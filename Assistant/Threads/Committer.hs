@@ -32,6 +32,7 @@ import Annex.Link
 import Annex.CatFile
 import Annex.InodeSentinal
 import Annex.Version
+import Annex.CurrentBranch
 import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct
@@ -228,7 +229,7 @@ commitStaged msg = do
 		Right _ -> do
 			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit msg
 			when ok $
-				Command.Sync.updateSyncBranch =<< join Command.Sync.getCurrBranch
+				Command.Sync.updateSyncBranch =<< getCurrentBranch
 			return ok
 
 {- OSX needs a short delay after a file is added before locking it down,

@@ -25,6 +25,7 @@ import qualified Annex.Branch
 import Annex.UUID
 import Annex.TaggedPush
 import Annex.Ssh
+import Annex.CurrentBranch
 import qualified Config
 import Git.Config
 import Config.DynamicConfig
@@ -79,8 +80,7 @@ reconnectRemotes rs = void $ do
 	{- No local branch exists yet, but we can try pulling. -}
 	sync (Nothing, _) = manualPull (Nothing, Nothing) =<< gitremotes
 	go = do
-		(failed, diverged) <- sync
-			=<< liftAnnex (join Command.Sync.getCurrBranch)
+		(failed, diverged) <- sync =<< liftAnnex getCurrentBranch
 		addScanRemotes diverged =<<
 			filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) rs
 		return failed
@@ -127,7 +127,7 @@ pushToRemotes' now remotes = do
 		Annex.Branch.commit =<< Annex.Branch.commitMessage
 		(,,)
 			<$> gitRepo
-			<*> join Command.Sync.getCurrBranch
+			<*> getCurrentBranch
 			<*> getUUID
 	ret <- go True branch g u remotes
 	return ret

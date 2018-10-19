@@ -595,6 +595,7 @@ Executable git-annex
     Annex
     Annex.Action
     Annex.AdjustedBranch
+    Annex.AdjustedBranch.Name
     Annex.AutoMerge
     Annex.BloomFilter
     Annex.Branch
@@ -610,6 +611,7 @@ Executable git-annex
     Annex.Content.Direct
     Annex.Content.LowLevel
     Annex.Content.PointerFile
+    Annex.CurrentBranch
     Annex.Difference
     Annex.DirHashes
     Annex.Direct
@@ -942,6 +944,7 @@ Executable git-annex
     Test.Framework
     Types
     Types.ActionItem
+    Types.AdjustedBranch
     Types.Availability
     Types.Backend
     Types.BranchState

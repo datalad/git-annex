@@ -11,6 +11,7 @@ module Annex.AdjustedBranch (
 	Adjustment(..),
 	LinkAdjustment(..),
 	PresenceAdjustment(..),
+	adjustmentHidesFiles,
 	OrigBranch,
 	AdjBranch(..),
 	originalToAdjusted,
@@ -29,6 +30,8 @@ module Annex.AdjustedBranch (
 ) where
 
 import Annex.Common
+import Types.AdjustedBranch
+import Annex.AdjustedBranch.Name
 import qualified Annex
 import Git
 import Git.Types
@@ -58,46 +61,6 @@ import qualified Database.Keys
 import Config
 
 import qualified Data.Map as M
-
-data Adjustment
-	= LinkAdjustment LinkAdjustment
-	| PresenceAdjustment PresenceAdjustment (Maybe LinkAdjustment)
-	deriving (Show, Eq)
-
--- Doesn't make sense to combine unlock with fix.
-data LinkAdjustment
-	= UnlockAdjustment
-	| LockAdjustment
-	| FixAdjustment
-	| UnFixAdjustment
-	deriving (Show, Eq)
-
-data PresenceAdjustment
-	= HideMissingAdjustment
-	| ShowMissingAdjustment
-	deriving (Show, Eq)
-
--- Adjustments have to be able to be reversed, so that commits made to the
--- adjusted branch can be reversed to the commit that would have been made
--- without the adjustment and applied to the original branch.
-class ReversableAdjustment t where
-	reverseAdjustment :: t -> t
-
-instance ReversableAdjustment Adjustment where
-	reverseAdjustment (LinkAdjustment l) = 
-		LinkAdjustment (reverseAdjustment l)
-	reverseAdjustment (PresenceAdjustment p ml) =
-		PresenceAdjustment (reverseAdjustment p) (fmap reverseAdjustment ml)
-
-instance ReversableAdjustment LinkAdjustment where
-	reverseAdjustment UnlockAdjustment = LockAdjustment
-	reverseAdjustment LockAdjustment = UnlockAdjustment
-	reverseAdjustment FixAdjustment = UnFixAdjustment
-	reverseAdjustment UnFixAdjustment = FixAdjustment
-
-instance ReversableAdjustment PresenceAdjustment where
-	reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
-	reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
 
 -- How to perform various adjustments to a TreeItem.
 class AdjustTreeItem t where
@@ -156,9 +119,6 @@ adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
 			<$> hashSymlink linktarget
 	Nothing -> return (Just ti)
 
-type OrigBranch = Branch
-newtype AdjBranch = AdjBranch { adjBranch :: Branch }
-
 -- This is a hidden branch ref, that's used as the basis for the AdjBranch,
 -- since pushes can overwrite the OrigBranch at any time. So, changes
 -- are propigated from the AdjBranch to the head of the BasisBranch.
@@ -169,62 +129,6 @@ newtype BasisBranch = BasisBranch Ref
 basisBranch :: AdjBranch -> BasisBranch
 basisBranch (AdjBranch adjbranch) = BasisBranch $
 	Ref ("refs/basis/" ++ fromRef (Git.Ref.base adjbranch))
-
-adjustedBranchPrefix :: String
-adjustedBranchPrefix = "refs/heads/adjusted/"
-
-class SerializeAdjustment t where
-	serialize :: t -> String
-	deserialize :: String -> Maybe t
-
-instance SerializeAdjustment Adjustment where
-	serialize (LinkAdjustment l) = serialize l
-	serialize (PresenceAdjustment p Nothing) = serialize p
-	serialize (PresenceAdjustment p (Just l)) = 
-		serialize p ++ "-" ++ serialize l
-	deserialize s = 
-		(LinkAdjustment <$> deserialize s)
-			<|>
-		(PresenceAdjustment <$> deserialize s1 <*> pure (deserialize s2))
-			<|>
-		(PresenceAdjustment <$> deserialize s <*> pure Nothing)
-	  where
-		(s1, s2) = separate (== '-') s
-
-instance SerializeAdjustment LinkAdjustment where
-	serialize UnlockAdjustment = "unlocked"
-	serialize LockAdjustment = "locked"
-	serialize FixAdjustment = "fixed"
-	serialize UnFixAdjustment = "unfixed"
-	deserialize "unlocked" = Just UnlockAdjustment
-	deserialize "locked" = Just UnlockAdjustment
-	deserialize "fixed" = Just FixAdjustment
-	deserialize "unfixed" = Just UnFixAdjustment
-	deserialize _ = Nothing
-
-instance SerializeAdjustment PresenceAdjustment where
-	serialize HideMissingAdjustment = "hidemissing"
-	serialize ShowMissingAdjustment = "showmissing"
-	deserialize "hidemissing" = Just HideMissingAdjustment
-	deserialize "showmissing" = Just ShowMissingAdjustment
-	deserialize _ = Nothing
-
-originalToAdjusted :: OrigBranch -> Adjustment -> AdjBranch
-originalToAdjusted orig adj = AdjBranch $ Ref $
-	adjustedBranchPrefix ++ base ++ '(' : serialize adj ++ ")"
-  where
-	base = fromRef (Git.Ref.base orig)
-
-adjustedToOriginal :: Branch -> Maybe (Adjustment, OrigBranch)
-adjustedToOriginal b
-	| adjustedBranchPrefix `isPrefixOf` bs = do
-		let (base, as) = separate (== '(') (drop prefixlen bs)
-		adj <- deserialize (takeWhile (/= ')') as)
-		Just (adj, Git.Ref.branchRef (Ref base))
-	| otherwise = Nothing
-  where
-	bs = fromRef b
-	prefixlen = length adjustedBranchPrefix
 
 getAdjustment :: Branch -> Maybe Adjustment
 getAdjustment = fmap fst . adjustedToOriginal

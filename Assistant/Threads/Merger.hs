@@ -13,6 +13,7 @@ import Assistant.BranchChange
 import Assistant.Sync
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
+import Annex.CurrentBranch
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
@@ -71,7 +72,7 @@ onChange file
 	changedbranch = fileToBranch file
 
 	mergecurrent =
-		mergecurrent' =<< liftAnnex (join Command.Sync.getCurrBranch)
+		mergecurrent' =<< liftAnnex getCurrentBranch
 	mergecurrent' currbranch@(Just b, _)
 		| changedbranch `isRelatedTo` b =
 			whenM (liftAnnex $ inRepo $ Git.Branch.changed b changedbranch) $ do

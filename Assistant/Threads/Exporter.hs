@@ -12,6 +12,7 @@ import Assistant.Commits
 import Assistant.Pushes
 import Assistant.DaemonStatus
 import Annex.Concurrent
+import Annex.CurrentBranch
 import Utility.ThreadScheduler
 import qualified Annex
 import qualified Remote
@@ -64,7 +65,7 @@ exportToRemotes rs = do
 			Annex.changeState $ \st -> st { Annex.errcounter = 0 }
 			start <- liftIO getCurrentTime
 			void $ Command.Sync.seekExportContent rs
-				=<< join Command.Sync.getCurrBranch
+				=<< getCurrentBranch
 			-- Look at command error counter to see if the export
 			-- didn't work.
 			failed <- (> 0) <$> Annex.getState Annex.errcounter

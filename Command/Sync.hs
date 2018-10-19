@@ -9,7 +9,6 @@
 module Command.Sync (
 	cmd,
 	CurrBranch,
-	getCurrBranch,
 	mergeConfig,
 	merge,
 	prepMerge,
@@ -60,6 +59,7 @@ import Annex.UpdateInstead
 import Annex.Export
 import Annex.LockFile
 import Annex.TaggedPush
+import Annex.CurrentBranch
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
@@ -162,8 +162,7 @@ seek :: SyncOptions -> CommandSeek
 seek o = allowConcurrentOutput $ do
 	prepMerge
 
-	getbranch <- getCurrBranch 
-	let withbranch a = a =<< getbranch
+	let withbranch a = a =<< getCurrentBranch
 
 	remotes <- syncRemotes (syncWith o)
 	let gitremotes = filter Remote.gitSyncableRemote remotes
@@ -188,7 +187,7 @@ seek o = allowConcurrentOutput $ do
 				]
 			
 			whenM shouldsynccontent $ do
-				syncedcontent <- seekSyncContent o dataremotes
+				syncedcontent <- withbranch $ seekSyncContent o dataremotes
 				exportedcontent <- withbranch $ seekExportContent exportremotes
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
@@ -208,35 +207,6 @@ seek o = allowConcurrentOutput $ do
 	shouldsynccontent = pure (contentOption o)
 		<||> pure (not (null (contentOfOption o)))
 		<||> (pure (not (noContentOption o)) <&&> getGitConfigVal annexSyncContent)
-
-type CurrBranch = (Maybe Git.Branch, Maybe Adjustment)
-
-{- There may not be a branch checked out until after the commit,
- - or perhaps after it gets merged from the remote, or perhaps
- - never.
- -
- - So only look it up once it's needed, and once there is a
- - branch, cache it.
- -
- - When on an adjusted branch, gets the original branch, and the adjustment.
- -}
-getCurrBranch :: Annex (Annex CurrBranch)
-getCurrBranch = do
-	mvar <- liftIO newEmptyMVar
-	return $ ifM (liftIO $ isEmptyMVar mvar)
-		( do
-			currbranch <- inRepo Git.Branch.current
-			case currbranch of
-				Nothing -> return (Nothing, Nothing)
-				Just b -> do
-					let v = case adjustedToOriginal b of
-						Nothing -> (Just b, Nothing)
-						Just (adj, origbranch) ->
-							(Just origbranch, Just adj)
-					liftIO $ putMVar mvar v
-					return v
-		, liftIO $ readMVar mvar
-		)
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
@@ -568,8 +538,11 @@ newer remote b = do
 		, return True
 		)
 
-{- Without --all, only looks at files in the work tree. With --all,
- - makes 2 passes, first looking at the work tree and then all keys.
+{- Without --all, only looks at files in the work tree.
+ - (Or, when in an ajusted branch where some files are hidden, at files in
+ - the original branch.)
+ -
+ - With --all, makes a second pass over all keys.
  - This ensures that preferred content expressions that match on
  - filenames work, even when in --all mode.
  -
@@ -577,15 +550,19 @@ newer remote b = do
  -
  - When concurrency is enabled, files are processed concurrently.
  -}
-seekSyncContent :: SyncOptions -> [Remote] -> Annex Bool
-seekSyncContent o rs = do
+seekSyncContent :: SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
+seekSyncContent o rs currbranch = do
 	mvar <- liftIO newEmptyMVar
 	bloom <- case keyOptions o of
 		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
-		_ -> do
-			l <- workTreeItems (contentOfOption o)
-			seekworktree mvar l (const noop)
-			pure Nothing
+		_ -> case currbranch of
+			(origbranch, Just adj) | adjustmentHidesFiles adj -> do
+				seekbranch origbranch (contentOfOption o)
+				pure Nohing
+			_ = do
+				l <- workTreeItems (contentOfOption o)
+				seekworktree mvar l (const noop)
+				pure Nothing
 	withKeyOptions' (keyOptions o) False
 		(return (seekkeys mvar bloom))
 		(const noop)
@@ -595,7 +572,11 @@ seekSyncContent o rs = do
   where
 	seekworktree mvar l bloomfeeder = seekHelper LsFiles.inRepo l >>=
 		mapM_ (\f -> ifAnnexed f (go (Right bloomfeeder) mvar (AssociatedFile (Just f))) noop)
+
+	seekbranch origbranch l = 
+
 	seekkeys mvar bloom (k, _) = go (Left bloom) mvar (AssociatedFile Nothing) k
+
 	go ebloom mvar af k = commandAction $ do
 		whenM (syncFile ebloom rs af k) $
 			void $ liftIO $ tryPutMVar mvar ()

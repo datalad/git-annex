@@ -32,12 +32,12 @@ import Annex.Content.Direct
 import Annex.Perms
 import Annex.Link
 import Annex.MetaData
+import Annex.CurrentBranch
 import Annex.Version
 import Logs.Location
 import qualified Annex
 import qualified Annex.Queue
 import qualified Database.Keys
-import qualified Git
 import qualified Git.Branch
 import Config
 import Utility.InodeCache
@@ -329,25 +329,13 @@ addUnlocked = isDirect <||>
 	(versionSupportsUnlockedPointers <&&>
 	 ((not . coreSymlinks <$> Annex.getGitConfig) <||>
 	  (annexAddUnlocked <$> Annex.getGitConfig) <||>
-	  (maybe False (isadjustedunlocked . getAdjustment) <$> cachedCurrentBranch)
+	  (maybe False isadjustedunlocked . snd <$> getCurrentBranch)
 	 )
 	)
   where
-	isadjustedunlocked (Just (LinkAdjustment UnlockAdjustment)) = True
-	isadjustedunlocked (Just (PresenceAdjustment _ (Just UnlockAdjustment))) = True
+	isadjustedunlocked (LinkAdjustment UnlockAdjustment) = True
+	isadjustedunlocked (PresenceAdjustment _ (Just UnlockAdjustment)) = True
 	isadjustedunlocked _ = False
-
-cachedCurrentBranch :: Annex (Maybe Git.Branch)
-cachedCurrentBranch = maybe cache (return . Just)
-	=<< Annex.getState Annex.cachedcurrentbranch
-  where
-	cache :: Annex (Maybe Git.Branch)
-	cache = inRepo Git.Branch.currentUnsafe >>= \case
-		Nothing -> return Nothing
-		Just b -> do
-			Annex.changeState $ \s ->
-				s { Annex.cachedcurrentbranch = Just b }
-			return (Just b)
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be
