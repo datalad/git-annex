@@ -171,7 +171,7 @@ enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
 					  , Git.Ref.describe origbranch
 					  ]
 					, [ "You can check out the adjusted branch manually to enter it,"
-					  , "or delete the adjusted branch and re-run this command."
+					  , "or add the --force option to overwrite the old branch."
 					  ]
 					]
 				return False
