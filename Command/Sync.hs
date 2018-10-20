@@ -19,7 +19,7 @@ module Command.Sync (
 	pushBranch,
 	updateBranch,
 	syncBranch,
-	updateSyncBranch,
+	updateBranches,
 	seekExportContent,
 ) where
 
@@ -227,7 +227,7 @@ mergeConfig =
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> ResolveMergeOverride -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
 merge currbranch mergeconfig resolvemergeoverride commitmode tomerge = case currbranch of
-	(Just b, Just adj) -> updateAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
+	(Just b, Just adj) -> mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
 	(b, _) -> autoMergeFrom tomerge b mergeconfig canresolvemerge commitmode
   where
 	canresolvemerge = case resolvemergeoverride of
@@ -342,17 +342,29 @@ needMerge (Just branch, madj) = ifM (allM id checks)
 
 pushLocal :: CurrBranch -> CommandStart
 pushLocal b = do
-	updateSyncBranch b
+	updateBranches b
 	stop
 
-updateSyncBranch :: CurrBranch -> Annex ()
-updateSyncBranch (Nothing, _) = noop
-updateSyncBranch (Just branch, madj) = do
+updateBranches :: CurrBranch -> Annex ()
+updateBranches (Nothing, _) = noop
+updateBranches (Just branch, madj) = do
 	-- When in an adjusted branch, propigate any changes made to it
-	-- back to the original branch.
-	maybe noop (propigateAdjustedCommits branch) madj
+	-- back to the original branch. The adjusted branch may also need
+	-- to be updated to hide/expose files.
+	case madj of
+		Nothing -> noop
+		Just adj -> do
+			let origbranch = branch
+			propigateAdjustedCommits origbranch adj
+			when (adjustmentHidesFiles adj) $ do
+				showSideAction "updating adjusted branch"
+				let adjbranch = originalToAdjusted origbranch adj
+				unlessM (updateAdjustedBranch adj adjbranch origbranch) $
+					warning $ unwords [ "Updating adjusted branch failed." ]
+					
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) branch
+
 	-- In direct mode, we're operating on some special direct mode
 	-- branch, rather than the intended branch, so update the intended
 	-- branch.

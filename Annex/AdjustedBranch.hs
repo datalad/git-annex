@@ -19,9 +19,10 @@ module Annex.AdjustedBranch (
 	fromAdjustedBranch,
 	getAdjustment,
 	enterAdjustedBranch,
+	updateAdjustedBranch,
 	adjustBranch,
 	adjustToCrippledFileSystem,
-	updateAdjustedBranch,
+	mergeToAdjustedBranch,
 	propigateAdjustedCommits,
 	AdjustedClone(..),
 	checkAdjustedClone,
@@ -150,7 +151,7 @@ enterAdjustedBranch :: Adjustment -> Annex Bool
 enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
 	Just currbranch -> case getAdjustment currbranch of
 		Just curradj | curradj == adj ->
-			reenterAdjustedBranch adj currbranch
+			updateAdjustedBranch adj (AdjBranch currbranch)
 				(fromAdjustedBranch currbranch)
 		_ -> go currbranch
 	Nothing -> do
@@ -197,8 +198,8 @@ checkoutAdjustedBranch (AdjBranch b) checkoutparams = do
  - deleting and rebuilding the adjusted branch, and then checking it out.
  - But, it can be implemented more efficiently than that.
  -}
-reenterAdjustedBranch :: Adjustment -> Branch -> OrigBranch -> Annex Bool
-reenterAdjustedBranch adj@(PresenceAdjustment _ _) currbranch origbranch = do
+updateAdjustedBranch :: Adjustment -> AdjBranch -> OrigBranch -> Annex Bool
+updateAdjustedBranch adj@(PresenceAdjustment _ _) (AdjBranch currbranch) origbranch = do
 	b <- preventCommits $ \commitlck -> do
 		-- Avoid losing any commits that the adjusted branch has that
 		-- have not yet been propigated back to the origbranch.
@@ -319,8 +320,8 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. Note that the provided branch should be a non-adjusted
  - branch. -}
-updateAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> [Git.Merge.MergeConfig] -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
-updateAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge commitmode = catchBoolIO $
+mergeToAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> [Git.Merge.MergeConfig] -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
+mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge commitmode = catchBoolIO $
 	join $ preventCommits go
   where
 	adjbranch@(AdjBranch currbranch) = originalToAdjusted origbranch adj

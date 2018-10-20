@@ -229,7 +229,7 @@ commitStaged msg = do
 		Right _ -> do
 			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit msg
 			when ok $
-				Command.Sync.updateSyncBranch =<< getCurrentBranch
+				Command.Sync.updateBranches =<< getCurrentBranch
 			return ok
 
 {- OSX needs a short delay after a file is added before locking it down,
