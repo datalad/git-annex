@@ -1,0 +1,146 @@
+Annexed files can have their content either present in the repository, or
+not locally present (but stored in other repositories). Normally such
+missing files are represented by broken symlinks or pointer files.
+
+Sometimes it can be useful to hide the missing files, so you can focus on
+only the files whose content is available to use. This is possible to do,
+but it needs some different workflows of using git-annex.
+
+## getting started
+
+To get started, your repository needs to be upgraded to v6, since the
+feature does not work in v5 repositories.
+
+	git annex upgrade --version=6
+
+The [[git-annex adjust|git-annex-adjust]] command sets up an adjusted form
+of a git branch, in this case we'll ask it to hide missing files.
+
+	git annex adjust --hide-missing
+
+And now the working tree only contains annexed files whose content is
+present. Files with missing content are gone (but not forgotten).
+
+The command switched to a branch with a name like "master(hidemissing)". Since
+it's a regular git branch, you can switch back and forth between it and the
+full branch at any time:
+
+	git checkout master
+	...
+	git checkout "master(hidemissing)"
+
+## git commands in the adjusted branch
+
+When in the adjusted branch, you can use the usual git commands, adding files,
+renaming them, and deleting them, and committing. But bear in mind you're not
+in the master branch, and so your commits won't touch the master branch. So,
+you need a way to update the master branch the changes you made to the adjusted
+branch. That's easy, just sync:
+
+	touch new-file
+	git annex add new-file
+	git commit -m 'added a file'
+	git annex sync --no-push --no-pull
+
+That sync updated the master branch, cherry-picking the commit into it:
+
+	> git log --stat master -n 1
+	commit 175ce2309a9a6f61b2c918f0878ea3060eab10ea
+	Author: Joey Hess <joeyh@joeyh.name>
+	Date:   Sat Oct 20 12:12:00 2018 -0400
+	
+	    added a file
+	
+	 new-file | 1 +
+	 1 file changed, 1 insertion(+)
+
+Similarly, you can delete a file and sync, and it will be removed from the master
+branch. 
+
+[[!template id=note text="""
+A tricky point, that's worth mentioning here is that, when you `git annex drop`
+a file, and then delete it, and sync, it *won't* be removed from the master branch. 
+
+Why not? Well, the adjusted branch hides missing files; after dropping the file
+is missing, and after deletion it's hidden. And you generally don't want to
+remove hidden files from the master branch in a sync from the adjusted branch.
+
+If that seems complicated, don't worry, the behavior will probably
+make sense when you encounter this situation.
+"""]]
+
+You can also use `git annex sync` to pull changes from remotes into the adjusted
+branch. It will automatically filter out missing files while merging the other
+changes.
+
+So that's all the usual git operations covered; you can use regular git commands
+on the working tree and to commit files, and you use `git annex sync` to push
+and pull. Now we need to talk about git-annex operations that get or drop
+content, which can be tricky since missing files are hidden.
+
+## getting and dropping files
+
+So, you're in a branch, missing files are hidden, and you want git-annex to get
+some file. What do you do?
+
+	> git annex get some_file
+	git-annex: some_file not found
+	git-annex: get: 1 failed
+
+Well of course, that doesn't work, the file's pointer is not in the working tree;
+it's been hidden. Asking git-annex to get a whole directory won't work either;
+all files in the working tree are present so it won't find any missing ones to
+operate on. (This might be improved later, but it's how things are currently.)
+
+What will work is to use `git annex sync`, which knows you're in an adjusted branch
+and can get hidden files.
+
+	git annex sync --content some_file some_directory --no-push --no-pull
+
+Unlike getting files that are hidden, dropping files is no problem, since
+the file you want to drop will be present. But, after dropping a file,
+it won't be hidden right away. This is because updating the adjusted branch to
+hide the dropped file is a bit expensive. Here's how to drop and then hide
+files:
+
+	git annex drop some_file
+	git annex adjust --hide-missing
+
+Re-running `git annex adjust` while in the adjusted branch updates the branch
+to hide any newly missing files, and unhide any files whose content is
+now present. (Running `git annex sync` also does that, along with the other
+syncing.)
+
+If this seems a bit of a pain, read on for a simpler way ...
+
+## a simple workflow
+
+Here's how I use this for my podcasts repository. I [[use git-annex to download
+podcasts|downloading_podcasts]] to a server. I want to keep all the podcasts,
+but on my laptop of phone, I mostly want to only see podcasts I've not already
+listened to.
+
+I set up the repository like this:
+
+	git clone server:/path/to/podcasts
+	cd podcasts
+	git annex upgrade --version=6
+	git annex adjust --hide-missing
+	git annex group here client
+	git annex wanted here standard
+
+The last two commands make the repository use the 
+[[standard preferred content setting for client repositories|preferred_content/standard_groups]],
+so it wants to get a copy of all files except for files inside "archive"
+directories. When I'm done with listening to a podcast, I'll move it into an
+"archive" directory to indicate I'm done with it.
+
+To download all the new podcasts and make the files visible,
+and drop the drop the archived podcasts, and hide their files, I now
+only need to run one command:
+
+	git annex sync --content
+
+Later, when I want to revisit an old podcast, I can simply check
+out the master branch to make all the old files appear, and
+`git annex get` the one I want.
