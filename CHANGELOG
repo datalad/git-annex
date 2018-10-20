@@ -2,6 +2,7 @@ git-annex (6.20181012) UNRELEASED; urgency=medium
 
   * At long last there's a way to hide annexed files whose content
     is missing from the working tree: git-annex adjust --hide-missing
+    See https://git-annex.branchable.com/tips/hiding_missing_files/
   * When already in an adjusted branch, running git-annex adjust
     again will update the branch as needed. This is mostly
     useful with --hide-missing to hide/unhide files after their content
