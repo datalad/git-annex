@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2018-10-22T16:24:44Z"
+ content="""
+First, you have not disabled sshcaching, because the value to disable it is
+not "no" but "false". So please try again with sshcaching disabled..
+
+	Oct  4 16:25:28 localhost sshd[11700]: Received disconnect from 129.XXX.XXX.XXX port 40080:11: disconnected by user
+
+Looks like something on the client side or in the middle is closing the TCP
+connection, and I think not in a clean shutdown way, but hard.
+
+I'm fairly sure the git-annex is not stopping the ssh process it used to open
+that connection though. The "hGetChar: illegal operation" is because it's still
+trying to read from ssh after it exited. So it seems we need to find out why
+the ssh process on the client side is exiting (assuning the same thing happens
+with sshcaching disabled). strace?
+
+You mentioned NFS.. Which repo is on NFS, the client or the server?
+"""]]
