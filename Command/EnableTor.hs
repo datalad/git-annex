@@ -122,6 +122,7 @@ checkHiddenService = bracket setup cleanup go
 			, connCheckAuth = const False
 			, connIhdl = h
 			, connOhdl = h
+			, connIdent = ConnIdent Nothing
 			}
 		runst <- mkRunState Client
 		void $ runNetProto runst conn $ P2P.serveAuth u

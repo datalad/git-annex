@@ -29,6 +29,7 @@ import qualified P2P.Annex as P2P
 import Control.Concurrent.STM
 import Control.Concurrent.Async
 import qualified Data.ByteString as B
+import Data.Unique
 
 toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
 toRepo cs r gc remotecmd = do
@@ -257,11 +258,16 @@ openP2PSshConnection r connpool = do
 				, std_out = CreatePipe
 				, std_err = CreatePipe
 				}
+		-- Could use getPid, but need to build with older versions
+		-- of process, so instead a unique connection number.
+		connnum <- hashUnique <$> newUnique
 		let conn = P2P.P2PConnection
 			{ P2P.connRepo = repo
 			, P2P.connCheckAuth = const False
 			, P2P.connIhdl = to
 			, P2P.connOhdl = from
+			, P2P.connIdent = P2P.ConnIdent $
+				Just $ "ssh connection " ++ show connnum
 			}
 		stderrhandlerst <- newStderrHandler err
 		runst <- P2P.mkRunState P2P.Client

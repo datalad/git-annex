@@ -114,6 +114,7 @@ serveClient th u r q = bracket setup cleanup start
 				, connCheckAuth = (`isAllowedAuthToken` allowed)
 				, connIhdl = h
 				, connOhdl = h
+				, connIdent = ConnIdent $ Just "tor remotedaemon"
 				}
 			-- not really Client, but we don't know their uuid yet
 			runstauth <- liftIO $ mkRunState Client

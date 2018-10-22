@@ -12,6 +12,7 @@ module P2P.IO
 	, RunState(..)
 	, mkRunState
 	, P2PConnection(..)
+	, ConnIdent(..)
 	, ClosableConnection(..)
 	, stdioP2PConnection
 	, connectPeer
@@ -77,7 +78,11 @@ data P2PConnection = P2PConnection
 	, connCheckAuth :: (AuthToken -> Bool)
 	, connIhdl :: Handle
 	, connOhdl :: Handle
+	, connIdent :: ConnIdent
 	}
+
+-- Identifier for a connection, only used for debugging.
+newtype ConnIdent = ConnIdent (Maybe String)
 
 data ClosableConnection conn
 	= OpenConnection conn
@@ -90,6 +95,7 @@ stdioP2PConnection g = P2PConnection
 	, connCheckAuth = const False
 	, connIhdl = stdin
 	, connOhdl = stdout
+	, connIdent = ConnIdent Nothing
 	}
 
 -- Opens a connection to a peer. Does not authenticate with it.
@@ -101,6 +107,7 @@ connectPeer g (TorAnnex onionaddress onionport) = do
 		, connCheckAuth = const False
 		, connIhdl = h
 		, connOhdl = h
+		, connIdent = ConnIdent Nothing
 		}
 
 closeConnection :: P2PConnection -> IO ()
@@ -166,7 +173,7 @@ runNet runst conn runner f = case f of
 	SendMessage m next -> do
 		v <- liftIO $ tryNonAsync $ do
 			let l = unwords (formatMessage m)
-			debugMessage "P2P >" m
+			debugMessage conn "P2P >" m
 			hPutStrLn (connOhdl conn) l
 			hFlush (connOhdl conn)
 		case v of
@@ -180,7 +187,7 @@ runNet runst conn runner f = case f of
 				ProtoFailureMessage "protocol error"
 			Right (Just l) -> case parseMessage l of
 				Just m -> do
-					liftIO $ debugMessage "P2P <" m
+					liftIO $ debugMessage conn "P2P <" m
 					runner (next (Just m))
 				Nothing -> runner (next Nothing)
 	SendBytes len b p next -> do
@@ -225,13 +232,19 @@ runNet runst conn runner f = case f of
 		Serving _ _ tv -> tv
 		Client tv -> tv
 
-debugMessage :: String -> Message -> IO ()
-debugMessage prefix m = debugM "p2p" $
-	prefix ++ " " ++ unwords (formatMessage safem)
+debugMessage :: P2PConnection -> String -> Message -> IO ()
+debugMessage conn prefix m = do
+	tid <- myThreadId	
+	debugM "p2p" $ concat $ catMaybes $
+		[ (\ident -> "[connection: " ++ ident ++ "] ") <$> mident
+		, Just $ "[" ++ show tid ++ "] "
+		, Just $ prefix ++ " " ++ unwords (formatMessage safem)
+		]
   where
 	safem = case m of
 		AUTH u _ -> AUTH u nullAuthToken
 		_ -> m
+	ConnIdent mident = connIdent conn
 
 -- Send exactly the specified number of bytes or returns False.
 --
