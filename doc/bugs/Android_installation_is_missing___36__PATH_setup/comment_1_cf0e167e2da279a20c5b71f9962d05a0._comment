@@ -4,11 +4,13 @@
  date="2018-10-22T17:04:18Z"
  content="""
 runshell contains code that puts it in PATH when run on termux.
-However, that relies on `uname -o` reporting "Android",
-and git-annex bundles its own uname which didn't (oops).
+That relies on termux's `uname -o` reporting "Android".
 
-It seems likely I fixed this in 
-[[!commit d14983ee68ac553f3a49e9148ed193fbae722bb8]], although I have
-not tried it yet, and the arm64 daily build hasn't been updated yet to
-include that fix.
+I'm fairly sure I tested that code when I added it, and it worked at the
+time. 
+[[!commit d14983ee68ac553f3a49e9148ed193fbae722bb8]] may be related,
+but I don't think so.
+
+It should not be hard to debug
+git-annex.linux/runshell, since it's a shell script and you can run it `set -x`
 """]]
