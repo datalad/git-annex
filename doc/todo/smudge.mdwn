@@ -10,19 +10,19 @@ git-annex should use smudge/clean filters. v6 mode
   branch, which causes 2x the space to be used.  
   
   "git annex proxy" could be used to handle this.
-  Make it run the git command with smudge filters disabled and then
-  scan through the changed files in the work tree, and update pointer files
-  to be hard links to their content.
+  Make it run the git command with smudge filter set to not output content
+  but only pointers, and then at the end populate the pointer files, hard
+  when appropriate. (As an optimization, the smudge filter could also be
+  made to use the long-running filter interface when run this way.)
   
   git-annex adjust and git-annex sync could both use that internally
   when checking out the adjusted branch, and merging a branch into HEAD.
   
-  Or: Make the smudge filter not provide the actual file content, but the
-  pointer, at least when used in a checkout. And install a post-checkout
-  hook that populates the worktree files that were checked out.
-  Of course, it will also need to update the index.
+  Or: Make the smudge filter never provide the actual file content, but the
+  pointer. Install post-checkout and post-merge hooks that populate
+  the worktree files that were checked out. Of course, they will also
+  need to update the index.
 
-  A post-merge hook would also be needed to handle git pull and merge.
   Problem: post-merge hook is not run when there's a merge conflict.
   Git does not actually run the smudge filter in this case;
   the conflicting file becomes a text file containing a merge conflict
@@ -31,6 +31,10 @@ git-annex should use smudge/clean filters. v6 mode
   So, if the smudge filter then provides the pointer, the file would not be
   populated. The post-commit hook would then need to populate the file,
   once the merge got committed.
+
+  Problem: No hook seems to be run for git stash / git stash apply 
+  or for git reset --hard. Fatal or can we live with needing to run a
+  git-annex command to populate the files after those commands?
 
   Optionally: Use the filterdriver interface during checkout. Unfortunately that
   interface is slower for cleaning during git add (see
