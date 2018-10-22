@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="stalling - also with =false"
+ date="2018-10-22T17:34:28Z"
+ content="""
+`=false` instead of `=no` seems to make no difference:
+
+[[!format sh \"\"\"
+1 13835.....................................:Mon 22 Oct 2018 01:24:10 PM EDT:.
+(git)smaug:/tmp/QA-stalling[master]git
+$> git  -c annex.sshcaching=false  annex get -J2 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz
+get sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz (from origin...) (checksum...) ok
+get sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz (from origin...) (checksum...) ok
+get sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz (from origin...) 
+^C
+1 13836 ->130.....................................:Mon 22 Oct 2018 01:25:44 PM EDT:.
+\"\"\"]]
+
+in a blind attempt I have also set them within `~/.gitconfig` on the server side -- also to no effect
+
+> `... strace?`
+
+I've provided a URL to strace log in an email from 3 Oct 2018 (msg id 20181003182901.GM3684@hopa.kiewit.dartmouth.edu).  Now will collect one more with the `=false` and follow up to that email with url to this fresh trace (do not want to share them publicly happen some sensitive information is recorded/leaks)
+
+> `You mentioned NFS.. Which repo is on NFS, the client or the server?  `
+
+Server.  I've emailed mount options in a private communication on Fri, 5 Oct 2018 (message id 20181005201504.GH3978@hopa.kiewit.dartmouth.edu)
+"""]]
