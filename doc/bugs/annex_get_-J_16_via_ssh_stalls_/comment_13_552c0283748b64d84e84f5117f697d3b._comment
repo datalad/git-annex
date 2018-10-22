@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2018-10-22T19:55:18Z"
+ content="""
+Hmm, more likely that's debug info from the remote side coming over ssh
+stderr channel. Still the added instrumentation may provide a clue..
+"""]]
