@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2018-10-22T18:37:54Z"
+ content="""
+Interestingly, the P2P debug in
+<http://git-annex.branchable.com/bugs/annex_get_-J_16_via_ssh_stalls_/#comment-34b66436c1a2f2d9479f948655375bb5>
+shows two ssh processes started, but then git-annex sends "VERSION 1" three
+times. And the remote only replies to two of those.
+
+Could that indicate two threads are somehow talking to the same ssh?
+I've instrumented --debug with more information to find out, so 
+please try again with [[!commit fcca7adaffe86673dade3790f80e22ee426b51e7]].
+"""]]
