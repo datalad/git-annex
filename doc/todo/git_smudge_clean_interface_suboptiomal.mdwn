@@ -1,0 +1,115 @@
+(This is a draft todo item, for when [[todo/smudge]] gets closed. Some of
+what's described below is not implemented yet, so it's actually worse than
+this describes. --[[Joey]])
+
+git-annex uses git's smudge/clean interface to implement v6 unlocked
+files. However, the interface is suboptimal for git-annex's needs. While
+git-annex works around most of the problems with the interface, it can't
+avoid some consequences of this poor fit, and it has to do some surprising
+things to make it work as well as it does.
+
+First, how git's smudge/clean interface is meant to work: The smudge filter
+is run on the content of files as stored in a repo before they are written to
+the work tree, and can alter the content in arbitrary ways. The clean filter
+reverses the smudge filter, so git can use it to get the content to store
+in the repo. See gitattributes(5) for details.
+
+It was originally used for minor textual changes (eg line ending
+conversion), but it's general enough to be used to add large file support
+to git. git-lfs uses it that way.
+
+The first problem with the interface was that it ran a command once per
+file. This was later fixed by extending it to support long-running filter
+processes, which git-lfs uses.
+
+A second problem with the interface, which affects git-lfs AFAIK, is that
+git buffers the output of the smudge filter in memory before updating the
+working tree. If the smudge filter emits a large file, git can use a lot of
+memory. Of course, on modern computers this needs to be hundreds of
+megabytes to be very noticable. git-lfs may tend to be used with
+files not that large. git-annex avoids this problem by not using the smudge
+filter in the usual way, as described below.
+
+A third problem with the interface is that piping large file contents
+between git and filters is innefficient. Seems this must affect git-lfs
+too, but perhaps it's used on less enourmous data sets than git-annex.
+To avoid the problem, git-annex relies on a not very well documented trick: The
+clean filter is fed a possibly large file on stdin, but when it closes the FD
+without reading. git gets a SIGPIPE and stops reading and sending the
+file. Instead of reading from stdin, git-annex abuses the fact that git
+provides the clean filter with the work tree filename, and reads and cleans
+the file itself, more efficiently. But, this trick only works when the
+long-running filter process interface is not used, so git-annex can't use
+it.
+
+git-lfs differs from git-annex in that all the large files in the
+repository are usually present in the working tree; it doesn't have a way
+to drop content that is not wanted locally while keeping other content
+locally available, as git-annex does. And so it does not need to be able to
+get content like git-annex can do either. It also differs in that it uses a
+central server, which is trusted to retain content, so it doesn't try to
+avoid losing the local copy, which could be the only copy, as git-annex
+does. (All AFAIK; have not looked at git-lfs recently.) 
+
+Those properties of git-lfs make it fit fairly well into the smudge/clean
+interface. Conversely, the different properties of git-annex make it a poor
+fit. 
+
+* git-annex needs to be able to update the working tree itself,
+  to make large file content available or not available. But this would cause
+  git to think the file is modified. 
+  
+  The way git-annex works around this is to run git update-index on files
+  after updating them. Git then runs the clean filter, and the clean filter
+  tells git there's not been any real modification of the file.
+
+* git-annex needs to hard link from its object store to a work tree
+  file, to avoid keeping two copies of the file on disk while preventing
+  a rm or git checkout from deleting the only local copy. But the smudge
+  interface does not provide a way to update the worktree itself.
+
+  So, git-annex's smudge filter does not actually provide the large file
+  content. It just echos back the file as checked into git, and
+  remembers that git wanted to check out that file.
+  git-annex installs post-checkout, post-merge, and pre-commit
+  hooks, which update the working tree files to make content from
+  git-annex available. Of course, that means git sees modifications to the
+  working tree, so git-annex then has to run git update-index on the files,
+  which runs the clean filter, as described above.
+  
+  (Not emitting large files from the smudge filter also avoids the problem with git
+  leaking memory described earlier.)
+
+And here's the consequences of git-annex's workarounds:
+
+* It doesn't use the long-running filter process interface, so `git add`
+  of a lot of files runs the clean filter once per file, which is slower than it
+  could be. Using `git-annex add` avoids this problem.
+
+* After a git-annex get/drop or a git checkout or pull that affects a lot
+  of files, the clean filter gets run once per file, which is again, slower
+  than ideal.
+
+* In a rare situation, git-annex would like to get git to run the clean
+  filter, but it cannot because git has the index locked. So, git-annex has
+  to print an ugly warning message saying that git status will show
+  modififcations to files that are not really modified, and giving a command to
+  fix the git status display.
+
+* git does not run any hook after a `git stash` or `git reset --hard`,
+  so after these operations, annexed files remain unpopulated until 
+  the user runs `git annex fix`.
+
+The best fix would be to improve git's smudge/clean interface:
+
+* Add hooks run after every work tree update or after `git stash` and
+  `git reset --hard`
+
+* Avoid buffering smudge filter output in memory.
+
+* Allow smudge filter to modify the work tree itself.
+  (I developed a patch series for this in 2016, but it didn't land.
+  --[[Joey]])
+
+* Allow clean filter to read work tree files itself, to avoid overhead of
+  sending huge files through a pipe.
