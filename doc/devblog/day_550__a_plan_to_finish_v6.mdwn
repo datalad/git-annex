@@ -1,0 +1,12 @@
+Dreadfully early this morning I developed a plan for a way to finish the
+last v6 blocker, that works around most of the problems with git's smudge 
+interface. The only problem with the plan is that it would make both `git
+stash` and `git reset --hard` leave unlocked annexed files in an
+unpopulated state when their content is available. The user would have to
+run git-annex afterwards to fix up after them. All other git checkout,
+merge, etc commands would work though.
+
+Not sure how I feel about this plan, but it seems to be the best one so
+far, other than going off and trying to improve git's smudge interface again.
+I also wrote up [[git_smudge_clean_interface_suboptiomal]] which explains
+the problems with git's interface in detail.
