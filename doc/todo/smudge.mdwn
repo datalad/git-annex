@@ -20,7 +20,28 @@ git-annex should use smudge/clean filters. v6 mode
   Or: Make the smudge filter not provide the actual file content, but the
   pointer, at least when used in a checkout. And install a post-checkout
   hook that populates the worktree files that were checked out.
-  Of course, it will also need to update the index..
+  Of course, it will also need to update the index.
+
+  A post-merge hook would also be needed to handle git pull and merge.
+  Problem: post-merge hook is not run when there's a merge conflict.
+  Git does not actually run the smudge filter in this case;
+  the conflicting file becomes a text file containing a merge conflict
+  between the two annex pointers. When the user resolves the conflict
+  and git add's the result, git runs the smudge filter.
+  So, if the smudge filter then provides the pointer, the file would not be
+  populated. The post-commit hook would then need to populate the file,
+  once the merge got committed.
+
+  Optionally: Use the filterdriver interface during checkout. Unfortunately that
+  interface is slower for cleaning during git add (see
+  [[todo/Long_Running_Filter_Process]]), but if the smudge filter is not
+  providing git with the file content and letting a
+  post-checkout/post-merge/post-commit hooks
+  populate the files, using filterdriver would avoid git running many
+  git-annex smudge processes, greatly speeding up large checkouts.
+  git add could be left slow, with git-annex add being the fast path,
+  until the filterdriver interface is improved. Or, make "git annex proxy"
+  use the filterdriver interface for checkout.
 
   (My enhanced smudge/clean patch set also fixed this problem, in a much
   nicer way...)
