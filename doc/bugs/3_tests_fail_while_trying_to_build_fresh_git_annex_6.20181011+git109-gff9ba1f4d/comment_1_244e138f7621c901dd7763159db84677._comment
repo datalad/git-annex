@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2018-10-22T19:22:30Z"
+ content="""
+See also (same?) failure when trying to build the conda-forge package:
+https://circleci.com/gh/conda-forge/git-annex-feedstock/116?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link
+"""]]
