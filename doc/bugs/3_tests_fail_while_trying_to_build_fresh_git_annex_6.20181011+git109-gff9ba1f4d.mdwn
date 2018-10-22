@@ -1,0 +1,40 @@
+[[!format sh """
+
+neurodebian@smaug ..6.20181011+git109-gff9ba1f4d-1~ndall+1 % grep  -B10 FAIL git-annex_6.20181011+git109-gff9ba1f4d-1~ndall+1_amd64.build
+   a03a722..0dd2b80  git-annex  -> r2/git-annex
+To ../../.t/tmprepo331
+ * [new branch]      git-annex -> synced/git-annex
+To ../../.t/tmprepo330
+   a03a722..22937c6  git-annex -> synced/git-annex
+OK (2.15s)
+    adjusted branch merge regression:                     On branch master
+nothing to commit, working tree clean
+On branch master
+nothing to commit, working tree clean
+FAIL (0.50s)
+      Test.hs:1463:
+      adjust failed
+    adjusted branch subtree regression:                   On branch master
+nothing to commit, working tree clean
+FAIL (0.31s)
+--
+   059871b..4f97b0c  annex/direct/master -> r2/annex/direct/master
+conflictor.variant-a507
+conflictor.variant-75dc
+conflictor.variant-a507
+conflictor.variant-75dc
+OK (1.37s)
+    conflict resolution (adjusted branch):                On branch master
+nothing to commit, working tree clean
+On branch master
+nothing to commit, working tree clean
+FAIL (0.70s)
+
+"""]]
+
+
+Full log http://www.onerussian.com/tmp/git-annex_6.20181011+git109-gff9ba1f4d-1~ndall+1_amd64.build
+
+(not sure if relevant - this is I think the first build without my custom no LOCPATH patch)
+
+[[!meta author=yoh]]
