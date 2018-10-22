@@ -97,8 +97,8 @@ And here's the consequences of git-annex's workarounds:
   fix the git status display.
 
 * git does not run any hook after a `git stash` or `git reset --hard`,
-  so after these operations, annexed files remain unpopulated until 
-  the user runs `git annex fix`.
+  or `git cherry-pick`, so after these operations, annexed files remain unpopulated
+  until the user runs `git annex fix`.
 
 The best fix would be to improve git's smudge/clean interface:
 

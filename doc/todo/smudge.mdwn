@@ -33,7 +33,8 @@ git-annex should use smudge/clean filters. v6 mode
   once the merge got committed.
 
   Problem: No hook seems to be run for git stash / git stash apply 
-  or for git reset --hard. Fatal or can we live with needing to run a
+  or for git reset --hard or git cherry-pick. 
+  Fatal or can we live with needing to run a
   git-annex command to populate the files after those commands?
 
   Optionally: Use the filterdriver interface during checkout. Unfortunately that
