@@ -218,7 +218,7 @@ updateAdjustedBranch adj@(PresenceAdjustment _ _) (AdjBranch currbranch) origbra
 	-- Make git checkout quiet to avoid warnings about disconnected
 	-- branch tips being lost.
 	checkoutAdjustedBranch b [Param "--quiet"]
-reenterAdjustedBranch adj@(LinkAdjustment _) _ origbranch = preventCommits $ \commitlck -> do
+updateAdjustedBranch adj@(LinkAdjustment _) _ origbranch = preventCommits $ \commitlck -> do
 	-- Not really needed here, but done for consistency.
 	_ <- propigateAdjustedCommits' origbranch adj commitlck
 	-- No need to do anything else, because link adjustments are stable.
