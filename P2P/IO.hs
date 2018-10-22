@@ -236,7 +236,7 @@ debugMessage :: P2PConnection -> String -> Message -> IO ()
 debugMessage conn prefix m = do
 	tid <- myThreadId	
 	debugM "p2p" $ concat $ catMaybes $
-		[ (\ident -> "[connection: " ++ ident ++ "] ") <$> mident
+		[ (\ident -> "[" ++ ident ++ "] ") <$> mident
 		, Just $ "[" ++ show tid ++ "] "
 		, Just $ prefix ++ " " ++ unwords (formatMessage safem)
 		]
