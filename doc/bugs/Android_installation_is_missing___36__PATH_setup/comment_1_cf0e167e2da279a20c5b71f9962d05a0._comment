@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-22T17:04:18Z"
+ content="""
+runshell contains code that puts it in PATH when run on termux.
+However, that relies on `uname -o` reporting "Android",
+and git-annex bundles its own uname which didn't (oops).
+
+It seems likely I fixed this in 
+[[!commit d14983ee68ac553f3a49e9148ed193fbae722bb8]], although I have
+not tried it yet, and the arm64 daily build hasn't been updated yet to
+include that fix.
+"""]]
