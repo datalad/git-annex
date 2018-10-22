@@ -89,23 +89,32 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 		}
 	isexport = do
 		db <- openDb (uuid r)
+		updateflag <- liftIO $ newTVarIO Nothing
 
-		updateflag <- liftIO newEmptyTMVarIO
-		let updateonce = liftIO $ atomically $
-			ifM (isEmptyTMVar updateflag)
-				( do
-					putTMVar updateflag ()
+		-- When multiple threads run this, all except the first
+		-- will block until the first runs doneupdateonce.
+		-- Returns True when an update should be done and False
+		-- when the update has already been done.
+		let startupdateonce = liftIO $ atomically $
+			readTVar updateflag >>= \case
+				Nothing -> do
+					writeTVar updateflag (Just True)
 					return True
-				, return False
-				)
+				Just True -> retry
+				Just False -> return False
+		let doneupdateonce = \updated ->
+			when updated $
+				liftIO $ atomically $
+					writeTVar updateflag (Just False)
 		
 		-- Get export locations for a key. Checks once
 		-- if the export log is different than the database and
 		-- updates the database, to notice when an export has been
 		-- updated from another repository.
 		let getexportlocs = \k -> do
-			whenM updateonce $
-				updateExportTreeFromLog db
+			bracket startupdateonce doneupdateonce $ \updatenow ->
+				when updatenow $
+					updateExportTreeFromLog db
 			liftIO $ getExportTree db k
 
 		return $ r

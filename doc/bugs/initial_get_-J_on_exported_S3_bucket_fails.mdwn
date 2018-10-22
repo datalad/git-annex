@@ -47,3 +47,5 @@ get sub-01/ses-01/func/sub-01_ses-01_task-Stroop_acq-cf0AP_run-03_physio.tsv.gz 
 
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]
