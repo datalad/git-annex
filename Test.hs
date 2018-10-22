@@ -1098,7 +1098,7 @@ test_conflict_resolution =
 
 {- Conflict resolution while in an adjusted branch. -}
 test_conflict_resolution_adjusted_branch :: Assertion
-test_conflict_resolution_adjusted_branch = whenM Annex.AdjustedBranch.isGitVersionSupported $
+test_conflict_resolution_adjusted_branch = whenM (annexeval Annex.AdjustedBranch.isSupported) $
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
@@ -1447,7 +1447,7 @@ test_mixed_lock_conflict_resolution =
  - where the same file is added to both independently. The bad merge
  - emptied the whole tree. -}
 test_adjusted_branch_merge_regression :: Assertion
-test_adjusted_branch_merge_regression = whenM Annex.AdjustedBranch.isGitVersionSupported $
+test_adjusted_branch_merge_regression = whenM (annexeval Annex.AdjustedBranch.isSupported) $
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
 			pair r1 r2
@@ -1474,7 +1474,7 @@ test_adjusted_branch_merge_regression = whenM Annex.AdjustedBranch.isGitVersionS
  - a subtree to an existing tree lost files. -}
 test_adjusted_branch_subtree_regression :: Assertion
 test_adjusted_branch_subtree_regression = 
-	whenM Annex.AdjustedBranch.isGitVersionSupported $ 
+	whenM (annexeval Annex.AdjustedBranch.isSupported) $ 
 		withtmpclonerepo $ \r -> do
 			indir r $ do
 				disconnectOrigin

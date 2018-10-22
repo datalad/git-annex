@@ -26,7 +26,7 @@ module Annex.AdjustedBranch (
 	propigateAdjustedCommits,
 	AdjustedClone(..),
 	checkAdjustedClone,
-	isGitVersionSupported,
+	isSupported,
 	checkVersionSupported,
 ) where
 
@@ -610,10 +610,8 @@ checkAdjustedClone = ifM isBareRepo
 				, return NeedUpgradeForAdjustedClone
 				)
 
--- git 2.2.0 needed for GIT_COMMON_DIR which is needed
--- by updateAdjustedBranch to use withWorkTreeRelated.
-isGitVersionSupported :: IO Bool
-isGitVersionSupported = not <$> Git.Version.older "2.2.0"
+isSupported :: Annex Bool
+isSupported = versionSupportsAdjustedBranch <&&> liftIO isGitVersionSupported
 
 checkVersionSupported :: Annex ()
 checkVersionSupported = do
@@ -621,3 +619,8 @@ checkVersionSupported = do
 		giveup "Adjusted branches are only supported in v6 or newer repositories."
 	unlessM (liftIO isGitVersionSupported) $
 		giveup "Your version of git is too old; upgrade it to 2.2.0 or newer to use adjusted branches."
+
+-- git 2.2.0 needed for GIT_COMMON_DIR which is needed
+-- by updateAdjustedBranch to use withWorkTreeRelated.
+isGitVersionSupported :: IO Bool
+isGitVersionSupported = not <$> Git.Version.older "2.2.0"
