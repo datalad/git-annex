@@ -88,3 +88,5 @@ git: 'annex' is not a git command. See 'git --help'.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, lots of luck over the years :-)  This is the final little tweak required to get it working for me on Android.
+
+> [[fixed|done]] --[[Joey]]

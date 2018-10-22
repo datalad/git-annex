@@ -3,14 +3,15 @@
  subject="""comment 1"""
  date="2018-10-22T17:04:18Z"
  content="""
-runshell contains code that puts it in PATH when run on termux.
-That relies on termux's `uname -o` reporting "Android".
+    Running on Android.. Adding git-annex to PATH for you, and tuning for optimal behavior.
 
-I'm fairly sure I tested that code when I added it, and it worked at the
-time. 
-[[!commit d14983ee68ac553f3a49e9148ed193fbae722bb8]] may be related,
-but I don't think so.
+That means it should have updated ~/.profile to set PATH appropriate.
 
-It should not be hard to debug
-git-annex.linux/runshell, since it's a shell script and you can run it `set -x`
-"""]]
+The problem is the new git-annex-install script, when it exits, dumps the
+user back into the shell they were in before, and that shell has not gotten
+its path updated. And without sourcing the download script into the current
+shell, it has no way to update the path. 
+
+I suppose the best thing is to ask the user to source the script, and then
+the script can set PATH. Which I've now done.
+""]]
