@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 14"
+ date="2018-10-22T20:07:38Z"
+ content="""
+it would be easier for me just to build from master but [fresh test failures](http://git-annex.branchable.com/bugs/3_tests_fail_while_trying_to_build_fresh_git_annex_6.20181011+git109-gff9ba1f4d/) seems to preclude that.  Any clue on those?
+"""]]
