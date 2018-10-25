@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="try the --known argument"
+ date="2018-10-25T17:30:29Z"
+ content="""
+This works now, with the reinject `--known` argument.
+"""]]
