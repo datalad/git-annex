@@ -144,11 +144,10 @@ emitPointer = putStr . formatPointer
 -- the pointer copy. It will then be populated with the content.
 getMoveRaceRecovery :: Key -> FilePath -> Annex ()
 getMoveRaceRecovery k file = void $ tryNonAsync $
-	liftIO (isPointerFile file) >>= \k' -> when (Just k == k') $
-		whenM (inAnnex k) $ do
-			obj <- calcRepo (gitAnnexLocation k)
-			-- Cannot restage because git add is running and has
-			-- the index locked.
-			populatePointerFile (Restage False) k obj file >>= \case
-				Nothing -> return ()
-				Just ic -> Database.Keys.addInodeCaches k [ic]
+	whenM (inAnnex k) $ do
+		obj <- calcRepo (gitAnnexLocation k)
+		-- Cannot restage because git add is running and has
+		-- the index locked.
+		populatePointerFile (Restage False) k obj file >>= \case
+			Nothing -> return ()
+			Just ic -> Database.Keys.addInodeCaches k [ic]
