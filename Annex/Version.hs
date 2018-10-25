@@ -23,7 +23,7 @@ latestVersion :: RepoVersion
 latestVersion = RepoVersion 7
 
 supportedVersions :: [RepoVersion]
-supportedVersions = map RepoVersion [3, 5, 7]
+supportedVersions = map RepoVersion [5, 7]
 
 versionForAdjustedClone :: RepoVersion
 versionForAdjustedClone = RepoVersion 7
