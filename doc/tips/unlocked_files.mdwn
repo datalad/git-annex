@@ -105,7 +105,8 @@ If you want to mostly keep files locked, but be able to locally switch
 to having them all unlocked, you can do so using `git annex adjust
 --unlock`. See [[git-annex-adjust]] for details. This is particularly
 useful when using filesystems like FAT, and OS's like Windows that don't
-support symlinks.
+support symlinks. Indeed, `git-annex init` detects such filesystems and
+automatically sets up a repository to use all unlocked files.
 
 ## index gotchas
 
