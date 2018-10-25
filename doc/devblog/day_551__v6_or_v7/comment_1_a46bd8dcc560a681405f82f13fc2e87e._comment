@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="pigmonkey"
+ avatar="http://cdn.libravatar.org/avatar/560cedfcec1b75e8ac2e98a10615d770"
+ subject="comment 1"
+ date="2018-10-25T21:54:18Z"
+ content="""
+As someone with a mix of v5 and v6 repositories, I think keeping the version number and requiring `git annex init` is reasonable. I wouldn't be upset with either route...
+"""]]
