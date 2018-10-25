@@ -37,19 +37,19 @@ git-annex should use smudge/clean filters. v6 mode
   Fatal or can we live with needing to run a
   git-annex command to populate the files after those commands?
 
-  Optionally: Use the filterdriver interface during checkout. Unfortunately that
-  interface is slower for cleaning during git add (see
-  [[todo/Long_Running_Filter_Process]]), but if the smudge filter is not
-  providing git with the file content and letting a
-  post-checkout/post-merge/post-commit hooks
-  populate the files, using filterdriver would avoid git running many
-  git-annex smudge processes, greatly speeding up large checkouts.
-  git add could be left slow, with git-annex add being the fast path,
-  until the filterdriver interface is improved. Or, make "git annex proxy"
-  use the filterdriver interface for checkout.
+  > implemented on the `delaysmudge` branch now
 
   (My enhanced smudge/clean patch set also fixed this problem, in a much
   nicer way...)
+
+* Optionally: Use the filterdriver interface during checkout. Unfortunately that
+  interface is slower for cleaning during git add (see
+  [[todo/Long_Running_Filter_Process]]), but since the smudge filter is not
+  providing git with the file content any more, using filterdriver would
+  avoid git running many git-annex smudge processes, greatly speeding up large
+  checkouts. git add could be left slow, with git-annex add being the fast path,
+  until the filterdriver interface is improved. Or, make "git annex proxy"
+  use the filterdriver interface for checkout.
 
 * When git runs the smudge filter, it buffers all its output in ram before
   writing it to a file. So, checking out a branch with a large v6 unlocked files
@@ -66,6 +66,7 @@ git-annex should use smudge/clean filters. v6 mode
 
   The annex.thin idea above could work around this problem.
 
+  > implemented on the `delaysmudge` branch now
 
 ## other warts
 

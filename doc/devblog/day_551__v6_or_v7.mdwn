@@ -1,0 +1,19 @@
+In the `delaysmudge` branch, I've implemented the delayed worktree update in
+the post-merge/post-checkout hooks for v6. It works very well!
+
+In particular, with annex.thin set, checking out a branch
+containing a huge unlocked file does a fast hard link to the file.
+
+Remaining problem before merging that is, how to get the new hooks installed? Of
+course `git annex init` and `git annex upgrade` install them, but I know plenty
+of people have v6 repositories already, without those hooks.
+
+So, would it be better to bump up to v7 and install the hooks on that upgrade,
+or stay on v6 and say that it was, after all, experimental up until now, and
+so the minor bother of needing to run `git annex init` in existing v6 repositories
+is acceptable? If the version is bumped to v7, that will cause some pain
+for users of older versions of git-annex that won't support it, but those old
+versions also have pretty big gaps in their support for v6. I'm undecided,
+but leaning toward v7, even though it will also mean a lot of work to update
+all the documentation, as well as needing changes to projects like datalad that use
+git-annex. Feedback on this decision is welcomed below...
