@@ -13,6 +13,7 @@ import Command
 import Config
 import qualified Command.Add
 import qualified Command.Fix
+import qualified Command.Smudge
 import Annex.Direct
 import Annex.Hook
 import Annex.Link
@@ -54,11 +55,21 @@ seek ps = lockPreCommitHook $ ifM isDirect
 				flip withFilesToBeCommitted l $ \f -> commandAction $
 					maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)
 						=<< isAnnexLink f
-				-- inject unlocked files into the annex
-				-- (not needed when repo version uses
-				-- unlocked pointer files)
-				unlessM versionSupportsUnlockedPointers $
-					withFilesOldUnlockedToBeCommitted (commandAction . startInjectUnlocked) l
+				ifM versionSupportsUnlockedPointers
+					-- after a merge conflict or git
+					-- cherry-pick or stash, pointer
+					-- files in the worktree won't
+					-- be populated, so populate them
+					-- here
+					( Command.Smudge.updateSmudged 
+						-- When there's a false index,
+						-- restaging the files won't work.
+						. Restage =<< liftIO Git.haveFalseIndex
+					-- inject unlocked files into the annex
+					-- (not needed when repo version uses
+					-- unlocked pointer files)
+					, withFilesOldUnlockedToBeCommitted (commandAction . startInjectUnlocked) l
+					)
 			)
 		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata

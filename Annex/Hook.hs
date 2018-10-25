@@ -32,6 +32,17 @@ postReceiveHook = Git.Hook "post-receive"
 	[ mkHookScript "git annex post-receive"
 	]
 
+postCheckoutHook :: Git.Hook
+postCheckoutHook = Git.Hook "post-checkout" smudgeHook []
+
+postMergeHook :: Git.Hook
+postMergeHook = Git.Hook "post-merge" smudgeHook []
+
+-- Only run git-annex smudge --update when git-annex supports it.
+-- Older versions of git-annex didn't need this hook.
+smudgeHook :: String
+smudgeHook = mkHookScript "if git annex smudge --update >/dev/null 2>&1; then git-annex smudge --update; fi"
+
 preCommitAnnexHook :: Git.Hook
 preCommitAnnexHook = Git.Hook "pre-commit-annex" "" []
 

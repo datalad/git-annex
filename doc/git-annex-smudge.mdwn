@@ -6,11 +6,13 @@ git-annex smudge - git filter driver for git-annex
 
 git annex smudge [--clean] file
 
+git annex smudge --update
+
 # DESCRIPTION
 
 This command lets git-annex be used as a git filter driver which lets
-annexed files in the git repository to be unlocked at all times, instead
-of being symlinks.
+annexed files in the git repository to be unlocked, instead
+of being symlinks, and lets `git add` store files in the annex.
 
 When adding a file with `git add`, the annex.largefiles config is
 consulted to decide if a given file should be added to git as-is,
@@ -31,6 +33,16 @@ contents:
 
 	* filter=annex
 	.* !filter
+
+The smudge filter does not provide git with the content of annexed files,
+because that would be slow and triggers memory leaks in git. Instead,
+it records which worktree files need to be updated, and 
+`git annex smudge --update` later updates the work tree to contain
+the content. That is run by several git hooks, including post-checkout
+and post-merge. However, a few git commands, notably `git stash` and
+`git cherry-pick`, do not run any hooks, so after using those commands
+you can manually run `git annex smudge --update` to update the working
+tree.
 
 # SEE ALSO
 

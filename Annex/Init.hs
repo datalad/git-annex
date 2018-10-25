@@ -112,6 +112,9 @@ initialize' ai mversion = checkCanInitialize ai $ do
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		scanUnlockedFiles
+		unlessM isBareRepo $ do
+			hookWrite postCheckoutHook
+			hookWrite postMergeHook
 	checkAdjustedClone >>= \case
 		NeedUpgradeForAdjustedClone -> 
 			void $ upgrade True  versionForAdjustedClone
