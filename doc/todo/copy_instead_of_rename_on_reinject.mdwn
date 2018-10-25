@@ -15,9 +15,20 @@ they (obviously) were broken. So I tried to fix that with reinject:
     git-annex: reinject: 1 failed
 
 It *almost* worked but failed because it cannot rename the git-annex
-file on the other side. Other than making reinject work against a
-fellow git-annex repository, I think this would be useful to avoid
-deleting files which might surprise users... I suggest using a logic
-similar to [[git-annex-import]] for consistency reasons.
+file on the other side. But worse, copying the file by hand does not 
+work either:
+
+    $ LANG=C cp ~/mp3/.git/annex/objects/xJ/K5/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac ../../../.git/annex/objects/xJ/K5/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac
+    cp: cannot create regular file '../../../.git/annex/objects/xJ/K5/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac': Permission denied
+
+... obviously because the directory already exists and is not
+writable. The workaround is to create those directories if missing
+(`mkdir -p`) or change the mode if present (`chmod u+w`), then run
+`git-annex-fsck` which will fix those modes.
+
+Other than making reinject work against a fellow git-annex repository,
+I think this would be useful to avoid deleting files which might
+surprise users... I suggest using a logic similar to
+[[git-annex-import]] for consistency reasons.
 
 Thanks! -- [[anarcat]]
