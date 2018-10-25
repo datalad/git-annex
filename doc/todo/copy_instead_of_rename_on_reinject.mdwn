@@ -1,0 +1,23 @@
+The same way that [[git-annex-import]] has a `--duplicate` option,
+there should be a way to reinject content without dropping the
+original file.
+
+My use case is that I had imported content in the wrong git-annex
+repository, by mistake. Unaware of my mistake, I moved the files (now
+symlinks) to the proper git-annex repo, where I added them and where
+they (obviously) were broken. So I tried to fix that with reinject:
+
+    $ git annex reinject --known ~/mp3/.git/annex/objects/xJ/K5/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac
+    reinject /home/anarcat/mp3/.git/annex/objects/xJ/K5/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac 
+    git-annex: /home/anarcat/mp3/.git/annex/objects/xJ/K5/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac/SHA256E-s16309242--41eb375ac760bf8542bae1ec2bcfce9269f78302820bcc88904e76bab473181c.flac: rename: permission denied (Permission denied)
+    failed
+    (recording state in git...)
+    git-annex: reinject: 1 failed
+
+It *almost* worked but failed because it cannot rename the git-annex
+file on the other side. Other than making reinject work against a
+fellow git-annex repository, I think this would be useful to avoid
+deleting files which might surprise users... I suggest using a logic
+similar to [[git-annex-import]] for consistency reasons.
+
+Thanks! -- [[anarcat]]
