@@ -1,0 +1,1 @@
+For which git-annex commands that take a file argument, is it safe for the file to be a named pipe (i.e. git-annex is guaranteed to only read/write the file once and without seeking)?
