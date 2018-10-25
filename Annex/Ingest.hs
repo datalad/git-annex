@@ -38,7 +38,6 @@ import Logs.Location
 import qualified Annex
 import qualified Annex.Queue
 import qualified Database.Keys
-import qualified Git.Branch
 import Config
 import Utility.InodeCache
 import Annex.ReplaceFile
