@@ -21,7 +21,6 @@ module Annex.Init (
 import Annex.Common
 import qualified Annex
 import qualified Git
-import qualified Git.LsFiles
 import qualified Git.Config
 import qualified Git.Objects
 import qualified Annex.Branch
@@ -33,7 +32,6 @@ import Types.RepoVersion
 import Annex.Version
 import Annex.Difference
 import Annex.UUID
-import Annex.Link
 import Annex.WorkTree
 import Config
 import Config.Smudge
@@ -118,16 +116,11 @@ initialize' ai mversion = checkCanInitialize ai $ do
 			hookWrite postMergeHook
 	checkAdjustedClone >>= \case
 		NeedUpgradeForAdjustedClone -> 
-			void $ upgrade True  versionForAdjustedClone
+			void $ upgrade True versionForAdjustedClone
 		InAdjustedClone -> return ()
 		NotInAdjustedClone ->
 			ifM (crippledFileSystem <&&> (not <$> isBareRepo))
-				( ifM versionSupportsUnlockedPointers
-					( adjustToCrippledFileSystem
-					, do
-						enableDirectMode
-						setDirect True
-					)
+				( adjustToCrippledFileSystem
 				-- Handle case where this repo was cloned from a
 				-- direct mode repo
 				, unlessM isBareRepo
@@ -269,15 +262,6 @@ checkFifoSupport = unlessM probeFifoSupport $ do
 	warning "Detected a filesystem without fifo support."
 	warning "Disabling ssh connection caching."
 	setConfig (annexConfig "sshcaching") (Git.Config.boolConfig False)
-
-enableDirectMode :: Annex ()
-enableDirectMode = unlessM isDirect $ do
-	warning "Enabling direct mode."
-	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
-	forM_ l $ \f ->
-		maybe noop (`toDirect` f) =<< isAnnexLink f
-	void $ liftIO clean
 
 checkSharedClone :: Annex Bool
 checkSharedClone = inRepo Git.Objects.isSharedClone

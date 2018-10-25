@@ -6,6 +6,8 @@ git-annex (7.20181025) UNRELEASED; urgency=medium
   * Direct mode repositories are deprecated; they have many problems
     that v7 fixes, so upgrading them now is recommended (but not yet
     required): git annex upgrade --version=7
+  * init: When in a crippled filesystem, initialize a v7 repository
+    using an adjusted unlocked branch, instead of a direct mode repository.
   * At long last there's a way to hide annexed files whose content
     is missing from the working tree: git-annex adjust --hide-missing
     See https://git-annex.branchable.com/tips/hiding_missing_files/
