@@ -3,6 +3,9 @@ git-annex (7.20181025) UNRELEASED; urgency=medium
   * Added v7 repository mode. v6 upgrades automatically to v7, but
     v5 is still the default for now. While v6 was always experimental
     to some degree, its successor v7 is ready for production use!
+  * Direct mode repositories are deprecated; they have many problems
+    that v7 fixes, so upgrading them now is recommended (but not yet
+    required): git annex upgrade --version=7
   * At long last there's a way to hide annexed files whose content
     is missing from the working tree: git-annex adjust --hide-missing
     See https://git-annex.branchable.com/tips/hiding_missing_files/

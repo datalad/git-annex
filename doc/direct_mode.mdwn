@@ -11,9 +11,9 @@ understand how to update its working tree.
 
 ## deprecated
 
-Direct mode is deprecated! Intead, git-annex v6 repositories can simply
+Direct mode is deprecated! Intead, git-annex v7 repositories can simply
 have files that are unlocked and thus can be directly accessed and
-modified. See [[upgrades]] for details about the transition to v6
+modified. See [[upgrades]] for details about the transition to v7
 repositories.
 
 ## enabling (and disabling) direct mode

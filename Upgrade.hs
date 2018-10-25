@@ -22,18 +22,24 @@ import qualified Upgrade.V4
 import qualified Upgrade.V5
 import qualified Upgrade.V6
 
+import qualified Data.Map as M
+
 checkUpgrade :: RepoVersion -> Annex ()
 checkUpgrade = maybe noop giveup <=< needsUpgrade
 
 needsUpgrade :: RepoVersion -> Annex (Maybe String)
 needsUpgrade v
 	| v `elem` supportedVersions = ok
-	| v `elem` autoUpgradeableVersions = ifM (upgrade True defaultVersion)
-		( ok
-		, err "Automatic upgrade failed!"
-		)
-	| v `elem` upgradableVersions = err "Upgrade this repository: git-annex upgrade"
-	| otherwise = err "Upgrade git-annex."
+	| otherwise = case M.lookup v autoUpgradeableVersions of
+		Nothing
+			| v `elem` upgradableVersions ->
+				err "Upgrade this repository: git-annex upgrade"
+			| otherwise ->
+				err "Upgrade git-annex."
+		Just newv -> ifM (upgrade True newv)
+			( ok
+			, err "Automatic upgrade failed!"
+			)
   where
 	err msg = return $ Just $ "Repository version " ++
 		show (fromRepoVersion v) ++

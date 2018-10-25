@@ -14,6 +14,8 @@ import Config
 import Types.RepoVersion
 import qualified Annex
 
+import qualified Data.Map as M
+
 defaultVersion :: RepoVersion
 defaultVersion = RepoVersion 5
 
@@ -33,8 +35,12 @@ upgradableVersions = map RepoVersion [0..6]
 upgradableVersions = map RepoVersion [2..6]
 #endif
 
-autoUpgradeableVersions :: [RepoVersion]
-autoUpgradeableVersions = map RepoVersion [3, 4, 6]
+autoUpgradeableVersions :: M.Map RepoVersion RepoVersion
+autoUpgradeableVersions = M.fromList
+	[ (RepoVersion 3, RepoVersion 5)
+	, (RepoVersion 4, RepoVersion 5)
+	, (RepoVersion 6, RepoVersion 7)
+	]
 
 versionField :: ConfigKey
 versionField = annexConfig "version"
