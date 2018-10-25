@@ -67,7 +67,7 @@ smudge file = do
 		Just k -> do
 			topfile <- inRepo (toTopFilePath file)
 			Database.Keys.addAssociatedFile k topfile
-			smudgeLog k topfile
+			void $ smudgeLog k topfile
 	liftIO $ B.putStr b
 	stop
 

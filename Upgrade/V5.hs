@@ -17,6 +17,7 @@ import Annex.Direct
 import Annex.Content
 import Annex.CatFile
 import Annex.WorkTree
+import Annex.Hook
 import qualified Database.Keys
 import qualified Annex.Content.Direct as Direct
 import qualified Git
@@ -63,6 +64,9 @@ upgrade automatic = do
 		 - adjust branch. Instead, update HEAD manually. -}
 		inRepo $ setHeadRef b
 	configureSmudgeFilter
+	unlessM isBareRepo $ do
+		hookWrite postCheckoutHook
+		hookWrite postMergeHook
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more
 	-- extensively, so make sure it exists, since old repos that didn't

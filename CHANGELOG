@@ -26,6 +26,14 @@ git-annex (6.20181012) UNRELEASED; urgency=medium
     honor annex.thin. Now git annex smudge --update has to be run
     after a checkout to update unlocked files in the working tree 
     with annexed file contents.
+  * init, upgrade: Install git post-checkout and post-merge hooks that run 
+    git annex smudge --update.
+  * precommit: Run git annex smudge --update, because the post-merge
+    hook is not run when there is a merge conflict. So the work tree will
+    be updated when a commit is made to resolve the merge conflict.
+  * Note that git has no hooks run after git stash or git cherry-pick,
+    so the user will have to manually run git annex smudge --update
+    after such commands.
 
  -- Joey Hess <id@joeyh.name>  Sat, 13 Oct 2018 00:52:02 -0400
 
