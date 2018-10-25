@@ -95,19 +95,30 @@ clean file = do
 			if Git.BuildVersion.older "2.5"
 				then B.length b `seq` return ()
 				else liftIO $ hClose stdin
-			-- Look up the backend that was used for this file
-			-- before, so that when git re-cleans a file its
-			-- backend does not change.
-			let oldbackend = maybe Nothing (maybeLookupBackendVariety . keyVariety) oldkey
-			-- Can't restage associated files because git add
-			-- runs this and has the index locked.
-			let norestage = Restage False
-			liftIO . emitPointer
-				=<< postingest
-				=<< (\ld -> ingest' oldbackend ld Nothing norestage)
-				=<< lockDown cfg file
+
+			-- Optimization when the file is already annexed
+			-- and is unmodified.
+			case oldkey of
+				Nothing -> ingest oldkey
+				Just ko -> ifM (isUnmodifiedCheap ko file)
+					( liftIO $ emitPointer ko
+					, ingest oldkey
+					)
 		, liftIO $ B.hPut stdout b
 		)
+	
+	ingest oldkey = do
+		-- Look up the backend that was used for this file
+		-- before, so that when git re-cleans a file its
+		-- backend does not change.
+		let oldbackend = maybe Nothing (maybeLookupBackendVariety . keyVariety) oldkey
+		-- Can't restage associated files because git add
+		-- runs this and has the index locked.
+		let norestage = Restage False
+		liftIO . emitPointer
+			=<< postingest
+			=<< (\ld -> ingest' oldbackend ld Nothing norestage)
+			=<< lockDown cfg file
 
 	postingest (Just k, _) = do
 		logStatus k InfoPresent
