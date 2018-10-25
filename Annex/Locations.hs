@@ -38,6 +38,8 @@ module Annex.Locations (
 	gitAnnexFsckDbDir,
 	gitAnnexFsckDbLock,
 	gitAnnexFsckResultsLog,
+	gitAnnexSmudgeLog,
+	gitAnnexSmudgeLock,
 	gitAnnexExportDbDir,
 	gitAnnexExportLock,
 	gitAnnexScheduleState,
@@ -311,6 +313,14 @@ gitAnnexFsckDbLock u r = gitAnnexFsckDir u r </> "fsck.lck"
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> FilePath
 gitAnnexFsckResultsLog u r = gitAnnexDir r </> "fsckresults" </> fromUUID u
+
+{- .git/annex/smudge.log is used to log smudges worktree files that need to
+ - be updated. -}
+gitAnnexSmudgeLog :: Git.Repo -> FilePath
+gitAnnexSmudgeLog r = gitAnnexDir r </> "smudge.log"
+
+gitAnnexSmudgeLock :: Git.Repo -> FilePath
+gitAnnexSmudgeLock r = gitAnnexDir r </> "smudge.lck"
 
 {- .git/annex/export/uuid/ is used to store information about
  - exports to special remotes. -}

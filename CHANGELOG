@@ -21,6 +21,11 @@ git-annex (6.20181012) UNRELEASED; urgency=medium
     get confused about whether a locked file's content was present.
   * Fix concurrency bug that occurred on the first download from an
     exporttree remote.
+  * smudge: The smudge filter no longer provides git with annexed
+    file content, to avoid a git memory leak, and because that did not
+    honor annex.thin. Now git annex smudge --update has to be run
+    after a checkout to update unlocked files in the working tree 
+    with annexed file contents.
 
  -- Joey Hess <id@joeyh.name>  Sat, 13 Oct 2018 00:52:02 -0400
 
