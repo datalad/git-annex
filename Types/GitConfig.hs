@@ -30,6 +30,7 @@ import Types.Concurrency
 import Types.NumCopies
 import Types.Difference
 import Types.RefSpec
+import Types.RepoVersion
 import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
@@ -52,7 +53,7 @@ data Configurable a
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
 data GitConfig = GitConfig
-	{ annexVersion :: Maybe String
+	{ annexVersion :: Maybe RepoVersion
 	, annexUUID :: UUID
 	, annexNumCopies :: Maybe NumCopies
 	, annexDiskReserve :: Integer
@@ -110,7 +111,7 @@ data GitConfig = GitConfig
 
 extractGitConfig :: Git.Repo -> GitConfig
 extractGitConfig r = GitConfig
-	{ annexVersion = notempty $ getmaybe (annex "version")
+	{ annexVersion = RepoVersion <$> getmayberead (annex "version")
 	, annexUUID = maybe NoUUID toUUID $ getmaybe (annex "uuid")
 	, annexNumCopies = NumCopies <$> getmayberead (annex "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $

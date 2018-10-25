@@ -99,15 +99,15 @@ clean file = do
 			-- Optimization when the file is already annexed
 			-- and is unmodified.
 			case oldkey of
-				Nothing -> ingest oldkey
+				Nothing -> doingest oldkey
 				Just ko -> ifM (isUnmodifiedCheap ko file)
 					( liftIO $ emitPointer ko
-					, ingest oldkey
+					, doingest oldkey
 					)
 		, liftIO $ B.hPut stdout b
 		)
 	
-	ingest oldkey = do
+	doingest oldkey = do
 		-- Look up the backend that was used for this file
 		-- before, so that when git re-cleans a file its
 		-- backend does not change.

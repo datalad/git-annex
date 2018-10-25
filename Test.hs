@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Test where
 
 import Types.Test
+import Types.RepoVersion
 import Test.Framework
 import Options.Applicative.Types
 
@@ -148,10 +149,10 @@ tests crippledfilesystem opts = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te initTests (unitTests d)) testmodes
   where
 	testmodes = catMaybes
-		[ Just ("v6 unlocked", (testMode opts "6") { unlockedFiles = True })
-		, unlesscrippled ("v5", testMode opts "5")
-		, unlesscrippled ("v6 locked", testMode opts "6")
-		, Just ("v5 direct", (testMode opts "5") { forceDirect = True })
+		[ Just ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
+		, unlesscrippled ("v5", testMode opts (RepoVersion 5))
+		, unlesscrippled ("v7 locked", testMode opts (RepoVersion 7))
+		, Just ("v5 direct", (testMode opts (RepoVersion 5)) { forceDirect = True })
 		]
 	unlesscrippled v
 		| crippledfilesystem = Nothing
@@ -225,7 +226,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "move (ssh remote)" test_move_ssh_remote
 	, testCase "copy" test_copy
 	, testCase "lock" test_lock
-	, testCase "lock (v6 --force)" test_lock_v6_force
+	, testCase "lock (v7 --force)" test_lock_v7_force
 	, testCase "edit (no pre-commit)" test_edit
 	, testCase "edit (pre-commit)" test_edit_precommit
 	, testCase "partial commit" test_partial_commit
@@ -280,7 +281,7 @@ test_init = innewrepo $ do
 	ver <- annexVersion <$> getTestMode
 	if ver == Annex.Version.defaultVersion
 		then git_annex "init" [reponame] @? "init failed"
-		else git_annex "init" [reponame, "--version", ver] @? "init failed"
+		else git_annex "init" [reponame, "--version", show (fromRepoVersion ver)] @? "init failed"
 	setupTestMode
   where
 	reponame = "test repo"
@@ -601,11 +602,11 @@ test_lock = intmpclonerepoInDirect $ do
 	annexed_notpresent annexedfile
 
 	-- regression test: unlock of newly added, not committed file
-	-- should fail in v5 mode. In v6 mode, this is allowed.
+	-- should fail in v5 mode. In v7 mode, this is allowed.
 	writeFile "newfile" "foo"
 	git_annex "add" ["newfile"] @? "add new file failed"
 	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
-		( git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file in v6 repository"
+		( git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file in v7 repository"
 		, not <$> git_annex "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file in v5 repository"
 		)
 
@@ -619,7 +620,7 @@ test_lock = intmpclonerepoInDirect $ do
 	writeFile annexedfile $ content annexedfile ++ "foo"
 	not <$> git_annex "lock" [annexedfile] @? "lock failed to fail without --force"
 	git_annex "lock" ["--force", annexedfile] @? "lock --force failed"
-	-- In v6 mode, the original content of the file is not always
+	-- In v7 mode, the original content of the file is not always
 	-- preserved after modification, so re-get it.
 	git_annex "get" [annexedfile] @? "get of file failed after lock --force"
 	annexed_present_locked annexedfile
@@ -642,19 +643,19 @@ test_lock = intmpclonerepoInDirect $ do
 -- Regression test: lock --force when work tree file
 -- was modified lost the (unmodified) annex object.
 -- (Only occurred when the keys database was out of sync.)
-test_lock_v6_force :: Assertion
-test_lock_v6_force = intmpclonerepoInDirect $ do
+test_lock_v7_force :: Assertion
+test_lock_v7_force = intmpclonerepoInDirect $ do
 	git_annex "upgrade" [] @? "upgrade failed"
 	whenM (annexeval Annex.Version.versionSupportsUnlockedPointers) $ do
 		git_annex "get" [annexedfile] @? "get of file failed"
-		git_annex "unlock" [annexedfile] @? "unlock failed in v6 mode"
+		git_annex "unlock" [annexedfile] @? "unlock failed in v7 mode"
 		annexeval $ do
 			Database.Keys.closeDb
 			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
 			liftIO $ renameDirectory dbdir (dbdir ++ ".old")
-		writeFile annexedfile "test_lock_v6_force content"
-		not <$> git_annex "lock" [annexedfile] @? "lock of modified file failed to fail in v6 mode"
-		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v6 mode"
+		writeFile annexedfile "test_lock_v7_force content"
+		not <$> git_annex "lock" [annexedfile] @? "lock of modified file failed to fail in v7 mode"
+		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v7 mode"
 		annexed_present_locked annexedfile
 
 test_edit :: Assertion
@@ -693,7 +694,7 @@ test_partial_commit = intmpclonerepoInDirect $ do
 	changecontent annexedfile
 	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
 		( boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
-			@? "partial commit of unlocked file should be allowed in v6 repository"
+			@? "partial commit of unlocked file should be allowed in v7 repository"
 		, not <$> boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
 			@? "partial commit of unlocked file not blocked by pre-commit hook"
 		)
@@ -723,7 +724,7 @@ test_direct = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
-		( not <$> git_annex "direct" [] @? "switch to direct mode failed to fail in v6 repository"
+		( not <$> git_annex "direct" [] @? "switch to direct mode failed to fail in v7 repository"
 		, do
 			git_annex "direct" [] @? "switch to direct mode failed"
 			annexed_present annexedfile
@@ -1111,7 +1112,7 @@ test_conflict_resolution_adjusted_branch = whenM (annexeval Annex.AdjustedBranch
 				writeFile conflictor "conflictor2"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
-				-- need v6 to use adjust
+				-- need v7 to use adjust
 				git_annex "upgrade" [] @? "upgrade failed"
 				-- We might be in an adjusted branch
 				-- already, when eg on a crippled
@@ -1405,7 +1406,7 @@ test_conflict_resolution_symlink_bit = unlessM (unlockedFiles <$> getTestMode) $
 		all (\i -> Git.Types.toTreeItemType (Git.LsTree.mode i) == Just Git.Types.TreeSymlink) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
 
-{- A v6 unlocked file that conflicts with a locked file should be resolved
+{- A v7 unlocked file that conflicts with a locked file should be resolved
  - in favor of the unlocked file, with no variant files, as long as they
  - both point to the same key. -}
 test_mixed_lock_conflict_resolution :: Assertion

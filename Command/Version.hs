@@ -12,6 +12,7 @@ import Annex.Version
 import BuildInfo
 import BuildFlags
 import Types.Key
+import Types.RepoVersion
 import qualified Types.Backend as B
 import qualified Types.Remote as R
 import qualified Remote
@@ -49,7 +50,7 @@ seekNoRepo o
 showVersion :: Annex ()
 showVersion = do
 	liftIO showPackageVersion
-	maybe noop (liftIO . vinfo "local repository version")
+	maybe noop (liftIO . vinfo "local repository version" . showRepoVersion)
 		=<< getVersion
 
 showPackageVersion :: IO ()
@@ -62,9 +63,14 @@ showPackageVersion = do
 	vinfo "remote types" $ unwords $ map R.typename Remote.remoteTypes
 	vinfo "operating system" $ unwords [os, arch]
 	vinfo "supported repository versions" $
-		unwords supportedVersions
+		verlist supportedVersions
 	vinfo "upgrade supported from repository versions" $
-		unwords upgradableVersions
+		verlist upgradableVersions
+  where
+	verlist = unwords . map showRepoVersion
+
+showRepoVersion :: RepoVersion -> String
+showRepoVersion = show  . fromRepoVersion
 
 showRawVersion :: IO ()
 showRawVersion = do

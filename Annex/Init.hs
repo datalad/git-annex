@@ -29,6 +29,7 @@ import Logs.UUID
 import Logs.Trust.Basic
 import Logs.Config
 import Types.TrustLevel
+import Types.RepoVersion
 import Annex.Version
 import Annex.Difference
 import Annex.UUID
@@ -78,7 +79,7 @@ genDescription Nothing = do
 		Right username -> [username, at, hostname, ":", reldir]
 		Left _ -> [hostname, ":", reldir]
 
-initialize :: AutoInit -> Maybe String -> Maybe Version -> Annex ()
+initialize :: AutoInit -> Maybe String -> Maybe RepoVersion -> Annex ()
 initialize ai mdescription mversion = checkCanInitialize ai $ do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
@@ -98,7 +99,7 @@ initialize ai mdescription mversion = checkCanInitialize ai $ do
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: AutoInit -> Maybe Version -> Annex ()
+initialize' :: AutoInit -> Maybe RepoVersion -> Annex ()
 initialize' ai mversion = checkCanInitialize ai $ do
 	checkLockSupport
 	checkFifoSupport

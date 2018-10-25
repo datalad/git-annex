@@ -1,8 +1,8 @@
 {- git-annex repository versioning
  -
- - Copyright 2010,2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
@@ -11,48 +11,47 @@ module Annex.Version where
 
 import Annex.Common
 import Config
+import Types.RepoVersion
 import qualified Annex
 
-type Version = String
+defaultVersion :: RepoVersion
+defaultVersion = RepoVersion 5
 
-defaultVersion :: Version
-defaultVersion = "5"
+latestVersion :: RepoVersion
+latestVersion = RepoVersion 7
 
-latestVersion :: Version
-latestVersion = "6"
+supportedVersions :: [RepoVersion]
+supportedVersions = map RepoVersion [3, 5, 7]
 
-supportedVersions :: [Version]
-supportedVersions = ["3", "5", "6"]
+versionForAdjustedClone :: RepoVersion
+versionForAdjustedClone = RepoVersion 6
 
-versionForAdjustedClone :: Version
-versionForAdjustedClone = "6"
-
-upgradableVersions :: [Version]
+upgradableVersions :: [RepoVersion]
 #ifndef mingw32_HOST_OS
-upgradableVersions = ["0", "1", "2", "3", "4", "5"]
+upgradableVersions = map RepoVersion [0..6]
 #else
-upgradableVersions = ["2", "3", "4", "5"]
+upgradableVersions = map RepoVersion [2..6]
 #endif
 
-autoUpgradeableVersions :: [Version]
-autoUpgradeableVersions = ["3", "4"]
+autoUpgradeableVersions :: [RepoVersion]
+autoUpgradeableVersions = map RepoVersion [3, 4, 6]
 
 versionField :: ConfigKey
 versionField = annexConfig "version"
 
-getVersion :: Annex (Maybe Version)
+getVersion :: Annex (Maybe RepoVersion)
 getVersion = annexVersion <$> Annex.getGitConfig
 
 versionSupportsDirectMode :: Annex Bool
 versionSupportsDirectMode = go <$> getVersion
   where
-	go (Just "6") = False
+	go (Just v) | v >= RepoVersion 6 = False
 	go _ = True
 
 versionSupportsUnlockedPointers :: Annex Bool
 versionSupportsUnlockedPointers = go <$> getVersion
   where
-	go (Just "6") = True
+	go (Just v) | v >= RepoVersion 6 = True
 	go _ = False
 
 versionSupportsAdjustedBranch :: Annex Bool
@@ -61,8 +60,8 @@ versionSupportsAdjustedBranch = versionSupportsUnlockedPointers
 versionUsesKeysDatabase :: Annex Bool
 versionUsesKeysDatabase = versionSupportsUnlockedPointers
 
-setVersion :: Version -> Annex ()
-setVersion = setConfig versionField
+setVersion :: RepoVersion -> Annex ()
+setVersion (RepoVersion v) = setConfig versionField (show v)
 
 removeVersion :: Annex ()
 removeVersion = unsetConfig versionField

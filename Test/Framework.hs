@@ -17,6 +17,7 @@ import Types.Test
 import qualified Annex
 import qualified Annex.UUID
 import qualified Annex.Version
+import qualified Types.RepoVersion
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Construct
@@ -198,7 +199,7 @@ clonerepo old new cfg = do
 		ver <- annexVersion <$> getTestMode
 		if ver == Annex.Version.defaultVersion
 			then git_annex "init" ["-q", new] @? "git annex init failed"
-			else git_annex "init" ["-q", new, "--version", ver] @? "git annex init failed"
+			else git_annex "init" ["-q", new, "--version", show (Types.RepoVersion.fromRepoVersion ver)] @? "git annex init failed"
 	unless (bareClone cfg) $
 		indir new $
 			setupTestMode
@@ -387,11 +388,11 @@ add_annex f = ifM (unlockedFiles <$> getTestMode)
 data TestMode = TestMode
 	{ forceDirect :: Bool
 	, unlockedFiles :: Bool
-	, annexVersion :: Annex.Version.Version
+	, annexVersion :: Types.RepoVersion.RepoVersion
 	, keepFailures :: Bool
 	} deriving (Read, Show)
 
-testMode :: TestOptions -> Annex.Version.Version -> TestMode
+testMode :: TestOptions -> Types.RepoVersion.RepoVersion -> TestMode
 testMode opts v = TestMode
 	{ forceDirect = False
 	, unlockedFiles = False
