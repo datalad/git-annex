@@ -1,3 +1,18 @@
+git-annex (7.20181026) upstream; urgency=medium
+
+  Repository version 7 is now available. v6 repositories will automatically
+  upgrade to v7. v5 repositories are still supported and will not be
+  automatically upgraded yet.
+
+  Direct mode is deprecated, and upgrading direct mode repositories to v7 is
+  encouraged, unless they need to remain usable by older versions of git-annex.
+  Just run `git annex upgrade`.
+
+  git-annex will no longer initialize new repositories on crippled filesystems
+  using direct mode.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 26 Oct 2018 14:11:48 -0400
+
 git-annex (6.20180626) upstream; urgency=high
 
   A security fix has changed git-annex to refuse to download content from
