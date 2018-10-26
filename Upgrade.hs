@@ -53,17 +53,24 @@ upgrade automatic destversion = do
 		setVersion destversion
 	return upgraded
   where
-	go (Just v) | v >= destversion = return True
-#ifndef mingw32_HOST_OS
-	go (Just (RepoVersion 0)) = Upgrade.V0.upgrade
-	go (Just (RepoVersion 1)) = Upgrade.V1.upgrade
-#else
-	go (Just (RepoVersion 0)) = giveup "upgrade from V0 on Windows not supported"
-	go (Just (RepoVersion 1)) = giveup "upgrade from V1 on Windows not supported"
-#endif
-	go (Just (RepoVersion 2)) = Upgrade.V2.upgrade
-	go (Just (RepoVersion 3)) = Upgrade.V3.upgrade automatic
-	go (Just (RepoVersion 4)) = Upgrade.V4.upgrade automatic
-	go (Just (RepoVersion 5)) = Upgrade.V5.upgrade automatic
-	go (Just (RepoVersion 6)) = Upgrade.V6.upgrade automatic
+	go (Just v)
+		| v >= destversion = return True
+		| otherwise = ifM (up v)
+			( go (Just (RepoVersion (fromRepoVersion v + 1)))
+			, return False
+			)
 	go _ = return True
+
+#ifndef mingw32_HOST_OS
+	up (RepoVersion 0) = Upgrade.V0.upgrade
+	up (RepoVersion 1) = Upgrade.V1.upgrade
+#else
+	up (RepoVersion 0) = giveup "upgrade from v0 on Windows not supported"
+	up (RepoVersion 1) = giveup "upgrade from v1 on Windows not supported"
+#endif
+	up (RepoVersion 2) = Upgrade.V2.upgrade
+	up (RepoVersion 3) = Upgrade.V3.upgrade automatic
+	up (RepoVersion 4) = Upgrade.V4.upgrade automatic
+	up (RepoVersion 5) = Upgrade.V5.upgrade automatic
+	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
+	up _ = return True
