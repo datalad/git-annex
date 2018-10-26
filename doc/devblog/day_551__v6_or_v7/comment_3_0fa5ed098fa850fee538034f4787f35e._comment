@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2018-10-26T15:27:50Z"
+ content="""
+If making a new repo version, maybe consider also changing the format of symlinks to locked files, to remove the double repetition of the key?  See discussion at [[todo/shorter_keys_through_better_encoding]] .
+"""]]
