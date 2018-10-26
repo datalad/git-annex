@@ -5,6 +5,7 @@
  subject="comment 4"
  date="2018-10-18T23:34:26Z"
  content="""
+
 I am stupid talking about executable files hardlinking. I think I just chmod-ed already hardlinking files, that's how I got it. No surprise.
 
 I am ok with this quirk (executable files are not thinned), but just curious: what exactly influenced such design decision?
