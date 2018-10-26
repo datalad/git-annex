@@ -750,21 +750,17 @@ isUnmodified key f = go =<< geti
 	go (Just fc) = isUnmodifiedCheap' key fc <||> expensivecheck fc
 	expensivecheck fc = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
 		( do
-			liftIO $ print "content verified"
 			-- The file could have been modified while it was
 			-- being verified. Detect that.
 			ifM (geti >>= maybe (return False) (compareInodeCaches fc))
 				( do
 					-- Update the InodeCache to avoid
 					-- performing this expensive check again.
-					liftIO $ print "update inode cache"
 					Database.Keys.addInodeCaches key [fc]
 					return True
 				, return False
 				)
-		, do
-			liftIO $ print "content not verified"
-			return False
+		, return False
 		)
 	geti = withTSDelta (liftIO . genInodeCache f)
 
