@@ -10,7 +10,10 @@ module Command.Init where
 import Command
 import Annex.Init
 import Annex.Version
+import Types.RepoVersion
 import qualified Annex.SpecialRemote
+
+import qualified Data.Map as M
 	
 cmd :: Command
 cmd = dontCheck repoExists $
@@ -19,21 +22,25 @@ cmd = dontCheck repoExists $
 
 data InitOptions = InitOptions
 	{ initDesc :: String
-	, initVersion :: Maybe Version
+	, initVersion :: Maybe RepoVersion
 	}
 
 optParser :: CmdParamsDesc -> Parser InitOptions
 optParser desc = InitOptions
 	<$> (unwords <$> cmdParams desc)
-	<*> optional (option (str >>= parseVersion)
+	<*> optional (option (str >>= parseRepoVersion)
 		( long "version" <> metavar paramValue
 		<> help "Override default annex.version"
 		))
 
-parseVersion :: Monad m => String -> m Version
-parseVersion v
-	| v `elem` supportedVersions = return v
-	| otherwise = fail $ v ++ " is not a currently supported repository version"
+parseRepoVersion :: Monad m => String -> m RepoVersion
+parseRepoVersion s = case RepoVersion <$> readish s of
+	Nothing -> fail $ "version parse error"
+	Just v
+		| v `elem` supportedVersions -> return v
+		| otherwise -> case M.lookup v autoUpgradeableVersions of
+			Just v' -> return v'
+			Nothing -> fail $ s ++ " is not a currently supported repository version"
 
 seek :: InitOptions -> CommandSeek
 seek = commandAction . start

@@ -22,7 +22,6 @@ import Yesod.Default.Util
 import Language.Haskell.TH.Syntax (Q, Exp)
 import Data.Default (def)
 import Text.Hamlet hiding (Html)
-import Data.Text (Text)
 
 widgetFile :: String -> Q Exp
 widgetFile = widgetFileNoReload $ def

@@ -46,6 +46,7 @@ module Annex.Content (
 	staleKeysPrune,
 	pruneTmpWorkDirBefore,
 	isUnmodified,
+	isUnmodifiedCheap,
 	verifyKeyContent,
 	VerifyConfig(..),
 	Verification(..),
@@ -746,9 +747,7 @@ isUnmodified :: Key -> FilePath -> Annex Bool
 isUnmodified key f = go =<< geti
   where
 	go Nothing = return False
-	go (Just fc) = cheapcheck fc <||> expensivecheck fc
-	cheapcheck fc = anyM (compareInodeCaches fc)
-		=<< Database.Keys.getInodeCaches key
+	go (Just fc) = isUnmodifiedCheap' key fc <||> expensivecheck fc
 	expensivecheck fc = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
 		( do
 			-- The file could have been modified while it was
@@ -764,6 +763,17 @@ isUnmodified key f = go =<< geti
 		, return False
 		)
 	geti = withTSDelta (liftIO . genInodeCache f)
+
+{- Cheap check if a file contains the unmodified content of the key,
+ - only checking the InodeCache of the key.
+ -}
+isUnmodifiedCheap :: Key -> FilePath -> Annex Bool
+isUnmodifiedCheap key f = maybe (return False) (isUnmodifiedCheap' key) 
+	=<< withTSDelta (liftIO . genInodeCache f)
+
+isUnmodifiedCheap' :: Key -> InodeCache -> Annex Bool
+isUnmodifiedCheap' key fc = 
+	anyM (compareInodeCaches fc) =<< Database.Keys.getInodeCaches key
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}

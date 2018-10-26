@@ -8,10 +8,10 @@ but it needs some different workflows of using git-annex.
 
 ## getting started
 
-To get started, your repository needs to be upgraded to v6, since the
+To get started, your repository needs to be upgraded to v7, since the
 feature does not work in v5 repositories.
 
-	git annex upgrade --version=6
+	git annex upgrade --version=7
 
 The [[git-annex adjust|git-annex-adjust]] command sets up an adjusted form
 of a git branch, in this case we'll ask it to hide missing files.
@@ -124,7 +124,7 @@ I set up the repository like this:
 
 	git clone server:/path/to/podcasts
 	cd podcasts
-	git annex upgrade --version=6
+	git annex upgrade --version=7
 	git annex adjust --hide-missing
 	git annex group here client
 	git annex wanted here standard

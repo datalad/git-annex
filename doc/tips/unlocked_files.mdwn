@@ -15,7 +15,7 @@ by running `git annex unlock`.
 	# git annex unlock some_file
 	# echo "new content" > some_file
 
-Back before git-annex version 6, and its v6 repository mode, unlocking a file
+Back before git-annex version 7, and its v7 repository mode, unlocking a file
 like this was a transient thing. You'd modify it and then `git annex add` the
 modified version to the annex, and finally `git commit`. The new version of
 the file was then back to being locked.
@@ -29,31 +29,28 @@ to edit files repeatedly, without manually having to unlock them every time.
 The [[direct_mode]] made all files be unlocked all the time, but it
 had many problems of its own.
 
-## enter v6 mode
+## enter v7 mode
 
-/!\ This is a new feature; see its [[todo_list|todo/smudge]]
-for known issues.
-
-This led to the v6 repository mode, which makes unlocked files remain
+This led to the v7 repository mode, which makes unlocked files remain
 unlocked after they're committed, so you can keep changing them and
 committing the changes whenever you'd like. It also lets you use more
 normal git commands (or even interfaces on top of git) for handling
 annexed files.
 
-To get a repository into v6 mode, you can [[upgrade|upgrades]] it.
+To get a repository into v7 mode, you can [[upgrade|upgrades]] it.
 This will eventually happen automatically, but for now it's a manual process
 (be sure to read [[upgrades]] before doing this):
 
 	# git annex upgrade
 	
-Or, you can init a new repository in v6 mode.
+Or, you can init a new repository in v7 mode.
 
 	# git init
-	# git annex init --version=6
+	# git annex init --version=7
 
 ## using it
 
-Using a v6 repository is easy! Simply use regular git commands to add
+Using a v7 repository is easy! Simply use regular git commands to add
 and commit files. In a git-annex repository, git will use git-annex
 to store the file contents, and the files will be left unlocked.
 
@@ -97,7 +94,7 @@ mode is used. To make them always use unlocked mode, run:
 
 ## mixing locked and unlocked files
 
-A v6 repository can contain both locked and unlocked files. You can switch 
+A v7 repository can contain both locked and unlocked files. You can switch 
 a file back and forth using the `git annex lock` and `git annex unlock`
 commands. This changes what's stored in git between a git-annex symlink
 (locked) and a git-annex pointer file (unlocked). To add a file to
@@ -108,28 +105,34 @@ If you want to mostly keep files locked, but be able to locally switch
 to having them all unlocked, you can do so using `git annex adjust
 --unlock`. See [[git-annex-adjust]] for details. This is particularly
 useful when using filesystems like FAT, and OS's like Windows that don't
-support symlinks.
+support symlinks. Indeed, `git-annex init` detects such filesystems and
+automatically sets up a repository to use all unlocked files.
 
-## index gotchas
+## imperfections
 
-When git-annex gets or drops the content of an unlocked file, it updates
-the file in git's worktree accordingly. That makes `git status` show
-the file as modified, even though there are no changes to commit.
-So git-annex then updates the index file to reflect the change to the
-worktree, and prevent the file from appearing to be modified.
+Unlocked files in v7 repositories mostly work very well, but there are a
+few imperfections which you should be aware of when using them.
 
-This means that when git-annex is running a command that gets or drops the
-content of an unlocked file, the index will sometimes be locked. This might
-prevent you from `git commit` at the same time. Or, if you have a git
-commit in progress, or are running multiple git-annex processes, git-annex
-may complain that the index is locked.
+1. `git stash`, `git cherry-pick` and `git reset --hard` don't update
+   the working tree with the content of unlocked files. The files
+   will contain pointers, the same as if the content was not in the
+   repository. So after running these commands, you will need to manually
+   run `git annex smudge --update`.
 
-Also, interrupting git-annex (eg with ctrl-c) before it can update the
-index will leave `git status` showing modifications.
+2. When git-annex is running a command that gets or drops the content
+   of an unlocked file, git's index will briefly be locked, which might
+   prevent you from running a `git commit` at the same time.
 
-To manually update the index when git-annex was not able to, you can run:
+3. Conversely, if you have a git commit in progress, running git-annex may
+   complain that the index is locked, though this will not prevent it from
+   working.
 
-	git update-index -q --refresh $file
+4. When an operation such as a checkout or merge needs to update a large
+   number of unlocked files, it can become slow. So can be `git add` of
+   a large number of files (`git annex add` is faster).
+
+(The technical reasons behind these imperfections are explained in
+detail in [[todo/git_smudge_clean_interface_suboptiomal]].)
 
 ## using less disk space
 
@@ -167,15 +170,6 @@ After changing annex.thin, you'll want to fix up the work tree to
 match the new setting:
 
 	git annex fix
-
-Unfortunately, git's smudge interface does not let git-annex honor
-the annex.thin configuration when git is checking out a file.
-So, using `git checkout` to check out a different branch, or even 
-`git merge` can result in some non-thin files making their way into the
-working tree, and using more disk space. A warning will be printed out in
-this situation. You can always run `git annex fix` to re-thin such files.
-
-## annex.thin tradeoffs
 
 [[!template id=note text="""
 When a [[direct_mode]] repository is upgraded, annex.thin is automatically

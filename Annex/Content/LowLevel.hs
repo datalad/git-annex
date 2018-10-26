@@ -49,7 +49,6 @@ linkOrCopy = linkOrCopy' (annexThin <$> Annex.getGitConfig)
 
 linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
 linkOrCopy' canhardlink key src dest destmode
-	| maybe False isExecutable destmode = copy =<< getstat
 	| otherwise = catchDefaultIO Nothing $
 		ifM canhardlink
 			( hardlink

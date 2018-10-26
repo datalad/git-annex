@@ -77,3 +77,5 @@ file_%subdir%
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yep! I already use it to move files between my laptop's HDD and SSD, and to copy files between my many SD cards. I was trying this to see if I could not have to scroll as far on my 3D printer's menu.
+
+> [[done]] see comments --[[Joey]]

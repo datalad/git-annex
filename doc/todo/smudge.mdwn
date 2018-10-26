@@ -1,82 +1,13 @@
-git-annex should use smudge/clean filters. v6 mode
+git-annex should use smudge/clean filters. v7 mode
 
-### problems keeping v6 experimental
+## warts
 
-* Checking out a different branch causes git to smudge all changed files,
-  and write their content. This does not honor annex.thin. A warning
-  message is printed in this case.  
-
-  This is particularly wasteful when checking out an adjusted unlocked
-  branch, which causes 2x the space to be used.  
-  
-  "git annex proxy" could be used to handle this.
-  Make it run the git command with smudge filter set to not output content
-  but only pointers, and then at the end populate the pointer files, hard
-  when appropriate. (As an optimization, the smudge filter could also be
-  made to use the long-running filter interface when run this way.)
-  
-  git-annex adjust and git-annex sync could both use that internally
-  when checking out the adjusted branch, and merging a branch into HEAD.
-  
-  Or: Make the smudge filter never provide the actual file content, but the
-  pointer. Install post-checkout and post-merge hooks that populate
-  the worktree files that were checked out. Of course, they will also
-  need to update the index.
-
-  Problem: post-merge hook is not run when there's a merge conflict.
-  Git does not actually run the smudge filter in this case;
-  the conflicting file becomes a text file containing a merge conflict
-  between the two annex pointers. When the user resolves the conflict
-  and git add's the result, git runs the smudge filter.
-  So, if the smudge filter then provides the pointer, the file would not be
-  populated. The post-commit hook would then need to populate the file,
-  once the merge got committed.
-
-  Problem: No hook seems to be run for git stash / git stash apply 
-  or for git reset --hard or git cherry-pick. 
-  Fatal or can we live with needing to run a
-  git-annex command to populate the files after those commands?
-
-  > implemented on the `delaysmudge` branch now
-
-  (My enhanced smudge/clean patch set also fixed this problem, in a much
-  nicer way...)
-
-* Optionally: Use the filterdriver interface during checkout. Unfortunately that
-  interface is slower for cleaning during git add (see
-  [[todo/Long_Running_Filter_Process]]), but since the smudge filter is not
-  providing git with the file content any more, using filterdriver would
-  avoid git running many git-annex smudge processes, greatly speeding up large
-  checkouts. git add could be left slow, with git-annex add being the fast path,
-  until the filterdriver interface is improved. Or, make "git annex proxy"
-  use the filterdriver interface for checkout.
-
-* When git runs the smudge filter, it buffers all its output in ram before
-  writing it to a file. So, checking out a branch with a large v6 unlocked files
-  can cause git to use a lot of memory.
-
-  This needs to be fixed in git, but my proposed interface in
-  <http://thread.gmane.org/gmane.comp.version-control.git/294425> would
-  avoid the problem for git checkout, since it would use the new interface
-  and not the smudge filter.
-
-  Last verified with git 2.18 in 2018. 
-
-  Note that the long-running filter process interface has the same problem.
-
-  The annex.thin idea above could work around this problem.
-
-  > implemented on the `delaysmudge` branch now
-
-## other warts
-
-* There are several v6 bugs that are edge cases and
+* There are several bugs that are edge cases and
   need more info or analysis. None of these seem like blockers
-  to keep v6 experimental or to replacing direct mode with v6.
+  to keep v7 experimental or to replacing direct mode with v7.
 
   - <http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/>
   - <http://git-annex.branchable.com/bugs/v6_appears_to_not_thin/>
-  - <http://git-annex.branchable.com/bugs/Metadata_views_in_v6_repo_upgraded_from_direct_mode_act_strangely/>
   - <http://git-annex.branchable.com/bugs/git-annex-sync_sometimes_fails_in_submodule_in_V6_adjusted_branch/>
 
 ### long term todos
@@ -86,14 +17,14 @@ git-annex should use smudge/clean filters. v6 mode
   multiple files, and so should be faster.
 
   See [[todo/Long_Running_Filter_Process]] .. it's not currently actually a
-  win but might be a good way to improve git to work better with v6.
+  win but might be a good way to improve git to work better with v7.
 
-* Eventually (but not yet), make v6 the default for new repositories.
+* Eventually (but not yet), make v7 the default for new repositories.
   Note that the assistant forces repos into direct mode; that will need to
   be changed then, and it should enable annex.thin instead.
 
 * Later still, remove support for direct mode, and enable automatic
-  v5 to v6 upgrades.
+  v5 to v7 upgrades.
 
 ### historical notes
 
@@ -395,7 +326,7 @@ just look at the repo content in the first place..
 
 #### Upgrading
 
-annex.version changes to 6
+annex.version changes to 7
 
 git config for filter.annex.smudge and filter.annex.clean is set up.
 

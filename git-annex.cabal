@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 6.20181011
+Version: 7.20181011
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -880,6 +880,7 @@ Executable git-annex
     Logs.Schedule
     Logs.SingleValue
     Logs.SingleValue.Pure
+    Logs.Smudge
     Logs.TimeStamp
     Logs.Transfer
     Logs.Transitions
@@ -969,6 +970,7 @@ Executable git-annex
     Types.NumCopies
     Types.RefSpec
     Types.Remote
+    Types.RepoVersion
     Types.ScheduledActivity
     Types.StandardGroups
     Types.StoreRetrieve
@@ -985,6 +987,7 @@ Executable git-annex
     Upgrade.V3
     Upgrade.V4
     Upgrade.V5
+    Upgrade.V6
     Utility.Aeson
     Utility.Android
     Utility.Applicative

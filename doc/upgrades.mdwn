@@ -46,10 +46,17 @@ the upgrade would need to be run in a copy of the repository.
 
 The upgrade events, so far:
 
-## v5 -> v6 (git-annex version 6.x)
+## v6 -> v7 (git-annex version 7.x)
 
-The upgrade from v5 to v6 is handled manually for now.
+The upgrade from v5 to v7 is handled manually for now.
 Run `git-annex upgrade` to perform the upgrade.
+
+v6 repositories are automatically upgraded to v7.
+
+The only difference between v6 and v7 is that some additional git hooks
+were added in v7.
+
+## v5 -> v6 (git-annex version 6.x)
 
 A v6 git-annex repository can have some files locked while other files are
 unlocked, and all git and git-annex commands can be used on both locked and

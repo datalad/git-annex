@@ -8,12 +8,12 @@
 module Command.Smudge where
 
 import Command
-import qualified Annex
 import Annex.Content
 import Annex.Link
 import Annex.FileMatcher
 import Annex.Ingest
 import Annex.CatFile
+import Logs.Smudge
 import Logs.Location
 import qualified Database.Keys
 import qualified Git.BuildVersion
@@ -29,43 +29,46 @@ cmd = noCommit $ noMessages $
 		"git smudge filter"
 		paramFile (seek <$$> optParser)
 
-data SmudgeOptions = SmudgeOptions
+data SmudgeOptions = UpdateOption | SmudgeOptions
 	{ smudgeFile :: FilePath
 	, cleanOption :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser SmudgeOptions
-optParser desc = SmudgeOptions
-	<$> argument str ( metavar desc )
-	<*> switch ( long "clean" <> help "clean filter" )
+optParser desc = smudgeoptions <|> updateoption
+  where
+	smudgeoptions = SmudgeOptions
+		<$> argument str ( metavar desc )
+		<*> switch ( long "clean" <> help "clean filter" )
+	updateoption = flag' UpdateOption
+		( long "update" <> help "populate annexed worktree files" )
 
 seek :: SmudgeOptions -> CommandSeek
-seek o = commandAction $
-	(if cleanOption o then clean else smudge) (smudgeFile o)
+seek (SmudgeOptions f False) = commandAction (smudge f)
+seek (SmudgeOptions f True) = commandAction (clean f)
+seek UpdateOption = commandAction update
 
 -- Smudge filter is fed git file content, and if it's a pointer to an
--- available annex object, should output its content.
+-- available annex object, git expects it to output its content.
+--
+-- However, this does not do that. It outputs the pointer, and records
+-- the filename in the smudge log. Git hooks run after commands like checkout
+-- then run git annex smudge --update which populates the work tree files
+-- with annex content. This is done for several reasons:
+--
+-- * To support annex.thin
+-- * Because git currently buffers the whole object received from the
+--   smudge filter in memory, which is a problem with large files.
 smudge :: FilePath -> CommandStart
 smudge file = do
 	b <- liftIO $ B.hGetContents stdin
 	case parseLinkOrPointer b of
-		Nothing -> liftIO $ B.putStr b
+		Nothing -> noop
 		Just k -> do
-			Database.Keys.addAssociatedFile k =<< inRepo (toTopFilePath file)
-			-- A previous unlocked checkout of the file may have
-			-- led to the annex object getting modified;
-			-- don't provide such modified content as it
-			-- will be confusing. inAnnex will detect such
-			-- modifications.
-			ifM (inAnnex k)
-				( do
-					content <- calcRepo (gitAnnexLocation k)
-					whenM (annexThin <$> Annex.getGitConfig) $
-						warning $ "Not able to honor annex.thin when git is checking out " ++ file ++ " (run git annex fix to re-thin files)"
-					liftIO $ B.putStr . fromMaybe b
-						=<< catchMaybeIO (B.readFile content)
-				, liftIO $ B.putStr b
-				)
+			topfile <- inRepo (toTopFilePath file)
+			Database.Keys.addAssociatedFile k topfile
+			void $ smudgeLog k topfile
+	liftIO $ B.putStr b
 	stop
 
 -- Clean filter is fed file content on stdin, decides if a file
@@ -92,19 +95,30 @@ clean file = do
 			if Git.BuildVersion.older "2.5"
 				then B.length b `seq` return ()
 				else liftIO $ hClose stdin
-			-- Look up the backend that was used for this file
-			-- before, so that when git re-cleans a file its
-			-- backend does not change.
-			let oldbackend = maybe Nothing (maybeLookupBackendVariety . keyVariety) oldkey
-			-- Can't restage associated files because git add
-			-- runs this and has the index locked.
-			let norestage = Restage False
-			liftIO . emitPointer
-				=<< postingest
-				=<< (\ld -> ingest' oldbackend ld Nothing norestage)
-				=<< lockDown cfg file
+
+			-- Optimization when the file is already annexed
+			-- and is unmodified.
+			case oldkey of
+				Nothing -> doingest oldkey
+				Just ko -> ifM (isUnmodifiedCheap ko file)
+					( liftIO $ emitPointer ko
+					, doingest oldkey
+					)
 		, liftIO $ B.hPut stdout b
 		)
+	
+	doingest oldkey = do
+		-- Look up the backend that was used for this file
+		-- before, so that when git re-cleans a file its
+		-- backend does not change.
+		let oldbackend = maybe Nothing (maybeLookupBackendVariety . keyVariety) oldkey
+		-- Can't restage associated files because git add
+		-- runs this and has the index locked.
+		let norestage = Restage False
+		liftIO . emitPointer
+			=<< postingest
+			=<< (\ld -> ingest' oldbackend ld Nothing norestage)
+			=<< lockDown cfg file
 
 	postingest (Just k, _) = do
 		logStatus k InfoPresent
@@ -151,3 +165,19 @@ getMoveRaceRecovery k file = void $ tryNonAsync $
 		populatePointerFile (Restage False) k obj file >>= \case
 			Nothing -> return ()
 			Just ic -> Database.Keys.addInodeCaches k [ic]
+
+update :: CommandStart
+update = do
+	updateSmudged (Restage True)
+	stop
+
+updateSmudged :: Restage -> Annex ()
+updateSmudged restage = streamSmudged $ \k topf -> do
+	f <- fromRepo $ fromTopFilePath topf
+	whenM (inAnnex k) $ do
+		obj <- calcRepo (gitAnnexLocation k)
+		unlessM (isJust <$> populatePointerFile restage k obj f) $
+			liftIO (isPointerFile f) >>= \case
+				Just k' | k' == k -> toplevelWarning False $
+					"unable to populate worktree file " ++ f
+				_ -> noop
