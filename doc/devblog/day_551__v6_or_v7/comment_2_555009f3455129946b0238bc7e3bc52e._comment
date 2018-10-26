@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ avatar="http://cdn.libravatar.org/avatar/0be1310904ded29624b9edb4824d451b"
+ subject="v7"
+ date="2018-10-26T09:33:09Z"
+ content="""
+I would prefer making it v7 so that it can be done automatically. I've got a large number of git-annex repositories (between 10-15) checked out on many boxes. I have upgraded some to v6, but I'm not sure I remember which (though I could find out). Having it be automatic would be preferable so that I wouldn't have to manually go check.
+"""]]
