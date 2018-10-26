@@ -38,10 +38,10 @@ postCheckoutHook = Git.Hook "post-checkout" smudgeHook []
 postMergeHook :: Git.Hook
 postMergeHook = Git.Hook "post-merge" smudgeHook []
 
--- Only run git-annex smudge --update when git-annex supports it.
--- Older versions of git-annex didn't need this hook.
+-- Older versions of git-annex didn't support this command, but neither did
+-- they support v7 repositories.
 smudgeHook :: String
-smudgeHook = mkHookScript "if git annex smudge --update >/dev/null 2>&1; then git-annex smudge --update; fi"
+smudgeHook = mkHookScript "git annex smudge --update"
 
 preCommitAnnexHook :: Git.Hook
 preCommitAnnexHook = Git.Hook "pre-commit-annex" "" []
