@@ -51,15 +51,6 @@ your files to and from it.
 And so on. Most ways you would use git-annex on a Linux system work fairly
 well in the Termux environment.
 
-## Known limitations
-
-* Direct mode
-
-  git-annex will probably default to direct mode due to the
-  limitations of Android's /sdcard. You can get around this using v6
-  unlocked repositories, or by putting the git-annex repository on a better
-  filesystem on the Android device, such as your termux home directory.
-
 ## Upgrading
 
 To upgrade to a new git-annex release, just run `git-annex-install` again.
