@@ -8,7 +8,6 @@ git-annex should use smudge/clean filters. v7 mode
 
   - <http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/>
   - <http://git-annex.branchable.com/bugs/v6_appears_to_not_thin/>
-  - <http://git-annex.branchable.com/bugs/Metadata_views_in_v6_repo_upgraded_from_direct_mode_act_strangely/>
   - <http://git-annex.branchable.com/bugs/git-annex-sync_sometimes_fails_in_submodule_in_V6_adjusted_branch/>
 
 ### long term todos

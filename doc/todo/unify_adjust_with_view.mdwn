@@ -1,0 +1,7 @@
+`git annex adjust` and `git annex view` (et all) both derive a branch from
+the main branch and enter it. They have different capabilies. It would be
+useful to be able to compose them. For example, to enter a view based on
+metadata that also has all files unlocked.
+
+There's also probably a fair amount of overlap in their implementations.
+--[[Joey]]
