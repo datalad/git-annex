@@ -108,26 +108,31 @@ useful when using filesystems like FAT, and OS's like Windows that don't
 support symlinks. Indeed, `git-annex init` detects such filesystems and
 automatically sets up a repository to use all unlocked files.
 
-## index gotchas
+## imperfections
 
-When git-annex gets or drops the content of an unlocked file, it updates
-the file in git's worktree accordingly. That makes `git status` show
-the file as modified, even though there are no changes to commit.
-So git-annex then updates the index file to reflect the change to the
-worktree, and prevent the file from appearing to be modified.
+Unlocked files in v7 repositories mostly work very well, but there are a
+few imperfections which you should be aware of when using them.
 
-This means that when git-annex is running a command that gets or drops the
-content of an unlocked file, the index will sometimes be locked. This might
-prevent you from `git commit` at the same time. Or, if you have a git
-commit in progress, or are running multiple git-annex processes, git-annex
-may complain that the index is locked.
+1. `git stash`, `git cherry-pick` and `git reset --hard` don't update
+   the working tree with the content of unlocked files. The files
+   will contain pointers, the same as if the content was not in the
+   repository. So after running these commands, you will need to manually
+   run `git annex smudge --update`.
 
-Also, interrupting git-annex (eg with ctrl-c) before it can update the
-index will leave `git status` showing modifications.
+2. When git-annex is running a command that gets or drops the content
+   of an unlocked file, git's index will briefly be locked, which might
+   prevent you from running a `git commit` at the same time.
 
-To manually update the index when git-annex was not able to, you can run:
+3. Conversely, if you have a git commit in progress, running git-annex may
+   complain that the index is locked, though this will not prevent it from
+   working.
 
-	git update-index -q --refresh $file
+4. When an operation such as a checkout or merge needs to update a large
+   number of unlocked files, it can become slow. So can be `git add` of
+   a large number of files (`git annex add` is faster).
+
+(The technical reasons behind these imperfections are explained in
+detail in [[todo/git_smudge_clean_interface_suboptiomal]].)
 
 ## using less disk space
 
@@ -165,15 +170,6 @@ After changing annex.thin, you'll want to fix up the work tree to
 match the new setting:
 
 	git annex fix
-
-Unfortunately, git's smudge interface does not let git-annex honor
-the annex.thin configuration when git is checking out a file.
-So, using `git checkout` to check out a different branch, or even 
-`git merge` can result in some non-thin files making their way into the
-working tree, and using more disk space. A warning will be printed out in
-this situation. You can always run `git annex fix` to re-thin such files.
-
-## annex.thin tradeoffs
 
 [[!template id=note text="""
 When a [[direct_mode]] repository is upgraded, annex.thin is automatically
