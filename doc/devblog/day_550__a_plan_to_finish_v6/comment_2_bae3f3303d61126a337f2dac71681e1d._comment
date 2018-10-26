@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-10-26T17:41:14Z"
+ content="""
+Well, `git annex add -J` works of course.. `git add` doesn't have a way to
+parallelize, nor does git checkout.
+
+It might be useful to parallelize `git annex smudge --update` which updates
+unlocked files in the work tree. I guess it should already be mostly disk
+bound when it's copying files and parallalizing that would likely only
+worsten things due to seeking (on spinning rust), 
+but it may have some parallizable overhead when it's making annex.thin hardlinks.
+It would need to be controlled via a git config flag or something since
+it gets run internally.
+"""]]
