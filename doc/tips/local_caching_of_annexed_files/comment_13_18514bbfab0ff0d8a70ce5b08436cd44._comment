@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 13"
+ date="2018-10-26T11:35:19Z"
+ content="""
+This would be super useful for my sorting annex! Being able to just drop the symlinks into other git-annex repositories and fetch the file from any of the \"storage\" ones (acting as caches) resolves [[todo/transfer_between_git-annexes]] in a very neat and safe way!
+
+I see that git-annex won't merge the cache's git-annex branch with this setup (which is great, because some of them are *huge*) but when a repo fetches a file from the cache, it will note that the cache repo had the file in the location log, right?
+Can this be avoided so the cache is entirely transient (once you remove the remote, there is no trace of it at all)?
+"""]]
