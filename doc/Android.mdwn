@@ -32,10 +32,9 @@ remain running and sync your files.
 ## Starting at power on
 
 If you install the [Termux:Boot app](https://wiki.termux.com/wiki/Termux:Boot),
-git-annex will automatically be automatically started when your Android device
+git-annex will be automatically started when your Android device
 powers on. It will run in the background in whatever repositories you have
 set up in the webapp.  
-(Or have listed in (or listed in ~/.config/git-annex/autostart)
 
 ## Using the command line
 

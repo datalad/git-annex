@@ -14,3 +14,5 @@ Or if manual configuration of `~/.termux/boot` *is* required, what exactly shoul
 What's the format of the contents of `~/.config/git-annex/autostart`?
 
 Finally, the last sentence has unbalanced parentheses, and doesn't parse correctly.
+
+> [[done]] --[[Joey]]
