@@ -12,6 +12,8 @@ import Annex.Init
 import Annex.Version
 import Types.RepoVersion
 import qualified Annex.SpecialRemote
+
+import qualified Data.Map as M
 	
 cmd :: Command
 cmd = dontCheck repoExists $
@@ -36,7 +38,9 @@ parseRepoVersion s = case RepoVersion <$> readish s of
 	Nothing -> fail $ "version parse error"
 	Just v
 		| v `elem` supportedVersions -> return v
-		| otherwise -> fail $ s ++ " is not a currently supported repository version"
+		| otherwise -> case M.lookup v autoUpgradeableVersions of
+			Just v' -> return v'
+			Nothing -> fail $ s ++ " is not a currently supported repository version"
 
 seek :: InitOptions -> CommandSeek
 seek = commandAction . start
