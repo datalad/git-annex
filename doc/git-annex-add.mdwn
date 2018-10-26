@@ -24,7 +24,7 @@ modification of their content unless unlocked by [[git-annex-unlock]](1).
 (This is not the case however when a repository is in a filesystem not
 supporting symlinks, or is in direct mode.)
 To add a file to the annex in unlocked form, `git add` can be used instead 
-(that only works when the repository has annex.version 6 or higher).
+(that only works in repository v7 or higher).
 
 This command can also be used to add symbolic links, both symlinks to
 annexed content, and other symlinks.

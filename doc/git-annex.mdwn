@@ -901,7 +901,7 @@ Here are all the supported configuration settings.
 
   Set to true to make commands like `git-annex add` that add files to the
   repository add them in unlocked form. The default is to add files in
-  locked form. This only has effect in version 6 repositories.
+  locked form. This only has effect in v7 repositories.
 
   When a repository has core.symlinks set to false, it implicitly
   sets annex.addunlocked to true.
