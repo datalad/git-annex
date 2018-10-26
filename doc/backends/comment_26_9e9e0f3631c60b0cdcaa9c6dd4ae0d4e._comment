@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="stable vs unstable keys"
+ date="2018-10-26T15:58:26Z"
+ content="""
+Backend.hs [classifies](https://git.kitenet.net/index.cgi/git-annex.git/tree/Backend.hs?h=6.20181011&id=426f0f3f4bff378e7be402d905ed171c6f26e472#n16) keys as \"stable\" or not, with URL keys being unstable.  How is this distinction used?  I found only one [place](https://git.kitenet.net/index.cgi/git-annex.git/tree/Remote/Helper/Chunked.hs?h=6.20181011&id=426f0f3f4bff378e7be402d905ed171c6f26e472#n111) where it's used, but couldn't quite understand it.  If \"stable\" means \"containing a hash of the content\", then wouldn't WORM keys be unstable too?
+"""]]
