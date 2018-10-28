@@ -1,10 +1,10 @@
 When an external special remote tells git-annex a fuller URL for a given file, git-annex-addurl does not use that information:
 
-[2018-10-28 16:12:39.933464] git-annex-remote-dnanexus[1] <-- CLAIMURL dx://file-FJZjVx001pB2BQPVKY4zX8kk/
-[2018-10-28 16:12:39.933515] git-annex-remote-dnanexus[1] --> CLAIMURL-SUCCESS
-[2018-10-28 16:12:39.933568] git-annex-remote-dnanexus[1] <-- CHECKURL dx://file-FJZjVx001pB2BQPVKY4zX8kk/
-[2018-10-28 16:12:40.469292] git-annex-remote-dnanexus[1] --> CHECKURL-MULTI dx://file-FJZjVx001pB2BQPVKY4zX8kk/A4.assembly1-trinity.fasta 11086 A4.assembly1-trinity.fasta
-addurl dx://file-FJZjVx001pB2BQPVKY4zX8kk/ (from mydx) (to A4.assembly1_trinity.fasta) [2018-10-28 16:12:40.469503] read: git ["--version"]
+    [2018-10-28 16:12:39.933464] git-annex-remote-dnanexus[1] <-- CLAIMURL dx://file-FJZjVx001pB2BQPVKY4zX8kk/
+    [2018-10-28 16:12:39.933515] git-annex-remote-dnanexus[1] --> CLAIMURL-SUCCESS
+    [2018-10-28 16:12:39.933568] git-annex-remote-dnanexus[1] <-- CHECKURL dx://file-FJZjVx001pB2BQPVKY4zX8kk/
+    [2018-10-28 16:12:40.469292] git-annex-remote-dnanexus[1] --> CHECKURL-MULTI dx://file-FJZjVx001pB2BQPVKY4zX8kk/A4.assembly1-trinity.fasta 11086 A4.assembly1-trinity.fasta
+    addurl dx://file-FJZjVx001pB2BQPVKY4zX8kk/ (from mydx) (to A4.assembly1_trinity.fasta) [2018-10-28 16:12:40.469503] read: git ["--version"]
 
 It would be better if, in the above log, the URL key was based on dx://file-FJZjVx001pB2BQPVKY4zX8kk/A4.assembly1-trinity.fasta , which would preserve the .fasta extension in the key and therefore in the symlink target.
 
