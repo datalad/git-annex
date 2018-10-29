@@ -93,6 +93,7 @@ remoteListRefresh = do
 	newg <- inRepo Git.Config.reRead
 	Annex.changeState $ \s -> s 
 		{ Annex.remotes = []
+		, Annex.gitremotes = Nothing
 		, Annex.repo = newg
 		}
 	remoteList

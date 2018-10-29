@@ -108,3 +108,4 @@ The interesting part here is that if I try to run the failing git commands in th
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I have been using it for years. Just not the webapp :)
 
+> [[fixed|done]] --[[Joey]] 
