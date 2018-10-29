@@ -689,10 +689,6 @@ checkUrlM external url =
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
 		CHECKURL_CONTENTS sz f -> result $ UrlContents sz $
 			if null f then Nothing else Just $ mkSafeFilePath f
-		-- Treat a single item multi response specially to
-		-- simplify the external remote implementation.
-		CHECKURL_MULTI ((_, sz, f):[]) ->
-			result $ UrlContents sz $ Just $ mkSafeFilePath f
 		CHECKURL_MULTI l -> result $ UrlMulti $ map mkmulti l
 		CHECKURL_FAILURE errmsg -> Just $ giveup errmsg
 		UNSUPPORTED_REQUEST -> giveup "CHECKURL not implemented by external special remote"

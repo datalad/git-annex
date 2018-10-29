@@ -132,17 +132,21 @@ checkUrl r o u = do
 	go deffile (Right (UrlContents sz mf)) = do
 		let f = adjustFile o (fromMaybe (maybe deffile fromSafeFilePath mf) (fileOption (downloadOptions o)))
 		void $ commandAction $ startRemote r o f u sz
-	go deffile (Right (UrlMulti l))
-		| isNothing (fileOption (downloadOptions o)) =
+	go deffile (Right (UrlMulti l)) = case fileOption (downloadOptions o) of
+		Nothing ->
 			forM_ l $ \(u', sz, f) -> do
 				let f' = adjustFile o (deffile </> fromSafeFilePath f)
-				void $ commandAction $
-					startRemote r o f' u' sz
-		| otherwise = giveup $ unwords
-			[ "That url contains multiple files according to the"
-			, Remote.name r
-			, " remote; cannot add it to a single file."
-			]
+				void $ commandAction $ startRemote r o f' u' sz
+		Just f -> case l of
+			[] -> noop
+			((u',sz,_):[]) -> do
+				let f' = adjustFile o f
+				void $ commandAction $ startRemote r o f' u' sz
+			_ -> giveup $ unwords
+				[ "That url contains multiple files according to the"
+				, Remote.name r
+				, " remote; cannot add it to a single file."
+				]
 
 startRemote :: Remote -> AddUrlOptions -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote r o file uri sz = do

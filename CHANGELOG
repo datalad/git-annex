@@ -46,6 +46,9 @@ git-annex (7.20181025) UNRELEASED; urgency=medium
     immediately to v7.
   * When annex.thin is set, allow hard links to be made between executable
     work tree files and annex objects.
+  * addurl: Removed undocumented special case in handling of a CHECKURL-MULTI
+    response with only a single file listed. Rather than ignoring the url that
+    was in the response, use it.
 
  -- Joey Hess <id@joeyh.name>  Sat, 13 Oct 2018 00:52:02 -0400
 
