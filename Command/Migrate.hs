@@ -82,18 +82,18 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 			next $ Command.ReKey.cleanup file oldkey newkey
 		, giveup "failed creating link from old to new key"
 		)
-	genkey Nothing = return Nothing
+	genkey Nothing = do
+		content <- calcRepo $ gitAnnexLocation oldkey
+		let source = KeySource
+			{ keyFilename = file
+			, contentLocation = content
+			, inodeCache = Nothing
+			}
+		v <- genKey source (Just newbackend)
+		return $ case v of
+			Just (newkey, _) -> Just (newkey, False)
+			_ -> Nothing
 	genkey (Just fm) = fm oldkey newbackend afile >>= \case
-		Just newkey -> return $ Just (newkey, True)
-		Nothing -> do
-			content <- calcRepo $ gitAnnexLocation oldkey
-			let source = KeySource
-				{ keyFilename = file
-				, contentLocation = content
-				, inodeCache = Nothing
-				}
-			v <- genKey source (Just newbackend)
-			return $ case v of
-				Just (newkey, _) -> Just (newkey, False)
-				_ -> Nothing
+		Just newkey -> return (Just (newkey, True))
+		Nothing -> genkey Nothing
 	afile = AssociatedFile (Just file)

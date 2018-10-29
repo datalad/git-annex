@@ -24,3 +24,5 @@ Migrating from a URL key to an MD5E key (after addurl --fast using an external s
     [2018-10-29 15:17:15.621264] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","A4.taxfilt.bam"]
     migrate A4.taxfilt.bam failed
     git-annex: migrate: 1 failed
+
+> [[fixed|done]] --[[Joey]]

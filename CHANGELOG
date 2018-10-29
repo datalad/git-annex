@@ -51,6 +51,8 @@ git-annex (7.20181025) UNRELEASED; urgency=medium
     was in the response, use it.
   * webapp: Fixed a crash when adding a git remote.
     (Reversion introduced in version 6.20180112)
+  * migrate: Fix failure to migrate from URL keys.
+    (Reversion introduced in version 6.20180926)
 
  -- Joey Hess <id@joeyh.name>  Sat, 13 Oct 2018 00:52:02 -0400
 
