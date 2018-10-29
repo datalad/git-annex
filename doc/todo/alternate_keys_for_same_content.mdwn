@@ -1,0 +1,6 @@
+Designate a metadata field, say alt_keys, to store alternate keys for the content designated by the key with the metadata.
+Then, after initially adding a URL key, and after some time getting its content, a checksum-based key such as MD5 could be added as the URL key's metadata.
+Then, without needing to migrate, the URL key could be treated like checksum-based keys, e.g. downloaded from untrusted remotes, fsck'ed, etc.
+
+The problem with migrating keys is that a separate copy of the contents is stored in the annex under the old key; but it you force-drop that, symlinks in
+older commits will become invalid.   You could rewrite git history, but that brings its own problems.
