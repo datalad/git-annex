@@ -1,0 +1,16 @@
+When an external special remote tells git-annex a fuller URL for a given file, git-annex-addurl does not use that information:
+
+    [2018-10-28 16:12:39.933464] git-annex-remote-dnanexus[1] <-- CLAIMURL dx://file-FJZjVx001pB2BQPVKY4zX8kk/
+    [2018-10-28 16:12:39.933515] git-annex-remote-dnanexus[1] --> CLAIMURL-SUCCESS
+    [2018-10-28 16:12:39.933568] git-annex-remote-dnanexus[1] <-- CHECKURL dx://file-FJZjVx001pB2BQPVKY4zX8kk/
+    [2018-10-28 16:12:40.469292] git-annex-remote-dnanexus[1] --> CHECKURL-MULTI dx://file-FJZjVx001pB2BQPVKY4zX8kk/A4.assembly1-trinity.fasta 11086 A4.assembly1-trinity.fasta
+    addurl dx://file-FJZjVx001pB2BQPVKY4zX8kk/ (from mydx) (to A4.assembly1_trinity.fasta) [2018-10-28 16:12:40.469503] read: git ["--version"]
+
+It would be better if, in the above log, the URL key was based on dx://file-FJZjVx001pB2BQPVKY4zX8kk/A4.assembly1-trinity.fasta , which would preserve the .fasta extension in the key and therefore in the symlink target.
+
+Also, it would be good if the external special remote could return an etag for the URL, which would be a value guaranteed to change if the URL's contents changes;
+and if git-annex would then compute the URL key based on the combination of URL and etag.
+
+It'd also be good if there was a option to automatically migrate URL keys to the default backend whenever a file from a URL key is downloaded.  Also, to record 
+the checksummed key (e.g. MD5E) as metadata of the URL key (in a field named e.g. alternateKeys), and if addurl --fast is later done on a URL key for which 
+a checksummed key is recorded in the metadata, to add the checksummed key instead of the URL key .
