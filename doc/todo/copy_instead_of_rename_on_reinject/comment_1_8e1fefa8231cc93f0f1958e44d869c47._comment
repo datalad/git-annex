@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-29T19:20:15Z"
+ content="""
+The first word of the git-annex-reinject man page is "moves", so 
+I find it hard to believe users would be surprised that it does that.
+(Also, "inject" suggests movement.)
+
+I can't see this being anything but an option added to reinject, because
+changing behavior to copying when it's been move *would* be surprising, and
+could result in a lot of unwanted disk space being used or other problems
+with some workflow that involves reinject.
+
+I am doubtful that such an option is worth it given the way git-annex
+reinject is usually used.
+
+And if I were in your situation, which I have been, I'd just delete the symlinks
+I moved by accident, check them back out in the other repository,
+and then unannex the files and move them. Much easier than running reinject
+with long paths into the other repository.
+"""]]
