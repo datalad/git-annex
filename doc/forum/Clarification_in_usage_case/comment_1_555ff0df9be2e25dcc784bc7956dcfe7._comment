@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-10-29T23:34:24Z"
+ content="""
+When I wrote that, I was thinking of something more like, you have a clone of your repository
+on the server, and you run `git annex addurl` sshed into there. Then you
+can just run `git annex get` (or move) on the client later to download all the queued
+stuff.
+
+But, you can in fact tag files and operate on them like you're thinking of.
+
+	git annex metadata --tag later
+
+	git annex get --metadata tag=later
+"""]]
