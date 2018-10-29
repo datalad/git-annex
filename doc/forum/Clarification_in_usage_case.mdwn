@@ -1,0 +1,8 @@
+Hello. This is in the git-annex usage case called "the nomad":
+> When she has 1 bar on her cell, Alice queues up interesting files on her server for later. At a coffee shop, she has git-annex download them to her USB drive.
+
+Every time I read this, it makes me think that it would be possible to "tag" a number of files, and then get them all in one go when they are made available. This would be quite useful since I don't always remember what files I wanted when I plug in the external HD and I don't always go get the HD when I remember one more file that would be convenient to have.
+
+Unfortunately I never did find a way of achieving this (not on the command line). Perhaps I could use the *preferred content* to achieve that effect, but it does not seem as convenient as something like an hypothetical `git-annex get --delayed filename1 filename2`.
+
+Could someone suggest a way of doing this? Thank you very much. I'm still learning this neat tool.
