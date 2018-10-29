@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: stable vs unstable keys"""
+ date="2018-10-29T18:55:09Z"
+ content="""
+It's only used to avoid uploading one chunk from one object that the key
+points to, and then later upload a chunk from a different object.
+
+While WORM keys could in theory "collide" and the same key point to
+different content, that's no different than MD5 or SHA1 keys colliding;
+it's a smallish risk, easily quantified, and you take that risk by
+choosing to use those keys.
+
+The risk that the content at an url might change varies over time or
+something like that, so I think it makes sense to treat URL keys as specially
+unstable.
+"""]]
