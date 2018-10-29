@@ -65,7 +65,7 @@ compareStrong (InodeCache x) (InodeCache y) = x == y
  - due to some filesystems being remounted.
  -
  - The weak mtime comparison treats any mtimes that are within 2 seconds
- - of one-anther as the same. This is because FAT has only a 2 second
+ - of one-another as the same. This is because FAT has only a 2 second
  - resolution. When a FAT filesystem is used on Linux, higher resolution
  - timestamps are cached and used by Linux, but this is lost on unmount,
  - so after a remount, the timestamp can appear to have changed.

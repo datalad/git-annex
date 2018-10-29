@@ -10,6 +10,7 @@ module Test.Framework where
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
+import Control.Concurrent
 
 import Common
 import Types.Test
@@ -503,8 +504,17 @@ content f
 	| "import" `isPrefixOf` f = "imported content"
 	| otherwise = "unknown file " ++ f
 
+writecontent :: FilePath -> String -> IO ()
+writecontent f c = do
+	-- Delay 1/10th of a second, because filesystem's
+	-- mtime resolution may not be very high, and we want to make sure
+	-- that git etc notices the file has been modified even when
+	-- multiple modifications happen close together.
+	threadDelay 100000
+	writeFile f c
+
 changecontent :: FilePath -> IO ()
-changecontent f = writeFile f $ changedcontent f
+changecontent f = writecontent f $ changedcontent f
 
 changedcontent :: FilePath -> String
 changedcontent f = content f ++ " (modified)"

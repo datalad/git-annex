@@ -290,10 +290,10 @@ test_init = innewrepo $ do
 -- annexed file that later tests will use
 test_add :: Assertion
 test_add = inmainrepo $ do
-	writeFile annexedfile $ content annexedfile
+	writecontent annexedfile $ content annexedfile
 	add_annex annexedfile @? "add failed"
 	annexed_present annexedfile
-	writeFile sha1annexedfile $ content sha1annexedfile
+	writecontent sha1annexedfile $ content sha1annexedfile
 	git_annex "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
 	whenM (unlockedFiles <$> getTestMode) $
 		git_annex "unlock" [sha1annexedfile] @? "unlock failed"
@@ -301,12 +301,12 @@ test_add = inmainrepo $ do
 	checkbackend sha1annexedfile backendSHA1
 	ifM (annexeval Config.isDirect)
 		( do
-			writeFile ingitfile $ content ingitfile
+			writecontent ingitfile $ content ingitfile
 			not <$> boolSystem "git" [Param "add", File ingitfile] @? "git add failed to fail in direct mode"
 			nukeFile ingitfile
 			git_annex "sync" [] @? "sync failed"
 		, do
-			writeFile ingitfile $ content ingitfile
+			writecontent ingitfile $ content ingitfile
 			boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
 			boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "commit"] @? "git commit failed"
 			git_annex "add" [ingitfile] @? "add ingitfile should be no-op"
@@ -315,14 +315,14 @@ test_add = inmainrepo $ do
 
 test_add_dup :: Assertion
 test_add_dup = intmpclonerepo $ do
-	writeFile annexedfiledup $ content annexedfiledup
+	writecontent annexedfiledup $ content annexedfiledup
 	add_annex annexedfiledup @? "add of second file with same content failed"
 	annexed_present annexedfiledup
 	annexed_present annexedfile
 
 test_add_extras :: Assertion
 test_add_extras = intmpclonerepo $ do
-	writeFile wormannexedfile $ content wormannexedfile
+	writecontent wormannexedfile $ content wormannexedfile
 	git_annex "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
 	whenM (unlockedFiles <$> getTestMode) $
 		git_annex "unlock" [wormannexedfile] @? "unlock failed"
@@ -387,7 +387,7 @@ test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \import
 	mktoimport importdir subdir = do
 		createDirectory (importdir </> subdir)
 		let importf = subdir </> "f"
-		writeFile (importdir </> importf) (content importf)
+		writecontent (importdir </> importf) (content importf)
 		return (importdir </> subdir, importdir </> importf, importf)
 	annexed_present_imported f = ifM (annexeval Config.crippledFileSystem)
 		( annexed_present_unlocked f
@@ -402,7 +402,7 @@ test_reinject :: Assertion
 test_reinject = intmpclonerepoInDirect $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	annexed_notpresent sha1annexedfile
-	writeFile tmp $ content sha1annexedfile
+	writecontent tmp $ content sha1annexedfile
 	key <- Key.key2file <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	annexed_present sha1annexedfile
@@ -603,7 +603,7 @@ test_lock = intmpclonerepoInDirect $ do
 
 	-- regression test: unlock of newly added, not committed file
 	-- should fail in v5 mode. In v7 mode, this is allowed.
-	writeFile "newfile" "foo"
+	writecontent "newfile" "foo"
 	git_annex "add" ["newfile"] @? "add new file failed"
 	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
 		( git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file in v7 repository"
@@ -617,7 +617,7 @@ test_lock = intmpclonerepoInDirect $ do
 	-- write different content, to verify that lock
 	-- throws it away
 	changecontent annexedfile
-	writeFile annexedfile $ content annexedfile ++ "foo"
+	writecontent annexedfile $ content annexedfile ++ "foo"
 	not <$> git_annex "lock" [annexedfile] @? "lock failed to fail without --force"
 	git_annex "lock" ["--force", annexedfile] @? "lock --force failed"
 	-- In v7 mode, the original content of the file is not always
@@ -653,7 +653,7 @@ test_lock_v7_force = intmpclonerepoInDirect $ do
 			Database.Keys.closeDb
 			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
 			liftIO $ renameDirectory dbdir (dbdir ++ ".old")
-		writeFile annexedfile "test_lock_v7_force content"
+		writecontent annexedfile "test_lock_v7_force content"
 		not <$> git_annex "lock" [annexedfile] @? "lock of modified file failed to fail in v7 mode"
 		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v7 mode"
 		annexed_present_locked annexedfile
@@ -770,7 +770,7 @@ test_fsck_basic = intmpclonerepo $ do
 	corrupt f = do
 		git_annex "get" [f] @? "get of file failed"
 		Utility.FileMode.allowWrite f
-		writeFile f (changedcontent f)
+		writecontent f (changedcontent f)
 		ifM (annexeval Config.isDirect <||> unlockedFiles <$> getTestMode)
 			( git_annex "fsck" [] @? "fsck failed on unlocked file with changed file content"
 			, not <$> git_annex "fsck" [] @? "fsck failed to fail with corrupted file content"
@@ -887,7 +887,7 @@ test_unused = intmpclonerepoInDirect $ do
 	-- unlocked, the work tree file has the content, and there's no way
 	-- to associate it with the key.
 	unlessM (unlockedFiles <$> getTestMode) $ do
-		writeFile "unusedfile" "unusedcontent"
+		writecontent "unusedfile" "unusedcontent"
 		git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 		unusedfilekey <- getKey backendSHA256E "unusedfile"
 		renameFile "unusedfile" "unusedunstagedfile"
@@ -898,7 +898,7 @@ test_unused = intmpclonerepoInDirect $ do
 
 	-- unused used to miss symlinks that were deleted or modified
 	-- manually
-	writeFile "unusedfile" "unusedcontent"
+	writecontent "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
 	unusedfilekey' <- getKey backendSHA256E "unusedfile"
@@ -908,7 +908,7 @@ test_unused = intmpclonerepoInDirect $ do
 
 	-- unused used to false positive on symlinks that were
 	-- deleted or modified manually, but not staged as such
-	writeFile "unusedfile" "unusedcontent"
+	writecontent "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
 	checkunused [] "with staged file"
@@ -920,10 +920,10 @@ test_unused = intmpclonerepoInDirect $ do
 	-- found as unused.
 	whenM (unlockedFiles <$> getTestMode) $ do
 		let f = "unlockedfile"
-		writeFile f "unlockedcontent1"
+		writecontent f "unlockedcontent1"
 		boolSystem "git" [Param "add", File "unlockedfile"] @? "git add failed"
 		checkunused [] "with unlocked file before modification"
-		writeFile f "unlockedcontent2"
+		writecontent f "unlockedcontent2"
 		checkunused [] "with unlocked file after modification"
 		not <$> boolSystem "git" [Param "diff", Param "--quiet", File f] @? "git diff did not show changes to unlocked file"
 		-- still nothing unused because one version is in the index
@@ -960,7 +960,7 @@ test_find = intmpclonerepo $ do
 	{- --include=* should match files in subdirectories too,
 	 - and --exclude=* should exclude them. -}
 	createDirectory "dir"
-	writeFile "dir/subfile" "subfile"
+	writecontent "dir/subfile" "subfile"
 	git_annex "add" ["dir"] @? "add of subdir failed"
 	git_annex_expectoutput "find" ["--include", "*", "--exclude", annexedfile, "--exclude", sha1annexedfile] ["dir/subfile"]
 	git_annex_expectoutput "find" ["--exclude", "*"] []
@@ -1044,10 +1044,10 @@ test_conflict_resolution_movein_regression = withtmpclonerepo $ \r1 ->
 			{- Set up a conflict. -}
 			let newcontent = content annexedfile ++ rname r
 			ifM (annexeval Config.isDirect)
-				( writeFile annexedfile newcontent
+				( writecontent annexedfile newcontent
 				, do
 					git_annex "unlock" [annexedfile] @? "unlock failed"		
-					writeFile annexedfile newcontent
+					writecontent annexedfile newcontent
 				)
 		{- Sync twice in r1 so it gets the conflict resolution
 		 - update from r2 -}
@@ -1071,12 +1071,12 @@ test_conflict_resolution =
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor1"
+				writecontent conflictor "conflictor1"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor2"
+				writecontent conflictor "conflictor2"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
 			pair r1 r2
@@ -1104,12 +1104,12 @@ test_conflict_resolution_adjusted_branch = whenM (annexeval Annex.AdjustedBranch
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor1"
+				writecontent conflictor "conflictor1"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor2"
+				writecontent conflictor "conflictor2"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
 				-- need v7 to use adjust
@@ -1147,13 +1147,13 @@ test_mixed_conflict_resolution = do
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor"
+				writecontent conflictor "conflictor"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
 				createDirectory conflictor
-				writeFile subfile "subfile"
+				writecontent subfile "subfile"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
 			pair r1 r2
@@ -1189,7 +1189,7 @@ test_remove_conflict_resolution = do
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor"
+				writecontent conflictor "conflictor"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $
@@ -1202,7 +1202,7 @@ test_remove_conflict_resolution = do
 				unlessM (annexeval Config.isDirect) $ do
 					git_annex "unlock" [conflictor]
 						@? "unlock conflictor failed"
-				writeFile conflictor "newconflictor"
+				writecontent conflictor "newconflictor"
 			indir r1 $
 				nukeFile conflictor
 			let l = if inr1 then [r1, r2, r1] else [r2, r1, r2]
@@ -1238,12 +1238,12 @@ test_nonannexed_file_conflict_resolution = do
 			whenM (isInDirect r1 <&&> isInDirect r2) $ do
 				indir r1 $ do
 					disconnectOrigin
-					writeFile conflictor "conflictor"
+					writecontent conflictor "conflictor"
 					add_annex conflictor @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 				indir r2 $ do
 					disconnectOrigin
-					writeFile conflictor nonannexed_content
+					writecontent conflictor nonannexed_content
 					boolSystem "git"
 						[ Param "config"
 						, Param "annex.largefiles"
@@ -1295,7 +1295,7 @@ test_nonannexed_symlink_conflict_resolution = do
 			       <&&> isInDirect r1 <&&> isInDirect r2) $ do
 				indir r1 $ do
 					disconnectOrigin
-					writeFile conflictor "conflictor"
+					writecontent conflictor "conflictor"
 					add_annex conflictor @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 				indir r2 $ do
@@ -1346,12 +1346,12 @@ test_uncommitted_conflict_resolution = do
 			indir r1 $ do
 				disconnectOrigin
 				createDirectoryIfMissing True (parentDir remoteconflictor)
-				writeFile remoteconflictor annexedcontent
+				writecontent remoteconflictor annexedcontent
 				add_annex conflictor @? "add remoteconflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ do
 				disconnectOrigin
-				writeFile conflictor localcontent
+				writecontent conflictor localcontent
 			pair r1 r2
 			indir r2 $ ifM (annexeval Config.isDirect)
 				( do
@@ -1383,18 +1383,18 @@ test_conflict_resolution_symlink_bit = unlessM (unlockedFiles <$> getTestMode) $
 		withtmpclonerepo $ \r2 ->
 			withtmpclonerepo $ \r3 -> do
 				indir r1 $ do
-					writeFile conflictor "conflictor"
+					writecontent conflictor "conflictor"
 					git_annex "add" [conflictor] @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 					check_is_link conflictor "r1"
 				indir r2 $ do
 					createDirectory conflictor
-					writeFile (conflictor </> "subfile") "subfile"
+					writecontent (conflictor </> "subfile") "subfile"
 					git_annex "add" [conflictor] @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r2"
 					check_is_link (conflictor </> "subfile") "r2"
 				indir r3 $ do
-					writeFile conflictor "conflictor"
+					writecontent conflictor "conflictor"
 					git_annex "add" [conflictor] @? "add conflicter failed"
 					git_annex "sync" [] @? "sync failed in r1"
 					check_is_link (conflictor </> "subfile") "r3"
@@ -1415,12 +1415,12 @@ test_mixed_lock_conflict_resolution =
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ whenM shouldtest $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor"
+				writecontent conflictor "conflictor"
 				git_annex "add" [conflictor] @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
 			indir r2 $ whenM shouldtest $ do
 				disconnectOrigin
-				writeFile conflictor "conflictor"
+				writecontent conflictor "conflictor"
 				git_annex "add" [conflictor] @? "add conflicter failed"
 				git_annex "unlock" [conflictor] @? "unlock conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
@@ -1462,7 +1462,7 @@ test_adjusted_branch_merge_regression = whenM (annexeval Annex.AdjustedBranch.is
 		disconnectOrigin
 		git_annex "upgrade" [] @? "upgrade failed"
 		git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
-		writeFile conflictor "conflictor"
+		writecontent conflictor "conflictor"
 		git_annex "add" [conflictor] @? "add conflicter failed"
 		git_annex "sync" [] @? "sync failed"
 	checkmerge what d = indir d $ do
@@ -1482,11 +1482,11 @@ test_adjusted_branch_subtree_regression =
 				git_annex "upgrade" [] @? "upgrade failed"
 				git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
 				createDirectoryIfMissing True "a/b/c"
-				writeFile "a/b/c/d" "foo"
+				writecontent "a/b/c/d" "foo"
 				git_annex "add" ["a/b/c"] @? "add a/b/c failed"
 				git_annex "sync" [] @? "sync failed"
 				createDirectoryIfMissing True "a/b/x"
-				writeFile "a/b/x/y" "foo"
+				writecontent "a/b/x/y" "foo"
 				git_annex "add" ["a/b/x"] @? "add a/b/x failed"
 				git_annex "sync" [] @? "sync failed"
 				boolSystem "git" [Param "checkout", Param "master"] @? "git checkout master failed"
@@ -1696,7 +1696,7 @@ test_crypto = putStrLn "gpg testing not implemented on Windows"
 test_add_subdirs :: Assertion
 test_add_subdirs = intmpclonerepo $ do
 	createDirectory "dir"
-	writeFile ("dir" </> "foo") $ "dir/" ++ content annexedfile
+	writecontent ("dir" </> "foo") $ "dir/" ++ content annexedfile
 	git_annex "add" ["dir"] @? "add of subdir failed"
 
 	{- Regression test for Windows bug where symlinks were not
@@ -1708,7 +1708,7 @@ test_add_subdirs = intmpclonerepo $ do
 		"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
 	createDirectory "dir2"
-	writeFile ("dir2" </> "foo") $ content annexedfile
+	writecontent ("dir2" </> "foo") $ content annexedfile
 	setCurrentDirectory "dir"
 	git_annex "add" [".." </> "dir2"] @? "add of ../subdir failed"
 
@@ -1718,7 +1718,7 @@ test_addurl = intmpclonerepo $ do
 	let filecmd c ps = git_annex c ("-cannex.security.allowed-url-schemes=file" : ps)
 	f <- absPath "myurl"
 	let url = replace "\\" "/" ("file:///" ++ dropDrive f)
-	writeFile f "foo"
+	writecontent f "foo"
 	not <$> git_annex "addurl" [url] @? "addurl failed to fail on file url"
 	filecmd "addurl" [url] @? ("addurl failed on " ++ url)
 	let dest = "addurlurldest"
