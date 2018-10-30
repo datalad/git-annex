@@ -50,6 +50,7 @@ Build-Depends:
 	libghc-persistent-template-dev,
 	libghc-persistent-sqlite-dev,
 	libghc-esqueleto-dev,
+	libghc-microlens-dev,
 	libghc-securemem-dev,
 	libghc-byteable-dev,
 	libghc-stm-chans-dev,

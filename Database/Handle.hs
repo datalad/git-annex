@@ -1,6 +1,6 @@
 {- Persistent sqlite database handles.
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
