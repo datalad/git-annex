@@ -31,7 +31,7 @@ instance (Arbitrary v, Ord v) => Arbitrary (S.Set v) where
 	arbitrary = S.fromList <$> arbitrary
 #endif
 
-{- Times before the epoch are excluded. -}
+{- Times before the epoch are excluded, and no fraction is included. -}
 instance Arbitrary POSIXTime where
 	arbitrary = fromInteger <$> nonNegative arbitrarySizedIntegral
 

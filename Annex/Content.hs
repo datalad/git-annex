@@ -766,6 +766,10 @@ isUnmodified key f = go =<< geti
 
 {- Cheap check if a file contains the unmodified content of the key,
  - only checking the InodeCache of the key.
+ -
+ - Note that, on systems not supporting high-resolution mtimes,
+ - this may report a false positive when repeated edits are made to a file
+ - within a small time window (eg 1 second).
  -}
 isUnmodifiedCheap :: Key -> FilePath -> Annex Bool
 isUnmodifiedCheap key f = maybe (return False) (isUnmodifiedCheap' key) 

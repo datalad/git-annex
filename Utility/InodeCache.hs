@@ -1,12 +1,13 @@
 {- Caching a file's inode, size, and modification time
  - to see when it's changed.
  -
- - Copyright 2013-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2018 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Utility.InodeCache (
@@ -38,15 +39,20 @@ module Utility.InodeCache (
 ) where
 
 import Common
+import Utility.TimeStamp
+import Utility.QuickCheck
+
 import System.PosixCompat.Types
 import Data.Time.Clock.POSIX
-import Utility.QuickCheck
 
 #ifdef mingw32_HOST_OS
 import Data.Word (Word64)
+import System.Directory
+#else
+import System.Posix.Files
 #endif
 
-data InodeCachePrim = InodeCachePrim FileID Integer EpochTime
+data InodeCachePrim = InodeCachePrim FileID FileSize MTime
 	deriving (Show, Eq, Ord)
 
 newtype InodeCache = InodeCache InodeCachePrim
@@ -68,12 +74,12 @@ compareStrong (InodeCache x) (InodeCache y) = x == y
  - The weak mtime comparison treats any mtimes that are within 2 seconds
  - of one-another as the same. This is because FAT has only a 2 second
  - resolution. When a FAT filesystem is used on Linux, higher resolution
- - timestamps are cached and used by Linux, but this is lost on unmount,
- - so after a remount, the timestamp can appear to have changed.
+ - timestamps maybe be are cached and used by Linux, but they are lost
+ - on unmount, so after a remount, the timestamp can appear to have changed.
  -}
 compareWeak :: InodeCache -> InodeCache -> Bool
 compareWeak (InodeCache (InodeCachePrim _ size1 mtime1)) (InodeCache (InodeCachePrim _ size2 mtime2)) =
-	size1 == size2 && (abs (mtime1 - mtime2) < 2)
+	size1 == size2 && (abs (lowResTime mtime1 - lowResTime mtime2) < 2)
 
 compareBy :: InodeComparisonType -> InodeCache -> InodeCache -> Bool
 compareBy Strongly = compareStrong
@@ -92,23 +98,66 @@ inodeCacheToKey :: InodeComparisonType -> InodeCache -> InodeCacheKey
 inodeCacheToKey ct (InodeCache prim) = InodeCacheKey ct prim
 
 inodeCacheToMtime :: InodeCache -> POSIXTime
-inodeCacheToMtime (InodeCache (InodeCachePrim _ _ mtime)) = realToFrac mtime
+inodeCacheToMtime (InodeCache (InodeCachePrim _ _ mtime)) = highResTime mtime
+
+{- For backwards compatability, support low-res mtime with no
+ - fractional seconds. -}
+data MTime = MTimeLowRes EpochTime | MTimeHighRes POSIXTime
+	deriving (Show, Ord)
+
+{- A low-res time compares equal to any high-res time in the same second. -}
+instance Eq MTime where
+	MTimeLowRes a == MTimeLowRes b = a == b
+	MTimeHighRes a == MTimeHighRes b = a == b
+	MTimeHighRes a == MTimeLowRes b = lowResTime a == b
+	MTimeLowRes a == MTimeHighRes b = a == lowResTime b
+
+class MultiResTime t where
+	lowResTime :: t -> EpochTime
+	highResTime :: t -> POSIXTime
+
+instance MultiResTime EpochTime where
+	lowResTime = id
+	highResTime = realToFrac
+
+instance MultiResTime POSIXTime where
+	lowResTime = fromInteger . floor
+	highResTime = id
+
+instance MultiResTime MTime where
+	lowResTime (MTimeLowRes t) = t
+	lowResTime (MTimeHighRes t) = lowResTime t
+	highResTime (MTimeLowRes t) = highResTime t
+	highResTime (MTimeHighRes t) = t
 
 showInodeCache :: InodeCache -> String
-showInodeCache (InodeCache (InodeCachePrim inode size mtime)) = unwords
-	[ show inode
-	, show size
-	, show mtime
-	]
+showInodeCache (InodeCache (InodeCachePrim inode size (MTimeHighRes mtime))) = 
+	let (t, d) = separate (== '.') (takeWhile (/= 's') (show mtime))
+	in unwords
+		[ show inode
+		, show size
+		, t
+		, d
+		]
+showInodeCache (InodeCache (InodeCachePrim inode size (MTimeLowRes mtime))) =
+	unwords
+		[ show inode
+		, show size
+		, show mtime
+		]
 
 readInodeCache :: String -> Maybe InodeCache
 readInodeCache s = case words s of
-	(inode:size:mtime:_) ->
-		let prim = InodeCachePrim
-			<$> readish inode
-			<*> readish size
-			<*> readish mtime
-		in InodeCache <$> prim
+	(inode:size:mtime:[]) -> do
+		i <- readish inode
+		sz <- readish size
+		t <- readish mtime
+		return $ InodeCache $ InodeCachePrim i sz (MTimeLowRes t)
+	(inode:size:mtime:mtimedecimal:_) -> do
+		i <- readish inode
+		sz <- readish size
+		t <- parsePOSIXTime' mtime mtimedecimal
+		return $ InodeCache $ InodeCachePrim i sz (MTimeHighRes t)
 	_ -> Nothing
 
 genInodeCache :: FilePath -> TSDelta -> IO (Maybe InodeCache)
@@ -120,10 +169,12 @@ toInodeCache (TSDelta getdelta) f s
 	| isRegularFile s = do
 		delta <- getdelta
 		sz <- getFileSize' f s
-		return $ Just $ InodeCache $ InodeCachePrim
-			(fileID s)
-			sz
-			(modificationTime s + delta)
+#ifdef mingw32_HOST_OS
+		mtime <- MTimeHighRes . utcTimeToPOSIXSeconds <$> getModificationTime f
+#else
+ 		let mtime = (MTimeHighRes (modificationTimeHiRes s + highResTime delta))
+#endif
+		return $ Just $ InodeCache $ InodeCachePrim (fileID s) sz mtime
 	| otherwise = pure Nothing
 
 {- Some filesystem get new random inodes each time they are mounted.
@@ -195,7 +246,7 @@ checkSentinalFile s = do
 			mnew <- gennewcache
 			return $ case mnew of
 				Just (InodeCache (InodeCachePrim _ _ currmtime)) ->
-					oldmtime - currmtime
+					lowResTime oldmtime - lowResTime currmtime
 				Nothing -> 0
 #else
 		unchanged = oldinode == newinode && oldsize == newsize && oldmtime == newmtime
@@ -211,9 +262,23 @@ instance Arbitrary InodeCache where
 		let prim = InodeCachePrim
 			<$> arbitrary
 			<*> arbitrary
-			-- timestamp cannot be negative
-			<*> (abs . fromInteger <$> arbitrary)
+			<*> arbitrary
 		in InodeCache <$> prim
+
+instance Arbitrary MTime where
+	arbitrary = frequency
+		-- timestamp is not usually negative
+                [ (50, MTimeLowRes <$> (abs . fromInteger <$> arbitrary))
+                , (50, MTimeHighRes <$> (abs <$> arbposixtime))
+		]
+	  where
+		-- include fractional part, which the usual instance does not
+		arbposixtime = do
+			t <- arbitrary
+			f <- arbitrary
+			return $ if f == 0
+				then t
+				else t + recip f
 
 #ifdef mingw32_HOST_OS
 instance Arbitrary FileID where

@@ -18,8 +18,10 @@ import Annex.Content
 import Annex.Perms
 import qualified Annex.Queue
 import qualified Database.Keys
+
 #if ! defined(mingw32_HOST_OS)
 import Utility.Touch
+import System.Posix.Files
 #endif
 
 cmd :: Command
@@ -93,7 +95,7 @@ fixSymlink file link = do
 	liftIO $ do
 #if ! defined(mingw32_HOST_OS)
 		-- preserve mtime of symlink
-		mtime <- catchMaybeIO $ modificationTimeHighRes
+		mtime <- catchMaybeIO $ modificationTimeHiRes
 			<$> getSymbolicLinkStatus file
 #endif
 		createDirectoryIfMissing True (parentDir file)

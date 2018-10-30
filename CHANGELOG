@@ -53,6 +53,8 @@ git-annex (7.20181025) UNRELEASED; urgency=medium
     (Reversion introduced in version 6.20180112)
   * migrate: Fix failure to migrate from URL keys.
     (Reversion introduced in version 6.20180926)
+  * Cache high-resolution mtimes for improved detection of modified files
+    in v7 (and direct mode).
 
  -- Joey Hess <id@joeyh.name>  Sat, 13 Oct 2018 00:52:02 -0400
 

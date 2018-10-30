@@ -96,8 +96,8 @@ clean file = do
 				then B.length b `seq` return ()
 				else liftIO $ hClose stdin
 
-			-- Optimization when the file is already annexed
-			-- and is unmodified.
+			-- Optimization for the case when the file is already
+			-- annexed and is unmodified.
 			case oldkey of
 				Nothing -> doingest oldkey
 				Just ko -> ifM (isUnmodifiedCheap ko file)
