@@ -391,7 +391,7 @@ Executable git-annex
       setenv,
       process (>= 1.6.2.0)
   else
-    Build-Depends: unix
+    Build-Depends: unix (>= 2.7.2)
 
   if flag(S3)
     Build-Depends: aws (>= 0.9.2)

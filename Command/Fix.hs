@@ -93,7 +93,7 @@ fixSymlink file link = do
 	liftIO $ do
 #if ! defined(mingw32_HOST_OS)
 		-- preserve mtime of symlink
-		mtime <- catchMaybeIO $ TimeSpec . modificationTime
+		mtime <- catchMaybeIO $ modificationTimeHighRes
 			<$> getSymbolicLinkStatus file
 #endif
 		createDirectoryIfMissing True (parentDir file)

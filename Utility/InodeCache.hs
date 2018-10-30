@@ -39,6 +39,7 @@ module Utility.InodeCache (
 
 import Common
 import System.PosixCompat.Types
+import Data.Time.Clock.POSIX
 import Utility.QuickCheck
 
 #ifdef mingw32_HOST_OS
@@ -90,8 +91,8 @@ instance Eq InodeCacheKey where
 inodeCacheToKey :: InodeComparisonType -> InodeCache -> InodeCacheKey 
 inodeCacheToKey ct (InodeCache prim) = InodeCacheKey ct prim
 
-inodeCacheToMtime :: InodeCache -> EpochTime
-inodeCacheToMtime (InodeCache (InodeCachePrim _ _ mtime)) = mtime
+inodeCacheToMtime :: InodeCache -> POSIXTime
+inodeCacheToMtime (InodeCache (InodeCachePrim _ _ mtime)) = realToFrac mtime
 
 showInodeCache :: InodeCache -> String
 showInodeCache (InodeCache (InodeCachePrim inode size mtime)) = unwords

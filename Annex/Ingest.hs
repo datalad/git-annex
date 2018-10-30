@@ -287,7 +287,7 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
 	case mcache of
-		Just c -> liftIO $ touch file (TimeSpec $ inodeCacheToMtime c) False
+		Just c -> liftIO $ touch file (inodeCacheToMtime c) False
 		Nothing -> noop
 
 	return l
