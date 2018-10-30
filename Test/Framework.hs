@@ -504,14 +504,26 @@ content f
 	| "import" `isPrefixOf` f = "imported content"
 	| otherwise = "unknown file " ++ f
 
+-- Writes new content to a file, and makes sure that it has a different
+-- mtime than it did before
 writecontent :: FilePath -> String -> IO ()
-writecontent f c = do
-	-- Delay 1/10th of a second, because filesystem's
-	-- mtime resolution may not be very high, and we want to make sure
-	-- that git etc notices the file has been modified even when
-	-- multiple modifications happen close together.
-	threadDelay 100000
-	writeFile f c
+writecontent f c = go (10000000 :: Integer)
+  where
+	go ticsleft = do
+		oldmtime <- catchMaybeIO $ getModificationTime f
+		writeFile f c
+		newmtime <- getModificationTime f
+		if Just newmtime == oldmtime
+			then do
+				threadDelay 100000
+				let ticsleft' = ticsleft - 100000
+				if ticsleft' > 0
+					then go ticsleft'
+					else do
+						hPutStrLn stderr "file mtimes do not seem to be changing (tried for 10 seconds)"
+						hFlush stderr
+						return ()
+			else return ()
 
 changecontent :: FilePath -> IO ()
 changecontent f = writecontent f $ changedcontent f
