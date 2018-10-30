@@ -188,7 +188,10 @@ runSqliteRobustly tablename db a = do
 	-- sometimes take a while to become usable; select statements will
 	-- fail with ErrorBusy for some time. So, loop until a select
 	-- succeeds; once one succeeds the connection will stay usable.
-	-- <http://thread.gmane.org/gmane.comp.db.sqlite.general/93116>
+	--
+	-- I reported this bug, but the sqlite developers did not respond.
+	-- Bug report is archived in blob 500f777a6ab6c45ca5f9790e0a63575f8e3cb88f
+	-- in git-annex git repo.
 	settle conn = do
 		r <- tryNonAsync $ do
 			stmt <- Sqlite.prepare conn nullselect
