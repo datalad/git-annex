@@ -22,8 +22,11 @@ import System.Locale
 {- Parses how POSIXTime shows itself: "1431286201.113452s"
  - Also handles the format with no fractional seconds. -}
 parsePOSIXTime :: String -> Maybe POSIXTime
-parsePOSIXTime s = do
-	let (sn, sd) = separate (== '.') s
+parsePOSIXTime = uncurry parsePOSIXTime' . separate (== '.')
+
+{- Parses the integral and decimal part of a POSIXTime -}
+parsePOSIXTime' :: String -> String -> Maybe POSIXTime
+parsePOSIXTime' sn sd = do
 	n <- readi sn
 	if null sd 
 		then return (fromIntegral n)
