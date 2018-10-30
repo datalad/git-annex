@@ -31,7 +31,6 @@ import Control.Exception (throwIO, BlockedIndefinitelyOnMVar(..))
 import qualified Data.Text as T
 import Control.Monad.Trans.Resource (runResourceT)
 import Control.Monad.Logger (runNoLoggingT)
-import Data.List
 import System.IO
 
 {- A DbHandle is a reference to a worker thread that communicates with
@@ -175,36 +174,68 @@ workerThread db tablename jobs = go
 				liftIO (a (runSqliteRobustly tablename db))
 				loop
 	
--- like runSqlite, but calls settle on the raw sql Connection.
+-- Like runSqlite, but more robust.
+--
+-- New database connections can sometimes take a while to become usable.
+-- This may be due to WAL mode recovering after a crash, or perhaps a bug
+-- like described in blob 500f777a6ab6c45ca5f9790e0a63575f8e3cb88f.
+-- So, loop until a select succeeds; once one succeeds the connection will
+-- stay usable.
+--
+-- And sqlite sometimes throws ErrorIO when there's not really an IO problem,
+-- but perhaps just a short read(). That's caught and retried several times.
 runSqliteRobustly :: TableName -> T.Text -> (SqlPersistM a) -> IO a
 runSqliteRobustly tablename db a = do
-	conn <- Sqlite.open db
-	settle conn
-	runResourceT $ runNoLoggingT $
-		withSqlConn (wrapConnection conn) $
-			runSqlConn a
+	conn <- opensettle maxretries
+	go conn maxretries
   where
-	-- Work around a bug in sqlite: New database connections can
-	-- sometimes take a while to become usable; select statements will
-	-- fail with ErrorBusy for some time. So, loop until a select
-	-- succeeds; once one succeeds the connection will stay usable.
-	--
-	-- I reported this bug, but the sqlite developers did not respond.
-	-- Bug report is archived in blob 500f777a6ab6c45ca5f9790e0a63575f8e3cb88f
-	-- in git-annex git repo.
-	settle conn = do
-		r <- tryNonAsync $ do
+	maxretries = 100 :: Int
+	
+	rethrow msg e = throwIO $ userError $ show e ++ "(" ++ msg ++ ")"
+	
+	go conn retries = do
+		r <- try $ runResourceT $ runNoLoggingT $
+			withSqlConn (wrapConnection conn) $
+				runSqlConn a
+		case r of
+			Right v -> return v
+			Left ex@(Sqlite.SqliteException { Sqlite.seError = e })
+				| e == Sqlite.ErrorIO ->
+					let retries' = retries - 1
+					in if retries' < 1
+						then rethrow "after successful open" ex
+						else go conn retries'
+				| otherwise -> rethrow "after successful open" ex
+	
+	opensettle retries = do
+		conn <- Sqlite.open db
+		settle conn retries
+
+	settle conn retries = do
+		r <- try $ do
 			stmt <- Sqlite.prepare conn nullselect
 			void $ Sqlite.step stmt
 			void $ Sqlite.finalize stmt
 		case r of
-			Right _ -> return ()
-			Left e -> do
-				if "ErrorBusy" `isInfixOf` show e
-					then do
-						threadDelay 1000 -- 1/1000th second
-						settle conn
-					else throwIO e
+			Right _ -> return conn
+			Left ex@(Sqlite.SqliteException { Sqlite.seError = e })
+				| e == Sqlite.ErrorBusy -> do
+					-- Wait and retry any number of times; it 
+					-- will stop being busy eventually.
+					briefdelay
+					settle conn retries
+				| e == Sqlite.ErrorIO -> do
+					-- Could be a real IO error,
+					-- so don't retry indefinitely.
+					Sqlite.close conn
+					briefdelay
+					let retries' = retries - 1
+					if retries' < 1
+						then rethrow "while opening database connection" ex
+						else opensettle retries'
+				| otherwise -> rethrow "while opening database connection" ex
 	
 	-- This should succeed for any table.
 	nullselect = T.pack $ "SELECT null from " ++ tablename ++ " limit 1"
+
+	briefdelay = threadDelay 1000 -- 1/1000th second
