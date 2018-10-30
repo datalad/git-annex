@@ -47,12 +47,22 @@ import qualified CmdLine.GitAnnex as GitAnnex
 -- This is equivilant to running git-annex, but it's all run in-process
 -- so test coverage collection works.
 git_annex :: String -> [String] -> IO Bool
-git_annex command params = do
+git_annex command params = git_annex' command params >>= \case
+	Right () -> return True
+	Left e -> do
+		hPutStrLn stderr (show e)
+		return False
+
+-- For when git-annex is expected to fail.
+git_annex_shouldfail :: String -> [String] -> IO Bool
+git_annex_shouldfail command params = git_annex' command params >>= \case
+	Right () -> return False
+	Left _ -> return True
+
+git_annex' :: String -> [String] -> IO (Either SomeException ())
+git_annex' command params = do
 	-- catch all errors, including normally fatal errors
-	r <- try run ::IO (Either SomeException ())
-	case r of
-		Right _ -> return True
-		Left _ -> return False
+	try run ::IO (Either SomeException ())
   where
 	run = GitAnnex.run dummyTestOptParser Nothing (command:"-q":params)
 	dummyTestOptParser = pure mempty

@@ -379,7 +379,7 @@ test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \import
 	git_annex "drop" ["--force", imported1, imported2, imported5] @? "drop failed"
 	annexed_notpresent_imported imported2
 	(toimportdup, importfdup, importeddup) <- mktoimport importdir "importdup"
-	not <$> git_annex "import" ["--clean-duplicates", toimportdup] 
+	git_annex_shouldfail "import" ["--clean-duplicates", toimportdup] 
 		@? "import of missing duplicate with --clean-duplicates failed to fail"
 	checkdoesnotexist importeddup
 	checkexists importfdup
@@ -437,7 +437,7 @@ test_drop_noremote = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get failed"
 	boolSystem "git" [Param "remote", Param "rm", Param "origin"]
 		@? "git remote rm origin failed"
-	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of file"
+	git_annex_shouldfail "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of file"
 	annexed_present annexedfile
 	git_annex "drop" ["--force", annexedfile] @? "drop --force failed"
 	annexed_notpresent annexedfile
@@ -451,7 +451,7 @@ test_drop_withremote = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
 	git_annex "numcopies" ["2"] @? "numcopies config failed"
-	not <$> git_annex "drop" [annexedfile] @? "drop succeeded although numcopies is not satisfied"
+	git_annex_shouldfail "drop" [annexedfile] @? "drop succeeded although numcopies is not satisfied"
 	git_annex "numcopies" ["1"] @? "numcopies config failed"
 	git_annex "drop" [annexedfile] @? "drop failed though origin has copy"
 	annexed_notpresent annexedfile
@@ -465,7 +465,7 @@ test_drop_untrustedremote = intmpclonerepo $ do
 	git_annex "untrust" ["origin"] @? "untrust of origin failed"
 	git_annex "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with only an untrusted copy of the file"
+	git_annex_shouldfail "drop" [annexedfile] @? "drop wrongly succeeded with only an untrusted copy of the file"
 	annexed_present annexedfile
 	inmainrepo $ annexed_present annexedfile
 
@@ -596,8 +596,8 @@ test_lock = intmpclonerepoInDirect $ do
 	annexed_notpresent annexedfile
 	unlessM (annexeval Annex.Version.versionSupportsUnlockedPointers) $
 		ifM (unlockedFiles <$> getTestMode)
-			( not <$> git_annex "lock" [annexedfile] @? "lock failed to fail with not present file"
-			, not <$> git_annex "unlock" [annexedfile] @? "unlock failed to fail with not present file"
+			( git_annex_shouldfail "lock" [annexedfile] @? "lock failed to fail with not present file"
+			, git_annex_shouldfail "unlock" [annexedfile] @? "unlock failed to fail with not present file"
 			)
 	annexed_notpresent annexedfile
 
@@ -607,7 +607,7 @@ test_lock = intmpclonerepoInDirect $ do
 	git_annex "add" ["newfile"] @? "add new file failed"
 	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
 		( git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file in v7 repository"
-		, not <$> git_annex "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file in v5 repository"
+		, git_annex_shouldfail "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file in v5 repository"
 		)
 
 	git_annex "get" [annexedfile] @? "get of file failed"
@@ -618,7 +618,7 @@ test_lock = intmpclonerepoInDirect $ do
 	-- throws it away
 	changecontent annexedfile
 	writecontent annexedfile $ content annexedfile ++ "foo"
-	not <$> git_annex "lock" [annexedfile] @? "lock failed to fail without --force"
+	git_annex_shouldfail "lock" [annexedfile] @? "lock failed to fail without --force"
 	git_annex "lock" ["--force", annexedfile] @? "lock --force failed"
 	-- In v7 mode, the original content of the file is not always
 	-- preserved after modification, so re-get it.
@@ -654,7 +654,7 @@ test_lock_v7_force = intmpclonerepoInDirect $ do
 			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
 			liftIO $ renameDirectory dbdir (dbdir ++ ".old")
 		writecontent annexedfile "test_lock_v7_force content"
-		not <$> git_annex "lock" [annexedfile] @? "lock of modified file failed to fail in v7 mode"
+		git_annex_shouldfail "lock" [annexedfile] @? "lock of modified file failed to fail in v7 mode"
 		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v7 mode"
 		annexed_present_locked annexedfile
 
@@ -684,7 +684,7 @@ test_edit' precommit = intmpclonerepoInDirect $ do
 		)
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
-	not <$> git_annex "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
+	git_annex_shouldfail "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
 
 test_partial_commit :: Assertion
 test_partial_commit = intmpclonerepoInDirect $ do
@@ -724,7 +724,7 @@ test_direct = intmpclonerepoInDirect $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
-		( not <$> git_annex "direct" [] @? "switch to direct mode failed to fail in v7 repository"
+		( git_annex_shouldfail "direct" [] @? "switch to direct mode failed to fail in v7 repository"
 		, do
 			git_annex "direct" [] @? "switch to direct mode failed"
 			annexed_present annexedfile
@@ -773,7 +773,7 @@ test_fsck_basic = intmpclonerepo $ do
 		writecontent f (changedcontent f)
 		ifM (annexeval Config.isDirect <||> unlockedFiles <$> getTestMode)
 			( git_annex "fsck" [] @? "fsck failed on unlocked file with changed file content"
-			, not <$> git_annex "fsck" [] @? "fsck failed to fail with corrupted file content"
+			, git_annex_shouldfail "fsck" [] @? "fsck failed to fail with corrupted file content"
 			)
 		git_annex "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
 
@@ -804,7 +804,7 @@ test_fsck_fromremote = intmpclonerepo $ do
 	git_annex "fsck" ["--from", "origin"] @? "fsck --from origin failed"
 
 fsck_should_fail :: String -> Assertion
-fsck_should_fail m = not <$> git_annex "fsck" []
+fsck_should_fail m = git_annex_shouldfail "fsck" []
 	@? "fsck failed to fail with " ++ m
 
 test_migrate :: Assertion
@@ -876,10 +876,10 @@ test_unused = intmpclonerepoInDirect $ do
 		@? "dropkey failed"
 	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Key.key2file annexedfilekey)
 
-	not <$> git_annex "dropunused" ["1"] @? "dropunused failed to fail without --force"
+	git_annex_shouldfail "dropunused" ["1"] @? "dropunused failed to fail without --force"
 	git_annex "dropunused" ["--force", "1"] @? "dropunused failed"
 	checkunused [] "after dropunused"
-	not <$> git_annex "dropunused" ["--force", "10", "501"] @? "dropunused failed to fail on bogus numbers"
+	git_annex_shouldfail "dropunused" ["--force", "10", "501"] @? "dropunused failed to fail on bogus numbers"
 
 	-- Unused used to miss renamed symlinks that were not staged
 	-- and pointed at annexed content, and think that content was unused.
@@ -1367,7 +1367,7 @@ test_uncommitted_conflict_resolution = do
 				-- this case is intentionally not handled
 				-- in indirect mode, since the user
 				-- can recover on their own easily
-				, not <$> git_annex "sync" [] @? "sync failed to fail"
+				, git_annex_shouldfail "sync" [] @? "sync failed to fail"
 				)
 	conflictor = "conflictor"
 	localprefix = ".variant-local"
@@ -1519,7 +1519,7 @@ test_uninit = intmpclonerepo $ do
 test_uninit_inbranch :: Assertion
 test_uninit_inbranch = intmpclonerepoInDirect $ do
 	boolSystem "git" [Param "checkout", Param "git-annex"] @? "git checkout git-annex"
-	not <$> git_annex "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
+	git_annex_shouldfail "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
 
 test_upgrade :: Assertion
 test_upgrade = intmpclonerepo $
@@ -1530,7 +1530,7 @@ test_whereis = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex "whereis" [annexedfile] @? "whereis on non-present file failed"
 	git_annex "untrust" ["origin"] @? "untrust failed"
-	not <$> git_annex "whereis" [annexedfile] @? "whereis on non-present file only present in untrusted repo failed to fail"
+	git_annex_shouldfail "whereis" [annexedfile] @? "whereis on non-present file only present in untrusted repo failed to fail"
 	git_annex "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
 	git_annex "whereis" [annexedfile] @? "whereis on present file failed"
@@ -1556,7 +1556,7 @@ test_hook_remote = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex "move" [annexedfile, "--from", "foo"] @? "move --from hook remote failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+	git_annex_shouldfail "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
   where
 	dir = "dir"
@@ -1580,7 +1580,7 @@ test_directory_remote = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex "move" [annexedfile, "--from", "foo"] @? "move --from directory remote failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+	git_annex_shouldfail "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
 
 test_rsync_remote :: Assertion
@@ -1595,7 +1595,7 @@ test_rsync_remote = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex "move" [annexedfile, "--from", "foo"] @? "move --from rsync remote failed"
 	annexed_present annexedfile
-	not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+	git_annex_shouldfail "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
 
 test_bup_remote :: Assertion
@@ -1659,7 +1659,7 @@ test_crypto = do
 			annexed_notpresent annexedfile
 			git_annex "move" [annexedfile, "--from", "foo"] @? "move --from encrypted remote failed"
 			annexed_present annexedfile
-			not <$> git_annex "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
+			git_annex_shouldfail "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 			annexed_present annexedfile
 	{- Ensure the configuration complies with the encryption scheme, and
 	 - that all keys are encrypted properly for the given directory remote. -}
@@ -1719,7 +1719,7 @@ test_addurl = intmpclonerepo $ do
 	f <- absPath "myurl"
 	let url = replace "\\" "/" ("file:///" ++ dropDrive f)
 	writecontent f "foo"
-	not <$> git_annex "addurl" [url] @? "addurl failed to fail on file url"
+	git_annex_shouldfail "addurl" [url] @? "addurl failed to fail on file url"
 	filecmd "addurl" [url] @? ("addurl failed on " ++ url)
 	let dest = "addurlurldest"
 	filecmd "addurl" ["--file", dest, url] @? ("addurl failed on " ++ url ++ "  with --file")
