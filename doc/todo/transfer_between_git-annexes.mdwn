@@ -22,3 +22,13 @@ Not having this isn't a showstopper (I can use rsync) so no worries if you don't
 > So I get the feeling you found a way to do this in a script using
 > lower-level parts of git-annex. Closing on that basis, but feel free to
 > reopen if I'm wrong. [[done]] --[[Joey]]
+
+>> Adding the source annex as a cache
+>> ([[tips/local_caching_of_annexed_files/]]) and then adding the
+>> symlinks to the local annex allows the content to be transferred with
+>> all of the safeguards one usually gets from git-annex, but without
+>> the merging of the repositories.
+>> This is also very clean as the source annex doesn't get included in
+>> the location tracking.
+>> This works *really well* for me (even better than the script I was
+>> using!), so happy with this being closed. -- [[CandyAngel]]
