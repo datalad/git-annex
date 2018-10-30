@@ -28,11 +28,12 @@ parsePOSIXTime = uncurry parsePOSIXTime' . separate (== '.')
 parsePOSIXTime' :: String -> String -> Maybe POSIXTime
 parsePOSIXTime' sn sd = do
 	n <- readi sn
-	if null sd 
+	let sd' = takeWhile (/= 's') sd
+	if null sd'
 		then return (fromIntegral n)
 		else do
-			d <- readi sd
-			let r = d % (10 ^ (length sd - 1))
+			d <- readi sd'
+			let r = d % (10 ^ (length sd'))
 			return (fromIntegral n + fromRational r)
   where
 	readi :: String -> Maybe Integer
