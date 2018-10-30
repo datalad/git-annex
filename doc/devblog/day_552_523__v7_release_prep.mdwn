@@ -1,0 +1,34 @@
+I fixed two reversions yesterday (neither related to v7 repos) during a day
+of triage in preparation for the release of git-annex 7. 
+
+One of the reversions broke adding remotes in the webapp, and was filed all
+the way back in January with lots of confirmations. I feel bad I didn't get
+around to even looking at that bug report until now. 
+
+My backlog is kind of large, it hovers around 400 messages most of the time
+now, there needs to be a better way to make sure I notice such bad bugs. Would
+someone like to help with git-annex bug triage, picking out bugs that
+multiple users have confirmed, or that have good intructions to reproduce
+them, and helping me prioritize them? No coding required, massive
+contribution to git-annex. Please get in touch.
+
+---
+
+Anyway, after that full day's work, I took a look at the autobuilders, and
+it was bad; the test suite was failing everywhere testing v7. For quite a
+while I've been seeing intermittent test suite failures involving the new
+repo version, that mostly only happened on the autobuilders. But now they
+were more reproducible; a recent change made them happen much more
+frequently. That was good; it made it easier to track down the problem.
+
+Which was that git-annex was getting mtime information with 1 second
+granularity. So when the test suite modified a file several times in the
+same second, git-annex could fail to notice some of the modifications. I
+think when I origianlly developed the inode cache module in 2013, for
+direct mode, there was no easy way to access high-precision mtimes from
+haskell, but there is now, and git-annex will use them.
+
+That left one other failure in the test suite, an intermittent crash of
+sqlite with ErrorIO on Linux. May be related to the known sqlite crashes in WSL.
+I've been trying various things today to try to fix it, but have to run the
+test suite in a loop for several hours to reproduce it reliably.
