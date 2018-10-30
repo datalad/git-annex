@@ -15,7 +15,6 @@ module Utility.Touch (
 #if ! defined(mingw32_HOST_OS)
 
 import System.Posix.Files
-import System.Posix.Types
 import Data.Time.Clock.POSIX
 
 {- Changes the access and modification times of an existing file.
