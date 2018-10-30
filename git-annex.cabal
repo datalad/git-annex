@@ -879,7 +879,6 @@ Executable git-annex
     Logs.SingleValue
     Logs.SingleValue.Pure
     Logs.Smudge
-    Logs.TimeStamp
     Logs.Transfer
     Logs.Transitions
     Logs.Trust
@@ -1062,6 +1061,7 @@ Executable git-annex
     Utility.SshHost
     Utility.Su
     Utility.SystemDirectory
+    Utility.TimeStamp
     Utility.TList
     Utility.Tense
     Utility.ThreadLock

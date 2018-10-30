@@ -18,7 +18,7 @@ import Utility.Metered
 import Utility.Percentage
 import Utility.PID
 import Annex.LockPool
-import Logs.TimeStamp
+import Utility.TimeStamp
 import Logs.File
 
 import Data.Time.Clock

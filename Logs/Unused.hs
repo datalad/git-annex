@@ -33,7 +33,7 @@ import Data.Time
 
 import Annex.Common
 import qualified Annex
-import Logs.TimeStamp
+import Utility.TimeStamp
 import Logs.File
 
 -- everything that is stored in the unused log

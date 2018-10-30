@@ -22,7 +22,7 @@ import Annex.Link
 import Logs.Location
 import Logs.Trust
 import Logs.Activity
-import Logs.TimeStamp
+import Utility.TimeStamp
 import Logs.PreferredContent
 import Annex.NumCopies
 import Annex.UUID

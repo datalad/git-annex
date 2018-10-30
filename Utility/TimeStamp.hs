@@ -1,13 +1,13 @@
-{- log timestamp parsing
+{- timestamp parsing and formatting
  -
  - Copyright 2015-2016 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
 
-module Logs.TimeStamp where
+module Utility.TimeStamp where
 
 import Utility.PartialPrelude
 import Utility.Misc

@@ -16,7 +16,7 @@ import Utility.NotificationBroadcaster
 import Types.Transfer
 import Logs.Transfer
 import Logs.Trust
-import Logs.TimeStamp
+import Utility.TimeStamp
 import qualified Remote
 import qualified Types.Remote as Remote
 import Config.DynamicConfig

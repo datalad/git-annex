@@ -40,7 +40,7 @@ import Annex.VectorClock
 import qualified Annex.Branch
 import qualified Annex
 import Logs
-import Logs.TimeStamp
+import Utility.TimeStamp
 import Logs.MetaData.Pure
 
 import qualified Data.Set as S

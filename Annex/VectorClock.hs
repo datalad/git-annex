@@ -15,7 +15,7 @@ import Control.Applicative
 import Prelude
 
 import Utility.Env
-import Logs.TimeStamp
+import Utility.TimeStamp
 import Utility.QuickCheck
 
 -- | Some very old logs did not have any time stamp at all;
