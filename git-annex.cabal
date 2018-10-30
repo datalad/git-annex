@@ -392,8 +392,6 @@ Executable git-annex
       process (>= 1.6.2.0)
   else
     Build-Depends: unix
-    if impl(ghc <= 7.6.3)
-      Other-Modules: Utility.Touch.Old
 
   if flag(S3)
     Build-Depends: aws (>= 0.9.2)
