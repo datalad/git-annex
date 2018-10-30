@@ -43,12 +43,8 @@ type TableName = String
 
 {- Sqlite only allows a single write to a database at a time; a concurrent
  - write will crash. 
- -
- - While a DbHandle serializes concurrent writes from
- - multiple threads. But, when a database can be written to by
- - multiple processes concurrently, use MultiWriter to make writes
- - to the database be done robustly.
  - 
+ - MultiWrter works around this limitation.
  - The downside of using MultiWriter is that after writing a change to the
  - database, the a query using the same DbHandle will not immediately see
  - the change! This is because the change is actually written using a
@@ -57,9 +53,10 @@ type TableName = String
  - you can't rely on seeing values you've just written anyway, as another
  - process may change them.
  -
- - When a database can only be written to by a single process, use
- - SingleWriter. Changes written to the database will always be immediately
- - visible then.
+ - When a database can only be written to by a single process (enforced by
+ - a lock file), use SingleWriter. Changes written to the database will
+ - always be immediately visible then. Multiple threads can write; their
+ - writes will be serialized.
  -}
 data DbConcurrency = SingleWriter | MultiWriter
 
@@ -105,9 +102,10 @@ queryDb (DbHandle _ _ jobs) a = do
 
 {- Writes a change to the database.
  -
- - In MultiWriter mode, catches failure to write to the database,
- - and retries repeatedly for up to 10 seconds,  which should avoid
- - all but the most exceptional problems.
+ - In MultiWriter mode, writes can fail if another write is happening
+ - concurrently. So write failures are caught and retried repeatedly
+ - for up to 10 seconds, which should avoid all but the most exceptional
+ - problems.
  -}
 commitDb :: DbHandle -> SqlPersistM () -> IO ()
 commitDb h wa = robustly Nothing 100 (commitDb' h wa)
