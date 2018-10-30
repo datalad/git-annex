@@ -38,7 +38,7 @@ import Data.Time.Clock.POSIX
 touchBoth :: FilePath -> POSIXTime -> POSIXTime -> Bool -> IO ()
 touchBoth _ _ _ _ = return ()
 
-touch :: FilePath -> TimeSpec -> Bool -> IO ()
+touch :: FilePath -> POSIXTime -> Bool -> IO ()
 touch _ _ _ = return ()
 
 #endif
