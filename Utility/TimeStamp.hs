@@ -27,14 +27,16 @@ parsePOSIXTime = uncurry parsePOSIXTime' . separate (== '.')
 {- Parses the integral and decimal part of a POSIXTime -}
 parsePOSIXTime' :: String -> String -> Maybe POSIXTime
 parsePOSIXTime' sn sd = do
-	n <- readi sn
+	n <- fromIntegral <$> readi sn
 	let sd' = takeWhile (/= 's') sd
 	if null sd'
-		then return (fromIntegral n)
+		then return n
 		else do
 			d <- readi sd'
 			let r = d % (10 ^ (length sd'))
-			return (fromIntegral n + fromRational r)
+			return $ if n < 0
+				then n - fromRational r
+				else n + fromRational r
   where
 	readi :: String -> Maybe Integer
 	readi = readish
