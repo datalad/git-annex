@@ -4,3 +4,8 @@ Then, without needing to migrate, the URL key could be treated like checksum-bas
 
 The problem with migrating keys is that a separate copy of the contents is stored in the annex under the old key; but it you force-drop that, symlinks in
 older commits will become invalid.   You could rewrite git history, but that brings its own problems.
+
+Also, sometimes one can determine the MD5 from the URL without downloading the file; e.g. with gsutil stat for gs:// URIs, or by downloading an .md5 file stored next to the main file,
+or because an MD5 was computed by a workflow manager that produced the file (Cromwell does this).   The special remote's "CHECKURL" implementation could record an MD5E key in the
+alt_keys metadata field of the URL key.   Then 'addurl --fast' could check alt_keys, and store in git an MD5E key rather than a URL key, if available.
+
