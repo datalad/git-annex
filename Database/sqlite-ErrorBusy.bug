@@ -1,0 +1,296 @@
+From mairix@mairix Mon Jan  1 12:34:56 1970
+X-source-folder: /home/joey/mail/.git/annex/objects/KF/18/SHA256E-s3002403--01161ac42b9e452562e18425176f95cca7466e08f21e6c755f752bd0ede64b14.gz/SHA256E-s3002403--01161ac42b9e452562e18425176f95cca7466e08f21e6c755f752bd0ede64b14.gz
+Date: Thu, 19 Feb 2015 12:32:55 -0400
+From: Joey Hess <id@joeyh.name>
+To: sqlite-users@sqlite.org
+Subject: bug report: SELECT fails with BUSY in WAL mode database with
+ concurrent writer
+Message-ID: <20150219163255.GA13383@kitenet.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="8GpibOaaTibBMecb"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.23 (2014-03-12)
+Status: RO
+Content-Length: 8268
+Lines: 278
+
+
+--8GpibOaaTibBMecb
+Content-Type: multipart/mixed; boundary="nFreZHaLTZJo0R7j"
+Content-Disposition: inline
+
+
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+[ Not subscribed; please CC me. ]
+
+The attached Testcase.hs is a haskell program using sqlite, that
+demonstrates what I think may be a bug in WAL mode. Based on the
+documentation, readers in WAL mode are supposed to not be blocked by
+concurrent writers. However, this test case demonstrates that a SELECT
+can fail with busy in a WAL mode database that is getting a large volume
+of writes.
+
+To build:
+
+apt-get install haskell-platform
+cabal update
+cabal install persistent-sqlite persistent-template esqueleto IfElse
+ghc --make Testcase
+
+I've been building it on Debian unstable. Note that by default,
+persisten-sqlite includes its own embedded copy of sqlite, which is rather
+out of date. It can be modified to build with the system library.
+I have reproduced the crash when the test case is linked to version 3.8.7.4;
+I have not yet tried a newer version.
+
+To run:
+
+rm test.db* (if ran before)
+Run one Testcase process, and wait for it to print the Migrating line.
+Then immediately run a second Testcase process. One of the two processes
+will quickly crash:
+
+=2E.Testcase: user error (SQLite3 returned ErrorBusy while attempting to pe=
+rfor
+
+While running, it outputs '.' every time it successfully changes the
+database. It's expected that some write attempts fail, as there are multiple
+concurrent writers; if a write fails, it prints '!' and ignores the failure.
+
+The crash comes when a *read* fails. WAL documentation indicates that
+writers should not block reads, but this test case seems to demonstrate
+otherwise!
+
+Also attached is a TestcaseReader.hs. This only does reads, no writes.
+TestcaseReader can be run while Testcase is running, and will also
+demonstrate the problem:
+
+user error (SQLite3 returned ErrorBusy while attempting to perform prepare =
+"SELECT \"fscked\".\"key\"\nFROM \"fscked\"\nWHERE \"fscked\".\"key\" =3D ?=
+\n": database is locked)
+
+finally succeeded after 1 retries
+all 1..100000 followup selects succeeded
+
+The interest thing about this is that it shows that the failing
+SELECT is always the first one made on a new database connection.
+I've seen it need to retry 60+ times to get that first SELECT to
+succeed, but once a SELECT does succeed, it seems it's past
+the danger zone and the database can be used without problems.
+
+--=20
+see shy jo
+
+--nFreZHaLTZJo0R7j
+Content-Type: text/x-haskell; charset=us-ascii
+Content-Disposition: attachment; filename="Testcase.hs"
+Content-Transfer-Encoding: quoted-printable
+
+-- sqlite WAL database testcase
+--
+-- Joey Hess <id@joey.name> ; copyright: BSD3
+
+{-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE BangPatterns, ScopedTypeVariables #-}
+
+import Database.Persist.TH
+import Database.Esqueleto
+import Control.Monad
+import Control.Monad.IfElse
+import Control.Monad.IO.Class (liftIO)
+import System.Directory
+import Database.Persist.Sqlite hiding ((=3D=3D.))
+import qualified Database.Sqlite as Sqlite
+import qualified Data.Text as T
+import Control.Monad.Catch as X hiding (Handler)
+import qualified Control.Monad.Catch as M
+import Control.Exception (AsyncException)
+import System.IO
+import System.Posix.Process
+
+share [mkPersist sqlSettings, mkMigrate "migrateFsck"] [persistLowerCase|
+Fscked
+  key String
+  foo String
+  UniqueKey key
+|]
+
+main :: IO ()
+main =3D do
+	pid <- getProcessID
+
+	let db =3D T.pack "test.db"
+	unlessM (doesFileExist (T.unpack db)) $ do
+		void $ runSqlite db $
+			runMigration migrateFsck
+		enableWAL (T.unpack db)
+
+	forM_ [1..40000] $ \n -> do
+		_ <- inDb db n -- this is the line that unexpectedly crashes!
+		addDb db n (show pid)
+
+toK :: Int -> String
+toK =3D take 2 . show
+
+addDb :: T.Text -> Int -> String -> IO ()
+addDb db i s =3D do
+	r <- tryNonAsync $ runSqlite db $=20
+		unlessM (inDb' sk) $
+			insert_ $ Fscked sk s
+	liftIO $ do
+		case r of
+			Left _ -> putStr "!"
+			Right _ -> putStr "."
+		hFlush stdout
+  where
+	sk =3D toK i
+
+inDb :: T.Text -> Int -> IO Bool
+inDb db =3D runSqlite db . inDb' . toK
+
+inDb' :: String -> SqlPersistM Bool
+inDb' sk =3D do
+	r <- select $ from $ \r -> do
+		where_ (r ^. FsckedKey =3D=3D. val sk)
+		return (r ^. FsckedKey)
+	return $ not $ null r
+
+enableWAL :: FilePath -> IO ()
+enableWAL db =3D do
+	conn <- Sqlite.open (T.pack db)
+	stmt <- Sqlite.prepare conn (T.pack "PRAGMA journal_mode=3DWAL;")
+	void $ Sqlite.step stmt
+	void $ Sqlite.finalize stmt
+	Sqlite.close conn
+
+catchNonAsync :: MonadCatch m =3D> m a -> (SomeException -> m a) -> m a
+catchNonAsync a onerr =3D a `catches`
+	[ M.Handler (\ (e :: AsyncException) -> throwM e)
+	, M.Handler (\ (e :: SomeException) -> onerr e)
+	]
+
+tryNonAsync :: MonadCatch m =3D> m a -> m (Either SomeException a)
+tryNonAsync a =3D go `catchNonAsync` (return . Left)
+  where
+	go =3D do
+		v <- a
+		return (Right v)
+
+--nFreZHaLTZJo0R7j
+Content-Type: text/x-haskell; charset=us-ascii
+Content-Disposition: attachment; filename="TestcaseReader.hs"
+
+-- sqlite WAL database reader testcase
+--
+-- Joey Hess <id@joey.name> ; copyright: BSD3
+
+{-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE BangPatterns, ScopedTypeVariables #-}
+
+import Database.Persist.TH
+import Database.Esqueleto
+import Control.Monad
+import Control.Monad.IO.Class (liftIO)
+import Database.Persist.Sqlite hiding ((==.))
+import qualified Data.Text as T
+import Control.Monad.Catch as X hiding (Handler)
+import qualified Control.Monad.Catch as M
+import Control.Exception (AsyncException)
+import System.IO
+
+share [mkPersist sqlSettings, mkMigrate "migrateFsck"] [persistLowerCase|
+Fscked
+  key String
+  foo String
+  UniqueKey key
+|]
+
+main :: IO ()
+main = do
+	let db = T.pack "test.db"
+	void $ runSqlite db loop
+  where
+	sk = toK 100
+	loop = do
+		r <- go (0 :: Int)
+		if r
+			then do
+				-- try some more selects, to see if it ever
+				-- begins to fail after initial connection
+				forM_ [1..100000] $ \n -> do
+					_ <- inDb' (toK n)
+					liftIO $ do
+						putStr " "
+						hFlush stdout
+				liftIO $ putStrLn "all 1..100000 followup selects succeeded"
+			else loop
+	go n = do
+		r <- tryNonAsync $ inDb' sk
+		case r of
+			Right _
+				| n > 0 -> do
+					liftIO $ putStrLn $ "finally succeeded after " ++ show n ++ " retries"
+					return False
+				| otherwise -> return True
+			Left e -> do
+				liftIO $ putStrLn $ show e
+				go (n+1)
+
+toK :: Int -> String
+toK = take 2 . show
+
+inDb' :: String -> SqlPersistM Bool
+inDb' sk = do
+	r <- select $ from $ \r -> do
+		where_ (r ^. FsckedKey ==. val sk)
+		return (r ^. FsckedKey)
+	return $ not $ null r
+
+catchNonAsync :: MonadCatch m => m a -> (SomeException -> m a) -> m a
+catchNonAsync a onerr = a `catches`
+	[ M.Handler (\ (e :: AsyncException) -> throwM e)
+	, M.Handler (\ (e :: SomeException) -> onerr e)
+	]
+
+tryNonAsync :: MonadCatch m => m a -> m (Either SomeException a)
+tryNonAsync a = go `catchNonAsync` (return . Left)
+  where
+	go = do
+		v <- a
+		return (Right v)
+
+--nFreZHaLTZJo0R7j--
+
+--8GpibOaaTibBMecb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIVAwUBVOYQNckQ2SIlEuPHAQI2Bg//Qh/j4jobOdSXtbWMe2YAd06nysfOdkyr
+5czFH2TWWtA4PPERuV5BbGpXmjCqhsPqJJwBGp+rtSHr222/08XgydqAzec/RWDp
+U6nHvFoGLPSuw/5JEBGdY08Vdpgeh/25FIBvWMdToDdrxnDepmiM/wKQ+4jTIDt7
+FikvGevyI1LOnB5dl5lf+UZQRnoDLQmL6znhnZ2ICqYQ5Y4B89SUHhji0ZaLQphr
+Or04lP5vZ2AN6Ltnx7VueallPgy3RH5/Lr5FlsNnLeDM2TRtKkWJSHUDbrZoZBJ1
+gOBqc9YWXPsmLXJlHRUUZK9fGtJ88VYfsmduadurIQ6JcGlqNiy5ersi7mB71Iiq
+6cyaxFsdVUggTUo+qBU4behAMmkxYHDJWe6Uvp8pXA7nF1iZnuxzCczyL79KoSIL
+DLxXdK+JAzR3nxX+2ZMxpeiD4sYPy73RLcxW6ItyVwAuLhHVcOX1yp+VPhCxEr5s
+WVQUEhevdCJbl2jz797tSGpR8umHpuUqd5npfVMUDthfj05VhXPsrnEG0vv77iPF
+Sjk/iS14LQiW6pZfCFxLDx6cejYj+eVm3p4A/wiZqO/x/Gz6SLlUpMLr30B8/WfO
+3MZUCTRH1ROlQXa4WgHmRBOakM4GWpTdko81DrQeUdK0KHTevpCJhF4EWJi5iuYK
+vmQDUvGVomA=
+=VqgN
+-----END PGP SIGNATURE-----
+
+--8GpibOaaTibBMecb--
+
