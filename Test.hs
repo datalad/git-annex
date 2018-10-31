@@ -650,9 +650,10 @@ test_lock_v7_force = intmpclonerepoInDirect $ do
 		git_annex "get" [annexedfile] @? "get of file failed"
 		git_annex "unlock" [annexedfile] @? "unlock failed in v7 mode"
 		annexeval $ do
+			Just k <- Annex.WorkTree.lookupFile annexedfile
+			Database.Keys.removeInodeCaches k
 			Database.Keys.closeDb
-			dbdir <- Annex.fromRepo Annex.Locations.gitAnnexKeysDb
-			liftIO $ renameDirectory dbdir (dbdir ++ ".old")
+			liftIO . nukeFile =<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
 		writecontent annexedfile "test_lock_v7_force content"
 		git_annex_shouldfail "lock" [annexedfile] @? "lock of modified file failed to fail in v7 mode"
 		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v7 mode"
