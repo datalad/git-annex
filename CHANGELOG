@@ -1,8 +1,9 @@
-git-annex (7.20181025) UNRELEASED; urgency=medium
+git-annex (7.20181031) upstream; urgency=medium
 
   * Added v7 repository mode. v6 upgrades automatically to v7, but
     v5 is still the default for now. While v6 was always experimental
     to some degree, its successor v7 is ready for production use!
+    http://git-annex.branchable.com/tips/unlocked_files/
   * Direct mode repositories are deprecated; they have many problems
     that v7 fixes, so upgrading them now is recommended (but not yet
     required): git annex upgrade --version=7
@@ -56,7 +57,7 @@ git-annex (7.20181025) UNRELEASED; urgency=medium
   * Cache high-resolution mtimes for improved detection of modified files
     in v7 (and direct mode).
 
- -- Joey Hess <id@joeyh.name>  Sat, 13 Oct 2018 00:52:02 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 31 Oct 2018 09:21:50 -0400
 
 git-annex (6.20181011) upstream; urgency=medium
 
