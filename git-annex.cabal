@@ -356,7 +356,7 @@ Executable git-annex
    split,
    attoparsec,
    concurrent-output (>= 1.6),
-   QuickCheck (>= 2.1),
+   QuickCheck (>= 2.8.2),
    tasty (>= 0.7),
    tasty-hunit,
    tasty-quickcheck,

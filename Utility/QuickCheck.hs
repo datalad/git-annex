@@ -6,7 +6,7 @@
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE TypeSynonymInstances, CPP #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module Utility.QuickCheck
 	( module X
@@ -16,20 +16,8 @@ module Utility.QuickCheck
 import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
 import System.Posix.Types
-#if ! MIN_VERSION_QuickCheck(2,8,2)
-import qualified Data.Map as M
-import qualified Data.Set as S
-#endif
 import Control.Applicative
 import Prelude
-
-#if ! MIN_VERSION_QuickCheck(2,8,2)
-instance (Arbitrary k, Arbitrary v, Ord k) => Arbitrary (M.Map k v) where
-	arbitrary = M.fromList <$> arbitrary
-
-instance (Arbitrary v, Ord v) => Arbitrary (S.Set v) where
-	arbitrary = S.fromList <$> arbitrary
-#endif
 
 {- Times before the epoch are excluded, and no fraction is included. -}
 instance Arbitrary POSIXTime where
