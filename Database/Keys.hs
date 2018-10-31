@@ -151,7 +151,9 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
  - data to it.
  -}
 closeDb :: Annex ()
-closeDb = liftIO . closeDbHandle =<< getDbHandle
+closeDb = Annex.getState Annex.keysdbhandle >>= \case
+	Nothing -> return ()
+	Just h -> liftIO (closeDbHandle h)
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toIKey k) f
