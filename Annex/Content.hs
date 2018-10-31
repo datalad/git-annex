@@ -867,6 +867,7 @@ getKeysPresent keyloc = do
 saveState :: Bool -> Annex ()
 saveState nocommit = doSideAction $ do
 	Annex.Queue.flush
+	Database.Keys.closeDb
 	unless nocommit $
 		whenM (annexAlwaysCommit <$> Annex.getGitConfig) $
 			Annex.Branch.commit =<< Annex.Branch.commitMessage
