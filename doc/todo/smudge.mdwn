@@ -1,30 +1,6 @@
 git-annex should use smudge/clean filters. v7 mode
 
-## warts
-
-* There are several bugs that are edge cases and
-  need more info or analysis. None of these seem like blockers
-  to keep v7 experimental or to replacing direct mode with v7.
-
-  - <http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/>
-  - <http://git-annex.branchable.com/bugs/v6_appears_to_not_thin/>
-  - <http://git-annex.branchable.com/bugs/git-annex-sync_sometimes_fails_in_submodule_in_V6_adjusted_branch/>
-
-### long term todos
-
-* Potentially: Use git's new `filter.<driver>.process` interface, which will
-  let only 1 git-annex process be started by git when processing
-  multiple files, and so should be faster.
-
-  See [[todo/Long_Running_Filter_Process]] .. it's not currently actually a
-  win but might be a good way to improve git to work better with v7.
-
-* Eventually (but not yet), make v7 the default for new repositories.
-  Note that the assistant forces repos into direct mode; that will need to
-  be changed then, and it should enable annex.thin instead.
-
-* Later still, remove support for direct mode, and enable automatic
-  v5 to v7 upgrades.
+[[done]]! Continued in [[v7_path_toward_default]]
 
 ### historical notes
 
