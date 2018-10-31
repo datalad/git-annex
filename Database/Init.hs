@@ -10,10 +10,8 @@ module Database.Init where
 import Annex.Common
 import Annex.Perms
 import Utility.FileMode
-import Database.Handle
 
 import Database.Persist.Sqlite
-import qualified Database.Sqlite as Sqlite
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as T
 import Lens.Micro
