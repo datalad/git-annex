@@ -269,16 +269,8 @@ instance Arbitrary MTime where
 	arbitrary = frequency
 		-- timestamp is not usually negative
                 [ (50, MTimeLowRes <$> (abs . fromInteger <$> arbitrary))
-                , (50, MTimeHighRes <$> (abs <$> arbposixtime))
+                , (50, MTimeHighRes <$> arbitrary)
 		]
-	  where
-		-- include fractional part, which the usual instance does not
-		arbposixtime = do
-			t <- arbitrary
-			f <- arbitrary
-			return $ if f == 0
-				then t
-				else t + recip f
 
 #ifdef mingw32_HOST_OS
 instance Arbitrary FileID where

@@ -15,17 +15,23 @@ module Utility.QuickCheck
 
 import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
+import Data.Ratio
 import System.Posix.Types
-import Control.Applicative
 import Prelude
 
-{- Times before the epoch are excluded, and no fraction is included. -}
+{- Times before the epoch are excluded. Half with decimal and half without. -}
 instance Arbitrary POSIXTime where
-	arbitrary = fromInteger <$> nonNegative arbitrarySizedIntegral
+	arbitrary = do
+		n <- nonNegative arbitrarySizedBoundedIntegral :: Gen Int
+		d <- nonNegative arbitrarySizedIntegral
+		withd <- arbitrary
+		return $ if withd
+			then fromIntegral n + fromRational (1 % max d 1)
+			else fromIntegral n
 
 {- Pids are never negative, or 0. -}
 instance Arbitrary ProcessID where
-	arbitrary = arbitrarySizedBoundedIntegral `suchThat` (> 0)
+	arbitrary = positive arbitrarySizedBoundedIntegral
 
 {- Inodes are never negative. -}
 instance Arbitrary FileID where
