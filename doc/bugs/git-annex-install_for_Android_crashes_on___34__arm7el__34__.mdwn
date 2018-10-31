@@ -1,0 +1,90 @@
+### Please describe the problem.
+
+I am trying to install git-annex on the Fairphone with Android/Termux. 
+
+
+### What steps will reproduce the problem?
+
+Running 
+
+$ source git-annex-install
+
+
+### What version of git-annex are you using? On what operating system?
+
+Fairphone Open Android 6.0, Marshmallow 
+
+$ uname -a
+Linux localhost 3.4.0-gcde0e65 #1 SMP PREEMPT Wed Apr 11 16:49:55 BST 2018 armv7l Android
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ source git-annex-install
+unknown architecture armv7l, cannot install
+Connection to [host] closed.
+
+
+# End of transcript or log.
+"""]]
+
+after changing the line
+
+    arm)
+
+to
+
+    arm|armv7l)
+
+I get:
+
+[[!format sh """
+
+$ sh git-annex-install > out 2> out.err
+
+$ cat out
+Installing dependencies with termux pkg manager...
+Hit:1 https://termux.net stable InRelease
+Reading package lists...
+Building dependency tree...
+Reading state information...
+All packages are up to date.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+coreutils is already the newest version (8.30-1).
+git is already the newest version (2.19.1).
+proot is already the newest version (5.1.107-18).
+tar is already the newest version (1.30-1).
+wget is already the newest version (1.19.5-1).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Downloading git-annex...
+
+$ tail -n 15 out.err
+ 59450K .......... .......... .......... .......... .......... 99%  734K 0s
+ 59500K .......... .......... .......... .......... .......... 99%  846K 0s
+ 59550K .......... .......... .......... .......... ...       100%  759K=95s
+
+2018-10-31 16:42:08 (630 KB/s) - written to stdout [61023751/61023751]
+
+Running on Android.. Adding git-annex to PATH for you, and tuning for optimal behavior.
+proot error: execve("/data/data/com.termux/files/home/git-annex.linux/bin/git-annex"): No such file or directory
+proot info: possible causes:
+  * the program is a script but its interpreter (eg. /bin/sh) was not found;
+  * the program is an ELF but its interpreter (eg. ld-linux.so) was not found;
+  * the program is a foreign binary but qemu was not specified;
+  * qemu does not work correctly (if specified);
+  * the loader was not found or doesn't work.
+fatal error: see `proot --help`.
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! I use git-annex for many years now under Debian with no problems. Back when I recorded TV with my DVB-T card I used it to pushed files on external hard drives while being able to find them. I just now noticed 
+
+
