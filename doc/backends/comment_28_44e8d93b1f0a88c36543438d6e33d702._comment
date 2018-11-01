@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 28"
+ date="2018-11-01T17:12:59Z"
+ content="""
+\"The risk that the content at an url might change varies over time or something like that, so I think it makes sense to treat URL keys as specially unstable.\" -- but, if I understand correctly, a URL key does not actually represent a URL?  Rather, a URL can be attached to _any_ key, and if the contents of some URLs claimed by a remote is unstable, such remotes should be marked as untrusted; while if the contents of a URL key is stored in a trusted remote, that contents is not unstable.  But URL and WORM keys are both \"unstable\" in that their contents can't be verified.  
+[[todo/alternate_keys_for_same_content] could mitigate that.
+"""]]
