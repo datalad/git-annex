@@ -118,3 +118,4 @@ But also note that `git-annex` seems to not even provide any agent value while t
 ```
 10.31.191.134 - - [01/Oct/2018:13:12:45 -0400] "GET /labs/haxby/raiders/.git//config HTTP/1.1" 206 501 "-" "-"
 ```
+[[fixed|done]] --[[Yarik]]
