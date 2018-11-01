@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-11-01T12:24:10Z"
+ content="""
+If you want to be able to drop files into your server repo directly and have those files seen by git-annex and then synced back to your laptop you will need your server repo to be non-bare (IE a normal full git repository). Bare repositories are never monitored by git-annex assistant ([see somewhat related comments on that here](http://git-annex.branchable.com/bugs/OSX_Assistant_will_not_automatically_drop/#comment-e81c8bac6a39c90692a3eb695c8dc416)).
+"""]]
