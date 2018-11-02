@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="marvin@3296bf3c446430c3b2ebc32b5c784ee976620847"
+ nickname="marvin"
+ avatar="http://cdn.libravatar.org/avatar/a07e2adf7ff40bdd4c3fe20ededc0a4e"
+ subject="comment 2"
+ date="2018-11-02T08:57:39Z"
+ content="""
+server and laptop repos are not bare. there are normal checkout out git repos. there are not created by the assistant and i wonder if i have to do that if i want a dropbox like sync.
+"""]]
