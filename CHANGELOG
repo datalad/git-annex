@@ -1,6 +1,7 @@
 git-annex (7.20181032) UNRELEASED; urgency=medium
 
   * Increase minimum QuickCheck version.
+  * Fix a P2P protocol hang.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Oct 2018 15:53:03 -0400
 

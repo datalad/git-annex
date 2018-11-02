@@ -50,18 +50,19 @@ runLocal runst runner a = case a of
 		size <- inAnnex' isJust Nothing getsize k
 		runner (next (Len <$> size))
 	ReadContent k af o sender next -> do
+		let proceed c = do
+			r <- tryNonAsync c
+			case r of
+				Left e -> return $ Left $ ProtoFailureException e
+				Right (Left e) -> return $ Left e
+				Right (Right ok) -> runner (next ok)
 		v <- tryNonAsync $ prepSendAnnex k
 		case v of
-			Right (Just (f, checkchanged)) -> do
-				v' <- tryNonAsync $
-					transfer upload k af $
-						sinkfile f o checkchanged sender
-				case v' of
-					Left e -> return $ Left $ ProtoFailureException e
-					Right (Left e) -> return $ Left e
-					Right (Right ok) -> runner (next ok)
-			-- content not available
- 			Right Nothing -> runner (next False)
+			Right (Just (f, checkchanged)) -> proceed $
+				transfer upload k af $
+					sinkfile f o checkchanged sender
+ 			Right Nothing -> proceed $
+				runner (sender mempty (return Invalid))
 			Left e -> return $ Left $ ProtoFailureException e
 	StoreContent k af o l getb validitycheck next -> do
 		-- This is the same as the retrievalSecurityPolicy of
