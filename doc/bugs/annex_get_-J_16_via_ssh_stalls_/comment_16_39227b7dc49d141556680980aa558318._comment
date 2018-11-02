@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2018-11-02T16:33:52Z"
+ content="""
+Trimming that to only P2P protocol and reordering by connection:
+
+[[!format sh \"\"\"
+[2018-10-22 23:03:09.30462026] [ssh connection 1] [ThreadId 12] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-10-22 23:03:09.304852574] [ssh connection 1] [ThreadId 12] P2P > VERSION 1
+[2018-10-22 23:03:09.306234971] [ssh connection 1] [ThreadId 12] P2P < VERSION 1
+[2018-10-22 23:03:09.306444891] [ssh connection 1] [ThreadId 12] P2P > GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz SHA256E-s26287753--02448aa9a07ef300dcd7b445d178c558bef8048dced539e0cf97a51250c937c8.nii.gz
+[2018-10-22 23:03:09.307458334] P2P < GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2_dwi.nii.gz SHA256E-s26287753--02448aa9a07ef300dcd7b445d178c558bef8048dced539e0cf97a51250c937c8.nii.gz
+[2018-10-22 23:03:09.325250636] P2P > DATA 26287753
+[2018-10-22 23:03:09.325749037] [ssh connection 1] [ThreadId 12] P2P < DATA 26287753
+[2018-10-22 23:03:09.830143593] P2P > VALID
+[2018-10-22 23:03:09.831871793] [ssh connection 1] [ThreadId 12] P2P < VALID
+[2018-10-22 23:03:09.832050086] [ssh connection 1] [ThreadId 12] P2P > SUCCESS
+[2018-10-22 23:03:09.832697551] P2P < SUCCESS
+[2018-10-22 23:03:09.978345188] [ssh connection 1] [ThreadId 48] P2P > GET 0 sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz
+[2018-10-22 23:03:09.979193267] P2P < GET 0 sub-qa/ses-20161205/func/sub-qa_ses-20161205_task-rest_acq-p2Xs4X35mm_bold.nii.gz SHA256E-s33352666--36efd3512b1dd33192ec0d4e1a615c2a6eb36277fbe817827eb0be0a2c6934ea.nii.gz
+[2018-10-22 23:03:09.993552354] P2P > DATA 33352666
+[2018-10-22 23:03:09.994121174] [ssh connection 1] [ThreadId 48] P2P < DATA 33352666
+[2018-10-22 23:03:10.946446534] P2P > VALID
+[2018-10-22 23:03:10.947694471] [ssh connection 1] [ThreadId 48] P2P < VALID
+[2018-10-22 23:03:10.947885865] [ssh connection 1] [ThreadId 48] P2P > SUCCESS
+[2018-10-22 23:03:10.9484066] P2P < SUCCESS
+
+[2018-10-22 23:03:09.30461788] [ssh connection 2] [ThreadId 11] P2P < AUTH-SUCCESS 6384a551-a41d-4290-b186-9258befede97
+[2018-10-22 23:03:09.304949382] [ssh connection 2] [ThreadId 11] P2P > VERSION 1
+[2018-10-22 23:03:09.306349793] [ssh connection 2] [ThreadId 11] P2P < VERSION 1
+[2018-10-22 23:03:09.306552423] [ssh connection 2] [ThreadId 11] P2P > GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz
+[2018-10-22 23:03:09.307525458] P2P < GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz
+\"\"\"]]
+
+So the second connection received the GET request, but did not respond to
+it, or its response was not received.
+
+Maybe try replaying the same protocol on the server manually. Eg:
+
+	ssh bids@rolando.cns -T git-annex-shell p2pstdio /inbox/BIDS/dbic/QA --debug ed495e60-f4c1-4a9b-86fd-0b3cec9689a6 --uuid 6384a551-a41d-4290-b186-9258befede9
+	VERSION 1
+	GET 0 sub-qa/ses-20161205/dwi/sub-qa_ses-20161205_acq-DTIX30Xp2Xs4_dwi.nii.gz SHA256E-s24797353--d1bb6541067f4ba3cdb6a698e2e6e7dbd483d8179007ebd2f2774d11972daf04.nii.gz
+
+If it doesn't reply with DATA, then it's something to do with that
+one particular key. If it does, the problem must involve concurrency or
+the ssh connection somehow.
+
+---
+
+I have found one possible way this protocol trace could happen, although it seems
+unlikely to be the actual cause here.. But possibly. Dealt with it
+in [[!commit 0b053b96119c1a2d6c2d03ba7f98f032e89b8b66]] which would need
+to be deployed to the server side to test.
+"""]]
