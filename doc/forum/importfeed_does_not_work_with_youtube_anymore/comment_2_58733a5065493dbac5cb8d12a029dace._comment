@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="workaround with youtube-dl"
+ date="2018-11-03T20:52:49Z"
+ content="""
+i hacked my way around this problem with this crazy commandline:
+
+    URL=www.youtube.com/user/WHATEVER/videos # or playlist or whatever
+    youtube-dl --dump-json --flat-playlist $URL | jq -r '.id' | sed 's_^_https://www.youtube.com/watch?v=_' > urls.txt
+    git -c annex.security.allowed-http-addresses=all annex  addurl --batch < urls.txt
+
+It's idiotic that youtube removed support for standard stuff, but that's the name of the game these days. Maybe git-annex could delegate this to youtube-dl? --[[anarcat]]
+"""]]
