@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="spwhitton"
- avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
- subject="armel+armhf available in stretch-backports"
- date="2018-03-04T19:03:19Z"
- content="""
-@Alan: stretch-backports now includes git-annex on armel and armhf.
-"""]]
