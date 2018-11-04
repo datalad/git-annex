@@ -78,21 +78,18 @@ perform :: ImportFeedOptions -> Cache -> URLString -> CommandPerform
 perform opts cache url = do
 	v <- findDownloads url
 	case v of
-		[] -> do
+		[] -> next $
 			feedProblem url "bad feed content; no enclosures to download"
-			next $ return True
 		l -> do
 			showOutput
 			ok <- and <$> mapM (performDownload opts cache) l
-			unless ok $
-				feedProblem url "problem downloading some item(s) from feed"
-			next $ cleanup url True
+			next $ cleanup url ok
 
 cleanup :: URLString -> Bool -> CommandCleanup
-cleanup url ok = do
-	when ok $
-		clearFeedProblem url
-	return ok
+cleanup url True = do
+	clearFeedProblem url
+	return True
+cleanup url False = feedProblem url "problem downloading some item(s) from feed"
 
 data ToDownload = ToDownload
 	{ feed :: Feed
@@ -370,11 +367,17 @@ noneValue :: String
 noneValue = "none"
 
 {- Called when there is a problem with a feed.
- - Throws an error if the feed is broken, otherwise shows a warning. -}
-feedProblem :: URLString -> String -> Annex ()
+ -
+ - If the feed has been broken for some time,
+ - returns False, otherwise only warns. -}
+feedProblem :: URLString -> String -> Annex Bool
 feedProblem url message = ifM (checkFeedBroken url)
-	( giveup $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
-	, warning $ "warning: " ++ message
+	( do
+		warning $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
+		return False
+	, do
+		warning $ "warning: " ++ message
+		return True
 	)
 
 {- A feed is only broken if problems have occurred repeatedly, for at

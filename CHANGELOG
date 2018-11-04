@@ -2,6 +2,8 @@ git-annex (7.20181032) UNRELEASED; urgency=medium
 
   * Increase minimum QuickCheck version.
   * Fix a P2P protocol hang.
+  * importfeed: Avoid erroring out when a feed has been repeatedly broken,
+    as that can leave other imported files not checked into git.
 
  -- Joey Hess <id@joeyh.name>  Wed, 31 Oct 2018 15:53:03 -0400
 
