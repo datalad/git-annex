@@ -18,8 +18,8 @@ import qualified Database.Queue as H
 import Utility.InodeCache
 import Git.FilePath
 
+import Database.Persist.Sql
 import Database.Persist.TH
-import Database.Esqueleto hiding (Key)
 import Data.Time.Clock
 import Control.Monad
 
@@ -62,8 +62,7 @@ addAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
 addAssociatedFile ik f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
-	delete $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val af &&. not_ (r ^. AssociatedKey ==. val ik))
+	deleteWhere [AssociatedFile ==. af, AssociatedKey ==. ik]
 	void $ insertUnique $ Associated ik af
   where
 	af = toSFilePath (getTopFilePath f)
@@ -78,32 +77,27 @@ addAssociatedFileFast ik f = queueDb $ void $ insertUnique $ Associated ik af
 
 dropAllAssociatedFiles :: WriteHandle -> IO ()
 dropAllAssociatedFiles = queueDb $
-	delete $ from $ \(_r :: SqlExpr (Entity Associated)) -> return ()
+	deleteWhere ([] :: [Filter Associated])
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: IKey -> ReadHandle -> IO [TopFilePath]
 getAssociatedFiles ik = readDb $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val ik)
-		return (r ^. AssociatedFile)
-	return $ map (asTopFilePath . fromSFilePath . unValue) l
+	l <- selectList [AssociatedKey ==. ik] []
+	return $ map (asTopFilePath . fromSFilePath . associatedFile . entityVal) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: TopFilePath -> ReadHandle -> IO [IKey]
 getAssociatedKey f = readDb $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. AssociatedFile ==. val af)
-		return (r ^. AssociatedKey)
-	return $ map unValue l
+	l <- selectList [AssociatedFile ==. af] []
+	return $ map (associatedKey . entityVal) l
   where
 	af = toSFilePath (getTopFilePath f)
 
 removeAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
-removeAssociatedFile ik f = queueDb $ 
-	delete $ from $ \r -> do
-		where_ (r ^. AssociatedKey ==. val ik &&. r ^. AssociatedFile ==. val af)
+removeAssociatedFile ik f = queueDb $
+	deleteWhere [AssociatedKey ==. ik, AssociatedFile ==. af]
   where
 	af = toSFilePath (getTopFilePath f)
 
@@ -115,12 +109,9 @@ addInodeCaches ik is = queueDb $
  - for each pointer file that is a copy of it. -}
 getInodeCaches :: IKey -> ReadHandle -> IO [InodeCache]
 getInodeCaches ik = readDb $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. ContentKey ==. val ik)
-		return (r ^. ContentCache)
-	return $ map (fromSInodeCache . unValue) l
+	l <- selectList [ContentKey ==. ik] []
+	return $ map (fromSInodeCache . contentCache . entityVal) l
 
 removeInodeCaches :: IKey -> WriteHandle -> IO ()
-removeInodeCaches ik = queueDb $ 
-	delete $ from $ \r -> do
-		where_ (r ^. ContentKey ==. val ik)
+removeInodeCaches ik = queueDb $
+	deleteWhere [ContentKey ==. ik]
