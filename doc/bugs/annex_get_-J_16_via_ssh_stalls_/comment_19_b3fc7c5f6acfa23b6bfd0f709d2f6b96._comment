@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2018-11-05T15:42:45Z"
+ content="""
+I've seen the test fail that way, where apparently all gets from the remote
+repo are failing, on the autobuilders once or twice, but not reproducably,
+so have not been able to track it down yet.
+
+(I was running the test suite hundreds of times overnight
+in a loop to reproduce and fix other intermittent test failures
+just before the v7 release, and never reproduced that failure pattern.)
+
+If you can reproduce that test failure we can work on debugging 
+it on a different bug report.
+
+Anyway, since it replied to DATA for that key, the fix in
+[[!commit 0b053b96119c1a2d6c2d03ba7f98f032e89b8b66]] almost certianly can't
+be for the same problem as this bug.
+"""]]
