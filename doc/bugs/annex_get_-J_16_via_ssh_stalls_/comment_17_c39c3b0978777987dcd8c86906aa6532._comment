@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 17"
+ date="2018-11-02T19:58:06Z"
+ content="""
+> If it doesn't reply with DATA, then it's something to do with that one particular key. If it does, the problem must involve concurrency or the ssh connection somehow.
+
+isn't the fact that it works without -j parallelization hints that it is about concurrency and not just the key?
+But for the sake of completeness, I did that \"manual\" `GET 0 sub-qa/s...` snippet and indeed was bombarded with the data.
+
+> Dealt with it in 0b053b96119c1a2d6c2d03ba7f98f032e89b8b66 which would need to be deployed to the server side to test.
+
+ok, will build/test, thanks!
+
+"""]]

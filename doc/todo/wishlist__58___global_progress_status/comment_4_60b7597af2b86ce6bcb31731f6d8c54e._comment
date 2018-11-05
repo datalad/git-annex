@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="rsync can do this on its own"
+ date="2018-11-04T19:29:19Z"
+ content="""
+i understand, thanks for taking the time to explain the tradeoffs! :)
+
+i know that rsync is not used anymore, but I figured I should document this here since it's the first thing that it made me think of when i found out about it. as it turns out, rsync *does* have its own \"global status\", which has similar tradeoffs than git-annex (namely that it doesn't work in \"incremental mode\"). from #debian-til on OFTC:
+
+[[!format txt \"\"\"
+13:30:15 <juliank> TIL: rsync  --partial --no-inc-recursive -ah --info=progress2 
+13:30:32 <lamby> explanation?
+13:30:33  * juliank apologizes for the :
+13:30:45 <juliank> So, --info=progress2 gives you overall progress
+13:30:53 <lamby> overall?
+13:30:58 <lamby> Oh, w/ multiple files?
+13:31:00 <juliank> and --no-inc-recursive makes it really overall by doing scanning up front
+13:31:08 <juliank> s/scanning/recursion/
+13:31:09 <lamby> Oh, now that's very neat.
+13:31:16 <juliank> and -h gives you human-readable sizes
+13:31:16 <lamby> WTB that in debmirror :3
+\"\"\"]]
+
+So rsync allows you to switch back to the \"costly mode\" which *does* a full scan before starting. It's slower, but it allows you to get global progress info. It's a nice tradeoff and it's especially useful to be able to enable it on deman. I understand this might be complicated to implement in git-annex because there are many places where such an option would be required (and it's unclear how it would be named), but it's something that would certainly be useful for my use cases, where some repos have large files but not so many so are fairly fast to scan (e.g. i could do this on my video repo, but not the music repo). -- [[anarcat]]
+"""]]

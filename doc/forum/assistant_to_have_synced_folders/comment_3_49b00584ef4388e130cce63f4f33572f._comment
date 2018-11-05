@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 3"
+ date="2018-11-02T22:03:15Z"
+ content="""
+Aaah OK. You don't necessarily need to add the repositories from assistant. If you create them from the command-line you need to manually add the full path to any repos you want the assistant to watch to a file located at `~/.config/git-annex/autostart`.
+
+So on your server you want that `~/.config/git-annex/autostart` file to contain the full path to the repo that is located on the server and for the `~/.config/git-annex/autostart` file on your laptop you want it to contain the full path to your laptop repo. You also need to start the assistant on both your laptop and your server by running `git-annex-assistant --autostart` on your laptop and on your server. You'll also want to verify that this autostart command is happening automatically at boot (which `git-annex` might have done for you).
+"""]]
