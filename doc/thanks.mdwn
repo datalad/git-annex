@@ -1,4 +1,4 @@
-The development of git-annex was made possible by the generous
+Financially, the development of git-annex was made possible by the generous
 donations of many people. I want to say "Thank You!" to each of
 you individually, but until I meet all 1500+ of you, this page will have to
 do. You have my most sincere thanks. --[[Joey]]
@@ -11,7 +11,27 @@ You can support my git-annex development
 (If I got your name wrong, or you don't want it publically posted here,
 email <id@joeyh.name>.)
 
-## 2014-2018
+## code and other bits
+
+git-annex is mostly developed by Joey Hess, with code contributions
+from Sören Brunk, Robie Basak, Klaus Ethgen, Sebastian Reuße, Oliver
+Matthews, guilhem, fftehnik, Ben Gamari, Eric Siegerman, Sean T Parsons,
+Félix Sipma, aristidb, Daniel Brooks, Alper Nebi Yasak,
+James MacMahon, Farhan Kathawala, divergentdave, Gabor Greif, wzhd, Pieter
+Kitslaar, Øyvind A. Holm, Michael Alan Dorman, Ben Boeckel,
+Magnus Therning, Yaroslav Halchenko, silvio, Magnus Therning,
+Justin Geibel, Trent, Jon Ander Peñalba, divB, Fraser Tweedale,
+jlebar, Johan Kiviniemi, Alberto Berti, ion, Anarcat, Adam Spiers,
+Peter Simmons, Nicolas Pouillard, Eskild Hustvedt, Nathan Collins,
+Sergei Trofimovich, Mark Wright, Jimmy Tang, Josh Triplett,
+and Joachim Breitner.
+
+Many folks have [[contributed|contribute]] documentation fixes, 
+tips, user support, etc. Two names that come to mind are Anarcat and
+CandyAngel. John Lawrence made the logo. And many others have
+contributed good bug reports and great ideas.
+
+## financial support, 2014-2018
 
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
@@ -22,7 +42,7 @@ git-annex development is partially supported by the
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
 
-## 2013-2014
+## financial support, 2013-2014
 
 Continued git-annex development was [crowd funded](https://campaign.joeyh.name/)
 by these excellent people. *Hug*
@@ -146,7 +166,7 @@ and 30 anonymous bitcoin users
 With an especial thanks to the WikiMedia foundation,
 and Rede Mocambos.
 
-## 2012-2013
+## financial support, 2012-2013
 
 <a name="kickstarter">
 The git-annex assistant was [crowd funded on Kickstarter](http://www.kickstarter.com/projects/joeyh/git-annex-assistant-like-dropbox-but-with-your-own/).
@@ -366,7 +386,7 @@ altruism, Eric Solheim, MarkS, ndrwc, Matthew, David Lehn, Matthew
 Cisneros, Mike Skoglund, Kristy Carey, fmotta, Tom Lowenthal, Branden
 Tyree, Aaron Whitehouse
 
-### Also thanks to
+## also thanks to
 
 * The Kickstarter team, who have unleashed much good on the world.
 * The Haskell developers, who toiled for 20 years in obscurity
