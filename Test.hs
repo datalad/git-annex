@@ -60,7 +60,6 @@ import qualified Annex.WorkTree
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
-import qualified Annex.AdjustedBranch
 import qualified Annex.VectorClock
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
@@ -1100,9 +1099,9 @@ test_conflict_resolution =
 
 {- Conflict resolution while in an adjusted branch. -}
 test_conflict_resolution_adjusted_branch :: Assertion
-test_conflict_resolution_adjusted_branch = whenM (annexeval Annex.AdjustedBranch.isSupported) $
+test_conflict_resolution_adjusted_branch =
 	withtmpclonerepo $ \r1 ->
-		withtmpclonerepo $ \r2 -> do
+		withtmpclonerepo $ \r2 -> whenM (adjustedbranchsupported r2) $ do
 			indir r1 $ do
 				disconnectOrigin
 				writecontent conflictor "conflictor1"
@@ -1449,9 +1448,9 @@ test_mixed_lock_conflict_resolution =
  - where the same file is added to both independently. The bad merge
  - emptied the whole tree. -}
 test_adjusted_branch_merge_regression :: Assertion
-test_adjusted_branch_merge_regression = whenM (annexeval Annex.AdjustedBranch.isSupported) $
+test_adjusted_branch_merge_regression = do
 	withtmpclonerepo $ \r1 ->
-		withtmpclonerepo $ \r2 -> do
+		withtmpclonerepo $ \r2 -> whenM (adjustedbranchsupported r1) $ do
 			pair r1 r2
 			setup r1
 			setup r2
@@ -1476,22 +1475,21 @@ test_adjusted_branch_merge_regression = whenM (annexeval Annex.AdjustedBranch.is
  - a subtree to an existing tree lost files. -}
 test_adjusted_branch_subtree_regression :: Assertion
 test_adjusted_branch_subtree_regression = 
-	whenM (annexeval Annex.AdjustedBranch.isSupported) $ 
-		withtmpclonerepo $ \r -> do
-			indir r $ do
-				disconnectOrigin
-				git_annex "upgrade" [] @? "upgrade failed"
-				git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
-				createDirectoryIfMissing True "a/b/c"
-				writecontent "a/b/c/d" "foo"
-				git_annex "add" ["a/b/c"] @? "add a/b/c failed"
-				git_annex "sync" [] @? "sync failed"
-				createDirectoryIfMissing True "a/b/x"
-				writecontent "a/b/x/y" "foo"
-				git_annex "add" ["a/b/x"] @? "add a/b/x failed"
-				git_annex "sync" [] @? "sync failed"
-				boolSystem "git" [Param "checkout", Param "master"] @? "git checkout master failed"
-				doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
+	withtmpclonerepo $ \r -> whenM (adjustedbranchsupported r) $ do
+		indir r $ do
+			disconnectOrigin
+			git_annex "upgrade" [] @? "upgrade failed"
+			git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
+			createDirectoryIfMissing True "a/b/c"
+			writecontent "a/b/c/d" "foo"
+			git_annex "add" ["a/b/c"] @? "add a/b/c failed"
+			git_annex "sync" [] @? "sync failed"
+			createDirectoryIfMissing True "a/b/x"
+			writecontent "a/b/x/y" "foo"
+			git_annex "add" ["a/b/x"] @? "add a/b/x failed"
+			git_annex "sync" [] @? "sync failed"
+			boolSystem "git" [Param "checkout", Param "master"] @? "git checkout master failed"
+			doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
 
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion

@@ -35,6 +35,7 @@ import qualified Annex.Link
 import qualified Annex.Init
 import qualified Annex.Path
 import qualified Annex.Action
+import qualified Annex.AdjustedBranch
 import qualified Utility.Process
 import qualified Utility.Env
 import qualified Utility.Env.Set
@@ -160,17 +161,22 @@ disconnectOrigin = boolSystem "git" [Param "remote", Param "rm", Param "origin"]
 withgitrepo :: (FilePath -> Assertion) -> Assertion
 withgitrepo = bracket (setuprepo mainrepodir) return
 
-indir :: FilePath -> Assertion -> Assertion
+indir :: FilePath -> IO a -> IO a
 indir dir a = do
 	currdir <- getCurrentDirectory
 	-- Assertion failures throw non-IO errors; catch
 	-- any type of error and change back to currdir before
 	-- rethrowing.
-	r <- bracket_ (changeToTmpDir dir) (setCurrentDirectory currdir)
-		(try a::IO (Either SomeException ()))
+	r <- bracket_
+		(changeToTmpDir dir)
+		(setCurrentDirectory currdir)
+		(tryNonAsync a)
 	case r of
-		Right () -> return ()
+		Right v -> return v
 		Left e -> throwM e
+
+adjustedbranchsupported :: FilePath -> IO Bool
+adjustedbranchsupported repo = indir repo $ annexeval Annex.AdjustedBranch.isSupported
 
 setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
