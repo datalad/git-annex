@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 25"
+ date="2018-11-05T21:01:35Z"
+ content="""
+Re
+
+> I've seen the test fail that way, where apparently all gets from the remote repo are failing, on the autobuilders once or twice, but not reproducably...
+
+Unfortunately this time I was not as fortunate to reliably reproduce it (yet) :-(  for me I believe it happened for the first time ever although I could be wrong.
+How do you know which test(s) fail and how to restart only a failing test (e.g. by name?) -- I find it difficult to parse logged output to figure out test names/boundaries since intermixed with git output etc which also includes error messages on conflicts etc.
+"""]]
