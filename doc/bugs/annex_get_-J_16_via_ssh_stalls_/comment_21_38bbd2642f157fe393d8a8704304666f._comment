@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 21"
+ date="2018-11-05T16:00:53Z"
+ content="""
+ah, ok -- just now I have mentioned that it did build find for i386... rerunning amd64 build a few times to see how reproducible it is for a lucky me
+"""]]
