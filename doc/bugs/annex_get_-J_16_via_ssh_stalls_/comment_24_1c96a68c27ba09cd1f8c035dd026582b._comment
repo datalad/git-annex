@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 24"
+ date="2018-11-05T20:53:48Z"
+ content="""
+Great to hear that bottom issue is revealed!
+
+FWIW regarding
+
+> If you wait 300 seconds, it should give up waiting for the pid lock, and complain about it to stderr, which may or may not be visible across the ssh connection.
+
+waited for ~50 minutes, `git annex get` process is still hanging without any additional output provided
+"""]]
