@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 22"
+ date="2018-11-05T17:31:45Z"
+ content="""
+Had to call that script explicitly since my PATH is tuned to point to the directory with this \"wrapper\" so it would call recursively and bail with operation not permitted (to strace already straced thing)
+
+[[!format sh \"\"\"
+#!/bin/sh                                                                                               
+set -e                                                                                                  
+strace -o $HOME/git-annex-shell-strace.$$ -f /afs/dbic.dartmouth.edu/usr/pkg/git-annex/git-annex-shell \"$@\" 
+\"\"\"]]
+
+anyways, sending straces via email
+"""]]
