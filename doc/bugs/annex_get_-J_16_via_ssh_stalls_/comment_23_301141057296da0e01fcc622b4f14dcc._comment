@@ -4,45 +4,66 @@
  date="2018-11-05T19:14:44Z"
  content="""
 Straces confirm the hanging git-annex-shell never gets to the point of
-sending "DATA".
+sending "DATA". It does receive the "GET". 
 
-It does receive the "GET".
+annex.pidlock is set. That's unusual. It seems likely it's got
+something to do with the problem, because pidlocks and concurrency don't
+really mix; at best one git-annex process can hold the pid lock, so
+other processes will need to wait, and could also time out and fail
+to take the pid lock. 
 
-Ah. pidlock is in use. It hangs taking the pid lock.
+Yeah: Setting annex.pidlock, I can reproduce the hang!
 
-I feel foolish now that I've gone so deep debugging when we established
-at the beginning that the server was using NFS, which kind of implies pid
-locking.
+The strace of the non-hanging process shows it took the pid lock and dropped it,
+twice. So the other process should have been able to take the pid lock too.
 
-(At least I found and fixed that other problem.)
+The hanging process does something around taking the pid lock just before
+it hangs.
 
-----
+It checks the side lock, which is locked (this is `trySideLock`):
 
-When one git-annex-shell is holding the pid lock,
-the other one has to wait for it to exit.
+	6219  openat(AT_FDCWD, "/dev/shm/08d71513c120bda153ed3b773c1e59ff_BIDS_dbic_QA_.git_annex_pidlock.lck", O_RDWR|O_CREAT, 0666 <unfinished ...>
+	6286  futex(0x555f91523d2c, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+	6219  <... openat resumed> )            = 11
+	6219  fcntl(11, F_GETFD)                = 0
+	6219  fcntl(11, F_SETFD, FD_CLOEXEC)    = 0
+	6219  fcntl(11, F_SETLK, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = -1 EAGAIN (Resource temporarily unavailable)
+	6219  close(11)                         = 0
 
-If you wait 300 seconds, it should give up waiting for the pid lock, and
-complain about it to stderr, which may or may not be visible across the ssh
-connection. That's kinda sorta ok when using git-annex at the command line,
-a concurrent command getting blocked will eventually either continue or
-display a warning about pidlock.
+Then it checks the pid lock (this is `tryLock` when
+`linkToLock` fails due to the side lock not being held):
 
-Problem is, we have concurrent git-annex-shell p2pstdio being run, and both
-are locking, and git-annex doesn't shut down either of them, so it blocks
-at least for 300 seconds, and this could repeat several times when acting on a
-lot of files.
+	6219  openat(AT_FDCWD, "XXX/.git/annex/locktmp6219-0", O_RDWR|O_CREAT|O_EXCL|O_NOCTTY|O_NONBLOCK, 0600) = 11
+	6219  openat(AT_FDCWD, "XXX/.git/annex/pidlock", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 11
+	6219  fstat(11, {st_mode=S_IFREG|0444, st_size=52, ...}) = 0
+	6219  ioctl(11, TCGETS, 0x7ffd3c59ba90) = -1 ENOTTY (Inappropriate ioctl for device)
+	6219  uname({sysname="Linux", nodename="XXX", ...}) = 0
+	6219  stat("XXX/.git/annex/locktmp6219-0", {st_mode=S_IFREG|0444, st_size=52, ...}) = 0
+	6219  read(11, "PidLock {lockingPid = 6221, lock"..., 8192) = 52
 
-It's taking the pid lock, it appears, as part of writing the transfer log.
-Not a very important reason. Some git-annex-shell operations like dropping
-will need to take the pid lock for better reasons.
+And gives up without overwriting it:
 
-Currently, once a process takes the pid lock, it continues to hold it
-until that process terminates. `dropLock` is never called.
+	6219  unlink("XXX/.git/annex/locktmp6219-0") = 0
+	6219  unlink("XXX/.git/annex/locktmp6219-0") = -1 ENOENT (No such file or directory)
 
-Should be able to fix this, by counting the number of finer-grained
-pseudo-locks that are being held, and dropping the pid lock when all are
-done. It will still be possible for one process to hog the pid lock,
-eg, a git-annex-shell that's performing a string of requests. But
-eventually the other process, if it's not timed out, will be able to take
-the pid lock.
+And then hangs waiting on stdin, it looks lile:
+
+	6219  poll([{fd=0, events=POLLIN}], 1, 0) = 0 (Timeout)
+	6219  epoll_ctl(3, EPOLL_CTL_MOD, 0, {EPOLLIN|EPOLLONESHOT, {u32=0, u64=0}}) = 0
+	6219  futex(0x555f91523c0c, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+	6285  <... read resumed> "\1\0\0\0\0\0\0\0", 8) = 8
+	6285  read(4, "\1\0\0\0\0\0\0\0", 8)    = 8
+	6285  read(4, "\1\0\0\0\0\0\0\0", 8)    = 8
+	6285  read(4, "\1\0\0\0\0\0\0\0", 8)    = 8
+	6285  read(4, "\1\0\0\0\0\0\0\0", 8)    = 8
+
+Seems it was not in `waitLock`, because that should loop and `tryLock` again once
+per second.
+
+So, maybe some part of git-annex is calling `tryLock`, and when it fails, it
+somehow ends up blocked waiting for more protocol commands?
+
+My next step now that I can reproduce it is to manually take the pid lock,
+and run git-annex-shell p2pstdio, and see if it's indeed reading more commands from
+stdin despite not responding to GET, or is sending an error or what.
 """]]
