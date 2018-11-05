@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2018-11-05T16:25:21Z"
+ content="""
+I'm fairly sure that the problem with no DATA response is not due to an
+implementation bug in the P2P protocol code, since I've read over it all
+and only found the one way it could fail to send DATA, which should be
+reproducible w/o concurrency.
+
+(It would be good to prove that it always sends DATA now, and it should
+be possible to prove things like that about the P2P protocol code, by
+running it in a different free monad interpreter that tests every possible
+input. But I don't have a framework to do that yet.)
+
+Anyway, it would be good to check this at the server end, by stracing
+git-annex-shell. Can you wrap it with a shell script that straces it?
+Eg:
+
+	#!/bin/sh
+	set -e
+	strace -o $HOME/git-annex-shell-strace.$$ -f git-annex-shell "$@"
+"""]]
