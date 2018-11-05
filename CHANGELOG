@@ -1,13 +1,13 @@
-git-annex (7.20181032) UNRELEASED; urgency=medium
+git-annex (7.20181105) upstream; urgency=medium
 
   * Fix test suite failure when git-annex test is not run inside a git
     repository.
-  * Increase minimum QuickCheck version.
   * Fix a P2P protocol hang.
   * importfeed: Avoid erroring out when a feed has been repeatedly broken,
     as that can leave other imported files not checked into git.
+  * Increase minimum QuickCheck version.
 
- -- Joey Hess <id@joeyh.name>  Wed, 31 Oct 2018 15:53:03 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 05 Nov 2018 13:31:09 -0400
 
 git-annex (7.20181031) upstream; urgency=medium
 
