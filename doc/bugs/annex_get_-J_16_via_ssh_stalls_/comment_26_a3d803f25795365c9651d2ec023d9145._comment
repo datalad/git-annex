@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 26"""
+ date="2018-11-05T21:32:20Z"
+ content="""
+tryLockExclusive is returning Nothing before the hang, when runTransfer 
+tries to lock the transfer log file. So runTransfer returns without 
+running the transfer action.
+
+Aha! ReadContent tries to run a transfer, and it calls
+sinkfile with sender in the transfer action.
+Never run, and so DATA never gets sent and indeed git-annex-shell is
+waiting for the next command.
+
+Using alwaysRunTransfer would solve this; that's what Command.SendKey does.
+And it would let concurrent downloads from a annex.pidlock remote work.
+However, I'm not entirely happy with that, because as this shows any bug in
+there that prevents the transfer action being run will lead to a protocol
+stall. Seems it ought to detect when the transfer action didn't run, and
+error out, somehow.
+
+Note that StoreContent also runs a transfer, but that does not involve
+running a callback. So, might be ok. But, it may not consume the DATA
+from the sender, so I need to look at it too.
+"""]]
