@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2018-11-05T19:14:44Z"
+ content="""
+Straces confirm the hanging git-annex-shell never gets to the point of
+sending "DATA".
+
+It does receive the "GET".
+
+Ah. pidlock is in use. It hangs taking the pid lock.
+
+I feel foolish now that I've gone so deep debugging when we established
+at the beginning that the server was using NFS, which kind of implies pid
+locking.
+
+(At least I found and fixed that other problem.)
+
+----
+
+When one git-annex-shell is holding the pid lock,
+the other one has to wait for it to exit.
+
+If you wait 300 seconds, it should give up waiting for the pid lock, and
+complain about it to stderr, which may or may not be visible across the ssh
+connection. That's kinda sorta ok when using git-annex at the command line,
+a concurrent command getting blocked will eventually either continue or
+display a warning about pidlock.
+
+Problem is, we have concurrent git-annex-shell p2pstdio being run, and both
+are locking, and git-annex doesn't shut down either of them, so it blocks
+at least for 300 seconds, and this could repeat several times when acting on a
+lot of files.
+
+It's taking the pid lock, it appears, as part of writing the transfer log.
+Not a very important reason. Some git-annex-shell operations like dropping
+will need to take the pid lock for better reasons.
+
+Currently, once a process takes the pid lock, it continues to hold it
+until that process terminates. `dropLock` is never called.
+
+Should be able to fix this, by counting the number of finer-grained
+pseudo-locks that are being held, and dropping the pid lock when all are
+done. It will still be possible for one process to hog the pid lock,
+eg, a git-annex-shell that's performing a string of requests. But
+eventually the other process, if it's not timed out, will be able to take
+the pid lock.
+"""]]
