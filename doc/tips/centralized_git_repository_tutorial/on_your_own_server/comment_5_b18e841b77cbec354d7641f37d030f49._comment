@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="metst13@1d16544ec52801db7efb2895d3dc7a4458b8eb45"
+ nickname="metst13"
+ avatar="http://cdn.libravatar.org/avatar/168d629704097ddc596f75ca32a687a3"
+ subject="clone to the server"
+ date="2018-11-06T14:58:39Z"
+ content="""
+As usually, create a directory on the server, `git init`, then `git-annex init` there. 
+
+Add that locally: `git remote add my-server-name my-server:~/my-repo`
+
+`git-annex sync` locally seems to work fine and pushes data to the server. 
+
+I needed to have this workaround before, because I could not get data from my laptop while on the server (I wasn't sure I had an open IP address for my laptop). This is mostly a basic thing in git, but I had errors with git-annex earlier and I try to be cautious now.
+"""]]
