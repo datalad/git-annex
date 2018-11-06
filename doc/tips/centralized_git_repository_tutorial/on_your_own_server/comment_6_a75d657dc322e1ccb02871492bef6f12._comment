@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="metst13@1d16544ec52801db7efb2895d3dc7a4458b8eb45"
+ nickname="metst13"
+ avatar="http://cdn.libravatar.org/avatar/168d629704097ddc596f75ca32a687a3"
+ subject="comment 6"
+ date="2018-11-06T16:10:11Z"
+ content="""
+I must add that after the previous commands finished, content of the repository was not shown on the server (it was all in .git). I made
+
+    git checkout synced/master
+
+and files appeared. Unfortunately it seems all timestamps were new, which I didn't like, and it was already asked here (http://git-annex.branchable.com/todo/does_not_preserve_timestamps/).
+"""]]
