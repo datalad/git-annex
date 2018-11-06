@@ -81,6 +81,10 @@ If the sender finds itself unable to send as many bytes of data as it
 promised (perhaps because a file got truncated while it was being sent),
 its only option is to close the protocol connection.
 
+And if the receiver finds itself unable to receive all the data for some
+reason (eg, out of disk space), its only option is to close the protocol
+connection.
+
 ## Checking if content is present
 
 To check if a key is currently present on the server, the client sends:

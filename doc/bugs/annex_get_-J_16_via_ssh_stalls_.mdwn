@@ -94,3 +94,5 @@ get .heudiconv/qa/ses-20171113/info/filegroup_ses-20171113.json (from origin...)
 so to me smells like some race condition due to high -J value.
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

@@ -26,6 +26,7 @@ import Types.Remote (RetrievalSecurityPolicy(..))
 import Utility.Metered
 
 import Control.Monad.Free
+import Control.Concurrent.STM
 
 -- Full interpreter for Proto, that can receive and send objects.
 runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either ProtoFailure a)
@@ -56,28 +57,46 @@ runLocal runst runner a = case a of
 				Left e -> return $ Left $ ProtoFailureException e
 				Right (Left e) -> return $ Left e
 				Right (Right ok) -> runner (next ok)
+		-- If the content is not present, or the transfer doesn't
+		-- run for any other action, the sender action still must
+		-- be run, so is given empty and Invalid data.
+		let fallback = runner (sender mempty (return Invalid))
 		v <- tryNonAsync $ prepSendAnnex k
 		case v of
-			Right (Just (f, checkchanged)) -> proceed $
-				-- Allow multiple uploads of the same key.
-				transfer alwaysUpload k af $
-					sinkfile f o checkchanged sender
- 			Right Nothing -> proceed $
-				runner (sender mempty (return Invalid))
+			Right (Just (f, checkchanged)) -> proceed $ do
+				-- alwaysUpload to allow multiple uploads of the same key.
+				let runtransfer ti = transfer alwaysUpload k af $ \p ->
+					sinkfile f o checkchanged sender p ti
+				checktransfer runtransfer fallback
+ 			Right Nothing -> proceed fallback
 			Left e -> return $ Left $ ProtoFailureException e
 	StoreContent k af o l getb validitycheck next -> do
 		-- This is the same as the retrievalSecurityPolicy of
-		-- Remote.P2P and Remote.Git. 
+		-- Remote.P2P and Remote.Git.
 		let rsp = RetrievalAllKeysSecure
-		ok <- flip catchNonAsync (const $ return False) $
-			transfer download k af $ \p ->
-				getViaTmp rsp DefaultVerify k $ \tmp -> do
-					storefile tmp o l getb validitycheck p
-		runner (next ok)
+		v <- tryNonAsync $ do
+			let runtransfer ti = 
+				Right <$> transfer download k af (\p ->
+					getViaTmp rsp DefaultVerify k $ \tmp ->
+						storefile tmp o l getb validitycheck p ti)
+			let fallback = return $ Left $
+				ProtoFailureMessage "transfer already in progress, or unable to take transfer lock"
+			checktransfer runtransfer fallback
+		case v of
+			Left e -> return $ Left $ ProtoFailureException e
+			Right (Left e) -> return $ Left e
+			Right (Right ok) -> runner (next ok)
 	StoreContentTo dest o l getb validitycheck next -> do
-		res <- flip catchNonAsync (const $ return (False, UnVerified)) $
-			storefile dest o l getb validitycheck nullMeterUpdate
-		runner (next res)
+		v <- tryNonAsync $ do
+			let runtransfer ti = Right
+				<$> storefile dest o l getb validitycheck nullMeterUpdate ti
+			let fallback = return $ Left $
+				ProtoFailureMessage "transfer failed"
+			checktransfer runtransfer fallback
+		case v of
+			Left e -> return $ Left $ ProtoFailureException e
+			Right (Left e) -> return $ Left e
+			Right (Right ok) -> runner (next ok)
 	SetPresent k u next -> do
 		v <- tryNonAsync $ logChange k u InfoPresent
 		case v of
@@ -123,7 +142,7 @@ runLocal runst runner a = case a of
 	UpdateMeterTotalSize m sz next -> do
 		liftIO $ setMeterTotalSize m sz
 		runner next
-	RunValidityCheck check next -> runner . next =<< check
+	RunValidityCheck checkaction next -> runner . next =<< checkaction
   where
 	transfer mk k af ta = case runst of
 		-- Update transfer logs when serving.
@@ -133,8 +152,8 @@ runLocal runst runner a = case a of
 		-- Transfer logs are updated higher in the stack when
 		-- a client.
 		Client _ -> ta nullMeterUpdate
-	
-	storefile dest (Offset o) (Len l) getb validitycheck p = do
+
+	storefile dest (Offset o) (Len l) getb validitycheck p ti = do
 		let p' = offsetMeterUpdate p (toBytesProcessed o)
 		v <- runner getb
 		case v of
@@ -143,6 +162,8 @@ runLocal runst runner a = case a of
 					when (o /= 0) $
 						hSeek h AbsoluteSeek o
 					meteredWrite p' h b
+				indicatetransferred ti
+
 				rightsize <- do
 					sz <- liftIO $ getFileSize dest
 					return (toInteger sz == l + o)
@@ -158,7 +179,7 @@ runLocal runst runner a = case a of
 						return (rightsize, MustVerify)
 			Left e -> error $ describeProtoFailure e
 	
-	sinkfile f (Offset o) checkchanged sender p = bracket setup cleanup go
+	sinkfile f (Offset o) checkchanged sender p ti = bracket setup cleanup go
 	  where
 		setup = liftIO $ openBinaryFile f ReadMode
 		cleanup = liftIO . hClose
@@ -167,8 +188,34 @@ runLocal runst runner a = case a of
 			when (o /= 0) $
 				liftIO $ hSeek h AbsoluteSeek o
 			b <- liftIO $ hGetContentsMetered h p'
+
 			let validitycheck = local $ runValidityCheck $ 
 				checkchanged >>= return . \case
 					False -> Invalid
 					True -> Valid
-			runner (sender b validitycheck)
+			r <- runner (sender b validitycheck)
+			indicatetransferred ti
+			return r
+	
+	-- This allows using actions like download and viaTmp
+	-- that may abort a transfer, and clean up the protocol after them.
+	--
+	-- Runs an action that may make a transfer, passing a transfer
+	-- indicator. The action should call indicatetransferred on it,
+	-- only after it's actually sent/received the all data.
+	--
+	-- If the action ends without having called indicatetransferred,
+	-- runs the fallback action, which can close the protoocol
+	-- connection or otherwise clean up after the transfer not having
+	-- occurred.
+	--
+	-- If the action throws an exception, the fallback is not run.
+	checktransfer ta fallback = do
+		ti <- liftIO $ newTVarIO False
+		r <- ta ti
+		ifM (liftIO $ atomically $ readTVar ti)
+			( return r
+			, fallback
+			)
+
+	indicatetransferred ti = liftIO $ atomically $ writeTVar ti True

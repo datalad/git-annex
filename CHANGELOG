@@ -3,6 +3,7 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
   * git-annex-shell: Fix hang when transferring the same objects to two
     different clients at the same time. (Or when annex.pidlock is used,
     two different objects.)
+  * Fixed some other potential hangs in the P2P protocol.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 

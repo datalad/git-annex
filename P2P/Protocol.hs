@@ -238,8 +238,11 @@ data LocalF c
 	-- present.
 	| ReadContent Key AssociatedFile Offset (L.ByteString -> Proto Validity -> Proto Bool) (Bool -> c)
 	-- ^ Reads the content of a key and sends it to the callback.
+	-- Must run the callback, or terminate the protocol connection.
+	--
 	-- May send any amount of data, including L.empty if the content is
 	-- not available. The callback must deal with that.
+	--
 	-- And the content may change while it's being sent.
 	-- The callback is passed a validity check that it can run after
 	-- sending the content to detect when this happened.
@@ -247,6 +250,9 @@ data LocalF c
 	-- ^ Stores content to the key's temp file starting at an offset.
 	-- Once the whole content of the key has been stored, moves the
 	-- temp file into place as the content of the key, and returns True.
+	--
+	-- Must consume the whole lazy ByteString, or if unable to do
+	-- so, terminate the protocol connection.
 	--
 	-- If the validity check is provided and fails, the content was
 	-- changed while it was being sent, so verificiation of the
