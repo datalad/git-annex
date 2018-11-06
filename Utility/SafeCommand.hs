@@ -133,5 +133,6 @@ segmentXargsUnordered l = go l [] 0 []
 
 	{- 10k of filenames per command, well under 100k limit
 	 - of Linux (and OSX has a similar limit);
-	 - allows room for other parameters etc. -}
+	 - allows room for other parameters etc. Also allows for
+	 - eg, multibyte characters. -}
 	maxlen = 10240
