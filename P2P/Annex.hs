@@ -59,7 +59,8 @@ runLocal runst runner a = case a of
 		v <- tryNonAsync $ prepSendAnnex k
 		case v of
 			Right (Just (f, checkchanged)) -> proceed $
-				transfer upload k af $
+				-- Allow multiple uploads of the same key.
+				transfer alwaysUpload k af $
 					sinkfile f o checkchanged sender
  			Right Nothing -> proceed $
 				runner (sender mempty (return Invalid))

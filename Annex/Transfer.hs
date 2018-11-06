@@ -10,6 +10,7 @@
 module Annex.Transfer (
 	module X,
 	upload,
+	alwaysUpload,
 	download,
 	runTransfer,
 	alwaysRunTransfer,
@@ -38,6 +39,10 @@ import Data.Ord
 upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload u key f d a _witness = guardHaveUUID u $ 
 	runTransfer (Transfer Upload u key) f d a
+
+alwaysUpload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
+alwaysUpload u key f d a _witness = guardHaveUUID u $ 
+	alwaysRunTransfer (Transfer Upload u key) f d a
 
 download :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 download u key f d a _witness = guardHaveUUID u $

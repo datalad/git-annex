@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 27"""
+ date="2018-11-06T16:55:17Z"
+ content="""
+Preliminary fix in place, but have not yet done anything more to guarantee that
+other failures don't prevent it from sending DATA.
+"""]]
