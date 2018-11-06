@@ -62,7 +62,7 @@ addAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
 addAssociatedFile ik f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
-	deleteWhere [AssociatedFile ==. af, AssociatedKey ==. ik]
+	deleteWhere [AssociatedFile ==. af, AssociatedKey !=. ik]
 	void $ insertUnique $ Associated ik af
   where
 	af = toSFilePath (getTopFilePath f)
