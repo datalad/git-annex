@@ -148,3 +148,6 @@ Seems like this would need Windows 10.
 > > ("powershell.exe" is in PATH)
 > > 
 > > --[[Joey]]
+> > 
+> > > The sqlite problem may be fixed in git-annex 7. I fixed some similar,
+> > > less frequent crashes on Linux. Need to test on windows. --[[Joey]]
