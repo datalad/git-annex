@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 6"
+ date="2018-11-08T13:10:23Z"
+ content="""
+Also you said “i always have to run git annex sync do get the new files or repo A in repo B”, did you mean you have to run `git annex sync --content`? Or did you mean you are just getting the filenames in sync without the content?
+"""]]
