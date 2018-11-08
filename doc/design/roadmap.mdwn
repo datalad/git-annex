@@ -1,38 +1,57 @@
-## ahead
+git-annex is in a mode of continual user-driven improvement, involving numerous
+small issues and often easily implemented ideas.
 
-* [[design/caching_database]] for metadata views
-* [[assistant/deltas]]
-* [[assistant/gpgkeys]] management for the assistant
-* [[design/requests_routing]]
-* [[design/new_repo_versions]]
+Here are some larger/ongoing plans for git-annex, in no particular order.
 
-## the rearview
+Speed improvements, including:
 
-* Spring 2016 [[adjusted_branches]]
-* Winter 2015 v6 repo format
-* Mar-Oct 2015 busy busy busy, too busy to update!
-* Feb 2015 user-driven features and polishing, [[design/caching_database]] part 1
-* Jan 2015 Android 5, relative paths, workload [[tuning]]
-* Dec 2014 [[todo/extensible_addurl]], bittorrent special remote
-* Nov 2014 direct mode proxy, undo command, diffdriver
-* Oct 2014 user-driven features and polishing, S3 multipart
-* Sep 2014 vacation
+* Speed up git checkout in v7 repository by 
+  improving git's smudge/clean filter interface, or some other approach, to avoid needing to fork
+  git-annex once per file during the checkout.
+  <http://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/>
+  <http://git-annex.branchable.com/todo/Long_Running_Filter_Process/>
 
-2013-2014 [crowdfunded](https://campaign.joeyh.name/) year
+* Speed up git-annex branch data queries and updates by rewriting it to
+  use ByteStrings. May become an order of magnitude faster. Using
+  libgit2 to access data from the branch w/o using the git interface
+  may also improve speed.
 
-* Aug 2014 user-driven features and polishing
-* Jul 2014 [[!traillink assistant/chunks]]
-* Jun 2014 polish [[assistant/Windows]] port
-* May 2014 Brazil!, [[!traillink assistant/sshpassword]]
-* Apr 2014 [[!traillink git-remote-daemon]]
-* Mar 2014 user-driven features and polishing
-* Feb 2014 get Windows out of beta, [[!traillink design/metadata text="metadata and views"]]
-* Jan 2014 user-driven features and polishing
-* Dec 2013 [[!traillink assistant/windows text="Windows webapp"]], Linux arm, external special remotes
-* Nov 2013 [[!traillink direct_mode]] guard [[!traillink assistant/upgrading]]
-* Oct 2013 [[!traillink assistant/disaster_recovery]]
-* Sep 2013 [[!traillink assistant/encrypted_git_remotes]]
+* Improve speed of git-annex when operating on large numbers of files.
+  Approaches include better caching of data, and switching to packed
+  FilePaths and other better data structures.
 
-2012-2013 kickstarted year developing [[git-annex assistant|assistant]]
+* Enable parallelism by default.
+  <http://git-annex.branchable.com/todo/config_option_to_use_all_processors_by_default/>
 
-2010-2011 initial git-annex development
+Improvements to tree export support, including supporting export to more
+external special remotes, exporting only preferred content, more
+efficient renames, and improving support for exporting non-annexed files.
+<http://git-annex.branchable.com/todo/export_preferred_content/>
+<http://git-annex.branchable.com/todo/export_paired_rename_innefficenctcy/>
+<http://git-annex.branchable.com/todo/Exporting_with_exporttree_should_sync_files_deleted_from_the_remote/>
+
+Complimenting tree export, support importing trees from special remotes so eg a
+S3 bucket of data can be pulled into a git-annex repository easily, and the
+repository updated when the bucket is changed.
+<http://git-annex.branchable.com/todo/import_tree/>
+
+Improve support for branches where annexed files without content locally
+present are hidden (adjust --hide-missing). Including interface for
+operating on hidden files to get them, speeding up generation of the
+branch, and updating it more frequently.
+<http://git-annex.branchable.com/todo/better_way_to_get_missing_files/>
+Also unify adjusted branches and view branches.
+<http://git-annex.branchable.com/todo/unify_adjust_with_view/>
+
+Improve Windows support. Long filenames may be possible on Windows now
+thanks to fixes in recent versions of ghc. Further improve using
+git-annex in Windows Subsystem for Linux (WSL). Get Windows fully
+supported with no caveats. Possibly even supporting indirect mode with
+symlinks.
+<http://git-annex.branchable.com/todo/windows_support/>
+<http://git-annex.branchable.com/todo/utilising_the_mklink_command_on_windows_to_utilise_symlinks_and_therefore_indirect_mode_on_windows/>
+
+Add more special remotes, and/or ship a collection of existing external
+special remotes as part of git-annex. Improve existing special remotes,
+eg adding support for Glacier lifecycles to S3.
+<http://git-annex.branchable.com/todo/wishlist__58___Restore_s3_files_moved_to_Glacier/>
