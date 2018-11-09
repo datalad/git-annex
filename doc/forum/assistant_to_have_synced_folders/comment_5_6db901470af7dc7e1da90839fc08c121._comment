@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 5"
+ date="2018-11-08T13:06:55Z"
+ content="""
+Could you post the output to `git annex version` are you on latest git-annex? As well can you post any information you are willing to share from `.git/config` on each of the repos in question. Also I would recommend creating two new repos from the web interface of git annex assistant (locally) and see if they behave as expected.
+"""]]

@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+Originally reported (so more details could be found there) in [datalad issue #2988].
+
+While trying to `annex get` on local cluster, over ssh without a ssh-agent, I was prompted for password multiple times, although previous version didn't do it:
+
+[[!format sh """
+[yhalchen@discovery7 QA]$ git annex version | head -n1 ; git annex get -J2 sub-qa/
+git-annex version: 6.20180926-gc906aaf
+get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2Xs4_dwi.nii.gz get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2_dwi.nii.gz (from origin...) 
+(from origin...) 
+yoh@falkor.datalad.org's password: yoh@falkor.datalad.org's password: 
+"""]]
+
+
+and when I try an "imputated" from NeuroDebian .deb package recent build of git-annex then I am observing
+
+[[!format sh """
+[yhalchen@discovery7 QA]$ export PATH=/ihome/yhalchen/7.20181105+git22-g4c7236c58/usr/lib/git-annex.linux:$PATH
+[yhalchen@discovery7 QA]$ git annex version | head -n1 ; git annex get -J2 sub-qa/
+git-annex version: 7.20181105+git22-g4c7236c58-1~ndall+1
+get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2Xs4_dwi.nii.gz get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2_dwi.nii.gz (transfer already in progress, or unable to take transfer lock) 
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+get sub-qa/ses-20161128/func/sub-qa_ses-20161128_task-rest_acq-p2Xs4X35mm_bold.nii.gz (from origin...) 
+(from origin...) 
+
+
+  thread blocked indefinitely in an MVar operation
+  thread blocked indefinitely in an STM transaction
+
+  Unable to access these remotes: origin
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+git-annex: thread blocked indefinitely in an STM transaction
+"""]]
+so smells like may be recent fixes caused some other locking problems
+
+This is on an NFS mounted partition, but remains the same when run under `/tmp` 
+
+Running a significantly more outdated version I found laying around (6.20170815+gitg22da64d0f-1~ndall+1) shows a single password prompt
+
+[[!meta author=yoh]]

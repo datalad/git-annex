@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2018-11-06T22:16:39Z"
+ content="""
+FWIW -- observed similar one while testing [the fresh fix](http://git-annex.branchable.com/bugs/annex_get_-J_16_via_ssh_stalls_/#comment-2abcda07d2832b923f1e7aa12778b734) under -J10 over ssh:
+
+[[!format sh \"\"\"
+get sourcedata/sub-emmet/ses-20180521/fmap/sub-emmet_ses-20180521_acq-topupXb0X3mm_dir-AP_epi.dicom.tgz (from origin...) 
+  Lost connection (fd:90: hGetChar: illegal operation (handle is closed))
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+...
+failed
+\"\"\"]]
+"""]]
