@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Database.Init where
 
 import Annex.Common
@@ -14,7 +16,11 @@ import Utility.FileMode
 import Database.Persist.Sqlite
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as T
+#if MIN_VERSION_persistent_sqlite(2,6,2)
 import Lens.Micro
+#else
+import qualified Database.Sqlite as Sqlite
+#endif
 
 {- Ensures that the database is freshly initialized. Deletes any
  - existing database. Pass the migration action for the database.
@@ -29,9 +35,15 @@ initDb db migration = do
 	let dbdir = takeDirectory db
 	let tmpdbdir = dbdir ++ ".tmp"
 	let tmpdb = tmpdbdir </> "db"
+	let tdb = T.pack tmpdb	
 	liftIO $ do
 		createDirectoryIfMissing True tmpdbdir
-		runSqliteInfo (mkConnInfo tmpdb) migration
+#if MIN_VERSION_persistent_sqlite(2,6,2)
+		runSqliteInfo (enableWAL tdb) migration
+#else
+		enableWAL tdb
+		runSqlite tdb migration
+#endif
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring
 	-- less restrictive umasks.
@@ -44,11 +56,21 @@ initDb db migration = do
 {- Make sure that the database uses WAL mode, to prevent readers
  - from blocking writers, and prevent a writer from blocking readers.
  -
- - This is the default in persistent-sqlite currently, but force it on just
- - in case. 
+ - This is the default in recent persistent-sqlite versions, but 
+ - force it on just in case. 
  -
  - Note that once WAL mode is enabled, it will persist whenever the
  - database is opened. -}
-mkConnInfo :: FilePath -> SqliteConnectionInfo
-mkConnInfo db = over walEnabled (const True) $ 
-	mkSqliteConnectionInfo (T.pack db)
+#if MIN_VERSION_persistent_sqlite(2,6,2)
+enableWAL :: T.Text -> SqliteConnectionInfo
+enableWAL db = over walEnabled (const True) $ 
+	mkSqliteConnectionInfo db
+#else
+enableWAL :: T.Text -> IO ()
+enableWAL db = do
+	conn <- Sqlite.open db
+	stmt <- Sqlite.prepare conn (T.pack "PRAGMA journal_mode=WAL;")
+	void $ Sqlite.step stmt
+	void $ Sqlite.finalize stmt
+	Sqlite.close conn
+#endif

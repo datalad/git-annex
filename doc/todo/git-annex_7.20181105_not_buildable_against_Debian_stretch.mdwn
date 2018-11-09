@@ -8,3 +8,5 @@
 Backporting recent persistent-sqlite to stretch is highly unlikely to succeed, given how tangled Haskell library dependencies tend to be.  So, unless there is an easy fix for this, git-annex will have to be removed from stretch-backports.  That would be a shame, but I guess buster isn't so far away now!
 
 --spwhitton
+
+> [[fixed|done]] --[[Joey]]
