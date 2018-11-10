@@ -22,6 +22,8 @@ html
 *.tix
 .hpc
 dist
+dist-newstyle
+result
 # Sandboxed builds
 cabal-dev
 .cabal-sandbox
