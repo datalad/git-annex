@@ -5,6 +5,10 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     two different objects.)
   * Fixed some other potential hangs in the P2P protocol.
   * Fix build with persistent-sqlite older than 2.6.3.
+  * Remove esqueleto dependency to allow upgrading other dependencies to
+    newer versions.
+    Thanks Sean Parsons.
+  * stack.yaml: Update to lts-12.17.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 
