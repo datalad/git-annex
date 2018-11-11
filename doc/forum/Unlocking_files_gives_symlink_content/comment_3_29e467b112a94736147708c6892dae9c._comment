@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 3"
+ date="2018-11-11T23:13:29Z"
+ content="""
+Did you try Joey's suggestion? “Another way to get out of this situation would be to edit the files, and remove the initial lines so it contains a single line that is the link target of the symlink (the bit with .git/annex/objects in it). Then, git annex fsck would be able to fix up the files.”
+
+What is the output of `readlink test.md` when test.md is locked?
+"""]]
