@@ -80,3 +80,5 @@ git-annex version: 6.20181011+git124-g94aa0e2f6-1~ndall+1
 </details>
 
 
+
+[[!meta author=yoh]]
