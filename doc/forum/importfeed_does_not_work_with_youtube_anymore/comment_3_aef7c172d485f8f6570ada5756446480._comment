@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-11-12T20:17:31Z"
+ content="""
+There is actually a way to construct a rss feed url that will work,
+but nowhere in youtube can you find the url.
+[[tips/downloading_podcasts]] discusses how the url looks like; finding the
+`channel_id` value for a given youtube page tends to involve grepping the
+html or some third-party tool.
+
+If youtube-dl had a way to extract the `channel_id`, I suppose I might make
+git-annex use it. Although leaving the user to jump through the absurd
+hoops google has set up to find an rss feed does highlight just how
+user-hostile and standard-hostile Google is being here; it sends some
+important signals to the user about the entity they're interacting with,
+their business model, and how likely the rss feed is to break in the
+future.
+"""]]
