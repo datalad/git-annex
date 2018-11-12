@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2018-11-12T17:54:07Z"
+ content="""
+	[2018-11-12 12:25:05.612916] read: ssh [\"-o\",\"BatchMode=true\",\"-S\",\".git/annex/ssh/yoh@falkor.datalad.org\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"yoh@falkor.datalad.org\",\"true\"]
+	[2018-11-12 12:25:05.712832294] process done ExitFailure 255
+	git-annex: thread blocked indefinitely in an STM transaction
+
+So sshing without letting it prompt for a password has failed.
+The next thing git-annex should do at that point is take a lock
+to prevent concurrent prompts (which does not use STM), 
+ask concurrent-output to hide any regions from the display
+(which does use STM), and run ssh again to prompt. 
+
+It's apparently crashing before it can run ssh again. (Although I'm not really
+sure if it is, it's also possible it overwrote some of the debug output while
+trying to hide console regions. Please capture a complete typescript.)
+
+It could be that concurrent-output's waitDisplayChange is buggy,
+with some kind of race. But this does not seem to be behaving like a race condition,
+does it? It happens every time?
+"""]]
