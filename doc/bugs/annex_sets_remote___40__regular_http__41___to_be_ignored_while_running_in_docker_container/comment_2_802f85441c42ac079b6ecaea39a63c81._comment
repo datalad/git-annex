@@ -1,0 +1,351 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2018-11-12T19:27:48Z"
+ content="""
+Just want to check first -- you didn't miss my fancy foldable \"A sample docker run\" in the original submission? (has annex version at the bottom), did you?
+
+and yes -- works fine outside of docker on the same box (well - my laptop).
+
+FWIW, you are welcome to try it on smaug, you are a part of `docker` group there.  For some reason docker is slowish there.
+
+Interestingly, the version of that image being different on smaug, output might be more informative (?):
+
+[[!format sh \"\"\"
+[2018-11-12 19:09:33.816486231] process done ExitSuccess
+download failed: ConnectionFailure Network.BSD.getProtocolByName: does not exist (no such protocol name: tcp)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+\"\"\"]]
+
+And here is (folded) full output of that run:
+
+<details>
+<summary>Docker run with older git annex 6.20180626+gitg12cd64369-1~ndall+1</summary>
+
+[[!format sh \"\"\"
+$> docker run -it --rm --entrypoint bash nipy/heudiconv:annex-6.20180626 -c \"cd /tmp/ && rm -rf /tmp/MEEPI3; git clone http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git MEEPI3 && cd MEEPI3 && git annex info --debug; echo -e '\n\nCURL:'; curl http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git/config; git annex version\"          
+Cloning into 'MEEPI3'...                                                
+remote: Counting objects: 101, done.
+remote: Compressing objects: 100% (82/82), done.
+remote: Total 101 (delta 35), reused 0 (delta 0)
+Receiving objects: 100% (101/101), 11.70 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (35/35), done.
+[2018-11-12 19:09:33.497644702] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-11-12 19:09:33.502984282] process done ExitSuccess
+[2018-11-12 19:09:33.503282134] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-11-12 19:09:33.508604943] process done ExitFailure 1
+[2018-11-12 19:09:33.508770986] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--verify\",\"-q\",\"origin/git-annex\"]
+[2018-11-12 19:09:33.512907558] process done ExitFailure 1
+[2018-11-12 19:09:33.513545552] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-11-12 19:09:33.678146279] process done ExitSuccess
+[2018-11-12 19:09:33.678410423] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\",\"--no-gpg-sign\"]
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email \"you@example.com\"
+  git config --global user.name \"Your Name\"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'root@5d3e0680b6fc.(none)')
+[2018-11-12 19:09:33.684364456] process done ExitFailure 128
+[2018-11-12 19:09:33.684636234] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"user.name\",\"root\"]
+[2018-11-12 19:09:33.68955458] process done ExitSuccess
+[2018-11-12 19:09:33.689684113] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:09:33.693793841] process done ExitSuccess
+[2018-11-12 19:09:33.693980718] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"user.email\",\"root\"]
+[2018-11-12 19:09:33.697545036] process done ExitSuccess
+[2018-11-12 19:09:33.697671055] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:09:33.701348909] process done ExitSuccess
+[2018-11-12 19:09:33.701520785] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-11-12 19:09:33.704126701] process done ExitFailure 1
+[2018-11-12 19:09:33.704281927] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--verify\",\"-q\",\"origin/git-annex\"]
+[2018-11-12 19:09:33.708300009] process done ExitFailure 1
+[2018-11-12 19:09:33.708510969] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-11-12 19:09:33.712223058] process done ExitSuccess
+[2018-11-12 19:09:33.712455349] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\",\"--no-gpg-sign\"]
+[2018-11-12 19:09:33.717700724] process done ExitSuccess
+[2018-11-12 19:09:33.717878364] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"b6d1fa4a9fd6e1e2b92cc4472374ff788f4ffe82\"]
+[2018-11-12 19:09:33.72191105] process done ExitSuccess
+[2018-11-12 19:09:33.72266107] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.uuid\",\"f7e33e3d-b3aa-473a-9fa3-213ef312c646\"]
+[2018-11-12 19:09:33.726190775] process done ExitSuccess
+[2018-11-12 19:09:33.726346741] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:09:33.729706319] process done ExitSuccess
+[2018-11-12 19:09:33.73202387] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-11-12 19:09:33.73679675] process done ExitSuccess
+[2018-11-12 19:09:33.73698363] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-11-12 19:09:33.74067435] process done ExitSuccess
+[2018-11-12 19:09:33.741001325] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..b6d1fa4a9fd6e1e2b92cc4472374ff788f4ffe82\",\"--pretty=%H\",\"-n1\"]
+[2018-11-12 19:09:33.745857469] process done ExitSuccess
+[2018-11-12 19:09:33.74605887] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..04619d91febf86de056a8d091a5f06d464a01c04\",\"--pretty=%H\",\"-n1\"]
+[2018-11-12 19:09:33.751124219] process done ExitSuccess
+[2018-11-12 19:09:33.751630501] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-11-12 19:09:33.752216628] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+(merging origin/git-annex into git-annex...)
+[2018-11-12 19:09:33.755344426] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2018-11-12 19:09:33.756221301] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2018-11-12 19:09:33.756880319] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"04619d91febf86de056a8d091a5f06d464a01c04\",\"--\"]
+[2018-11-12 19:09:33.7622414] process done ExitSuccess
+[2018-11-12 19:09:33.763122925] process done ExitSuccess
+[2018-11-12 19:09:33.763684956] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"04619d91febf86de056a8d091a5f06d464a01c04..refs/heads/git-annex\",\"--pretty=%H\",\"-n1\"]
+[2018-11-12 19:09:33.768141316] process done ExitSuccess
+(recording state in git...)
+[2018-11-12 19:09:33.768438348] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-11-12 19:09:33.77206771] process done ExitSuccess
+[2018-11-12 19:09:33.772262959] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"f21c20ffe799304525ca1aeace21935c47926873\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\",\"-p\",\"04619d91febf86de056a8d091a5f06d464a01c04\"]
+[2018-11-12 19:09:33.776274369] process done ExitSuccess
+[2018-11-12 19:09:33.77643436] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"d076e4f8669ea8f8ddce8685e85af824a9697100\"]
+[2018-11-12 19:09:33.781233336] process done ExitSuccess
+[2018-11-12 19:09:33.783050992] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.version\",\"5\"]
+[2018-11-12 19:09:33.787781391] process done ExitSuccess
+[2018-11-12 19:09:33.78793579] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:09:33.790756389] process done ExitSuccess
+[2018-11-12 19:09:33.790954849] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2018-11-12 19:09:33.795171566] process done ExitSuccess
+[2018-11-12 19:09:33.795368409] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2018-11-12 19:09:33.800060961] process done ExitSuccess
+[2018-11-12 19:09:33.800259221] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2018-11-12 19:09:33.803306615] process done ExitSuccess
+[2018-11-12 19:09:33.803473861] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+[2018-11-12 19:09:33.807579032] process done ExitSuccess
+[2018-11-12 19:09:33.807783985] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"checkout\",\"-q\",\"-B\",\"master\"]
+[2018-11-12 19:09:33.814124796] process done ExitSuccess
+[2018-11-12 19:09:33.815125257] read: uname [\"-n\"]
+[2018-11-12 19:09:33.816486231] process done ExitSuccess
+download failed: ConnectionFailure Network.BSD.getProtocolByName: does not exist (no such protocol name: tcp)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+[2018-11-12 19:09:33.94194622] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"remote.origin.annex-ignore\",\"true\"]
+[2018-11-12 19:09:33.947114461] process done ExitSuccess
+[2018-11-12 19:09:33.9474738] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:09:33.951509986] process done ExitSuccess
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	41bc6812-269a-47af-a7c9-ba2d30e55642 -- yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/dicoms/velasco/MEEPI
+ 	757a81e7-f905-4796-9941-a2772ec190b6 -- yoh@falkor:/srv/datasets.datalad.org/www/dicoms/velasco/MEEPI
+ 	c04eb54b-4b4e-5755-8436-866b043170fa -- datalad-archives
+ 	f7e33e3d-b3aa-473a-9fa3-213ef312c646 -- root@5d3e0680b6fc:/tmp/MEEPI3 [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 34.84 terabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: [2018-11-12 19:09:33.953212804] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"--others\",\"-z\",\"--\",\".\"]
+[2018-11-12 19:09:33.957668639] process done ExitSuccess
+3
+size of annexed files in working tree: 5.87 megabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	MD5E: 3
+[2018-11-12 19:09:33.958614844] process done ExitSuccess
+[2018-11-12 19:09:33.95905526] process done ExitSuccess
+[2018-11-12 19:09:33.959474605] process done ExitSuccess
+
+
+CURL:
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	sharedrepository = 2
+[receive]
+	denyNonFastforwards = true
+	denyCurrentBranch = updateInstead
+[annex]
+	uuid = 757a81e7-f905-4796-9941-a2772ec190b6
+	version = 5
+git-annex version: 6.20180626+gitg12cd64369-1~ndall+1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify ConcurrentOutput TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.16 bloomfilter-2.0.1.0 cryptonite-0.23 DAV-1.3.1 feed-0.3.12.0 ghc-8.0.2 http-client-0.5.7.1 persistent-sqlite-2.6.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+local repository version: 5
+
+\"\"\"]]
+</details>
+
+Having pulled the `nipy/heudiconv:latest`, original reported behavior reproduces 
+
+<details>
+<summary>Docker run with newer git annex </summary>
+
+[[!format sh \"\"\"
+$> docker run -it --rm --entrypoint bash nipy/heudiconv:latest -c \"cd /tmp/ && rm -rf /tmp/MEEPI3; git clone http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git MEEPI3 && cd MEEPI3 && git annex info --debug; echo -e '\n\nCURL:'; curl http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git/config; git annex version\"  
+Cloning into 'MEEPI3'...                                      
+remote: Counting objects: 101, done.
+remote: Compressing objects: 100% (82/82), done.
+remote: Total 101 (delta 35), reused 0 (delta 0)
+Receiving objects: 100% (101/101), 11.70 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (35/35), done.
+[2018-11-12 19:16:30.168203115] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-11-12 19:16:30.173678013] process done ExitSuccess
+[2018-11-12 19:16:30.174017869] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-11-12 19:16:30.17921506] process done ExitFailure 1
+[2018-11-12 19:16:30.179386236] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--verify\",\"-q\",\"origin/git-annex\"]
+[2018-11-12 19:16:30.183673031] process done ExitFailure 1
+[2018-11-12 19:16:30.184420434] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-11-12 19:16:30.189923909] process done ExitSuccess
+[2018-11-12 19:16:30.190097446] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\",\"--no-gpg-sign\"]
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email \"you@example.com\"
+  git config --global user.name \"Your Name\"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'root@b88726a4382b.(none)')
+[2018-11-12 19:16:30.194707379] process done ExitFailure 128
+[2018-11-12 19:16:30.194989101] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"user.name\",\"root\"]
+[2018-11-12 19:16:30.199736477] process done ExitSuccess
+[2018-11-12 19:16:30.199882502] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:16:30.204311006] process done ExitSuccess
+[2018-11-12 19:16:30.204467196] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"user.email\",\"root\"]
+[2018-11-12 19:16:30.209146004] process done ExitSuccess
+[2018-11-12 19:16:30.2092902] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:16:30.21315675] process done ExitSuccess
+[2018-11-12 19:16:30.213311976] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-11-12 19:16:30.217993425] process done ExitFailure 1
+[2018-11-12 19:16:30.218146321] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--verify\",\"-q\",\"origin/git-annex\"]
+[2018-11-12 19:16:30.22226559] process done ExitFailure 1
+[2018-11-12 19:16:30.596337472] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-11-12 19:16:30.601348306] process done ExitSuccess
+[2018-11-12 19:16:30.601517345] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\",\"--no-gpg-sign\"]
+[2018-11-12 19:16:30.607398795] process done ExitSuccess
+[2018-11-12 19:16:30.607513593] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"44bd175787872acfd21593ef7f75224da84f728e\"]
+[2018-11-12 19:16:30.612739367] process done ExitSuccess
+[2018-11-12 19:16:30.613560258] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.uuid\",\"d886638a-7427-46c1-911d-2febef7fc831\"]
+[2018-11-12 19:16:30.617982319] process done ExitSuccess
+[2018-11-12 19:16:30.618139741] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:16:30.622404815] process done ExitSuccess
+[2018-11-12 19:16:30.624792574] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-11-12 19:16:30.629506669] process done ExitSuccess
+[2018-11-12 19:16:30.629670469] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-11-12 19:16:30.633873559] process done ExitSuccess
+[2018-11-12 19:16:30.634159315] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..44bd175787872acfd21593ef7f75224da84f728e\",\"--pretty=%H\",\"-n1\"]
+[2018-11-12 19:16:30.638868994] process done ExitSuccess
+[2018-11-12 19:16:30.63901631] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..04619d91febf86de056a8d091a5f06d464a01c04\",\"--pretty=%H\",\"-n1\"]
+[2018-11-12 19:16:30.644133907] process done ExitSuccess
+[2018-11-12 19:16:30.644558474] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-11-12 19:16:30.645069766] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+(merging origin/git-annex into git-annex...)
+[2018-11-12 19:16:30.648787618] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2018-11-12 19:16:30.649353618] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2018-11-12 19:16:30.650115411] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"04619d91febf86de056a8d091a5f06d464a01c04\",\"--\"]
+[2018-11-12 19:16:30.654663147] process done ExitSuccess
+[2018-11-12 19:16:30.655618594] process done ExitSuccess
+[2018-11-12 19:16:30.656176449] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"04619d91febf86de056a8d091a5f06d464a01c04..refs/heads/git-annex\",\"--pretty=%H\",\"-n1\"]
+[2018-11-12 19:16:30.661120546] process done ExitSuccess
+(recording state in git...)
+[2018-11-12 19:16:30.661335622] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2018-11-12 19:16:30.666151568] process done ExitSuccess
+[2018-11-12 19:16:30.666446029] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"f21c20ffe799304525ca1aeace21935c47926873\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\",\"-p\",\"04619d91febf86de056a8d091a5f06d464a01c04\"]
+[2018-11-12 19:16:30.67115132] process done ExitSuccess
+[2018-11-12 19:16:30.671318437] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"e9b0bb4be7614f8dab19660fc8b3c00fec9c1180\"]
+[2018-11-12 19:16:30.676528891] process done ExitSuccess
+[2018-11-12 19:16:30.678481925] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.version\",\"5\"]
+[2018-11-12 19:16:30.682563316] process done ExitSuccess
+[2018-11-12 19:16:30.682715955] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:16:30.686466067] process done ExitSuccess
+[2018-11-12 19:16:30.68663411] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2018-11-12 19:16:30.690971999] process done ExitSuccess
+[2018-11-12 19:16:30.691134218] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2018-11-12 19:16:30.695344845] process done ExitSuccess
+[2018-11-12 19:16:30.695518841] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2018-11-12 19:16:30.699919641] process done ExitSuccess
+[2018-11-12 19:16:30.700082394] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+[2018-11-12 19:16:30.704659184] process done ExitSuccess
+[2018-11-12 19:16:30.704830677] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"checkout\",\"-q\",\"-B\",\"master\"]
+[2018-11-12 19:16:30.709278877] process done ExitSuccess
+[2018-11-12 19:16:30.710297742] read: uname [\"-n\"]
+[2018-11-12 19:16:30.730187288] process done ExitSuccess
+[2018-11-12 19:16:30.964899187] Request {
+  host                 = \"datasets-tests.datalad.org\"
+  port                 = 80
+  secure               = False
+  requestHeaders       = [(\"Range\",\"bytes=0-\"),(\"Accept-Encoding\",\"identity\"),(\"User-Agent\",\"git-annex/6.20181011+git124-g94aa0e2f6-1~ndall+1\")]
+  path                 = \"/dicoms/velasco/MEEPI/.git/config\"
+  queryString          = \"\"
+  method               = \"GET\"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+
+  Remote origin not usable by git-annex; setting annex-ignore
+[2018-11-12 19:16:30.965795741] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"remote.origin.annex-ignore\",\"true\"]
+[2018-11-12 19:16:30.9707034] process done ExitSuccess
+[2018-11-12 19:16:30.970879863] read: git [\"config\",\"--null\",\"--list\"]
+[2018-11-12 19:16:30.975621212] process done ExitSuccess
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	41bc6812-269a-47af-a7c9-ba2d30e55642 -- yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/dicoms/velasco/MEEPI
+ 	757a81e7-f905-4796-9941-a2772ec190b6 -- yoh@falkor:/srv/datasets.datalad.org/www/dicoms/velasco/MEEPI
+ 	c04eb54b-4b4e-5755-8436-866b043170fa -- datalad-archives
+ 	d886638a-7427-46c1-911d-2febef7fc831 -- root@b88726a4382b:/tmp/MEEPI3 [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 34.83 terabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: [2018-11-12 19:16:30.978614061] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"--others\",\"-z\",\"--\",\".\"]
+[2018-11-12 19:16:30.982161106] process done ExitSuccess
+3
+size of annexed files in working tree: 5.87 megabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	MD5E: 3
+[2018-11-12 19:16:30.983219045] process done ExitSuccess
+[2018-11-12 19:16:30.984207325] process done ExitSuccess
+[2018-11-12 19:16:30.984715431] process done ExitSuccess
+
+
+CURL:
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	sharedrepository = 2
+[receive]
+	denyNonFastforwards = true
+	denyCurrentBranch = updateInstead
+[annex]
+	uuid = 757a81e7-f905-4796-9941-a2772ec190b6
+	version = 5
+git-annex version: 6.20181011+git124-g94aa0e2f6-1~ndall+1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.12 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 3 5 6
+upgrade supported from repository versions: 0 1 2 3 4 5
+local repository version: 5
+\"\"\"]]
+</details>
+
+Reflecting on the discovery of that \"no such protocol name\", googled [github hit](https://github.com/fpco/haskell-scratch/issues/2#issuecomment-285923941), added `apt-get install -y libnss3 libnss-lwres libnss-mdns` to the new version of the docker image - that didn't help.
+
+"""]]
