@@ -1,0 +1,82 @@
+I have a case where `whereis` knows that a file is present in an exporttree
+remote, but `get` fails:
+
+	joey@darkstar:/tmp/bench/repoclone>git annex whereis bar
+	whereis bar (1 copy)
+	  	b1a73a91-5f79-4b4b-b838-683e602b2888 -- joey@darkstar:/tmp/bench/repo
+	
+	  The following untrusted locations may also have copies:
+	  	163219a6-fdc1-4d3e-98a6-7aed3e9d605d -- [dir]
+	ok
+	joey@darkstar:/tmp/bench/repoclone>git annex get bar
+	get bar
+	  Unable to access these remotes: dir
+	
+	  Try making some of these repositories available:
+	  	163219a6-fdc1-4d3e-98a6-7aed3e9d605d -- [dir]
+	   	b1a73a91-5f79-4b4b-b838-683e602b2888 -- joey@darkstar:/tmp/bench/repo
+	failed
+	git-annex: get: 1 failed
+	- exit 1
+
+Reproducible with git-annex 7.20181106-g58d1b2510 using this script.
+
+It looks like the export database is not getting updated to reflect the
+export that was made in the other clone of the repository.
+
+	joey@darkstar:/tmp/bench/repoclone>echo .dump | sqlite3 .git/annex/export/163219a6-fdc1-4d3e-98a6-7aed3e9d605d/db/db
+	PRAGMA foreign_keys=OFF;
+	BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS "exported"("id" INTEGER PRIMARY KEY,"key" VARCHAR NOT NULL,"file" VARCHAR NOT NULL,CONSTRAINT "exported_index" UNIQUE ("key","file"));
+	INSERT INTO exported VALUES(1,'SHA1--257cc5642cb1a054f08cc83f2d943e56fd3ebe99','foo');
+	CREATE TABLE IF NOT EXISTS "exported_directory"("id" INTEGER PRIMARY KEY,"subdir" VARCHAR NOT NULL,"file" VARCHAR NOT NULL,CONSTRAINT "exported_directory_index" UNIQUE ("subdir","file"));
+	CREATE TABLE IF NOT EXISTS "export_tree"("id" INTEGER PRIMARY KEY,"key" VARCHAR NOT NULL,"file" VARCHAR NOT NULL,CONSTRAINT "export_tree_index" UNIQUE ("key","file"));
+	INSERT INTO export_tree VALUES(1,'SHA1--257cc5642cb1a054f08cc83f2d943e56fd3ebe99','foo');
+	CREATE TABLE IF NOT EXISTS "export_tree_current"("id" INTEGER PRIMARY KEY,"tree" VARCHAR NOT NULL,CONSTRAINT "unique_tree" UNIQUE ("tree"));
+	INSERT INTO export_tree_current VALUES(1,'205f6b799e7d5c2524468ca006a0131aa57ecce7');
+	COMMIT;
+
+--[[Joey]]
+
+<pre>
+#!/bin/sh
+set -e
+mkdir /tmp/bench
+cd /tmp/bench
+mkdir d
+git init repo
+cd repo
+git annex init
+echo foo > foo
+git add foo
+git commit -m add
+git annex initremote dir type=directory directory=../d encryption=none exporttree=yes
+cd ..
+git clone repo repoclone
+cd repoclone
+git annex enableremote dir directory=../d
+set +e
+git-annex export --tracking master --to dir
+echo "above expected to fail as foo's content is not present"
+set -e
+cd ../repo
+git-annex export --tracking master --to dir
+cd ../repoclone
+git fetch
+git annex whereis foo
+git annex get foo
+git-annex export --tracking master --to dir
+
+cd ../repo
+echo bar > bar
+git annex add
+git commit -m add
+git-annex export --tracking master --to dir
+
+cd ../repoclone
+git fetch
+git merge
+git annex whereis bar
+git remote rm origin
+git annex get bar
+</pre>
