@@ -58,7 +58,7 @@ runLocal runst runner a = case a of
 				Right (Left e) -> return $ Left e
 				Right (Right ok) -> runner (next ok)
 		-- If the content is not present, or the transfer doesn't
-		-- run for any other action, the sender action still must
+		-- run for any other reason, the sender action still must
 		-- be run, so is given empty and Invalid data.
 		let fallback = runner (sender mempty (return Invalid))
 		v <- tryNonAsync $ prepSendAnnex k
