@@ -98,3 +98,5 @@ git-annex version: 6.20181011+git124-g94aa0e2f6-1~ndall+1
 """]]
 
 Not sure why it ended up not moved into the proper location but I think upon redownload, size should be verified, if "Full" - try to proceed to checksum verification etc.
+
+> [[fixed|done]] --[[Joey]]

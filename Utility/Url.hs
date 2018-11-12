@@ -348,7 +348,14 @@ download' noerror meterupdate url file uo =
 			-- This could be improved by fixing
 			-- https://github.com/aristidb/http-types/issues/87
 			Just crh -> crh == B8.fromString ("bytes */" ++ show sz)
-			Nothing -> False
+			-- Some http servers send no Content-Range header when
+			-- the range extends beyond the end of the file.
+			-- There is no way to distinguish between the file
+			-- being the same size on the http server, vs
+			-- it being shorter than the file we already have.
+			-- So assume we have the whole content of the file
+			-- already, the same as wget and curl do.
+			Nothing -> True
 
 	-- Resume download from where a previous download was interrupted, 
 	-- when supported by the http server. The server may also opt to
