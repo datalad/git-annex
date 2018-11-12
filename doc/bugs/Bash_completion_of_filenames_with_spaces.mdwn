@@ -51,3 +51,4 @@ However, it doesn't correctly handle escape characters. Typically, a filename co
 
 Many times over! I use git-annex to manage my hundreds of pdfs, images, video files etc! It essentially enables *exactly* the work flow I like, since I live in the command line and appreciate fine-grained control over my tools. So, yes, thank you very much for this excellent too!
 
+> [[fixed|done]] --[[Joey]]

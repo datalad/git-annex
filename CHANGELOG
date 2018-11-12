@@ -5,6 +5,9 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     two different objects.)
   * Fixed some other potential hangs in the P2P protocol.
   * Fix build with persistent-sqlite older than 2.6.3.
+  * Fix bash completion of "git annex" to propertly handle files with
+    spaces and other problem characters. (Completion of "git-annex"
+    already did.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 
