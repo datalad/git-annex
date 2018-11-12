@@ -1,0 +1,82 @@
+### Please describe the problem.
+
+Initially reported in [heudiconv](https://github.com/nipy/heudiconv/pull/259).  I am not yet sure what is going on, but git-annex (tried "bleeding edge" from a few days back too) seems to believe being unable to get .git/config file, while I do not see any request being logged on the server side, and `curl` gets it just ok.
+
+To reproduce you can use ```docker run -it --rm --entrypoint bash nipy/heudiconv:latest -c "cd /tmp/ && rm -rf /tmp/MEEPI3; git clone http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git MEEPI3 && cd MEEPI3 && git annex info --debug; echo -e '\n\nCURL:'; curl http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git/config"```
+
+
+<details>
+<summary>A sample docker run</summary>
+
+[[!format sh """
+docker run -it --rm --entrypoint bash nipy/heudiconv:latest -c "cd /tmp/ && rm -rf /tmp/MEEPI3; git clone http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git MEEPI3 && cd MEEPI3 && git annex info --debug; echo -e '\n\nCURL:'; curl http://datasets-tests.datalad.org/dicoms/velasco/MEEPI/.git/config"
+...
+[2018-11-12 17:58:02.246908731] Request {
+  host                 = "datasets-tests.datalad.org"
+  port                 = 80
+  secure               = False
+  requestHeaders       = [("Range","bytes=0-"),("Accept-Encoding","identity"),("User-Agent","git-annex/6.20181011+git124-g94aa0e2f6-1~ndall+1")]
+  path                 = "/dicoms/velasco/MEEPI/.git/config"
+  queryString          = ""
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+
+  Remote origin not usable by git-annex; setting annex-ignore
+[2018-11-12 17:58:02.247631556] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","remote.origin.annex-ignore","true"]
+[2018-11-12 17:58:02.249993683] process done ExitSuccess
+[2018-11-12 17:58:02.250056119] read: git ["config","--null","--list"]
+[2018-11-12 17:58:02.252212701] process done ExitSuccess
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 6
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	41bc6812-269a-47af-a7c9-ba2d30e55642 -- yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/dicoms/velasco/MEEPI
+ 	757a81e7-f905-4796-9941-a2772ec190b6 -- yoh@falkor:/srv/datasets.datalad.org/www/dicoms/velasco/MEEPI
+ 	c04eb54b-4b4e-5755-8436-866b043170fa -- datalad-archives
+ 	ffa6417c-5511-4b43-a67a-036dd57ab974 -- root@d9efe0626d93:/tmp/MEEPI3 [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 12.08 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: [2018-11-12 17:58:02.253291443] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","--others","-z","--","."]
+[2018-11-12 17:58:02.255650007] process done ExitSuccess
+3
+size of annexed files in working tree: 5.87 megabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	MD5E: 3
+[2018-11-12 17:58:02.256351183] process done ExitSuccess
+[2018-11-12 17:58:02.256558475] process done ExitSuccess
+[2018-11-12 17:58:02.256945107] process done ExitSuccess
+
+
+CURL:
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	sharedrepository = 2
+[receive]
+	denyNonFastforwards = true
+	denyCurrentBranch = updateInstead
+[annex]
+	uuid = 757a81e7-f905-4796-9941-a2772ec190b6
+	version = 5
+
+
+$> docker run -it --rm --entrypoint bash nipy/heudiconv:latest -c "git annex version | head -n1"
+git-annex version: 6.20181011+git124-g94aa0e2f6-1~ndall+1 
+"""]]
+
+</details>
+
+
