@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-11-12T15:22:12Z"
+ content="""
+@andrew, the bug you linked to is only about multiple password prompting
+when using `GIT_SSH`, which I don't think is in use here.
+
+Anyway that bug did not involve MVar/STM deadlocks, so this is not a
+duplicate.
+"""]]
