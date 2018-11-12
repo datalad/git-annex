@@ -1,0 +1,72 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reply on the issue "
+ date="2018-11-12T16:48:08Z"
+ content="""
+>  (can't tell from your version string due to the git rev not being one from the git-annex repo)
+
+patch for my \"custom\" version is now (if was not before) sent out -- needs adjustment in standalone patch
+
+> As Andrew noted, the multiple ssh password prompt issue is expected if you are using GIT_SSH or GIT_SSH_COMMAND. From discussion in https://github.com/datalad/datalad/issues/2988 it seems like you might be?
+
+in [a comment on that issue](https://github.com/datalad/datalad/issues/2988#issuecomment-437088252) I call `git annex` directly, so I think I did not have any custom env settings set...  Moreover as I [commented further](https://github.com/datalad/datalad/issues/2988#issuecomment-437095621) nothing changed when I set `GIT_ANNEX_USE_GIT_SSH=1` which I guess should have counteracted?  
+I have tried now with `6.20170815+gitg22da64d0f-1~ndall+1` -- provides a single prompt. 
+Here is again output now also checking for SSH variables:
+[[!format sh \"\"\"
+[yhalchen@discovery7 QA]$ export | grep GIT       
+[yhalchen@discovery7 QA]$ git annex version | head -n 1   
+git-annex version: 6.20180926-gc906aaf
+[yhalchen@discovery7 QA]$ git annex get -J2 sub-qa/ 
+get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2Xs4_dwi.nii.gz get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2_dwi.nii.gz (from origin...) 
+(from origin...) 
+yoh@falkor.datalad.org's password: yoh@falkor.datalad.org's password: 
+\"\"\"]]
+
+> ... suggests they you have annex.pidlock set locally. It would be good to know about this or other configuration.
+
+smth like?
+
+[[!format sh \"\"\"
+[yhalchen@discovery7 QA]$ git config annex.pidlock
+false
+\"\"\"]]
+
+I also no longer see that \"transfer already in progress...\" - may be I changed config since then:
+
+[[!format sh \"\"\"
+[yhalchen@discovery7 QA]$ git annex version | head -n1 ; git annex get -J2 sub-qa/
+git-annex version: 7.20181105+git22-g4c7236c58-1~ndall+1
+get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2Xs4_dwi.nii.gz get sub-qa/ses-20161128/dwi/sub-qa_ses-20161128_acq-DTIX30Xp2_dwi.nii.gz (from origin...) 
+(from origin...) 
+
+
+  thread blocked indefinitely in an STM transaction
+  thread blocked indefinitely in an MVar operation
+
+  Unable to access these remotes: origin
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+failed
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+git-annex: thread blocked indefinitely in an STM transaction
+\"\"\"]]
+
+FWIW, I have now ran `git annex test` with TMPDIR on that partition, with
+[[!format sh \"\"\"
+157 out of 293 tests failed (686.03s)
+\"\"\"]]
+as the result. [HEre is the full log](http://www.onerussian.com/tmp/annex-test-7.20181105+git22-g4c7236c58.txt) -- may be it would give you some hints.
+
+
+"""]]
