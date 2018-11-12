@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2018-11-12T17:25:43Z"
+ content="""
+FWIW, running under /tmp with TMPDIR there -- `All 293 tests passed `, so aforementioned test failures are FS related.
+
+another (complete) attempt on `get` under `/tmp`, which is less noisy but still failing due to locking:
+[[!format sh \"\"\"
+[yhalchen@discovery7 tmp]$ git clone yoh@falkor.datalad.org:/srv/datasets.datalad.org/www/dbic/QA/
+Cloning into 'QA'...
+yoh@falkor.datalad.org's password: 
+Permission denied, please try again.
+yoh@falkor.datalad.org's password: 
+remote: Counting objects: 31315, done.
+remote: Compressing objects: 100% (10068/10068), done.
+remote: Total 31315 (delta 15553), reused 26858 (delta 14185)
+Receiving objects: 100% (31315/31315), 31.02 MiB | 43.04 MiB/s, done.
+Resolving deltas: 100% (15553/15553), done.
+
+[yhalchen@discovery7 tmp]$ cd QA
+
+[yhalchen@discovery7 QA]$ git annex get -J2 sub-*                                                               
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+git-annex: thread blocked indefinitely in an STM transaction
+
+[yhalchen@discovery7 QA]$ export | grep SSH
+declare -x SSH_CLIENT=\"10.31.184.44 54944 22\"
+declare -x SSH_CONNECTION=\"10.31.184.44 54944 129.170.232.78 22\"
+declare -x SSH_TTY=\"/dev/pts/6\"
+
+[yhalchen@discovery7 QA]$ export | grep GIT
+
+[yhalchen@discovery7 QA]$ git annex version | head -n 1
+git-annex version: 7.20181105+git22-g4c7236c58-1~ndall+1
+
+[yhalchen@discovery7 QA]$ git annex get --debug -J2 sub-*
+[2018-11-12 12:25:05.499642416] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2018-11-12 12:25:05.515163636] process done ExitSuccess
+[2018-11-12 12:25:05.515289739] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2018-11-12 12:25:05.5303119] process done ExitSuccess
+[2018-11-12 12:25:05.530496533] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"sub-amit\",\"sub-emmet\",\"sub-qa\",\"sub-sid000143\"]
+[2018-11-12 12:25:05.547049728] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2018-11-12 12:25:05.561799248] process done ExitSuccess
+[2018-11-12 12:25:05.561984198] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2018-11-12 12:25:05.576759502] process done ExitSuccess
+[2018-11-12 12:25:05.577215967] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..b984c211b3b15db79921d77d1c30cf4b06140d0e\",\"--pretty=%H\",\"-n1\"]
+[2018-11-12 12:25:05.59389018] process done ExitSuccess
+[2018-11-12 12:25:05.594415045] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2018-11-12 12:25:05.596445232] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2018-11-12 12:25:05.612916] read: ssh [\"-o\",\"BatchMode=true\",\"-S\",\".git/annex/ssh/yoh@falkor.datalad.org\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"yoh@falkor.datalad.org\",\"true\"]
+[2018-11-12 12:25:05.712832294] process done ExitFailure 255
+git-annex: thread blocked indefinitely in an STM transaction
+
+```
+"""]]
