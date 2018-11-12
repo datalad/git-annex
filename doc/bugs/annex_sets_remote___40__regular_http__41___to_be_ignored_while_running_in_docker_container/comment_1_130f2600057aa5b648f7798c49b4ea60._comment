@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-11-12T18:42:53Z"
+ content="""
+It does seem to work just fine with current git-annex outside
+docker.
+
+Given the insecurity-to-weight ratio of docker and the number of hoops
+I would have to jump through to run that docker command, 
+it may be several days until I have time, bandwidth, and power to try
+it myself.. If you want to show the debug output, that generally doesn't
+hurt.
+
+(Please include the git-annex version information in all bug reports.)
+"""]]
