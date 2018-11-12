@@ -1,0 +1,281 @@
+### Please describe the problem.
+I create two new local repositories each a remote of each-other. I put both repos in autostart and then i autostart the assistant. I create a new file in repo1 it doesn't get transfered to repo2. Once I create a new file manually in repo2 now bi-directional transferring happens fine. Presumably assistant is not able to handle the case where the initial git commit has not yet happened in an indirect mode destination repo?
+
+I think this might be happening for repositories created from the webapp gui as well sometimes.
+
+
+### What steps will reproduce the problem?
+See log.
+
+### What version of git-annex are you using? On what operating system?
+7.20181106-g352f88226, macOS 10.12.6
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+andrew@bumblebee /Users/Shared$ git-annex version
+git-annex version: 7.20181106-g352f88226
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV FsEvents TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.17.1 bloomfilter-2.0.1.0 cryptonite-0.23 DAV-1.3.1 feed-0.3.12.0 ghc-8.0.2 http-client-0.5.7.0 persistent-sqlite-2.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: darwin x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+andrew@bumblebee /Users/Shared$ mkdir repo1
+andrew@bumblebee /Users/Shared$ mkdir repo2
+andrew@bumblebee /Users/Shared$ cd repo1
+andrew@bumblebee /Users/Shared/repo1$ git init
+Initialized empty Git repository in /Users/Shared/repo1/.git/
+andrew@bumblebee /Users/Shared/repo1$ git annex init
+init  ok
+(recording state in git...)
+andrew@bumblebee /Users/Shared/repo1$ cd ../repo2
+andrew@bumblebee /Users/Shared/repo2$ git init
+Initialized empty Git repository in /Users/Shared/repo2/.git/
+andrew@bumblebee /Users/Shared/repo2$ git annex init
+init  ok
+(recording state in git...)
+andrew@bumblebee /Users/Shared/repo2$ git remote add /Users/Shared/repo1 repo1
+fatal: '/Users/Shared/repo1' is not a valid remote name
+andrew@bumblebee /Users/Shared/repo2$ git remote add repo1 /Users/Shared/repo1
+andrew@bumblebee /Users/Shared/repo2$ cd ../repo1
+andrew@bumblebee /Users/Shared/repo1$ git remote add repo2 /Users/Shared/repo2
+andrew@bumblebee /Users/Shared/repo1$ cat ~/.config/git-annex/autostart
+/Users/Shared/repo2
+/Users/Shared/repo1
+andrew@bumblebee /Users/Shared/repo1$ cd ..
+andrew@bumblebee /Users/Shared$ git-annex assistant --autostart
+git-annex autostart in /Users/Shared/repo2
+ok
+git-annex autostart in /Users/Shared/repo1
+ok
+andrew@bumblebee /Users/Shared$ cd repo1
+andrew@bumblebee /Users/Shared/repo1$ ls
+andrew@bumblebee /Users/Shared/repo1$ date
+Mon Nov 12 11:28:59 EST 2018
+andrew@bumblebee /Users/Shared/repo1$ touch a.txt
+andrew@bumblebee /Users/Shared/repo1$ git-annex whereis a.txt
+whereis a.txt (2 copies) 
+  	746bb051-e2c5-463b-8d4c-7d4eee6de855 -- andrew@bumblebee.local:/Users/Shared/repo1 [here]
+   	87af3666-1f63-4ad1-8a1e-a1d260c90751 -- andrew@bumblebee.local:/Users/Shared/repo2 [repo2]
+ok
+andrew@bumblebee /Users/Shared/repo1$ cd ../repo2
+andrew@bumblebee /Users/Shared/repo2$ date
+Mon Nov 12 11:29:27 EST 2018
+andrew@bumblebee /Users/Shared/repo2$ ls
+andrew@bumblebee /Users/Shared/repo2$ git-annex whereis a.txt
+git-annex: a.txt not found
+git-annex: whereis: 1 failed
+andrew@bumblebee /Users/Shared/repo2$ git status
+On branch master
+
+No commits yet
+
+nothing to commit (create/copy files and use "git add" to track)
+andrew@bumblebee /Users/Shared/repo2$ ls
+andrew@bumblebee /Users/Shared/repo2$ date
+Mon Nov 12 11:29:58 EST 2018
+andrew@bumblebee /Users/Shared/repo2$ ls
+andrew@bumblebee /Users/Shared/repo2$ touch b.txt
+andrew@bumblebee /Users/Shared/repo2$ ls
+b.txt
+andrew@bumblebee /Users/Shared/repo2$ ls
+a.txt	b.txt
+andrew@bumblebee /Users/Shared/repo2$ ls ../repo1/
+a.txt	b.txt
+andrew@bumblebee /Users/Shared/repo2$ git annex info
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 4
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	746bb051-e2c5-463b-8d4c-7d4eee6de855 -- andrew@bumblebee.local:/Users/Shared/repo1 [repo1]
+ 	87af3666-1f63-4ad1-8a1e-a1d260c90751 -- andrew@bumblebee.local:/Users/Shared/repo2 [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 39.71 gigabytes (+1 megabyte reserved)
+local annex keys: 1
+local annex size: 0 bytes
+annexed files in working tree: 2
+size of annexed files in working tree: 0 bytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	SHA256E: 2
+andrew@bumblebee /Users/Shared/repo2$ cd ../repo1
+andrew@bumblebee /Users/Shared/repo1$ git annex info
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 4
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	746bb051-e2c5-463b-8d4c-7d4eee6de855 -- andrew@bumblebee.local:/Users/Shared/repo1 [here]
+ 	87af3666-1f63-4ad1-8a1e-a1d260c90751 -- andrew@bumblebee.local:/Users/Shared/repo2 [repo2]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 39.71 gigabytes (+1 megabyte reserved)
+local annex keys: 1
+local annex size: 0 bytes
+annexed files in working tree: 2
+size of annexed files in working tree: 0 bytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	SHA256E: 2
+andrew@bumblebee /Users/Shared/repo1$ git annex status
+andrew@bumblebee /Users/Shared/repo1$ cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[annex]
+	uuid = 746bb051-e2c5-463b-8d4c-7d4eee6de855
+	version = 5
+[remote "repo2"]
+	url = /Users/Shared/repo2
+	fetch = +refs/heads/*:refs/remotes/repo2/*
+	annex-uuid = 87af3666-1f63-4ad1-8a1e-a1d260c90751
+andrew@bumblebee /Users/Shared/repo1$ cd ../repo2/
+andrew@bumblebee /Users/Shared/repo2$ cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[annex]
+	uuid = 87af3666-1f63-4ad1-8a1e-a1d260c90751
+	version = 5
+[remote "repo1"]
+	url = /Users/Shared/repo1
+	fetch = +refs/heads/*:refs/remotes/repo1/*
+	annex-uuid = 746bb051-e2c5-463b-8d4c-7d4eee6de855
+andrew@bumblebee /Users/Shared/repo2$ less .git/annex/daemon.log 
+andrew@bumblebee /Users/Shared/repo2$ cat .git/annex/daemon.log 
+[2018-11-12 11:28:49.465425] main: starting assistant version 7.20181106-g352f88226
+[2018-11-12 11:28:49.512513] Cronner: You should enable consistency checking to protect your data. 
+[2018-11-12 11:28:54.562634] TransferScanner: Syncing with repo1 
+(scanning...) [2018-11-12 11:28:54.726133] Watcher: Performing startup scan
+(started...) 
+warning: no common commits
+From /Users/Shared/repo1
+ * [new branch]      git-annex  -> repo1/git-annex
+(merging repo1/git-annex into git-annex...)
+(recording state in git...)
+
+merge: refs/remotes/repo1/master - not something we can merge
+
+merge: refs/remotes/repo1/synced/master - not something we can merge
+gpg: assuming signed data in '/var/folders/h8/r85pzlmn7nn9_cslphvm3fl00000gn/T/git-annex.tmpdFD1JY/info'
+gpg: Signature made Wed Nov  7 17:35:16 2018 EST
+gpg:                using DSA key 40055C6AFD2D526B2961E78F5EE1DBA789C809CB
+gpg: /var/folders/h8/r85pzlmn7nn9_cslphvm3fl00000gn/T/git-annex-gpg.tmp4i2O5V/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+[2018-11-12 11:29:54.740571] Pusher: Syncing with repo1 
+[2018-11-12 11:30:34.763638] Committer: Adding b.txt
+add b.txt ok
+[2018-11-12 11:30:34.781129] Committer: Committing changes to git
+(recording state in git...)
+[2018-11-12 11:30:34.840133] Pusher: Syncing with repo1 
+To /Users/Shared/repo1
+ * [new branch]      git-annex -> synced/git-annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to '/Users/Shared/repo1'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and integrate the remote changes
+hint: (e.g. 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+To /Users/Shared/repo1
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to '/Users/Shared/repo1'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+From /Users/Shared/repo1
+ * [new branch]      master        -> repo1/master
+ * [new branch]      synced/master -> repo1/synced/master
+
+Merge made by the 'recursive' strategy.
+ a.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 a.txt
+
+Already up to date.
+[2018-11-12 11:30:35.847507] Committer: Committing changes to git
+(recording state in git...)
+To /Users/Shared/repo1
+   fc9cada..6ba5ac7  master -> synced/master
+[2018-11-12 11:30:38.007996] Pusher: Syncing with repo1 
+Everything up-to-date
+andrew@bumblebee /Users/Shared/repo2$ cd ../repo1
+andrew@bumblebee /Users/Shared/repo1$ cat .git/annex/daemon.log 
+[2018-11-12 11:28:49.721989] main: starting assistant version 7.20181106-g352f88226
+[2018-11-12 11:28:49.769131] Cronner: You should enable consistency checking to protect your data. 
+[2018-11-12 11:28:54.824594] TransferScanner: Syncing with repo2 
+(scanning...) [2018-11-12 11:28:55.021515] Watcher: Performing startup scan
+(started...) 
+From /Users/Shared/repo2
+ * [new branch]      git-annex  -> repo2/git-annex
+(merging repo2/git-annex into git-annex...)
+
+merge: refs/remotes/repo2/master - not something we can merge
+
+merge: refs/remotes/repo2/synced/master - not something we can merge
+gpg: assuming signed data in '/var/folders/h8/r85pzlmn7nn9_cslphvm3fl00000gn/T/git-annex.tmpDX5TrA/info'
+gpg: Signature made Wed Nov  7 17:35:16 2018 EST
+gpg:                using DSA key 40055C6AFD2D526B2961E78F5EE1DBA789C809CB
+gpg: /var/folders/h8/r85pzlmn7nn9_cslphvm3fl00000gn/T/git-annex-gpg.tmpoINnOV/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+[2018-11-12 11:29:08.133292] Committer: Adding a.txt
+add a.txt ok
+[2018-11-12 11:29:08.156146] Committer: Committing changes to git
+(recording state in git...)
+[2018-11-12 11:29:08.213209] Pusher: Syncing with repo2 
+(recording state in git...)
+(checksum...) [2018-11-12 11:29:08.423322] Transferrer: Uploaded a.txt
+To /Users/Shared/repo2
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+[2018-11-12 11:29:10.600961] Pusher: Syncing with repo2 
+(recording state in git...)
+To /Users/Shared/repo2
+   0d60202..3f14350  git-annex -> synced/git-annex
+[2018-11-12 11:29:55.03181] Pusher: Syncing with repo2 
+Everything up-to-date
+
+Updating fc9cada..6ba5ac7
+Fast-forward
+ b.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 b.txt
+[2018-11-12 11:30:36.890836] Committer: Committing changes to git
+(recording state in git...)
+[2018-11-12 11:30:36.924606] Pusher: Syncing with repo2 
+To /Users/Shared/repo2
+   3f14350..c67ada1  git-annex -> synced/git-annex
+andrew@bumblebee /Users/Shared/repo1$
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes. Its excellent!
