@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-11-12T15:27:27Z"
+ content="""
+It certianly seems possible that
+[[!commit 6ecd55a9fa4c64399b5ede3944bd2aa5f78cf0b1]]
+could have introduced a locking problem causing such a crash, 
+assuming you are running that version (can't tell from your version string
+due to the git rev not being one from the git-annex repo). 
+
+As Andrew noted, the multiple ssh password prompt issue is expected if you
+are using `GIT_SSH` or `GIT_SSH_COMMAND`. From discussion in 
+<https://github.com/datalad/datalad/issues/2988> it seems like you might
+be?
+
+The fact that it says 
+"(transfer already in progress, or unable to take transfer lock)" strongly
+suggests they you have annex.pidlock set locally. It would be good to know
+about this or other configuration.
+
+I have not had any luck reproducing the crash so far. I have tried setting
+`GIT_SSH`, `GIT_ANNEX_USE_GIT_SSH`, and `annex.pidlock`.
+"""]]
