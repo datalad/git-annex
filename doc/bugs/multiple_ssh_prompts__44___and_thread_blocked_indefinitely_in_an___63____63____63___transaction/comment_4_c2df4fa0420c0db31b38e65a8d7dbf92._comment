@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-11-12T15:52:44Z"
+ content="""
+I don't see anything in [[!commit 6ecd55a9fa4c64399b5ede3944bd2aa5f78cf0b1]]
+that could cause a STM deadlock; it uses a TVar and never retries.
+"""]]
