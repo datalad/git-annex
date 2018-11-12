@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 29"""
+ date="2018-11-12T20:25:37Z"
+ content="""
+The scenario that isStableKey is being used to guard against is two
+repos downloading the content of an url and each getting different content,
+followed by one repo uploading some chunks of its content and then the
+other repo "finishing" the upload with chunks of its different content.
+That would result in a mismash of chunks being stored in the remote.
+
+It's true that it could also happen using WORM with an url attached to it.
+(Not with other types of keys that verify a checksum.)
+Though it seems much less likely, since the file size is at least checked
+for WORM, while with URL keys there's often no recorded file size. And,
+WORMs don't typically have urls attached (I can't think of a single time
+I've ever done that, it just feels like asking for trouble), 
+while URL keys always do.
+
+If this is a serious concern, I'd suggest you open a todo or bug report
+about it, there are far too many comments to wade through here already.
+We could think about, perhaps not allowing download of WORM keys from urls
+or something like that..
+"""]]
