@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2018-11-12T19:34:00Z"
+ content="""
+even though not that -- probably due to `--no-install-recommends` while installing git-annex-standalone... may be at least core needed libs needed for annex operation could be added to Depends for the git-annex debian pkg?
+"""]]
