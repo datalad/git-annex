@@ -1,0 +1,299 @@
+### Please describe the problem.
+
+I have a central repo that holds all my content. I keep a second copy of the content split across two hard drives (each of those being too small to hold the whole content), in bare repositories.
+
+I use  "git annex sync --content" with "git annex required" to control which sub-tree goes to which of the smaller hard-drive.
+
+I noticed that some files, which I did not modify, where copied then dropped by git annex at each sync.
+
+I eventually understood that 
+
+* those file are duplicates: the same contents appears at several paths in my repo,
+* my "required" rules match the same content differently depending on the path.
+* this seems to confuse git annex, which will copy a file to remote, only to drop it from that remote just afterward.
+
+### What steps will reproduce the problem?
+
+This script illustrates the issue
+
+[[!format sh """
+set -x
+chmod +rwX -R /tmp/test_dupe
+rm -rf /tmp/test_dupe
+mkdir /tmp/test_dupe
+cd /tmp/test_dupe
+
+# create repo
+mkdir main
+cd main
+git init
+git annex init
+git annex numcopies 2
+
+# populate repo
+mkdir private public
+echo "my private file" > private/private_file
+echo "my public file" > public/public_file
+echo "my dupe file" | tee public/dupe_file > private/dupe_file
+git annex add .
+git commit -m "populate repo"
+tree
+
+# create 2 partial archives
+for x in public private
+do
+  cd ..
+  git clone main --bare archive_$x.git
+  cd archive_$x.git
+  git annex init "archive $x"
+  git annex required . "include=$x/*"
+  cd ../main
+  git remote add archive_$x "../archive_$x.git"
+done
+
+git annex sync
+git annex whereis
+git annex sync --content
+git annex whereis
+git annex sync --content
+git annex whereis
+
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 6.20170101.1, on debian stretch
+
+
+### Please provide any additional information below.
+
+Here is the transcript of running the script above
+
+[[!format sh """
++ chmod +rwX -R /tmp/test_dupe
++ rm -rf /tmp/test_dupe
++ mkdir /tmp/test_dupe
++ cd /tmp/test_dupe
++ mkdir main
++ cd main
++ git init
+Initialized empty Git repository in /tmp/test_dupe/main/.git/
++ git annex init
+init  ok
+(recording state in git...)
++ git annex numcopies 2
+numcopies 2 ok
+(recording state in git...)
++ mkdir private public
++ echo 'my private file'
++ echo 'my public file'
++ echo 'my dupe file'
++ tee public/dupe_file
++ git annex add .
+add private/dupe_file ok
+add private/private_file ok
+add public/dupe_file ok
+add public/public_file ok
+(recording state in git...)
++ git commit -m 'populate repo'
+[master (root-commit) 75d8a5c] populate repo
+ 4 files changed, 4 insertions(+)
+ create mode 120000 private/dupe_file
+ create mode 120000 private/private_file
+ create mode 120000 public/dupe_file
+ create mode 120000 public/public_file
++ tree
+.
+├── private
+│   ├── dupe_file -> ../.git/annex/objects/ZP/1X/SHA256E-s13--a1786172085dbc6d805c9e311fe636cd36709a24eceb00017408dbe75cff24db/SHA256E-s13--a1786172085dbc6d805c9e311fe636cd36709a24eceb00017408dbe75cff24db
+│   └── private_file -> ../.git/annex/objects/Gk/mx/SHA256E-s16--2cdc2a8328f83bf817e7e8c305f9c8afda7ead5e447bac99ac250dfb7bdb8839/SHA256E-s16--2cdc2a8328f83bf817e7e8c305f9c8afda7ead5e447bac99ac250dfb7bdb8839
+└── public
+    ├── dupe_file -> ../.git/annex/objects/ZP/1X/SHA256E-s13--a1786172085dbc6d805c9e311fe636cd36709a24eceb00017408dbe75cff24db/SHA256E-s13--a1786172085dbc6d805c9e311fe636cd36709a24eceb00017408dbe75cff24db
+    └── public_file -> ../.git/annex/objects/M9/8P/SHA256E-s15--fb55ed5db2dc55ef8442f515c008fe89ae2a428652b468ab132065d09402be2d/SHA256E-s15--fb55ed5db2dc55ef8442f515c008fe89ae2a428652b468ab132065d09402be2d
+
+2 directories, 4 files
++ for x in public private
++ cd ..
++ git clone main --bare archive_public.git
+Cloning into bare repository 'archive_public.git'...
+done.
++ cd archive_public.git
++ git annex init 'archive public'
+init archive public ok
+(recording state in git...)
++ git annex required . 'include=public/*'
+required . ok
+(recording state in git...)
++ cd ../main
++ git remote add archive_public ../archive_public.git
++ for x in public private
++ cd ..
++ git clone main --bare archive_private.git
+Cloning into bare repository 'archive_private.git'...
+done.
++ cd archive_private.git
++ git annex init 'archive private'
+init archive private ok
+(recording state in git...)
++ git annex required . 'include=private/*'
+required . ok
+(recording state in git...)
++ cd ../main
++ git remote add archive_private ../archive_private.git
++ git annex sync
+commit  
+On branch master
+nothing to commit, working tree clean
+ok
+pull archive_public 
+From ../archive_public
+ * [new branch]      git-annex  -> archive_public/git-annex
+ * [new branch]      master     -> archive_public/master
+ok
+pull archive_private 
+From ../archive_private
+ * [new branch]      git-annex  -> archive_private/git-annex
+ * [new branch]      master     -> archive_private/master
+ok
+(merging archive_private/git-annex archive_public/git-annex into git-annex...)
+(recording state in git...)
+push archive_public 
+To ../archive_public.git
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+push archive_private 
+To ../archive_private.git
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
++ git annex whereis
+whereis private/dupe_file (1 copy) 
+  	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis private/private_file (1 copy) 
+  	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis public/dupe_file (1 copy) 
+  	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis public/public_file (1 copy) 
+  	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+"""]]
+
+
+now let do a sync --content
+
+
+[[!format sh """
++ git annex sync --content
+commit  
+On branch master
+nothing to commit, working tree clean
+ok
+pull archive_public 
+ok
+pull archive_private 
+ok
+copy private/dupe_file (to archive_private...) (checksum...) ok ################################## copied
+copy private/private_file (to archive_private...) (checksum...) ok
+copy public/dupe_file (to archive_public...) (checksum...) ok
+drop archive_private public/dupe_file ok ################################## dropped
+copy public/public_file (to archive_public...) (checksum...) ok
+pull archive_public 
+ok
+pull archive_private 
+ok
+(recording state in git...)
+push archive_public 
+To ../archive_public.git
+   cacaf8b..1d5c278  git-annex -> synced/git-annex
+ok
+push archive_private 
+To ../archive_private.git
+   cacaf8b..1d5c278  git-annex -> synced/git-annex
+ok
++ git annex whereis
+whereis private/dupe_file (2 copies) ################################## missing from archive_private
+  	02ee663d-8956-4ad5-9165-0e82314f00f1 -- archive public [archive_public]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis private/private_file (2 copies) 
+  	551ffe45-f46d-4c37-8c59-eff4e8ec8bfe -- archive private [archive_private]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis public/dupe_file (2 copies) 
+  	02ee663d-8956-4ad5-9165-0e82314f00f1 -- archive public [archive_public]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis public/public_file (2 copies) 
+  	02ee663d-8956-4ad5-9165-0e82314f00f1 -- archive public [archive_public]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+"""]]
+
+We've seen that git-annex
+
+* did not honor the "required" command: "private/dupe_file" is missing from private_archive
+* wasted some bandwidth: it copied the file only to drop it
+* did enforce the "numcopies=2" quite literally 
+* did not loose any data (thank you Joey!)
+
+The same happens if we sync again
+
+[[!format sh """
++ git annex sync --content
+commit  
+On branch master
+nothing to commit, working tree clean
+ok
+pull archive_public 
+From ../archive_public
+   1d5c278..4b9583f  git-annex  -> archive_public/git-annex
+ok
+pull archive_private 
+From ../archive_private
+   1d5c278..7aec3eb  git-annex  -> archive_private/git-annex
+ok
+(merging archive_private/git-annex archive_public/git-annex into git-annex...)
+(recording state in git...)
+copy private/dupe_file (to archive_private...) (checksum...) ok ################################## copied again
+drop archive_public private/dupe_file ok
+copy public/dupe_file (to archive_public...) (checksum...) ok
+drop archive_private public/dupe_file ok ################################## dropped again
+pull archive_public 
+ok
+pull archive_private 
+ok
+(recording state in git...)
+push archive_public 
+To ../archive_public.git
+   1d5c278..51d259c  git-annex -> synced/git-annex
+ok
+push archive_private 
+To ../archive_private.git
+   1d5c278..51d259c  git-annex -> synced/git-annex
+ok
++ git annex whereis
+whereis private/dupe_file (2 copies) ################################## still missing from archive_private
+  	02ee663d-8956-4ad5-9165-0e82314f00f1 -- archive public [archive_public]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis private/private_file (2 copies) 
+  	551ffe45-f46d-4c37-8c59-eff4e8ec8bfe -- archive private [archive_private]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis public/dupe_file (2 copies) 
+  	02ee663d-8956-4ad5-9165-0e82314f00f1 -- archive public [archive_public]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+whereis public/public_file (2 copies) 
+  	02ee663d-8956-4ad5-9165-0e82314f00f1 -- archive public [archive_public]
+   	aaa3a2b2-d354-4ca0-857d-ae51762f69de -- seb@navi:/tmp/test_dupe/main [here]
+ok
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! I use git-annex almost every day, and I'm very happy to do so.
