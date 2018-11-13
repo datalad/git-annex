@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~barthelemy"
+ nickname="barthelemy"
+ avatar="http://cdn.libravatar.org/avatar/e99cb15f6029de3225721b3ebdd0233905eb69698e9b229a8c4cc510a4135438"
+ subject="cannot reproduce on git-annex 6.20180913"
+ date="2018-11-13T09:32:54Z"
+ content="""
+I tested with a more recent git-annex version 6.20180913, from debian backports,
+and cannot reproduce the issue. The script above ends with
+
+    + git annex whereis
+    whereis private/dupe_file (3 copies)
+            3098d3d7-e4fc-4860-90e1-f7e0ccd71242 -- seb@navi:/tmp/test_dupe/main [here]
+            89a591d2-5744-4e31-ba8a-92693cdc858a -- archive private [archive_private]
+            ae3085ab-456b-4eab-bb9c-7e31877d0d52 -- archive public [archive_public]
+    ok
+    whereis private/private_file (2 copies)
+            3098d3d7-e4fc-4860-90e1-f7e0ccd71242 -- seb@navi:/tmp/test_dupe/main [here]
+            89a591d2-5744-4e31-ba8a-92693cdc858a -- archive private [archive_private]
+    ok
+    whereis public/dupe_file (3 copies)
+            3098d3d7-e4fc-4860-90e1-f7e0ccd71242 -- seb@navi:/tmp/test_dupe/main [here]
+            89a591d2-5744-4e31-ba8a-92693cdc858a -- archive private [archive_private]
+            ae3085ab-456b-4eab-bb9c-7e31877d0d52 -- archive public [archive_public]
+    ok
+    whereis public/public_file (2 copies)
+            3098d3d7-e4fc-4860-90e1-f7e0ccd71242 -- seb@navi:/tmp/test_dupe/main [here]
+            ae3085ab-456b-4eab-bb9c-7e31877d0d52 -- archive public [archive_public]
+    ok
+
+I had a look at the changelog, but could not find in which precise version it was fixed.
+
+Thank you!  
+
+"""]]
