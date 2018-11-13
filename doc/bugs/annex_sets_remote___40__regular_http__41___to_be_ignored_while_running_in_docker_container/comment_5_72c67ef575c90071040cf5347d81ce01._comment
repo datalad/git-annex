@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2018-11-13T17:30:33Z"
+ content="""
+netbase was already added to depends in version 6.20180926.
+
+Yes, I missed the folded data, the UI provides almost no clue that it's
+an interactive element. 
+"""]]

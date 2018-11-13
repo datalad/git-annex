@@ -82,3 +82,6 @@ git-annex version: 6.20181011+git124-g94aa0e2f6-1~ndall+1
 
 
 [[!meta author=yoh]]
+
+> [[done]]; git-annex displays a good error message and the dependency is
+> there. --[[Joey]]
