@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-11-13T17:46:43Z"
+ content="""
+This looks like the same problem as
+<http://git-annex.branchable.com/bugs/indeterminite_preferred_content_state_for_duplicated_file/>.
+
+I can't think of any change between those versions of git-annex that would
+have fixed it, in any case the general case of the problem still certianly
+exists.
+"""]]
