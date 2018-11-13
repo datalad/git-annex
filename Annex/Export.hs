@@ -9,10 +9,12 @@ module Annex.Export where
 
 import Annex
 import Annex.CatFile
+import Types
 import Types.Key
-import Types.Remote
 import qualified Git
+import qualified Types.Remote as Remote
 import Config
+import Messages
 
 import qualified Data.Map as M
 import Control.Applicative
@@ -41,5 +43,11 @@ exportKey sha = mk <$> catKey sha
 		, keyChunkNum = Nothing
 		}
 
-exportTree :: RemoteConfig -> Bool
+exportTree :: Remote.RemoteConfig -> Bool
 exportTree c = fromMaybe False $ yesNo =<< M.lookup "exporttree" c
+
+warnExportConflict :: Remote -> Annex ()
+warnExportConflict r = toplevelWarning True $
+	"Export conflict detected. Different trees have been exported to " ++ 
+	Remote.name r ++ 
+	". Use git-annex export to resolve this conflict."

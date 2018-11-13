@@ -720,9 +720,7 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 	fillexport r ea db (Exported { exportedTreeish = t }:[]) =
 		Command.Export.fillExport r ea db t
 	fillexport r _ _ _ = do
-		warning $ "Export conflict detected. Different trees have been exported to " ++ 
-			Remote.name r ++ 
-			". Use git-annex export to resolve this conflict."
+		warnExportConflict r
 		return False
 
 cleanupLocal :: CurrBranch -> CommandStart

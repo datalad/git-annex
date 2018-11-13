@@ -107,6 +107,8 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 				liftIO $ atomically $
 					writeTVar updateflag (Just False)
 		
+		exportinconflict <- liftIO $ newTVarIO False
+
 		-- Get export locations for a key. Checks once
 		-- if the export log is different than the database and
 		-- updates the database, to notice when an export has been
@@ -114,7 +116,12 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 		let getexportlocs = \k -> do
 			bracket startupdateonce doneupdateonce $ \updatenow ->
 				when updatenow $
-					updateExportTreeFromLog db
+					updateExportTreeFromLog db >>= \case
+						ExportUpdateSuccess -> return ()
+						ExportUpdateConflict -> do
+							warnExportConflict r
+							liftIO $ atomically $
+								writeTVar exportinconflict True
 			liftIO $ getExportTree db k
 
 		return $ r
@@ -136,7 +143,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- so don't need to use retrieveExport.
 			, retrieveKeyFile = if appendonly r
 				then retrieveKeyFile r
-				else retrieveKeyFileFromExport getexportlocs
+				else retrieveKeyFileFromExport getexportlocs exportinconflict
 			, retrieveKeyFileCheap = if appendonly r
 				then retrieveKeyFileCheap r
 				else \_ _ _ -> return False
@@ -170,18 +177,28 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 					ea <- exportActions r
 					anyM (checkPresentExport ea k)
 						=<< getexportlocs k
+			-- checkPresent from an export is more expensive
+			-- than otherwise, so not cheap. Also, this
+			-- avoids things that look at checkPresentCheap and
+			-- silently skip non-present files from behaving
+			-- in confusing ways when there's an export
+			-- conflict.
+			, checkPresentCheap = False
 			, mkUnavailable = return Nothing
 			, getInfo = do
 				is <- getInfo r
 				return (is++[("export", "yes")])
 			}
-	retrieveKeyFileFromExport getexportlocs k _af dest p = unVerified $
+	retrieveKeyFileFromExport getexportlocs exportinconflict k _af dest p = unVerified $
 		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
 			then do
 				locs <- getexportlocs k
 				case locs of
 					[] -> do
-						warning "unknown export location"
+						ifM (liftIO $ atomically $ readTVar exportinconflict)
+							( warning "unknown export location, likely due to the export conflict"
+							, warning "unknown export location"
+							)
 						return False
 					(l:_) -> do
 						ea <- exportActions r

@@ -24,19 +24,28 @@ Reproducible with git-annex 7.20181106-g58d1b2510 using this script.
 It looks like the export database is not getting updated to reflect the
 export that was made in the other clone of the repository.
 
-	joey@darkstar:/tmp/bench/repoclone>echo .dump | sqlite3 .git/annex/export/163219a6-fdc1-4d3e-98a6-7aed3e9d605d/db/db
-	PRAGMA foreign_keys=OFF;
-	BEGIN TRANSACTION;
-	CREATE TABLE IF NOT EXISTS "exported"("id" INTEGER PRIMARY KEY,"key" VARCHAR NOT NULL,"file" VARCHAR NOT NULL,CONSTRAINT "exported_index" UNIQUE ("key","file"));
-	INSERT INTO exported VALUES(1,'SHA1--257cc5642cb1a054f08cc83f2d943e56fd3ebe99','foo');
-	CREATE TABLE IF NOT EXISTS "exported_directory"("id" INTEGER PRIMARY KEY,"subdir" VARCHAR NOT NULL,"file" VARCHAR NOT NULL,CONSTRAINT "exported_directory_index" UNIQUE ("subdir","file"));
-	CREATE TABLE IF NOT EXISTS "export_tree"("id" INTEGER PRIMARY KEY,"key" VARCHAR NOT NULL,"file" VARCHAR NOT NULL,CONSTRAINT "export_tree_index" UNIQUE ("key","file"));
-	INSERT INTO export_tree VALUES(1,'SHA1--257cc5642cb1a054f08cc83f2d943e56fd3ebe99','foo');
-	CREATE TABLE IF NOT EXISTS "export_tree_current"("id" INTEGER PRIMARY KEY,"tree" VARCHAR NOT NULL,CONSTRAINT "unique_tree" UNIQUE ("tree"));
-	INSERT INTO export_tree_current VALUES(1,'205f6b799e7d5c2524468ca006a0131aa57ecce7');
-	COMMIT;
-
 --[[Joey]]
+
+> Hmm, `git annex sync --content` complains that there was an export
+> conflict, and unexports bar to resolve it. And indeed, there is a 
+> conflict, since export was run in the two different repos without
+> syncing in between.
+> 
+> When there's no conflict, the `git annex get` does succeed.
+> 
+> So the real problem here is that, during an export conflict, there
+> is no indication in `git annex get` about why retrival from the export
+> fails.
+>
+> Also, `git annex get --from dir` / `git annex copy --from dir`
+> silently does nothing.
+
+> Both turn out to only happen with a directory special remote, because it
+> has checkPresentCheap = True. Other special remotes will fail 
+> with "unknown export location", which is not a great error message
+> either but at least hints at the problem.
+>
+> Made it display a better error message. [[done]]
 
 <pre>
 #!/bin/sh

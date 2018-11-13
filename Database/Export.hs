@@ -32,6 +32,7 @@ module Database.Export (
 	ExportedDirectoryId,
 	ExportTreeId,
 	ExportTreeCurrentId,
+	ExportUpdateResult(..),
 ) where
 
 import Database.Types
@@ -218,16 +219,21 @@ updateExportTree' h srcek dstek i = do
 		Just k -> liftIO $ addExportTree h (asKey k) loc
   where
 	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
-			
-updateExportTreeFromLog :: ExportHandle -> Annex ()
+
+data ExportUpdateResult = ExportUpdateSuccess | ExportUpdateConflict
+	deriving (Eq)
+
+updateExportTreeFromLog :: ExportHandle -> Annex ExportUpdateResult
 updateExportTreeFromLog db@(ExportHandle _ u) = 
 	withExclusiveLock (gitAnnexExportLock u) $ do
 		old <- liftIO $ fromMaybe emptyTree
 			<$> getExportTreeCurrent db
 		l <- Log.getExport u
 		case map Log.exportedTreeish l of
+			[] -> return ExportUpdateSuccess
 			(new:[]) | new /= old -> do
 				updateExportTree db old new
 				liftIO $ recordExportTreeCurrent db new
 				liftIO $ flushDbQueue db
-			_ -> return ()
+				return ExportUpdateSuccess
+			_ts -> return ExportUpdateConflict
