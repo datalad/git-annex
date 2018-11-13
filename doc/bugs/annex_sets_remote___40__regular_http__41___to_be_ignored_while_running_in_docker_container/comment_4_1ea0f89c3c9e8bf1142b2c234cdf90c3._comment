@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="yeap -- it is netbase which is needed"
+ date="2018-11-13T04:20:28Z"
+ content="""
+spotted that netbase is among recommends thus is not installed while `apt-get install --no-install-recommends git-annex-standalone` .  Installed and issue is gone.
+
+- I feel like we had that issue/discussion before, but don't you think it would be valuable to make `netbase` a Depends not just Recommends?
+
+- Also it would be nice if there was a more logical error, info or at least debug message whenever annex fails to perform network operations, instead of just marking remote as \"non-annex\".
+"""]]
