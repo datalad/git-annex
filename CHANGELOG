@@ -12,6 +12,8 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     already actually downloaded.
   * When an export conflict prevents accessing a special remote,
     be clearer about what the problem is and how to resolve it.
+  * export, sync --content: Avoid unnecessarily trying to upload files
+    to an exporttree remote that already contains the files.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 
