@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 8"
+ date="2018-11-14T13:32:52Z"
+ content="""
+Thank you for recording the screencast. Yes, you did all of the steps correctly, that should have worked. Could you please post the output of:
+
+   * `git annex version`
+   * `.git/config` from each of the repos created in the screencast
+   * `.git/annex/daemon.log` from each of the repos created in the screencast
+
+So we can get some more insight into what the issue might be on your machine. Thank you for your patience and detail.
+"""]]
