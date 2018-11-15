@@ -22,3 +22,5 @@ $ git diff ../file1.txt ../file2.txt
 ### What version of git-annex are you using? On what operating system?
 
 6.20180913-1~bpo9+1 on Debian Stretch + backports.
+
+> [[fixed|done]] --[[Joey]]

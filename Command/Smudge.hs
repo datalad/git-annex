@@ -18,6 +18,7 @@ import Logs.Location
 import qualified Database.Keys
 import qualified Git.BuildVersion
 import Git.FilePath
+import qualified Git
 import qualified Git.Ref
 import Backend
 
@@ -77,11 +78,14 @@ smudge file = do
 clean :: FilePath -> CommandStart
 clean file = do
 	b <- liftIO $ B.hGetContents stdin
-	case parseLinkOrPointer b of
-		Just k -> do
-			getMoveRaceRecovery k file
-			liftIO $ B.hPut stdout b
-		Nothing -> go b =<< catKeyFile file
+	ifM fileoutsiderepo
+		( liftIO $ B.hPut stdout b
+		, case parseLinkOrPointer b of
+			Just k -> do
+				getMoveRaceRecovery k file
+				liftIO $ B.hPut stdout b
+			Nothing -> go b =<< catKeyFile file
+		)
 	stop
   where
 	go b oldkey = ifM (shouldAnnex file oldkey)
@@ -129,6 +133,13 @@ clean file = do
 		{ lockingFile = False
 		, hardlinkFileTmp = False
 		}
+
+	-- git diff can run the clean filter on files outside the
+	-- repository; can't annex those
+	fileoutsiderepo = do
+	        repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+		filepath <- liftIO $ absPath file
+		return $ not $ dirContains repopath filepath
 
 -- New files are annexed as configured by annex.largefiles, with a default
 -- of annexing them.

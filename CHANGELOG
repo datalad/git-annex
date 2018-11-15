@@ -14,6 +14,8 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     be clearer about what the problem is and how to resolve it.
   * export, sync --content: Avoid unnecessarily trying to upload files
     to an exporttree remote that already contains the files.
+  * smudge: When passed a file located outside the working tree, eg by git
+    diff, avoid erroring out.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 
