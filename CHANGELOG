@@ -18,6 +18,9 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     diff, avoid erroring out.
   * drop -J: Avoid processing the same key twice at the same time when
     multiple annexes files use it.
+  * When a command is operating on multiple files and there's an error
+    with one, try harder to continue to the rest. (As was already done
+    for many types of errors including IO errors.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 

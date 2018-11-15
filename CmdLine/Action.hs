@@ -43,8 +43,7 @@ performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
 
 {- Runs one of the actions needed to perform a command.
  - Individual actions can fail without stopping the whole command,
- - including by throwing IO errors (but other errors terminate the whole
- - command).
+ - including by throwing non-async exceptions.
  - 
  - When concurrency is enabled, a thread is forked off to run the action
  - in the background, as soon as a free slot is available.
@@ -128,7 +127,7 @@ findFreeSlot = go []
 
 {- Like commandAction, but without the concurrency. -}
 includeCommandAction :: CommandStart -> CommandCleanup
-includeCommandAction a = account =<< tryIO (callCommandAction a)
+includeCommandAction a = account =<< tryNonAsync (callCommandAction a)
   where
 	account (Right True) = return True
 	account (Right False) = incerr

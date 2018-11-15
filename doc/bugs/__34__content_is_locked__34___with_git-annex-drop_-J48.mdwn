@@ -29,3 +29,15 @@ local repository version: 5
 Linux ip-172-31-87-156 4.14.72-68.55.amzn1.x86_64 #1 SMP Fri Sep 28 21:14:54 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux
 
 ### Please provide any additional information below.
+
+> Made drop not operate on the same key multiple times concurrently.
+> 
+> Also yeah, that kind of exception should not interrupt processing other
+> files; the distinction git-annex has drawn between IO errors and other
+> exceptions is not super useful unless a command for some reason wants to
+> completely stop everything for some reason. I can't think of any cases
+> where a command would want to do that; if it does turn out to be needed,
+> a special type of exception could be thrown to force termination.
+> So I changed it to catch all (non-async) errors.
+> 
+> [[fixed|done]] --[[Joey]]
