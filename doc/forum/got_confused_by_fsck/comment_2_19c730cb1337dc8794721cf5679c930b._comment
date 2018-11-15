@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-11-15T19:12:30Z"
+ content="""
+fsck has checked required content (across all repos) since version 6.20180227.
+
+There are many ways that some copies of a file could be lost without the
+user really noticing, so it makes sense for fsck to check numcopies.
+
+The local/global distinction you are trying to draw is not one I'm really
+interested in drawing with fsck. It checks everything that it's practical
+for it to check that we've thought of checking.
+
+If you don't want to check all keys in a bare repo, you can use 
+`git annex fsck --branch=master` to only check the files in the master
+branch.
+"""]]
