@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2018-11-15T18:28:58Z"
+ content="""
+[[!commit 872af2b2f1049e4eecf274ac70caf99a367f3818]] allows ruling out
+a concurrent-output bug. If git-annex with that commit is run with --quiet
+and still exhibits the problem, it shouldn't involve concurrent-output at
+all.
+"""]]
