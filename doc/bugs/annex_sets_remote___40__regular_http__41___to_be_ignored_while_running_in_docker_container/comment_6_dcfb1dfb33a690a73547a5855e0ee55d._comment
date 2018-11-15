@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="my bad"
+ date="2018-11-15T12:34:58Z"
+ content="""
+eh, and when you added it, I incorrectly adjusted the standalone patch in 042e20d895e022f283d7fb210e61bc19a77b0c39 by not including netbase into Depends.
+I have emailed you the patch, and I think this issue could be closed with it
+"""]]
