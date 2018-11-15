@@ -1,0 +1,43 @@
+Hello,
+
+in a clean-up spree, I removed unused content from my repos and ran fsck.
+
+I found the behaviour of fsck surprising. I'm reporting it here to give feedback (and maybe get corrected).
+
+I expected fsck to basically check that git annex's "recorded state" matches the actual
+filesystem state (ie. expected files are present and they have the expected checksum).
+
+fsck does that, but it also checks that the "numcopies" rule is enforced.
+If I'm not mistaken, this check is quite different:
+* it does not correspond to an error
+* the reported issue is possibly irrelevant if the repo has an outdated view of the other remotes.
+* the reported issue might be fixed by adding copies of the content to any other repo, not specificallyb to the one being fsck-ed.
+
+Moreover, if fsck checks numcopies, I'd expect it to also check if the "required"
+rule is enforced on the current repo, which it does not (tested on git annex 6.20170101.1).
+Sice fixing a missing "required" file would need to add a copy to current repo, I'd consider this check more "local" than the numcopies one. 
+(Or alternatively, maybe fsck sould fully be "global" and report "required" rule violations about all the repos/remotes?).
+
+
+
+Because my backup/archival repos are bare, fsck defaults to --all, and will complain
+about insufficient numcopies for content that I intentionally dropped (with --unused --force).
+It scared me at first, but I not
+
+I envision several solutions to avoid those complaints:
+
+* use --numcopies=0 (by the way, https://git-annex.branchable.com/git-annex-fsck/, states
+"To verify data integrity only while disregarding required number of copies, use --numcopies=1.",
+I think it should be =0)
+
+* mark all those keys as dead (this seems time consuming)
+
+* rewrite the git history or use git annex forget (untested, seems dangerous).
+
+* maybe replace my backup/archival bare git repos with "directory" special remotes (less state involved).
+
+
+Am I missing a better way?
+
+PS. I attached a script illustrating the issue, together with its output.
+PPS Thank you for git-annex!
