@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 14"
+ date="2018-11-15T18:06:10Z"
+ content="""
+about to start bisection for the locking issue. Relevant PR on datalad: https://github.com/datalad/datalad/pull/2995  to get a helper script and Singularity environment to build
+
+As for double password prompt - should I bisect too?  that one seems to be not that easy since if `annex get` is invoked within script, typescript records nothing:
+[[!format sh \"\"\"
+[yhalchen@discovery7 ~]$ cat bisect-git-annex-doublepasswd.sh
+#!/bin/bash
+set -eu
+
+err=\"thread blocked indefinitely\"
+
+cd ~/QA
+# script doesn't work in  a script since probably no tty
+timeout 10 script -f -c 'git annex get -J2 sub-*' || :
+test 1 -eq `sed -e 's, ,\n,g' typescript | grep -c 'password:' `
+[yhalchen@discovery7 ~]$ bash -x bisect-git-annex-doublepasswd.sh
++ set -eu
++ err='thread blocked indefinitely'
++ cd /ihome/yhalchen/QA
++ timeout 10 script -f -c 'git annex get -J2 sub-*'
+Script started, file is typescript
++ :
+++ sed -e 's, ,\n,g' typescript
+++ grep -c password:
++ test 1 -eq 0
+\"\"\"]]
+"""]]
