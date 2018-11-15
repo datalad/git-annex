@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 10"
+ date="2018-11-15T20:15:16Z"
+ content="""
+That all looks correct. Are both `ANNEX_1` and `ANNEX_2` listed in `~/.config/git-annex/autostart`? What happens if you now run `git-annex assistant --autostart` does it list both `ANNEX_1` and `ANNEX_2`? Does everything work OK then?
+"""]]
