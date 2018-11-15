@@ -377,7 +377,9 @@ keyUrls gc repo r key = map tourl locs'
 dropKey :: Remote -> State -> Key -> Annex Bool
 dropKey r st key = do
 	repo <- getRepo r
-	dropKey' repo r st key
+	catchNonAsync
+		(dropKey' repo r st key)
+		(\e -> warning (show e) >> return False)
 
 dropKey' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
 dropKey' repo r (State connpool duc _) key

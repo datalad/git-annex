@@ -75,7 +75,7 @@ expireUnused duration = do
 	let oldkeys = M.keys $ M.filter (tooold now) m
 	forM_ oldkeys $ \k -> do
 		debug ["removing old unused key", key2file k]
-		liftAnnex $ do
+		liftAnnex $ tryNonAsync $ do
 			lockContentForRemoval k removeAnnex
 			logStatus k InfoMissing
   where

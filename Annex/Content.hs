@@ -220,6 +220,8 @@ lockContentShared key a = lockContentUsing lock key $ ifM (inAnnex key)
 
 {- Exclusively locks content, while performing an action that
  - might remove it.
+ -
+ - If locking fails, throws an exception rather than running the action.
  -}
 lockContentForRemoval :: Key -> (ContentRemovalLock -> Annex a) -> Annex a
 lockContentForRemoval key a = lockContentUsing lock key $ 
