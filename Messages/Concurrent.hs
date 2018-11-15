@@ -123,9 +123,11 @@ concurrentOutputSupported = return True -- Windows is always unicode
  - This needs a new enough version of concurrent-output; otherwise
  - the regions will not be hidden, but the action still runs, garbling the
  - display. -}
-hideRegionsWhile :: Annex a -> Annex a
+hideRegionsWhile :: MessageState -> Annex a -> Annex a
 #if MIN_VERSION_concurrent_output(1,9,0)
-hideRegionsWhile a = bracketIO setup cleanup go
+hideRegionsWhile s a 
+	| concurrentOutputEnabled s = bracketIO setup cleanup go
+	| otherwise = a
   where
 	setup = Regions.waitDisplayChange $ swapTMVar Regions.regionList []
 	cleanup = void . atomically . swapTMVar Regions.regionList

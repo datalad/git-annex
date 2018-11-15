@@ -181,11 +181,13 @@ allowConcurrentOutput a = do
 		c <- liftIO getNumCapabilities
 		when (n > c) $
 			liftIO $ setNumCapabilities n
-		ifM (liftIO concurrentOutputSupported)
-			( Regions.displayConsoleRegions $
-				goconcurrent' True
-			, goconcurrent' False
-			)
+		withMessageState $ \s -> case outputType s of
+			NormalOutput -> ifM (liftIO concurrentOutputSupported)
+				( Regions.displayConsoleRegions $
+					goconcurrent' True
+				, goconcurrent' False
+				)
+			_ -> goconcurrent' False
 	goconcurrent' b = bracket_ (setup b) cleanup a
 	setup = setconcurrentoutputenabled
 	cleanup = do

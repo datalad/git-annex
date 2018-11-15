@@ -270,4 +270,4 @@ prompt a = go =<< Annex.getState Annex.concurrency
 		bracketIO
 			(takeMVar l)
 			(putMVar l)
-			(const $ hideRegionsWhile a)
+			(const $ hideRegionsWhile s a)
