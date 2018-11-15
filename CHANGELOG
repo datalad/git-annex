@@ -16,6 +16,8 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     to an exporttree remote that already contains the files.
   * smudge: When passed a file located outside the working tree, eg by git
     diff, avoid erroring out.
+  * drop -J: Avoid processing the same key twice at the same time when
+    multiple annexes files use it.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 

@@ -68,7 +68,7 @@ start o file key = start' o key afile (mkActionItem afile)
 	afile = AssociatedFile (Just file)
 
 start' :: DropOptions -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' o key afile ai = do
+start' o key afile ai = onlyActionOn key $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
 		stopUnless (want from) $
