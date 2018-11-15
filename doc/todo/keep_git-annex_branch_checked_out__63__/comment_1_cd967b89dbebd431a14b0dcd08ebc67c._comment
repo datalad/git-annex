@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-11-15T16:09:30Z"
+ content="""
+Interesting idea, though a ramdisk seems like overkill; filesystem caching
+tends to be quite good. 
+
+It would only speed up branch reads, not writes.
+
+I don't think it would be much faster to read individual files from the
+filesystem than reading the data directly out of the git repository.
+git pack files are designed for fast random access. On top of that,
+the git cat-file --batch interface adds extra context
+switches and buffer copies and parsing overhead; something like libgit2
+could potentially be quite a bit faster.
+
+Note that git-annex repository v0 did keep the git-annex data in the
+regular git tree. My notes during the conversion from that to the branch 
+include: "After all that, git-annex turned out to be nearly as fast as
+before when it was simply reading files from the filesystem, and actually
+faster in some cases." Although I didn't record more detailed benchmark
+information. Would be interesting to dig up git-annex 0.20110610 and benchmark
+it against the current version. :-)
+"""]]
