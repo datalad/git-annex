@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2018-11-15T17:06:39Z"
+ content="""
+I don't think this bug will be able to be tracked down without
+rebuilding git-annex one way or another.
+
+I could use the technique in
+<https://www.fpcomplete.com/blog/2018/05/pinpointing-deadlocks-in-haskell>
+to instrument every possible place in git-annex that could deadlock.
+This would be a lot of work, probably hundreds of lines of code changes.
+
+It seems much easier to either find a way to reproduce the problem
+outside of this one machine with the problem, or bisect it.
+"""]]
