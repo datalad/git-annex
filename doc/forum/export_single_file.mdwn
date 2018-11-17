@@ -1,0 +1,15 @@
+I am following the instructions at [tips/publishing_your_files_to_the_public](https://git-annex.branchable.com/tips/publishing_your_files_to_the_public/) to export trees to a public remote. Often I want to just share a single file publicly with someone, not an entire folder. Does the export command already support this in some way? I do know the docs say it only supports treeishes, any reason I shouldn't add a TODO if this isn't currently supported?
+
+I tried:
+
+    git annex export master:tests/tests1.mov --to public
+    fatal: entry 'export.tree' object 64a9dba40c4325f86c106887750b9405d89b54d4 is a blob but specified type was (tree)
+    git-annex: fd:27: hClose: resource vanished (Broken pipe)
+
+and:
+
+    git annex export tests/tests1.mov --to public
+    fatal: Invalid object name 'tests/tests1.mov'.
+    git-annex: unknown tree
+
+using git annex version `7.20181106-g352f88226`
