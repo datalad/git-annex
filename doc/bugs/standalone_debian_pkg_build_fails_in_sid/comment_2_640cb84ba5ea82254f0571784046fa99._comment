@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-11-19T16:40:27Z"
+ content="""
+This is a reversion due to [[!commit 39fbaa0682198ba0fd8aa437b8382b13fb71e66f]]
+that breaks any part of a git-annex command that uses exitWith since that
+is actually implemented as an exception which now gets caught.
+"""]]
