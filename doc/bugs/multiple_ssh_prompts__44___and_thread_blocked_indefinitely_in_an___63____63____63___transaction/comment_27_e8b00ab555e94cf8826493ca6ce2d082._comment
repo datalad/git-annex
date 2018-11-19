@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 27"""
+ date="2018-11-19T21:02:24Z"
+ content="""
+Also it would be good to build git-annex with the DebugLocks build flag
+described above, and the unfixed concurrent-output, and verify that
+the debug info when it crashes shows it crashed in Message.hs or
+concurrent-output.
+"""]]
