@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 32"""
+ date="2018-11-19T21:38:29Z"
+ content="""
+Ok so we know for sure it's crashing in Message.prompt, good.
+
+I see you mean that my commit to git-annex that avoids using
+concurrent-output in some circumstances "fixed" it. I'm not sure how your
+bisection environment avoids those circumstances; it does not seem to be
+passing --quiet or --json to git-annex. Perhaps piping the git-annex output
+causes it to decide it's not on a tty and so avoid using concurrent-output.
+Perhaps it's a locale setting. Doesn't really matter..
+
+Except, it seems we have still not verified that the actual source of the
+crash in concurrent-output is really fixed. That needs building with
+concurrent-output 1.10.8 and then trying to reproduce the crash
+at the command line.
+"""]]
