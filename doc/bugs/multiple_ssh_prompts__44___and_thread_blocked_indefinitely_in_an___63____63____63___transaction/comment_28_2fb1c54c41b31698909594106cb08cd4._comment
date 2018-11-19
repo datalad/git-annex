@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 28"
+ date="2018-11-19T21:10:47Z"
+ content="""
+FWIW, regarding 
+
+> So I want to make very sure that fix did fix it, and it's not masked by some other change to the build environment, or by the problem being more intermittent than you thought it was. 
+
+`git bisect start 900bf3436 05bfce7ca^`
+
+`git bisect run bash -c '! ../bisect-git-annex ../git-annex-dev.img ../bisect-git-annex-lock.sh'`
+
+so build environment (singularity image) remained the same, the bisect script was
+
+[[!format sh \"\"\"
+#!/bin/bash
+set -eu
+
+err=\"thread blocked indefinitely\"
+
+cd ~/QA
+# script doesn't work in  a script since probably no tty
+#timeout 10 script -f -c 'git annex get -J2 sub-*' || :
+#test 1 -eq `sed -e 's, ,\n,g' typescript | grep -c 'password:' `
+timeout 5 git annex get -J2 sub-* 2>&1 | tee annex-get-log.txt
+if grep -q \"$err\" annex-get-log.txt; then
+	echo \"E: $err\"
+	exit 1
+fi
+\"\"\"]]
+
+and it did point to that commit... I can rerun it again for the geeks of it whenever I would have another guaranteed hour online (processes time out on that host, so can't reliably run screen)
+"""]]
