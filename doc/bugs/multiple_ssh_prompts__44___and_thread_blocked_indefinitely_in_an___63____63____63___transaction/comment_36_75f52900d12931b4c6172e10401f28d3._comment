@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 36"
+ date="2018-11-19T22:46:01Z"
+ content="""
+> Bisecting git-annex couldn't isolate the problem to any commit if the bug was fixed in concurrent-output. What commit did bisect point to?
+
+[[!format sh \"\"\"
+
+[yhalchen@discovery7 git-annex]$ git bisect start 900bf3436 05bfce7ca^
+Already on 'master'
+Your branch is up to date with 'origin/master'.
+Bisecting: 7 revisions left to test after this (roughly 3 steps)
+[04b5ed09d8bcd9cef83e605d5cc061892010ada7] close old unreproducible bug report
+[yhalchen@discovery7 git-annex]$ git bisect run bash -c '! ../bisect-git-annex ../git-annex-dev.img ../bisect-git-annex-lock.sh'
+running bash -c ! ../bisect-git-annex ../git-annex-dev.img ../bisect-git-annex-lock.sh
+I: cleaning /ihome/yhalchen/git-annex
+I: building 7.20181105-119-g04b5ed09d
+...
+872af2b2f1049e4eecf274ac70caf99a367f3818 is the first bad commit
+commit 872af2b2f1049e4eecf274ac70caf99a367f3818
+Author: Joey Hess <joeyh@joeyh.name>
+Date:   Thu Nov 15 14:26:40 2018 -0400
+    
+    avoid using concurrent-output at all when --quiet or --json
+    
+    Of course, it wasn't used much in those modes, because normal output is
+    avoided. But it was still initialized and used in a few places,
+    including a call to hideRegionsWhile.
+
+:040000 040000 b81c7bae30915cdacf1fbfd11b0c203c59381ea1 5eff43f94de79fd18b6480a6ace8e3115533ca07 M      CmdLine
+:100644 100644 9e33bd7762e0488ab2d4d371ca40ee4f70a0bdd8 21422e4495ef77cadbfa8ba48e832b300a656839 M      Messages.hs
+:040000 040000 9d7b1b176904f78b29ffe92939411e2f42b0d770 fc3c3a51b5bdfab4c12198490825e801e7f08ac4 M      Messages
+bisect run success
+\"\"\"]]
+"""]]
