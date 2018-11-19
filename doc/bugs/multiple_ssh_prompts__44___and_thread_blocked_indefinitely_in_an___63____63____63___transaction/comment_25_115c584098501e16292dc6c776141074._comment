@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 25"""
+ date="2018-11-19T20:52:20Z"
+ content="""
+My comment in the concurrent-output commit was that I didn't think git-annex
+could be affected, since it can only call waitDisplayChange once at a
+time. That analysis still looks right to me; Messages.prompt takes the
+promptLock before calling it.
+
+So I want to make very sure that fix did fix it, and it's not masked by
+some other change to the build environment, or by the problem being more
+intermittent than you thought it was. It would be good if you can
+revert the concurrent-output change, reproduce, re-introduce the change,
+and verify it fixes it.
+"""]]
