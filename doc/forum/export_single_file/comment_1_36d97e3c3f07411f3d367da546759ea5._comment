@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-11-17T18:17:27Z"
+ content="""
+And some more detail… I am implementing a feature in [git-annex-turtle](https://github.com/andrewringler/git-annex-turtle) where you can right-click on a file, select Share and have that file uploaded to some public place, then i'll let the user know the public URL so they can share it (perhaps by placing it in their copy-paste buffer). I thought at first I could use [git-annex export](http://git-annex.branchable.com/git-annex-export/) but I don't think it is really designed for this use case. I think export is meant to export a tree to a non-git-ish place and then merge changes into that remote tree as you make changes locally.
+"""]]

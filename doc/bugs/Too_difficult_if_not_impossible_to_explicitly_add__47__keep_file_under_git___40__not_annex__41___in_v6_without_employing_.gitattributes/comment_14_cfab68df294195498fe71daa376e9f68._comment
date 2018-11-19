@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="michael.hanke@c60e12358aa3fc6060531bdead1f530ac4d582ec"
+ nickname="michael.hanke"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="git annex init --version=6 leaves repo dirty"
+ date="2018-11-18T17:00:21Z"
+ content="""
+With this command in an empty directory, I can more or less reliably cause the issue to happen (again)
+
+`sudo rm -rf .git .datalad .gitattributes * ; git clone https://github.com/datalad/testrepo--minimalds.git . && git annex init --version=6; git status`
+
+using 6.20181011+git124-g94aa0e2f6-1~ndall+1 or 6.20180913-1
+
+Full story is here: [#datalad/2998](https://github.com/datalad/datalad/issues/2998)
+"""]]

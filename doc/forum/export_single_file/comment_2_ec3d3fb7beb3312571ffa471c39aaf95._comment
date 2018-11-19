@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 2"
+ date="2018-11-17T19:13:24Z"
+ content="""
+OK. It looks like one way I could achieve this is by following these instructions [old method](https://git-annex.branchable.com/tips/publishing_your_files_to_the_public/old_method/). Basically just `git annex copy --to` the file to a public s3 repo without encryption and without chunking and with `public=yes` then grab the URL.
+
+It seems this should also work for any remote that supports `WHEREIS Key` for getting a URL from any key.
+"""]]

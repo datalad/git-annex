@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 17"
+ date="2018-11-16T22:12:58Z"
+ content="""
+ok, not sure yet if it is git-annex change or ghc change or both here is the point where things changed radically:
+
+going from 6.20180519+gitgf6f199be3 build which used ghc 8.0.1-17+b1 and where we had a nice single ssh password prompt:
+
+[[!format sh \"\"\"
+[yhalchen@discovery7 QA]$ PATH=$HOME/6.20180519+gitgf6f199be3-1~ndall+1/usr/lib/git-annex.linux:$PATH git annex get -J2 sub-*
+get sub-amit/ses-20180508/anat/sub-amit_ses-20180508_acq-MPRAGE_T1w.nii.gz get sub-amit/ses-20180508/dwi/sub-amit_ses-20180508_acq-DTIX30Xp2Xs4_dwi.nii.gz (from origin...) 
+(from origin...) 
+yoh@falkor.datalad.org's password: 
+
+\"\"\"]]
+
+to the next build I have 6.20180521+gitg0e3bebd71 which used ghc 8.0.2-11 and with which locking madness starts to kick in:
+
+[[!format sh \"\"\"
+[yhalchen@discovery7 QA]$ PATH=$HOME/6.20180521+gitg0e3bebd71-1~ndall+1/usr/lib/git-annex.linux:$PATH git annex get -J2 sub-*
+get sub-amit/ses-20180508/anat/sub-amit_ses-20180508_acq-MPRAGE_T1w.nii.gz get sub-amit/ses-20180508/dwi/sub-amit_ses-20180508_acq-DTIX30Xp2Xs4_dwi.nii.gz (transfer already in progress, or unable to take transfer lock) 
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+get sub-amit/ses-20180508/func/sub-amit_ses-20180508_task-rest_acq-p2_bold.nii.gz (from origin...) 
+(from origin...) 
+
+
+  thread blocked indefinitely in an STM transaction
+  thread blocked indefinitely in an MVar operation
+
+  Unable to access these remotes: origin
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+git-annex: thread blocked indefinitely in an STM transaction
+
+\"\"\"]]
+
+I hope that would give enough clues, Joey?
+"""]]
