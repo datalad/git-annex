@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 16"
+ date="2018-11-15T20:43:27Z"
+ content="""
+woohoo `git bisect run ~/bisect-git-annex ~/git-annex-dev.img ~/bisect-git-annex-lock.sh` (on `git bisect start HEAD 6.20180926` with HEAD being 05bfce7ca8e67612c66e2cdb3c7c0c26fd8c5243 finished with ground breaking discovery
+
+[[!format sh \"\"\"
+2c0300c8b9cd97b7d2a86e48e19283be8c9ef278 is the first bad commit
+commit 2c0300c8b9cd97b7d2a86e48e19283be8c9ef278
+Author: Ilya_Shlyakhter <Ilya_Shlyakhter@web>
+Date:   Wed Sep 26 17:16:13 2018 +0000
+
+    Added a comment: question about special remote protocol
+
+:040000 040000 6e8d46c0b393e4b96ff53f28224154939fbe4883 e9db3cc46114d98fe77bf0392d8a90c314c9326e M      doc
+bisect run success
+\"\"\"]]
+so it is all destructive Ilya's comments! ;)
+
+That is a commit right after the 6.20180926 which I chose as \"good\" since the good was the 6.20180926-gc906aaf (installed via conda  build pl5.22.2.1_0).  
+So may be the problem is not in git annex per se but in its build-depends, which changed in buster (I've been building standalones with buster for a while).
+I will try to do manual comparison across a number of builds from datalad.
+"""]]
