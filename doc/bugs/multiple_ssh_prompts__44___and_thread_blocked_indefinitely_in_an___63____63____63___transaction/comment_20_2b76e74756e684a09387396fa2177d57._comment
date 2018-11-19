@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2018-11-19T17:04:18Z"
+ content="""
+I don't see anything in ghc 8.0.2's release notes that points to a breaking
+change to STM/MVar handling. There were a couple of changes in that version
+that involve concurrency and MVars though, that could somehow have led to
+the problem.
+
+Parallel programs should be significantly more reliable on platforms with
+weak memory consistency guarantees
+<https://ghc.haskell.org/trac/ghc/ticket/12469>
+
+Scheduling bug with forkOS + MVar
+<https://ghc.haskell.org/trac/ghc/ticket/12419>
+
+One thing that seems worth trying re the second of those
+is to edit CmdLine/Action.hs and delete the setNumCapabilities line:
+
+	--- a/CmdLine/Action.hs
+	+++ b/CmdLine/Action.hs
+	@@ -178,8 +178,6 @@ allowConcurrentOutput a = do
+	   where
+	 	goconcurrent n = do
+ 			c <- liftIO getNumCapabilities
+	-		when (n > c) $
+	-			liftIO $ setNumCapabilities n
+	 		withMessageState $ \s -> case outputType s of
+	 			NormalOutput -> ifM (liftIO concurrentOutputSupported)
+	 				( Regions.displayConsoleRegions $
+
+A compiler bug is looking not entirely unlikely..
+"""]]
