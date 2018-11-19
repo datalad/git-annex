@@ -21,6 +21,8 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
   * When a command is operating on multiple files and there's an error
     with one, try harder to continue to the rest. (As was already done
     for many types of errors including IO errors.)
+  * Fixed a crash when using -J with ssh password prompts in
+    --quiet/--json mode.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 
