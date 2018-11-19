@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 35"""
+ date="2018-11-19T22:42:12Z"
+ content="""
+Fixed underlying bug in concurrent-output. No more changes in git-annex
+needed for this, and I'm confident enough I've gotten to the root cause
+now.
+
+Note that you can  open a new bug report about the test suite failures on
+that system, if it's really a bug and not some NFS problem or whatever.
+"""]]
