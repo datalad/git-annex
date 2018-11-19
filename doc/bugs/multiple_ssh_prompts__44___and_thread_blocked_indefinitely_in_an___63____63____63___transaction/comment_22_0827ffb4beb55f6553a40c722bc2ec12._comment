@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 22"
+ date="2018-11-19T19:25:35Z"
+ content="""
+thanks! ... FYI: I am \"afraid\" that either I am completely lost my grip on things or may be bug was fixed somewhere in the recent days (within `05bfce7ca..900bf3436`)!  bisecting now which change possibly fixed it
+"""]]
