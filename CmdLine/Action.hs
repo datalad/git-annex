@@ -131,10 +131,12 @@ includeCommandAction a = account =<< tryNonAsync (callCommandAction a)
   where
 	account (Right True) = return True
 	account (Right False) = incerr
-	account (Left err) = do
-		toplevelWarning True (show err)
-		implicitMessage showEndFail
-		incerr
+	account (Left err) = case fromException err of
+		Just exitcode -> liftIO $ exitWith exitcode
+		Nothing -> do
+			toplevelWarning True (show err)
+			implicitMessage showEndFail
+			incerr
 	incerr = do
 		Annex.incError
 		return False
