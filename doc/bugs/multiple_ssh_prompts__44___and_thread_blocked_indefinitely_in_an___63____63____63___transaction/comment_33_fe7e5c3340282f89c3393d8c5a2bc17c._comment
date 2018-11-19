@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 33"""
+ date="2018-11-19T21:48:30Z"
+ content="""
+As of 451145738267b5858132554da2367a78c145b610 git-annex depends on the
+hopefully fixed concurrent-output, so if you build that version and it
+works at the command line, we can know for sure.
+
+You'll need to run `cabal update; cabal install --only-dependencies` in the
+git-annex source dir to get the fixed concurrent-output installed before
+building git-annex.
+"""]]
