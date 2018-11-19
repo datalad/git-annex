@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2018-11-19T17:17:07Z"
+ content="""
+6.20180913-1 is from before the problem was fixed.
+
+I don't reproduce the problem with your script, using the current version of git-annex.
+"""]]
