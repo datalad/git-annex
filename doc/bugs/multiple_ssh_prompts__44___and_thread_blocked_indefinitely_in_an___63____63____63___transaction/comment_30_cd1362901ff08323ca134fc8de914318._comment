@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 30"""
+ date="2018-11-19T21:29:38Z"
+ content="""
+Bisecting git-annex couldn't isolate the problem to any commit if the bug
+was fixed in concurrent-output. What commit did bisect point to?
+"""]]
