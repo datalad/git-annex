@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reconfirming with new build option"
+ date="2018-11-19T21:33:34Z"
+ content="""
+> Also it would be good to build git-annex with the DebugLocks build flag described above, and the unfixed concurrent-output, and verify that the debug info when it crashes shows it crashed in Message.hs or concurrent-output.
+
+Ok, did
+
+[[!format patch \"\"\"
+
+$ git co -b debug-locks 872af2b2f1049e4eecf274ac70caf99a367f3818^
+$ git cherry-pick 9127fe4821a9d4aeba18c8d240c9df71b54c1353
+$ # vim Makefile to add that flag
+$ git diff
+diff --git a/Makefile b/Makefile
+index 149309f59..2d87b34e0 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,7 +21,7 @@ build: $(all)
+ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
+        if [ \"$(BUILDER)\" = ./Setup ]; then ghc --make Setup; fi
+        if [ \"$(BUILDER)\" != stack ]; then \
+-               $(BUILDER) configure --ghc-options=\"$(shell Build/collect-ghc-options.sh)\"; \
++               $(BUILDER) configure --ghc-options=\"$(shell Build/collect-ghc-options.sh)\" -fDebugLocks; \
+        else \
+                $(BUILDER) setup; \
+        fi
+$ ../bisect-git-annex ../git-annex-dev.img ../bisect-git-annex-lock.sh
+...
+get sub-amit/ses-20180508/anat/sub-amit_ses-20180508_acq-MPRAGE_T1w.nii.gz get sub-amit/ses-20180508/dwi/sub-amit_ses-20180508_acq-DTIX30Xp2Xs4_dwi.nii.gz (from origin...) 
+(from origin...) 
+MVar deadlock detected CallStack (from HasCallStack):
+  debugLocks, called at Messages.hs:265:12 in main:Messages
+STM deadlock detected CallStack (from HasCallStack):
+  debugLocks, called at Messages.hs:265:12 in main:Messages
+MVar deadlock detected CallStack (from HasCallStack):
+  debugLocks, called at ./Annex/Ssh.hs:201:37 in main:Annex.Ssh
+STM deadlock detected CallStack (from HasCallStack):
+  debugLocks, called at ./Annex/Ssh.hs:201:37 in main:Annex.Ssh
+
+
+  thread blocked indefinitely in an MVar operation
+  thread blocked indefinitely in an STM transaction
+
+  Unable to access these remotes: origin
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+
+  Try making some of these repositories available:
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+  	6384a551-a41d-4290-b186-9258befede97 -- bids@rolando:/inbox/BIDS/dbic/QA
+failed
+   	7d9ed214-3e5f-4cc8-ac88-f397145b2d4c -- yoh@falkor:/srv/datasets.datalad.org/www/dbic/QA [origin]
+   	ba8f2cea-f229-422c-82be-6580e5e07ed5 -- yoh@smaug:/mnt/datasets/datalad/crawl/dbic/QA
+failed
+git-annex: thread blocked indefinitely in an STM transaction
+E: thread blocked indefinitely
+\"\"\"]]
+"""]]
