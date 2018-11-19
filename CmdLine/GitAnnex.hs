@@ -123,7 +123,7 @@ import qualified Command.TestRemote
 import qualified Command.Benchmark
 #endif
 
-cmds :: Parser TestOptions -> Maybe TestRunner -> [Command]
+cmds :: Parser TestOptions -> TestRunner -> [Command]
 cmds testoptparser testrunner = 
 	[ Command.Help.cmd
 	, Command.Add.cmd
@@ -233,7 +233,7 @@ cmds testoptparser testrunner =
 #endif
 	]
 
-run :: Parser TestOptions -> Maybe TestRunner -> [String] -> IO ()
+run :: Parser TestOptions -> TestRunner -> [String] -> IO ()
 run testoptparser testrunner args = go envmodes
   where
 	go [] = dispatch True args 

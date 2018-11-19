@@ -103,28 +103,25 @@ optParser = TestOptions
 		)
 	<*> cmdParams "non-options are for internal use only"
 
-runner :: Maybe (TestOptions -> IO ())
-runner = Just go
+runner :: TestOptions -> IO ()
+runner opts
+	| fakeSsh opts = runFakeSsh (internalData opts)
+	| otherwise = runsubprocesstests =<< Utility.Env.getEnv subenv
   where
-	go opts
-		| fakeSsh opts = runFakeSsh (internalData opts)
-		| otherwise = runsubprocesstests opts
-			=<< Utility.Env.getEnv subenv
-	
 	-- Run git-annex test in a subprocess, so that any files
 	-- it may open will be closed before running finalCleanup.
 	-- This should prevent most failures to clean up after the test
 	-- suite.
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
-	runsubprocesstests opts Nothing = do
+	runsubprocesstests Nothing = do
 		pp <- Annex.Path.programPath
 		Utility.Env.Set.setEnv subenv "1" True
 		ps <- getArgs
-		(Nothing, Nothing, Nothing, pid) <-createProcess (proc pp ps)
+		(Nothing, Nothing, Nothing, pid) <- createProcess (proc pp ps)
 		exitcode <- waitForProcess pid
 		unless (keepFailuresOption opts) finalCleanup
 		exitWith exitcode
-	runsubprocesstests opts (Just _) = isolateGitConfig $ do
+	runsubprocesstests (Just _) = isolateGitConfig $ do
 		ensuretmpdir
 		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem' tmpdir
 		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
