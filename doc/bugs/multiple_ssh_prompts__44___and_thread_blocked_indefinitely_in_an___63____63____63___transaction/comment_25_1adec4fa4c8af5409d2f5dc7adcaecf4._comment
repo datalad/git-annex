@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 25"
+ date="2018-11-19T20:55:27Z"
+ content="""
+reconfirming that as of current master 7.20181105-154-gc2e298e96 I do not see locking issue appearing and also I observe only a single password prompt! whoohoo, thanks Joey ;-)
+"""]]
