@@ -95,7 +95,7 @@ startTransferInfo afile = TransferInfo
  - interrupted.
  -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
-checkTransfer t = do
+checkTransfer t = debugLocks $ do
 	tfile <- fromRepo $ transferFile t
 	let lck = transferLockFile tfile
 	let cleanstale = do

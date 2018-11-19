@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2018-11-19T18:46:32Z"
+ content="""
+I've added a DebugLocks build flag to try to track down the source
+of the deadlock. It's not enabled by default, so you'll need to eg modify
+the Makefile to set it:
+
+	cabal configure -fDebugLocks
+
+Calls to `debugLocks` are scattered around in a several of the places I
+suspect may be involved, around ssh prompting, transfer locks, and
+general lock files. If one of them is, it will display line number
+information when the deadlock happens.
+
+It will probably take several iterations of adding more calls to
+`debugLocks` to narrow in on the code that is involved in the
+deadlock.
+"""]]

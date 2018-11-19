@@ -198,7 +198,7 @@ prepSocket socketfile sshhost sshparams = do
 	-- When the LockCache already has the socketlock in it,
 	-- the connection has already been started. Otherwise,
 	-- get the connection started now.
-	makeconnection socketlock =
+	makeconnection socketlock = debugLocks $
 		whenM (isNothing <$> fromLockCache socketlock) $
 			-- See if ssh can connect in batch mode,
 			-- if so there's no need to block for a password

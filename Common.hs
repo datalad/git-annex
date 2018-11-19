@@ -19,6 +19,7 @@ import System.PosixCompat.Files as X hiding (fileSize)
 
 import Utility.Misc as X
 import Utility.Exception as X
+import Utility.DebugLocks as X
 import Utility.SafeCommand as X
 import Utility.Process as X
 import Utility.Path as X

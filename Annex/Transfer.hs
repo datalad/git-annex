@@ -77,7 +77,7 @@ alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider 
 alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile retrydecider transferaction = checkSecureHashes t $ do
+runTransfer' ignorelock t afile retrydecider transferaction = debugLocks $ checkSecureHashes t $ do
 	shouldretry <- retrydecider
 	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
@@ -210,7 +210,7 @@ forwardRetry = pure $ \old new -> pure $
 {- Retries a number of times with growing delays in between when enabled
  - by git configuration. -}
 configuredRetry :: RetryDecider
-configuredRetry = do
+configuredRetry = debugLocks $ do
 	retrycounter <- liftIO $ newMVar 0
 	return $ \_old new -> do
 		(maxretries, Seconds initretrydelay) <- getcfg $ 
@@ -243,7 +243,7 @@ configuredRetry = do
  - increase total transfer speed.
  -}
 pickRemote :: Observable v => [Remote] -> (Remote -> Annex v) -> Annex v
-pickRemote l a = go l =<< Annex.getState Annex.concurrency
+pickRemote l a = debugLocks $ go l =<< Annex.getState Annex.concurrency
   where
 	go [] _ = return observeFailure
 	go (r:[]) _ = a r

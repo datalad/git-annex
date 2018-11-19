@@ -61,7 +61,7 @@ changeLockCache a = do
 {- Runs an action with an exclusive lock held. If the lock is already
  - held, blocks until it becomes free. -}
 withExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex a
-withExclusiveLock getlockfile a = do
+withExclusiveLock getlockfile a = debugLocks $ do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
@@ -76,7 +76,7 @@ withExclusiveLock getlockfile a = do
 {- Tries to take an exclusive lock and run an action. If the lock is
  - already held, returns Nothing. -}
 tryExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex (Maybe a)
-tryExclusiveLock getlockfile a = do
+tryExclusiveLock getlockfile a = debugLocks $ do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode

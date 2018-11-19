@@ -69,11 +69,11 @@ pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)
 	)
 
 pidLockCheck :: IO a -> (LockFile -> IO a) -> Annex a
-pidLockCheck posixcheck pidcheck = 
+pidLockCheck posixcheck pidcheck = debugLocks $
 	liftIO . maybe posixcheck pidcheck =<< pidLockFile
 
 pidLock :: Maybe FileMode -> LockFile -> IO LockHandle -> Annex LockHandle
-pidLock m f posixlock = go =<< pidLockFile
+pidLock m f posixlock = debugLocks $ go =<< pidLockFile
   where
 	go Nothing = liftIO posixlock
 	go (Just pidlock) = do
@@ -83,7 +83,7 @@ pidLock m f posixlock = go =<< pidLockFile
 			Pid.waitLock timeout pidlock
 
 tryPidLock :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle) -> Annex (Maybe LockHandle)
-tryPidLock m f posixlock = liftIO . go =<< pidLockFile
+tryPidLock m f posixlock = debugLocks $ liftIO . go =<< pidLockFile
   where
 	go Nothing = posixlock
 	go (Just pidlock) = do

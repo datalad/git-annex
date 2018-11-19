@@ -20,6 +20,7 @@ module Utility.LockPool.LockHandle (
 
 import qualified Utility.LockPool.STM as P
 import Utility.LockPool.STM (LockFile)
+import Utility.DebugLocks
 
 import Control.Concurrent.STM
 import Control.Exception
@@ -49,8 +50,8 @@ checkSaneLock lockfile (LockHandle _ flo) = fCheckSaneLock flo lockfile
 makeLockHandle :: P.LockPool -> LockFile -> (P.LockPool -> LockFile -> STM P.LockHandle) -> (LockFile -> IO FileLockOps) -> IO LockHandle
 makeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
-	setup = atomically (pa pool file)
-	cleanup ph = P.releaseLock ph
+	setup = debugLocks $ atomically (pa pool file)
+	cleanup ph = debugLocks $ P.releaseLock ph
 	go ph = mkLockHandle pool file ph =<< fa file
 
 tryMakeLockHandle :: P.LockPool -> LockFile -> (P.LockPool -> LockFile -> STM (Maybe P.LockHandle)) -> (LockFile -> IO (Maybe FileLockOps)) -> IO (Maybe LockHandle)

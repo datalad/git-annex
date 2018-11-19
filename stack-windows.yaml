@@ -9,6 +9,7 @@ flags:
     webapp: true
     magicmime: false
     dbus: false
+    debuglocks: false
 packages:
 - '.'
 extra-deps:

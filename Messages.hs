@@ -262,7 +262,7 @@ implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)
  - the user.
  -}
 prompt :: Annex a -> Annex a
-prompt a = go =<< Annex.getState Annex.concurrency
+prompt a = debugLocks $ go =<< Annex.getState Annex.concurrency
   where
 	go NonConcurrent = a
 	go (Concurrent {}) = withMessageState $ \s -> do

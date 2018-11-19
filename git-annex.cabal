@@ -279,6 +279,10 @@ Flag Benchmark
   Description: Enable benchmarking
   Default: False
 
+Flag DebugLocks
+  Description: Debug location of MVar/STM deadlocks
+  Default: False
+
 Flag Dbus
   Description: Enable dbus support
 
@@ -586,6 +590,9 @@ Executable git-annex
     Build-Depends: criterion, deepseq
     CPP-Options: -DWITH_BENCHMARK
     Other-Modules: Command.Benchmark
+  
+  if flag(DebugLocks)
+    CPP-Options: -DDEBUGLOCKS
 
   Other-Modules:
     Annex
@@ -995,6 +1002,7 @@ Executable git-annex
     Utility.Daemon
     Utility.Data
     Utility.DataUnits
+    Utility.DebugLocks
     Utility.DirWatcher
     Utility.DirWatcher.Types
     Utility.Directory
