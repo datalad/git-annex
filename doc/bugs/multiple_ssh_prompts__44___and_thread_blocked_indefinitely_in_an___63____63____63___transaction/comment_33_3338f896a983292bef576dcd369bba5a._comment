@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 33"""
+ date="2018-11-19T21:57:13Z"
+ content="""
+Interesting that one side of the deadlock is a MVar and the other side is STM:
+
+	MVar deadlock detected CallStack (from HasCallStack):
+	  debugLocks, called at Messages.hs:265:12 in main:Messages
+	STM deadlock detected CallStack (from HasCallStack):
+	  debugLocks, called at Messages.hs:265:12 in main:Messages
+
+This seems consistent with a single call of `waitDisplayChange` being involved.
+That's the STM side. The MVar side is the `takeMVar` call in `prompt`.
+
+So somehow `waitDisplayChange` is blocking and of course the `takeMVar`
+also blocks waiting for it. But with only a single caller to `waitDisplayChange`,
+my bug fix in concurrent-output can't have been the actual fix. It has to
+block with a single caller.
+
+Oh, what if `waitDisplayChange` is called when there are no display changes
+pending, because there are no console regions being displayed? 
+I think it would still block then!
+
+In a bench test I've at least verified it hangs in that situation, though I have not
+triggered ghc's deadlock detection. Which is good enough for me, I know
+I need to fix this problem in concurrent-output, and also it seems my earlier
+fix to git-annex is enough to avoid triggering the underlying bug; git-annex
+won't need to depend on the fixed concurrent-output.
+"""]]
