@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 29"
+ date="2018-11-19T21:14:10Z"
+ content="""
+FWIW, [http://www.onerussian.com/tmp/git-annex-test-discovery7-7.20181105-154-gc2e298e96.log](http://www.onerussian.com/tmp/git-annex-test-discovery7-7.20181105-154-gc2e298e96.log) contains detailed `git annex test` output on that box/that version with `85 out of 293 tests failed`
+"""]]
