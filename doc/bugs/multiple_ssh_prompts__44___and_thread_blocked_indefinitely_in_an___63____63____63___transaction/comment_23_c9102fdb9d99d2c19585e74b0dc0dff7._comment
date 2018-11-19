@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 23"
+ date="2018-11-19T20:26:32Z"
+ content="""
+I guess I should have more paid attention to your [comment](http://git-annex.branchable.com/bugs/multiple_ssh_prompts__44___and_thread_blocked_indefinitely_in_an___63____63____63___transaction/#comment-859cc85018f5871fcd70a1169f7095db) about a fix for concurrent outputs! It was the 872af2b2f1049e4eecf274ac70caf99a367f3818 which fixed it for my trials.
+"""]]
