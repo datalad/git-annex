@@ -359,7 +359,7 @@ Executable git-annex
    memory,
    split,
    attoparsec,
-   concurrent-output (>= 1.6),
+   concurrent-output (>= 1.10.8),
    QuickCheck (>= 2.8.2),
    tasty (>= 0.7),
    tasty-hunit,
