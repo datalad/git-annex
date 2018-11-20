@@ -44,7 +44,6 @@ import Annex.LockPool
 #endif
 
 import Control.Concurrent.STM
-import Control.Concurrent.Async
 
 {- Some ssh commands are fed stdin on a pipe and so should be allowed to
  - consume it. But ssh commands that are not piped stdin should generally
@@ -204,13 +203,12 @@ prepSocket socketfile sshhost sshparams = do
 			-- See if ssh can connect in batch mode,
 			-- if so there's no need to block for a password
 			-- prompt.
-			unlessM (tryssh ["-o", "BatchMode=true"]) $ do
-				liftIO $ print "ok then"
+			unlessM (tryssh ["-o", "BatchMode=true"]) $
 				-- ssh needs to prompt (probably)
 				-- If the user enters the wrong password,
 				-- ssh will tell them, so we can ignore
 				-- failure.
-				let p = void $ prompt $ tryssh [] in p `concurrently` p
+				void $ prompt $ tryssh []
 	-- Try to ssh to the host quietly. Returns True if ssh apparently
 	-- connected to the host successfully. If ssh failed to connect,
 	-- returns False.
