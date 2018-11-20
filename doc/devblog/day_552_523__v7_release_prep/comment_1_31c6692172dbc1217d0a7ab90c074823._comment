@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="apenwarr on mtimes"
+ date="2018-11-20T19:16:59Z"
+ content="""
+this is pretty much the most thorough overview of mtime and related issues I've ever read:
+
+https://apenwarr.ca/log/20181113
+
+warmly recommend it. he basically gave up on mtime: they're tracked and important, but not in isolation. he also tracks file size, inode numbers, etc.
+"""]]
