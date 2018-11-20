@@ -3,15 +3,6 @@ users with experience building code from source. But the build may
 require some care and feeding. This page will start with the easy
 methods and work up to the harder ones.
 
-## prerequisites
-
-Start by installing the 
-[Haskell Platform](http://hackage.haskell.org/platform/).
-
-In Debian, this is as simple as:
-
-	sudo apt-get install haskell-platform
-
 ## downloading the source code
 
 The easiest way is using git; see [[download]] or just run:
@@ -36,7 +27,7 @@ Using stack automates nearly everything, will work on many systems,
 and avoids build failures due to fast-changing haskell libraries.
 
 First, [install stack](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md)
-It will be part of the Haskell Platform soon. On Debian unstable/testing:
+On Debian:
 
 	sudo apt-get install haskell-stack zlib1g-dev libtinfo-dev
 
@@ -83,8 +74,8 @@ Get the git-annex source code, and inside the source tree, run:
 
 To build with all features enabled, including the assistant and webapp,
 you will need to install several C libraries and their headers,
-including libgnutls, libgsasl, libxml2, libmagic, and zlib. How to do
-that for your OS is beyond the scope of this page. 
+including libmagic, and zlib. How to do that for your OS is beyond
+the scope of this page. 
 
 Once the C libraries are installed, run inside the source tree:
 
@@ -93,10 +84,3 @@ Once the C libraries are installed, run inside the source tree:
 	cabal build -j
 	PATH=$HOME/bin:$PATH
 	cabal install --bindir=$HOME/bin
-
-## EKG
-
-When building with cabal, you can optionally enable the 
-[[EKG monitoring interface|ekg]]. This is great for debugging resource
-usage problems, but not for general-purpose builds.
-Just pass `-f+EKG` to `cabal configure`
