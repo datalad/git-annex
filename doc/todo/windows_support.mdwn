@@ -29,6 +29,16 @@ usable!
 
 * Tor remotes are not supported yet. Should not be very hard to get it working.
 
+* Due to bundling rsync.exe, the windows installer needs to be installed
+  with git for windows 32 bit, not 64 bit. It would be possible to switch
+  to a 64 bit rsync.exe build, but then 32 bit git for windows would not
+  work. Better, perhaps, to drop rsync.exe from the bundle; it's only
+  needed when talking to older versions of git-annex-shell, and of course
+  for rsync special remotes, but if the users wants to use the latter, they
+  can install rsync themselves.
+
+  Postponed until old versions of git-annex-shell are less common..
+
 ## potential encoding problems
 
 [[bugs/Unicode_file_names_ignored_on_Windows]] is fixed, but some potential
