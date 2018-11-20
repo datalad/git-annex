@@ -4,7 +4,6 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     different clients at the same time. (Or when annex.pidlock is used,
     two different objects.)
   * Fixed some other potential hangs in the P2P protocol.
-  * Fix build with persistent-sqlite older than 2.6.3.
   * Fix bash completion of "git annex" to propertly handle files with
     spaces and other problem characters. (Completion of "git-annex"
     already did.)
@@ -23,6 +22,11 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     for many types of errors including IO errors.)
   * Fixed a crash when using -J with ssh password prompts in
     --quiet/--json mode.
+  * Remove esqueleto dependency to allow upgrading other dependencies to
+    newer versions.
+    Thanks Sean Parsons.
+  * stack.yaml: Update to lts-12.17.
+  * Fix build with persistent-sqlite older than 2.6.3.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 

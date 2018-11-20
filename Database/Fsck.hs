@@ -28,8 +28,8 @@ import Utility.Exception
 import Annex.Common
 import Annex.LockFile
 
+import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-import Database.Esqueleto hiding (Key)
 import Data.Time.Clock
 
 data FsckHandle = FsckHandle H.DbQueue UUID
@@ -72,7 +72,7 @@ closeDb (FsckHandle h u) = do
 	unlockFile =<< fromRepo (gitAnnexFsckDbLock u)
 
 addDb :: FsckHandle -> Key -> IO ()
-addDb (FsckHandle h _) k = H.queueDb h checkcommit $ 
+addDb (FsckHandle h _) k = H.queueDb h checkcommit $
 	void $ insertUnique $ Fscked sk
   where
 	sk = toSKey k
@@ -90,7 +90,5 @@ inDb (FsckHandle h _) = H.queryDbQueue h . inDb' . toSKey
 
 inDb' :: SKey -> SqlPersistM Bool
 inDb' sk = do
-	r <- select $ from $ \r -> do
-		where_ (r ^. FsckedKey ==. val sk)
-		return (r ^. FsckedKey)
+	r <- selectList [FsckedKey ==. sk] []
 	return $ not $ null r

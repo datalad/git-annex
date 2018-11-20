@@ -49,8 +49,8 @@ import Git.Sha
 import Git.FilePath
 import qualified Git.DiffTree
 
+import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-import Database.Esqueleto hiding (Key)
 
 data ExportHandle = ExportHandle H.DbQueue UUID
 
@@ -108,17 +108,14 @@ flushDbQueue (ExportHandle h _) = H.flushDbQueue h
 
 recordExportTreeCurrent :: ExportHandle -> Sha -> IO ()
 recordExportTreeCurrent h s = queueDb h $ do
-	delete $ from $ \r -> do
-		where_ (r ^. ExportTreeCurrentTree ==. r ^. ExportTreeCurrentTree)
+	deleteWhere ([] :: [Filter ExportTreeCurrent])
 	void $ insertUnique $ ExportTreeCurrent $ toSRef s
 
 getExportTreeCurrent :: ExportHandle -> IO (Maybe Sha)
 getExportTreeCurrent (ExportHandle h _) = H.queryDbQueue h $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. ExportTreeCurrentTree ==. r ^. ExportTreeCurrentTree)
-		return (r ^. ExportTreeCurrentTree)
+	l <- selectList ([] :: [Filter ExportTreeCurrent]) []
 	case l of
-		(s:[]) -> return $ Just $ fromSRef $ unValue s
+		(s:[]) -> return $ Just $ fromSRef $ exportTreeCurrentTree $ entityVal s
 		_ -> return Nothing
 
 addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
@@ -138,13 +135,10 @@ addExportedLocation h k el = queueDb h $ do
 
 removeExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 removeExportedLocation h k el = queueDb h $ do
-	delete $ from $ \r -> do
-		where_ (r ^. ExportedKey ==. val ik &&. r ^. ExportedFile ==. val ef)
+	deleteWhere [ExportedKey ==. ik, ExportedFile ==. ef]
 	let subdirs = map (toSFilePath . fromExportDirectory)
 		(exportDirectories el)
-	delete $ from $ \r -> do
-		where_ (r ^. ExportedDirectoryFile ==. val ef
-			&&. r ^. ExportedDirectorySubdir `in_` valList subdirs)
+	deleteWhere [ExportedDirectoryFile ==. ef, ExportedDirectorySubdir <-. subdirs]
   where
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation el)
@@ -152,19 +146,15 @@ removeExportedLocation h k el = queueDb h $ do
 {- Note that this does not see recently queued changes. -}
 getExportedLocation :: ExportHandle -> Key -> IO [ExportLocation]
 getExportedLocation (ExportHandle h _) k = H.queryDbQueue h $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. ExportedKey ==. val ik)
-		return (r ^. ExportedFile)
-	return $ map (mkExportLocation . fromSFilePath . unValue) l
+	l <- selectList [ExportedKey ==. ik] []
+	return $ map (mkExportLocation . fromSFilePath . exportedFile . entityVal) l
   where
 	ik = toIKey k
 
 {- Note that this does not see recently queued changes. -}
 isExportDirectoryEmpty :: ExportHandle -> ExportDirectory -> IO Bool
 isExportDirectoryEmpty (ExportHandle h _) d = H.queryDbQueue h $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. ExportedDirectorySubdir ==. val ed)
-		return (r ^. ExportedDirectoryFile)
+	l <- selectList [ExportedDirectorySubdir ==. ed] []
 	return $ null l
   where
 	ed = toSFilePath $ fromExportDirectory d
@@ -172,10 +162,8 @@ isExportDirectoryEmpty (ExportHandle h _) d = H.queryDbQueue h $ do
 {- Get locations in the export that might contain a key. -}
 getExportTree :: ExportHandle -> Key -> IO [ExportLocation]
 getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
-	l <- select $ from $ \r -> do
-		where_ (r ^. ExportTreeKey ==. val ik)
-		return (r ^. ExportTreeFile)
-	return $ map (mkExportLocation . fromSFilePath . unValue) l
+	l <- selectList [ExportTreeKey ==. ik] []
+	return $ map (mkExportLocation . fromSFilePath . exportTreeFile . entityVal) l
   where
 	ik = toIKey k
 
@@ -187,9 +175,8 @@ addExportTree h k loc = queueDb h $
 	ef = toSFilePath (fromExportLocation loc)
 
 removeExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
-removeExportTree h k loc = queueDb h $ 
-	delete $ from $ \r ->
-		where_ (r ^. ExportTreeKey ==. val ik &&. r ^. ExportTreeFile ==. val ef)
+removeExportTree h k loc = queueDb h $
+	deleteWhere [ExportTreeKey ==. ik, ExportTreeFile ==. ef]
   where
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation loc)
