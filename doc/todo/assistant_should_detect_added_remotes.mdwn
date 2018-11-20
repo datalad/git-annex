@@ -1,0 +1,5 @@
+I think it would be useful if the assistant (when monitoring a repo) could automatically detect when the user adds a new remote to that repo. For example, right now, if I have two local repos (`repo1` and `repo2`) neither with any remotes and each is listed in `~/.config/git-annex/autostart` and I run `git annex assistant --autostart` then the assistant will detect files added to each remote but won't sync between them (since they have no remotes) per design.
+
+If I then add each repo as a remote of the other (from the command-line), assistant will still not sync files between the repos until I stop all the assistants running and then restart them. Presumably only on launch does the assistant check the list of remotes?
+
+I think this is perhaps causing issues for users not just on the command-line but also for users who create multiple local remotes from the webapp and then combine them, since the webapp is perhaps not restarting the assistant daemons after the combine operation? I'm not sure about this…
