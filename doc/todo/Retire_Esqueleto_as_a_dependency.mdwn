@@ -2,3 +2,6 @@ Since Esqueleto is seemingly abandoned and it's causing grief with NixOS: [[http
 [[https://github.com/seanparsons/git-annex/commit/62f291262f37327d9b2a864cd701aacb03766115]]
 
 Alongside that is a bunch of nix specific files that support the building and/or development of git-annex, which is pretty much anything with "nix" in the name in the patch.
+
+> Went ahead and merged it! [[done]] Thank you for your contribution to
+> git-annex. --[[Joey]]
