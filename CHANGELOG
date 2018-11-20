@@ -25,7 +25,6 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
   * Remove esqueleto dependency to allow upgrading other dependencies to
     newer versions.
     Thanks Sean Parsons.
-  * stack.yaml: Update to lts-12.17.
   * Fix build with persistent-sqlite older than 2.6.3.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
