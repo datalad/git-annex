@@ -13,11 +13,9 @@ flags:
 packages:
 - '.'
 extra-deps:
-- IfElse-0.85
-- aws-0.20
+- aws-0.17.1
 - bloomfilter-2.0.1.0
-- tasty-rerun-1.1.13
 - torrent-10000.1.1
 explicit-setup-deps:
   git-annex: true
-resolver: lts-12.19
+resolver: lts-9.9

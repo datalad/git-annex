@@ -28,6 +28,8 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
     newer versions.
     Thanks Sean Parsons.
   * Fix build with persistent-sqlite older than 2.6.3.
+  * Updated stack.yaml to lts-12.19; added stack-lts-9.9.yaml
+    to support old versions of stack.
 
  -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
 
