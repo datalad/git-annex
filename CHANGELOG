@@ -16,7 +16,7 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
   * smudge: When passed a file located outside the working tree, eg by git
     diff, avoid erroring out.
   * drop -J: Avoid processing the same key twice at the same time when
-    multiple annexes files use it.
+    multiple annexed files use it.
   * When a command is operating on multiple files and there's an error
     with one, try harder to continue to the rest. (As was already done
     for many types of errors including IO errors.)
