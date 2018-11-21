@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Mowgli"
+ avatar="http://cdn.libravatar.org/avatar/17ab194dddf7b7da59ec039cbb3ac252"
+ subject="reflink and subvolume"
+ date="2018-11-21T19:01:11Z"
+ content="""
+It doesn't work well if the source of the copy is in a btrfs subvolume and the cache is in another subvolume of the same filesystem.
+
+With that setup every file is really copied instead of using reflink=always.
+
+I solved it currently by copying .git/annex/objects manual into the cache (`cp -a --reflink=always .git/annex/objects ~/.cache/annex/` and afterwards doing the git annex cp which recognice the existence of the objects.
+"""]]
