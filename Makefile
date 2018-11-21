@@ -21,15 +21,17 @@ build: $(all)
 tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
-		$(BUILDER) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
+		$(BUILDER) configure $(BUILDERCOMMONOPTIONS) --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
+	else \
+		$(BUILDER) setup $(BUILDERCOMMONOPTIONS); \
 	fi
 	mkdir -p tmp
 	touch tmp/configure-stamp
 
 git-annex: tmp/configure-stamp
-	$(BUILDER) build $(BUILDEROPTIONS)
+	$(BUILDER) build $(BUILDERCOMMONOPTIONS) $(BUILDEROPTIONS)
 	if [ "$(BUILDER)" = stack ]; then \
-		ln -sf $$(stack path --dist-dir)/build/git-annex/git-annex git-annex; \
+		ln -sf $$(stack path $(BUILDERCOMMONOPTIONS) --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
 		ln -sf dist/build/git-annex/git-annex git-annex; \
 	fi
