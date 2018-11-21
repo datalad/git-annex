@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-11-20T21:42:11Z"
+ content="""
+Also note from the log above that `whereis` on repo1 reports that repo2 has a copy of the file even though git failed to merge into repo1 and even though repo1 does not actually have the file.
+
+    andrew@bumblebee /Users/Shared/repo1$ git-annex whereis a.txt
+    whereis a.txt (2 copies) 
+        746bb051-e2c5-463b-8d4c-7d4eee6de855 -- andrew@bumblebee.local:/Users/Shared/repo1 [here]
+        87af3666-1f63-4ad1-8a1e-a1d260c90751 -- andrew@bumblebee.local:/Users/Shared/repo2 [repo2]
+    ok
+    andrew@bumblebee /Users/Shared/repo1$ cd ../repo2
+    andrew@bumblebee /Users/Shared/repo2$ date
+    Mon Nov 12 11:29:27 EST 2018
+    andrew@bumblebee /Users/Shared/repo2$ ls
+    andrew@bumblebee /Users/Shared/repo2$ git-annex whereis a.txt
+    git-annex: a.txt not found
+    git-annex: whereis: 1 failed
+"""]]
