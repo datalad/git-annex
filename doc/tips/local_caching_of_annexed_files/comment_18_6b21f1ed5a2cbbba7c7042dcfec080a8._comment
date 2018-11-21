@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 18"
+ date="2018-11-21T19:56:45Z"
+ content="""
+I think that annex always uses `cp --reflink=auto` for local paths (cache remote was on a local path right?).  I guess running with `--debug` could have helped to resolve the mystery ;-)
+
+BTW -- checked locally - `reflink=auto` seems to work nicely across subvolumes of the same BTRFS filesystem. \"copying\" gigabytes takes half a second or so ;-) (without reflink=auto - takes considerably longer)
+"""]]
