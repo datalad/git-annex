@@ -22,8 +22,6 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
 		$(BUILDER) configure --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
-	else \
-		$(BUILDER) setup $(BUILDEROPTIONS); \
 	fi
 	mkdir -p tmp
 	touch tmp/configure-stamp
