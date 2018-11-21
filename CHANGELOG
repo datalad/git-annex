@@ -1,4 +1,4 @@
-git-annex (7.20181106) UNRELEASED; urgency=medium
+git-annex (7.20181121) upstream; urgency=medium
 
   * git-annex-shell: Fix hang when transferring the same objects to two
     different clients at the same time. (Or when annex.pidlock is used,
@@ -31,7 +31,7 @@ git-annex (7.20181106) UNRELEASED; urgency=medium
   * Updated stack.yaml to lts-12.19; added stack-lts-9.9.yaml
     to support old versions of stack.
 
- -- Joey Hess <id@joeyh.name>  Tue, 06 Nov 2018 12:44:27 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 21 Nov 2018 14:22:47 -0400
 
 git-annex (7.20181105) upstream; urgency=medium
 
