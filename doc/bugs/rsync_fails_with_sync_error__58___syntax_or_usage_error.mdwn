@@ -1,6 +1,7 @@
 ### Please describe the problem.
 get annex sync fails with rsync error saying that the remote is not accessible.
 
+(root cause git annex did not work on my storage machine which causes the client to complain that it can not download objects but I couldn't figure out how to change the title.)
 
 rerunning the rsync command gives
 [[!format sh """
