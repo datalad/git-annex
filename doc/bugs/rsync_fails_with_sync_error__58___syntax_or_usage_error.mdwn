@@ -10,7 +10,7 @@ protocol version mismatch -- is your shell clean?
 (see the rsync man page for an explanation)
 rsync error: protocol incompatibility (code 2) at compat.c(176) [Receiver=3.1.1]
 [Receiver] _exit_cleanup(code=2, file=compat.c, line=176): about to call exit(2)
-"""
+"""]]
 
 which seems to tell me something is wrong with rsync (the man page references invalid .bashrc but that was not it).
 
@@ -22,7 +22,7 @@ rm: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_valu
 Aborted (core dumped)
 rm: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' failed.
 Aborted (core dumped)
-"""
+"""]]
 
 Seems to indicate something is wrong with the locale (on that machine), setting it to c fixes the problem.
 
@@ -31,7 +31,7 @@ echo $LANG
 en_US.UTF-8
 set LANG=c
 git-annex-shell
-"""
+"""]]
 
 Actually investigating this shows that git annex it self crashes with this locale for some reason
 
@@ -41,7 +41,7 @@ rm: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_valu
 Aborted (core dumped)
 rm: loadlocale.c:129: _nl_intern_locale_data: Assertion `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))' failed.
 Aborted (core dumped)
-"""
+"""]]
 
 I made it work by adding `status --is-interactive; or set -x LANG c` to my `.config/fish/config.fish` but maybe someone else runs into this.
 
@@ -64,7 +64,7 @@ remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb ta
 operating system: linux x86_64
 supported repository versions: 5 7
 upgrade supported from repository versions: 0 1 2 3 4 5 6
-"""
+"""]]
 
 
 ### Please provide any additional information below.
