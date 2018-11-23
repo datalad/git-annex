@@ -278,8 +278,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 contentDispositionFilename :: String -> Maybe FilePath
 contentDispositionFilename s
 	| "attachment; filename=\"" `isPrefixOf` s && "\"" `isSuffixOf` s =
-		Just $ reverse $ drop 1 $ reverse $ 
-			drop 1 $ dropWhile (/= '"') s
+		Just $ dropFromEnd 1 $ drop 1 $ dropWhile (/= '"') s
 	| otherwise = Nothing
 
 headRequest :: Request -> Request

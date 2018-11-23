@@ -16,6 +16,7 @@ module Types.Export (
 ) where
 
 import Git.FilePath
+import Utility.Split
 
 import qualified System.FilePath.Posix as Posix
 
@@ -50,4 +51,4 @@ exportDirectories (ExportLocation f) =
 	subs ps (d:ds) = (d:ps) : subs (d:ps) ds
 
 	dirs = map Posix.dropTrailingPathSeparator $
-		reverse $ drop 1 $ reverse $ Posix.splitPath f
+		dropFromEnd 1 $ Posix.splitPath f

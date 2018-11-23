@@ -26,8 +26,7 @@ isRemoteKey k = "remote." `isPrefixOf` k && ".url" `isSuffixOf` k
 
 {- Get a remote's name from the config key that specifies its location. -}
 remoteKeyToRemoteName :: String -> RemoteName
-remoteKeyToRemoteName k = intercalate "." $
-	reverse $ drop 1 $ reverse $ drop 1 $ splitc '.' k
+remoteKeyToRemoteName k = intercalate "." $ dropFromEnd 1 $ drop 1 $ splitc '.' k
 
 {- Construct a legal git remote name out of an arbitrary input string.
  -

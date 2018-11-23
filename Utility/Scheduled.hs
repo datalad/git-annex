@@ -30,6 +30,7 @@ import Utility.Data
 import Utility.PartialPrelude
 import Utility.Misc
 import Utility.Tuple
+import Utility.Split
 
 import Data.List
 import Data.Time.Clock
@@ -265,7 +266,7 @@ toRecurrance s = case words s of
 	constructor "month" = Just Monthly
 	constructor "year" = Just Yearly
 	constructor u
-		| "s" `isSuffixOf` u = constructor $ reverse $ drop 1 $ reverse u
+		| "s" `isSuffixOf` u = constructor $ dropFromEnd 1 u
 		| otherwise = Nothing
 	withday sd u = do
 		c <- constructor u
