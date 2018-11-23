@@ -1,0 +1,24 @@
+I am using git-annex to set up a file distribution system with git commands as the interface. I have configured a unix user account with .ssh key so that calls to the git remote are authenticated automatically. I have set the ownership and permissions for that user account. I can ssh into the remote with that account no problem. But when I run `git annex get` to retrieve the source data from the annex, I get a typical permissions error. I have tried `chown'ing` and `chmod'ing` many combinations, but always get the same error. 
+Looking for help to diagnose and fix this issue.  Let me know if there are other commands I can run to hone in.  
+
+
+    > git ls-remote
+    Warning: No xauth data; using fake authentication data for X11 forwarding.
+    From username@distro.myserver.edu:/path/to/remote/repo/.git
+    f4d9c5e4735f4c6b057d0c43090c80c09b7ab9ae        HEAD
+    49b3b4c81c3ce78443bb00c594cce51a4fa2c034        refs/heads/git-annex
+    f4d9c5e4735f4c6b057d0c43090c80c09b7ab9ae        refs/heads/master
+    
+    > git remote -v
+    origin  username@distro.myserver.edu:/path/to/remote/repo/.git (fetch)
+    origin  username@distro.myserver.edu:/path/to/remote/repo/.git (push)
+    
+    > git annex get sub-STJ82860572941V0120181112132504070/dwi/sub-STJ82860572941V0120181112132504070_dwi__dup-10.nii.gz
+    get sub-STJ82860572941V0120181112132504070/dwi/sub-STJ82860572941V0120181112132504070_dwi__dup-10.nii.gz (not available) 
+      Try making some of these repositories available:
+            fcfe03d6-3638-4ae2-baca-67c4c28e74bb -- username@myserver:/path/to/remote/annex
+    failed
+    git-annex: get: 1 failed
+
+
+Cross post: https://stackoverflow.com/questions/53418582/permissions-error-with-ssh-key-authentication-to-remote-git-annex-get-file
