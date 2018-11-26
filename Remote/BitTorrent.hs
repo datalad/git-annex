@@ -288,7 +288,7 @@ checkDependencies = do
   where
 	deps =
 		[ "aria2c"
-#ifndef TORRENT
+#ifndef WITH_TORRENTPARSER
 		, "btshowmetainfo"
 #endif
 		]
