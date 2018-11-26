@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="techcustomersupport"
- avatar="http://cdn.libravatar.org/avatar/150632946f1b1da29beadfb6e4ce513b"
- subject="adding a remote"
- date="2018-11-26T11:41:11Z"
- content="""
-To add a new remote, use the git remote add command on the terminal, in the directory your repository is stored at. The git remote add command takes two arguments: A remote name, for example, origin. For more information visit - https://www.applesupportphonenumbers.com/blog/fix-mac-error-code-36/
-"""]]
