@@ -18,7 +18,7 @@ from Sören Brunk, Robie Basak, Klaus Ethgen, Sebastian Reuße, Oliver
 Matthews, guilhem, fftehnik, Ben Gamari, Eric Siegerman, Sean T Parsons,
 Félix Sipma, aristidb, Daniel Brooks, Alper Nebi Yasak,
 James MacMahon, Farhan Kathawala, divergentdave, Gabor Greif, wzhd, Pieter
-Kitslaar, Øyvind A. Holm, Michael Alan Dorman, Ben Boeckel,
+Kitslaar, Øyvind A. Holm, Michael Alan Dorman, Ben Boeckel, Robert Schütz,
 Magnus Therning, Yaroslav Halchenko, silvio, Magnus Therning,
 Justin Geibel, Trent, Jon Ander Peñalba, divB, Fraser Tweedale,
 jlebar, Johan Kiviniemi, Alberto Berti, ion, Anarcat, Adam Spiers,
