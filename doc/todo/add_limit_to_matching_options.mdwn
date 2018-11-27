@@ -1,0 +1,14 @@
+It would be really useful to have something like the limit option in SQL for matching options.
+
+Here is a scenario where it makes sense, and which actually comes up for me quite a bit:
+
+You have 2TB of files, where none of the files are larger than 1TB. You want to transfer the entire 2TB annex to another location (we'll call it target), but you can only do it with a single 1TB hard drive.
+
+By being able to git annex copy . -t <1tb drive> --in=here --not --in=target --limit=1TB, I can ensure that an arbitrary group of any files, not to exceed 1TB, is copied to my transport drive. After I move the files from the transport drive to the target repo, I can repeat the process with the next 1TB.
+
+I don't care which of the specific files are copied, I just want a subset of them copied, because they are part of a batch transfer job.
+
+I often transfer files via mediums that have transfer limits, but I am eventually going to transfer all of them, so I don't have to care which ones are selected.
+
+
+Currently, I've been using tricks to select a subset of the files, such as a range of file-sizes.
