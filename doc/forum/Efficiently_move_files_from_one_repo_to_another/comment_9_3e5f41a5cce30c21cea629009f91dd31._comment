@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="toh_corpora"
+ avatar="http://cdn.libravatar.org/avatar/c4265d106fd775ab35231ea3f9696cb0"
+ subject="comment 9"
+ date="2018-11-27T14:10:53Z"
+ content="""
+I have had a lot of success with some scripts I have written that externally assist git-annex in moving large files. Perhaps they can be at some point integrated into git-annex. I understand that this probably isn't a priority for Joey.
+
+One thing that has made a huge difference for me is asynchronous verification of content. I have a turbo-copy script which simply copies keys from one repo to another externally, and then triggers an fsck in the target repo after it has finished copying everything. In many cases, this makes a huge improvement in transfer speed. I might have it start an fsck in the target as soon as each file is copied externally.
+
+I have also been experimenting with using make to externally manage git-annex pipelines, where it makes more sense to do more simultaneous copies for smaller files, for certain backends.
+
+One thing that would be amazingly helpful, is if there was a way that a backend could inform git-annex ahead of time what it intends to do. For me, when I encrypt and upload files  > 40M  < 400M to Google Drive, git-annex spends about 50% of its time encrypting, and 50% uploading. It would substantially improve performance if git-annex could get to work on the next file while the current one is uploading. I don't know if it is possible for a backend to do this. I think that it would have to falsly claim success to get git-annex to give it the next file.l
+"""]]
