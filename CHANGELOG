@@ -3,6 +3,7 @@ git-annex (7.20181122) UNRELEASED; urgency=medium
   * Make bittorrent special remote work w/o btshowmetainfo installed
     when it was build with torrentparser.
     Thanks, Robert Schütz
+  * When running youtube-dl to get a filename, pass --no-playlist.
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Nov 2018 12:29:27 -0400
 

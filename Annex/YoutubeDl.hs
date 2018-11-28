@@ -204,6 +204,7 @@ youtubeDlFileNameHtmlOnly' url uo
 			[ Param url
 			, Param "--get-filename"
 			, Param "--no-warnings"
+			, Param "--no-playlist"
 			]
 		(Nothing, Just o, Just e, pid) <- liftIO $ createProcess
 			(proc "youtube-dl" (toCommand opts))
