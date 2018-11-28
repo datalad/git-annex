@@ -1,0 +1,7 @@
+It's been several years since the last git-annex user survey, and I've put
+together a new one. 
+
+<http://git-annex-survey.branchable.com/polls/2018/>
+**This is only a draft**, any votes made at this point
+won't count. I wanted to get more eyes on it before it goes live to get
+whatever feedback and ideas you have on the content of the survey.
