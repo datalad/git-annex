@@ -1,0 +1,18 @@
+[Git worktrees](https://git-scm.com/docs/git-worktree) are supported since version 6.20180719.
+
+Git normally makes a `.git` **file** in a
+worktree, that points to the real git repository under `.git/worktrees/`.
+This presents problems for git-annex. So, when used in a worktree,
+git-annex will automatically replace the `.git` file with a symlink
+pointing at the git repository. It also places an appropriate `annex` link
+to `.git/worktrees/<name>/annex` to point to the object store. I don't know
+how crippled filesystems are handled.
+
+Getting, dropping and syncing content works fine in a worktree, however
+if there is change in the tree then syncing doesn't update git worktrees
+and their indices, but updates the checked out branches. This is different to
+the handling of the main working directory as it's either got updated or left
+behind with its branch if there is a conflict.
+
+In its current state I use git-worktree to copy symlinks across branches and run `git annex fix`
+on them. I only use temporary worktrees due to the syncing behavior.
