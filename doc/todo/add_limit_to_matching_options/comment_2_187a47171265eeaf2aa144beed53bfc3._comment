@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="toh_corpora"
+ avatar="http://cdn.libravatar.org/avatar/c4265d106fd775ab35231ea3f9696cb0"
+ subject="comment 2"
+ date="2018-11-28T15:56:54Z"
+ content="""
+Thanks for your reply Joey.
+
+There are other times when I want to limit that size of a query, besides when the filesystem of the target device is exhausted.
+
+I would be able to minimize the number of round trips required for transporting two or more repos on one hard drive. It would be great to have more control over the amount of space used on the remote, via the amount of space that is passed to copy or move.
+
+Beyond that, what would be really cool, is to have something like --limitfiles and --limitsize, to constrain a query by the total number of files, or the total size, especially for certain cloud-based services. That is, cap the query to return a total number of files, regardless of size, along with --greaterthan and --lessthan.
+
+
+"""]]
