@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="status?"
+ date="2018-11-30T19:46:20Z"
+ content="""
+Why was the smudge filter improvements not accepted upstream? All I could find was [this post](https://public-inbox.org/git/xmqqwpjqdh7w.fsf@gitster.mtv.corp.google.com/) which explains it was \"discarded\" because of \"bitrot\"...
+
+Also: the third \"suboptimal\" point is that \"piping large file contents between git and filters is innefficient\". Why? Aren't there ways to efficiently pipe contents around processes? For example, pv uses the splice(2) system call instead of just read/write on the pipes... 
+
+Thanks for any details!
+"""]]
