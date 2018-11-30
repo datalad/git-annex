@@ -55,7 +55,9 @@ branchHashDir = hashDirLower . branchHashLevels
  - came first, and is fine, except for the problem of case-strict
  - filesystems such as Linux VFAT (mounted with shortname=mixed),
  - which do not allow using a directory "XX" when "xx" already exists.
- - To support that, most repositories use the lower case hash for new data. -}
+ - To support that, some git-annex repositories use the lower case-hash.
+ - All special remotes use the lower-case hash for new data, but old data
+ - may still used the mixed case hash. -}
 dirHashes :: [HashLevels -> Hasher]
 dirHashes = [hashDirLower, hashDirMixed]
 
