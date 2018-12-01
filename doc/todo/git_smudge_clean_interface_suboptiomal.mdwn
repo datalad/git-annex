@@ -1,7 +1,3 @@
-(This is a draft todo item, for when [[todo/smudge]] gets closed. Some of
-what's described below is not implemented yet, so it's actually worse than
-this describes. --[[Joey]])
-
 git-annex uses git's smudge/clean interface to implement v6 unlocked
 files. However, the interface is suboptimal for git-annex's needs. While
 git-annex works around most of the problems with the interface, it can't
