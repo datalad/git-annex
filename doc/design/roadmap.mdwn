@@ -8,8 +8,8 @@ Speed improvements, including:
 * Speed up git checkout in v7 repository by 
   improving git's smudge/clean filter interface, or some other approach, to avoid needing to fork
   git-annex once per file during the checkout.
-  <http://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/>
-  <http://git-annex.branchable.com/todo/Long_Running_Filter_Process/>
+  <https://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/>
+  <https://git-annex.branchable.com/todo/Long_Running_Filter_Process/>
 
 * Speed up git-annex branch data queries and updates by rewriting it to
   use ByteStrings. May become an order of magnitude faster. Using
@@ -21,37 +21,40 @@ Speed improvements, including:
   FilePaths and other better data structures.
 
 * Enable parallelism by default.
-  <http://git-annex.branchable.com/todo/config_option_to_use_all_processors_by_default/>
+  <https://git-annex.branchable.com/todo/config_option_to_use_all_processors_by_default/>
 
 Improvements to tree export support, including supporting export to more
 external special remotes, exporting only preferred content, more
 efficient renames, and improving support for exporting non-annexed files.
-<http://git-annex.branchable.com/todo/export_preferred_content/>
-<http://git-annex.branchable.com/todo/export_paired_rename_innefficenctcy/>
-<http://git-annex.branchable.com/todo/Exporting_with_exporttree_should_sync_files_deleted_from_the_remote/>
+<https://git-annex.branchable.com/todo/export_preferred_content/>
+<https://git-annex.branchable.com/todo/export_paired_rename_innefficenctcy/>
+<https://git-annex.branchable.com/todo/Exporting_with_exporttree_should_sync_files_deleted_from_the_remote/>
 
 Complimenting tree export, support importing trees from special remotes so eg a
 S3 bucket of data can be pulled into a git-annex repository easily, and the
 repository updated when the bucket is changed.
-<http://git-annex.branchable.com/todo/import_tree/>
+<https://git-annex.branchable.com/todo/import_tree/>
 
 Improve support for branches where annexed files without content locally
 present are hidden (adjust --hide-missing). Including interface for
 operating on hidden files to get them, speeding up generation of the
 branch, and updating it more frequently.
-<http://git-annex.branchable.com/todo/better_way_to_get_missing_files/>
+<https://git-annex.branchable.com/todo/better_way_to_get_missing_files/>
 Also unify adjusted branches and view branches.
-<http://git-annex.branchable.com/todo/unify_adjust_with_view/>
+<https://git-annex.branchable.com/todo/unify_adjust_with_view/>
 
 Improve Windows support. Long filenames may be possible on Windows now
 thanks to fixes in recent versions of ghc. Further improve using
 git-annex in Windows Subsystem for Linux (WSL). Get Windows fully
 supported with no caveats. Possibly even supporting indirect mode with
 symlinks.
-<http://git-annex.branchable.com/todo/windows_support/>
-<http://git-annex.branchable.com/todo/utilising_the_mklink_command_on_windows_to_utilise_symlinks_and_therefore_indirect_mode_on_windows/>
+<https://git-annex.branchable.com/todo/windows_support/>
+<https://git-annex.branchable.com/todo/utilising_the_mklink_command_on_windows_to_utilise_symlinks_and_therefore_indirect_mode_on_windows/>
 
 Add more special remotes, and/or ship a collection of existing external
 special remotes as part of git-annex. Improve existing special remotes,
 eg adding support for Glacier lifecycles to S3.
-<http://git-annex.branchable.com/todo/wishlist__58___Restore_s3_files_moved_to_Glacier/>
+<https://git-annex.branchable.com/todo/wishlist__58___Restore_s3_files_moved_to_Glacier/>
+
+Deltas to improve transfer of modified versions of files.
+<https://git-annex.branchable.com/design/assistant/deltas/>
