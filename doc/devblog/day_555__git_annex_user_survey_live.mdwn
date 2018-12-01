@@ -1,0 +1,7 @@
+The survey is now live,
+<http://git-annex-survey.branchable.com/polls/2018/>
+
+I had said I was going to clear votes to the draft survey, but for
+technical reasons I decided not to. So if you already voted you don't need
+to vote again, but if you made any joke votes please go change your vote.
+(I removed the proposed port of git-annex to the TOPS-20.)
