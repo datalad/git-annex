@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-12-01T15:47:48Z"
+ content="""
+At the same time I was working on that patch set, there was another patch
+being developed that affected the same filters (adding the long-running
+filter interface to git). I think there may have also been some
+uncertianty, on the part of the git developers, in taking the filter
+interface in the direction I wanted to.
+
+(Also honestly, I can only rebase large C patch sets some many times before my
+time feels better spent doing something else. :-/)
+
+On piping efficiency, `splice()` doesn't avoid the whole file needing to be
+read in and and written to the pipe, which is the main bottleneck.
+And the way the smudge/clean filters are used by git-annex 
+(and git-lfs), bouncing the unaltered file content back out the other side
+using `splice()` doesn't seem like it would be useful.
+"""]]
