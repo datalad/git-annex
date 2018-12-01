@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="how about for regular key/value storage?"
+ date="2018-12-01T17:42:18Z"
+ content="""
+are there plans to have chunks stored in the regular backend storage?
+
+i'm curious because one my use cases is archiving websites, where we end up with lots of WARC files. those files are basically a bunch of files from the website gzipp'd together in a stream, which means that multiple crawls of the same website (or actually, different website) have *lots* of redundant data (e.g. jQuery.js). storing those files in git-annex is not very efficient, because that data is duplicated all over the place.
+
+if the storage backend was chunked, there could be massive deduplication across those files... this is why i looked at the [[todo/borg_special_remote]]: I figured that i could at least deduplicate on the remote side, but it would still be nice to have this built-in! -- [[anarcat]]
+"""]]
