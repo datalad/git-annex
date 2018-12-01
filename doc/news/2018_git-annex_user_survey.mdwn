@@ -1,0 +1,7 @@
+Similar to the yearly git user survey, there is a
+[2018 git-annex user survey](http://git-annex-survey.branchable.com/polls/2018/).
+
+If you use git-annex, please take a few minutes to answer the questions!
+
+Since git-annex is seeing increasing use to manage scientific data, the
+survey also includes some extra questions about that at the end.
