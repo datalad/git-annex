@@ -1,0 +1,9 @@
+I was very disappointed to see GitLab [drop support](https://gitlab.com/gitlab-org/gitlab-ee/issues/1648) for git-annex in their 9.0 release in 2017. This makes it impossible to use GitLab to store our blobs. But there is a way out of there.
+
+GitLab, GitHub, Gogs and many other hosting providers actually support the Git LFS API for large file storage. If git-annex would support that API through (say) a special (or builtin) remote, it would be possible to transparently access those contents.
+
+I'm not talking about supporting the *client*-side LFS datastructures. Everything would stay the same from git-annex's point of view. The idea would be to allow pushing/pulling files from Git LFS repositories, quite simply.
+
+Could that work? Would it be possible to just make this into a separate remote without having to hack at git-annex's core?
+
+Thanks for your great work! :) -- [[anarcat]]
