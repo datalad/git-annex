@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2018-12-03T17:34:10Z"
+ content="""
+git-annex looks at the file's stat() and only if the device id is the same
+as the stat of the destination directory does it use `cp`. If you see it
+running `rsync` instead, it's under the perhaps mistaken impression that
+it's a cross-device copy.
+"""]]
