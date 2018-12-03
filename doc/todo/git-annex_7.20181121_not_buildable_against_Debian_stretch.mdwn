@@ -16,3 +16,5 @@ When trying to build the latest release on stretch,
 It would be nice if this could be patched so that git-annex can continue to be shipped in the stretch-backports repository.
 
 --spwhitton
+
+> [[fixed|done]] --[[Joey]]
