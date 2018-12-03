@@ -89,6 +89,8 @@ same tradeoff.
 See [[tips/unlocked_files/]] for more details about locked files and thin
 mode.
 
+Run git-annex upgrade to perform this upgrade.
+
 ## v4 -> v5 (git-annex version 5.x)
 
 The upgrade from v4 to v5 is handled
