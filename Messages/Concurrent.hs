@@ -135,5 +135,5 @@ hideRegionsWhile s a
 		liftIO $ hFlush stdout
 		a
 #else
-hideRegionsWhile = id
+hideRegionsWhile _ = id
 #endif
