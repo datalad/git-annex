@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-12-03T17:48:38Z"
+ content="""
+The assistant watches for changes to the git-annex branch, and reloads its
+list of remotes within 60 seconds after a change.
+
+If you're using `git remote add`, that doesn't affect the git-annex branch,
+so the assistant won't notice the new remote. Once `git annex
+sync` with that remote, the git-annex branch will be updated and the
+assistant will notice it then.
+"""]]
