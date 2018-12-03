@@ -188,11 +188,10 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, checkPresentCheap = False
 			, mkUnavailable = return Nothing
 			, getInfo = do
-				ts <- map (\t -> ("exportedtree", fromRef t) )
-					. map exportedTreeish
+				ts <- map (fromRef . exportedTreeish)
 					<$> getExport (uuid r)
 				is <- getInfo r
-				return (is++[("export", "yes")]++ts)
+				return (is++[("export", "yes"), ("exportedtree", unwords ts)])
 			}
 	retrieveKeyFileFromExport getexportlocs exportinconflict k _af dest p = unVerified $
 		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
