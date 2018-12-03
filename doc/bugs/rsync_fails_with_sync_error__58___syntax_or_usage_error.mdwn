@@ -109,3 +109,5 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git annex has worked well for more than a year now :) happy user.
+
+> closing as a duplicate bug report [[done]] --[[Joey]]

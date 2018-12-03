@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2018-12-03T17:41:43Z"
+ content="""
+Same problem reported in another bug, the bug sumitter was using Ubuntu
+14.04.5 LTS. Which also makes me think it's related to kernel version.
+"""]]
