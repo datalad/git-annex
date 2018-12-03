@@ -5,6 +5,10 @@ git-annex (7.20181122) UNRELEASED; urgency=medium
     Thanks, Robert Schütz
   * When running youtube-dl to get a filename, pass --no-playlist.
   * Fix build without concurrent-output.
+  * init: When a crippled filesystem causes an adjusted unlocked branch to
+    be used, set repo version to 7, which it neglected to do before.
+  * init: When on a crippled filesystem, and the git version is too old
+    to use an adjusted unlocked branch, fall back to using direct mode.
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Nov 2018 12:29:27 -0400
 

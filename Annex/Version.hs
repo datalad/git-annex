@@ -28,6 +28,9 @@ supportedVersions = map RepoVersion [5, 7]
 versionForAdjustedClone :: RepoVersion
 versionForAdjustedClone = RepoVersion 7
 
+versionForCrippledFilesystem :: RepoVersion
+versionForCrippledFilesystem = RepoVersion 7
+
 upgradableVersions :: [RepoVersion]
 #ifndef mingw32_HOST_OS
 upgradableVersions = map RepoVersion [0..6]

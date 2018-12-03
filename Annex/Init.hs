@@ -23,6 +23,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Objects
+import qualified Git.LsFiles
 import qualified Annex.Branch
 import Logs.UUID
 import Logs.Trust.Basic
@@ -32,11 +33,12 @@ import Types.RepoVersion
 import Annex.Version
 import Annex.Difference
 import Annex.UUID
+import Annex.Link
 import Annex.WorkTree
 import Config
 import Config.Smudge
 import Annex.Direct
-import Annex.AdjustedBranch
+import qualified Annex.AdjustedBranch as AdjustedBranch
 import Annex.Environment
 import Annex.Hook
 import Annex.InodeSentinal
@@ -114,13 +116,13 @@ initialize' ai mversion = checkCanInitialize ai $ do
 		unlessM isBareRepo $ do
 			hookWrite postCheckoutHook
 			hookWrite postMergeHook
-	checkAdjustedClone >>= \case
-		NeedUpgradeForAdjustedClone -> 
+	AdjustedBranch.checkAdjustedClone >>= \case
+		AdjustedBranch.NeedUpgradeForAdjustedClone -> 
 			void $ upgrade True versionForAdjustedClone
-		InAdjustedClone -> return ()
-		NotInAdjustedClone ->
+		AdjustedBranch.InAdjustedClone -> return ()
+		AdjustedBranch.NotInAdjustedClone ->
 			ifM (crippledFileSystem <&&> (not <$> isBareRepo))
-				( adjustToCrippledFileSystem
+				( adjustToCrippledFilesystem
 				-- Handle case where this repo was cloned from a
 				-- direct mode repo
 				, unlessM isBareRepo
@@ -282,3 +284,20 @@ propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
 	maybe noop (setConfig (ConfigKey "annex.securehashesonly"))
 		=<< getGlobalConfig "annex.securehashesonly"
+
+adjustToCrippledFilesystem :: Annex ()
+adjustToCrippledFilesystem = ifM (liftIO $ AdjustedBranch.isGitVersionSupported)
+	( do
+		void $ upgrade True versionForCrippledFilesystem
+		AdjustedBranch.adjustToCrippledFileSystem
+	, enableDirectMode 
+	)
+
+enableDirectMode :: Annex ()
+enableDirectMode = unlessM isDirect $ do
+	warning "Enabling direct mode."
+	top <- fromRepo Git.repoPath
+	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+	forM_ l $ \f ->
+		maybe noop (`toDirect` f) =<< isAnnexLink f
+	void $ liftIO clean

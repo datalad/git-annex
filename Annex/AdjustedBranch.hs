@@ -28,6 +28,7 @@ module Annex.AdjustedBranch (
 	checkAdjustedClone,
 	isSupported,
 	checkVersionSupported,
+	isGitVersionSupported,
 ) where
 
 import Annex.Common
@@ -227,6 +228,7 @@ updateAdjustedBranch adj@(LinkAdjustment _) _ origbranch = preventCommits $ \com
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
 	warning "Entering an adjusted branch where files are unlocked as this filesystem does not support locked files."
+	checkVersionSupported
 	whenM (isNothing <$> originalBranch) $
 		void $ inRepo $ Git.Branch.commitCommand Git.Branch.AutomaticCommit
 			[ Param "--quiet"
