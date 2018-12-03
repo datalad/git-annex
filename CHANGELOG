@@ -9,6 +9,9 @@ git-annex (7.20181122) UNRELEASED; urgency=medium
     be used, set repo version to 7, which it neglected to do before.
   * init: When on a crippled filesystem, and the git version is too old
     to use an adjusted unlocked branch, fall back to using direct mode.
+  * info: When used with an exporttree remote, includes an "exportedtree"
+    info, which is the tree last exported to the remote. During an export
+    conflict, multiple values will be listed.
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Nov 2018 12:29:27 -0400
 

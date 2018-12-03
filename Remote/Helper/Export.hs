@@ -18,6 +18,8 @@ import Remote.Helper.Encryptable (isEncrypted)
 import Database.Export
 import Annex.Export
 import Config
+import Git.Types (fromRef)
+import Logs.Export
 
 import qualified Data.Map as M
 import Control.Concurrent.STM
@@ -186,8 +188,11 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, checkPresentCheap = False
 			, mkUnavailable = return Nothing
 			, getInfo = do
+				ts <- map (\t -> ("exportedtree", fromRef t) )
+					. map exportedTreeish
+					<$> getExport (uuid r)
 				is <- getInfo r
-				return (is++[("export", "yes")])
+				return (is++[("export", "yes")]++ts)
 			}
 	retrieveKeyFileFromExport getexportlocs exportinconflict k _af dest p = unVerified $
 		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
