@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-12-03T17:09:03Z"
+ content="""
+So you want this limit option to make git-annex stop processing files once
+the files it's processed sum up to a given size, or after some number of
+files are transferred. Similar to --time-limit then.
+
+It seems this would need to only count a file once git-annex decides to
+do something with it. Otherwise, a `git annex copy` would count all the
+files that are already on the drive as it scans through them, and stop too
+soon.
+
+So this seems to need something that sits in between the seek stage and the
+perform stage, that can see the key that is being processed. There's not
+currently a way to do that, it would need changes to the Command types,
+or would need to be manually inserted into every command that should do
+this. Either way, needs some changes to be made to every command in
+git-annex to implement.
+
+Hmm, if it's limited to commands that transfer files, it could be hooked
+into Annex.Transfer instead; that does know the key being transferred.
+It could refuse to do the transfer and report a failure, and git-annex
+would then display failures to transfer every file after the limit. (I'm
+not very comfortable making that interface throw an exception and anyway
+users of it may already catch transfer exceptions.)
+"""]]
