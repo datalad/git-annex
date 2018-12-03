@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="StéphaneGL"
+ avatar="http://cdn.libravatar.org/avatar/a12e6e0852d5a1985b8684b17202561c"
+ subject="comment 6"
+ date="2018-12-03T18:20:28Z"
+ content="""
+I had the same error message when trying to run the standalone, version 7.20181106, on my raspberry pi. For some reason, the stand-alone version of git-annex handles and compiles its own locales in 
+
+`~/.cache/git-annex/locales/[SOME_DIRECTORY]/`
+
+For some unknown reason, the locale that git-annex compiled in that directory, namely en_GB.UTF-8 for me, was different from the one from my system, which is kept in `/usr/lib/locale/`.
+Every command that git-annex uses, even just rm, was systematically failing with error `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))` after git-annex loaded its own locale instead of the system's (technically, after the runshell script exports LOCPATH=`~/.cache/git-annex/locales/[SOME_DIRECTORY]/`).
+
+Solution I found:
+I erased the version that git-annex compiled and instead placed a symbolic link `~/.cache/git-annex/locales/[SOME_DIRECTORY]/en_GB.UTF-8` towards my system's locale in `/usr/lib/locale/`.
+Then LC_TIME was correctly defined and I got rid of the error `cnt < (sizeof (_nl_value_type_LC_TIME) / sizeof (_nl_value_type_LC_TIME[0]))'
+
+Hope this helps.
+
+It looks like the runshell script is doing something incorrect with the compilation of locales, but I'm not sure what.
+
+
+"""]]
