@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2018-12-03T16:58:10Z"
+ content="""
+The bup special remote does exist, so if you want to use that special
+remote, you can get efficient storage and transfer of related versions.
+It would probably be possible to make bup use the same git repo as
+git-annex, just storing its data in a separate branch, but I have not tried
+it.
+"""]]
