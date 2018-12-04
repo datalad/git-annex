@@ -76,3 +76,9 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, I love git-annex! has been helping me manage my files for years!
+
+> As far as I can see, this is either user error having removed the
+> annex.uuid config from the bup repo somehow, or something other than
+> git-annex did it, or perhaps the bup repo that was initialized for use
+> with this remote has since been replaced by another bup repo. No
+> indication that this is a bug in git-annex so [[done]]. --[[Joey]]
