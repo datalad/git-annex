@@ -12,6 +12,7 @@ module Annex.Content (
 	inAnnex',
 	inAnnexSafe,
 	inAnnexCheck,
+	objectFileExists,
 	lockContentShared,
 	lockContentForRemoval,
 	ContentRemovalLock,
@@ -130,6 +131,11 @@ inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
 				, checkdirect locs
 				)
 			else checkdirect locs
+
+{- Like inAnnex, checks if the object file for a key exists,
+ - but there are no guarantees it has the right content. -}
+objectFileExists :: Key -> Annex Bool
+objectFileExists key = calcRepo (gitAnnexLocation key) >>= liftIO . doesFileExist
 
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}

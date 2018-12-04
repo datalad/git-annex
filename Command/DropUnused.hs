@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010,2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010,2012,2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Command.DropUnused where
 
 import Command
+import qualified Annex
 import qualified Command.Drop
 import qualified Remote
 import qualified Git
@@ -48,9 +49,19 @@ perform from numcopies key = case from of
 		showAction $ "from " ++ Remote.name r
 		Command.Drop.performRemote key (AssociatedFile Nothing) numcopies r
 	Nothing -> ifM (inAnnex key)
-		( Command.Drop.performLocal key (AssociatedFile Nothing) numcopies []
-		, next (return True)
+		( droplocal
+		, ifM (objectFileExists key)
+			( ifM (Annex.getState Annex.force)
+				( droplocal
+				, do
+					warning "Annexed object has been modified and dropping it would probably lose the only copy. Run this command with --force if you want to drop it anyway."
+					next $ return False
+				)
+			, next $ return True
+			)
 		)
+  where
+	droplocal = Command.Drop.performLocal key (AssociatedFile Nothing) numcopies []
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

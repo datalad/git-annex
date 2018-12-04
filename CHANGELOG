@@ -12,6 +12,9 @@ git-annex (7.20181122) UNRELEASED; urgency=medium
   * info: When used with an exporttree remote, includes an "exportedtree"
     info, which is the tree last exported to the remote. During an export
     conflict, multiple values will be listed.
+  * dropunused: When an unused object file has gotten modified, eg due to
+    annex.thin being set, don't silently skip it, but display a warning
+    and let --force drop it.
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Nov 2018 12:29:27 -0400
 
