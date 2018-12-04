@@ -5,3 +5,5 @@ Something like `git annex export master:some-videos --to myexport --prefix share
 I could then do another export using the same remote like `git annex export master:some-other-videos --to myexport --prefix share-with-bill` which wouldn't touch any of the videos I previously shared with john but would create a new export into a new `share-with-bill` directory.
 
 My goal with the prefix option is to setup an exporttree remote one time, but then be able to re-use this same remote multiple times to create independent publicly shared folders.
+
+> [[done]], seems we've decided against adding this --[[Joey]]
