@@ -42,3 +42,5 @@ Considering there's no backport of 7.x in Debian stretch, it makes the
 upgrade path rather delicate... Is there a way to "downgrade" that
 sneakernet repo? :) (Thankfully, the main server still runs v5 so the
 files are still accessible from stretch....) -- [[anarcat]]
+
+Updated the [[upgrades]] page, [[done]].
