@@ -3,7 +3,7 @@ Section: utils
 Priority: optional
 Build-Depends: 
 	debhelper (>= 9),
-	ghc (>= 7.4),
+	ghc (>= 8.4.3),
 	cabal-install,
 	libghc-mtl-dev (>= 2.1.1),
 	libghc-split-dev,
@@ -32,7 +32,6 @@ Build-Depends:
 	libghc-bloomfilter-dev,
 	libghc-edit-distance-dev,
 	libghc-hinotify-dev [linux-any],
-	libghc-stm-dev (>= 2.3),
 	libghc-dbus-dev (>= 0.10.7) [linux-any],
 	libghc-fdo-notify-dev (>= 0.3) [linux-any],
 	libghc-yesod-dev (>= 1.2.6.1)       [i386 amd64 arm64 armel armhf kfreebsd-i386 kfreebsd-amd64 mips mips64el mipsel powerpc ppc64el s390x],
