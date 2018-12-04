@@ -11,7 +11,7 @@ with one or more keyids.
 
 Note that the tahoe special remote supports embedcreds,
 but disallows setting any encryption (because tahoe handles that)
-so the encryptions can only be stored in the clear. It would make sense for
+so the creds can only be stored in the clear currently. It would make sense for
 tahoe to support encryption=onlycreds while disallowing other encryption
 methods.
 
