@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-12-04T19:20:11Z"
+ content="""
+Yes, gpg-agent is why I'm not stressing the potential extra gpg use by that
+setting.
+"""]]
