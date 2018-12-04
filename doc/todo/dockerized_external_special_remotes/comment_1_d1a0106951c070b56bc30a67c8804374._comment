@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2018-12-04T19:56:36Z"
+ content="""
+Some external special remotes need to run git-annex, for things not directly supported by the protocol; a dockerized remote implementation couldn't do that.  But maybe, the protocol could be extended with a command by which the remote asks git-annex to run a given git-annex command, and return paths to files containing the output and the exit code?
+"""]]
