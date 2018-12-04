@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-12-04T17:16:41Z"
+ content="""
+That does not look like a permissions error, I mean it could be one, but
+all you show is git-annex not being able to access the repository, which
+could be any kind of configuration problem.
+"""]]
