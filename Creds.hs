@@ -13,9 +13,9 @@ module Creds (
 	getRemoteCredPairFor,
 	warnMissingCredPairFor,
 	getEnvCredPair,
-	writeCacheCreds,
-	readCacheCreds,
-	cacheCredsFile,
+	writeCreds,
+	readCreds,
+	credsFile,
 	removeCreds,
 	includeCredsInfo,
 ) where
@@ -141,31 +141,31 @@ getEnvCredPair storage = liftM2 (,)
 
 writeCacheCredPair :: CredPair -> CredPairStorage -> Annex ()
 writeCacheCredPair credpair storage =
-	writeCacheCreds (encodeCredPair credpair) (credPairFile storage)
+	writeCreds (encodeCredPair credpair) (credPairFile storage)
+
+readCacheCredPair :: CredPairStorage -> Annex (Maybe CredPair)
+readCacheCredPair storage = maybe Nothing decodeCredPair
+	<$> readCreds (credPairFile storage)
+
+existsCacheCredPair :: CredPairStorage -> Annex Bool
+existsCacheCredPair storage = 
+	liftIO . doesFileExist =<< credsFile (credPairFile storage)
 
 {- Stores the creds in a file inside gitAnnexCredsDir that only the user
  - can read. -}
-writeCacheCreds :: Creds -> FilePath -> Annex ()
-writeCacheCreds creds file = do
+writeCreds :: Creds -> FilePath -> Annex ()
+writeCreds creds file = do
 	d <- fromRepo gitAnnexCredsDir
 	createAnnexDirectory d
 	liftIO $ writeFileProtected (d </> file) creds
 
-readCacheCredPair :: CredPairStorage -> Annex (Maybe CredPair)
-readCacheCredPair storage = maybe Nothing decodeCredPair
-	<$> readCacheCreds (credPairFile storage)
+readCreds :: FilePath -> Annex (Maybe Creds)
+readCreds f = liftIO . catchMaybeIO . readFileStrict =<< credsFile f
 
-readCacheCreds :: FilePath -> Annex (Maybe Creds)
-readCacheCreds f = liftIO . catchMaybeIO . readFileStrict =<< cacheCredsFile f
-
-cacheCredsFile :: FilePath -> Annex FilePath
-cacheCredsFile basefile = do
+credsFile :: FilePath -> Annex FilePath
+credsFile basefile = do
 	d <- fromRepo gitAnnexCredsDir
 	return $ d </> basefile
-
-existsCacheCredPair :: CredPairStorage -> Annex Bool
-existsCacheCredPair storage = 
-	liftIO . doesFileExist =<< cacheCredsFile (credPairFile storage)
 
 encodeCredPair :: CredPair -> Creds
 encodeCredPair (l, p) = unlines [l, p]

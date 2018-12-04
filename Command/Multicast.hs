@@ -232,7 +232,7 @@ uftpKey = do
 	u <- getUUID
 	return $ KeyContainer $ "annex-" ++ fromUUID u
 #else
-uftpKey = KeyFile <$> cacheCredsFile "multicast"
+uftpKey = KeyFile <$> credsFile "multicast"
 #endif
 
 -- uftp needs a unique UID for each client and server, which 

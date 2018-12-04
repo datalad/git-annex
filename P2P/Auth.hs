@@ -25,7 +25,7 @@ loadP2PAuthTokens' = mapMaybe toAuthToken
         . map T.pack
         . lines
         . fromMaybe []
-        <$> readCacheCreds p2pAuthCredsFile
+        <$> readCreds p2pAuthCredsFile
 
 -- | Stores an AuthToken, making it be accepted by this repository.
 storeP2PAuthToken :: AuthToken -> Annex ()
@@ -33,7 +33,7 @@ storeP2PAuthToken t = do
 	ts <- loadP2PAuthTokens'
 	unless (t `elem` ts) $ do
 		let d = unlines $ map (T.unpack . fromAuthToken) (t:ts)
-		writeCacheCreds d p2pAuthCredsFile
+		writeCreds d p2pAuthCredsFile
 
 p2pAuthCredsFile :: FilePath
 p2pAuthCredsFile = "p2pauth"
@@ -45,7 +45,7 @@ p2pAuthCredsFile = "p2pauth"
 loadP2PRemoteAuthToken :: P2PAddress -> Annex (Maybe AuthToken)
 loadP2PRemoteAuthToken addr = maybe Nothing mk <$> getM id
 	[ liftIO $ getEnv "GIT_ANNEX_P2P_AUTHTOKEN"
-	, readCacheCreds (addressCredsFile addr)
+	, readCreds (addressCredsFile addr)
 	]
   where
 	mk = toAuthToken . T.pack . takeWhile (/= '\n')
@@ -53,9 +53,9 @@ loadP2PRemoteAuthToken addr = maybe Nothing mk <$> getM id
 p2pAuthTokenEnv :: String
 p2pAuthTokenEnv = "GIT_ANNEX_P2P_AUTHTOKEN"
 
--- | Stores the AuthToken o use when connecting with a given P2P address.
+-- | Stores the AuthToken to use when connecting with a given P2P address.
 storeP2PRemoteAuthToken :: P2PAddress -> AuthToken -> Annex ()
-storeP2PRemoteAuthToken addr t = writeCacheCreds
+storeP2PRemoteAuthToken addr t = writeCreds
 	(T.unpack $ fromAuthToken t)
 	(addressCredsFile addr)
 

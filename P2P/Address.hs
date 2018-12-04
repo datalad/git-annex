@@ -65,7 +65,7 @@ repoP2PAddress _ = Nothing
 -- | Load known P2P addresses for this repository.
 loadP2PAddresses :: Annex [P2PAddress]
 loadP2PAddresses = mapMaybe unformatP2PAddress . maybe [] lines
-	<$> readCacheCreds p2pAddressCredsFile
+	<$> readCreds p2pAddressCredsFile
 
 -- | Store a new P2P address for this repository.
 storeP2PAddress :: P2PAddress -> Annex ()
@@ -74,9 +74,9 @@ storeP2PAddress addr = do
 	unless (addr `elem` addrs) $ do
 		let s = unlines $ map formatP2PAddress (addr:addrs)
 		let tmpnam = p2pAddressCredsFile ++ ".new"
-		writeCacheCreds s tmpnam
-		tmpf <- cacheCredsFile tmpnam
-		destf <- cacheCredsFile p2pAddressCredsFile
+		writeCreds s tmpnam
+		tmpf <- credsFile tmpnam
+		destf <- credsFile p2pAddressCredsFile
 		-- This may be run by root, so make the creds file
 		-- and directory have the same owner and group as
 		-- the git repository directory has.
