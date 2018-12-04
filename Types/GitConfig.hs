@@ -102,6 +102,7 @@ data GitConfig = GitConfig
 	, annexAllowUnverifiedDownloads :: Bool
 	, annexMaxExtensionLength :: Maybe Int
 	, annexJobs :: Concurrency
+	, annexCacheCreds :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -177,6 +178,7 @@ extractGitConfig r = GitConfig
 		getmaybe (annex "security.allow-unverified-downloads")
 	, annexMaxExtensionLength = getmayberead (annex "maxextensionlength")
 	, annexJobs = maybe NonConcurrent Concurrent $ getmayberead (annex "jobs")
+	, annexCacheCreds = getbool (annex "cachecreds") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

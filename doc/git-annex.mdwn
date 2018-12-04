@@ -1160,6 +1160,16 @@ Here are all the supported configuration settings.
   git-annex will wait up to this many seconds for the pid lock
   file to go away, and will then abort if it cannot continue. Default: 300
 
+* `annex.cachecreds`
+
+  When "true" (the default), git-annex will cache credentials used to
+  access special remotes in files in .git/annex/creds/
+  that only you can read. To disable that caching, set to "false",
+  and credentials will only be read from the environment, or if
+  they have been embedded in encrypted form in the git repository, will
+  be extracted and decrypted each time git-annex needs to access the
+  remote.
+
 * `remote.<name>.annex-cost`
 
   When determining which repository to

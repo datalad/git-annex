@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-12-04T17:18:19Z"
+ content="""
+I agree it would make sense to have some way to embedcreds without
+encrypting content stored on the remote.
+
+I suppose one way to express it is as encryption=onlycreds embedcreds=yes
+with one or more keyids.
+
+Note that the tahoe special remote supports embedcreds,
+but disallows setting any encryption (because tahoe handles that)
+so the encryptions can only be stored in the clear. It would make sense for
+tahoe to support encryption=onlycreds while disallowing other encryption
+methods.
+
+----
+
+As for storing creds locally only in encrypted form, it would suffice to
+have an option that makes git-annex not write anything to
+.git/annex/creds/, so it would not use those files as a cache, and would
+pull the creds out of the repository and decrypt each time needed
+(or use environment varibles for creds when applicable.) In some cases
+that would cause more gpg prompts. I think that S3 and WebDAV special
+remotes only call getRemoteCredPair once per run, but external may
+call it repeatedly, and glacier calls it once per request.
+
+Implemented as annex.cachecreds.
+"""]]

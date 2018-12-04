@@ -129,3 +129,16 @@ of the special remote with the option `mac=HMACSHA512`. The available
 MAC algorithms are HMACSHA1, HMACSHA224, HMACSHA256, HMACSHA384, and
 HMACSHA512. Note that it is not possible to change algorithm for a
 non-empty remote.
+
+## credentials storage
+
+Special remotes that need some form of credentials, such as a password,
+may support embedding the credentials in the git repository, using
+embedcreds=yes. See individual special remotes' documentation for details.
+When credentials are embedded in the repository, they're also encrypted using
+whatever encryption setting has been selected for the repository.
+
+Such credentials are also cached locally in a file only you can read,
+in `.git/annex/creds/`. If you prefer to not expose the credentials on disk
+in unencrypted form, you can disable this cache, by setting the
+`annex.cachecreds` config to `false`.

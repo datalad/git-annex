@@ -139,9 +139,11 @@ getEnvCredPair storage = liftM2 (,)
   where
 	(uenv, penv) = credPairEnvironment storage
 
+{- Writes a cred pair to local cache, unless prevented by configuration. -}
 writeCacheCredPair :: CredPair -> CredPairStorage -> Annex ()
-writeCacheCredPair credpair storage =
-	writeCreds (encodeCredPair credpair) (credPairFile storage)
+writeCacheCredPair credpair storage = 
+	whenM (annexCacheCreds <$> Annex.getGitConfig) $
+		writeCreds (encodeCredPair credpair) (credPairFile storage)
 
 readCacheCredPair :: CredPairStorage -> Annex (Maybe CredPair)
 readCacheCredPair storage = maybe Nothing decodeCredPair
