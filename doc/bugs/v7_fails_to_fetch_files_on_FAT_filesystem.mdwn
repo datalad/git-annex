@@ -7,8 +7,7 @@ filesystem.
 
  1. mount external USB drive named `KINGSTON`
  2. `cd /media/anarcat/KINGSTON`
- 3. `git clone ~/git-annex-repo`
- 4. `git -C git-annex-repo annex info`
+ 3. `git clone ~/git-annex-repo` `git -C git-annex-repo annex info`
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -111,6 +110,15 @@ manager because, thankfully, the new v7 mode seems to work well enough
 for me to be able to just copy files that way now. :)
 
 How do I fetch those files anyways? -- [[anarcat]]
+
+> Ugh. Obviously, problem between keyboard and chair here. :( Turns
+> out the clone didn't create a v7 repository, and a simple `git annex
+> upgrade` on the clone fixed the problem. The `Entering an adjusted
+> branch` warning threw me off - I thought it was an indicator that
+> the `init` stage (correctly?) detected it should be in v7 mode. I
+> would have expected a v5 repo to be in classical `direct` mode here,
+> not this weird state where it's "partly v7". Maybe I misunderstood
+> something?
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
