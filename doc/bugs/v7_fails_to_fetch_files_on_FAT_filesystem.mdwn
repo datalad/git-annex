@@ -126,3 +126,5 @@ I am a faithful user of git-annex since almost the beginning, and it's
 serving me incredibly well. The new v7 mode seems awesome and I have
 high hopes it will solve a *ton* of workflow issues I have identified
 over time with git-annex. So congratulations on that awesome work! :)
+
+> [[fixed|done]] in master, I think. --[[Joey]]
