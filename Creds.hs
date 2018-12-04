@@ -34,12 +34,12 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Utility.Base64
 
-{- A CredPair can be stored in a file, or in the environment, or perhaps
+{- A CredPair can be stored in a file, or in the environment, or
  - in a remote's configuration. -}
 data CredPairStorage = CredPairStorage
 	{ credPairFile :: FilePath
 	, credPairEnvironment :: (String, String)
-	, credPairRemoteKey :: Maybe RemoteConfigKey
+	, credPairRemoteKey :: RemoteConfigKey
 	}
 
 {- Stores creds in a remote's configuration, if the remote allows
@@ -57,9 +57,9 @@ setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
 	Nothing -> maybe (return c) (setRemoteCredPair encsetup c gc storage . Just)
 		=<< getRemoteCredPair c gc storage
 	Just creds
-		| embedCreds c -> case credPairRemoteKey storage of
-			Nothing -> localcache creds
-			Just key -> storeconfig creds key =<< flip remoteCipher gc =<< localcache creds
+		| embedCreds c ->
+			let key = credPairRemoteKey storage
+			in storeconfig creds key =<< flip remoteCipher gc =<< localcache creds
 		| otherwise -> localcache creds
   where
 	localcache creds = do
@@ -83,16 +83,15 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
   where
 	fromenv = liftIO $ getEnvCredPair storage
 	fromcache = maybe fromconfig (return . Just) =<< readCacheCredPair storage
-	fromconfig = case credPairRemoteKey storage of
-		Just key -> do
-			mcipher <- remoteCipher' c gc
-			case (M.lookup key c, mcipher) of
-				(Nothing, _) -> return Nothing
-				(Just enccreds, Just (cipher, storablecipher)) ->
-					fromenccreds enccreds cipher storablecipher
-				(Just bcreds, Nothing) ->
-					fromcreds $ fromB64 bcreds
-		Nothing -> return Nothing
+	fromconfig = do
+		let key = credPairRemoteKey storage
+		mcipher <- remoteCipher' c gc
+		case (M.lookup key c, mcipher) of
+			(Nothing, _) -> return Nothing
+			(Just enccreds, Just (cipher, storablecipher)) ->
+				fromenccreds enccreds cipher storablecipher
+			(Just bcreds, Nothing) ->
+				fromcreds $ fromB64 bcreds
 	fromenccreds enccreds cipher storablecipher = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd (c, gc) cipher
@@ -189,7 +188,7 @@ includeCredsInfo c storage info = do
 		Just _ -> do
 			let (uenv, penv) = credPairEnvironment storage
 			ret $ "from environment variables (" ++ unwords [uenv, penv] ++ ")"
-		Nothing -> case (`M.lookup` c) =<< credPairRemoteKey storage of
+		Nothing -> case (`M.lookup` c) (credPairRemoteKey storage) of
 			Nothing -> ifM (existsCacheCredPair storage)
 				( ret "stored locally"
 				, ret "not available"
