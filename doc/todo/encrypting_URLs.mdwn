@@ -3,7 +3,7 @@ E.g. record the URL as encryptedurl://key_id/[base64-encoded encryption of the o
 
 Many cloud services let you create a pre-signed URL for a non-public file.  Anyone with the URL can get the file, so the URL is "public" in that sense;
 but you only share the URL with intended recipient(s), not the public.  Or you might store files in a bucket that can be publicly read but not listed, and
-store files under paths like s3://mybucket/<randomstring>/myfile ; the URL is "public" but in practice it can't be guessed.
+store files under paths like s3://mybucket/randomstring/myfile ; the URL is "public" but in practice it can't be guessed.
 If the URLs could be stored encrypted in the git-annex branch, one could track such files using the ordinary web remote.  One could use an S3 export-tree
 remote to share a directory with specific recipient(s), without them needing either AWS credentials or git-annex.
 
