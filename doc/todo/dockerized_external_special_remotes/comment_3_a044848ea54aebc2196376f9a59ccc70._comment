@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-12-05T16:27:47Z"
+ content="""
+I think this could be a good idea, although I would not want to be forced
+to use docker as the only way to install an external special remote either.
+
+It seems that the minimum needed is a way to add a shell script to
+PATH with the name of the external special remote program, so git-annex can
+run it as usual. Or git-annex could invoke `docker run` itself, but I like
+having a shell script because it means git-annex doesn't need to know about
+docker and other containerization technologies.
+
+OTOH, I can see it would be nice if `git annex enableremote` could somehow
+get everything set up to use docker, and `git annex init` could fully set
+up autoenable=true special remotes.
+
+A balance could be for `git annex enableremote` to set up the shell script,
+perhaps in `.git/annex/externals/`. Store a few values like which docker
+image to use in the remote config, and generate the shell script from that.
+Then when a user needs to pass extra parameters to docker, or if they want
+to use rkt etc, they can just edit the shell script.
+"""]]

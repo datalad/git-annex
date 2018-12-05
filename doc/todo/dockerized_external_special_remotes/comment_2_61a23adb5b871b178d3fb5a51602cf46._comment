@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2018-12-05T16:24:17Z"
+ content="""
+Couldn't the docker image come with its own copy of git-annex?
+Not super space efficient, but it ensures that the special remote has
+access to a version of git-annex with the features it needs.
+"""]]
