@@ -128,3 +128,5 @@ i have recorded a asciinema: https://asciinema.org/a/O8ZjZp2TVO3mnuB4ZtmJxgceC
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 yeah. i try to use git-annex for just everything. lately im building a little script of using git-annex to save content from my blog. i love it alot :)
+
+> [[fixed|done]] --[[Joey]]
