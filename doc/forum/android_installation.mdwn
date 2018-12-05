@@ -1,0 +1,7 @@
+I tried to install using termux (from F-Droid).
+
+On running source git-annex-install i get
+ unknown architecture armv81, cannot install
+
+actually, I have no idea whats going on.
+
