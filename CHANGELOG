@@ -1,4 +1,4 @@
-git-annex (7.20181122) UNRELEASED; urgency=medium
+git-annex (7.20181205) upstream; urgency=medium
 
   * Make bittorrent special remote work w/o btshowmetainfo installed
     when it was build with torrentparser.
@@ -18,7 +18,7 @@ git-annex (7.20181122) UNRELEASED; urgency=medium
   * annex.cachecreds: New config to allow disabling of credentials caching
     for special remotes.
 
- -- Joey Hess <id@joeyh.name>  Tue, 27 Nov 2018 12:29:27 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 05 Dec 2018 14:02:27 -0400
 
 git-annex (7.20181121) upstream; urgency=medium
 
