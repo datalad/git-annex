@@ -259,15 +259,18 @@ storeHelper info h f object p = case partSize info of
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
 retrieve :: Remote -> RemoteConfig -> S3Info -> Maybe S3Handle -> Retriever
-retrieve r _ info (Just h) = fileRetriever $ \f k p -> do
-	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
-	retrieveHelper info h loc f p
+retrieve r c info (Just h) = fileRetriever $ \f k p ->
+	eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
+		Left failreason -> do
+			warning failreason
+			giveup "cannot download content"
+		Right loc -> retrieveHelper info h loc f p
 retrieve r c info Nothing = fileRetriever $ \f k p ->
-	getPublicWebUrls (uuid r) info c k >>= \case
-		[] -> do
-			needS3Creds (uuid r)
-			giveup "No S3 credentials configured"
-		us -> unlessM (downloadUrl k p us f) $
+	getPublicWebUrls' (uuid r) info c k >>= \case
+		Left failreason -> do
+			warning failreason
+			giveup "cannot download content"
+		Right us -> unlessM (downloadUrl k p us f) $
 			giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
@@ -292,16 +295,19 @@ remove info h k = do
 	return $ either (const False) (const True) res
 
 checkKey :: Remote -> RemoteConfig -> S3Info -> Maybe S3Handle -> CheckPresent
-checkKey r _ info (Just h) k = do
+checkKey r c info (Just h) k = do
 	showChecking r
-	loc <- eitherS3VersionID info (uuid r) k (T.pack $ bucketObject info k)
-	checkKeyHelper info h loc
+	eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
+		Left failreason -> do
+			warning failreason
+			giveup "cannot check content"
+		Right loc -> checkKeyHelper info h loc
 checkKey r c info Nothing k = 
-	getPublicWebUrls (uuid r) info c k >>= \case
-		[] -> do
-			needS3Creds (uuid r)
-			giveup "No S3 credentials configured"
-		us -> do
+	getPublicWebUrls' (uuid r) info c k >>= \case
+		Left failreason -> do
+			warning failreason
+			giveup "cannot check content"
+		Right us -> do
 			showChecking r
 			let check u = withUrlOptions $ 
 				liftIO . checkBoth u (keySize k)
@@ -347,7 +353,7 @@ storeExportS3 u info (Just h) f k loc p =
 			>>= setS3VersionID info u k
 		return True
 storeExportS3 u _ Nothing _ _ _ _ = do
-	needS3Creds u
+	warning $ needS3Creds u
 	return False
 
 retrieveExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
@@ -360,7 +366,7 @@ retrieveExportS3 u info mh _k loc f p =
 			return True
 		Nothing -> case getPublicUrlMaker info of
 			Nothing -> do
-				needS3Creds u
+				warning $ needS3Creds u
 				return False
 			Just geturl -> Url.withUrlOptions $ 
 				liftIO . Url.download p (geturl exporturl) f
@@ -375,7 +381,7 @@ removeExportS3 _u info (Just h) _k loc =
 			S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
 		return $ either (const False) (const True) res
 removeExportS3 u _ Nothing _ _ = do
-	needS3Creds u
+	warning $ needS3Creds u
 	return False
 
 checkPresentExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
@@ -383,7 +389,7 @@ checkPresentExportS3 _u info (Just h) _k loc =
 	checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
 checkPresentExportS3 u info Nothing k loc = case getPublicUrlMaker info of
 	Nothing -> do
-		needS3Creds u
+		warning $ needS3Creds u
 		giveup "No S3 credentials configured"
 	Just geturl -> withUrlOptions $ liftIO . 
 		checkBoth (geturl $ bucketExportLocation info loc) (keySize k)
@@ -403,7 +409,7 @@ renameExportS3 _u info (Just h) _k src dest = catchNonAsync go (\_ -> return Fal
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
 renameExportS3 u _ Nothing _ _ _ = do
-	needS3Creds u
+	warning $ needS3Creds u
 	return False
 
 {- Generate the bucket if it does not already exist, including creating the
@@ -523,7 +529,7 @@ withS3Handle :: RemoteConfig -> RemoteGitConfig -> UUID -> (S3Handle -> Annex a)
 withS3Handle c gc u a = withS3HandleMaybe c gc u $ \mh -> case mh of
 	Just h -> a h
 	Nothing -> do
-		needS3Creds u
+		warning $ needS3Creds u
 		giveup "No S3 credentials configured"
 
 withS3HandleMaybe :: RemoteConfig -> RemoteGitConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
@@ -542,8 +548,8 @@ withS3HandleMaybe c gc u a = do
   where
 	s3cfg = s3Configuration c
 
-needS3Creds :: UUID -> Annex ()
-needS3Creds u = warnMissingCredPairFor "S3" (AWS.creds u)
+needS3Creds :: UUID -> String
+needS3Creds u = missingCredPairFor "S3" (AWS.creds u)
 
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = cfg
@@ -734,19 +740,28 @@ s3Info c info = catMaybes
 	showstorageclass sc = show sc
 
 getPublicWebUrls :: UUID -> S3Info -> RemoteConfig -> Key -> Annex [URLString]
-getPublicWebUrls u info c k
-	| not (public info) = return []
+getPublicWebUrls u info c k = either (const []) id <$> getPublicWebUrls' u info c k
+
+getPublicWebUrls' :: UUID -> S3Info -> RemoteConfig -> Key -> Annex (Either String [URLString])
+getPublicWebUrls' u info c k
+	| not (public info) = return $ Left $ 
+		"S3 bucket does not allow public access; " ++ needS3Creds u
 	| exportTree c = if versioning info
 		then case publicurl info of
-			Just url -> getS3VersionIDPublicUrls (const $ genericPublicUrl url) info u k
+			Just url -> getversionid (const $ genericPublicUrl url)
 			Nothing -> case host info of
 				Just h | h == AWS.s3DefaultHost ->
-					getS3VersionIDPublicUrls awsPublicUrl info u k
-				_ -> return []
-		else return []
+					getversionid awsPublicUrl
+				_ -> return nopublicurl
+		else return (Left "exporttree used without versioning")
 	| otherwise = case getPublicUrlMaker info of
-		Just geturl -> return [geturl $ bucketObject info k]
-		Nothing -> return []
+		Just geturl -> return (Right [geturl $ bucketObject info k])
+		Nothing -> return nopublicurl
+  where
+	nopublicurl = Left "No publicurl is configured for this remote"
+	getversionid url = getS3VersionIDPublicUrls url info u k >>= \case
+		[] -> return (Left "Remote is configured to use versioning, but no S3 version ID is recorded for this key")
+		l -> return (Right l)
 
 getPublicUrlMaker :: S3Info -> Maybe (BucketObject -> URLString)
 getPublicUrlMaker info = case publicurl info of
@@ -813,14 +828,16 @@ getS3VersionID u k = do
 s3VersionField :: MetaField
 s3VersionField = mkMetaFieldUnchecked "V"
 
-eitherS3VersionID :: S3Info -> UUID -> Key -> S3.Object -> Annex (Either S3.Object S3VersionID)
-eitherS3VersionID info u k fallback
+eitherS3VersionID :: S3Info -> UUID -> RemoteConfig -> Key -> S3.Object -> Annex (Either String (Either S3.Object S3VersionID))
+eitherS3VersionID info u c k fallback
 	| versioning info = getS3VersionID u k >>= return . \case
-		[] -> Left fallback
+		[] -> if exportTree c
+			then Left "Remote is configured to use versioning, but no S3 version ID is recorded for this key"
+			else Right (Left fallback)
 		-- It's possible for a key to be stored multiple timees in
 		-- a bucket with different version IDs; only use one of them.
-		(v:_) -> Right v
-	| otherwise = return (Left fallback)
+		(v:_) -> Right (Right v)
+	| otherwise = return (Right (Left fallback))
 
 s3VersionIDPublicUrl :: (S3Info -> BucketObject -> URLString) -> S3Info -> S3VersionID -> URLString
 s3VersionIDPublicUrl mk info (S3VersionID obj vid) = mk info $ concat

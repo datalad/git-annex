@@ -11,7 +11,7 @@ module Creds (
 	setRemoteCredPair,
 	getRemoteCredPair,
 	getRemoteCredPairFor,
-	warnMissingCredPairFor,
+	missingCredPairFor,
 	getEnvCredPair,
 	writeCreds,
 	readCreds,
@@ -118,12 +118,12 @@ getRemoteCredPairFor :: String -> RemoteConfig -> RemoteGitConfig -> CredPairSto
 getRemoteCredPairFor this c gc storage = go =<< getRemoteCredPair c gc storage
   where
 	go Nothing = do
-		warnMissingCredPairFor this storage
+		warning $ missingCredPairFor this storage
 		return Nothing
 	go (Just credpair) = return $ Just credpair
 
-warnMissingCredPairFor :: String -> CredPairStorage -> Annex ()
-warnMissingCredPairFor this storage = warning $ unwords
+missingCredPairFor :: String -> CredPairStorage -> String
+missingCredPairFor this storage = unwords
 	[ "Set both", loginvar
 	, "and", passwordvar
 	, "to use", this
