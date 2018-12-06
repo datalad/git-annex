@@ -1,0 +1,11 @@
+Hi,
+
+I am Yaroslav Olegovich Halchenko, or just Yarik.  I also got my first MS degree in Laser and Optoelectronic Engineering, and that is how I became `yarikoptic`.
+
+Through the past two decades I have been pursuing a variety of problems in neuroimaging and neuroinformatics, to solve many of which we have provide many solutions to our scientific community (e.g. [NeuroDebian](http://neuro.debian.net), [PyMVPA](http://pymvpa.org), etc). git-annex became the ideological and technological core for our [DataLad](http://datalad.org) project to provide a data distribution for existing data resources, and a versatile management platform for all digital objects of science (code, data, computational environments, etc).  DataLad development was funded by NSF (USA) and BMBF (Germany), which allowed us to support development and maintenance of the core piece of git-annex for over 4 years now.
+
+To discover more, visit
+
+- [Center for Open Neuroscience](http://centerforopenneuroscience.org)
+- [yarikoptic@GitHub](https://github.com/yarikoptic)
+- [yarikoptic@Twitter](http://twitter.com/yarikoptic)
