@@ -1,0 +1,10 @@
+Attempt to build the conda-forge recipe for the latest git-annex version fails like this:
+https://circleci.com/gh/conda-forge/git-annex-feedstock/124?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link
++ stack --local-bin-path /home/conda/feedstock_root/build_artifacts/git-annex_1544129313702/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_p/bin --extra-include-dirs /home/conda/feedstock_root/build_artifacts/git-annex_1544129313702/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_p/include --extra-lib-dirs /home/conda/feedstock_root/build_artifacts/git-annex_1544129313702/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_p/lib --stack-root /home/conda/feedstock_root/build_artifacts/git-annex_1544129313702/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_p/share/git-annex-7.20181205-0/stackroot setup
+Downloading lts-12.19 build plan ...
+Downloaded lts-12.19 build plan.
+No setup information found for ghc-8.4.4 on your platform.
+This probably means a GHC bindist has not yet been added for OS key 'linux64-gmp4'.
+Supported versions: ghc-7.8.4, ghc-7.10.2, ghc-7.10.3, ghc-8.0.1, ghc-8.0.2, ghc-8.2.1, ghc-8.2.2, ghc-8.4.2
+
+Is there a way to specify that ghc-8.4.2 is ok (if it is ok)?
