@@ -1,0 +1,14 @@
+The git annex documentation gives an example of using get:
+
+# git annex sync laptop
+# git annex get .
+get my_cool_big_file (from laptop...) ok
+get iso/debian.iso (from laptop...) ok
+https://git-annex.branchable.com/walkthrough/#index5h2
+
+Is there a way to do the opposite, i.e. once synchronised with the remote repo called "laptop", directly put the actual file content directly into the "laptop"'s annex storage? E.g.
+
+# git annex sync laptop
+# git annex put .
+put my_cool_big_file (to laptop...) ok
+put iso/debian.iso (to laptop...) ok
