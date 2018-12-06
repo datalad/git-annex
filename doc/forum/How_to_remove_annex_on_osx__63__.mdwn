@@ -1,0 +1,5 @@
+I tried to remove git annex and it seems to have completely broken my git. Anytime I try to clone it says:
+
+-bash: /Applications/git-annex.app/Contents/MacOS/git: No such file or directory
+
+How do I fix?
