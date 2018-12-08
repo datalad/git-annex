@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2018-12-08T16:43:07Z"
+ content="""
+`git-annex` for mac comes with a bundled version of git usually located at `/Applications/git-annex.app/Contents/MacOS/git`.  It looks like some application you are using found that location of git and decided to use it. When you deleted the git-annex.app directory your app could no longer find git there. **Are you getting this error message from the Github Desktop app?**
+
+Most likely you just need to install a standalone version of git (if you have never done that) from <https://git-scm.com/> or Homebrew if you are into that, or if you use Github Desktop just go to `Github Desktop > Install Command Line Tool…`. You could also check to make sure you don't have some hardcoded alias for git setup in `~/.bash_profile`, but that seems unlikely.
+"""]]
