@@ -2,6 +2,12 @@ git-annex (7.20181206) UNRELEASED; urgency=medium
 
   * S3: Improve diagnostics when a remote is configured with exporttree and
     versioning, but no S3 version id has been recorded for a key.
+  * findref: Support file matching options: --include, --exclude,
+    --want-get, --want-drop, --largerthan, --smallerthan, --accessedwithin
+  * Commands supporting --branch now apply file matching options --include,
+    --exclude, --want-get, --want-drop to filenames from the branch.
+    Previously, combining --branch with those would fail to match anything.
+  * add, import, findref: Support --time-limit.
 
  -- Joey Hess <id@joeyh.name>  Thu, 06 Dec 2018 13:39:16 -0400
 

@@ -8,7 +8,7 @@
 module Types.FileMatcher where
 
 import Types.UUID (UUID)
-import Types.Key (Key)
+import Types.Key (Key, AssociatedFile)
 import Utility.Matcher (Matcher, Token)
 import Utility.FileSize
 
@@ -18,7 +18,7 @@ import qualified Data.Set as S
 
 data MatchInfo
 	= MatchingFile FileInfo
-	| MatchingKey Key
+	| MatchingKey Key AssociatedFile
 	| MatchingInfo (OptInfo FilePath) (OptInfo Key) (OptInfo FileSize) (OptInfo MimeType)
 
 type MimeType = String

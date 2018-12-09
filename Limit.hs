@@ -94,16 +94,17 @@ matchGlobFile :: String -> MatchInfo -> Annex Bool
 matchGlobFile glob = go
   where
 	cglob = compileGlob glob CaseSensative -- memoized
-	go (MatchingKey _) = pure False
 	go (MatchingFile fi) = pure $ matchGlob cglob (matchFile fi)
 	go (MatchingInfo af _ _ _) = matchGlob cglob <$> getInfo af
+	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
+	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob af
 
 #ifdef WITH_MAGICMIME
 matchMagic :: Maybe Magic -> MkLimit Annex
 matchMagic (Just magic) glob = Right $ const go
   where
  	cglob = compileGlob glob CaseSensative -- memoized
-	go (MatchingKey _) = pure False
+	go (MatchingKey _ _) = pure False
 	go (MatchingFile fi) = liftIO $ catchBoolIO $
 		matchGlob cglob <$> magicFile magic (currFile fi)
 	go (MatchingInfo _ _ _ mimeval) = matchGlob cglob <$> getInfo mimeval
@@ -152,7 +153,8 @@ limitInDir :: FilePath -> MatchFiles Annex
 limitInDir dir = const go
   where
 	go (MatchingFile fi) = checkf $ matchFile fi
-	go (MatchingKey _) = return False
+	go (MatchingKey _ (AssociatedFile Nothing)) = return False
+	go (MatchingKey _ (AssociatedFile (Just af))) = checkf af
 	go (MatchingInfo af _ _ _) = checkf =<< getInfo af
 	checkf = return . elem dir . splitPath . takeDirectory
 
@@ -200,7 +202,7 @@ limitLackingCopies approx want = case readish want of
 			then approxNumCopies
 			else case mi of
 				MatchingFile fi -> getGlobalFileNumCopies $ matchFile fi
-				MatchingKey _ -> approxNumCopies
+				MatchingKey _ _ -> approxNumCopies
 				MatchingInfo _ _ _ _ -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
 			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
@@ -214,7 +216,7 @@ limitLackingCopies approx want = case readish want of
  -}
 limitUnused :: MatchFiles Annex
 limitUnused _ (MatchingFile _) = return False
-limitUnused _ (MatchingKey k) = S.member k <$> unusedKeys
+limitUnused _ (MatchingKey k _) = S.member k <$> unusedKeys
 limitUnused _ (MatchingInfo _ ak _ _) = do
 	k <- getInfo ak
 	S.member k <$> unusedKeys
@@ -277,7 +279,7 @@ limitSize vs s = case readSize dataUnits s of
 	Just sz -> Right $ go sz
   where
 	go sz _ (MatchingFile fi) = lookupFileKey fi >>= check fi sz
-	go sz _ (MatchingKey key) = checkkey sz key
+	go sz _ (MatchingKey key _) = checkkey sz key
 	go sz _ (MatchingInfo _ _ as _) =
 		getInfo as >>= \sz' -> return (Just sz' `vs` Just sz)
 	checkkey sz key = return $ keySize key `vs` Just sz
@@ -329,5 +331,5 @@ lookupFileKey = lookupFile . currFile
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a
-checkKey a (MatchingKey k) = a k
+checkKey a (MatchingKey k _) = a k
 checkKey a (MatchingInfo _ ak _ _) = a =<< getInfo ak

@@ -211,18 +211,18 @@ parseKey = maybe (fail "invalid key") return . file2key
 -- Options to match properties of annexed files.
 annexedMatchingOptions :: [GlobalOption]
 annexedMatchingOptions = concat
-	[ nonWorkTreeMatchingOptions'
+	[ keyMatchingOptions'
 	, fileMatchingOptions'
 	, combiningOptions
 	, timeLimitOption
 	]
 
--- Matching options that don't need to examine work tree files.
-nonWorkTreeMatchingOptions :: [GlobalOption]
-nonWorkTreeMatchingOptions = nonWorkTreeMatchingOptions' ++ combiningOptions
+-- Matching options that can operate on keys as well as files.
+keyMatchingOptions :: [GlobalOption]
+keyMatchingOptions = keyMatchingOptions' ++ combiningOptions ++ timeLimitOption
 
-nonWorkTreeMatchingOptions' :: [GlobalOption]
-nonWorkTreeMatchingOptions' = 
+keyMatchingOptions' :: [GlobalOption]
+keyMatchingOptions' = 
 	[ globalSetter Limit.addIn $ strOption
 		( long "in" <> short 'i' <> metavar paramRemote
 		<> help "match files present in a remote"
@@ -285,7 +285,7 @@ nonWorkTreeMatchingOptions' =
 
 -- Options to match files which may not yet be annexed.
 fileMatchingOptions :: [GlobalOption]
-fileMatchingOptions = fileMatchingOptions' ++ combiningOptions
+fileMatchingOptions = fileMatchingOptions' ++ combiningOptions ++ timeLimitOption
 
 fileMatchingOptions' :: [GlobalOption]
 fileMatchingOptions' =

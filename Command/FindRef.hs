@@ -12,7 +12,7 @@ import qualified Command.Find as Find
 import qualified Git
 
 cmd :: Command
-cmd = withGlobalOptions [nonWorkTreeMatchingOptions] $ Find.mkCommand $ 
+cmd = withGlobalOptions [annexedMatchingOptions] $ Find.mkCommand $ 
 	command "findref" SectionPlumbing
 		"lists files in a git ref"
 		paramRef (seek <$$> Find.optParser)

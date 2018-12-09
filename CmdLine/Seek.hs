@@ -24,6 +24,7 @@ import qualified Limit
 import CmdLine.GitAnnex.Options
 import Logs.Location
 import Logs.Unused
+import Types.ActionItem
 import Types.Transfer
 import Logs.Transfer
 import Remote.List
@@ -84,12 +85,14 @@ withFilesInRefs a = mapM_ go
 	go r = do	
 		matcher <- Limit.getMatcher
 		(l, cleanup) <- inRepo $ LsTree.lsTree r
-		forM_ l $ \i -> do
-			let f = getTopFilePath $ LsTree.file i
-			catKey (LsTree.sha i) >>= \case
+		forM_ l $ \ti -> do
+			let f = getTopFilePath $ LsTree.file ti
+			catKey (LsTree.sha ti) >>= \case
 				Nothing -> noop
-				Just k -> whenM (matcher $ MatchingKey k) $
-					a (f, k)
+				Just k -> 
+					let i = MatchingKey k (AssociatedFile (Just f))
+					in whenM (matcher i) $
+						a (f, k)
 		liftIO $ void cleanup
 
 withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
@@ -197,8 +200,12 @@ withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
   where
 	mkkeyaction = do
 		matcher <- Limit.getMatcher
-		return $ \v ->
-			whenM (matcher $ MatchingKey $ fst v) $
+		return $ \v@(k, ai) ->
+			let i = case ai of
+				ActionItemBranchFilePath (BranchFilePath _ topf) ->
+					MatchingKey k (AssociatedFile $ Just $ getTopFilePath topf)
+				_ -> MatchingKey k (AssociatedFile Nothing)
+			in whenM (matcher i) $
 				keyaction v
 
 withKeyOptions' 

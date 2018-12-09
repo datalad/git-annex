@@ -60,7 +60,7 @@ checkMatcher matcher mkey afile notpresent notconfigured d
 	| isEmpty matcher = notconfigured
 	| otherwise = case (mkey, afile) of
 		(_, AssociatedFile (Just file)) -> go =<< fileMatchInfo file
-		(Just key, _) -> go (MatchingKey key)
+		(Just key, _) -> go (MatchingKey key afile)
 		_ -> d
   where
 	go mi = matchMrun matcher $ \a -> a notpresent mi
