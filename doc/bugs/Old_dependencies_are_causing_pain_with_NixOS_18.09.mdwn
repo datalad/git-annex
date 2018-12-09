@@ -4,3 +4,6 @@ More detail here: <https://github.com/NixOS/nixpkgs/issues/45686>
 
 ### What steps will reproduce the problem?
 Installing git-annex from the 18.09 nixpkgs release.
+
+> [[done]]; the esqueleto dep was dropped and deps are fairly current now.
+> --[[Joey]]
