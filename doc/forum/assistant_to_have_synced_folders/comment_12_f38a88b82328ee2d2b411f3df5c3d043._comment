@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 12"
+ date="2018-12-08T16:56:11Z"
+ content="""
+Looking through your video, I think I have found at least one issue with the assistant. I logged in a todo here: <http://git-annex.branchable.com/todo/assistant_should_detect_added_remotes/>. It looks like assistant is not detecting your newly added remote (after hitting the combine button) which is why it wasn't syncing.
+"""]]

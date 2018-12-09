@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 2"
+ date="2018-12-08T17:09:27Z"
+ content="""
+Could the assistant put a file watch on `.git/config` to detect when new remotes are added/removed?
+
+I am pretty sure this user [assistant to have synced folders](http://git-annex.branchable.com/forum/assistant_to_have_synced_folders/) ran into this issue. They added two local remotes then hit the combine button, then looked for synced files. Assistant never started syncing, presumably for the reasons outlined in your comment. They did everything through the web gui so they really didn't have any expectation that they would need to manually restart all the assistant daemons after hitting the combine button.
+"""]]
