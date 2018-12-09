@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-12-09T14:47:59Z"
+ content="""
+As the test suite is constructed, there is a single origin repository
+shared by clones used for each test case, and there are test cases that do
+eg `git annex move --from origin ; git annex move --to origin` and so would break
+other tests cases using the same origin if they were run concurrently, without it
+being an actual concurrency bug in git-annex.
+
+So parallelizing the test suite would need each test case to have its own
+isolated set of test repos. But then concurrency bugs could not be found by
+the test suite; concurrency would only possibly make it run faster.
+
+Finding concurrency bugs seems to need the test repos to contain more
+files than the two or three they now do, so that a single test case can
+run some git-annex operation concurrently on several files at once.
+
+Also, if you look at the CHANGELOG, you'll find that concurrency bugs in
+git-annex beyond the UI level are fairly rare. And I can think of only one
+concurrency bug that ever caused even theoretical data loss; it involved 3
+repos in a triangle topology all dropping the same file at the same time.
+"""]]
