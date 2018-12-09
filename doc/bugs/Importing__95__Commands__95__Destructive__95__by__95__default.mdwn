@@ -28,3 +28,6 @@ for me personally the ideal case would be a cp command for git annex that would 
 in a cp style allowing to use options like `noclobber` and perhaps `reinject`
 
 it may be sensible to leave supporting this to the importtree feature
+
+> I think we've argued pretty well that the current behavior makes sense,
+> so [[done]] --[[Joey]]
