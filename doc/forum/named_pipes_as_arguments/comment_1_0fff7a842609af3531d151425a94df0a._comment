@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-12-09T15:38:21Z"
+ content="""
+I doubt it?
+
+The two way filesnames are used with git-annex commands are
+
+1. The name of a file already checked in to the git repository,
+   here git-annex needs to stat the file so I doubt a named pipe would
+   work.
+2. A file not yet checked into git which is going to be added.
+   git-annex has to adjust permissions, move the file etc, as well as
+   reading its content so again a named pipe wouldn't work.
+"""]]
