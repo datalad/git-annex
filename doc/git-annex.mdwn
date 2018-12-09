@@ -660,7 +660,7 @@ subdirectories).
 
 * `findref [ref]`
 
-  Lists files in a git ref.
+  Lists files in a git ref. (deprecated)
   
   See [[git-annex-findref]](1) for details.
 

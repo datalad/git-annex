@@ -79,22 +79,6 @@ withFilesNotInGit skipdotfiles a l
 	go fs = seekActions $ prepFiltered a $
 		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> f) l) fs
 
-withFilesInRefs :: ((FilePath, Key) -> CommandSeek) -> [Git.Ref] -> CommandSeek
-withFilesInRefs a = mapM_ go
-  where
-	go r = do	
-		matcher <- Limit.getMatcher
-		(l, cleanup) <- inRepo $ LsTree.lsTree r
-		forM_ l $ \ti -> do
-			let f = getTopFilePath $ LsTree.file ti
-			catKey (LsTree.sha ti) >>= \case
-				Nothing -> noop
-				Just k -> 
-					let i = MatchingKey k (AssociatedFile (Just f))
-					in whenM (matcher i) $
-						a (f, k)
-		liftIO $ void cleanup
-
 withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher

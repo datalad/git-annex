@@ -1,6 +1,6 @@
 # NAME
 
-git-annex findref - lists files in a git ref
+git-annex findref - lists files in a git ref (deprecated)
 
 # SYNOPSIS
 
@@ -8,9 +8,9 @@ git annex findref `[ref]`
 
 # DESCRIPTION
 
-This is very similar to the `git-annex find` command, but instead of
-finding files in the current work tree, it finds files in the
-specified git ref.
+This is the same as `git annex find` with the --branch option, and you're
+encouraged to use that instead unless you need to support older versions of
+git-annex.
 
 # OPTIONS
 

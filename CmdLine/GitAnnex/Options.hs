@@ -174,10 +174,7 @@ data KeyOptions
 
 parseKeyOptions :: Parser KeyOptions
 parseKeyOptions = parseAllOption
-	<|> WantBranchKeys <$> some (option (str >>= pure . Ref)
-		( long "branch" <> metavar paramRef
-		<> help "operate on files in the specified branch or treeish"
-		))
+	<|> parseBranchKeysOption
 	<|> flag' WantUnusedKeys
 		( long "unused" <> short 'U'
 		<> help "operate on files found by last run of git-annex unused"
@@ -185,6 +182,13 @@ parseKeyOptions = parseAllOption
 	<|> (WantSpecificKey <$> option (str >>= parseKey)
 		( long "key" <> metavar paramKey
 		<> help "operate on specified key"
+		))
+
+parseBranchKeysOption :: Parser KeyOptions
+parseBranchKeysOption =
+	WantBranchKeys <$> some (option (str >>= pure . Ref)
+		( long "branch" <> metavar paramRef
+		<> help "operate on files in the specified branch or treeish"
 		))
 
 parseFailedTransfersOption :: Parser KeyOptions

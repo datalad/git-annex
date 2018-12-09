@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,9 +14,14 @@ import qualified Git
 cmd :: Command
 cmd = withGlobalOptions [annexedMatchingOptions] $ Find.mkCommand $ 
 	command "findref" SectionPlumbing
-		"lists files in a git ref"
+		"lists files in a git ref (deprecated)"
 		paramRef (seek <$$> Find.optParser)
 
 seek :: Find.FindOptions -> CommandSeek
-seek o = (commandAction . uncurry (Find.start o))
-	`withFilesInRefs` (map Git.Ref $ Find.findThese o)
+seek o = Find.seek o'
+  where
+	o' = o 
+		{ Find.keyOptions = Just $ WantBranchKeys $
+			map Git.Ref (Find.findThese o)
+		, Find.findThese = []
+		}

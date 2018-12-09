@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,6 +14,8 @@ import Command
 import Annex.Content
 import Limit
 import Types.Key
+import Types.ActionItem
+import Git.FilePath
 import qualified Utility.Format
 import Utility.DataUnits
 
@@ -28,6 +30,7 @@ mkCommand = noCommit . noMessages . withGlobalOptions [jsonOptions]
 data FindOptions = FindOptions
 	{ findThese :: CmdParams
 	, formatOption :: Maybe Utility.Format.Format
+	, keyOptions :: Maybe KeyOptions
 	, batchOption :: BatchMode
 	}
 
@@ -35,6 +38,7 @@ optParser :: CmdParamsDesc -> Parser FindOptions
 optParser desc = FindOptions
 	<$> cmdParams desc
 	<*> optional parseFormatOption
+	<*> optional parseBranchKeysOption
 	<*> parseBatchOption
 
 parseFormatOption :: Parser Utility.Format.Format
@@ -50,7 +54,9 @@ parseFormatOption =
 
 seek :: FindOptions -> CommandSeek
 seek o = case batchOption o of
-	NoBatch -> withFilesInGit (commandAction . go)
+	NoBatch -> withKeyOptions (keyOptions o) False
+		(commandAction . startKeys o)
+		(withFilesInGit (commandAction . go))
 		=<< workTreeItems (findThese o)
 	Batch fmt -> batchFilesMatching fmt go
   where
@@ -65,6 +71,11 @@ start o file key = ifM (limited <||> inAnnex key)
 		next $ next $ return True
 	, stop
 	)
+
+startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
+startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf)) = 
+	start o (getTopFilePath topf) key
+startKeys _ _ = stop
 
 showFormatted :: Maybe Utility.Format.Format -> String -> [(String, String)] -> Annex ()
 showFormatted format unformatted vars =

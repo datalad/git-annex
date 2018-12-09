@@ -26,6 +26,10 @@ finds files in the current directory and its subdirectories.
 
   To list annexed files whose content is not present, specify `--not --in=here`
 
+* `--branch=ref`
+
+  List files in the specified branch or treeish.
+
 * `--print0`
 
   Output filenames terminated with nulls, for use with `xargs -0`
