@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2018-12-09T15:25:24Z"
+ content="""
+The installer is running the command `uname -m` to find out what kind of
+processor your Android device has. It doesn't recognize "armv81"
+
+What you can try is to open the git-annex-install
+script in a text editor, and add a case under `uname -m` for
+"armv81". My guess is that this would work:
+
+	armv81) arch=arm64 ;;
+
+Or maybe this:
+
+	armv81) arch=arm ;;
+"""]]

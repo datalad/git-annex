@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2018-12-09T15:22:09Z"
+ content="""
+`git annex export` only exports trees, but you can easily make a tree
+containing only a single file, and then export that. 
+
+For example:
+
+	mkdir exporttree
+	cp tests/tests1.mov exporttree
+	git annex add exporttree
+	git commit -m 'created export tree'
+	git annex export master:exporttree --to public
+
+If you don't want to commit that you can switch to a temporary branch
+and build the tree there. Or there are plenty of lower-level git commands
+to build trees.
+"""]]
