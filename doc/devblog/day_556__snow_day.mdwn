@@ -1,0 +1,6 @@
+Snowed in and without internet until now, I've been working on the backlog.
+This included adding `git annex find --branch` and adding support
+for combining options like `--include`, `--largerthan` etc with
+`--branch`.
+
+Today's work was sponsored by Jake Vosloo [on Patreon](https://patreon.com/joeyh/).
