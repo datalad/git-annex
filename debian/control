@@ -89,7 +89,7 @@ Build-Depends:
 	gpg-agent,
 Maintainer: Richard Hartmann <richih@debian.org>
 Standards-Version: 3.9.8
-Vcs-Git: git://git.kitenet.net/git-annex
+Vcs-Git: git://git.joeyh.name/git-annex
 Homepage: http://git-annex.branchable.com/
 XS-Testsuite: autopkgtest
 
