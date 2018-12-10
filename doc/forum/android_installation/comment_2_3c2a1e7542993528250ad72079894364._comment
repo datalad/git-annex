@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="tritigr"
+ avatar="http://cdn.libravatar.org/avatar/b48e7ad14f74123cd33968fc1b747cb5"
+ subject="comment 2"
+ date="2018-12-10T21:28:59Z"
+ content="""
+Hi Joey,
+
+thanks for helping.
+Unfortunately, installation with arm64 fails with something that 64bit executables are not supported.
+using \"armel\" installation seems ok, (\"git-annex is sucessfully installed; installation complete\")
+
+but then \"git annex webapp\" gives
+git: 'annex' is not a git command
+
+using \"arm\" (without the \"el\") gives Error 404 on downloading, so I guess you really meant \"armel\" (32 bits)
+
+Til
+"""]]
