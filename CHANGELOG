@@ -10,6 +10,9 @@ git-annex (7.20181206) UNRELEASED; urgency=medium
   * add, import, findref: Support --time-limit.
   * Add --branch option to git-annex find and mildly deprecate findref in
     favor of it.
+  * webdav: When initializing, avoid trying to make a directory at the top of
+    the webdav server, which could never accomplish anything and failed on
+    nextcloud servers. (Reversion introduced in version 6.20170925.)
 
  -- Joey Hess <id@joeyh.name>  Thu, 06 Dec 2018 13:39:16 -0400
 

@@ -128,3 +128,7 @@ Incidentally, the [[tips/owncloudannex]] remote also [fails](https://github.com/
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use git-annex every day! I hope to write a glowing review for LWN soon. ;) Cheers and hi joey! :)
+
+> So the problem is code was changed a while ago to `mkColRecursive "/"`
+> which causes this wacky attempt to mkcol at the top of the server not
+> underneath the path of the url. [[fixed|done]] --[[Joey]]

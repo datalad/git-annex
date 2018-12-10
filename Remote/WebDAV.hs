@@ -274,7 +274,6 @@ testDav url (Just (u, p)) = do
 	test $ liftIO $ evalDAVT url $ do
 		prepDAV user pass
 		makeParentDirs
-		void $ mkColRecursive "/"
 		inLocation (tmpLocation "test") $ do
 			putContentM (Nothing, L8.fromString "test")
 			delContentM
