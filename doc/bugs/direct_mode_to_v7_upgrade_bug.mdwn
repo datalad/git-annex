@@ -1,0 +1,12 @@
+Upgrade from a direct mode repo to a v7 repo can cause annexed files to
+get checked into git, in an edge case.
+
+The annexed files need to be already v7 unlocked files, and their content
+needs to be present in the direct mode repo. Of course this is an unusual
+situation.
+
+Then, the upgrade to v7 from direct mode makes a commit 
+"commit before upgrade to annex.version 6" which converts the pointer
+files into the full file content.
+
+--[[Joey]]
