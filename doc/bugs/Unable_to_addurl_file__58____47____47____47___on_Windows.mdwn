@@ -1,0 +1,63 @@
+### Please describe the problem.
+
+Unable to addurl to a file:/// on Windows
+
+1. doesn't understand file:///
+2. with file:// blows with permission denied:
+
+[[!format sh """
+C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>git annex addurl --file buga file:///C:/123
+addurl file:///C:/123
+download failed: /C:/123: openBinaryFile: invalid argument (Invalid argument)
+failed
+git-annex: addurl: 1 failed
+
+C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>git annex addurl --file buga file://C:/123
+addurl file://C:/123
+(to buga)
+git-annex: .git\annex\tmp\URL-s6--file&c%%C&c%123: renameFile:renamePath:MoveFileEx "\\\\?\\C:\\Users\\appveyor\\
+AppData\\Local\\Temp\\1\\datalad_temp_testrepo_tmphjl88\\.git\\annex\\tmp\\URL-s6--file&c%%C&c%123" Just "\\\\?\\
+C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\datalad_temp_testrepo_tmphjl88\\buga": permission denied (The proce
+ss cannot access the file because it is being used by another process.)
+failed
+git-annex: addurl: 1 failed
+
+"""]]
+
+here is some relevant details (and showing curl handling both file:// and file:///):
+[[!format sh """
+C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>git status
+On branch adjusted/master(unlocked)
+nothing to commit, working tree clean
+
+C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>git annex version
+git-annex version: 7.20181205-g51d6f38b1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV TorrentParser Feeds Testsuite
+dependency versions: aws-0.17.1 bloomfilter-2.0.1.0 cryptonite-0.23 DAV-1.3.1 feed-0.3.12.0 ghc-8.0.2 http-client
+-0.5.7.1 persistent-sqlite-2.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3
+_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B51
+2E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S
+160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM
+ URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: mingw32 i386
+supported repository versions: 5 7
+upgrade supported from repository versions: 2 3 4 5 6
+local repository version: 7
+
+C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>git status
+On branch adjusted/master(unlocked)
+nothing to commit, working tree clean
+
+C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>curl file://C:/123
+124
+
+C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>curl file:///C:/123
+124
+"""]]
+
+More information about this appveyor server could be obtained from [datalad wtf](http://paste.debian.net/1055359/) output
+
+Awhile back we [had related discussion](https://git-annex.branchable.com/bugs/git-annex_drop_fails_to_access_file__58____47____47____47___target_URL_on_Windows/) but at least `addurl` seemed to work then.
+
