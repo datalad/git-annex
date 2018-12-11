@@ -18,3 +18,5 @@ Strangely, git doesn't see which changes are present here:
     $ 
 
 Workaround: `git checkout .` - but I don't understand why that is happening in the first place... Is that a bug? -- [[anarcat]]
+
+> update: yes, and it was [[fixed|done]] by joeyh.
