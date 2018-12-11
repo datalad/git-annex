@@ -94,5 +94,4 @@ scanUnlockedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ do
 					LinkAnnexFailed -> liftIO $ do
 						writePointerFile tmp k destmode
 						return Nothing
-			liftIO $ print ic
 			maybe noop (restagePointerFile (Restage True) f) ic
