@@ -1,0 +1,10 @@
+Fixed several bugs involving upgrade to v7 when the git repository
+already v7 contained unlocked files. The worst of those involved direct
+mode and caused the whole file content to get checked into git. While
+that's a fairly unusual case, it's an ugly enough bug that I rushed out a
+release to fix it.
+
+Also, LWN has posted a
+[comparison of git-annex and git LFS](https://lwn.net/Articles/774125/).
+
+Today's work was sponsored by Trenton Cronholm [on Patreon](https://patreon.com/joeyh/).
