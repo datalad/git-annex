@@ -1,4 +1,4 @@
-git-annex (7.20181206) UNRELEASED; urgency=medium
+git-annex (7.20181211) upstream; urgency=medium
 
   * S3: Improve diagnostics when a remote is configured with exporttree and
     versioning, but no S3 version id has been recorded for a key.
@@ -22,7 +22,7 @@ git-annex (7.20181206) UNRELEASED; urgency=medium
   * Fix bug that caused v7 unlocked files in a direct mode repository
     to get locked when committing.
 
- -- Joey Hess <id@joeyh.name>  Thu, 06 Dec 2018 13:39:16 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 11 Dec 2018 16:33:10 -0400
 
 git-annex (7.20181205) upstream; urgency=medium
 
