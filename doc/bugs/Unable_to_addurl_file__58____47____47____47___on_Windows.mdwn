@@ -1,9 +1,9 @@
 ### Please describe the problem.
 
-Unable to addurl to a file:/// on Windows
+Unable to addurl to a `file:///` on Windows
 
-1. doesn't understand file:///
-2. with file:// blows with permission denied:
+1. doesn't understand `file:///C:/`
+2. with `file://C:/` blows with permission denied:
 
 [[!format sh """
 C:\...pData\Local\Temp\1\datalad_temp_testrepo_tmphjl88>git annex addurl --file buga file:///C:/123
@@ -61,3 +61,5 @@ More information about this appveyor server could be obtained from [datalad wtf]
 
 Awhile back we [had related discussion](https://git-annex.branchable.com/bugs/git-annex_drop_fails_to_access_file__58____47____47____47___target_URL_on_Windows/) but at least `addurl` seemed to work then.
 
+
+[[!meta author=yoh]]
