@@ -15,6 +15,12 @@ git-annex (7.20181206) UNRELEASED; urgency=medium
     nextcloud servers. (Reversion introduced in version 6.20170925.)
   * Fix a case where upgrade to v7 caused git to think that unlocked files
     were modified.
+  * Fix bug upgrading from direct mode to v7: when files in the repository
+    were already committed as v7 unlocked files elsewhere, and the
+    content was present in the direct mode repository, the annexed files
+    got their full content checked into git.
+  * Fix bug that caused v7 unlocked files in a direct mode repository
+    to get locked when committing.
 
  -- Joey Hess <id@joeyh.name>  Thu, 06 Dec 2018 13:39:16 -0400
 

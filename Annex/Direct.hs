@@ -61,7 +61,10 @@ stageDirect = do
 		shakey <- catKey sha
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		mcache <- liftIO $ maybe (pure Nothing) (toInodeCache delta file) mstat
-		filekey <- isAnnexLink file
+		filekey <- isAnnexLink file >>= \case
+			Just k -> return (Just k)
+			-- v7 unlocked pointer file
+			Nothing -> liftIO (isPointerFile file)
 		case (shakey, filekey, mstat, mcache) of
 			(_, Just key, _, _)
 				| shakey == filekey -> noop

@@ -33,7 +33,6 @@ upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	unless automatic $
 		showAction "v5 to v6"
-	scanUnlockedFiles
 	whenM isDirect $ do
 		{- Direct mode makes the same tradeoff of using less disk
 		 - space, with less preservation of old versions of files
@@ -62,6 +61,7 @@ upgrade automatic = do
 		 - contents too, don't use git checkout to check out the
 		 - adjust branch. Instead, update HEAD manually. -}
 		inRepo $ setHeadRef b
+	scanUnlockedFiles
 	configureSmudgeFilter
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more

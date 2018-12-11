@@ -9,4 +9,10 @@ Then, the upgrade to v7 from direct mode makes a commit
 "commit before upgrade to annex.version 6" which converts the pointer
 files into the full file content.
 
+Also, `git annex sync` in the direct mode repo before the upgrade
+converted the v7 unlocked files back to locked files. (While also a bug,
+this helped mask the other bug..)
+
+Both [[fixed|done]] now. 
+
 --[[Joey]]
