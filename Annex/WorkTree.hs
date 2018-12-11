@@ -14,6 +14,8 @@ import Annex.Version
 import Annex.Content
 import Annex.ReplaceFile
 import Annex.CurrentBranch
+import Annex.InodeSentinal
+import Utility.InodeCache
 import Config
 import Git.FilePath
 import qualified Git.Ref
@@ -84,9 +86,13 @@ scanUnlockedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ do
 		whenM (inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
-			replaceFile f $ \tmp ->
+			ic <- replaceFile f $ \tmp ->
 				linkFromAnnex k tmp destmode >>= \case
-					LinkAnnexOk -> return ()
-					LinkAnnexNoop -> return ()
-					LinkAnnexFailed -> liftIO $
+					LinkAnnexOk -> 
+						withTSDelta (liftIO . genInodeCache tmp)
+					LinkAnnexNoop -> return Nothing
+					LinkAnnexFailed -> liftIO $ do
 						writePointerFile tmp k destmode
+						return Nothing
+			liftIO $ print ic
+			maybe noop (restagePointerFile (Restage True) f) ic
