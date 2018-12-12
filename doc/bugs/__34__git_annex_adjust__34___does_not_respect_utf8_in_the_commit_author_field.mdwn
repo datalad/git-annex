@@ -1,0 +1,9 @@
+### Please describe the problem.
+
+### What steps will reproduce the problem?
+
+I ran `git annex adjust --unlock` in a repo. `git-annex` did its job and added a commit with the description "git-annex adjusted branch". The author field does not seem to respect utf8, though. I get: "Author:     FÃ©lix <felix@example.com>" while I have "Author:     Félix <felix@example.com>" for all the other (manual) commits.
+
+### What version of git-annex are you using? On what operating system?
+
+Current Debian sid version: 7.20181205
