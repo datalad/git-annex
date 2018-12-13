@@ -1,0 +1,13 @@
+Since 7.20181121 Debian has been seeing test suite failures, on the mips autobuilders and on the amd64 CI infrastructure, but not on the amd64 autobuilders.
+
+With 7.20181205 I was not able to reproduce the mips failure on a porterbox.  Instead, a bunch of different tests failed.  I have not yet had time to try 7.20181121 on a porterbox.
+
+However, the most recent failures on the CI infrastructure and the mips autobuilders looks to be the same set of tests that have failed.  So I am inclined to think that the problem is not a flaky test.
+
+I won't have time to investigate for a few days but I thought that I would at least get this bug filed.
+
+- [mips log](https://spwhitton.name/pub/git-annex-dec18/mipsbuildd.txt)
+
+- [CI log](https://spwhitton.name/pub/git-annex-dec18/debci.txt)
+
+--spwhitton
