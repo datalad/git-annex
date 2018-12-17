@@ -1,0 +1,1 @@
+In stack.yaml, the 'dbus' and 'magicmime' flags are off by default.  What is the reason for that?  When building e.g. conda-forge package, is there reason not to build with these flags on? @joeyh
