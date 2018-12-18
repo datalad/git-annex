@@ -15,6 +15,7 @@ One more concern I have is the fact that "git add" now adds files in this mode, 
 
 TL;DR
 Please provide support (or better still enable as default) the following behavior:
+
 * "git add" just adds files to git, not annex
 * The v7 unlocked mode stores data in git annex(I mean the git-annex branch), and ideally uses standard mechanism like symlinks to track data, with smudge/clean filters used *only* when necessary. (My guess is that the reason it is this way now is because git probably doesn't like doing a type change of a file)
 
