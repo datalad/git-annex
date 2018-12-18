@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="tim@5431dd39464df207b7d46d3cf1bc74c82123ac68"
+ nickname="tim"
+ avatar="http://cdn.libravatar.org/avatar/967c2815f001d24b5f9f33300c03ba6f"
+ subject="Archive not found"
+ date="2018-12-18T21:22:54Z"
+ content="""
+For a couple of years already I've been regularly uploading my pictures to glacier through git-annex. After losing my local disk I'm trying to restore my files. However I get these errors:
+
+    $ git annex get . --from glacier
+    get DSC05172.JPG (from glacier...) 
+    glacier: archive 'GPGHMACSHA1--a0c0b35b3c2967e78a012ec95af2a77abf78465a' not found
+    failed
+    get DSC05173.JPG (from glacier...) 
+    glacier: archive 'GPGHMACSHA1--272c741c5dc61a3a45246b55d9777c451425b2bc' not found
+    failed
+    get DSC05173.variant-611a.JPG (from glacier...) 
+    glacier: archive 'GPGHMACSHA1--272c741c5dc61a3a45246b55d9777c451425b2bc' not found
+    failed
+
+No files have been deleted, the glacier bucket still exists and has all its data. Has anything changed in the naming scheme or anything? Or is it possible that this error is masking a different issue?
+"""]]
