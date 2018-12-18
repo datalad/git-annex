@@ -11,11 +11,12 @@ import Annex.Common
 import qualified Annex
 import Logs.Trust
 import Annex.NumCopies
-import Types.Remote (uuid, appendonly)
+import Types.Remote (uuid, appendonly, config)
 import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
+import Annex.Export
 import Config
 import Annex.Content.Direct
 import qualified Database.Keys
@@ -30,7 +31,8 @@ type Reason = String
  - and numcopies settings.
  -
  - Skips trying to drop from remotes that are appendonly, since those drops
- - would presumably fail.
+ - would presumably fail. Also skips dropping from exporttree remotes,
+ - which don't allow dropping individual keys.
  -
  - The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
@@ -61,10 +63,9 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 		AssociatedFile (Just f) -> nub (f : l)
 		AssociatedFile Nothing -> l
 	n <- getcopies fs
-	let rs' = filter (not . appendonly) rs
 	void $ if fromhere && checkcopies n Nothing
-		then go fs rs' n >>= dropl fs
-		else go fs rs' n
+		then go fs rs n >>= dropl fs
+		else go fs rs n
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
@@ -91,6 +92,8 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 	go _ [] n = pure n
 	go fs (r:rest) n
 		| uuid r `S.notMember` slocs = go fs rest n
+		| appendonly r = go fs rest n
+		| exportTree (config r) = go fs rest n
 		| checkcopies n (Just $ Remote.uuid r) =
 			dropr fs r n >>= go fs rest
 		| otherwise = pure n

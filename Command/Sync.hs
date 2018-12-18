@@ -166,9 +166,9 @@ seek o = allowConcurrentOutput $ do
 
 	remotes <- syncRemotes (syncWith o)
 	let gitremotes = filter Remote.gitSyncableRemote remotes
-	(exportremotes, dataremotes) <- partition (exportTree . Remote.config)
-		. filter (\r -> Remote.uuid r /= NoUUID)
+	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
+	let exportremotes = filter (exportTree . Remote.config) dataremotes
 
 	if cleanupOption o
 		then do
@@ -187,8 +187,11 @@ seek o = allowConcurrentOutput $ do
 				]
 			
 			whenM shouldsynccontent $ do
-				syncedcontent <- withbranch $ seekSyncContent o dataremotes
+				-- Send content to any exports first, in 
+				-- case that lets content be dropped from
+				-- other repositories.
 				exportedcontent <- withbranch $ seekExportContent exportremotes
+				syncedcontent <- withbranch $ seekSyncContent o dataremotes
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
 				-- git-annex branch on the remotes in the
@@ -618,14 +621,15 @@ seekSyncContent o rs currbranch = do
  -}
 syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
 syncFile ebloom rs af k = onlyActionOn' k $ do
+	inhere <- inAnnex k
 	locs <- map Remote.uuid <$> Remote.keyPossibilities k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
-	got <- anyM id =<< handleget have
+	got <- anyM id =<< handleget have inhere
 	putrs <- handleput lack
 
 	u <- getUUID
-	let locs' = concat [[u | got], putrs, locs]
+	let locs' = concat [if inhere || got then [u] else [], putrs, locs]
 
 	-- A bloom filter is populated with all the keys in the first pass.
 	-- On the second pass, avoid dropping keys that were seen in the
@@ -649,12 +653,12 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 	
 	return (got || not (null putrs))
   where
-	wantget have = allM id 
+	wantget have inhere = allM id 
 		[ pure (not $ null have)
-		, not <$> inAnnex k
+		, pure (not inhere)
 		, wantGet True (Just k) af
 		]
-	handleget have = ifM (wantget have)
+	handleget have inhere = ifM (wantget have inhere)
 		( return [ get have ]
 		, return []
 		)
