@@ -1,13 +1,17 @@
 Since 7.20181121 Debian has been seeing test suite failures, on the mips autobuilders and on the amd64 CI infrastructure, but not on the amd64 autobuilders.
 
-With 7.20181205 I was not able to reproduce the mips failure on a porterbox.  Instead, a bunch of different tests failed.  I have not yet had time to try 7.20181121 on a porterbox.
+I attempted to reproduce the failure on a mips and could not; instead, four different tests failed in a different way.
 
-However, the most recent failures on the CI infrastructure and the mips autobuilders looks to be the same set of tests that have failed.  So I am inclined to think that the problem is not a flaky test.
+The most recent failures on the CI infrastructure and the mips autobuilders looks to be the same set of tests that have failed.
 
-I won't have time to investigate for a few days but I thought that I would at least get this bug filed.
+- [mips autobuilder log](https://spwhitton.name/pub/git-annex-dec18/mipsbuildd.txt)
 
-- [mips log](https://spwhitton.name/pub/git-annex-dec18/mipsbuildd.txt)
+- [mips reproduction attempt log](https://spwhitton.name/pub/git-annex-dec18/mipsporterbox.txt)
 
 - [CI log](https://spwhitton.name/pub/git-annex-dec18/debci.txt)
+
+I am inclined to think that there are several bugs here: the test suite is overly sensitive to its environment and can fail in different ways in different environments.  What's mysterious is why all this started happening so recently.
+
+It seems unlikely to me that anyone has time to fix these bugs before the upcoming Debian freeze.  Getting git-annex v7.x into buster is a priority.  Maybe the test suite should be disabled during the package build, since it's flaky?  I'd like to hear Joey's opinion on doing that.
 
 --spwhitton
