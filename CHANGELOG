@@ -8,6 +8,8 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * init: When --version=5 is passed on a crippled filesystem,
     use a v5 direct mode repo as requested, rather than upgrading to v7
     adjusted unlocked. (Fixes test suite on crippled filesystems.)
+  * unused: Update suggested git log message to see where data was previously
+    used so it will also work with v7 unlocked pointer files.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 

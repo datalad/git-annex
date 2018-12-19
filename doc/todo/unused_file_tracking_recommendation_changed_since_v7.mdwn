@@ -17,3 +17,5 @@ Indeed, -S doesn't find anything here. I suspect that is because git's
 smudge/clean interface kicks in in `--stat`. The above text should add
 the `--no-textconv` argument to avoid that. At least it works here. :)
 -- [[anarcat]]
+
+> Nice catch, thanks! [[done]] --[[Joey]]

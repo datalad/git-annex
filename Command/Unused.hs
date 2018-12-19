@@ -139,7 +139,7 @@ unusedMsg' :: [(Int, Key)] -> [String] -> [String] -> String
 unusedMsg' u mheader mtrailer = unlines $
 	mheader ++
 	table u ++
-	["(To see where data was previously used, try: git log --stat -S'KEY')"] ++
+	["(To see where data was previously used, try: git log --stat --no-textconv -S'KEY')"] ++
 	mtrailer
 
 remoteUnusedMsg :: Maybe Remote -> RemoteName -> [(Int, Key)] -> String
