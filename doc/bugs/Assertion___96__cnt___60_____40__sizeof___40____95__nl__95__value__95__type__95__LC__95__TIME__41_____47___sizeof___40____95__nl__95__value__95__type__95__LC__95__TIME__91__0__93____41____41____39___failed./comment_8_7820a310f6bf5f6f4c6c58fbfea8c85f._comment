@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="ga@2217a6e07239bc6b36af2a9134b2647fdebcabcd"
+ nickname="ga"
+ avatar="http://cdn.libravatar.org/avatar/d077d3b19ca11c2036b4870e4340c7d1"
+ subject="Worked around"
+ date="2018-12-19T21:09:43Z"
+ content="""
+Setting LC_ALL=C appears to have worked around this for me.
+"""]]
