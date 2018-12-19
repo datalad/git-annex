@@ -31,6 +31,16 @@ tips, user support, etc. Two names that come to mind are Anarcat and
 CandyAngel. John Lawrence made the logo. And many others have
 contributed good bug reports and great ideas.
 
+## financial support, 2019
+
+<img alt="Powderhouse logo" src="https://d33wubrfki0l68.cloudfront.net/e9285c9a8db37874efdadd61f2231774ce1d86cb/5de87/assets/phs-leftaligned-logo.svg" width=100>
+
+git-annex development is partially supported by
+[Powderhouse Studios](https://powderhouse.org/).
+
+Thanks also to these folks for their support: 
+[[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
+
 ## financial support, 2014-2018
 
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
@@ -40,7 +50,7 @@ git-annex development is partially supported by the
 [DataLad project](http://datalad.org/) and NICEMAN (ReproNim TR&D3).
 
 Thanks also to these folks for their support: 
-[[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
+[[!inline raw=yes pages="thanks/list.2018"]] and anonymous supporters.
 
 ## financial support, 2013-2014
 
