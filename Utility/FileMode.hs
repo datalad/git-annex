@@ -69,6 +69,7 @@ otherGroupModes :: [FileMode]
 otherGroupModes = 
 	[ groupReadMode, otherReadMode
 	, groupWriteMode, otherWriteMode
+	, groupExecuteMode, otherExecuteMode
 	]
 
 {- Removes the write bits from a file. -}

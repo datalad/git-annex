@@ -19,7 +19,7 @@ import Utility.Env.Set
 #else
 import Utility.Tmp
 #endif
-import Utility.Tmp.Dir
+import Utility.FileMode
 import Utility.Format (decode_c)
 
 import Control.Concurrent
@@ -347,37 +347,39 @@ keyBlock public ls = unlines
 
 #ifndef mingw32_HOST_OS
 {- Runs an action using gpg in a test harness, in which gpg does
- - not use ~/.gpg/, but a directory with the test key set up to be used. -}
-testHarness :: GpgCmd -> IO a -> IO a
-testHarness cmd a = withTmpDir "gpgtmpXXXXXX" $ \tmpdir ->
-	bracket (setup tmpdir) (cleanup tmpdir) (const a)
+ - not use ~/.gpg/, but sets up the test key in the passed directory
+ - and uses it. -}
+testHarness :: FilePath -> GpgCmd -> IO a -> IO a
+testHarness tmpdir cmd a = bracket setup cleanup (const a)
   where
 	var = "GNUPGHOME"		
 
-	setup tmpdir = do
+	setup = do
 		orig <- getEnv var
-		setEnv var tmpdir True
+		subdir <- makenewdir (1 :: Integer)
+		-- gpg is picky about permissions on its home dir
+		liftIO $ void $ tryIO $ modifyFileMode subdir $
+			removeModes $ otherGroupModes
+		setEnv var subdir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
 		_ <- pipeStrict cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] []
 		_ <- pipeStrict cmd [Param "--import", Param "-q"] $ unlines
 			[testSecretKey, testKey]
 		return orig
 		
-	cleanup tmpdir orig = do
-		removeDirectoryRecursive tmpdir
-			-- gpg-agent may be shutting down at the same time
-			-- and may delete its socket at the same time as
-			-- we're trying to, causing an exception. Retrying
-			-- will deal with this race.
-			`catchIO` (\_ -> removeDirectoryRecursive tmpdir)
-		reset orig
-	reset (Just v) = setEnv var v True
-	reset _ = unsetEnv var
+	cleanup (Just v) = setEnv var v True
+	cleanup Nothing = unsetEnv var
+
+        makenewdir n = do
+		let subdir = tmpdir </> show n
+		catchIOErrorType AlreadyExists (const $ makenewdir $ n + 1) $ do
+			createDirectory subdir
+			return subdir
 
 {- Tests the test harness. -}
-testTestHarness :: GpgCmd -> IO Bool
-testTestHarness cmd = do
-	keys <- testHarness cmd $ findPubKeys cmd testKeyId
+testTestHarness :: FilePath -> GpgCmd -> IO Bool
+testTestHarness tmpdir cmd = do
+	keys <- testHarness tmpdir cmd $ findPubKeys cmd testKeyId
 	return $ KeyIds [testKeyId] == keys
 #endif
 

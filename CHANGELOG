@@ -4,6 +4,7 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * sync --content: Support dropping local content that has reached an
     exporttree remote that is not untrusted (currently only S3 remotes
     with versioning).
+  * Make test suite work better when the temp directory is on NFS.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 
