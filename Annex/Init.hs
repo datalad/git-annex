@@ -109,7 +109,10 @@ initialize' ai mversion = checkCanInitialize ai $ do
 		hookWrite postReceiveHook
 	setDifferences
 	unlessM (isJust <$> getVersion) $
-		setVersion (fromMaybe defaultVersion mversion)
+		ifM (crippledFileSystem <&&> (not <$> isBareRepo))
+			( setVersion (fromMaybe versionForCrippledFilesystem mversion)
+			, setVersion (fromMaybe defaultVersion mversion)
+			)
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
 		scanUnlockedFiles
@@ -286,11 +289,12 @@ propigateSecureHashesOnly =
 		=<< getGlobalConfig "annex.securehashesonly"
 
 adjustToCrippledFilesystem :: Annex ()
-adjustToCrippledFilesystem = ifM (liftIO $ AdjustedBranch.isGitVersionSupported)
-	( do
-		void $ upgrade True versionForCrippledFilesystem
-		AdjustedBranch.adjustToCrippledFileSystem
-	, enableDirectMode 
+adjustToCrippledFilesystem = ifM versionSupportsAdjustedBranch
+	( ifM (liftIO $ AdjustedBranch.isGitVersionSupported)
+		( AdjustedBranch.adjustToCrippledFileSystem
+		, enableDirectMode 
+		)
+	, enableDirectMode
 	)
 
 enableDirectMode :: Annex ()

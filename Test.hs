@@ -276,9 +276,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 test_init :: Assertion
 test_init = innewrepo $ do
 	ver <- annexVersion <$> getTestMode
-	if ver == Annex.Version.defaultVersion
-		then git_annex "init" [reponame] @? "init failed"
-		else git_annex "init" [reponame, "--version", show (fromRepoVersion ver)] @? "init failed"
+	git_annex "init" [reponame, "--version", show (fromRepoVersion ver)] @? "init failed"
 	setupTestMode
   where
 	reponame = "test repo"

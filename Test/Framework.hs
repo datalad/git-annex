@@ -17,7 +17,6 @@ import Types.Test
 
 import qualified Annex
 import qualified Annex.UUID
-import qualified Annex.Version
 import qualified Types.RepoVersion
 import qualified Backend
 import qualified Git.CurrentRepo
@@ -214,9 +213,7 @@ clonerepo old new cfg = do
 	configrepo new
 	indir new $ do
 		ver <- annexVersion <$> getTestMode
-		if ver == Annex.Version.defaultVersion
-			then git_annex "init" ["-q", new] @? "git annex init failed"
-			else git_annex "init" ["-q", new, "--version", show (Types.RepoVersion.fromRepoVersion ver)] @? "git annex init failed"
+		git_annex "init" ["-q", new, "--version", show (Types.RepoVersion.fromRepoVersion ver)] @? "git annex init failed"
 	unless (bareClone cfg) $
 		indir new $
 			setupTestMode

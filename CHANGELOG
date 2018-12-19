@@ -5,6 +5,9 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
     exporttree remote that is not untrusted (currently only S3 remotes
     with versioning).
   * Make test suite work better when the temp directory is on NFS.
+  * init: When --version=5 is passed on a crippled filesystem,
+    use a v5 direct mode repo as requested, rather than upgrading to v7
+    adjusted unlocked. (Fixes test suite on crippled filesystems.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 
