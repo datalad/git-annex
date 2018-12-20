@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+Trying to build fresh snapshot for neurodebian but 3 tests report failing
+Full buildlogs are at [http://neuro.debian.net/_files/_buildlogs/git-annex/7.20181211+git29-gab4a1bed9](http://neuro.debian.net/_files/_buildlogs/git-annex/7.20181211+git29-gab4a1bed9)
+
+
+[[!format sh """
+neurodebian@smaug ../7.20181211+git29-gab4a1bed9-1~ndall+1 % grep -B3 '^FAIL' git-annex_7.20181211+git29-gab4a1bed9-1\~ndall+1_amd64.build 
+    bup remote:                                           OK (0.11s)
+    crypto:                                               gpg: can't connect to the agent: IPC connect call failed
+gpg: error getting the KEK: No agent running
+FAIL
+--
+    bup remote:                                           OK (0.19s)
+    crypto:                                               gpg: can't connect to the agent: IPC connect call failed
+gpg: error getting the KEK: No agent running
+FAIL
+--
+nothing to commit, working tree clean
+gpg: can't connect to the agent: IPC connect call failed
+gpg: error getting the KEK: No agent running
+FAIL
+
+"""]]
+
+[[!meta author=yoh]]
