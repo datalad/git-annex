@@ -1,0 +1,2 @@
+Some questions about git-annex-import: (1) To where in the repository, exactly, are the files imported?  The manpage does not seem to specify.  What happens if two files with same basenames but different contents are imported from different paths -- where in the repository do they go?  (2) There is no --batch option; would that be hard to add?
+Thanks!
