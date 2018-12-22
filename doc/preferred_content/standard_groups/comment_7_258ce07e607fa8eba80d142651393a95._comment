@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="j2.00ghz@62c10efa0e9db19385458f656e45c32d1642bca4"
+ nickname="j2.00ghz"
+ avatar="http://cdn.libravatar.org/avatar/23a619a7d1f5937934334509a832618d"
+ subject="Repo with multiple groups with wanted/required set to standard"
+ date="2018-12-22T17:06:26Z"
+ content="""
+What should happen if I `git annex require here standard` and then `git annex group here client; git annex group here transfer`? Does it take the expressions from both groups and connects them with or?
+"""]]
