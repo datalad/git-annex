@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Repo with multiple groups with wanted/required set to standard"""
+ date="2018-12-26T17:02:54Z"
+ content="""
+standard only works if the repository is in exactly one group.
+
+Combining standard preferred content expressions for several groups with
+OR/AND does not always make sense, and which way does make sense probably
+varies.
+"""]]
