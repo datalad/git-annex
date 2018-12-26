@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="tomi.ollila@7588dbee63d5e035a85167fe207afb49287f9d1a"
+ nickname="tomi.ollila"
+ avatar="http://cdn.libravatar.org/avatar/a794ec01b038c83c4d568d17dc4ceeab"
+ subject="git config remote.origin.annex-ignore true"
+ date="2018-12-26T20:33:36Z"
+ content="""
+Something like 
+
+    git config remote.origin.annex-ignore true
+
+could be useful information in this page. It took me 1.5 hours to figure this out for me (while coding)...
+
+"""]]
