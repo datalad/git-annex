@@ -67,4 +67,4 @@ alex-3.2.4: configure
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-Yes!  git-annex has been _very_ helpful for my personal website (see https://duncan.bayne.id.au/blog/images-fixed.html), and was working like a charm on FreeBSD 11.2.
+Yes!  git-annex has been _very_ helpful for my personal website (see <https://duncan.bayne.id.au/blog/images-fixed.html>), and was working like a charm on FreeBSD 11.2.
