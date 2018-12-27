@@ -33,10 +33,16 @@ contributed good bug reports and great ideas.
 
 ## financial support, 2019
 
+<img alt="McGill logo" src="https://mcgill.ca/hbhl/sites/all/themes/moriarty/images/logo-red.svg" width=100>
+
+git-annex development is supported in large part by 
+[NeuroHub](https://www.mcgill.ca/hbhl/research/platforms), funded
+by the Canada First Research Excellence Fund, awarded to McGill
+University for the Healthy Brains for Healthy Lives initiative.
+
 <img alt="Powderhouse logo" src="https://d33wubrfki0l68.cloudfront.net/e9285c9a8db37874efdadd61f2231774ce1d86cb/5de87/assets/phs-leftaligned-logo.svg" width=100>
 
-git-annex development is partially supported by
-[Powderhouse Studios](https://powderhouse.org/).
+With additional support by [Powderhouse Studios](https://powderhouse.org/).
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
