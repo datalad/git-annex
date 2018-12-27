@@ -13,7 +13,7 @@ stack install
 
 ### What version of git-annex are you using? On what operating system?
 
-git-annex HEAD, on FreeBSD 12.0.
+git-annex HEAD, on FreeBSD 12.0. stack Version 1.7.1 x86_64.  The Glorious Glasgow Haskell Compilation System, version 8.4.3.
 
 ### Please provide any additional information below.
 
