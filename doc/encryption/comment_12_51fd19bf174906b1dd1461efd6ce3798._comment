@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="johannes@f7951ad4aa9c858952712114847f969dde63b172"
+ nickname="johannes"
+ avatar="http://cdn.libravatar.org/avatar/5a2ee3d066dbffac3a2b14b3cffbebb0"
+ subject="Option to disable filename encyprtion"
+ date="2018-12-29T01:13:20Z"
+ content="""
+Are there plans to have a mac=PLAIN/NONE option?
+"""]]
