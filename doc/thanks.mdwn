@@ -34,6 +34,7 @@ contributed good bug reports and great ideas.
 ## financial support, 2019
 
 <img alt="McGill logo" src="https://mcgill.ca/hbhl/sites/all/themes/moriarty/images/logo-red.svg" width=100>
+<img alt="Neurohub" src="https://joeyh.name/blog/pics/neurohub.png" width=100>
 
 git-annex development is supported in large part by 
 [NeuroHub](https://www.mcgill.ca/hbhl/research/platforms), funded
