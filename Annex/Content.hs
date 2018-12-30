@@ -880,7 +880,8 @@ saveState nocommit = doSideAction $ do
 		whenM (annexAlwaysCommit <$> Annex.getGitConfig) $
 			Annex.Branch.commit =<< Annex.Branch.commitMessage
 
-{- Downloads content from any of a list of urls. -}
+{- Downloads content from any of a list of urls, displaying a progress
+ - meter. -}
 downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl k p urls file = 
 	-- Poll the file to handle configurations where an external

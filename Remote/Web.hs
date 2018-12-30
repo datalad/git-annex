@@ -87,8 +87,7 @@ downloadKey key _af dest p = unVerified $ get =<< getWebUrls key
 			YoutubeDownloader -> do
 				showOutput
 				youtubeDlTo key u' dest
-			_ -> metered (Just p) key (pure Nothing) $ \_ p' -> 
-				downloadUrl key p' [u'] dest
+			_ -> downloadUrl key p [u'] dest
 
 downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 downloadKeyCheap _ _ _ = return False
