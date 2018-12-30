@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 7"
+ date="2018-12-30T23:23:46Z"
+ content="""
+Just tested with `7.20181106-g352f88226` on macOS 10.12.6. Archive groups work fine with v5 repo but do not work with a v7 repo. With a v7 repo content is synced, but content is never dropped from the source archive folder. If I disable assistant and run `git annex drop --auto` from the client repo this will in fact drop the files from the archive folder. With the v5 repo I get drop logs in daemon.log with the v7 repos I get no errors in the logs and also no drop logs.
+
+Also reported by a user here: [https://git-annex.branchable.com/bugs/OSX_Assistant_will_not_automatically_drop/]
+"""]]
