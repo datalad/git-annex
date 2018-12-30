@@ -11,6 +11,7 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * unused: Update suggested git log message to see where data was previously
     used so it will also work with v7 unlocked pointer files.
   * Fix doubled progress display when downloading an url when -J is used.
+  * importfeed: Better error message when downloading the feed fails.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 

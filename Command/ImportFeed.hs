@@ -75,9 +75,10 @@ start opts cache url = do
 	next $ perform opts cache url
 
 perform :: ImportFeedOptions -> Cache -> URLString -> CommandPerform
-perform opts cache url = do
-	v <- findDownloads url
-	case v of
+perform opts cache url = go =<< downloadFeed url
+  where
+	go Nothing = next $ feedProblem url "downloading the feed failed"
+	go (Just f) = case findDownloads url f of
 		[] -> next $
 			feedProblem url "bad feed content; no enclosures to download"
 		l -> do
@@ -128,13 +129,10 @@ knownItems (k, u) = do
 		<$> getCurrentMetaData k
 	return (itemids, u)
 
-findDownloads :: URLString -> Annex [ToDownload]
-findDownloads u = go <$> downloadFeed u
+findDownloads :: URLString -> Feed -> [ToDownload]
+findDownloads u f = catMaybes $ map mk (feedItems f)
   where
-	go Nothing = []
-	go (Just f) = catMaybes $ map (mk f) (feedItems f)
-
-	mk f i = case getItemEnclosure i of
+	mk i = case getItemEnclosure i of
 		Just (enclosureurl, _, _) ->
 			Just $ ToDownload f u i $ Enclosure $ 
 				fromFeed enclosureurl
