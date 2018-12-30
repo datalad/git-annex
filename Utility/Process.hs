@@ -178,13 +178,10 @@ withHandle h creator p a = creator p' $ a . select
 		, std_out = Inherit
 		, std_err = Inherit
 		}
-	(select, p')
-		| h == StdinHandle  =
-			(stdinHandle, base { std_in = CreatePipe })
-		| h == StdoutHandle =
-			(stdoutHandle, base { std_out = CreatePipe })
-		| h == StderrHandle =
-			(stderrHandle, base { std_err = CreatePipe })
+	(select, p') = case h of
+		StdinHandle -> (stdinHandle, base { std_in = CreatePipe })
+		StdoutHandle -> (stdoutHandle, base { std_out = CreatePipe })
+		StderrHandle -> (stderrHandle, base { std_err = CreatePipe })
 
 -- | Like withHandle, but passes (stdin, stdout) handles to the action.
 withIOHandles
