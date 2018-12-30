@@ -27,7 +27,7 @@ import Logs.Transfer
 import Network.URI
 import Control.Concurrent.Async
 
--- youtube-dl is can follow redirects to anywhere, including potentially
+-- youtube-dl can follow redirects to anywhere, including potentially
 -- localhost or a private address. So, it's only allowed to download
 -- content if the user has allowed access to all addresses.
 youtubeDlAllowed :: Annex Bool
