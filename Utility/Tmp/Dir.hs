@@ -19,8 +19,7 @@ import System.Posix.Temp (mkdtemp)
 #endif
 
 import Utility.Exception
-
-type Template = String
+import Utility.Tmp (Template)
 
 {- Runs an action with a tmp directory located within the system's tmp
  - directory (or within "." if there is none), then removes the tmp
