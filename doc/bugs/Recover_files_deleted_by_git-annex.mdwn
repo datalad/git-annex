@@ -18,5 +18,8 @@ fatal: this operation must be run in a work tree
 6.20170818
 
 
+
+[[done]]  —resolved by poster
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes, I did, it works great whenever I barely use, as soon as more data comes in it messes up and data goes missing.
