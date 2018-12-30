@@ -18,7 +18,6 @@ import Config.Cost
 import Config
 import Logs.Web
 import Annex.UUID
-import Messages.Progress
 import Utility.Metered
 import qualified Annex.Url as Url
 import Annex.YoutubeDl
