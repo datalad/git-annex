@@ -121,3 +121,6 @@ local repository version: 5
 supported repository version: 5
 upgrade supported from repository versions: 0 1 2 4
 """]]
+
+
+[[!taglink  confirmed]] —marked as confirmed on 2018-12-30
