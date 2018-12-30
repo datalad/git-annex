@@ -129,19 +129,19 @@ knownItems (k, u) = do
 	return (itemids, u)
 
 findDownloads :: URLString -> Annex [ToDownload]
-findDownloads u = go =<< downloadFeed u
+findDownloads u = go <$> downloadFeed u
   where
-	go Nothing = pure []
-	go (Just f) = catMaybes <$> mapM (mk f) (feedItems f)
+	go Nothing = []
+	go (Just f) = catMaybes $ map (mk f) (feedItems f)
 
 	mk f i = case getItemEnclosure i of
-		Just (enclosureurl, _, _) -> return $ 
+		Just (enclosureurl, _, _) ->
 			Just $ ToDownload f u i $ Enclosure $ 
 				fromFeed enclosureurl
 		Nothing -> case getItemLink i of
-			Just link -> return $ Just $ ToDownload f u i $ 
+			Just link -> Just $ ToDownload f u i $ 
 				MediaLink $ fromFeed link
-			Nothing -> return Nothing
+			Nothing -> Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
