@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="chocolate.camera@ec2ecab153906be21ac5f36652c33786ad0e0b60"
+ nickname="chocolate.camera"
+ avatar="http://cdn.libravatar.org/avatar/4f00dfc3ad590ef7492788b854ceba78"
+ subject="Why so slow"
+ date="2018-12-31T04:06:34Z"
+ content="""
+Why is uninit so slow? Shouldn’t it simply consist of moving the files out of the annex and then delete the .git folder?
+"""]]
