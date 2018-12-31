@@ -433,13 +433,14 @@ genBucket c gc u = do
 			Right _ -> noop
 			Left _ -> do
 				showAction $ "creating bucket in " ++ datacenter
-				void $ sendS3Handle h $ S3.PutBucket
-					(bucket info)
-					(acl info)
-					locconstraint
+				void $ sendS3Handle h $ 
+					(S3.putBucket (bucket info))
+						{ S3.pbCannedAcl = acl info
+						, S3.pbLocationConstraint = locconstraint
 #if MIN_VERSION_aws(0,13,0)
-					storageclass
+						, S3.pbXStorageClass = storageclass
 #endif
+						}
 		writeUUIDFile c u info h
 	
 	locconstraint = mkLocationConstraint $ T.pack datacenter
