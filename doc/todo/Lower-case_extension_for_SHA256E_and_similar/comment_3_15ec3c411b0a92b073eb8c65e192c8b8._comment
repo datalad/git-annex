@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="michael@ff03af62c7fd492c75066bda2fbf02370f5431f4"
+ nickname="michael"
+ avatar="http://cdn.libravatar.org/avatar/125bdfa8a2b91432c072615364bc3fa1"
+ subject="Import --clean-duplicates"
+ date="2018-12-31T10:40:03Z"
+ content="""
+I would like to revive this request for lower-case file extensions in the SHA256E backend. At some point, I migrated all my photos to use lower-case filenames.  However, the images stored on the SD card of my camera still use upper-case filenames including the extension. I would love to be able to use git annex import --clean-duplicates to remove already imported images from the SD card. However, this no longer works due to my files being directly added with lower-case extensions.
+"""]]
