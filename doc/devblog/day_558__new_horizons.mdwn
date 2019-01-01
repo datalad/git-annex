@@ -1,0 +1,15 @@
+Starting the new year with
+[new git-annex development funding](https://joeyh.name/blog/entry/git-annex_and_funding_update/)
+for most of the things on the [[design/roadmap]]!
+
+Today was spent converting the UUID data type to use a ByteString, rather
+than a String, and also converting repo descriptions to ByteString.
+That's groundwork for reading and writing log files on the git-annex
+branch using attoparsec and ByteString builders, which will hopefully
+improve performance.
+
+Until that's complete, it will often convert a String to a ByteString and
+then back to a String, which could actually make performance slightly
+worse. Benchmarking `git annex whereis` doesn't find much of a change. It
+may have gotten a slightly faster overall, due to the faster Eq and
+Ord instances making the map of repositories faster.
