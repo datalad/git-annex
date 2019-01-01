@@ -67,14 +67,14 @@ hashDirs _ sz s = addTrailingPathSeparator $ take sz s </> drop sz s
 
 hashDirLower :: HashLevels -> Hasher
 hashDirLower n k = hashDirs n 3 $ take 6 $ show $ md5 $
-	encodeBS $ key2file $ nonChunkKey k
+	encodeBL $ key2file $ nonChunkKey k
 
 {- This was originally using Data.Hash.MD5 from MissingH. This new version
 - is faster, but ugly as it has to replicate the 4 Word32's that produced. -}
 hashDirMixed :: HashLevels -> Hasher
 hashDirMixed n k = hashDirs n 2 $ take 4 $ concatMap display_32bits_as_dir $
 	encodeWord32 $ map fromIntegral $ Data.ByteArray.unpack $
-		Utility.Hash.md5 $ encodeBS $ key2file $ nonChunkKey k
+		Utility.Hash.md5 $ encodeBL $ key2file $ nonChunkKey k
   where
 	encodeWord32 (b1:b2:b3:b4:rest) =
 		(shiftL b4 24 .|. shiftL b3 16 .|. shiftL b2 8 .|. b1)

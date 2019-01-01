@@ -41,4 +41,4 @@ variantFile file key
 	doubleconflict = variantMarker `isInfixOf` file
 
 shortHash :: String -> String
-shortHash = take 4 . show . md5 . encodeBS
+shortHash = take 4 . show . md5 . encodeBL

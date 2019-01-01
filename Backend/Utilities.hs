@@ -20,7 +20,7 @@ genKeyName s
 	-- Avoid making keys longer than the length of a SHA256 checksum.
 	| bytelen > sha256len =
 		truncateFilePath (sha256len - md5len - 1) s' ++ "-" ++ 
-			show (md5 (encodeBS s))
+			show (md5 (encodeBL s))
 	| otherwise = s'
   where
 	s' = preSanitizeKeyName s

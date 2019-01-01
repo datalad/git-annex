@@ -111,7 +111,7 @@ catKey ref = go =<< catObjectMetaData ref
 
 {- Gets a symlink target. -}
 catSymLinkTarget :: Sha -> Annex String
-catSymLinkTarget sha = fromInternalGitPath . decodeBS <$> get
+catSymLinkTarget sha = fromInternalGitPath . decodeBL <$> get
   where
 	-- Avoid buffering the whole file content, which might be large.
 	-- 8192 is enough if it really is a symlink.

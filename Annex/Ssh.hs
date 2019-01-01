@@ -300,7 +300,7 @@ hostport2socket host (Just port) = hostport2socket' $
 	fromSshHost host ++ "!" ++ show port
 hostport2socket' :: String -> FilePath
 hostport2socket' s
-	| length s > lengthofmd5s = show $ md5 $ encodeBS s
+	| length s > lengthofmd5s = show $ md5 $ encodeBL s
 	| otherwise = s
   where
 	lengthofmd5s = 32

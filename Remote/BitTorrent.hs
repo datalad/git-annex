@@ -350,7 +350,7 @@ btshowmetainfo torrent field =
 torrentFileSizes :: FilePath -> IO [(FilePath, Integer)]
 torrentFileSizes torrent = do
 #ifdef WITH_TORRENTPARSER
-	let mkfile = joinPath . map (scrub . decodeBS)
+	let mkfile = joinPath . map (scrub . decodeBL)
 	b <- B.readFile torrent
 	return $ case readTorrent b of
 		Left e -> giveup $ "failed to parse torrent: " ++ e

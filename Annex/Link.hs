@@ -228,7 +228,7 @@ unableToRestage mf = unwords
  - lines. -}
 parseLinkOrPointer :: L.ByteString -> Maybe Key
 parseLinkOrPointer = parseLinkOrPointer' 
-	. decodeBS . L.take (fromIntegral maxPointerSz)
+	. decodeBL . L.take (fromIntegral maxPointerSz)
   where
 
 {- Want to avoid buffering really big files in git into

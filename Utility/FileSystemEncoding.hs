@@ -15,7 +15,9 @@ module Utility.FileSystemEncoding (
 	RawFilePath,
 	fromRawFilePath,
 	toRawFilePath,
+	decodeBL,
 	decodeBS,
+	encodeBL,
 	encodeBS,
 	decodeW8,
 	encodeW8,
@@ -38,6 +40,7 @@ import Data.List
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 #ifdef mingw32_HOST_OS
+import qualified Data.ByteString.UTF8 as S8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 #endif
 
@@ -107,21 +110,35 @@ _encodeFilePath fp = unsafePerformIO $ do
 		`catchNonAsync` (\_ -> return fp)
 
 {- Decodes a ByteString into a FilePath, applying the filesystem encoding. -}
-decodeBS :: L.ByteString -> FilePath
+decodeBL :: L.ByteString -> FilePath
 #ifndef mingw32_HOST_OS
-decodeBS = encodeW8NUL . L.unpack
+decodeBL = encodeW8NUL . L.unpack
 #else
 {- On Windows, we assume that the ByteString is utf-8, since Windows
  - only uses unicode for filenames. -}
-decodeBS = L8.toString
+decodeBL = L8.toString
+#endif
+
+decodeBS :: S.ByteString -> FilePath
+#ifndef mingw32_HOST_OS
+decodeBS = encodeW8NUL . S.unpack
+#else
+decodeBS = S8.toString
 #endif
 
 {- Encodes a FilePath into a ByteString, applying the filesystem encoding. -}
-encodeBS :: FilePath -> L.ByteString
+encodeBL :: FilePath -> L.ByteString
 #ifndef mingw32_HOST_OS
-encodeBS = L.pack . decodeW8NUL
+encodeBL = L.pack . decodeW8NUL
 #else
-encodeBS = L8.fromString
+encodeBL = L8.fromString
+#endif
+
+encodeBS :: FilePath -> S.ByteString
+#ifndef mingw32_HOST_OS
+encodeBS = S.pack . decodeW8NUL
+#else
+encodeBS = S8.fromString
 #endif
 
 {- Recent versions of the unix package have this alias; defined here

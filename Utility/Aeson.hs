@@ -22,7 +22,6 @@ import qualified Data.Aeson
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as S
 import qualified Data.Set
 import qualified Data.Vector
 import Prelude
@@ -53,7 +52,7 @@ instance ToJSON' String where
 -- Note that if the string contains invalid UTF8 characters not using
 -- the FileSystemEncoding, this is the same as Data.Text.pack.
 packString :: String -> T.Text
-packString s = case T.decodeUtf8' (S.concat $ L.toChunks $ encodeBS s) of
+packString s = case T.decodeUtf8' (encodeBS s) of
 	Right t -> t
 	Left _ -> T.pack s
 

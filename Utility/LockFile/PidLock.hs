@@ -102,7 +102,7 @@ sideLockFile lockfile = do
 	let shortbase = reverse $ take 32 $ reverse base
 	let md5sum = if base == shortbase
 		then ""
-		else show (md5 (encodeBS base))
+		else show (md5 (encodeBL base))
 	dir <- ifM (doesDirectoryExist "/dev/shm")
 		( return "/dev/shm"
 		, return "/tmp"

@@ -243,7 +243,7 @@ getHistorical date file =
 		)
 
 getRef :: Ref -> FilePath -> Annex String
-getRef ref file = withIndex $ decodeBS <$> catFile ref file
+getRef ref file = withIndex $ decodeBL <$> catFile ref file
 
 {- Applies a function to modify the content of a file.
  -
@@ -320,7 +320,7 @@ commitIndex' jl branchref message basemessage retrynum parents = do
   where
 	-- look for "parent ref" lines and return the refs
 	commitparents = map (Git.Ref . snd) . filter isparent .
-		map (toassoc . decodeBS) . L.split newline
+		map (toassoc . decodeBL) . L.split newline
 	newline = fromIntegral (ord '\n')
 	toassoc = separate (== ' ')
 	isparent (k,_) = k == "parent"
@@ -522,7 +522,7 @@ handleTransitions jl localts refs = do
 			return True
   where
 	getreftransition ref = do
-		ts <- parseTransitionsStrictly "remote" . decodeBS
+		ts <- parseTransitionsStrictly "remote" . decodeBL
 			<$> catFile ref transitionsLog
 		return (ref, ts)
 
@@ -595,7 +595,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 
 checkBranchDifferences :: Git.Ref -> Annex ()
 checkBranchDifferences ref = do
-	theirdiffs <- allDifferences . parseDifferencesLog . decodeBS
+	theirdiffs <- allDifferences . parseDifferencesLog . decodeBL
 		<$> catFile ref differenceLog
 	mydiffs <- annexDifferences <$> Annex.getGitConfig
 	when (theirdiffs /= mydiffs) $

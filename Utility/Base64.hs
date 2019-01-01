@@ -19,10 +19,10 @@ import Data.ByteString.UTF8 (fromString, toString)
 import Data.Char
 
 toB64 :: String -> String	
-toB64 = toString . B64.encode . L.toStrict . encodeBS
+toB64 = toString . B64.encode . encodeBS
 
 fromB64Maybe :: String -> Maybe String
-fromB64Maybe s = either (const Nothing) (Just . decodeBS . L.fromStrict)
+fromB64Maybe s = either (const Nothing) (Just . decodeBL . L.fromStrict)
 	(B64.decode $ fromString s)
 
 fromB64 :: String -> String
