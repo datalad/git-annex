@@ -38,6 +38,14 @@ This command can only be used in a v6 git-annex repository.
   Unlock all annexed files in the adjusted branch. This allows
   annexed files to be modified.
 
+  Normally, unlocking a file requires a copy to be made of its content,
+  so that its original content is preserved, while the copy can be modified.
+  To use less space, annex.thin can be set to true before running this
+  command; this makes a hard link to the content be made instead of a copy.
+  (When supported by the file system.) While this can save considerable
+  disk space, any modification made to a file will cause the old version of the
+  file to be lost from the local repository. So, enable annex.thin with care.
+
 * `--fix`
 
   Fix the symlinks to annexed files to point to the local git annex
