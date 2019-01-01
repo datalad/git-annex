@@ -70,7 +70,8 @@ start file key = stopUnless (inAnnex key) $ do
 	showStart "unannex" file
 	next $ ifM isDirect
 		( performDirect file key
-		, performIndirect file key)
+		, performIndirect file key
+		)
 
 performIndirect :: FilePath -> Key -> CommandPerform
 performIndirect file key = do
