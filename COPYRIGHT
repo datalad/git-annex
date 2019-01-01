@@ -2,7 +2,7 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Source: native package
 
 Files: *
-Copyright: © 2010-2018 Joey Hess <id@joeyh.name>
+Copyright: © 2010-2019 Joey Hess <id@joeyh.name>
 License: GPL-3+
 
 Files: Assistant/WebApp.hs Assistant/WebApp/* templates/* static/*
@@ -30,7 +30,7 @@ Copyright: 2018 Joey Hess <id@joeyh.name>
 License: Expat
 
 Files: Utility/*
-Copyright: 2012-2018 Joey Hess <id@joeyh.name>
+Copyright: 2012-2019 Joey Hess <id@joeyh.name>
 License: BSD-2-clause
 
 Files: doc/logo* */favicon.ico standalone/osx/git-annex.app/Contents/Resources/git-annex.icns
