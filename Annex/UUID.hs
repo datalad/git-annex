@@ -37,6 +37,7 @@ import Config
 import qualified Data.UUID as U
 import qualified Data.UUID.V4 as U4
 import qualified Data.UUID.V5 as U5
+import Data.String
 import Utility.FileSystemEncoding
 
 configkey :: ConfigKey
@@ -44,13 +45,13 @@ configkey = annexConfig "uuid"
 
 {- Generates a random UUID, that does not include the MAC address. -}
 genUUID :: IO UUID
-genUUID = UUID . show <$> U4.nextRandom
+genUUID = toUUID <$> U4.nextRandom
 
 {- Generates a UUID from a given string, using a namespace.
  - Given the same namespace, the same string will always result
  - in the same UUID. -}
 genUUIDInNameSpace :: U.UUID -> String -> UUID
-genUUIDInNameSpace namespace = UUID . show . U5.generateNamed namespace . s2w8
+genUUIDInNameSpace namespace = toUUID . U5.generateNamed namespace . s2w8
 
 {- Namespace used for UUIDs derived from git-remote-gcrypt ids. -}
 gCryptNameSpace :: U.UUID
@@ -117,8 +118,8 @@ setUUID r u = do
 
 -- Dummy uuid for the whole web. Do not alter.
 webUUID :: UUID
-webUUID = UUID "00000000-0000-0000-0000-000000000001"
+webUUID = UUID (fromString "00000000-0000-0000-0000-000000000001")
 
 -- Dummy uuid for bittorrent. Do not alter.
 bitTorrentUUID :: UUID
-bitTorrentUUID = UUID "00000000-0000-0000-0000-000000000002"
+bitTorrentUUID = UUID (fromString "00000000-0000-0000-0000-000000000002")

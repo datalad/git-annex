@@ -67,7 +67,7 @@ git_annex_shell cs r command params fields
 			else params
 		return (Param command : File dir : params')
 	uuidcheck NoUUID = []
-	uuidcheck (UUID u) = ["--uuid", u]
+	uuidcheck u@(UUID _) = ["--uuid", fromUUID u]
 	fieldopts
 		| null fields = []
 		| otherwise = fieldsep : map fieldopt fields ++ [fieldsep]

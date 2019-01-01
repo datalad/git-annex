@@ -456,7 +456,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 		[ ("transfer", toJSON' (formatDirection (transferDirection t)))
 		, ("key", toJSON' (transferKey t))
 		, ("file", toJSON' afile)
-		, ("remote", toJSON' (fromUUID (transferUUID t)))
+		, ("remote", toJSON' (fromUUID (transferUUID t) :: String))
 		]
 	  where
 		AssociatedFile afile = associatedFile i

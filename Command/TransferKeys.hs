@@ -82,7 +82,7 @@ sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
 sendRequest t tinfo h = do
 	hPutStr h $ intercalate fieldSep
 		[ serialize (transferDirection t)
-		, maybe (serialize (fromUUID (transferUUID t)))
+		, maybe (serialize ((fromUUID (transferUUID t)) :: String))
 			(serialize . Remote.name)
 			(transferRemote tinfo)
 		, serialize (transferKey t)

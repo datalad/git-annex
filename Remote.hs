@@ -224,7 +224,7 @@ prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 			Nothing -> s
 			Just val -> val ++ ": " ++ s
 	jsonify hereu (u, optval) = object $ catMaybes
-		[ Just (packString "uuid", toJSON' $ fromUUID u)
+		[ Just (packString "uuid", toJSON' (fromUUID u :: String))
 		, Just (packString "description", toJSON' $ finddescription u)
 		, Just (packString "here", toJSON' $ hereu == u)
 		, case (optfield, optval) of

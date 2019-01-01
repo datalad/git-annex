@@ -54,9 +54,9 @@ logChange :: Key -> UUID -> LogStatus -> Annex ()
 logChange = logChange' logNow
 
 logChange' :: (LogStatus -> String -> Annex LogLine) -> Key -> UUID -> LogStatus -> Annex ()
-logChange' mklog key (UUID u) s = do
+logChange' mklog key u@(UUID _) s = do
 	config <- Annex.getGitConfig
-	maybeAddLog (locationLogFile config key) =<< mklog s u
+	maybeAddLog (locationLogFile config key) =<< mklog s (fromUUID u)
 logChange' _ _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have

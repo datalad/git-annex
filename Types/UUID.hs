@@ -1,6 +1,6 @@
 {- git-annex UUID type
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,29 +9,49 @@
 
 module Types.UUID where
 
+import qualified Data.ByteString as B
 import qualified Data.Map as M
 import qualified Data.UUID as U
 import Data.Maybe
 
+import Utility.FileSystemEncoding
 import qualified Utility.SimpleProtocol as Proto
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
-data UUID = NoUUID | UUID String
+data UUID = NoUUID | UUID B.ByteString
 	deriving (Eq, Ord, Show, Read)
 
-fromUUID :: UUID -> String
-fromUUID (UUID u) = u
-fromUUID NoUUID = ""
+class FromUUID a where
+	fromUUID :: UUID -> a
 
 class ToUUID a where
 	toUUID :: a -> UUID
 
+instance FromUUID UUID where
+	fromUUID = id
+
 instance ToUUID UUID where
 	toUUID = id
 
+instance FromUUID B.ByteString where
+	fromUUID (UUID u) = u
+	fromUUID NoUUID = B.empty
+
+instance ToUUID B.ByteString where
+	toUUID b
+		| B.null b = NoUUID
+		| otherwise = UUID b
+
+instance FromUUID String where
+	fromUUID s = fromRawFilePath (fromUUID s)
+
 instance ToUUID String where
-	toUUID [] = NoUUID
-	toUUID s = UUID s
+	toUUID s = toUUID (toRawFilePath s)
+
+-- There is no matching FromUUID U.UUID because a git-annex UUID may
+-- be NoUUID or perhaps contain something not allowed in a canonical UUID.
+instance ToUUID U.UUID where
+	toUUID = toUUID . U.toASCIIBytes
 
 isUUID :: String -> Bool
 isUUID = isJust . U.fromString

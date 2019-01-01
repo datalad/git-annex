@@ -113,7 +113,7 @@ nodeId :: Git.Repo -> String
 nodeId r =
 	case getUncachedUUID r of
 		NoUUID -> Git.repoLocation r
-		UUID u -> u
+		u@(UUID _) -> fromUUID u
 
 {- A node representing a repo. -}
 node :: M.Map UUID String -> [Git.Repo] -> TrustMap -> RepoRemotes -> String
