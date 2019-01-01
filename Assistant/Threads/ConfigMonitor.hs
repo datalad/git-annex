@@ -57,7 +57,7 @@ type Configs = S.Set (FilePath, Sha)
 {- All git-annex's config files, and actions to run when they change. -}
 configFilesActions :: [(FilePath, Assistant ())]
 configFilesActions =
-	[ (uuidLog, void $ liftAnnex uuidMapLoad)
+	[ (uuidLog, void $ liftAnnex uuidDescMapLoad)
 	, (remoteLog, void $ liftAnnex remoteListRefresh)
 	, (trustLog, void $ liftAnnex trustMapLoad)
 	, (groupLog, void $ liftAnnex groupMapLoad)

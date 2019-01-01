@@ -150,13 +150,13 @@ showLog outputter cs = forM_ cs $ \c -> do
 	sequence_ $ compareChanges (outputter keyname)
 		[(changetime c, new, old)]
 
-mkOutputter :: M.Map UUID String -> TimeZone -> LogOptions -> FilePath -> Outputter
+mkOutputter :: UUIDDescMap -> TimeZone -> LogOptions -> FilePath -> Outputter
 mkOutputter m zone o file
 	| rawDateOption o = normalOutput lookupdescription file show
 	| gourceOption o = gourceOutput lookupdescription file
 	| otherwise = normalOutput lookupdescription file (showTimeStamp zone)
   where
-	lookupdescription u = fromMaybe (fromUUID u) $ M.lookup u m
+	lookupdescription u = maybe (fromUUID u) (fromUUIDDesc) (M.lookup u m)
 
 normalOutput :: (UUID -> String) -> FilePath -> (POSIXTime -> String) -> Outputter
 normalOutput lookupdescription file formattime logchange ts us =

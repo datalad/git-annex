@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, GeneralizedNewtypeDeriving #-}
 
 module Types.UUID where
 
@@ -13,6 +13,7 @@ import qualified Data.ByteString as B
 import qualified Data.Map as M
 import qualified Data.UUID as U
 import Data.Maybe
+import Data.String
 
 import Utility.FileSystemEncoding
 import qualified Utility.SimpleProtocol as Proto
@@ -56,7 +57,17 @@ instance ToUUID U.UUID where
 isUUID :: String -> Bool
 isUUID = isJust . U.fromString
 
-type UUIDMap = M.Map UUID String
+-- A description of a UUID.
+newtype UUIDDesc = UUIDDesc B.ByteString
+	deriving (Eq, Monoid, Semigroup, IsString)
+
+fromUUIDDesc :: UUIDDesc -> String
+fromUUIDDesc (UUIDDesc d) = decodeBS d
+
+toUUIDDesc :: String -> UUIDDesc
+toUUIDDesc = UUIDDesc . encodeBS
+
+type UUIDDescMap = M.Map UUID UUIDDesc
 
 instance Proto.Serializable UUID where
 	serialize = fromUUID

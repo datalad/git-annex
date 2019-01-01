@@ -122,7 +122,7 @@ data AnnexState = AnnexState
 	, globalnumcopies :: Maybe NumCopies
 	, forcenumcopies :: Maybe NumCopies
 	, limit :: ExpandableMatcher Annex
-	, uuidmap :: Maybe UUIDMap
+	, uuiddescmap :: Maybe UUIDDescMap
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
 	, forcetrust :: TrustMap
@@ -181,7 +181,7 @@ newState c r = do
 		, globalnumcopies = Nothing
 		, forcenumcopies = Nothing
 		, limit = BuildingMatcher []
-		, uuidmap = Nothing
+		, uuiddescmap = Nothing
 		, preferredcontentmap = Nothing
 		, requiredcontentmap = Nothing
 		, forcetrust = M.empty

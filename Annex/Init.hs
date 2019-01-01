@@ -45,6 +45,7 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Perms
 import Utility.UserInfo
+import Utility.FileSystemEncoding
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
 import System.Posix.User
@@ -68,14 +69,14 @@ checkCanInitialize (AutoInit False) a = fromRepo Git.repoWorkTree >>= \case
 				giveup "Not initialized."
 			)
 
-genDescription :: Maybe String -> Annex String
-genDescription (Just d) = return d
+genDescription :: Maybe String -> Annex UUIDDesc
+genDescription (Just d) = return $ UUIDDesc $ encodeBS d
 genDescription Nothing = do
 	reldir <- liftIO . relHome =<< liftIO . absPath =<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
 	let at = if null hostname then "" else "@"
 	v <- liftIO myUserName
-	return $ concat $ case v of
+	return $ UUIDDesc $ encodeBS $ concat $ case v of
 		Right username -> [username, at, hostname, ":", reldir]
 		Left _ -> [hostname, ":", reldir]
 

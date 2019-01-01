@@ -43,7 +43,7 @@ start :: CommandStart
 start = do
 	rs <- combineSame <$> (spider =<< gitRepo)
 
-	umap <- uuidMap
+	umap <- uuidDescMap
 	trustmap <- trustMapLoad
 		
 	file <- (</>) <$> fromRepo gitAnnexDir <*> pure "map.dot"
@@ -79,7 +79,7 @@ runViewer file ((c, ps):rest) = ifM (liftIO $ inPath c)
  - the repositories first, followed by uuids that were not matched
  - to a repository.
  -}
-drawMap :: [RepoRemotes] -> TrustMap -> M.Map UUID String -> String
+drawMap :: [RepoRemotes] -> TrustMap -> UUIDDescMap -> String
 drawMap rs trustmap umap = Dot.graph $ repos ++ others
   where
 	repos = map (node umap (map fst rs) trustmap) rs
@@ -88,7 +88,9 @@ drawMap rs trustmap umap = Dot.graph $ repos ++ others
 		filter (\u -> M.lookup u trustmap /= Just DeadTrusted) $
 		filter (`notElem` ruuids) (M.keys umap)
 	uuidnode u = trustDecorate trustmap u $
-		Dot.graphNode (fromUUID u) $ M.findWithDefault "" u umap
+		Dot.graphNode
+			(fromUUID u)
+			(fromUUIDDesc $ M.findWithDefault mempty u umap)
 
 hostname :: Git.Repo -> String
 hostname r
@@ -100,10 +102,10 @@ basehostname r = fromMaybe "" $ headMaybe $ splitc '.' $ hostname r
 
 {- A name to display for a repo. Uses the name from uuid.log if available,
  - or the remote name if not. -}
-repoName :: M.Map UUID String -> Git.Repo -> String
+repoName :: UUIDDescMap -> Git.Repo -> String
 repoName umap r
 	| repouuid == NoUUID = fallback
-	| otherwise = M.findWithDefault fallback repouuid umap
+	| otherwise = maybe fallback fromUUIDDesc $ M.lookup repouuid umap
   where
 	repouuid = getUncachedUUID r
 	fallback = fromMaybe "unknown" $ Git.remoteName r
@@ -116,7 +118,7 @@ nodeId r =
 		u@(UUID _) -> fromUUID u
 
 {- A node representing a repo. -}
-node :: M.Map UUID String -> [Git.Repo] -> TrustMap -> RepoRemotes -> String
+node :: UUIDDescMap -> [Git.Repo] -> TrustMap -> RepoRemotes -> String
 node umap fullinfo trustmap (r, rs) = unlines $ n:edges
   where
 	n = Dot.subGraph (hostname r) (basehostname r) "lightblue" $
@@ -125,7 +127,7 @@ node umap fullinfo trustmap (r, rs) = unlines $ n:edges
 	edges = map (edge umap fullinfo r) rs
 
 {- An edge between two repos. The second repo is a remote of the first. -}
-edge :: M.Map UUID String -> [Git.Repo] -> Git.Repo -> Git.Repo -> String	
+edge :: UUIDDescMap -> [Git.Repo] -> Git.Repo -> Git.Repo -> String	
 edge umap fullinfo from to =
 	Dot.graphEdge (nodeId from) (nodeId fullto) edgename
   where

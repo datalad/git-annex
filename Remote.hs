@@ -1,9 +1,11 @@
 {- git-annex remotes
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote (
 	Remote,
@@ -57,6 +59,7 @@ module Remote (
 ) where
 
 import Data.Ord
+import Data.String
 import qualified Data.Map as M
 import qualified Data.Vector as V
 
@@ -73,6 +76,7 @@ import Config
 import Config.DynamicConfig
 import Git.Types (RemoteName)
 import Utility.Aeson
+import Utility.FileSystemEncoding
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)
@@ -92,13 +96,16 @@ remoteMap' mkv mkk = M.fromList . catMaybes <$> (mapM mk =<< remoteList)
 {- Map of UUIDs of repositories and their descriptions.
  - The names of Remotes are added to suppliment any description that has
  - been set for a repository.  -}
-uuidDescriptions :: Annex (M.Map UUID String)
-uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap name
+uuidDescriptions :: Annex UUIDDescMap
+uuidDescriptions = M.unionWith addName
+	<$> uuidDescMap
+	<*> remoteMap (UUIDDesc . encodeBS . name)
 
-addName :: String -> RemoteName -> String
+{- Add a remote name to its description. -}
+addName :: (IsString t, Monoid t, Eq t) => t -> t -> t
 addName desc n
-	| desc == n || null desc = "[" ++ n ++ "]"
-	| otherwise = desc ++ " [" ++ n ++ "]"
+	| desc == n || desc == mempty = "[" <> n <> "]"
+	| otherwise = desc <> " [" <> n <> "]"
 
 byUUID :: UUID -> Annex (Maybe Remote)
 byUUID u = headMaybe . filter matching <$> remoteList
@@ -170,8 +177,9 @@ nameToUUID' n = byName' n >>= go
 		NoUUID -> Left $ noRemoteUUIDMsg r
 		u -> Right u
 	go (Left e) = do
-		m <- uuidMap
-		return $ case M.keys (M.filter (== n) m) of
+		m <- uuidDescMap
+		let descn = UUIDDesc (encodeBS n)
+		return $ case M.keys (M.filter (== descn) m) of
 			[u] -> Right u
 			[] -> let u = toUUID n
 				in case M.keys (M.filterWithKey (\k _ -> k == u) m) of
@@ -189,7 +197,7 @@ prettyPrintUUIDs header uuids = do
 	descm <- uuidDescriptions
 	prettyPrintUUIDsDescs header descm uuids
 
-prettyPrintUUIDsDescs :: String -> M.Map UUID RemoteName -> [UUID] -> Annex String
+prettyPrintUUIDsDescs :: String -> UUIDDescMap -> [UUID] -> Annex String
 prettyPrintUUIDsDescs header descm uuids =
 	prettyPrintUUIDsWith Nothing header descm
 		(const Nothing)
@@ -200,7 +208,7 @@ prettyPrintUUIDsWith
 	:: ToJSON' v
 	=> Maybe String 
 	-> String 
-	-> M.Map UUID RemoteName
+	-> UUIDDescMap
 	-> (v -> Maybe String)
 	-> [(UUID, Maybe v)] 
 	-> Annex String
@@ -209,7 +217,7 @@ prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 	maybeShowJSON $ JSONChunk [(header, V.fromList $ map (jsonify hereu) uuidvals)]
 	return $ unwords $ map (\u -> "\t" ++ prettify hereu u ++ "\n") uuidvals
   where
-	finddescription u = M.findWithDefault "" u descm
+	finddescription u = fromUUIDDesc $ M.findWithDefault mempty u descm
 	prettify hereu (u, optval)
 		| not (null d) = addoptval $ fromUUID u ++ " -- " ++ d
 		| otherwise = addoptval $ fromUUID u
@@ -237,9 +245,9 @@ prettyListUUIDs :: [UUID] -> Annex [String]
 prettyListUUIDs uuids = do
 	hereu <- getUUID
 	m <- uuidDescriptions
-	return $ map (prettify m hereu) uuids
+	return $ map (fromUUIDDesc . prettify m hereu) uuids
   where
-	finddescription m u = M.findWithDefault "" u m
+	finddescription m u = M.findWithDefault mempty u m
 	prettify m hereu u
 		| u == hereu = addName n "here"
 		| otherwise = n

@@ -129,7 +129,7 @@ diffCfg curcfg newcfg = Cfg
 	diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
 		(f newcfg) (f curcfg)
 
-genCfg :: Cfg -> M.Map UUID String -> String
+genCfg :: Cfg -> UUIDDescMap -> String
 genCfg cfg descs = unlines $ intercalate [""]
 	[ intro
 	, trust
@@ -223,7 +223,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		gline g val = [ unwords ["config", g, "=", val] ]
 
 	line setting u val =
-		[ com $ "(for " ++ fromMaybe "" (M.lookup u descs) ++ ")"
+		[ com $ "(for " ++ fromUUIDDesc (fromMaybe mempty (M.lookup u descs)) ++ ")"
 		, unwords [setting, fromUUID u, "=", val]
 		]
 
@@ -235,7 +235,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, line' "numcopies" (show . fromNumCopies <$> cfgNumCopies cfg)
 		]
 	
-settings :: Ord v => Cfg -> M.Map UUID String -> (Cfg -> M.Map UUID v) -> [String] -> ((v, UUID) -> [String]) -> (UUID -> [String]) -> [String]
+settings :: Ord v => Cfg -> UUIDDescMap -> (Cfg -> M.Map UUID v) -> [String] -> ((v, UUID) -> [String]) -> (UUID -> [String]) -> [String]
 settings cfg descs = settings' cfg (M.keysSet descs)
 
 settings' :: (Ord v, Ord f) => Cfg -> S.Set f -> (Cfg -> M.Map f v) -> [String] -> ((v, f) -> [String]) -> (f -> [String]) -> [String]

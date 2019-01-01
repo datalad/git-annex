@@ -61,10 +61,10 @@ getList o
 		let l = (hereu, "here", heretrust) : zip3 (map uuid rs) (map name rs) ts
 		return $ filter (\(_, _, t) -> t /= DeadTrusted) l 
 	getAllUUIDs = do
-		rs <- M.toList <$> uuidMap
-		rs3 <- forM rs $ \(u, n) -> (,,)
+		rs <- M.toList <$> uuidDescMap
+		rs3 <- forM rs $ \(u, d) -> (,,)
 			<$> pure u
-			<*> pure n
+			<*> pure (fromUUIDDesc d)
 			<*> lookupTrust u
 		return $ sortBy (comparing snd3) $
 			filter (\t -> thd3 t /= DeadTrusted) rs3

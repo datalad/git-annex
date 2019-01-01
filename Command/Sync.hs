@@ -296,8 +296,8 @@ commit o = stopUnless shouldcommit $ next $ next $ do
 commitMsg :: Annex String
 commitMsg = do
 	u <- getUUID
-	m <- uuidMap
-	return $ "git-annex in " ++ fromMaybe "unknown" (M.lookup u m)
+	m <- uuidDescMap
+	return $ "git-annex in " ++ maybe "unknown" fromUUIDDesc (M.lookup u m)
 
 commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
 commitStaged commitmode commitmessage = do

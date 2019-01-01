@@ -51,11 +51,11 @@ seek o = do
 	expire <- parseExpire (expireParams o)
 	actlog <- lastActivities (activityOption o)
 	u <- getUUID
-	us <- filter (/= u) . M.keys <$> uuidMap
-	descs <- uuidMap
+	us <- filter (/= u) . M.keys <$> uuidDescMap
+	descs <- uuidDescMap
 	commandActions $ map (start expire (noActOption o) actlog descs) us
 
-start :: Expire -> Bool -> Log Activity -> M.Map UUID String -> UUID -> CommandStart
+start :: Expire -> Bool -> Log Activity -> UUIDDescMap -> UUID -> CommandStart
 start (Expire expire) noact actlog descs u =
 	case lastact of
 		Just ent | notexpired ent -> checktrust (== DeadTrusted) $ do
@@ -75,7 +75,7 @@ start (Expire expire) noact actlog descs u =
 			d <- liftIO $ durationSince $ posixSecondsToUTCTime c
 			return $ "last active: " ++ fromDuration d ++ " ago"
 		_  -> return "no activity"
-	desc = fromUUID u ++ " " ++ fromMaybe "" (M.lookup u descs)
+	desc = fromUUID u ++ " " ++ fromUUIDDesc (fromMaybe mempty (M.lookup u descs))
 	notexpired ent = case ent of
 		Unknown -> False
 		VectorClock c -> case lookupexpire of

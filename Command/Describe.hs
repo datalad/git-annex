@@ -29,5 +29,5 @@ start _ = giveup "Specify a repository and a description."
 
 perform :: UUID -> String -> CommandPerform
 perform u description = do
-	describeUUID u description
+	describeUUID u (toUUIDDesc description)
 	next $ return True

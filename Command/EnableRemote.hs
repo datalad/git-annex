@@ -100,7 +100,9 @@ cleanupSpecialRemote u c = do
 unknownNameError :: String -> Annex a
 unknownNameError prefix = do
 	m <- Annex.SpecialRemote.specialRemoteMap
-	descm <- M.unionWith Remote.addName <$> uuidMap <*> pure m
+	descm <- M.unionWith Remote.addName
+		<$> uuidDescMap
+		<*> pure (M.map toUUIDDesc m)
 	specialmsg <- if M.null m
 			then pure "(No special remotes are currently known; perhaps use initremote instead?)"
 			else Remote.prettyPrintUUIDsDescs

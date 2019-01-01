@@ -66,7 +66,7 @@ getRepoConfig :: UUID -> Maybe Remote -> Annex RepoConfig
 getRepoConfig uuid mremote = do
 	-- Ensure we're editing current data by discarding caches.
 	void groupMapLoad
-	void uuidMapLoad
+	void uuidDescMapLoad
 
 	groups <- lookupGroups uuid
 	remoteconfig <- M.lookup uuid <$> readRemoteLog
@@ -74,7 +74,7 @@ getRepoConfig uuid mremote = do
 		Nothing -> (RepoGroupCustom $ unwords $ S.toList groups, Nothing)
 		Just g -> (RepoGroupStandard g, associatedDirectory remoteconfig g)
 	
-	description <- fmap T.pack . M.lookup uuid <$> uuidMap
+	description <- fmap (T.pack . fromUUIDDesc) . M.lookup uuid <$> uuidDescMap
 
 	syncable <- case mremote of
 		Just r -> liftIO $ getDynamicConfig $ remoteAnnexSync $ Remote.gitconfig r
@@ -90,8 +90,8 @@ getRepoConfig uuid mremote = do
 setRepoConfig :: UUID -> Maybe Remote -> RepoConfig -> RepoConfig -> Handler ()
 setRepoConfig uuid mremote oldc newc = do
 	when descriptionChanged $ liftAnnex $ do
-		maybe noop (describeUUID uuid . T.unpack) (repoDescription newc)
-		void uuidMapLoad
+		maybe noop (describeUUID uuid . toUUIDDesc . T.unpack) (repoDescription newc)
+		void uuidDescMapLoad
 	when nameChanged $ do
 		liftAnnex $ do
 			name <- uniqueRemoteName (legalName newc) 0 <$> Annex.getGitRemotes

@@ -326,7 +326,7 @@ repository_mode = simpleStat "repository mode" $ lift $
 repo_list :: TrustLevel -> Stat
 repo_list level = stat n $ nojson $ lift $ do
 	us <- filter (/= NoUUID) . M.keys 
-		<$> (M.union <$> uuidMap <*> remoteMap Remote.name)
+		<$> (M.union <$> (M.map fromUUIDDesc <$> uuidDescMap) <*> remoteMap Remote.name)
 	rs <- fst <$> trustPartition level us
 	countRepoList (length rs)
 		-- This also handles json display.

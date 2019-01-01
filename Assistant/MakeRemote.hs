@@ -106,8 +106,8 @@ setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) = do
 	(c', u) <- R.setup remotetype ss mu mcreds weakc dummycfg
 	configSet u c'
 	when setdesc $
-		whenM (isNothing . M.lookup u <$> uuidMap) $
-			describeUUID u name
+		whenM (isNothing . M.lookup u <$> uuidDescMap) $
+			describeUUID u (toUUIDDesc name)
 	return name
 
 {- Returns the name of the git remote it created. If there's already a

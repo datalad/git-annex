@@ -418,7 +418,7 @@ getLogin sshinput = geti inputUsername ++ "@" ++ geti inputHostname
 getConfirmSshR :: SshData -> UUID -> Handler Html
 getConfirmSshR sshdata u
 	| u == NoUUID = handlenew
-	| otherwise = handleexisting =<< (M.lookup u <$> liftAnnex uuidMap)
+	| otherwise = handleexisting =<< (M.lookup u <$> liftAnnex uuidDescMap)
   where
 	handlenew = sshConfigurator $ do
 		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig

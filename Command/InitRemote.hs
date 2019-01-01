@@ -59,6 +59,6 @@ perform t name c = do
 
 cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup
 cleanup u name c = do
-	describeUUID u name
+	describeUUID u (toUUIDDesc name)
 	Logs.Remote.configSet u c
 	return True

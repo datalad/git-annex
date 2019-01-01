@@ -41,7 +41,7 @@ setDifferences = do
 					warning "Cannot change tunable parameters in already initialized repository."
 				return oldds
 			, if otherds == mempty
-				then ifM (any (/= u) . M.keys <$> uuidMap)
+				then ifM (any (/= u) . M.keys <$> uuidDescMap)
 					( do
 						warning "Cannot change tunable parameters in a clone of an existing repository."
 						return mempty

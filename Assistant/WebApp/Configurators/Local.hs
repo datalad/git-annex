@@ -289,7 +289,7 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 	askcombine = page "Combine repositories?" (Just Configuration) $
 		$(widgetFile "configurators/adddrive/combine")
 	isknownuuid driveuuid =
-		ifM (M.member driveuuid <$> liftAnnex uuidMap)
+		ifM (M.member driveuuid <$> liftAnnex uuidDescMap)
 			( knownrepo
 			, askcombine
 			)
