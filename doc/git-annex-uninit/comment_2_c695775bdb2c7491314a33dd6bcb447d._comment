@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-01-01T16:26:57Z"
+ content="""
+Obvious reason is that it's not something often used or that has had much
+demand for being sped up. And in particular it's written as a call to
+unannex each annexed file, and that runs `git rm --cached` once per file,
+which can be slow.
+
+But there are also non-obvious things that it may need to do that can be
+slow. For example, if two files in the git repo point to the same git-annex
+object, it has to make a copy of the object to one of the worktree files.
+"""]]
