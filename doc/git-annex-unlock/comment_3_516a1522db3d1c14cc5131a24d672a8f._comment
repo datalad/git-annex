@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="chocolate.camera@ec2ecab153906be21ac5f36652c33786ad0e0b60"
+ nickname="chocolate.camera"
+ avatar="http://cdn.libravatar.org/avatar/4f00dfc3ad590ef7492788b854ceba78"
+ subject="comment 3"
+ date="2019-01-01T18:17:21Z"
+ content="""
+The page about [unlocked files](https://git-annex.branchable.com/tips/unlocked_files/) says:
+
+> setting annex.thin only has any effect on systems that support hard links. It is supported on Windows, but not on FAT filesystems.
+"""]]
