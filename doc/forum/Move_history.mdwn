@@ -1,0 +1,5 @@
+I have recently noticed that my .git directory in one copy of my git annex repository has ballooned to about 500GB (on a direct mode network).
+
+Is there any way to move the history to another repository? I guess 500GB isn't that bad on my archive repositories, but for one of my deployment machines this much space for files I don't use isn't really acceptable.
+
+Alternatively, and since this repo is quite a bit older, I think I could also just delete some of the history. Is there any way to do that?

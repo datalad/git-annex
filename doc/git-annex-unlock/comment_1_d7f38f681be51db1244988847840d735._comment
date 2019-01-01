@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="chocolate.camera@ec2ecab153906be21ac5f36652c33786ad0e0b60"
+ nickname="chocolate.camera"
+ avatar="http://cdn.libravatar.org/avatar/4f00dfc3ad590ef7492788b854ceba78"
+ subject="comment 1"
+ date="2018-12-31T16:41:08Z"
+ content="""
+> Normally, unlocking a file requires a copy to be made of its content, so that its original content is preserved
+
+Does that imply than, on v7 in a file system that does not support hard links such as FAT32, `git annex adjust --unlock` would effectively be creating a duplicate of all files via cp (which is incredibly costly time-wise specially for big repos and huge files) and would effectively double the size it occupies?
+"""]]

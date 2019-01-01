@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 3"
+ date="2018-12-30T23:29:16Z"
+ content="""
+Linking to another poster asking for assistant to monitor changes to `~/.git/config`
+
+<https://git-annex.branchable.com/bugs/annex.autocommit_seems_ignored_for_new_files/>
+"""]]
