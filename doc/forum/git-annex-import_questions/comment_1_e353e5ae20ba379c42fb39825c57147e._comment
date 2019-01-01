@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2019-01-01T19:36:35Z"
+ content="""
+ * files are imported recursively into the directory you call `git-annex import` from
+ * What happens if two files with same basenames but different contents are imported from different paths: git-annex will skip importing these files unless you specify --force
+ * When you import a directory, does this recursively import the full tree under it?: yes
+ * Also, just to note, the command name may be confusing to users, because (5) it deletes the original files by default, which most import commands do not do: see discussion here: <http://git-annex.branchable.com/bugs/Importing__95__Commands__95__Destructive__95__by__95__default/>
+ * it is unrelated to git-annex-export: the intent is for it to eventually be related to export, see TODO here: <http://git-annex.branchable.com/todo/import_tree/>
+
+And I don't know about your `--batch` question.
+
+With your `import a file into the annex only, without creating a symlink to it from the working copy` question:
+
+You could do:
+
+    git annex calckey path-of-file-not-in-repo
+    git annex setkey key-from-previous-command path-of-file-not-in-repo
+
+But perhaps if this is generally useful there could be a `git annex reinject --unknown` command added to git-annex, or a `--import-keys-only` command added to `import`.
+"""]]

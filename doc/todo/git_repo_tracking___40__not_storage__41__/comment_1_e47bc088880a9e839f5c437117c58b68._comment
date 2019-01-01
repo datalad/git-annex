@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2019-01-01T20:02:57Z"
+ content="""
+#1
+*|| Drop a repo for space if the current commit is available in at least N remotes (and all of the repo state is pushed/clean).*
+
+Did you mean \"drop a remote for space\"? If so there are already a lot of ways of conditionally dropping content from remotes or locally.
+
+#2
+*|| Create branches or tags in an annex that collect a set of version-compatible checkouts for related projects. The commit/tag messages provide a natural place for meta-commentary*
+
+You can create branches or tags in an annex and check them out as needed. The working directory always just refers to content in the .git/annex directory which would be shared across all branches.
+
+#3
+*|| Save and version files that aren't quite junk but don't belong in a repo (logs, dumps, backups, editor project/workspace files, notes/to-do lists, build-artifacts, test-coverage/linter stat databases, shell history) alongside the repo, making it easier to have a consistent environment for working on one project across multiple systems.*
+
+Couldn't you put these in another branch? Or add [metadata](https://git-annex.branchable.com/design/metadata/) to track them separately and use [metadata driven views](https://git-annex.branchable.com/tips/metadata_driven_views/).
+
+#4
+*|| Make separate system-specific \"master\" branches for the main projects directory on each system, then edit and push changes from any other. For example, prep the projects directory on an infrequently-used laptop from your desktop and push/pull the changes.*
+
+You can use any commands that work with git to manage your working directory including branches.
+"""]]

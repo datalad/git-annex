@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 9"
+ date="2019-01-01T19:00:07Z"
+ content="""
+I believe all repos are created at v5 by default currently both from the command-line and the assistant webapp, but there is no guarantee that will always be the case. With the latest version of git-annex a v6 repo will automatically be upgraded to a v7 repo whenever you run any git-annex command (or start the assistant or webapp).
+
+Also just for help troubleshooting Joey: I just tested this with `6.20180914-g13dc117e9` and v6 indirect repos. Same issue, files moved to an archive folder (unlocked and locked) are never dropped by the assistant even after they have reached an archive repo. As with v7 repos, running `git-annex drop --auto` does drop them.
+"""]]
