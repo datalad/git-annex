@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-01-01T16:10:48Z"
+ content="""
+I'll bet [[!commit 14971414dc263fcb8124b4cf6b14b9b7a19189af]]
+somehow led to this
+since the test suite now runs gpg with its home 
+directory set to be inside the test repo and not in the system's temporary
+directory.
+
+But I tested that commit on filesystems down to FAT, so it seems strange it
+would fail on whatever filesystem you are testing on.
+"""]]
