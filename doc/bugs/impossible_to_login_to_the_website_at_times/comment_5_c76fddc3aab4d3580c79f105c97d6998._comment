@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 5"
+ date="2019-01-01T18:47:58Z"
+ content="""
+OK. I think I have figured out the issue (at least in my case). I guess that I had logged into https://git-annex.branchable.com, then tried to visit the non-secure URL http://git-annex.branchable.com this is when I got the error.
+
+Taking a look at the cookie I send when visiting https://git-annex.branchable.com I see that it has the secure flag set. Which I think means that my browser will refuse to send this cookie when I visit the http://git-annex.branchable.com and will refuse to receive another cookie (since its the same domain).
+
+If I clear my cookies and login via http://git-annex.branchable.com, the cookie does not have the secure flag set.
+
+This means that ikiwiki is serving cookies with different flags for http vs https. Probably related to this feature? <https://ikiwiki.info/todo/use_secure_cookies_for_ssl_logins/>. Anyhow it seems this isn't quite working as desired. I think it is possible to serve two different cookies (one for http and one for https) but ikiwiki does not appear to be doing that.
+"""]]
