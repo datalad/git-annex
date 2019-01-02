@@ -1,0 +1,9 @@
+Built an attoparsec parser for timestamps, and unsurprisingly it's 15 times
+faster parsing ByteStrings with it than the old String parser. The
+surprising thing to me was that converting a String to a ByteString and
+using the new parser is 10 times as fast as the old parser despite the
+conversion overhead. A nice immediate speedup for many parts of git-annex!
+
+Of course timestamp parsing is not a major cost center in git-annex, but
+benchmarking `git annex whereis` run on 1000 files, there is a real
+speedup already, approximately 4%.
