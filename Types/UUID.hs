@@ -44,10 +44,10 @@ instance ToUUID B.ByteString where
 		| otherwise = UUID b
 
 instance FromUUID String where
-	fromUUID s = fromRawFilePath (fromUUID s)
+	fromUUID s = decodeBS' (fromUUID s)
 
 instance ToUUID String where
-	toUUID s = toUUID (toRawFilePath s)
+	toUUID s = toUUID (encodeBS' s)
 
 -- There is no matching FromUUID U.UUID because a git-annex UUID may
 -- be NoUUID or perhaps contain something not allowed in a canonical UUID.

@@ -16,9 +16,11 @@ module Utility.FileSystemEncoding (
 	fromRawFilePath,
 	toRawFilePath,
 	decodeBL,
-	decodeBS,
 	encodeBL,
+	decodeBS,
 	encodeBS,
+	decodeBS',
+	encodeBS',
 	decodeW8,
 	encodeW8,
 	encodeW8NUL,
@@ -119,19 +121,19 @@ decodeBL = encodeW8NUL . L.unpack
 decodeBL = L8.toString
 #endif
 
-decodeBS :: S.ByteString -> FilePath
-#ifndef mingw32_HOST_OS
-decodeBS = encodeW8NUL . S.unpack
-#else
-decodeBS = S8.toString
-#endif
-
 {- Encodes a FilePath into a ByteString, applying the filesystem encoding. -}
 encodeBL :: FilePath -> L.ByteString
 #ifndef mingw32_HOST_OS
 encodeBL = L.pack . decodeW8NUL
 #else
 encodeBL = L8.fromString
+#endif
+
+decodeBS :: S.ByteString -> FilePath
+#ifndef mingw32_HOST_OS
+decodeBS = encodeW8NUL . S.unpack
+#else
+decodeBS = S8.toString
 #endif
 
 encodeBS :: FilePath -> S.ByteString
@@ -141,6 +143,14 @@ encodeBS = S.pack . decodeW8NUL
 encodeBS = S8.fromString
 #endif
 
+{- Faster version that assumes the string does not contain NUL;
+ - if it does it will be truncated before the NUL. -}
+decodeBS' :: S.ByteString -> FilePath
+decodeBS' = encodeW8 . S.unpack
+
+encodeBS' :: FilePath -> S.ByteString
+encodeBS' = S.pack . decodeW8
+
 {- Recent versions of the unix package have this alias; defined here
  - for backwards compatibility. -}
 type RawFilePath = S.ByteString
@@ -149,13 +159,13 @@ type RawFilePath = S.ByteString
  - since filename's don't. This should only be used with actual
  - RawFilePaths not arbitrary ByteString that may contain NUL. -}
 fromRawFilePath :: RawFilePath -> FilePath
-fromRawFilePath = encodeW8 . S.unpack
+fromRawFilePath = decodeBS'
 
 {- Note that the FilePath is assumed to never contain NUL,
  - since filename's don't. This should only be used with actual FilePaths
  - not arbitrary String that may contain NUL. -}
 toRawFilePath :: FilePath -> RawFilePath
-toRawFilePath = S.pack . decodeW8
+toRawFilePath = encodeBS'
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
@@ -164,7 +174,7 @@ toRawFilePath = S.pack . decodeW8
  - file system encoding, only complicated by GHC's interface to doing so.
  -
  - Note that the encoding stops at any NUL in the input. FilePaths
- - do not normally contain embedded NUL, but Haskell Strings may.
+ - cannot contain embedded NUL, but Haskell Strings may.
  -}
 {-# NOINLINE encodeW8 #-}
 encodeW8 :: [Word8] -> FilePath
