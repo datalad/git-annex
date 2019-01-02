@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Chymera"
+ avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
+ subject="comment 2"
+ date="2019-01-02T12:08:19Z"
+ content="""
+>  If you run git annex info you can see how much of this space is from actual annexed objects local annex size
+
+I don't understand what you mean, `git annex info` tells me nothing about the repository size, and I have no idea where to enter the “local annex size” string.
+At any rate, no, I have already run `git annex dropunused` to get rid of all unused files. All the rest seems to be needed for some reason. My question was whether I can move all of this history to one of my volumes which have more space on them.
+"""]]
