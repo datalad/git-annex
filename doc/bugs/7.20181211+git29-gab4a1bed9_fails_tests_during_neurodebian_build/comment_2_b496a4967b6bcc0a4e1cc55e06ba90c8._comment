@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="the build details"
+ date="2019-01-02T01:14:39Z"
+ content="""
+cowbuilder is used, underlying file system (dedicated to debian pkgs building) is ext4.
+but is it a filesystem effect somehow or just a \"partially\" isolated environment aspect (such as those pbuilder/cowbuilder chroots)?  The message `gpg: can't connect to the agent: IPC connect call failed` suggests that may be tests pass for you locally as connecting to your gpg agent?
+"""]]
