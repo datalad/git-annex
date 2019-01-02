@@ -169,7 +169,7 @@ toRawFilePath = encodeBS'
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
- - w82c produces a String, which may contain Chars that are invalid
+ - w82s produces a String, which may contain Chars that are invalid
  - unicode. From there, this is really a simple matter of applying the
  - file system encoding, only complicated by GHC's interface to doing so.
  -
@@ -182,8 +182,6 @@ encodeW8 w8 = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
 	GHC.withCString Encoding.char8 (w82s w8) $ GHC.peekCString enc
 
-{- Useful when you want the actual number of bytes that will be used to
- - represent the FilePath on disk. -}
 decodeW8 :: FilePath -> [Word8]
 decodeW8 = s2w8 . _encodeFilePath
 
