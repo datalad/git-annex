@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+When you encrypt something to a master key, gpg actually encrypts to its corresponding encryption subkey, but the id of the master key gets recorded in the remote information. It is useful to be able to see the actual subkey id to make sure everything is encrypted as expected in a multi-subkey setup.
+
+### What steps will reproduce the problem?
+
+1. Have a master key with two encryption subkeys
+2. Create a remote with `hybrid` encryption with `keyid` set to the key’s email address or master key id
+3. Use `git annex enableremote keyid+=` and the `!` suffix to add the second encryption key.
+4. Try to use `git annex info` to see which subkeys can be used for decryption.
+
+
+### What version of git-annex are you using? On what operating system?
+
+7.20181211
+
+
+### Please provide any additional information below.
+
+I managed to do this for myself by thaking the `cypher` from `remote.log`, decoding base64 and running it through `gpg --list-packets`, but, I guess, it would be nicer to have an easy way to do this: maybe some flag for `git annex info` to do this dance for me, or even just record the subkey in `remote.log`.
