@@ -9,14 +9,14 @@
 
 module Utility.TimeStamp where
 
-import Utility.PartialPrelude
-import Utility.Misc
+import Utility.Data
 
 import Data.Time.Clock.POSIX
 import Data.Time
 import Data.Ratio
 import Control.Applicative
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.Attoparsec.ByteString as A
 import Data.Attoparsec.ByteString.Char8 (char, decimal, signed, isDigit_w8)
 #if ! MIN_VERSION_time(1,5,0)
@@ -41,24 +41,9 @@ parserPOSIXTime = mkPOSIXTime
 			A.parseOnly (decimal <* A.endOfInput) b
 		return (d, len)
 
-{- Parses how POSIXTime shows itself: "1431286201.113452s"
- - Also handles the format with no fractional seconds. -}
 parsePOSIXTime :: String -> Maybe POSIXTime
-parsePOSIXTime = uncurry parsePOSIXTime' . separate (== '.')
-
-{- Parses the integral and decimal part of a POSIXTime -}
-parsePOSIXTime' :: String -> String -> Maybe POSIXTime
-parsePOSIXTime' sn sd = do
-	n <- readi sn
-	let sd' = takeWhile (/= 's') sd
-	if null sd'
-		then return (fromIntegral n)
-		else do
-			d <- readi sd'
-			return $ mkPOSIXTime n (d, length sd')
-  where
-	readi :: String -> Maybe Integer
-	readi = readish
+parsePOSIXTime s = eitherToMaybe $ 
+	A.parseOnly (parserPOSIXTime <* A.endOfInput) (B8.pack s)
 
 {- This implementation allows for higher precision in a POSIXTime than
  - supported by the system's Double, and avoids the complications of
