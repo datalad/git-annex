@@ -1,0 +1,109 @@
+### Please describe the problem.
+
+`git annex enable-tor` fails on Android/Termux (both when entering the command manually and in the webapp)
+
+*(apologies if this is a duplicate, but I couldn't find anything related to this problem)*
+
+### What steps will reproduce the problem?
+
+Occurs reliably when trying to enable p2p pairing via tor (see below)
+
+### What version of git-annex are you using? On what operating system?
+
+* Version: 7.20181122-gbb94cc9f8
+
+  Build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite Dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.12 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0 
+
+* Installed via the Termux app using this guide: [[https://git-annex.branchable.com/Android/]]
+* Termux version 0.65
+
+* tor installed in Termux via `pkg install tor`
+
+* Rooted Android with SuperSU installed
+
+
+### Please provide any additional information below.
+
+##### In the webapp via 'Add another repository -> Share with a friend -> Let's get started':
+[[!format txt
+"""
+Failed to enable tor 
+
+enable-tor 
+  You will be prompted for root's password
+mkdir: '//.cache': Read-only file system 
+Unable to write to //.cache/git-annex/locales/_data_data_com.termux_files_home_git-annex.linux; can't continue! 
+
+git-annex: Failed to run as root: /data/data/com.termux/files/home/git-annex.linux/git-annex enable-tor 10076 
+failed
+git-annex: enable-tor: 1 failed
+"""]]
+  A SuperSU prompt to confirm root permissions is shown during the process
+
+##### On the Termux commandline (in the annex repo directory):
+Need to use the full file path since git-annex isn't in $PATH
+[[!format txt """
+$ su
+# /data/data/com.termux/files/home/git-annex.linux/git-annex enable-tor 10076
+mkdir: '//.cache': Read-only file system
+Unable to write to //.cache/git-annex/locales/_data_data_com.termux_files_home_git-annex.linux; can't continue!
+"""]]
+
+Seems like an environment variable isn't set correctly and/or is empty (hence the double // at the start), leading to an incorrect path.
+
+Output of `env` (as root):
+[[!format txt """
+# env
+_=/system/bin/env
+ANDROID_DATA=/data
+HOME=/
+ANDROID_STORAGE=/storage
+PWD=/data/data/com.termux/files/home/storage/shared/annex
+TERMINFO=/system/etc/terminfo
+TERM=xterm-256color
+ANDROID_CACHE=/cache
+SHLVL=1
+DOWNLOAD_CACHE=/cache
+LOGNAME=root
+LANG=en_US.UTF-8
+OLDPWD=/data/data/com.termux/files/home
+BOOTCLASSPATH=/system/framework/core-oj.jar:/system/framework/core-libart.jar:/system/framework/conscrypt.jar:/system/framework/okhttp.jar:/system/framework/core-junit.jar:/system/framework/bouncycastle.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/telephony-common.jar:/system/framework/voip-common.jar:/system/framework/ims-common.jar:/system/framework/apache-xml.jar:/system/framework/org.apache.http.legacy.boot.jar:/system/framework/telephony-ext.jar
+SHELL=/su/bin/sush
+ANDROID_BOOTLOGO=1
+SYSTEMSERVERCLASSPATH=/system/framework/org.cyanogenmod.platform.jar:/system/framework/org.cyanogenmod.hardware.jar:/system/framework/services.jar:/system/framework/ethernet-service.jar:/system/framework/wifi-service.jar
+LD_PRELOAD=libsigchain.so
+ASEC_MOUNTPOINT=/mnt/asec
+ANDROID_ASSETS=/system/app
+EXTERNAL_STORAGE=/sdcard
+USER=root
+TMPDIR=/data/local/tmp
+PATH=/sbin/su:/su/bin:/su/xbin:/system/bin:/system/xbin
+HOSTNAME=mido
+ANDROID_ROOT=/system
+PREFIX=/data/data/com.termux/files/usr
+"""]]
+
+Output of `env` (as normal user):
+[[!format txt """
+$ env
+LD_LIBRARY_PATH=/data/data/com.termux/files/usr/lib
+LANG=en_US.UTF-8
+PREFIX=/data/data/com.termux/files/usr
+PWD=/data/data/com.termux/files/home/storage/shared/annex
+HOME=/data/data/com.termux/files/home
+TMPDIR=/data/data/com.termux/files/usr/tmp
+SHELL=/data/data/com.termux/files/usr/bin/bash
+TERM=xterm-256color
+SHLVL=1
+ANDROID_ROOT=/system
+ANDROID_DATA=/data
+EXTERNAL_STORAGE=/sdcard
+PATH=/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/usr/bin/applets:/data/data/com.termux/files/home/git-annex.linux
+LD_PRELOAD=/data/data/com.termux/files/usr/lib/libtermux-exec.so
+_=/data/data/com.termux/files/usr/bin/env
+OLDPWD=/data/data/com.termux/files/home/storage/shared
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure thing! git-annex is amazing and usually works really well. Using it to keep files in sync between my pc, laptop and phone.

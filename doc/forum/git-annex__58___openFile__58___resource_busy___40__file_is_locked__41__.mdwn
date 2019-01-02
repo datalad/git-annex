@@ -1,0 +1,8 @@
+Hi. I have a git-annex repo on a FAT32 file system that only replies:
+
+    git-annex: openFile: resource busy (file is locked)
+
+to most commands. Any hint as to what I could do to fix it? It is a v7 repo.
+
+git-annex version: 7.20181121
+operating system: darwin x86_64
