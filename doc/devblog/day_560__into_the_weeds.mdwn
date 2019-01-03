@@ -1,0 +1,14 @@
+Converted git-annex branch access to use ByteStrings, with support also for
+writing to it using bytestring-builder, which is supposed to be faster.
+Finished both an attoparsec parser and a builder for the location logs.
+All the other logs just convert to and from String for now, so there is
+still a lot of work to do.
+
+The `git annex whereis` benchmark looks to be around 6% total speedup now,
+so this only improved it by a few percent, but these little speedups are adding up.
+
+Writing to the git-annex branch may also have sped up significantly; the
+builder is probably able to stream out to git without doing any internal
+copies. But there are not many cases where git-annex does a lot of writes to
+the branch without some other operation that is much more expensive, so I don't
+anticipate much speed improvement on that side.
