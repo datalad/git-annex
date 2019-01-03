@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="colin.brosseau@d444b2b3412af38b85f7b4b340b9c44a412b5698"
+ nickname="colin.brosseau"
+ avatar="http://cdn.libravatar.org/avatar/23872b72fbb19f62ac611e9a80e27f29"
+ subject="NTFS Make it clear that it'll not work with annex.thin"
+ date="2019-01-03T18:04:58Z"
+ content="""
+On the doc it's said that
+
+\"Note that setting annex.thin only has any effect on systems that support hard links. It is supported on Windows, but not on FAT filesystems.\"
+
+Having read that, I was thinking that I'd be able to use _annex.thin_ with NTFS but it doesn't work. 
+I'd specify clearly that NTFS would also not work with _annex.thin_
+
+Thanks
+"""]]
