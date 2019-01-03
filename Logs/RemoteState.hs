@@ -25,12 +25,12 @@ setRemoteState u k s = do
 	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (remoteStateLogFile config k) $
-		showLogNew id . changeLog c u s . parseLogNew Just
+		encodeBL . showLogNew id . changeLog c u s . parseLogNew Just . decodeBL
 
 getRemoteState :: UUID -> Key -> Annex (Maybe RemoteState)
 getRemoteState u k = do
 	config <- Annex.getGitConfig
-	extract . parseLogNew Just
+	extract . parseLogNew Just . decodeBL
 		<$> Annex.Branch.get (remoteStateLogFile config k)
   where
 	extract m = value <$> M.lookup u m

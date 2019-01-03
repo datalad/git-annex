@@ -10,6 +10,8 @@ module Upgrade.V1 where
 import System.Posix.Types
 import Data.Char
 import Data.Default
+import Data.ByteString.Builder
+import qualified Data.ByteString.Lazy as L
 
 import Annex.Common
 import Annex.Content
@@ -177,11 +179,11 @@ fileKey1 file = readKey1 $
 	replace "&a" "&" $ replace "&s" "%" $ replace "%" "/" file
 
 writeLog1 :: FilePath -> [LogLine] -> IO ()
-writeLog1 file ls = viaTmp writeFile file (showLog ls)
+writeLog1 file ls = viaTmp L.writeFile file (toLazyByteString $ buildLog ls)
 
 readLog1 :: FilePath -> IO [LogLine]
 readLog1 file = catchDefaultIO [] $
-	parseLog <$> readFileStrict file
+	parseLog . encodeBL <$> readFileStrict file
 
 lookupFile1 :: FilePath -> Annex (Maybe (Key, Backend))
 lookupFile1 file = do

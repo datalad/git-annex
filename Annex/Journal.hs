@@ -4,12 +4,10 @@
  - git-annex branch. Among other things, it ensures that if git-annex is
  - interrupted, its recorded data is not lost.
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
-
-{-# LANGUAGE CPP #-}
 
 module Annex.Journal where
 
@@ -18,6 +16,23 @@ import qualified Git
 import Annex.Perms
 import Annex.LockFile
 import Utility.Directory.Stream
+
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
+import Data.ByteString.Builder
+
+class Journalable t where
+	writeJournalHandle :: Handle -> t -> IO ()
+	journalableByteString :: t -> L.ByteString
+
+instance Journalable L.ByteString where
+	writeJournalHandle = L.hPut
+	journalableByteString = id
+
+-- This is more efficient than the ByteString instance.
+instance Journalable Builder where
+	writeJournalHandle = hPutBuilder
+	journalableByteString = toLazyByteString
 
 {- Records content for a file in the branch to the journal.
  -
@@ -28,7 +43,7 @@ import Utility.Directory.Stream
  - getJournalFileStale to always return a consistent journal file
  - content, although possibly not the most current one.
  -}
-setJournalFile :: JournalLocked -> FilePath -> String -> Annex ()
+setJournalFile :: Journalable content => JournalLocked -> FilePath -> content -> Annex ()
 setJournalFile _jl file content = do
 	tmp <- fromRepo gitAnnexTmpMiscDir
 	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
@@ -37,23 +52,27 @@ setJournalFile _jl file content = do
 	jfile <- fromRepo $ journalFile file
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
-		withFile tmpfile WriteMode $ \h -> do
-#ifdef mingw32_HOST_OS
-			hSetNewlineMode h noNewlineTranslation
-#endif
-			hPutStr h content
+		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
 		moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
-getJournalFile :: JournalLocked -> FilePath -> Annex (Maybe String)
+getJournalFile :: JournalLocked -> FilePath -> Annex (Maybe L.ByteString)
 getJournalFile _jl = getJournalFileStale
 
 {- Without locking, this is not guaranteed to be the most recent
  - version of the file in the journal, so should not be used as a basis for
- - changes. -}
-getJournalFileStale :: FilePath -> Annex (Maybe String)
+ - changes.
+ -
+ - The file is read strictly so that its content can safely be fed into
+ - an operation that modifies the file. While setJournalFile doesn't
+ - write directly to journal files and so probably avoids problems with
+ - writing to the same file that's being read, but there could be
+ - concurrency or other issues with a lazy read, and the minor loss of
+ - laziness doesn't matter much, as the files are not very large.
+ -}
+getJournalFileStale :: FilePath -> Annex (Maybe L.ByteString)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	readFileStrict $ journalFile file g
+	L.fromStrict <$> S.readFile (journalFile file g)
 
 {- List of existing journal files, but without locking, may miss new ones
  - just being added, or may have false positives if the journal is staged

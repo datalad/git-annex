@@ -37,9 +37,9 @@ groupChange uuid@(UUID _) modifier = do
 	curr <- lookupGroups uuid
 	c <- liftIO currentVectorClock
 	Annex.Branch.change groupLog $
-		showLog (unwords . S.toList) .
+		encodeBL . showLog (unwords . S.toList) .
 			changeLog c uuid (modifier curr) .
-				parseLog (Just . S.fromList . words)
+				parseLog (Just . S.fromList . words) . decodeBL
 	
 	-- The changed group invalidates the preferred content cache.
 	Annex.changeState $ \s -> s
@@ -59,7 +59,7 @@ groupMap = maybe groupMapLoad return =<< Annex.getState Annex.groupmap
 groupMapLoad :: Annex GroupMap
 groupMapLoad = do
 	m <- makeGroupMap . simpleMap .
-		parseLog (Just . S.fromList . words) <$>
+		parseLog (Just . S.fromList . words) . decodeBL <$>
 			Annex.Branch.get groupLog
 	Annex.changeState $ \s -> s { Annex.groupmap = Just m }
 	return m

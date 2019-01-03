@@ -182,7 +182,7 @@ updateTo' pairs = do
 			else return $ "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ fromRef name
-		localtransitions <- parseTransitionsStrictly "local"
+		localtransitions <- parseTransitionsStrictly "local" . decodeBL
 			<$> getLocal transitionsLog
 		unless (null tomerge) $ do
 			showSideAction merge_desc
@@ -209,7 +209,7 @@ updateTo' pairs = do
  - content is returned.
  -
  - Returns an empty string if the file doesn't exist yet. -}
-get :: FilePath -> Annex String
+get :: FilePath -> Annex L.ByteString
 get file = do
 	update
 	getLocal file
@@ -218,21 +218,21 @@ get file = do
  - reflect changes in remotes.
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
-getLocal :: FilePath -> Annex String
+getLocal :: FilePath -> Annex L.ByteString
 getLocal file = go =<< getJournalFileStale file
   where
 	go (Just journalcontent) = return journalcontent
 	go Nothing = getRef fullname file
 
 {- Gets the content of a file as staged in the branch's index. -}
-getStaged :: FilePath -> Annex String
+getStaged :: FilePath -> Annex L.ByteString
 getStaged = getRef indexref
   where
 	-- This makes git cat-file be run with ":file",
 	-- so it looks at the index.
 	indexref = Ref ""
 
-getHistorical :: RefDate -> FilePath -> Annex String
+getHistorical :: RefDate -> FilePath -> Annex L.ByteString
 getHistorical date file =
 	-- This check avoids some ugly error messages when the reflog
 	-- is empty.
@@ -241,27 +241,29 @@ getHistorical date file =
 		, getRef (Git.Ref.dateRef fullname date) file
 		)
 
-getRef :: Ref -> FilePath -> Annex String
-getRef ref file = withIndex $ decodeBL <$> catFile ref file
+getRef :: Ref -> FilePath -> Annex L.ByteString
+getRef ref file = withIndex $ catFile ref file
 
 {- Applies a function to modify the content of a file.
  -
  - Note that this does not cause the branch to be merged, it only
  - modifes the current content of the file on the branch.
  -}
-change :: FilePath -> (String -> String) -> Annex ()
+change :: Journalable content => FilePath -> (L.ByteString -> content) -> Annex ()
 change file f = lockJournal $ \jl -> f <$> getLocal file >>= set jl file
 
 {- Applies a function which can modify the content of a file, or not. -}
-maybeChange :: FilePath -> (String -> Maybe String) -> Annex ()
+maybeChange :: Journalable content => FilePath -> (L.ByteString -> Maybe content) -> Annex ()
 maybeChange file f = lockJournal $ \jl -> do
 	v <- getLocal file
 	case f v of
-		Just v' | v' /= v -> set jl file v'
+		Just jv ->
+			let b = journalableByteString jv
+			in when (v /= b) $ set jl file b
 		_ -> noop
 
 {- Records new content of a file into the journal -}
-set :: JournalLocked -> FilePath -> String -> Annex ()
+set :: Journalable content => JournalLocked -> FilePath -> content -> Annex ()
 set = setJournalFile
 
 {- Commit message used when making a commit of whatever data has changed
@@ -570,7 +572,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	 -}
 	run [] = noop
 	run changers = do
-		trustmap <- calcTrustMap <$> getStaged trustLog
+		trustmap <- calcTrustMap . decodeBL <$> getStaged trustLog
 		fs <- branchFiles
 		forM_ fs $ \f -> do
 			content <- getStaged f

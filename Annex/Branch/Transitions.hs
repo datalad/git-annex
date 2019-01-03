@@ -1,6 +1,6 @@
 {- git-annex branch transitions
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Annex.Branch.Transitions (
 	getTransitionCalculator
 ) where
 
+import Common
 import Logs
 import Logs.Transitions
 import qualified Logs.UUIDBased as UUIDBased
@@ -22,41 +23,43 @@ import Types.MetaData
 
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.Default
+import qualified Data.ByteString.Lazy as L
+import Data.ByteString.Builder
 
 data FileTransition
-	= ChangeFile String
+	= ChangeFile L.ByteString
 	| RemoveFile
 	| PreserveFile
 
-type TransitionCalculator = FilePath -> String -> TrustMap -> FileTransition
+type TransitionCalculator = FilePath -> L.ByteString -> TrustMap -> FileTransition
 
 getTransitionCalculator :: Transition -> Maybe TransitionCalculator
 getTransitionCalculator ForgetGitHistory = Nothing
 getTransitionCalculator ForgetDeadRemotes = Just dropDead
 
-dropDead :: FilePath -> String -> TrustMap -> FileTransition
+dropDead :: FilePath -> L.ByteString -> TrustMap -> FileTransition
 dropDead f content trustmap = case getLogVariety f of
 	Just UUIDBasedLog
 		-- Don't remove the dead repo from the trust log,
 		-- because git remotes may still exist, and they need
 		-- to still know it's dead.
 		| f == trustLog -> PreserveFile
-		| otherwise -> ChangeFile $ UUIDBased.showLog id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just content
-	Just NewUUIDBasedLog -> ChangeFile $
-		UUIDBased.showLogNew id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLogNew Just content
-	Just (ChunkLog _) -> ChangeFile $
-		Chunk.showLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog content
+		| otherwise -> ChangeFile $ encodeBL $
+			UUIDBased.showLog id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just (decodeBL content)
+	Just NewUUIDBasedLog -> ChangeFile $ encodeBL $
+		UUIDBased.showLogNew id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLogNew Just (decodeBL content)
+	Just (ChunkLog _) -> ChangeFile $ encodeBL $
+		Chunk.showLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog (decodeBL content)
 	Just (PresenceLog _) ->
 		let newlog = Presence.compactLog $ dropDeadFromPresenceLog trustmap $ Presence.parseLog content
 		in if null newlog
 			then RemoveFile
-			else ChangeFile $ Presence.showLog newlog
+			else ChangeFile $ toLazyByteString $ Presence.buildLog newlog
 	Just RemoteMetaDataLog ->
-		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog content
+		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog (decodeBL content)
 		in if S.null newlog
 			then RemoveFile
-			else ChangeFile $ MetaData.showLog newlog
+			else ChangeFile $ encodeBL $ MetaData.showLog newlog
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 
@@ -68,7 +71,7 @@ dropDeadFromMapLog trustmap getuuid =
  - a dead uuid is dropped; any other values are passed through. -}
 dropDeadFromPresenceLog :: TrustMap -> [Presence.LogLine] -> [Presence.LogLine]
 dropDeadFromPresenceLog trustmap =
-	filter $ notDead trustmap (toUUID . Presence.info)
+	filter $ notDead trustmap (toUUID . Presence.fromLogInfo . Presence.info)
 
 dropDeadFromRemoteMetaDataLog :: TrustMap -> MetaData.Log MetaData -> MetaData.Log MetaData
 dropDeadFromRemoteMetaDataLog trustmap =

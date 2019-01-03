@@ -110,9 +110,9 @@ addMetaDataClocked' getlogfile k d@(MetaData m) c
 	| otherwise = do
 		config <- Annex.getGitConfig
 		Annex.Branch.change (getlogfile config k) $
-			showLog . simplifyLog 
+			encodeBL . showLog . simplifyLog 
 				. S.insert (LogEntry c metadata)
-				. parseLog
+				. parseLog . decodeBL
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 
@@ -145,8 +145,8 @@ copyMetaData oldkey newkey
 			else do
 				config <- Annex.getGitConfig
 				Annex.Branch.change (metaDataLogFile config newkey) $
-					const $ showLog l
+					const $ encodeBL $ showLog l
 				return True
 
 readLog :: FilePath -> Annex (Log MetaData)
-readLog = parseLog <$$> Annex.Branch.get
+readLog = parseLog . decodeBL <$$> Annex.Branch.get

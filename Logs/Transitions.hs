@@ -19,6 +19,7 @@ import Annex.VectorClock
 import Logs.Line
 
 import qualified Data.Set as S
+import qualified Data.ByteString.Lazy as L
 
 transitionsLog :: FilePath
 transitionsLog = "transitions.log"
@@ -81,6 +82,6 @@ transitionList = nub . map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}
-recordTransitions :: (FilePath -> (String -> String) -> Annex ()) -> Transitions -> Annex ()
+recordTransitions :: (FilePath -> (L.ByteString -> L.ByteString) -> Annex ()) -> Transitions -> Annex ()
 recordTransitions changer t = changer transitionsLog $
-	showTransitions . S.union t . parseTransitionsStrictly "local"
+	encodeBL . showTransitions . S.union t . parseTransitionsStrictly "local" . decodeBL

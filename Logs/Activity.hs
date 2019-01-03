@@ -24,10 +24,10 @@ recordActivity :: Activity -> UUID -> Annex ()
 recordActivity act uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change activityLog $
-		showLog show . changeLog c uuid act . parseLog readish
+		encodeBL . showLog show . changeLog c uuid act . parseLog readish . decodeBL
 
 lastActivities :: Maybe Activity -> Annex (Log Activity)
-lastActivities wantact = parseLog onlywanted <$> Annex.Branch.get activityLog
+lastActivities wantact = parseLog onlywanted . decodeBL <$> Annex.Branch.get activityLog
   where
 	onlywanted s = case readish s of
 		Just a | wanted a -> Just a

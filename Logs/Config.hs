@@ -34,7 +34,7 @@ setGlobalConfig' :: ConfigName -> ConfigValue -> Annex ()
 setGlobalConfig' name new = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change configLog $ 
-		showMapLog id id . changeMapLog c name new . parseGlobalConfig
+		encodeBL . showMapLog id id . changeMapLog c name new . parseGlobalConfig . decodeBL
 
 unsetGlobalConfig :: ConfigName -> Annex ()
 unsetGlobalConfig name = do
@@ -50,5 +50,5 @@ parseGlobalConfig :: String -> MapLog ConfigName ConfigValue
 parseGlobalConfig = parseMapLog Just Just
 
 loadGlobalConfig :: Annex (M.Map ConfigName ConfigValue)
-loadGlobalConfig = M.filter (not . null) . simpleMap . parseGlobalConfig
+loadGlobalConfig = M.filter (not . null) . simpleMap . parseGlobalConfig . decodeBL
 	<$> Annex.Branch.get configLog

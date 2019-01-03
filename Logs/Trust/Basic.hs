@@ -24,13 +24,13 @@ trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change trustLog $
-		showLog showTrustLog .
+		encodeBL . showLog showTrustLog .
 			changeLog c uuid level .
-				parseLog (Just . parseTrustLog)
+				parseLog (Just . parseTrustLog) . decodeBL
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Does not include forcetrust or git config values, just those from the
  - log file. -}
 trustMapRaw :: Annex TrustMap
-trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog
+trustMapRaw = calcTrustMap . decodeBL <$> Annex.Branch.get trustLog

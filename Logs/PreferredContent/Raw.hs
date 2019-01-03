@@ -29,9 +29,9 @@ setLog :: FilePath -> UUID -> PreferredContentExpression -> Annex ()
 setLog logfile uuid@(UUID _) val = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change logfile $
-		showLog id
+		encodeBL . showLog id
 		. changeLog c uuid val
-		. parseLog Just
+		. parseLog Just . decodeBL
 	Annex.changeState $ \s -> s 
 		{ Annex.preferredcontentmap = Nothing
 		, Annex.requiredcontentmap = Nothing
@@ -43,19 +43,19 @@ groupPreferredContentSet :: Group -> PreferredContentExpression -> Annex ()
 groupPreferredContentSet g val = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change groupPreferredContentLog $
-		showMapLog id id 
+		encodeBL . showMapLog id id 
 		. changeMapLog c g val 
-		. parseMapLog Just Just
+		. parseMapLog Just Just . decodeBL
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
 
 preferredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
-preferredContentMapRaw = simpleMap . parseLog Just
+preferredContentMapRaw = simpleMap . parseLog Just . decodeBL
 	<$> Annex.Branch.get preferredContentLog
 
 requiredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
-requiredContentMapRaw = simpleMap . parseLog Just
+requiredContentMapRaw = simpleMap . parseLog Just . decodeBL
 	<$> Annex.Branch.get requiredContentLog
 
 groupPreferredContentMapRaw :: Annex (M.Map Group PreferredContentExpression)
-groupPreferredContentMapRaw = simpleMap . parseMapLog Just Just
+groupPreferredContentMapRaw = simpleMap . parseMapLog Just Just . decodeBL
 	<$> Annex.Branch.get groupPreferredContentLog

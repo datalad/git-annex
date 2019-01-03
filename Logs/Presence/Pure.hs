@@ -1,6 +1,6 @@
 {- git-annex presence log, pure operations
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,11 +13,17 @@ import Logs.Line
 import Utility.QuickCheck
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
+import Data.ByteString.Builder
+
+newtype LogInfo = LogInfo { fromLogInfo :: S.ByteString }
+	deriving (Show, Eq, Ord)
 
 data LogLine = LogLine
 	{ date :: VectorClock
 	, status :: LogStatus
-	, info :: String
+	, info :: LogInfo
 	} deriving (Eq)
 
 instance Show LogLine where
@@ -27,13 +33,13 @@ data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
 
 {- Parses a log file. Unparseable lines are ignored. -}
-parseLog :: String -> [LogLine]
-parseLog = mapMaybe parseline . splitLines
+parseLog :: L.ByteString -> [LogLine]
+parseLog = mapMaybe parseline . splitLines . decodeBL
   where
 	parseline l = LogLine
 		<$> parseVectorClock c
 		<*> parseStatus s
-		<*> pure rest
+		<*> pure (LogInfo (encodeBS rest))
 	  where
 		(c, pastc) = separate (== ' ') l
 		(s, rest) = separate (== ' ') pastc
@@ -44,17 +50,20 @@ parseStatus "0" = Just InfoMissing
 parseStatus "X" = Just InfoDead
 parseStatus _ = Nothing
 
-{- Generates a log file. -}
-showLog :: [LogLine] -> String
-showLog = unlines . map genline
+buildLog :: [LogLine] -> Builder
+buildLog = mconcat . map genline
   where
-	genline (LogLine c s i) = unwords [formatVectorClock c, genstatus s, i]
-	genstatus InfoPresent = "1"
-	genstatus InfoMissing = "0"
-	genstatus InfoDead = "X"
+	genline (LogLine c s (LogInfo i)) = 
+		byteString (encodeBS' (formatVectorClock c)) <> sp <>
+		genstatus s <> sp <> byteString i <> nl
+	sp = charUtf8 ' '
+	nl = charUtf8 '\n'
+	genstatus InfoPresent = charUtf8 '1'
+	genstatus InfoMissing = charUtf8 '0'
+	genstatus InfoDead = charUtf8 'X'
 
 {- Given a log, returns only the info that is are still in effect. -}
-getLog :: String -> [String]
+getLog :: L.ByteString -> [LogInfo]
 getLog = map info . filterPresent . parseLog
 
 {- Returns the info from LogLines that are in effect. -}
@@ -66,7 +75,7 @@ filterPresent = filter (\l -> InfoPresent == status l) . compactLog
 compactLog :: [LogLine] -> [LogLine]
 compactLog = mapLog . logMap
 
-type LogMap = M.Map String LogLine
+type LogMap = M.Map LogInfo LogLine
 
 mapLog :: LogMap -> [LogLine]
 mapLog = M.elems
@@ -101,9 +110,11 @@ instance Arbitrary LogLine where
 	arbitrary = LogLine
 		<$> arbitrary
 		<*> elements [minBound..maxBound]
-		<*> arbitrary `suchThat`
+		<*> (LogInfo . encodeBS <$> arbinfo)
+	  where
+		arbinfo = arbitrary `suchThat`
 			(\c -> '\n' `notElem` c && '\r' `notElem` c)
 
-prop_parse_show_log :: [LogLine] -> Bool
-prop_parse_show_log l = parseLog (showLog l) == l
+prop_parse_build_log :: [LogLine] -> Bool
+prop_parse_build_log l = parseLog (toLazyByteString (buildLog l)) == l
 

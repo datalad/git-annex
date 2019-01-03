@@ -20,7 +20,6 @@ module Logs.Web (
 	removeTempUrl,
 ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 
 import Annex.Common
@@ -49,7 +48,7 @@ getUrls key = do
 		us <- currentLogInfo l
 		if null us
 			then go ls
-			else return us
+			else return $ map (decodeBS  . fromLogInfo) us
 
 getUrlsWithPrefix :: Key -> String -> Annex [URLString]
 getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) 
@@ -61,7 +60,8 @@ setUrlPresent key url = do
 	us <- getUrls key
 	unless (url `elem` us) $ do
 		config <- Annex.getGitConfig
-		addLog (urlLogFile config key) =<< logNow InfoPresent url
+		addLog (urlLogFile config key)
+			=<< logNow InfoPresent (LogInfo (encodeBS url))
 	-- If the url does not have an OtherDownloader, it must be present
 	-- in the web.
 	case snd (getDownloader url) of
@@ -71,7 +71,8 @@ setUrlPresent key url = do
 setUrlMissing :: Key -> URLString -> Annex ()
 setUrlMissing key url = do
 	config <- Annex.getGitConfig
-	addLog (urlLogFile config key) =<< logNow InfoMissing url
+	addLog (urlLogFile config key)
+		=<< logNow InfoMissing (LogInfo (encodeBS url))
 	-- If the url was a web url (not OtherDownloader) and none of
 	-- the remaining urls for the key are web urls, the key must not
 	-- be present in the web.
@@ -102,7 +103,9 @@ knownUrls = do
 		Just k -> zip (repeat k) <$> geturls s
 		Nothing -> return []
 	geturls Nothing = return []
-	geturls (Just logsha) = getLog . L.unpack <$> catObject logsha
+	geturls (Just logsha) =
+		map (decodeBS . fromLogInfo) . getLog 
+			<$> catObject logsha
 
 setTempUrl :: Key -> URLString -> Annex ()
 setTempUrl key url = Annex.changeState $ \s ->

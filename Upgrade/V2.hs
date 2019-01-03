@@ -83,7 +83,7 @@ inject source dest = do
 	old <- fromRepo olddir
 	new <- liftIO (readFile $ old </> source)
 	Annex.Branch.change dest $ \prev -> 
-		unlines $ nub $ lines prev ++ lines new
+		encodeBL $ unlines $ nub $ lines (decodeBL prev) ++ lines new
 
 logFiles :: FilePath -> Annex [FilePath]
 logFiles dir = return . filter (".log" `isSuffixOf`)

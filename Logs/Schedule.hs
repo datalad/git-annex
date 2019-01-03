@@ -32,14 +32,14 @@ scheduleSet :: UUID -> [ScheduledActivity] -> Annex ()
 scheduleSet uuid@(UUID _) activities = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change scheduleLog $
-		showLog id . changeLog c uuid val . parseLog Just
+		encodeBL . showLog id . changeLog c uuid val . parseLog Just . decodeBL
   where
 	val = fromScheduledActivities activities
 scheduleSet NoUUID _ = error "unknown UUID; cannot modify"
 
 scheduleMap :: Annex (M.Map UUID [ScheduledActivity])
 scheduleMap = simpleMap
-	. parseLogWithUUID parser
+	. parseLogWithUUID parser . decodeBL
 	<$> Annex.Branch.get scheduleLog
   where
 	parser _uuid = eitherToMaybe . parseScheduledActivities

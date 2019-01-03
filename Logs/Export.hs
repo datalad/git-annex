@@ -42,6 +42,7 @@ data ExportChange = ExportChange
 getExport :: UUID -> Annex [Exported]
 getExport remoteuuid = nub . mapMaybe get . M.toList . simpleMap 
 	. parseExportLog
+	. decodeBL
 	<$> Annex.Branch.get exportLog
   where
 	get (ep, exported)
@@ -68,10 +69,10 @@ recordExport remoteuuid ec = do
 	let ep = ExportParticipants { exportFrom = u, exportTo = remoteuuid }
 	let exported = Exported (newTreeish ec) []
 	Annex.Branch.change exportLog $
-		showExportLog
+		encodeBL . showExportLog
 			. changeMapLog c ep exported 
 			. M.mapWithKey (updateothers c u)
-			. parseExportLog
+			. parseExportLog . decodeBL
   where
 	updateothers c u ep le@(LogEntry _ exported@(Exported { exportedTreeish = t }))
 		| u == exportFrom ep || remoteuuid /= exportTo ep || t `notElem` oldTreeish ec = le
@@ -89,12 +90,13 @@ recordExportBeginning remoteuuid newtree = do
 	old <- fromMaybe (Exported emptyTree [])
 		. M.lookup ep . simpleMap 
 		. parseExportLog
+		. decodeBL
 		<$> Annex.Branch.get exportLog
 	let new = old { incompleteExportedTreeish = nub (newtree:incompleteExportedTreeish old) }
 	Annex.Branch.change exportLog $
-		showExportLog 
+		encodeBL . showExportLog 
 			. changeMapLog c ep new
-			. parseExportLog
+			. parseExportLog . decodeBL
 	Annex.Branch.graftTreeish newtree (asTopFilePath "export.tree")
 
 parseExportLog :: String -> MapLog ExportParticipants Exported

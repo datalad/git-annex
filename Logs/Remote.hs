@@ -32,11 +32,11 @@ configSet :: UUID -> RemoteConfig -> Annex ()
 configSet u cfg = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change remoteLog $
-		showLog showConfig . changeLog c u cfg . parseLog parseConfig
+		encodeBL . showLog showConfig . changeLog c u cfg . parseLog parseConfig . decodeBL
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = simpleMap . parseLog parseConfig <$> Annex.Branch.get remoteLog
+readRemoteLog = simpleMap . parseLog parseConfig . decodeBL <$> Annex.Branch.get remoteLog
 
 parseConfig :: String -> Maybe RemoteConfig
 parseConfig = Just . keyValToConfig . words

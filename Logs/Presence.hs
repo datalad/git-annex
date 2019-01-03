@@ -31,8 +31,8 @@ import Git.Types (RefDate)
 {- Adds a LogLine to the log, removing any LogLines that are obsoleted by
  - adding it. -}
 addLog :: FilePath -> LogLine -> Annex ()
-addLog file line = Annex.Branch.change file $ \s ->
-	showLog $ compactLog (line : parseLog s)
+addLog file line = Annex.Branch.change file $ \b ->
+	buildLog $ compactLog (line : parseLog b)
 
 {- When a LogLine already exists with the same status and info, but an
  - older timestamp, that LogLine is preserved, rather than updating the log
@@ -41,7 +41,7 @@ addLog file line = Annex.Branch.change file $ \s ->
 maybeAddLog :: FilePath -> LogLine -> Annex ()
 maybeAddLog file line = Annex.Branch.maybeChange file $ \s -> do
 	m <- insertNewStatus line $ logMap $ parseLog s
-	return $ showLog $ mapLog m
+	return $ buildLog $ mapLog m
 
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
@@ -49,13 +49,13 @@ readLog :: FilePath -> Annex [LogLine]
 readLog = parseLog <$$> Annex.Branch.get
 
 {- Generates a new LogLine with the current time. -}
-logNow :: LogStatus -> String -> Annex LogLine
+logNow :: LogStatus -> LogInfo -> Annex LogLine
 logNow s i = do
 	c <- liftIO currentVectorClock
 	return $ LogLine c s i
 
 {- Reads a log and returns only the info that is still in effect. -}
-currentLogInfo :: FilePath -> Annex [String]
+currentLogInfo :: FilePath -> Annex [LogInfo]
 currentLogInfo file = map info <$> currentLog file
 
 currentLog :: FilePath -> Annex [LogLine]
@@ -66,6 +66,6 @@ currentLog file = filterPresent <$> readLog file
  -
  - The date is formatted as shown in gitrevisions man page.
  -}
-historicalLogInfo :: RefDate -> FilePath -> Annex [String]
+historicalLogInfo :: RefDate -> FilePath -> Annex [LogInfo]
 historicalLogInfo refdate file = map info . filterPresent . parseLog
 	<$> Annex.Branch.getHistorical refdate file

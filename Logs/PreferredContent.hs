@@ -74,6 +74,7 @@ preferredRequiredMapsLoad = do
 	configmap <- readRemoteLog
 	let genmap l gm = simpleMap
 		. parseLogWithUUID ((Just .) . makeMatcher groupmap configmap gm)
+		. decodeBL
 		<$> Annex.Branch.get l
 	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
 	rc <- genmap requiredContentLog M.empty

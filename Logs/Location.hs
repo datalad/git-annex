@@ -41,7 +41,6 @@ import Git.Types (RefDate, Ref)
 import qualified Annex
 
 import Data.Time.Clock
-import qualified Data.ByteString.Lazy.Char8 as L
 
 {- Log a change in the presence of a key's value in current repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
@@ -53,10 +52,10 @@ logStatus key s = do
 logChange :: Key -> UUID -> LogStatus -> Annex ()
 logChange = logChange' logNow
 
-logChange' :: (LogStatus -> String -> Annex LogLine) -> Key -> UUID -> LogStatus -> Annex ()
+logChange' :: (LogStatus -> LogInfo -> Annex LogLine) -> Key -> UUID -> LogStatus -> Annex ()
 logChange' mklog key u@(UUID _) s = do
 	config <- Annex.getGitConfig
-	maybeAddLog (locationLogFile config key) =<< mklog s (fromUUID u)
+	maybeAddLog (locationLogFile config key) =<< mklog s (LogInfo (fromUUID u))
 logChange' _ _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
@@ -70,12 +69,12 @@ loggedLocationsHistorical = getLoggedLocations . historicalLogInfo
 
 {- Gets the locations contained in a git ref. -}
 loggedLocationsRef :: Ref -> Annex [UUID]
-loggedLocationsRef ref = map toUUID . getLog . L.unpack <$> catObject ref
+loggedLocationsRef ref = map (toUUID . fromLogInfo) . getLog <$> catObject ref
 
-getLoggedLocations :: (FilePath -> Annex [String]) -> Key -> Annex [UUID]
+getLoggedLocations :: (FilePath -> Annex [LogInfo]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do
 	config <- Annex.getGitConfig
-	map toUUID <$> getter (locationLogFile config key)
+	map (toUUID . fromLogInfo) <$> getter (locationLogFile config key)
 
 {- Is there a location log for the key? True even for keys with no
  - remaining locations. -}
