@@ -17,6 +17,7 @@ import Prelude
 import Utility.Env
 import Utility.TimeStamp
 import Utility.QuickCheck
+import qualified Data.Attoparsec.ByteString.Lazy as A
 
 -- | Some very old logs did not have any time stamp at all;
 -- Unknown is used for those.
@@ -44,3 +45,6 @@ formatVectorClock (VectorClock t) = show t
 
 parseVectorClock :: String -> Maybe VectorClock
 parseVectorClock t = VectorClock <$> parsePOSIXTime t
+
+vectorClockParser :: A.Parser VectorClock
+vectorClockParser = VectorClock <$> parserPOSIXTime

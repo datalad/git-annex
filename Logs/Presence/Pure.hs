@@ -15,6 +15,8 @@ import Utility.QuickCheck
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import Data.Attoparsec.ByteString.Char8 (char, anyChar)
 import Data.ByteString.Builder
 
 newtype LogInfo = LogInfo { fromLogInfo :: S.ByteString }
@@ -32,17 +34,25 @@ instance Show LogLine where
 data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
 
-{- Parses a log file. Unparseable lines are ignored. -}
 parseLog :: L.ByteString -> [LogLine]
-parseLog = mapMaybe parseline . splitLines . decodeBL
-  where
-	parseline l = LogLine
-		<$> parseVectorClock c
-		<*> parseStatus s
-		<*> pure (LogInfo (encodeBS rest))
-	  where
-		(c, pastc) = separate (== ' ') l
-		(s, rest) = separate (== ' ') pastc
+parseLog = fromMaybe [] . A.maybeResult . A.parse (logParser <* A.endOfInput)
+
+logParser :: A.Parser [LogLine]
+logParser = parseLogLines $ LogLine
+	<$> vectorClockParser
+	<* char ' '
+	<*> statusParser
+	<* char ' '
+	<*> (LogInfo <$> A.takeByteString)
+
+statusParser :: A.Parser LogStatus
+statusParser = do
+	c <- anyChar
+	case c of
+		'1' -> return InfoPresent
+		'0' -> return InfoMissing
+		'X' -> return InfoDead
+		_ -> fail "unknown status character"
 
 parseStatus :: String -> Maybe LogStatus
 parseStatus "1" = Just InfoPresent
