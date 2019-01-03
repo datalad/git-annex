@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="Chymera"
+ avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
+ subject="comment 6"
+ date="2019-01-03T22:56:25Z"
+ content="""
+    git annex info | grep \"size of annexed files in working tree\"
+
+This does nothing but hang and I am not sure whether it's git annex or grep that hangs:
+
+    chymera@clusterhost /mnt/overflow $ ps aux | ag annex
+    chymera   5884  0.0  0.0 139920  3388 pts/7    S+   23:53   0:00 git annex info
+    chymera   5885  0.0  0.0 133216   900 pts/7    S+   23:53   0:00 grep --colour=auto size of annexed files in working tree
+    chymera   5886  6.4  0.0 1074610112 102528 pts/7 Dl+ 23:53   0:05 /usr/bin/git-annex info
+    chymera   5905  0.0  0.0  11304  1084 pts/8    S+   23:55   0:00 ag annex
+    chymera@clusterhost /mnt/overflow $ ps aux | ag git
+    chymera   5884  0.0  0.0 139920  3388 pts/7    S+   23:53   0:00 git annex info
+    chymera   5886  6.3  0.0 1074610112 102528 pts/7 Dl+ 23:53   0:05 /usr/bin/git-annex info
+    chymera   5893  0.0  0.0 258580  4492 pts/7    S+   23:54   0:00 git --git-dir=.git --work-tree=. --literal-pathspecs -c core.bare=false cat-file --batch
+    chymera   5894  0.0  0.0 139920  3740 pts/7    S+   23:54   0:00 git --git-dir=.git --work-tree=. --literal-pathspecs -c core.bare=false cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+    chymera   5909  0.0  0.0  11304  1032 pts/8    S+   23:55   0:00 ag git
+    chymera@clusterhost /mnt/overflow $ ps aux | ag grep
+    chymera   5885  0.0  0.0 133216   900 pts/7    S+   23:53   0:00 grep --colour=auto size of annexed files in working tree
+    chymera   5913  0.0  0.0  11304  1072 pts/8    S+   23:55   0:00 ag grep
+
+"""]]
