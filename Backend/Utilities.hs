@@ -8,7 +8,6 @@
 module Backend.Utilities where
 
 import Annex.Common
-import Utility.FileSystemEncoding
 import Utility.Hash
 
 {- Generates a keyName from an input string. Takes care of sanitizing it.

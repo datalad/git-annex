@@ -45,7 +45,6 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Perms
 import Utility.UserInfo
-import Utility.FileSystemEncoding
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
 import System.Posix.User

@@ -38,7 +38,6 @@ import qualified Data.UUID as U
 import qualified Data.UUID.V4 as U4
 import qualified Data.UUID.V5 as U5
 import Data.String
-import Utility.FileSystemEncoding
 
 configkey :: ConfigKey
 configkey = annexConfig "uuid"

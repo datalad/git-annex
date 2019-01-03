@@ -52,7 +52,6 @@ import Types.MetaData
 import Utility.Metered
 import qualified Annex.Url as Url
 import Utility.DataUnits
-import Utility.FileSystemEncoding
 import Annex.Content
 import Annex.Url (withUrlOptions)
 import Utility.Url (checkBoth, UrlOptions(..))

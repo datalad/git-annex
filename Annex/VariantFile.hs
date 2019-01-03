@@ -8,7 +8,6 @@
 module Annex.VariantFile where
 
 import Annex.Common
-import Utility.FileSystemEncoding
 import Utility.Hash
 
 variantMarker :: String

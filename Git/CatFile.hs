@@ -38,7 +38,6 @@ import Git.Types
 import Git.FilePath
 import Git.HashObject
 import qualified Utility.CoProcess as CoProcess
-import Utility.FileSystemEncoding
 import Utility.Tuple
 
 data CatFileHandle = CatFileHandle 

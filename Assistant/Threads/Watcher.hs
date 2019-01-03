@@ -44,7 +44,6 @@ import Git.FilePath
 import Config
 import Config.GitConfig
 import Utility.ThreadScheduler
-import Utility.FileSystemEncoding
 import Logs.Location
 import qualified Database.Keys
 #ifndef mingw32_HOST_OS

@@ -30,7 +30,6 @@ import Git.FilePath
 import Annex.HashObject
 import Annex.InodeSentinal
 import Utility.FileMode
-import Utility.FileSystemEncoding
 import Utility.InodeCache
 import Utility.Tmp.Dir
 import Utility.CopyFile

@@ -10,7 +10,6 @@
 module Utility.Metered where
 
 import Common
-import Utility.FileSystemEncoding
 import Utility.Percentage
 import Utility.DataUnits
 import Utility.HumanTime

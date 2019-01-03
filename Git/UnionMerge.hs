@@ -22,7 +22,6 @@ import Git.UpdateIndex
 import Git.HashObject
 import Git.Types
 import Git.FilePath
-import Utility.FileSystemEncoding
 
 {- Performs a union merge between two branches, staging it in the index.
  - Any previously staged changes in the index will be lost.

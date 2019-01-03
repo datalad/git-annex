@@ -28,7 +28,6 @@ import Types.UrlContents
 import Annex.FileMatcher
 import Logs.Location
 import Utility.Metered
-import Utility.FileSystemEncoding
 import Utility.HtmlDetect
 import Utility.Path.Max
 import qualified Annex.Transfer as Transfer

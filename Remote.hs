@@ -76,7 +76,6 @@ import Config
 import Config.DynamicConfig
 import Git.Types (RemoteName)
 import Utility.Aeson
-import Utility.FileSystemEncoding
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)

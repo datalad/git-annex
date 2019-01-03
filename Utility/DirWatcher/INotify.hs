@@ -12,9 +12,6 @@ module Utility.DirWatcher.INotify where
 import Common hiding (isDirectory)
 import Utility.ThreadLock
 import Utility.DirWatcher.Types
-#if MIN_VERSION_hinotify(0,3,10)
-import Utility.FileSystemEncoding
-#endif
 
 import System.INotify
 import qualified System.Posix.Files as Files

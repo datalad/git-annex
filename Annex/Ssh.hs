@@ -32,7 +32,6 @@ import qualified Git.Url
 import Config
 import Annex.Path
 import Utility.Env
-import Utility.FileSystemEncoding
 import Utility.Hash
 import Types.CleanupActions
 import Types.Concurrency

@@ -22,7 +22,6 @@ import qualified Annex.Branch
 import Logs
 import Logs.UUIDBased
 import qualified Annex.UUID
-import Utility.FileSystemEncoding
 
 import qualified Data.Map.Strict as M
 
