@@ -41,7 +41,7 @@ hashFile f = do
 {- Note that the content will be written to a temp file.
  - So it may be faster to use Git.HashObject.hashObject for large
  - blob contents. -}
-hashBlob :: String -> Annex Sha
+hashBlob :: Git.HashObject.HashableBlob b => b -> Annex Sha
 hashBlob content = do
 	h <- hashObjectHandle
 	liftIO $ Git.HashObject.hashBlob h content

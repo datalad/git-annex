@@ -112,7 +112,7 @@ addAnnexLink linktarget file = do
 
 {- Injects a symlink target into git, returning its Sha. -}
 hashSymlink :: LinkTarget -> Annex Sha
-hashSymlink linktarget = hashBlob (toInternalGitPath linktarget)
+hashSymlink linktarget = hashBlob $ toRawFilePath $ toInternalGitPath linktarget
 
 {- Stages a symlink to an annexed object, using a Sha of its target. -}
 stageSymlink :: FilePath -> Sha -> Annex ()
@@ -122,7 +122,7 @@ stageSymlink file sha =
 
 {- Injects a pointer file content into git, returning its Sha. -}
 hashPointerFile :: Key -> Annex Sha
-hashPointerFile key = hashBlob (formatPointer key)
+hashPointerFile key = hashBlob $ encodeBS $ formatPointer key
 
 {- Stages a pointer file, using a Sha of its content -}
 stagePointerFile :: FilePath -> Maybe FileMode -> Sha -> Annex ()

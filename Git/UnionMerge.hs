@@ -85,7 +85,7 @@ mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha]
 	[] -> return Nothing
 	(sha:[]) -> use sha
 	shas -> use
-		=<< either return (\s -> hashBlob hashhandle (unlines s))
+		=<< either return (hashBlob hashhandle . encodeBS . unlines)
 		=<< calcMerge . zip shas <$> mapM getcontents shas
   where
 	[_colonmode, _bmode, asha, bsha, _status] = words info
