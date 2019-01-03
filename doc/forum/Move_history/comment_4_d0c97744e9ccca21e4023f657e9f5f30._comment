@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="Chymera"
+ avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
+ subject="comment 4"
+ date="2019-01-03T19:33:01Z"
+ content="""
+```
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex info | grep \"repository mode\"
+repository mode: direct
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex version | grep \"local repository version\"
+local repository version: 5
+```
+
+> One of the outputs of this command is \"local annex size\" which tells you how much space this repo is taking up. 
+
+this does not happen, `git-annex info | grep \"local annex size\"` returns nothing.
+
+```
+chymera@clusterhost ~/ni_data $ du -sh .git/annex/objects/
+1.6G  .git/annex/objects/
+chymera@clusterhost ~/ni_data $ du -sh .git/objects/
+218M    .git/objects/
+chymera@clusterhost ~/ni_data $ du -sh
+779G
+chymera@clusterhost ~/ni_data $ du -sh .git/
+501G    .git/ 
+```
+"""]]
