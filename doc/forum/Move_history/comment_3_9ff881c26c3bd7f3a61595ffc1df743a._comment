@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 3"
+ date="2019-01-03T01:32:28Z"
+ content="""
+There are various ways to forget history, both in git and git-annex. I don't have enough clarity into what history is taking up space in your repository to give you a good answer. Answering the following questions will give me more insight into where the space is being used up, then I can give you some ideas on how to reclaim it:
+
+Is the repo in question direct or indirect (I am not sure what you meant by \"direct mode network\")? Output of `git annex info | grep \"repository mode\"` command will tell you this.
+
+What git-annex repo version is the repo in question? Output of `git annex version | grep \"local repository version\"` command will tell you this.
+
+If you cd into the repo in question and run `git-annex info` it gives you various information about what git-annex thinks about the repository. One of the outputs of this command is \"local annex size\" which tells you how much space this repo is taking up. In a direct mode repo this should be the same size as you get from sizing all the files in your working directory excluding the .git directory (`du -sh --exclude=.git` on Linux). Otherwise in an indirect mode repo, the \"local annex size\" given by `git-annex info` should match the size of the `.git/annex/objects` directory.
+
+If you cd into the repo in question what are the outputs of the following commands.
+
+Size of git annex objects (In a direct mode repo this should be very small):
+
+    du -sh .git/annex/objects/
+ 
+
+Size of git objects (This just tells you how much history is stored in git. This should also be small (unless you store a lot of large files in git, which you probably don't since you are using git-annex):
+
+    du -sh .git/objects/
+
+Size of working tree (this will tell you file content present in this repo):
+
+    git annex info | grep \"size of annexed files in working tree\"
+
+
+
+
+"""]]
