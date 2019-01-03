@@ -28,7 +28,7 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.ByteString.Lazy as L
 import "crypto-api" Crypto.Random
 
--- | An AuthToken is stored in secue memory, with constant time comparison.
+-- | An AuthToken is stored in secure memory, with constant time comparison.
 --
 -- It can have varying length, depending on the security needs of the
 -- application.
