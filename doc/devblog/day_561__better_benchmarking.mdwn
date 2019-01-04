@@ -1,0 +1,17 @@
+I've been benchmarking whole calls to eg `git annex whereis`, and that's
+not ideal because git-annex has some startup overhead that I'm not
+interested in benchmarking (right now), and often that overhead swamped
+the things I wanted to benchmark, making it difficult to trust my results.
+
+So, I've built a `git annex benchmark` command, that can benchmark any other
+git-annex commands, without starting a new git-annex process. It uses
+criterion to get statistically meaningful benchmark results. And operations
+as fast as 10 ms can be benchmarked now, without needing to write any
+special purpose benchmark code.
+
+New results for this weeks's optimisations:
+
+whereis on 1000 files........... 5% speedup  
+whereis on 1 file............... 14% speedup  
+info on dir with 400 files...... 15% speedup  
+local get ; drop of 1000 files.. 3% speedup  
