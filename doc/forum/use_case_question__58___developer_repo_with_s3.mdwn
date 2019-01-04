@@ -1,0 +1,6 @@
+Hello, the teams I work with have repositories for tracking CI pipelines and build scripts.  There are binary resources, and sensitive information, that we would like to somehow be able to store with the repo, but in a secure fashion. Would a scenario like this be feasible with git-annex?
+
+* create an annex attached to existing code repositories, with s3 as the special remote.  
+* each developer is able to read or add to and from the encrypted bucket using either their key from signed commits or from an ssh key
+
+We already reject non-signed commits, and are not public-facing in our repositories or accessible without credentials to s3. The developers with access to the repository are all of the same access level internal to the company with permission to do what they must with the keys.  I'm sorry if this is an obvious 'yes' or 'no' question.  Using git-annex privately as a file store for myself thus far has been excellent.
