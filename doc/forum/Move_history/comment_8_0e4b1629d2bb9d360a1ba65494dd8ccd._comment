@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="Chymera"
+ avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
+ subject="comment 8"
+ date="2019-01-04T03:52:22Z"
+ content="""
+Additionally, I notice that the git annex version my repo has (5) is 2 versions old. Given the git-annex availability on my distributions, I think I could bump this to 6 --- do you suggest I do this now or after I have this issue handled?
+
+    chymera@clusterhost ~/ni_data $ du -h -d 1 .git/
+    12K     .git/info
+    52K     .git/hooks
+    218M    .git/objects
+    501G  .git/annex
+    124K    .git/refs
+    172K    .git/logs
+    501G    .git/
+
+
+    chymera@clusterhost ~/ni_data $ du -h -d 1 .git/annex/
+    499G    .git/annex/misctmp
+    4.0K    .git/annex/ssh
+    8.3M    .git/annex/journal
+    60K     .git/annex/keys
+    30M     .git/annex/transfer
+    1.6G    .git/annex/objects
+    4.0K    .git/annex/tmp
+    501G    .git/annex/
+"""]]
