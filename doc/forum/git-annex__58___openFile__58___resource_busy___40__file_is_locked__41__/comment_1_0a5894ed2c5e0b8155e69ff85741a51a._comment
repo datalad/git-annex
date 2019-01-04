@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="chocolate.camera@ec2ecab153906be21ac5f36652c33786ad0e0b60"
+ nickname="chocolate.camera"
+ avatar="http://cdn.libravatar.org/avatar/4f00dfc3ad590ef7492788b854ceba78"
+ subject="comment 1"
+ date="2019-01-04T16:11:12Z"
+ content="""
+I still do not know how to fix the repo. An Internet search seems to indicate the error comes from git annex' being written in Haskell: see [A newcomer's run-in with lazy I/O](https://ianthehenry.com/2016/3/9/lazy-io/).
+"""]]
