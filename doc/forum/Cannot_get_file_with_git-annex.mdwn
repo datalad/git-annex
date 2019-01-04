@@ -1,0 +1,85 @@
+I recently noticed that a file I thought I had on one of my repositories was missing, so I decided to get it:
+
+
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex get 20151226_112356_4012_1_7/2/pulseprogram 
+get 20151226_112356_4012_1_7/2/pulseprogram (from data0...) 
+git-annex-shell: failed to read git config of git repository in zenhost on /run/media/chymera/data0/ni_data; perhaps this repository is not set up correctly or has moved
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(226) [Receiver=3.1.3]
+
+  rsync failed -- run git annex again to resume file transfer
+(from data1...) 
+git-annex-shell: failed to read git config of git repository in zenhost on /run/media/chymera/data1/ni_data; perhaps this repository is not set up correctly or has moved
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(226) [Receiver=3.1.3]
+
+  rsync failed -- run git annex again to resume file transfer
+(from quiethost...) 
+ssh: connect to host localhost port 2225: Connection refused
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: unexplained error (code 255) at io.c(226) [Receiver=3.1.3]
+
+  rsync failed -- run git annex again to resume file transfer
+(from zenhost...) 
+SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+         32,243 100%    7.69MB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+(recording state in git...)
+chymera@clusterhost ~/ni_data/ofM.dr $ ls -lah 20151226_112356_4012_1_7/2/pdata/1/
+total 468K
+drwxr-sr-x 2 chymera wheel 4.0K Nov  2  2017 .
+drwxr-sr-x 3 chymera wheel 4.0K Mar 20  2017 ..
+-rw-r-Sr-- 1 chymera wheel 422K Mar 20  2017 2dseq
+-rw-r-Sr-- 1 chymera wheel  356 Mar 20  2017 id
+-rw-r-Sr-- 1 chymera wheel  420 Mar 20  2017 methreco
+-rw-r-Sr-- 1 chymera wheel  349 Mar 20  2017 procs
+-rw-r-Sr-- 1 chymera wheel 9.1K Mar 20  2017 reco
+-rw-r-Sr-- 1 chymera wheel 8.3K Nov  2  2017 visu_pars
+chymera@clusterhost ~/ni_data/ofM.dr $ ls -lah 20151226_112356_4012_1_7/2/pulseprogram 
+lrwxrwxrwx 1 chymera wheel 195 Dec 25 22:01 20151226_112356_4012_1_7/2/pulseprogram -> ../../../.git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex get 20151226_112356_4012_1_7/2/pulseprogram 
+chymera@clusterhost ~/ni_data/ofM.dr $ ls -lah 20151226_112356_4012_1_7/2/pdata/1/^C
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex direct
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex get 20151226_112356_4012_1_7/2/pulseprogram 
+chymera@clusterhost ~/ni_data/ofM.dr $ ls -lah 20151226_112356_4012_1_7/2/pulseprogram 
+lrwxrwxrwx 1 chymera wheel 195 Dec 25 22:01 20151226_112356_4012_1_7/2/pulseprogram -> ../../../.git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex drop 20151226_112356_4012_1_7/2/pulseprogram 
+drop 20151226_112356_4012_1_7/2/pulseprogram (locking data0...) (lockcontent failed) (checking data0...) git-annex-shell: failed to read git config of git repository in zenhost on /run/media/chymera/data0/ni_data; perhaps this repository is not set up correctly or has moved
+(locking data1...) (lockcontent failed) (checking data1...) git-annex-shell: failed to read git config of git repository in zenhost on /run/media/chymera/data1/ni_data; perhaps this repository is not set up correctly or has moved
+(locking quiethost...) (lockcontent failed) (checking quiethost...) ssh: connect to host localhost port 2225: Connection refused
+(locking zenhost...) ok
+(recording state in git...)
+chymera@clusterhost ~/ni_data/ofM.dr $ git annex get 20151226_112356_4012_1_7/2/pulseprogram 
+get 20151226_112356_4012_1_7/2/pulseprogram (from data0...) 
+git-annex-shell: failed to read git config of git repository in zenhost on /run/media/chymera/data0/ni_data; perhaps this repository is not set up correctly or has moved
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(226) [Receiver=3.1.3]
+
+  rsync failed -- run git annex again to resume file transfer
+(from data1...) 
+git-annex-shell: failed to read git config of git repository in zenhost on /run/media/chymera/data1/ni_data; perhaps this repository is not set up correctly or has moved
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(226) [Receiver=3.1.3]
+
+  rsync failed -- run git annex again to resume file transfer
+(from quiethost...) 
+ssh: connect to host localhost port 2225: Connection refused
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: unexplained error (code 255) at io.c(226) [Receiver=3.1.3]
+
+  rsync failed -- run git annex again to resume file transfer
+(from zenhost...) 
+SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+         32,243 100%   30.75MB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) ok
+(recording state in git...)
+chymera@clusterhost ~/ni_data/ofM.dr $ ls -lah 20151226_112356_4012_1_7/2/pulseprogram 
+lrwxrwxrwx 1 chymera wheel 195 Dec 25 22:01 20151226_112356_4012_1_7/2/pulseprogram -> ../../../.git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+
+Even after git-annex states it fetched it, the symlink is still broken.
+
+On my other remote, however, it's perfectly fine:
+
+chymera@zenhost ~/ni_data/ofM.dr $  ls -lah 20151226_112356_4012_1_7/2/pulseprogram
+lrwxrwxrwx 1 chymera wheel 195 May 23  2018 20151226_112356_4012_1_7/2/pulseprogram -> ../../../.git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+
