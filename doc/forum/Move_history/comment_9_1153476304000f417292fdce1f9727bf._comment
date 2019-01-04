@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 9"
+ date="2019-01-04T12:49:51Z"
+ content="""
+Aaah. All the space is in `.git/annex/misctmp`. This is essentially a directory for git annex to stage things temporarily, but I don't know too much about what gets put in this directory and when it is safe to delete it (the only official documentation is in [internals](http://git-annex.branchable.com/internals/)).
+
+One person had their `.git/annex/misctmp` dir fill up after [interrupting the assistant during transfers](https://git-annex.branchable.com/forum/misctmp_filling_up/), another person had their misctmp fill up [after interrupting git annex while it was switching to direct mode](https://git-annex.branchable.com/bugs/direct_command_leaves_repository_inconsistent_if_interrupted/).
+
+Maybe one of those situations applies to you? Perhaps take a look at some of the files in misctmp and try to evaluate if you feel they are safe to delete? They should have somewhat recognizable names. I don't know if running `git annex fsck` will cleanup any of these files (Joey?).
+
+I would personally not rush into upgrading from v5. v6 has been deprecated so, with the latest git-annex, it will auto-upgrade v6 to v7 (so you can't have a v6 repo anymore). So your only options are staying on v5 or upgrading to v7. But, there are some significant differences (currently) that you need to be aware of. v7 no longer supports direct mode (it has features that are similar but not equivalent in all situations). v7 (and v6) take control of `git add` so files are actually added to the annex (not git) when you use this command unless you have configured largefiles (this makes it a bit more difficult to maintain repos that have a mix of git and git-annex files. And unlocked/locked files are treated differently.
+"""]]
