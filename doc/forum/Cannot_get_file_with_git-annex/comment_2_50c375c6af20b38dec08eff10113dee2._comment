@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Chymera"
+ avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
+ subject="comment 2"
+ date="2019-01-04T23:05:43Z"
+ content="""
+turns out I need to do `git annex inidrect` and then `git annex direct` for my files to be detected, this software is really strange
+"""]]
