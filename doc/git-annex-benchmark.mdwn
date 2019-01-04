@@ -1,0 +1,60 @@
+# NAME
+
+git-annex benchmark - benchmark git-annex commands
+
+# SYNOPSIS
+
+git annex benchmark [criterionopts] -- commmand [; command]
+
+# DESCRIPTION
+
+When git-annex is built with benchmarking support, this command can be used
+to benchmark any other git-annex command. For example "git annex benchmark -- get ."
+will benchmark "git annex get".
+
+The command being benchmarked is run in the current git-annex repository.
+It does not run just once; the benchmarking process will run it several
+times to get a statistically meaningful result.
+
+When benchmarking an action like "git annex get", the first run will
+often do much more than subseqent runs. To make the benchmark repeat an
+action like getting a file each time, additional command can be listed,
+separated by ';'. (Note that ';' needs to be escaped from the shell.)
+The combined script will be run repeatedly by the benchmark. An example
+of using this:
+
+	git annex benchmark -- get . ';' drop .
+
+Note that git-annex benchmark does not fork new git-annex processes when
+benchmarking; it calls the command to benchmark internally, and so avoids
+git-annex's startup overhead. (So don't try to use it to optimise git-annex
+startup.) 
+
+# OPTIONS
+
+Before the "--" any of the criterion library's command-line options can be
+used.
+
+Any options that git-annex usually accepts can be included after the
+command to benchmark.
+
+# OUTPUT
+
+The output of the commands being benchmarked goes to standard output and
+standard error as usual. It's often a good idea to sink it to /dev/null to
+avoid the display of the output skewing the benchmark results. Of course
+--quiet can also be used to avoid most git-annex output, as long as you
+don't want to benchmark the generation of that output.
+
+The benchmark report is output to standard output by default, although
+criterion options can be used to redirect it to a file.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import Utility.Env
 import Annex.Ssh
 import Annex.Multicast
 import Types.Test
+import Types.Benchmark
 
 import qualified Command.Help
 import qualified Command.Add
@@ -123,8 +124,8 @@ import qualified Command.TestRemote
 import qualified Command.Benchmark
 #endif
 
-cmds :: Parser TestOptions -> TestRunner -> [Command]
-cmds testoptparser testrunner = 
+cmds :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [Command]
+cmds testoptparser testrunner mkbenchmarkgenerator = 
 	[ Command.Help.cmd
 	, Command.Add.cmd
 	, Command.Get.cmd
@@ -229,15 +230,16 @@ cmds testoptparser testrunner =
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
 #ifdef WITH_BENCHMARK
-	, Command.Benchmark.cmd
+	, Command.Benchmark.cmd $
+		mkbenchmarkgenerator $ cmds testoptparser testrunner (\_ _ -> return noop)
 #endif
 	]
 
-run :: Parser TestOptions -> TestRunner -> [String] -> IO ()
-run testoptparser testrunner args = go envmodes
+run :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [String] -> IO ()
+run testoptparser testrunner mkbenchmarkgenerator args = go envmodes
   where
 	go [] = dispatch True args 
-		(cmds testoptparser testrunner)
+		(cmds testoptparser testrunner mkbenchmarkgenerator)
 		gitAnnexGlobalOptions [] Git.CurrentRepo.get
 		"git-annex"
 		"manage files with git, without checking their contents in"

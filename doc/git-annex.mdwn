@@ -730,6 +730,8 @@ subdirectories).
 
   This runs git-annex's built-in benchmarks, if it was built with
   benchmarking support.
+  
+  See [[git-annex-benchmark]](1) for details.
 
 # COMMON OPTIONS
 

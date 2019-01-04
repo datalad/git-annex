@@ -64,8 +64,13 @@ git_annex' command params = do
 	-- catch all errors, including normally fatal errors
 	try run ::IO (Either SomeException ())
   where
-	run = GitAnnex.run dummyTestOptParser (\_ -> noop) (command:"-q":params)
+	run = GitAnnex.run dummyTestOptParser
+		dummyTestRunner
+		dummyBenchmarkGenerator
+		(command:"-q":params)
 	dummyTestOptParser = pure mempty
+	dummyTestRunner _ = noop
+	dummyBenchmarkGenerator _ _ = return noop
 
 {- Runs git-annex and returns its output. -}
 git_annex_output :: String -> [String] -> IO String

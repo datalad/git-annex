@@ -8,6 +8,8 @@
 module CmdLine (
 	dispatch,
 	usage,
+	parseCmd,
+	prepRunCommand,
 ) where
 
 import qualified Options.Applicative as O
@@ -39,13 +41,7 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			(cmd, seek, globalconfig) <- parsewith False cmdparser
 				(\a -> inRepo $ a . Just)
 				(liftIO . O.handleParseResult)
-			when (cmdnomessages cmd) $ do
-				Annex.setOutput QuietOutput
-				Annex.changeState $ \s -> s 
-					{ Annex.output = (Annex.output s) { implicitMessages = False } }
-			getParsed globalconfig
-			whenM (annexDebug <$> Annex.getGitConfig) $
-				liftIO enableDebugOutput
+			prepRunCommand cmd globalconfig
 			startup
 			performCommandAction cmd seek $
 				shutdown $ cmdnocommit cmd
@@ -123,3 +119,13 @@ findCmd fuzzyok argv cmds
 	inexactcmds = case name of
 		Nothing -> []
 		Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
+
+prepRunCommand :: Command -> GlobalSetter -> Annex ()
+prepRunCommand cmd globalconfig = do
+	when (cmdnomessages cmd) $ do
+		Annex.setOutput QuietOutput
+		Annex.changeState $ \s -> s 
+			{ Annex.output = (Annex.output s) { implicitMessages = False } }
+	getParsed globalconfig
+	whenM (annexDebug <$> Annex.getGitConfig) $
+		liftIO enableDebugOutput
