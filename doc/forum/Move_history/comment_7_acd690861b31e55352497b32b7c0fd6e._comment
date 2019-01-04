@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 7"
+ date="2019-01-03T23:48:03Z"
+ content="""
+Aaah, sorry, yeah, `git-annex info` is very slow its checks many things locally and remotely… (i've seen it run for 30min+ on some of my repos). No, worries I don't think we'll learn too much more from that command than we learned from the `du` commands.
+
+You indeed do have some un-accounted for space in `.git`, I usually expect most of the space to be in the git-annex or git objects folders but that only accounts for 1.6 of the 501 GB in your .git folder.
+
+What are the outputs of `du -h -d 1 .git/` thats a level-1 listing of files in .git, and `du -h -d 1 .git/annex/` thats for files in the annex specific folder? That will help narrow down where the space is eaten up from. Perhaps `.git/annex/misctmp` or `.git/annex/tmp` are the culprits.
+"""]]
