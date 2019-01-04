@@ -10,6 +10,7 @@ flags:
     magicmime: false
     dbus: false
     debuglocks: false
+    benchmark: false
 packages:
 - '.'
 extra-deps:
