@@ -74,6 +74,7 @@ import "mtl" Control.Monad.Reader
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
+import qualified Control.Monad.Fail as Fail
 import qualified Control.Concurrent.SSem as SSem
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
@@ -93,6 +94,7 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		MonadCatch,
 		MonadThrow,
 		MonadMask,
+		Fail.MonadFail,
 		Functor,
 		Applicative
 	)

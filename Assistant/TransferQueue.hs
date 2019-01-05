@@ -191,16 +191,17 @@ getNextTransfer acceptable = do
 		sz <- readTVar (queuesize q)
 		if sz < 1
 			then retry -- blocks until queuesize changes
-			else do
-				(r@(t,info):rest) <- readTList (queuelist q)
-				void $ modifyTVar' (queuesize q) pred
-				setTList (queuelist q) rest
-				if acceptable info
-					then do
-						adjustTransfersSTM dstatus $
-							M.insert t info
-						return $ Just r
-					else return Nothing
+			else readTList (queuelist q) >>= \case
+				[] -> retry -- blocks until something is queued
+				(r@(t,info):rest) -> do
+					void $ modifyTVar' (queuesize q) pred
+					setTList (queuelist q) rest
+					if acceptable info
+						then do
+							adjustTransfersSTM dstatus $
+								M.insert t info
+							return $ Just r
+						else return Nothing
 
 {- Moves transfers matching a condition from the queue, to the
  - currentTransfers map. -}

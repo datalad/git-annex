@@ -27,6 +27,7 @@ module Assistant.Monad (
 
 import "mtl" Control.Monad.Reader
 import System.Log.Logger
+import qualified Control.Monad.Fail as Fail
 
 import Annex.Common
 import Assistant.Types.ThreadedMonad
@@ -49,6 +50,7 @@ newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 		Monad,
 		MonadIO,
 		MonadReader AssistantData,
+		Fail.MonadFail,
 		Functor,
 		Applicative
 	)
