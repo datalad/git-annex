@@ -16,7 +16,7 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
     and improved parsing and serialization of git-annex branch data.
   * The benchmark command, which only had some old benchmarking of the sqlite
     databases before, now allows benchmarking any other git-annex commands.
-  * Support being built with ghc 8.0.1 (MonadFail).
+  * Support being built with ghc 8.6.3 (MonadFail).
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 
