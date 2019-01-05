@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="Chymera"
+ avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
+ subject="comment 1"
+ date="2019-01-04T21:08:54Z"
+ content="""
+Interestingly stat claims the target file is missing in both repos:
+
+    chymera@clusterhost ~/ni_data/ofM.dr $ stat .git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+    stat: cannot stat '.git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624': No such file or directory
+
+    chymera@zenhost ~/ni_data/ofM.dr $ stat .git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624
+    stat: cannot stat '.git/annex/objects/vz/WW/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624/SHA256E-s32243--feae20d26c487947f9ad30019459464ba5a206a4ae6149a9d10fa4100c64f624': No such file or directory
+
+
+But the tail command works on the file on one of the repos:
+
+
+    chymera@clusterhost ~/ni_data/ofM.dr $ tail -10 20151226_112356_4012_1_7/2/pulseprogram 
+    tail: cannot open '20151226_112356_4012_1_7/2/pulseprogram' for reading: No such file or directory
+
+
+    chymera@zenhost ~/ni_data/ofM.dr $ tail -10 20151226_112356_4012_1_7/2/pulseprogram
+    exit
+    # 147 \"/opt/PV6.0/exp/stan/nmr/lists/pp/FLASHAngio.ppg\"
+    ph0 = 0
+    ph1 = 0 
+
+
+    # 153 \"/opt/PV6.0/exp/stan/nmr/lists/pp/FLASHAngio.ppg\"
+
+
+"""]]
