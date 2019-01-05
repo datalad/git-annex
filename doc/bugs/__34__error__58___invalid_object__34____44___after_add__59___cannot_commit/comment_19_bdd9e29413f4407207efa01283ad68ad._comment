@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="bump"
+ date="2019-01-05T23:06:05Z"
+ content="""
+same here: scary error message, easy fix (`rm .git/annex/index.lck`):
+
+    (recording state in git...)
+    error: invalid object 100644 81c85a0001f059e769034c34d4f739376ecd9429 for '000/53b/SHA256E-s1346--41101bacc557f53ceec3a7fd401a3f6a53c0dfe649ac7fe2812208e4d0384a13.RAF.xmp.log'
+    fatal: git-write-tree: error building trees
+    git-annex: failed to read sha from git write-tree
+    CallStack (from HasCallStack):
+      error, called at ./Git/Sha.hs:18:15 in main:Git.Sha
+
+Unfortunately, this is a very large repo and I can't really reproduce now that I removed the lockfile. Do note there was an out of disk space condition earlier on that drive, but that was resolved before starting the git-annex operations. -- [[anarcat]]
+"""]]
