@@ -5,15 +5,17 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE CPP #-}
 
 module Command.Benchmark where
 
 import Command
 import Types.Benchmark
 
+#ifdef WITH_BENCHMARK
 import Criterion.Main
 import Criterion.Main.Options (parseWith, Mode)
+#endif
 
 cmd :: BenchmarkGenerator -> Command
 cmd generator = command "benchmark" SectionTesting
@@ -21,15 +23,27 @@ cmd generator = command "benchmark" SectionTesting
 	paramNothing
 	(seek generator <$$> optParser)
 
+#ifndef WITH_BENCHMARK
+type Mode = ()
+#endif
+
 data BenchmarkOptions = BenchmarkOptions CmdParams Mode
 
 optParser :: CmdParamsDesc -> Parser BenchmarkOptions
 optParser desc = BenchmarkOptions
 	<$> cmdParams desc
+#ifdef WITH_BENCHMARK
 	-- parse criterion's options
 	<*> parseWith defaultConfig
+#else
+	<*> pure ()
+#endif
 
 seek :: BenchmarkGenerator -> BenchmarkOptions -> CommandSeek
+#ifdef WITH_BENCHMARK
 seek generator (BenchmarkOptions ps mode) = do
 	runner <- generator ps
 	liftIO $ runMode mode [ bench (unwords ps) $ nfIO runner ]
+#else
+seek _ _ = giveup "git-annex is not built with benchmarking support"
+#endif

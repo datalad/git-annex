@@ -588,7 +588,6 @@ Executable git-annex
   if flag(Benchmark)
     Build-Depends: criterion, deepseq
     CPP-Options: -DWITH_BENCHMARK
-    Other-Modules: Command.Benchmark
   
   if flag(DebugLocks)
     CPP-Options: -DDEBUGLOCKS
@@ -690,6 +689,7 @@ Executable git-annex
     Command.AddUnused
     Command.AddUrl
     Command.Adjust
+    Command.Benchmark
     Command.CalcKey
     Command.CheckPresentKey
     Command.Commit

@@ -120,9 +120,7 @@ import qualified Command.WebApp
 import qualified Command.Test
 import qualified Command.FuzzTest
 import qualified Command.TestRemote
-#ifdef WITH_BENCHMARK
 import qualified Command.Benchmark
-#endif
 
 cmds :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [Command]
 cmds testoptparser testrunner mkbenchmarkgenerator = 
@@ -229,10 +227,8 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.Test.cmd testoptparser testrunner
 	, Command.FuzzTest.cmd
 	, Command.TestRemote.cmd
-#ifdef WITH_BENCHMARK
 	, Command.Benchmark.cmd $
 		mkbenchmarkgenerator $ cmds testoptparser testrunner (\_ _ -> return noop)
-#endif
 	]
 
 run :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [String] -> IO ()
