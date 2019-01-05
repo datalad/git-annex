@@ -11,6 +11,7 @@ module Git.UnionMerge (
 ) where
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Set as S
 
 import Common
@@ -85,26 +86,25 @@ mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha]
 	[] -> return Nothing
 	(sha:[]) -> use sha
 	shas -> use
-		=<< either return (hashBlob hashhandle . encodeBS . unlines)
+		=<< either return (hashBlob hashhandle . L8.unlines)
 		=<< calcMerge . zip shas <$> mapM getcontents shas
   where
 	[_colonmode, _bmode, asha, bsha, _status] = words info
 	use sha = return $ Just $
 		updateIndexLine sha TreeFile $ asTopFilePath file
-	-- We don't know how the file is encoded, but need to
-	-- split it into lines to union merge. Using the
-	-- FileSystemEncoding for this is a hack, but ensures there
-	-- are no decoding errors.
-	getcontents s = lines . encodeW8NUL . L.unpack <$> catObject h s
+	-- Get file and split into lines to union merge.
+	-- The encoding of the file is assumed to be either ASCII or utf-8;
+	-- in either case it's safe to split on \n
+	getcontents s = L8.lines <$> catObject h s
 
 {- Calculates a union merge between a list of refs, with contents.
  -
  - When possible, reuses the content of an existing ref, rather than
  - generating new content.
  -}
-calcMerge :: [(Ref, [String])] -> Either Ref [String]
+calcMerge :: [(Ref, [L8.ByteString])] -> Either Ref [L8.ByteString]
 calcMerge shacontents
-	| null reuseable = Right $ new
+	| null reuseable = Right new
 	| otherwise = Left $ fst $ Prelude.head reuseable
   where
 	reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
