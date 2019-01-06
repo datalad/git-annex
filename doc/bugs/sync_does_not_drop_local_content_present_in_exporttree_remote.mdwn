@@ -10,4 +10,4 @@ drop local unwanted content that's got only 1 copy on another remote.
 It forgot to include the local copy as a currently present copy, throwing
 off the numcopies counting. --[[Joey]]
 
-Both [fixed|done]] --[[Joey]]
+Both [[fixed|done]] --[[Joey]]
