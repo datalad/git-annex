@@ -14,3 +14,4 @@ Thank you.
 
 PS: I love git annex; it's taken me a while to grok it and start using it usefully (despite my being already a somewhat experienced git user); but the steep-ish learning curve is worth it, for a file management system with flexible, distributed backends, that I can have control over, and with versioning.  Thank you very much for creating and sharing and continuing to work on it.
 
+-- aaronw
