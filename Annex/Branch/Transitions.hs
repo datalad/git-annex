@@ -56,10 +56,10 @@ dropDead f content trustmap = case getLogVariety f of
 			then RemoveFile
 			else ChangeFile $ toLazyByteString $ Presence.buildLog newlog
 	Just RemoteMetaDataLog ->
-		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog (decodeBL content)
+		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog content
 		in if S.null newlog
 			then RemoveFile
-			else ChangeFile $ encodeBL $ MetaData.showLog newlog
+			else ChangeFile $ toLazyByteString $ MetaData.buildLog newlog
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 

@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.MetaData.StandardFields (
 	tagMetaField,
 	yearMetaField,
@@ -18,7 +20,7 @@ module Annex.MetaData.StandardFields (
 
 import Types.MetaData
 
-import Data.List
+import qualified Data.Text as T
 
 tagMetaField :: MetaField
 tagMetaField = mkMetaFieldUnchecked "tag"
@@ -43,17 +45,17 @@ lastChangedField :: MetaField
 lastChangedField = mkMetaFieldUnchecked lastchanged
 
 mkLastChangedField :: MetaField -> MetaField
-mkLastChangedField f = mkMetaFieldUnchecked (fromMetaField f ++ lastchangedSuffix)
+mkLastChangedField f = mkMetaFieldUnchecked (fromMetaField f <> lastchangedSuffix)
 
 isLastChangedField :: MetaField -> Bool
 isLastChangedField f
 	| f == lastChangedField = True
-	| otherwise = lastchanged `isSuffixOf` s && s /= lastchangedSuffix
+	| otherwise = lastchanged `T.isSuffixOf` s && s /= lastchangedSuffix
   where
 	s = fromMetaField f
 
-lastchanged :: String
+lastchanged :: T.Text
 lastchanged = "lastchanged"
 
-lastchangedSuffix :: String
+lastchangedSuffix :: T.Text
 lastchangedSuffix = "-lastchanged"

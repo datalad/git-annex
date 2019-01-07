@@ -11,7 +11,7 @@ module Logs.MetaData.Pure (
 	Log,
 	LogEntry(..),
 	parseLog,
-	showLog,
+	buildLog,
 	logToCurrentMetaData,
 	simplifyLog,
 	filterRemoteMetaData,

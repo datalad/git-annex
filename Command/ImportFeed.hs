@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Command.ImportFeed where
 
@@ -124,7 +125,8 @@ getCache opttemplate = ifM (Annex.getState Annex.force)
 
 knownItems :: (Key, URLString) -> Annex ([ItemId], URLString)
 knownItems (k, u) = do
-	itemids <- S.toList . S.filter (/= noneValue) . S.map fromMetaValue 
+	itemids <- S.toList . S.filter (/= noneValue)
+		. S.map (decodeBS . fromMetaValue)
 		. currentMetaDataValues itemIdField 
 		<$> getCurrentMetaData k
 	return (itemids, u)
@@ -322,14 +324,14 @@ extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of
 	Just (Just d) -> unionMetaData meta (dateMetaData d meta)
 	_ -> meta
   where
-	tometa (k, v) = (mkMetaFieldUnchecked k, S.singleton (toMetaValue v))
+	tometa (k, v) = (mkMetaFieldUnchecked (T.pack k), S.singleton (toMetaValue (encodeBS v)))
 	meta = MetaData $ M.fromList $ map tometa $ extractFields i
 
 minimalMetaData :: ToDownload -> MetaData
 minimalMetaData i = case getItemId (item i) of
 	(Nothing) -> emptyMetaData
 	(Just (_, itemid)) -> MetaData $ M.singleton itemIdField 
-		(S.singleton $ toMetaValue $ fromFeed itemid)
+		(S.singleton $ toMetaValue $ encodeBS $ fromFeed itemid)
 
 {- Extract fields from the feed and item, that are both used as metadata,
  - and to generate the filename. -}

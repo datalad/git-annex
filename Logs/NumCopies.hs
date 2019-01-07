@@ -20,8 +20,8 @@ import Logs
 import Logs.SingleValue
 
 instance SingleValueSerializable NumCopies where
-	serialize (NumCopies n) = show n
-	deserialize = NumCopies <$$> readish
+	serialize (NumCopies n) = encodeBS (show n)
+	deserialize = NumCopies <$$> readish . decodeBS
 
 setGlobalNumCopies :: NumCopies -> Annex ()
 setGlobalNumCopies new = do

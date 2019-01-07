@@ -20,6 +20,7 @@ import Limit
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as BU
 import Control.Concurrent
 
@@ -45,7 +46,7 @@ optParser desc = MetaDataOptions
 	<*> optional parseKeyOptions
 	<*> parseBatchOption
   where
-	getopt = option (eitherReader mkMetaField)
+	getopt = option (eitherReader (mkMetaField . T.pack))
 		( long "get" <> short 'g' <> metavar paramField
 		<> help "get single metadata field"
 		)
@@ -61,7 +62,7 @@ optParser desc = MetaDataOptions
 			( long "untag" <> short 'u' <> metavar "TAG"
 			<> help "remove a tag"
 			))
-		<|> option (eitherReader (\f -> DelMeta <$> mkMetaField f <*> pure Nothing))
+		<|> option (eitherReader (\f -> DelMeta <$> mkMetaField (T.pack f) <*> pure Nothing))
 			( long "remove"  <> short 'r' <> metavar "FIELD"
 			<> help "remove all values of a field"
 			)
@@ -101,7 +102,7 @@ startKeys c o (k, ai) = case getSet o of
 	Get f -> do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
-			putStrLn . fromMetaValue
+			B8.putStrLn . fromMetaValue
 		stop
 	_ -> do
 		showStartKey "metadata" k ai
@@ -126,7 +127,7 @@ cleanup k = do
 	return True
   where
 	unwrapmeta (f, v) = (fromMetaField f, map fromMetaValue (S.toList v))
-	showmeta (f, vs) = map ((f ++ "=") ++) vs
+	showmeta (f, vs) = map ((T.unpack f ++ "=") ++) (map decodeBS vs)
 
 -- Metadata serialized to JSON in the field named "fields" of
 -- a larger object.

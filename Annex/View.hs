@@ -31,6 +31,8 @@ import Utility.Glob
 import Types.Command
 import CmdLine.Action
 
+import qualified Data.Text as T
+import qualified Data.ByteString as B
 import qualified Data.Set as S
 import qualified Data.Map as M
 import "mtl" Control.Monad.Writer
@@ -68,18 +70,18 @@ parseViewParam s = case separate (== '=') s of
 		)
 	(field, wanted)
 		| end field == "!" ->
-			( mkMetaFieldUnchecked (beginning field)
+			( mkMetaFieldUnchecked (T.pack (beginning field))
 			, mkExcludeValues wanted
 			)
 		| otherwise ->
-			( mkMetaFieldUnchecked field
+			( mkMetaFieldUnchecked (T.pack field)
 			, mkFilterValues wanted
 			)
   where
 	mkFilterValues v
 		| any (`elem` v) "*?" = FilterGlob v
-		| otherwise = FilterValues $ S.singleton $ toMetaValue v
-	mkExcludeValues = ExcludeValues . S.singleton . toMetaValue
+		| otherwise = FilterValues $ S.singleton $ toMetaValue $ encodeBS v
+	mkExcludeValues = ExcludeValues . S.singleton . toMetaValue . encodeBS
 
 data ViewChange = Unchanged | Narrowing | Widening
 	deriving (Ord, Eq, Show)
@@ -156,7 +158,7 @@ combineViewFilter old@(ExcludeValues olds) (ExcludeValues news)
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
-	| all (matchGlob (compileGlob oldglob CaseInsensative) . fromMetaValue) (S.toList s) = (new, Narrowing)
+	| all (matchGlob (compileGlob oldglob CaseInsensative) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
 	| otherwise = (new, Widening)
 combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
@@ -211,7 +213,7 @@ viewComponentMatcher viewcomponent = \metadata ->
 		FilterGlob glob ->
 			let cglob = compileGlob glob CaseInsensative
 			in \values -> setmatches $
-				S.filter (matchGlob cglob . fromMetaValue) values
+				S.filter (matchGlob cglob . decodeBS . fromMetaValue) values
 		ExcludeValues excludes -> \values -> 
 			if S.null (S.intersection values excludes)
 				then Just []
@@ -231,7 +233,7 @@ pseudoBackslash :: String
 pseudoBackslash = "\56546\56469\56498"
 
 toViewPath :: MetaValue -> FilePath
-toViewPath = escapeslash [] . fromMetaValue
+toViewPath = escapeslash [] . decodeBS . fromMetaValue
   where
 	escapeslash s ('/':cs) = escapeslash (pseudoSlash:s) cs
 	escapeslash s ('\\':cs) = escapeslash (pseudoBackslash:s) cs
@@ -243,7 +245,7 @@ toViewPath = escapeslash [] . fromMetaValue
 	escapeslash s cs = concat (reverse (cs:s))
 
 fromViewPath :: FilePath -> MetaValue
-fromViewPath = toMetaValue . deescapeslash []
+fromViewPath = toMetaValue . encodeBS . deescapeslash []
   where
 	deescapeslash s ('%':escapedc:cs) = deescapeslash ([escapedc]:s) cs
 	deescapeslash s (c1:c2:c3:cs)
@@ -285,7 +287,7 @@ prop_view_roundtrips f metadata visible = null f || viewTooLarge view ||
 	all hasfields (viewedFiles view viewedFileFromReference f metadata)
   where
 	view = View (Git.Ref "master") $
-		map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . null . fromMetaValue) mv) visible)
+		map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . B.null . fromMetaValue) mv) visible)
 			(fromMetaData metadata)
 	visiblefields = sort (map viewField $ filter viewVisible (viewComponents view))
 	hasfields fv = sort (map fst (fromMetaData (fromView view fv))) == visiblefields
@@ -300,9 +302,9 @@ getDirMetaData :: FilePath -> MetaData
 getDirMetaData d = MetaData $ M.fromList $ zip fields values
   where
 	dirs = splitDirectories d
-	fields = map (mkMetaFieldUnchecked . addTrailingPathSeparator . joinPath)
+	fields = map (mkMetaFieldUnchecked . T.pack . addTrailingPathSeparator . joinPath)
 		(inits dirs)
-	values = map (S.singleton . toMetaValue . fromMaybe "" . headMaybe)
+	values = map (S.singleton . toMetaValue . encodeBS . fromMaybe "" . headMaybe)
 		(tails dirs)
 
 getWorkTreeMetaData :: FilePath -> MetaData

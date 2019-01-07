@@ -29,6 +29,7 @@ import qualified Git.Index as Git
 import qualified Git.LsFiles as Git
 
 import qualified Data.Set as S
+import qualified Data.Text as T
 
 cmd :: Command
 cmd = command "pre-commit" SectionPlumbing
@@ -111,7 +112,7 @@ showMetaDataChange :: MetaData -> Annex ()
 showMetaDataChange = showLongNote . unlines . concatMap showmeta . fromMetaData
   where
 	showmeta (f, vs) = map (showmetavalue f) $ S.toList vs
-	showmetavalue f v = fromMetaField f ++ showset v ++ "=" ++ fromMetaValue v
+	showmetavalue f v = T.unpack (fromMetaField f) <> showset v <> "=" <> decodeBS (fromMetaValue v)
 	showset v
 		| isSet v = "+"
 		| otherwise = "-"

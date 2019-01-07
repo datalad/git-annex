@@ -78,7 +78,7 @@ getCurrentMetaData' getlogfile k = do
 		let MetaData m = value l
 		    ts = lastchangedval l
 		in M.map (const ts) m
-	lastchangedval l = S.singleton $ toMetaValue $ showts $ 
+	lastchangedval l = S.singleton $ toMetaValue $ encodeBS $ showts $ 
 		case changed l of
 			VectorClock t -> t
 			Unknown -> 0
@@ -110,9 +110,9 @@ addMetaDataClocked' getlogfile k d@(MetaData m) c
 	| otherwise = do
 		config <- Annex.getGitConfig
 		Annex.Branch.change (getlogfile config k) $
-			encodeBL . showLog . simplifyLog 
+			buildLog . simplifyLog 
 				. S.insert (LogEntry c metadata)
-				. parseLog . decodeBL
+				. parseLog
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 
@@ -145,8 +145,8 @@ copyMetaData oldkey newkey
 			else do
 				config <- Annex.getGitConfig
 				Annex.Branch.change (metaDataLogFile config newkey) $
-					const $ encodeBL $ showLog l
+					const $ buildLog l
 				return True
 
 readLog :: FilePath -> Annex (Log MetaData)
-readLog = parseLog . decodeBL <$$> Annex.Branch.get
+readLog = parseLog <$$> Annex.Branch.get

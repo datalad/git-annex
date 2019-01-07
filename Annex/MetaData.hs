@@ -22,6 +22,7 @@ import Annex.CatFile
 import Utility.Glob
 
 import qualified Data.Set as S
+import qualified Data.Text as T
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
@@ -71,30 +72,30 @@ genMetaData key file status = do
  - only changes to add the date fields. -}
 dateMetaData :: UTCTime -> MetaData -> MetaData
 dateMetaData mtime old = modMeta old $
-	(SetMeta yearMetaField $ S.singleton $ toMetaValue $ show y)
+	(SetMeta yearMetaField $ S.singleton $ toMetaValue $ encodeBS' $ show y)
 		`ComposeModMeta`
-	(SetMeta monthMetaField $ S.singleton $ toMetaValue $ show m)
+	(SetMeta monthMetaField $ S.singleton $ toMetaValue $ encodeBS' $ show m)
 		`ComposeModMeta`
-	(SetMeta dayMetaField $ S.singleton $ toMetaValue $ show d)
+	(SetMeta dayMetaField $ S.singleton $ toMetaValue $ encodeBS' $ show d)
   where
 	(y, m, d) = toGregorian $ utctDay mtime
 
 {- Parses field=value, field+=value, field-=value, field?=value -}
 parseModMeta :: String -> Either String ModMeta
 parseModMeta p = case lastMaybe f of
-	Just '+' -> AddMeta <$> mkMetaField f' <*> v
-	Just '-' -> DelMeta <$> mkMetaField f' <*> (Just <$> v)
-	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
-	_ -> SetMeta <$> mkMetaField f <*> (S.singleton <$> v)
+	Just '+' -> AddMeta <$> mkMetaField (T.pack f') <*> v
+	Just '-' -> DelMeta <$> mkMetaField (T.pack f') <*> (Just <$> v)
+	Just '?' -> MaybeSetMeta <$> mkMetaField (T.pack f') <*> v
+	_ -> SetMeta <$> mkMetaField (T.pack f) <*> (S.singleton <$> v)
   where
 	(f, sv) = separate (== '=') p
 	f' = beginning f
-	v = pure (toMetaValue sv)
+	v = pure (toMetaValue (encodeBS sv))
 
 {- Parses field=value, field<value, field<=value, field>value, field>=value -}
 parseMetaDataMatcher :: String -> Either String (MetaField, MetaValue -> Bool)
 parseMetaDataMatcher p = (,)
-	<$> mkMetaField f
+	<$> mkMetaField (T.pack f)
 	<*> pure matcher
   where
 	(f, op_v) = break (`elem` "=<>") p
@@ -107,8 +108,8 @@ parseMetaDataMatcher p = (,)
 		_ -> checkglob ""
 	checkglob v =
 		let cglob = compileGlob v CaseInsensative
-		in matchGlob cglob . fromMetaValue
-	checkcmp cmp v v' = case (doubleval v, doubleval (fromMetaValue v')) of
+		in matchGlob cglob . decodeBS . fromMetaValue
+	checkcmp cmp v v' = case (doubleval v, doubleval (decodeBS (fromMetaValue v'))) of
 		(Just d, Just d') -> d' `cmp` d
 		_ -> False
 	doubleval v = readish v :: Maybe Double

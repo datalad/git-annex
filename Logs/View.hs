@@ -28,6 +28,7 @@ import qualified Git.Ref
 import Git.Types
 import Logs.File
 
+import qualified Data.Text as T
 import qualified Data.Set as S
 import Data.Char
 
@@ -74,15 +75,15 @@ branchView view
 	branchcomp c
 		| viewVisible c = branchcomp' c
 		| otherwise = "(" ++ branchcomp' c ++ ")"
-	branchcomp' (ViewComponent metafield viewfilter _) =concat
-		[ forcelegal (fromMetaField metafield)
+	branchcomp' (ViewComponent metafield viewfilter _) = concat
+		[ forcelegal (T.unpack (fromMetaField metafield))
 		, branchvals viewfilter
 		]
 	branchvals (FilterValues set) = '=' : branchset set
 	branchvals (FilterGlob glob) = '=' : forcelegal glob
 	branchvals (ExcludeValues set) = "!=" ++ branchset set
 	branchset = intercalate ","
-		. map (forcelegal . fromMetaValue)
+		. map (forcelegal . decodeBS . fromMetaValue)
 		. S.toList
 	forcelegal s
 		| Git.Ref.legal True s = s

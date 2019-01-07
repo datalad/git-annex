@@ -19,6 +19,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified System.FilePath.Posix as Posix
@@ -277,7 +278,7 @@ retrieveHelper info h loc f p = liftIO $ runResourceT $ do
 	let req = case loc of
 		Left o -> S3.getObject (bucket info) o
 		Right (S3VersionID o vid) -> (S3.getObject (bucket info) o)
-			{ S3.goVersionId = Just (T.pack vid) }
+			{ S3.goVersionId = Just vid }
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle' h req
 	Url.sinkResponseFile p zeroBytesProcessed f WriteMode rsp
 
@@ -327,7 +328,7 @@ checkKeyHelper info h loc = do
 	req = case loc of
 		Left o -> S3.headObject (bucket info) o
 		Right (S3VersionID o vid) -> (S3.headObject (bucket info) o)
-			{ S3.hoVersionId = Just (T.pack vid) }
+			{ S3.hoVersionId = Just vid }
 
 #if ! MIN_VERSION_aws(0,10,0)
 	{- Catch exception headObject returns when an object is not present
@@ -775,36 +776,34 @@ getPublicUrlMaker info = case publicurl info of
 		_ -> Nothing
 
 
-data S3VersionID = S3VersionID S3.Object String
+data S3VersionID = S3VersionID S3.Object T.Text
 	deriving (Show)
 
 -- smart constructor
 mkS3VersionID :: S3.Object -> Maybe T.Text -> Maybe S3VersionID
-mkS3VersionID o = mkS3VersionID' o . fmap T.unpack
-
-mkS3VersionID' :: S3.Object -> Maybe String -> Maybe S3VersionID
-mkS3VersionID' o (Just s)
-	| null s = Nothing
+mkS3VersionID o (Just t)
+	| T.null t = Nothing
 	-- AWS documentation says a version ID is at most 1024 bytes long.
 	-- Since they are stored in the git-annex branch, prevent them from
 	-- being very much larger than that.
-	| length s < 2048 = Just (S3VersionID o s)
+	| T.length t < 2048 = Just (S3VersionID o t)
 	| otherwise = Nothing
-mkS3VersionID' _ Nothing = Nothing
+mkS3VersionID _ Nothing = Nothing
 
 -- Format for storage in per-remote metadata.
 --
 -- A S3 version ID is "url ready" so does not contain '#' and so we'll use
 -- that to separate it from the object id. (Could use a space, but spaces
 -- in metadata values lead to an inefficient encoding.)
-formatS3VersionID :: S3VersionID -> String
-formatS3VersionID (S3VersionID o v) = v ++ '#' : T.unpack o
+formatS3VersionID :: S3VersionID -> BS.ByteString
+formatS3VersionID (S3VersionID o v) = T.encodeUtf8 v <> "#" <> T.encodeUtf8 o
 
 -- Parse from value stored in per-remote metadata.
-parseS3VersionID :: String -> Maybe S3VersionID
-parseS3VersionID s = 
-	let (v, o) = separate (== '#') s
-	in mkS3VersionID' (T.pack o) (Just v)
+parseS3VersionID :: BS.ByteString -> Maybe S3VersionID
+parseS3VersionID b = do
+	let (v, rest) = B8.break (== '#') b
+	o <- eitherToMaybe $ T.decodeUtf8' $ BS.drop 1 rest
+	mkS3VersionID o (eitherToMaybe $ T.decodeUtf8' v)
 
 setS3VersionID :: S3Info -> UUID -> Key -> Maybe S3VersionID -> Annex ()
 setS3VersionID info u k vid
@@ -843,7 +842,7 @@ s3VersionIDPublicUrl :: (S3Info -> BucketObject -> URLString) -> S3Info -> S3Ver
 s3VersionIDPublicUrl mk info (S3VersionID obj vid) = mk info $ concat
 	[ T.unpack obj
 	, "?versionId="
-	, vid -- version ID is "url ready" so no escaping needed
+	, T.unpack vid -- version ID is "url ready" so no escaping needed
 	]
 
 getS3VersionIDPublicUrls :: (S3Info -> BucketObject -> URLString) -> S3Info -> UUID -> Key -> Annex [URLString]

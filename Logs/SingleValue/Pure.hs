@@ -1,6 +1,6 @@
 {- git-annex single-value log, pure operations
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,10 +12,15 @@ import Logs.Line
 import Annex.VectorClock
 
 import qualified Data.Set as S
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import Data.Attoparsec.ByteString.Char8 (char)
+import Data.ByteString.Builder
 
 class SingleValueSerializable v where
-	serialize :: v -> String
-	deserialize :: String -> Maybe v
+	serialize :: v -> B.ByteString
+	deserialize :: B.ByteString -> Maybe v
 
 data LogEntry v = LogEntry
 	{ changed :: VectorClock
@@ -24,20 +29,27 @@ data LogEntry v = LogEntry
 
 type Log v = S.Set (LogEntry v)
 
-showLog :: (SingleValueSerializable v) => Log v -> String
-showLog = unlines . map showline . S.toList
+buildLog :: (SingleValueSerializable v) => Log v -> Builder
+buildLog = mconcat . map genline . S.toList
   where
-	showline (LogEntry c v) = unwords [formatVectorClock c, serialize v]
+	genline (LogEntry c v) =
+		byteString (encodeBS' (formatVectorClock c)) <> sp 
+			<> byteString (serialize v)
+			<> nl
+	sp = charUtf8 ' '
+	nl = charUtf8 '\n'
 
-parseLog :: (Ord v, SingleValueSerializable v) => String -> Log v
-parseLog = S.fromList . mapMaybe parse . splitLines
+parseLog :: (Ord v, SingleValueSerializable v) => L.ByteString -> Log v
+parseLog = S.fromList . fromMaybe [] 
+	. A.maybeResult . A.parse (logParser <* A.endOfInput)
+
+logParser :: SingleValueSerializable v => A.Parser [LogEntry v]
+logParser = parseLogLines $ LogEntry
+	<$> vectorClockParser
+	<* char ' '
+	<*> (parsevalue =<< A.takeByteString)
   where
-	parse line = do
-		let (sc, s) = splitword line
-		c <- parseVectorClock sc
-		v <- deserialize s
-		Just (LogEntry c v)
-	splitword = separate (== ' ')
+	parsevalue = maybe (fail "log line parse failure") return . deserialize
 
 newestValue :: Log v -> Maybe v
 newestValue s
