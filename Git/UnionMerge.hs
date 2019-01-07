@@ -10,7 +10,6 @@ module Git.UnionMerge (
 	mergeIndex
 ) where
 
-import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Set as S
 
