@@ -2,7 +2,7 @@
  -
  - Import instead of Data.Aeson
  -
- - Copyright 2018 Joey Hess <id@joeyh.name>
+ - Copyright 2018-2019 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -14,6 +14,7 @@ module Utility.Aeson (
 	ToJSON'(..),
 	encode,
 	packString,
+	packByteString,
 ) where
 
 import Data.Aeson as X hiding (ToJSON, toJSON, encode)
@@ -22,6 +23,7 @@ import qualified Data.Aeson
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
 import qualified Data.Set
 import qualified Data.Vector
 import Prelude
@@ -45,6 +47,13 @@ class ToJSON' a where
 instance ToJSON' String where
 	toJSON' = toJSON . packString
 
+-- | Aeson does not have a ToJSON instance for ByteString;
+-- this one assumes that the ByteString contains text, and will
+-- have the same effect as toJSON' . decodeBS, but with a more efficient
+-- implementation.
+instance ToJSON' S.ByteString where
+	toJSON' = toJSON . packByteString
+
 -- | Pack a String to Text, correctly handling the filesystem encoding.
 --
 -- Use this instead of Data.Text.pack.
@@ -55,6 +64,13 @@ packString :: String -> T.Text
 packString s = case T.decodeUtf8' (encodeBS s) of
 	Right t -> t
 	Left _ -> T.pack s
+
+-- | The same as packString . decodeBS, but more efficient in the usual
+-- case.
+packByteString :: S.ByteString -> T.Text
+packByteString b = case T.decodeUtf8' b of
+	Right t -> t
+	Left _ -> T.pack (decodeBS b)
 
 -- | An instance for lists cannot be included as it would overlap with
 -- the String instance. Instead, you can use a Vector.
