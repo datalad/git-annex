@@ -1,0 +1,8 @@
+The imminent move of to v7 of my shared repositories (eg. family photo collection) offers a chance to simplify the workflow from differentiating between `git annex` commands and `git` commands for participants who have a hard time keeping them apart using `largefiles`. In practice, `largefiles` would be configured to always annex JPEG files, various raw formats and video data, but to never annex data like SVG files (typically collages), .pto files (Hugin's panorama files) or READMEs.
+
+I don't trust the above list to be comprehensive, and want to avoid errors in both directions (needlessly annexed files I'd actually want under regular version control, and worse yet, huge files in the hard-to-edit git history).
+
+Is there (or could there be added) a way I could set files to a "I don't know" state of largefiles (and make that the default for everything not explicitly configured), such that `git add` would rather err out than making the wrong decision?
+
+Thanks<br />
+[[chrysn]]
