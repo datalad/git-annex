@@ -44,6 +44,9 @@ encode = Data.Aeson.encode . toJSON'
 class ToJSON' a where
 	toJSON' :: a -> Value
 
+instance ToJSON' T.Text where
+	toJSON' = toJSON
+
 instance ToJSON' String where
 	toJSON' = toJSON . packString
 

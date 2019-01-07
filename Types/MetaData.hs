@@ -1,11 +1,12 @@
 {- git-annex general metadata
  -
- - Copyright 2014-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Types.MetaData (
 	MetaData(..),
@@ -51,11 +52,14 @@ import Utility.Aeson
 import Types.UUID
 
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
 import qualified Data.HashMap.Strict as HM
 import Data.Char
 import qualified Data.CaseInsensitive as CI
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B8
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 	deriving (Show, Eq, Ord)
@@ -63,14 +67,14 @@ newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 instance ToJSON' MetaData where
 	toJSON' (MetaData m) = object $ map go (M.toList m)
 	  where
-		go (MetaField f, s) = (packString (CI.original f), toJSON' s)
+		go (MetaField f, s) = (CI.original f, toJSON' s)
 
 instance FromJSON MetaData where
 	parseJSON (Object o) = do
 		l <- HM.toList <$> parseJSON (Object o)
 		MetaData . M.fromList <$> mapM go l
 	  where
-		go (t, l) = case mkMetaField (T.unpack t) of
+		go (t, l) = case mkMetaField t of
 			Left e -> fail e
 			Right f -> (,) <$> pure f <*> parseJSON l
 	parseJSON _ = fail "expected an object"
@@ -81,17 +85,18 @@ newtype CurrentlySet = CurrentlySet Bool
 	deriving (Read, Show, Eq, Ord, Arbitrary)
 
 {- Fields are case insensitive. -}
-newtype MetaField = MetaField (CI.CI String)
+newtype MetaField = MetaField (CI.CI T.Text)
 	deriving (Read, Show, Eq, Ord)
 
-data MetaValue = MetaValue CurrentlySet String
+data MetaValue = MetaValue CurrentlySet B.ByteString
 	deriving (Read, Show)
 
 instance ToJSON' MetaValue where
 	toJSON' (MetaValue _ v) = toJSON' v
 
 instance FromJSON MetaValue where
-	parseJSON (String v) = return $ MetaValue (CurrentlySet True) (T.unpack v)
+	parseJSON (String v) = return $
+		MetaValue (CurrentlySet True) (E.encodeUtf8 v)
 	parseJSON _  = fail "expected a string"
 
 {- Metadata values compare and order the same whether currently set or not. -}
@@ -105,14 +110,16 @@ instance Ord MetaValue where
  - field1 +val1 +val2 -val3 field2 +val4 +val5
  -}
 class MetaSerializable v where
-	serialize :: v -> String
-	deserialize :: String -> Maybe v
+	serialize :: v -> B.ByteString
+	deserialize :: B.ByteString -> Maybe v
 
 instance MetaSerializable MetaData where
-	serialize (MetaData m) = unwords $ concatMap go $ M.toList m
+	serialize (MetaData m) = B8.unwords $ concatMap go $ M.toList m
 	  where
 		go (f, vs) = serialize f : map serialize (S.toList vs)
-	deserialize = Just . getfield emptyMetaData . words
+	-- Note that B8.words cannot be used here, because UTF-8 encoded
+	-- field names may contain bytes such as \160 that are whitespace.
+	deserialize = Just . getfield emptyMetaData . B8.split ' '
 	  where
 		getfield m [] = m
 		getfield m (w:ws) = maybe m (getvalues m ws) (deserialize w)
@@ -122,23 +129,25 @@ instance MetaSerializable MetaData where
 			Nothing -> getfield m l
 
 instance MetaSerializable MetaField where
-	serialize (MetaField f) = CI.original f
-	deserialize = Just . mkMetaFieldUnchecked
+	serialize (MetaField f) = E.encodeUtf8 (CI.original f)
+	deserialize = MetaField . CI.mk <$$> eitherToMaybe . E.decodeUtf8'
 
 {- Base64 problematic values. -}
 instance MetaSerializable MetaValue where
 	serialize (MetaValue isset v) =
-		serialize isset ++
-		if any isSpace v || "!" `isPrefixOf` v
-			then '!' : toB64 v
+		serialize isset <>
+		if B8.any (== ' ') v || "!" `B8.isPrefixOf` v
+			then "!" <> toB64' v
 			else v
-	deserialize (isset:'!':v) = MetaValue
-		<$> deserialize [isset]
-		<*> fromB64Maybe v
-	deserialize (isset:v) = MetaValue 
-		<$> deserialize [isset]
-		<*> pure v
-	deserialize [] = Nothing
+	deserialize b = do
+		(isset, b') <- B8.uncons b
+		case B8.uncons b' of
+			Just ('!', b'') -> MetaValue
+				<$> deserialize (B8.singleton isset)
+				<*> fromB64Maybe' b''
+			_ -> MetaValue
+				<$> deserialize (B8.singleton isset)
+				<*> pure b'
 
 instance MetaSerializable CurrentlySet where
 	serialize (CurrentlySet True) = "+"
@@ -147,17 +156,17 @@ instance MetaSerializable CurrentlySet where
 	deserialize "-" = Just (CurrentlySet False)
 	deserialize _ = Nothing
 
-mkMetaField :: String -> Either String MetaField
+mkMetaField :: T.Text -> Either String MetaField
 mkMetaField f = maybe (Left $ badField f) Right (toMetaField f)
 
-badField :: String -> String
-badField f = "Illegal metadata field name, \"" ++ f ++ "\""
+badField :: T.Text -> String
+badField f = "Illegal metadata field name, \"" ++ T.unpack f ++ "\""
 
 {- Does not check that the field name is valid. Use with caution. -}
-mkMetaFieldUnchecked :: String -> MetaField
+mkMetaFieldUnchecked :: T.Text -> MetaField
 mkMetaFieldUnchecked = MetaField . CI.mk
 
-toMetaField :: String -> Maybe MetaField
+toMetaField :: T.Text -> Maybe MetaField
 toMetaField f
 	| legalField f = Just $ MetaField $ CI.mk f
 	| otherwise = Nothing
@@ -168,23 +177,29 @@ toMetaField f
  - Additionally, fields should not contain any form of path separator, as
  - that would break views.
  -
+ - And, fields need to be valid JSON keys.
+ -
  - So, require they have an alphanumeric first letter, with the remainder
  - being either alphanumeric or a small set of whitelisted common punctuation.
  -}
-legalField :: String -> Bool
-legalField [] = False
-legalField (c1:cs)
-	| not (isAlphaNum c1) = False
-	| otherwise = all legalchars cs
+legalField :: T.Text -> Bool
+legalField t = case T.uncons t of
+	Nothing -> False
+	Just (c1, t')
+		| not (isAlphaNum c1) -> False
+		| otherwise -> T.all legalchars t'
   where
 	legalchars c
 		| isAlphaNum c = True
-		| otherwise = c `elem` "_-."
+		| otherwise = c `elem` legalFieldWhiteList
 
-toMetaValue :: String -> MetaValue
+legalFieldWhiteList :: [Char]
+legalFieldWhiteList = "_-."
+
+toMetaValue :: B.ByteString -> MetaValue
 toMetaValue = MetaValue (CurrentlySet True)
 
-mkMetaValue :: CurrentlySet -> String -> MetaValue
+mkMetaValue :: CurrentlySet -> B.ByteString -> MetaValue
 mkMetaValue = MetaValue
 
 unsetMetaValue :: MetaValue -> MetaValue
@@ -194,10 +209,10 @@ unsetMetaValue (MetaValue _ s) = MetaValue (CurrentlySet False) s
 unsetMetaData :: MetaData -> MetaData
 unsetMetaData (MetaData m) = MetaData $ M.map (S.map unsetMetaValue) m
 
-fromMetaField :: MetaField -> String
+fromMetaField :: MetaField -> T.Text
 fromMetaField (MetaField f) = CI.original f
 
-fromMetaValue :: MetaValue -> String
+fromMetaValue :: MetaValue -> B.ByteString
 fromMetaValue (MetaValue _ f) = f
 
 fromMetaData :: MetaData -> [(MetaField, S.Set MetaValue)]
@@ -296,26 +311,26 @@ extractRemoteMetaData :: UUID -> MetaData -> RemoteMetaData
 extractRemoteMetaData u (MetaData m) = RemoteMetaData u $ MetaData $
 	M.mapKeys removeprefix $ M.filterWithKey belongsremote m
   where
-	belongsremote (MetaField f) _v = prefix `isPrefixOf` CI.original f
+	belongsremote (MetaField f) _v = prefix `T.isPrefixOf` CI.original f
 	removeprefix (MetaField f) = MetaField $ 
-		CI.mk $ drop prefixlen $ CI.original f
+		CI.mk $ T.drop prefixlen $ CI.original f
 	prefix = remoteMetaDataPrefix u
-	prefixlen = length prefix
+	prefixlen = T.length prefix
 
 splitRemoteMetaDataField :: MetaField -> Maybe (UUID, MetaField)
 splitRemoteMetaDataField (MetaField f) = do
-	let (su, sf) = separate (== ':') (CI.original f)
-	f' <- toMetaField sf
-	return $ (toUUID su, f')
+	let (su, sf) = T.break (== ':') (CI.original f)
+	f' <- toMetaField ((T.drop 1 sf))
+	return $ (toUUID (T.unpack su), f')
 
-remoteMetaDataPrefix :: UUID -> String
-remoteMetaDataPrefix u = fromUUID u ++ ":"
+remoteMetaDataPrefix :: UUID -> T.Text
+remoteMetaDataPrefix u = T.pack (fromUUID u) <> ":"
 
 fromRemoteMetaData :: RemoteMetaData -> MetaData
 fromRemoteMetaData (RemoteMetaData u (MetaData m)) = MetaData $
 	M.mapKeys addprefix m
   where
-	addprefix (MetaField f) = MetaField $ CI.mk $ (prefix ++) $ CI.original f
+	addprefix (MetaField f) = MetaField $ CI.mk $ prefix <> CI.original f
 	prefix = remoteMetaDataPrefix u
 
 {- Avoid putting too many fields in the map; extremely large maps make
@@ -334,11 +349,11 @@ instance Arbitrary MetaValue where
 		-- Avoid non-ascii metavalues because fully arbitrary
 		-- strings may not be encoded using the filesystem
 		-- encoding, which is norally applied to all input.
-		<*> arbitrary `suchThat` all isAscii
+		<*> (encodeBS <$> arbitrary `suchThat` all isAscii)
 
 instance Arbitrary MetaField where
-	arbitrary = MetaField . CI.mk 
-		<$> arbitrary `suchThat` legalField 
+	arbitrary = MetaField . CI.mk
+		<$> (T.pack <$> arbitrary) `suchThat` legalField
 
 prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and
