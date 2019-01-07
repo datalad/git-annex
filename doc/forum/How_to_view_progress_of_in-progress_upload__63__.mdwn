@@ -1,0 +1,16 @@
+Hello,
+
+I have a large (3.3 GB) file uploading to a Backblaze B2 remote ... when I first issued the `git annex copy --to` command, it showed a nice progress bar.  However, it didn't finish on the first attempt (probably due to system hibernation or something).  
+
+At first I couldn't get it to resume; I used `git annex whereis` to confirm that it wasn't in the remote (and confirmed manually), then I tried to reissue the `git annex copy` command to resume, but I got an error: copy failed: "transfer already in progress, or unable to take transfer lock".
+
+I'm not sure how, but I got it to resume ... I think it was `git annex copy --failed --to=(remote)` ... I know that it resumed because I can see the network traffic, confirmed in nethogs that it is coming from git-annex-remote-b2, and issuing `git annex info` reports the file is uploading under `transfers in progress`.
+
+What I'm wondering, is how can I get information on the progress of the upload, how much it's done and has left, etc?  Or even a progress bar, since the initial `copy` command gave a nice progress bar?
+
+I've been searching the documentation, man pages, and web, but haven't found anything so far ... please forgive me and let me know if I missed this somewhere.
+
+Thank you.
+
+PS: I love git annex; it's taken me a while to grok it and start using it usefully (despite my being already a somewhat experienced git user); but the steep-ish learning curve is worth it, for a file management system with flexible, distributed backends, that I can have control over, and with versioning.  Thank you very much for creating and sharing and continuing to work on it.
+
