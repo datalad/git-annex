@@ -1,0 +1,14 @@
+Continuing with the ByteString conversion marathon, today worked on
+converting the metadata types. Actually, metadata field names made more
+sense to change to Text, since they're limited to a subset of utf-8.
+
+I lost 2 hours to a puzzling quickcheck failure of metadata serialization.
+It turned out to involve unicode non-breaking spaces. Aaargh.
+Otherwise, fairly straightforward changes, but metadata is used all over
+git-annex, so the final patch was nearly 1000 lines.
+
+Benchmark time:
+
+setting metadata in 1000 files...... 1% speedup  
+getting metadata from 1000 files.... 0.5% speedup  
+finding a single file out of 1000 that has a given metadata value... 5% speedup  
