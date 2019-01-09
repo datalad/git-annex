@@ -29,7 +29,7 @@ data LogLine = LogLine
 	} deriving (Eq)
 
 instance Show LogLine where
-	show l = "LogLine " ++ formatVectorClock (date l) ++ show (status l) ++ " " ++ show (info l)
+	show l = "LogLine " ++ formatVectorClock (date l) ++ " " ++ show (status l) ++ " " ++ show (info l)
 
 data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
