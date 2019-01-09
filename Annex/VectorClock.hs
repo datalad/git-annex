@@ -18,7 +18,6 @@ import Prelude
 import Utility.Env
 import Utility.TimeStamp
 import Utility.QuickCheck
-import Utility.FileSystemEncoding
 import qualified Data.Attoparsec.ByteString.Lazy as A
 
 -- | Some very old logs did not have any time stamp at all;
@@ -46,7 +45,7 @@ formatVectorClock Unknown = "0"
 formatVectorClock (VectorClock t) = show t
 
 buildVectorClock :: VectorClock -> Builder
-buildVectorClock = byteString . encodeBS' . formatVectorClock
+buildVectorClock = string7 . formatVectorClock
 
 parseVectorClock :: String -> Maybe VectorClock
 parseVectorClock t = VectorClock <$> parsePOSIXTime t
