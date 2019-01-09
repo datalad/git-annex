@@ -1,0 +1,1 @@
+Is it correct that whenever the documentation refers to a "remote", the "here" remote can be specified to denote the local annex?
