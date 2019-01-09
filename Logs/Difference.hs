@@ -13,6 +13,7 @@ module Logs.Difference (
 ) where
 
 import qualified Data.Map as M
+import Data.ByteString.Builder
 
 import Annex.Common
 import Types.Difference
@@ -25,7 +26,9 @@ recordDifferences :: Differences -> UUID -> Annex ()
 recordDifferences ds@(Differences {}) uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change differenceLog $
-		encodeBL . showLog id . changeLog c uuid (showDifferences ds) . parseLog Just . decodeBL
+		buildLog (byteString . encodeBS) 
+			. changeLog c uuid (showDifferences ds) 
+			. parseLog Just . decodeBL
 recordDifferences UnknownDifferences _ = return ()
 
 -- Map of UUIDs that have Differences recorded.

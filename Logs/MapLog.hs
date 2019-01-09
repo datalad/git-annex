@@ -39,7 +39,6 @@ buildMapLog fieldbuilder valuebuilder = mconcat . map genline . M.toList
 	sp = charUtf8 ' '
 	nl = charUtf8 '\n'
 
-
 parseMapLog :: Ord f => (String -> Maybe f) -> (String -> Maybe v) -> String -> MapLog f v
 parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . splitLines
   where

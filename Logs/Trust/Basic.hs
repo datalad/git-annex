@@ -19,12 +19,14 @@ import Logs
 import Logs.UUIDBased
 import Logs.Trust.Pure as X
 
+import Data.ByteString.Builder
+
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change trustLog $
-		encodeBL . showLog showTrustLog .
+		buildLog (byteString . encodeBS . showTrustLog) .
 			changeLog c uuid level .
 				parseLog (Just . parseTrustLog) . decodeBL
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }

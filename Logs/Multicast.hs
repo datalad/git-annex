@@ -17,6 +17,7 @@ import Logs
 import Logs.UUIDBased
 
 import qualified Data.Map as M
+import Data.ByteString.Builder
 
 newtype Fingerprint = Fingerprint String
 	deriving (Eq, Read, Show)
@@ -25,7 +26,9 @@ recordFingerprint :: Fingerprint -> UUID -> Annex ()
 recordFingerprint fp uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change multicastLog $
-		encodeBL . showLog show . changeLog c uuid fp . parseLog readish . decodeBL
+		buildLog (byteString . encodeBS . show)
+			. changeLog c uuid fp
+			. parseLog readish . decodeBL
 
 knownFingerPrints :: Annex (M.Map UUID Fingerprint)
 knownFingerPrints = simpleMap . parseLog readish . decodeBL <$> Annex.Branch.get activityLog

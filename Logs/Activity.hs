@@ -17,6 +17,8 @@ import qualified Annex.Branch
 import Logs
 import Logs.UUIDBased
 
+import Data.ByteString.Builder
+
 data Activity = Fsck
 	deriving (Eq, Read, Show, Enum, Bounded)
 
@@ -24,7 +26,9 @@ recordActivity :: Activity -> UUID -> Annex ()
 recordActivity act uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change activityLog $
-		encodeBL . showLog show . changeLog c uuid act . parseLog readish . decodeBL
+		buildLog (byteString . encodeBS . show) 
+			. changeLog c uuid act 
+			. parseLog readish . decodeBL
 
 lastActivities :: Maybe Activity -> Annex (Log Activity)
 lastActivities wantact = parseLog onlywanted . decodeBL <$> Annex.Branch.get activityLog

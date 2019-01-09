@@ -44,8 +44,9 @@ dropDead f content trustmap = case getLogVariety f of
 		-- because git remotes may still exist, and they need
 		-- to still know it's dead.
 		| f == trustLog -> PreserveFile
-		| otherwise -> ChangeFile $ encodeBL $
-			UUIDBased.showLog id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just (decodeBL content)
+		| otherwise -> ChangeFile $ toLazyByteString $
+			UUIDBased.buildLog (byteString . encodeBS) $
+				dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just (decodeBL content)
 	Just NewUUIDBasedLog -> ChangeFile $ toLazyByteString $
 		UUIDBased.buildLogNew (byteString . encodeBS) $
 			dropDeadFromMapLog trustmap id $

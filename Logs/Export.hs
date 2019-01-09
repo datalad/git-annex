@@ -108,8 +108,8 @@ buildExportLog :: MapLog ExportParticipants Exported -> Builder
 buildExportLog = buildMapLog buildExportParticipants buildExported
 
 buildExportParticipants :: ExportParticipants -> Builder
-buildExportParticipants ep = byteString (fromUUID (exportFrom ep)) 
-	<> sep <> byteString (fromUUID (exportTo ep))
+buildExportParticipants ep = 
+	buildUUID (exportFrom ep) <> sep <> buildUUID (exportTo ep)
   where
 	sep = charUtf8 ':'
 

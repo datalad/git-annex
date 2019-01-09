@@ -51,6 +51,6 @@ parseLog = parseMapLog fieldparser valueparser
 buildLog :: ChunkLog -> Builder
 buildLog = buildMapLog fieldbuilder valuebuilder
   where
-	fieldbuilder (u, m) = byteString (fromUUID u) <> sep <> buildChunkMethod m
+	fieldbuilder (u, m) = buildUUID u <> sep <> buildChunkMethod m
 	valuebuilder = integerDec
 	sep = charUtf8 ':'

@@ -17,6 +17,11 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * The benchmark command, which only had some old benchmarking of the sqlite
     databases before, now allows benchmarking any other git-annex commands.
   * Support being built with ghc 8.6.3 (MonadFail).
+  * Removed old code that cleaned up after a bug in git-annex versions
+    3.20111105-3.20111110. In the unlikely event that a repo was
+    last touched by that ancient git-annex version, the descriptions
+    of remotes would appear missing when used with this version of
+    git-annex.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 

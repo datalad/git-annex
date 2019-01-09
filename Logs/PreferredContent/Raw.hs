@@ -30,7 +30,7 @@ setLog :: FilePath -> UUID -> PreferredContentExpression -> Annex ()
 setLog logfile uuid@(UUID _) val = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change logfile $
-		encodeBL . showLog id
+		buildLog (byteString . encodeBS)
 		. changeLog c uuid val
 		. parseLog Just . decodeBL
 	Annex.changeState $ \s -> s 

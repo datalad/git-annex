@@ -1,6 +1,6 @@
 {- git-annex group log
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ module Logs.Group (
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Data.ByteString.Builder
 
 import Annex.Common
 import Logs
@@ -37,7 +38,7 @@ groupChange uuid@(UUID _) modifier = do
 	curr <- lookupGroups uuid
 	c <- liftIO currentVectorClock
 	Annex.Branch.change groupLog $
-		encodeBL . showLog (unwords . S.toList) .
+		buildLog buildGroup .
 			changeLog c uuid (modifier curr) .
 				parseLog (Just . S.fromList . words) . decodeBL
 	
@@ -47,6 +48,13 @@ groupChange uuid@(UUID _) modifier = do
 		, Annex.preferredcontentmap = Nothing
 		}
 groupChange NoUUID _ = error "unknown UUID; cannot modify"
+
+buildGroup :: S.Set Group -> Builder
+buildGroup = go . S.toList
+  where
+	go [] = mempty
+	go (g:gs) = bld g <> mconcat [ charUtf8 ' ' <> bld g' | g' <- gs ]
+	bld = byteString . encodeBS
 
 groupSet :: UUID -> S.Set Group -> Annex ()
 groupSet u g = groupChange u (const g)

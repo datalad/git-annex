@@ -14,6 +14,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Logs.UUIDBased (
 	Log,
 	LogEntry(..),
@@ -22,7 +24,7 @@ module Logs.UUIDBased (
 	parseLog,
 	parseLogNew,
 	parseLogWithUUID,
-	showLog,
+	buildLog,
 	buildLogNew,
 	changeLog,
 	addLog,
@@ -41,13 +43,16 @@ import Data.ByteString.Builder
 
 type Log v = MapLog UUID v
 
-showLog :: (v -> String) -> Log v -> String
-showLog shower = unlines . map showpair . M.toList
+buildLog :: (v -> Builder) -> Log v -> Builder
+buildLog builder = mconcat . map genline . M.toList
   where
-	showpair (k, LogEntry (VectorClock c) v) =
-		unwords [fromUUID k, shower v, tskey ++ show c]
-	showpair (k, LogEntry Unknown v) =
-		unwords [fromUUID k, shower v]
+	genline (u, LogEntry c@(VectorClock {}) v) =
+		buildUUID u <> sp <> builder v <> sp <>
+			byteString "timestamp=" <> buildVectorClock c <> nl
+	genline (u, LogEntry Unknown v) =
+		buildUUID u <> sp <> builder v <> nl
+	sp = charUtf8 ' '
+	nl = charUtf8 '\n'
 
 parseLog :: (String -> Maybe a) -> String -> Log a
 parseLog = parseLogWithUUID . const
@@ -77,7 +82,7 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . splitLines
 			| otherwise = drop 1 $ beginning ws
 
 buildLogNew :: (v -> Builder) -> Log v -> Builder
-buildLogNew = buildMapLog (byteString . fromUUID)
+buildLogNew = buildMapLog buildUUID
 
 parseLogNew :: (String -> Maybe v) -> String -> Log v
 parseLogNew = parseMapLog (Just . toUUID)

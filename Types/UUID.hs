@@ -14,6 +14,7 @@ import qualified Data.Map as M
 import qualified Data.UUID as U
 import Data.Maybe
 import Data.String
+import Data.ByteString.Builder
 
 import Utility.FileSystemEncoding
 import qualified Utility.SimpleProtocol as Proto
@@ -54,6 +55,9 @@ instance ToUUID String where
 instance ToUUID U.UUID where
 	toUUID = toUUID . U.toASCIIBytes
 
+buildUUID :: UUID -> Builder
+buildUUID (UUID b) = byteString b
+
 isUUID :: String -> Bool
 isUUID = isJust . U.fromString
 
@@ -66,6 +70,9 @@ fromUUIDDesc (UUIDDesc d) = decodeBS d
 
 toUUIDDesc :: String -> UUIDDesc
 toUUIDDesc = UUIDDesc . encodeBS
+
+buildUUIDDesc :: UUIDDesc -> Builder
+buildUUIDDesc (UUIDDesc b) = byteString b
 
 type UUIDDescMap = M.Map UUID UUIDDesc
 
