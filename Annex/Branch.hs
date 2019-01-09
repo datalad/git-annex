@@ -34,6 +34,7 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Function
 import Data.Char
+import Data.ByteString.Builder
 import Control.Concurrent (threadDelay)
 
 import Annex.Common
@@ -586,7 +587,8 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 				-- File is deleted; can't run any other
 				-- transitions on it.
 				return ()
-			ChangeFile content' -> do
+			ChangeFile builder -> do
+				let content' = toLazyByteString builder
 				sha <- hashBlob content'
 				Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
 					Git.UpdateIndex.updateIndexLine sha TreeFile (asTopFilePath file)

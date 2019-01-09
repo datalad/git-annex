@@ -19,6 +19,7 @@ import Utility.Tmp
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import Data.ByteString.Builder
 
 type HashObjectHandle = CoProcess.CoProcessHandle
 
@@ -48,6 +49,9 @@ instance HashableBlob L.ByteString where
 
 instance HashableBlob S.ByteString where
 	hashableBlobToHandle = S.hPut
+
+instance HashableBlob Builder where
+	hashableBlobToHandle = hPutBuilder
 
 {- Injects a blob into git. Unfortunately, the current git-hash-object
  - interface does not allow batch hashing without using temp files. -}

@@ -27,7 +27,7 @@ import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
 
 data FileTransition
-	= ChangeFile L.ByteString
+	= ChangeFile Builder
 	| RemoveFile
 	| PreserveFile
 
@@ -44,25 +44,25 @@ dropDead f content trustmap = case getLogVariety f of
 		-- because git remotes may still exist, and they need
 		-- to still know it's dead.
 		| f == trustLog -> PreserveFile
-		| otherwise -> ChangeFile $ toLazyByteString $
+		| otherwise -> ChangeFile $
 			UUIDBased.buildLog (byteString . encodeBS) $
 				dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just (decodeBL content)
-	Just NewUUIDBasedLog -> ChangeFile $ toLazyByteString $
+	Just NewUUIDBasedLog -> ChangeFile $
 		UUIDBased.buildLogNew (byteString . encodeBS) $
 			dropDeadFromMapLog trustmap id $
 				UUIDBased.parseLogNew Just (decodeBL content)
-	Just (ChunkLog _) -> ChangeFile $ toLazyByteString $
+	Just (ChunkLog _) -> ChangeFile $
 		Chunk.buildLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog (decodeBL content)
 	Just (PresenceLog _) ->
 		let newlog = Presence.compactLog $ dropDeadFromPresenceLog trustmap $ Presence.parseLog content
 		in if null newlog
 			then RemoveFile
-			else ChangeFile $ toLazyByteString $ Presence.buildLog newlog
+			else ChangeFile $ Presence.buildLog newlog
 	Just RemoteMetaDataLog ->
 		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog content
 		in if S.null newlog
 			then RemoveFile
-			else ChangeFile $ toLazyByteString $ MetaData.buildLog newlog
+			else ChangeFile $ MetaData.buildLog newlog
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 
