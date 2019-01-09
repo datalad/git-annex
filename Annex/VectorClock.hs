@@ -24,7 +24,7 @@ import qualified Data.Attoparsec.ByteString.Lazy as A
 -- | Some very old logs did not have any time stamp at all;
 -- Unknown is used for those.
 data VectorClock = Unknown | VectorClock POSIXTime
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 -- Unknown is oldest.
 prop_VectorClock_sane :: Bool

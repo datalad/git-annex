@@ -26,10 +26,7 @@ data LogLine = LogLine
 	{ date :: VectorClock
 	, status :: LogStatus
 	, info :: LogInfo
-	} deriving (Eq)
-
-instance Show LogLine where
-	show l = "LogLine " ++ formatVectorClock (date l) ++ " " ++ show (status l) ++ " " ++ show (info l)
+	} deriving (Eq, Show)
 
 data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
