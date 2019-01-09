@@ -3,7 +3,7 @@
  - We don't have a way yet to keep true distributed vector clocks.
  - The next best thing is a timestamp.
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,12 +11,14 @@
 module Annex.VectorClock where
 
 import Data.Time.Clock.POSIX
+import Data.ByteString.Builder
 import Control.Applicative
 import Prelude
 
 import Utility.Env
 import Utility.TimeStamp
 import Utility.QuickCheck
+import Utility.FileSystemEncoding
 import qualified Data.Attoparsec.ByteString.Lazy as A
 
 -- | Some very old logs did not have any time stamp at all;
@@ -40,8 +42,11 @@ currentVectorClock = go =<< getEnv "GIT_ANNEX_VECTOR_CLOCK"
 		Nothing -> VectorClock <$> getPOSIXTime
 
 formatVectorClock :: VectorClock -> String
-formatVectorClock  Unknown = "0"
+formatVectorClock Unknown = "0"
 formatVectorClock (VectorClock t) = show t
+
+buildVectorClock :: VectorClock -> Builder
+buildVectorClock = byteString . encodeBS' . formatVectorClock
 
 parseVectorClock :: String -> Maybe VectorClock
 parseVectorClock t = VectorClock <$> parsePOSIXTime t

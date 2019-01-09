@@ -1,6 +1,6 @@
 {- Remote state logs.
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import qualified Annex.Branch
 import qualified Annex
 
 import qualified Data.Map as M
+import Data.ByteString.Builder
 
 type RemoteState = String
 
@@ -25,7 +26,10 @@ setRemoteState u k s = do
 	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (remoteStateLogFile config k) $
-		encodeBL . showLogNew id . changeLog c u s . parseLogNew Just . decodeBL
+		buildRemoteState . changeLog c u s . parseLogNew Just . decodeBL
+
+buildRemoteState :: Log RemoteState -> Builder
+buildRemoteState = buildLogNew (byteString . encodeBS)
 
 getRemoteState :: UUID -> Key -> Annex (Maybe RemoteState)
 getRemoteState u k = do

@@ -64,8 +64,7 @@ buildLog :: [LogLine] -> Builder
 buildLog = mconcat . map genline
   where
 	genline (LogLine c s (LogInfo i)) = 
-		byteString (encodeBS' (formatVectorClock c)) <> sp <>
-		genstatus s <> sp <> byteString i <> nl
+		buildVectorClock c <> sp <> genstatus s <> sp <> byteString i <> nl
 	sp = charUtf8 ' '
 	nl = charUtf8 '\n'
 	genstatus InfoPresent = charUtf8 '1'

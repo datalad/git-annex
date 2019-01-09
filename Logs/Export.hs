@@ -18,6 +18,8 @@ import Logs
 import Logs.MapLog
 import Annex.UUID
 
+import Data.ByteString.Builder
+
 data Exported = Exported
 	{ exportedTreeish :: Git.Ref
 	, incompleteExportedTreeish :: [Git.Ref]
@@ -69,7 +71,7 @@ recordExport remoteuuid ec = do
 	let ep = ExportParticipants { exportFrom = u, exportTo = remoteuuid }
 	let exported = Exported (newTreeish ec) []
 	Annex.Branch.change exportLog $
-		encodeBL . showExportLog
+		buildExportLog
 			. changeMapLog c ep exported 
 			. M.mapWithKey (updateothers c u)
 			. parseExportLog . decodeBL
@@ -94,7 +96,7 @@ recordExportBeginning remoteuuid newtree = do
 		<$> Annex.Branch.get exportLog
 	let new = old { incompleteExportedTreeish = nub (newtree:incompleteExportedTreeish old) }
 	Annex.Branch.change exportLog $
-		encodeBL . showExportLog 
+		buildExportLog 
 			. changeMapLog c ep new
 			. parseExportLog . decodeBL
 	Annex.Branch.graftTreeish newtree (asTopFilePath "export.tree")
@@ -102,12 +104,14 @@ recordExportBeginning remoteuuid newtree = do
 parseExportLog :: String -> MapLog ExportParticipants Exported
 parseExportLog = parseMapLog parseExportParticipants parseExported
 
-showExportLog :: MapLog ExportParticipants Exported -> String
-showExportLog = showMapLog formatExportParticipants formatExported
+buildExportLog :: MapLog ExportParticipants Exported -> Builder
+buildExportLog = buildMapLog buildExportParticipants buildExported
 
-formatExportParticipants :: ExportParticipants -> String
-formatExportParticipants ep = 
-	fromUUID (exportFrom ep) ++ ':' : fromUUID (exportTo ep)
+buildExportParticipants :: ExportParticipants -> Builder
+buildExportParticipants ep = byteString (fromUUID (exportFrom ep)) 
+	<> sep <> byteString (fromUUID (exportTo ep))
+  where
+	sep = charUtf8 ':'
 
 parseExportParticipants :: String -> Maybe ExportParticipants
 parseExportParticipants s = case separate (== ':') s of
@@ -117,9 +121,13 @@ parseExportParticipants s = case separate (== ':') s of
 		{ exportFrom = toUUID f
 		, exportTo = toUUID t
 		}
-formatExported :: Exported -> String
-formatExported exported = unwords $ map Git.fromRef $
-	exportedTreeish exported : incompleteExportedTreeish exported
+
+buildExported :: Exported -> Builder
+buildExported exported = go (exportedTreeish exported : incompleteExportedTreeish exported)
+  where
+	go [] = mempty
+	go (r:rs) = rref r <> mconcat [ charUtf8 ' ' <> rref r' | r' <- rs ]
+	rref r = byteString (encodeBS' (Git.fromRef r))
 
 parseExported :: String -> Maybe Exported
 parseExported s = case words s of

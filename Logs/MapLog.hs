@@ -1,12 +1,10 @@
-{-# LANGUAGE CPP #-}
-
 {- git-annex Map log
  -
  - This is used to store a Map, in a way that can be union merged.
  -
  - A line of the log will look like: "timestamp field value"
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,6 +20,7 @@ import Annex.VectorClock
 import Logs.Line
 
 import qualified Data.Map.Strict as M
+import Data.ByteString.Builder
 
 data LogEntry v = LogEntry
 	{ changed :: VectorClock
@@ -30,13 +29,16 @@ data LogEntry v = LogEntry
 
 type MapLog f v = M.Map f (LogEntry v)
 
-showMapLog :: (f -> String) -> (v -> String) -> MapLog f v -> String
-showMapLog fieldshower valueshower = unlines . map showpair . M.toList
+buildMapLog :: (f -> Builder) -> (v -> Builder) -> MapLog f v -> Builder
+buildMapLog fieldbuilder valuebuilder = mconcat . map genline . M.toList
   where
-	showpair (f, LogEntry (VectorClock c) v) =
-		unwords [show c, fieldshower f, valueshower v]
-	showpair (f, LogEntry Unknown v) =
-		unwords ["0", fieldshower f, valueshower v]
+	genline (f, LogEntry c v) = 
+		buildVectorClock c <> sp 
+			<> fieldbuilder f <> sp 
+			<> valuebuilder v <> nl
+	sp = charUtf8 ' '
+	nl = charUtf8 '\n'
+
 
 parseMapLog :: Ord f => (String -> Maybe f) -> (String -> Maybe v) -> String -> MapLog f v
 parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . splitLines

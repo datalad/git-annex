@@ -46,10 +46,12 @@ dropDead f content trustmap = case getLogVariety f of
 		| f == trustLog -> PreserveFile
 		| otherwise -> ChangeFile $ encodeBL $
 			UUIDBased.showLog id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just (decodeBL content)
-	Just NewUUIDBasedLog -> ChangeFile $ encodeBL $
-		UUIDBased.showLogNew id $ dropDeadFromMapLog trustmap id $ UUIDBased.parseLogNew Just (decodeBL content)
-	Just (ChunkLog _) -> ChangeFile $ encodeBL $
-		Chunk.showLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog (decodeBL content)
+	Just NewUUIDBasedLog -> ChangeFile $ toLazyByteString $
+		UUIDBased.buildLogNew (byteString . encodeBS) $
+			dropDeadFromMapLog trustmap id $
+				UUIDBased.parseLogNew Just (decodeBL content)
+	Just (ChunkLog _) -> ChangeFile $ toLazyByteString $
+		Chunk.buildLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog (decodeBL content)
 	Just (PresenceLog _) ->
 		let newlog = Presence.compactLog $ dropDeadFromPresenceLog trustmap $ Presence.parseLog content
 		in if null newlog

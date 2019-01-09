@@ -9,7 +9,7 @@
  -
  - New uuid based logs instead use the form: "timestamp UUID INFO"
  - 
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,7 +23,7 @@ module Logs.UUIDBased (
 	parseLogNew,
 	parseLogWithUUID,
 	showLog,
-	showLogNew,
+	buildLogNew,
 	changeLog,
 	addLog,
 	simpleMap,
@@ -36,6 +36,8 @@ import Types.UUID
 import Annex.VectorClock
 import Logs.MapLog
 import Logs.Line
+
+import Data.ByteString.Builder
 
 type Log v = MapLog UUID v
 
@@ -74,8 +76,8 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . splitLines
 			| ts == Unknown = drop 1 ws
 			| otherwise = drop 1 $ beginning ws
 
-showLogNew :: (v -> String) -> Log v -> String
-showLogNew = showMapLog fromUUID
+buildLogNew :: (v -> Builder) -> Log v -> Builder
+buildLogNew = buildMapLog (byteString . fromUUID)
 
 parseLogNew :: (String -> Maybe v) -> String -> Log v
 parseLogNew = parseMapLog (Just . toUUID)

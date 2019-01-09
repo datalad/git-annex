@@ -33,9 +33,7 @@ buildLog :: (SingleValueSerializable v) => Log v -> Builder
 buildLog = mconcat . map genline . S.toList
   where
 	genline (LogEntry c v) =
-		byteString (encodeBS' (formatVectorClock c)) <> sp 
-			<> byteString (serialize v)
-			<> nl
+		buildVectorClock c <> sp <> byteString (serialize v) <> nl
 	sp = charUtf8 ' '
 	nl = charUtf8 '\n'
 

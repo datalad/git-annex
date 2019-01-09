@@ -1,6 +1,6 @@
 {- unparsed preferred content expressions
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import Types.StandardGroups
 import Types.Group
 
 import qualified Data.Map as M
+import Data.ByteString.Builder
 
 {- Changes the preferred content configuration of a remote. -}
 preferredContentSet :: UUID -> PreferredContentExpression -> Annex ()
@@ -43,10 +44,16 @@ groupPreferredContentSet :: Group -> PreferredContentExpression -> Annex ()
 groupPreferredContentSet g val = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change groupPreferredContentLog $
-		encodeBL . showMapLog id id 
+		buildGroupPreferredContent
 		. changeMapLog c g val 
 		. parseMapLog Just Just . decodeBL
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
+
+buildGroupPreferredContent :: MapLog Group PreferredContentExpression -> Builder
+buildGroupPreferredContent = buildMapLog buildgroup buildexpr
+  where
+	buildgroup = byteString . encodeBS
+	buildexpr = byteString . encodeBS
 
 preferredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
 preferredContentMapRaw = simpleMap . parseLog Just . decodeBL
