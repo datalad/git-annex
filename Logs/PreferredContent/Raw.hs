@@ -17,6 +17,7 @@ import Types.StandardGroups
 import Types.Group
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
 
 {- Changes the preferred content configuration of a remote. -}
@@ -46,13 +47,16 @@ groupPreferredContentSet g val = do
 	Annex.Branch.change groupPreferredContentLog $
 		buildGroupPreferredContent
 		. changeMapLog c g val 
-		. parseMapLog Just Just . decodeBL
+		. parseGroupPreferredContent
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
+
+parseGroupPreferredContent :: L.ByteString -> MapLog Group String
+parseGroupPreferredContent = parseMapLog (Just . toGroup) Just . decodeBL
 
 buildGroupPreferredContent :: MapLog Group PreferredContentExpression -> Builder
 buildGroupPreferredContent = buildMapLog buildgroup buildexpr
   where
-	buildgroup = byteString . encodeBS
+	buildgroup (Group g) = byteString g
 	buildexpr = byteString . encodeBS
 
 preferredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
@@ -64,5 +68,5 @@ requiredContentMapRaw = simpleMap . parseLog Just . decodeBL
 	<$> Annex.Branch.get requiredContentLog
 
 groupPreferredContentMapRaw :: Annex (M.Map Group PreferredContentExpression)
-groupPreferredContentMapRaw = simpleMap . parseMapLog Just Just . decodeBL
+groupPreferredContentMapRaw = simpleMap . parseGroupPreferredContent
 	<$> Annex.Branch.get groupPreferredContentLog

@@ -167,10 +167,10 @@ genCfg cfg descs = unlines $ intercalate [""]
 		, com $ "(Standard groups: " ++ grouplist ++ ")"
 		, com "(Separate group names with spaces)"
 		]
-		(\(s, u) -> line "group" u $ unwords $ S.toList s)
+		(\(s, u) -> line "group" u $ unwords $ map fromGroup $ S.toList s)
 		(\u -> lcom $ line "group" u "")
 	  where
-		grouplist = unwords $ map fromStandardGroup [minBound..]
+		grouplist = unwords $ map (fromGroup . fromStandardGroup) [minBound..]
 
 	preferredcontent = settings cfg descs cfgPreferredContentMap
 		[ com "Repository preferred contents"
@@ -191,7 +191,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 		(\(s, g) -> gline g s)
 		(\g -> gline g "")
 	  where
-		gline g val = [ unwords ["groupwanted", g, "=", val] ]
+		gline g val = [ unwords ["groupwanted", fromGroup g, "=", val] ]
 		allgroups = S.unions $ stdgroups : M.elems (cfgGroupMap cfg)
 		stdgroups = S.fromList $ map fromStandardGroup [minBound..maxBound]
 
@@ -204,7 +204,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 	  where
 		gline g = com $ unwords
 			[ "standard"
-			, fromStandardGroup g, "=", standardPreferredContent g
+			, fromGroup (fromStandardGroup g), "=", standardPreferredContent g
 			]
 	
 	schedule = settings cfg descs cfgScheduleMap
@@ -282,7 +282,7 @@ parseCfg defcfg = go [] defcfg . lines
 				let m = M.insert u (Down t) (cfgTrustMap cfg)
 				in Right $ cfg { cfgTrustMap = m }
 		| setting == "group" =
-			let m = M.insert u (S.fromList $ words val) (cfgGroupMap cfg)
+			let m = M.insert u (S.fromList $ map toGroup $ words val) (cfgGroupMap cfg)
 			in Right $ cfg { cfgGroupMap = m }
 		| setting == "wanted" = 
 			case checkPreferredContentExpression val of
@@ -300,7 +300,7 @@ parseCfg defcfg = go [] defcfg . lines
 			case checkPreferredContentExpression val of
 				Just e -> Left e
 				Nothing ->
-					let m = M.insert f val (cfgGroupPreferredContentMap cfg)
+					let m = M.insert (toGroup f) val (cfgGroupPreferredContentMap cfg)
 					in Right $ cfg { cfgGroupPreferredContentMap = m }
 		| setting == "schedule" = case parseScheduledActivities val of
 			Left e -> Left e

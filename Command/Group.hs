@@ -26,11 +26,13 @@ start (name:g:[]) = do
 	allowMessages
 	showStart' "group" (Just name)
 	u <- Remote.nameToUUID name
-	next $ setGroup u g
+	next $ setGroup u (toGroup g)
 start (name:[]) = do
 	u <- Remote.nameToUUID name
-	liftIO . putStrLn . unwords . S.toList =<< lookupGroups u
+	liftIO . putStrLn . unwords . map fmt . S.toList =<< lookupGroups u
 	stop
+  where
+	fmt (Group g) = decodeBS g
 start _ = giveup "Specify a repository and a group."
 
 setGroup :: UUID -> Group -> CommandPerform

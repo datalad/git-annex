@@ -25,7 +25,7 @@ start :: [String] -> CommandStart
 start (name:g:[]) = do
 	showStart' "ungroup" (Just name)
 	u <- Remote.nameToUUID name
-	next $ perform u g
+	next $ perform u (toGroup g)
 start _ = giveup "Specify a repository and a group."
 
 perform :: UUID -> Group -> CommandPerform

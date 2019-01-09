@@ -16,6 +16,7 @@ module Logs.Group (
 	inUnwantedGroup
 ) where
 
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.ByteString.Builder
@@ -38,9 +39,7 @@ groupChange uuid@(UUID _) modifier = do
 	curr <- lookupGroups uuid
 	c <- liftIO currentVectorClock
 	Annex.Branch.change groupLog $
-		buildLog buildGroup .
-			changeLog c uuid (modifier curr) .
-				parseLog (Just . S.fromList . words) . decodeBL
+		buildLog buildGroup . changeLog c uuid (modifier curr) . parseGroup
 	
 	-- The changed group invalidates the preferred content cache.
 	Annex.changeState $ \s -> s
@@ -54,7 +53,10 @@ buildGroup = go . S.toList
   where
 	go [] = mempty
 	go (g:gs) = bld g <> mconcat [ charUtf8 ' ' <> bld g' | g' <- gs ]
-	bld = byteString . encodeBS
+	bld (Group g) = byteString g
+
+parseGroup :: L.ByteString -> Log (S.Set Group)
+parseGroup = parseLog (Just . S.fromList . map toGroup . words) . decodeBL
 
 groupSet :: UUID -> S.Set Group -> Annex ()
 groupSet u g = groupChange u (const g)
@@ -66,9 +68,7 @@ groupMap = maybe groupMapLoad return =<< Annex.getState Annex.groupmap
 {- Loads the map, updating the cache. -}
 groupMapLoad :: Annex GroupMap
 groupMapLoad = do
-	m <- makeGroupMap . simpleMap .
-		parseLog (Just . S.fromList . words) . decodeBL <$>
-			Annex.Branch.get groupLog
+	m <- makeGroupMap . simpleMap . parseGroup <$> Annex.Branch.get groupLog
 	Annex.changeState $ \s -> s { Annex.groupmap = Just m }
 	return m
 

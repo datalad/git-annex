@@ -1,22 +1,33 @@
 {- git-annex repo groups
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Types.Group (
-	Group,
+	Group(..),
+	fromGroup,
+	toGroup,
 	GroupMap(..),
 	emptyGroupMap
 ) where
 
 import Types.UUID
+import Utility.FileSystemEncoding
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified Data.ByteString as S
 
-type Group = String
+newtype Group = Group S.ByteString
+	deriving (Eq, Ord)
+
+fromGroup :: Group -> String
+fromGroup (Group g) = decodeBS g
+
+toGroup :: String -> Group
+toGroup = Group . encodeBS
 
 data GroupMap = GroupMap
 	{ groupsByUUID :: M.Map UUID (S.Set Group)

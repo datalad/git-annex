@@ -169,7 +169,7 @@ limitCopies want = case splitc ':' want of
 	-- level, it's parsed as a trust level, not as a group.
 	[v, n] -> case parsetrustspec v of
 		Just checker -> go n $ checktrust checker
-		Nothing -> go n $ checkgroup v
+		Nothing -> go n $ checkgroup (toGroup v)
 	[n] -> go n $ const $ return True
 	_ -> Left "bad value for copies"
   where
@@ -237,7 +237,7 @@ addInAllGroup groupname = addLimit $ limitInAllGroup groupMap groupname
 limitInAllGroup :: Annex GroupMap -> MkLimit Annex
 limitInAllGroup getgroupmap groupname = Right $ \notpresent mi -> do
 	m <- getgroupmap
-	let want = fromMaybe S.empty $ M.lookup groupname $ uuidsByGroup m
+	let want = fromMaybe S.empty $ M.lookup (toGroup groupname) $ uuidsByGroup m
 	if S.null want
 		then return True
 		-- optimisation: Check if a wanted uuid is notpresent.

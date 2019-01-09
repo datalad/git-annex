@@ -45,6 +45,7 @@ import Assistant.Ssh
 import Config
 import Config.GitConfig
 import Config.DynamicConfig
+import Types.Group
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -71,7 +72,7 @@ getRepoConfig uuid mremote = do
 	groups <- lookupGroups uuid
 	remoteconfig <- M.lookup uuid <$> readRemoteLog
 	let (repogroup, associateddirectory) = case getStandardGroup groups of
-		Nothing -> (RepoGroupCustom $ unwords $ S.toList groups, Nothing)
+		Nothing -> (RepoGroupCustom $ unwords $ map fromGroup $ S.toList groups, Nothing)
 		Just g -> (RepoGroupStandard g, associatedDirectory remoteconfig g)
 	
 	description <- fmap (T.pack . fromUUIDDesc) . M.lookup uuid <$> uuidDescMap
@@ -127,7 +128,7 @@ setRepoConfig uuid mremote oldc newc = do
 	when groupChanged $ do
 		liftAnnex $ case repoGroup newc of
 			RepoGroupStandard g -> setStandardGroup uuid g
-			RepoGroupCustom s -> groupSet uuid $ S.fromList $ words s
+			RepoGroupCustom s -> groupSet uuid $ S.fromList $ map toGroup $ words s
 		{- Enabling syncing will cause a scan,
 		 - so avoid queueing a duplicate scan. -}
 		when (repoSyncable newc && not syncableChanged) $ liftAssistant $

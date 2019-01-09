@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Types.StandardGroups where
 
 import Types.Remote (RemoteConfig)
@@ -29,28 +31,28 @@ data StandardGroup
 	deriving (Eq, Ord, Enum, Bounded, Show)
 
 fromStandardGroup :: StandardGroup -> Group
-fromStandardGroup ClientGroup = "client"
-fromStandardGroup TransferGroup = "transfer"
-fromStandardGroup BackupGroup = "backup"
-fromStandardGroup IncrementalBackupGroup = "incrementalbackup"
-fromStandardGroup SmallArchiveGroup = "smallarchive"
-fromStandardGroup FullArchiveGroup = "archive"
-fromStandardGroup SourceGroup = "source"
-fromStandardGroup ManualGroup = "manual"
-fromStandardGroup PublicGroup = "public"
-fromStandardGroup UnwantedGroup = "unwanted"
+fromStandardGroup ClientGroup = Group "client"
+fromStandardGroup TransferGroup = Group "transfer"
+fromStandardGroup BackupGroup = Group "backup"
+fromStandardGroup IncrementalBackupGroup = Group "incrementalbackup"
+fromStandardGroup SmallArchiveGroup = Group "smallarchive"
+fromStandardGroup FullArchiveGroup = Group "archive"
+fromStandardGroup SourceGroup = Group "source"
+fromStandardGroup ManualGroup = Group "manual"
+fromStandardGroup PublicGroup = Group "public"
+fromStandardGroup UnwantedGroup = Group "unwanted"
 
 toStandardGroup :: Group -> Maybe StandardGroup
-toStandardGroup "client" = Just ClientGroup
-toStandardGroup "transfer" = Just TransferGroup
-toStandardGroup "backup" = Just BackupGroup
-toStandardGroup "incrementalbackup" = Just IncrementalBackupGroup
-toStandardGroup "smallarchive" = Just SmallArchiveGroup
-toStandardGroup "archive" = Just FullArchiveGroup
-toStandardGroup "source" = Just SourceGroup
-toStandardGroup "manual" = Just ManualGroup
-toStandardGroup "public" = Just PublicGroup
-toStandardGroup "unwanted" = Just UnwantedGroup
+toStandardGroup (Group "client") = Just ClientGroup
+toStandardGroup (Group "transfer") = Just TransferGroup
+toStandardGroup (Group "backup") = Just BackupGroup
+toStandardGroup (Group "incrementalbackup") = Just IncrementalBackupGroup
+toStandardGroup (Group "smallarchive") = Just SmallArchiveGroup
+toStandardGroup (Group "archive") = Just FullArchiveGroup
+toStandardGroup (Group "source") = Just SourceGroup
+toStandardGroup (Group "manual") = Just ManualGroup
+toStandardGroup (Group "public") = Just PublicGroup
+toStandardGroup (Group "unwanted") = Just UnwantedGroup
 toStandardGroup _ = Nothing
 
 descStandardGroup :: StandardGroup -> String
