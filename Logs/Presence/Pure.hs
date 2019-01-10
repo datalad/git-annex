@@ -32,7 +32,7 @@ data LogStatus = InfoPresent | InfoMissing | InfoDead
 	deriving (Eq, Show, Bounded, Enum)
 
 parseLog :: L.ByteString -> [LogLine]
-parseLog = fromMaybe [] . A.maybeResult . A.parse (logParser <* A.endOfInput)
+parseLog = fromMaybe [] . A.maybeResult . A.parse logParser
 
 logParser :: A.Parser [LogLine]
 logParser = parseLogLines $ LogLine
