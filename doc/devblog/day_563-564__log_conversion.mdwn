@@ -1,0 +1,15 @@
+Spent two days converting all code that deal with git-annex branch log
+files to use attoparsec and bytestring builders.
+
+For most of them, I'm not expecting much if any speed improvements, since
+often git-annex only ever parses a given log file once, and writes to many
+log files are only done rarely. The main candidates for speedup are chunk
+logs and remote state logs. Also Group was converted to a ByteString,
+which may speed up queries that involve groups. I have not benchmarked.
+It was still worth doing the conversion, for consistency and better code
+if not speed.
+
+I found a few bugs in the old parsers for log files along the way.
+The uuid.log parser was not preserving whitespace in repositiory
+descriptions; the new one will. And the activity.log parser filtered out
+unknown values, not leaving room for expansion.
