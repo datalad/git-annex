@@ -183,7 +183,7 @@ updateTo' pairs = do
 			else return $ "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ fromRef name
-		localtransitions <- parseTransitionsStrictly "local" . decodeBL
+		localtransitions <- parseTransitionsStrictly "local"
 			<$> getLocal transitionsLog
 		unless (null tomerge) $ do
 			showSideAction merge_desc
@@ -524,7 +524,7 @@ handleTransitions jl localts refs = do
 			return True
   where
 	getreftransition ref = do
-		ts <- parseTransitionsStrictly "remote" . decodeBL
+		ts <- parseTransitionsStrictly "remote"
 			<$> catFile ref transitionsLog
 		return (ref, ts)
 
@@ -560,7 +560,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc
 		| otherwise = "continuing transition " ++ tdesc
 	tdesc = show $ map describeTransition tlist
-	tlist = transitionList ts
+	tlist = knownTransitionList ts
 
 	{- The changes to make to the branch are calculated and applied to
 	 - the branch directly, rather than going through the journal,

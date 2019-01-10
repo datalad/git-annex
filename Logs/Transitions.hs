@@ -7,7 +7,7 @@
  - done that is listed in the remote branch by checking that the local
  - branch contains the same transition, with the same or newer start time.
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,7 +19,12 @@ import Annex.VectorClock
 import Logs.Line
 
 import qualified Data.Set as S
+import Data.Either
+import Data.ByteString (ByteString)
+import Data.ByteString.Builder
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 
 transitionsLog :: FilePath
 transitionsLog = "transitions.log"
@@ -31,7 +36,8 @@ data Transition
 
 data TransitionLine = TransitionLine
 	{ transitionStarted :: VectorClock
-	, transition :: Transition
+	-- New transitions that we don't know about yet are preserved.
+	, transition :: Either ByteString Transition
 	} deriving (Ord, Eq)
 
 type Transitions = S.Set TransitionLine
@@ -44,44 +50,50 @@ noTransitions :: Transitions
 noTransitions = S.empty
 
 addTransition :: VectorClock -> Transition -> Transitions -> Transitions
-addTransition c t = S.insert $ TransitionLine c t
+addTransition c t = S.insert $ TransitionLine c (Right t)
 
-showTransitions :: Transitions -> String
-showTransitions = unlines . map showTransitionLine . S.elems
-
-{- If the log contains new transitions we don't support, returns Nothing. -}
-parseTransitions :: String -> Maybe Transitions
-parseTransitions = check . map parseTransitionLine . splitLines
+buildTransitions :: Transitions -> Builder
+buildTransitions = mconcat . map genline . S.elems
   where
-	check l
-		| all isJust l = Just $ S.fromList $ catMaybes l
-		| otherwise = Nothing
+	genline tl = buildt (transition tl) <> charUtf8 ' '
+		<> buildVectorClock (transitionStarted tl) <> charUtf8 '\n'
+	buildt (Left b) = byteString b
+	buildt (Right t) = byteString (encodeBS (show t))
 
-parseTransitionsStrictly :: String -> String -> Transitions
-parseTransitionsStrictly source = fromMaybe badsource . parseTransitions
-  where
-	badsource = giveup $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
+parseTransitions :: L.ByteString -> Transitions
+parseTransitions = fromMaybe S.empty . A.maybeResult . A.parse
+	(S.fromList <$> parseLogLines transitionLineParser)
+
+parseTransitionsStrictly :: String -> L.ByteString -> Transitions
+parseTransitionsStrictly source b =
+	let ts = parseTransitions b
+	in if S.null $ S.filter (isLeft . transition) ts
+		then ts
+		else giveup $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
 
 showTransitionLine :: TransitionLine -> String
 showTransitionLine (TransitionLine c t) = unwords [show t, formatVectorClock c]
 
-parseTransitionLine :: String -> Maybe TransitionLine
-parseTransitionLine s = TransitionLine
-	<$> parseVectorClock cs
-	<*> readish ts
+transitionLineParser :: A.Parser TransitionLine
+transitionLineParser = do
+	t <- (parsetransition <$> A.takeByteString)
+	_ <- A8.char ' '
+	c <- vectorClockParser
+	return $ TransitionLine c t
   where
-	ws = words s
-	ts = Prelude.head ws
-	cs = unwords $ Prelude.tail ws
+	parsetransition b = case readish (decodeBS b) of
+		Just t -> Right t
+		Nothing -> Left b
 
 combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions
 
-transitionList :: Transitions -> [Transition]
-transitionList = nub . map transition . S.elems
+{- Unknown types of transitions are omitted. -}
+knownTransitionList :: Transitions -> [Transition]
+knownTransitionList = nub . rights . map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}
-recordTransitions :: (FilePath -> (L.ByteString -> L.ByteString) -> Annex ()) -> Transitions -> Annex ()
+recordTransitions :: (FilePath -> (L.ByteString -> Builder) -> Annex ()) -> Transitions -> Annex ()
 recordTransitions changer t = changer transitionsLog $
-	encodeBL . showTransitions . S.union t . parseTransitionsStrictly "local" . decodeBL
+	buildTransitions . S.union t . parseTransitionsStrictly "local"
