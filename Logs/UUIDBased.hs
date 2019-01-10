@@ -14,7 +14,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TupleSections #-}
 
 module Logs.UUIDBased (
 	Log,
@@ -39,9 +39,12 @@ import Annex.VectorClock
 import Logs.MapLog
 import Logs.Line
 
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
+import qualified Data.DList as D
 
 type Log v = MapLog UUID v
 
@@ -56,32 +59,28 @@ buildLog builder = mconcat . map genline . M.toList
 	sp = charUtf8 ' '
 	nl = charUtf8 '\n'
 
-parseLog :: (String -> Maybe a) -> String -> Log a
+parseLog :: A.Parser a -> L.ByteString -> Log a
 parseLog = parseLogWithUUID . const
 
-parseLogWithUUID :: (UUID -> String -> Maybe a) -> String -> Log a
-parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . splitLines
+parseLogWithUUID :: (UUID -> A.Parser a) -> L.ByteString -> Log a
+parseLogWithUUID parser = fromMaybe M.empty . A.maybeResult
+	. A.parse (logParser parser)
+
+logParser :: (UUID -> A.Parser a) -> A.Parser (Log a)
+logParser parser = M.fromListWith best <$> parseLogLines go
   where
-	parse line
-		-- This is a workaround for a bug that caused
-		-- NoUUID items to be stored in the log.
-		-- It can be removed at any time; is just here to clean
-		-- up logs where that happened temporarily.
-		| " " `isPrefixOf` line = Nothing
-		| null ws = Nothing
-		| otherwise = parser u (unwords info) >>= makepair
-	  where
-		makepair v = Just (u, LogEntry ts v)
-		ws = words line
-		u = toUUID $ Prelude.head ws
-		t = Prelude.last ws
-		ts
-			| tskey `isPrefixOf` t = fromMaybe Unknown $
-				parseVectorClock $ drop 1 $ dropWhile (/= '=') t
-			| otherwise = Unknown
-		info
-			| ts == Unknown = drop 1 ws
-			| otherwise = drop 1 $ beginning ws
+	go = do
+		u <- toUUID <$> A8.takeWhile1 (/= ' ')
+		(dl, ts) <- accumval D.empty
+		v <- either fail return $ A.parseOnly (parser u <* A.endOfInput)
+			(S.intercalate " " $ D.toList dl)
+		return (u, LogEntry ts v)
+	accumval dl =
+		((dl,) <$> parsetimestamp)
+		<|> (A8.char ' ' *> (A8.takeWhile (/= ' ')) >>= accumval . D.snoc dl)
+	parsetimestamp = 
+		(A8.string " timestamp=" *> vectorClockParser <* A.endOfInput)
+		<|> (const Unknown <$> A.endOfInput)
 
 buildLogNew :: (v -> Builder) -> Log v -> Builder
 buildLogNew = buildMapLog buildUUID
@@ -94,6 +93,3 @@ changeLog = changeMapLog
 
 addLog :: UUID -> LogEntry v -> Log v -> Log v
 addLog = addMapLog
-
-tskey :: String
-tskey = "timestamp="

@@ -12,7 +12,6 @@ module Logs.Remote (
 	keyValToConfig,
 	configToKeyVal,
 	showConfig,
-	parseConfig,
 
 	prop_isomorphic_configEscape,
 	prop_parse_show_Config,
@@ -26,6 +25,7 @@ import Logs.UUIDBased
 
 import qualified Data.Map as M
 import Data.Char
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 {- Adds or updates a remote's config in the log. -}
@@ -35,14 +35,15 @@ configSet u cfg = do
 	Annex.Branch.change remoteLog $
 		buildLog (byteString . encodeBS . showConfig)
 			. changeLog c u cfg
-			. parseLog parseConfig . decodeBL
+			. parseLog remoteConfigParser
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = simpleMap . parseLog parseConfig . decodeBL <$> Annex.Branch.get remoteLog
+readRemoteLog = simpleMap . parseLog remoteConfigParser
+	<$> Annex.Branch.get remoteLog
 
-parseConfig :: String -> Maybe RemoteConfig
-parseConfig = Just . keyValToConfig . words
+remoteConfigParser :: A.Parser RemoteConfig
+remoteConfigParser = keyValToConfig . words . decodeBS <$> A.takeByteString
 
 showConfig :: RemoteConfig -> String
 showConfig = unwords . configToKeyVal
@@ -93,7 +94,7 @@ prop_parse_show_Config :: RemoteConfig -> Bool
 prop_parse_show_Config c
 	-- whitespace and '=' are not supported in keys
 	| any (\k -> any isSpace k || elem '=' k) (M.keys c) = True
-	| otherwise = parseConfig (showConfig c) ~~ Just c
+	| otherwise = A.parseOnly remoteConfigParser (encodeBS $ showConfig c) ~~ Right c
   where
 	normalize v = sort . M.toList <$> v
 	a ~~ b = normalize a == normalize b

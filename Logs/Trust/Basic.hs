@@ -19,20 +19,18 @@ import Logs
 import Logs.UUIDBased
 import Logs.Trust.Pure as X
 
-import Data.ByteString.Builder
-
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change trustLog $
-		buildLog (byteString . encodeBS . showTrustLog) .
+		buildLog buildTrustLevel .
 			changeLog c uuid level .
-				parseLog (Just . parseTrustLog) . decodeBL
+				parseLog trustLevelParser
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Does not include forcetrust or git config values, just those from the
  - log file. -}
 trustMapRaw :: Annex TrustMap
-trustMapRaw = calcTrustMap . decodeBL <$> Annex.Branch.get trustLog
+trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog

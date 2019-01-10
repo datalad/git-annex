@@ -22,6 +22,9 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
     last touched by that ancient git-annex version, the descriptions
     of remotes would appear missing when used with this version of
     git-annex.
+  * Improve uuid.log parser to preserve whitespace in repo descriptions.
+  * Improve activity.log parser to not remove unknown activities,
+    allowing for future expansion.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 

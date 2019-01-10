@@ -20,6 +20,7 @@ module Logs.Schedule (
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Time.LocalTime
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 import Annex.Common
@@ -33,19 +34,18 @@ scheduleSet :: UUID -> [ScheduledActivity] -> Annex ()
 scheduleSet uuid@(UUID _) activities = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change scheduleLog $
-		buildLog (byteString . encodeBS) 
-			. changeLog c uuid val 
-			. parseLog Just . decodeBL
+		buildLog byteString 
+			. changeLog c uuid (encodeBS val)
+			. parseLog A.takeByteString
   where
 	val = fromScheduledActivities activities
 scheduleSet NoUUID _ = error "unknown UUID; cannot modify"
 
 scheduleMap :: Annex (M.Map UUID [ScheduledActivity])
-scheduleMap = simpleMap
-	. parseLog parser . decodeBL
-	<$> Annex.Branch.get scheduleLog
+scheduleMap = simpleMap . parseLog parser <$> Annex.Branch.get scheduleLog
   where
-	parser = eitherToMaybe . parseScheduledActivities
+	parser = either fail pure . parseScheduledActivities . decodeBS 
+		=<< A.takeByteString
 
 scheduleGet :: UUID -> Annex (S.Set ScheduledActivity)
 scheduleGet u = do

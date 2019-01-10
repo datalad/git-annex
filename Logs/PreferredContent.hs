@@ -1,6 +1,6 @@
 {- git-annex preferred content matcher configuration
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,6 +26,7 @@ module Logs.PreferredContent (
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Either
+import qualified Data.Attoparsec.ByteString.Lazy as A
 
 import Annex.Common
 import Logs.PreferredContent.Raw
@@ -73,8 +74,7 @@ preferredRequiredMapsLoad = do
 	groupmap <- groupMap
 	configmap <- readRemoteLog
 	let genmap l gm = simpleMap
-		. parseLogWithUUID ((Just .) . makeMatcher groupmap configmap gm)
-		. decodeBL
+		. parseLogWithUUID (\u -> makeMatcher groupmap configmap gm u . decodeBS <$> A.takeByteString)
 		<$> Annex.Branch.get l
 	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
 	rc <- genmap requiredContentLog M.empty

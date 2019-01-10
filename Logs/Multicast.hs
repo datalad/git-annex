@@ -1,6 +1,6 @@
 {- git-annex multicast fingerprint log
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import Logs
 import Logs.UUIDBased
 
 import qualified Data.Map as M
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 newtype Fingerprint = Fingerprint String
@@ -26,9 +27,17 @@ recordFingerprint :: Fingerprint -> UUID -> Annex ()
 recordFingerprint fp uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change multicastLog $
-		buildLog (byteString . encodeBS . show)
+		buildLog buildFindgerPrint
 			. changeLog c uuid fp
-			. parseLog readish . decodeBL
+			. parseLog fingerprintParser
 
 knownFingerPrints :: Annex (M.Map UUID Fingerprint)
-knownFingerPrints = simpleMap . parseLog readish . decodeBL <$> Annex.Branch.get activityLog
+knownFingerPrints = simpleMap . parseLog fingerprintParser
+	<$> Annex.Branch.get activityLog
+
+fingerprintParser :: A.Parser Fingerprint
+fingerprintParser = maybe (fail "fingerprint parse failed") pure 
+	. readish . decodeBS =<< A.takeByteString
+
+buildFindgerPrint :: Fingerprint -> Builder
+buildFindgerPrint = byteString . encodeBS . show

@@ -13,6 +13,7 @@ module Logs.Difference (
 ) where
 
 import qualified Data.Map as M
+import qualified Data.Attoparsec.ByteString as A
 import Data.ByteString.Builder
 
 import Annex.Common
@@ -26,17 +27,16 @@ recordDifferences :: Differences -> UUID -> Annex ()
 recordDifferences ds@(Differences {}) uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change differenceLog $
-		buildLog (byteString . encodeBS) 
-			. changeLog c uuid (showDifferences ds) 
-			. parseLog Just . decodeBL
+		buildLog byteString 
+			. changeLog c uuid (encodeBS $ showDifferences ds) 
+			. parseLog A.takeByteString
 recordDifferences UnknownDifferences _ = return ()
 
 -- Map of UUIDs that have Differences recorded.
 -- If a new version of git-annex has added a Difference this version
 -- doesn't know about, it will contain UnknownDifferences.
 recordedDifferences :: Annex (M.Map UUID Differences)
-recordedDifferences = parseDifferencesLog . decodeBL <$> Annex.Branch.get differenceLog
+recordedDifferences = parseDifferencesLog <$> Annex.Branch.get differenceLog
 
 recordedDifferencesFor :: UUID -> Annex Differences
-recordedDifferencesFor u = fromMaybe mempty . M.lookup u 
-	<$> recordedDifferences
+recordedDifferencesFor u = fromMaybe mempty . M.lookup u <$> recordedDifferences

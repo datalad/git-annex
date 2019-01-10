@@ -573,7 +573,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	 -}
 	run [] = noop
 	run changers = do
-		trustmap <- calcTrustMap . decodeBL <$> getStaged trustLog
+		trustmap <- calcTrustMap <$> getStaged trustLog
 		fs <- branchFiles
 		forM_ fs $ \f -> do
 			content <- getStaged f
@@ -598,7 +598,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 
 checkBranchDifferences :: Git.Ref -> Annex ()
 checkBranchDifferences ref = do
-	theirdiffs <- allDifferences . parseDifferencesLog . decodeBL
+	theirdiffs <- allDifferences . parseDifferencesLog
 		<$> catFile ref differenceLog
 	mydiffs <- annexDifferences <$> Annex.getGitConfig
 	when (theirdiffs /= mydiffs) $

@@ -46,8 +46,9 @@ dropDead f content trustmap = case getLogVariety f of
 		-- to still know it's dead.
 		| f == trustLog -> PreserveFile
 		| otherwise -> ChangeFile $
-			UUIDBased.buildLog (byteString . encodeBS) $
-				dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just (decodeBL content)
+			UUIDBased.buildLog byteString $
+				dropDeadFromMapLog trustmap id $
+					UUIDBased.parseLog A.takeByteString content
 	Just NewUUIDBasedLog -> ChangeFile $
 		UUIDBased.buildLogNew byteString $
 			dropDeadFromMapLog trustmap id $
@@ -55,7 +56,8 @@ dropDead f content trustmap = case getLogVariety f of
 	Just (ChunkLog _) -> ChangeFile $
 		Chunk.buildLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog content
 	Just (PresenceLog _) ->
-		let newlog = Presence.compactLog $ dropDeadFromPresenceLog trustmap $ Presence.parseLog content
+		let newlog = Presence.compactLog $
+			dropDeadFromPresenceLog trustmap $ Presence.parseLog content
 		in if null newlog
 			then RemoveFile
 			else ChangeFile $ Presence.buildLog newlog

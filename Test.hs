@@ -180,7 +180,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
 	, testProperty "prop_parse_build_log" Logs.Presence.prop_parse_build_log
 	, testProperty "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
-	, testProperty "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
+	, testProperty "prop_parse_build_TrustLevelLog" Logs.Trust.prop_parse_build_TrustLevelLog
 	, testProperty "prop_hashes_stable" Utility.Hash.prop_hashes_stable
 	, testProperty "prop_mac_stable" Utility.Hash.prop_mac_stable
 	, testProperty "prop_schedule_roundtrips" Utility.Scheduled.QuickCheck.prop_schedule_roundtrips

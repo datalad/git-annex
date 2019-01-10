@@ -11,13 +11,16 @@ module Logs.Difference.Pure (
 ) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString as A
 
 import Annex.Common
 import Types.Difference
 import Logs.UUIDBased
 
-parseDifferencesLog :: String -> (M.Map UUID Differences)
-parseDifferencesLog = simpleMap . parseLog (Just . readDifferences)
+parseDifferencesLog :: L.ByteString -> (M.Map UUID Differences)
+parseDifferencesLog = simpleMap
+	. parseLog (readDifferences . decodeBS <$> A.takeByteString)
 
 -- The sum of all recorded differences, across all UUIDs.
 allDifferences :: M.Map UUID Differences -> Differences
