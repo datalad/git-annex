@@ -18,6 +18,9 @@ import Logs
 import Logs.MapLog
 import Annex.UUID
 
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
 data Exported = Exported
@@ -30,7 +33,7 @@ data ExportParticipants = ExportParticipants
 	{ exportFrom :: UUID
 	, exportTo :: UUID
 	}
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 data ExportChange = ExportChange
 	{ oldTreeish :: [Git.Ref]
@@ -44,7 +47,6 @@ data ExportChange = ExportChange
 getExport :: UUID -> Annex [Exported]
 getExport remoteuuid = nub . mapMaybe get . M.toList . simpleMap 
 	. parseExportLog
-	. decodeBL
 	<$> Annex.Branch.get exportLog
   where
 	get (ep, exported)
@@ -74,7 +76,7 @@ recordExport remoteuuid ec = do
 		buildExportLog
 			. changeMapLog c ep exported 
 			. M.mapWithKey (updateothers c u)
-			. parseExportLog . decodeBL
+			. parseExportLog
   where
 	updateothers c u ep le@(LogEntry _ exported@(Exported { exportedTreeish = t }))
 		| u == exportFrom ep || remoteuuid /= exportTo ep || t `notElem` oldTreeish ec = le
@@ -92,17 +94,16 @@ recordExportBeginning remoteuuid newtree = do
 	old <- fromMaybe (Exported emptyTree [])
 		. M.lookup ep . simpleMap 
 		. parseExportLog
-		. decodeBL
 		<$> Annex.Branch.get exportLog
 	let new = old { incompleteExportedTreeish = nub (newtree:incompleteExportedTreeish old) }
 	Annex.Branch.change exportLog $
 		buildExportLog 
 			. changeMapLog c ep new
-			. parseExportLog . decodeBL
+			. parseExportLog
 	Annex.Branch.graftTreeish newtree (asTopFilePath "export.tree")
 
-parseExportLog :: String -> MapLog ExportParticipants Exported
-parseExportLog = parseMapLog parseExportParticipants parseExported
+parseExportLog :: L.ByteString -> MapLog ExportParticipants Exported
+parseExportLog = parseMapLog exportParticipantsParser exportedParser
 
 buildExportLog :: MapLog ExportParticipants Exported -> Builder
 buildExportLog = buildMapLog buildExportParticipants buildExported
@@ -113,14 +114,11 @@ buildExportParticipants ep =
   where
 	sep = charUtf8 ':'
 
-parseExportParticipants :: String -> Maybe ExportParticipants
-parseExportParticipants s = case separate (== ':') s of
-	("",_) -> Nothing
-	(_,"") -> Nothing
-	(f,t) -> Just $ ExportParticipants
-		{ exportFrom = toUUID f
-		, exportTo = toUUID t
-		}
+exportParticipantsParser :: A.Parser ExportParticipants
+exportParticipantsParser = ExportParticipants
+	<$> (toUUID <$> A8.takeWhile1 (/= ':'))
+	<* A8.char ':'
+	<*> (toUUID <$> A8.takeWhile1 (const True))
 
 buildExported :: Exported -> Builder
 buildExported exported = go (exportedTreeish exported : incompleteExportedTreeish exported)
@@ -129,7 +127,8 @@ buildExported exported = go (exportedTreeish exported : incompleteExportedTreeis
 	go (r:rs) = rref r <> mconcat [ charUtf8 ' ' <> rref r' | r' <- rs ]
 	rref r = byteString (encodeBS' (Git.fromRef r))
 
-parseExported :: String -> Maybe Exported
-parseExported s = case words s of
-	(et:it) -> Just $ Exported (Git.Ref et) (map Git.Ref it)
-	_ -> Nothing
+exportedParser :: A.Parser Exported
+exportedParser = Exported <$> refparser <*> many refparser
+  where
+	refparser = (Git.Ref . decodeBS <$> A8.takeWhile1 (/= ' ') )
+		<* ((const () <$> A8.char ' ') <|> A.endOfInput)

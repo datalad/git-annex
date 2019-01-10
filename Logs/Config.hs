@@ -20,6 +20,8 @@ import Logs.MapLog
 import qualified Annex.Branch
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 type ConfigName = String
@@ -35,7 +37,7 @@ setGlobalConfig' :: ConfigName -> ConfigValue -> Annex ()
 setGlobalConfig' name new = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change configLog $ 
-		buildGlobalConfig . changeMapLog c name new . parseGlobalConfig . decodeBL
+		buildGlobalConfig . changeMapLog c name new . parseGlobalConfig
 
 unsetGlobalConfig :: ConfigName -> Annex ()
 unsetGlobalConfig name = do
@@ -53,9 +55,11 @@ buildGlobalConfig = buildMapLog fieldbuilder valuebuilder
 	fieldbuilder = byteString . encodeBS
 	valuebuilder = byteString . encodeBS
 
-parseGlobalConfig :: String -> MapLog ConfigName ConfigValue
-parseGlobalConfig = parseMapLog Just Just
+parseGlobalConfig :: L.ByteString -> MapLog ConfigName ConfigValue
+parseGlobalConfig = parseMapLog string string
+  where
+	string = decodeBS <$> A.takeByteString
 
 loadGlobalConfig :: Annex (M.Map ConfigName ConfigValue)
-loadGlobalConfig = M.filter (not . null) . simpleMap . parseGlobalConfig . decodeBL
+loadGlobalConfig = M.filter (not . null) . simpleMap . parseGlobalConfig
 	<$> Annex.Branch.get configLog

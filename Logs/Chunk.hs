@@ -38,7 +38,7 @@ chunksStored u k chunkmethod chunkcount = do
 	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (chunkLogFile config k) $
-		buildLog . changeMapLog c (u, chunkmethod) chunkcount . parseLog . decodeBL
+		buildLog . changeMapLog c (u, chunkmethod) chunkcount . parseLog
 
 chunksRemoved :: UUID -> Key -> ChunkMethod -> Annex ()
 chunksRemoved u k chunkmethod = chunksStored u k chunkmethod 0
@@ -46,7 +46,7 @@ chunksRemoved u k chunkmethod = chunksStored u k chunkmethod 0
 getCurrentChunks :: UUID -> Key -> Annex [(ChunkMethod, ChunkCount)]
 getCurrentChunks u k = do
 	config <- Annex.getGitConfig
-	select . parseLog . decodeBL <$> Annex.Branch.get (chunkLogFile config k)
+	select . parseLog <$> Annex.Branch.get (chunkLogFile config k)
   where
 	select = filter (\(_m, ct) -> ct > 0)
 		. map (\((_ku, m), l) -> (m, value l))

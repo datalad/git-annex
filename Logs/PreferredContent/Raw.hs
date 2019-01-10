@@ -18,6 +18,7 @@ import Types.Group
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 {- Changes the preferred content configuration of a remote. -}
@@ -51,7 +52,10 @@ groupPreferredContentSet g val = do
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
 
 parseGroupPreferredContent :: L.ByteString -> MapLog Group String
-parseGroupPreferredContent = parseMapLog (Just . toGroup) Just . decodeBL
+parseGroupPreferredContent = parseMapLog parsegroup parsestring
+  where
+	parsegroup = Group <$> A.takeByteString
+	parsestring = decodeBS <$> A.takeByteString
 
 buildGroupPreferredContent :: MapLog Group PreferredContentExpression -> Builder
 buildGroupPreferredContent = buildMapLog buildgroup buildexpr

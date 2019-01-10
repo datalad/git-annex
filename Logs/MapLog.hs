@@ -4,6 +4,8 @@
  -
  - A line of the log will look like: "timestamp field value"
  -
+ - The field names cannot contain whitespace.
+ -
  - Copyright 2014, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -19,13 +21,16 @@ import Common
 import Annex.VectorClock
 import Logs.Line
 
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
 data LogEntry v = LogEntry
 	{ changed :: VectorClock
 	, value :: v
-	} deriving (Eq)
+	} deriving (Eq, Show)
 
 type MapLog f v = M.Map f (LogEntry v)
 
@@ -39,17 +44,23 @@ buildMapLog fieldbuilder valuebuilder = mconcat . map genline . M.toList
 	sp = charUtf8 ' '
 	nl = charUtf8 '\n'
 
-parseMapLog :: Ord f => (String -> Maybe f) -> (String -> Maybe v) -> String -> MapLog f v
-parseMapLog fieldparser valueparser = M.fromListWith best . mapMaybe parse . splitLines
+parseMapLog :: Ord f => A.Parser f -> A.Parser v -> L.ByteString -> MapLog f v
+parseMapLog fieldparser valueparser = fromMaybe M.empty . A.maybeResult 
+	. A.parse (mapLogParser fieldparser valueparser)
+
+mapLogParser :: Ord f => A.Parser f -> A.Parser v -> A.Parser (MapLog f v)
+mapLogParser fieldparser valueparser = M.fromListWith best <$> parseLogLines go
   where
-	parse line = do
-		let (sc, rest) = splitword line
-		    (sf, sv) = splitword rest
-		c <- parseVectorClock sc
-		f <- fieldparser sf
-		v <- valueparser sv
-		Just (f, LogEntry c v)
-	splitword = separate (== ' ')
+	go = do
+		c <- vectorClockParser
+		_ <- A8.char ' '
+		w <- A8.takeTill (== ' ')
+		f <- either fail return $
+			A.parseOnly (fieldparser <* A.endOfInput) w
+		_ <- A8.char ' '
+		v <- valueparser
+		A.endOfInput
+		return (f, LogEntry c v)
 
 changeMapLog :: Ord f => VectorClock -> f -> v -> MapLog f v -> MapLog f v
 changeMapLog c f v = M.insert f $ LogEntry c v

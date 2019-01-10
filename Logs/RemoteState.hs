@@ -17,6 +17,8 @@ import qualified Annex.Branch
 import qualified Annex
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 type RemoteState = String
@@ -26,7 +28,7 @@ setRemoteState u k s = do
 	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (remoteStateLogFile config k) $
-		buildRemoteState . changeLog c u s . parseLogNew Just . decodeBL
+		buildRemoteState . changeLog c u s . parseRemoteState
 
 buildRemoteState :: Log RemoteState -> Builder
 buildRemoteState = buildLogNew (byteString . encodeBS)
@@ -34,7 +36,10 @@ buildRemoteState = buildLogNew (byteString . encodeBS)
 getRemoteState :: UUID -> Key -> Annex (Maybe RemoteState)
 getRemoteState u k = do
 	config <- Annex.getGitConfig
-	extract . parseLogNew Just . decodeBL
+	extract . parseRemoteState
 		<$> Annex.Branch.get (remoteStateLogFile config k)
   where
 	extract m = value <$> M.lookup u m
+
+parseRemoteState :: L.ByteString -> Log RemoteState
+parseRemoteState = parseLogNew (decodeBS <$> A.takeByteString)

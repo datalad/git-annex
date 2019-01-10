@@ -19,6 +19,9 @@ import Logs.MapLog
 import Data.Int
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
 -- Currently chunks are all fixed size, but other chunking methods
@@ -33,20 +36,13 @@ type ChunkCount = Integer
 
 type ChunkLog = MapLog (UUID, ChunkMethod) ChunkCount
 
-parseChunkMethod :: String -> ChunkMethod
-parseChunkMethod s = maybe (UnknownChunks $ encodeBS s) FixedSizeChunks (readish s)
-
 buildChunkMethod :: ChunkMethod -> Builder
 buildChunkMethod (FixedSizeChunks sz) = int64Dec sz
 buildChunkMethod (UnknownChunks s) = byteString s
 
-parseLog :: String -> ChunkLog
-parseLog = parseMapLog fieldparser valueparser
-  where
-	fieldparser s =
-		let (u,m) = separate (== ':') s
-		in Just (toUUID u, parseChunkMethod m)
-	valueparser = readish
+chunkMethodParser :: A.Parser ChunkMethod
+chunkMethodParser =
+	(FixedSizeChunks <$> A8.decimal) <|> (UnknownChunks <$> A.takeByteString)
 
 buildLog :: ChunkLog -> Builder
 buildLog = buildMapLog fieldbuilder valuebuilder
@@ -54,3 +50,13 @@ buildLog = buildMapLog fieldbuilder valuebuilder
 	fieldbuilder (u, m) = buildUUID u <> sep <> buildChunkMethod m
 	valuebuilder = integerDec
 	sep = charUtf8 ':'
+
+parseLog :: L.ByteString -> ChunkLog
+parseLog = parseMapLog fieldparser valueparser
+  where
+	fieldparser = (,)
+		<$> (toUUID <$> A8.takeTill (== ':'))
+		<* A8.char ':'
+		<*> chunkMethodParser
+		<* A.endOfInput
+	valueparser = A8.decimal

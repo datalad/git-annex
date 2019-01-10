@@ -39,6 +39,8 @@ import Annex.VectorClock
 import Logs.MapLog
 import Logs.Line
 
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 type Log v = MapLog UUID v
@@ -84,8 +86,8 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . splitLines
 buildLogNew :: (v -> Builder) -> Log v -> Builder
 buildLogNew = buildMapLog buildUUID
 
-parseLogNew :: (String -> Maybe v) -> String -> Log v
-parseLogNew = parseMapLog (Just . toUUID)
+parseLogNew :: A.Parser v -> L.ByteString -> Log v
+parseLogNew = parseMapLog (toUUID <$> A.takeByteString)
 
 changeLog :: VectorClock -> UUID -> v -> Log v -> Log v
 changeLog = changeMapLog

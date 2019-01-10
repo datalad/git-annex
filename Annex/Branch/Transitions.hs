@@ -24,6 +24,7 @@ import Types.MetaData
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 data FileTransition
@@ -48,11 +49,11 @@ dropDead f content trustmap = case getLogVariety f of
 			UUIDBased.buildLog (byteString . encodeBS) $
 				dropDeadFromMapLog trustmap id $ UUIDBased.parseLog Just (decodeBL content)
 	Just NewUUIDBasedLog -> ChangeFile $
-		UUIDBased.buildLogNew (byteString . encodeBS) $
+		UUIDBased.buildLogNew byteString $
 			dropDeadFromMapLog trustmap id $
-				UUIDBased.parseLogNew Just (decodeBL content)
+				UUIDBased.parseLogNew A.takeByteString content
 	Just (ChunkLog _) -> ChangeFile $
-		Chunk.buildLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog (decodeBL content)
+		Chunk.buildLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog content
 	Just (PresenceLog _) ->
 		let newlog = Presence.compactLog $ dropDeadFromPresenceLog trustmap $ Presence.parseLog content
 		in if null newlog
