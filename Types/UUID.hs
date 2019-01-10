@@ -57,6 +57,7 @@ instance ToUUID U.UUID where
 
 buildUUID :: UUID -> Builder
 buildUUID (UUID b) = byteString b
+buildUUID NoUUID = mempty
 
 isUUID :: String -> Bool
 isUUID = isJust . U.fromString
