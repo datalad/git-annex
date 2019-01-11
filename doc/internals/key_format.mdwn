@@ -22,8 +22,9 @@ For example:
 * Other fields could be added in the future, if needed.
 
 git-annex always puts the fields in the order shown above when serializing
-a key. It can parse keys with the fields in other orders (although the name
-field must always come last).
+a key. Older versions of git-annex would parse keys with the fields in other
+orders (although the name field must always come last), but the current
+version requires the fields come in the order shown above.
 
 The `git annex examinekey` command can be used to extract information from
 a key.
