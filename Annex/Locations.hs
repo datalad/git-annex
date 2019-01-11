@@ -76,8 +76,6 @@ module Annex.Locations (
 	hashDirLower,
 	preSanitizeKeyName,
 	reSanitizeKeyName,
-
-	prop_isomorphic_fileKey
 ) where
 
 import Data.Char
@@ -85,7 +83,6 @@ import Data.Default
 
 import Common
 import Key
-import Types.Key
 import Types.UUID
 import Types.GitConfig
 import Types.Difference
@@ -528,14 +525,6 @@ fileKey = file2key . unesc []
 	unesc r ('&':'s':cs) = unesc ('%':r) cs
 	unesc r ('&':'a':cs) = unesc ('&':r) cs
 	unesc r (c:cs) = unesc (c:r) cs
-
-{- for quickcheck -}
-prop_isomorphic_fileKey :: String -> Bool
-prop_isomorphic_fileKey s
-	| null s = True -- it's not legal for a key to have no keyName
-	| otherwise= Just k == fileKey (keyFile k)
-  where
-	k = stubKey { keyName = s, keyVariety = OtherKey "test" }
 
 {- A location to store a key on a special remote that uses a filesystem.
  - A directory hash is used, to protect against filesystems that dislike

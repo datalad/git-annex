@@ -15,6 +15,7 @@ import qualified Git
 import qualified Types.Remote as Remote
 import Config
 import Messages
+import Utility.FileSystemEncoding
 
 import qualified Data.Map as M
 import Control.Applicative
@@ -35,8 +36,8 @@ exportKey sha = mk <$> catKey sha
   where
 	mk (Just k) = AnnexKey k
 	mk Nothing = GitKey $ Key
-		{ keyName = Git.fromRef sha
-		, keyVariety = SHA1Key (HasExt False)
+		{ keyName = encodeBS $ Git.fromRef sha
+		, keyVariety = SHA1Key (HasExt False) mempty
 		, keySize = Nothing
 		, keyMtime = Nothing
 		, keyChunkSize = Nothing

@@ -208,5 +208,5 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 						ea <- exportActions r
 						retrieveExport ea k l dest p
 			else do
-				warning $ "exported content cannot be verified due to using the " ++ formatKeyVariety (keyVariety k) ++ " backend"
+				warning $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (keyVariety k)) ++ " backend"
 				return False

@@ -12,6 +12,8 @@ module Types.Backend where
 import Types.Key
 import Types.KeySource
 
+import Utility.FileSystemEncoding
+
 data BackendA a = Backend
 	{ backendVariety :: KeyVariety
 	, getKey :: KeySource -> a (Maybe Key) 
@@ -28,7 +30,7 @@ data BackendA a = Backend
 	}
 
 instance Show (BackendA a) where
-	show backend = "Backend { name =\"" ++ formatKeyVariety (backendVariety backend) ++ "\" }"
+	show backend = "Backend { name =\"" ++ decodeBS (formatKeyVariety (backendVariety backend)) ++ "\" }"
 
 instance Eq (BackendA a) where
 	a == b = backendVariety a == backendVariety b

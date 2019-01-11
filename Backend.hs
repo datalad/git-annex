@@ -29,6 +29,7 @@ import qualified Backend.WORM
 import qualified Backend.URL
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Char8 as S8
 
 list :: [Backend]
 list = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
@@ -46,7 +47,7 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 		Annex.changeState $ \s -> s { Annex.backend = Just b }
 		return b
 	valid name = not (null name)
-	lookupname = lookupBackendVariety . parseKeyVariety
+	lookupname = lookupBackendVariety . parseKeyVariety . encodeBS
 
 {- Generates a key for a file. -}
 genKey :: KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
@@ -57,7 +58,7 @@ genKey source preferredbackend = do
 		Just k -> Just (makesane k, b)
   where
 	-- keyNames should not contain newline characters.
-	makesane k = k { keyName = map fixbadchar (keyName k) }
+	makesane k = k { keyName = S8.map fixbadchar (keyName k) }
 	fixbadchar c
 		| c == '\n' = '_'
 		| otherwise = c
@@ -66,7 +67,7 @@ getBackend :: FilePath -> Key -> Annex (Maybe Backend)
 getBackend file k = case maybeLookupBackendVariety (keyVariety k) of
 	Just backend -> return $ Just backend
 	Nothing -> do
-		warning $ "skipping " ++ file ++ " (unknown backend " ++ formatKeyVariety (keyVariety k) ++ ")"
+		warning $ "skipping " ++ file ++ " (unknown backend " ++ decodeBS (formatKeyVariety (keyVariety k)) ++ ")"
 		return Nothing
 
 {- Looks up the backend that should be used for a file.
@@ -75,7 +76,7 @@ getBackend file k = case maybeLookupBackendVariety (keyVariety k) of
 chooseBackend :: FilePath -> Annex (Maybe Backend)
 chooseBackend f = Annex.getState Annex.forcebackend >>= go
   where
-	go Nothing = maybeLookupBackendVariety . parseKeyVariety
+	go Nothing = maybeLookupBackendVariety . parseKeyVariety . encodeBS
 		<$> checkAttr "annex.backend" f
 	go (Just _) = Just <$> defaultBackend
 
@@ -83,7 +84,7 @@ chooseBackend f = Annex.getState Annex.forcebackend >>= go
 lookupBackendVariety :: KeyVariety -> Backend
 lookupBackendVariety v = fromMaybe unknown $ maybeLookupBackendVariety v
   where
-	unknown = giveup $ "unknown backend " ++ formatKeyVariety v
+	unknown = giveup $ "unknown backend " ++ decodeBS (formatKeyVariety v)
 
 maybeLookupBackendVariety :: KeyVariety -> Maybe Backend
 maybeLookupBackendVariety v = M.lookup v varietyMap

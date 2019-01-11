@@ -1,11 +1,12 @@
 {- git-annex hashing backends
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Backend.Hash (
 	backends,
@@ -19,6 +20,8 @@ import Types.Backend
 import Types.KeySource
 import Utility.Hash
 
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 
@@ -71,15 +74,15 @@ genBackendE hash = (genBackend hash)
 	}
 
 hashKeyVariety :: Hash -> HasExt -> KeyVariety
-hashKeyVariety MD5Hash = MD5Key
-hashKeyVariety SHA1Hash = SHA1Key
-hashKeyVariety (SHA2Hash size) = SHA2Key size
-hashKeyVariety (SHA3Hash size) = SHA3Key size
-hashKeyVariety (SkeinHash size) = SKEINKey size
+hashKeyVariety MD5Hash he = MD5Key he mempty
+hashKeyVariety SHA1Hash he = SHA1Key he mempty
+hashKeyVariety (SHA2Hash size) he = SHA2Key size he mempty
+hashKeyVariety (SHA3Hash size) he = SHA3Key size he mempty
+hashKeyVariety (SkeinHash size) he = SKEINKey size he mempty
 #if MIN_VERSION_cryptonite(0,23,0)
-hashKeyVariety (Blake2bHash size) = Blake2bKey size
-hashKeyVariety (Blake2sHash size) = Blake2sKey size
-hashKeyVariety (Blake2spHash size) = Blake2spKey size
+hashKeyVariety (Blake2bHash size) he = Blake2bKey size he mempty
+hashKeyVariety (Blake2sHash size) he = Blake2sKey size he mempty
+hashKeyVariety (Blake2spHash size) he = Blake2spKey size he mempty
 #endif
 
 {- A key is a hash of its contents. -}
@@ -89,7 +92,7 @@ keyValue hash source = do
 	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file
 	return $ Just $ stubKey
-		{ keyName = s
+		{ keyName = encodeBS s
 		, keyVariety = hashKeyVariety hash (HasExt False)
 		, keySize = Just filesize
 		}
@@ -102,7 +105,7 @@ keyValueE hash source = keyValue hash source >>= maybe (return Nothing) addE
 		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
 		let ext = selectExtension maxlen (keyFilename source)
 		return $ Just $ k
-			{ keyName = keyName k ++ ext
+			{ keyName = keyName k <> encodeBS ext
 			, keyVariety = hashKeyVariety hash (HasExt True)
 			}
 
@@ -132,7 +135,7 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 			check <$> hashFile hash file
 		_ -> return True
   where
-	expected = keyHash key
+	expected = decodeBS (keyHash key)
 	check s
 		| s == expected = True
 		{- A bug caused checksums to be prefixed with \ in some
@@ -145,8 +148,8 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 		warning $ "hardware fault: " ++ show e
 		return False
 
-keyHash :: Key -> String
-keyHash key = dropExtensions (keyName key)
+keyHash :: Key -> S.ByteString
+keyHash = fst . splitKeyNameExtension
 
 validInExtension :: Char -> Bool
 validInExtension c
@@ -163,8 +166,8 @@ validInExtension c
  -}
 needsUpgrade :: Key -> Bool
 needsUpgrade key = or
-	[ "\\" `isPrefixOf` keyHash key
-	, any (not . validInExtension) (takeExtensions $ keyName key)
+	[ "\\" `S8.isPrefixOf` keyHash key
+	, any (not . validInExtension) (decodeBS $ snd $ splitKeyNameExtension key)
 	, not (hasExt (keyVariety key)) && keyHash key /= keyName key
 	]
 
@@ -184,7 +187,7 @@ trivialMigrate' oldkey newbackend afile maxextlen
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ oldkey
 			{ keyName = keyHash oldkey 
-				++ selectExtension maxextlen file
+				<> encodeBS (selectExtension maxextlen file)
 			, keyVariety = newvariety
 			}
 	{- Upgrade to fix bad previous migration that created a
@@ -285,5 +288,5 @@ testKeyBackend =
 	let b = genBackendE (SHA2Hash (HashSize 256))
 	in b { getKey = (fmap addE) <$$> getKey b } 
   where
-	addE k = k { keyName = keyName k ++ longext }
+	addE k = k { keyName = keyName k <> longext }
 	longext = ".this-is-a-test-key"

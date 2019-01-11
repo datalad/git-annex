@@ -11,6 +11,7 @@ import System.Posix.Types
 import Data.Char
 import Data.Default
 import Data.ByteString.Builder
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 
 import Annex.Common
@@ -133,7 +134,7 @@ oldlog2key l
   where
 	len = length l - 4
 	k = readKey1 (take len l)
-	sane = (not . null $ keyName k) && (not . null $ formatKeyVariety $ keyVariety k)
+	sane = (not . S.null $ keyName k) && (not . S.null $ formatKeyVariety $ keyVariety k)
 
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
@@ -145,8 +146,8 @@ readKey1 :: String -> Key
 readKey1 v
 	| mixup = fromJust $ file2key $ intercalate ":" $ Prelude.tail bits
 	| otherwise = stubKey
-		{ keyName = n
-		, keyVariety = parseKeyVariety b
+		{ keyName = encodeBS n
+		, keyVariety = parseKeyVariety (encodeBS b)
 		, keySize = s
 		, keyMtime = t
 		}
@@ -165,11 +166,11 @@ readKey1 v
 
 showKey1 :: Key -> String
 showKey1 Key { keyName = n , keyVariety = v, keySize = s, keyMtime = t } =
-	intercalate ":" $ filter (not . null) [b, showifhere t, showifhere s, n]
+	intercalate ":" $ filter (not . null) [b, showifhere t, showifhere s, decodeBS n]
   where
 	showifhere Nothing = ""
 	showifhere (Just x) = show x
-	b = formatKeyVariety v
+	b = decodeBS $ formatKeyVariety v
 
 keyFile1 :: Key -> FilePath
 keyFile1 key = replace "/" "%" $ replace "%" "&s" $ replace "&" "&a"  $ showKey1 key
@@ -202,8 +203,8 @@ lookupFile1 file = do
 		Just backend -> return $ Just (k, backend)
 	  where
 		k = fileKey1 l
-		bname = formatKeyVariety (keyVariety k)
-		kname = keyName k
+		bname = decodeBS (formatKeyVariety (keyVariety k))
+		kname = decodeBS (keyName k)
 		skip = "skipping " ++ file ++ 
 			" (unknown backend " ++ bname ++ ")"
 

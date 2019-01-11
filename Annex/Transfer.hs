@@ -178,7 +178,7 @@ checkSecureHashes t a
 	| cryptographicallySecure variety = a
 	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( do
-			warning $ "annex.securehashesonly blocked transfer of " ++ formatKeyVariety variety ++ " key"
+			warning $ "annex.securehashesonly blocked transfer of " ++ decodeBS (formatKeyVariety variety) ++ " key"
 			return observeFailure
 		, a
 		)

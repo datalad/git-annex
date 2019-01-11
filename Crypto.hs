@@ -9,6 +9,7 @@
  -}
 
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE Rank2Types #-}
 
 module Crypto (
@@ -33,6 +34,7 @@ module Crypto (
 	prop_HmacSha1WithCipher_sane
 ) where
 
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.UTF8 (fromString)
 import qualified Data.Map as M
@@ -159,16 +161,17 @@ type EncKey = Key -> Key
  - on content. It does need to be repeatable. -}
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
-	{ keyName = macWithCipher mac c (key2file k)
-	, keyVariety = OtherKey (encryptedBackendNamePrefix ++ showMac mac)
+	{ keyName = encodeBS (macWithCipher mac c (key2file k))
+	, keyVariety = OtherKey $
+		encryptedBackendNamePrefix <> encodeBS (showMac mac)
 	}
 
-encryptedBackendNamePrefix :: String
+encryptedBackendNamePrefix :: S.ByteString
 encryptedBackendNamePrefix = "GPG"
 
 isEncKey :: Key -> Bool
 isEncKey k = case keyVariety k of
-	OtherKey s ->  encryptedBackendNamePrefix `isPrefixOf` s
+	OtherKey s -> encryptedBackendNamePrefix `S.isPrefixOf` s
 	_ -> False
 
 type Feeder = Handle -> IO ()

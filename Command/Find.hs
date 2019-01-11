@@ -89,10 +89,10 @@ showFormatted format unformatted vars =
 keyVars :: Key -> [(String, String)]
 keyVars key =
 	[ ("key", key2file key)
-	, ("backend", formatKeyVariety $ keyVariety key)
+	, ("backend", decodeBS $ formatKeyVariety $ keyVariety key)
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
-	, ("keyname", keyName key)
+	, ("keyname", decodeBS $ keyName key)
 	, ("hashdirlower", hashDirLower def key)
 	, ("hashdirmixed", hashDirMixed def key)
 	, ("mtime", whenavail show $ keyMtime key)

@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Assistant.Threads.SanityChecker (
 	sanityCheckerStartupThread,
@@ -52,6 +53,7 @@ import Utility.DiskFree
 
 import Data.Time.Clock.POSIX
 import qualified Data.Text as T
+import qualified Data.ByteString as S
 
 {- This thread runs once at startup, and most other threads wait for it
  - to finish. (However, the webapp thread does not, to prevent the UI
@@ -309,7 +311,7 @@ cleanReallyOldTmp = do
 	cleanjunk check f = case fileKey (takeFileName f) of
 		Nothing -> cleanOld check f
 		Just k
-			| "GPGHMAC" `isPrefixOf` formatKeyVariety (keyVariety k) ->
+			| "GPGHMAC" `S.isPrefixOf` formatKeyVariety (keyVariety k) ->
 				cleanOld check f
 			| otherwise -> noop
 

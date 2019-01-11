@@ -250,7 +250,7 @@ verifyLocationLog key keystatus ai = do
 	 - config was set. -}
 	when (present && not (cryptographicallySecure (keyVariety key))) $
 		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
-			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ formatKeyVariety (keyVariety key) ++ " key"
+			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ decodeBS (formatKeyVariety (keyVariety key)) ++ " key"
 
 	{- In direct mode, modified files will show up as not present,
 	 - but that is expected and not something to do anything about. -}
@@ -424,7 +424,7 @@ checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
 				[ actionItemDesc ai key
 				, ": Can be upgraded to an improved key format. "
 				, "You can do so by running: git annex migrate --backend="
-				, formatKeyVariety (keyVariety key) ++ " "
+				, decodeBS (formatKeyVariety (keyVariety key)) ++ " "
 				, file
 				]
 			return True

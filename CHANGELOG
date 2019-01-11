@@ -13,7 +13,9 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * Fix doubled progress display when downloading an url when -J is used.
   * importfeed: Better error message when downloading the feed fails.
   * Some optimisations, including a 10x faster timestamp parser,
-    and improved parsing and serialization of git-annex branch data.
+    a 7x faster key parser, and improved parsing and serialization of
+    git-annex branch data.
+  * Stricter parser for keys doesn't allow doubled fields or out of order fields.
   * The benchmark command, which only had some old benchmarking of the sqlite
     databases before, now allows benchmarking any other git-annex commands.
   * Support being built with ghc 8.6.3 (MonadFail).

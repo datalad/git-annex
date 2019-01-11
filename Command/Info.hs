@@ -481,7 +481,7 @@ disk_size = simpleStat "available local disk space" $
 
 backend_usage :: Stat
 backend_usage = stat "backend usage" $ json fmt $
-	ObjectMap . (M.mapKeys formatKeyVariety) . backendsKeys
+	ObjectMap . (M.mapKeys (decodeBS . formatKeyVariety)) . backendsKeys
 		<$> cachedReferencedData
   where
 	fmt = multiLine . map (\(b, n) -> b ++ ": " ++ show n) . sort . M.toList . fromObjectMap

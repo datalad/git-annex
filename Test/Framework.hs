@@ -562,7 +562,7 @@ backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
-backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety
+backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety . encodeBS
 
 getKey :: Types.Backend -> FilePath -> IO Types.Key
 getKey b f = fromJust <$> annexeval go

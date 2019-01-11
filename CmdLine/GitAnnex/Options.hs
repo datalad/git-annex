@@ -410,4 +410,4 @@ completeRemotes = completer $ mkCompleter $ \input -> do
 		
 completeBackends :: HasCompleter f => Mod f a
 completeBackends = completeWith $
-	map (formatKeyVariety . Backend.backendVariety) Backend.list
+	map (decodeBS . formatKeyVariety . Backend.backendVariety) Backend.list

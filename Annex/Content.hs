@@ -405,7 +405,7 @@ warnUnverifiableInsecure k = warning $ unwords
 	, "this safety check.)"
 	]
   where
-	kv = formatKeyVariety (keyVariety k)
+	kv = decodeBS (formatKeyVariety (keyVariety k))
 
 data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
 
@@ -544,7 +544,7 @@ checkSecureHashes key
 	| cryptographicallySecure (keyVariety key) = return True
 	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( do
-			warning $ "annex.securehashesonly blocked adding " ++ formatKeyVariety (keyVariety key) ++ " key to annex objects"
+			warning $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (keyVariety key)) ++ " key to annex objects"
 			return False
 		, return True
 		)

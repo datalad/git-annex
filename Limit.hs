@@ -257,7 +257,7 @@ limitInBackend :: MkLimit Annex
 limitInBackend name = Right $ const $ checkKey check
   where
 	check key = pure $ keyVariety key == variety
-	variety = parseKeyVariety name
+	variety = parseKeyVariety (encodeBS name)
 
 {- Adds a limit to skip files not using a secure hash. -}
 addSecureHash :: Annex ()

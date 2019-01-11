@@ -14,6 +14,8 @@ import Types.KeySource
 import Backend.Utilities
 import Git.FilePath
 
+import qualified Data.ByteString.Char8 as S8
+
 backends :: [Backend]
 backends = [backend]
 
@@ -45,12 +47,12 @@ keyValue source = do
 
 {- Old WORM keys could contain spaces, and can be upgraded to remove them. -}
 needsUpgrade :: Key -> Bool
-needsUpgrade key = ' ' `elem` keyName key
+needsUpgrade key = ' ' `S8.elem` keyName key
 
 removeSpaces :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
 removeSpaces oldkey newbackend _
 	| migratable = return $ Just $ oldkey
-		{ keyName = reSanitizeKeyName (keyName oldkey) }
+		{ keyName = encodeBS $ reSanitizeKeyName $ decodeBS $ keyName oldkey }
 	| otherwise = return Nothing
   where
 	migratable = oldvariety == newvariety
