@@ -93,7 +93,7 @@ buildKeyFile k = byteString (formatKeyVariety (keyVariety k))
 	_ ?: Nothing = mempty
 
 key2file :: Key -> FilePath
-key2file = decodeBL . key2file'
+key2file = decodeBL' . key2file'
 
 key2file' :: Key -> L.ByteString
 key2file' = toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty . buildKeyFile
@@ -136,7 +136,7 @@ keyFileParser = do
 	parsechunknum = parseopt $ A8.char 'C' *> A8.decimal
 
 file2key :: FilePath -> Maybe Key
-file2key = file2key' . encodeBS
+file2key = file2key' . encodeBS'
 
 file2key' :: S.ByteString -> Maybe Key
 file2key' b = eitherToMaybe $ A.parseOnly keyFileParser b

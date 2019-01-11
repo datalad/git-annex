@@ -19,6 +19,8 @@ module Utility.FileSystemEncoding (
 	encodeBL,
 	decodeBS,
 	encodeBS,
+	decodeBL',
+	encodeBL',
 	decodeBS',
 	encodeBS',
 	decodeW8,
@@ -150,6 +152,12 @@ decodeBS' = encodeW8 . S.unpack
 
 encodeBS' :: FilePath -> S.ByteString
 encodeBS' = S.pack . decodeW8
+
+decodeBL' :: L.ByteString -> FilePath
+decodeBL' = encodeW8 . L.unpack
+
+encodeBL' :: FilePath -> L.ByteString
+encodeBL' = L.pack . decodeW8
 
 {- Recent versions of the unix package have this alias; defined here
  - for backwards compatibility. -}
