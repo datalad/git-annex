@@ -11,14 +11,9 @@ Speed improvements, including:
   <https://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/>
   <https://git-annex.branchable.com/todo/Long_Running_Filter_Process/>
 
-* Speed up git-annex branch data queries and updates by rewriting it to
-  use ByteStrings. May become an order of magnitude faster. Using
-  libgit2 to access data from the branch w/o using the git interface
-  may also improve speed.
-
 * Improve speed of git-annex when operating on large numbers of files.
-  Approaches include better caching of data, and switching to packed
-  FilePaths and other better data structures.
+  Approaches include better caching of data, and using ByteString
+  more where String is used, and other better data structures.
 
 * Enable parallelism by default.
   <https://git-annex.branchable.com/todo/config_option_to_use_all_processors_by_default/>
