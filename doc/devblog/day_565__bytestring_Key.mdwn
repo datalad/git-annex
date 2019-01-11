@@ -1,0 +1,15 @@
+Today worked on converting the Key data type to use ByteString.
+
+Microbenchmarks of Keys improved, especially parsing them got 700% faster.
+But key parsing is not enough of an overhead in any commands I benchmarked
+to be a real improvement.
+
+The new key parser is much stricter than the old one, which helps the
+speed. Hopefully the oddly formatted edge cases that the old parser allowed
+are not really in use; they include keys with fields out of the usual order,
+and keys with multiple values for the same field.
+
+The next step would probably be to convert the git interface to use
+ByteStrings, and that plus the current groundwork is likely to lead to some
+real performance improvements. But I'm going to stop here with the
+ByteString conversion for now.
