@@ -1,6 +1,6 @@
 {- git-annex Keys
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,19 +11,31 @@ module Key (
 	Key(..),
 	AssociatedFile(..),
 	stubKey,
-	key2file,
+	buildKeyFile,
+	keyFileParser,
 	file2key,
+	key2file,
+	file2key',
+	key2file',
 	nonChunkKey,
 	chunkKeyOffset,
 	isChunkKey,
 	isKeyPrefix,
+	splitKeyNameExtension,
 
 	prop_isomorphic_key_encode,
 	prop_isomorphic_key_decode
 ) where
 
-import Data.Char
 import qualified Data.Text as T
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
+import qualified Data.ByteString.Lazy as L
+import Data.ByteString.Builder
+import Data.ByteString.Builder.Extra
+import qualified Data.Attoparsec.ByteString as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
+import Foreign.C.Types
 
 import Common
 import Types.Key
@@ -34,8 +46,8 @@ import qualified Utility.SimpleProtocol as Proto
 
 stubKey :: Key
 stubKey = Key
-	{ keyName = ""
-	, keyVariety = OtherKey ""
+	{ keyName = mempty
+	, keyVariety = OtherKey mempty
 	, keySize = Nothing
 	, keyMtime = Nothing
 	, keyChunkSize = Nothing
@@ -65,69 +77,81 @@ isKeyPrefix s = [fieldSep, fieldSep] `isInfixOf` s
 fieldSep :: Char
 fieldSep = '-'
 
-{- Converts a key to a string that is suitable for use as a filename.
- - The name field is always shown last, separated by doubled fieldSeps,
+{- Builds a ByteString that is suitable for use as a filename representing
+ - a Key. The name field is always shown last, separated by doubled fieldSeps,
  - and is the only field allowed to contain the fieldSep. -}
-key2file :: Key -> FilePath
-key2file Key { keyVariety = kv, keySize = s, keyMtime = m, keyChunkSize = cs, keyChunkNum = cn, keyName = n } =
-	formatKeyVariety kv +++ ('s' ?: s) +++ ('m' ?: m) +++ ('S' ?: cs) +++ ('C' ?: cn) +++ (fieldSep : n)
+buildKeyFile :: Key -> Builder
+buildKeyFile k = byteString (formatKeyVariety (keyVariety k))
+	<> 's' ?: (integerDec <$> keySize k)
+	<> 'm' ?: (integerDec . (\(CTime t) -> fromIntegral t) <$> keyMtime k)
+	<> 'S' ?: (integerDec <$> keyChunkSize k)
+	<> 'C' ?: (integerDec <$> keyChunkNum k)
+	<> sepbefore (sepbefore (byteString (keyName k)))
   where
-	"" +++ y = y
-	x +++ "" = x
-	x +++ y = x ++ fieldSep:y
-	f ?: (Just v) = f : show v
-	_ ?: _ = ""
+	sepbefore s = char7 fieldSep <> s
+	c ?: (Just b) = sepbefore (char7 c <> b)
+	_ ?: Nothing = mempty
+
+key2file :: Key -> FilePath
+key2file = decodeBL . key2file'
+
+key2file' :: Key -> L.ByteString
+key2file' = toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty . buildKeyFile
+
+{- This is a strict parser for security reasons; a key
+ - can contain only 4 fields, which all consist only of numbers.
+ - Any key containing other fields, or non-numeric data will fail
+ - to parse.
+ -
+ - If a key contained non-numeric fields, they could be used to
+ - embed data used in a SHA1 collision attack, which would be a
+ - problem since the keys are committed to git.
+ -}
+keyFileParser :: A.Parser Key
+keyFileParser = do
+	-- key variety cannot be empty
+	v <- (parseKeyVariety <$> A8.takeWhile1 (/= fieldSep))
+	s <- parsesize
+	m <- parsemtime
+	cs <- parsechunksize
+	cn <- parsechunknum
+	_ <- A8.char fieldSep
+	_ <- A8.char fieldSep
+	n <- A.takeByteString
+	if validKeyName v n
+		then return $ Key
+			{ keyName = n
+			, keyVariety = v
+			, keySize = s
+			, keyMtime = m
+			, keyChunkSize = cs
+			, keyChunkNum = cn
+			}
+		else fail "invalid keyName"
+  where
+	parseopt p = (Just <$> (A8.char fieldSep *> p)) <|> pure Nothing
+	parsesize = parseopt $ A8.char 's' *> A8.decimal
+	parsemtime = parseopt $ CTime <$> (A8.char 'm' *> A8.decimal)
+	parsechunksize = parseopt $ A8.char 'S' *> A8.decimal
+	parsechunknum = parseopt $ A8.char 'C' *> A8.decimal
 
 file2key :: FilePath -> Maybe Key
-file2key s
-	| key == Just stubKey || (keyName <$> key) == Just "" || (keyVariety <$> key) == Just (OtherKey "") = Nothing
-	| otherwise = key
-  where
-	key = startbackend stubKey s
+file2key = file2key' . encodeBS
 
-	startbackend k v = sepfield k v addvariety
-		
-	sepfield k v a = case span (/= fieldSep) v of
-		(v', _:r) -> findfields r $ a k v'
-		_ -> Nothing
+file2key' :: S.ByteString -> Maybe Key
+file2key' b = eitherToMaybe $ A.parseOnly keyFileParser b
 
-	findfields (c:v) (Just k)
-		| c == fieldSep = addkeyname k v
-		| otherwise = sepfield k v $ addfield c
-	findfields _ v = v
+{- This splits any extension out of the keyName, returning the 
+ - keyName minus extension, and the extension (including leading dot).
+ -}
+splitKeyNameExtension :: Key -> (S.ByteString, S.ByteString)
+splitKeyNameExtension = splitKeyNameExtension' . keyName
 
-	addvariety k v = Just k { keyVariety = parseKeyVariety v }
+splitKeyNameExtension' :: S.ByteString -> (S.ByteString, S.ByteString)
+splitKeyNameExtension' keyname = S8.span (/= '.') keyname
 
-	-- This is a strict parser for security reasons; a key
-	-- can contain only 4 fields, which all consist only of numbers.
-	-- Any key containing other fields, or non-numeric data is
-	-- rejected with Nothing.
-	--
-	-- If a key contained non-numeric fields, they could be used to
-	-- embed data used in a SHA1 collision attack, which would be a
-	-- problem since the keys are committed to git.
-	addfield _ _ v | not (all isDigit v) = Nothing
-	addfield 's' k v = do
-		sz <- readish v
-		return $ k { keySize = Just sz }
-	addfield 'm' k v = do
-		mtime <- readish v
-		return $ k { keyMtime = Just mtime }
-	addfield 'S' k v = do
-		chunksize <- readish v
-		return $ k { keyChunkSize = Just chunksize }
-	addfield 'C' k v = case readish v of
-		Just chunknum | chunknum > 0 ->
-			return $ k { keyChunkNum = Just chunknum }
-		_ -> Nothing
-	addfield _ _ _ = Nothing
-
-	addkeyname k v
-		| validKeyName k v = Just $ k { keyName = v }
-		| otherwise = Nothing
-
-{- When a key HasExt, the length of the extension is limited in order to
- - mitigate against SHA1 collision attacks.
+{- Limits the length of the extension in the keyName to mitigate against
+ - SHA1 collision attacks.
  -
  - In such an attack, the extension of the key could be made to contain
  - the collision generation data, with the result that a signed git commit
@@ -137,23 +161,25 @@ file2key s
  - characters; 20 is used here to give a little future wiggle-room. 
  - The SHA1 common-prefix attack needs 128 bytes of data.
  -}
-validKeyName :: Key -> String -> Bool
-validKeyName k name
-	| hasExt (keyVariety k) = length (takeExtensions name) <= 20
+validKeyName :: KeyVariety -> S.ByteString -> Bool
+validKeyName kv name
+	| hasExt kv = 
+		let ext = snd $ splitKeyNameExtension' name
+		in S.length ext <= 20
 	| otherwise = True
 
 instance Arbitrary Key where
 	arbitrary = Key
-		<$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t")
-		<*> (parseKeyVariety <$> (listOf1 $ elements ['A'..'Z'])) -- BACKEND
+		<$> (encodeBS <$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t"))
+		<*> (parseKeyVariety . encodeBS <$> (listOf1 $ elements ['A'..'Z'])) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
 		<*> ((abs . fromInteger <$>) <$> arbitrary) -- mtime cannot be negative
 		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
 instance Hashable Key where
-	hashIO32 = hashIO32 . key2file
-	hashIO64 = hashIO64 . key2file
+	hashIO32 = hashIO32 . key2file'
+	hashIO64 = hashIO64 . key2file'
 
 instance ToJSON' Key where
 	toJSON' = toJSON' . key2file

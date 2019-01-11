@@ -12,8 +12,6 @@ module Types.Key where
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
-import qualified Data.ByteString.Lazy as L
-import Data.ByteString.Builder
 import System.Posix.Types
 
 {- A Key has a unique name, which is derived from a particular backend,
