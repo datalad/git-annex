@@ -1,0 +1,5 @@
+I have two local devices set up with the same remote server (a bare repo following https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_your_own_server/)
+
+I can sync and move files to/from each device. But I can't see the files pushed by one device on the other (or vice-versa).
+
+So from desktop I sync file "a" and from android I sync file "b" but I can't do "git annex copy b --from origin" on the desktop.
