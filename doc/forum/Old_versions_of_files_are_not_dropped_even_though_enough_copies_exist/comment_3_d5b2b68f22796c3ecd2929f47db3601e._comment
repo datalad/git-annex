@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jonas"
+ avatar="http://cdn.libravatar.org/avatar/33f6268ae24acfbdc02a1c80f6ff5e8e"
+ subject="comment 3"
+ date="2019-01-13T20:40:09Z"
+ content="""
+Ok, after upgrading my repository to v7 (apparently repositories are still created as v5) git annex finds the unused versions and lets me drop them.
+"""]]
