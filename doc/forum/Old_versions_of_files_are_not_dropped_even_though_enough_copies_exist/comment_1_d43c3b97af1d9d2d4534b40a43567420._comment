@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="guzik.sergey@9391b6c15e4938a539e36fbe5bab71df07111d2e"
+ nickname="guzik.sergey"
+ avatar="http://cdn.libravatar.org/avatar/69073e903eefa0bc2755123b26441a2f"
+ subject="comment 1"
+ date="2019-01-13T14:50:44Z"
+ content="""
+The behaviour you described is intended, git annex preserves all versions of all files. Those old file are refered in git annex documentation as `unused`, so you can search for this term. Following are main commands:
+
+- [git annex unused](https://git-annex.branchable.com/git-annex-unused/)
+- [git annex dropunused](https://git-annex.branchable.com/git-annex-dropunused/)
+- [git annex drop --unused](https://git-annex.branchable.com/git-annex-drop/)
+"""]]
