@@ -1,0 +1,45 @@
+When a changed version of a file is created after `git annex unlock && change-file && git annex add` the old file inside `.git/annex/objects` is retained and cannot be removed with `git annex drop`.
+When I checkout a commit which has the old version of the file I can easily `git annex drop` it and then it also vanishes from `.git/annex/objects`.
+
+Look at the following script which reproduces the behavior.
+Is this behavior intended?
+
+My use case is a big music library which does not fit onto my laptop.
+So for updating the metadata in the files I basically run `git annex get <folder> && git annex unlock <folder>` then update all files in that folder and then run `git annex add <folder> && git commit && git copy --to remote && git annex drop <folder>`.
+This works perfectly but the problem is, that all old versions of changed files are retained in `.git/annex/objects` which in no time filled my drive to 100%.
+
+EDIT: As a clarification, I would expect git-annex to also drop the old versions of the file if enough copies exist…
+
+The script:
+
+    #!/usr/bin/env bash
+    cd /tmp
+    git init client
+    cd client
+    git annex init
+    git annex numcopies 1
+    dd if=/dev/zero of=zero bs=1M count=4
+    git annex add zero
+    git commit -m 'Checkin'
+    cd ..
+    git clone client remote
+    cd client
+    git remote add remote ../remote
+    git annex sync
+    git annex copy --to remote
+    git annex drop zero
+    git annex get zero
+    git annex unlock zero
+    echo test >> zero
+    git annex add zero
+    git commit -m 'Update'
+    git annex copy --to remote
+    git annex drop zero
+    cd ..
+    tree {client,remote}/.git/annex/objects
+    cd client
+    git checkout master~
+    git annex drop zero
+    git checkout master
+    cd ..
+    tree {client,remote}/.git/annex/objects
