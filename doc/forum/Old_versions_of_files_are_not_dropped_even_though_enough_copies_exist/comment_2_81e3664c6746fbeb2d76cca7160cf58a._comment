@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jonas"
+ avatar="http://cdn.libravatar.org/avatar/33f6268ae24acfbdc02a1c80f6ff5e8e"
+ subject="comment 2"
+ date="2019-01-13T20:21:30Z"
+ content="""
+Thanks for the comment. I somehow forgot to mention that in my post, that `unused` does virtually nothing in this case.
+If you stop my example after the first `tree` invocation and then in the `client` repository do `git annex unused` it tells you that there are no unused files. And hence neither `dropunused` or `drop --unused` does anything more.
+
+So somehow I'm still stuck with this old version of the file which is duplicated and hence should be found and deletable, if I'm not mistaken.
+"""]]
