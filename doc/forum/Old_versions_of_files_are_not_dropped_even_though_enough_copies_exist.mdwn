@@ -8,6 +8,8 @@ My use case is a big music library which does not fit onto my laptop.
 So for updating the metadata in the files I basically run `git annex get <folder> && git annex unlock <folder>` then update all files in that folder and then run `git annex add <folder> && git commit && git copy --to remote && git annex drop <folder>`.
 This works perfectly but the problem is, that all old versions of changed files are retained in `.git/annex/objects` which in no time filled my drive to 100%.
 
+EDIT: As a clarification, I would expect git-annex to also drop the old versions of the file if enough copies exist…
+
 The script:
 
     #!/usr/bin/env bash
