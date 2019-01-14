@@ -181,6 +181,7 @@ trivialMigrate' oldkey newbackend afile maxextlen
 	| migratable && hasExt oldvariety = Just $ oldkey
 		{ keyName = keyHash oldkey
 		, keyVariety = newvariety
+		, keySerialization = Nothing
 		}
 	{- Fast migration from hash to hashE backend. -}
 	| migratable && hasExt newvariety = case afile of
@@ -189,6 +190,7 @@ trivialMigrate' oldkey newbackend afile maxextlen
 			{ keyName = keyHash oldkey 
 				<> encodeBS (selectExtension maxextlen file)
 			, keyVariety = newvariety
+			, keySerialization = Nothing
 			}
 	{- Upgrade to fix bad previous migration that created a
 	 - non-extension preserving key, with an extension
@@ -196,6 +198,7 @@ trivialMigrate' oldkey newbackend afile maxextlen
 	| newvariety == oldvariety && not (hasExt oldvariety) &&
 		keyHash oldkey /= keyName oldkey = Just $ oldkey
 			{ keyName = keyHash oldkey
+			, keySerialization = Nothing
 			}
 	| otherwise = Nothing
   where
@@ -288,5 +291,8 @@ testKeyBackend =
 	let b = genBackendE (SHA2Hash (HashSize 256))
 	in b { getKey = (fmap addE) <$$> getKey b } 
   where
-	addE k = k { keyName = keyName k <> longext }
+	addE k = k
+		{ keyName = keyName k <> longext
+		, keySerialization = Nothing
+		}
 	longext = ".this-is-a-test-key"

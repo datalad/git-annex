@@ -377,7 +377,10 @@ finishDownloadWith tmp u url file = do
 
 {- Adds the url size to the Key. -}
 addSizeUrlKey :: Url.UrlInfo -> Key -> Key
-addSizeUrlKey urlinfo key = key { keySize = Url.urlSize urlinfo }
+addSizeUrlKey urlinfo key = key
+	{ keySize = Url.urlSize urlinfo
+	, keySerialization = Nothing
+	}
 
 {- Adds worktree file to the repository. -}
 addWorkTree :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()

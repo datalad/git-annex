@@ -150,6 +150,7 @@ readKey1 v
 		, keyVariety = parseKeyVariety (encodeBS b)
 		, keySize = s
 		, keyMtime = t
+		, keySerialization = Nothing
 		}
   where
 	bits = splitc ':' v
