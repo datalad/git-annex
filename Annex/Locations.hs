@@ -1,13 +1,17 @@
 {- git-annex file locations
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Locations (
 	keyFile,
+	keyFile',
 	fileKey,
+	fileKey',
 	keyPaths,
 	keyPath,
 	annexDir,
@@ -80,6 +84,8 @@ module Annex.Locations (
 
 import Data.Char
 import Data.Default
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Char8 as S8
 
 import Common
 import Key
@@ -476,8 +482,8 @@ preSanitizeKeyName' resanitize = concatMap escape
   where
 	escape c
 		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
-		| c `elem` ".-_" = [c] -- common, assumed safe
-		| c `elem` "/%:" = [c] -- handled by keyFile
+		| c `elem` ['.', '-', '_'] = [c] -- common, assumed safe
+		| c `elem` ['/', '%', ':'] = [c] -- handled by keyFile
 		-- , is safe and uncommon, so will be used to escape
 		-- other characters. By itself, it is escaped to 
 		-- doubled form.
@@ -506,25 +512,33 @@ reSanitizeKeyName = preSanitizeKeyName' True
  - can cause existing objects to get lost.
  -}
 keyFile :: Key -> FilePath
-keyFile = concatMap esc . serializeKey
+keyFile = fromRawFilePath . keyFile'
+
+keyFile' :: Key -> RawFilePath
+keyFile' = S8.concatMap esc . L.toStrict . serializeKey'
   where
 	esc '&' = "&a"
 	esc '%' = "&s"
 	esc ':' = "&c"
 	esc '/' = "%"
-	esc c = [c]
+	esc c = S8.singleton c
 
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
 fileKey :: FilePath -> Maybe Key
-fileKey = deserializeKey . unesc [] 
+fileKey = fileKey' . toRawFilePath
+
+fileKey' :: RawFilePath -> Maybe Key
+fileKey' = deserializeKey' . S8.intercalate "/" . map go . S8.split '%'
   where
-	unesc r [] = reverse r
-	unesc r ('%':cs) = unesc ('/':r) cs
-	unesc r ('&':'c':cs) = unesc (':':r) cs
-	unesc r ('&':'s':cs) = unesc ('%':r) cs
-	unesc r ('&':'a':cs) = unesc ('&':r) cs
-	unesc r (c:cs) = unesc (c:r) cs
+	go :: S8.ByteString -> S8.ByteString
+	go = S8.concat . map (unesc . S8.uncons) . S8.split '&'
+	unesc :: Maybe (Char, S8.ByteString) -> S8.ByteString
+	unesc Nothing = mempty
+	unesc (Just ('c', b)) = S8.cons ':' b
+	unesc (Just ('s', b)) = S8.cons '%' b
+	unesc (Just ('a', b)) = S8.cons '&' b
+	unesc (Just (c, b)) = S8.cons c b
 
 {- A location to store a key on a special remote that uses a filesystem.
  - A directory hash is used, to protect against filesystems that dislike
