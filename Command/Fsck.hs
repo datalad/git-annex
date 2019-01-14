@@ -562,7 +562,7 @@ badContentDirect file key = do
 badContentRemote :: Remote -> FilePath -> Key -> Annex String
 badContentRemote remote localcopy key = do
 	bad <- fromRepo gitAnnexBadDir
-	let destbad = bad </> serializeKey key
+	let destbad = bad </> fileKey key
 	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
 		( return False
 		, do
