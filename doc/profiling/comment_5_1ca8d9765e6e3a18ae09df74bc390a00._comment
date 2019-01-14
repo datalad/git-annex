@@ -1,0 +1,80 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-01-14T21:18:17Z"
+ content="""
+After switching many internal types to ByteString.
+
+(Note that stack build --profile built this with -O, not -O2, so it's not
+as fast as it ought to be, but the cost centers are probably fairly
+accurate still.)
+
+	        Mon Jan 14 17:17 2019 Time and Allocation Profiling Report  (Final)
+	
+	           git-annex +RTS -p -RTS find
+	
+	        total time  =        3.07 secs   (3074 ticks @ 1000 us, 1 processor)
+	        total alloc = 1,880,855,184 bytes  (excludes profiling overheads)
+	
+	COST CENTRE                      MODULE                         SRC                                                 %time %alloc
+	
+	inAnnex'.checkindirect           Annex.Content                  Annex/Content.hs:(106,9)-(121,39)                    31.6   41.0
+	splitc                           Utility.Split                  Utility/Split.hs:(24,1)-(26,25)                       4.8    5.2
+	keyFile'                         Annex.Locations                Annex/Locations.hs:(518,1)-(524,30)                   4.5    5.2
+	encodeW8                         Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:(189,1)-(191,70)        3.1    3.6
+	>>=.\                            Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:(146,9)-(147,44)    2.5    0.7
+	_encodeFilePath                  Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:(111,1)-(114,49)        2.5    2.7
+	>>=.\.succ'                      Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:146:13-76           2.2    0.2
+	fileKey'                         Annex.Locations                Annex/Locations.hs:(532,1)-(541,41)                   2.2    1.5
+	getState                         Annex                          Annex.hs:(254,1)-(257,27)                             2.1    0.4
+	getAnnexLinkTarget'.probesymlink Annex.Link                     Annex/Link.hs:77:9-62                                 1.9    2.5
+	w82s                             Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:217:1-15                1.8    5.2
+	keyPath                          Annex.Locations                Annex/Locations.hs:(551,1)-(553,23)                   1.7    3.5
+	keyFile'.esc                     Annex.Locations                Annex/Locations.hs:(520,9)-(524,30)                   1.6    4.7
+	fileKey'.go                      Annex.Locations                Annex/Locations.hs:535:9-63                           1.6    1.6
+	s2w8                             Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:214:1-15                1.3    3.5
+	withPtr                          Basement.Block.Base            Basement/Block/Base.hs:(395,1)-(404,31)               1.3    0.5
+	parseLinkTarget                  Annex.Link                     Annex/Link.hs:(247,1)-(255,25)                        1.2    3.8
+	parseKeyVariety                  Types.Key                      Types/Key.hs:(135,1)-(184,41)                         1.2    0.0
+	assertLocal                      Git                            Git.hs:(123,1)-(129,28)                               0.8    1.6
+	decodeBS'                        Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:151:1-31                0.6    2.4
+
+Notice that the percent of time inAnnex' went up from 14.1% to 31.6%. 
+That and getAnnexLinkTarget are the meat of the IO, so it's good for them
+to get a higher percent of the CPU, to the extent they're IO bound.
+It seems like getAnnexLinkTarget also lost a lot of non-IO overhead.
+
+There are still some overheads from conversion to and from ByteString,
+but the above does seem like a good improvement.
+
+	        Mon Jan 14 17:56 2019 Time and Allocation Profiling Report  (Final)
+	
+	           git-annex +RTS -p -RTS find --not --in web
+	
+	        total time  =        7.62 secs   (7622 ticks @ 1000 us, 1 processor)
+	        total alloc = 1,908,064,368 bytes  (excludes profiling overheads)
+	
+	COST CENTRE                      MODULE                         SRC                                                 %time %alloc
+	
+	catObjectDetails.\               Git.CatFile                    Git/CatFile.hs:(83,88)-(91,97)                        6.5    3.8
+	catchDefaultIO                   Utility.Exception              Utility/Exception.hs:57:1-53                          6.4    2.5
+	parseResp                        Git.CatFile                    Git/CatFile.hs:(141,1)-(152,28)                       4.9    5.0
+	MAIN                             MAIN                           <built-in>                                            4.6    0.4
+	>>=.\                            Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:(146,9)-(147,44)    4.6    1.7
+	>>=.\.succ'                      Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:146:13-76           4.1    0.7
+	getState                         Annex                          Annex.hs:(254,1)-(257,27)                             2.7    1.1
+	simplifyPath                     Utility.Path                   Utility/Path.hs:(38,1)-(50,48)                        2.6    6.8
+	splitc                           Utility.Split                  Utility/Split.hs:(24,1)-(26,25)                       2.5    5.1
+	keyFile'                         Annex.Locations                Annex/Locations.hs:(518,1)-(524,30)                   1.7    5.2
+	getAnnexLinkTarget'.probesymlink Annex.Link                     Annex/Link.hs:77:9-62                                 1.7    2.6
+	journalFile                      Annex.Journal                  Annex/Journal.hs:(107,1)-(112,33)                     1.7    5.7
+	catches                          Control.Monad.Catch            src/Control/Monad/Catch.hs:(795,1)-(799,76)           1.7    2.7
+	query.send                       Git.CatFile                    Git/CatFile.hs:137:9-32                               1.6    0.5
+	delEntry                         Utility.Env                    Utility/Env.hs:(57,1)-(60,48)                         1.6    0.8
+	encodeW8                         Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:(189,1)-(191,70)        1.4    3.5
+	query                            Git.CatFile                    Git/CatFile.hs:(130,1)-(138,26)                       1.3    0.0
+
+Notice that allocations dropped by 1/3rd!
+
+Otherwise, not a large change here..
+"""]]
