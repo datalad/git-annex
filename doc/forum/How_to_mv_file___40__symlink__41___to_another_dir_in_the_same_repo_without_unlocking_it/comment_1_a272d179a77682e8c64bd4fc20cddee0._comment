@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2019-01-14T12:36:04Z"
+ content="""
+You can just move it with any file manager or `git mv`.
+
+git-annex will fix the moved symlink before it is committed.
+"""]]
