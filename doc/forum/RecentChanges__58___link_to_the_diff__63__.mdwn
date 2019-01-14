@@ -1,0 +1,1 @@
+In the RecentChanges page on the forum, it'd be good to have a link to the diff for the change, in addition to the existing link to the changed page.
