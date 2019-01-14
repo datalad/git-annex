@@ -84,7 +84,6 @@ module Annex.Locations (
 
 import Data.Char
 import Data.Default
-import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Char8 as S8
 
 import Common
