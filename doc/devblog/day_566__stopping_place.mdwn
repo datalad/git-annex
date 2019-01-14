@@ -1,0 +1,26 @@
+I said I was going to stop with the ByteString conversion, but then I
+looked at [[/profiling]], and I knew I couldn't stop there --
+conversion between String and ByteString had became a major cost center.
+
+So today, converted all the code that reads and parses symlinks and pointer files
+to ByteString, now ByteString is used all the way from disk to Key. Also
+put in some caching, so git-annex does not need to re-serialize a Key
+that it's just deserialized from a ByteString.
+
+There's still some ByteString to String conversion when generating
+FilePaths; to avoid that will need an equivilant of System.FilePath that
+operates on RawFilePath, and I don't think there is one yet? But the
+[[/profiling]] does show improvement, it's more and more dominated by IO
+operations that can't be sped up, and less by slow code.
+
+This really does feel like a stopping place now.
+
+Updated benchmarks (compared to last git-annex release):
+
+find on 10000 files, none present... 8% speedup  
+whereis on 1000 files............... 12% speedup  
+info on dir with 1000 files......... 7% speedup  
+local get ; drop of 1000 files...... 4% speedup  
+setting metadata in 1000 files...... 8% speedup  
+getting metadata from 1000 files.... 7% speedup  
+finding a single file out of 1000 that has a given metadata value... 8% speedup  
