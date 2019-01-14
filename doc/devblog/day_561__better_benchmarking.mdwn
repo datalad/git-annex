@@ -13,5 +13,5 @@ New results for this weeks's optimisations:
 
 whereis on 1000 files........... 5% speedup  
 whereis on 1 file............... 14% speedup  
-info on dir with 400 files...... 15% speedup  
+info on dir with 1000 files..... 4% speedup  
 local get ; drop of 1000 files.. 3% speedup  
