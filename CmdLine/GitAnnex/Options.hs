@@ -210,7 +210,7 @@ parseAllOption = flag' WantAllKeys
 	)
 
 parseKey :: Monad m => String -> m Key
-parseKey = maybe (fail "invalid key") return . file2key
+parseKey = maybe (fail "invalid key") return . deserializeKey
 
 -- Options to match properties of annexed files.
 annexedMatchingOptions :: [GlobalOption]

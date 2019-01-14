@@ -43,7 +43,7 @@ batchParser :: String -> Either String (FilePath, Key)
 batchParser s = case separate (== ' ') (reverse s) of
 	(rk, rf)
 		| null rk || null rf -> Left "Expected: \"file key\""
-		| otherwise -> case file2key (reverse rk) of
+		| otherwise -> case deserializeKey (reverse rk) of
 			Nothing -> Left "bad key"
 			Just k -> Right (reverse rf, k)
 
@@ -53,7 +53,7 @@ seek o = case batchOption o of
 	NoBatch -> withPairs (commandAction . start . parsekey) (reKeyThese o)
   where
 	parsekey (file, skey) =
-		(file, fromMaybe (giveup "bad key") (file2key skey))
+		(file, fromMaybe (giveup "bad key") (deserializeKey skey))
 
 start :: (FilePath, Key) -> CommandStart
 start (file, newkey) = ifAnnexed file go stop

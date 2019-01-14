@@ -38,7 +38,7 @@ seek = withWords (commandAction . start)
  -}
 start :: [String] -> CommandStart
 start (k:[]) = do
-	case file2key k of
+	case deserializeKey k of
 		Nothing -> error "bad key"
 		(Just key) -> whenM (inAnnex key) $ do
 			afile <- AssociatedFile <$> Fields.getField Fields.associatedFile

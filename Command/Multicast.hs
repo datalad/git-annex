@@ -208,7 +208,7 @@ receive ups = do
 
 storeReceived :: FilePath -> Annex ()
 storeReceived f = do
-	case file2key (takeFileName f) of
+	case deserializeKey (takeFileName f) of
 		Nothing -> do
 			warning $ "Received a file " ++ f ++ " that is not a git-annex key. Deleting this file."
 			liftIO $ nukeFile f

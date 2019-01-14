@@ -38,7 +38,7 @@ seek o = do
 		Batch fmt -> batchInput fmt parsekey $ batchCommandAction . start
 		NoBatch -> noop
   where
-	parsekey = maybe (Left "bad key") Right . file2key
+	parsekey = maybe (Left "bad key") Right . deserializeKey
 
 start :: Key -> CommandStart
 start key = do

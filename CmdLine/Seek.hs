@@ -158,7 +158,7 @@ withFilesMaybeModified a params = seekActions $
 withKeys :: (Key -> CommandSeek) -> CmdParams -> CommandSeek
 withKeys a l = seekActions $ return $ map (a . parse) l
   where
-	parse p = fromMaybe (giveup "bad key") $ file2key p
+	parse p = fromMaybe (giveup "bad key") $ deserializeKey p
 
 withNothing :: CommandSeek -> CmdParams -> CommandSeek
 withNothing a [] = a

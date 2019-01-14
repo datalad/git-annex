@@ -14,8 +14,8 @@ module Key (
 	buildKey,
 	keyParser,
 	serializeKey,
-	serializeKey,
-	deserializeKey',
+	serializeKey',
+	deserializeKey,
 	deserializeKey',
 	nonChunkKey,
 	chunkKeyOffset,
@@ -179,8 +179,8 @@ instance Arbitrary Key where
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
 instance Hashable Key where
-	hashIO32 = hashIO32 . deserializeKey'
-	hashIO64 = hashIO64 . deserializeKey'
+	hashIO32 = hashIO32 . serializeKey'
+	hashIO64 = hashIO64 . serializeKey'
 
 instance ToJSON' Key where
 	toJSON' = toJSON' . serializeKey

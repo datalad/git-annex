@@ -40,7 +40,7 @@ data KeyStatus = KeyStatus Key UUID LogStatus
 
 parseKeyStatus :: [String] -> Either String KeyStatus
 parseKeyStatus (ks:us:vs:[]) = do
-	k <- maybe (Left "bad key") Right (file2key ks)
+	k <- maybe (Left "bad key") Right (deserializeKey ks)
 	let u = toUUID us
 	s <- maybe (Left "bad value") Right (parseStatus vs)
 	return $ KeyStatus k u s

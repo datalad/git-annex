@@ -26,7 +26,7 @@ start (keyname:file:[]) = do
 start _ = giveup "specify a key and a content file"
 
 mkKey :: String -> Key
-mkKey = fromMaybe (giveup "bad key") . file2key
+mkKey = fromMaybe (giveup "bad key") . deserializeKey
 
 perform :: FilePath -> Key -> CommandPerform
 perform file key = do

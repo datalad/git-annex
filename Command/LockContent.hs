@@ -32,7 +32,7 @@ start [ks] = do
 		then exitSuccess
 		else exitFailure
   where
-	k = fromMaybe (giveup "bad key") (file2key ks)
+	k = fromMaybe (giveup "bad key") (deserializeKey ks)
 	locksuccess = liftIO $ do
 		putStrLn contentLockedMarker
 		hFlush stdout

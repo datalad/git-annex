@@ -27,5 +27,5 @@ start (ks:us:[]) = do
 		then liftIO exitSuccess
 		else liftIO exitFailure
   where
-	k = fromMaybe (giveup "bad key") (file2key ks)
+	k = fromMaybe (giveup "bad key") (deserializeKey ks)
 start _ = giveup "Wrong number of parameters"

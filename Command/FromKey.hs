@@ -79,7 +79,7 @@ mkKey :: String -> Key
 mkKey s = case parseURI s of
 	Just u | not (isKeyPrefix (uriScheme u)) ->
 		Backend.URL.fromUrl s Nothing
-	_ -> case file2key s of
+	_ -> case deserializeKey s of
 		Just k -> k
 		Nothing -> giveup $ "bad key/url " ++ s
 

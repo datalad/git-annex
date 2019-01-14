@@ -144,7 +144,7 @@ oldlog2key l
 -- as the v2 key that it is.
 readKey1 :: String -> Key
 readKey1 v
-	| mixup = fromJust $ file2key $ intercalate ":" $ Prelude.tail bits
+	| mixup = fromJust $ deserializeKey $ intercalate ":" $ Prelude.tail bits
 	| otherwise = stubKey
 		{ keyName = encodeBS n
 		, keyVariety = parseKeyVariety (encodeBS b)

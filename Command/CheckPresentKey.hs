@@ -69,7 +69,7 @@ batchResult Present = liftIO $ putStrLn "1"
 batchResult _ = liftIO $ putStrLn "0"
 
 toKey :: String -> Key
-toKey = fromMaybe (giveup "Bad key") . file2key
+toKey = fromMaybe (giveup "Bad key") . deserializeKey
 
 toRemote :: String -> Annex Remote
 toRemote rn = maybe (giveup "Unknown remote") return
