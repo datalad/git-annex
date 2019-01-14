@@ -160,7 +160,6 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	[ testProperty "prop_encode_decode_roundtrip" Git.Filename.prop_encode_decode_roundtrip
 	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
-	, testProperty "prop_isomorphic_key_decode" Key.prop_isomorphic_key_decode
 	, testProperty "prop_isomorphic_shellEscape" Utility.SafeCommand.prop_isomorphic_shellEscape
 	, testProperty "prop_isomorphic_shellEscape_multiword" Utility.SafeCommand.prop_isomorphic_shellEscape_multiword
 	, testProperty "prop_isomorphic_configEscape" Logs.Remote.prop_isomorphic_configEscape
@@ -397,7 +396,7 @@ test_reinject = intmpclonerepoInDirect $ do
 	git_annex "drop" ["--force", sha1annexedfile] @? "drop failed"
 	annexed_notpresent sha1annexedfile
 	writecontent tmp $ content sha1annexedfile
-	key <- Key.key2file <$> getKey backendSHA1 tmp
+	key <- Key.serializeKey <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] @? "reinject failed"
 	annexed_present sha1annexedfile
 	-- fromkey can't be used on a crippled filesystem, since it makes a
@@ -867,9 +866,9 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
-	git_annex "dropkey" ["--force", Key.key2file annexedfilekey]
+	git_annex "dropkey" ["--force", Key.serializeKey annexedfilekey]
 		@? "dropkey failed"
-	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Key.key2file annexedfilekey)
+	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Key.serializeKey annexedfilekey)
 
 	git_annex_shouldfail "dropunused" ["1"] @? "dropunused failed to fail without --force"
 	git_annex "dropunused" ["--force", "1"] @? "dropunused failed"
@@ -1682,12 +1681,12 @@ test_crypto = do
 			let encparams = (mempty :: Types.Remote.RemoteConfig, dummycfg)
 			cipher <- Crypto.decryptCipher gpgcmd encparams cip
 			files <- filterM doesFileExist $
-				map ("dir" </>) $ concatMap (key2files cipher) keys
+				map ("dir" </>) $ concatMap (serializeKeys cipher) keys
 			return (not $ null files) <&&> allM (checkFile mvariant) files
 		checkFile mvariant filename =
 			Utility.Gpg.checkEncryptionFile gpgcmd filename $
 				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
-		key2files cipher = Annex.Locations.keyPaths .
+		serializeKeys cipher = Annex.Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
 test_crypto = putStrLn "gpg testing not implemented on Windows"

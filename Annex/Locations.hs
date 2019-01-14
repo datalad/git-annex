@@ -506,7 +506,7 @@ reSanitizeKeyName = preSanitizeKeyName' True
  - can cause existing objects to get lost.
  -}
 keyFile :: Key -> FilePath
-keyFile = concatMap esc . key2file
+keyFile = concatMap esc . serializeKey
   where
 	esc '&' = "&a"
 	esc '%' = "&s"
@@ -517,7 +517,7 @@ keyFile = concatMap esc . key2file
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
 fileKey :: FilePath -> Maybe Key
-fileKey = file2key . unesc [] 
+fileKey = deserializeKey . unesc [] 
   where
 	unesc r [] = reverse r
 	unesc r ('%':cs) = unesc ('/':r) cs

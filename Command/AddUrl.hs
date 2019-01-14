@@ -400,7 +400,7 @@ addWorkTree u url file key mtmp = case mtmp of
 			else void $ Command.Add.addSmall file
   where
 	go = do
-		maybeShowJSON $ JSONChunk [("key", key2file key)]
+		maybeShowJSON $ JSONChunk [("key", serializeKey key)]
 		setUrlPresent key url
 		logChange key u InfoPresent
 		ifM (addAnnexedFile file key mtmp)

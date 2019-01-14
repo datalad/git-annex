@@ -115,7 +115,7 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 				liftIO $ debugM "drop" $ unwords
 					[ "dropped"
 					, case afile of
-						AssociatedFile Nothing -> key2file key
+						AssociatedFile Nothing -> serializeKey key
 						AssociatedFile (Just af) -> af
 					, "(from " ++ maybe "here" show u ++ ")"
 					, "(copies now " ++ show (fromNumCopies have - 1) ++ ")"

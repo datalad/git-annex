@@ -498,7 +498,7 @@ checkBackendOr' bad backend key file ai postcheck =
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
 	let (desc, hasafile) = case afile of
-		AssociatedFile Nothing -> (key2file key, False)
+		AssociatedFile Nothing -> (serializeKey key, False)
 		AssociatedFile (Just af) -> (af, True)
 	locs <- loggedLocations key
 	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
@@ -562,7 +562,7 @@ badContentDirect file key = do
 badContentRemote :: Remote -> FilePath -> Key -> Annex String
 badContentRemote remote localcopy key = do
 	bad <- fromRepo gitAnnexBadDir
-	let destbad = bad </> key2file key
+	let destbad = bad </> serializeKey key
 	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
 		( return False
 		, do

@@ -126,5 +126,5 @@ instance TCSerialized RemoteName where
 	deserialize n = Just n
 
 instance TCSerialized Key where
-	serialize = key2file
-	deserialize = file2key
+	serialize = serializeKey
+	deserialize = deserializeKey

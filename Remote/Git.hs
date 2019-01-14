@@ -427,7 +427,7 @@ lockKey' repo r (State connpool duc _) key callback
 	fallback = do
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			repo "lockcontent"
-			[Param $ key2file key] []
+			[Param $ serializeKey key] []
 		(Just hin, Just hout, Nothing, p) <- liftIO $ 
 			withFile devNull WriteMode $ \nullh ->
 				createProcess $
@@ -530,7 +530,7 @@ copyFromRemote'' repo forcersync r (State connpool _ _) key file dest meterupdat
 			: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			repo "transferinfo" 
-			[Param $ key2file key] fields
+			[Param $ serializeKey key] fields
 		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
 		pidv <- liftIO $ newEmptyMVar
 		tid <- liftIO $ forkIO $ void $ tryIO $ do

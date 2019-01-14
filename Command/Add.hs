@@ -150,7 +150,7 @@ perform file = do
 
 cleanup :: Key -> Bool -> CommandCleanup
 cleanup key hascontent = do
-	maybeShowJSON $ JSONChunk [("key", key2file key)]
+	maybeShowJSON $ JSONChunk [("key", serializeKey key)]
 	when hascontent $
 		logStatus key InfoPresent
 	return True

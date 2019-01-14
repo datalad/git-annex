@@ -410,7 +410,7 @@ key_size :: Key -> Stat
 key_size k = simpleStat "size" $ showSizeKeys $ foldKeys [k]
 
 key_name :: Key -> Stat
-key_name k = simpleStat "key" $ pure $ key2file k
+key_name k = simpleStat "key" $ pure $ serializeKey k
 
 content_present :: Key -> Stat
 content_present k = stat "present" $ json boolConfig $ lift $ inAnnex k

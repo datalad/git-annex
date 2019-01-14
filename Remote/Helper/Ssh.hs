@@ -98,7 +98,7 @@ onRemote cs r (with, errorval) command params fields = do
 inAnnex :: Git.Repo -> Key -> Annex Bool
 inAnnex r k = do
 	showChecking r
-	onRemote NoConsumeStdin r (runcheck, cantCheck r) "inannex" [Param $ key2file k] []
+	onRemote NoConsumeStdin r (runcheck, cantCheck r) "inannex" [Param $ serializeKey k] []
   where
 	runcheck c p = dispatch =<< safeSystem c p
 	dispatch ExitSuccess = return True
@@ -109,7 +109,7 @@ inAnnex r k = do
 dropKey :: Git.Repo -> Key -> Annex Bool
 dropKey r key = onRemote NoConsumeStdin r (boolSystem, return False) "dropkey"
 	[ Param "--quiet", Param "--force"
-	, Param $ key2file key
+	, Param $ serializeKey key
 	]
 	[]
 
@@ -141,7 +141,7 @@ rsyncParamsRemote unlocked r direction key file (AssociatedFile afile) = do
 	repo <- getRepo r
 	Just (shellcmd, shellparams) <- git_annex_shell ConsumeStdin repo
 		(if direction == Download then "sendkey" else "recvkey")
-		[ Param $ key2file key ]
+		[ Param $ serializeKey key ]
 		fields
 	-- Convert the ssh command into rsync command line.
 	let eparam = rsyncShell (Param shellcmd:shellparams)

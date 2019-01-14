@@ -186,7 +186,7 @@ checkKey' r serial aloc = do
 
 androidLocation :: AndroidPath -> Key -> AndroidPath
 androidLocation adir k = AndroidPath $
-	fromAndroidPath (androidHashDir adir k) ++ key2file k
+	fromAndroidPath (androidHashDir adir k) ++ serializeKey k
 
 androidHashDir :: AndroidPath -> Key -> AndroidPath
 androidHashDir adir k = AndroidPath $ 

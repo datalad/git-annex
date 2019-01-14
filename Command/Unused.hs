@@ -118,7 +118,7 @@ number n (x:xs) = (n+1, x) : number (n+1) xs
 table :: [(Int, Key)] -> [String]
 table l = "  NUMBER  KEY" : map cols l
   where
-	cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ key2file k
+	cols (n,k) = "  " ++ pad 6 (show n) ++ "  " ++ serializeKey k
 	pad n s = s ++ replicate (n - length s) ' '
 
 staleTmpMsg :: [(Int, Key)] -> String

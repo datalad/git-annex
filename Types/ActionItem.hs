@@ -36,8 +36,8 @@ instance MkActionItem (Transfer, TransferInfo) where
 
 actionItemDesc :: ActionItem -> Key -> String
 actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f))) _ = f
-actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing)) k = key2file k
-actionItemDesc ActionItemKey k = key2file k
+actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing)) k = serializeKey k
+actionItemDesc ActionItemKey k = serializeKey k
 actionItemDesc (ActionItemBranchFilePath bfp) _ = descBranchFilePath bfp
 actionItemDesc (ActionItemFailedTransfer _ i) k =
 	actionItemDesc (ActionItemAssociatedFile (associatedFile i)) k

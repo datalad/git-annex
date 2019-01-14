@@ -66,7 +66,7 @@ optParser _ = ExportOptions
 -- to a stable temporary name based on the key.
 exportTempName :: ExportKey -> ExportLocation
 exportTempName ek = mkExportLocation $ 
-	".git-annex-tmp-content-" ++ key2file (asKey (ek))
+	".git-annex-tmp-content-" ++ serializeKey (asKey (ek))
 
 seek :: ExportOptions -> CommandSeek
 seek o = do

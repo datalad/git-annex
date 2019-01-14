@@ -653,7 +653,7 @@ getFilePrefix :: RemoteConfig -> String
 getFilePrefix = M.findWithDefault "" "fileprefix"
 
 getBucketObject :: RemoteConfig -> Key -> BucketObject
-getBucketObject c = munge . key2file
+getBucketObject c = munge . serializeKey
   where
 	munge s = case M.lookup "mungekeys" c of
 		Just "ia" -> iaMunge $ getFilePrefix c ++ s

@@ -21,6 +21,6 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 run :: () -> String -> Annex Bool
 run _ file = genKey (KeySource file file Nothing) Nothing >>= \case
 	Just (k, _) -> do
-		liftIO $ putStrLn $ key2file k
+		liftIO $ putStrLn $ serializeKey k
 		return True
 	Nothing -> return False

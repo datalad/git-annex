@@ -197,7 +197,7 @@ checkKey r k = do
 		{- glacier checkpresent outputs the archive name to stdout if
 		 - it's present. -}
 		s <- liftIO $ readProcessEnv "glacier" (toCommand params) (Just e)
-		let probablypresent = key2file k `elem` lines s
+		let probablypresent = serializeKey k `elem` lines s
 		if probablypresent
 			then ifM (Annex.getFlag "trustglacier")
 				( return True, giveup untrusted )
@@ -253,7 +253,7 @@ getVault = fromMaybe (giveup "Missing vault configuration")
 	. M.lookup "vault"
 
 archive :: Remote -> Key -> Archive
-archive r k = fileprefix ++ key2file k
+archive r k = fileprefix ++ serializeKey k
   where
 	fileprefix = M.findWithDefault "" "fileprefix" $ config r
 
@@ -306,7 +306,7 @@ jobList r keys = go =<< glacierEnv (config r) (gitconfig r) (uuid r)
 	parse c [] = c
 	parse c@(succeeded, failed) ((status:_date:vault:key:[]):rest)
 		| vault == myvault =
-			case file2key key of
+			case deserializeKey key of
 				Nothing -> parse c rest
 				Just k
 					| "a/d" `isPrefixOf` status ->

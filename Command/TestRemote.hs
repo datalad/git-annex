@@ -178,7 +178,7 @@ test st r k =
 		Nothing -> return True
 		Just b -> case Backend.verifyKeyContent b of
 			Nothing -> return True
-			Just verifier -> verifier k (key2file k)
+			Just verifier -> verifier k (serializeKey k)
 	get = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
 		Remote.retrieveKeyFile r k (AssociatedFile Nothing)
 			dest nullMeterUpdate

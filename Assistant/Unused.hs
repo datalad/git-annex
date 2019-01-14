@@ -74,7 +74,7 @@ expireUnused duration = do
 	now <- liftIO getPOSIXTime
 	let oldkeys = M.keys $ M.filter (tooold now) m
 	forM_ oldkeys $ \k -> do
-		debug ["removing old unused key", key2file k]
+		debug ["removing old unused key", serializeKey k]
 		liftAnnex $ tryNonAsync $ do
 			lockContentForRemoval k removeAnnex
 			logStatus k InfoMissing

@@ -16,7 +16,7 @@ smudgeLog :: Key -> TopFilePath -> Annex ()
 smudgeLog k f = do
 	logf <- fromRepo gitAnnexSmudgeLog
 	appendLogFile logf gitAnnexSmudgeLock $ 
-		key2file k ++ " " ++ getTopFilePath f
+		serializeKey k ++ " " ++ getTopFilePath f
 
 -- | Streams all smudged files, and then empties the log at the end.
 --
@@ -36,5 +36,5 @@ streamSmudged a = do
 	parse l = 
 		let (ks, f) = separate (== ' ') l
 		in do
-			k <- file2key ks
+			k <- deserializeKey ks
 			return (k, asTopFilePath f)

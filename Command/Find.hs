@@ -88,7 +88,7 @@ showFormatted format unformatted vars =
 
 keyVars :: Key -> [(String, String)]
 keyVars key =
-	[ ("key", key2file key)
+	[ ("key", serializeKey key)
 	, ("backend", decodeBS $ formatKeyVariety $ keyVariety key)
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)

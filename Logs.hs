@@ -124,7 +124,7 @@ urlLogFile config key = branchHashDir config key </> keyFile key ++ urlLogExt
 {- Old versions stored the urls elsewhere. -}
 oldurlLogs :: GitConfig -> Key -> [FilePath]
 oldurlLogs config key =
-	[ "remote/web" </> hdir </> key2file key ++ ".log"
+	[ "remote/web" </> hdir </> serializeKey key ++ ".log"
 	, "remote/web" </> hdir </> keyFile key ++ ".log"
 	]
   where

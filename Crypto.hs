@@ -161,7 +161,7 @@ type EncKey = Key -> Key
  - on content. It does need to be repeatable. -}
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = stubKey
-	{ keyName = encodeBS (macWithCipher mac c (key2file k))
+	{ keyName = encodeBS (macWithCipher mac c (serializeKey k))
 	, keyVariety = OtherKey $
 		encryptedBackendNamePrefix <> encodeBS (showMac mac)
 	}

@@ -341,7 +341,7 @@ checklocationlog f expected = do
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
-			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Key.key2file k ++ " uuid " ++ show thisuuid)
+			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Key.serializeKey k ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 

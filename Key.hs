@@ -11,20 +11,19 @@ module Key (
 	Key(..),
 	AssociatedFile(..),
 	stubKey,
-	buildKeyFile,
-	keyFileParser,
-	file2key,
-	key2file,
-	file2key',
-	key2file',
+	buildKey,
+	keyParser,
+	serializeKey,
+	serializeKey,
+	deserializeKey',
+	deserializeKey',
 	nonChunkKey,
 	chunkKeyOffset,
 	isChunkKey,
 	isKeyPrefix,
 	splitKeyNameExtension,
 
-	prop_isomorphic_key_encode,
-	prop_isomorphic_key_decode
+	prop_isomorphic_key_encode
 ) where
 
 import qualified Data.Text as T
@@ -77,11 +76,13 @@ isKeyPrefix s = [fieldSep, fieldSep] `isInfixOf` s
 fieldSep :: Char
 fieldSep = '-'
 
-{- Builds a ByteString that is suitable for use as a filename representing
- - a Key. The name field is always shown last, separated by doubled fieldSeps,
- - and is the only field allowed to contain the fieldSep. -}
-buildKeyFile :: Key -> Builder
-buildKeyFile k = byteString (formatKeyVariety (keyVariety k))
+{- Builds a ByteString from a Key.
+ -
+ - The name field is always shown last, separated by doubled fieldSeps,
+ - and is the only field allowed to contain the fieldSep.
+ -}
+buildKey :: Key -> Builder
+buildKey k = byteString (formatKeyVariety (keyVariety k))
 	<> 's' ?: (integerDec <$> keySize k)
 	<> 'm' ?: (integerDec . (\(CTime t) -> fromIntegral t) <$> keyMtime k)
 	<> 'S' ?: (integerDec <$> keyChunkSize k)
@@ -92,11 +93,11 @@ buildKeyFile k = byteString (formatKeyVariety (keyVariety k))
 	c ?: (Just b) = sepbefore (char7 c <> b)
 	_ ?: Nothing = mempty
 
-key2file :: Key -> FilePath
-key2file = decodeBL' . key2file'
+serializeKey :: Key -> String
+serializeKey = decodeBL' . serializeKey'
 
-key2file' :: Key -> L.ByteString
-key2file' = toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty . buildKeyFile
+serializeKey' :: Key -> L.ByteString
+serializeKey' = toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty . buildKey
 
 {- This is a strict parser for security reasons; a key
  - can contain only 4 fields, which all consist only of numbers.
@@ -107,8 +108,8 @@ key2file' = toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty . bui
  - embed data used in a SHA1 collision attack, which would be a
  - problem since the keys are committed to git.
  -}
-keyFileParser :: A.Parser Key
-keyFileParser = do
+keyParser :: A.Parser Key
+keyParser = do
 	-- key variety cannot be empty
 	v <- (parseKeyVariety <$> A8.takeWhile1 (/= fieldSep))
 	s <- parsesize
@@ -135,11 +136,11 @@ keyFileParser = do
 	parsechunksize = parseopt $ A8.char 'S' *> A8.decimal
 	parsechunknum = parseopt $ A8.char 'C' *> A8.decimal
 
-file2key :: FilePath -> Maybe Key
-file2key = file2key' . encodeBS'
+deserializeKey :: String -> Maybe Key
+deserializeKey = deserializeKey' . encodeBS'
 
-file2key' :: S.ByteString -> Maybe Key
-file2key' b = eitherToMaybe $ A.parseOnly keyFileParser b
+deserializeKey' :: S.ByteString -> Maybe Key
+deserializeKey' b = eitherToMaybe $ A.parseOnly keyParser b
 
 {- This splits any extension out of the keyName, returning the 
  - keyName minus extension, and the extension (including leading dot).
@@ -178,30 +179,19 @@ instance Arbitrary Key where
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
 instance Hashable Key where
-	hashIO32 = hashIO32 . key2file'
-	hashIO64 = hashIO64 . key2file'
+	hashIO32 = hashIO32 . deserializeKey'
+	hashIO64 = hashIO64 . deserializeKey'
 
 instance ToJSON' Key where
-	toJSON' = toJSON' . key2file
+	toJSON' = toJSON' . serializeKey
 
 instance FromJSON Key where
-	parseJSON (String t) = maybe mempty pure $ file2key $ T.unpack t
+	parseJSON (String t) = maybe mempty pure $ deserializeKey $ T.unpack t
 	parseJSON _ = mempty
 
 instance Proto.Serializable Key where
-	serialize = key2file
-	deserialize = file2key
+	serialize = serializeKey
+	deserialize = deserializeKey
 
 prop_isomorphic_key_encode :: Key -> Bool
-prop_isomorphic_key_encode k = Just k == (file2key . key2file) k
-
-prop_isomorphic_key_decode :: FilePath -> Bool
-prop_isomorphic_key_decode f
-	| normalfieldorder = maybe True (\k -> key2file k == f) (file2key f)
-	| otherwise = True
-  where
-	-- file2key will accept the fields in any order, so don't
-	-- try the test unless the fields are in the normal order
-	normalfieldorder = fields `isPrefixOf` "smSC"
-	fields = map (f !!) $ filter (< length f) $ map succ $
-		elemIndices fieldSep f
+prop_isomorphic_key_encode k = Just k == (deserializeKey . serializeKey) k

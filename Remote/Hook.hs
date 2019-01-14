@@ -92,7 +92,7 @@ hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
 	mergeenv l = addEntries l <$> getEnvironment
 	envvar s v = ("ANNEX_" ++ s, v)
 	keyenv = catMaybes
-		[ Just $ envvar "KEY" (key2file k)
+		[ Just $ envvar "KEY" (serializeKey k)
 		, Just $ envvar "ACTION" action
 		, envvar "HASH_1" <$> headMaybe hashbits
 		, envvar "HASH_2" <$> headMaybe (drop 1 hashbits)
@@ -151,7 +151,7 @@ checkKey r h k = do
 	liftIO $ check v
   where
 	action = "checkpresent"
-	findkey s = key2file k `elem` lines s
+	findkey s = serializeKey k `elem` lines s
 	check Nothing = giveup $ action ++ " hook misconfigured"
 	check (Just hook) = do
 		environ <- hookEnv action k Nothing

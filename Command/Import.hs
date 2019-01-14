@@ -86,7 +86,7 @@ start largematcher mode (srcfile, destfile) =
 		)
   where
 	deletedup k = do
-		showNote $ "duplicate of " ++ key2file k
+		showNote $ "duplicate of " ++ serializeKey k
 		verifyExisting k destfile
 			( do
 				liftIO $ removeFile srcfile

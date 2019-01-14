@@ -66,8 +66,8 @@ writeUnusedLog prefix l = do
 	logfile <- fromRepo $ gitAnnexUnusedLog prefix
 	writeLogFile logfile $ unlines $ map format $ M.toList l
   where
-	format (k, (i, Just t)) = show i ++ " " ++ key2file k ++ " " ++ show t
-	format (k, (i, Nothing)) = show i ++ " " ++ key2file k
+	format (k, (i, Just t)) = show i ++ " " ++ serializeKey k ++ " " ++ show t
+	format (k, (i, Nothing)) = show i ++ " " ++ serializeKey k
 
 readUnusedLog :: FilePath -> Annex UnusedLog
 readUnusedLog prefix = do
@@ -78,7 +78,7 @@ readUnusedLog prefix = do
 		, return M.empty
 		)
   where
-	parse line = case (readish sint, file2key skey, parsePOSIXTime ts) of
+	parse line = case (readish sint, deserializeKey skey, parsePOSIXTime ts) of
 		(Just int, Just key, mtimestamp) -> Just (key, (int, mtimestamp))
 		_ -> Nothing
 	  where

@@ -33,7 +33,7 @@ seek (DeadKeys ks) = commandActions $ map startKey ks
 
 startKey :: Key -> CommandStart
 startKey key = do
-	showStart' "dead" (Just $ key2file key)
+	showStart' "dead" (Just $ serializeKey key)
 	keyLocations key >>= \case
 		[] -> next $ performKey key
 		_ -> giveup "This key is still known to be present in some locations; not marking as dead."

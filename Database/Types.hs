@@ -23,10 +23,10 @@ newtype SKey = SKey String
 	deriving (Show, Read)
 
 toSKey :: Key -> SKey
-toSKey = SKey . key2file
+toSKey = SKey . serializeKey
 
 fromSKey :: SKey -> Key
-fromSKey (SKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (file2key s)
+fromSKey (SKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (deserializeKey s)
 
 derivePersistField "SKey"
 
@@ -41,10 +41,10 @@ instance Show IKey where
 	show (IKey s) = s
 
 toIKey :: Key -> IKey
-toIKey = IKey . key2file
+toIKey = IKey . serializeKey
 
 fromIKey :: IKey -> Key
-fromIKey (IKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (file2key s)
+fromIKey (IKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (deserializeKey s)
 
 derivePersistField "IKey"
 

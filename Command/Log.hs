@@ -144,7 +144,7 @@ showLogIncremental outputter ps = do
  - as showLogIncremental. -}
 showLog :: (String -> Outputter) -> [RefChange] -> Annex ()
 showLog outputter cs = forM_ cs $ \c -> do
-	let keyname = key2file (changekey c)
+	let keyname = serializeKey (changekey c)
 	new <- S.fromList <$> loggedLocationsRef (newref c)
 	old <- S.fromList <$> loggedLocationsRef (oldref c)
 	sequence_ $ compareChanges (outputter keyname)

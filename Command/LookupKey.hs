@@ -23,7 +23,7 @@ run _ file = seekSingleGitFile file >>= \case
 	Nothing -> return False
 	Just file' -> catKeyFile file' >>= \case
 		Just k  -> do
-			liftIO $ putStrLn $ key2file k
+			liftIO $ putStrLn $ serializeKey k
 			return True
 		Nothing -> return False
 

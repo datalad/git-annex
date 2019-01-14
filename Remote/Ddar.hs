@@ -110,7 +110,7 @@ store ddarrepo = fileStorer $ \k src _p -> do
 	let params =
 		[ Param "c"
 		, Param "-N"
-		, Param $ key2file k
+		, Param $ serializeKey k
 		, Param $ ddarRepoLocation ddarrepo
 		, File src
 		]
@@ -138,7 +138,7 @@ ddarRemoteCall cs ddarrepo cmd params
 {- Specialized ddarRemoteCall that includes extraction command and flags -}
 ddarExtractRemoteCall :: ConsumeStdin -> DdarRepo -> Key -> Annex (String, [CommandParam])
 ddarExtractRemoteCall cs ddarrepo k =
-	ddarRemoteCall cs ddarrepo 'x' [Param "--force-stdout", Param $ key2file k]
+	ddarRemoteCall cs ddarrepo 'x' [Param "--force-stdout", Param $ serializeKey k]
 
 retrieve :: DdarRepo -> Retriever
 retrieve ddarrepo = byteRetriever $ \k sink -> do
@@ -154,7 +154,7 @@ retrieveCheap _ _ _ = return False
 remove :: DdarRepo -> Remover
 remove ddarrepo key = do
 	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 'd'
-		[Param $ key2file key]
+		[Param $ serializeKey key]
 	liftIO $ boolSystem cmd params
 
 ddarDirectoryExists :: DdarRepo -> Annex (Either String Bool)
@@ -188,7 +188,7 @@ inDdarManifest ddarrepo k = do
 		contents <- hGetContents h
 		return $ elem k' $ lines contents
   where
-	k' = key2file k
+	k' = serializeKey k
 
 checkKey :: DdarRepo -> CheckPresent
 checkKey ddarrepo key = do

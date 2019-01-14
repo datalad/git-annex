@@ -280,7 +280,7 @@ bupRef k
 	| Git.Ref.legal True shown = shown
 	| otherwise = "git-annex-" ++ show (sha2_256 (fromString shown))
   where
-	shown = key2file k
+	shown = serializeKey k
 
 bupLocal :: BupRepo -> Bool
 bupLocal = notElem ':'

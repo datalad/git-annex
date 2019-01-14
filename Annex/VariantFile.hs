@@ -34,8 +34,8 @@ mkVariant file variant = takeDirectory file
  -}
 variantFile :: FilePath -> Key -> FilePath
 variantFile file key
-	| doubleconflict = mkVariant file (key2file key)
-	| otherwise = mkVariant file (shortHash $ key2file key)
+	| doubleconflict = mkVariant file (serializeKey key)
+	| otherwise = mkVariant file (shortHash $ serializeKey key)
   where
 	doubleconflict = variantMarker `isInfixOf` file
 

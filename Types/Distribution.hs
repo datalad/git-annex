@@ -46,7 +46,7 @@ parseInfoFile s = case lines s of
 formatGitAnnexDistribution :: GitAnnexDistribution -> String
 formatGitAnnexDistribution d = unlines
 	[ distributionUrl d
-	, key2file (distributionKey d)
+	, serializeKey (distributionKey d)
 	, distributionVersion d
 	, show (distributionReleasedate d)
 	, maybe "" show (distributionUrgentUpgrade d)
@@ -56,7 +56,7 @@ parseGitAnnexDistribution :: String -> Maybe GitAnnexDistribution
 parseGitAnnexDistribution s = case lines s of
 	(u:k:v:d:uu:_) -> GitAnnexDistribution
 		<$> pure u
-		<*> file2key k
+		<*> deserializeKey k
 		<*> pure v
 		<*> readish d
 		<*> pure (readish uu)

@@ -32,7 +32,7 @@ perform key = next $ do
 	addLink file key Nothing
 	return True
   where
-	file = "unused." ++ key2file key
+	file = "unused." ++ serializeKey key
 
 {- The content is not in the annex, but in another directory, and
  - it seems better to error out, rather than moving bad/tmp content into
