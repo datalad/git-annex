@@ -27,12 +27,14 @@ module Utility.Hash (
 	blake2b_512,
 #endif
 	md5,
+	md5s,
 	prop_hashes_stable,
 	Mac(..),
 	calcMac,
 	prop_mac_stable,
 ) where
 
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -111,6 +113,9 @@ blake2b_512 = hashlazy
 
 md5 ::  L.ByteString -> Digest MD5
 md5 = hashlazy
+
+md5s ::  S.ByteString -> Digest MD5
+md5s = hash
 
 {- Check that all the hashes continue to hash the same. -}
 prop_hashes_stable :: Bool

@@ -515,7 +515,7 @@ keyFile :: Key -> FilePath
 keyFile = fromRawFilePath . keyFile'
 
 keyFile' :: Key -> RawFilePath
-keyFile' = S8.concatMap esc . L.toStrict . serializeKey'
+keyFile' = S8.concatMap esc . serializeKey'
   where
 	esc '&' = "&a"
 	esc '%' = "&s"

@@ -56,11 +56,13 @@ stubKey = Key
 
 -- Gets the parent of a chunk key.
 nonChunkKey :: Key -> Key
-nonChunkKey k = k
-	{ keyChunkSize = Nothing
-	, keyChunkNum = Nothing
-	, keySerialization = Nothing
-	}
+nonChunkKey k
+	| keyChunkSize k == Nothing && keyChunkNum k == Nothing = k
+	| otherwise = k
+		{ keyChunkSize = Nothing
+		, keyChunkNum = Nothing
+		, keySerialization = Nothing
+		}
 
 -- Where a chunk key is offset within its parent.
 chunkKeyOffset :: Key -> Maybe Integer
@@ -96,12 +98,13 @@ buildKey k = byteString (formatKeyVariety (keyVariety k))
 	_ ?: Nothing = mempty
 
 serializeKey :: Key -> String
-serializeKey = decodeBL' . serializeKey'
+serializeKey = decodeBS' . serializeKey'
 
-serializeKey' :: Key -> L.ByteString
+serializeKey' :: Key -> S.ByteString
 serializeKey' k = case keySerialization k of
-	Nothing -> toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty (buildKey k)
-	Just b -> L.fromStrict b
+	Nothing -> L.toStrict $
+		toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty (buildKey k)
+	Just b -> b
 
 {- This is a strict parser for security reasons; a key
  - can contain only 4 fields, which all consist only of numbers.
