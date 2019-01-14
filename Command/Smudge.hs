@@ -22,7 +22,8 @@ import qualified Git
 import qualified Git.Ref
 import Backend
 
-import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as L
 
 cmd :: Command
 cmd = noCommit $ noMessages $
@@ -62,14 +63,14 @@ seek UpdateOption = commandAction update
 --   smudge filter in memory, which is a problem with large files.
 smudge :: FilePath -> CommandStart
 smudge file = do
-	b <- liftIO $ B.hGetContents stdin
-	case parseLinkOrPointer b of
+	b <- liftIO $ L.hGetContents stdin
+	case parseLinkTargetOrPointerLazy b of
 		Nothing -> noop
 		Just k -> do
 			topfile <- inRepo (toTopFilePath file)
 			Database.Keys.addAssociatedFile k topfile
 			void $ smudgeLog k topfile
-	liftIO $ B.putStr b
+	liftIO $ L.putStr b
 	stop
 
 -- Clean filter is fed file content on stdin, decides if a file
@@ -77,13 +78,13 @@ smudge file = do
 -- injested content if so. Otherwise, the original content.
 clean :: FilePath -> CommandStart
 clean file = do
-	b <- liftIO $ B.hGetContents stdin
+	b <- liftIO $ L.hGetContents stdin
 	ifM fileoutsiderepo
-		( liftIO $ B.hPut stdout b
-		, case parseLinkOrPointer b of
+		( liftIO $ L.hPut stdout b
+		, case parseLinkTargetOrPointerLazy b of
 			Just k -> do
 				getMoveRaceRecovery k file
-				liftIO $ B.hPut stdout b
+				liftIO $ L.hPut stdout b
 			Nothing -> go b =<< catKeyFile file
 		)
 	stop
@@ -97,7 +98,7 @@ clean file = do
 			-- to free memory when sending the file, so the
 			-- less we let it send, the less memory it will waste.)
 			if Git.BuildVersion.older "2.5"
-				then B.length b `seq` return ()
+				then L.length b `seq` return ()
 				else liftIO $ hClose stdin
 
 			-- Optimization for the case when the file is already
@@ -108,7 +109,7 @@ clean file = do
 					( liftIO $ emitPointer ko
 					, doingest oldkey
 					)
-		, liftIO $ B.hPut stdout b
+		, liftIO $ L.hPut stdout b
 		)
 	
 	doingest oldkey = do
@@ -158,7 +159,7 @@ shouldAnnex file moldkey = do
 		Nothing -> isNothing <$> catObjectMetaData (Git.Ref.fileRef file)
 
 emitPointer :: Key -> IO ()
-emitPointer = putStr . formatPointer
+emitPointer = S.putStr . formatPointer
 
 -- Recover from a previous race between eg git mv and git-annex get.
 -- That could result in the file remaining a pointer file, while

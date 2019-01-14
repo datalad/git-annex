@@ -1057,6 +1057,7 @@ Executable git-annex
     Utility.Process.Shim
     Utility.Process.Transcript
     Utility.QuickCheck
+    Utility.RawFilePath
     Utility.Rsync
     Utility.SafeCommand
     Utility.Scheduled

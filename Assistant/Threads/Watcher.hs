@@ -302,11 +302,11 @@ onAddUnlocked' isdirect contentchanged addassociatedfile addlink samefilestatus 
 			case linktarget of
 				Nothing -> a
 				Just lt -> do
-					case fileKey $ takeFileName lt of
+					case parseLinkTarget lt of
 						Nothing -> noop
 						Just key -> liftAnnex $
 							addassociatedfile key file
-					onAddSymlink' linktarget mk isdirect file fs
+					onAddSymlink' (Just $ fromRawFilePath lt) mk isdirect file fs
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content

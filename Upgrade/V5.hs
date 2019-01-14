@@ -29,6 +29,8 @@ import Git.Ref
 import Utility.InodeCache
 import Annex.AdjustedBranch
 
+import qualified Data.ByteString as S
+
 upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	unless automatic $
@@ -117,7 +119,7 @@ upgradeDirectWorkTree = do
 		void $ linkToAnnex k f ic
 	writepointer f k = liftIO $ do
 		nukeFile f
-		writeFile f (formatPointer k)
+		S.writeFile f (formatPointer k)
 
 {- Remove all direct mode bookkeeping files. -}
 removeDirectCruft :: Annex ()

@@ -105,7 +105,7 @@ catKey ref = go =<< catObjectMetaData ref
 		-- Avoid catting large files, that cannot be symlinks or
 		-- pointer files, which would require buffering their
 		-- content in memory, as well as a lot of IO.
-		| sz <= maxPointerSz = parseLinkOrPointer <$> catObject ref
+		| sz <= maxPointerSz = parseLinkTargetOrPointer . L.toStrict <$> catObject ref
 	go _ = return Nothing
 
 {- Gets a symlink target. -}

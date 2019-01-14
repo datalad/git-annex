@@ -7,7 +7,7 @@
  -
  - Pointer files are used instead of symlinks for unlocked files.
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -33,14 +33,17 @@ import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
 import Utility.CopyFile
+import qualified Utility.RawFilePath as R
 
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 
 type LinkTarget = String
 
 {- Checks if a file is a link to a key. -}
 isAnnexLink :: FilePath -> Annex (Maybe Key)
-isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget file
+isAnnexLink file = maybe Nothing parseLinkTargetOrPointer <$> getAnnexLinkTarget file
 
 {- Gets the link target of a symlink.
  -
@@ -50,40 +53,42 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
  - Returns Nothing if the file is not a symlink, or not a link to annex
  - content.
  -}
-getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
+getAnnexLinkTarget :: FilePath -> Annex (Maybe S.ByteString)
 getAnnexLinkTarget f = getAnnexLinkTarget' f
 	=<< (coreSymlinks <$> Annex.getGitConfig)
 
-{- Pass False to force looking inside file. -}
-getAnnexLinkTarget' :: FilePath -> Bool -> Annex (Maybe LinkTarget)
+{- Pass False to force looking inside file, for when git checks out
+ - symlinks as plain files. -}
+getAnnexLinkTarget' :: FilePath -> Bool -> Annex (Maybe S.ByteString)
 getAnnexLinkTarget' file coresymlinks = if coresymlinks
-	then check readSymbolicLink $
+	then check probesymlink $
 		return Nothing
-	else check readSymbolicLink $
+	else check probesymlink $
 		check probefilecontent $
 			return Nothing
   where
 	check getlinktarget fallback = 
-		liftIO (catchMaybeIO $ getlinktarget file) >>= \case
+		liftIO (catchMaybeIO getlinktarget) >>= \case
 			Just l
-				| isLinkToAnnex (fromInternalGitPath l) -> return (Just l)
+				| isLinkToAnnex l -> return (Just l)
 				| otherwise -> return Nothing
 			Nothing -> fallback
 
-	probefilecontent f = withFile f ReadMode $ \h -> do
-		-- The first 8k is more than enough to read; link
-		-- files are small.
-		s <- take 8192 <$> hGetContents h
-		-- If we got the full 8k, the file is too large
-		if length s == 8192
-			then return ""
+	probesymlink = R.readSymbolicLink $ toRawFilePath file
+
+	probefilecontent = withFile file ReadMode $ \h -> do
+		s <- S.hGet h unpaddedMaxPointerSz
+		-- If we got the full amount, the file is too large
+		-- to be a symlink target.
+		return $ if S.length s == unpaddedMaxPointerSz
+			then mempty
 			else 
 				-- If there are any NUL or newline
 				-- characters, or whitespace, we
-				-- certianly don't have a link to a
+				-- certianly don't have a symlink to a
 				-- git-annex key.
-				return $ if any (`elem` s) "\0\n\r \t"
-					then ""
+				if any (`S8.elem` s) "\0\n\r \t"
+					then mempty
 					else s
 
 makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
@@ -122,7 +127,7 @@ stageSymlink file sha =
 
 {- Injects a pointer file content into git, returning its Sha. -}
 hashPointerFile :: Key -> Annex Sha
-hashPointerFile key = hashBlob $ encodeBS $ formatPointer key
+hashPointerFile key = hashBlob $ formatPointer key
 
 {- Stages a pointer file, using a Sha of its content -}
 stagePointerFile :: FilePath -> Maybe FileMode -> Sha -> Annex ()
@@ -136,7 +141,7 @@ stagePointerFile file mode sha =
 
 writePointerFile :: FilePath -> Key -> Maybe FileMode -> IO ()
 writePointerFile file k mode = do
-	writeFile file (formatPointer k)
+	S.writeFile file (formatPointer k)
 	maybe noop (setFileMode file) mode
 
 newtype Restage = Restage Bool
@@ -222,49 +227,58 @@ unableToRestage mf = unwords
 	, "git update-index -q --refresh " ++ fromMaybe "<file>" mf
 	]
 
-{- Parses a symlink target or a pointer file to a Key.
- - Only looks at the first line, as pointer files can have subsequent
- - lines. -}
-parseLinkOrPointer :: L.ByteString -> Maybe Key
-parseLinkOrPointer = parseLinkOrPointer' 
-	. decodeBL . L.take (fromIntegral maxPointerSz)
+{- Parses a symlink target or a pointer file to a Key. -}
+parseLinkTargetOrPointer :: S.ByteString -> Maybe Key
+parseLinkTargetOrPointer = parseLinkTarget . S8.takeWhile (not . lineend)
   where
-
-{- Want to avoid buffering really big files in git into
- - memory when reading files that may be pointers.
- -
- - 8192 bytes is plenty for a pointer to a key.
- - Pad some more to allow for any pointer files that might have
- - lines after the key explaining what the file is used for. -}
-maxPointerSz :: Integer
-maxPointerSz = 81920
-
-parseLinkOrPointer' :: String -> Maybe Key
-parseLinkOrPointer' = go . fromInternalGitPath . takeWhile (not . lineend)
-  where
-	go l
-		| isLinkToAnnex l = fileKey $ takeFileName l
-		| otherwise = Nothing
 	lineend '\n' = True
 	lineend '\r' = True
 	lineend _ = False
 
-formatPointer :: Key -> String
-formatPointer k = 
-	toInternalGitPath (pathSeparator:objectDir </> keyFile k) ++ "\n"
+{- Avoid looking at more of the lazy ByteString than necessary since it
+ - could be reading from a large file that is not a pointer file. -}
+parseLinkTargetOrPointerLazy :: L.ByteString -> Maybe Key
+parseLinkTargetOrPointerLazy b = 
+	let b' = L.take (fromIntegral maxPointerSz) b
+	in parseLinkTargetOrPointer (L.toStrict b')
+
+{- Parses a symlink target to a Key. -}
+parseLinkTarget :: S.ByteString -> Maybe Key
+parseLinkTarget l
+	| isLinkToAnnex l = fileKey' $ snd $ S8.breakEnd pathsep l
+	| otherwise = Nothing
+  where
+	pathsep '/' = True
+#ifdef mingw32_HOST_OS
+	pathsep '\\' = True
+#endif
+	pathsep _ = False
+
+formatPointer :: Key -> S.ByteString
+formatPointer k = prefix <> keyFile' k <> nl
+  where
+	prefix = toRawFilePath $ toInternalGitPath (pathSeparator:objectDir)
+	nl = S8.singleton '\n'
+
+{- Maximum size of a file that could be a pointer to a key.
+ - Check to avoid buffering really big files in git into
+ - memory when reading files that may be pointers.
+ -
+ - 8192 bytes is plenty for a pointer to a key. This adds some additional
+ - padding to allow for any pointer files that might have
+ - lines after the key explaining what the file is used for. -}
+maxPointerSz :: Integer
+maxPointerSz = 81920
+
+unpaddedMaxPointerSz :: Int
+unpaddedMaxPointerSz = 8192
 
 {- Checks if a worktree file is a pointer to a key.
  -
  - Unlocked files whose content is present are not detected by this. -}
 isPointerFile :: FilePath -> IO (Maybe Key)
-isPointerFile f = catchDefaultIO Nothing $ bracket open close $ \h -> do
-	b <- take (fromIntegral maxPointerSz) <$> hGetContents h
-	-- strict so it reads before the file handle is closed
-	let !mk = parseLinkOrPointer' b
-	return mk
-  where
-	open = openBinaryFile f ReadMode
-	close = hClose
+isPointerFile f = catchDefaultIO Nothing $ withFile f ReadMode $ \h ->
+	parseLinkTargetOrPointer <$> S.hGet h unpaddedMaxPointerSz
 
 {- Checks a symlink target or pointer file first line to see if it
  - appears to point to annexed content.
@@ -273,10 +287,15 @@ isPointerFile f = catchDefaultIO Nothing $ bracket open close $ \h -> do
  - directory itself, because GIT_DIR may cause a directory name other
  - than .git to be used.
  -}
-isLinkToAnnex :: FilePath -> Bool
-isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
+isLinkToAnnex :: S.ByteString -> Bool
+isLinkToAnnex s = p `S.isInfixOf` s
 #ifdef mingw32_HOST_OS
 	-- '/' is still used inside pointer files on Windows, not the native
 	-- '\'
-	|| ('/':objectDir) `isInfixOf` s
+	|| p' `S.isInfixOf` s
+#endif
+  where
+	p = toRawFilePath (pathSeparator:objectDir)
+#ifdef mingw32_HOST_OS
+	p' = toRawFilePath ('/':objectDir)
 #endif

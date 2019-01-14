@@ -205,8 +205,7 @@ performKey key backend numcopies = do
 check :: [Annex Bool] -> Annex Bool
 check cs = and <$> sequence cs
 
-{- Checks that symlinks points correctly to the annexed content.
- -}
+{- Checks that symlinks points correctly to the annexed content. -}
 fixLink :: Key -> FilePath -> Annex Bool
 fixLink key file = do
 	want <- calcRepo $ gitAnnexLink file key
@@ -215,7 +214,7 @@ fixLink key file = do
 	return True
   where
 	go want have
-		| want /= fromInternalGitPath have = do
+		| want /= fromInternalGitPath (fromRawFilePath have) = do
 			showNote "fixing link"
 			liftIO $ createDirectoryIfMissing True (parentDir file)
 			liftIO $ removeFile file
@@ -562,7 +561,7 @@ badContentDirect file key = do
 badContentRemote :: Remote -> FilePath -> Key -> Annex String
 badContentRemote remote localcopy key = do
 	bad <- fromRepo gitAnnexBadDir
-	let destbad = bad </> fileKey key
+	let destbad = bad </> keyFile key
 	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
 		( return False
 		, do

@@ -88,7 +88,7 @@ fixupReq req@(Req {}) =
 	check getfile getmode setfile r = case readTreeItemType (getmode r) of
 		Just TreeSymlink -> do
 			v <- getAnnexLinkTarget' (getfile r) False
-			case fileKey . takeFileName =<< v of
+			case parseLinkTargetOrPointer =<< v of
 				Nothing -> return r
 				Just k -> setfile r <$>
 					withObjectLoc k
