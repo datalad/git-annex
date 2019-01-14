@@ -38,7 +38,6 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified Data.ByteString as S
 import "cryptonite" Crypto.MAC.HMAC
 import "cryptonite" Crypto.Hash
 
