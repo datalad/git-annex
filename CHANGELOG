@@ -27,6 +27,8 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * Improve uuid.log parser to preserve whitespace in repo descriptions.
   * Improve activity.log parser to not remove unknown values,
     allowing for future expansion.
+  * addunused, merge, assistant: Avoid creating work tree files in
+    subdirectories in an edge case where the key contains "/".
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 

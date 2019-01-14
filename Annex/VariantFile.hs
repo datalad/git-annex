@@ -10,6 +10,8 @@ module Annex.VariantFile where
 import Annex.Common
 import Utility.Hash
 
+import qualified Data.ByteString.Lazy as L
+
 variantMarker :: String
 variantMarker = ".variant-"
 
@@ -34,10 +36,10 @@ mkVariant file variant = takeDirectory file
  -}
 variantFile :: FilePath -> Key -> FilePath
 variantFile file key
-	| doubleconflict = mkVariant file (serializeKey key)
-	| otherwise = mkVariant file (shortHash $ serializeKey key)
+	| doubleconflict = mkVariant file (keyFile key)
+	| otherwise = mkVariant file (shortHash $ serializeKey' key)
   where
 	doubleconflict = variantMarker `isInfixOf` file
 
-shortHash :: String -> String
-shortHash = take 4 . show . md5 . encodeBL
+shortHash :: L.ByteString -> String
+shortHash = take 4 . show . md5
