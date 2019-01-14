@@ -170,14 +170,15 @@ splitKeyNameExtension' keyname = S8.span (/= '.') keyname
  - including such keys would not be secure.
  -
  - The maximum extension length ever generated for such a key was 8
- - characters; 20 is used here to give a little future wiggle-room. 
+ - characters, but they may be unicode which could use up to 4 bytes each,
+ - so 32 bytes. 64 bytes is used here to give a little future wiggle-room. 
  - The SHA1 common-prefix attack needs 128 bytes of data.
  -}
 validKeyName :: KeyVariety -> S.ByteString -> Bool
 validKeyName kv name
 	| hasExt kv = 
 		let ext = snd $ splitKeyNameExtension' name
-		in S.length ext <= 20
+		in S.length ext <= 64
 	| otherwise = True
 
 instance Arbitrary Key where
