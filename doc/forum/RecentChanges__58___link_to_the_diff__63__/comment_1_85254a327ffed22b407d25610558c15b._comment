@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2019-01-15T08:30:10Z"
+ content="""
+There already is one. It's right before the link to the page (has 3D glasses image).
+
+    <span class=\"pagelinks\">
+      <a href=\"http://source.git-annex.branchable.com/?p=source.git;a=blobdiff;f=doc/forum/RecentChanges__58___link_to_the_diff__63__.mdwn;h=6c15de14e1b020c43bd11132726d62942ab96f42;hp=0000000000000000000000000000000000000000;hb=27cf71e7e4b1a8e556000375c96bc30bc1b8fae7;hpb=9953e3d3530aa48cd26dd3e69fd81488f83164a9\" title=\"diff\" rel=\"nofollow\">
+        <img src=\"../wikiicons/diff.png\" alt=\"diff\">
+      </a>
+      <a href=\"/ikiwiki.cgi?do=goto&amp;page=forum%2FRecentChanges__58___link_to_the_diff__63__\" rel=\"nofollow\">forum/RecentChanges: link to the diff?</a>
+    </span>
+"""]]
