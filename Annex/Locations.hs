@@ -514,7 +514,11 @@ keyFile :: Key -> FilePath
 keyFile = fromRawFilePath . keyFile'
 
 keyFile' :: Key -> RawFilePath
-keyFile' = S8.concatMap esc . serializeKey'
+keyFile' k = 
+	let b = serializeKey' k
+	in if any (`S8.elem` b) ['&', '%', ':', '/']
+		then S8.concatMap esc b
+		else b
   where
 	esc '&' = "&a"
 	esc '%' = "&s"
