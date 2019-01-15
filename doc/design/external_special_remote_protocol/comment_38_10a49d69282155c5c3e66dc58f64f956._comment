@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="PREPARE-LOCAL"
+ date="2019-01-15T15:46:07Z"
+ content="""
+> \"Note that users expect `git annex whereis` to run fast, without eg, network access\"
+
+Currently, git-annex spins up a remote process for every `git annex whereis` command that involves a file present on the remote (w/o chunking & encryption). As most remotes establish their network connection during the PREPARE phase, the command is slowed down, especially with bad internet connection. So I propose an extension `PREPARE-LOCAL` that tells the remote to get all necessary config information but skip the networking.
+
+Alternatively, the remotes could wait to establish network connection until the first transfer command is sent but I think something like `PREPARE-LOCAL` would be the cleaner solution.
+"""]]
