@@ -534,9 +534,9 @@ fileKey = fileKey' . toRawFilePath
 fileKey' :: RawFilePath -> Maybe Key
 fileKey' = deserializeKey' . S8.intercalate "/" . map go . S8.split '%'
   where
-	go = S8.concat . go' . S8.split '&'
-	go' [] = []
-	go' (b:bs) = b : map (unesc . S8.uncons) bs
+	go = S8.concat . unescafterfirst . S8.split '&'
+	unescafterfirst [] = []
+	unescafterfirst (b:bs) = b : map (unesc . S8.uncons) bs
 	unesc :: Maybe (Char, S8.ByteString) -> S8.ByteString
 	unesc Nothing = mempty
 	unesc (Just ('c', b)) = S8.cons ':' b
