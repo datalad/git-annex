@@ -85,6 +85,7 @@ module Annex.Locations (
 import Data.Char
 import Data.Default
 import qualified Data.ByteString.Char8 as S8
+import qualified Data.ByteString.Lazy as L
 
 import Common
 import Key
@@ -515,7 +516,7 @@ keyFile = fromRawFilePath . keyFile'
 
 keyFile' :: Key -> RawFilePath
 keyFile' k = 
-	let b = serializeKey' k
+	let b = L.toStrict (serializeKey' k)
 	in if any (`S8.elem` b) ['&', '%', ':', '/']
 		then S8.concatMap esc b
 		else b

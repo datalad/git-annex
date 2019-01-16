@@ -10,7 +10,7 @@ module Annex.VariantFile where
 import Annex.Common
 import Utility.Hash
 
-import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as L
 
 variantMarker :: String
 variantMarker = ".variant-"
@@ -41,5 +41,5 @@ variantFile file key
   where
 	doubleconflict = variantMarker `isInfixOf` file
 
-shortHash :: S.ByteString -> String
-shortHash = take 4 . show . md5s
+shortHash :: L.ByteString -> String
+shortHash = take 4 . show . md5

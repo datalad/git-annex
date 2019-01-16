@@ -51,18 +51,14 @@ stubKey = Key
 	, keyMtime = Nothing
 	, keyChunkSize = Nothing
 	, keyChunkNum = Nothing
-	, keySerialization = Nothing
 	}
 
 -- Gets the parent of a chunk key.
 nonChunkKey :: Key -> Key
-nonChunkKey k
-	| keyChunkSize k == Nothing && keyChunkNum k == Nothing = k
-	| otherwise = k
-		{ keyChunkSize = Nothing
-		, keyChunkNum = Nothing
-		, keySerialization = Nothing
-		}
+nonChunkKey k = k
+	{ keyChunkSize = Nothing
+	, keyChunkNum = Nothing
+	}
 
 -- Where a chunk key is offset within its parent.
 chunkKeyOffset :: Key -> Maybe Integer
@@ -98,13 +94,10 @@ buildKey k = byteString (formatKeyVariety (keyVariety k))
 	_ ?: Nothing = mempty
 
 serializeKey :: Key -> String
-serializeKey = decodeBS' . serializeKey'
+serializeKey = decodeBL' . serializeKey'
 
-serializeKey' :: Key -> S.ByteString
-serializeKey' k = case keySerialization k of
-	Nothing -> L.toStrict $
-		toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty (buildKey k)
-	Just b -> b
+serializeKey' :: Key -> L.ByteString
+serializeKey' = toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty . buildKey
 
 {- This is a strict parser for security reasons; a key
  - can contain only 4 fields, which all consist only of numbers.
@@ -134,7 +127,6 @@ keyParser = do
 			, keyMtime = m
 			, keyChunkSize = cs
 			, keyChunkNum = cn
-			, keySerialization = Nothing
 			}
 		else fail "invalid keyName"
   where
@@ -148,10 +140,7 @@ deserializeKey :: String -> Maybe Key
 deserializeKey = deserializeKey' . encodeBS'
 
 deserializeKey' :: S.ByteString -> Maybe Key
-deserializeKey' b = either
-	(const Nothing)
-	(\k -> Just $ k { keySerialization = Just b })
-	(A.parseOnly keyParser b)
+deserializeKey' b = eitherToMaybe $ A.parseOnly keyParser b
 
 {- This splits any extension out of the keyName, returning the 
  - keyName minus extension, and the extension (including leading dot).
@@ -189,7 +178,6 @@ instance Arbitrary Key where
 		<*> ((abs . fromInteger <$>) <$> arbitrary) -- mtime cannot be negative
 		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
-		<*> pure Nothing
 
 instance Hashable Key where
 	hashIO32 = hashIO32 . serializeKey'

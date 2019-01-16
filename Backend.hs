@@ -58,10 +58,7 @@ genKey source preferredbackend = do
 		Just k -> Just (makesane k, b)
   where
 	-- keyNames should not contain newline characters.
-	makesane k = k
-		{ keyName = S8.map fixbadchar (keyName k)
-		, keySerialization = Nothing
-		}
+	makesane k = k { keyName = S8.map fixbadchar (keyName k) }
 	fixbadchar c
 		| c == '\n' = '_'
 		| otherwise = c

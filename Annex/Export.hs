@@ -42,7 +42,6 @@ exportKey sha = mk <$> catKey sha
 		, keyMtime = Nothing
 		, keyChunkSize = Nothing
 		, keyChunkNum = Nothing
-		, keySerialization = Nothing
 		}
 
 exportTree :: Remote.RemoteConfig -> Bool

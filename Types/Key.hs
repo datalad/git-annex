@@ -23,7 +23,6 @@ data Key = Key
 	, keyMtime :: Maybe EpochTime
 	, keyChunkSize :: Maybe Integer
 	, keyChunkNum :: Maybe Integer
-	, keySerialization :: Maybe S.ByteString -- ^ cached serialization
 	} deriving (Eq, Ord, Read, Show)
 
 {- A filename may be associated with a Key. -}

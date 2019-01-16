@@ -68,10 +68,7 @@ chunkKeyStream :: Key -> ChunkSize -> ChunkKeyStream
 chunkKeyStream basek chunksize = ChunkKeyStream $ map mk [1..]
   where
 	mk chunknum = sizedk { keyChunkNum = Just chunknum }
-	sizedk = basek
-		{ keyChunkSize = Just (toInteger chunksize)
-		, keySerialization = Nothing
-		}
+	sizedk = basek { keyChunkSize = Just (toInteger chunksize) }
 
 nextChunkKeyStream :: ChunkKeyStream -> (Key, ChunkKeyStream)
 nextChunkKeyStream (ChunkKeyStream (k:l)) = (k, ChunkKeyStream l)
