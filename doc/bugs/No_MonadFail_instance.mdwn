@@ -45,3 +45,5 @@ Some of the code in git-annex uses failable patterns in `do`-blocks, so it fails
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Just trying to start using it. I have built it with `-XNoMonadFailDesugaring` for now.
+
+> [[fixed|done]] (release soonish) --[[Joey]]
