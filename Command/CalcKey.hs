@@ -14,7 +14,7 @@ import Types.KeySource
 cmd :: Command
 cmd = noCommit $ noMessages $ dontCheck repoExists $
 	command "calckey" SectionPlumbing 
-		"calculates the key that would be used to refer to a file"
+		"calulate key for a file"
 		(paramRepeating paramFile)
 		(batchable run (pure ()))
 

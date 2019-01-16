@@ -1,6 +1,6 @@
 # NAME
 
-git-annex info - shows information about the specified item or the repository as a whole
+git-annex info - information about an item or the repository
 
 # SYNOPSIS
 

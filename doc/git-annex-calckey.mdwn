@@ -1,6 +1,6 @@
 # NAME
 
-git-annex calckey - calculates the key that would be used to refer to a file
+git-annex calckey - calulate key for a file
 
 # SYNOPSIS
 

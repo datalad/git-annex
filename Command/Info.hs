@@ -102,7 +102,7 @@ type StatState = StateT StatInfo Annex
 cmd :: Command
 cmd = noCommit $ withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 	command "info" SectionQuery
-		"shows  information about the specified item or the repository as a whole"
+		"information about an item or the repository"
 		(paramRepeating paramItem) (seek <$$> optParser)
 
 data InfoOptions = InfoOptions
