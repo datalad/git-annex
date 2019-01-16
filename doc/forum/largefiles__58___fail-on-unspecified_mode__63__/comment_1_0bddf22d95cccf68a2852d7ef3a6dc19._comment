@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-01-16T19:11:35Z"
+ content="""
+This is a good idea, but unfortunately the interface that `git add` uses to
+run git-annex doesn't provide a way for git-annex to request that the file
+not be added. Even if git-annex exits with an error, git will assume the
+best thing to do is to add the file itself. As documented in the gitattributes(5)
+man page:
+
+           A missing filter driver definition in the config, or a filter driver that
+           exits with a non-zero status, is not an error but makes the filter a
+           no-op passthru.
+
+So this would I think need an extension to git..
+
+However, there is a fairly easy way to convert an annexed file to be stored in git
+if your annex.largefiles configuration didn't do the right thing:
+
+	touch thefile
+	git -c annex.largefiles=nothing add thefile
+"""]]
