@@ -74,15 +74,15 @@ genBackendE hash = (genBackend hash)
 	}
 
 hashKeyVariety :: Hash -> HasExt -> KeyVariety
-hashKeyVariety MD5Hash he = MD5Key he mempty
-hashKeyVariety SHA1Hash he = SHA1Key he mempty
-hashKeyVariety (SHA2Hash size) he = SHA2Key size he mempty
-hashKeyVariety (SHA3Hash size) he = SHA3Key size he mempty
-hashKeyVariety (SkeinHash size) he = SKEINKey size he mempty
+hashKeyVariety MD5Hash he = MD5Key he
+hashKeyVariety SHA1Hash he = SHA1Key he
+hashKeyVariety (SHA2Hash size) he = SHA2Key size he
+hashKeyVariety (SHA3Hash size) he = SHA3Key size he
+hashKeyVariety (SkeinHash size) he = SKEINKey size he
 #if MIN_VERSION_cryptonite(0,23,0)
-hashKeyVariety (Blake2bHash size) he = Blake2bKey size he mempty
-hashKeyVariety (Blake2sHash size) he = Blake2sKey size he mempty
-hashKeyVariety (Blake2spHash size) he = Blake2spKey size he mempty
+hashKeyVariety (Blake2bHash size) he = Blake2bKey size he
+hashKeyVariety (Blake2sHash size) he = Blake2sKey size he
+hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
 #endif
 
 {- A key is a hash of its contents. -}
