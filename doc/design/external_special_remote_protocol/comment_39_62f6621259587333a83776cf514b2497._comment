@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: PREPARE-LOCAL"""
+ date="2019-01-16T18:24:08Z"
+ content="""
+There is a difference between a WHEREIS that for some reason itself hit the
+network, and a single network connection in PREPARE. The language was
+really talking about the former, which would make whereis on a large number
+of files painful. Not saying it wouldn't be better to avoid the latter too;
+if the user is only running whereis on 1 file the overhead is equally as bad.
+
+Hmm, there is that "long running network connections" section
+that encourages using PREPARE that way, I think the idea was to make it as
+simple as possible to implement an external remote. All of git-annex's
+built-in remotes defer anything like that until it's needed.
+
+In a way the real problem here is that WHEREIS is something most
+remotes will never need to implement, but it's queried of all of them.
+If only the few remotes that implement it needed to avoid network
+connections in PREPARE, that would not be much trouble to do.
+
+PREPARE-LOCAL would need to be a protocol extension, so special remotes
+would have to be modified to request it, and those that are not modified
+would still have the overhead. Would that be any more likely to
+happen/easier to do than modifying all special remotes to defer network
+connections until needed?
+"""]]
