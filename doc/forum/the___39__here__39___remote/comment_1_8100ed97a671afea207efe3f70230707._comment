@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-01-17T17:18:17Z"
+ content="""
+No, "here" is not a remote. It is a way to refer to a repository that can
+be used in places where the name of a remote, or a UUID, can also be used
+to refer to a repository.
+
+For example, `git annex move --from here` doesn't work, and there's nothing
+it would make sense for it to do.
+"""]]
