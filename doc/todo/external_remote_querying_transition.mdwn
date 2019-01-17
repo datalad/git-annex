@@ -1,0 +1,50 @@
+The problem: WHEREIS must come after PREPARE, and external remotes are
+encouraged to establish network connections in PREPARE to simplify their
+implementations. So `git annex whereis` with such an external remote
+enabled and content on that remote is slowed down by an unnecessary network
+connection.
+
+Note that this even happens when the external remote does not implement
+support for WHEREIS.
+
+So, we want to deprecate WHEREIS needing to come after PREPARE.
+
+GETINFO has the same problem. (GETCOST and GETAVAILABILITY also, but
+those are cached to avoid needing to be run more than once per remote.)
+
+The transition: 
+
+* Add an extension to the protocol that lets WHEREIS come before/without
+  PREPARE. The external remote can indicate it supports this by negotiating
+  EXTENSIONS WHEREIS.
+
+  And similarly for GETINFO, with EXTENSIONS GETINFO.
+
+* For a while, git-annex can continue to send WHEREIS after PREPARE when
+  the external remote doesn't support the protocol extension. If the
+  external remote replies with WHEREIS-SUCCESS, then git-annex can warn
+  that it needs to be updated for the transition. (If it replies with
+  WHEREIS-FAILURE, it may be that it only has stub whereis support that
+  doesn't do anything, so probably git-annex should avoid warning in that
+  case).
+
+  And similarly for GETINFO, warning when it is sent after PREPARE and
+  there are any INFOFIELD replies, but not warning if there's only an
+  INFOEND.
+
+* Eventually, git-annex can stop sending WHEREIS unless the protocol
+  extension was negotiated. So WHEREIS stops being part of the
+  base protocol and becomes an extension.
+
+  Ditto for GETINFO.
+
+Possible complications:
+
+An external remote may need to do some kind of expensive setup to prepare
+to reply to WHEREIS, such as querying with GETCONFIG or looking at its own
+internal state or whatever. With WHEREIS run before PREPARE, such a remote
+will need to defer that setup until the first WHEREIS and cache it for
+subsequent WHEREIS, which may complicate its code slightly.
+
+Note that the protocol does allow querying with GETCONFIG etc before
+responding to a WHEREIS request.
