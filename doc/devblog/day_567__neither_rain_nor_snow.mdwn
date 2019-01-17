@@ -1,0 +1,16 @@
+Offline today due to weather, but there's lots of nice backlog to work
+on...
+
+I've written down a [[todo/external_remote_querying_transition]] plan.
+If you maintain an external special remote that implements WHEREIS or
+GETINFO, please take a look as your code would need to be updated if this
+is done.
+
+Ilya suggested making `git annex testremote` be able to test readonly
+remotes, and I implemented that.
+
+There was a discussion in the forum about .git/annex/misctmp/
+containing cruft left by an interrupted git-annex process.
+I was surprised to find half a gigabyte of old files on my own laptop due
+to this problem. I've put in a fix, so git-annex will clean up such temp
+files that were left behind by a previous interrupted git-annex process.
