@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-01-17T17:21:23Z"
+ content="""
+If git-annex is not providing a progress display, it's because
+the remote is not reporting any progress to it.
+
+It may be that the Backblaze B2 remote doesn't report progress when
+resuming an interrupted upload, for some reason.
+"""]]
