@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,7 +14,9 @@ import qualified Types.Remote as Remote
 import qualified Types.Backend as Backend
 import Types.KeySource
 import Annex.Content
+import Annex.WorkTree
 import Backend
+import Logs.Location
 import qualified Backend.Hash
 import Utility.Tmp
 import Utility.Metered
@@ -42,6 +44,7 @@ cmd = command "testremote" SectionTesting
 data TestRemoteOptions = TestRemoteOptions
 	{ testRemote :: RemoteName
 	, sizeOption :: ByteSize
+	, testReadonlyFile :: [FilePath]
 	}
 
 optParser :: CmdParamsDesc -> Parser TestRemoteOptions
@@ -52,22 +55,43 @@ optParser desc = TestRemoteOptions
 		<> value (1024 * 1024)
 		<> help "base key size (default 1MiB)"
 		)
+	<*> many testreadonly
+  where
+	testreadonly = option str
+		( long "test-readonly" <> metavar paramFile
+		<> help "readonly test object"
+		)
 
 seek :: TestRemoteOptions -> CommandSeek
-seek o = commandAction $ start (fromInteger $ sizeOption o) (testRemote o) 
+seek = commandAction . start 
 
-start :: Int -> RemoteName -> CommandStart
-start basesz name = do
-	showStart' "testremote" (Just name)
+start :: TestRemoteOptions -> CommandStart
+start o = do
+	showStart' "testremote" (Just (testRemote o))
 	fast <- Annex.getState Annex.fast
-	r <- either giveup disableExportTree =<< Remote.byName' name
-	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
-	rs' <- concat <$> mapM encryptionVariants rs
-	unavailrs  <- catMaybes <$> mapM Remote.mkUnavailable [r]
-	exportr <- exportTreeVariant r
-	showAction "generating test keys"
-	ks <- mapM randKey (keySizes basesz fast)
-	next $ perform rs' unavailrs exportr ks
+	r <- either giveup disableExportTree =<< Remote.byName' (testRemote o)
+	ks <- case testReadonlyFile o of
+		[] -> if Remote.readonly r
+			then giveup "This remote is readonly, so you need to use the --test-readonly option."
+			else do
+				showAction "generating test keys"
+				mapM randKey (keySizes basesz fast)
+		fs -> mapM (getReadonlyKey r) fs
+	let r' = if null (testReadonlyFile o)
+		then r
+		else r { Remote.readonly = True }
+	rs <- if Remote.readonly r'
+		then return [r']
+		else do
+			rs <- catMaybes <$> mapM (adjustChunkSize r') (chunkSizes basesz fast)
+			concat <$> mapM encryptionVariants rs
+	unavailrs  <- catMaybes <$> mapM Remote.mkUnavailable [r']
+	exportr <- if Remote.readonly r'
+		then return Nothing
+		else exportTreeVariant r'
+	next $ perform rs unavailrs exportr ks
+  where
+	basesz = fromInteger $ sizeOption o
 
 perform :: [Remote] -> [Remote] -> Maybe Remote -> [Key] -> CommandPerform
 perform rs unavailrs exportr ks = do
@@ -132,18 +156,18 @@ adjustRemoteConfig r adjustconfig = do
 		(Remote.gitconfig r)
 
 test :: Annex.AnnexState -> Remote -> Key -> [TestTree]
-test st r k =
-	[ check "removeKey when not present" remove
-	, present False
-	, check "storeKey" store
-	, present True
-	, check "storeKey when already present" store
-	, present True
-	, check "retrieveKeyFile" $ do
+test st r k = catMaybes
+	[ whenwritable $ check "removeKey when not present" remove
+	, whenwritable $ present False
+	, whenwritable $ check "storeKey" store
+	, whenwritable $ present True
+	, whenwritable $ check "storeKey when already present" store
+	, whenwritable $ present True
+	, Just $ check "retrieveKeyFile" $ do
 		lockContentForRemoval k removeAnnex
 		get
-	, check "fsck downloaded object" fsck
-	, check "retrieveKeyFile resume from 33%" $ do
+	, Just $ check "fsck downloaded object" fsck
+	, Just $ check "retrieveKeyFile resume from 33%" $ do
 		loc <- Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
@@ -152,24 +176,25 @@ test st r k =
 		liftIO $ L.writeFile tmp partial
 		lockContentForRemoval k removeAnnex
 		get
-	, check "fsck downloaded object" fsck
-	, check "retrieveKeyFile resume from 0" $ do
+	, Just $ check "fsck downloaded object" fsck
+	, Just $ check "retrieveKeyFile resume from 0" $ do
 		tmp <- prepTmp k
 		liftIO $ writeFile tmp ""
 		lockContentForRemoval k removeAnnex
 		get
-	, check "fsck downloaded object" fsck
-	, check "retrieveKeyFile resume from end" $ do
+	, Just $ check "fsck downloaded object" fsck
+	, Just $ check "retrieveKeyFile resume from end" $ do
 		loc <- Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
 		lockContentForRemoval k removeAnnex
 		get
-	, check "fsck downloaded object" fsck
-	, check "removeKey when present" remove
-	, present False
+	, Just $ check "fsck downloaded object" fsck
+	, whenwritable $ check "removeKey when present" remove
+	, whenwritable $ present False
 	]
   where
+	whenwritable a = if Remote.readonly r then Nothing else Just a
 	check desc a = testCase desc $
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	present b = check ("present " ++ show b) $
@@ -252,10 +277,12 @@ testUnavailable st r k =
 		checkval v  @? ("(got: " ++ show v ++ ")")
 
 cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
-cleanup rs ks ok = do
-	forM_ rs $ \r -> forM_ ks (Remote.removeKey r)
-	forM_ ks $ \k -> lockContentForRemoval k removeAnnex
-	return ok
+cleanup rs ks ok
+	| all Remote.readonly rs = return ok
+	| otherwise = do
+		forM_ rs $ \r -> forM_ ks (Remote.removeKey r)
+		forM_ ks $ \k -> lockContentForRemoval k removeAnnex
+		return ok
 
 chunkSizes :: Int -> Bool -> [Int]
 chunkSizes base False =
@@ -297,3 +324,13 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		<$> Backend.getKey Backend.Hash.testKeyBackend ks
 	_ <- moveAnnex k f
 	return k
+
+getReadonlyKey :: Remote -> FilePath -> Annex Key
+getReadonlyKey r f = lookupFile f >>= \case
+	Nothing -> giveup $ f ++ " is not an annexed file"
+	Just k -> do
+		unlessM (inAnnex k) $
+			giveup $ f ++ " does not have its content locally present, cannot test it"
+		unlessM ((Remote.uuid r `elem`) <$> loggedLocations k) $
+			giveup $ f ++ " is not stored in the remote being tested, cannot test it"
+		return k

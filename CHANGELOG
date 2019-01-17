@@ -29,6 +29,7 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
     allowing for future expansion.
   * addunused, merge, assistant: Avoid creating work tree files in
     subdirectories in an edge case where the key contains "/".
+  * testremote: Support testing readonly remotes with the --test-readonly option.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 
