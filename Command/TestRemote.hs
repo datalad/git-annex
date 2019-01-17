@@ -162,7 +162,7 @@ test st r k = catMaybes
 	, whenwritable $ check "storeKey" store
 	, whenwritable $ present True
 	, whenwritable $ check "storeKey when already present" store
-	, whenwritable $ present True
+	, Just $ present True
 	, Just $ check "retrieveKeyFile" $ do
 		lockContentForRemoval k removeAnnex
 		get
