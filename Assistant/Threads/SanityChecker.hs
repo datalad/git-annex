@@ -40,8 +40,8 @@ import Git.Index
 import Assistant.Unused
 import Logs.Unused
 import Types.Transfer
-import Types.Key
 import Annex.Path
+import Annex.Tmp
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
@@ -53,7 +53,6 @@ import Utility.DiskFree
 
 import Data.Time.Clock.POSIX
 import qualified Data.Text as T
-import qualified Data.ByteString as S
 
 {- This thread runs once at startup, and most other threads wait for it
  - to finish. (However, the webapp thread does not, to prevent the UI
@@ -88,9 +87,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	liftIO $ fixUpSshRemotes
 
 	{- Clean up old temp files. -}
-	void $ liftAnnex $ tryNonAsync $ do
-		cleanOldTmpMisc
-		cleanReallyOldTmp
+	void $ liftAnnex $ tryNonAsync $ cleanupOtherTmp
 
 	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
@@ -269,58 +266,6 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
 #else
 		debug [show $ renderTense Past msg]
 #endif
-
-{- Files may be left in misctmp by eg, an interrupted add of files
- - by the assistant, which hard links files to there as part of lockdown
- - checks. Delete these files if they're more than a day old.
- -
- - Note that this is not safe to run after the Watcher starts up, since it
- - will create such files, and due to hard linking they may have old
- - mtimes. So, this should only be called from the
- - sanityCheckerStartupThread, which runs before the Watcher starts up.
- -
- - Also, if a git-annex add is being run at the same time the assistant
- - starts up, its tmp files could be deleted. However, the watcher will
- - come along and add everything once it starts up anyway, so at worst
- - this would make the git-annex add fail unexpectedly.
- -}
-cleanOldTmpMisc :: Annex ()
-cleanOldTmpMisc = do
-	now <- liftIO getPOSIXTime
-	let oldenough = now - (60 * 60 * 24)
-	tmp <- fromRepo gitAnnexTmpMiscDir
-	liftIO $ mapM_ (cleanOld (<= oldenough)) =<< dirContentsRecursive tmp
-
-{- While .git/annex/tmp is now only used for storing partially transferred
- - objects, older versions of git-annex used it for misctemp. Clean up any
- - files that might be left from that, by looking for files whose names
- - cannot be the key of an annexed object. Only delete files older than
- - 1 week old.
- -
- - Also, some remotes such as rsync may use this temp directory for storing
- - eg, encrypted objects that are being transferred. So, delete old
- - objects that use a GPGHMAC backend.
- -}
-cleanReallyOldTmp :: Annex ()
-cleanReallyOldTmp = do
-	now <- liftIO getPOSIXTime
-	let oldenough = now - (60 * 60 * 24 * 7)
-	tmp <- fromRepo gitAnnexTmpObjectDir
-	liftIO $ mapM_ (cleanjunk (<= oldenough)) =<< dirContentsRecursive tmp
-  where
-	cleanjunk check f = case fileKey (takeFileName f) of
-		Nothing -> cleanOld check f
-		Just k
-			| "GPGHMAC" `S.isPrefixOf` formatKeyVariety (keyVariety k) ->
-				cleanOld check f
-			| otherwise -> noop
-
-cleanOld :: (POSIXTime -> Bool) -> FilePath -> IO ()
-cleanOld check f = go =<< catchMaybeIO getmtime
-  where
-	getmtime = realToFrac . modificationTime <$> getSymbolicLinkStatus f
-	go (Just mtime) | check mtime = nukeFile f
-	go _ = noop
 
 checkRepoExists :: Assistant ()
 checkRepoExists = do

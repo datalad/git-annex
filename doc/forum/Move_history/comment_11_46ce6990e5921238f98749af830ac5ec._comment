@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2019-01-17T20:01:51Z"
+ content="""
+There were actually a few ways git-annex could be interrupted and leave
+droppings in misctmp.
+
+This is now dealt with, a subsequent run of git-annex will clean up
+leftover files from a previous interrupted run.
+"""]]

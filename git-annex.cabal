@@ -645,6 +645,7 @@ Executable git-annex
     Annex.SpecialRemote
     Annex.Ssh
     Annex.TaggedPush
+    Annex.Tmp
     Annex.Transfer
     Annex.UpdateInstead
     Annex.UUID

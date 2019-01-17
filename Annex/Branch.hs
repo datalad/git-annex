@@ -41,6 +41,7 @@ import Annex.Common
 import Annex.BranchState
 import Annex.Journal
 import Annex.GitOverlay
+import Annex.Tmp
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
@@ -488,9 +489,7 @@ stageJournal jl = withIndex $ do
 		mapM_ (removeFile . (dir </>)) stagedfs
 		hClose jlogh
 		nukeFile jlogf
-	openjlog = do
-		tmpdir <- fromRepo gitAnnexTmpMiscDir
-		createAnnexDirectory tmpdir
+	openjlog = withOtherTmp $ \tmpdir -> 
 		liftIO $ openTempFile tmpdir "jlog"
 
 {- This is run after the refs have been merged into the index,

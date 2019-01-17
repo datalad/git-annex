@@ -24,6 +24,7 @@ import Utility.Metered
 import Utility.Tmp
 import Backend.URL
 import Annex.Perms
+import Annex.Tmp
 import Annex.UUID
 import qualified Annex.Url as Url
 import Remote.Helper.Export
@@ -165,29 +166,20 @@ torrentUrlNum u
 torrentUrlKey :: URLString -> Annex Key
 torrentUrlKey u = return $ fromUrl (fst $ torrentUrlNum u) Nothing
 
-{- Temporary directory used to download a torrent. -}
-tmpTorrentDir :: URLString -> Annex FilePath
-tmpTorrentDir u = do
-	d <- fromRepo gitAnnexTmpMiscDir
-	f <- keyFile <$> torrentUrlKey u
-	return (d </> f)
-
 {- Temporary filename to use to store the torrent file. -}
 tmpTorrentFile :: URLString -> Annex FilePath
 tmpTorrentFile u = fromRepo . gitAnnexTmpObjectLocation =<< torrentUrlKey u
 
-{- A cleanup action is registered to delete the torrent file and its
- - associated temp directory when git-annex exits.
+{- A cleanup action is registered to delete the torrent file
+ - when git-annex exits.
  -
- - This allows multiple actions that use the same torrent file and temp
- - directory to run in a single git-annex run.
+ - This allows multiple actions that use the same torrent file
+ - directory to run in a single git-annex run, and only download the
+ - torrent file once.
  -}
 registerTorrentCleanup :: URLString -> Annex ()
-registerTorrentCleanup u = Annex.addCleanup (TorrentCleanup u) $ do
+registerTorrentCleanup u = Annex.addCleanup (TorrentCleanup u) $
 	liftIO . nukeFile =<< tmpTorrentFile u
-	d <- tmpTorrentDir u
-	liftIO $ whenM (doesDirectoryExist d) $
-		removeDirectoryRecursive d
 
 {- Downloads the torrent file. (Not its contents.) -}
 downloadTorrentFile :: URLString -> Annex Bool
@@ -199,17 +191,16 @@ downloadTorrentFile u = do
 			showAction "downloading torrent file"
 			createAnnexDirectory (parentDir torrent)
 			if isTorrentMagnetUrl u
-				then do
-					tmpdir <- tmpTorrentDir u
-					let metadir = tmpdir </> "meta"
+				then withOtherTmp $ \othertmp -> do
+					kf <- keyFile <$> torrentUrlKey u
+					let metadir = othertmp </> "torrentmeta" </> kf
 					createAnnexDirectory metadir
 					showOutput
 					ok <- downloadMagnetLink u metadir torrent
 					liftIO $ removeDirectoryRecursive metadir
 					return ok
-				else do
-					misctmp <- fromRepo gitAnnexTmpMiscDir
-					withTmpFileIn misctmp "torrent" $ \f h -> do
+				else withOtherTmp $ \othertmp -> do
+					withTmpFileIn othertmp "torrent" $ \f h -> do
 						liftIO $ hClose h
 						ok <- Url.withUrlOptions $ 
 							liftIO . Url.download nullMeterUpdate u f
@@ -244,16 +235,25 @@ downloadMagnetLink u metadir dest = ifM download
 downloadTorrentContent :: Key -> URLString -> FilePath -> Int -> MeterUpdate -> Annex Bool
 downloadTorrentContent k u dest filenum p = do
 	torrent <- tmpTorrentFile u
-	tmpdir <- tmpTorrentDir u
-	createAnnexDirectory tmpdir
-	f <- wantedfile torrent
-	showOutput
-	ifM (download torrent tmpdir <&&> liftIO (doesFileExist (tmpdir </> f)))
-		( do
-			liftIO $ renameFile (tmpdir </> f) dest
-			return True
-		, return False
-		)
+	withOtherTmp $ \othertmp -> do
+		kf <- keyFile <$> torrentUrlKey u
+		let downloaddir = othertmp </> "torrent" </> kf
+		createAnnexDirectory downloaddir
+		f <- wantedfile torrent
+		showOutput
+		ifM (download torrent downloaddir <&&> liftIO (doesFileExist (downloaddir </> f)))
+			( do
+				liftIO $ renameFile (downloaddir </> f) dest
+				-- The downloaddir is not removed here,
+				-- so if aria downloaded parts of other
+				-- files, and this is called again, it will
+				-- resume where it left off.
+				-- withOtherTmp registers a cleanup action
+				-- that will clean up leftover files when
+				-- git-annex terminates.
+				return True
+			, return False
+			)
   where
 	download torrent tmpdir = ariaProgress (keySize k) p
 		[ Param $ "--select-file=" ++ show filenum

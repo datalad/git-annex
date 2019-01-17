@@ -28,7 +28,9 @@ module Annex.Locations (
 	annexLocations,
 	gitAnnexDir,
 	gitAnnexObjectDir,
-	gitAnnexTmpMiscDir,
+	gitAnnexTmpOtherDir,
+	gitAnnexTmpOtherLock,
+	gitAnnexTmpOtherDirOld,
 	gitAnnexTmpObjectDir,
 	gitAnnexTmpObjectLocation,
 	gitAnnexTmpWorkDir,
@@ -246,13 +248,21 @@ gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
 gitAnnexObjectDir :: Git.Repo -> FilePath
 gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
 
-{- .git/annex/misctmp/ is used for random temp files -}
-gitAnnexTmpMiscDir :: Git.Repo -> FilePath
-gitAnnexTmpMiscDir r = addTrailingPathSeparator $ gitAnnexDir r </> "misctmp"
-
 {- .git/annex/tmp/ is used for temp files for key's contents -}
 gitAnnexTmpObjectDir :: Git.Repo -> FilePath
 gitAnnexTmpObjectDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
+
+{- .git/annex/othertmp/ is used for other temp files -}
+gitAnnexTmpOtherDir :: Git.Repo -> FilePath
+gitAnnexTmpOtherDir r = addTrailingPathSeparator $ gitAnnexDir r </> "othertmp"
+
+{- Lock file for gitAnnexTmpOtherDir. -}
+gitAnnexTmpOtherLock :: Git.Repo -> FilePath
+gitAnnexTmpOtherLock r = gitAnnexDir r </> "othertmp.lck"
+
+{- Directory used by old versions of git-annex. -}
+gitAnnexTmpOtherDirOld :: Git.Repo -> FilePath
+gitAnnexTmpOtherDirOld r = addTrailingPathSeparator $ gitAnnexDir r </> "misctmp"
 
 {- The temp file to use for a given key's content. -}
 gitAnnexTmpObjectLocation :: Key -> Git.Repo -> FilePath

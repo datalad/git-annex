@@ -1,6 +1,6 @@
 {- git-annex lock files.
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Annex.LockFile (
 	unlockFile,
 	getLockCache,
 	fromLockCache,
+	withSharedLock,
 	withExclusiveLock,
 	tryExclusiveLock,
 ) where
@@ -57,6 +58,21 @@ changeLockCache :: (LockCache -> LockCache) -> Annex ()
 changeLockCache a = do
 	m <- getLockCache
 	changeState $ \s -> s { lockcache = a m }
+
+{- Runs an action with a shared lock held. If an exclusive lock is held,
+ - blocks until it becomes free. -}
+withSharedLock :: (Git.Repo -> FilePath) -> Annex a -> Annex a
+withSharedLock getlockfile a = debugLocks $ do
+	lockfile <- fromRepo getlockfile
+	createAnnexDirectory $ takeDirectory lockfile
+	mode <- annexFileMode
+	bracket (lock mode lockfile) (liftIO . dropLock) (const a)
+  where
+#ifndef mingw32_HOST_OS
+	lock mode = noUmask mode . lockShared (Just mode)
+#else
+	lock _mode = liftIO . waitToLock . lockShared
+#endif
 
 {- Runs an action with an exclusive lock held. If the lock is already
  - held, blocks until it becomes free. -}

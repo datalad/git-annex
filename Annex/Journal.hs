@@ -14,6 +14,7 @@ module Annex.Journal where
 import Annex.Common
 import qualified Git
 import Annex.Perms
+import Annex.Tmp
 import Annex.LockFile
 import Utility.Directory.Stream
 
@@ -44,10 +45,8 @@ instance Journalable Builder where
  - content, although possibly not the most current one.
  -}
 setJournalFile :: Journalable content => JournalLocked -> FilePath -> content -> Annex ()
-setJournalFile _jl file content = do
-	tmp <- fromRepo gitAnnexTmpMiscDir
+setJournalFile _jl file content = withOtherTmp $ \tmp -> do
 	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
-	createAnnexDirectory tmp
 	-- journal file is written atomically
 	jfile <- fromRepo $ journalFile file
 	let tmpfile = tmp </> takeFileName jfile

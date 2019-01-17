@@ -16,7 +16,7 @@ import Annex.Common
 import Utility.FileMode
 import Remote.Helper.Special
 import qualified Remote.Helper.Chunked.Legacy as Legacy
-import Annex.Perms
+import Annex.Tmp
 import Utility.Metered
 
 withCheckedFiles :: (FilePath -> IO Bool) -> FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> ([FilePath] -> IO Bool) -> IO Bool
@@ -89,10 +89,8 @@ store chunksize finalizer k b p = storeHelper finalizer k $ \dests ->
  - :/ This is legacy code..
  -}
 retrieve :: (FilePath -> Key -> [FilePath]) -> FilePath -> Preparer Retriever
-retrieve locations d basek a = do
+retrieve locations d basek a = withOtherTmp $ \tmpdir -> do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
-	tmpdir <- fromRepo $ gitAnnexTmpMiscDir
-	createAnnexDirectory tmpdir
 	let tmp = tmpdir </> keyFile basek ++ ".directorylegacy.tmp"
 	a $ Just $ byteRetriever $ \k sink -> do
 		liftIO $ void $ withStoredFiles d locations k $ \fs -> do

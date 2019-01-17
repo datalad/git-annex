@@ -55,7 +55,7 @@ import Annex.CatFile
 import Annex.Link
 import Annex.AutoMerge
 import Annex.Content
-import Annex.Perms
+import Annex.Tmp
 import Annex.GitOverlay
 import Utility.Tmp.Dir
 import Utility.CopyFile
@@ -356,12 +356,10 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	 - (Doing the merge this way also lets it run even though the main
 	 - index file is currently locked.)
 	 -}
-	changestomerge (Just updatedorig) = do
-		misctmpdir <- fromRepo gitAnnexTmpMiscDir
-		void $ createAnnexDirectory misctmpdir
+	changestomerge (Just updatedorig) = withOtherTmp $ \othertmpdir -> do
 		tmpwt <- fromRepo gitAnnexMergeDir
 		git_dir <- fromRepo Git.localGitDir
-		withTmpDirIn misctmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
+		withTmpDirIn othertmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
 				-- Copy in refs and packed-refs, to work

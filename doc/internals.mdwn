@@ -33,12 +33,12 @@ that contain the key.
 
 This directory contains partially transferred objects.
 
-### `.git/annex/misctmp/`
+### `.git/annex/othertmp/`
 
 This is a temp directory for miscellaneous other temp files.
 
 While .git/annex/objects and .git/annex/tmp can be put on different
-filesystems if desired, .git/annex/misctmp 
+filesystems if desired, .git/annex/othertmp 
 has to be on the same filesystem as the work tree and git repository.
 
 ### `.git/annex/bad/`

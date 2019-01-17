@@ -29,6 +29,7 @@ import Config
 import Annex.Content
 import Annex.Ingest
 import Annex.Link
+import Annex.Tmp
 import Annex.CatFile
 import Annex.InodeSentinal
 import Annex.Version
@@ -487,9 +488,7 @@ safeToAdd lockdownconfig havelsof delayadd pending inprocess = do
 		( liftIO $ do
 			let segments = segmentXargsUnordered $ map keyFilename keysources
 			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
-		, do
-			tmpdir <- fromRepo gitAnnexTmpMiscDir
-			liftIO $ Lsof.queryDir tmpdir
+		, withOtherTmp $ liftIO . Lsof.queryDir
 		)
 
 {- After a Change is committed, queue any necessary transfers or drops

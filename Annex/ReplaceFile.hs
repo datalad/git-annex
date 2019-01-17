@@ -10,7 +10,7 @@
 module Annex.ReplaceFile where
 
 import Annex.Common
-import Annex.Perms
+import Annex.Tmp
 import Utility.Tmp.Dir
 import Utility.Path.Max
 
@@ -27,21 +27,19 @@ import Utility.Path.Max
  - Throws an IO exception when it was unable to replace the file.
  -}
 replaceFile :: FilePath -> (FilePath -> Annex a) -> Annex a
-replaceFile file action = do
-	misctmpdir <- fromRepo gitAnnexTmpMiscDir
-	void $ createAnnexDirectory misctmpdir
+replaceFile file action = withOtherTmp $ \othertmpdir -> do
 #ifndef mingw32_HOST_OS
 	-- Use part of the filename as the template for the temp
 	-- directory. This does not need to be unique, but it
 	-- makes it more clear what this temp directory is for.
-	filemax <- liftIO $ fileNameLengthLimit misctmpdir
+	filemax <- liftIO $ fileNameLengthLimit othertmpdir
 	let basetmp = take (filemax `div` 2) (takeFileName file)
 #else
 	-- Windows has limits on the whole path length, so keep
 	-- it short.
 	let basetmp = "t"
 #endif
-	withTmpDirIn misctmpdir basetmp $ \tmpdir -> do
+	withTmpDirIn othertmpdir basetmp $ \tmpdir -> do
 		let tmpfile = tmpdir </> basetmp
 		r <- action tmpfile
 		liftIO $ replaceFileFrom tmpfile file

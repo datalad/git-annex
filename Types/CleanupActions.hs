@@ -17,4 +17,5 @@ data CleanupAction
 	| FsckCleanup
 	| SshCachingCleanup
 	| TorrentCleanup URLString
+	| OtherTmpCleanup
 	deriving (Eq, Ord)

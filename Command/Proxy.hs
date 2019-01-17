@@ -12,6 +12,7 @@ import Config
 import Utility.Tmp.Dir
 import Utility.Env
 import Annex.Direct
+import Annex.Tmp
 import qualified Git
 import qualified Git.Sha
 import qualified Git.Ref
@@ -32,9 +33,7 @@ seek = withWords (commandAction . start)
 start :: [String] -> CommandStart
 start [] = giveup "Did not specify command to run."
 start (c:ps) = liftIO . exitWith =<< ifM isDirect
-	( do
-		tmp <- gitAnnexTmpMiscDir <$> gitRepo
-		withTmpDirIn tmp "proxy" go
+	( withOtherTmp $ \tmp -> withTmpDirIn tmp "proxy" go
 	, liftIO $ safeSystem c (map Param ps)
 	)
   where

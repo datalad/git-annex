@@ -1621,7 +1621,7 @@ test_crypto = do
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
 	testscheme scheme = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
 		gpgtmpdir <- annexeval $ (</> "gpgtest")
-			<$> Annex.fromRepo Annex.Locations.gitAnnexTmpMiscDir
+			<$> Annex.fromRepo Annex.Locations.gitAnnexTmpOtherDir
 		annexeval $ Annex.Perms.createAnnexDirectory gpgtmpdir
 		Utility.Gpg.testTestHarness gpgtmpdir gpgcmd 
 			@? "test harness self-test failed"

@@ -30,6 +30,7 @@ import Backend
 import Annex.Content
 import Annex.Content.Direct
 import Annex.Perms
+import Annex.Tmp
 import Annex.Link
 import Annex.MetaData
 import Annex.CurrentBranch
@@ -84,14 +85,12 @@ lockDown cfg file = either
 lockDown' :: LockDownConfig -> FilePath -> Annex (Either IOException LockedDown)
 lockDown' cfg file = ifM (pure (not (hardlinkFileTmp cfg)) <||> crippledFileSystem)
 	( withTSDelta $ liftIO . tryIO . nohardlink
-	, tryIO $ do
-		tmp <- fromRepo gitAnnexTmpMiscDir
-		createAnnexDirectory tmp
+	, tryIO $ withOtherTmp $ \tmp -> do
 		when (lockingFile cfg) $
 			freezeContent file
 		withTSDelta $ \delta -> liftIO $ do
 			(tmpfile, h) <- openTempFile tmp $
-				relatedTemplate $ takeFileName file
+				relatedTemplate $ "ingest-" ++ takeFileName file
 			hClose h
 			nukeFile tmpfile
 			withhardlink delta tmpfile `catchIO` const (nohardlink delta)

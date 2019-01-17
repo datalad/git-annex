@@ -44,6 +44,7 @@ import Annex.Hook
 import Annex.InodeSentinal
 import Upgrade
 import Annex.Perms
+import Annex.Tmp
 import Utility.UserInfo
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
@@ -163,9 +164,7 @@ isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersi
 {- A crippled filesystem is one that does not allow making symlinks,
  - or removing write access from files. -}
 probeCrippledFileSystem :: Annex Bool
-probeCrippledFileSystem = do
-	tmp <- fromRepo gitAnnexTmpMiscDir
-	createAnnexDirectory tmp
+probeCrippledFileSystem = withOtherTmp $ \tmp -> do
 	(r, warnings) <- liftIO $ probeCrippledFileSystem' tmp
 	mapM_ warning warnings
 	return r
@@ -222,17 +221,16 @@ probeLockSupport = do
 #ifdef mingw32_HOST_OS
 	return True
 #else
-	tmp <- fromRepo gitAnnexTmpMiscDir
-	let f = tmp </> "lockprobe"
-	createAnnexDirectory tmp
-	mode <- annexFileMode
-	liftIO $ do
-		nukeFile f
-		ok <- catchBoolIO $ do
-			Posix.dropLock =<< Posix.lockExclusive (Just mode) f
-			return True
-		nukeFile f
-		return ok
+	withOtherTmp $ \tmp -> do
+		let f = tmp </> "lockprobe"
+		mode <- annexFileMode
+		liftIO $ do
+			nukeFile f
+			ok <- catchBoolIO $ do
+				Posix.dropLock =<< Posix.lockExclusive (Just mode) f
+				return True
+			nukeFile f
+			return ok
 #endif
 
 probeFifoSupport :: Annex Bool
@@ -240,20 +238,19 @@ probeFifoSupport = do
 #ifdef mingw32_HOST_OS
 	return False
 #else
-	tmp <- fromRepo gitAnnexTmpMiscDir
-	let f = tmp </> "gaprobe"
-	let f2 = tmp </> "gaprobe2"
-	createAnnexDirectory tmp
-	liftIO $ do
-		nukeFile f
-		nukeFile f2
-		ms <- tryIO $ do
-			createNamedPipe f ownerReadMode
-			createLink f f2
-			getFileStatus f
-		nukeFile f
-		nukeFile f2
-		return $ either (const False) isNamedPipe ms
+	withOtherTmp $ \tmp -> do
+		let f = tmp </> "gaprobe"
+		let f2 = tmp </> "gaprobe2"
+		liftIO $ do
+			nukeFile f
+			nukeFile f2
+			ms <- tryIO $ do
+				createNamedPipe f ownerReadMode
+				createLink f f2
+				getFileStatus f
+			nukeFile f
+			nukeFile f2
+			return $ either (const False) isNamedPipe ms
 #endif
 
 checkLockSupport :: Annex ()

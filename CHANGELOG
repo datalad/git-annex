@@ -30,6 +30,11 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * addunused, merge, assistant: Avoid creating work tree files in
     subdirectories in an edge case where the key contains "/".
   * testremote: Support testing readonly remotes with the --test-readonly option.
+  * Switch to using .git/annex/othertmp for tmp files other than partial
+    downloads, and make stale files left in that directory when git-annex
+    is interrupted be cleaned up promptly by subsequent git-annex processes.
+  * The .git/annex/misctmp directory is no longer used and git-annex will
+    delete anything lingering in there after it's 1 week old.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 
