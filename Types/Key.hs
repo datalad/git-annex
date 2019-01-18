@@ -13,6 +13,8 @@ module Types.Key where
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import System.Posix.Types
+import Data.Monoid
+import Prelude
 
 {- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}
