@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 2"
+ date="2019-01-16T23:51:21Z"
+ content="""
+Another workflow is to use `encryption=pubkey`.  Again init the repo on s3. And add the keys of all your devs.
+
+    git annex initremote sensitive-s3 type=S3 chunk=1MiB encryption=pubkey embedcreds=no  keyid=DEV1_KEYID
+    git annex enableremote sensitive-s3 keyid+=DEV2_KEYID
+    git annex enableremote sensitive-s3 keyid+=DEV3_KEYID
+
+Then files on sensitive-s3 will be encrypted using (I think) multi-key encryption that any of the devs can decrypt using their private key.
+
+If you want to remove a dev later then you would have to, tell git-annex to remove their key, drop all files from sensitive-s3 (since they are readable by the revoked dev), then re-upload all files.
+
+    git annex enableremote sensitive-s3 keyid-=DEV2_KEYID
+    git annex drop --from=sensitive-s3
+    git annex copy --to=senitive-s3 /tmp/all-the-sensitive-files
+"""]]

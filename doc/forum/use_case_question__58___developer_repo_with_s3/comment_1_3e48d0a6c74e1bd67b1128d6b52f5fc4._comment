@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 1"
+ date="2019-01-16T23:44:02Z"
+ content="""
+I think you could probably achieve what you need to (depending on your specific needs).
+
+There some general notes on encryption at: <http://git-annex.branchable.com/encryption/> and <http://git-annex.branchable.com/design/encryption/> and some insights into `git-annex` internals with respect to encryption here <https://git-annex.branchable.com/tips/Decrypting_files_in_special_remotes_without_git-annex/>.
+
+I think you could setup s3 as a special remote with something like:
+
+    git annex initremote sensitive-s3 type=S3 chunk=1MiB encryption=hybrid embedcreds=no  keyid=DEV1_KEYID
+
+`DEV1_KEYID` is a name that the user's GPG keyring can recognize (sounds like you already have those). `hybrid` encryption means (I think?) that DEV1_KEYID GPG public key is used to encrypt a symmetric cipher that is stored in the repo. All the content on `sensitive-s3` will be encrypted using the symmetric cipher.  By default DEV1_KEYID will also be used to encrypt `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` which are stored encrypted in the repo, `embedcreds=no` means don't store that info in the repo.
+
+If you want to grant another developer access to `sensitive-s3`, then run something like:
+
+    git annex enableremote sensitive-s3 keyid+=DEV2_KEYID
+
+I can't find any documentation of what happens next, but I assume `git-annex` re-encrypts the symmetric cipher using multi-key encryption so both DEV1_KEYID and DEV2_KEYID can decrypt the symmetric cipher using either of their private keys. Because `git-annex` doesn't actually encrypt your files using gpg keys when using `hybrid` encryption, you don't need to re-upload or re-encrypt any files. `git-annex` is only using the GPG keys to grant access to a small encrypted file containing a symmetric cipher that is used for the actual encryption of files.
+
+The one main drawback with this design is that is difficult to revoke access. If you want, at a later date, to revoke DEV2's access to sensitive-s3, you can't do that using any built-in `git-annex` feature. You could give each dev their own AWS creds up-front, then at the very least you could revoke those on AWS. If you need to, you could also delete the old cipher regenerate a new one and re-upload all files with a new cipher that only remaining developers have access to.
+"""]]
