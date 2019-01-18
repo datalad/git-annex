@@ -92,8 +92,9 @@ prop_isomorphic_configEscape s = s == (configUnEscape . configEscape) s
 
 prop_parse_show_Config :: RemoteConfig -> Bool
 prop_parse_show_Config c
-	-- whitespace and '=' are not supported in keys
-	| any (\k -> any isSpace k || elem '=' k) (M.keys c) = True
+	-- whitespace and '=' are not supported in config keys; limit to
+	-- alphanumerics for simplicity
+	| any (all isAlphaNum) (M.keys c) = True
 	| otherwise = A.parseOnly remoteConfigParser (encodeBS $ showConfig c) ~~ Right c
   where
 	normalize v = sort . M.toList <$> v

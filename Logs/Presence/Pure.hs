@@ -15,6 +15,7 @@ import Utility.QuickCheck
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as C8
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.Attoparsec.ByteString.Char8 (char, anyChar)
 import Data.ByteString.Builder
@@ -116,10 +117,10 @@ instance Arbitrary LogLine where
 	arbitrary = LogLine
 		<$> arbitrary
 		<*> elements [minBound..maxBound]
-		<*> (LogInfo . encodeBS <$> arbinfo)
+		<*> (LogInfo <$> arbinfo)
 	  where
-		arbinfo = arbitrary `suchThat`
-			(\c -> '\n' `notElem` c && '\r' `notElem` c)
+		arbinfo = (encodeBS <$> arbitrary) `suchThat`
+			(\b -> C8.notElem '\n' b && C8.notElem '\r' b)
 
 prop_parse_build_log :: [LogLine] -> Bool
 prop_parse_build_log l = parseLog (toLazyByteString (buildLog l)) == l
