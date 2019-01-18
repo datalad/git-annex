@@ -20,9 +20,7 @@ import Data.Time.Format
 #if ! MIN_VERSION_time(1,5,0)
 import System.Locale
 #endif
-#if MIN_VERSION_feed(1,0,0)
 import qualified Data.Text as T
-#endif
 
 import Command
 import qualified Annex
