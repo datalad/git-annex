@@ -15,6 +15,7 @@ import qualified Data.UUID as U
 import Data.Maybe
 import Data.String
 import Data.ByteString.Builder
+import qualified Data.Semigroup as Sem
 
 import Utility.FileSystemEncoding
 import qualified Utility.SimpleProtocol as Proto
@@ -64,7 +65,7 @@ isUUID = isJust . U.fromString
 
 -- A description of a UUID.
 newtype UUIDDesc = UUIDDesc B.ByteString
-	deriving (Eq, Monoid, Semigroup, IsString)
+	deriving (Eq, Sem.Semigroup, Monoid, IsString)
 
 fromUUIDDesc :: UUIDDesc -> String
 fromUUIDDesc (UUIDDesc d) = decodeBS d
