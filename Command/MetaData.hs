@@ -54,11 +54,11 @@ optParser desc = MetaDataOptions
 		( long "set" <> short 's' <> metavar "FIELD[+-]=VALUE"
 		<> help "set or unset metadata value"
 		)
-		<|> (AddMeta tagMetaField . toMetaValue <$> strOption
+		<|> (AddMeta tagMetaField . toMetaValue . encodeBS <$> strOption
 			( long "tag" <> short 't' <> metavar "TAG"
 			<> help "set a tag"
 			))
-		<|> (DelMeta tagMetaField . Just . toMetaValue <$> strOption
+		<|> (DelMeta tagMetaField . Just . toMetaValue . encodeBS <$> strOption
 			( long "untag" <> short 'u' <> metavar "TAG"
 			<> help "remove a tag"
 			))
