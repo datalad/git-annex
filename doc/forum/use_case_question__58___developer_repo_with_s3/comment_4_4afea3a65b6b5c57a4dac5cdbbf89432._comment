@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="comment 4"
+ date="2019-01-20T21:14:03Z"
+ content="""
+Great, glad to hear this setup might work for you. Also, I also forgot to mention another drawback with `encryption=pubkey` is that you can't easily add add a key for a newly added developer later on, if you want to add a new developer key after you have uploaded files to s3 you will have to drop all the files, add the new key to git-annex, make sure all your devs do a `git-annex sync` to get the new set of public keys to use for encryption, then re-upload all the files to s3.
+"""]]
