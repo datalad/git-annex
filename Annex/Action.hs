@@ -11,7 +11,6 @@ module Annex.Action where
 
 import qualified Data.Map as M
 #ifndef mingw32_HOST_OS
-import System.Posix.Signals
 import System.Posix.Process (getAnyProcessStatus)
 import Utility.Exception
 #endif
@@ -26,12 +25,7 @@ import Annex.CheckIgnore
 
 {- Actions to perform each time ran. -}
 startup :: Annex ()
-startup =
-#ifndef mingw32_HOST_OS
-	liftIO $ void $ installHandler sigINT Default Nothing
-#else
-	return ()
-#endif
+startup = return ()
 
 {- Cleanup actions. -}
 shutdown :: Bool -> Annex ()
