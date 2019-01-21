@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-01-21T18:26:32Z"
+ content="""
+This is not making much sense to me, and the fact that the link to the
+comment that presumably provides some context is broken does not help much.
+
+The windows installation instructions are clear that only the 32 bit build
+of git for windows is supported. I don't see much benefit of chasing down
+some way that the windows installer messes up when not following the
+instructions..
+"""]]
