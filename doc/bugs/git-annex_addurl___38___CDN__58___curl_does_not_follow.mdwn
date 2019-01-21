@@ -41,3 +41,6 @@ debian stretch, x64. git-annex as out-of-box
 
 yes ! wunderful tool.
 managing my video, photo & music with it.
+
+> Appears to have been a local misconfiguration, not a bug. [[done]]
+> --[[Joey]]
