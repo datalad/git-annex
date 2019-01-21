@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="May be it is time?"
+ date="2019-01-20T15:32:38Z"
+ content="""
+> ... Postponed until old versions of git-annex-shell are less common
+
+I find installation on windows unnecessarily complicated with current demand of using x86 git.  Not that it is impossible but it makes it more elaborate, even for old timers.
+Would be nice if it was streamlined more.  I even wondered if there is a way to provide (additional) bundles which would come with git itself.  This way it could be just the git-annex installer to install all needed for working with git-annex (instead of this multistep process)
+"""]]

@@ -1,0 +1,8 @@
+### Please describe the problem.
+
+I had "fun" today doing some initial configuration of a laptop with Windows 10.  I remembered that I need to install Git first, so did that first, 64 bit since that is what is the laptop is.  Then when got to install git-annex remembered that it is recommended to install 32bit built of Git instead. Oh well, I left [a comment]() and proceeded hoping to resolve rsync issue if/when arises.
+The problem came upon reboot when I got "Windows Script Host" error "Can not find script file C:\Program Files (x86)\Git\cmd\git-annex-autostart.vbs".  Oh well, indeed -- there is no " (x86)\Git" and as described above it was "on purpose".  So it feels that some "recommended" value is hard-coded somewhere?
+
+P.S. I really hope that someone eventually takes time to make git-annex become available for Windows from conda-forge.
+
+[[!meta author=yoh]]
