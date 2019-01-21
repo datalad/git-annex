@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-01-21T18:12:13Z"
+ content="""
+I've fixed the problem I described above. But I don't think it was the
+same problem; the neurodebian build log is not complaining about missing
+files/directories.
+
+gpg in the test suite is using a separate home directory, so it starts a
+separate gpg-agent process for that. If the test suite is run on a
+filesystem where gpg-agent can't work, due say to unix sockets not being
+supported, that might be why it fails.
+"""]]
