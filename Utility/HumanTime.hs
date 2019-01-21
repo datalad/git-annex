@@ -60,15 +60,17 @@ parseDuration = maybe parsefail (return . Duration) . go 0
 fromDuration :: Duration -> String
 fromDuration Duration { durationSeconds = d }
 	| d == 0 = "0s"
-	| otherwise = concatMap showunit $ go [] units d
+	| otherwise = concatMap showunit $ take 2 $ go [] units d
   where
-	showunit (u, n)
-		| n > 0 = show n ++ [u]
-		| otherwise = ""
+	showunit (u, n) = show n ++ [u]
 	go c [] _ = reverse c
 	go c ((u, n):us) v =
 		let (q,r) = v `quotRem` n
-		in go ((u, q):c) us r
+		in if q > 0
+			then go ((u, q):c) us r
+			else if null c
+				then go c us r
+				else reverse c
 
 units :: [(Char, Integer)]
 units = 

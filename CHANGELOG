@@ -35,6 +35,7 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
     is interrupted be cleaned up promptly by subsequent git-annex processes.
   * The .git/annex/misctmp directory is no longer used and git-annex will
     delete anything lingering in there after it's 1 week old.
+  * Estimated time to completion display shortened from eg "1h1m1s" to "1h1m".
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 
