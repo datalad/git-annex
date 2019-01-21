@@ -347,8 +347,8 @@ keyBlock public ls = unlines
 
 #ifndef mingw32_HOST_OS
 {- Runs an action using gpg in a test harness, in which gpg does
- - not use ~/.gpg/, but sets up the test key in the passed directory
- - and uses it. -}
+ - not use ~/.gpg/, but sets up the test key in a subdirectory of 
+ - the passed directory and uses it. -}
 testHarness :: FilePath -> GpgCmd -> IO a -> IO a
 testHarness tmpdir cmd a = bracket setup cleanup (const a)
   where

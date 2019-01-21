@@ -60,7 +60,6 @@ import qualified Annex.WorkTree
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
-import qualified Annex.Perms
 import qualified Annex.VectorClock
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
@@ -1619,13 +1618,14 @@ test_crypto = do
 	testscheme "pubkey"
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
-	testscheme scheme = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
-		gpgtmpdir <- annexeval $ (</> "gpgtest")
-			<$> Annex.fromRepo Annex.Locations.gitAnnexTmpOtherDir
-		annexeval $ Annex.Perms.createAnnexDirectory gpgtmpdir
-		Utility.Gpg.testTestHarness gpgtmpdir gpgcmd 
+	testscheme scheme = do
+		gpgtmp <- (</> "gpgtest") <$> absPath tmpdir
+		createDirectoryIfMissing False gpgtmp
+		testscheme' scheme gpgtmp
+	testscheme' scheme gpgtmp = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
+		Utility.Gpg.testTestHarness gpgtmp gpgcmd 
 			@? "test harness self-test failed"
-		Utility.Gpg.testHarness gpgtmpdir gpgcmd $ do
+		Utility.Gpg.testHarness gpgtmp gpgcmd $ do
 			createDirectory "dir"
 			let a cmd = git_annex cmd $
 				[ "foo"
