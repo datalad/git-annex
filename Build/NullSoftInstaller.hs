@@ -87,8 +87,17 @@ installer = "git-annex-installer.exe"
 uninstaller :: FilePath
 uninstaller = "git-annex-uninstall.exe"
 
+gitInstallDir32 :: Exp FilePath
+gitInstallDir32 = fromString "$PROGRAMFILES\\Git"
+
+gitInstallDir64 :: Exp FilePath
+gitInstallDir64 = fromString "$PROGRAMFILES64\\Git"
+
 gitInstallDir :: Exp FilePath
-gitInstallDir = fromString "$PROGRAMFILES\\Git"
+gitInstallDir = fileExists gitInstallDir32 ?
+	( gitInstallDir32
+	, fileExists gitInstallDir64 ? (gitInstallDir64, gitInstallDir32)
+	)
 
 -- This intentionally has a different name than git-annex or
 -- git-annex-webapp, since it is itself treated as an executable file.

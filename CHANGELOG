@@ -36,6 +36,9 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * The .git/annex/misctmp directory is no longer used and git-annex will
     delete anything lingering in there after it's 1 week old.
   * Estimated time to completion display shortened from eg "1h1m1s" to "1h1m".
+  * Windows: If 64 bit git is installed, use it when installing git-annex.
+    (However, rsync still won't work and this is still not the documented way
+    to install it.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 
