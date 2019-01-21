@@ -1,3 +1,4 @@
 :load Common
 :set -XLambdaCase
 :set -XPackageImports
+:set -fno-warn-tabs
