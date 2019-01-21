@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2019-01-21T19:17:29Z"
+ content="""
+oops -- forgot indeed to add the [actual link](http://git-annex.branchable.com/todo/windows_support/#comment-c1b06cae15fbebf97d58f5e7a498b2d2) - fixed now.
+
+> The windows installation instructions are clear that only the 32 bit build of git for windows is supported.
+
+Windows installation instructions say actually nothing about what is \"supported\" at all. What they say is \"If you installed the 64 bit version of git, then parts of git-annex will still run, however, some features, including tools like rsync, will not work.\"  So here was I -- exploring uncharted territories by installing git-annex to see what parts will run and which wouldn't.  As I found no other report of the issue I have ran into -- I have filed a new issue instead of staying silent.  If you feel that it is something you wouldn't be interested to fix ATM -- I can live with that. But at least others who run into a similar case could find this report, and I guess it would get fixed when that roadblock with rsync gets resolved.
+
+Cheers!
+"""]]
