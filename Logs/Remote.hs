@@ -94,10 +94,14 @@ prop_parse_show_Config :: RemoteConfig -> Bool
 prop_parse_show_Config c
 	-- whitespace and '=' are not supported in config keys
 	| any (\k -> any isSpace k || elem '=' k) (M.keys c) = True
-	-- limit to alphanumerics for simplicity
-	| any (any (not . isAlphaNum)) (M.keys c) = True
-	| any (any (not . isAlphaNum)) (M.elems c) = True
+	| any (any excluded) (M.keys c) = True
+	| any (any excluded) (M.elems c) = True
 	| otherwise = A.parseOnly remoteConfigParser (encodeBS $ showConfig c) ~~ Right c
   where
 	normalize v = sort . M.toList <$> v
 	a ~~ b = normalize a == normalize b
+	-- limit to ascii alphanumerics for simplicity; characters not
+	-- allowed by the current character set in the config may not
+	-- round-trip in an identical representation due to the use of the
+	-- filesystem encoding.
+	excluded c = not (isAlphaNum c) || not (isAscii c)
