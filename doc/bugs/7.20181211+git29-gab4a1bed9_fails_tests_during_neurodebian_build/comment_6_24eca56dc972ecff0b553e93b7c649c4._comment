@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2019-01-21T19:22:52Z"
+ content="""
+tried to build 7.20181211+git284-g6f0d98f2a - it seems that the failing one is different one now?
+
+    prop_parse_show_Config:                               FAIL
+      *** Failed! Falsifiable (after 3 tests and 1 shrink):
+      fromList [(\"\791992\",\"\")]
+      Use --quickcheck-replay=133129 to reproduce.
+    prop_upFrom_basics:                                   OK (0.03s)
+    ...
+    1 out of 291 tests failed (254.87s)
+
+"""]]
