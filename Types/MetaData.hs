@@ -337,9 +337,8 @@ fromRemoteMetaData (RemoteMetaData u (MetaData m)) = MetaData $
  - the seriaization test slow due to the sheer amount of data.
  - It's unlikely that more than 100 fields of metadata will be used. -}
 instance Arbitrary MetaData where
-	arbitrary = do
-		size <- arbitrarySizedBoundedIntegral `suchThat` (< 500)
-		MetaData . M.filterWithKey legal . M.fromList <$> vector size
+	arbitrary = MetaData . M.filterWithKey legal . M.fromList
+		<$> resize 10 (listOf arbitrary)
 	  where
 		legal k _v = legalField $ fromMetaField k
 

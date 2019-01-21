@@ -23,7 +23,8 @@ data View = View
 	deriving (Eq, Read, Show)
 
 instance Arbitrary View where
-	arbitrary = View <$> pure (Git.Ref "master") <*> arbitrary
+	arbitrary = View (Git.Ref "master")
+		<$> resize 10 (listOf arbitrary)
 
 data ViewComponent = ViewComponent
 	{ viewField :: MetaField
@@ -43,8 +44,7 @@ data ViewFilter
 
 instance Arbitrary ViewFilter where
 	arbitrary = do
-		size <- arbitrarySizedBoundedIntegral `suchThat` (< 100)
-		s <- S.fromList <$> vector size
+		s <- S.fromList <$> resize 10 (listOf arbitrary)
 		ifM arbitrary
 			( return (FilterValues s)
 			, return (ExcludeValues s)
