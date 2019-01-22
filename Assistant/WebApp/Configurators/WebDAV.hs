@@ -30,9 +30,6 @@ import Network.URI
 webDAVConfigurator :: Widget -> Handler Html
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
 
-boxConfigurator :: Widget -> Handler Html
-boxConfigurator = page "Add a Box.com repository" (Just Configuration)
-
 data WebDAVInput = WebDAVInput
 	{ user :: Text
 	, password :: Text
@@ -44,14 +41,6 @@ data WebDAVInput = WebDAVInput
 toCredPair :: WebDAVInput -> CredPair
 toCredPair input = (T.unpack $ user input, T.unpack $ password input)
 
-boxComAForm :: Maybe CredPair -> MkAForm WebDAVInput
-boxComAForm defcreds = WebDAVInput
-	<$> areq textField (bfs "Username or Email") (T.pack . fst <$> defcreds)
-	<*> areq passwordField (bfs "Box.com Password") (T.pack . snd <$> defcreds)
-	<*> areq checkBoxField "Share this account with other devices and friends?" (Just True)
-	<*> areq textField (bfs "Directory") (Just "annex")
-	<*> enableEncryptionField
-
 webDAVCredsAForm :: Maybe CredPair -> MkAForm WebDAVInput
 webDAVCredsAForm defcreds = WebDAVInput
 	<$> areq textField (bfs "Username or Email") (T.pack . fst <$> defcreds)
@@ -59,32 +48,6 @@ webDAVCredsAForm defcreds = WebDAVInput
 	<*> pure False
 	<*> pure T.empty
 	<*> pure NoEncryption -- not used!
-
-getAddBoxComR :: Handler Html
-getAddBoxComR = postAddBoxComR
-postAddBoxComR :: Handler Html
-#ifdef WITH_WEBDAV
-postAddBoxComR = boxConfigurator $ do
-	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
-	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout
-			$ boxComAForm defcreds
-	case result of
-		FormSuccess input -> liftH $ 
-			makeWebDavRemote initSpecialRemote "box.com" (toCredPair input) $ M.fromList
-				[ configureEncryption $ enableEncryption input
-				, ("embedcreds", if embedCreds input then "yes" else "no")
-				, ("type", "webdav")
-				, ("url", "https://dav.box.com/dav/" ++ T.unpack (directory input))
-				-- Box.com has a max file size of 100 mb, but
-				-- using smaller chunks has better memory
-				-- performance.
-				, ("chunk", "10mb")
-				]
-		_ -> $(widgetFile "configurators/addbox.com")
-#else
-postAddBoxComR = giveup "WebDAV not supported by this build"
-#endif
 
 getEnableWebDAVR :: UUID -> Handler Html
 getEnableWebDAVR = postEnableWebDAVR
@@ -101,11 +64,7 @@ postEnableWebDAVR uuid = do
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $
 			makeWebDavRemote enableSpecialRemote name creds M.empty
-		Nothing
-			| "box.com/" `isInfixOf` url ->
-				boxConfigurator $ showform name url
-			| otherwise ->
-				webDAVConfigurator $ showform name url
+		Nothing -> webDAVConfigurator $ showform name url
   where
 	showform name url = do
 		defcreds <- liftAnnex $ 
