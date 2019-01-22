@@ -14,6 +14,7 @@ import Prelude
 
 import Utility.Monad
 import Utility.Exception
+import Utility.Misc
 
 type Version = String
 
@@ -55,7 +56,7 @@ getChangelogVersion = do
 	middle = drop 1 . init
 
 writeVersion :: Version -> IO ()
-writeVersion ver = catchMaybeIO (readFile f) >>= \case
+writeVersion ver = catchMaybeIO (readFileStrict f) >>= \case
 	Just s | s == body -> return ()
 	_ -> writeFile f body
   where
