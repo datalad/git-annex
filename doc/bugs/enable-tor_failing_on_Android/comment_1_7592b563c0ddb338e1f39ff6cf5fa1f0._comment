@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-01-22T21:28:17Z"
+ content="""
+I see you're trying to run git-annex from termux having su'd to root
+and that fails. (Not due to a missing env var, but due to HOME=/ and
+android not letting root write to / apparently?!)
+
+I don't know that chasing down that failure is a good use
+of my time, because having tor installed system-wide on a rooted android
+is not going to be a very common thing to do.
+
+termux has a tor package, and with tor installed that way, its
+configuration is in `$PREFIX/etc/tor/torrc` in the termux file tree,
+and is writable by the termux user, without su.
+
+<https://wiki.termux.com/wiki/Remote_Access#Accessing_Termux_from_the_Internet>
+
+Making enable-tor use that seems like a more fruitful avenue to pursue.
+Utility/Tor.hs has a findTorrc function that could be modified to
+find the termux torrc file. Other changes would also be needed for eg
+torLibDir.
+"""]]
