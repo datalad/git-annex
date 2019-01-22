@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-01-22T21:12:15Z"
+ content="""
+I mean, yes, that is an error message that can occur due to some newbie
+haskell mistake, OTOH I have been writing haskell for 10 years and
+generally don't make that mistake anymore and why would it only occur on
+OSX on FAT?
+
+Also, when I do that newbie mistake on purpose, the error message I get includes the
+name of the file that it's having trouble with. It's strange that the error
+message you show did not.
+
+	joey@darkstar:~>cp /etc/passwd foo
+	joey@darkstar:~>ghci
+	GHCi, version 8.4.4: http://www.haskell.org/ghc/  :? for help
+	Loaded GHCi configuration from /home/joey/.etc/.ghci
+	ghci> readFile  "foo" >>= writeFile "foo"
+	*** Exception: foo: openFile: resource busy (file is locked)
+
+This makes me wonder if you censored the filename from the message. The lack
+of specifics about exactly which git-annex commands do this and which don't
+also does not help me in trying to think about your problem.
+
+I suggest you use dtrace or something to examine the system calls that
+git-annex is making, which should give a hint about which file it's having
+the problem with.
+"""]]
