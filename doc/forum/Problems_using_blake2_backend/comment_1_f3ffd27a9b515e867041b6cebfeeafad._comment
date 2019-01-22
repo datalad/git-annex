@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-01-22T21:21:22Z"
+ content="""
+This means that the C implementation of blake2 in the cryptonite library
+is optimised using an instruction not supported by your CPU.
+
+My first guess is it's SSE, which gets enabled when cryptonite is built
+with the `support_sse` build flag. That flag is not enabled by default;
+but perhaps archlinux has enabled it?
+"""]]
