@@ -104,4 +104,4 @@ prop_parse_show_Config c
 	-- allowed by the current character set in the config may not
 	-- round-trip in an identical representation due to the use of the
 	-- filesystem encoding.
-	excluded c = not (isAlphaNum c) || not (isAscii c)
+	excluded ch = not (isAlphaNum ch) || not (isAscii ch)
