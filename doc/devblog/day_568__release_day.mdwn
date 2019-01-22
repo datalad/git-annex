@@ -1,0 +1,11 @@
+After a long struggle with the test suite, the new
+git-annex release is finally out today.
+
+A few last-minute changes in the release include removing
+box.com from the webapp since their webdav gateway is EOL at the end of the
+month, supporting armv71 in the android installation script, allowing
+installation with 64 bit git on windows, and shortening the estimated time
+to completion display.
+
+Today's work was supported by Trenton Cronholm
+[on Patreon](https://patreon.com/joeyh).
