@@ -1,3 +1,6 @@
+
+### Fixed in Version 7.20190122
+
 Hello, 
 When doing a "git annex init somename --version=5" on git-annex 7.20181211, it still creates an v7 repository. I want to be able to use the direct-mode because of space constraints (v7 unlocked files take up double the space).
 
