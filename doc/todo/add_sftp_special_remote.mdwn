@@ -3,8 +3,18 @@ pipelined to the network transfer, not requiring the creation of a full
 file to disk with gpg before the network transmission, as it happens with
 the rsync special remote.
 
-There should be some libraries that can handle the sftp connections and
-transfers. I read that even curl has support for that.
+That's assuming a sftp library; the sftp command wouldn't support that.
+<http://hackage.haskell.org/package/libssh2> has support for sftp, using
+the C libssh2. However, it does not integrate with ssh-agent, and
+it has two different entry points for authentication with a ssh key
+and with a password, and this would leave git-annex to somehow decide which
+method to use, and somehow remembering the ssh password or prompting for it
+each time. That seems suboptimal.
+
+Driving the `sftp` command is also suboptimal because there would be a trafeoff
+between reusing a single sftp session, which would prevent sftp from
+displaying progress (it doesn't when stdout is not a tty), and running sftp
+repeatedly (though ssh connection caching helps some with that).
 
 > Another reason to build this is that sftp has a `SFTP_FXP_STAT`
 > that can get disk free space information. "echo df | sftp user@host"
