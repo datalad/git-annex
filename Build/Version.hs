@@ -1,5 +1,6 @@
 {- Package version determination. -}
 
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Build.Version where
@@ -54,9 +55,11 @@ getChangelogVersion = do
 	middle = drop 1 . init
 
 writeVersion :: Version -> IO ()
-writeVersion = writeFile "Build/Version" . body
+writeVersion ver = catchMaybeIO (readFile f) >>= \case
+	Just s | s == body -> return ()
+	_ -> writeFile f body
   where
-	body ver = unlines $ concat
+	body = unlines $ concat
 		[ header
 		, ["packageversion :: String"]
 		, ["packageversion = \"" ++ ver ++ "\""]
@@ -67,3 +70,4 @@ writeVersion = writeFile "Build/Version" . body
 		, ""
 		]
 	footer = []
+	f = "Build/Version"
