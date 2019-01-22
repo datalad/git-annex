@@ -24,10 +24,7 @@ import Types.Remote (RemoteConfig)
 import Git.Types (RemoteName, fromRef)
 import qualified Remote.GCrypt as GCrypt
 import qualified Annex
-import qualified Git.Construct
-import qualified Git.Config
 import qualified Git.Command
-import qualified Remote.Helper.Ssh
 import qualified Annex.Branch
 import Annex.UUID
 import Logs.UUID
