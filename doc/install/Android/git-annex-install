@@ -18,6 +18,9 @@ case $(uname -m) in
 	arm)
 		arch=armel
 		;;
+	armv71)
+		arch=armel
+		;;
 	x86_64)
 		arch=amd64
 		;;

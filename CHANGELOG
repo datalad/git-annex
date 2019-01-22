@@ -43,6 +43,7 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
     webdav support is going away at the end of this January.
   * webapp: Remove configurator for gitlab, which stopped supporting git-annex
     some time ago.
+  * Android: For armv71 architecture, use the armel build.
 
  -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
 

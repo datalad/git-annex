@@ -25,3 +25,4 @@ source git-annex-install
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yeah, almost every day
 
+> Updated the script per comments. [[done]] --[[Joey]]
