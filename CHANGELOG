@@ -1,17 +1,12 @@
-git-annex (7.20181212) UNRELEASED; urgency=medium
+git-annex (7.20190122) upstream; urgency=medium
 
   * sync --content: Fix dropping unwanted content from the local repository.
   * sync --content: Support dropping local content that has reached an
     exporttree remote that is not untrusted (currently only S3 remotes
     with versioning).
-  * Make test suite work better when the temp directory is on NFS.
   * init: When --version=5 is passed on a crippled filesystem,
     use a v5 direct mode repo as requested, rather than upgrading to v7
     adjusted unlocked. (Fixes test suite on crippled filesystems.)
-  * unused: Update suggested git log message to see where data was previously
-    used so it will also work with v7 unlocked pointer files.
-  * Fix doubled progress display when downloading an url when -J is used.
-  * importfeed: Better error message when downloading the feed fails.
   * Some optimisations, including a 10x faster timestamp parser,
     a 7x faster key parser, and improved parsing and serialization of
     git-annex branch data. Many commands will run 5-15% faster.
@@ -36,16 +31,21 @@ git-annex (7.20181212) UNRELEASED; urgency=medium
   * The .git/annex/misctmp directory is no longer used and git-annex will
     delete anything lingering in there after it's 1 week old.
   * Estimated time to completion display shortened from eg "1h1m1s" to "1h1m".
-  * Windows: If 64 bit git is installed, use it when installing git-annex.
-    (However, rsync still won't work and this is still not the documented way
-    to install it.)
+  * Fix doubled progress display when downloading an url when -J is used.
+  * unused: Update suggested git log message to see where data was previously
+    used so it will also work with v7 unlocked pointer files.
+  * importfeed: Better error message when downloading the feed fails.
+  * Make test suite work better when the temp directory is on NFS.
   * webapp: Remove configurator for box.com repository, since their
     webdav support is going away at the end of this January.
   * webapp: Remove configurator for gitlab, which stopped supporting git-annex
     some time ago.
   * Android: For armv71 architecture, use the armel build.
+  * Windows: If 64 bit git is installed, use it when installing git-annex.
+    (However, rsync still won't work and this is still not the documented way
+    to install it.)
 
- -- Joey Hess <id@joeyh.name>  Tue, 18 Dec 2018 12:24:52 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 22 Jan 2019 12:25:26 -0400
 
 git-annex (7.20181211) upstream; urgency=medium
 
