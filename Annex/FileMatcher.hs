@@ -30,12 +30,8 @@ import Types.FileMatcher
 import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Annex.CheckAttr
+import Annex.Magic
 import Git.CheckAttr (unspecifiedAttr)
-
-#ifdef WITH_MAGICMIME
-import Magic
-import Utility.Env
-#endif
 
 import Data.Either
 import qualified Data.Set as S
@@ -139,15 +135,7 @@ preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu e
 
 mkLargeFilesParser :: Annex (String -> [ParseResult])
 mkLargeFilesParser = do
-#ifdef WITH_MAGICMIME
-	magicmime <- liftIO $ catchMaybeIO $ do
-		m <- magicOpen [MagicMimeType]
-		liftIO $ getEnv "GIT_ANNEX_DIR" >>= \case
-			Nothing -> magicLoadDefault m
-			Just d -> magicLoad m
-				(d </> "magic" </> "magic.mgc")
-		return m
-#endif
+	magicmime <- liftIO initMagicMimeType
 	let parse = parseToken $ commonTokens
 #ifdef WITH_MAGICMIME
 		++ [ ValueToken "mimetype" (usev $ matchMagic magicmime) ]

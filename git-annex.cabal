@@ -631,6 +631,7 @@ Executable git-annex
     Annex.LockFile
     Annex.LockPool
     Annex.LockPool.PosixOrPid
+    Annex.Magic
     Annex.MetaData
     Annex.MetaData.StandardFields
     Annex.Multicast

@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Limit where
 
 import Annex.Common
@@ -17,6 +15,7 @@ import Annex.Content
 import Annex.WorkTree
 import Annex.Action
 import Annex.UUID
+import Annex.Magic
 import Logs.Trust
 import Annex.NumCopies
 import Types.Key
@@ -33,10 +32,6 @@ import Git.Types (RefDate(..))
 import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
-
-#ifdef WITH_MAGICMIME
-import Magic
-#endif
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
@@ -99,17 +94,16 @@ matchGlobFile glob = go
 	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
 	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob af
 
-#ifdef WITH_MAGICMIME
 matchMagic :: Maybe Magic -> MkLimit Annex
 matchMagic (Just magic) glob = Right $ const go
   where
  	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingKey _ _) = pure False
 	go (MatchingFile fi) = liftIO $ catchBoolIO $
-		matchGlob cglob <$> magicFile magic (currFile fi)
+		maybe False (matchGlob cglob)
+			<$> getMagicMimeType magic (currFile fi)
 	go (MatchingInfo _ _ _ mimeval) = matchGlob cglob <$> getInfo mimeval
 matchMagic Nothing _ = Left "unable to load magic database; \"mimetype\" cannot be used"
-#endif
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
