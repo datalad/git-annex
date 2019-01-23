@@ -14,7 +14,6 @@ import Build.Version (getChangelogVersion, Version)
 import Utility.UserInfo
 import Utility.Url
 import Utility.Tmp.Dir
-import Utility.FileSystemEncoding
 import Utility.Metered
 import qualified Git.Construct
 import qualified Annex
