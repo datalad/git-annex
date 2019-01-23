@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="pthomasdelaney@9b04608ad7e837fde64ab60a285a7b7254b5bb26"
+ nickname="pthomasdelaney"
+ avatar="http://cdn.libravatar.org/avatar/2212a0d6c1fd93bc531c1fb461777a68"
+ subject="comment 5"
+ date="2019-01-23T02:26:33Z"
+ content="""
+thanks for pointing that out, I was wondering about that reading through the documentation.  We're going to give it a quick try and see how it goes.  We've got a very small team (less than five) and we require additional authentication to access the annex. I think it also works out that our company policy is a key rotation upon a departure, I'd be asked to re-create the annex. long-term we may look for other options if it seems too cumbersome but hopefully our turn over rate isn't that high.
+"""]]
