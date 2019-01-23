@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified System.FilePath.Posix as Posix
 import Data.Char
+import Data.String
 import Network.Socket (HostName)
 import Network.HTTP.Conduit (Manager)
 import Network.HTTP.Client (responseStatus, responseBody, RequestBody(..))
@@ -47,6 +48,7 @@ import Remote.Helper.Export
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
+import Annex.Magic
 import Logs.Web
 import Logs.MetaData
 import Types.MetaData
@@ -74,10 +76,11 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remot
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
 	info <- extractS3Info c
-	return $ new cst info
+	magic <- liftIO initMagicMimeType
+	return $ new cst info magic
   where
-	new cst info = Just $ specialRemote c
-		(prepareS3Handle this $ store this info)
+	new cst info magic = Just $ specialRemote c
+		(prepareS3Handle this $ store this info magic)
 		(prepareS3HandleMaybe this $ retrieve this c info)
 		(prepareS3Handle this $ remove info)
 		(prepareS3HandleMaybe this $ checkKey this c info)
@@ -99,7 +102,7 @@ gen r u c gc = do
 			, checkPresentCheap = False
 			, exportActions = withS3HandleMaybe c gc u $ \mh -> 
 				return $ ExportActions
-					{ storeExport = storeExportS3 u info mh
+					{ storeExport = storeExportS3 u info mh magic
 					, retrieveExport = retrieveExportS3 u info mh
 					, removeExport = removeExportS3 u info mh
 					, checkPresentExport = checkPresentExportS3 u info mh
@@ -190,16 +193,16 @@ prepareS3HandleMaybe :: Remote -> (Maybe S3Handle -> helper) -> Preparer helper
 prepareS3HandleMaybe r = resourcePrepare $ const $
 	withS3HandleMaybe (config r) (gitconfig r) (uuid r)
 
-store :: Remote -> S3Info -> S3Handle -> Storer
-store _r info h = fileStorer $ \k f p -> do
-	void $ storeHelper info h f (T.pack $ bucketObject info k) p
+store :: Remote -> S3Info -> Maybe Magic -> S3Handle -> Storer
+store _r info magic h = fileStorer $ \k f p -> do
+	void $ storeHelper info h magic f (T.pack $ bucketObject info k) p
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
 		setUrlPresent k (iaPublicUrl info (bucketObject info k))
 	return True
 
-storeHelper :: S3Info -> S3Handle -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3VersionID)
-storeHelper info h f object p = case partSize info of
+storeHelper :: S3Info -> S3Handle -> Maybe Magic -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3VersionID)
+storeHelper info h magic f object p = case partSize info of
 	Just partsz | partsz > 0 -> do
 		fsz <- liftIO $ getFileSize f
 		if fsz > partsz
@@ -208,16 +211,20 @@ storeHelper info h f object p = case partSize info of
 	_ -> singlepartupload
   where
 	singlepartupload = do
+		contenttype <- getcontenttype
 		rbody <- liftIO $ httpBodyStorer f p
-		r <- sendS3Handle h $ putObject info object rbody
+		r <- sendS3Handle h $ (putObject info object rbody)
+			{ S3.poContentType = encodeBS <$> contenttype }
 		return (mkS3VersionID object (S3.porVersionId r))
 	multipartupload fsz partsz = do
 #if MIN_VERSION_aws(0,16,0)
+		contenttype <- getcontenttype
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
 				{ S3.imuStorageClass = Just (storageClass info)
 				, S3.imuMetadata = metaHeaders info
 				, S3.imuAutoMakeBucket = isIA info
 				, S3.imuExpires = Nothing -- TODO set some reasonable expiry
+				, S3.imuContentType = fromString <$> contenttype
 				}
 		uploadid <- S3.imurUploadId <$> sendS3Handle h startreq
 
@@ -254,6 +261,8 @@ storeHelper info h f object p = case partSize info of
 		warning $ "Cannot do multipart upload (partsize " ++ show partsz ++ ") of large file (" ++ show fsz ++ "); built with too old a version of the aws library."
 		singlepartupload
 #endif
+	getcontenttype = liftIO $
+		maybe (pure Nothing) (flip getMagicMimeType f) magic
 
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
@@ -343,16 +352,16 @@ checkKeyHelper info h loc = do
 			| otherwise = Nothing
 #endif
 
-storeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportS3 u info (Just h) f k loc p = 
+storeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportS3 u info (Just h) magic f k loc p = 
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = do
 		let o = T.pack $ bucketExportLocation info loc
-		storeHelper info h f o p
+		storeHelper info h magic f o p
 			>>= setS3VersionID info u k
 		return True
-storeExportS3 u _ Nothing _ _ _ _ = do
+storeExportS3 u _ Nothing _ _ _ _ _ = do
 	warning $ needS3Creds u
 	return False
 

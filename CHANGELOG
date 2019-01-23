@@ -1,3 +1,11 @@
+git-annex (7.20190123) UNRELEASED; urgency=medium
+
+  * S3: Send a Content-Type header when storing objects in S3,
+    so exports to public buckets can be linked to from web pages.
+    (When git-annex is built with MagicMime support.)
+
+ -- Joey Hess <id@joeyh.name>  Wed, 23 Jan 2019 12:54:56 -0400
+
 git-annex (7.20190122) upstream; urgency=medium
 
   * sync --content: Fix dropping unwanted content from the local repository.
