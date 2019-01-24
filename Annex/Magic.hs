@@ -32,7 +32,7 @@ initMagicMimeType = catchMaybeIO $ do
 			(d </> "magic" </> "magic.mgc")
 	return m
 #else
-mkMagic = return Nothing
+initMagicMimeType = return Nothing
 #endif
 
 type MimeType = String
