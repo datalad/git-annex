@@ -1,0 +1,8 @@
+Hello Everyone,
+I created a set of scripts to work around some limitations in git-annex (although some of this is out of scope for git-annex ) like managing git repos inside a git-annex repo and (emulating) encryption=shared for gcrypt remotes. This is pretty much tailored to my own use-case, but maybe someone else is interested in this.
+
+You can find the Workarounds alongside a small Guide here:
+https://github.com/Lukey3332/git-annex-workarounds
+
+Regards,
+Lukey
