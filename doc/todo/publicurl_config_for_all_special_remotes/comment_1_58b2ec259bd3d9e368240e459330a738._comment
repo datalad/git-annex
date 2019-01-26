@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2019-01-25T21:34:15Z"
+ content="""
+Maybe, it'll suffice to just register the URL with the built-in web remote (via addurl, or registerurl and setpresentkey)?
+
+"""]]
