@@ -279,6 +279,11 @@ startUnexport' r ea db f ek = do
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
+-- Unlike a usual drop from a repository, this does not check that
+-- numcopies is satisfied before removing the content. Typically an export
+-- remote is untrusted, so would not count as a copy anyway.
+-- Or, an export may be appendonly, and removing a file from it does
+-- not really remove the content, which must be accessible later on.
 performUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
 performUnexport r ea db eks loc = do
 	ifM (allM (\ek -> removeExport ea (asKey ek) loc) eks)
