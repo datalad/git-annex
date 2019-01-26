@@ -1,0 +1,49 @@
+If a S3 remote is set up with exporttree=yes, and some files are stored on
+it, and then it's later changed to also have versioning=yes, an exporttree
+that removes some of the original files can lose the only remaining copy of
+them.
+
+exporttree does not currently check numcopies before removing from an
+export. Normally all export remotes are untrusted, so they can't count as a
+copy, and so removing something from them cannot violate numcopies.
+
+An appendonly remote, such as S3 with exporttree=yes, is supposed to not
+let git-annex remove content from it. So such a remote can be not
+untrusted, and exporttree can remove content from its exported tree without
+violating numcopies since the content is still supposed to be available in
+the remote.
+
+The S3 remote that gets versioning=yes enabled *after* some content has
+been stored on it without versioning violates the requirements for an
+appendonly remote. When exporttree removes a file from that S3 remote,
+it could have contained the only copy of the file, and it may not have
+versioning info for that file, so the only copy is lost.
+
+So are those requirements wrong, or is the S3 remote wrong? In either case,
+something needs to be done to prevent this situation from losing data.
+
+# change S3
+
+S3 remotes could refuse to allow versioning=yes to be set during
+enableremote, and only allow it at initremote time. And check that the
+bucket does indeed have versioning enabled or refuse to allow that
+configuration. That would avoid the problem.
+
+(Unless the user changed the bucket configuration later to not allow
+versioning. But if they did so, and an old version of the bucket was the
+only place a file was stored, they would lose data without git-annex being
+run at all, so it's equivilant to them deleting the bucket, so this seems
+not something it needs to worry about).
+
+There is [an yet-unmerged pull
+request](https://github.com/aristidb/aws/pull/255) to let buckets be
+created with versioning enabled, that is kind of a prerequisite for this
+change, otherwise the user would need to manually make the bucket and
+enable versioning before initremote.
+
+# change exporttree
+
+Exporttree could do some kind of check, but the regular numcopies check
+doesn't seem right for this situation. Perhaps it should
+check if the S3 remote has a S3 version ID for the key that it's going to
+unexport from that remote. This would be a fast local check.
