@@ -1,0 +1,19 @@
+Hello, I have a question about my tipical use case.
+
+I have a laptop with limited ssd space, 3 USB disks and I want to keep them in sync without using my laptop space.
+
+I specify:
+I want
+/media/disk1/Backup
+/media/disk2/Backup
+/media/disk3/Backup
+to be identical and synced, I can connect all the 3 drives to my laptop when I want to sync.
+Usually I add a batch of photos from the pc to one of the disk and git annex sync the files for me.
+
+BUT...
+
+In my future-proof environment I really prefer to have my files stored in "direct" mode in all of the 3 repositories, is this possible?
+So if something bad will happen I can just plug the disk in a brand new laptop and access my backup.
+
+How can I achieve this result?
+Thank you for your help
