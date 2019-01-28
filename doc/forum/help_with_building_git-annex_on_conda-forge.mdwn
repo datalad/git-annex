@@ -1,0 +1,8 @@
+I've been maintaining the recipe for installing git-annex with the  [conda-forge](https://conda-forge.org/) package manager.  I'm having trouble making the recipe work with the current conda-forge version, and would much appreciate any help, especially from people who understand Haskell/ghc/stack/cabal .  The recipe is here: https://github.com/conda-forge/git-annex-feedstock .  I keep getting error related to not finding libgmp, even though it is installed as a dependency:
+https://circleci.com/gh/conda-forge/git-annex-feedstock/157?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link
+
+The benefit of having a working conda-forge recipe is that it enables git-annex installation without root privileges, and enables building other conda-installable tools that depend on git-annex.
+
+Thanks,
+
+ilya
