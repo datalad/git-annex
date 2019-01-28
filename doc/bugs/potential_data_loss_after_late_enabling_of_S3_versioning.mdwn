@@ -41,9 +41,53 @@ created with versioning enabled, that is kind of a prerequisite for this
 change, otherwise the user would need to manually make the bucket and
 enable versioning before initremote.
 
+So, plan:
+
+* Wait for the PutBucketVersioning pull request to be merged.
+* Add a remote.name.s3-versioning-enabled which needs to be true
+  in order for exporttree to remove files from a versioned remote.
+* Enable versioning and set remote.name.s3-versioning-enabled during initremote,
+  when versioning=yes. If aws library is too old to enable versioning,
+  initremote should fail.
+* Do no allow changing versioning= during enableremote.
+* Any repos that used versioning=yes before this point will see removal
+  of files from them fail. The user can either manually set
+  remote.name.s3-versioning-enabled (if they are sure they enabled it from
+  the beginning), or can disable versioning. (Or perhaps other resolutions
+  to the problem, up to the user.)
+
 # change exporttree
 
-Exporttree could do some kind of check, but the regular numcopies check
-doesn't seem right for this situation. Perhaps it should
-check if the S3 remote has a S3 version ID for the key that it's going to
-unexport from that remote. This would be a fast local check.
+Exporttree could do some kind of check, but the regular numcopies drop check
+doesn't seem right for this situation. 
+
+The regular pre-drop check with an untrusted export remote would fail when
+a file's content was removed from the local repo (or was overwritten with
+annex.thin eg), even though the export remote, being untrusted, can't be
+guaranteed to continue to have a copy of the file. It would add some
+measure of safety, but not a strong guarantee of not losing the last copy,
+in that situation. To continue with the export, the user would need to
+first somehow download the object from from the export remote. The UI for
+that is lacking.
+
+The regular pre-drop check with a versioned S3 export remote is just wrong,
+because the content is not normally going to be removed from that remote,
+due to the versioning.
+
+Hmm, the versioned S3 remote could check, in removeExport 
+that the keys being removed have S3 versioning information available. If
+not, refuse to remove, or treat this removal as a drop, verifying numcopies
+first.
+(Luckily S3 does not implement removeExportDirectory so don't need to handle
+that much harder case.)
+
+Need to consider export split brain situations. If repo A has updated a
+file in the S3 export, and has not yet synced to repo B, and repo B is
+removing the file, it would check the wrong key.
+
+Also, repo A and repo B may both run storeExport using different keys, 
+and one overwrite the other, which cannot be detected by either until they
+merge. It's always possible to lose an object this way, if no S3 version ID was
+recorded.
+
+This approach is not looking promising..
