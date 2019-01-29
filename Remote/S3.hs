@@ -383,7 +383,7 @@ retrieveExportS3 u info mh _k loc f p =
 	exporturl = bucketExportLocation info loc
 
 removeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
-removeExportS3 u info (Just h) k loc = checkVersioning info u $
+removeExportS3 u info (Just h) k loc = checkVersioning info u k $
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = do
@@ -406,7 +406,7 @@ checkPresentExportS3 u info Nothing k loc = case getPublicUrlMaker info of
 
 -- S3 has no move primitive; copy and delete.
 renameExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 u info (Just h) k src dest = checkVersioning info u k src $ 
+renameExportS3 u info (Just h) k src dest = checkVersioning info u k $ 
 	catchNonAsync go (\_ -> return False)
   where
 	go = do
@@ -864,7 +864,11 @@ getS3VersionIDPublicUrls mk info u k =
 -- setting versioning in a bucket that git-annex has already exported
 -- files to risks losing the content of those un-versioned files.
 enableBucketVersioning :: SetupStage -> RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+#if MIN_VERSION_aws(0,22,0)
 enableBucketVersioning ss c gc u = do
+#else
+enableBucketVersioning ss c _ _ = do
+#endif
 	info <- extractS3Info c
 	case ss of
 		Init -> when (versioning info) $
