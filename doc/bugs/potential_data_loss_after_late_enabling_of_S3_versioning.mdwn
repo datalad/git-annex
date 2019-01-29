@@ -19,11 +19,6 @@ appendonly remote. When exporttree removes a file from that S3 remote,
 it could have contained the only copy of the file, and it may not have
 versioning info for that file, so the only copy is lost.
 
-So are those requirements wrong, or is the S3 remote wrong? In either case,
-something needs to be done to prevent this situation from losing data.
-
-# change S3
-
 S3 remotes could refuse to allow versioning=yes to be set during
 enableremote, and only allow it at initremote time. And check that the
 bucket does indeed have versioning enabled or refuse to allow that
@@ -46,39 +41,3 @@ Plan:
 * Any repos that previously enabled versioning after storing some
   unversioned files still are at risk of data loss. Detect this
   case and treat them as versioning=no. How?
-
-# change exporttree
-
-Exporttree could do some kind of check, but the regular numcopies drop check
-doesn't seem right for this situation. 
-
-The regular pre-drop check with an untrusted export remote would fail when
-a file's content was removed from the local repo (or was overwritten with
-annex.thin eg), even though the export remote, being untrusted, can't be
-guaranteed to continue to have a copy of the file. It would add some
-measure of safety, but not a strong guarantee of not losing the last copy,
-in that situation. To continue with the export, the user would need to
-first somehow download the object from from the export remote. The UI for
-that is lacking.
-
-The regular pre-drop check with a versioned S3 export remote is just wrong,
-because the content is not normally going to be removed from that remote,
-due to the versioning.
-
-Hmm, the versioned S3 remote could check, in removeExport 
-that the keys being removed have S3 versioning information available. If
-not, refuse to remove, or treat this removal as a drop, verifying numcopies
-first.
-(Luckily S3 does not implement removeExportDirectory so don't need to handle
-that much harder case.)
-
-Need to consider export split brain situations. If repo A has updated a
-file in the S3 export, and has not yet synced to repo B, and repo B is
-removing the file, it would check the wrong key.
-
-Also, repo A and repo B may both run storeExport using different keys, 
-and one overwrite the other, which cannot be detected by either until they
-merge. It's always possible to lose an object this way, if no S3 version ID was
-recorded.
-
-This approach is not looking promising..
