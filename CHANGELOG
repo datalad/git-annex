@@ -3,6 +3,10 @@ git-annex (7.20190123) UNRELEASED; urgency=medium
   * S3: Send a Content-Type header when storing objects in S3,
     so exports to public buckets can be linked to from web pages.
     (When git-annex is built with MagicMime support.)
+  * initremote S3: Automatically enable versioning in S3 buckets when configured
+    with versioning=yes. Needs not yet released version 0.22 of aws library;
+    with older versions asks the user to configure the bucket versioning
+    themselves.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Jan 2019 12:54:56 -0400
 

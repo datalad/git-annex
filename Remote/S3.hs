@@ -148,6 +148,12 @@ s3Setup' ss u mcreds c gc
 		]
 		
 	use fullconfig = do
+		case ss of
+			Init -> do
+				info <- extractS3Info fullconfig
+				when (versioning info) $
+					enableBucketVersioning (bucket info) fullconfig gc u
+			_ -> return ()
 		gitConfigSpecialRemote u fullconfig [("s3", "true")]
 		return (fullconfig, u)
 
@@ -425,8 +431,8 @@ renameExportS3 u _ Nothing _ _ _ = do
  - UUID file within the bucket.
  -
  - Some ACLs can allow read/write to buckets, but not querying them,
- - so first check if the UUID file already exists and we can skip doing
- - anything.
+ - so first check if the UUID file already exists and we can skip creating
+ - it.
  -}
 genBucket :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genBucket c gc u = do
@@ -857,3 +863,28 @@ s3VersionIDPublicUrl mk info (S3VersionID obj vid) = mk info $ concat
 getS3VersionIDPublicUrls :: (S3Info -> BucketObject -> URLString) -> S3Info -> UUID -> Key -> Annex [URLString]
 getS3VersionIDPublicUrls mk info u k =
 	map (s3VersionIDPublicUrl mk info) <$> getS3VersionID u k
+
+-- Enable versioning on the bucket.
+--
+-- This must only be done at init time; setting versioning in a bucket
+-- that git-annex has already exported files to risks losing the content of
+-- those un-versioned files.
+enableBucketVersioning :: S3.Bucket -> RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+enableBucketVersioning b c gc u = do
+#if MIN_VERSION_aws(0,22,0)
+	showAction "enabling bucket versioning"
+	withS3Handle c gc u $ \h ->
+		void $ sendS3Handle h $ S3.putBucketVersioning b S3.VersioningEnabled
+#else
+	let ConfigKey c = remoteConfig c "s3-versioning-enabled"
+	showLongNote $ unlines
+		[ "This version of git-annex cannot auto-enable S3 bucket versioning."
+		, "You need to manually enable versioning in the S3 console"
+		, "for the bucket \"" ++ T.unpack b ++ "\""
+		, "https://docs.aws.amazon.com/AmazonS3/latest/user-guide/enable-versioning.html"
+		, "It's important you do this before storing anything in the bucket!"
+		]
+#endif
+
+-- 
+-- verifyBucketVersioningEnabled :: Annex Bool
