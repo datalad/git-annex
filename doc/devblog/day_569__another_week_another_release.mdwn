@@ -1,0 +1,11 @@
+Today's release is to fix a
+[data loss bug](http://git-annex.branchable.com/bugs/potential_data_loss_after_late_enabling_of_S3_versioning/),
+that affects S3 remotes configured with exporttree=yes that got versioning=yes
+turned on after some unversioned data is stored in them. If you use the new
+versioning=yes feature with S3, please upgrade.
+
+Also, there are only two days left to fill out the
+[git-annex user survey](http://git-annex-survey.branchable.com/polls/2018/)
+if you have not already.
+
+Today's work was sponsored by Jake Vosloo [on Patreon](https://patreon.com/joeyh/).
