@@ -383,7 +383,7 @@ retrieveExportS3 u info mh _k loc f p =
 	exporturl = bucketExportLocation info loc
 
 removeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
-removeExportS3 _u info (Just h) _k loc = 
+removeExportS3 u info (Just h) k loc = checkVersioning info u $
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
 	go = do
@@ -406,7 +406,8 @@ checkPresentExportS3 u info Nothing k loc = case getPublicUrlMaker info of
 
 -- S3 has no move primitive; copy and delete.
 renameExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 _u info (Just h) _k src dest = catchNonAsync go (\_ -> return False)
+renameExportS3 u info (Just h) k src dest = checkVersioning info u k src $ 
+	catchNonAsync go (\_ -> return False)
   where
 	go = do
 		let co = S3.copyObject (bucket info) dstobject
@@ -887,3 +888,22 @@ enableBucketVersioning ss c gc u = do
 			, "It's important you enable versioning before storing anything in the bucket!"
 			]
 #endif
+
+-- If the remote has versioning enabled, but the version ID is for some
+-- reason not being recorded, it's not safe to perform an action that
+-- will remove the unversioned file. The file may be the only copy of an
+-- annex object.
+--
+-- This code could be removed eventually, since enableBucketVersioning
+-- will avoid this situation. Before that was added, some remotes
+-- were created without versioning, some unversioned files exported to
+-- them, and then versioning enabled, and this is to avoid data loss in
+-- those cases.
+checkVersioning :: S3Info -> UUID -> Key -> Annex Bool -> Annex Bool
+checkVersioning info u k a
+	| versioning info = getS3VersionID u k >>= \case
+		[] -> do
+			warning $ "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
+			return False
+		_ -> a
+	| otherwise = a

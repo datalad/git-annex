@@ -3,10 +3,6 @@ it, and then it's later changed to also have versioning=yes, an exporttree
 that removes some of the original files can lose the only remaining copy of
 them.
 
-exporttree does not currently check numcopies before removing from an
-export. Normally all export remotes are untrusted, so they can't count as a
-copy, and so removing something from them cannot violate numcopies.
-
 An appendonly remote, such as S3 with exporttree=yes, is supposed to not
 let git-annex remove content from it. So such a remote can be not
 untrusted, and exporttree can remove content from its exported tree without
@@ -19,25 +15,31 @@ appendonly remote. When exporttree removes a file from that S3 remote,
 it could have contained the only copy of the file, and it may not have
 versioning info for that file, so the only copy is lost.
 
-S3 remotes could refuse to allow versioning=yes to be set during
-enableremote, and only allow it at initremote time. And check that the
-bucket does indeed have versioning enabled or refuse to allow that
-configuration. That would avoid the problem.
+## Migration advice for users affected by this bug
 
-(Unless the user changed the bucket configuration later to not allow
-versioning. But if they did so, and an old version of the bucket was the
-only place a file was stored, they would lose data without git-annex being
-run at all, so it's equivilant to them deleting the bucket, so this seems
-not something it needs to worry about).
+If you think your S3 remote may be affected by this problem, you should
+immediately set it to untrusted to avoid data loss: 
+`git annex untrust $mys3remotename`
 
-Plan:
+If you see a warning message "Remote is configured to use versioning, but no S3 version ID is recorded for this key", 
+your S3 remote is affected.
 
-* Wait for the PutBucketVersioning pull request to be merged.
-  (Done, not in a release yet, but will probably be aws-0.22)
+Also, the fixed git-annex (version 7.20190129) will detect the problem,
+and refuse to delete unversioned files from your versioned S3 bucket.
+
+This will leave you with a S3 remote containing some versioned and some
+unversioned files. Kind of a mess. Best thing to do is to make a new
+S3 remote, with versioning=yes exporttree=yes set from the beginning,
+and copy all the content that was in the old S3 remote over to it.
+Then you can delete the old S3 bucket, and use `git annex dead` to
+make git-annex stop using it.
+
+## Fix
+
 * Auto-enable versioning during initremote (and not enableremote)
   when versioning=yes. (Or prompt user to do it when aws is too old.)
-  (Done)
 * Do not allow changing versioning= during enableremote.
-* Any repos that previously enabled versioning after storing some
-  unversioned files still are at risk of data loss. Detect this
-  case and treat them as versioning=no. How?
+* Make removeExport and renameExport check that
+  there is a S3 version ID known, and fail if not.
+
+[[done]] --[[Joey]]
