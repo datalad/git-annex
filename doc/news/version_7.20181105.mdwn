@@ -1,8 +1,0 @@
-git-annex 7.20181105 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix test suite failure when git-annex test is not run inside a git
-     repository.
-   * Fix a P2P protocol hang.
-   * importfeed: Avoid erroring out when a feed has been repeatedly broken,
-     as that can leave other imported files not checked into git.
-   * Increase minimum QuickCheck version."""]]
