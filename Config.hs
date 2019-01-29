@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,6 +19,8 @@ import Config.DynamicConfig
 import Types.Availability
 import Git.Types
 import qualified Types.Remote as Remote
+
+import qualified Data.Map as M
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -58,6 +60,9 @@ instance RemoteNameable RemoteName where
 
 instance RemoteNameable Remote where
 	getRemoteName = Remote.name
+
+instance RemoteNameable Remote.RemoteConfig where
+	getRemoteName c = fromMaybe "" (M.lookup "name" c)
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey

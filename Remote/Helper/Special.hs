@@ -69,10 +69,8 @@ findSpecialRemotes s = do
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()
 gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
-		setConfig (remoteConfig remotename k) v
-	setConfig (remoteConfig remotename "uuid") (fromUUID u)
-  where
-	remotename = fromJust (M.lookup "name" c)
+		setConfig (remoteConfig c k) v
+	setConfig (remoteConfig c "uuid") (fromUUID u)
 
 -- RetrievalVerifiableKeysSecure unless overridden by git config.
 --
