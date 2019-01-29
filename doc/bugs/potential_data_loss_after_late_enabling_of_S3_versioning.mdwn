@@ -35,26 +35,17 @@ only place a file was stored, they would lose data without git-annex being
 run at all, so it's equivilant to them deleting the bucket, so this seems
 not something it needs to worry about).
 
-There is [an yet-unmerged pull
-request](https://github.com/aristidb/aws/pull/255) to let buckets be
-created with versioning enabled, that is kind of a prerequisite for this
-change, otherwise the user would need to manually make the bucket and
-enable versioning before initremote.
-
-So, plan:
+Plan:
 
 * Wait for the PutBucketVersioning pull request to be merged.
-* Add a remote.name.s3-versioning-enabled which needs to be true
-  in order for exporttree to remove files from a versioned remote.
-* Enable versioning and set remote.name.s3-versioning-enabled during initremote,
-  when versioning=yes. If aws library is too old to enable versioning,
-  initremote should fail.
-* Do no allow changing versioning= during enableremote.
-* Any repos that used versioning=yes before this point will see removal
-  of files from them fail. The user can either manually set
-  remote.name.s3-versioning-enabled (if they are sure they enabled it from
-  the beginning), or can disable versioning. (Or perhaps other resolutions
-  to the problem, up to the user.)
+  (Done, not in a release yet, but will probably be aws-0.22)
+* Auto-enable versioning during initremote (and not enableremote)
+  when versioning=yes. (Or prompt user to do it when aws is too old.)
+  (Done)
+* Do not allow changing versioning= during enableremote.
+* Any repos that previously enabled versioning after storing some
+  unversioned files still are at risk of data loss. Detect this
+  case and treat them as versioning=no. How?
 
 # change exporttree
 
