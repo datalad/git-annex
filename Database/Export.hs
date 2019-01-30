@@ -218,9 +218,11 @@ updateExportTreeFromLog db@(ExportHandle _ u) =
 		l <- Log.getExport u
 		case Log.exportedTreeishes l of
 			[] -> return ExportUpdateSuccess
-			(new:[]) | new /= old -> do
-				updateExportTree db old new
-				liftIO $ recordExportTreeCurrent db new
-				liftIO $ flushDbQueue db
-				return ExportUpdateSuccess
+			(new:[]) 
+				| new /= old -> do
+					updateExportTree db old new
+					liftIO $ recordExportTreeCurrent db new
+					liftIO $ flushDbQueue db
+					return ExportUpdateSuccess
+				| new == old -> return ExportUpdateSuccess
 			_ts -> return ExportUpdateConflict
