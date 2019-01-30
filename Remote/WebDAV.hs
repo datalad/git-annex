@@ -120,8 +120,6 @@ webdavSetup _ mu mcreds c gc = do
 	c'' <- setRemoteCredPair encsetup c' gc (davCreds u) creds
 	return (c'', u)
 
--- Opens a http connection to the DAV server, which will be reused
--- each time the helper is called.
 prepareDAV :: Remote -> (Maybe DavHandle -> helper) -> Preparer helper
 prepareDAV = resourcePrepare . const . withDAVHandle
 
