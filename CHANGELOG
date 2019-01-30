@@ -3,6 +3,10 @@ git-annex (7.20190130) UNRELEASED; urgency=medium
   * Fix false positive in export conflict detection, that occurred
     when the same tree was exported by multiple clones. Previous fix was
     incomplete.
+  * When key-based retrieval from a S3 remote with exporttree=yes appendonly=yes
+    fails, fall back to trying to retrieve from the exported tree.
+    This allows downloads of files that were exported to such a remote
+    before versioning was enabled on it.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jan 2019 12:30:22 -0400
 

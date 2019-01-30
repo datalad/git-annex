@@ -141,11 +141,18 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- with content not of the requested key,
 			-- the content has to be strongly verified.
 			--
-			-- But, appendonly remotes have a key/value store,
-			-- so don't need to use retrieveExport.
-			, retrieveKeyFile = if appendonly r
-				then retrieveKeyFile r
-				else retrieveKeyFileFromExport getexportlocs exportinconflict
+			-- appendonly remotes have a key/value store,
+			-- so don't need to use retrieveExport. However,
+			-- fall back to it if retrieveKeyFile fails.
+			, retrieveKeyFile = \k af dest p ->
+				let retrieveexport = retrieveKeyFileFromExport getexportlocs exportinconflict k af dest p
+				in if appendonly r
+					then do
+						ret@(ok, _v) <- retrieveKeyFile r k af dest p
+						if ok
+							then return ret
+							else retrieveexport
+					else retrieveexport
 			, retrieveKeyFileCheap = if appendonly r
 				then retrieveKeyFileCheap r
 				else \_ _ _ -> return False
