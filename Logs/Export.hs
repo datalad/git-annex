@@ -1,11 +1,21 @@
 {- git-annex export log
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Logs.Export where
+module Logs.Export (
+	Exported,
+	mkExported,
+	ExportParticipants,
+	ExportChange(..),
+	getExport,
+	exportedTreeishes,
+	incompleteExportedTreeishes,
+	recordExport,
+	recordExportBeginning,
+) where
 
 import qualified Data.Map as M
 
@@ -23,11 +33,28 @@ import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
+-- This constuctor is not itself exported to other modules, to enforce
+-- consistent use of exportedTreeishes.
 data Exported = Exported
 	{ exportedTreeish :: Git.Ref
 	, incompleteExportedTreeish :: [Git.Ref]
 	}
 	deriving (Eq, Show)
+
+mkExported :: Git.Ref -> [Git.Ref] -> Exported
+mkExported = Exported
+
+-- | Get the list of exported treeishes.
+--
+-- If the list contains multiple items, there was an export conflict,
+-- and different trees were exported to the same special remote.
+exportedTreeishes :: [Exported] -> [Git.Ref]
+exportedTreeishes = nub . map exportedTreeish
+
+-- | Treeishes that started to be exported, but were not finished.
+incompleteExportedTreeishes :: [Exported] -> [Git.Ref]
+incompleteExportedTreeishes = concatMap incompleteExportedTreeish
+
 
 data ExportParticipants = ExportParticipants
 	{ exportFrom :: UUID
@@ -41,9 +68,6 @@ data ExportChange = ExportChange
 	}
 
 -- | Get what's been exported to a special remote.
---
--- If the list contains multiple items, there was an export conflict,
--- and different trees were exported to the same special remote.
 getExport :: UUID -> Annex [Exported]
 getExport remoteuuid = nub . mapMaybe get . M.toList . simpleMap 
 	. parseExportLog

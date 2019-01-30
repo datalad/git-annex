@@ -188,7 +188,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			, checkPresentCheap = False
 			, mkUnavailable = return Nothing
 			, getInfo = do
-				ts <- map (fromRef . exportedTreeish)
+				ts <- map fromRef . exportedTreeishes
 					<$> getExport (uuid r)
 				is <- getInfo r
 				return (is++[("export", "yes"), ("exportedtree", unwords ts)])

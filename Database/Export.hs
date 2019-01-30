@@ -216,7 +216,7 @@ updateExportTreeFromLog db@(ExportHandle _ u) =
 		old <- liftIO $ fromMaybe emptyTree
 			<$> getExportTreeCurrent db
 		l <- Log.getExport u
-		case map Log.exportedTreeish l of
+		case Log.exportedTreeishes l of
 			[] -> return ExportUpdateSuccess
 			(new:[]) | new /= old -> do
 				updateExportTree db old new

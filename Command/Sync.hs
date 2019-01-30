@@ -700,8 +700,8 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 					Nothing -> nontracking r
 					Just cur -> do
 						Command.Export.changeExport r ea db cur
-						return [Exported cur []]
-		Export.closeDb db `after` fillexport r ea db exported
+						return [mkExported cur []]
+		Export.closeDb db `after` fillexport r ea db (exportedTreeishes exported)
 		
 	nontracking r = do
 		exported <- getExport (Remote.uuid r)
@@ -709,7 +709,7 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 		return exported
 	
 	warnnontracking r exported currb = inRepo (Git.Ref.tree currb) >>= \case
-		Just currt | not (any (\ex -> exportedTreeish ex == currt) exported) ->
+		Just currt | not (any (== currt) (exportedTreeishes exported)) ->
 			showLongNote $ unwords
 				[ "Not updating export to " ++ Remote.name r
 				, "to reflect changes to the tree, because export"
@@ -721,7 +721,7 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 
 
 	fillexport _ _ _ [] = return False
-	fillexport r ea db (Exported { exportedTreeish = t }:[]) =
+	fillexport r ea db (t:[]) =
 		Command.Export.fillExport r ea db t
 	fillexport r _ _ _ = do
 		warnExportConflict r

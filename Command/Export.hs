@@ -103,7 +103,7 @@ changeExport r ea db new = do
 		startRecoverIncomplete r ea db
 			(Git.DiffTree.srcsha diff)
 			(Git.DiffTree.file diff)
-	forM_ (concatMap incompleteExportedTreeish old) $ \incomplete ->
+	forM_ (incompleteExportedTreeishes old) $ \incomplete ->
 		mapdiff recover incomplete new
 
 	-- Diff the old and new trees, and delete or rename to new name all
@@ -113,7 +113,7 @@ changeExport r ea db new = do
 	-- When there was an export conflict, this resolves it.
 	--
 	-- The ExportTree is also updated here to reflect the new tree.
-	case nub (map exportedTreeish old) of
+	case exportedTreeishes old of
 		[] -> updateExportTree db emptyTree new
 		[oldtreesha] -> do
 			diffmap <- mkDiffMap oldtreesha new db
@@ -158,7 +158,7 @@ changeExport r ea db new = do
 	c <- Annex.getState Annex.errcounter
 	when (c == 0) $ do
 		recordExport (uuid r) $ ExportChange
-			{ oldTreeish = map exportedTreeish old
+			{ oldTreeish = exportedTreeishes old
 			, newTreeish = new
 			}
   where
