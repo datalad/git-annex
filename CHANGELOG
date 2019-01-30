@@ -7,6 +7,7 @@ git-annex (7.20190130) UNRELEASED; urgency=medium
     fails, fall back to trying to retrieve from the exported tree.
     This allows downloads of files that were exported to such a remote
     before versioning was enabled on it.
+  * Improved speed of S3 remote by only loading S3 creds once.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jan 2019 12:30:22 -0400
 
