@@ -80,10 +80,10 @@ gen r u c gc = do
 	return $ new cst info magic
   where
 	new cst info magic = Just $ specialRemote c
-		(prepareS3Handle this $ store this info magic)
-		(prepareS3HandleMaybe this $ retrieve this c info)
-		(prepareS3Handle this $ remove info)
-		(prepareS3HandleMaybe this $ checkKey this c info)
+		(simplyPrepare $ store this info magic)
+		(simplyPrepare $ retrieve this c info)
+		(simplyPrepare $ remove this info)
+		(simplyPrepare $ checkKey this c info)
 		this
 	  where
 		this = Remote
@@ -100,7 +100,7 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = withS3HandleMaybe c gc u $ \mh -> 
+			, exportActions = withS3HandleMaybe' c gc u $ \mh -> 
 				return $ ExportActions
 					{ storeExport = storeExportS3 u info mh magic
 					, retrieveExport = retrieveExportS3 u info mh
@@ -179,23 +179,12 @@ s3Setup' ss u mcreds c gc
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" defaults
 		info <- extractS3Info archiveconfig
-		withS3Handle archiveconfig gc u $
+		withS3Handle' archiveconfig gc u $
 			writeUUIDFile archiveconfig u info
 		use archiveconfig
 
--- Sets up a http connection manager for S3 endpoint, which allows
--- http connections to be reused across calls to the helper.
-prepareS3Handle :: Remote -> (S3Handle -> helper) -> Preparer helper
-prepareS3Handle r = resourcePrepare $ const $
-	withS3Handle (config r) (gitconfig r) (uuid r)
-
--- Allows for read-only actions, which can be run without a S3Handle.
-prepareS3HandleMaybe :: Remote -> (Maybe S3Handle -> helper) -> Preparer helper
-prepareS3HandleMaybe r = resourcePrepare $ const $
-	withS3HandleMaybe (config r) (gitconfig r) (uuid r)
-
-store :: Remote -> S3Info -> Maybe Magic -> S3Handle -> Storer
-store _r info magic h = fileStorer $ \k f p -> do
+store :: Remote -> S3Info -> Maybe Magic -> Storer
+store r info magic = fileStorer $ \k f p -> withS3Handle r $ \h -> do
 	void $ storeHelper info h magic f (T.pack $ bucketObject info k) p
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
@@ -268,20 +257,21 @@ storeHelper info h magic f object p = case partSize info of
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
-retrieve :: Remote -> RemoteConfig -> S3Info -> Maybe S3Handle -> Retriever
-retrieve r c info (Just h) = fileRetriever $ \f k p ->
-	eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
-		Left failreason -> do
-			warning failreason
-			giveup "cannot download content"
-		Right loc -> retrieveHelper info h loc f p
-retrieve r c info Nothing = fileRetriever $ \f k p ->
-	getPublicWebUrls' (uuid r) info c k >>= \case
-		Left failreason -> do
-			warning failreason
-			giveup "cannot download content"
-		Right us -> unlessM (downloadUrl k p us f) $
-			giveup "failed to download content"
+retrieve :: Remote -> RemoteConfig -> S3Info -> Retriever
+retrieve r c info = fileRetriever $ \f k p -> withS3HandleMaybe r $ \case
+	(Just h) -> 
+		eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
+			Left failreason -> do
+				warning failreason
+				giveup "cannot download content"
+			Right loc -> retrieveHelper info h loc f p
+	Nothing ->
+		getPublicWebUrls' (uuid r) info c k >>= \case
+			Left failreason -> do
+				warning failreason
+				giveup "cannot download content"
+			Right us -> unlessM (downloadUrl k p us f) $
+				giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
 retrieveHelper info h loc f p = liftIO $ runResourceT $ do
@@ -295,33 +285,31 @@ retrieveHelper info h loc f p = liftIO $ runResourceT $ do
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
-{- Internet Archive doesn't easily allow removing content.
- - While it may remove the file, there are generally other files
- - derived from it that it does not remove. -}
-remove :: S3Info -> S3Handle -> Remover
-remove info h k = do
+remove :: Remote -> S3Info -> Remover
+remove r info k = withS3Handle r $ \h -> do
 	res <- tryNonAsync $ sendS3Handle h $
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 	return $ either (const False) (const True) res
 
-checkKey :: Remote -> RemoteConfig -> S3Info -> Maybe S3Handle -> CheckPresent
-checkKey r c info (Just h) k = do
-	showChecking r
-	eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
-		Left failreason -> do
-			warning failreason
-			giveup "cannot check content"
-		Right loc -> checkKeyHelper info h loc
-checkKey r c info Nothing k = 
-	getPublicWebUrls' (uuid r) info c k >>= \case
-		Left failreason -> do
-			warning failreason
-			giveup "cannot check content"
-		Right us -> do
-			showChecking r
-			let check u = withUrlOptions $ 
-				liftIO . checkBoth u (keySize k)
-			anyM check us
+checkKey :: Remote -> RemoteConfig -> S3Info -> CheckPresent
+checkKey r c info k = withS3HandleMaybe r $ \case
+	Just h -> do
+		showChecking r
+		eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
+			Left failreason -> do
+				warning failreason
+				giveup "cannot check content"
+			Right loc -> checkKeyHelper info h loc
+	Nothing ->
+		getPublicWebUrls' (uuid r) info c k >>= \case
+			Left failreason -> do
+				warning failreason
+				giveup "cannot check content"
+			Right us -> do
+				showChecking r
+				let check u = withUrlOptions $ 
+					liftIO . checkBoth u (keySize k)
+				anyM check us
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
 checkKeyHelper info h loc = do
@@ -434,7 +422,7 @@ genBucket :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genBucket c gc u = do
 	showAction "checking bucket"
 	info <- extractS3Info c
-	withS3Handle c gc u $ \h ->
+	withS3Handle' c gc u $ \h ->
 		go info h =<< checkUUIDFile c u info h
   where
 	go _ _ (Right True) = noop
@@ -537,15 +525,21 @@ sendS3Handle'
 	-> ResourceT IO a
 sendS3Handle' h r = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h) r
 
-withS3Handle :: RemoteConfig -> RemoteGitConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
-withS3Handle c gc u a = withS3HandleMaybe c gc u $ \mh -> case mh of
+withS3Handle :: Remote -> (S3Handle -> Annex a) -> Annex a
+withS3Handle r = withS3Handle' (config r) (gitconfig r) (uuid r)
+
+withS3Handle' :: RemoteConfig -> RemoteGitConfig -> UUID -> (S3Handle -> Annex a) -> Annex a
+withS3Handle' c gc u a = withS3HandleMaybe' c gc u $ \mh -> case mh of
 	Just h -> a h
 	Nothing -> do
 		warning $ needS3Creds u
 		giveup "No S3 credentials configured"
 
-withS3HandleMaybe :: RemoteConfig -> RemoteGitConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
-withS3HandleMaybe c gc u a = do
+withS3HandleMaybe :: Remote -> (Maybe S3Handle -> Annex a) -> Annex a
+withS3HandleMaybe r = withS3HandleMaybe' (config r) (gitconfig r) (uuid r)
+
+withS3HandleMaybe' :: RemoteConfig -> RemoteGitConfig -> UUID -> (Maybe S3Handle -> Annex a) -> Annex a
+withS3HandleMaybe' c gc u a = do
 	mcreds <- getRemoteCredPair c gc (AWS.creds u)
 	case mcreds of
 		Just creds -> do
@@ -881,7 +875,7 @@ enableBucketVersioning ss c _ _ = do
 	enableversioning b = do
 #if MIN_VERSION_aws(0,22,0)
 		showAction "enabling bucket versioning"
-		withS3Handle c gc u $ \h ->
+		withS3Handle' c gc u $ \h ->
 			void $ sendS3Handle h $ S3.putBucketVersioning b S3.VersioningEnabled
 #else
 		showLongNote $ unlines
@@ -911,3 +905,4 @@ checkVersioning info u k a
 			return False
 		_ -> a
 	| otherwise = a
+
