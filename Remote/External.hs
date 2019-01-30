@@ -75,7 +75,7 @@ gen r u c gc
 			then checkExportSupported' external
 			else return False
 		let exportactions = if exportsupported
-			then return $ ExportActions
+			then ExportActions
 				{ storeExport = storeExportM external
 				, retrieveExport = retrieveExportM external
 				, removeExport = removeExportM external

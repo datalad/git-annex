@@ -691,7 +691,6 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
   where
 	go r = withExclusiveLock (gitAnnexExportLock (Remote.uuid r)) $ do
 		db <- Export.openDb (Remote.uuid r)
-		ea <- Remote.exportActions r
 		exported <- case remoteAnnexExportTracking (Remote.gitconfig r) of
 			Nothing -> nontracking r
 			Just b -> do
@@ -699,9 +698,9 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 				case mcur of
 					Nothing -> nontracking r
 					Just cur -> do
-						Command.Export.changeExport r ea db cur
+						Command.Export.changeExport r db cur
 						return [mkExported cur []]
-		Export.closeDb db `after` fillexport r ea db (exportedTreeishes exported)
+		Export.closeDb db `after` fillexport r db (exportedTreeishes exported)
 		
 	nontracking r = do
 		exported <- getExport (Remote.uuid r)
@@ -720,10 +719,9 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 		_ -> noop
 
 
-	fillexport _ _ _ [] = return False
-	fillexport r ea db (t:[]) =
-		Command.Export.fillExport r ea db t
-	fillexport r _ _ _ = do
+	fillexport _ _ [] = return False
+	fillexport r db (t:[]) = Command.Export.fillExport r db t
+	fillexport r _ _ = do
 		warnExportConflict r
 		return False
 

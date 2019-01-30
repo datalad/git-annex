@@ -100,16 +100,15 @@ gen r u c gc = do
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = withS3HandleMaybe' c gc u $ \mh -> 
-				return $ ExportActions
-					{ storeExport = storeExportS3 u info mh magic
-					, retrieveExport = retrieveExportS3 u info mh
-					, removeExport = removeExportS3 u info mh
-					, checkPresentExport = checkPresentExportS3 u info mh
-					-- S3 does not have directories.
-					, removeExportDirectory = Nothing
-					, renameExport = renameExportS3 u info mh
-					}
+			, exportActions = ExportActions
+				{ storeExport = storeExportS3 this info magic
+				, retrieveExport = retrieveExportS3 this info
+				, removeExport = removeExportS3 this info
+				, checkPresentExport = checkPresentExportS3 this info
+				-- S3 does not have directories.
+				, removeExportDirectory = Nothing
+				, renameExport = renameExportS3 this info
+				}
 			, whereisKey = Just (getPublicWebUrls u info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -341,63 +340,68 @@ checkKeyHelper info h loc = do
 			| otherwise = Nothing
 #endif
 
-storeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportS3 u info (Just h) magic f k loc p = 
-	catchNonAsync go (\e -> warning (show e) >> return False)
+storeExportS3 :: Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportS3 r info magic f k loc p = withS3HandleMaybe r $ \case
+	Just h -> catchNonAsync (go h) (\e -> warning (show e) >> return False)
+	Nothing -> do
+		warning $ needS3Creds (uuid r)
+		return False
   where
-	go = do
+	go h = do
 		let o = T.pack $ bucketExportLocation info loc
 		storeHelper info h magic f o p
-			>>= setS3VersionID info u k
+			>>= setS3VersionID info (uuid r) k
 		return True
-storeExportS3 u _ Nothing _ _ _ _ _ = do
-	warning $ needS3Creds u
-	return False
 
-retrieveExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportS3 u info mh _k loc f p =
+retrieveExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportS3 r info _k loc f p =
 	catchNonAsync go (\e -> warning (show e) >> return False)
   where
-	go = case mh of
+	go = withS3HandleMaybe r $ \case
 		Just h -> do
 			retrieveHelper info h (Left (T.pack exporturl)) f p
 			return True
 		Nothing -> case getPublicUrlMaker info of
 			Nothing -> do
-				warning $ needS3Creds u
+				warning $ needS3Creds (uuid r)
 				return False
 			Just geturl -> Url.withUrlOptions $ 
 				liftIO . Url.download p (geturl exporturl) f
 	exporturl = bucketExportLocation info loc
 
-removeExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
-removeExportS3 u info (Just h) k loc = checkVersioning info u k $
-	catchNonAsync go (\e -> warning (show e) >> return False)
+removeExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
+removeExportS3 r info k loc = withS3HandleMaybe r $ \case
+	Just h -> checkVersioning info (uuid r) k $
+		catchNonAsync (go h) (\e -> warning (show e) >> return False)
+	Nothing -> do
+		warning $ needS3Creds (uuid r)
+		return False	
   where
-	go = do
+	go h = do
 		res <- tryNonAsync $ sendS3Handle h $
 			S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
 		return $ either (const False) (const True) res
-removeExportS3 u _ Nothing _ _ = do
-	warning $ needS3Creds u
-	return False
 
-checkPresentExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> Annex Bool
-checkPresentExportS3 _u info (Just h) _k loc =
-	checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
-checkPresentExportS3 u info Nothing k loc = case getPublicUrlMaker info of
-	Nothing -> do
-		warning $ needS3Creds u
-		giveup "No S3 credentials configured"
-	Just geturl -> withUrlOptions $ liftIO . 
-		checkBoth (geturl $ bucketExportLocation info loc) (keySize k)
+checkPresentExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
+checkPresentExportS3 r info k loc = withS3HandleMaybe r $ \case
+	Just h -> checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
+	Nothing -> case getPublicUrlMaker info of
+		Just geturl -> withUrlOptions $ liftIO . 
+			checkBoth (geturl $ bucketExportLocation info loc) (keySize k)
+		Nothing -> do
+			warning $ needS3Creds (uuid r)
+			giveup "No S3 credentials configured"
 
 -- S3 has no move primitive; copy and delete.
-renameExportS3 :: UUID -> S3Info -> Maybe S3Handle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 u info (Just h) k src dest = checkVersioning info u k $ 
-	catchNonAsync go (\_ -> return False)
+renameExportS3 :: Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportS3 r info k src dest = withS3HandleMaybe r $ \case
+	Just h -> checkVersioning info (uuid r) k $ 
+		catchNonAsync (go h) (\_ -> return False)
+	Nothing -> do 
+		warning $ needS3Creds (uuid r)
+		return False
   where
-	go = do
+	go h = do
 		let co = S3.copyObject (bucket info) dstobject
 			(S3.ObjectId (bucket info) srcobject Nothing)
 			S3.CopyMetadata
@@ -407,9 +411,6 @@ renameExportS3 u info (Just h) k src dest = checkVersioning info u k $
 		return True
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
-renameExportS3 u _ Nothing _ _ _ = do
-	warning $ needS3Creds u
-	return False
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.

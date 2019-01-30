@@ -103,7 +103,7 @@ data RemoteA a = Remote
 	-- operation.
 	, checkPresentCheap :: Bool
 	-- Some remotes support exports of trees.
-	, exportActions :: a (ExportActions a)
+	, exportActions :: ExportActions a
 	-- Some remotes can provide additional details for whereis.
 	, whereisKey :: Maybe (Key -> a [String])
 	-- Some remotes can run a fsck operation on the remote,

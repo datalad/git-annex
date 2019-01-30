@@ -31,8 +31,8 @@ class HasExportUnsupported a where
 instance HasExportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) where
 	exportUnsupported = \_ _ -> return False
 
-instance HasExportUnsupported (Annex (ExportActions Annex)) where
-	exportUnsupported = return $ ExportActions
+instance HasExportUnsupported (ExportActions Annex) where
+	exportUnsupported = ExportActions
 		{ storeExport = \_ _ _ _ -> do
 			warning "store export is unsupported"
 			return False
@@ -182,10 +182,8 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 			-- non-export remote)
 			, checkPresent = if appendonly r
 				then checkPresent r
-				else \k -> do
-					ea <- exportActions r
-					anyM (checkPresentExport ea k)
-						=<< getexportlocs k
+				else \k -> anyM (checkPresentExport (exportActions r) k)
+					=<< getexportlocs k
 			-- checkPresent from an export is more expensive
 			-- than otherwise, so not cheap. Also, this
 			-- avoids things that look at checkPresentCheap and
@@ -211,9 +209,7 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 							, warning "unknown export location"
 							)
 						return False
-					(l:_) -> do
-						ea <- exportActions r
-						retrieveExport ea k l dest p
+					(l:_) -> retrieveExport (exportActions r) k l dest p
 			else do
 				warning $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (keyVariety k)) ++ " backend"
 				return False

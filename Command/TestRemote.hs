@@ -95,7 +95,7 @@ start o = do
 
 perform :: [Remote] -> [Remote] -> Maybe Remote -> [Key] -> CommandPerform
 perform rs unavailrs exportr ks = do
-	ea <- maybe exportUnsupported Remote.exportActions exportr
+	let ea = maybe exportUnsupported Remote.exportActions exportr
 	st <- Annex.getState id
 	let tests = testGroup "Remote Tests" $ concat
 		[ [ testGroup "unavailable remote" (testUnavailable st r (Prelude.head ks)) | r <- unavailrs ]

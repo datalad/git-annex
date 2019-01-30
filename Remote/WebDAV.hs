@@ -79,14 +79,14 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, lockContent = Nothing
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
-			, exportActions = withDAVHandle this $ \mh -> return $ ExportActions
-				{ storeExport = storeExportDav mh
-				, retrieveExport = retrieveExportDav mh
-				, checkPresentExport = checkPresentExportDav this mh
-				, removeExport = removeExportDav mh
+			, exportActions = ExportActions
+				{ storeExport = storeExportDav this
+				, retrieveExport = retrieveExportDav this
+				, checkPresentExport = checkPresentExportDav this
+				, removeExport = removeExportDav this
 				, removeExportDirectory = Just $
-					removeExportDirectoryDav mh
-				, renameExport = renameExportDav mh
+					removeExportDirectoryDav this
+				, renameExport = renameExportDav this
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -193,45 +193,46 @@ checkKey r chunkconfig (Just dav) k = do
 				existsDAV (keyLocation k)
 			either giveup return v
 
-storeExportDav :: Maybe DavHandle -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportDav mh f k loc p = runExport mh $ \dav -> do
+storeExportDav :: Remote -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDav r f k loc p = withDAVHandle r $ \mh -> runExport mh $ \dav -> do
 	reqbody <- liftIO $ httpBodyStorer f p
 	storeHelper dav (keyTmpLocation k) (exportLocation loc) reqbody
 	return True
 
-retrieveExportDav :: Maybe DavHandle -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportDav mh  _k loc d p = runExport mh $ \_dav -> do
+retrieveExportDav :: Remote -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportDav r  _k loc d p = withDAVHandle r $ \mh -> runExport mh $ \_dav -> do
 	retrieveHelper (exportLocation loc) d p
 	return True
 
-checkPresentExportDav :: Remote -> Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
-checkPresentExportDav r mh _k loc = case mh of
+checkPresentExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
+checkPresentExportDav r _k loc = withDAVHandle r $ \case
 	Nothing -> giveup $ name r ++ " not configured"
 	Just h -> liftIO $ do
 		v <- goDAV h $ existsDAV (exportLocation loc)
 		either giveup return v
 
-removeExportDav :: Maybe DavHandle -> Key -> ExportLocation -> Annex Bool
-removeExportDav mh _k loc = runExport mh $ \_dav ->
+removeExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
+removeExportDav r _k loc = withDAVHandle r $ \mh -> runExport mh $ \_dav ->
 	removeHelper (exportLocation loc)
 
-removeExportDirectoryDav :: Maybe DavHandle -> ExportDirectory -> Annex Bool
-removeExportDirectoryDav mh dir = runExport mh $ \_dav -> do
+removeExportDirectoryDav :: Remote -> ExportDirectory -> Annex Bool
+removeExportDirectoryDav r dir = withDAVHandle r $ \mh -> runExport mh $ \_dav -> do
 	let d = fromExportDirectory dir
 	debugDav $ "delContent " ++ d
 	safely (inLocation d delContentM)
 		>>= maybe (return False) (const $ return True)
 
-renameExportDav :: Maybe DavHandle -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportDav Nothing _ _ _ = return False
-renameExportDav (Just h) _k src dest
-	-- box.com's DAV endpoint has buggy handling of renames,
-	-- so avoid renaming when using it.
-	| boxComUrl `isPrefixOf` baseURL h = return False
-	| otherwise = runExport (Just h) $ \dav -> do
-		maybe noop (void . mkColRecursive) (locationParent (exportLocation dest))
-		moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
-		return True
+renameExportDav :: Remote -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportDav r _k src dest = withDAVHandle r $ \case
+	Just h
+		-- box.com's DAV endpoint has buggy handling of renames,
+		-- so avoid renaming when using it.
+		| boxComUrl `isPrefixOf` baseURL h -> return False
+		| otherwise -> runExport (Just h) $ \dav -> do
+			maybe noop (void . mkColRecursive) (locationParent (exportLocation dest))
+			moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
+			return True
+	Nothing -> return False
 
 runExport :: Maybe DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
 runExport Nothing _ = return False

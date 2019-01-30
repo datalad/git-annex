@@ -82,16 +82,15 @@ seek o = do
 		inRepo (Git.Ref.tree (exportTreeish o))
 	withExclusiveLock (gitAnnexExportLock (uuid r)) $ do
 		db <- openDb (uuid r)
-		ea <- exportActions r
-		changeExport r ea db new
+		changeExport r db new
 		unlessM (Annex.getState Annex.fast) $
-			void $ fillExport r ea db new
+			void $ fillExport r db new
 		closeDb db
 
 -- | Changes what's exported to the remote. Does not upload any new
 -- files, but does delete and rename files already exported to the remote.
-changeExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.Ref -> CommandSeek
-changeExport r ea db new = do
+changeExport :: Remote -> ExportHandle -> Git.Ref -> CommandSeek
+changeExport r db new = do
 	old <- getExport (uuid r)
 	recordExportBeginning (uuid r) new
 	
@@ -100,7 +99,7 @@ changeExport r ea db new = do
 	-- temp files. Diff from the incomplete tree to the new tree,
 	-- and delete any temp files that the new tree can't use.
 	let recover diff = commandAction $
-		startRecoverIncomplete r ea db
+		startRecoverIncomplete r db
 			(Git.DiffTree.srcsha diff)
 			(Git.DiffTree.file diff)
 	forM_ (incompleteExportedTreeishes old) $ \incomplete ->
@@ -123,15 +122,15 @@ changeExport r ea db new = do
 			seekdiffmap $ \(ek, (moldf, mnewf)) -> do
 				case (moldf, mnewf) of
 					(Just oldf, Just _newf) ->
-						startMoveToTempName r ea db oldf ek
+						startMoveToTempName r db oldf ek
 					(Just oldf, Nothing) ->
-						startUnexport' r ea db oldf ek
+						startUnexport' r db oldf ek
 					_ -> stop
 			-- Rename from temp to new files.
 			seekdiffmap $ \(ek, (moldf, mnewf)) ->
 				case (moldf, mnewf) of
 					(Just _oldf, Just newf) ->
-						startMoveFromTempName r ea db ek newf
+						startMoveFromTempName r db ek newf
 					_ -> stop
 		ts -> do
 			warning "Export conflict detected. Different trees have been exported to the same special remote. Resolving.."
@@ -147,7 +146,7 @@ changeExport r ea db new = do
 				-- Don't rename to temp, because the
 				-- content is unknown; delete instead.
 				mapdiff
-					(\diff -> commandAction $ startUnexport r ea db (Git.DiffTree.file diff) (unexportboth diff))
+					(\diff -> commandAction $ startUnexport r db (Git.DiffTree.file diff) (unexportboth diff))
 					oldtreesha new
 			updateExportTree db emptyTree new
 	liftIO $ recordExportTreeCurrent db new
@@ -193,24 +192,24 @@ mkDiffMap old new db = do
 
 -- | Upload all exported files that are not yet in the remote,
 -- Returns True when files were uploaded.
-fillExport :: Remote -> ExportActions Annex -> ExportHandle -> Git.Ref -> Annex Bool
-fillExport r ea db new = do
+fillExport :: Remote -> ExportHandle -> Git.Ref -> Annex Bool
+fillExport r db new = do
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree new
 	cvar <- liftIO $ newMVar False
-	commandActions $ map (startExport r ea db cvar) l
+	commandActions $ map (startExport r db cvar) l
 	void $ liftIO $ cleanup
 	liftIO $ takeMVar cvar
 
-startExport :: Remote -> ExportActions Annex -> ExportHandle -> MVar Bool -> Git.LsTree.TreeItem -> CommandStart
-startExport r ea db cvar ti = do
+startExport :: Remote -> ExportHandle -> MVar Bool -> Git.LsTree.TreeItem -> CommandStart
+startExport r db cvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (notrecordedpresent ek) $ do
 		showStart ("export " ++ name r) f
-		ifM (either (const False) id <$> tryNonAsync (checkPresentExport ea (asKey ek) loc))
+		ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) (asKey ek) loc))
 			( next $ next $ cleanupExport r db ek loc False
 			, do
 				liftIO $ modifyMVar_ cvar (pure . const True)
-				next $ performExport r ea db ek af (Git.LsTree.sha ti) loc
+				next $ performExport r db ek af (Git.LsTree.sha ti) loc
 			)
   where
 	loc = mkExportLocation f
@@ -222,9 +221,9 @@ startExport r ea db cvar ti = do
 		-- will still list it, so also check location tracking.
 		<*> (notElem (uuid r) <$> loggedLocations (asKey ek))
 
-performExport :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> CommandPerform
-performExport r ea db ek af contentsha loc = do
-	let storer = storeExport ea
+performExport :: Remote -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> CommandPerform
+performExport r db ek af contentsha loc = do
+	let storer = storeExport (exportActions r)
 	sent <- case ek of
 		AnnexKey k -> ifM (inAnnex k)
 			( notifyTransfer Upload af $
@@ -232,7 +231,7 @@ performExport r ea db ek af contentsha loc = do
 				-- exports cannot be resumed.
 				upload (uuid r) k af noRetry $ \pm -> do
 					let rollback = void $
-						performUnexport r ea db [ek] loc
+						performUnexport r db [ek] loc
 					sendAnnex k rollback $ \f ->
 						metered Nothing k (return $ Just f) $ \_ m -> do
 							let m' = combineMeterUpdate pm m
@@ -259,22 +258,22 @@ cleanupExport r db ek loc sent = do
 		logChange (asKey ek) (uuid r) InfoPresent
 	return True
 
-startUnexport :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
-startUnexport r ea db f shas = do
+startUnexport :: Remote -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
+startUnexport r db f shas = do
 	eks <- forM (filter (/= nullSha) shas) exportKey
 	if null eks
 		then stop
 		else do
 			showStart ("unexport " ++ name r) f'
-			next $ performUnexport r ea db eks loc
+			next $ performUnexport r db eks loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
-startUnexport' :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startUnexport' r ea db f ek = do
+startUnexport' :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startUnexport' r db f ek = do
 	showStart ("unexport " ++ name r) f'
-	next $ performUnexport r ea db [ek] loc
+	next $ performUnexport r db [ek] loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
@@ -284,15 +283,15 @@ startUnexport' r ea db f ek = do
 -- remote is untrusted, so would not count as a copy anyway.
 -- Or, an export may be appendonly, and removing a file from it does
 -- not really remove the content, which must be accessible later on.
-performUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
-performUnexport r ea db eks loc = do
-	ifM (allM (\ek -> removeExport ea (asKey ek) loc) eks)
-		( next $ cleanupUnexport r ea db eks loc
+performUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
+performUnexport r db eks loc = do
+	ifM (allM (\ek -> removeExport (exportActions r) (asKey ek) loc) eks)
+		( next $ cleanupUnexport r db eks loc
 		, stop
 		)
 
-cleanupUnexport :: Remote -> ExportActions Annex -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandCleanup
-cleanupUnexport r ea db eks loc = do
+cleanupUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandCleanup
+cleanupUnexport r db eks loc = do
 	liftIO $ do
 		forM_ eks $ \ek ->
 			removeExportedLocation db (asKey ek) loc
@@ -308,68 +307,68 @@ cleanupUnexport r ea db eks loc = do
 			forM_ eks $ \ek ->
 				logChange (asKey ek) (uuid r) InfoMissing
 	
-	removeEmptyDirectories ea db loc (map asKey eks)
+	removeEmptyDirectories r db loc (map asKey eks)
 
-startRecoverIncomplete :: Remote -> ExportActions Annex -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
-startRecoverIncomplete r ea db sha oldf
+startRecoverIncomplete :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
+startRecoverIncomplete r db sha oldf
 	| sha == nullSha = stop
 	| otherwise = do
 		ek <- exportKey sha
 		let loc = exportTempName ek
 		showStart ("unexport " ++ name r) (fromExportLocation loc)
 		liftIO $ removeExportedLocation db (asKey ek) oldloc
-		next $ performUnexport r ea db [ek] loc
+		next $ performUnexport r db [ek] loc
   where
 	oldloc = mkExportLocation oldf'
 	oldf' = getTopFilePath oldf
 
-startMoveToTempName :: Remote -> ExportActions Annex -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startMoveToTempName r ea db f ek = do
+startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startMoveToTempName r db f ek = do
 	showStart ("rename " ++ name r) (f' ++ " -> " ++ fromExportLocation tmploc)
-	next $ performRename r ea db ek loc tmploc
+	next $ performRename r db ek loc tmploc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 	tmploc = exportTempName ek
 
-startMoveFromTempName :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
-startMoveFromTempName r ea db ek f = do
+startMoveFromTempName :: Remote -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
+startMoveFromTempName r db ek f = do
 	let tmploc = exportTempName ek
 	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $ do
 		showStart ("rename " ++ name r) (fromExportLocation tmploc ++ " -> " ++ f')
-		next $ performRename r ea db ek tmploc loc
+		next $ performRename r db ek tmploc loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
-performRename :: Remote -> ExportActions Annex -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
-performRename r ea db ek src dest = do
-	ifM (renameExport ea (asKey ek) src dest)
-		( next $ cleanupRename ea db ek src dest
+performRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
+performRename r db ek src dest = do
+	ifM (renameExport (exportActions r) (asKey ek) src dest)
+		( next $ cleanupRename r db ek src dest
 		-- In case the special remote does not support renaming,
 		-- unexport the src instead.
 		, do
 			warning "rename failed; deleting instead"
-			performUnexport r ea db [ek] src
+			performUnexport r db [ek] src
 		)
 
-cleanupRename :: ExportActions Annex -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup
-cleanupRename ea db ek src dest = do
+cleanupRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup
+cleanupRename r db ek src dest = do
 	liftIO $ do
 		removeExportedLocation db (asKey ek) src
 		addExportedLocation db (asKey ek) dest
 		flushDbQueue db
 	if exportDirectories src /= exportDirectories dest
-		then removeEmptyDirectories ea db src [asKey ek]
+		then removeEmptyDirectories r db src [asKey ek]
 		else return True
 
 -- | Remove empty directories from the export. Call after removing an
 -- exported file, and after calling removeExportLocation and flushing the
 -- database.
-removeEmptyDirectories :: ExportActions Annex -> ExportHandle -> ExportLocation -> [Key] -> Annex Bool
-removeEmptyDirectories ea db loc ks
+removeEmptyDirectories :: Remote -> ExportHandle -> ExportLocation -> [Key] -> Annex Bool
+removeEmptyDirectories r db loc ks
 	| null (exportDirectories loc) = return True
-	| otherwise = case removeExportDirectory ea of
+	| otherwise = case removeExportDirectory (exportActions r) of
 		Nothing -> return True
 		Just removeexportdirectory -> do
 			ok <- allM (go removeexportdirectory) 
