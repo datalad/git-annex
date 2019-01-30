@@ -1,0 +1,20 @@
+Started off the day with some more improvements and bug fixes for export
+remotes.
+
+Then I noticed that there is no progress displayed for transfers to export
+remotes; it seems I forgot to wire that up. That really ought to be handled
+by the special remote setup code, the same way it is for non-export
+remotes. But it was not possible to do it there the way that export actions
+are structured.
+
+I got sidetracked with how S3 prepares a handle to the server. That didn't
+work as well as it might have; most of the time each request to the remote
+actually prepared a new handle, rather than reusing a single handle. Though
+the http connection to the server did get reused, that still caused a lot
+of unncessary work. I fixed that, and the fix also allowed me to
+restructure export actions in the way I need for progress bars.
+
+I've ran out of time to finish adding the missing progress bars today, so
+I'll do it tomorrow.
+
+Today's work was sponsored by Jake Vosloo [on Patreon](https://patreon.com/joeyh).
