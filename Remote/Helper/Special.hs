@@ -1,6 +1,6 @@
 {- helpers for special remotes
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -157,6 +157,8 @@ specialRemoteCfg c = SpecialRemoteCfg (getChunkConfig c) True
 
 -- Modifies a base Remote to support both chunking and encryption,
 -- which special remotes typically should support.
+-- 
+-- Handles progress displays when displayProgress is set.
 specialRemote :: RemoteModifier
 specialRemote c = specialRemote' (specialRemoteCfg c) c
 
@@ -192,6 +194,12 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 		, whereisKey = if noChunks (chunkConfig cfg) && not isencrypted
 			then whereisKey baser
 			else Nothing
+		, exportActions = (exportActions baser)
+			{ storeExport = \f k l p -> displayprogress p k (Just f) $
+				storeExport (exportActions baser) f k l
+			, retrieveExport = \k l f p -> displayprogress p k Nothing $
+				retrieveExport (exportActions baser) k l f
+			}
 		}
 	cip = cipherKey c (gitconfig baser)
 	isencrypted = isJust (extractCipher c)

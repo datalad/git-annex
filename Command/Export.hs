@@ -28,7 +28,6 @@ import Annex.LockFile
 import Logs.Location
 import Logs.Export
 import Database.Export
-import Messages.Progress
 import Config
 import Utility.Tmp
 import Utility.Metered
@@ -233,20 +232,18 @@ performExport r db ek af contentsha loc = do
 					let rollback = void $
 						performUnexport r db [ek] loc
 					sendAnnex k rollback $ \f ->
-						metered Nothing k (return $ Just f) $ \_ m -> do
-							let m' = combineMeterUpdate pm m
-							storer f k loc m'
+						storer f k loc pm
 			, do
 				showNote "not available"
 				return False
 			)
 		-- Sending a non-annexed file.
-		GitKey sha1k -> metered Nothing sha1k (return Nothing) $ \_ m ->
+		GitKey sha1k ->
 			withTmpFile "export" $ \tmp h -> do
 				b <- catObject contentsha
 				liftIO $ L.hPut h b
 				liftIO $ hClose h
-				storer tmp sha1k loc m
+				storer tmp sha1k loc nullMeterUpdate
 	if sent
 		then next $ cleanupExport r db ek loc True
 		else stop
