@@ -1,0 +1,173 @@
+The [2018 user's survey](http://git-annex-survey.branchable.com/polls/2018/) 
+is closed, time for a look at the results. Several of the questions were
+also on the two past surveys, so we can start to look at historical
+trends as well.
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/num_respondants.png">
+
+Very similar numbers of people responded in 2018 as in 2015.
+The 2013 survey remains a high water mark in participation.
+[My thoughts on the 2015 survey](day_360__results_of_2015_user_survey)
+participation level mostly still stand, although there has been a
+consistent downwards trend in [Debian popcon](https://qa.debian.org/popcon-graph.php?packages=git-annex&show_installed=on&want_legend=on&want_ticks=on&date_fmt=%25Y-%25m&beenhere=1)
+since 2015.
+
+Also interesting that several people skipped the first question on the
+survey, perhaps because it was a fairly challenging question? And later
+questions saw much higher response rates this time than in either of the
+previous surveys, thanks to improvements in the survey interface.
+
+## v7
+
+v7 unlocked files are being used by 7% of users, pretty impressive uptake
+for a feature that has only been really finished for a couple of months.
+Direct mode is still used by 7% of users, while its v7 replacement of
+adjusted unlocked branches is only used by 1% so far. That's still some
+decent progress toward eliminating the need for direct mode.
+
+## command line vs assistant
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/num_respondants.png">
+
+Well that's plain enough isn't it? Although note that I myself have
+the assistant running in some repos all the time, but would of course
+vote "command line" since I interact with that much more.
+
+Also notice that people who apparently don't use git-annex
+but wanted to fill out the survey anyway was the same for 2013-2015,
+but has now declined.
+
+## operating system
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/operating_system.png">
+
+Android users have more or less gone away since I deprecated the app.
+I hope the termux integration brings some back.
+
+## how git-annex is installed
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/how_installed.png">
+
+Good to see the increase in using git-annex packages from the OS
+or a third-party package manager.
+
+## missing/incomplete ports
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/missing_ports.png">
+
+Good improvement here since 2015 with 60% now satisfied with available
+ports.
+
+Worth noting that in 2013, 6% wanted a way to use git-annex on
+Synology NAS. That is possible now via the standalone linux tarball.
+This year, 2% wanted "Synology NAS (app store package)".
+
+Also honorable mention to the anonymous person who rewrote
+git-annex in another language. You should release the code!
+
+## number of repositories
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/number_of_repositories.png">
+
+Increasingly users seem to have just a couple repositories or a large
+number, with the middle ground shrinking. A few percent have 200+ 
+repositories now. The sense is of a split between causual users who
+perhaps clone one repository to a few places, and power users who
+are adding new repositories over time.
+
+## data stored in git-annex
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/size_of_annex.png">
+
+Increasing growth in the high end with many users storing dozens of terabytes
+of data in git-annex and a couple storing more than 64 terabytes. 
+And a bit of growth in the low end storing under 100 gb.
+
+The total data stored in git-annex looks to be around 650-1300 terabytes
+now. It was around 150-300 terabytes in 2013. That doesn't count redundant
+data. And it could be off slightly if shared repositories were reported by
+multiple users.
+
+(Compare with the Internet Archive, which was 15000 terabytes in 2016
+but I think they keep two copies of everything, so call it 7000
+terabytes of unique data.)
+
+## git level
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/git_level.png">
+
+The same question was asked in the [git surveys](https://git.wiki.kernel.org/index.php/GitSurvey2016)
+so I have included those in the graph for comparison.
+
+git-annex users trend more experienced than git users,
+which is not surprising. You have to know some stuff about 
+git to understand why you'd want to use git-annex.
+
+Notice that git knowledge level is generally going up over time in both
+surveys.
+
+## happyness with the software
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/happyness.png">
+
+A similar question on the git survey included for comparison.
+
+There's a bimodal distribution to git-annex user's happyness,
+with more unhappy with it than with git, but also more so happy
+they gravitate toward extreme praise.
+
+There seem to be more unhappy users in 2018 than in 2015 though.
+The 2018 results are very close to the 2013 results.
+
+## blocking problems
+
+Notably 15% of users now find git-annex too hard to use, up from 5% in
+2015. Which seems to correlate with some users being more unhappy with it.
+I don't think git-annex has gotten any harder to use, so this must
+reflect a change in expectations and/or demographics. (2013 had similar
+numbers to 2018.)
+
+Very few complain about the documentation now, down to 3% from 13% in 2015,
+but 12% want to see more tutorials showing how to tie the features
+together.
+
+And a staggering 21% picked a write-in, "no issues personally, but people
+don't see (or realize they need) the immense benefits it provides".
+Need to find better ways to market git-annex, essentially.
+
+## size of group using git-annex together
+
+A similar distribution to 2015. One person said they're using git-annex in
+a group of 50+, and 5 reported groups larger than 10 people.
+
+## scientific data
+
+A new high of 11% of respondants are using git-annex to store scientific data.
+(Other kinds of data it's used for seem more or less the same.)
+
+Part of that growth is because of the companion 
+[2018 git-annex scientific data survey](http://git-annex-survey.branchable.com/polls/2018_science/)
+which was promoted in some scientific communities, and
+so brought more scientists to the main survey.
+
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/field_of_science.png">
+
+The use for neuroscience is no surprise, but so much use for astronomy and
+physics is. And "other" in that pie chart includes statistics,
+social sciences, mathematics, education, linguistics, biomedical
+engineering, EE, and physiology -- wow!
+
+## survey reach
+
+All participants in the science survey did go on to answer at least part of
+the main survey. So 37% of respondants to the main survey are scientists.
+
+A full 27% of survey respondants have their name on the thanks
+page, many for financial support. Which is really great, but also speaks to
+the fraction of the git-annex user base who saw the survey,
+because I really doubt that a quarter of the users of *any* free software
+are financially supporting it. 
+
+As with any online survey, the results are skewed by who bothers to answer it.
+Still, a lot of useful information to mull over.
+
