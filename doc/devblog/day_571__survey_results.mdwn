@@ -27,7 +27,7 @@ decent progress toward eliminating the need for direct mode.
 
 ## command line vs assistant
 
-<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/num_respondants.png">
+<img src="https://git-annex-survey.branchable.com/polls/2018/graphs/command_line_vs_assistant.png">
 
 Well that's plain enough isn't it? Although note that I myself have
 the assistant running in some repos all the time, but would of course
