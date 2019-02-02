@@ -27,8 +27,9 @@ withOtherTmp a = do
 	addCleanup OtherTmpCleanup cleanupOtherTmp
 	tmpdir <- fromRepo gitAnnexTmpOtherDir
 	tmplck <- fromRepo gitAnnexTmpOtherLock
-	void $ createAnnexDirectory tmpdir
-	withSharedLock (const tmplck) (a tmpdir)
+	withSharedLock (const tmplck) $ do
+		void $ createAnnexDirectory tmpdir
+		a tmpdir
 
 -- | Cleans up any tmp files that were left by a previous
 -- git-annex process that got interrupted or failed to clean up after
