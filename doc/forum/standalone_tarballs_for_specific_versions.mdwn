@@ -1,0 +1,2 @@
+The page at https://git-annex.branchable.com/install/Linux_standalone/ has a link to the tarball for the standalone git-annex for the most recent version.
+Is it possible to make a page with link to stand-alone builds for specific git-annex versions?  This is for creating a conda-forge recipe, which requires a pointer to a stable URL for a given version.
