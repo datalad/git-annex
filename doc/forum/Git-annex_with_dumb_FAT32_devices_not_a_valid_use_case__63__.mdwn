@@ -1,0 +1,5 @@
+Am I right in concluding that using an array of limited storage devices that require FAT32 is not a valid use case for git-annex?
+
+Dumb devices that require FAT32, that need all present files to be unlocked in order to not choke on them (i.e. unlike with git-annex’ text-files-as-symlinks on crippled filesystems), that also therefore need missing files to be hidden, and that are storage space-constrained, I would say are extremely common. Yet, if I understood correctly, v7 repos are required for being able to hiding missing files, but at the same time, on v7 and FAT32 filesystems, files that are present take up double their file size.
+
+Am I right, or I am missing a way to use those?
