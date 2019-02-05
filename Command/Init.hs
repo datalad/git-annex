@@ -52,7 +52,7 @@ start os = do
 
 perform :: InitOptions -> CommandPerform
 perform os = do
-	initialize (AutoInit False)
+	initialize
 		(if null (initDesc os) then Nothing else Just (initDesc os))
 		(initVersion os)
 	Annex.SpecialRemote.autoEnable

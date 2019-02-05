@@ -8,7 +8,6 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Init (
-	AutoInit(..),
 	ensureInitialized,
 	isInitialized,
 	initialize,
@@ -36,6 +35,7 @@ import Annex.UUID
 import Annex.Link
 import Annex.WorkTree
 import Config
+import Config.Files
 import Config.Smudge
 import Annex.Direct
 import qualified Annex.AdjustedBranch as AdjustedBranch
@@ -52,22 +52,14 @@ import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
 #endif
 
-newtype AutoInit = AutoInit Bool
-
-checkCanInitialize :: AutoInit -> Annex a -> Annex a
-checkCanInitialize (AutoInit True) a = a
-checkCanInitialize (AutoInit False) a = fromRepo Git.repoWorkTree >>= \case
+checkCanInitialize :: Annex a -> Annex a
+checkCanInitialize a = inRepo noAnnexFileContent >>= \case
 	Nothing -> a
-	Just wt -> liftIO (catchMaybeIO (readFile (wt </> ".noannex"))) >>= \case
-		Nothing -> a
-		Just noannexmsg -> ifM (Annex.getState Annex.force)
-			( a
-			, do
-				warning "Initialization prevented by .noannex file (use --force to override)"
-				unless (null noannexmsg) $
-					warning noannexmsg
-				giveup "Not initialized."
-			)
+	Just noannexmsg -> do
+		warning "Initialization prevented by .noannex file (remove the file to override)"
+		unless (null noannexmsg) $
+			warning noannexmsg
+		giveup "Not initialized."
 
 genDescription :: Maybe String -> Annex UUIDDesc
 genDescription (Just d) = return $ UUIDDesc $ encodeBS d
@@ -80,8 +72,8 @@ genDescription Nothing = do
 		Right username -> [username, at, hostname, ":", reldir]
 		Left _ -> [hostname, ":", reldir]
 
-initialize :: AutoInit -> Maybe String -> Maybe RepoVersion -> Annex ()
-initialize ai mdescription mversion = checkCanInitialize ai $ do
+initialize :: Maybe String -> Maybe RepoVersion -> Annex ()
+initialize mdescription mversion = checkCanInitialize $ do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -91,7 +83,7 @@ initialize ai mdescription mversion = checkCanInitialize ai $ do
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
-	initialize' (AutoInit True) mversion
+	initialize' mversion
 	
 	initSharedClone sharedclone
 
@@ -100,8 +92,8 @@ initialize ai mdescription mversion = checkCanInitialize ai $ do
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: AutoInit -> Maybe RepoVersion -> Annex ()
-initialize' ai mversion = checkCanInitialize ai $ do
+initialize' :: Maybe RepoVersion -> Annex ()
+initialize' mversion = checkCanInitialize  $ do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
@@ -153,7 +145,7 @@ ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
-			( initialize (AutoInit True) Nothing Nothing
+			( initialize Nothing Nothing
 			, giveup "First run: git-annex init"
 			)
 

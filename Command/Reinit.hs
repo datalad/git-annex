@@ -36,6 +36,6 @@ perform s = do
 		then return $ toUUID s
 		else Remote.nameToUUID s
 	storeUUID u
-	initialize' (AutoInit False) Nothing
+	initialize' Nothing
 	Annex.SpecialRemote.autoEnable
 	next $ return True

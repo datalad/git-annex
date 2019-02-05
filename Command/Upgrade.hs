@@ -25,6 +25,6 @@ start :: CommandStart
 start = do
 	showStart' "upgrade" Nothing
 	whenM (isNothing <$> getVersion) $ do
-		initialize (AutoInit False) Nothing Nothing
+		initialize Nothing Nothing
 	r <- upgrade False latestVersion
 	next $ next $ return r

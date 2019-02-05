@@ -1,6 +1,6 @@
 {- git-annex extra config files
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,8 @@ module Config.Files where
 import Common
 import Utility.Tmp
 import Utility.FreeDesktop
+
+import Git
 
 {- ~/.config/git-annex/file -}
 userConfigFile :: FilePath -> IO FilePath
@@ -81,3 +83,10 @@ cannotFindProgram :: IO a
 cannotFindProgram = do
 	f <- programFile
 	giveup $ "cannot find git-annex program in PATH or in the location listed in " ++ f
+
+{- A .noannex file in a git repository prevents git-annex from
+ - initializing that repository.. The content of the file is returned. -}
+noAnnexFileContent :: Repo -> IO (Maybe String)
+noAnnexFileContent r = case Git.repoWorkTree r of
+	Nothing -> return Nothing
+	Just wt -> catchMaybeIO (readFile (wt </> ".noannex"))

@@ -124,7 +124,7 @@ intmpclonerepoInDirect a = intmpclonerepo $
 		)
   where
 	isdirect = annexeval $ do
-		Annex.Init.initialize (Annex.Init.AutoInit False) Nothing Nothing
+		Annex.Init.initialize Nothing Nothing
 		Config.isDirect
 
 checkRepo :: Types.Annex a -> FilePath -> IO a

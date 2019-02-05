@@ -1,6 +1,6 @@
 {- git-annex repository fixups
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Annex.Fixup where
 import Git.Types
 import Git.Config
 import Types.GitConfig
+import Config.Files
 import qualified Git.BuildVersion
 import Utility.Path
 import Utility.SafeCommand
@@ -22,6 +23,7 @@ import System.IO
 import System.FilePath
 import System.PosixCompat.Files
 import Data.List
+import Data.Maybe
 import Control.Monad
 import Control.Monad.IfElse
 import qualified Data.Map as M
@@ -80,18 +82,25 @@ fixupDirect r = r
  - When the filesystem doesn't support symlinks, we cannot make .git
  - into a symlink. But we don't need too, since the repo will use direct
  - mode.
+ -
+ - Before making any changes, check if there's a .noannex file
+ - in the repo. If that file will prevent git-annex from being used,
+ - there's no need to fix up the repository.
  -}
 fixupUnusualRepos :: Repo -> GitConfig -> IO Repo
 fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d }) }) c
-	| needsSubmoduleFixup r = do
-		when (coreSymlinks c) $
-			(replacedotgit >> unsetcoreworktree)
-				`catchNonAsync` \_e -> hPutStrLn stderr
-					"warning: unable to convert submodule to form that will work with git-annex"
-		return $ r'
-			{ config = M.delete "core.worktree" (config r)
-			}
-	| otherwise = ifM (needsGitLinkFixup r)
+	| needsSubmoduleFixup r = ifM notnoannex
+		( do
+			when (coreSymlinks c) $
+				(replacedotgit >> unsetcoreworktree)
+					`catchNonAsync` \_e -> hPutStrLn stderr
+						"warning: unable to convert submodule to form that will work with git-annex"
+			return $ r'
+				{ config = M.delete "core.worktree" (config r)
+				}
+		, return r
+		)
+	| otherwise = ifM (needsGitLinkFixup r <&&> notnoannex)
 		( do
 			when (coreSymlinks c) $
 				(replacedotgit >> worktreefixup)
@@ -131,6 +140,8 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 	r'
 		| coreSymlinks c = r { location = l { gitdir = dotgit } }
 		| otherwise = r
+
+	notnoannex = isNothing <$> noAnnexFileContent r
 fixupUnusualRepos r _ = return r
 
 needsSubmoduleFixup :: Repo -> Bool
