@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-02-05T16:43:09Z"
+ content="""
+The git-annex repository https://downloads.kitenet.net/.git/ keeps track of
+all the old versions, which get moved to archive.org eventually to free up
+space on my server. So it would be possible to build such a page from the
+information in that repository. Or just look up the archive.org url for
+the version of the file that you want using git annex whereis.
+"""]]
