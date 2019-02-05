@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Command.FromKey where
 import Command
 import qualified Annex.Queue
 import Annex.Content
+import Annex.WorkTree
 import qualified Annex
 import qualified Backend.URL
 
@@ -89,9 +90,13 @@ perform key file = do
 	next $ return ok
 
 perform' :: Key -> FilePath -> Annex Bool
-perform' key file = do
-	link <- calcRepo $ gitAnnexLink file key
-	liftIO $ createDirectoryIfMissing True (parentDir file)
-	liftIO $ createSymbolicLink link file
-	Annex.Queue.addCommand "add" [Param "--"] [file]
-	return True
+perform' key file = lookupFileNotHidden file >>= \case
+	Nothing -> do
+		link <- calcRepo $ gitAnnexLink file key
+		liftIO $ createDirectoryIfMissing True (parentDir file)
+		liftIO $ createSymbolicLink link file
+		Annex.Queue.addCommand "add" [Param "--"] [file]
+		return True
+	Just k
+		| k == key -> return True
+		| otherwise -> giveup $ file ++ " already exists with different content"

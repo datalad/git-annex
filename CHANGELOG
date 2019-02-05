@@ -11,6 +11,7 @@ git-annex (7.20190130) UNRELEASED; urgency=medium
   * Display progress bar when getting files from export remotes.
   * Fix race in cleanup of othertmp directory that could result in a failure
     attempting to access it.
+  * fromkey: Made idempotent.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jan 2019 12:30:22 -0400
 

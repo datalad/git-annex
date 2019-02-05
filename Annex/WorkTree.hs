@@ -1,6 +1,6 @@
 {- git-annex worktree files
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -36,13 +36,28 @@ import qualified Database.Keys.SQL
  - pointer to a key in the original branch.
  -}
 lookupFile :: FilePath -> Annex (Maybe Key)
-lookupFile file = isAnnexLink file >>= \case
-	Just key -> return (Just key)
-	Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
-		( ifM (liftIO $ doesFileExist file)
+lookupFile = lookupFile' catkeyfile
+  where
+	catkeyfile file =
+		ifM (liftIO $ doesFileExist file)
 			( catKeyFile file
 			, catKeyFileHidden file =<< getCurrentBranch
 			)
+
+lookupFileNotHidden :: FilePath -> Annex (Maybe Key)
+lookupFileNotHidden = lookupFile' catkeyfile
+  where
+	catkeyfile file =
+		ifM (liftIO $ doesFileExist file)
+			( catKeyFile file
+			, return Nothing
+			)
+
+lookupFile' :: (FilePath -> Annex (Maybe Key)) -> FilePath -> Annex (Maybe Key)
+lookupFile' catkeyfile file = isAnnexLink file >>= \case
+	Just key -> return (Just key)
+	Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
+		( catkeyfile file
 		, return Nothing 
 		)
 
