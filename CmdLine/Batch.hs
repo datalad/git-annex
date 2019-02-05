@@ -93,15 +93,15 @@ batchCommandAction a = maybe (batchBadInput (Batch BatchLine)) (const noop)
 -- to handle them.
 --
 -- File matching options are not checked.
-allBatchFiles :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
-allBatchFiles fmt a = batchInput fmt Right $ batchCommandAction . a
+batchStart :: BatchFormat -> (String -> CommandStart) -> Annex ()
+batchStart fmt a = batchInput fmt Right $ batchCommandAction . a
 
--- Like allBatchFiles, but checks the file matching options
+-- Like batchStart, but checks the file matching options
 -- and skips non-matching files.
 batchFilesMatching :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
 batchFilesMatching fmt a = do
 	matcher <- getMatcher
-	allBatchFiles fmt $ \f ->
+	batchStart fmt $ \f ->
 		ifM (matcher $ MatchingFile $ FileInfo f f)
 			( a f
 			, return Nothing
