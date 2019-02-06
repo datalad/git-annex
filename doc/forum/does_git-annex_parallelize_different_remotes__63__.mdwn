@@ -1,0 +1,46 @@
+Hi!
+
+I'm wondering how clever git-annex is at parallelizing different
+remotes with different bandwidth. For example here I have a `origin`
+remote that is on the local LAN (so it's fast) and an `offsite-annex`
+remote that's, well, offsite, so it's much slower. If I run `git annex
+sync --content -J2`, it *looks* like it indiscriminately starts
+copying over files to either host without too much though:
+
+    $ git annex sync --content -J2
+    [...]
+    copy 2019/01/29/montreal/DSCF8148.JPG (to origin...) ok
+    copy 2019/01/29/montreal/DSCF8148.JPG (checking offsite-annex...) (to offsite-annex...) ok
+    copy 2019/01/29/montreal/DSCF8147.RAF (checking offsite-annex...) (to offsite-annex...) 
+    copy 2019/01/29/montreal/DSCF8148.RAF (to origin...) ok
+    copy 2019/01/29/montreal/DSCF8148.RAF (checking offsite-annex...) (to offsite-annex...) 
+
+The interactivity of this doesn't show well here, but what happens is
+this, in order:
+
+ 1. a first JPG is copied to origin and offsite-annex in parallel
+    (good)
+
+ 2. the origin (local) JPG transfer completes, a RAF file transfer
+    gets started to offsite-annex (not so great - a best strategy
+    would be to continue copying files to the local remote, as it's
+    fast and its bandwidth is now unused)
+
+ 3. the offsite-annex JPG transfer completes, a RAF transfer starts to
+    origin (good)
+
+ 4. that transfer completes, the same file is now copied to offsite
+    (again, not so great - local remote is now unused)
+
+What I think git-annex should be doing is try, as much as possible to
+saturate the different network links represented by the different
+remotes. In my case, files should be transfered on the local LAN as
+soon as possible: a single thread should be busy with that `origin`
+remote as long as files are missing there, while the other thread can
+slowly trickle files to `offsite`. Only when `origin` is full should
+both threads work on the `offsite` one. A simple heuristic would be
+"is there a thread already busy with that remote? if yes, see if
+another remote needs a file transfered that is not busy".
+
+Am I analysing this correctly? Is this a bug? or feature request?
+:) -- [[anarcat]]
