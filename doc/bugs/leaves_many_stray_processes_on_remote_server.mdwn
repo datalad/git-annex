@@ -236,3 +236,5 @@ In general, the user is quite happy about git-annex now that they
 understood how to fetch files through their file manager and see
 progress through the GUI. I'm similarly happy to have less
 hand-holding to do myself. :)
+
+Thanks again for your great work! -- [[anarcat]]
