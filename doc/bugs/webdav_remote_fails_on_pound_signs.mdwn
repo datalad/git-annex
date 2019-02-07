@@ -57,3 +57,5 @@ It wouldn't be so bad if git-annex would fail to upload to a webdav repo and jus
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I'm running out of ideas here, to be honest. I've certainly had a lot of "luck" running git-annex before, but as others have said, "there's no such thing as luck" and the reason this whole thing works at all is because you work so hard on making it. So: thanks again! --[[anarcat]]
+
+> [[fixed|done]] --[[Joey]]
