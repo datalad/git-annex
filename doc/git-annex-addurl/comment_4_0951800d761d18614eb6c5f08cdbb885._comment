@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-02-07T19:26:12Z"
+ content="""
+@john, the difference is that while addurl can make up a filename to use if
+you do not provide one, rmurl needs you to specifiy a filename.
+
+So, yes, "git annex rmurl --file=whatever url" would be more consistent,
+but it requires typing more my making something that is not actually
+optional into an option. And "git annex addurl file url" would make
+the command more consistent with rmurl, but harder to use.
+
+Consistency is not everything.
+
+(Also, the rmurl batch interface would then be less consistent to its
+command-line interface.)
+"""]]
