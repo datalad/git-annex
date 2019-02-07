@@ -1,0 +1,26 @@
+git-annex has this peculiar thing that blobs stored in `.git/annex/objects` are readonly, even for the current user. Naturally, git-annex itself bypasses those restrictions in some way to create/remove/move those files from time to time, but for other tools, this can actually be a problem. For example, if a user wants to completely remove a dead repository, they will naively try to just delete it (say) in their file manager, which will fail with permission errors.
+
+Similarly, moving a repository across filesystem boundaries will create problems, as this effectively means copying the files and removing the original copy. Normally, this should be a safe thing to do, but git-annex forbids it.
+
+The workaround I have found is to do exactly that: copy the files and then remove the original. I used the "tar + pv" hack to get a progress bar:
+
+    tar cf - Photos | pv -s 406G | ( cd /srv ; tar xf - )
+
+Just for good measure, I then also run fsck on the repository copy:
+
+    git -C /srv/Photos annex fsck --quiet --incremental
+
+If that succeeds, I then remove the original repository:
+
+    sudo rm -r Photos
+
+Notice how it's simpler for me to do `sudo rm` than the alternative:
+
+    chmod -R u+w Photos
+    \rm -r Photos
+
+I believe that's because rm won't fail to remove files if they are readonly when running as root.
+
+Anyways - what's the proper way of doing this? I know I could `git clone` the repository and `git get` everything, but that would create another repository with a new UUID. That's duplication I do not want.
+
+Thanks for the advice! -- [[anarcat]]
