@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-02-07T20:29:19Z"
+ content="""
+That would make it do efficient parallelization of downloads, but not of
+the uploads that you showed it being bottlenecked on the slowest remote.
+"""]]
