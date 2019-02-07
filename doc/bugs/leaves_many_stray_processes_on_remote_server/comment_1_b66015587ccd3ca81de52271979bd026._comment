@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-02-07T19:58:58Z"
+ content="""
+There is not much git-annex involved here; git receive-pack is being run in the
+usual way by a git push, and git-annex-shell only forks off a git-shell to
+handle it in the usual way.
+
+If you change the ssh command to git-shell then git-annex would be out of
+the picture, and so you could then tell if git-annex is somehow involved in
+the problem at all on the server.
+
+But I think that upgrading the client is the first step, or checking to
+see if it has corresponding git processes that are keeping those git
+receive-pack's going.
+
+It could be that the client is losing connection with the server in a way
+that doesn't cause the TCP connection to be closed on the server, and so it
+waits around for whatever TCP timeout might eventually close it.
+"""]]
