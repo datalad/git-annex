@@ -46,8 +46,14 @@ keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
 keyLocation :: Key -> DavLocation
 keyLocation k = keyDir k ++ keyFile k
 
-exportLocation :: ExportLocation -> DavLocation
-exportLocation = fromExportLocation
+{- Paths containing # or ? cannot be represented in an url, so fails on
+ - those. -}
+exportLocation :: ExportLocation -> Either String DavLocation
+exportLocation l =
+	let p = fromExportLocation l
+	in if any (`elem` p) ['#', '?']
+		then Left ("Cannot store file containing '#' or '?' on webdav: " ++ p)
+		else Right p
 
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation

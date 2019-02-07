@@ -194,26 +194,41 @@ checkKey r chunkconfig (Just dav) k = do
 			either giveup return v
 
 storeExportDav :: Remote -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportDav r f k loc p = withDAVHandle r $ \mh -> runExport mh $ \dav -> do
-	reqbody <- liftIO $ httpBodyStorer f p
-	storeHelper dav (keyTmpLocation k) (exportLocation loc) reqbody
-	return True
+storeExportDav r f k loc p = case exportLocation loc of
+	Right dest -> withDAVHandle r $ \mh -> runExport mh $ \dav -> do
+		reqbody <- liftIO $ httpBodyStorer f p
+		storeHelper dav (keyTmpLocation k) dest reqbody
+		return True
+	Left err -> do
+		warning err
+		return False
 
 retrieveExportDav :: Remote -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportDav r  _k loc d p = withDAVHandle r $ \mh -> runExport mh $ \_dav -> do
-	retrieveHelper (exportLocation loc) d p
-	return True
+retrieveExportDav r  _k loc d p = case exportLocation loc of
+	Right src -> withDAVHandle r $ \mh -> runExport mh $ \_dav -> do
+		retrieveHelper src d p
+		return True
+	Left _err -> return False
 
 checkPresentExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
-checkPresentExportDav r _k loc = withDAVHandle r $ \case
-	Nothing -> giveup $ name r ++ " not configured"
-	Just h -> liftIO $ do
-		v <- goDAV h $ existsDAV (exportLocation loc)
-		either giveup return v
+checkPresentExportDav r _k loc = case exportLocation loc of
+	Right p -> withDAVHandle r $ \case
+		Nothing -> giveup $ name r ++ " not configured"
+		Just h -> liftIO $ do
+			v <- goDAV h $ existsDAV p
+			either giveup return v
+	Left err -> giveup err
 
 removeExportDav :: Remote -> Key -> ExportLocation -> Annex Bool
-removeExportDav r _k loc = withDAVHandle r $ \mh -> runExport mh $ \_dav ->
-	removeHelper (exportLocation loc)
+removeExportDav r _k loc = case exportLocation loc of
+	Right p -> withDAVHandle r $ \mh -> runExport mh $ \_dav ->
+		removeHelper p
+	-- When the exportLocation is not legal for webdav,
+	-- the content is certianly not stored there, so it's ok for
+	-- removal to succeed. This allows recovery after failure to store
+	-- content there, as the user can rename the problem file and
+	-- this will be called to make sure it's gone.
+	Left _err -> return True
 
 removeExportDirectoryDav :: Remote -> ExportDirectory -> Annex Bool
 removeExportDirectoryDav r dir = withDAVHandle r $ \mh -> runExport mh $ \_dav -> do
@@ -223,16 +238,18 @@ removeExportDirectoryDav r dir = withDAVHandle r $ \mh -> runExport mh $ \_dav -
 		>>= maybe (return False) (const $ return True)
 
 renameExportDav :: Remote -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportDav r _k src dest = withDAVHandle r $ \case
-	Just h
-		-- box.com's DAV endpoint has buggy handling of renames,
-		-- so avoid renaming when using it.
-		| boxComUrl `isPrefixOf` baseURL h -> return False
-		| otherwise -> runExport (Just h) $ \dav -> do
-			maybe noop (void . mkColRecursive) (locationParent (exportLocation dest))
-			moveDAV (baseURL dav) (exportLocation src) (exportLocation dest)
-			return True
-	Nothing -> return False
+renameExportDav r _k src dest = case (exportLocation src, exportLocation dest) of
+	(Right srcl, Right destl) -> withDAVHandle r $ \case
+		Just h
+			-- box.com's DAV endpoint has buggy handling of renames,
+			-- so avoid renaming when using it.
+			| boxComUrl `isPrefixOf` baseURL h -> return False
+			| otherwise -> runExport (Just h) $ \dav -> do
+				maybe noop (void . mkColRecursive) (locationParent destl)
+				moveDAV (baseURL dav) srcl destl
+				return True
+		Nothing -> return False
+	_ -> return False
 
 runExport :: Maybe DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
 runExport Nothing _ = return False
