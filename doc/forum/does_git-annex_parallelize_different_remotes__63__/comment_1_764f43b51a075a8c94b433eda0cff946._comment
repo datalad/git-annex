@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-02-07T19:29:55Z"
+ content="""
+If there are several remotes that it can use, and they all have the same
+cost, then yes, `git-annex get` will spread the load amoung them and not
+use higher cost remotes.
+So will `git-annex sync` when getting files from remotes.
+
+There is not currently any similar smart thing done when sending files to
+multiple remotes (or dropping from multiple remotes). 
+And it's kind of hard to see an efficient way to improve it. 
+
+The simplest way would be to loop over remotes ordered by cost and
+then inner loop over files, rather than the current method of looping over
+files with an inner loop over remotes. But in a large tree with many remotes,
+that has to traverse the tree multiple times, which would slow down the
+overall sync.
+
+If instead there's one thread per remote, then the slowest remote will
+fall behind the others, and there will need to be a queue of the files
+that still need to be sent to it -- and that queue could grow to use a lot
+of memory when the tree is large. There would need to be some bound
+on how far behind a thread gets before it stops adding more files and waits
+for it to catch up.
+"""]]
