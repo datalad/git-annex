@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-02-07T20:23:03Z"
+ content="""
+ghc links to libgmp, and uses the system library, and I can see in the log
+that is working; ghc outputs " [1 of 1] Compiling Main ..."
+
+The problem seems to be with
+`/home/conda/feedstock_root/build_artifacts/git-annex_1548210869175/_build_env/bin/../lib/gcc/x86_64-conda_cos6-linux-gnu/7.3.0/../../../../x86_64-conda_cos6-linux-gnu/bin/ld`
+which is not the system ld, nor is it coming from stack, so I guess it's
+conda's ld which is for whatever reason not finding the system libgmp.
+"""]]
