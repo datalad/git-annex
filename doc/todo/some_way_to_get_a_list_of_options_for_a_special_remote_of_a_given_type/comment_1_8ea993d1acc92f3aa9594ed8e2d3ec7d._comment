@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-02-07T15:57:26Z"
+ content="""
+The remote options could be part of option parsing, and then --help would
+list them.
+
+That was not originally done because the option parser was too crude
+to support options specific not only to a given command but to a given type
+of special remote, but with optparse-applicative, it could certianly be done.
+
+I don't know about supporting it in the external special remote protocol
+though. Communicating the full power of applicative option parsing over
+that pipe would add a great deal of complexity. 
+And it would need to retain backwards compatibility.
+
+Also, since git-annex doesn't know the name of the external special remote
+to use until it's parsed the command line options, it wouldn't really
+be possible to use any information from externals to configure the option
+parsing.
+
+Kind of feels like the simplest thing with externals would be best, and
+that's probably something like a "CONFIGSYNOPSIS" that lets the external
+answer with a preformatted string describing its options for display to the
+user.
+
+(Encryption needing to be explicitly disabled is a good thing, I think; it
+avoids any confusion about it.)
+"""]]
