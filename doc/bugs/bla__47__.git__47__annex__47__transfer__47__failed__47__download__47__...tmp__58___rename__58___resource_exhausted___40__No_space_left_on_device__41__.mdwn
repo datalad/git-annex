@@ -1,0 +1,62 @@
+### Please describe the problem.
+
+I'm syncing the content of an annex to another annex on a fat32 partition connected with usb (on an ipod video, with rockbox). I created this annex  with "git init && git annex init", so it is using unlocked adusted branch.
+
+Here is the .git/config:
+
+    [core]
+            repositoryformatversion = 0
+            filemode = false
+            bare = false
+            logallrefupdates = true
+            symlinks = false
+            ignorecase = true
+    [annex]
+            uuid = 25e5f762-db7f-49ad-a504-93e02bba642f
+            sshcaching = false
+            crippledfilesystem = true
+            version = 7
+    [filter "annex"]
+            smudge = git-annex smudge %f
+            clean = git-annex smudge --clean %f
+
+
+
+The sync seems to go well, all files are being copied, but I see an error for each copy during the checksum:
+
+
+    ...
+    copy music/file.flac (to ipod...) 
+    SHA256E-s26126286--32b36b6ff0e9a667c588229f159ff7a553fcd08012b8a74a65bf9f09874044e2.flac
+     26,126,286 100%   25.21MB/s    0:00:00 (xfr#1, to-chk=0/1)
+    (checksum...) 
+      ../../../media/gueux/IPOD/audio/.git/annex/othertmp/927_692_SHA256E-s26126286--32b36b6ff0e9a667c588229f159ff7a553fcd08012b8a74a65bf9f09874044e2.flac.log: openFile: resource exhausted (No space left on device)
+    
+      ../../../media/gueux/IPOD/audio/.git/annex/transfer/failed/download/fa8db49d-df5f-4c65-9af4-712d38729ef0/SHA256E-s26126286--32b36b6ff0e9a667c588229f159ff7a553fcd08012b8a74a65bf9f09874044e2.flac26375-82266.tmp: rename: resource exhausted (No space left on device)
+    ok
+    ...
+
+Note that there is plenty space left on device (300 out of 500Go), and this happened since the beginning of the sync, when the disk was almost empty.
+
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+Debian sid,
+
+    git-annex version: 7.20190129
+    build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+    dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+    operating system: linux x86_64
+    supported repository versions: 5 7
+    upgrade supported from repository versions: 0 1 2 3 4 5 6
+    local repository version: 7
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure, I love it, and unlocked branch is really a great addition for crippled filesystems!
