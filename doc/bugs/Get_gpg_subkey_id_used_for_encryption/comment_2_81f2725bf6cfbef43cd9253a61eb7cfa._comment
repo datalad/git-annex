@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="kirelagin@6d93475882c55a329fedae6be1971868a775ec7e"
+ nickname="kirelagin"
+ avatar="http://cdn.libravatar.org/avatar/325af9a946cb4337c6640f0e95044be1"
+ subject="comment 2"
+ date="2019-02-07T19:03:35Z"
+ content="""
+> If you use \"keyid!\" to specify a subkey, it is shown by git-annex info
+
+But if I do not, then it is not shown, even though there can still be multiple valid encryption subkeys and god knows which one it chose.
+"""]]
