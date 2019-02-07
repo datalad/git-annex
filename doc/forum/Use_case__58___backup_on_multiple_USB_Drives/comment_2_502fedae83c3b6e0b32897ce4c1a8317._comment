@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-02-07T20:12:47Z"
+ content="""
+You don't need direct mode for this at all and there's no benefit to using
+it in most cases.
+
+You can just use regular git clones on the backup disks, and sync to them.
+Running "git annex merge" in the clone on the backup disk at any time will
+advance it to the most recently synced version with all the files in it,
+and you can do that when you plug it into the new laptop.
+"""]]
