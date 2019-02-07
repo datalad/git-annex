@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-02-07T19:22:23Z"
+ content="""
+Right, but if you're not sure if it's encrypted to a given subkey, you can
+simply add the subkey with `keyid+='xxx!'` and then you'll know for sure
+it's encrypting to it.
+
+Seems to me that users who want to do things with multiple subkeys can just
+do that, once, and we avoid needing to add a whole lot of complication to
+git-annex.
+"""]]
