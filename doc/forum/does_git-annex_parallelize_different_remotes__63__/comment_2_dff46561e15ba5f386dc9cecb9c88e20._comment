@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="use cost then?"
+ date="2019-02-07T20:19:13Z"
+ content="""
+So I guess the answer here is to use \"cost\" to prioritize \"LAN-local\" repositories? Then we hit [[bugs/assistant_does_not_always_use_repo_cost_info_when_queueing_downloads]] but at least it will work in the general case...
+
+I think that, in my case, it means doing:
+
+    git config remote.origin.annex-cost 150
+
+... so that it's somewhere between local repositories (100) and remote (200). Would that solve my issue here? I don't have many files to transfer right now so I can't really test this until I import new photos, but I'll give it a shot! :)
+
+It would certainly be nice if git-annex was a little more clever with this - it could, for example, have a gray zone between \"remote\" and \"local\"... but I guess that's what the `annex-cost-command` is for...
+
+Thanks!
+"""]]
