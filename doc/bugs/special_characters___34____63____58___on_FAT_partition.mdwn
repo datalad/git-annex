@@ -3,6 +3,9 @@
 `git annex sync --content` in an annex on a FAT partition fails if it contains filenames with special characters like `"?:`
 
 
+    error: unable to create file music/File "Test".mp3: Invalid argument
+
+
 ### What version of git-annex are you using? On what operating system?
 
 debian sid
