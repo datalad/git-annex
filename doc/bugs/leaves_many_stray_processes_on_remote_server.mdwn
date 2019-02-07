@@ -1,0 +1,240 @@
+### Please describe the problem.
+
+git-annex leaves many stray processes around on a remote SSH server.
+
+### What steps will reproduce the problem?
+
+I'm not exactly sure, to be honest. I have setup a user for a friend on my home server with the following SSH key:
+
+    command="git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"",restrict ssh-rsa AAAAB[...]
+
+They use that access to synchronize a repository in `/srv/media` which is read-only for them, thanks to simple file permissions (files are owned by another user and another group).
+
+The friend uses the assistant to see progress of their transfers and regularly keep their local copy up to date. I suspect what is happening is the assistant is trying to *push* local changes to the remote server, and fails to do so.
+
+### What version of git-annex are you using? On what operating system?
+
+The remote git-annex client is, I believe, the `6.20170101-1+deb9u2` version shipped in Debian stable. The server is running 7.20190122-1~bpo9+1 on Debian stretch.
+
+### Please provide any additional information below.
+
+Here's a dump of the stray processes:
+
+[[!format sh """
+# ps axfu | grep friend
+root      8493  0.0  0.0 114176  7272 ?        Ss   12:24   0:00  \_ sshd: friend [priv]
+friend    8502  0.0  0.0 114360  4536 ?        S    12:24   0:00  |   \_ sshd: friend@notty
+friend    8511  0.0  0.0 1074101432 7760 ?     Ssl  12:24   0:00  |       \_ git-annex-shell -c git-receive-pack '/srv/media'
+friend    8520  0.0  0.0  39356  3248 ?        Sl   12:24   0:00  |           \_ git receive-pack /srv/media
+root     16282  0.0  0.0 114176  7240 ?        Ss   12:51   0:00  \_ sshd: friend [priv]
+friend   16291  0.0  0.0 115036  5292 ?        S    12:51   0:00  |   \_ sshd: friend@notty
+friend   16298  0.0  0.0 1074101432 7792 ?     Ssl  12:51   0:00  |       \_ git-annex-shell -c git-receive-pack '/srv/media'
+friend   16302  0.0  0.0  39356  3280 ?        Sl   12:51   0:00  |       |   \_ git receive-pack /srv/media
+friend   16312  0.0  0.0 1074101432 7720 ?     Ssl  12:52   0:00  |       \_ git-annex-shell -c git-receive-pack '/srv/media'
+friend   16317  0.0  0.0  39356  3276 ?        Sl   12:52   0:00  |       |   \_ git receive-pack /srv/media
+friend   16324  0.0  0.0 1074101432 7828 ?     Ssl  12:52   0:00  |       \_ git-annex-shell -c git-receive-pack '/srv/media'
+friend   16328  0.0  0.0  39356  3336 ?        Sl   12:52   0:00  |       |   \_ git receive-pack /srv/media
+friend   20296  0.0  0.0 1074101432 7680 ?     Ssl  13:06   0:00  |       \_ git-annex-shell -c git-receive-pack '/srv/media'
+friend   20300  0.0  0.0  39356  3260 ?        Sl   13:06   0:00  |           \_ git receive-pack /srv/media
+root     32041  0.0  0.0  14004   972 pts/5    S+   13:49   0:00      \_ grep friend
+friend   25870  0.0  0.0  65116  4560 ?        Ss   fév02   0:00 /lib/systemd/systemd --user
+friend   25874  0.0  0.0 244548   720 ?        S    fév02   0:00  \_ (sd-pam)
+friend   25952  0.0  0.0 1074101432 2088 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25956  0.0  0.0  39172   564 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   26062  0.0  0.0 1074101432 2196 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   26066  0.0  0.0  39172   548 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   29069  0.0  0.0 1074101432 2188 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   29073  0.0  0.0  39172   608 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30475  0.0  0.0 1074101432 2140 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30488  0.0  0.0  39172   568 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30476  0.0  0.0 1074101432 2196 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30492  0.0  0.0  39172   780 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30477  0.0  0.0 1074101432 2244 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30485  0.0  0.0  39172   544 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30478  0.0  0.0 1074101432 2140 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30495  0.0  0.0  39172   740 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30499  0.0  0.0 1074101432 2220 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30503  0.0  0.0  39172   628 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30505  0.0  0.0 1074101432 2096 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30510  0.0  0.0  39172   588 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30506  0.0  0.0 1074101432 2140 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30514  0.0  0.0  39172   728 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   30546  0.0  0.0 1074101432 2076 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   30550  0.0  0.0  39172   588 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend   16664  0.0  0.0 1074101432 2144 ?     Ssl  fév02   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   16668  0.0  0.0  39172   756 ?        Sl   fév02   0:00  \_ git receive-pack /srv/media
+friend    5225  0.0  0.0 1074101432 2520 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    5229  0.0  0.0  39324   904 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25302  0.0  0.0 1074101432 2256 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25337  0.0  0.0  39356   328 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25304  0.0  0.0 1074101432 2408 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25342  0.0  0.0  39356   376 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25305  0.0  0.0 1074101432 2248 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25336  0.0  0.0  39356   340 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25307  0.0  0.0 1074101432 2432 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25341  0.0  0.0  39356   364 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25362  0.0  0.0 1074101432 2392 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25366  0.0  0.0  39356   400 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25386  0.0  0.0 1074101432 2136 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25399  0.0  0.0  39356   564 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25387  0.0  0.0 1074101432 2440 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25400  0.0  0.0  39356   500 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend   25388  0.0  0.0 1074101432 2136 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25394  0.0  0.0  39356   420 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend    1181  0.0  0.0 1074101432 2308 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    1186  0.0  0.0  39356   380 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend    6483  0.0  0.0 1074101432 2336 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    6487  0.0  0.0  39356   436 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend    9714  0.0  0.0 1074101432 2340 ?     Ssl  fév03   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    9718  0.0  0.0  39356   360 ?        Sl   fév03   0:00  \_ git receive-pack /srv/media
+friend    9117  0.0  0.0 1074101432 2392 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    9121  0.0  0.0  39356   536 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   13542  0.0  0.0 1074101432 2264 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   13558  0.0  0.0  39356   436 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   13543  0.0  0.0 1074101432 2328 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   13553  0.0  0.0  39356   532 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   13544  0.0  0.0 1074101432 2272 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   13561  0.0  0.0  39356   540 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   13545  0.0  0.0 1074101432 2380 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   13560  0.0  0.0  39356   592 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend    1940  0.0  0.0 1074101432 2264 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    1944  0.0  0.0  39356   468 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend    8515  0.0  0.0 1074101432 2348 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    8519  0.0  0.0  39356   520 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   11968  0.0  0.0 1074101432 2424 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   11972  0.0  0.0  39356   640 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   24944  0.0  0.0 1074101432 2264 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   24948  0.0  0.0  39356   504 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   25327  0.0  0.0 1074101432 2416 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   25335  0.0  0.0  39356   668 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   10241  0.0  0.0 1074101432 2272 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   10245  0.0  0.0  39356   552 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   15442  0.0  0.0 1074101432 2272 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   15446  0.0  0.0  39356   524 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   16915  0.0  0.0 1074101432 2248 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   16919  0.0  0.0  39356   592 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   29211  0.0  0.0 1074101432 2420 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   29215  0.0  0.0  39356   552 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend    1623  0.0  0.0 1074101432 2220 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    1630  0.0  0.0  39356   312 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend    1624  0.0  0.0 1074101432 2360 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    1632  0.0  0.0  39356   268 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   11255  0.0  0.0 1074101432 2312 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   11259  0.0  0.0  39356   340 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   29421  0.0  0.0 1074101432 2424 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   29425  0.0  0.0  39356   260 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend    8089  0.0  0.0 1074101432 2220 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    8100  0.0  0.0  39356   372 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend    8090  0.0  0.0 1074101432 2024 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    8101  0.0  0.0  39356   432 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend    8091  0.0  0.0 1074101432 2048 ?     Ssl  fév04   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    8103  0.0  0.0  39356   500 ?        Sl   fév04   0:00  \_ git receive-pack /srv/media
+friend   32567  0.0  0.0 1074101432 2680 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   32571  0.0  0.0  39356   588 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    3556  0.0  0.0 1074101432 2672 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    3561  0.0  0.0  39356   632 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    3557  0.0  0.0 1074101432 2688 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    3565  0.0  0.0  39356   656 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    3566  0.0  0.0 1074101432 2816 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    3578  0.0  0.0  39356   680 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    3567  0.0  0.0 1074101432 2656 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    3577  0.0  0.0  39356   916 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    3587  0.0  0.0 1074101432 2880 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    3591  0.0  0.0  39356   956 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   14117  0.0  0.0 1074101432 3444 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   14121  0.0  0.0  39356   984 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   20449  0.0  0.0 1074101432 3464 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20453  0.0  0.0  39356   888 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   20469  0.0  0.0 1074101432 3528 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20480  0.0  0.0  39356   904 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   20483  0.0  0.0 1074101432 3140 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20492  0.0  0.0  39356  1056 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   20484  0.0  0.0 1074101432 3168 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20491  0.0  0.0  39356  1040 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   20498  0.0  0.0 1074101432 3348 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20502  0.0  0.0  39356   848 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   32112  0.0  0.0 1074101432 3360 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   32116  0.0  0.0  39356   768 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   28244  0.0  0.0 1074101432 3452 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   28248  0.0  0.0  39356   936 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   28266  0.0  0.0 1074101432 3352 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   28276  0.0  0.0  39356   976 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   28267  0.0  0.0 1074101432 3332 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   28273  0.0  0.0  39356  1016 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   28284  0.0  0.0 1074101432 3388 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   28289  0.0  0.0  39356   900 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   28285  0.0  0.0 1074101432 3328 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   28293  0.0  0.0  39356   748 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   31816  0.0  0.0 1074101432 3384 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   31827  0.0  0.0  39356   852 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   31822  0.0  0.0 1074101432 2612 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   31835  0.0  0.0  39356   780 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   31823  0.0  0.0 1074101432 2496 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   31832  0.0  0.0  39356   748 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   31842  0.0  0.0 1074101432 3272 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   31846  0.0  0.0  39356   964 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    9226  0.0  0.0 1074101432 3416 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    9230  0.0  0.0  39356   508 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   13564  0.0  0.0 1074101432 3456 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   13568  0.0  0.0  39356   708 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    4424  0.0  0.0 1074101432 3348 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    4433  0.0  0.0  39356   788 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend    4425  0.0  0.0 1074101432 3500 ?     Ssl  fév05   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend    4432  0.0  0.0  39356   664 ?        Sl   fév05   0:00  \_ git receive-pack /srv/media
+friend   12235  0.0  0.0 1074101432 7784 ?     Ssl  08:37   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   12239  0.0  0.0  39356  3172 ?        Sl   08:37   0:00  \_ git receive-pack /srv/media
+friend   15636  0.0  0.0 1074101432 7600 ?     Ssl  08:50   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   15640  0.0  0.0  39356  3248 ?        Sl   08:50   0:00  \_ git receive-pack /srv/media
+friend   17626  0.0  0.0 1074101432 7560 ?     Ssl  09:00   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   17638  0.0  0.0  39356  3232 ?        Sl   09:00   0:00  \_ git receive-pack /srv/media
+friend   17628  0.0  0.0 1074101432 7660 ?     Ssl  09:00   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   17633  0.0  0.0  39356  3240 ?        Sl   09:00   0:00  \_ git receive-pack /srv/media
+friend   20252  0.0  0.0 1074101432 7820 ?     Ssl  11:10   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20258  0.0  0.0  39356  3228 ?        Sl   11:10   0:00  \_ git receive-pack /srv/media
+friend   20253  0.0  0.0 1074101432 7884 ?     Ssl  11:10   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20263  0.0  0.0  39356  3320 ?        Sl   11:10   0:00  \_ git receive-pack /srv/media
+friend   20287  0.0  0.0 1074101432 7684 ?     Ssl  11:10   0:00 git-annex-shell -c git-receive-pack '/srv/media'
+friend   20291  0.0  0.0  39356  3224 ?        Sl   11:10   0:00  \_ git receive-pack /srv/media
+"""]]
+
+Notice how many processes are orphaned there: they are not owned by
+any process and will seemingly never terminate. They are fairly
+harmless as I do not believe they are holding a lock (they can't: the
+repo is readonly) and will probably get swapped to disk. But
+eventually they *will* overrun even the swap if I wait long enough. :)
+I can kill the processes, but then it means I might kill a running
+transfer which is too bad - it's hard to tell which of those processes
+are valid.
+
+I have also seen such behavior when *I* connect to my remote SSH
+server but switch networks (say between wired and wireless) on my
+laptop: the SSH process would hang on the older connection and the
+sshd-managed process would keep a lock on the repository, keeping me
+from making further connections to the repository. I'd then have to
+login to the server and kill those pesky git-annex process to resume
+my work.
+
+I've seen this behavior with more recent versions in buster, so I
+doubt this problem is fixed in later versions. I'm also unsure it's
+git-annex's fault, to be fair: we might want SSH to fail earlier here
+which would make git-annex recover. But then on the other hand, we
+often *like* SSH to hang on through network failure and recover when
+the network comes back...
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I have, of course. :) You'd be happy to know this attempt at making
+this friend use git-annex is proving more successful than last time
+(the now deleted [[bugs/flooding_me_with_ssh_password_prompts]] which
+led to the also deleted [[bugs/kill_git-annex_assistant_on_logout]]),
+mainly because I got my head out of my figurative bottom and properly
+configured SSH to never ever prompt for passwords. What we're seeing
+now is a different problem than the original flood of passwords, of
+course, but it might be related to the latter bug.
+
+In general, the user is quite happy about git-annex now that they
+understood how to fetch files through their file manager and see
+progress through the GUI. I'm similarly happy to have less
+hand-holding to do myself. :)
+
+Thanks again for your great work! -- [[anarcat]]

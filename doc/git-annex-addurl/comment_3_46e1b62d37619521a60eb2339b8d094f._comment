@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="pellman.john@e59e5c6d98d49cd9632d6fbe0c5026ddc71d52fd"
+ nickname="pellman.john"
+ avatar="http://cdn.libravatar.org/avatar/eaca2e5f6d5888d139129293c7293b1f"
+ subject="Inconsistent idiom"
+ date="2019-02-06T20:53:00Z"
+ content="""
+In using git-annex in the past, I've always found it counterintuitive that [rmurl](https://git-annex.branchable.com/git-annex-rmurl/) uses the following form to remove a URL from a file:
+
+```
+git annex rmurl [file] [url]
+```
+
+While, in contrast, addurl uses a flag to designate the file that a URL should be added to the list of URLs a file points to:
+
+```
+git annex addurl [url] --file=[file]
+```
+
+It would make sense (at least to me) to make the syntax for these more congruous so that both commands use either two positional arguments or one positional argument and one keyword argument / flag.
+"""]]

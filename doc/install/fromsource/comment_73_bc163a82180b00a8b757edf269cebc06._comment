@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="prabindh"
+ avatar="http://cdn.libravatar.org/avatar/d5c12329a2a524ebf6105721dafcc0c2"
+ subject="Windows build with stack"
+ date="2019-02-07T14:59:51Z"
+ content="""
+1. git checkout failed,
+
+fatal: cannot create directory at 
+
+'doc/bugs/Assertion___96__cnt___60_____40__sizeof___40____95__nl__95__value__95__type__95__LC__95__TIME__41_____47___sizeof___40____95__nl__95__value__95__type__95__LC__95__TIME__91__0__93____41____41____39___failed.': Filename too long
+
+fixed by updating longpaths in gitconfig, 
+
+2. stack setup ok
+
+3. stack install failed, 
+
+regex-tdfa-1.2.3.1: copy/register
+Progress 58/168
+removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:RemoveDirectory 
+
+Will have to try the Make approach on Windows ?
+"""]]

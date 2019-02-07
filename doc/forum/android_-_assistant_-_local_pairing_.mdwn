@@ -1,0 +1,15 @@
+Hello!
+
+I'm trying to *local pair* a recent build of assistant (7.20190129-ge3dce20cf) on android with debian (6.20170101.1).
+
+Either way around one assistant doesn't show the pair request of the other.
+
+When the debian box initiates the pairing android can see [the packets](http://git-annex.branchable.com/assistant/local_pairing_walkthrough/#comment-3eb46bd30deac03bda8eaba18a85751c) (in tcpdump) but there's nothing in the webapp.
+When I try initiating the pairing from android no pairing packets seem to show up (this is using tcpdump on android. I didn't check on the Debian box - I'm assuming they have to exist on Android first).
+
+
+Termux needs the ssh server to be started manually (I'm using the openssh package). Termux is (by default) configured to run it as the termux user, so it's on port 8022. I can ssh to that from debian.
+
+The Termux shell shows the hostname as "localhost" because that's what gethostname() returns (<https://github.com/termux/termux-packages/issues/352#issuecomment-458278586>). Could that be causing problems?
+
+What can I try next?
