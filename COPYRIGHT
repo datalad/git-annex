@@ -10,8 +10,8 @@ Copyright: © 2012-2017 Joey Hess <id@joeyh.name>
            © 2014 Sören Brunk
 License: AGPL-3+
 
-Files: Remote/Git.hs Remote/Helper/Ssh.hs Remote/Adb.hs Remote/External.hs Remote/Extermal/Types.hs
-Copyright: © 2011-2018 Joey Hess <id@joeyh.name>
+Files: Annex/AdjustedBranch.hs Annex/AdjustedBranch/Name.hs Annex/CurrentBranch.hs Annex/Version.hs Benchmark.hs Logs/File.hs Logs/Line.hs Logs/Smudge.hs Remote/Git.hs Remote/Helper/Ssh.hs Remote/Adb.hs Remote/External.hs Remote/Extermal/Types.hs Types/AdjustedBranch.hs Types/RepoVersion.hs Upgrade/V6.hs
+Copyright: © 2011-2019 Joey Hess <id@joeyh.name>
 License: AGPL-3+
 
 Files: Remote/Ddar.hs

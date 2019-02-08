@@ -1,7 +1,7 @@
 Name: git-annex
 Version: 7.20190129
 Cabal-Version: >= 1.8
-License: GPL-3
+License: AGPL-3
 Maintainer: Joey Hess <id@joeyh.name>
 Author: Joey Hess
 Stability: Stable
