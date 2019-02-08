@@ -11,6 +11,7 @@ import Git.Types
 import Git.Config
 import Types.GitConfig
 import Config.Files
+import qualified Git
 import qualified Git.BuildVersion
 import Utility.Path
 import Utility.SafeCommand
@@ -141,7 +142,7 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		| coreSymlinks c = r { location = l { gitdir = dotgit } }
 		| otherwise = r
 
-	notnoannex = isNothing <$> noAnnexFileContent (repoWorkTree r)
+	notnoannex = isNothing <$> noAnnexFileContent (Git.repoWorkTree r)
 fixupUnusualRepos r _ = return r
 
 needsSubmoduleFixup :: Repo -> Bool

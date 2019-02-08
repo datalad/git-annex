@@ -53,7 +53,7 @@ import qualified Utility.LockFile.Posix as Posix
 #endif
 
 checkCanInitialize :: Annex a -> Annex a
-checkCanInitialize a = inRepo (noAnnexFileContent . repoWorkTree) >>= \case
+checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case
 	Nothing -> a
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
