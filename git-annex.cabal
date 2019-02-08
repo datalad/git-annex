@@ -284,6 +284,10 @@ Flag DebugLocks
 Flag Dbus
   Description: Enable dbus support
 
+Flag NetworkBSD
+  Description: Build with network-3.0 which split out network-bsd
+  Default: True
+
 source-repository head
   type: git
   location: git://git-annex.branchable.com/
@@ -297,7 +301,6 @@ Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
    base (>= 4.9 && < 5.0),
-   network (>= 2.6.3.0),
    network-uri (>= 2.6),
    optparse-applicative (>= 0.11.0),
    containers (>= 0.5.7.1),
@@ -391,6 +394,11 @@ Executable git-annex
       process (>= 1.6.2.0)
   else
     Build-Depends: unix (>= 2.7.2)
+
+  if flag(NetworkBSD)
+    Build-Depends: network-bsd, network (>= 3.0.0.0)
+  else
+    Build-Depends: network (< 3.0.0.0), network (>= 2.6.3.0)
 
   if flag(S3)
     Build-Depends: aws (>= 0.9.2)
