@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="guzik.sergey@9391b6c15e4938a539e36fbe5bab71df07111d2e"
+ nickname="guzik.sergey"
+ avatar="http://cdn.libravatar.org/avatar/69073e903eefa0bc2755123b26441a2f"
+ subject="comment 1"
+ date="2019-02-08T11:00:14Z"
+ content="""
+I would say that FAT32 devices are perfectly valid, but only if used as a [directory special remote](https://git-annex.branchable.com/special_remotes/directory/) with chunking enabled. This way you can transfer files of any size (given there is enough space of course) and keep all previous versions. The downside is that you can't just plug the drive into random computer and read files, git-annex is required, also it is important to remember that special remotes do not store metadata about files so you need your regular repository synced to a computer where you want to read special remote.
+
+Next option is to use [direct mode](https://git-annex.branchable.com/direct_mode/), this way files will be readable on any computer even without git-annex, but file size will be limited to 4Gb and only latest version of your files will be available. Note that you still can drop files from direct mode repository and these files will be replaced with placeholders, so you are not forced to copy big files to a repository with limited file size.
+
+Actually it is possible (and I think it is a valid use case) to use both \"directory special remote\" and \"direct mode repository\" on the same drive.
+
+If I was forced to use FAT32, I would use it this way: create directory special remote with chunking to store files, create bare repository just for metadata. This way the drive will store all versions of files, any size, even if other repositories disappear this will be a complete copy.
+"""]]
