@@ -141,7 +141,7 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		| coreSymlinks c = r { location = l { gitdir = dotgit } }
 		| otherwise = r
 
-	notnoannex = isNothing <$> noAnnexFileContent r
+	notnoannex = isNothing <$> noAnnexFileContent (repoWorkTree r)
 fixupUnusualRepos r _ = return r
 
 needsSubmoduleFixup :: Repo -> Bool

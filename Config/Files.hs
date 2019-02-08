@@ -13,8 +13,6 @@ import Common
 import Utility.Tmp
 import Utility.FreeDesktop
 
-import Git
-
 {- ~/.config/git-annex/file -}
 userConfigFile :: FilePath -> IO FilePath
 userConfigFile file = do
@@ -86,7 +84,7 @@ cannotFindProgram = do
 
 {- A .noannex file in a git repository prevents git-annex from
  - initializing that repository.. The content of the file is returned. -}
-noAnnexFileContent :: Repo -> IO (Maybe String)
-noAnnexFileContent r = case Git.repoWorkTree r of
+noAnnexFileContent :: Maybe FilePath -> IO (Maybe String)
+noAnnexFileContent repoworktree = case repoworktree of
 	Nothing -> return Nothing
 	Just wt -> catchMaybeIO (readFile (wt </> ".noannex"))
