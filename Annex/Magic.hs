@@ -41,5 +41,5 @@ getMagicMimeType :: Magic -> FilePath -> IO (Maybe MimeType)
 #ifdef WITH_MAGICMIME
 getMagicMimeType m f = Just <$> magicFile m f
 #else
-getMagicMimeType = return Nothing
+getMagicMimeType _ _ = return Nothing
 #endif
