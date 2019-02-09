@@ -129,6 +129,15 @@ to a given remote. This reduces the use cases a lot though, and perhaps
 so far that the import tree feature is not worth building. The adb
 special remote needs both.
 
+Is this race really a significant problem? One way to look at it is
+analagous to a git pull overwriting a locally modified file, which should
+not happen. Git may in some condition not notice the modification before
+overwrite, but if so that would be considered a surprising bug; it's
+certianly *possible* for git pull to avoid such a race whether or not it
+currently does. But another way to look at it is the remote has two
+writers, one of which is git annex exporttree and the other something
+else, and it's up to the user to avoid them conflicting.
+
 Really fixing this race needs locking or an atomic operation. Locking seems
 unlikely to be a portable enough solution.
 
