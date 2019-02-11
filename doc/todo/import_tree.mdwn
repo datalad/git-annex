@@ -112,14 +112,20 @@ know if those files have changed.
 
 ## race conditions TODO
 
-There's a race here, since a file could be modified on the remote while
+A file could be modified on the remote while
 it's being exported, and if the remote then uses the mtime of the modified
 file in the content identifier, the modification would never be noticed by
 imports. 
 
 To fix this race, we need an atomic move operation on the remote. Upload
 the file to a temp file, then get its content identifier, and then move it
-from the temp file to its final location.
+from the temp file to its final location. Alternatively, upload a file and
+get the content identifier atomically, which eg S3 with versioning enabled
+provides. It would make sense to have the storeExport operation always return
+a content identifier and document that it needs to get it atomically by
+either using a temp file or something specific to the remote.
+
+----
 
 There's also a race where a file gets changed on the remote after an
 import tree, and an export then overwrites it with something else.
@@ -129,43 +135,75 @@ to a given remote. This reduces the use cases a lot though, and perhaps
 so far that the import tree feature is not worth building. The adb
 special remote needs both.
 
-Is this race really a significant problem? One way to look at it is
-analagous to a git pull overwriting a locally modified file, which should
-not happen. Git may in some condition not notice the modification before
-overwrite, but if so that would be considered a surprising bug; it's
-certianly *possible* for git pull to avoid such a race whether or not it
-currently does. But another way to look at it is the remote has two
-writers, one of which is git annex exporttree and the other something
-else, and it's up to the user to avoid them conflicting.
-
 Really fixing this race needs locking or an atomic operation. Locking seems
 unlikely to be a portable enough solution.
 
-An atomic move could at least narrow the race significantly, eg:
+An atomic rename operation could at least narrow the race significantly, eg:
 
-1. upload new version of $file to $tmp1
-2. atomic move current $file to $tmp2
-3. Get content identifier of $tmp2, check if it's what was expected to
+1. get content identifier of $file, check if it's what was expected else
+   abort (optional but would catch most problems)
+2. upload new version of $file to $tmp1
+3. rename current $file to $tmp2
+4. Get content identifier of $tmp2, check if it's what was expected to
    be. If not, $file was modified after the last import tree, and that
    conflict has to be resolved. Otherwise, delete $tmp2
-4. atomic move $tmp1 to $file
+5. rename $tmp1 to $file
+
+That leaves a race if the file gets overwritten after it's moved out
+of the way. If the rename refuses to overwrite existing files, that race
+would be detected by it failing. renameat(2) with `RENAME_NOREPLACE` can do that, 
+but probably many special remote interfaces don't provide a way to do that.
+
+S3 lacks a rename operation, can only copy and then delete. Which is not
+good enough; it risks the file being replaced with new content before
+the delete and the new content being deleted.
+
+Is this race really a significant problem? One way to look at it is
+analagous to a git merge overwriting a locally modified file.
+Git can certianly use similar techniques to entirely detect and recover
+from such races (but not the similar race described in the next section). 
+But, git does not actually do that! I modified git's
+merge.c to sleep for 10 seconds after `refresh_index()`, and verified
+that changes made to the work tree in that window were silently overwritten
+by git merge. In git's case, the race window is normally quite narrow
+and this is very unlikely to happen (the similar race described in the next
+section is more likely). 
+
+If git-annex could get the race window similarly small out would perhaps be
+ok. Eg:
+
+1. upload new version of $file to $tmp
+2. get content identifier of $file, check if it's what was expected else
+   abort
+3. rename (or copy and delete) $tmp to $file
+
+The race window between #2 and #3 could be quite narrow for some remotes.
+But S3, lacking a rename, does a copy that can be very slow for large files.
+
+S3, with versioning, could detect the race after the fact, by listing
+the versions of the file, and checking if any of the versions is one
+that git-annex did not know the file already had.
+[Using this api](https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGETVersion.html),
+with version-id-marker set to the previous version of the file,
+should list only the previous and current versions; if there's an
+intermediate version then the race occurred and it could roll the change
+back, or otherwise recover the overwritten version.
+(Note that there's a risk of a second race occuring during rollback.)
+
+----
 
 A remaining race is that, if the file is open for write at the same
 time it's renamed, the write might happen after the content identifer
 is checked, and then whatever is written to it will be lost. 
 
 But: Git worktree update has the same race condition. Verified with
-this perl oneliner, run in a worktree, followed by a git pull. The lines
-that it appended to the file got lost:
+this perl oneliner, run in a worktree and a second later 
+followed by a git pull. The lines that it appended to the 
+file got lost:
 
-	perl -e 'open (OUT, ">>foo") || die "$!"; while (<>) { print OUT $_ }'
+	perl -e 'open (OUT, ">>foo") || die "$!"; sleep(10); while (<>) { print OUT $_ }'
 
 Since this is acceptable in git, I suppose we can accept it here too..
-
-Another remaining race is if the file gets recreated after it's moved out
-of the way. If the atomic move refuses to overwrite existing files, that race
-would be detected by it failing. renameat(2) with `RENAME_NOREPLACE` can do that, 
-but probably many special remote interfaces don't provide a way to do that.
 
 ----
 
