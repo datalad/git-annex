@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-"git status" returns a list of almost all files in the annex with these messages:
+"git status" returns a list of almost all files in the annex (located on a FAT32 device) with these messages:
 
     git-annex: git status will show music/a.flac to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh music/a.flac
     ... (a lot of similar messages for +30000 files)
