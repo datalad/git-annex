@@ -1,11 +1,10 @@
-When `git annex export treeish` is used to export to a remote, and the
-remote allows files to somehow be edited on it, then there ought to be a
-way to import the changes back from the remote into the git repository.
+When `git annex export treeish --to remote` is used to export to a remote,
+and the remote allows files to somehow be edited on it, then there ought
+to be a way to import the changes back from the remote into the git repository.
+The command could be `git annex import --from remote`
 
-The command could be `git annex import treeish` or something like that.
-
-It would ask the special remote to list changed/new files, and deleted
-files. Download the changed/new files and inject into the annex. 
+It would find changed/new/deleted files on the remote.
+Download the changed/new files and inject into the annex. 
 Generate a new treeish, with parent the treeish that was exported,
 that has the modifications in it.
 
@@ -14,67 +13,13 @@ This way, conflicts will be detected and handled as normal by git.
 
 ----
 
-The remote interface could have a new method, to list the changed/new and
-deleted files. It will be up to remotes to implement that if they can
-support importing.
-
-One way for a remote to do it, assuming it has mtimes, is to export
-files to the remote with their mtime set to the date of the treeish
-being exported (when the treeish is a commit, which has dates, and not
-a raw tree). Then the remote can simply enumerate all files,
-with their mtimes, and look for files that have mtimes
-newer than the last exported treeish's date.
-
-> But: If files on the remote are being changed at around the time
-> of the export, they could have older mtimes than the exported treeish's
-> date, and so be missed.
-> 
-> Also, a rename that swaps two files would be missed if mtimes
-> are only compared to the treeish's date.
-
-A perhaps better way is for the remote to keep track of the mtime,
-size, etc of all exported files, and use that state to find changes.
-Where to store that data?
-
-The data could be stored in a file/files on the remote, or perhaps
-the remote has a way to store some arbitrary metadata about a file
-that could be used.
-
-It could be stored in git-annex branch per-remote state. However,
-that state is per-key, not per-file. The export database could be
-used to convert a ExportLocation to a Key, which could be used
-to access the per-remote state. Querying the database for each file
-in the export could be a bottleneck without the right interface.
-
-If only one repository will ever access the remote, it could be stored
-in eg a local database. But access from only one repository is a 
-hard invariant to guarantee.
-
-Would local storage pose a problem when multiple repositories import from
-the same remote? In that case, perhaps different trees would be imported,
-and merged into master. So the two repositories then have differing
-masters, which can be reconciled as usual. It would mean extra downloads
-of content from the remote, since each import would download its own copy.
-Perhaps this is acceptable?
-
-This feels like it's reimplementing the git index, on a per-remote basis.
-So perhaps this is not the right interface.
-
-----
-
-Alternate interface: The remote is responsible for collecting a list of
+The remote is responsible for collecting a list of
 files currently in it, along with some content identifier. That data is
-sent to git-annex. git-annex keep track of which content identifier(s) map
+sent to git-annex. git-annex keeps track of which content identifier(s) map
 to which keys, and uses the information to determine when a file on the
 remote has changed or is new.
 
-This way, each special remote doesn't have to reimplement the equivilant of
-the git index, or comparing lists of files, it only needs a way to list
-files, and a good content identifier.
-
-This also simplifies implementation in git-annex, because it does not
-even need to look for changed/new/deleted files compared with the
-old tree. Instead, it can simply build git tree objects as the file list
+git-annex can simply build git tree objects as the file list
 comes in, looking up the key corresponding to each content identifier
 (or downloading the content from the remote and adding it to the annex
 when there's no corresponding key yet). It might be possible to avoid
@@ -87,26 +32,26 @@ A good content identifier needs to:
 * Be stable, so when a file has not changed, the content identifier
   remains the same.
 * Change when a file is modified.
-* Be reasonably unique, but not necessarily fully unique.  
-  For example, if the mtime of a file is used as the content identifier, then
-  a rename that swaps two files would be noticed, except for in the
-  unusual case where they have the same mtime. If a new file
-  is added with the same mtime as some other file in the tree though,
-  git-annex will see that the filename is new, and so can still import it,
-  even though it's seen that content identifier before. Of course, that might
-  result in unncessary downloads (eg of a renamed file), so a more unique
-  content identifer would be better.
-
-A (size, mtime, inode) tuple is as good a content identifier as git uses in
-its index. That or a hash of the content would be ideal. 
-
-Do remotes need to tell git-annex about the properties of content
-identifiers they use, or does git-annex assume a minimum bar, and pay the
-price with some unncessary transfers of renamed files etc?
+* Be as unique as possible, but not necessarily fully unique.  
+  A hash of the content would be ideal.
+  A (size, mtime, inode) tuple is as good a content identifier as git uses in
+  its index.
 
 git-annex will need a way to get the content identifiers of files
 that it stores on the remote when exporting a tree to it, so it can later
 know if those files have changed.
+
+----
+
+The content identifier needs to be stored somehow for later use.
+
+It would be good to store the content identifiers only locally, if
+possible.
+
+Would local storage pose a problem when multiple repositories import from
+the same remote? In that case, perhaps different trees would be imported,
+and merged into master. So the two repositories then have differing
+masters, which can be reconciled in merge as usual.
 
 ----
 
