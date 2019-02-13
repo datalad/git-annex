@@ -1,0 +1,17 @@
+Not a lot of coding the past few days, but a lot of skull sweat!
+
+I've been working through the design for the [[todo/import_tree]] feature,
+and I think I finally have a design that I'm happy with. There were some
+very challenging race conditions, and so import tree may only be safely
+able to be implemented for a few remotes; S3 (with versioning enabled),
+directory, maybe webdav and I hope adb. Work on this included finding
+equivilant race conditions in git's update of the worktree, which do
+turn out to exist if you go looking, but have much narrower time
+windows there.
+
+And I'll be running a tutorial for people who want to
+learn about git-annex internals at the code level, to start development or
+be better able to design their own features. That's in Montreal, March
+26th-27th (8 hours total), hosted at McGill university. There may be one or
+two seats left, so if you are interested in attending, please get in touch
+with me by email. Haskell is not a prerequisite.
