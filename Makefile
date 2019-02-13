@@ -82,7 +82,7 @@ retest: git-annex
 
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
-	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -c --cpp -c -traditional -c --include=dist/build/autogen/cabal_macros.h $$f; done) 2>/dev/null | sort > tags
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -XLambdaCase -XPackageImports -c --cpp -c -traditional -c --include=dist/build/git-annex/autogen/cabal_macros.h $$f; done) 2>/dev/null | sort > tags
 
 mans: Build/MakeMans
 	./Build/MakeMans
