@@ -1,0 +1,22 @@
+Hello!
+
+
+In relation to the description of `--used-refspec` in the docs https://git-annex.branchable.com/git-annex-unused/ 
+I was wondering why it is possible to add a positive refspec without the full path of the ref e.g.
+
+`git annex unused --used-refspec  +master`
+
+while for exclusions (negative refspec) it seems to be necessary to specify the full path, e.g.
+
+`git annex unused --used-refspec  '+*:-refs/heads/master'`
+
+or globbing:
+
+`git annex unused --used-refspec  '+*:-*master'`
+
+I guess the negative form of 
+
+> Each + without a glob adds the literal value to the set.  For example, "+HEAD^" adds "HEAD^".
+
+is actually (intentionally) missing. 
+If so, this might be worth noting in the docs.
