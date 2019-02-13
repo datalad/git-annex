@@ -99,7 +99,9 @@ import tree, and an export then overwrites it with something else.
 One solution would be to only allow one of importtree or exporttree
 to a given remote. This reduces the use cases a lot though, and perhaps
 so far that the import tree feature is not worth building. The adb
-special remote needs both.
+special remote needs both. Also, such a limitation seems like one that
+users might try to work around by initializing two remotes using the same
+data and trying to use one for import and the other for export.
 
 Really fixing this race needs locking or an atomic operation. Locking seems
 unlikely to be a portable enough solution.
@@ -153,8 +155,12 @@ that git-annex did not know the file already had.
 with version-id-marker set to the previous version of the file,
 should list only the previous and current versions; if there's an
 intermediate version then the race occurred and it could roll the change
-back, or otherwise recover the overwritten version.
-(Note that there's a risk of a second race occuring during rollback.)
+back, or otherwise recover the overwritten version. This could be done at
+import time, to detect a previous race, and recover from it; importing
+a tree with the file(s) that were overwritten due to the race, leading to a
+tree import conflict that the user can resolve. This likely generalizes
+to importing a sequence of trees, so each version written to S3 gets
+imported.
 
 ----
 
@@ -194,7 +200,7 @@ importing from the remote.
 Pulling all of the above together, this is an extension to the
 ExportActions api.
 
-	listContents :: Annex [(ExportLocation, ContentIdentifier)]
+	listContents :: Annex (Tree [(ExportLocation, ContentIdentifier)])
 
 	getContentIdentifier :: ExportLocation -> Annex (Maybe ContentIdentifier)
 	
@@ -202,21 +208,43 @@ ExportActions api.
 
 	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Maybe ContentIdentifier)
 
+listContents finds the current set of files that are stored in the remote,
+some of which may have been written by other programs than git-annex,
+along with their content identifiers. It returns a list of those, often in
+a single node tree.
+
+listContents may also find past versions of files that are stored in the
+remote, when it supports storing multiple versions of files. Since it
+returns a tree of lists of files, it can represent anything from a linear
+history to a full branching version control history.
+
 retrieveExportWithContentIdentifier is used when downloading a new file from 
 the remote that listContents found. retrieveExport can't be used because
 it has a Key parameter and the key is not yet known in this case.
 (The callback generating a key will let eg S3 record the S3 version id for
 the key.)
 
+retrieveExportWithContentIdentifier should detect when the file it's
+downloaded may not match the requested content identifier (eg when
+something else wrote to it), and fail in that case.
+
 storeExportWithContentIdentifier is used to get the content identifier
 corresponding to what it stores. It can either get the content
 identifier in reply to the store (as S3 does with versioning), or it can
 store to a temp location, get the content identifier of that, and then
-rename the content into place. When there's a race with a concurrent
-writer, it needs to avoid getting the wrong ContentIdentifier for data
-written by the other writer.
+rename the content into place.
 
-TODO what's needed to work around the other race condition discussed above?
+storeExportWithContentIdentifier must avoid overwriting any file that may
+have been written to the remote by something else (unless that version of
+the file can later be recovered by listContents), so it will typically
+need to query for the content identifier before moving the new content
+into place.
+
+storeExportWithContentIdentifier needs to handle the case when there's a
+race with a concurrent writer. It needs to avoid getting the wrong
+ContentIdentifier for data written by the other writer. It may detect such
+races and fail, or it could succeed and overwrite the other file, so long
+as it can later be recovered by listContents.
 
 ----
 
