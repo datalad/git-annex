@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2019-02-13T16:48:08Z"
+ content="""
++1 for this.  Maybe, add a config option to pipe a file through a particular program before sending it to a remote?
+"""]]
