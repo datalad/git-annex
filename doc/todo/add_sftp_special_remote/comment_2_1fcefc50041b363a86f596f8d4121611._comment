@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-02-13T16:46:25Z"
+ content="""
+This can be implemented as an external special remote in Python with a combination of https://github.com/althonos/fs.sshfs and  https://github.com/Lykos153/AnnexRemote .  Implementing using https://www.pyfilesystem.org/ would make a remote that works with a range of filesystems ( https://www.pyfilesystem.org/page/index-of-filesystems/ ).   I don't have time right now but maybe you can try.
+"""]]
