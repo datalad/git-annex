@@ -872,7 +872,8 @@ Here are all the supported configuration settings.
   Maximum length of what is considered a filename extension when adding a
   file to a backend that preserves filename extensions. The default length
   is 4, which allows extensions like "jpeg". The dot before the extension
-  is not counted part of its length.
+  is not counted part of its length.  At most two extensions at the end of
+  a filename will be preserved, e.g. .gz or .tar.gz .
 
 * `annex.diskreserve`
 
