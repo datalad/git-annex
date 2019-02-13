@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Grothausmann.Roman@343b033fef650d362015d5593ec935121340e082"
+ nickname="Grothausmann.Roman"
+ avatar="http://cdn.libravatar.org/avatar/7883b2b02c31cc2b5e8672cfea4ec9da"
+ subject="Up-vote for sftp special remote"
+ date="2019-02-13T12:11:05Z"
+ content="""
+I'd really welcome an __sftp special remote__ because SFTP it is the only officially allowed way for our institution to exchange data with external collaborators and I had no luck using the [gvfs](https://github.com/grawity/code/blob/master/net/git-annex-remote-gvfs) approach. 
+
+Even without an sftp special remote, it would be great to have some short walkthrough how to use SFTP with git-annex (if SFTP is currently actually possible with e.g. gvfs).
+
+"""]]

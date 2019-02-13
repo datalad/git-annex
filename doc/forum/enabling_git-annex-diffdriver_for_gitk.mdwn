@@ -1,0 +1,5 @@
+If `git` with `git-annex-diffdriver` is properly configured and works, is it possible to also get `gitk` to show these diffs?
+
+It seems that `gitk` in general does not apply diff-filters to symlinks and I was not able to find a way to make `gitk` show the same as `git` with `git-annex-diffdriver` does.
+
+Are there some tricks to make that possible somehow?
