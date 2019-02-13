@@ -1,0 +1,1 @@
+Current special remote protocol works on one file at a time.  With some remotes, a batch operation can be more efficient, e.g. querying the status of many URLs in one API call.  It would be good if special remotes could optionally implement batch versions of their operations, and these versions were used by batch-mode git-annex commands.
