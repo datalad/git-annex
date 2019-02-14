@@ -1,0 +1,27 @@
+I just created a repo and added some content as described here:
+https://writequit.org/articles/getting-started-with-git-annex.html
+
+Some of the directories I added ended up fine, while others have lot's of broken symlinks.
+
+    git annex fsck file
+gives me :
+
+    ** No known copies exist of file
+    failed
+    git-annex: fsck: 1 failed
+
+
+and
+
+    git annex get file
+
+gives me:
+
+    get file (not available) 
+      No other repository is known to contain the file.
+    failed
+    git-annex: get: 1 failed
+
+
+Any ideas on how to troubleshoot further?
+Thanks!
