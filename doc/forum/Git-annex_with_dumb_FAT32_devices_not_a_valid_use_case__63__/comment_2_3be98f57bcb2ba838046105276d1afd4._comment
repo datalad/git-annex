@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="chocolate.camera@ec2ecab153906be21ac5f36652c33786ad0e0b60"
+ nickname="chocolate.camera"
+ avatar="http://cdn.libravatar.org/avatar/4f00dfc3ad590ef7492788b854ceba78"
+ subject="comment 2"
+ date="2019-02-14T12:46:17Z"
+ content="""
+By device, I meant the computer-like device that needs to be able to read the files. Say, an MP3 player for example.
+
+>  used as a directory special remote […] you can't just plug the drive into random computer and read files
+
+Well, that rules it out since, the device being dumb, it does need to be able to find the real files at their standard path and be able to read them as is.
+
+Chunking is not a requirement, though, since the device's software, only supporting FAT32, would not support or expect files that cannot exist in FAT32.
+
+> Next option is to use direct mode.
+
+Direct mode is deprecated.
+"""]]
