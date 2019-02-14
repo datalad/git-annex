@@ -23,5 +23,9 @@ gives me:
     git-annex: get: 1 failed
 
 
+The objects directory is about the same size as the repo was before I annexed it.
+
 Any ideas on how to troubleshoot further?
+
+
 Thanks!
