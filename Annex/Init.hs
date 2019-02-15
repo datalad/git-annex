@@ -294,3 +294,4 @@ enableDirectMode = unlessM isDirect $ do
 	forM_ l $ \f ->
 		maybe noop (`toDirect` f) =<< isAnnexLink f
 	void $ liftIO clean
+	setDirect True
