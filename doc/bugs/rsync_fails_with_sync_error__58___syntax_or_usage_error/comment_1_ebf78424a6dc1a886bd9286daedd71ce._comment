@@ -4,7 +4,7 @@
  date="2018-12-03T17:40:15Z"
  content="""
 This is the same problem as
-<http://git-annex.branchable.com/bugs/Assertion___96__cnt___60_____40__sizeof___40____95__nl__95__value__95__type__95__LC__95__TIME__41_____47___sizeof___40____95__nl__95__value__95__type__95__LC__95__TIME__91__0__93____41____41____39___failed./>
+<http://git-annex.branchable.com/bugs/loadlocale_error_with_standalone_build/>
 and I'll bet your git-annex on the remote machine was installed from the
 standalone tarball too?
 """]]
