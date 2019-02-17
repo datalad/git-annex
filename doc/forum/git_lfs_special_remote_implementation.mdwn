@@ -1,0 +1,9 @@
+I'm thinking about how to implement a special remote that uses git-lfs (no promises to get it done).  I'm not sure if my thoughts are good since I've barely used remotes at all so far!
+
+I'm not sure when annex executes the various remote protocol commands (presumably it issues TRANSFER when pushing to the remote?), but I'm thinking something like this might be appropriate:
+
+The special remote is implemented as a local git-lfs working tree, which has not necessarily been pushed to an upstream remote supporting LFS (like gitlab or github).  Then, "TRANSFER" just arranges to copy the file to a file in the LFS repo -- named after the provided key -- and then `git add`, ensuring LFS is used.  Nothing is pushed from the git repo that implements the special remote, until the user explicitly does so.
+
+Does that sound sane and in keeping with how remotes work?
+
+Why do I want it to work this way?  Because if each TRANSFER is supposed to result in something stored, it seems odd to git push for every file stored to the remote.  As far as I can see, there's no FINISHED hook analogous to PREPARE at which time (after "all the files" are transferred, whatever that would mean) the special remote might choose to git push the LFS repo to gitlab/github?  If there were, I might choose instead to make the local working copy a hidden implementation detail of the special remote, which users of the LFS remote never directly see or use.
