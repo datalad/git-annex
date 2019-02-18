@@ -709,7 +709,9 @@ onLocalFast repo r a = onLocal repo r $ Annex.BranchState.disableUpdate >> a
 rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
 rsyncOrCopyFile rsyncparams src dest p =
 #ifdef mingw32_HOST_OS
-	dorsync
+	-- rsync is only available on Windows in some inatallation methods,
+	-- and is not strictly needed here, so don't use it.
+	docopy
   where
 #else
 	ifM (sameDeviceIds src dest) (docopy, dorsync)
