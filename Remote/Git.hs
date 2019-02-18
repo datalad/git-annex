@@ -42,9 +42,7 @@ import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
 import Utility.Metered
-#ifndef mingw32_HOST_OS
 import Utility.CopyFile
-#endif
 import Utility.Env
 import Utility.Batch
 import Utility.SimpleProtocol
