@@ -55,7 +55,7 @@ git_annex command params = git_annex' command params >>= \case
 
 -- For when git-annex is expected to fail.
 git_annex_shouldfail :: String -> [String] -> IO Bool
-git_annex_shouldfail command params = git_annex' command params >>= \case
+git_annex_shouldfail command params = git_annex' command ("-q":params) >>= \case
 	Right () -> return False
 	Left _ -> return True
 
@@ -67,7 +67,7 @@ git_annex' command params = do
 	run = GitAnnex.run dummyTestOptParser
 		dummyTestRunner
 		dummyBenchmarkGenerator
-		(command:"-q":params)
+		(command:params)
 	dummyTestOptParser = pure mempty
 	dummyTestRunner _ = noop
 	dummyBenchmarkGenerator _ _ = return noop
