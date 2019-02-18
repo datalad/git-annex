@@ -718,13 +718,13 @@ rsyncOrCopyFile rsyncparams src dest p =
   where
 	sameDeviceIds a b = (==) <$> getDeviceId a <*> getDeviceId b
 	getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
-	docopy = liftIO $ watchFileSize dest p $
-		copyFileExternal CopyTimeStamps src dest
-#endif
 	dorsync = do
 		oh <- mkOutputHandler
 		Ssh.rsyncHelper oh (Just p) $
 			rsyncparams ++ [File src, File dest]
+#endif
+	docopy = liftIO $ watchFileSize dest p $
+		copyFileExternal CopyTimeStamps src dest
 
 commitOnCleanup :: Git.Repo -> Remote -> Annex a -> Annex a
 commitOnCleanup repo r a = go `after` a
