@@ -290,12 +290,12 @@ isPointerFile f = catchDefaultIO Nothing $ withFile f ReadMode $ \h ->
 isLinkToAnnex :: S.ByteString -> Bool
 isLinkToAnnex s = p `S.isInfixOf` s
 #ifdef mingw32_HOST_OS
-	-- '/' is still used inside pointer files on Windows, not the native
-	-- '\'
+	-- '/' is used inside pointer files on Windows, not the native '\'
 	|| p' `S.isInfixOf` s
 #endif
   where
-	p = toRawFilePath (pathSeparator:objectDir)
+	sp = (pathSeparator:objectDir)
+	p = toRawFilePath sp
 #ifdef mingw32_HOST_OS
-	p' = toRawFilePath ('/':objectDir)
+	p' = toRawFilePath (toInternalGitPath sp)
 #endif

@@ -29,6 +29,8 @@ git-annex (7.20190130) UNRELEASED; urgency=medium
     package.
   * init: Fix bug when direct mode needs to be enabled on a crippled
     filesystem, that left the repository in indirect mode.
+  * Fix path separator bug on Windows that completely broke git-annex
+    since version 7.20190122.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jan 2019 12:30:22 -0400
 
