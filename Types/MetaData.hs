@@ -335,24 +335,26 @@ fromRemoteMetaData (RemoteMetaData u (MetaData m)) = MetaData $
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.
- - It's unlikely that more than 100 fields of metadata will be used. -}
+ - It's unlikely that more than 10 fields of metadata will be used. -}
 instance Arbitrary MetaData where
-	arbitrary = MetaData . M.filterWithKey legal . M.fromList
-		<$> resize 10 (listOf arbitrary)
+	arbitrary = MetaData . M.fromList <$> resize 10 (listOf arbitrary)
 	  where
-		legal k _v = legalField $ fromMetaField k
 
 instance Arbitrary MetaValue where
 	arbitrary = MetaValue 
 		<$> arbitrary
-		-- Avoid non-ascii metavalues because fully arbitrary
+		-- Avoid non-ascii MetaValues because fully arbitrary
 		-- strings may not be encoded using the filesystem
-		-- encoding, which is norally applied to all input.
+		-- encoding, which is normally applied to all input.
 		<*> (encodeBS <$> arbitrary `suchThat` all isAscii)
 
 instance Arbitrary MetaField where
 	arbitrary = MetaField . CI.mk
-		<$> (T.pack <$> arbitrary) `suchThat` legalField
+		-- Avoid non-ascii MetaFields because fully arbitrary
+		-- strings may not be encoded using the filesystem
+		-- encoding, which is normally applied to all input.
+		<$> (T.pack <$> arbitrary `suchThat` all isAscii)
+			`suchThat` legalField
 
 prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and
