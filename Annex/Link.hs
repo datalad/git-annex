@@ -27,6 +27,7 @@ import qualified Git.Env
 import qualified Git
 import Git.Types
 import Git.FilePath
+import Git.Config
 import Annex.HashObject
 import Annex.InodeSentinal
 import Utility.FileMode
@@ -203,7 +204,12 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 			let updatetmpindex = do
 				r' <- Git.Env.addGitEnv r Git.Index.indexEnv 
 					=<< Git.Index.indexEnvVal tmpindex
-				Git.UpdateIndex.refreshIndex r' $ \feed ->
+				-- Avoid git warning about CRLF munging.
+				let r'' = r' { gitGlobalOpts = gitGlobalOpts r' ++
+					[ Param "-c"
+					, Param $ "core.safecrlf=" ++ boolConfig False
+					] }
+				Git.UpdateIndex.refreshIndex r'' $ \feed ->
 					forM_ l $ \(f', checkunmodified) ->
 						whenM checkunmodified $
 							feed f'

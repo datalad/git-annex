@@ -27,3 +27,5 @@ returned Nothing which should not happen in this case.
 
 So, the next step will be to build git-annex on Windows and instrument
 `stageDirect` to work out which thing it depends on has broken..
+
+> [[fixed|done]] --[[Joey]] 
