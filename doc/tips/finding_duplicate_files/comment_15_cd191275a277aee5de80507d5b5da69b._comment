@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="chris@a3ac8acdfdc53fa269c7b9bda4306c25b92d6624"
+ nickname="chris"
+ avatar="http://cdn.libravatar.org/avatar/eb7f91e7b7b3457ca57701a40f920f2a"
+ subject="Files with spaces"
+ date="2019-02-19T14:04:04Z"
+ content="""
+For anyone dealing with files with spaces, try this:
+
+```
+git annex find --include '*' --format='${escaped_file} ${escaped_key}\n' | \
+    sort -k2 | uniq --all-repeated=separate -f1 | \
+    sed 's/ [^ ]*$//'
+```
+
+Using `escaped_file` escapes the filename, which will avoid whitespace so the rest of the pipe commands work correctly. You'll need to deal with the files being escaped in the final output, but you'll see them correctly. This worked for me.
+"""]]
