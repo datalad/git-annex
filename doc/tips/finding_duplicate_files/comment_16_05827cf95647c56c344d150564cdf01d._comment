@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 16"
+ date="2019-02-19T14:13:48Z"
+ content="""
+As the key never contains spaces, it is better to have the key first. Then the filename is anything after key(plus separator) up to the newline.
+"""]]
