@@ -11,6 +11,7 @@ import Utility.Exception
 
 import Network.Socket
 import Data.Word
+import Data.Memory.Endian
 import Control.Applicative
 import Prelude
 
@@ -67,8 +68,18 @@ embeddedIpv4 v = case v of
 	(0x64,0xff9b,0,0,0,0,a,b) -> Just (toipv4 a b)
 	_ -> Nothing
   where
-	toipv4 a b = htonl $ fromIntegral a * (2^halfipv4bits) + fromIntegral b
 	halfipv4bits = 16 :: Word32
+	toipv4 a b =
+		let n = fromIntegral a * (2^halfipv4bits) + fromIntegral b
+		-- HostAddress is in network byte order, but n is using host
+		-- byte order so needs to be swapped.
+		-- Could just use htonl n, but it's been dropped from the
+		-- network library, so work around by manually swapping.
+		in case getSystemEndianness of
+			LittleEndian ->
+				let (b1, b2, b3, b4) = hostAddressToTuple n
+				in tupleToHostAddress (b4, b3, b2, b1)
+			BigEndian -> n
 
 {- Given a string containing an IP address, make a function that will
  - match that address in a SockAddr. Nothing when the address cannot be
