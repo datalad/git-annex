@@ -1,5 +1,7 @@
-git-annex (7.20190130) UNRELEASED; urgency=medium
+git-annex (7.20190219) upstream; urgency=medium
 
+  * init: Fix bug when direct mode needs to be enabled on a crippled
+    filesystem, that left the repository in indirect mode.
   * Fix false positive in export conflict detection, that occurred
     when the same tree was exported by multiple clones. Previous fix was
     incomplete.
@@ -7,6 +9,8 @@ git-annex (7.20190130) UNRELEASED; urgency=medium
     fails, fall back to trying to retrieve from the exported tree.
     This allows downloads of files that were exported to such a remote
     before versioning was enabled on it.
+  * Fix path separator bug on Windows that completely broke git-annex
+    since version 7.20190122.
   * Improved speed of S3 remote by only loading S3 creds once.
   * Display progress bar when getting files from export remotes.
   * Fix race in cleanup of othertmp directory that could result in a failure
@@ -25,16 +29,12 @@ git-annex (7.20190130) UNRELEASED; urgency=medium
     urls get truncated on those. Fail in a better way in this case,
     and avoid failing when removing such files from the export, so
     after the user has renamed the problem files the export will succeed.
-  * Added NetworkBSD build flag to deal with Network.BSD moving to a new
-    package.
-  * init: Fix bug when direct mode needs to be enabled on a crippled
-    filesystem, that left the repository in indirect mode.
-  * Fix path separator bug on Windows that completely broke git-annex
-    since version 7.20190122.
   * On Windows, avoid using rsync for local copies, since rsync is not
     always available there.
+  * Added NetworkBSD build flag to deal with Network.BSD moving to a new
+    package.
 
- -- Joey Hess <id@joeyh.name>  Wed, 30 Jan 2019 12:30:22 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 19 Feb 2019 11:12:45 -0400
 
 git-annex (7.20190129) upstream; urgency=medium
 
