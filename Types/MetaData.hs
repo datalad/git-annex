@@ -136,7 +136,7 @@ instance MetaSerializable MetaField where
 instance MetaSerializable MetaValue where
 	serialize (MetaValue isset v) =
 		serialize isset <>
-		if B8.any (== ' ') v || "!" `B8.isPrefixOf` v
+		if B8.any (`elem` [' ', '\r', '\n']) v || "!" `B8.isPrefixOf` v
 			then "!" <> toB64' v
 			else v
 	deserialize b = do
