@@ -15,7 +15,6 @@ module Logs.ContentIdentifier.Pure
 
 import Annex.Common
 import Logs.MapLog
-import Data.Int
 import Types.Remote (ContentIdentifier(..))
 import Utility.Base64
 
