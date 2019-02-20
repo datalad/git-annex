@@ -128,11 +128,9 @@ This is an extension to the ExportActions api.
 
 	listContents :: Annex (Tree [(ExportLocation, ContentIdentifier)])
 
-	getContentIdentifier :: ExportLocation -> Annex (Maybe ContentIdentifier)
-	
 	retrieveExportWithContentIdentifier :: ExportLocation -> ContentIdentifier -> (FilePath -> Annex Key) -> MeterUpdate -> Annex (Maybe Key)
 
-	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> Maybe ContentIdentifier -> MeterUpdate -> Annex (Maybe ContentIdentifier)
 
 listContents finds the current set of files that are stored in the remote,
 some of which may have been written by other programs than git-annex,
@@ -161,12 +159,11 @@ the content identifier in reply to the store (as S3 does with versioning),
 or it can store to a temp location, get the content identifier of that,
 and then rename the content into place.
 
-storeExportWithContentIdentifier must avoid overwriting any file that may
-have been written to the remote by something else (unless that version of
-the file can later be recovered by listContents), so it will typically
-need to query for the content identifier before moving the new content
-into place. FIXME: How does it know when it's safe to overwrite a file?
-Should it be passed the content identifier that it's allowed to overwrite?
+storeExportWithContentIdentifier must avoid overwriting any existing file
+on the remote, unless the file has the same content identifier that's passed
+to it, to avoid overwriting a file that was modified by something else.
+But alternatively, if listContents can later recover the modified file, it can
+overwrite the modified file.
 
 storeExportWithContentIdentifier needs to handle the case when there's a
 race with a concurrent writer. It needs to avoid getting the wrong
