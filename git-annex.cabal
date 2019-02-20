@@ -929,7 +929,7 @@ Executable git-annex
     Remote.Helper.Chunked
     Remote.Helper.Chunked.Legacy
     Remote.Helper.Encryptable
-    Remote.Helper.Export
+    Remote.Helper.ExportImport
     Remote.Helper.Git
     Remote.Helper.Hooks
     Remote.Helper.Messages

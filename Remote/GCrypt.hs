@@ -38,7 +38,7 @@ import Remote.Helper.Git
 import Remote.Helper.Encryptable
 import Remote.Helper.Special
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Remote.Helper.Ssh as Ssh
 import Utility.Metered
 import Annex.UUID
@@ -61,6 +61,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = gCryptSetup
 	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	}
 
 chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -119,6 +120,7 @@ gen' r u c gc = do
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = repoCheap r
 		, exportActions = exportUnsupported
+		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

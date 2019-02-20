@@ -19,7 +19,7 @@ import Config
 import Git.Config (isTrue, boolConfig)
 import Git.Env
 import Remote.Helper.Special
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Annex.Export
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
@@ -48,6 +48,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = externalSetup
 	, exportSupported = checkExportSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -119,6 +120,7 @@ gen r u c gc
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, exportActions = exportactions
+			, importActions = importUnsupported
 			, whereisKey = towhereis
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

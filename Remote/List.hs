@@ -18,7 +18,7 @@ import Types.Remote
 import Annex.UUID
 import Remote.Helper.Hooks
 import Remote.Helper.ReadOnly
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Git
 import qualified Git.Config
 

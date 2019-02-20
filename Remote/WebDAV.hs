@@ -34,7 +34,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.Http
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
@@ -53,6 +53,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = webdavSetup
 	, exportSupported = exportIsSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -88,6 +89,7 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 					removeExportDirectoryDav this
 				, renameExport = renameExportDav this
 				}
+			, importActions = importUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

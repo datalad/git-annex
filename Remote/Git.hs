@@ -48,7 +48,7 @@ import Utility.Batch
 import Utility.SimpleProtocol
 import Remote.Helper.Git
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import qualified Remote.P2P
@@ -72,6 +72,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = gitSetup
 	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	}
 
 list :: Bool -> Annex [Git.Repo]
@@ -165,6 +166,7 @@ gen r u c gc
 			, checkPresent = inAnnex new st
 			, checkPresentCheap = repoCheap r
 			, exportActions = exportUnsupported
+			, importActions = importUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing

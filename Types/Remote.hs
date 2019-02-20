@@ -263,7 +263,7 @@ data ImportActions a = ImportActions
 	--
 	-- May also find old versions of files that are still stored in the
 	-- remote, and return a ContentHistory with multiple nodes.
-	{ listContents :: a (ContentHistory [(ExportLocation, ContentIdentifier)])
+	{ listContents :: a (Maybe (ContentHistory [(ExportLocation, ContentIdentifier)]))
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has the requested ContentIdentifier.
 	--

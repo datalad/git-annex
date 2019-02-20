@@ -1,13 +1,13 @@
-{- exports to remotes
+{- Helper to make remotes support export and import (or not).
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE FlexibleInstances #-}
 
-module Remote.Helper.Export where
+module Remote.Helper.ExportImport where
 
 import Annex.Common
 import Types.Remote
@@ -41,6 +41,20 @@ instance HasExportUnsupported (ExportActions Annex) where
 		, removeExport = \_ _ -> return False
 		, removeExportDirectory = Just $ \_ -> return False
 		, renameExport = \_ _ _ -> return False
+		}
+
+-- | Use for remotes that do not support imports.
+class HasImportUnsupported a where
+	importUnsupported :: a
+
+instance HasImportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) where
+	importUnsupported = \_ _ -> return False
+
+instance HasImportUnsupported (ImportActions Annex) where
+	importUnsupported = ImportActions
+		{ listContents = return Nothing
+		, retrieveExportWithContentIdentifier = \_ _ _ _ -> return Nothing
+		, storeExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
 		}
 
 exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool

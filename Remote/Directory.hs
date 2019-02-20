@@ -26,7 +26,7 @@ import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
@@ -40,6 +40,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -73,6 +74,7 @@ gen r u c gc = do
 				, removeExportDirectory = Nothing
 				, renameExport = renameExportM dir
 				}
+			, importActions = importUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

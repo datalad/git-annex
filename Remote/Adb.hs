@@ -17,7 +17,7 @@ import qualified Git
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Annex.UUID
 import Utility.Metered
 
@@ -35,6 +35,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = adbSetup
 	, exportSupported = exportIsSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -61,6 +62,7 @@ gen r u c gc = do
 			, removeExportDirectory = Just $ removeExportDirectoryM serial adir
 			, renameExport = renameExportM serial adir
 			}
+		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

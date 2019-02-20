@@ -46,7 +46,7 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Http
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
@@ -72,6 +72,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = s3Setup
 	, exportSupported = exportIsSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -112,6 +113,7 @@ gen r u c gc = do
 				, removeExportDirectory = Nothing
 				, renameExport = renameExportS3 hdl this info
 				}
+			, importActions = importUnsupported
 			, whereisKey = Just (getPublicWebUrls u info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
