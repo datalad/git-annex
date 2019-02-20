@@ -6,6 +6,16 @@ The command could be `git annex import --from remote`
 See [[design/importing_trees_from_special_remotes]] for current design for
 this.
 
+## implementation notes
+
+* Database.ContentIdentifier needs a way to update the database with
+  information coming from the git-annex branch. This will allow multiple
+  clones to import from the same remote, and share content identifier
+  information amoung them.
+
+  It will only need to be updated when listContents returns a
+  ContentIdentifier that is not already known in the database.
+
 ## race conditions
 
 (Some thoughts about races that the design should cover now, but kept here
