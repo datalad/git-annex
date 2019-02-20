@@ -4,6 +4,12 @@ and content from the tree.
 
 (See also [[todo/export]] and [[todo/dumb, unsafe, human-readable_backend]])
 
+Note that this document was written with the assumption that only git-annex
+is writing to the special remote. But
+[[importing_trees_from_special_remotes]] invalidates that assumption,
+and needed to add some additional things to deal with it. See that link for
+details.
+
 [[!toc ]]
 
 ## configuring a special remote for tree export

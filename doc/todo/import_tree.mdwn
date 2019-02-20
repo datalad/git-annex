@@ -3,80 +3,13 @@ and the remote allows files to somehow be edited on it, then there ought
 to be a way to import the changes back from the remote into the git repository.
 The command could be `git annex import --from remote`
 
-It would find changed/new/deleted files on the remote.
-Download the changed/new files and inject into the annex. 
-Generate a new treeish, with parent the treeish that was exported,
-that has the modifications in it.
+See [[design/importing_trees_from_special_remotes]] for current design for
+this.
 
-Updating the working copy is then done by merging the import treeish.
-This way, conflicts will be detected and handled as normal by git.
+## race conditions
 
-## content identifiers
-
-The remote is responsible for collecting a list of
-files currently in it, along with some content identifier. That data is
-sent to git-annex. git-annex keeps track of which content identifier(s) map
-to which keys, and uses the information to determine when a file on the
-remote has changed or is new.
-
-git-annex can simply build git tree objects as the file list
-comes in, looking up the key corresponding to each content identifier
-(or downloading the content from the remote and adding it to the annex
-when there's no corresponding key yet). It might be possible to avoid
-git-annex buffering much tree data in memory.
-
-----
-
-A good content identifier needs to:
-
-* Be stable, so when a file has not changed, the content identifier
-  remains the same.
-* Change when a file is modified.
-* Be as unique as possible, but not necessarily fully unique.  
-  A hash of the content would be ideal.
-  A (size, mtime, inode) tuple is as good a content identifier as git uses in
-  its index.
-
-git-annex will need a way to get the content identifiers of files
-that it stores on the remote when exporting a tree to it, so it can later
-know if those files have changed.
-
-----
-
-The content identifier needs to be stored somehow for later use.
-
-It would be good to store the content identifiers only locally, if
-possible.
-
-Would local storage pose a problem when multiple repositories import from
-the same remote? In that case, perhaps different trees would be imported,
-and merged into master. So the two repositories then have differing
-masters, which can be reconciled in merge as usual.
-
-Since exporttree remotes don't have content identifier information yet, it
-needs to be collected the first time import tree is used. (Or import
-everything, but that is probably too expensive). Any modifications made to
-exported files before the first import tree would not be noticed. Seems
-acceptible as long as this only affects exporttree remotes created before
-this feature was added.
-
-What if repo A is being used to import tree from R for a while, and the
-user gets used to editing files on R and importing them. Then they stop
-using A and switch to clone B. It would not have the content identifier
-information that A did. It seems that in this case, B needs to re-download
-everything, to build up the map of content identifiers.
-(Anything could have changed since the last time A imported).
-That seems too expensive!
-
-Would storing content identifiers in the git-annex branch be too
-expensive? Probably not.. For S3 with versioning a content identifier is
-already stored. When the content identifier is (mtime, size, inode),
-that's a small amount of data. The maximum size of a content identifier
-could be limited to the size of a typical hash, and if a remote for some
-reason gets something larger, it could simply hash it to generate
-the content identifier.
-
-## race conditions TODO
+(Some thoughts about races that the design should cover now, but kept here
+for reference.)
 
 A file could be modified on the remote while
 it's being exported, and if the remote then uses the mtime of the modified
@@ -176,75 +109,6 @@ file got lost:
 	perl -e 'open (OUT, ">>foo") || die "$!"; sleep(10); while (<>) { print OUT $_ }'
 
 Since this is acceptable in git, I suppose we can accept it here too..
-
-----
-
-If multiple repos can access the remote at the same time, then there's a
-potential problem when one is exporting a new tree, and the other one is
-importing from the remote.
-
-> This can be reduced to the same problem as exports of two
-> different trees to the same remote, which is already handled with the
-> export log.
-> 
-> Once a tree has been imported from the remote, it's
-> in the same state as exporting that same tree to the remote, so
-> update the export log to say that the remote has that treeish exported
-> to it. A conflict between two export log entries will be handled as
-> usual, with the user being prompted to re-export the tree they want
-> to be on the remote. (May need to reword that prompt.)
-> --[[Joey]]
-
-## api design
-
-Pulling all of the above together, this is an extension to the
-ExportActions api.
-
-	listContents :: Annex (Tree [(ExportLocation, ContentIdentifier)])
-
-	getContentIdentifier :: ExportLocation -> Annex (Maybe ContentIdentifier)
-	
-	retrieveExportWithContentIdentifier :: ExportLocation -> ContentIdentifier -> (FilePath -> Annex Key) -> MeterUpdate -> Annex (Maybe Key)
-
-	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Maybe ContentIdentifier)
-
-listContents finds the current set of files that are stored in the remote,
-some of which may have been written by other programs than git-annex,
-along with their content identifiers. It returns a list of those, often in
-a single node tree.
-
-listContents may also find past versions of files that are stored in the
-remote, when it supports storing multiple versions of files. Since it
-returns a tree of lists of files, it can represent anything from a linear
-history to a full branching version control history.
-
-retrieveExportWithContentIdentifier is used when downloading a new file from 
-the remote that listContents found. retrieveExport can't be used because
-it has a Key parameter and the key is not yet known in this case.
-(The callback generating a key will let eg S3 record the S3 version id for
-the key.)
-
-retrieveExportWithContentIdentifier should detect when the file it's
-downloaded may not match the requested content identifier (eg when
-something else wrote to it), and fail in that case.
-
-storeExportWithContentIdentifier is used to get the content identifier
-corresponding to what it stores. It can either get the content
-identifier in reply to the store (as S3 does with versioning), or it can
-store to a temp location, get the content identifier of that, and then
-rename the content into place.
-
-storeExportWithContentIdentifier must avoid overwriting any file that may
-have been written to the remote by something else (unless that version of
-the file can later be recovered by listContents), so it will typically
-need to query for the content identifier before moving the new content
-into place.
-
-storeExportWithContentIdentifier needs to handle the case when there's a
-race with a concurrent writer. It needs to avoid getting the wrong
-ContentIdentifier for data written by the other writer. It may detect such
-races and fail, or it could succeed and overwrite the other file, so long
-as it can later be recovered by listContents.
 
 ----
 
