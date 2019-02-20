@@ -6,9 +6,10 @@ done
 
 ## step 2: default for new direct mode repositories
 
-Done when using the command line. The assistant still creates direct mode
-repositories though, and will need to enable annex.thin and adjusted
-unlocked branch instead.
+Done when using the command line to init in a crippled filesystem. 
+
+The assistant still creates direct mode repositories though,
+and will need to enable annex.thin and adjusted unlocked branch instead.
 
 ## step 3: auto-upgrade from direct mode
 
@@ -23,11 +24,17 @@ Here are some problems that need to be investigated first:
   - <http://git-annex.branchable.com/bugs/v6_appears_to_not_thin/>
   - <http://git-annex.branchable.com/bugs/git-annex-sync_sometimes_fails_in_submodule_in_V6_adjusted_branch/>
 
-Also need to wait until git-annex v7 is widely supported. In Debian stable
-seems reasonable. A direct mode repository may be used by multiple
-machines, some not supporting v7 and some that do.
+Note that direct mode repos with old git-annex interoperate with adjusted
+unlocked repos with new git-annex, so there is no need to wait for v7 to be
+widely supported.
 
-## step 4: automatic v5 to v7 upgrades
+## step 4: default for all new repositories
+
+Could probably happen fairly soon after default in direct mode.
+This is entirely new repositories that git-annex init is run in for the
+first time (no sibling git-annex branches).
+
+## step 5: automatic v5 to v7 upgrades
 
 Since v5 repos and v7 repos not using unlocked files are functionally
 almost identical, this is unlikely to break much. Unlocking files will of
@@ -35,18 +42,15 @@ course change behavior though.
 
 This needs to be deferred until every git-annex likely to be in use
 supports v7. A v5 repository may be used by multiple
-machines, some not supporting v7 and some that do. Probably around the same
-time auto-upgrade from direct mode is done then.
-
-## step 5: default for all new repositories
-
-Could probably happen fairly soon after default in direct mode.
+machines, some not supporting v7 and some that do. If one upgrades to v7
+and starts using unlocked files, those files won't be accessible on the old
+v5 machines.
 
 ## step 6: remove support for direct mode
 
 Will simplify a lot of code.
 
-## step 6: remove support for v5
+## step 7: remove support for v5
 
 This won't simplify much code, but maybe worth doing eventually.
 Best not to rush this, maybe in 5 years from when v7 is default?
