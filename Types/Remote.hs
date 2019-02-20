@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -21,10 +21,14 @@ module Types.Remote
 	, RetrievalSecurityPolicy(..)
 	, isExportSupported
 	, ExportActions(..)
+	, ContentIdentifier(..)
+	, ContentHistory(..)
+	, ImportActions(..)
 	)
 	where
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import Data.Ord
 
 import qualified Git
@@ -61,6 +65,8 @@ data RemoteTypeA a = RemoteType
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
 	-- check if a remote of this type is able to support export
 	, exportSupported :: RemoteConfig -> RemoteGitConfig -> a Bool
+	-- check if a remote of this type is able to support import
+	, importSupported :: RemoteConfig -> RemoteGitConfig -> a Bool
 	}
 
 instance Eq (RemoteTypeA a) where
@@ -102,8 +108,10 @@ data RemoteA a = Remote
 	-- Some remotes can checkPresent without an expensive network
 	-- operation.
 	, checkPresentCheap :: Bool
-	-- Some remotes support exports of trees.
+	-- Some remotes support export of trees.
 	, exportActions :: ExportActions a
+	-- Some remotes support import of trees.
+	, importActions :: ImportActions a
 	-- Some remotes can provide additional details for whereis.
 	, whereisKey :: Maybe (Key -> a [String])
 	-- Some remotes can run a fsck operation on the remote,
@@ -233,4 +241,65 @@ data ExportActions a = ExportActions
 	-- This may fail, if the file doesn't exist, or the remote does not
 	-- support renames.
 	, renameExport :: Key -> ExportLocation -> ExportLocation -> a Bool
+	}
+
+{- An identifier for content stored on a remote. It should be reasonably
+ - short since it is stored in the git-annex branch. -}
+newtype ContentIdentifier = ContentIdentifier S.ByteString
+	deriving (Eq, Ord, Show)
+
+{- Some remotes may support importing a history of versions of content that
+ - is stored in them. This is equivilant to a git commit history. -}
+data ContentHistory t
+	= ContentHistoryNode t
+	| ContentHistory
+		{ contentHistoryCurrent :: t
+		, contentHistoryPrev :: [ContentHistory t]
+		}
+
+data ImportActions a = ImportActions
+	-- Finds the current set of files that are stored in the remote,
+	-- along with their content identifiers.
+	--
+	-- May also find old versions of files that are still stored in the
+	-- remote, and return a ContentHistory with multiple nodes.
+	{ listContents :: a (ContentHistory [(ExportLocation, ContentIdentifier)])
+	-- Retrieves a file from the remote. Ensures that the file
+	-- it retrieves has the requested ContentIdentifier.
+	--
+	-- This has to be used rather than retrieveExport
+	-- when a special remote supports imports, since files on such a
+	-- special remote can be changed at any time.
+	, retrieveExportWithContentIdentifier 
+		:: ExportLocation
+		-> ContentIdentifier
+		-> (FilePath -> a Key)
+		-- ^ callback that generates a key from the downloaded content
+		-> MeterUpdate
+		-> a (Maybe Key)
+	-- Exports content to an ExportLocation, and returns the
+	-- ContentIdentifier corresponding to the content it stored.
+	--
+	-- This has to be used rather than storeExport when a special remote
+	-- supports imports, since files on such a special remote can be
+	-- changed at any time.
+	--
+	-- Since other things can modify the same file on the special
+	-- remote, this must take care to not overwrite such modifications,
+	-- and only overwrite a file that has the same ContentIdentifier
+	-- as was passed to it, unless listContents can recover an
+	-- overwritten file.
+	--
+	-- Also, since there can be concurrent writers, the implementation
+	-- needs to make sure that the ContentIdentifier it returns
+	-- corresponds to what it wrote, not to what some other writer
+	-- wrote.
+	, storeExportWithContentIdentifier
+		:: FilePath
+		-> Key
+		-> ExportLocation
+		-> [ContentIdentifier]
+		-- ^ old content that it's safe to overwrite
+		-> MeterUpdate
+		-> a (Maybe ContentIdentifier)
 	}

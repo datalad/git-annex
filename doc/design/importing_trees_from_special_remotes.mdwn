@@ -126,11 +126,11 @@ The situations to keep in mind are these:
 
 This is an extension to the ExportActions api.
 
-	listContents :: Annex (Tree [(ExportLocation, ContentIdentifier)])
+	listContents :: Annex (ContentHistory [(ExportLocation, ContentIdentifier)])
 
 	retrieveExportWithContentIdentifier :: ExportLocation -> ContentIdentifier -> (FilePath -> Annex Key) -> MeterUpdate -> Annex (Maybe Key)
 
-	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> Maybe ContentIdentifier -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
 
 listContents finds the current set of files that are stored in the remote,
 some of which may have been written by other programs than git-annex,
@@ -139,8 +139,8 @@ a single node tree.
 
 listContents may also find past versions of files that are stored in the
 remote, when it supports storing multiple versions of files. Since it
-returns a tree of lists of files, it can represent anything from a linear
-history to a full branching version control history.
+returns a history tree of lists of files, it can represent anything from a
+linear history to a full branching version control history.
 
 retrieveExportWithContentIdentifier is used when downloading a new file from 
 the remote that listContents found. retrieveExport can't be used because
