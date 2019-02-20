@@ -870,6 +870,7 @@ Executable git-annex
     Logs.Chunk
     Logs.Chunk.Pure
     Logs.Config
+    Logs.ContentIdentifier
     Logs.ContentIdentifier.Pure
     Logs.Difference
     Logs.Difference.Pure
