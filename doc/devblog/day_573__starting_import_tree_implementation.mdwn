@@ -1,0 +1,12 @@
+Started building [[todo/import_tree]] (in the `importtree` branch). So far
+the content identifier storage in the git-annex branch is done. Since the
+API tells me it will need to both map from a key to content identifiers,
+and from content identifier to the key, I also added a sqlite database to
+handle the latter.
+
+While implementing that, I happened to notice a bug in storage of metadata
+that contains newlines; [[internals]] said that would be base64'd, but it
+was not. That bug turns out to have been introduced by the ByteString
+conversion in January, and it's the second bug caused by that conversion.
+The other one broke git-annex on Windows, which was fixed by a release
+yesterday.
