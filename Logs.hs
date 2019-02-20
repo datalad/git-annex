@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,7 +25,7 @@ data LogVariety
 getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
 	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
-	| isRemoteStateLog f = Just NewUUIDBasedLog
+	| isRemoteStateLog f || isRemoteContentIdentifierLog f = Just NewUUIDBasedLog
 	| isChunkLog f = ChunkLog <$> chunkLogFileKey f
 	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
 	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
@@ -54,7 +54,7 @@ presenceLogs f =
 	, locationLogFileKey f
 	]
 
-{- Logs that are neither UUID based nor presence logs. -}
+{- Top-level logs that are neither UUID based nor presence logs. -}
 otherLogs :: [FilePath]
 otherLogs =
 	[ numcopiesLog
@@ -197,3 +197,13 @@ remoteMetaDataLogExt = ".log.rmet"
 
 isRemoteMetaDataLog :: FilePath -> Bool
 isRemoteMetaDataLog path = remoteMetaDataLogExt `isSuffixOf` path
+
+{- The filename of the remote content identifier log for a given key. -}
+remoteContentIdentifierLogFile :: GitConfig -> Key -> FilePath
+remoteContentIdentifierLogFile config key = branchHashDir config key </> keyFile key ++ remoteContentIdentifierExt
+
+remoteContentIdentifierExt :: String
+remoteContentIdentifierExt = ".log.cid"
+
+isRemoteContentIdentifierLog :: FilePath -> Bool
+isRemoteContentIdentifierLog path = remoteContentIdentifierExt `isSuffixOf` path
