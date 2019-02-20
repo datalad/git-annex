@@ -24,7 +24,7 @@ import Utility.DataUnits
 import Utility.CopyFile
 import Types.Messages
 import Types.Export
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Remote.Helper.Chunked
 import Git.Types
 
