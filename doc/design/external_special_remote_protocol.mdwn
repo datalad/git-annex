@@ -55,7 +55,7 @@ could have its own protocol extension details, but none are currently used.
 
 Next, git-annex will generally send a message telling the special
 remote to start up. (Or it might send an INITREMOTE or EXPORTSUPPORTED,
-so don't hardcode this order.)
+or perhaps other things in the future, so don't hardcode this order.)
 
 	PREPARE
 
