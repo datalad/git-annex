@@ -10,8 +10,8 @@
 module Logs.ContentIdentifier.Pure where
 
 import Annex.Common
-import Logs.MapLog
-import Types.Remote (ContentIdentifier(..))
+import Logs.UUIDBased
+import Types.Import
 import Utility.Base64
 
 import qualified Data.ByteString as S
@@ -21,10 +21,10 @@ import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
-type ContentIdentifierLog = MapLog UUID [ContentIdentifier]
+type ContentIdentifierLog = Log [ContentIdentifier]
 
 buildLog :: ContentIdentifierLog -> Builder
-buildLog = buildMapLog buildUUID buildContentIdentifierList
+buildLog = buildLogNew buildContentIdentifierList
 
 buildContentIdentifierList :: [ContentIdentifier] -> Builder
 buildContentIdentifierList l = case l of
@@ -38,9 +38,7 @@ buildContentIdentifierList l = case l of
 		| otherwise = byteString c
 
 parseLog :: L.ByteString -> ContentIdentifierLog
-parseLog = parseMapLog
-	(toUUID <$> A.takeByteString)
-	parseContentIdentifierList
+parseLog = parseLogNew parseContentIdentifierList
 
 parseContentIdentifierList :: A.Parser [ContentIdentifier]
 parseContentIdentifierList = reverse . catMaybes <$> valueparser []

@@ -32,7 +32,7 @@ describeUUID :: UUID -> UUIDDesc -> Annex ()
 describeUUID uuid desc = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change uuidLog $
-		buildLog buildUUIDDesc . changeLog c uuid desc . parseUUIDLog
+		buildLogOld buildUUIDDesc . changeLog c uuid desc . parseUUIDLog
 
 {- The map is cached for speed. -}
 uuidDescMap :: Annex UUIDDescMap
@@ -53,4 +53,4 @@ uuidDescMapLoad = do
 	preferold = flip const
 
 parseUUIDLog :: L.ByteString -> Log UUIDDesc
-parseUUIDLog = parseLog (UUIDDesc <$> A.takeByteString)
+parseUUIDLog = parseLogOld (UUIDDesc <$> A.takeByteString)

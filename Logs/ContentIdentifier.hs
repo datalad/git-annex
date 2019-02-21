@@ -14,7 +14,7 @@ module Logs.ContentIdentifier (
 import Annex.Common
 import Logs
 import Logs.MapLog
-import Types.Remote (ContentIdentifier)
+import Types.Import
 import qualified Annex.Branch
 import Logs.ContentIdentifier.Pure as X
 import qualified Annex

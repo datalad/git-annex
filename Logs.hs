@@ -12,7 +12,7 @@ import Annex.DirHashes
 
 {- There are several varieties of log file formats. -}
 data LogVariety
-	= UUIDBasedLog
+	= OldUUIDBasedLog
 	| NewUUIDBasedLog
 	| ChunkLog Key
 	| PresenceLog Key
@@ -24,16 +24,16 @@ data LogVariety
  - of logs used by git-annex, if it's a known path. -}
 getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
-	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
+	| f `elem` topLevelOldUUIDBasedLogs = Just OldUUIDBasedLog
 	| isRemoteStateLog f || isRemoteContentIdentifierLog f = Just NewUUIDBasedLog
 	| isChunkLog f = ChunkLog <$> chunkLogFileKey f
 	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
 	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
-{- All the uuid-based logs stored in the top of the git-annex branch. -}
-topLevelUUIDBasedLogs :: [FilePath]
-topLevelUUIDBasedLogs =
+{- All the (old-format) uuid-based logs stored in the top of the git-annex branch. -}
+topLevelOldUUIDBasedLogs :: [FilePath]
+topLevelOldUUIDBasedLogs =
 	[ uuidLog
 	, remoteLog
 	, trustLog

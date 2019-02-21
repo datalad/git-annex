@@ -24,9 +24,9 @@ trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change trustLog $
-		buildLog buildTrustLevel .
+		buildLogOld buildTrustLevel .
 			changeLog c uuid level .
-				parseLog trustLevelParser
+				parseLogOld trustLevelParser
 	Annex.changeState $ \s -> s { Annex.trustmap = Nothing }
 trustSet NoUUID _ = error "unknown UUID; cannot modify"
 

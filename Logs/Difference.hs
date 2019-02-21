@@ -27,9 +27,9 @@ recordDifferences :: Differences -> UUID -> Annex ()
 recordDifferences ds@(Differences {}) uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change differenceLog $
-		buildLog byteString 
+		buildLogOld byteString 
 			. changeLog c uuid (encodeBS $ showDifferences ds) 
-			. parseLog A.takeByteString
+			. parseLogOld A.takeByteString
 recordDifferences UnknownDifferences _ = return ()
 
 -- Map of UUIDs that have Differences recorded.

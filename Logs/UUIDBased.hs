@@ -3,9 +3,9 @@
  - This is used to store information about UUIDs in a way that can
  - be union merged.
  -
- - A line of the log will look like: "UUID[ INFO[ timestamp=foo]]"
+ - The old format looks like: "UUID[ INFO[ timestamp=foo]]"
  - The timestamp is last for backwards compatability reasons,
- - and may not be present on old log lines.
+ - and may not be present on very old log lines.
  -
  - New uuid based logs instead use the form: "timestamp UUID INFO"
  - 
@@ -21,10 +21,10 @@ module Logs.UUIDBased (
 	LogEntry(..),
 	VectorClock,
 	currentVectorClock,
-	parseLog,
+	parseLogOld,
 	parseLogNew,
-	parseLogWithUUID,
-	buildLog,
+	parseLogOldWithUUID,
+	buildLogOld,
 	buildLogNew,
 	changeLog,
 	addLog,
@@ -48,8 +48,8 @@ import qualified Data.DList as D
 
 type Log v = MapLog UUID v
 
-buildLog :: (v -> Builder) -> Log v -> Builder
-buildLog builder = mconcat . map genline . M.toList
+buildLogOld :: (v -> Builder) -> Log v -> Builder
+buildLogOld builder = mconcat . map genline . M.toList
   where
 	genline (u, LogEntry c@(VectorClock {}) v) =
 		buildUUID u <> sp <> builder v <> sp <>
@@ -59,15 +59,15 @@ buildLog builder = mconcat . map genline . M.toList
 	sp = charUtf8 ' '
 	nl = charUtf8 '\n'
 
-parseLog :: A.Parser a -> L.ByteString -> Log a
-parseLog = parseLogWithUUID . const
+parseLogOld :: A.Parser a -> L.ByteString -> Log a
+parseLogOld = parseLogOldWithUUID . const
 
-parseLogWithUUID :: (UUID -> A.Parser a) -> L.ByteString -> Log a
-parseLogWithUUID parser = fromMaybe M.empty . A.maybeResult
-	. A.parse (logParser parser)
+parseLogOldWithUUID :: (UUID -> A.Parser a) -> L.ByteString -> Log a
+parseLogOldWithUUID parser = fromMaybe M.empty . A.maybeResult
+	. A.parse (logParserOld parser)
 
-logParser :: (UUID -> A.Parser a) -> A.Parser (Log a)
-logParser parser = M.fromListWith best <$> parseLogLines go
+logParserOld :: (UUID -> A.Parser a) -> A.Parser (Log a)
+logParserOld parser = M.fromListWith best <$> parseLogLines go
   where
 	go = do
 		u <- toUUID <$> A8.takeWhile1 (/= ' ')

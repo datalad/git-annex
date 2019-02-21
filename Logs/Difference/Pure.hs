@@ -20,7 +20,7 @@ import Logs.UUIDBased
 
 parseDifferencesLog :: L.ByteString -> (M.Map UUID Differences)
 parseDifferencesLog = simpleMap
-	. parseLog (readDifferences . decodeBS <$> A.takeByteString)
+	. parseLogOld (readDifferences . decodeBS <$> A.takeByteString)
 
 -- The sum of all recorded differences, across all UUIDs.
 allDifferences :: M.Map UUID Differences -> Differences
