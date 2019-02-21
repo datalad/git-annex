@@ -1,0 +1,19 @@
+Not a lot of progress on [[todo/import_tree]] today I feel..
+
+Started off by adding a QuickCheck test of the content
+identifier log, which did find one bug in that code.
+
+Then started roughing out the core of the importing operation, which involves
+building up git trees for the files that are imported. But that needs a
+way to graft an imported tree into a subdirectory of another tree, 
+and the only way I had available to do it needed to read in the entire
+recursive tree of the current branch, which would be slower and use
+more memory than I like.
+
+So, got sidetracked building a git tree grafter. It turns out that 
+the export tree code also needs to graft a tree (into the git-annex
+branch), and did so using the same innefficient method that I want to
+avoid, so it will also be able to be improved using the grafter.
+
+Unfortunately, I had to stop for the day with the grafter not quite working
+properly.
