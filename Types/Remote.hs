@@ -21,14 +21,11 @@ module Types.Remote
 	, RetrievalSecurityPolicy(..)
 	, isExportSupported
 	, ExportActions(..)
-	, ContentIdentifier(..)
-	, ContentHistory(..)
 	, ImportActions(..)
 	)
 	where
 
 import qualified Data.Map as M
-import qualified Data.ByteString as S
 import Data.Ord
 
 import qualified Git
@@ -40,12 +37,12 @@ import Types.Creds
 import Types.UrlContents
 import Types.NumCopies
 import Types.Export
+import Types.Import
 import Config.Cost
 import Utility.Metered
 import Git.Types (RemoteName)
 import Utility.SafeCommand
 import Utility.Url
-import Utility.QuickCheck
 
 type RemoteConfigKey = String
 
@@ -244,28 +241,13 @@ data ExportActions a = ExportActions
 	, renameExport :: Key -> ExportLocation -> ExportLocation -> a Bool
 	}
 
-{- An identifier for content stored on a remote. It should be reasonably
- - short since it is stored in the git-annex branch. -}
-newtype ContentIdentifier = ContentIdentifier S.ByteString
-	deriving (Eq, Ord, Show, Arbitrary)
-
-{- Some remotes may support importing a history of versions of content that
- - is stored in them. This is equivilant to a git commit history. -}
-data ContentHistory t
-	= ContentHistoryNode t
-	| ContentHistory
-		{ contentHistoryCurrent :: t
-		, contentHistoryPrev :: [ContentHistory t]
-		}
-	deriving (Show)
-
 data ImportActions a = ImportActions
 	-- Finds the current set of files that are stored in the remote,
 	-- along with their content identifiers.
 	--
 	-- May also find old versions of files that are still stored in the
-	-- remote, and return a ContentHistory with multiple nodes.
-	{ listContents :: a (Maybe (ContentHistory [(ExportLocation, ContentIdentifier)]))
+	-- remote.
+	{ listImportableContents :: a (Maybe ImportableContents)
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has the requested ContentIdentifier.
 	--

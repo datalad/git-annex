@@ -976,6 +976,7 @@ Executable git-annex
     Types.FileMatcher
     Types.GitConfig
     Types.Group
+    Types.Import
     Types.Key
     Types.KeySource
     Types.LockCache

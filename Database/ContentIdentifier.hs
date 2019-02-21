@@ -29,7 +29,7 @@ import qualified Database.Queue as H
 import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
-import Types.Remote (ContentIdentifier(..))
+import Types.Import
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH

@@ -52,7 +52,7 @@ instance HasImportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) wh
 
 instance HasImportUnsupported (ImportActions Annex) where
 	importUnsupported = ImportActions
-		{ listContents = return Nothing
+		{ listImportableContents = return Nothing
 		, retrieveExportWithContentIdentifier = \_ _ _ _ -> return Nothing
 		, storeExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
 		}

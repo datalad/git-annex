@@ -23,7 +23,7 @@ import Key
 import Utility.InodeCache
 import Git.Types (Ref(..))
 import Types.UUID
-import Types.Remote (ContentIdentifier(..))
+import Types.Import
 
 -- A serialized Key
 newtype SKey = SKey String
