@@ -48,6 +48,7 @@ import qualified Logs.Remote
 import qualified Logs.Unused
 import qualified Logs.Transfer
 import qualified Logs.Presence
+import qualified Logs.ContentIdentifier
 import qualified Logs.PreferredContent
 import qualified Types.MetaData
 import qualified Remote
@@ -175,7 +176,8 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
 	, testProperty "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
 	, testProperty "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
-	, testProperty "prop_parse_build_log" Logs.Presence.prop_parse_build_log
+	, testProperty "prop_parse_build_presence_log" Logs.Presence.prop_parse_build_presence_log
+	, testProperty "prop_parse_build_contentidentifier_log" Logs.ContentIdentifier.prop_parse_build_contentidentifier_log
 	, testProperty "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
 	, testProperty "prop_parse_build_TrustLevelLog" Logs.Trust.prop_parse_build_TrustLevelLog
 	, testProperty "prop_hashes_stable" Utility.Hash.prop_hashes_stable

@@ -7,11 +7,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Logs.ContentIdentifier.Pure 
-	( ContentIdentifierLog
-	, parseLog
-	, buildLog
-	) where
+module Logs.ContentIdentifier.Pure where
 
 import Annex.Common
 import Logs.MapLog
@@ -28,11 +24,14 @@ import Data.ByteString.Builder
 type ContentIdentifierLog = MapLog UUID [ContentIdentifier]
 
 buildLog :: ContentIdentifierLog -> Builder
-buildLog = buildMapLog buildUUID valuebuilder
+buildLog = buildMapLog buildUUID buildContentIdentifierList
+
+buildContentIdentifierList :: [ContentIdentifier] -> Builder
+buildContentIdentifierList l = case l of
+	[] -> mempty
+	[c] -> buildcid c
+	(c:cs) -> buildcid c <> charUtf8 ' ' <> buildContentIdentifierList cs
   where
-	valuebuilder [] = mempty
-	valuebuilder [c] = buildcid c
-	valuebuilder (c:cs) = buildcid c <> charUtf8 ' ' <> valuebuilder cs
 	buildcid (ContentIdentifier c)
 		| S8.any (`elem` [' ', '\r', '\n']) c || "!" `S8.isPrefixOf` c =
 			charUtf8 '!' <> byteString (toB64' c)
@@ -41,7 +40,10 @@ buildLog = buildMapLog buildUUID valuebuilder
 parseLog :: L.ByteString -> ContentIdentifierLog
 parseLog = parseMapLog
 	(toUUID <$> A.takeByteString)
-	(reverse . catMaybes <$> valueparser [])
+	parseContentIdentifierList
+
+parseContentIdentifierList :: A.Parser [ContentIdentifier]
+parseContentIdentifierList = reverse . catMaybes <$> valueparser []
   where
 	valueparser l = do
 		b <- A8.takeWhile1 (/= ' ')
@@ -54,3 +56,7 @@ parseLog = parseMapLog
 				_ <- A8.char ' '
 				valueparser (cid:l)
 			)
+
+prop_parse_build_contentidentifier_log :: ContentIdentifierLog -> Bool
+prop_parse_build_contentidentifier_log l =
+	parseLog (toLazyByteString (buildLog l)) == l

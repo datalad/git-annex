@@ -6,6 +6,7 @@
  -}
 
 module Logs.ContentIdentifier (
+	module X,
 	recordContentIdentifier,
 	getContentIdentifiers,
 ) where
@@ -15,7 +16,7 @@ import Logs
 import Logs.MapLog
 import Types.Remote (ContentIdentifier)
 import qualified Annex.Branch
-import Logs.ContentIdentifier.Pure
+import Logs.ContentIdentifier.Pure as X
 import qualified Annex
 
 import qualified Data.Map as M

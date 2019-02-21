@@ -45,6 +45,7 @@ import Utility.Metered
 import Git.Types (RemoteName)
 import Utility.SafeCommand
 import Utility.Url
+import Utility.QuickCheck
 
 type RemoteConfigKey = String
 
@@ -246,7 +247,7 @@ data ExportActions a = ExportActions
 {- An identifier for content stored on a remote. It should be reasonably
  - short since it is stored in the git-annex branch. -}
 newtype ContentIdentifier = ContentIdentifier S.ByteString
-	deriving (Eq, Ord, Show)
+	deriving (Eq, Ord, Show, Arbitrary)
 
 {- Some remotes may support importing a history of versions of content that
  - is stored in them. This is equivilant to a git commit history. -}
@@ -256,6 +257,7 @@ data ContentHistory t
 		{ contentHistoryCurrent :: t
 		, contentHistoryPrev :: [ContentHistory t]
 		}
+	deriving (Show)
 
 data ImportActions a = ImportActions
 	-- Finds the current set of files that are stored in the remote,

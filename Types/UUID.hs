@@ -14,10 +14,12 @@ import qualified Data.Map as M
 import qualified Data.UUID as U
 import Data.Maybe
 import Data.String
+import Data.Char
 import Data.ByteString.Builder
 import qualified Data.Semigroup as Sem
 
 import Utility.FileSystemEncoding
+import Utility.QuickCheck
 import qualified Utility.SimpleProtocol as Proto
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
@@ -81,3 +83,11 @@ type UUIDDescMap = M.Map UUID UUIDDesc
 instance Proto.Serializable UUID where
 	serialize = fromUUID
 	deserialize = Just . toUUID
+
+instance Arbitrary UUID where
+	arbitrary = frequency [(1, return NoUUID), (3, UUID <$> arb)]
+	  where
+		-- Avoid non-ascii because fully arbitrary
+		-- strings may not be encoded using the filesystem
+       		-- encoding, which is normally applied to all input.
+		arb = encodeBS <$> arbitrary `suchThat` all isAscii
