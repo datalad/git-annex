@@ -30,10 +30,10 @@ buildContentIdentifierList :: [ContentIdentifier] -> Builder
 buildContentIdentifierList l = case l of
 	[] -> mempty
 	[c] -> buildcid c
-	(c:cs) -> buildcid c <> charUtf8 ' ' <> buildContentIdentifierList cs
+	(c:cs) -> buildcid c <> charUtf8 ':' <> buildContentIdentifierList cs
   where
 	buildcid (ContentIdentifier c)
-		| S8.any (`elem` [' ', '\r', '\n']) c || "!" `S8.isPrefixOf` c =
+		| S8.any (`elem` [':', '\r', '\n']) c || "!" `S8.isPrefixOf` c =
 			charUtf8 '!' <> byteString (toB64' c)
 		| otherwise = byteString c
 
@@ -44,7 +44,7 @@ parseContentIdentifierList :: A.Parser [ContentIdentifier]
 parseContentIdentifierList = reverse . catMaybes <$> valueparser []
   where
 	valueparser l = do
-		b <- A8.takeWhile (/= ' ')
+		b <- A8.takeWhile (/= ':')
 		let cid = if "!" `S8.isPrefixOf` b
 			then ContentIdentifier <$> fromB64Maybe' (S.drop 1 b)
 			else Just $ ContentIdentifier b
