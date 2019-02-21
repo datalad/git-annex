@@ -597,7 +597,7 @@ getDirStatInfo o dir = do
 getTreeStatInfo :: InfoOptions -> Git.Ref -> Annex (Maybe StatInfo)
 getTreeStatInfo o r = do
 	fast <- Annex.getState Annex.fast
-	(ls, cleanup) <- inRepo $ LsTree.lsTree r
+	(ls, cleanup) <- inRepo $ LsTree.lsTree LsTree.LsTreeRecursive r
 	(presentdata, referenceddata, repodata) <- go fast ls initial
 	ifM (liftIO cleanup)
 		( return $ Just $

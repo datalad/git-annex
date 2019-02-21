@@ -1,6 +1,6 @@
 {- git ls-tree interface
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@
 
 module Git.LsTree (
 	TreeItem(..),
+	LsTreeMode(..),
 	lsTree,
 	lsTree',
 	lsTreeParams,
@@ -34,26 +35,30 @@ data TreeItem = TreeItem
 	, file :: TopFilePath
 	} deriving Show
 
-{- Lists the complete contents of a tree, recursing into sub-trees,
- - with lazy output. -}
-lsTree :: Ref -> Repo -> IO ([TreeItem], IO Bool)
+data LsTreeMode = LsTreeRecursive | LsTreeNonRecursive
+
+{- Lists the contents of a tree, with lazy output. -}
+lsTree :: LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Bool)
 lsTree = lsTree' []
 
-lsTree' :: [CommandParam] -> Ref -> Repo -> IO ([TreeItem], IO Bool)
-lsTree' ps t repo = do
-	(l, cleanup) <- pipeNullSplit (lsTreeParams t ps) repo
+lsTree' :: [CommandParam] -> LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Bool)
+lsTree' ps mode t repo = do
+	(l, cleanup) <- pipeNullSplit (lsTreeParams mode t ps) repo
 	return (map parseLsTree l, cleanup)
 
-lsTreeParams :: Ref -> [CommandParam] -> [CommandParam]
-lsTreeParams r ps =
+lsTreeParams :: LsTreeMode -> Ref -> [CommandParam] -> [CommandParam]
+lsTreeParams mode r ps =
 	[ Param "ls-tree"
 	, Param "--full-tree"
 	, Param "-z"
-	, Param "-r"
-	] ++ ps ++
+	] ++ recursiveparams ++ ps ++
 	[ Param "--"
 	, File $ fromRef r
 	]
+  where
+	recursiveparams = case mode of
+		LsTreeRecursive -> [ Param "-r" ]
+		LsTreeNonRecursive -> []
 
 {- Lists specified files in a tree. -}
 lsTreeFiles :: Ref -> [FilePath] -> Repo -> IO [TreeItem]

@@ -193,7 +193,7 @@ mkDiffMap old new db = do
 -- Returns True when files were uploaded.
 fillExport :: Remote -> ExportHandle -> Git.Ref -> Annex Bool
 fillExport r db new = do
-	(l, cleanup) <- inRepo $ Git.LsTree.lsTree new
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive new
 	cvar <- liftIO $ newMVar False
 	commandActions $ map (startExport r db cvar) l
 	void $ liftIO $ cleanup

@@ -16,6 +16,11 @@ this.
   It will only need to be updated when listContents returns a
   ContentIdentifier that is not already known in the database.
 
+* When on an adjusted unlocked branch, need to import the files unlocked.
+
+* What if the remote lists importable filenames that are absolute paths,
+  or contain a "../" attack?
+
 ## race conditions
 
 (Some thoughts about races that the design should cover now, but kept here

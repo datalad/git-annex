@@ -19,6 +19,9 @@ import Utility.FileSystemEncoding
  - location on the remote. -}
 type ImportLocation = ExportLocation
 
+fromImportLocation :: ImportLocation -> FilePath
+fromImportLocation = fromExportLocation
+
 {- An identifier for content stored on a remote that has been imported into
  - the repository. It should be reasonably short since it is stored in the
  - git-annex branch. -}
@@ -32,10 +35,11 @@ instance Arbitrary ContentIdentifier where
 	arbitrary = ContentIdentifier . encodeBS
 		<$> arbitrary `suchThat` all isAscii
 
-{- List of files that can be imported from a remote. -}
-data ImportableContents = ImportableContents
-	{ importableContents :: [(ImportLocation, ContentIdentifier)]
-	, importableHistory :: [ImportableContents]
+{- List of files that can be imported from a remote, each with some added
+ - information. -}
+data ImportableContents info = ImportableContents
+	{ importableContents :: [(ImportLocation, info)]
+	, importableHistory :: [ImportableContents info]
 	-- ^ Used by remotes that support importing historical versions of
 	-- files that are stored in them. This is equivilant to a git
 	-- commit history.

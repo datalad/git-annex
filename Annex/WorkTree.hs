@@ -83,7 +83,7 @@ scanUnlockedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ do
 	showSideAction "scanning for unlocked files"
 	Database.Keys.runWriter $
 		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
-	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.Ref.headRef
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive Git.Ref.headRef
 	forM_ l $ \i -> 
 		when (isregfile i) $
 			maybe noop (add i)

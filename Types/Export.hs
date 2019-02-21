@@ -21,7 +21,7 @@ import Utility.Split
 import qualified System.FilePath.Posix as Posix
 
 -- A location on a remote that a key can be exported to.
--- The FilePath will be relative to the top of the export,
+-- The FilePath will be relative to the top of the remote,
 -- and uses unix-style path separators.
 newtype ExportLocation = ExportLocation FilePath
 	deriving (Show, Eq)

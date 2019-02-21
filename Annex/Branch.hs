@@ -51,6 +51,7 @@ import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.UpdateIndex
 import qualified Git.Tree
+import qualified Git.LsTree
 import Git.LsTree (lsTreeParams)
 import qualified Git.HashObject
 import Annex.HashObject
@@ -366,7 +367,7 @@ branchFiles = withIndex $ inRepo branchFiles'
 
 branchFiles' :: Git.Repo -> IO [FilePath]
 branchFiles' = Git.Command.pipeNullSplitZombie
-	(lsTreeParams fullname [Param "--name-only"])
+	(lsTreeParams Git.LsTree.LsTreeRecursive fullname [Param "--name-only"])
 
 {- Populates the branch's index file with the current branch contents.
  - 
@@ -649,7 +650,8 @@ graftTreeish :: Git.Ref -> TopFilePath -> Annex ()
 graftTreeish treeish graftpoint = lockJournal $ \jl -> do
 	branchref <- getBranch
 	updateIndex jl branchref
-	Git.Tree.Tree t <- inRepo $ Git.Tree.getTree branchref
+	Git.Tree.Tree t <- inRepo $
+		Git.Tree.getTree Git.LsTree.LsTreeRecursive branchref
 	t' <- inRepo $ Git.Tree.recordTree $ Git.Tree.Tree $
 		Git.Tree.RecordedSubTree graftpoint treeish [] : t
 	c <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit

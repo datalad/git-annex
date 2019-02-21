@@ -630,6 +630,7 @@ Executable git-annex
     Annex.GitOverlay
     Annex.HashObject
     Annex.Hook
+    Annex.Import
     Annex.Ingest
     Annex.Init
     Annex.InodeSentinal

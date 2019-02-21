@@ -228,7 +228,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 	runbranchkeys bs = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
-			(l, cleanup) <- inRepo $ LsTree.lsTree b
+			(l, cleanup) <- inRepo $ LsTree.lsTree LsTree.LsTreeRecursive b
 			forM_ l $ \i -> do
 				let bfp = mkActionItem $ BranchFilePath b (LsTree.file i)
 				maybe noop (\k -> keyaction (k, bfp))

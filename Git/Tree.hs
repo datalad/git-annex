@@ -13,7 +13,9 @@ module Git.Tree (
 	getTree,
 	recordTree,
 	TreeItem(..),
+	treeItemsToTree,
 	adjustTree,
+	graftTree,
 	treeMode,
 ) where
 
@@ -47,15 +49,15 @@ data TreeContent
 	deriving (Show, Eq, Ord)
 
 {- Gets the Tree for a Ref. -}
-getTree :: Ref -> Repo -> IO Tree
-getTree r repo = do
-	(l, cleanup) <- lsTreeWithObjects r repo
+getTree :: LsTree.LsTreeMode -> Ref -> Repo -> IO Tree
+getTree lstreemode r repo = do
+	(l, cleanup) <- lsTreeWithObjects lstreemode r repo
 	let !t = either (\e -> error ("ls-tree parse error:" ++ e)) id
 		(extractTree l)
 	void cleanup
 	return t
 
-lsTreeWithObjects :: Ref -> Repo -> IO ([LsTree.TreeItem], IO Bool)
+lsTreeWithObjects :: LsTree.LsTreeMode -> Ref -> Repo -> IO ([LsTree.TreeItem], IO Bool)
 lsTreeWithObjects = LsTree.lsTree' [Param "-t"]
 
 newtype MkTreeHandle = MkTreeHandle CoProcess.CoProcessHandle
@@ -181,7 +183,7 @@ adjustTree
 	-> m Sha
 adjustTree adjusttreeitem addtreeitems removefiles r repo =
 	withMkTreeHandle repo $ \h -> do
-		(l, cleanup) <- liftIO $ lsTreeWithObjects r repo
+		(l, cleanup) <- liftIO $ lsTreeWithObjects LsTree.LsTreeRecursive r repo
 		(l', _, _) <- go h False [] 1 inTopTree l
 		l'' <- adjustlist h 0 inTopTree (const True) l'
 		sha <- liftIO $ mkTree h l''
@@ -228,6 +230,58 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 	removeset = S.fromList $ map (normalise . gitPath) removefiles
 	removed (TreeBlob f _ _) = S.member (normalise (gitPath f)) removeset
 	removed _ = False
+
+{- Grafts subtree into the basetree at the specified location.
+ -
+ - This is generally much more efficient than using getTree and recordTree,
+ - or adjustTree, since it only needs to traverse from the top of the tree
+ - down to the graft location. It does not buffer the whole tree in memory.
+ -}
+graftTree
+	:: Sha
+	-> TopFilePath
+	-> Sha
+	-> Repo
+	-> IO Sha
+graftTree subtree graftloc basetree repo =
+	withMkTreeHandle repo $
+		go basetree graftdirs
+  where
+ 	go :: Ref -> [TopFilePath] -> MkTreeHandle -> IO Sha
+	go tsha [] h = do
+		graft <- graftin h []
+		mkTree h [graft]
+	go tsha graftdirs@(topmostgraphdir:_) h = do
+		Tree t <- getTree LsTree.LsTreeNonRecursive tsha repo
+		t' <- case partition isabovegraft t of
+			([], _) -> do
+				graft <- graftin h graftdirs
+				return (graft:t)
+			-- normally there can only be one matching item
+			-- in the tree, but it's theoretically possible
+			-- for a git tree to have multiple items with the
+			-- same name, so process them all
+			(matching, rest) -> do
+				newshas <- forM matching $ \case
+					RecordedSubTree tloc tsha' _ -> do
+						tsha'' <- go tsha' (drop 1 graftdirs) h
+						return $ RecordedSubTree tloc tsha'' []
+					_ -> graftin h $ drop 1 graftdirs
+				return (newshas ++ rest)
+		mkTree h t'
+
+	isabovegraft i = beneathSubTree i graftloc || gitPath i == gitPath graftloc
+	
+	graftin h t = recordSubTree h $ graftin' t
+	graftin' [] = RecordedSubTree graftloc subtree []
+	graftin' (d:rest) = NewSubTree d [graftin' rest]
+	
+	-- For a graftloc of "foo/bar/baz", this generates
+	-- ["foo", "foo/bar", "foo/bar/baz"]
+	graftdirs = map (asTopFilePath . toInternalGitPath) $
+		mkpaths [] $ splitDirectories $ gitPath graftloc
+	mkpaths _ [] = []
+	mkpaths base (d:rest) = (joinPath base </> d) : mkpaths (base ++ [d]) rest
 
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
