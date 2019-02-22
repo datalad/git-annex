@@ -42,12 +42,12 @@ lsTree :: LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Bool)
 lsTree = lsTree' []
 
 lsTree' :: [CommandParam] -> LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Bool)
-lsTree' ps mode t repo = do
-	(l, cleanup) <- pipeNullSplit (lsTreeParams mode t ps) repo
+lsTree' ps lsmode t repo = do
+	(l, cleanup) <- pipeNullSplit (lsTreeParams lsmode t ps) repo
 	return (map parseLsTree l, cleanup)
 
 lsTreeParams :: LsTreeMode -> Ref -> [CommandParam] -> [CommandParam]
-lsTreeParams mode r ps =
+lsTreeParams lsmode r ps =
 	[ Param "ls-tree"
 	, Param "--full-tree"
 	, Param "-z"
@@ -56,7 +56,7 @@ lsTreeParams mode r ps =
 	, File $ fromRef r
 	]
   where
-	recursiveparams = case mode of
+	recursiveparams = case lsmode of
 		LsTreeRecursive -> [ Param "-r" ]
 		LsTreeNonRecursive -> []
 

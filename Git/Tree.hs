@@ -1,6 +1,6 @@
 {- git trees
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,10 +12,13 @@ module Git.Tree (
 	TreeContent(..),
 	getTree,
 	recordTree,
+	recordTree',
 	TreeItem(..),
 	treeItemsToTree,
 	adjustTree,
 	graftTree,
+	graftTree',
+	withMkTreeHandle,
 	treeMode,
 ) where
 
@@ -245,14 +248,22 @@ graftTree
 	-> Repo
 	-> IO Sha
 graftTree subtree graftloc basetree repo =
-	withMkTreeHandle repo $
-		go basetree graftdirs
+	withMkTreeHandle repo $ graftTree' subtree graftloc basetree repo
+
+graftTree'
+	:: Sha
+	-> TopFilePath
+	-> Sha
+	-> Repo
+	-> MkTreeHandle
+	-> IO Sha
+graftTree' subtree graftloc basetree repo hdl = go basetree graftdirs
   where
-	go tsha (topmostgraphdir:restgraphdirs) h = do
+	go tsha (topmostgraphdir:restgraphdirs) = do
 		Tree t <- getTree LsTree.LsTreeNonRecursive tsha repo
 		t' <- case partition isabovegraft t of
 			([], _) -> do
-				graft <- graftin h (topmostgraphdir:restgraphdirs)
+				graft <- graftin (topmostgraphdir:restgraphdirs)
 				return (graft:t)
 			-- normally there can only be one matching item
 			-- in the tree, but it's theoretically possible
@@ -264,16 +275,16 @@ graftTree subtree graftloc basetree repo =
 						| null restgraphdirs -> return $
 							RecordedSubTree tloc subtree []
 						| otherwise -> do
-							tsha'' <- go tsha' restgraphdirs h
+							tsha'' <- go tsha' restgraphdirs
 							return $ RecordedSubTree tloc tsha'' []
-					_ -> graftin h (topmostgraphdir:restgraphdirs)
+					_ -> graftin (topmostgraphdir:restgraphdirs)
 				return (newshas ++ rest)
-		mkTree h t'
-	go tsha [] h = return subtree
+		mkTree hdl t'
+	go _ [] = return subtree
 
 	isabovegraft i = beneathSubTree i graftloc || gitPath i == gitPath graftloc
 	
-	graftin h t = recordSubTree h $ graftin' t
+	graftin t = recordSubTree hdl $ graftin' t
 	graftin' [] = RecordedSubTree graftloc subtree []
 	graftin' (d:rest) 
 		| d == graftloc = graftin' []
