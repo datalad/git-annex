@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="gan"
- avatar="http://cdn.libravatar.org/avatar/564f55f9fc3773e521bafdbb6f23efc9"
- subject="Clarification"
- date="2019-02-22T18:03:03Z"
- content="""
-So, to clarify - I read your first answer.  But if this coulud be done during \"get\" perhaps then it's OK because it is an explicit request for the potentially unsafe operation?
-"""]]
