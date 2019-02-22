@@ -3,6 +3,8 @@ and the remote allows files to somehow be edited on it, then there ought
 to be a way to import the changes back from the remote into the git repository.
 The command could be `git annex import --from remote`
 
+There also ought to be a way to make `git annex sync` automatically import.
+
 See [[design/importing_trees_from_special_remotes]] for current design for
 this.
 

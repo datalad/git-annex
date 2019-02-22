@@ -16,6 +16,31 @@ that has the modifications in it.
 Updating the local working copy is then done by merging the import treeish.
 This way, conflicts will be detected and handled as normal by git.
 
+## command line interface
+
+`git annex import --from remote` would import files from the remote to the
+top of the working tree. Sometimes users will want to import into a
+subdirectory, so there should be a way to do that.
+
+`git annex export` has its own way to specify a subdirectory to export,
+eg "master:subdir" (which is one way of referring to a git tree in git). 
+So it seems it would make sense to make importing use a similar syntax.
+When importing, "master:subdir" would mean to import into a tree at subdir,
+and merge it into master. So any branch ref not containing a colon, eg
+"master" naturally means import not in a subdir, and merge it into the
+branch. 
+
+Note that while export can have a particular commit or tree sha specified,
+it does not makes sense to import *to* a particular sha.
+
+Also, there should be a way to configure it so `git annex sync --content` 
+first imports from a remote and then exports to it. Currently `git annex
+export` has `--tracking` to configure the latter. It seems to only make
+sense to import and export the same tracking branch. So, should `git annex
+export --tracking` set the same thing, or perhaps it would be better to
+move the tracking branch configuration out of `git annex export` and into
+an interface that explicitly configures both import and export?
+
 ## content identifiers
 
 The remote is responsible for collecting a list of
