@@ -124,7 +124,7 @@ recordExportBeginning remoteuuid newtree = do
 		buildExportLog 
 			. changeMapLog c ep new
 			. parseExportLog
-	Annex.Branch.graftTreeish newtree (asTopFilePath "export.tree")
+	Annex.Branch.rememberTreeish newtree (asTopFilePath "export.tree")
 
 parseExportLog :: L.ByteString -> MapLog ExportParticipants Exported
 parseExportLog = parseMapLog exportParticipantsParser exportedParser
