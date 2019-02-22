@@ -67,7 +67,10 @@ buildImportCommit remote basecommit subdir importable commitmode commitmessage =
 		if basetree == importedtree && null parents
 			then return Nothing
 			else do
-				commit <- inRepo $ Git.Branch.commitTree commitmode commitmessage parents importedtree
+				let commitparents = if null parents
+					then [basecommit]
+					else parents
+				commit <- inRepo $ Git.Branch.commitTree commitmode commitmessage commitparents importedtree
 				return (Just commit)
 	updateexportdb importedtree = 
 		withExclusiveLock (gitAnnexExportLock (uuid remote)) $ do
