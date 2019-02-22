@@ -231,7 +231,8 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 	removed (TreeBlob f _ _) = S.member (normalise (gitPath f)) removeset
 	removed _ = False
 
-{- Grafts subtree into the basetree at the specified location.
+{- Grafts subtree into the basetree at the specified location, replacing
+ - anything that the basetree already had at that location.
  -
  - This is generally much more efficient than using getTree and recordTree,
  - or adjustTree, since it only needs to traverse from the top of the tree
@@ -247,15 +248,11 @@ graftTree subtree graftloc basetree repo =
 	withMkTreeHandle repo $
 		go basetree graftdirs
   where
- 	go :: Ref -> [TopFilePath] -> MkTreeHandle -> IO Sha
-	go tsha [] h = do
-		graft <- graftin h []
-		mkTree h [graft]
-	go tsha graftdirs@(topmostgraphdir:_) h = do
+	go tsha (topmostgraphdir:restgraphdirs) h = do
 		Tree t <- getTree LsTree.LsTreeNonRecursive tsha repo
 		t' <- case partition isabovegraft t of
 			([], _) -> do
-				graft <- graftin h graftdirs
+				graft <- graftin h (topmostgraphdir:restgraphdirs)
 				return (graft:t)
 			-- normally there can only be one matching item
 			-- in the tree, but it's theoretically possible
@@ -263,18 +260,24 @@ graftTree subtree graftloc basetree repo =
 			-- same name, so process them all
 			(matching, rest) -> do
 				newshas <- forM matching $ \case
-					RecordedSubTree tloc tsha' _ -> do
-						tsha'' <- go tsha' (drop 1 graftdirs) h
-						return $ RecordedSubTree tloc tsha'' []
-					_ -> graftin h $ drop 1 graftdirs
+					RecordedSubTree tloc tsha' _
+						| null restgraphdirs -> return $
+							RecordedSubTree tloc subtree []
+						| otherwise -> do
+							tsha'' <- go tsha' restgraphdirs h
+							return $ RecordedSubTree tloc tsha'' []
+					_ -> graftin h (topmostgraphdir:restgraphdirs)
 				return (newshas ++ rest)
 		mkTree h t'
+	go tsha [] h = return subtree
 
 	isabovegraft i = beneathSubTree i graftloc || gitPath i == gitPath graftloc
 	
 	graftin h t = recordSubTree h $ graftin' t
 	graftin' [] = RecordedSubTree graftloc subtree []
-	graftin' (d:rest) = NewSubTree d [graftin' rest]
+	graftin' (d:rest) 
+		| d == graftloc = graftin' []
+		| otherwise = NewSubTree d [graftin' rest]
 	
 	-- For a graftloc of "foo/bar/baz", this generates
 	-- ["foo", "foo/bar", "foo/bar/baz"]
