@@ -13,61 +13,91 @@ Download the changed/new files and inject into the annex.
 And then generate a commit that can be merged (by the command or later by
 the user) to make their branch reflect changes made on the remote.
 
-## generating commits and merging
+## generating commits and tracking branches
 
 For the merge to work correctly, the parent of the generated commit
 needs to be, when possible, a commit whose tree corresponds to the last
 tree that was exported to the remote. This way, git merge will treat the
 remote the same as a normal git remote where changes were made.
 
+If the last exported commit is not known, it would need to make a commit
+with no parent. git merge would then need --allow-unrelated-histories,
+and it would be more likely for the merge to have conflicts.
+
 The export log does not record the last exported commit though, only the
 tree. And the exported tree may not be the tree of any commit in the
 history; it's often a subtree.
 
-So, the export log needs to get a commit sha added to it. And it's possible
-that commit will get garbage collected or not pushed, and so not be
-available. It could be linked into the git-annex branch as is done for the 
-exported tree, but doing that for a commit is pretty strange. It's also
-possible for the user to export a tree by sha, so there's no commit.
-And of course, if no export has been done yet, there would be no commit.
+Should the last exported commit be stored in the git-annex branch?
+Could be done, but maybe it's not needed.. What the user probably expects
+is that, since importing is like pulling from a remote, and exporting is
+like pushing, for there to be a remote tracking branch that is updated. Eg,
+"refs/remotes/S3/master". The special remote is not a git repo with
+branch, so doesn't really have a master branch of its own, but this naming
+means that the user can "git merge S3" to merge in the imported tree.
 
-If the last exported commit is not accessible, or not recorded, seems it
-would be ok to make a commit with no parent. git merge would then need
---allow-unrelated-histories, and it would be more likely for the merge to
-have conflicts.
+If the user starts off in one repository, and later changes to using a
+different repository to import from the same special remote, the tracking
+branch would not be present there. So import would need to make a new branch
+with no parent, and they would have to use --allow-unrelated-histories.
+Perhaps the user could first export to the special remote, to get the
+branch set up, and then import. Assuming that exporting in this situation
+won't overwrite modified file on the special remote (see API below) and
+will succeed enough to update the tracking branch.
 
-It's also possible for the export log to indicate an unresolved export
-conflict, so two trees got exported to the remote independently. The
-content of the remote is not known at this point, but import will resolve
-that by getting a list of its contents. So, in this case, use the multiple
-commits that are in the export log as the parent of the generated commit,
-which nicely indicates to git that there was a conflict and it got
-resolved.
+Seems best to start with a remote tracking branch, since the user is going
+to expect there to be one, and if it later turns out that the last exported
+commit needs to be available across clones, store it in the git-annex
+branch then.
+
+## export conflict resolution
+
+What if the export log indicates an unresolved export conflict,
+and the user tries to import from the special remote?
+
+Well, two trees got exported to the remote independently. The content of
+the remote is not known to export code when there's a conflict, but import
+will resolve that by getting a list of its contents. Although that may be
+an admixture of the two exported trees, and so not necessarily a change the
+user will want to merge into master.
+
+One approach is to not allow imports in this situation; require the export
+conflict be resolved first. (--force could override if the user just wants
+to import whatever ended up on the special remote.)
+
+Another approach, if the commits that contain the trees that were exported
+is known, is to do the import and make a commit that uses those commits
+as its parents. Which nicely indicates to git that there was a conflict and
+it got "resolved".
 
 ## command line interface
 
-`git annex import --from remote` would import files from the remote to the
-top of the working tree. Sometimes users will want to import into a
-subdirectory, so there should be a way to do that.
+`git annex import master --from foo` will import a tree from the remote
+and update the "refs/remotes/foo/master" tracking branch to that tree.
 
-`git annex export` has its own way to specify a subdirectory to export,
-eg "master:subdir" (which is one way of referring to a git tree in git). 
-So it seems it would make sense to make importing use a similar syntax.
-When importing, "master:subdir" would mean to import into a tree at subdir,
-and merge it into master. So any branch ref not containing a colon, eg
-"master" naturally means import not in a subdir, and merge it into the
-branch. 
+Users will want a way to import files from a remote into a subdirectory,
+and by analogy to how `git annex export` handles that, it should be
+"master:subdir". So, `git annex import master:subdir --from foo`
+will import a tree from the remote and graft it into the current master
+branch at subdir (replacing whatever's there), storing the result in
+the "refs/remotes/foo/master" tracking branch.
 
 Note that while export can have a particular commit or tree sha specified,
 it does not makes sense to import *to* a particular sha.
 
-Also, there should be a way to configure it so `git annex sync --content` 
-first imports from a remote and then exports to it. Currently `git annex
-export` has `--tracking` to configure the latter. It seems to only make
-sense to import and export the same tracking branch. So, should `git annex
-export --tracking` set the same thing, or perhaps it would be better to
-move the tracking branch configuration out of `git annex export` and into
-an interface that explicitly configures both import and export?
+Should `git annex import` merge the tracking branch by itself, or leave it
+up to the user? Seems most ergonomic to merge by default; if the user
+wants to not merge it could be `git annex import --fetch --from remote`
+or a separate command.
+
+Also, there should be a way to configure the default tracking branch, so
+`git annex sync --content` first imports from a remote, merges that, and
+then exports to it. Currently `git annex export` has `--tracking` to
+configure the latter. It seems to only make sense to import and export the
+same tracking branch. So, should `git annex export --tracking` set the same
+thing, or perhaps it would be better to move the tracking branch
+configuration out of `git annex export` and into an interface that
+explicitly configures both import and export?
 
 ## content identifiers
 
