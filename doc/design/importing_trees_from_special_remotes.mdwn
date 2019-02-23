@@ -36,6 +36,14 @@ would be ok to make a commit with no parent. git merge would then need
 --allow-unrelated-histories, and it would be more likely for the merge to
 have conflicts.
 
+It's also possible for the export log to indicate an unresolved export
+conflict, so two trees got exported to the remote independently. The
+content of the remote is not known at this point, but import will resolve
+that by getting a list of its contents. So, in this case, use the multiple
+commits that are in the export log as the parent of the generated commit,
+which nicely indicates to git that there was a conflict and it got
+resolved.
+
 ## command line interface
 
 `git annex import --from remote` would import files from the remote to the
