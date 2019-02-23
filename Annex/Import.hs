@@ -5,7 +5,12 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.Import (buildImportCommit, buildImportTrees) where
+module Annex.Import (
+	ImportTreeConfig(..),
+	ImportCommitConfig(..),
+	buildImportCommit,
+	buildImportTrees
+) where
 
 import Annex.Common
 import Types.Import
@@ -22,56 +27,89 @@ import Annex.LockFile
 import Logs.Export
 import Database.Export
 
-{- Builds a commit on top of a basecommit that reflects changes to the
- - content of a remote. When there are no changes to commit, returns Nothing.
+{- Configures how to build an import tree. -}
+data ImportTreeConfig
+	= ImportTree
+	-- ^ Import the tree as-is from the remote.
+	| ImportSubTree TopFilePath Sha
+	-- ^ Import a tree from the remote and graft it into a subdirectory
+	-- of the existing tree whose Sha is provided, replacing anything
+	-- that was there before.
+	deriving (Show)
+
+{- Configures how to build an import commit. -}
+data ImportCommitConfig = ImportCommitConfig
+	{ importCommitParentRef :: Maybe Ref
+	-- ^ Use the commit that the Ref points to as the parent of the
+	-- commit. The Ref may be a branch name.
+	, importCommitMode :: Git.Branch.CommitMode
+	, importCommitMessage :: String
+	}
+
+{- Builds a commit for an import from a special remote. 
  -
  - When a remote provided a history of versions of files,
  - builds a corresponding tree of git commits.
+ -
+ - When there are no changes to commit (ie, the imported tree is the same
+ - as the tree in the importCommitParent), returns Nothing.
  -
  - After importing from a remote, exporting the same thing back to the
  - remote should be a no-op. So, the export log and database are
  - updated to reflect the imported tree.
  -
- - The files are imported to the top of the git repository, unless a
- - subdir is specified, then the import will only affect the contents of
- - the subdir.
- -
- - This does not import any content from a remote. But since it needs the
+ - This does not download any content from a remote. But since it needs the
  - Key of imported files to be known, its caller will have to first download
  - new files in order to generate keys for them.
  -}
 buildImportCommit
 	:: Remote
-	-> Ref
-	-> Maybe TopFilePath
+	-> ImportTreeConfig
+	-> ImportCommitConfig
 	-> ImportableContents Key
-	-> Git.Branch.CommitMode
-	-> String
 	-> Annex (Either String (Maybe Ref))
-buildImportCommit remote basecommit subdir importable commitmode commitmessage =
-	inRepo (Git.Ref.tree basecommit) >>= \case
-		Nothing -> return $
-			Left $ "Cannot find tree for " ++ fromRef basecommit
-		Just basetree -> do
-			imported@(History finaltree _) <-
-				buildImportTrees basetree subdir importable
-			mkcommits basetree imported >>= \case
-				Nothing -> return (Right Nothing)
-				Just finalcommit -> do
-					updateexportdb finaltree
-					updateexportlog finaltree
-					return (Right (Just finalcommit))
+buildImportCommit remote importtreeconfig importcommitconfig importable =
+	case importCommitParentRef importcommitconfig of
+		Nothing -> go emptyTree Nothing
+		Just parentref -> inRepo (Git.Ref.sha parentref) >>= \case
+			Nothing -> return $
+				Left $ "Cannot find ref " ++ fromRef parentref
+			Just basecommit -> inRepo (Git.Ref.tree basecommit) >>= \case
+				Nothing -> go emptyTree Nothing
+				Just origtree -> go origtree (Just basecommit)
   where
-	mkcommits basetree (History importedtree hs) = do
-		parents <- catMaybes <$> mapM (mkcommits basetree) hs
-		if basetree == importedtree && null parents
-			then return Nothing
+	basetree = case importtreeconfig of
+		ImportTree -> emptyTree
+		ImportSubTree _ sha -> sha
+	subdir = case importtreeconfig of
+		ImportTree -> Nothing
+		ImportSubTree dir _ -> Just dir
+	
+	go origtree basecommit = do
+		imported@(History finaltree _) <-
+			buildImportTrees basetree subdir importable
+		mkcommits origtree basecommit imported >>= \case
+			Nothing -> return (Right Nothing)
+			Just finalcommit -> do
+				updateexportdb finaltree
+				updateexportlog finaltree
+				return (Right (Just finalcommit))
+
+	mkcommits origtree basecommit (History importedtree hs) = do
+		parents <- catMaybes <$> mapM (mkcommits origtree basecommit) hs
+		if importedtree == origtree && null parents
+			then return Nothing -- no changes to commit
 			else do
 				let commitparents = if null parents
-					then [basecommit]
+					then catMaybes [basecommit]
 					else parents
-				commit <- inRepo $ Git.Branch.commitTree commitmode commitmessage commitparents importedtree
+				commit <- inRepo $ Git.Branch.commitTree
+					(importCommitMode importcommitconfig)
+					(importCommitMessage importcommitconfig)
+					commitparents
+					importedtree
 				return (Just commit)
+
 	updateexportdb importedtree = 
 		withExclusiveLock (gitAnnexExportLock (uuid remote)) $ do
 			db <- openDb (uuid remote)
@@ -82,6 +120,7 @@ buildImportCommit remote basecommit subdir importable commitmode commitmessage =
 				liftIO $ recordExportTreeCurrent db importedtree
 				-- TODO: addExportedLocation etc
 				liftIO $ flushDbQueue db
+	
 	updateexportlog importedtree = do
 		old <- getExport (uuid remote)
 		recordExport (uuid remote) $ ExportChange
