@@ -1,0 +1,9 @@
+Yesterday, got the git tree generation done and working. The main import
+tree code is also implemented, though it may need some fine tuning.
+
+Today I've been working on firming up user interface design and documentation.
+Turns out that import tree is going to lead to some changes to export tree.
+A remote tracking branch will be updated by both export tree and import
+tree, since those operations are similar to git push and git fetch.
+And `git annex export --tracking` will be deprecated in favor
+of a git config setting that configures both import and export.
