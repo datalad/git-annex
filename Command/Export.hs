@@ -58,7 +58,7 @@ optParser _ = ExportOptions
 		)
 	parsetracking = switch
 		( long "tracking"
-		<> help ("track changes to the " ++ paramTreeish)
+		<> help ("track changes to the " ++ paramTreeish ++ " (deprecated)")
 		)
 
 -- To handle renames which swap files, the exported file is first renamed
@@ -73,7 +73,7 @@ seek o = do
 	unlessM (isExportSupported r) $
 		giveup "That remote does not support exports."
 	when (exportTracking o) $
-		setConfig (remoteConfig r "export-tracking")
+		setConfig (remoteConfig r "annex-tracking-branch")
 			(fromRef $ exportTreeish o)
 	new <- fromMaybe (giveup "unknown tree") <$>
 		-- Dereference the tree pointed to by the branch, commit,

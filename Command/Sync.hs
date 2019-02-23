@@ -680,8 +680,8 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 	put dest = includeCommandAction $ 
 		Command.Move.toStart' dest Command.Move.RemoveNever af k (mkActionItem af)
 
-{- When a remote has an export-tracking branch, change the export to
- - follow the current content of the branch. Otherwise, transfer any files
+{- When a remote has an annex-tracking-branch configuration, change the export
+ - to contain the current content of the branch. Otherwise, transfer any files
  - that were part of an export but are not in the remote yet.
  - 
  - Returns True if any file transfers were made.
@@ -691,7 +691,7 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
   where
 	go r = withExclusiveLock (gitAnnexExportLock (Remote.uuid r)) $ do
 		db <- Export.openDb (Remote.uuid r)
-		exported <- case remoteAnnexExportTracking (Remote.gitconfig r) of
+		exported <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 			Nothing -> nontracking r
 			Just b -> do
 				mcur <- inRepo $ Git.Ref.tree b

@@ -88,9 +88,11 @@ headExists repo = do
 sha :: Branch -> Repo -> IO (Maybe Sha)
 sha branch repo = process <$> showref repo
   where
-	showref = pipeReadStrict [Param "show-ref",
-		Param "--hash", -- get the hash
-		Param $ fromRef branch]
+	showref = pipeReadStrict
+		[ Param "show-ref"
+		, Param "--hash" -- get the hash
+		, Param $ fromRef branch
+		]
 	process [] = Nothing
 	process s = Just $ Ref $ firstLine s
 
