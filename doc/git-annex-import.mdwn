@@ -1,16 +1,71 @@
 # NAME
 
-git-annex import - move and add files from outside git working copy
+git-annex import - add files from a directory or special remote
 
 # SYNOPSIS
 
-git annex import `[path ...]`
+git annex import `[path ...]` | git annex import branch[:subdir] --from remote
 
 # DESCRIPTION
 
-Moves files from somewhere outside the git working copy, and adds them to
-the annex. Individual files to import can be specified.
-If a directory is specified, the entire directory is imported.
+This command is a way to import files from elsewhere into your git-annex
+repository. It can import files from a directory into your repository, 
+or it can import files from a git-annex special remote.
+
+## IMPORTING FROM A SPECIAL REMOTE
+
+Importing from a special remote first downloads all new content from it,
+and then constructs a git commit that reflects files that have changed on
+the special remote since the last time git-annex looked at it. Merging that
+commit into your repository will update it to reflect changes made on the
+special remote.
+
+This way, something can be using the special remote for file storage,
+adding files, modifying files, and deleting files, and you can track those
+changes using git-annex.
+
+This can only be used with special remotes that were configured with
+`importtree=yes` when set up with [[git-annex-initremote]](1). Only some
+kinds of special remotes will let you configure them this way.
+
+To import from a special remote, you must specify the name of a branch.
+A corresponding remote tracking branch will be updated by `git annex
+import`. After that point, it's the same as if you had run a `git fetch`
+from a regular git remote; you can `git merge` the changes into your
+currently checked out branch.
+
+For example:
+
+	git annex import master --from myremote
+	git merge myremote/master
+
+It's also posible to limit the import to a subdirectory, using the
+"branch:subdir" syntax. For example, if "camera" is a special remote
+that accesses a camera, and you want to import those into the photos
+directory, rather than to the root of your repository:
+
+	git annex import master:photos --from camera
+	git merge camera/master
+
+You can combine using `git annex import` to fetch changes from a special 
+remote with `git annex export` to send your local changes to the special
+remote.
+
+The `git annex sync --content` command (and the git-annex assistant)
+can also be used to import from a special remote.
+To do this, you need to configure "remote.<name>.annex-tracking-branch"
+to tell it what branch to track. For example:
+
+	git config remote.myremote.annex-tracking-branch master
+	git annex sync --content
+
+## IMPORTING FROM A DIRECTORY
+
+When run with a path, `git annex import` moves files from somewhere outside
+the git working copy, and adds them to the annex. 
+
+Individual files to import can be specified. If a directory is specified,
+the entire directory is imported.
   
         	git annex import /media/camera/DCIM/*
 
@@ -25,9 +80,11 @@ a new filename being added to the repository, so the duplicate file
 is present in the repository twice. (With all checksumming backends,
 including the default SHA256E, only one copy of the data will be stored.)
 
-Several options can be used to adjust handling of duplicate files.
+Several options can be used to adjust handling of duplicate files, see
+`--duplicate`, `--deduplicate`, `--skip-duplicates`, `--clean-duplicates`,
+and `--reinject-duplicates` documentation below.
 
-# OPTIONS
+# OPTIONS FOR IMPORTING FROM A DIRECTORY
 
 * `--duplicate`
 
@@ -70,6 +127,8 @@ Several options can be used to adjust handling of duplicate files.
   can be used to specify files to import.
 
 		git annex import /dir --include='*.png'
+
+## COMMON OPTIONS
 
 * `--jobs=N` `-JN`
 

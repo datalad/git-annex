@@ -82,9 +82,12 @@ by running "git annex sync" on the remote.
   This behavior can be overridden by configuring the preferred content
   of a repository. See [[git-annex-preferred-content]](1).
 
-  When a special remote is configured as an export and is tracking a branch,
-  the export will be updated to the current content of the branch.
-  See [[git-annex-export]](1).
+  When `remote.<name>.annex-tracking-branch` is configured for a special remote
+  and that branch is checked out, syncing will import changes from
+  the remote, merge them into the branch, and export any changes that have
+  been committed to the branch back to the remote. See 
+  See [[git-annex-import]](1) and [[git-annex-export]](1) for details about
+  how importing and exporting work.
 
 * `--content-of=path` `-C path`
 

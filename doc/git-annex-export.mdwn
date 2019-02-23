@@ -6,8 +6,6 @@ git-annex export - export content to a remote
 
 git annex export `treeish --to remote`
 
-git annex export `--tracking treeish --to remote`
-
 # DESCRIPTION
 
 Use this command to export a tree of files from a git-annex repository.
@@ -45,6 +43,16 @@ paragraph do not apply. Note that dropping content from such a remote is
 not supported. See individual special remotes' documentation for
 details of how to enable such versioning.
 
+The `git annex sync --content` command (and the git-annex assistant)
+can also be used to export a branch to a special remote, 
+updating the special remote whenever the branch is changed.
+To do this, you need to configure "remote.<name>.annex-tracking-branch"
+to tell it what branch to track.
+For example:
+
+	git config remote.myremote.annex-tracking-branch master
+	git annex sync --content
+
 # OPTIONS
 
 * `--to=remote`
@@ -53,13 +61,9 @@ details of how to enable such versioning.
 
 * `--tracking`
 
-  This makes the export track changes that are committed to
-  the branch. `git annex sync --content` and the git-annex assistant
-  will update exports with commits made to the branch.
-
-  This is a local configuration setting, similar to a git remote's tracking
-  branch. You'll need to run `git annex export --tracking` in each
-  repository you want the export to track.
+  This is a deprecated way to set "remote.<name>.annex-tracking-branch".
+  Instead of using this option, you should just set the git configuration
+  yourself.
 
 * `--fast`
 
@@ -69,27 +73,23 @@ details of how to enable such versioning.
 
 # EXAMPLE
 
-	git annex initremote myexport type=directory directory=/mnt/myexport \
+	git annex initremote myremote type=directory directory=/mnt/myremote \
 		exporttree=yes encryption=none
-	git annex export master --to myexport
+	git annex export master --to myremote
 
-After that, /mnt/myexport will contain the same tree of files as the master
+After that, /mnt/myremote will contain the same tree of files as the master
 branch does.
 
 	git mv myfile subdir/myfile
 	git commit -m renamed
-	git annex export master --to myexport
+	git annex export master --to myremote
 
-That updates /mnt/myexport to reflect the renamed file.
+That updates /mnt/myremote to reflect the renamed file.
 
-	git annex export master:subdir --to myexport
+	git annex export master:subdir --to myremote
 
-That updates /mnt/myexport, to contain only the files in the "subdir"
+That updates /mnt/myremote, to contain only the files in the "subdir"
 directory of the master branch.
-
-	git annex export --tracking master --to myexport
-
-That makes myexport track changes that are committed to the master branch.
 
 # EXPORT CONFLICTS
 
@@ -115,6 +115,8 @@ export`, it will detect the export conflict, and resolve it.
 [[git-annex]](1)
 
 [[git-annex-initremote]](1)
+
+[[git-annex-import]](1)
 
 [[git-annex-sync]](1)
 
