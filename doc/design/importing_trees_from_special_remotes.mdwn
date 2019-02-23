@@ -9,12 +9,57 @@ their changes into the local repository's version control.
 The basic idea is to have a `git annex import --from remote` command.
 
 It would find changed/new/deleted files on the remote.
-Download the changed/new files and inject into the annex. 
-Generate a new treeish, with parent the treeish that was exported earlier,
-that has the modifications in it.
+Download the changed/new files and inject into the annex.
+And then generate a commit that can be merged (by the command or later by
+the user) to make their branch reflect changes made on the remote.
 
-Updating the local working copy is then done by merging the import treeish.
-This way, conflicts will be detected and handled as normal by git.
+## generating commits and merging
+
+For the merge to work correctly, the parent of the generated commit
+needs to be, when possible, a commit whose tree corresponds to the last
+tree that was exported to the remote. This way, git merge will treat the
+remote the same as a normal git remote where changes were made.
+
+The export log does not record the last exported commit though, only the
+tree. And the exported tree may not be the tree of any commit in the
+history; it's often a subtree.
+
+So, the export log needs to get a commit sha added to it. And it's possible
+that commit will get garbage collected or not pushed, and so not be
+available. It could be linked into the git-annex branch as is done for the 
+exported tree, but doing that for a commit is pretty strange. It's also
+possible for the user to export a tree by sha, so there's no commit.
+And of course, if no export has been done yet, there would be no commit.
+
+If the last exported commit is not accessible, or not recorded, seems it
+would be ok to make a commit with no parent. git merge would then need
+--allow-unrelated-histories, and it would be more likely for the merge to
+have conflicts.
+
+## command line interface
+
+`git annex import --from remote` would import files from the remote to the
+top of the working tree. Sometimes users will want to import into a
+subdirectory, so there should be a way to do that.
+
+`git annex export` has its own way to specify a subdirectory to export,
+eg "master:subdir" (which is one way of referring to a git tree in git). 
+So it seems it would make sense to make importing use a similar syntax.
+When importing, "master:subdir" would mean to import into a tree at subdir,
+and merge it into master. So any branch ref not containing a colon, eg
+"master" naturally means import not in a subdir, and merge it into the
+branch. 
+
+Note that while export can have a particular commit or tree sha specified,
+it does not makes sense to import *to* a particular sha.
+
+Also, there should be a way to configure it so `git annex sync --content` 
+first imports from a remote and then exports to it. Currently `git annex
+export` has `--tracking` to configure the latter. It seems to only make
+sense to import and export the same tracking branch. So, should `git annex
+export --tracking` set the same thing, or perhaps it would be better to
+move the tracking branch configuration out of `git annex export` and into
+an interface that explicitly configures both import and export?
 
 ## content identifiers
 

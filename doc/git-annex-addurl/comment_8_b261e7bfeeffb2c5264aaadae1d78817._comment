@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: provide flags to youtube-dl"""
+ date="2019-02-22T20:01:37Z"
+ content="""
+@gan, there's not much point in providing flags that are only used in the
+initial download; the main point in adding the url to git-annex is so you
+can download the same content from it again later.
+"""]]
