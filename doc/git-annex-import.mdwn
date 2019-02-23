@@ -62,7 +62,7 @@ to tell it what branch to track. For example:
 ## IMPORTING FROM A DIRECTORY
 
 When run with a path, `git annex import` moves files from somewhere outside
-the git working copy, and adds them to the annex. 
+the git working copy, and adds them to the annex.
 
 Individual files to import can be specified. If a directory is specified,
 the entire directory is imported.

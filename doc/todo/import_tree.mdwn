@@ -21,7 +21,10 @@ this.
 * When on an adjusted unlocked branch, need to import the files unlocked.
 
 * What if the remote lists importable filenames that are absolute paths,
-  or contain a "../" attack?
+  or contain a "../" attack? Does git already guard against merging such
+  trees?
+
+* Need to support annex.largefiles when importing.
 
 ## race conditions
 
