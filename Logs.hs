@@ -25,13 +25,15 @@ data LogVariety
 getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
 	| f `elem` topLevelOldUUIDBasedLogs = Just OldUUIDBasedLog
-	| isRemoteStateLog f || isRemoteContentIdentifierLog f = Just NewUUIDBasedLog
+	| f `elem` topLevelNewUUIDBasedLogs = Just NewUUIDBasedLog
+	| isRemoteStateLog f = Just NewUUIDBasedLog
+	| isRemoteContentIdentifierLog f = Just NewUUIDBasedLog
 	| isChunkLog f = ChunkLog <$> chunkLogFileKey f
 	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
 	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
-{- All the (old-format) uuid-based logs stored in the top of the git-annex branch. -}
+{- All the old-format uuid-based logs stored in the top of the git-annex branch. -}
 topLevelOldUUIDBasedLogs :: [FilePath]
 topLevelOldUUIDBasedLogs =
 	[ uuidLog
@@ -44,8 +46,14 @@ topLevelOldUUIDBasedLogs =
 	, activityLog
 	, differenceLog
 	, multicastLog
-	, exportLog
 	]
+
+{- All the new-format uuid-based logs stored in the top of the git-annex branch. -}
+topLevelNewUUIDBasedLogs :: [FilePath]
+topLevelNewUUIDBasedLogs =
+	[ exportLog
+	]
+
 
 {- All the ways to get a key from a presence log file -}
 presenceLogs :: FilePath -> [Maybe Key]
