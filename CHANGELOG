@@ -2,6 +2,8 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
 
   * Fix storage of metadata values containing newlines.
     (Reversion introduced in version 7.20190122.)
+  * S3: Support enabling bucket versioning when built with aws-0.21.1.
+  * stack.yaml: Build with aws-0.21.1
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 
