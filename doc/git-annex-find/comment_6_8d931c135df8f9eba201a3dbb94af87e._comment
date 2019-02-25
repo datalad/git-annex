@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="Find (and other operations) over multiple repos"
+ date="2019-02-25T14:33:26Z"
+ content="""
+Sometimes I want to move files from one git annex repo to another. It would be really awesome if one could so something like:
+
+    git annex find --in here --and --not --in-repo /path/to/OTHER-REPO
+
+Just to make myself clear. I do not mean \"other remote\" (foreign instance of \"same\" repo). I actually mean different repos without common location tracking, no common branches, etc. The only concession I would make (since I think it's necessary) would be that the same backend has to be used in both repos.
+
+This approach could also be relevant for other git annex commands, e.g.:
+
+    git annex move file --to-repo /path/to/OTHER-REPO
+
+Is there any way to do it? Or would this be a feature request worth to consider?
+"""]]
