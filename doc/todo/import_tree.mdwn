@@ -10,6 +10,17 @@ this.
 
 ## implementation notes
 
+* "git annex import master --from rmt" followed by "git annex import master:sub --from rmt"
+  first makes the tracking branch contain only what's in the remote,
+  and then grafts what's in the remote into a subdir. Is that the behavior
+  a user would expect, or would they instead expect that importing to a new
+  place starts the tracking branch over fresh on the contents of master?
+
+  Hmm, one way to look at it is that if there was a merge from
+  refs/remotes/rmt/master in between the two commands, and then after, the
+  result would be the same as if there was only a merge after. So the
+  current behavior seems to make sense.
+
 * Database.ContentIdentifier needs a way to update the database with
   information coming from the git-annex branch. This will allow multiple
   clones to import from the same remote, and share content identifier

@@ -6,6 +6,8 @@
  -}
 
 module Annex.Import (
+	RemoteTrackingBranch(..),
+	mkRemoteTrackingBranch,
 	ImportTreeConfig(..),
 	ImportCommitConfig(..),
 	buildImportCommit,
@@ -14,7 +16,7 @@ module Annex.Import (
 
 import Annex.Common
 import Types.Import
-import Types.Remote (uuid)
+import qualified Types.Remote as Remote
 import Git.Types
 import Git.Tree
 import Git.Sha
@@ -26,6 +28,16 @@ import Annex.Link
 import Annex.LockFile
 import Logs.Export
 import Database.Export
+
+newtype RemoteTrackingBranch = RemoteTrackingBranch
+	{ fromRemoteTrackingBranch :: Ref }
+	deriving (Show, Eq)
+
+{- Makes a remote tracking branch corresponding to a local branch. 
+ - Note that the local branch does not have to exist yet. -}
+mkRemoteTrackingBranch :: Remote -> Ref -> RemoteTrackingBranch
+mkRemoteTrackingBranch remote ref = RemoteTrackingBranch $
+	Git.Ref.underBase ("refs/remotes/" ++ Remote.name remote) ref
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -39,9 +51,8 @@ data ImportTreeConfig
 
 {- Configures how to build an import commit. -}
 data ImportCommitConfig = ImportCommitConfig
-	{ importCommitParentRef :: Maybe Ref
-	-- ^ Use the commit that the Ref points to as the parent of the
-	-- commit. The Ref may be a branch name.
+	{ importCommitParent :: Maybe Sha
+	-- ^ Commit to use as a parent of the import commit.
 	, importCommitMode :: Git.Branch.CommitMode
 	, importCommitMessage :: String
 	}
@@ -67,16 +78,13 @@ buildImportCommit
 	-> ImportTreeConfig
 	-> ImportCommitConfig
 	-> ImportableContents Key
-	-> Annex (Either String (Maybe Ref))
+	-> Annex (Maybe Ref)
 buildImportCommit remote importtreeconfig importcommitconfig importable =
-	case importCommitParentRef importcommitconfig of
+	case importCommitParent importcommitconfig of
 		Nothing -> go emptyTree Nothing
-		Just parentref -> inRepo (Git.Ref.sha parentref) >>= \case
-			Nothing -> return $
-				Left $ "Cannot find ref " ++ fromRef parentref
-			Just basecommit -> inRepo (Git.Ref.tree basecommit) >>= \case
-				Nothing -> go emptyTree Nothing
-				Just origtree -> go origtree (Just basecommit)
+		Just basecommit -> inRepo (Git.Ref.tree basecommit) >>= \case
+			Nothing -> go emptyTree Nothing
+			Just origtree -> go origtree (Just basecommit)
   where
 	basetree = case importtreeconfig of
 		ImportTree -> emptyTree
@@ -89,11 +97,11 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 		imported@(History finaltree _) <-
 			buildImportTrees basetree subdir importable
 		mkcommits origtree basecommit imported >>= \case
-			Nothing -> return (Right Nothing)
+			Nothing -> return Nothing
 			Just finalcommit -> do
 				updateexportdb finaltree
 				updateexportlog finaltree
-				return (Right (Just finalcommit))
+				return (Just finalcommit)
 
 	mkcommits origtree basecommit (History importedtree hs) = do
 		parents <- catMaybes <$> mapM (mkcommits origtree basecommit) hs
@@ -111,8 +119,8 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 				return (Just commit)
 
 	updateexportdb importedtree = 
-		withExclusiveLock (gitAnnexExportLock (uuid remote)) $ do
-			db <- openDb (uuid remote)
+		withExclusiveLock (gitAnnexExportLock (Remote.uuid remote)) $ do
+			db <- openDb (Remote.uuid remote)
 			prevtree <- liftIO $ fromMaybe emptyTree
 				<$> getExportTreeCurrent db
 			when (importedtree /= prevtree) $ do
@@ -122,8 +130,8 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 				liftIO $ flushDbQueue db
 	
 	updateexportlog importedtree = do
-		old <- getExport (uuid remote)
-		recordExport (uuid remote) $ ExportChange
+		old <- getExport (Remote.uuid remote)
+		recordExport (Remote.uuid remote) $ ExportChange
 			{ oldTreeish = exportedTreeishes old
 			, newTreeish = importedtree
 			}

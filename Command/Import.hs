@@ -15,6 +15,8 @@ import qualified Annex
 import qualified Command.Add
 import qualified Command.Reinject
 import qualified Types.Remote as Remote
+import qualified Git.Ref
+import qualified Git.Branch
 import Utility.CopyFile
 import Backend
 import Types.KeySource
@@ -28,6 +30,8 @@ import Utility.InodeCache
 import Logs.Location
 import Git.FilePath
 import Git.Types
+import Git.Branch
+import Types.Import
 
 cmd :: Command
 cmd = notBareRepo $
@@ -240,6 +244,29 @@ verifyExisting key destfile (yes, no) = do
 		(const yes) no
 
 startRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandStart
-startRemote remote branch subdir = do
+startRemote remote branch msubdir = do
 	showStart' "import" (Just (Remote.name remote))
+	importtreeconfig <- case msubdir of
+		Nothing -> return ImportTree
+		Just subdir -> frombranch Git.Ref.tree >>= \case
+			Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
+			Just tree -> pure $ ImportSubTree subdir tree
+	parentcommit <- frombranch Git.Ref.sha
+	let importcommitconfig = ImportCommitConfig parentcommit ManualCommit importmessage
+	-- TODO enumerate and download
+	let importable = ImportableContents [] []
+	importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
+	-- Update the tracking branch. Done even when there is nothing new
+	-- to import, to make sure it exists.
+	inRepo $ Git.Branch.update importmessage (fromRemoteTrackingBranch tb) $
+		fromMaybe (giveup $ "Nothing to import and " ++ fromRef branch ++ " does not exist.") $
+			importcommit <|> parentcommit
 	next stop
+  where
+	importmessage = "import from " ++ Remote.name remote
+	tb = mkRemoteTrackingBranch remote branch
+	-- If the remote tracking branch already exists, get from it,
+	-- otherwise get from the branch.
+	frombranch a = inRepo (a (fromRemoteTrackingBranch tb)) >>= \case
+		Just v -> return (Just v)
+		Nothing -> inRepo (a branch)
