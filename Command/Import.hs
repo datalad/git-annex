@@ -1,9 +1,11 @@
 {- git-annex command
  -
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE ApplicativeDo #-}
 
 module Command.Import where
 
@@ -12,6 +14,7 @@ import qualified Git
 import qualified Annex
 import qualified Command.Add
 import qualified Command.Reinject
+import qualified Types.Remote as Remote
 import Utility.CopyFile
 import Backend
 import Types.KeySource
@@ -20,8 +23,11 @@ import Annex.NumCopies
 import Annex.FileMatcher
 import Annex.Ingest
 import Annex.InodeSentinal
+import Annex.Import
 import Utility.InodeCache
 import Logs.Location
+import Git.FilePath
+import Git.Types
 
 cmd :: Command
 cmd = notBareRepo $
@@ -30,18 +36,34 @@ cmd = notBareRepo $
 			"move and add files from outside git working copy"
 			paramPaths (seek <$$> optParser)
 
-data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
-	deriving (Eq)
-
-data ImportOptions = ImportOptions
-	{ importFiles :: CmdParams
-	, duplicateMode :: DuplicateMode
-	}
+data ImportOptions 
+	= LocalImportOptions
+		{ importFiles :: CmdParams
+		, duplicateMode :: DuplicateMode
+		}
+	| RemoteImportOptions
+		{ importFromRemote :: DeferredParse Remote
+		, importToBranch :: Branch
+		, importToSubDir :: Maybe FilePath
+		}
 
 optParser :: CmdParamsDesc -> Parser ImportOptions
-optParser desc = ImportOptions
-	<$> cmdParams desc
-	<*> (fromMaybe Default <$> optional duplicateModeParser)
+optParser desc = remoteopts <|> localopts
+  where
+	localopts = LocalImportOptions
+		<$> cmdParams desc
+		<*> (fromMaybe Default <$> optional duplicateModeParser)
+	remoteopts = do
+		remote <- parseRemoteOption <$> parseFromOption
+		(branch, subdir) <- separate (== ':') <$> argument str
+			( metavar "BRANCH[:SUBDIR]"
+			)
+		pure $ RemoteImportOptions remote
+			(Ref branch)
+			(if null subdir then Nothing else Just subdir)
+
+data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
+	deriving (Eq)
 
 duplicateModeParser :: Parser DuplicateMode
 duplicateModeParser = 
@@ -67,17 +89,24 @@ duplicateModeParser =
 		)
 
 seek :: ImportOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o@(LocalImportOptions {}) = allowConcurrentOutput $ do
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
 		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	largematcher <- largeFilesMatcher
-	(commandAction . start largematcher (duplicateMode o))
+	(commandAction . startLocal largematcher (duplicateMode o))
 		`withPathContents` importFiles o
+seek o@(RemoteImportOptions {}) = do
+	r <- getParsed (importFromRemote o)
+	subdir <- maybe
+		(pure Nothing)
+		(Just <$$> inRepo . toTopFilePath)
+		(importToSubDir o)
+	commandAction $ startRemote r (importToBranch o) subdir
 
-start :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
-start largematcher mode (srcfile, destfile) =
+startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
+startLocal largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
 			showStart "import" destfile
@@ -209,3 +238,8 @@ verifyExisting key destfile (yes, no) = do
 	(tocheck, preverified) <- verifiableCopies key []
 	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
 		(const yes) no
+
+startRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandStart
+startRemote remote branch subdir = do
+	showStart' "import" (Just (Remote.name remote))
+	next stop
