@@ -5,13 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Annex.Import (
 	RemoteTrackingBranch(..),
 	mkRemoteTrackingBranch,
 	ImportTreeConfig(..),
 	ImportCommitConfig(..),
 	buildImportCommit,
-	buildImportTrees
+	buildImportTrees,
+	downloadImport
 ) where
 
 import Annex.Common
@@ -26,8 +29,14 @@ import qualified Git.Branch
 import qualified Annex
 import Annex.Link
 import Annex.LockFile
+import Utility.Metered
 import Logs.Export
-import Database.Export
+import Logs.ContentIdentifier
+import qualified Database.Export as Export
+import qualified Database.ContentIdentifier as CID
+
+import Control.Concurrent.STM
+import qualified Data.Map.Strict as M
 
 newtype RemoteTrackingBranch = RemoteTrackingBranch
 	{ fromRemoteTrackingBranch :: Ref }
@@ -120,14 +129,14 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 
 	updateexportdb importedtree = 
 		withExclusiveLock (gitAnnexExportLock (Remote.uuid remote)) $ do
-			db <- openDb (Remote.uuid remote)
+			db <- Export.openDb (Remote.uuid remote)
 			prevtree <- liftIO $ fromMaybe emptyTree
-				<$> getExportTreeCurrent db
+				<$> Export.getExportTreeCurrent db
 			when (importedtree /= prevtree) $ do
-				updateExportTree db prevtree importedtree
-				liftIO $ recordExportTreeCurrent db importedtree
+				Export.updateExportTree db prevtree importedtree
+				liftIO $ Export.recordExportTreeCurrent db importedtree
 				-- TODO: addExportedLocation etc
-				liftIO $ flushDbQueue db
+			Export.closeDb db
 	
 	updateexportlog importedtree = do
 		old <- getExport (Remote.uuid remote)
@@ -170,3 +179,63 @@ buildImportTrees basetree msubdir importable = History
 		symlink <- calcRepo $ gitAnnexLink relf k
 		linksha <- hashSymlink symlink
 		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
+
+{- Downloads all new ContentIdentifiers. Supports concurrency when enabled.
+ -
+ - If any download fails, the whole thing fails, but it will resume where
+ - it left off.
+ -}
+downloadImport :: Remote -> ImportableContents ContentIdentifier -> Annex (Maybe (ImportableContents Key))
+downloadImport remote importablecontents = do
+	-- This map is used to remember content identifiers that
+	-- were just downloaded, before they have necessarily been
+	-- stored in the database. This way, if the same content
+	-- identifier appears multiple times in the
+	-- importablecontents (eg when it has a history), 
+	-- they will only be downloaded once.
+	cidmap <- liftIO $ newTVarIO M.empty
+	bracket CID.openDb CID.closeDb (go cidmap importablecontents)
+	-- TODO really support concurrency; avoid donwloading the same
+	-- ContentIdentifier twice.
+  where
+	go cidmap (ImportableContents l h) db = do
+		l' <- mapM (download cidmap db) l
+		if any isNothing l'
+			then return Nothing
+			else do
+				h' <- mapM (\ic -> go cidmap ic db) h
+				if any isNothing h'
+					then return Nothing
+					else return $ Just $
+						ImportableContents
+							(catMaybes l')
+							(catMaybes h')
+	
+	download cidmap db (loc, cid) = getcidkey cidmap db cid >>= \case
+		(k:_) -> return $ Just (loc, k)
+		[] -> do
+			-- TODO progresss bar
+			let p = nullMeterUpdate
+			let ia = Remote.importActions remote
+			Remote.retrieveExportWithContentIdentifier ia loc cid mkkey p >>= \case
+				Just k -> do
+					recordcidkey cidmap db cid k
+					return $ Just (loc, k)
+				Nothing -> return Nothing
+	
+	mkkey f = error "TODO"
+
+	getcidkey cidmap db cid = liftIO $
+		CID.getContentIdentifierKeys db (Remote.uuid remote) cid >>= \case
+			[] -> atomically $ do
+				m <- readTVar cidmap
+				-- force lookup inside STM transaction
+				let !v = maybeToList $ M.lookup cid m
+				return v
+			l -> return l
+
+	recordcidkey cidmap db cid k = do
+		liftIO $ atomically $ modifyTVar' cidmap $
+			M.insert cid k
+		liftIO $ CID.recordContentIdentifier db (Remote.uuid remote) cid k
+		recordContentIdentifier (Remote.uuid remote) cid k

@@ -258,7 +258,8 @@ data ImportActions a = ImportActions
 		:: ExportLocation
 		-> ContentIdentifier
 		-> (FilePath -> a Key)
-		-- ^ callback that generates a key from the downloaded content
+		-- ^ callback that generates a key from the downloaded content,
+		-- it may rename or delete the file
 		-> MeterUpdate
 		-> a (Maybe Key)
 	-- Exports content to an ExportLocation, and returns the
