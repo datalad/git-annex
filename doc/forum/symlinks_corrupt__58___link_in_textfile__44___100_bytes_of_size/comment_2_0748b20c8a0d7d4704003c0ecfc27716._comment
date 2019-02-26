@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="sameerds"
+ avatar="http://cdn.libravatar.org/avatar/b6d36a03115d3ececaafe16e327e9e27"
+ subject="+1"
+ date="2019-02-24T17:06:30Z"
+ content="""
+I am facing the same problem. It's a v6 repo on an NTFS partition mounted on an Ubuntu system. Many (but not all) of my files look like ordinary text files with a path to the key. Double-clicking them in the GUI obviously doesn't work because although the extention is .jpg, the file contents are plain text. As far as I can see, it should have been a symlink. Commands like \"get\" and \"find\" work as if those files are present in the repo.
+"""]]

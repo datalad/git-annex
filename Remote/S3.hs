@@ -861,7 +861,7 @@ getS3VersionIDPublicUrls mk info u k =
 -- setting versioning in a bucket that git-annex has already exported
 -- files to risks losing the content of those un-versioned files.
 enableBucketVersioning :: SetupStage -> RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
-#if MIN_VERSION_aws(0,22,0)
+#if MIN_VERSION_aws(0,21,1)
 enableBucketVersioning ss c gc u = do
 #else
 enableBucketVersioning ss c _ _ = do
@@ -876,7 +876,7 @@ enableBucketVersioning ss c _ _ = do
 				giveup "Cannot change versioning= of existing S3 remote."
   where
 	enableversioning b = do
-#if MIN_VERSION_aws(0,22,0)
+#if MIN_VERSION_aws(0,21,1)
 		showAction "enabling bucket versioning"
 		hdl <- mkS3HandleVar c gc u
 		withS3HandleOrFail u hdl $ \h ->
