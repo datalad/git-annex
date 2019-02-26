@@ -107,7 +107,7 @@ seek o@(RemoteImportOptions {}) = do
 		(pure Nothing)
 		(Just <$$> inRepo . toTopFilePath)
 		(importToSubDir o)
-	commandAction $ startRemote r (importToBranch o) subdir
+	seekRemote r (importToBranch o) subdir
 
 startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 startLocal largematcher mode (srcfile, destfile) =
@@ -243,9 +243,8 @@ verifyExisting key destfile (yes, no) = do
 	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
 		(const yes) no
 
-startRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandStart
-startRemote remote branch msubdir = do
-	showStart' "import" (Just (Remote.name remote))
+seekRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandSeek
+seekRemote remote branch msubdir = allowConcurrentOutput $ do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir -> frombranch Git.Ref.tree >>= \case
@@ -253,15 +252,14 @@ startRemote remote branch msubdir = do
 			Just tree -> pure $ ImportSubTree subdir tree
 	parentcommit <- frombranch Git.Ref.sha
 	let importcommitconfig = ImportCommitConfig parentcommit ManualCommit importmessage
+
+	showStart' "import" (Just (Remote.name remote))
 	-- TODO enumerate and download
 	let importable = ImportableContents [] []
-	importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
-	-- Update the tracking branch. Done even when there is nothing new
-	-- to import, to make sure it exists.
-	inRepo $ Git.Branch.update importmessage (fromRemoteTrackingBranch tb) $
-		fromMaybe (giveup $ "Nothing to import and " ++ fromRef branch ++ " does not exist.") $
-			importcommit <|> parentcommit
-	next stop
+	showEndOk
+
+	void $ includeCommandAction $
+		commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable
   where
 	importmessage = "import from " ++ Remote.name remote
 	tb = mkRemoteTrackingBranch remote branch
@@ -270,3 +268,22 @@ startRemote remote branch msubdir = do
 	frombranch a = inRepo (a (fromRemoteTrackingBranch tb)) >>= \case
 		Just v -> return (Just v)
 		Nothing -> inRepo (a branch)
+
+commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents Key -> CommandStart
+commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable = do
+	showStart' "update" (Just $ fromRef $ fromRemoteTrackingBranch tb)
+	next $ do
+		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
+		next $ updateremotetrackingbranch importcommit
+		
+  where
+	-- Update the tracking branch. Done even when there
+	-- is nothing new to import, to make sure it exists.
+	updateremotetrackingbranch importcommit =
+		case importcommit <|> parentcommit of
+			Just c -> do
+				inRepo $ Git.Branch.update' (fromRemoteTrackingBranch tb) c
+				return True
+			Nothing -> do
+				warning $ "Nothing to import and " ++ fromRef branch ++ " does not exist."
+				return False
