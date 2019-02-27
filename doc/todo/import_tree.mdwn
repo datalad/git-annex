@@ -10,13 +10,6 @@ this.
 
 ## implementation notes
 
-* import can run out of disk space. Should listImportableContents 
-  include the size of the file, so that annex.diskreserve can be checked?
-
-* Should retrieveExportWithContentIdentifier have a FilePath parameter,
-  to tell it the file to retrieve to? And if so, would it make sense to
-  have a ContentLocation -> Key, so it can use gitAnnexTmpObjectLocation?
-
 * "git annex import master --from rmt" followed by "git annex import master:sub --from rmt"
   first makes the tracking branch contain only what's in the remote,
   and then grafts what's in the remote into a subdir. Is that the behavior

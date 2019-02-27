@@ -43,6 +43,7 @@ import Utility.Metered
 import Git.Types (RemoteName)
 import Utility.SafeCommand
 import Utility.Url
+import Utility.DataUnits
 
 type RemoteConfigKey = String
 
@@ -243,11 +244,11 @@ data ExportActions a = ExportActions
 
 data ImportActions a = ImportActions
 	-- Finds the current set of files that are stored in the remote,
-	-- along with their content identifiers.
+	-- along with their content identifiers and size.
 	--
 	-- May also find old versions of files that are still stored in the
 	-- remote.
-	{ listImportableContents :: a (Maybe (ImportableContents ContentIdentifier))
+	{ listImportableContents :: a (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has the requested ContentIdentifier.
 	--
@@ -257,9 +258,10 @@ data ImportActions a = ImportActions
 	, retrieveExportWithContentIdentifier 
 		:: ExportLocation
 		-> ContentIdentifier
-		-> (FilePath -> a Key)
-		-- ^ callback that generates a key from the downloaded content,
-		-- it may rename or delete the file
+		-> FilePath
+		-- ^ file to write content to
+		-> a (Maybe Key)
+		-- ^ callback that generates a key from the downloaded content
 		-> MeterUpdate
 		-> a (Maybe Key)
 	-- Exports content to an ExportLocation, and returns the

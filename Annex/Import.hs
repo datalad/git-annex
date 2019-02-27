@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Import (
 	RemoteTrackingBranch(..),
@@ -29,7 +29,12 @@ import qualified Git.Branch
 import qualified Annex
 import Annex.Link
 import Annex.LockFile
+import Annex.Content
+import Backend
+import Types.Key
+import Types.KeySource
 import Utility.Metered
+import Utility.DataUnits
 import Logs.Export
 import Logs.ContentIdentifier
 import qualified Database.Export as Export
@@ -185,8 +190,8 @@ buildImportTrees basetree msubdir importable = History
  - If any download fails, the whole thing fails, but it will resume where
  - it left off.
  -}
-downloadImport :: Remote -> ImportableContents ContentIdentifier -> Annex (Maybe (ImportableContents Key))
-downloadImport remote importablecontents = do
+downloadImport :: Remote -> ImportTreeConfig -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (Maybe (ImportableContents Key))
+downloadImport remote importtreeconfig importablecontents = do
 	-- This map is used to remember content identifiers that
 	-- were just downloaded, before they have necessarily been
 	-- stored in the database. This way, if the same content
@@ -211,27 +216,45 @@ downloadImport remote importablecontents = do
 							(catMaybes l')
 							(catMaybes h')
 	
-	download cidmap db (loc, cid) = getcidkey cidmap db cid >>= \case
+	download cidmap db (loc, (cid, sz)) = getcidkey cidmap db cid >>= \case
 		(k:_) -> return $ Just (loc, k)
-		[] -> do
-			-- TODO progresss bar
-			let p = nullMeterUpdate
-			let ia = Remote.importActions remote
-			Remote.retrieveExportWithContentIdentifier ia loc cid mkkey p >>= \case
-				Just k -> do
-					recordcidkey cidmap db cid k
-					return $ Just (loc, k)
-				Nothing -> return Nothing
+		[] -> checkDiskSpaceToGet tmpkey Nothing $
+			withTmp tmpkey $ \tmpfile ->
+				Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (ingestkey loc tmpfile) p >>= \case
+					Just k -> do
+						recordcidkey cidmap db cid k
+						return $ Just (loc, k)
+					Nothing -> return Nothing
+	  where
+		-- TODO progress bar
+		p = nullMeterUpdate
+		ia = Remote.importActions remote
+		tmpkey = importKey cid sz
 	
-	mkkey f = error "TODO"
+	ingestkey loc tmpfile = do
+		f <- fromRepo $ fromTopFilePath $ locworktreefilename loc
+		backend <- chooseBackend f
+		let ks = KeySource
+			{ keyFilename = f
+			, contentLocation = tmpfile
+			, inodeCache = Nothing
+			}
+		genKey ks backend >>= \case
+			Nothing -> return Nothing
+			Just (k, _) ->
+				tryNonAsync (moveAnnex k tmpfile) >>= \case
+					Right True -> return (Just k)
+					_ -> return Nothing
+
+	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
+		ImportTree -> fromImportLocation loc
+		ImportSubTree subdir _ ->
+			getTopFilePath subdir </> fromImportLocation loc
 
 	getcidkey cidmap db cid = liftIO $
 		CID.getContentIdentifierKeys db (Remote.uuid remote) cid >>= \case
-			[] -> atomically $ do
-				m <- readTVar cidmap
-				-- force lookup inside STM transaction
-				let !v = maybeToList $ M.lookup cid m
-				return v
+			[] -> atomically $
+				maybeToList . M.lookup cid <$> readTVar cidmap
 			l -> return l
 
 	recordcidkey cidmap db cid k = do
@@ -239,3 +262,12 @@ downloadImport remote importablecontents = do
 			M.insert cid k
 		liftIO $ CID.recordContentIdentifier db (Remote.uuid remote) cid k
 		recordContentIdentifier (Remote.uuid remote) cid k
+
+{- Temporary key used for import of a ContentIdentifier while downloading
+ - content, before generating its real key. -}
+importKey :: ContentIdentifier -> Integer -> Key
+importKey (ContentIdentifier cid) size = stubKey
+	{ keyName = cid
+	, keyVariety = OtherKey "CID"
+	, keySize = Just size
+	}
