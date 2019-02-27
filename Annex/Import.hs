@@ -139,7 +139,7 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			prevtree <- liftIO $ fromMaybe emptyTree
 				<$> Export.getExportTreeCurrent db
 			when (importedtree /= prevtree) $ do
-				Export.updateExportTree db prevtree importedtree
+				Export.updateExportDb db prevtree importedtree
 				liftIO $ Export.recordExportTreeCurrent db importedtree
 				-- TODO: addExportedLocation etc
 			Export.closeDb db

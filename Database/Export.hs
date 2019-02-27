@@ -1,6 +1,6 @@
 {- Sqlite database used for exports to special remotes.
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2019 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ module Database.Export (
 	updateExportTree,
 	updateExportTree',
 	updateExportTreeFromLog,
+	updateExportDb,
 	ExportedId,
 	ExportedDirectoryId,
 	ExportTreeId,
@@ -181,31 +182,62 @@ removeExportTree h k loc = queueDb h $
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation loc)
 
-{- Diff from the old to the new tree and update the ExportTree table. -}
-updateExportTree :: ExportHandle -> Sha -> Sha -> Annex ()
-updateExportTree h old new = do
+type DiffUpdater
+	= ExportHandle
+	-> Maybe ExportKey
+	-- ^ old exported key
+	-> Maybe ExportKey
+	-- ^ new exported key
+	-> Git.DiffTree.DiffTreeItem
+	-> Annex ()
+
+mkDiffUpdater
+	:: (ExportHandle -> Key -> ExportLocation -> IO ())
+	-> (ExportHandle -> Key -> ExportLocation -> IO ())
+	-> DiffUpdater
+mkDiffUpdater removeold addnew h srcek dstek i = do
+	case srcek of
+		Nothing -> return ()
+		Just k -> liftIO $ removeold h (asKey k) loc
+	case dstek of
+		Nothing -> return ()
+		Just k -> liftIO $ addnew h (asKey k) loc
+  where
+	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
+
+runDiffUpdater :: DiffUpdater -> ExportHandle -> Sha -> Sha -> Annex ()
+runDiffUpdater updater h old new = do
 	(diff, cleanup) <- inRepo $
 		Git.DiffTree.diffTreeRecursive old new
 	forM_ diff $ \i -> do
 		srcek <- getek (Git.DiffTree.srcsha i)
 		dstek <- getek (Git.DiffTree.dstsha i)
-		updateExportTree' h srcek dstek i
+		updater h srcek dstek i
 	void $ liftIO cleanup
   where
 	getek sha
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
 
-updateExportTree' :: ExportHandle -> Maybe ExportKey -> Maybe ExportKey -> Git.DiffTree.DiffTreeItem -> Annex ()
-updateExportTree' h srcek dstek i = do
-	case srcek of
-		Nothing -> return ()
-		Just k -> liftIO $ removeExportTree h (asKey k) loc
-	case dstek of
-		Nothing -> return ()
-		Just k -> liftIO $ addExportTree h (asKey k) loc
+{- Diff from the old to the new tree and update the ExportTree table. -}
+updateExportTree :: ExportHandle -> Sha -> Sha -> Annex ()
+updateExportTree = runDiffUpdater updateExportTree'
+
+updateExportTree' :: DiffUpdater
+updateExportTree' = mkDiffUpdater removeExportTree addExportTree
+
+{- Diff from the old to the new tree and update all tables in the export
+ - database. Should only be used when all the files in the new tree have
+ - been verified to already be present in the export remote. -}
+updateExportDb :: ExportHandle -> Sha -> Sha -> Annex ()
+updateExportDb = runDiffUpdater $ mkDiffUpdater removeold addnew
   where
-	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
+	removeold h k loc = liftIO $ do
+		removeExportTree h k loc
+		removeExportedLocation h k loc
+	addnew h k loc = liftIO $ do
+		addExportTree h k loc
+		addExportedLocation h k loc
 
 data ExportUpdateResult = ExportUpdateSuccess | ExportUpdateConflict
 	deriving (Eq)
