@@ -1,0 +1,23 @@
+Yesterday I implemented the command-line interface for
+`git annex import branch --from remote` and today I got a prototype of it
+it working with the directory special remote. Still a whole lot to do
+before this feature is ready for release, but it's good to have the command
+line interface working to play with it. The workflow feels pretty good:
+
+	joey@darkstar:~/tmp/t> echo hello > ../dir/new_file
+	joey@darkstar:~/tmp/t> git annex import master --from dir
+	import dir ok
+	update refs/remotes/dir/master ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/t> git merge dir/master
+	Updating d3277e2..410aa8e
+	Fast-forward
+	 new_file | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 new_file
+	joey@darkstar:~/tmp/t> cat new_file
+	hello
+
+My laptop's keyboard is dying; the S and X keys often don't register. Is 
+making programming feel very clumsy, and there are far too many S's in
+the code I've been working on. ;-)
