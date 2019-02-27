@@ -12,6 +12,13 @@ this.
 
 * need to check if a remote has importtree=yes before trying to import from it
 
+* Importing from a remote updates the location log for downloaded keys to
+  indicate they're present in the remote. So it should also update the
+  location log for keys that were present in the remote, but no longer are.
+  This will need a fast way to list the keys that are thought to be present
+  in the remote; one way would be to remember the previous list of contents
+  in the remote, and diff between it and the current one.
+
 * "git annex import master --from rmt" followed by "git annex import master:sub --from rmt"
   first makes the tracking branch contain only what's in the remote,
   and then grafts what's in the remote into a subdir. Is that the behavior

@@ -37,6 +37,7 @@ import Utility.Metered
 import Utility.DataUnits
 import Logs.Export
 import Logs.ContentIdentifier
+import Logs.Location
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as CID
 
@@ -223,6 +224,8 @@ downloadImport remote importtreeconfig importablecontents = do
 				Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (ingestkey loc tmpfile) p >>= \case
 					Just k -> do
 						recordcidkey cidmap db cid k
+						logStatus k InfoPresent
+						logChange k (Remote.uuid remote) InfoPresent
 						return $ Just (loc, k)
 					Nothing -> return Nothing
 	  where
