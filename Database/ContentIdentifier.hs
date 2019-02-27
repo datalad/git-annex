@@ -57,7 +57,7 @@ openDb = do
 	unlessM (liftIO $ doesFileExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateContentIdentifier
-	h <- liftIO $ H.openDbQueue H.SingleWriter db "contentidentifiers"
+	h <- liftIO $ H.openDbQueue H.SingleWriter db "content_identifiers"
 	return $ ContentIdentifierHandle h
 
 closeDb :: ContentIdentifierHandle -> Annex ()
