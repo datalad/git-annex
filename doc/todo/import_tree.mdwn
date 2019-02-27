@@ -12,6 +12,9 @@ this.
 
 * need to check if a remote has importtree=yes before trying to import from it
 
+* export needs to use storeExportWithContentIdentifierM for importtree=yes
+  remotes
+
 * Importing from a remote updates the location log for downloaded keys to
   indicate they're present in the remote. So it should also update the
   location log for keys that were present in the remote, but no longer are.
