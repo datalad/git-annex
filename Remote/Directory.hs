@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -27,6 +27,7 @@ import Config
 import Utility.FileMode
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
+import Types.Import
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
@@ -74,7 +75,11 @@ gen r u c gc = do
 				, removeExportDirectory = Nothing
 				, renameExport = renameExportM dir
 				}
-			, importActions = importUnsupported
+			, importActions = ImportActions
+				{ listImportableContents = listImportableContentsM dir
+				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir
+				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
+				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -290,3 +295,27 @@ removeExportLocation topdir loc =
 	go Nothing _ = return ()
 	go (Just loc') _ = go (upFrom loc')
 		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation loc'))
+
+listImportableContentsM :: FilePath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContentsM dir = catchMaybeIO $ liftIO $ do
+	l <- dirContentsRecursive dir
+	l' <- mapM go l
+	return $ ImportableContents l' []
+  where
+	go f = do
+		sz <- getFileSize f
+		loc <- mkImportLocation <$> relPathDirToFile dir f
+		-- TODO use inode, size etc
+		let cid = ContentIdentifier $ encodeBS f
+		return (loc, (cid, sz))
+
+retrieveExportWithContentIdentifierM :: FilePath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
+retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = catchDefaultIO Nothing $ do
+	-- TODO check the ContentIdentifier is valid (avoiding all races)
+	let f = dir </> fromExportLocation loc
+	h <- liftIO $ openBinaryFile f ReadMode
+	liftIO $ hGetContentsMetered h p >>= L.writeFile dest
+	mkkey
+
+storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+storeExportWithContentIdentifierM dir = error "TODO"

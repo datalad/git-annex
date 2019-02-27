@@ -22,6 +22,7 @@ module Types.Remote
 	, isExportSupported
 	, ExportActions(..)
 	, ImportActions(..)
+	, ByteSize
 	)
 	where
 
