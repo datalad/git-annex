@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+When launching git annex webapp in Termux the browser does not open.
+
+
+### What steps will reproduce the problem?
+
+git-annex is installed in android termux according to installation instructions
+I execute the "git annex webapp" command in termux and I get this error:
+Launching web browser on http://127.0.0.1:59394/........
+/data/data/com.termux/files/usr/bin/am: 4: exec: /system/bin/app_process: Operation not permitted
+
+So the browser does not automatically open with the webapp.
+If I manually open the browser and I copy-paste the url to it, then it works.
+
+
+### What version of git-annex are you using? On what operating system?
+7.20190219-g728228d5d for android
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Not yet: I tried to use it some years ago to handle my photo collection but I think digikam didn't like the sim links and it was very slow; I also was not lucky with the external (NTFS) drive that I used for sync/backup.
+But I like this project so much that I frequently come back to check for updates and test myself with it.
