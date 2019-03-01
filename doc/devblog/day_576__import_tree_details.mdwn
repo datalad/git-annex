@@ -1,0 +1,11 @@
+Still working on [[todo/import_tree]] today. I decided to
+make the imported commit be on an unrelated history from the main branch,
+which avoids some very susprising merge behavior, but means
+users will need to pass --allow-unrelated-histories to git merge.
+
+Also got `export` and `sync` commands updating the remote tracking branch.
+It was surprisingly complicated to do.
+
+With that done, I've tested exporting to a directory remote,
+then making changes to the directory manually, and importing, and it all
+works together.
