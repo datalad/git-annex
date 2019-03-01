@@ -34,6 +34,8 @@ module Database.Export (
 	ExportTreeId,
 	ExportTreeCurrentId,
 	ExportUpdateResult(..),
+	ExportDiffUpdater,
+	runExportDiffUpdater,
 ) where
 
 import Database.Types

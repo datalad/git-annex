@@ -30,6 +30,7 @@ import qualified Annex
 import Annex.Link
 import Annex.LockFile
 import Annex.Content
+import Annex.Export
 import Backend
 import Types.Key
 import Types.KeySource
@@ -115,7 +116,8 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Nothing -> return Nothing
 			Just finalcommit -> do
 				updateexportdb finaltree
-				updateexportlog finaltree
+				oldexport <- updateexportlog finaltree
+				updatelocationlog oldexport finaltree
 				return (Just finalcommit)
 
 	mkcommits origtree basecommit (History importedtree hs) = do
@@ -145,11 +147,33 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Export.closeDb db
 	
 	updateexportlog importedtree = do
-		old <- getExport (Remote.uuid remote)
+		oldexport <- getExport (Remote.uuid remote)
 		recordExport (Remote.uuid remote) $ ExportChange
-			{ oldTreeish = exportedTreeishes old
+			{ oldTreeish = exportedTreeishes oldexport
 			, newTreeish = importedtree
 			}
+		return oldexport
+
+	-- downloadImport takes care of updating the location log
+	-- for the local repo when keys are downloaded, and also updates
+	-- the location log for the remote for keys that are present in it.
+	-- That leaves updating the location log for the remote for keys
+	-- that have had the last copy of their content removed from it.
+	--
+	-- This must run after the export database has been updated
+	-- and flushed to disk, so it can query it.
+	updatelocationlog oldexport finaltree = do
+		let stillpresent db k = liftIO $ not . null
+			<$> Export.getExportedLocation db k
+		let updater db oldkey _newkey _ = case oldkey of
+			Just (AnnexKey k) -> unlessM (stillpresent db k) $
+				logChange k (Remote.uuid remote) InfoMissing
+			Just (GitKey _) -> noop
+			Nothing -> noop
+		db <- Export.openDb (Remote.uuid remote)
+		forM_ (exportedTreeishes oldexport) $ \oldtree ->
+			Export.runExportDiffUpdater updater db oldtree finaltree
+		Export.closeDb db
 
 data History t = History t [History t]
 	deriving (Show)

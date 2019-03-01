@@ -10,21 +10,16 @@ this.
 
 ## implementation notes
 
+* directory special remote import is prototype, does not notice modified
+  files, not race safe
+
+* Need to support annex-tracking-branch configuration, which documentation
+  says makes git-annex sync and assistant do imports.
+
 * need to check if a remote has importtree=yes before trying to import from it
 
 * export needs to use storeExportWithContentIdentifierM for importtree=yes
   remotes
-
-* Importing from a remote updates the location log for downloaded keys to
-  indicate they're present in the remote. So it should also update the
-  location log for keys that were present in the remote, but no longer are.
-
-  Plan: Diff the old and new export trees. For each removed file,
-  look up the key, and check with getExportedLocation if that key
-  is located on the remote (which it could be if it was moved or there were
-  multiple copies). If not, remove from location log. This will need to
-  be done after the export database has been updated and the update flushed
-  to disk.
 
 * "git annex import master --from rmt" followed by "git annex import master:sub --from rmt"
   first makes the tracking branch contain only what's in the remote,
