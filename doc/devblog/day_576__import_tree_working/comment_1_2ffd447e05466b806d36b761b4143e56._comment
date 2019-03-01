@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="thanks for working on this"
+ date="2019-02-28T18:06:26Z"
+ content="""
+import tree directly addresses one use case I have, where a task run in the cloud reads some inputs from a bucket and writes new outputs to that bucket. import tree can then be used to register the new outputs with git-annex.
+"""]]
