@@ -16,7 +16,6 @@ import qualified Command.Add
 import qualified Command.Reinject
 import qualified Types.Remote as Remote
 import qualified Git.Ref
-import qualified Git.Branch
 import Utility.CopyFile
 import Backend
 import Types.KeySource
@@ -26,6 +25,7 @@ import Annex.FileMatcher
 import Annex.Ingest
 import Annex.InodeSentinal
 import Annex.Import
+import Annex.RemoteTrackingBranch
 import Utility.InodeCache
 import Logs.Location
 import Git.FilePath
@@ -296,7 +296,7 @@ commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig i
 	updateremotetrackingbranch importcommit =
 		case importcommit <|> parentcommit of
 			Just c -> do
-				inRepo $ Git.Branch.update' (fromRemoteTrackingBranch tb) c
+				setRemoteTrackingBranch tb c
 				return True
 			Nothing -> do
 				warning $ "Nothing to import and " ++ fromRef branch ++ " does not exist."

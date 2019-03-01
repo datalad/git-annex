@@ -650,6 +650,7 @@ Executable git-annex
     Annex.Perms
     Annex.Queue
     Annex.ReplaceFile
+    Annex.RemoteTrackingBranch
     Annex.SpecialRemote
     Annex.Ssh
     Annex.TaggedPush

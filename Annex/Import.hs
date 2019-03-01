@@ -8,8 +8,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Import (
-	RemoteTrackingBranch(..),
-	mkRemoteTrackingBranch,
 	ImportTreeConfig(..),
 	ImportCommitConfig(..),
 	buildImportCommit,
@@ -44,16 +42,6 @@ import qualified Database.ContentIdentifier as CID
 
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
-
-newtype RemoteTrackingBranch = RemoteTrackingBranch
-	{ fromRemoteTrackingBranch :: Ref }
-	deriving (Show, Eq)
-
-{- Makes a remote tracking branch corresponding to a local branch. 
- - Note that the local branch does not have to exist yet. -}
-mkRemoteTrackingBranch :: Remote -> Ref -> RemoteTrackingBranch
-mkRemoteTrackingBranch remote ref = RemoteTrackingBranch $
-	Git.Ref.underBase ("refs/remotes/" ++ Remote.name remote) ref
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
