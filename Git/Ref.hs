@@ -1,6 +1,6 @@
 {- git ref stuff
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -33,11 +33,18 @@ describe = fromRef . base
  - Converts such a fully qualified ref into a base ref
  - (eg: master or origin/master). -}
 base :: Ref -> Ref
-base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
+base = removeBase "refs/heads/" . removeBase "refs/remotes/"
+
+{- Removes a directory such as "refs/heads/master" from a
+ - fully qualified ref. Any ref not starting with it is left as-is. -}
+removeBase :: String -> Ref -> Ref
+removeBase dir (Ref r)
+	| prefix `isPrefixOf` r = Ref (drop (length prefix) r)
+	| otherwise = Ref r
   where
-	remove prefix s
-		| prefix `isPrefixOf` s = drop (length prefix) s
-		| otherwise = s
+	prefix = case end dir of
+		['/'] -> dir
+		_ -> dir ++ "/"
 
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,

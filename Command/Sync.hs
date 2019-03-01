@@ -1,10 +1,12 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE FlexibleContexts #-}
 
 module Command.Sync (
 	cmd,
@@ -691,21 +693,25 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
   where
 	go r = withExclusiveLock (gitAnnexExportLock (Remote.uuid r)) $ do
 		db <- Export.openDb (Remote.uuid r)
-		exported <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
+		(exported, mtbcommitsha) <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 			Nothing -> nontracking r
 			Just b -> do
-				mcur <- inRepo $ Git.Ref.tree b
+				mtbcommitsha <- Command.Export.getExportCommit r b
+				mcur <- maybe
+					(return Nothing)
+					(inRepo . Git.Ref.tree)
+					(fmap snd mtbcommitsha)
 				case mcur of
 					Nothing -> nontracking r
 					Just cur -> do
 						Command.Export.changeExport r db cur
-						return [mkExported cur []]
-		Export.closeDb db `after` fillexport r db (exportedTreeishes exported)
+						return ([mkExported cur []], mtbcommitsha)
+		Export.closeDb db `after` fillexport r db (exportedTreeishes exported) mtbcommitsha
 		
 	nontracking r = do
 		exported <- getExport (Remote.uuid r)
 		maybe noop (warnnontracking r exported) currbranch
-		return exported
+		return (exported, Nothing)
 	
 	warnnontracking r exported currb = inRepo (Git.Ref.tree currb) >>= \case
 		Just currt | not (any (== currt) (exportedTreeishes exported)) ->
@@ -713,15 +719,15 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 				[ "Not updating export to " ++ Remote.name r
 				, "to reflect changes to the tree, because export"
 				, "tracking is not enabled. "
-				, "(Use git-annex export's --tracking option"
-				, "to enable it.)"
+				, "(Set " ++ gitconfig ++ " to enable it.)"
 				]
 		_ -> noop
+	  where
+		gitconfig = show (remoteConfig r "annex-tracking-branch")
 
-
-	fillexport _ _ [] = return False
-	fillexport r db (t:[]) = Command.Export.fillExport r db t
-	fillexport r _ _ = do
+	fillexport _ _ [] _ = return False
+	fillexport r db (t:[]) mtbcommitsha = Command.Export.fillExport r db t mtbcommitsha
+	fillexport r _ _ _ = do
 		warnExportConflict r
 		return False
 

@@ -1,14 +1,18 @@
 git-annex (7.20190220) UNRELEASED; urgency=medium
 
+  * New feature allows importing from special remotes, using
+    git annex import branch:subdir --from remote
+  * export: Deprecated the --tracking option.
+    Instead, users can configure remote.<name>.annex-tracking-branch
+    themselves.
+  * Remote tracking branches are updated when importing and exporting to
+    special remotes, in ways analagous to how git fetch and git push do.
   * Fix storage of metadata values containing newlines.
     (Reversion introduced in version 7.20190122.)
   * Sped up git-annex export in repositories with lots of keys.
   * S3: Support enabling bucket versioning when built with aws-0.21.1.
   * stack.yaml: Build with aws-0.21.1
   * Fix cleanup of git-annex:export.log after git-annex forget --drop-dead.
-  * export: Deprecated the --tracking option.
-    Instead, users can configure remote.<name>.annex-tracking-branch
-    themselves.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 

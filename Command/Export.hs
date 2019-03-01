@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -25,6 +25,7 @@ import Annex.Content
 import Annex.Transfer
 import Annex.CatFile
 import Annex.LockFile
+import Annex.RemoteTrackingBranch
 import Logs.Location
 import Logs.Export
 import Database.Export
@@ -43,6 +44,7 @@ cmd = command "export" SectionCommon
 
 data ExportOptions = ExportOptions
 	{ exportTreeish :: Git.Ref
+	-- ^ can be a tree, a branch, a commit, or a tag
 	, exportRemote :: DeferredParse Remote
 	, exportTracking :: Bool
 	}
@@ -72,19 +74,36 @@ seek o = do
 	r <- getParsed (exportRemote o)
 	unlessM (isExportSupported r) $
 		giveup "That remote does not support exports."
+	
+	-- handle deprecated option
 	when (exportTracking o) $
 		setConfig (remoteConfig r "annex-tracking-branch")
 			(fromRef $ exportTreeish o)
-	new <- fromMaybe (giveup "unknown tree") <$>
-		-- Dereference the tree pointed to by the branch, commit,
-		-- or tag.
-		inRepo (Git.Ref.tree (exportTreeish o))
+	
+	mtbcommitsha <- getExportCommit r (exportTreeish o)
+	tree <- fromMaybe (giveup "unknown tree") <$>
+		inRepo (Git.Ref.tree (fromMaybe (exportTreeish o) (fmap snd mtbcommitsha)))
+
 	withExclusiveLock (gitAnnexExportLock (uuid r)) $ do
 		db <- openDb (uuid r)
-		changeExport r db new
-		unlessM (Annex.getState Annex.fast) $
-			void $ fillExport r db new
+		changeExport r db tree
+		unlessM (Annex.getState Annex.fast) $ do
+			void $ fillExport r db tree mtbcommitsha
 		closeDb db
+
+-- | When the treeish is a branch like master or refs/heads/master
+-- (but not refs/remotes/...), find the commit it points to
+-- and the corresponding remote tracking branch.
+getExportCommit :: Remote -> Git.Ref -> Annex (Maybe (RemoteTrackingBranch, Sha))
+getExportCommit r treeish
+	| '/' `notElem` fromRef baseref = do
+		let tb = mkRemoteTrackingBranch r baseref
+		commitsha <- inRepo $ Git.Ref.sha $ Git.Ref.underBase refsheads baseref
+		return (fmap (tb, ) commitsha)
+	| otherwise = return Nothing
+  where
+	baseref = Git.Ref.removeBase refsheads treeish
+	refsheads = "refs/heads"
 
 -- | Changes what's exported to the remote. Does not upload any new
 -- files, but does delete and rename files already exported to the remote.
@@ -189,26 +208,42 @@ mkDiffMap old new db = do
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
 
--- | Upload all exported files that are not yet in the remote,
--- Returns True when files were uploaded.
-fillExport :: Remote -> ExportHandle -> Git.Ref -> Annex Bool
-fillExport r db new = do
-	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive new
-	cvar <- liftIO $ newMVar False
-	commandActions $ map (startExport r db cvar) l
-	void $ liftIO $ cleanup
-	liftIO $ takeMVar cvar
+newtype FileUploaded = FileUploaded { fromFileUploaded :: Bool }
 
-startExport :: Remote -> ExportHandle -> MVar Bool -> Git.LsTree.TreeItem -> CommandStart
-startExport r db cvar ti = do
+newtype AllFilled = AllFilled { fromAllFilled :: Bool }
+
+-- | Upload all exported files that are not yet in the remote.
+--
+-- Returns True when some files were uploaded (perhaps not all of them).
+--
+-- Once all exported files have reached the remote, updates the
+-- remote tracking branch.
+fillExport :: Remote -> ExportHandle -> Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> Annex Bool
+fillExport r db newtree mtbcommitsha = do
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive newtree
+	cvar <- liftIO $ newMVar (FileUploaded False)
+	allfilledvar <- liftIO $ newMVar (AllFilled True)
+	commandActions $ map (startExport r db cvar allfilledvar) l
+	void $ liftIO $ cleanup
+
+	case mtbcommitsha of
+		Nothing -> noop
+		Just (tb, commitsha) ->
+			whenM (liftIO $ fromAllFilled <$> takeMVar allfilledvar) $
+				setRemoteTrackingBranch tb commitsha
+	
+	liftIO $ fromFileUploaded <$> takeMVar cvar
+
+startExport :: Remote -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> Git.LsTree.TreeItem -> CommandStart
+startExport r db cvar allfilledvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (notrecordedpresent ek) $ do
 		showStart ("export " ++ name r) f
 		ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) (asKey ek) loc))
 			( next $ next $ cleanupExport r db ek loc False
 			, do
-				liftIO $ modifyMVar_ cvar (pure . const True)
-				next $ performExport r db ek af (Git.LsTree.sha ti) loc
+				liftIO $ modifyMVar_ cvar (pure . const (FileUploaded True))
+				next $ performExport r db ek af (Git.LsTree.sha ti) loc allfilledvar
 			)
   where
 	loc = mkExportLocation f
@@ -220,8 +255,8 @@ startExport r db cvar ti = do
 		-- will still list it, so also check location tracking.
 		<*> (notElem (uuid r) <$> loggedLocations (asKey ek))
 
-performExport :: Remote -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> CommandPerform
-performExport r db ek af contentsha loc = do
+performExport :: Remote -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
+performExport r db ek af contentsha loc allfilledvar = do
 	let storer = storeExport (exportActions r)
 	sent <- case ek of
 		AnnexKey k -> ifM (inAnnex k)
@@ -246,7 +281,9 @@ performExport r db ek af contentsha loc = do
 				storer tmp sha1k loc nullMeterUpdate
 	if sent
 		then next $ cleanupExport r db ek loc True
-		else stop
+		else do
+			liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
+			stop
 
 cleanupExport :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> Bool -> CommandCleanup
 cleanupExport r db ek loc sent = do

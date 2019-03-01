@@ -21,8 +21,6 @@ this.
 * export needs to use storeExportWithContentIdentifierM for importtree=yes
   remotes
 
-* export needs to update the tracking branch with what it exported
-
 * "git annex import master --from rmt" followed by "git annex import master:sub --from rmt"
   first makes the tracking branch contain only what's in the remote,
   and then grafts what's in the remote into a subdir. Is that the behavior
