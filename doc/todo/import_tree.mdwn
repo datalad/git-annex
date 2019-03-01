@@ -21,6 +21,26 @@ this.
 * export needs to use storeExportWithContentIdentifierM for importtree=yes
   remotes
 
+* Merging the first import from a remote currently removes all local
+  files that are not present in the remote. But subsequent imports from the
+  remote do not delete newly added local files when merged. This seems 
+  inconsistent and very surprising to the user.
+
+  It happens because the remote tracking branch currently starts
+  from the local branch, and then has a commit added to it that contains
+  all files in the remote (and thus deletes the local files).
+  A subsequent import extents the tracking branch by another commit, so
+  merging that does not re-do the deletion.
+
+  One fix would be to start the remote tracking branch not with the local
+  branch. Reflecting it being a perhaps entirely separate line of
+  development. Unless git-annex export were used first, and updated the
+  tracking branch, then the branch would start with what's exported, which
+  is fine. The downside of this is that git merge --allow-unrelated-histories
+  is needed to merge that unrelated history.
+
+* export needs to update the tracking branch with what it exported
+
 * "git annex import master --from rmt" followed by "git annex import master:sub --from rmt"
   first makes the tracking branch contain only what's in the remote,
   and then grafts what's in the remote into a subdir. Is that the behavior
