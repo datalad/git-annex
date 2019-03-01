@@ -18,9 +18,13 @@ this.
 * Importing from a remote updates the location log for downloaded keys to
   indicate they're present in the remote. So it should also update the
   location log for keys that were present in the remote, but no longer are.
-  This will need a fast way to list the keys that are thought to be present
-  in the remote; one way would be to remember the previous list of contents
-  in the remote, and diff between it and the current one.
+
+  Plan: Diff the old and new export trees. For each removed file,
+  look up the key, and check with getExportedLocation if that key
+  is located on the remote (which it could be if it was moved or there were
+  multiple copies). If not, remove from location log. This will need to
+  be done after the export database has been updated and the update flushed
+  to disk.
 
 * "git annex import master --from rmt" followed by "git annex import master:sub --from rmt"
   first makes the tracking branch contain only what's in the remote,
