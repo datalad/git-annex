@@ -182,7 +182,9 @@ removeExportTree h k loc = queueDb h $
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation loc)
 
-type DiffUpdater
+-- An action that is passed the old and new values that were exported,
+-- and updates state.
+type ExportDiffUpdater
 	= ExportHandle
 	-> Maybe ExportKey
 	-- ^ old exported key
@@ -191,11 +193,11 @@ type DiffUpdater
 	-> Git.DiffTree.DiffTreeItem
 	-> Annex ()
 
-mkDiffUpdater
+mkExportDiffUpdater
 	:: (ExportHandle -> Key -> ExportLocation -> IO ())
 	-> (ExportHandle -> Key -> ExportLocation -> IO ())
-	-> DiffUpdater
-mkDiffUpdater removeold addnew h srcek dstek i = do
+	-> ExportDiffUpdater
+mkExportDiffUpdater removeold addnew h srcek dstek i = do
 	case srcek of
 		Nothing -> return ()
 		Just k -> liftIO $ removeold h (asKey k) loc
@@ -205,8 +207,8 @@ mkDiffUpdater removeold addnew h srcek dstek i = do
   where
 	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
 
-runDiffUpdater :: DiffUpdater -> ExportHandle -> Sha -> Sha -> Annex ()
-runDiffUpdater updater h old new = do
+runExportDiffUpdater :: ExportDiffUpdater -> ExportHandle -> Sha -> Sha -> Annex ()
+runExportDiffUpdater updater h old new = do
 	(diff, cleanup) <- inRepo $
 		Git.DiffTree.diffTreeRecursive old new
 	forM_ diff $ \i -> do
@@ -221,16 +223,16 @@ runDiffUpdater updater h old new = do
 
 {- Diff from the old to the new tree and update the ExportTree table. -}
 updateExportTree :: ExportHandle -> Sha -> Sha -> Annex ()
-updateExportTree = runDiffUpdater updateExportTree'
+updateExportTree = runExportDiffUpdater updateExportTree'
 
-updateExportTree' :: DiffUpdater
-updateExportTree' = mkDiffUpdater removeExportTree addExportTree
+updateExportTree' :: ExportDiffUpdater
+updateExportTree' = mkExportDiffUpdater removeExportTree addExportTree
 
 {- Diff from the old to the new tree and update all tables in the export
  - database. Should only be used when all the files in the new tree have
  - been verified to already be present in the export remote. -}
 updateExportDb :: ExportHandle -> Sha -> Sha -> Annex ()
-updateExportDb = runDiffUpdater $ mkDiffUpdater removeold addnew
+updateExportDb = runExportDiffUpdater $ mkExportDiffUpdater removeold addnew
   where
 	removeold h k loc = liftIO $ do
 		removeExportTree h k loc
