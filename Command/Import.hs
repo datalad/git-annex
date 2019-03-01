@@ -247,10 +247,15 @@ seekRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandSeek
 seekRemote remote branch msubdir = allowConcurrentOutput $ do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
-		Just subdir -> frombranch Git.Ref.tree >>= \case
-			Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
-			Just tree -> pure $ ImportSubTree subdir tree
-	parentcommit <- frombranch Git.Ref.sha
+		Just subdir ->
+			let mk tree = pure $ ImportSubTree subdir tree
+			in fromtrackingbranch Git.Ref.tree >>= \case
+				Just tree -> mk tree
+				Nothing -> inRepo (Git.Ref.tree branch) >>= \case
+					Just tree -> mk tree
+					Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
+	
+	parentcommit <- fromtrackingbranch Git.Ref.sha
 	let importcommitconfig = ImportCommitConfig parentcommit ManualCommit importmessage
 
 	importable <- download importtreeconfig =<< enumerate
@@ -258,12 +263,10 @@ seekRemote remote branch msubdir = allowConcurrentOutput $ do
 		commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable
   where
 	importmessage = "import from " ++ Remote.name remote
+
 	tb = mkRemoteTrackingBranch remote branch
-	-- If the remote tracking branch already exists, get from it,
-	-- otherwise get from the branch.
-	frombranch a = inRepo (a (fromRemoteTrackingBranch tb)) >>= \case
-		Just v -> return (Just v)
-		Nothing -> inRepo (a branch)
+
+	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
 
 	enumerate = do
 		showStart' "import" (Just (Remote.name remote))

@@ -24,7 +24,11 @@ This way, something can be using the special remote for file storage,
 adding files, modifying files, and deleting files, and you can track those
 changes using git-annex.
 
-This can only be used with special remotes that were configured with
+You can combine using `git annex import` to fetch changes from a special 
+remote with `git annex export` to send your local changes to the special
+remote.
+
+You can only import from special remotes that were configured with
 `importtree=yes` when set up with [[git-annex-initremote]](1). Only some
 kinds of special remotes will let you configure them this way.
 
@@ -39,17 +43,19 @@ For example:
 	git annex import master --from myremote
 	git merge myremote/master
 
-It's also posible to limit the import to a subdirectory, using the
+Note that you may need to pass `--allow-unrelated-histories` the first time
+you `git merge` from an import. Think of this as the remote being a
+separate git repository with its own files. If you first
+`git annex export` files to a remote, and then `git annex import` from it,
+you won't need that option.
+
+You can also limit the import to a subdirectory, using the
 "branch:subdir" syntax. For example, if "camera" is a special remote
 that accesses a camera, and you want to import those into the photos
 directory, rather than to the root of your repository:
 
 	git annex import master:photos --from camera
 	git merge camera/master
-
-You can combine using `git annex import` to fetch changes from a special 
-remote with `git annex export` to send your local changes to the special
-remote.
 
 The `git annex sync --content` command (and the git-annex assistant)
 can also be used to import from a special remote.
