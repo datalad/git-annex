@@ -1,0 +1,17 @@
+Hello,
+
+IMHO the description of the special remotes at https://git-annex.branchable.com/special_remotes/ is misleading:
+
+> But, git-annex also extends git's concept of remotes, with these special types of remotes. These can be used just like any normal remote by git-annex. They cannot be used by other git commands though.
+
+AFAIK (and just tested it with a webdav remote), a special remote can not be used to transfer tracking information, only content. So that, in order to connect to repos that can not talk to each other, a special remote is not sufficient. You additionally need a ordinary git repo to transfer the tracking information.
+
+* Is that correct? Is there a way to use a special remote to transfer tracking information? (would love that!)
+
+The description above sounds for me, as I can simply use a special remote like a normal remote, which is not the case.
+
+Just a documentation improvement suggestions.
+
+Best Thanks,
+Florian
+
