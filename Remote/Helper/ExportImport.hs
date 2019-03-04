@@ -102,10 +102,10 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 	Just c -> case yesNo c of
 		Just True -> ifM (isExportSupported r)
 			( do
-				exportdb <- Export.openDb (uuid r)
-				r' <- isexport exportdb
+				exportdbv <- liftIO $ newTVarIO Nothing
+				r' <- isexport exportdbv
 				if importTree (config r)
-					then isimport r' exportdb
+					then isimport r' exportdbv
 					else return r'
 			, return $ notexport r
 			)
@@ -128,7 +128,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 			}
 		}
 	
-	isimport r' exportdb = do
+	isimport r' exportdbv = do
 		lcklckv <- liftIO newEmptyTMVarIO
 		dbtv <- liftIO newEmptyTMVarIO
 		let store f k loc p = do
@@ -151,6 +151,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 					, liftIO $ fst <$> atomically (readTMVar dbtv)
 					)
 
+			exportdb <- getexportdb exportdbv
 			ks <- liftIO $ Export.getExportedKey exportdb loc
 			oldcids <- liftIO $ concat
 				<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) ks
@@ -166,8 +167,15 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				{ storeExport = store
 				}
 			}
+	
+	getexportdb dbv = liftIO (atomically (readTVar dbv)) >>= \case
+		Just db -> return db
+		Nothing -> do
+			db <- Export.openDb (uuid r)
+			liftIO $ atomically $ writeTVar dbv $ Just db
+			return db
 
-	isexport db = do
+	isexport dbv = do
 		updateflag <- liftIO $ newTVarIO Nothing
 
 		-- When multiple threads run this, all except the first
@@ -193,6 +201,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 		-- updates the database, to notice when an export has been
 		-- updated from another repository.
 		let getexportlocs = \k -> do
+			db <- getexportdb dbv
 			bracket startupdateonce doneupdateonce $ \updatenow ->
 				when updatenow $
 					Export.updateExportTreeFromLog db >>= \case
