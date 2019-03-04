@@ -33,6 +33,7 @@ import Annex.Content
 import Annex.UUID
 import Utility.Metered
 import Utility.Tmp
+import Utility.InodeCache
 
 remote :: RemoteType
 remote = RemoteType
@@ -300,22 +301,90 @@ listImportableContentsM :: FilePath -> Annex (Maybe (ImportableContents (Content
 listImportableContentsM dir = catchMaybeIO $ liftIO $ do
 	l <- dirContentsRecursive dir
 	l' <- mapM go l
-	return $ ImportableContents l' []
+	return $ ImportableContents (catMaybes l') []
   where
 	go f = do
-		sz <- getFileSize f
-		loc <- mkImportLocation <$> relPathDirToFile dir f
-		-- TODO use inode, size etc
-		let cid = ContentIdentifier $ encodeBS f
-		return (loc, (cid, sz))
+		st <- getFileStatus f
+		mkContentIdentifier f st >>= \case
+			Nothing -> return Nothing
+			Just cid -> do
+				relf <- relPathDirToFile dir f
+				sz <- getFileSize' f st
+				return $ Just (mkImportLocation relf, (cid, sz))
+
+-- Make a ContentIdentifier that contains an InodeCache.
+--
+-- The InodeCache is generated without checking a sentinal file.
+-- So in a case when a remount etc causes all the inodes to change,
+-- files may appear to be modified when they are not, which will only
+-- result in extra work to re-import them.
+--
+-- If the file is not a regular file, this will return Nothing.
+mkContentIdentifier :: FilePath -> FileStatus -> IO (Maybe ContentIdentifier)
+mkContentIdentifier f st =
+	fmap (ContentIdentifier . encodeBS . showInodeCache)
+		<$> toInodeCache noTSDelta f st
 
 retrieveExportWithContentIdentifierM :: FilePath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
-retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = catchDefaultIO Nothing $ do
-	-- TODO check the ContentIdentifier is valid (avoiding all races)
-	let f = dir </> fromExportLocation loc
-	h <- liftIO $ openBinaryFile f ReadMode
-	liftIO $ hGetContentsMetered h p >>= L.writeFile dest
-	mkkey
+retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = 
+	catchDefaultIO Nothing $ precheck $ docopy postcheck
+  where
+	f = dir </> fromExportLocation loc
+
+	docopy cont = do
+#ifndef mingw32_HOST_OS
+		-- Need a duplicate fd for the post check, since
+		-- hGetContentsMetered closes its handle.
+		fd <- liftIO $ openFd f ReadOnly Nothing defaultFileFlags
+		dupfd <- liftIO $ dup fd
+		h <- liftIO $ fdToHandle fd
+#else
+		h <- liftIO $ openBinaryFile f ReadMode
+#endif
+		liftIO $ hGetContentsMetered h p >>= L.writeFile dest
+		k <- mkkey
+#ifndef mingw32_HOST_OS
+		cont dupfd (return k)
+#else
+		cont (return k)
+#endif
+	
+	-- Check before copy, to avoid expensive copy of wrong file
+	-- content.
+	precheck cont = comparecid cont
+		=<< liftIO . mkContentIdentifier f
+		=<< liftIO (getFileStatus f)
+
+	-- Check after copy, in case the file was changed while it was
+	-- being copied.
+	--
+	-- When possible (not on Windows), check the same handle
+	-- Check the same handle that the file was copied from.
+	-- Avoids some race cases where the file is modified while
+	-- it's copied but then gets restored to the original content
+	-- afterwards.
+	--
+	-- This does not guard against every possible race, but neither
+	-- can InodeCaches detect every possible modification to a file.
+	-- It's probably as good or better than git's handling of similar
+	-- situations with files being modified while it's updating the
+	-- working tree for a merge.
+#ifndef mingw32_HOST_OS
+	postcheck fd cont = do
+#else
+	postcheck cont = do
+#endif
+		currcid <- liftIO $ mkContentIdentifier f
+#ifndef mingw32_HOST_OS
+			=<< getFdStatus fd
+#else
+			=<< getFileStatus f
+#endif
+		comparecid cont currcid
+	
+	comparecid cont currcid
+		| currcid == Just cid = cont
+		| otherwise = return Nothing
 
 storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
 storeExportWithContentIdentifierM dir = error "TODO"

@@ -233,12 +233,14 @@ downloadImport remote importtreeconfig importablecontents = do
 		(k:_) -> return $ Just (loc, k)
 		[] -> checkDiskSpaceToGet tmpkey Nothing $
 			withTmp tmpkey $ \tmpfile ->
-				Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (ingestkey loc tmpfile) p >>= \case
-					Just k -> do
-						recordcidkey cidmap db cid k
-						logStatus k InfoPresent
-						logChange k (Remote.uuid remote) InfoPresent
-						return $ Just (loc, k)
+				Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile) p >>= \case
+					Just k -> tryNonAsync (moveAnnex k tmpfile) >>= \case
+						Right True -> do
+							recordcidkey cidmap db cid k
+							logStatus k InfoPresent
+							logChange k (Remote.uuid remote) InfoPresent
+							return $ Just (loc, k)
+						_ -> return Nothing
 					Nothing -> return Nothing
 	  where
 		-- TODO progress bar
@@ -246,7 +248,7 @@ downloadImport remote importtreeconfig importablecontents = do
 		ia = Remote.importActions remote
 		tmpkey = importKey cid sz
 	
-	ingestkey loc tmpfile = do
+	mkkey loc tmpfile = do
 		f <- fromRepo $ fromTopFilePath $ locworktreefilename loc
 		backend <- chooseBackend f
 		let ks = KeySource
@@ -254,12 +256,7 @@ downloadImport remote importtreeconfig importablecontents = do
 			, contentLocation = tmpfile
 			, inodeCache = Nothing
 			}
-		genKey ks backend >>= \case
-			Nothing -> return Nothing
-			Just (k, _) ->
-				tryNonAsync (moveAnnex k tmpfile) >>= \case
-					Right True -> return (Just k)
-					_ -> return Nothing
+		fmap fst <$> genKey ks backend
 
 	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
 		ImportTree -> fromImportLocation loc

@@ -10,9 +10,6 @@ this.
 
 ## implementation notes
 
-* directory special remote import is prototype, does not notice modified
-  files, not race safe
-
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
