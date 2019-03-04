@@ -274,9 +274,8 @@ data ImportActions a = ImportActions
 	--
 	-- Since other things can modify the same file on the special
 	-- remote, this must take care to not overwrite such modifications,
-	-- and only overwrite a file that has the same ContentIdentifier
-	-- as was passed to it, unless listContents can recover an
-	-- overwritten file.
+	-- and only overwrite a file that has one of the ContentIdentifiers
+	-- passed to it, unless listContents can recover an overwritten file.
 	--
 	-- Also, since there can be concurrent writers, the implementation
 	-- needs to make sure that the ContentIdentifier it returns
