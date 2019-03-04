@@ -2,6 +2,10 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
 
   * New feature allows importing from special remotes, using
     git annex import branch:subdir --from remote
+  * Directory special remote supports being configured with importree=yes,
+    to allow git-annex import of files from the directory. This can be
+    combined with exporttree=yes and git-annex export used to send changes
+    back to the same directory.
   * export: Deprecated the --tracking option.
     Instead, users can configure remote.<name>.annex-tracking-branch
     themselves.
