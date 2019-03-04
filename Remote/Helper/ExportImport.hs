@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
 
 module Remote.Helper.ExportImport where
 
@@ -15,9 +15,11 @@ import Types.Backend
 import Types.Key
 import Backend
 import Remote.Helper.Encryptable (isEncrypted)
-import Database.Export
+import qualified Database.Export as Export
+import qualified Database.ContentIdentifier as ContentIdentifier
 import Annex.Export
 import Annex.Import
+import Annex.LockFile
 import Config
 import Git.Types (fromRef)
 import Logs.Export
@@ -91,51 +93,81 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 					then giveup "cannot enable importtree=yes without also enabling exporttree=yes"
 					else setup rt st mu cp c gc
 
--- | If the remote is importSupported, and importtree=yes, adjust the
--- remote to be an import.
+-- | Adjust a remote to support exporttree=yes and importree=yes.
 --
--- (This relies on all import remotes also being export remotes,
--- so adjustExportable will adjust the remote actions to use the
--- exported/imported tree.)
-adjustImportable :: Remote -> Annex Remote
-adjustImportable r
-	| importTree (config r) =
-		ifM (isExportSupported r)
-			( return r
-			, notimport
-			)
-	| otherwise = notimport
-  where
-	notimport = return $ r 
-		{ importActions = importUnsupported
-		, remotetype = (remotetype r)
-			{ importSupported = importUnsupported
-			}
-		}
-
--- | If the remote is exportSupported, and exporttree=yes, adjust the
--- remote to be an export.
-adjustExportable :: Remote -> Annex Remote
-adjustExportable r = case M.lookup "exporttree" (config r) of
-	Nothing -> notexport
+-- Note that all remotes with importree=yes also have exporttree=yes.
+adjustExportImport :: Remote -> Annex Remote
+adjustExportImport r = case M.lookup "exporttree" (config r) of
+	Nothing -> return $ notexport r
 	Just c -> case yesNo c of
 		Just True -> ifM (isExportSupported r)
-			( isexport
-			, notexport
+			( do
+				exportdb <- Export.openDb (uuid r)
+				r' <- isexport exportdb
+				if importTree (config r)
+					then isimport r' exportdb
+					else return r'
+			, return $ notexport r
 			)
-		Just False -> notexport
+		Just False -> return $ notexport r
 		Nothing -> do
 			warning $ "bad exporttree value for " ++ name r ++ ", assuming not an export"
-			notexport
+			return $ notexport r
   where
-	notexport = return $ r 
+	notexport r' = notimport r'
 		{ exportActions = exportUnsupported
-		, remotetype = (remotetype r)
+		, remotetype = (remotetype r')
 			{ exportSupported = exportUnsupported
 			}
 		}
-	isexport = do
-		db <- openDb (uuid r)
+	
+	notimport r' = r'
+		{ importActions = importUnsupported
+		, remotetype = (remotetype r')
+			{ importSupported = importUnsupported
+			}
+		}
+	
+	isimport r' exportdb = do
+		lcklckv <- liftIO newEmptyTMVarIO
+		dbtv <- liftIO newEmptyTMVarIO
+		let store f k loc p = do
+			-- Only open the database once it's needed, since
+			-- we have to take an exclusive write lock.
+			-- The write lock will remain held while the
+			-- process is running.
+			db <- liftIO (atomically (tryReadTMVar dbtv)) >>= \case
+				Just (db, _lck) -> return db
+				-- let only one thread take the lock
+				Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
+					( do
+						lck <- takeExclusiveLock gitAnnexContentIdentifierLock
+						db <- ContentIdentifier.openDb
+						liftIO $ atomically (putTMVar dbtv (db, lck))
+						return db
+					-- loser waits for winner to open
+					-- the db and can then also use its
+					-- handle
+					, liftIO $ fst <$> atomically (readTMVar dbtv)
+					)
+
+			ks <- liftIO $ Export.getExportedKey exportdb loc
+			oldcids <- liftIO $ concat
+				<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) ks
+			storeExportWithContentIdentifier (importActions r') f k loc oldcids p >>= \case
+				Nothing -> return False
+				Just newcid -> do
+					liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
+					-- TODO update git-annex branch
+					return True
+
+		return $ r'
+			{ exportActions = (exportActions r')
+				{ storeExport = store
+				}
+			}
+
+	isexport db = do
 		updateflag <- liftIO $ newTVarIO Nothing
 
 		-- When multiple threads run this, all except the first
@@ -163,13 +195,13 @@ adjustExportable r = case M.lookup "exporttree" (config r) of
 		let getexportlocs = \k -> do
 			bracket startupdateonce doneupdateonce $ \updatenow ->
 				when updatenow $
-					updateExportTreeFromLog db >>= \case
-						ExportUpdateSuccess -> return ()
-						ExportUpdateConflict -> do
+					Export.updateExportTreeFromLog db >>= \case
+						Export.ExportUpdateSuccess -> return ()
+						Export.ExportUpdateConflict -> do
 							warnExportConflict r
 							liftIO $ atomically $
 								writeTVar exportinconflict True
-			liftIO $ getExportTree db k
+			liftIO $ Export.getExportTree db k
 
 		return $ r
 			-- Storing a key on an export could be implemented,

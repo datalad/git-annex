@@ -20,6 +20,7 @@ module Database.ContentIdentifier (
 	closeDb,
 	flushDbQueue,
 	recordContentIdentifier,
+	getContentIdentifiers,
 	getContentIdentifierKeys,
 	ContentIdentifiersId,
 ) where
@@ -82,11 +83,8 @@ recordContentIdentifier h u cid k = queueDb h $ do
 
 getContentIdentifiers :: ContentIdentifierHandle -> UUID -> Key -> IO [ContentIdentifier]
 getContentIdentifiers (ContentIdentifierHandle h) u k = H.queryDbQueue h $ do
-	l <- selectList
-		[ ContentIdentifiersCid ==. cid
-		, ContentIdentifiersKey ==. toSKey k
-		] []
-	return $ map (ContentIdentifiersCid . entityVal) l
+	l <- selectList [ContentIdentifiersKey ==. toSKey k] []
+	return $ map (contentIdentifiersCid . entityVal) l
 
 getContentIdentifierKeys :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> IO [Key]
 getContentIdentifierKeys (ContentIdentifierHandle h) u cid = 

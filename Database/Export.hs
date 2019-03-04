@@ -163,9 +163,9 @@ getExportedLocation (ExportHandle h _) k = H.queryDbQueue h $ do
  - Note that this does not see recently queued changes.
  -}
 getExportedKey :: ExportHandle -> ExportLocation -> IO [Key]
-getExportedKey ExportHandle h _) el = H.queryDbQueue h $ do
+getExportedKey (ExportHandle h _) el = H.queryDbQueue h $ do
 	l <- selectList [ExportedFile ==. ef] []
-	return $ map (fromSKey . exportedKey . entityVal) l
+	return $ map (fromIKey . exportedKey . entityVal) l
   where
 	ef = toSFilePath (fromExportLocation el)
 

@@ -106,10 +106,7 @@ remoteGen m t g = do
 	let c = fromMaybe M.empty $ M.lookup u m
 	generate t g u c gc >>= \case
 		Nothing -> return Nothing
-		Just r -> do
-			r' <- adjustImportable (adjustReadOnly (addHooks r))
-			r'' <- adjustExportable r'
-			return $ Just r''
+		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r))
 
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex (Maybe Remote)

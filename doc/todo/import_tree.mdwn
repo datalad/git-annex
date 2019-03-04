@@ -10,11 +10,16 @@ this.
 
 ## implementation notes
 
+* Should the ContentIdentifier db be multiwriter? It would simplify
+  the situation with the long-lived lock of it in adjustExportImport
+
+* fix TODO in adjustExportImport
+
+* Test export to importtree=yes remote and make sure it uses 
+  storeExportWithContentIdentifier correctly.
+
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
-
-* export needs to use storeExportWithContentIdentifierM for importtree=yes
-  remotes
 
 * Database.ContentIdentifier needs a way to update the database with
   information coming from the git-annex branch. This will allow multiple

@@ -14,6 +14,7 @@ module Annex.LockFile (
 	fromLockCache,
 	withSharedLock,
 	withExclusiveLock,
+	takeExclusiveLock,
 	tryExclusiveLock,
 ) where
 
@@ -77,11 +78,18 @@ withSharedLock getlockfile a = debugLocks $ do
 {- Runs an action with an exclusive lock held. If the lock is already
  - held, blocks until it becomes free. -}
 withExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex a
-withExclusiveLock getlockfile a = debugLocks $ do
+withExclusiveLock getlockfile a = bracket
+	(takeExclusiveLock getlockfile)
+	(liftIO . dropLock)
+	(const a)
+
+{- Takes an exclusive lock, blocking until it's free. -}
+takeExclusiveLock :: (Git.Repo -> FilePath) -> Annex LockHandle
+takeExclusiveLock getlockfile = debugLocks $ do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ takeDirectory lockfile
 	mode <- annexFileMode
-	bracket (lock mode lockfile) (liftIO . dropLock) (const a)
+	lock mode lockfile
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . lockExclusive (Just mode)
