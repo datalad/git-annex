@@ -217,7 +217,8 @@ downloadImport remote importtreeconfig importablecontents = do
 	-- importablecontents (eg when it has a history), 
 	-- they will only be downloaded once.
 	cidmap <- liftIO $ newTVarIO M.empty
-	bracket CID.openDb CID.closeDb (go cidmap importablecontents)
+	withExclusiveLock gitAnnexContentIdentifierLock $
+		bracket CID.openDb CID.closeDb (go cidmap importablecontents)
 	-- TODO really support concurrency; avoid donwloading the same
 	-- ContentIdentifier twice.
   where
