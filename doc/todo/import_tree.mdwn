@@ -13,7 +13,10 @@ this.
 * Should the ContentIdentifier db be multiwriter? It would simplify
   the situation with the long-lived lock of it in adjustExportImport
 
-* fix TODO in adjustExportImport
+  OTOH, if a single process, such as the assistant, exported one tree,
+  and then another, multiwriter would mean no guarantee that reading
+  from the contentidentifier database would see values that were earlier
+  written by the same process.
 
 * Test export to importtree=yes remote and make sure it uses 
   storeExportWithContentIdentifier correctly.

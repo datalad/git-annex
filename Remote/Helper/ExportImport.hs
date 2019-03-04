@@ -23,6 +23,7 @@ import Annex.LockFile
 import Config
 import Git.Types (fromRef)
 import Logs.Export
+import Logs.ContentIdentifier (recordContentIdentifier)
 
 import qualified Data.Map as M
 import Control.Concurrent.STM
@@ -132,9 +133,9 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 		lcklckv <- liftIO newEmptyTMVarIO
 		dbtv <- liftIO newEmptyTMVarIO
 		let store f k loc p = do
-			-- Only open the database once it's needed, since
-			-- we have to take an exclusive write lock.
-			-- The write lock will remain held while the
+			-- Only open the database once it's needed,
+			-- and take an exclusive write lock.
+			-- The write lock will then remain held while the
 			-- process is running.
 			db <- liftIO (atomically (tryReadTMVar dbtv)) >>= \case
 				Just (db, _lck) -> return db
@@ -159,7 +160,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				Nothing -> return False
 				Just newcid -> do
 					liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
-					-- TODO update git-annex branch
+					recordContentIdentifier (uuid r') newcid k
 					return True
 
 		return $ r'
