@@ -41,7 +41,8 @@ ContentIdentifiers
   remote UUID
   cid ContentIdentifier
   key SKey
-  ContentIdentifiersIndex remote cid
+  ContentIdentifiersIndexRemoteKey remote key
+  ContentIdentifiersIndexRemoteCID remote cid
   UniqueRemoteCidKey remote cid key
 |]
 
@@ -78,6 +79,14 @@ flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
 recordContentIdentifier :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> Key -> IO ()
 recordContentIdentifier h u cid k = queueDb h $ do
 	void $ insertUnique $ ContentIdentifiers u cid (toSKey k)
+
+getContentIdentifiers :: ContentIdentifierHandle -> UUID -> Key -> IO [ContentIdentifier]
+getContentIdentifiers (ContentIdentifierHandle h) u k = H.queryDbQueue h $ do
+	l <- selectList
+		[ ContentIdentifiersCid ==. cid
+		, ContentIdentifiersKey ==. toSKey k
+		] []
+	return $ map (ContentIdentifiersCid . entityVal) l
 
 getContentIdentifierKeys :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> IO [Key]
 getContentIdentifierKeys (ContentIdentifierHandle h) u cid = 
