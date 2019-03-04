@@ -245,6 +245,8 @@ verifyExisting key destfile (yes, no) = do
 
 seekRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandSeek
 seekRemote remote branch msubdir = allowConcurrentOutput $ do
+	unlessM (Remote.isImportSupported remote) $
+		giveup "That remote does not support imports."
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir ->

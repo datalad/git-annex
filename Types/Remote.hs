@@ -20,6 +20,7 @@ module Types.Remote
 	, unVerified
 	, RetrievalSecurityPolicy(..)
 	, isExportSupported
+	, isImportSupported
 	, ExportActions(..)
 	, ImportActions(..)
 	, ByteSize
@@ -214,6 +215,9 @@ data RetrievalSecurityPolicy
 
 isExportSupported :: RemoteA a -> a Bool
 isExportSupported r = exportSupported (remotetype r) (config r) (gitconfig r)
+
+isImportSupported :: RemoteA a -> a Bool
+isImportSupported r = importSupported (remotetype r) (config r) (gitconfig r)
 
 data ExportActions a = ExportActions 
 	-- Exports content to an ExportLocation.

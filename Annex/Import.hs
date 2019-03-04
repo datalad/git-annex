@@ -8,6 +8,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Import (
+	importTree,
 	ImportTreeConfig(..),
 	ImportCommitConfig(..),
 	buildImportCommit,
@@ -30,6 +31,7 @@ import Annex.LockFile
 import Annex.Content
 import Annex.Export
 import Backend
+import Config
 import Types.Key
 import Types.KeySource
 import Utility.Metered
@@ -42,6 +44,9 @@ import qualified Database.ContentIdentifier as CID
 
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
+
+importTree :: Remote.RemoteConfig -> Bool
+importTree c = fromMaybe False $ yesNo =<< M.lookup "importtree" c
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig

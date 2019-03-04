@@ -44,7 +44,7 @@ import qualified Remote.Hook
 import qualified Remote.External
 
 remoteTypes :: [RemoteType]
-remoteTypes = map adjustExportableRemoteType
+remoteTypes = map adjustExportImportRemoteType
 	[ Remote.Git.remote
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote
@@ -100,13 +100,16 @@ remoteListRefresh = do
 
 {- Generates a Remote. -}
 remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe Remote)
-remoteGen m t r = do
-	u <- getRepoUUID r
-	gc <- Annex.getRemoteGitConfig r
+remoteGen m t g = do
+	u <- getRepoUUID g
+	gc <- Annex.getRemoteGitConfig g
 	let c = fromMaybe M.empty $ M.lookup u m
-	generate t r u c gc >>= maybe
-		(return Nothing)
-		(Just <$$> adjustExportable . adjustReadOnly . addHooks)
+	generate t g u c gc >>= \case
+		Nothing -> return Nothing
+		Just r -> do
+			r' <- adjustImportable (adjustReadOnly (addHooks r))
+			r'' <- adjustExportable r'
+			return $ Just r''
 
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex (Maybe Remote)

@@ -42,7 +42,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
-	, importSupported = importUnsupported
+	, importSupported = importIsSupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)

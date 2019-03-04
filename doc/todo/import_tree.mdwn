@@ -13,8 +13,6 @@ this.
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
-* need to check if a remote has importtree=yes before trying to import from it
-
 * export needs to use storeExportWithContentIdentifierM for importtree=yes
   remotes
 

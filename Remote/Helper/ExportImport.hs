@@ -17,6 +17,7 @@ import Backend
 import Remote.Helper.Encryptable (isEncrypted)
 import Database.Export
 import Annex.Export
+import Annex.Import
 import Config
 import Git.Types (fromRef)
 import Logs.Export
@@ -60,27 +61,57 @@ instance HasImportUnsupported (ImportActions Annex) where
 exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
 exportIsSupported = \_ _ -> return True
 
--- | Prevent or allow exporttree=yes when setting up a new remote,
--- depending on exportSupported and other configuration.
-adjustExportableRemoteType :: RemoteType -> RemoteType
-adjustExportableRemoteType rt = rt { setup = setup' }
+importIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
+importIsSupported = \_ _ -> return True
+
+-- | Prevent or allow exporttree=yes and importtree=yes when
+-- setting up a new remote, depending on exportSupported and importSupported.
+adjustExportImportRemoteType :: RemoteType -> RemoteType
+adjustExportImportRemoteType rt = rt { setup = setup' }
   where
-	setup' st mu cp c gc = do
-		let cont = setup rt st mu cp c gc
-		ifM (exportSupported rt c gc)
-			( case st of
-				Init
-					| exportTree c && isEncrypted c ->
-						giveup "cannot enable both encryption and exporttree"
-					| otherwise -> cont
-				Enable oldc
-					| exportTree c /= exportTree oldc ->
-						giveup "cannot change exporttree of existing special remote"
-					| otherwise -> cont
-			, if exportTree c
-				then giveup "exporttree=yes is not supported by this special remote"
-				else cont
+	setup' st mu cp c gc =
+		let checkconfig supported configured setting cont =
+			ifM (supported rt c gc)
+				( case st of
+					Init
+						| configured c && isEncrypted c ->
+							giveup $ "cannot enable both encryption and " ++ setting
+						| otherwise -> cont
+					Enable oldc
+						| configured c /= configured oldc ->
+							giveup $ "cannot change " ++ setting ++ " of existing special remote"
+						| otherwise -> cont
+				, if configured c
+					then giveup $ setting ++ " is not supported by this special remote"
+					else cont
+				)
+		in checkconfig exportSupported exportTree "exporttree" $
+			checkconfig importSupported importTree "importtree" $
+				if importTree c && not (exportTree c)
+					then giveup "cannot enable importtree=yes without also enabling exporttree=yes"
+					else setup rt st mu cp c gc
+
+-- | If the remote is importSupported, and importtree=yes, adjust the
+-- remote to be an import.
+--
+-- (This relies on all import remotes also being export remotes,
+-- so adjustExportable will adjust the remote actions to use the
+-- exported/imported tree.)
+adjustImportable :: Remote -> Annex Remote
+adjustImportable r
+	| importTree (config r) =
+		ifM (isExportSupported r)
+			( return r
+			, notimport
 			)
+	| otherwise = notimport
+  where
+	notimport = return $ r 
+		{ importActions = importUnsupported
+		, remotetype = (remotetype r)
+			{ importSupported = importUnsupported
+			}
+		}
 
 -- | If the remote is exportSupported, and exporttree=yes, adjust the
 -- remote to be an export.
