@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Horus"
+ avatar="http://cdn.libravatar.org/avatar/8f0ee08b98ea5bba76c3fe112c08851c"
+ subject="comment 1"
+ date="2019-03-04T08:59:21Z"
+ content="""
+Another small thing, at <https://git-annex.branchable.com/special_remotes/rsync/> I think `annex-rsync-transport` should be `annex.rsync-transport`. At least for me, it only worked that way.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="tjbk123@277355c7f00c6df42e960e85caafa4b294872337"
+ nickname="tjbk123"
+ avatar="http://cdn.libravatar.org/avatar/8957c069e5030708a4c144b658437b49"
+ subject="Best solution to save disk space on exFAT"
+ date="2019-03-05T18:23:03Z"
+ content="""
+I see that `annex.thin` doesn't support FAT. What's the best option to save disk space when you *are* using FAT? I'm currently trying to put files that are more than 50% of a drive's size on that drive, with a v7 repository. Is that possible?
+"""]]
