@@ -105,7 +105,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 	Just c -> case yesNo c of
 		Just True -> ifM (isExportSupported r)
 			( do
-				exportdbv <- liftIO $ newTVarIO Nothing
+				exportdbv <- prepexportdb
 				r' <- isexport exportdbv
 				if importTree (config r)
 					then isimport r' exportdbv
@@ -132,24 +132,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 		}
 	
 	isimport r' exportdbv = do
-		lcklckv <- liftIO newEmptyTMVarIO
-		dbtv <- liftIO newEmptyTMVarIO
-		-- Only open the database once it's needed, and take an
-		-- exclusive write lock. The write lock will then remain
-		-- held while the process is running.
-		let getdb = liftIO (atomically (tryReadTMVar dbtv)) >>= \case
-			Just (db, _lck) -> return db
-			-- let only one thread take the lock
-			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
-				( do
-					lck <- takeExclusiveLock gitAnnexContentIdentifierLock
-					db <- ContentIdentifier.openDb
-					liftIO $ atomically (putTMVar dbtv (db, lck))
-					return db
-				-- loser waits for winner to open the db and
-				-- can then also use its handle
-				, liftIO $ fst <$> atomically (readTMVar dbtv)
-				)
+		ciddbv <- prepciddb
 
 		let getknowncids db loc = do
 			exportdb <- getexportdb exportdbv
@@ -160,7 +143,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 		return $ r'
 			{ exportActions = (exportActions r')
 				{ storeExport = \f k loc p -> do
-					db <- getdb
+					db <- getciddb ciddbv
 					knowncids <- getknowncids db loc
 					storeExportWithContentIdentifier (importActions r') f k loc knowncids p >>= \case
 						Nothing -> return False
@@ -169,7 +152,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 							recordContentIdentifier (uuid r') newcid k
 							return True			
 				, removeExport = \k loc -> do
-					db <- getdb
+					db <- getciddb ciddbv
 					removeExportWithContentIdentifier (importActions r') k loc
 						=<< getknowncids db loc
 				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r')
@@ -181,49 +164,11 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				, renameExport = \_ _ _ -> return False
 				}
 			}
-	
-	getexportdb dbv = liftIO (atomically (readTVar dbv)) >>= \case
-		Just db -> return db
-		Nothing -> do
-			db <- Export.openDb (uuid r)
-			liftIO $ atomically $ writeTVar dbv $ Just db
-			return db
 
 	isexport dbv = do
-		updateflag <- liftIO $ newTVarIO Nothing
-
-		-- When multiple threads run this, all except the first
-		-- will block until the first runs doneupdateonce.
-		-- Returns True when an update should be done and False
-		-- when the update has already been done.
-		let startupdateonce = liftIO $ atomically $
-			readTVar updateflag >>= \case
-				Nothing -> do
-					writeTVar updateflag (Just True)
-					return True
-				Just True -> retry
-				Just False -> return False
-		let doneupdateonce = \updated ->
-			when updated $
-				liftIO $ atomically $
-					writeTVar updateflag (Just False)
-		
-		exportinconflict <- liftIO $ newTVarIO False
-
-		-- Get export locations for a key. Checks once
-		-- if the export log is different than the database and
-		-- updates the database, to notice when an export has been
-		-- updated from another repository.
+		-- Get export locations for a key. 
 		let getexportlocs = \k -> do
 			db <- getexportdb dbv
-			bracket startupdateonce doneupdateonce $ \updatenow ->
-				when updatenow $
-					Export.updateExportTreeFromLog db >>= \case
-						Export.ExportUpdateSuccess -> return ()
-						Export.ExportUpdateConflict -> do
-							warnExportConflict r
-							liftIO $ atomically $
-								writeTVar exportinconflict True
 			liftIO $ Export.getExportTree db k
 
 		return $ r
@@ -245,7 +190,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 			-- so don't need to use retrieveExport. However,
 			-- fall back to it if retrieveKeyFile fails.
 			, retrieveKeyFile = \k af dest p ->
-				let retrieveexport = retrieveKeyFileFromExport getexportlocs exportinconflict k af dest p
+				let retrieveexport = retrieveKeyFileFromExport getexportlocs (getexportinconflict dbv) k af dest p
 				in if appendonly r
 					then do
 						ret@(ok, _v) <- retrieveKeyFile r k af dest p
@@ -298,6 +243,64 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				is <- getInfo r
 				return (is++[("export", "yes"), ("exportedtree", unwords ts)])
 			}
+
+	prepciddb = do
+		lcklckv <- liftIO newEmptyTMVarIO
+		dbtv <- liftIO newEmptyTMVarIO
+		return (dbtv, lcklckv)
+	
+	prepexportdb = do
+		lcklckv <- liftIO newEmptyTMVarIO
+		dbv <- liftIO newEmptyTMVarIO
+		exportinconflict <- liftIO $ newTVarIO False
+		return (dbv, lcklckv, exportinconflict)
+
+	-- Only open the database once it's needed, and take an
+	-- exclusive write lock. The write lock will then remain
+	-- held while the process is running.
+	getciddb (dbtv, lcklckv) =
+		liftIO (atomically (tryReadTMVar dbtv)) >>= \case
+			Just (db, _lck) -> return db
+			-- let only one thread take the lock
+			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
+				( do
+					lck <- takeExclusiveLock gitAnnexContentIdentifierLock
+					db <- ContentIdentifier.openDb
+					liftIO $ atomically $ putTMVar dbtv (db, lck)
+					return db
+				-- loser waits for winner to open the db and
+				-- can then also use its handle
+				, liftIO $ fst <$> atomically (readTMVar dbtv)
+				)
+	
+	getexportdb (dbv, lcklckv, exportinconflict) = 
+		liftIO (atomically (tryReadTMVar dbv)) >>= \case
+			Just db -> return db
+			-- let only one thread take the lock
+			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
+				( do
+					db <- Export.openDb (uuid r)
+					updateexportdb db exportinconflict
+					liftIO $ atomically $ putTMVar dbv db
+					return db
+				-- loser waits for winner to open the db and
+				-- can then also use its handle
+				, liftIO $ atomically (readTMVar dbv)
+				)
+
+	getexportinconflict (_, _, v) = v
+
+	-- Check if the export log is different than the database and
+	-- updates the database, to notice when an export has been
+	-- updated from another repository.				
+	updateexportdb db exportinconflict = 
+		Export.updateExportTreeFromLog db >>= \case
+			Export.ExportUpdateSuccess -> return ()
+			Export.ExportUpdateConflict -> do
+				warnExportConflict r
+				liftIO $ atomically $
+					writeTVar exportinconflict True
+
 	retrieveKeyFileFromExport getexportlocs exportinconflict k _af dest p = unVerified $
 		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
 			then do
