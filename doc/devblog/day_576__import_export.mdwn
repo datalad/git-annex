@@ -1,0 +1,39 @@
+Past two days have been spent making [[todo/import_tree]] interoperate
+safely with `git annex export`. This was more complicated and needed more
+methods to be added to the remote API than I had expected.
+
+At this point, the directory special remote's implementation is no longer
+an unsafe prototype, but detects conflicting file modifications and
+avoids overwriting them when exporting to the directory.
+
+Here it is in action:
+
+	joey@darkstar:/tmp/testrepo> git annex unlock foo
+	joey@darkstar:/tmp/testrepo> echo version from git > foo
+	joey@darkstar:/tmp/testrepo> echo version from special remote > ../dir/foo
+	joey@darkstar:/tmp/testrepo> git annex add foo
+	joey@darkstar:/tmp/testrepo> git commit -m add
+	joey@darkstar:/tmp/testrepo> git annex export master --to dir
+	unexport dir foo failed
+	export dir foo failed
+	(recording state in git...)
+	git-annex: export: 2 failed
+	joey@darkstar:/tmp/testrepo> git annex import master --from dir
+	import dir ok
+	update refs/remotes/dir/master ok
+	(recording state in git...)
+	joey@darkstar:/tmp/testrepo> git merge dir/master
+	Auto-merging foo
+	CONFLICT (content): Merge conflict in foo
+	Automatic merge failed; fix conflicts and then commit the result.
+	joey@darkstar:/tmp/testrepo> echo merged version > foo
+	joey@darkstar:/tmp/testrepo> git annex add foo
+	joey@darkstar:/tmp/testrepo> git commit -m resolved
+	joey@darkstar:/tmp/testrepo> git annex export master --to dir
+	unexport dir foo ok
+	export dir foo ok
+	(recording state in git...)
+
+The feature is close to being mergeable to master now, but still needs some
+work on the progress display of `git annex import`, and on supporting
+imports from the same special remote to different git repos.
