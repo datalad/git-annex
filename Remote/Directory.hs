@@ -82,6 +82,7 @@ gen r u c gc = do
 				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
 				, removeExportDirectoryWhenEmpty = Nothing
+				, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM dir
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -237,14 +238,17 @@ checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations k
 checkPresentM d _ k = checkPresentGeneric d (locations d k)
 
 checkPresentGeneric :: FilePath -> [FilePath] -> Annex Bool
-checkPresentGeneric d ps = liftIO $
-	ifM (anyM doesFileExist ps)
-		( return True
-		, ifM (doesDirectoryExist d)
-			( return False
-			, giveup $ "directory " ++ d ++ " is not accessible"
-			)
+checkPresentGeneric d ps = checkPresentGeneric' d $
+	liftIO $ anyM doesFileExist ps
+
+checkPresentGeneric' :: FilePath -> Annex Bool -> Annex Bool
+checkPresentGeneric' d check = ifM check
+	( return True
+	, ifM (liftIO $ doesDirectoryExist d)
+		( return False
+		, giveup $ "directory " ++ d ++ " is not accessible"
 		)
+	)
 
 storeExportM :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportM d src _k loc p = liftIO $ catchBoolIO $ do
@@ -410,6 +414,11 @@ removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [Cont
 removeExportWithContentIdentifierM dir k loc removeablecids =
 	checkExportContent dir loc removeablecids False $
 		removeExportM dir k loc
+
+checkPresentExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+checkPresentExportWithContentIdentifierM dir _k loc knowncids =
+	checkPresentGeneric' dir $
+		checkExportContent dir loc knowncids False (return True)
 
 -- Checks if the content at an ExportLocation is in the knowncids,
 -- and only runs the callback that modifies it if it's safe to do so.

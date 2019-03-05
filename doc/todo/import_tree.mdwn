@@ -10,10 +10,9 @@ this.
 
 ## implementation notes
 
-* startExport uses checkPresentExport, but when there's a modified file,
-  it's not unexported, so it present, so checkPresentExport succeeds,
-  and so startExport does the wrong thing. Seems to indicate checkPresentExport
-  needs to be replaced too.
+* Check conflict behavior for both conflicting edits to existing file,
+  and conflicting new files. Note need to check both sequences
+  import,export and export,import.
 
 * Should the ContentIdentifier db be multiwriter? It would simplify
   the situation with the long-lived lock of it in adjustExportImport

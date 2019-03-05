@@ -219,6 +219,8 @@ This is an extension to the ExportActions api.
 
 	removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> Annex Bool)
 
+	checkPresentExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex (Maybe Bool)
+
 listContents finds the current set of files that are stored in the remote,
 some of which may have been written by other programs than git-annex,
 along with their content identifiers. It returns a list of those, often in
@@ -272,6 +274,15 @@ the race.
 removeExportDirectoryWhenEmpty is used instead of removeExportDirectory.
 It should only remove empty directories, and succeeds if there are files
 in the directory.
+
+checkPresentExportWithContentIdentifier is used instead of
+checkPresentExport. It should verify that one of the provided
+ContentIdentifiers matches the current content of the file.
+
+Note that renameExport is never used when the special remote supports
+imports, because it may have an implementation that loses changes
+to imported files. (For example, it may copy the file to the new name,
+and delete the old name.)
 
 ## multiple git-annex repos accessing a special remote
 

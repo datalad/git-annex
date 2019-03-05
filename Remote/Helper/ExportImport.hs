@@ -61,6 +61,7 @@ instance HasImportUnsupported (ImportActions Annex) where
 		, storeExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
 		, removeExportWithContentIdentifier = \_ _ _ -> return False
 		, removeExportDirectoryWhenEmpty = Just $ \_ -> return False
+		, checkPresentExportWithContentIdentifier = \_ _ _ -> return False
 		}
 
 exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
@@ -140,6 +141,13 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 			liftIO $ concat
 				<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) ks
 
+		let checkpresent k loc = do
+			db <- getciddb ciddbv
+			checkPresentExportWithContentIdentifier
+				(importActions r')
+				k loc
+				=<< getknowncids db loc
+
 		return $ r'
 			{ exportActions = (exportActions r')
 				{ storeExport = \f k loc p -> do
@@ -162,87 +170,86 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				-- (by eg copying and then deleting)
 				-- so don't use it
 				, renameExport = \_ _ _ -> return False
+				, checkPresentExport = checkpresent
 				}
+			, checkPresent = if appendonly r'
+				then checkPresent r'
+				else \k -> anyM (checkpresent k)
+					=<< getexportlocs exportdbv k
 			}
 
-	isexport dbv = do
-		-- Get export locations for a key. 
-		let getexportlocs = \k -> do
-			db <- getexportdb dbv
-			liftIO $ Export.getExportTree db k
-
-		return $ r
-			-- Storing a key on an export could be implemented,
-			-- but it would perform unncessary work
-			-- when another repository has already stored the
-			-- key, and the local repository does not know
-			-- about it. To avoid unnecessary costs, don't do it.
-			{ storeKey = \_ _ _ -> do
-				warning "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
-				return False
-			-- Keys can be retrieved using retrieveExport, 
-			-- but since that retrieves from a path in the
-			-- remote that another writer could have replaced
-			-- with content not of the requested key,
-			-- the content has to be strongly verified.
-			--
-			-- appendonly remotes have a key/value store,
-			-- so don't need to use retrieveExport. However,
-			-- fall back to it if retrieveKeyFile fails.
-			, retrieveKeyFile = \k af dest p ->
-				let retrieveexport = retrieveKeyFileFromExport getexportlocs (getexportinconflict dbv) k af dest p
-				in if appendonly r
-					then do
-						ret@(ok, _v) <- retrieveKeyFile r k af dest p
-						if ok
-							then return ret
-							else retrieveexport
-					else retrieveexport
-			, retrieveKeyFileCheap = if appendonly r
-				then retrieveKeyFileCheap r
-				else \_ _ _ -> return False
-			-- Removing a key from an export would need to
-			-- change the tree in the export log to not include
-			-- the file. Otherwise, conflicts when removing
-			-- files would not be dealt with correctly.
-			-- There does not seem to be a good use case for
-			-- removing a key from an export in any case.
-			, removeKey = \_k -> do
-				warning "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
-				return False
-			-- Can't lock content on exports, since they're
-			-- not key/value stores, and someone else could
-			-- change what's exported to a file at any time.
-			--
-			-- (except for appendonly remotes)
-			, lockContent = if appendonly r
-				then lockContent r
-				else Nothing
-			-- Check if any of the files a key was exported to
-			-- are present. This doesn't guarantee the export
-			-- contains the right content, which is why export
-			-- remotes are untrusted.
-			--
-			-- (but appendonly remotes work the same as any
-			-- non-export remote)
-			, checkPresent = if appendonly r
-				then checkPresent r
-				else \k -> anyM (checkPresentExport (exportActions r) k)
-					=<< getexportlocs k
-			-- checkPresent from an export is more expensive
-			-- than otherwise, so not cheap. Also, this
-			-- avoids things that look at checkPresentCheap and
-			-- silently skip non-present files from behaving
-			-- in confusing ways when there's an export
-			-- conflict.
-			, checkPresentCheap = False
-			, mkUnavailable = return Nothing
-			, getInfo = do
-				ts <- map fromRef . exportedTreeishes
-					<$> getExport (uuid r)
-				is <- getInfo r
-				return (is++[("export", "yes"), ("exportedtree", unwords ts)])
-			}
+	isexport dbv = return $ r
+		-- Storing a key on an export could be implemented,
+		-- but it would perform unncessary work
+		-- when another repository has already stored the
+		-- key, and the local repository does not know
+		-- about it. To avoid unnecessary costs, don't do it.
+		{ storeKey = \_ _ _ -> do
+			warning "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
+			return False
+		-- Keys can be retrieved using retrieveExport, 
+		-- but since that retrieves from a path in the
+		-- remote that another writer could have replaced
+		-- with content not of the requested key,
+		-- the content has to be strongly verified.
+		--
+		-- appendonly remotes have a key/value store,
+		-- so don't need to use retrieveExport. However,
+		-- fall back to it if retrieveKeyFile fails.
+		, retrieveKeyFile = \k af dest p ->
+			let retrieveexport = retrieveKeyFileFromExport dbv k af dest p
+			in if appendonly r
+				then do
+					ret@(ok, _v) <- retrieveKeyFile r k af dest p
+					if ok
+						then return ret
+						else retrieveexport
+				else retrieveexport
+		, retrieveKeyFileCheap = if appendonly r
+			then retrieveKeyFileCheap r
+			else \_ _ _ -> return False
+		-- Removing a key from an export would need to
+		-- change the tree in the export log to not include
+		-- the file. Otherwise, conflicts when removing
+		-- files would not be dealt with correctly.
+		-- There does not seem to be a good use case for
+		-- removing a key from an export in any case.
+		, removeKey = \_k -> do
+			warning "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
+			return False
+		-- Can't lock content on exports, since they're
+		-- not key/value stores, and someone else could
+		-- change what's exported to a file at any time.
+		--
+		-- (except for appendonly remotes)
+		, lockContent = if appendonly r
+			then lockContent r
+			else Nothing
+		-- Check if any of the files a key was exported to
+		-- are present. This doesn't guarantee the export
+		-- contains the right content, which is why export
+		-- remotes are untrusted.
+		--
+		-- (but appendonly remotes work the same as any
+		-- non-export remote)
+		, checkPresent = if appendonly r
+			then checkPresent r
+			else \k -> anyM (checkPresentExport (exportActions r) k)
+				=<< getexportlocs dbv k
+		-- checkPresent from an export is more expensive
+		-- than otherwise, so not cheap. Also, this
+		-- avoids things that look at checkPresentCheap and
+		-- silently skip non-present files from behaving
+		-- in confusing ways when there's an export
+		-- conflict.
+		, checkPresentCheap = False
+		, mkUnavailable = return Nothing
+		, getInfo = do
+			ts <- map fromRef . exportedTreeishes
+				<$> getExport (uuid r)
+			is <- getInfo r
+			return (is++[("export", "yes"), ("exportedtree", unwords ts)])
+		}
 
 	prepciddb = do
 		lcklckv <- liftIO newEmptyTMVarIO
@@ -300,14 +307,18 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				warnExportConflict r
 				liftIO $ atomically $
 					writeTVar exportinconflict True
+		
+	getexportlocs dbv k = do
+		db <- getexportdb dbv
+		liftIO $ Export.getExportTree db k
 
-	retrieveKeyFileFromExport getexportlocs exportinconflict k _af dest p = unVerified $
+	retrieveKeyFileFromExport dbv k _af dest p = unVerified $
 		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
 			then do
-				locs <- getexportlocs k
+				locs <- getexportlocs dbv k
 				case locs of
 					[] -> do
-						ifM (liftIO $ atomically $ readTVar exportinconflict)
+						ifM (liftIO $ atomically $ readTVar $ getexportinconflict dbv)
 							( warning "unknown export location, likely due to the export conflict"
 							, warning "unknown export location"
 							)

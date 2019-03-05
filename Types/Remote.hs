@@ -312,4 +312,12 @@ data ImportActions a = ImportActions
 	--
 	-- If the directory is not empty, it should succeed.
 	, removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> a Bool)
+	-- Checks if the specified ContentIdentifier is exported to the
+	-- remote at the specified ExportLocation.
+	-- Throws an exception if the remote cannot be accessed.
+	, checkPresentExportWithContentIdentifier
+		:: Key
+		-> ExportLocation
+		-> [ContentIdentifier]
+		-> a Bool
 	}
