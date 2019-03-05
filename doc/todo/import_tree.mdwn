@@ -18,9 +18,6 @@ this.
   from the contentidentifier database would see values that were earlier
   written by the same process.
 
-* Test export to importtree=yes remote and make sure it uses 
-  storeExportWithContentIdentifier correctly.
-
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 

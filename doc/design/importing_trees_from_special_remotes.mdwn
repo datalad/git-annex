@@ -215,6 +215,10 @@ This is an extension to the ExportActions api.
 
 	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
 
+	removeExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+
+	removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> Annex Bool)
+
 listContents finds the current set of files that are stored in the remote,
 some of which may have been written by other programs than git-annex,
 along with their content identifiers. It returns a list of those, often in
@@ -236,6 +240,11 @@ downloaded may not match the requested content identifier (eg when
 something else wrote to it while it was being retrieved), and fail
 in that case.
 
+When a remote supports imports and exports, storeExport and removeExport 
+should not be used when exporting to it, and instead 
+storeExportWithContentIdentifier and removeExportWithContentIdentifier
+be used.
+
 storeExportWithContentIdentifier stores content and returns the 
 content identifier corresponding to what it stored. It can either get
 the content identifier in reply to the store (as S3 does with versioning),
@@ -248,11 +257,21 @@ to it, to avoid overwriting a file that was modified by something else.
 But alternatively, if listContents can later recover the modified file, it can
 overwrite the modified file.
 
-storeExportWithContentIdentifier needs to handle the case when there's a
-race with a concurrent writer. It needs to avoid getting the wrong
-ContentIdentifier for data written by the other writer. It may detect such
-races and fail, or it could succeed and overwrite the other file, so long
-as it can later be recovered by listContents.
+Similarly, removeExportWithContentIdentifier must only remove a file
+on the remote if it has the same content identifier that's passed to it,
+or if listContent can later recover the modified file. 
+Otherwise it should fail. (Like removeExport, removeExportWithContentIdentifier
+also succeeds if the file is not present.)
+
+Both storeExportWithContentIdentifier and removeExportWithContentIdentifier
+need to handle the case when there's a race with a concurrent writer.
+They can detect such races and fail. Or, if overwritten/deleted modified
+files can later be recovered by listContents, it's acceptable to not detect
+the race.
+
+removeExportDirectoryWhenEmpty is used instead of removeExportDirectory.
+It should only remove empty directories, and succeeds if there are files
+in the directory.
 
 ## multiple git-annex repos accessing a special remote
 

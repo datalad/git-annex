@@ -272,7 +272,7 @@ data ImportActions a = ImportActions
 	-- Exports content to an ExportLocation, and returns the
 	-- ContentIdentifier corresponding to the content it stored.
 	--
-	-- This has to be used rather than storeExport when a special remote
+	-- This is used rather than storeExport when a special remote
 	-- supports imports, since files on such a special remote can be
 	-- changed at any time.
 	--
@@ -293,4 +293,23 @@ data ImportActions a = ImportActions
 		-- ^ old content that it's safe to overwrite
 		-> MeterUpdate
 		-> a (Maybe ContentIdentifier)
+	-- This is used rather than removeExport when a special remote
+	-- supports imports.
+	--
+	-- It should only remove a file from the remote when it has one
+	-- of the ContentIdentifiers passed to it, unless listContents
+	-- can recover an overwritten file.
+	--
+	-- It needs to handle races similar to storeExportWithContentIdentifier.
+	, removeExportWithContentIdentifier
+		:: Key
+		-> ExportLocation
+		-> [ContentIdentifier]
+		-> a Bool
+	-- Removes a directory from the export, but only when it's empty.
+	-- Used instead of removeExportDirectory when a special remote
+	-- supports imports.
+	--
+	-- If the directory is not empty, it should succeed.
+	, removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> a Bool)
 	}

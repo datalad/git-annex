@@ -59,6 +59,8 @@ instance HasImportUnsupported (ImportActions Annex) where
 		{ listImportableContents = return Nothing
 		, retrieveExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
 		, storeExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
+		, removeExportWithContentIdentifier = \_ _ _ -> return False
+		, removeExportDirectoryWhenEmpty = Just $ \_ -> return False
 		}
 
 exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
@@ -132,40 +134,45 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 	isimport r' exportdbv = do
 		lcklckv <- liftIO newEmptyTMVarIO
 		dbtv <- liftIO newEmptyTMVarIO
-		let store f k loc p = do
-			-- Only open the database once it's needed,
-			-- and take an exclusive write lock.
-			-- The write lock will then remain held while the
-			-- process is running.
-			db <- liftIO (atomically (tryReadTMVar dbtv)) >>= \case
-				Just (db, _lck) -> return db
-				-- let only one thread take the lock
-				Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
-					( do
-						lck <- takeExclusiveLock gitAnnexContentIdentifierLock
-						db <- ContentIdentifier.openDb
-						liftIO $ atomically (putTMVar dbtv (db, lck))
-						return db
-					-- loser waits for winner to open
-					-- the db and can then also use its
-					-- handle
-					, liftIO $ fst <$> atomically (readTMVar dbtv)
-					)
+		-- Only open the database once it's needed, and take an
+		-- exclusive write lock. The write lock will then remain
+		-- held while the process is running.
+		let getdb = liftIO (atomically (tryReadTMVar dbtv)) >>= \case
+			Just (db, _lck) -> return db
+			-- let only one thread take the lock
+			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
+				( do
+					lck <- takeExclusiveLock gitAnnexContentIdentifierLock
+					db <- ContentIdentifier.openDb
+					liftIO $ atomically (putTMVar dbtv (db, lck))
+					return db
+				-- loser waits for winner to open the db and
+				-- can then also use its handle
+				, liftIO $ fst <$> atomically (readTMVar dbtv)
+				)
 
+		let getknowncids db loc = do
 			exportdb <- getexportdb exportdbv
 			ks <- liftIO $ Export.getExportedKey exportdb loc
-			oldcids <- liftIO $ concat
+			liftIO $ concat
 				<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) ks
-			storeExportWithContentIdentifier (importActions r') f k loc oldcids p >>= \case
-				Nothing -> return False
-				Just newcid -> do
-					liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
-					recordContentIdentifier (uuid r') newcid k
-					return True
 
 		return $ r'
 			{ exportActions = (exportActions r')
-				{ storeExport = store
+				{ storeExport = \f k loc p -> do
+					db <- getdb
+					knowncids <- getknowncids db loc
+					storeExportWithContentIdentifier (importActions r') f k loc knowncids p >>= \case
+						Nothing -> return False
+						Just newcid -> do
+							liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
+							recordContentIdentifier (uuid r') newcid k
+							return True			
+				, removeExport = \k loc -> do
+					db <- getdb
+					removeExportWithContentIdentifier (importActions r') k loc
+						=<< getknowncids db loc
+				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r')
 				}
 			}
 	

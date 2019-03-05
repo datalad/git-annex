@@ -202,7 +202,7 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   empty directories, this does not need to be implemented.  
   The directory will be in the form of a relative path, and may contain path
   separators, whitespace, and other special characters.  
-  Typically the directory will be empty, but it could possbly contain
+  Typically the directory will be empty, but it could possibly contain
   files or other directories, and it's ok to remove those.  
   The remote responds with either `REMOVEEXPORTDIRECTORY-SUCCESS`
   or `REMOVEEXPORTDIRECTORY-FAILURE`.  

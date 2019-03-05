@@ -80,6 +80,8 @@ gen r u c gc = do
 				{ listImportableContents = listImportableContentsM dir
 				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir
 				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
+				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
+				, removeExportDirectoryWhenEmpty = Nothing
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -329,7 +331,7 @@ retrieveExportWithContentIdentifierM :: FilePath -> ExportLocation -> ContentIde
 retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = 
 	catchDefaultIO Nothing $ precheck $ docopy postcheck
   where
-	f = dir </> fromExportLocation loc
+	f = exportPath dir loc
 
 	docopy cont = do
 #ifndef mingw32_HOST_OS
@@ -388,49 +390,57 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 
 storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
 storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
-	liftIO $ catchDefaultIO Nothing $ do
-		createDirectoryIfMissing True destdir
-		docopy checkoverwrite 
+	catchDefaultIO Nothing $ do
+		liftIO $ createDirectoryIfMissing True destdir
+		docopy
   where
-	dest = dir </> fromExportLocation loc
+	dest = exportPath dir loc
 	(destdir, base) = splitFileName dest
 	template = relatedTemplate (base ++ ".tmp")
 
-	docopy cont = withTmpFileIn destdir template $ \tmpf tmph -> do
-		withMeteredFile src p (L.hPut tmph)
-		hFlush tmph
-		getFileStatus tmpf >>= mkContentIdentifier tmpf >>= \case
+	docopy = withTmpFileIn destdir template $ \tmpf tmph -> do
+		liftIO $ withMeteredFile src p (L.hPut tmph)
+		liftIO $ hFlush tmph
+		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
 			Nothing -> return Nothing
-			Just newcid -> cont newcid $ do
-				rename tmpf dest
-				return (Just newcid)
-	
-	-- If the destination file already exists, it should only
-	-- be overwritten when its ContentIdentifier is in overwritablecids
-	-- or is the same as the ContentIdentifier of the replacement.
-	--
-	-- This should avoid races to the extent possible. However,
-	-- if something has the destination file open for write,
-	-- it could write to it after it's been overwritten with the new
-	-- content, and its write would be lost, and we don't need to
-	-- detect that. (In similar situations, git doesn't either!) 
-	--
-	-- It follows that if something is written to the destination file
-	-- shortly before, it's acceptable to overwrite anyway, as that's
-	-- nearly indistinguishable from the above case.
-	--
-	-- So, it suffices to check if the destination file's current
-	-- content can be overwritten, and immediately overwrite it.
-	checkoverwrite newcid finalize = do
-		destst <- getFileStatus dest
-		if isRegularFile destst
-			then catchDefaultIO Nothing (mkContentIdentifier dest destst) >>= \case
+			Just newcid ->
+				checkExportContent dir loc (newcid:overwritablecids) Nothing $ do
+					liftIO $ rename tmpf dest
+					return (Just newcid)
+
+removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+removeExportWithContentIdentifierM dir k loc removeablecids =
+	checkExportContent dir loc removeablecids False $
+		removeExportM dir k loc
+
+-- Checks if the content at an ExportLocation is in the knowncids,
+-- and only runs the callback that modifies it if it's safe to do so.
+--
+-- This should avoid races to the extent possible. However,
+-- if something has the file open for write, it could write to the handle
+-- after the callback has overwritten or deleted it, and its write would
+-- be lost, and we don't need to detect that.
+-- (In similar situations, git doesn't either!) 
+--
+-- It follows that if something is written to the destination file
+-- shortly before, it's acceptable to run the callback anyway, as that's
+-- nearly indistinguishable from the above case.
+--
+-- So, it suffices to check if the destination file's current
+-- content is known, and immediately run the callback.
+checkExportContent :: FilePath -> ExportLocation -> [ContentIdentifier] -> a -> Annex a -> Annex a
+checkExportContent dir loc knowncids unsafe callback = 
+	tryWhenExists (liftIO $ getFileStatus dest) >>= \case
+		Just destst
+			| not (isRegularFile destst) -> return unsafe
+			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier dest destst) >>= \case
 				Just destcid
-					| destcid `elem` overwritablecids ->
-						finalize
-					| destcid == newcid -> finalize
+					| destcid `elem` knowncids -> callback
 					-- dest exists with other content
-					| otherwise -> return Nothing	
-				-- dest does not exist, not overwriting
-				Nothing -> finalize
-			else return Nothing
+					| otherwise -> return unsafe
+				-- should never happen
+				Nothing -> return unsafe
+		-- dest does not exist
+		Nothing -> callback
+  where
+	dest = exportPath dir loc
