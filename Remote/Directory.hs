@@ -392,21 +392,19 @@ storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocati
 storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
 	catchDefaultIO Nothing $ do
 		liftIO $ createDirectoryIfMissing True destdir
-		docopy
+		withTmpFileIn destdir template $ \tmpf tmph -> do
+			liftIO $ withMeteredFile src p (L.hPut tmph)
+			liftIO $ hFlush tmph
+			liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
+				Nothing -> return Nothing
+				Just newcid ->
+					checkExportContent dir loc (newcid:overwritablecids) Nothing $ do
+						liftIO $ rename tmpf dest
+						return (Just newcid)
   where
 	dest = exportPath dir loc
 	(destdir, base) = splitFileName dest
 	template = relatedTemplate (base ++ ".tmp")
-
-	docopy = withTmpFileIn destdir template $ \tmpf tmph -> do
-		liftIO $ withMeteredFile src p (L.hPut tmph)
-		liftIO $ hFlush tmph
-		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
-			Nothing -> return Nothing
-			Just newcid ->
-				checkExportContent dir loc (newcid:overwritablecids) Nothing $ do
-					liftIO $ rename tmpf dest
-					return (Just newcid)
 
 removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 removeExportWithContentIdentifierM dir k loc removeablecids =
