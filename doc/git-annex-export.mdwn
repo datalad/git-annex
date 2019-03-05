@@ -43,9 +43,6 @@ paragraph do not apply. Note that dropping content from such a remote is
 not supported. See individual special remotes' documentation for
 details of how to enable such versioning.
 
-You can combine using `git annex export` to send changes to a special 
-remote with `git annex import` to fetch changes from a special remote.
-
 The `git annex sync --content` command (and the git-annex assistant)
 can also be used to export a branch to a special remote, 
 updating the special remote whenever the branch is changed.
@@ -55,6 +52,17 @@ For example:
 
 	git config remote.myremote.annex-tracking-branch master
 	git annex sync --content
+
+You can combine using `git annex export` to send changes to a special 
+remote with `git annex import` to fetch changes from a special remote.
+When a file on a special remote has been modified, exporting to it will
+not overwrite the modified file, and the export will not succeed.
+You can resolve this conflict by using `git annex import`.
+
+(Some types of special remotes such as S3 with versioning may instead
+let an export overwrite the modified file; then `git annex import`
+will create a sequence of commits that includes the modified file,
+so the overwritten modification is not lost.)
 
 # OPTIONS
 
