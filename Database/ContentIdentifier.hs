@@ -83,7 +83,10 @@ recordContentIdentifier h u cid k = queueDb h $ do
 
 getContentIdentifiers :: ContentIdentifierHandle -> UUID -> Key -> IO [ContentIdentifier]
 getContentIdentifiers (ContentIdentifierHandle h) u k = H.queryDbQueue h $ do
-	l <- selectList [ContentIdentifiersKey ==. toSKey k] []
+	l <- selectList
+		[ ContentIdentifiersKey ==. toSKey k
+		, ContentIdentifiersRemote ==. u
+		] []
 	return $ map (contentIdentifiersCid . entityVal) l
 
 getContentIdentifierKeys :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> IO [Key]
