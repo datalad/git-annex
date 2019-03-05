@@ -173,6 +173,12 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 					removeExportWithContentIdentifier (importActions r') k loc
 						=<< getknowncids db loc
 				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r')
+				-- renameExport is optional, and the
+				-- remote's implementation may
+				-- lose modifications to the file
+				-- (by eg copying and then deleting)
+				-- so don't use it
+				, renameExport = \_ _ _ -> return False
 				}
 			}
 	

@@ -15,21 +15,6 @@ this.
   and so startExport does the wrong thing. Seems to indicate checkPresentExport
   needs to be replaced too.
 
-* Is renameExport safe to use with an import? 
-
-  When a rename() is done, it could result in a modified file being
-  renamed. But this would not result in data loss; the next import would
-  see the modification and import it from the new name. The only
-  potentially confusing thing is that there was essentially a conflict, and
-  it got resolved in a way the user may not expect.
-
-  But.. S3 implements rename as a copy followed by a
-  delete. But if there's a race, that means that the modified content does
-  get deleted.
-
-  So, it seems it's not safe. 
-  Probably simplest to just make it not be provided for import remotes.
-
 * Should the ContentIdentifier db be multiwriter? It would simplify
   the situation with the long-lived lock of it in adjustExportImport
 
