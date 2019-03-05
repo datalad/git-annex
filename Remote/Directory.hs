@@ -402,7 +402,7 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
 			liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
 				Nothing -> return Nothing
 				Just newcid ->
-					checkExportContent dir loc (newcid:overwritablecids) Nothing $ do
+					checkExportContent dir loc (newcid:overwritablecids) Nothing $ const $ do
 						liftIO $ rename tmpf dest
 						return (Just newcid)
   where
@@ -412,13 +412,18 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
 
 removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 removeExportWithContentIdentifierM dir k loc removeablecids =
-	checkExportContent dir loc removeablecids False $
-		removeExportM dir k loc
+	checkExportContent dir loc removeablecids False $ \case
+		DoesNotExist -> return True
+		KnownContentIdentifier -> removeExportM dir k loc
 
 checkPresentExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 checkPresentExportWithContentIdentifierM dir _k loc knowncids =
 	checkPresentGeneric' dir $
-		checkExportContent dir loc knowncids False (return True)
+		checkExportContent dir loc knowncids False $ \case
+			DoesNotExist -> return False
+			KnownContentIdentifier -> return True
+
+data CheckResult = DoesNotExist | KnownContentIdentifier
 
 -- Checks if the content at an ExportLocation is in the knowncids,
 -- and only runs the callback that modifies it if it's safe to do so.
@@ -435,19 +440,19 @@ checkPresentExportWithContentIdentifierM dir _k loc knowncids =
 --
 -- So, it suffices to check if the destination file's current
 -- content is known, and immediately run the callback.
-checkExportContent :: FilePath -> ExportLocation -> [ContentIdentifier] -> a -> Annex a -> Annex a
+checkExportContent :: FilePath -> ExportLocation -> [ContentIdentifier] -> a -> (CheckResult -> Annex a) -> Annex a
 checkExportContent dir loc knowncids unsafe callback = 
 	tryWhenExists (liftIO $ getFileStatus dest) >>= \case
 		Just destst
 			| not (isRegularFile destst) -> return unsafe
 			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier dest destst) >>= \case
 				Just destcid
-					| destcid `elem` knowncids -> callback
+					| destcid `elem` knowncids -> callback KnownContentIdentifier
 					-- dest exists with other content
 					| otherwise -> return unsafe
 				-- should never happen
 				Nothing -> return unsafe
 		-- dest does not exist
-		Nothing -> callback
+		Nothing -> callback DoesNotExist
   where
 	dest = exportPath dir loc
