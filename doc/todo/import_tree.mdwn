@@ -10,8 +10,6 @@ this.
 
 ## implementation notes
 
-* tracking branch is updated after a failed export, should not be
-
 * getknowncids should run "updateexportdb exportdb exportdbv",
   but that leads to a STM deadlock for some reason?
 

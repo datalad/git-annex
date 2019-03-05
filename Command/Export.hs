@@ -258,7 +258,7 @@ startExport r db cvar allfilledvar ti = do
 performExport :: Remote -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
 performExport r db ek af contentsha loc allfilledvar = do
 	let storer = storeExport (exportActions r)
-	sent <- case ek of
+	sent <- tryNonAsync $ case ek of
 		AnnexKey k -> ifM (inAnnex k)
 			( notifyTransfer Upload af $
 				-- Using noRetry here because interrupted
@@ -279,11 +279,15 @@ performExport r db ek af contentsha loc allfilledvar = do
 				liftIO $ L.hPut h b
 				liftIO $ hClose h
 				storer tmp sha1k loc nullMeterUpdate
-	if sent
-		then next $ cleanupExport r db ek loc True
-		else do
-			liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
+	let failedsend = liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
+	case sent of
+		Right True -> next $ cleanupExport r db ek loc True
+		Right False -> do
+			failedsend
 			stop
+		Left err -> do
+			failedsend
+			throwM err
 
 cleanupExport :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> Bool -> CommandCleanup
 cleanupExport r db ek loc sent = do
