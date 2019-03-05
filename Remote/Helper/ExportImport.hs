@@ -260,7 +260,8 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 		lcklckv <- liftIO newEmptyTMVarIO
 		dbv <- liftIO newEmptyTMVarIO
 		exportinconflict <- liftIO $ newTVarIO False
-		return (dbv, lcklckv, exportinconflict)
+		exportupdated <- liftIO $ newTMVarIO ()
+		return (dbv, lcklckv, exportinconflict, exportupdated)
 
 	-- Only open the database once it's needed, and take an
 	-- exclusive write lock. The write lock will then remain
@@ -280,14 +281,13 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				, liftIO $ fst <$> atomically (readTMVar dbtv)
 				)
 	
-	getexportdb (dbv, lcklckv, exportinconflict) = 
+	getexportdb (dbv, lcklckv, _, _) = 
 		liftIO (atomically (tryReadTMVar dbv)) >>= \case
 			Just db -> return db
 			-- let only one thread take the lock
 			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
 				( do
 					db <- Export.openDb (uuid r)
-					updateexportdb db exportinconflict
 					liftIO $ atomically $ putTMVar dbv db
 					return db
 				-- loser waits for winner to open the db and
@@ -295,21 +295,24 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				, liftIO $ atomically (readTMVar dbv)
 				)
 
-	getexportinconflict (_, _, v) = v
+	getexportinconflict (_, _, v, _) = v
 
-	-- Check if the export log is different than the database and
+	-- Check once if the export log is different than the database and
 	-- updates the database, to notice when an export has been
 	-- updated from another repository.				
-	updateexportdb db exportinconflict = 
-		Export.updateExportTreeFromLog db >>= \case
-			Export.ExportUpdateSuccess -> return ()
-			Export.ExportUpdateConflict -> do
-				warnExportConflict r
-				liftIO $ atomically $
-					writeTVar exportinconflict True
+	updateexportdb db (_, _, exportinconflict, exportupdated) =
+		liftIO (atomically (tryTakeTMVar exportupdated)) >>= \case
+			Just () -> Export.updateExportTreeFromLog db >>= \case
+				Export.ExportUpdateSuccess -> return ()
+				Export.ExportUpdateConflict -> do
+					warnExportConflict r
+					liftIO $ atomically $
+						writeTVar exportinconflict True
+			Nothing -> return ()
 		
 	getexportlocs dbv k = do
 		db <- getexportdb dbv
+		updateexportdb db dbv
 		liftIO $ Export.getExportTree db k
 
 	retrieveKeyFileFromExport dbv k _af dest p = unVerified $

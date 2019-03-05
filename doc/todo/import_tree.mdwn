@@ -10,6 +10,11 @@ this.
 
 ## implementation notes
 
+* tracking branch is updated after a failed export, should not be
+
+* getknowncids should run "updateexportdb exportdb exportdbv",
+  but that leads to a STM deadlock for some reason?
+
 * Check conflict behavior for both conflicting edits to existing file,
   and conflicting new files. Note need to check both sequences
   import,export and export,import.
