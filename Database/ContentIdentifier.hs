@@ -22,7 +22,10 @@ module Database.ContentIdentifier (
 	recordContentIdentifier,
 	getContentIdentifiers,
 	getContentIdentifierKeys,
+	recordAnnexBranchTree,
+	getAnnexBranchTree,
 	ContentIdentifiersId,
+	AnnexBranchId,
 ) where
 
 import Database.Types
@@ -31,6 +34,8 @@ import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
 import Types.Import
+import Git.Types
+import Git.Sha
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
@@ -45,6 +50,11 @@ ContentIdentifiers
   ContentIdentifiersIndexRemoteKey remote key
   ContentIdentifiersIndexRemoteCID remote cid
   UniqueRemoteCidKey remote cid key
+-- The last git-annex branch tree sha that was used to update
+-- ContentIdentifiers
+AnnexBranch
+  tree SRef
+  UniqueTree tree
 |]
 
 {- Opens the database, creating it if it doesn't exist yet.
@@ -97,3 +107,15 @@ getContentIdentifierKeys (ContentIdentifierHandle h) u cid =
 			, ContentIdentifiersRemote ==. u
 			] []
 		return $ map (fromIKey . contentIdentifiersKey . entityVal) l
+
+recordAnnexBranchTree :: ContentIdentifierHandle -> Sha -> IO ()
+recordAnnexBranchTree h s = queueDb h $ do
+        deleteWhere ([] :: [Filter AnnexBranch])
+        void $ insertUnique $ AnnexBranch $ toSRef s
+
+getAnnexBranchTree :: ContentIdentifierHandle -> IO Sha
+getAnnexBranchTree (ContentIdentifierHandle h) = H.queryDbQueue h $ do
+        l <- selectList ([] :: [Filter AnnexBranch]) []
+        case l of
+                (s:[]) -> return $ fromSRef $ annexBranchTree $ entityVal s
+                _ -> return emptyTree

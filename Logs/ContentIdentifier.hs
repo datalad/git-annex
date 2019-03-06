@@ -21,6 +21,7 @@ import qualified Annex
 
 import qualified Data.Map as M
 import Data.List.NonEmpty (NonEmpty(..))
+import qualified Data.List.NonEmpty as NonEmpty
 
 -- | Records a remote's content identifier and the key that it corresponds to.
 --
@@ -37,9 +38,10 @@ recordContentIdentifier u cid k = do
 	  where
 		m = simpleMap l
 
--- | Get all content identifiers that a remote is known to use for a key.
-getContentIdentifiers :: UUID -> Key -> Annex [ContentIdentifier]
-getContentIdentifiers u k = do
+-- | Get all known content identifiers for a key.
+getContentIdentifiers :: Key -> Annex [(UUID, [ContentIdentifier])]
+getContentIdentifiers k = do
 	config <- Annex.getGitConfig
-	contentIdentifierList . M.lookup u . simpleMap . parseLog
+	map (\(u, l) -> (u, NonEmpty.toList l) )
+		. M.toList . simpleMap . parseLog
 		<$> Annex.Branch.get (remoteContentIdentifierLogFile config k)

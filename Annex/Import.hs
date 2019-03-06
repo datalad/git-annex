@@ -25,7 +25,9 @@ import Git.Sha
 import Git.FilePath
 import qualified Git.Ref
 import qualified Git.Branch
+import qualified Git.DiffTree as DiffTree
 import qualified Annex
+import qualified Annex.Branch
 import Annex.Link
 import Annex.LockFile
 import Annex.Content
@@ -36,11 +38,12 @@ import Types.Key
 import Types.KeySource
 import Utility.Metered
 import Utility.DataUnits
+import Logs
 import Logs.Export
-import Logs.ContentIdentifier
 import Logs.Location
 import qualified Database.Export as Export
-import qualified Database.ContentIdentifier as CID
+import qualified Database.ContentIdentifier as CIDDb
+import qualified Logs.ContentIdentifier as CIDLog
 
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
@@ -203,7 +206,8 @@ buildImportTrees basetree msubdir importable = History
 		linksha <- hashSymlink symlink
 		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
 
-{- Downloads all new ContentIdentifiers. Supports concurrency when enabled.
+{- Downloads all new ContentIdentifiers as needed to generate Keys. 
+ - Supports concurrency when enabled.
  -
  - If any download fails, the whole thing fails, but it will resume where
  - it left off.
@@ -218,7 +222,9 @@ downloadImport remote importtreeconfig importablecontents = do
 	-- they will only be downloaded once.
 	cidmap <- liftIO $ newTVarIO M.empty
 	withExclusiveLock gitAnnexContentIdentifierLock $
-		bracket CID.openDb CID.closeDb (go cidmap importablecontents)
+		bracket CIDDb.openDb CIDDb.closeDb $ \db -> do
+			updateContentIdentifierDbFromBranch db
+			go cidmap importablecontents db
 	-- TODO really support concurrency; avoid donwloading the same
 	-- ContentIdentifier twice.
   where
@@ -270,7 +276,7 @@ downloadImport remote importtreeconfig importablecontents = do
 			getTopFilePath subdir </> fromImportLocation loc
 
 	getcidkey cidmap db cid = liftIO $
-		CID.getContentIdentifierKeys db (Remote.uuid remote) cid >>= \case
+		CIDDb.getContentIdentifierKeys db (Remote.uuid remote) cid >>= \case
 			[] -> atomically $
 				maybeToList . M.lookup cid <$> readTVar cidmap
 			l -> return l
@@ -278,8 +284,8 @@ downloadImport remote importtreeconfig importablecontents = do
 	recordcidkey cidmap db cid k = do
 		liftIO $ atomically $ modifyTVar' cidmap $
 			M.insert cid k
-		liftIO $ CID.recordContentIdentifier db (Remote.uuid remote) cid k
-		recordContentIdentifier (Remote.uuid remote) cid k
+		liftIO $ CIDDb.recordContentIdentifier db (Remote.uuid remote) cid k
+		CIDLog.recordContentIdentifier (Remote.uuid remote) cid k
 
 {- Temporary key used for import of a ContentIdentifier while downloading
  - content, before generating its real key. -}
@@ -289,3 +295,31 @@ importKey (ContentIdentifier cid) size = stubKey
 	, keyVariety = OtherKey "CID"
 	, keySize = Just size
 	}
+
+{- Updates the ContentIdentifier database with information from the
+ - git-annex branch. This way, ContentIdentifiers that have been imported
+ - in other clones of the repository will be known, and not unncessarily
+ - downloaded again.
+ -
+ - The database should already be locked for write.
+ -}
+updateContentIdentifierDbFromBranch :: CIDDb.ContentIdentifierHandle -> Annex ()
+updateContentIdentifierDbFromBranch db = do
+	oldtree <- liftIO $ CIDDb.getAnnexBranchTree db
+	inRepo (Git.Ref.tree Annex.Branch.fullname) >>= \case
+		Just t | t /= oldtree -> do
+			(l, cleanup) <- inRepo $ DiffTree.diffTree oldtree t
+			mapM_ go l
+			void $ liftIO $ cleanup
+			liftIO $ do
+				CIDDb.recordAnnexBranchTree db t 
+				CIDDb.flushDbQueue db
+		_ -> return ()
+  where
+	go ti = case extLogFileKey remoteContentIdentifierExt (getTopFilePath (DiffTree.file ti)) of
+		Nothing -> return ()
+		Just k -> do
+			l <- CIDLog.getContentIdentifiers k
+			liftIO $ forM_ l $ \(u, cids) ->
+				forM_ cids $ \cid ->
+					CIDDb.recordContentIdentifier db u cid k

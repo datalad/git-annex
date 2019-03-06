@@ -17,19 +17,9 @@ this.
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
-* Database.ContentIdentifier needs a way to update the database with
-  information coming from the git-annex branch. This will allow multiple
-  clones to import from the same remote, and share content identifier
-  information amoung them.
-
-  It will only need to be updated when listContents returns a
-  ContentIdentifier that is not already known in the database.
-
-  How to do the update: Stash the ref of the last git-annex branch it's
-  updated from in the database. Diff between that ref and the current
-  git-annex branch. For each file in the diff that's a .cid file, read
-  the file from the branch, and store into the database. 
-  Update the stashed ref.
+* Test behavior when multiple repos import from same special remote;
+  the second importer should not re-download as long as it has pulled
+  from the first importer.
 
 * When on an adjusted unlocked branch, need to import the files unlocked.
   Also, the tracking branch code needs to know about such branches,
