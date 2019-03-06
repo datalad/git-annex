@@ -51,7 +51,7 @@ parseContentIdentifierList = reverse . catMaybes <$> valueparser []
 		ifM A8.atEnd
 			( return (cid:l)
 			, do
-				_ <- A8.char ' '
+				_ <- A8.char ':'
 				valueparser (cid:l)
 			)
 
