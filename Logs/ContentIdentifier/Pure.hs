@@ -43,8 +43,9 @@ buildContentIdentifierList l = case l of
 		| S8.any (`elem` [':', '\r', '\n']) c || "!" `S8.isPrefixOf` c =
 			charUtf8 '!' <> byteString (toB64' c)
 		| otherwise = byteString c
-	go (c:cs) = buildcid c <> charUtf8 ':' <> go cs
 	go [] = mempty
+	go (c:[]) = buildcid c
+	go (c:cs) = buildcid c <> charUtf8 ':' <> go cs
 
 parseLog :: L.ByteString -> ContentIdentifierLog
 parseLog = parseLogNew parseContentIdentifierList
@@ -59,14 +60,13 @@ parseContentIdentifierList = do
 		return $ if "!" `S8.isPrefixOf` b
 			then ContentIdentifier $ fromMaybe b (fromB64Maybe' (S.drop 1 b))
 			else ContentIdentifier b
-	listparser first rest = do
-		cid <- cidparser
-		ifM A8.atEnd
-			( return (first :| reverse (cid:rest))
-			, do
-				_ <- A8.char ':'
-				listparser first (cid:rest)
-			)
+	listparser first rest = ifM A8.atEnd
+		( return (first :| reverse rest)
+		, do
+			_ <- A8.char ':'
+			cid <- cidparser
+			listparser first (cid:rest)
+		)
 
 prop_parse_build_contentidentifier_log :: ContentIdentifierLog -> Bool
 prop_parse_build_contentidentifier_log l =
