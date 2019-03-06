@@ -28,7 +28,7 @@ getLogVariety f
 	| f `elem` topLevelNewUUIDBasedLogs = Just NewUUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
 	| isRemoteContentIdentifierLog f = Just NewUUIDBasedLog
-	| isChunkLog f = ChunkLog <$> chunkLogFileKey f
+	| isChunkLog f = ChunkLog <$> extLogFileKey chunkLogExt f
 	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
 	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
@@ -115,16 +115,6 @@ exportLog = "export.log"
 locationLogFile :: GitConfig -> Key -> String
 locationLogFile config key = branchHashDir config key </> keyFile key ++ ".log"
 
-{- Converts a pathname into a key if it's a location log. -}
-locationLogFileKey :: FilePath -> Maybe Key
-locationLogFileKey path
-	| ["remote", "web"] `isPrefixOf` splitDirectories dir = Nothing
-	| ext == ".log" = fileKey base
-	| otherwise = Nothing
-  where
-	(dir, file) = splitFileName path
-	(base, ext) = splitAt (length file - 4) file
-
 {- The filename of the url log for a given key. -}
 urlLogFile :: GitConfig -> Key -> FilePath
 urlLogFile config key = branchHashDir config key </> keyFile key ++ urlLogExt
@@ -140,17 +130,6 @@ oldurlLogs config key =
 
 urlLogExt :: String
 urlLogExt = ".log.web"
-
-{- Converts a url log file into a key.
- - (Does not work on oldurlLogs.) -}
-urlLogFileKey :: FilePath -> Maybe Key
-urlLogFileKey path
-	| ext == urlLogExt = fileKey base
-	| otherwise = Nothing
-  where
-	file = takeFileName path
-	(base, ext) = splitAt (length file - extlen) file
-	extlen = length urlLogExt
 
 {- Does not work on oldurllogs. -}
 isUrlLog :: FilePath -> Bool
@@ -170,15 +149,6 @@ isRemoteStateLog path = remoteStateLogExt `isSuffixOf` path
 {- The filename of the chunk log for a given key. -}
 chunkLogFile :: GitConfig -> Key -> FilePath
 chunkLogFile config key = branchHashDir config key </> keyFile key ++ chunkLogExt
-
-chunkLogFileKey :: FilePath -> Maybe Key
-chunkLogFileKey path
-	| ext == chunkLogExt = fileKey base
-	| otherwise = Nothing
-  where
-	file = takeFileName path
-	(base, ext) = splitAt (length file - extlen) file
-	extlen = length chunkLogExt
 
 chunkLogExt :: String
 chunkLogExt = ".log.cnk"
@@ -215,3 +185,25 @@ remoteContentIdentifierExt = ".log.cid"
 
 isRemoteContentIdentifierLog :: FilePath -> Bool
 isRemoteContentIdentifierLog path = remoteContentIdentifierExt `isSuffixOf` path
+
+{- From an extension and a log filename, get the key that it's a log for. -}
+extLogFileKey :: String -> FilePath -> Maybe Key
+extLogFileKey expectedext path
+	| ext == expectedext = fileKey base
+	| otherwise = Nothing
+  where
+	file = takeFileName path
+	(base, ext) = splitAt (length file - extlen) file
+	extlen = length expectedext
+
+{- Converts a url log file into a key.
+ - (Does not work on oldurlLogs.) -}
+urlLogFileKey :: FilePath -> Maybe Key
+urlLogFileKey = extLogFileKey urlLogExt
+
+{- Converts a pathname into a key if it's a location log. -}
+locationLogFileKey :: FilePath -> Maybe Key
+locationLogFileKey path
+	-- Want only xx/yy/foo.log, not .log files in other places.
+	| length (splitDirectories path) /= 3 = Nothing
+	| otherwise = extLogFileKey ".log" path
