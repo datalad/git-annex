@@ -231,6 +231,12 @@ remote, when it supports storing multiple versions of files. Since it
 returns a history tree of lists of files, it can represent anything from a
 linear history to a full branching version control history.
 
+Note that listContents does not need to worry about generating an
+ExportLocation that contains a ".." attack or an absolute path or other
+such mischief. Since a git tree is built from the ExportLocations, and is
+merged the same as a tree pulled from a regular git remote is, 
+git's usual safety measures avoid such attacks.
+
 retrieveExportWithContentIdentifier is used when downloading a new file from 
 the remote that listContents found. retrieveExport can't be used because
 it has a Key parameter and the key is not yet known in this case.

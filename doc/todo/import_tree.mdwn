@@ -10,13 +10,8 @@ this.
 
 ## implementation notes
 
-* After adding a new file with different content to local and remote, then
-  importing and resolving the merge conflict, exporting the resolution
-  fails. It seems it's lost the old CID for the remote's content.
-
-  Hmm, can't reproduce that now, I may have been confused?
-
-* getknowncids should run "updateexportdb exportdb exportdbv",
+* getknowncids should run "updateexportdb exportdb exportdbv"
+  to make sure it sees the most current data,
   but that leads to a STM deadlock for some reason?
 
 * Need to support annex-tracking-branch configuration, which documentation
@@ -30,9 +25,18 @@ this.
   It will only need to be updated when listContents returns a
   ContentIdentifier that is not already known in the database.
 
+  How to do the update: Stash the ref of the last git-annex branch it's
+  updated from in the database. Diff between that ref and the current
+  git-annex branch. For each file in the diff that's a .cid file, read
+  the file from the branch, and store into the database. 
+  Update the stashed ref.
+
 * When on an adjusted unlocked branch, need to import the files unlocked.
   Also, the tracking branch code needs to know about such branches,
   currently it will generate the wrong tracking branch.
+
+  The test case for `export_import` currently has a line commented out
+  that fails on adjusted unlocked branches.
 
 * What if the remote lists importable filenames that are absolute paths,
   or contain a "../" attack? Does git already guard against merging such
