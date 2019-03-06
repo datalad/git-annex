@@ -38,7 +38,8 @@ cmd = notBareRepo $
 	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
 		command "import" SectionCommon 
 			"move and add files from outside git working copy"
-			paramPaths (seek <$$> optParser)
+			(paramPaths ++ "|BRANCH[:SUBDIR]")
+			(seek <$$> optParser)
 
 data ImportOptions 
 	= LocalImportOptions
@@ -52,19 +53,19 @@ data ImportOptions
 		}
 
 optParser :: CmdParamsDesc -> Parser ImportOptions
-optParser desc = remoteopts <|> localopts
-  where
-	localopts = LocalImportOptions
-		<$> cmdParams desc
-		<*> (fromMaybe Default <$> optional duplicateModeParser)
-	remoteopts = do
-		remote <- parseRemoteOption <$> parseFromOption
-		(branch, subdir) <- separate (== ':') <$> argument str
-			( metavar "BRANCH[:SUBDIR]"
-			)
-		pure $ RemoteImportOptions remote
-			(Ref branch)
-			(if null subdir then Nothing else Just subdir)
+optParser desc = do
+	ps <- cmdParams desc
+	mfromremote <- optional $ parseRemoteOption <$> parseFromOption
+	dupmode <- fromMaybe Default <$> optional duplicateModeParser
+	return $ case mfromremote of
+		Nothing -> LocalImportOptions ps dupmode
+		Just r -> case ps of
+			[bs] -> 
+				let (branch, subdir) = separate (== ':') bs
+				in RemoteImportOptions r
+					(Ref branch)
+					(if null subdir then Nothing else Just subdir)
+			_ -> giveup "expected BRANCH[:SUBDIR]"
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
 	deriving (Eq)
