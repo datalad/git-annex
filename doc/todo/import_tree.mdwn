@@ -14,12 +14,10 @@ this.
   importing and resolving the merge conflict, exporting the resolution
   fails. It seems it's lost the old CID for the remote's content.
 
+  Hmm, can't reproduce that now, I may have been confused?
+
 * getknowncids should run "updateexportdb exportdb exportdbv",
   but that leads to a STM deadlock for some reason?
-
-* Check conflict behavior for both conflicting edits to existing file,
-  and conflicting new files. Note need to check both sequences
-  import,export and export,import.
 
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.

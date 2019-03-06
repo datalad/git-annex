@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -207,6 +207,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
+	, testCase "export_import" test_export_import
 	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
 	, testCase "import" test_import
@@ -1725,3 +1726,51 @@ test_addurl = intmpclonerepo $ do
 	let dest = "addurlurldest"
 	filecmd "addurl" ["--file", dest, url] @? ("addurl failed on " ++ url ++ "  with --file")
 	doesFileExist dest @? (dest ++ " missing after addurl --file")
+
+test_export_import :: Assertion
+test_export_import = intmpclonerepoInDirect $ do
+	createDirectory "dir"
+	git_annex "initremote" (words "foo type=directory encryption=none directory=dir exporttree=yes importtree=yes") @? "initremote failed"
+	git_annex "get" [] @? "get of files failed"
+	annexed_present annexedfile
+
+	git_annex "export" ["master", "--to", "foo"] @? "export to dir failed"
+	dircontains annexedfile (content annexedfile)
+
+	writedir "import" (content "import")
+	git_annex "import" ["master", "--from", "foo"] @? "import from dir failed"
+	boolSystem "git" [Param "merge", Param "foo/master", Param "-mmerge", Param "--allow-unrelated-histories"] @? "git merge foo/master failed"
+	-- FIXME fails when in an adjusted unlocked branch because
+	-- it's imported locked
+	--annexed_present "import"
+
+	nukeFile "import"
+	writecontent "import" (content "newimport1")
+	git_annex "add" ["import"] @? "add of import failed"
+	boolSystem "git" [Param "commit", Param "-q", Param "-mchanged"] @? "git commit failed"
+	git_annex "export" ["master", "--to", "foo"] @? "export modified file to dir failed"
+	dircontains "import" (content "newimport1")
+
+	-- verify that export refuses to overwrite modified file
+	writedir "import" (content "newimport2")
+	nukeFile "import"
+	writecontent "import" (content "newimport3")
+	git_annex "add" ["import"] @? "add of import failed"
+	boolSystem "git" [Param "commit", Param "-q", Param "-mchanged"] @? "git commit failed"
+	git_annex_shouldfail "export" ["master", "--to", "foo"] @? "export failed to fail in conflict"
+	dircontains "import" (content "newimport2")
+
+	-- resolving import conflict
+	git_annex "import" ["master", "--from", "foo"] @? "import from dir failed"
+	not <$> boolSystem "git" [Param "merge", Param "foo/master", Param "-mmerge"] @? "git merge of conflict failed to exit nonzero"
+	nukeFile "import"
+	writecontent "import" (content "newimport3")
+	git_annex "add" ["import"] @? "add of import failed"
+	boolSystem "git" [Param "commit", Param "-q", Param "-mchanged"] @? "git commit failed"
+	git_annex "export" ["master", "--to", "foo"] @? "export failed after import conflict"
+	dircontains "import" (content "newimport3")
+  where
+	dircontains f v = 
+		((v==) <$> readFile ("dir" </> f))
+			@? ("did not find expected content of " ++ "dir" </> f)
+	writedir f = writecontent ("dir" </> f)
