@@ -68,6 +68,8 @@ parseContentIdentifierList = do
 			listparser first (cid:rest)
 		)
 
-prop_parse_build_contentidentifier_log :: ContentIdentifierLog -> Bool
+prop_parse_build_contentidentifier_log :: NonEmpty ContentIdentifier -> Bool
 prop_parse_build_contentidentifier_log l =
-	parseLog (toLazyByteString (buildLog l)) == l
+	let v = A.parseOnly parseContentIdentifierList $ L.toStrict $ 
+		toLazyByteString $ buildContentIdentifierList l
+	in v == Right l
