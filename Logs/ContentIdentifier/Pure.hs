@@ -20,39 +20,52 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
+import Data.List.NonEmpty (NonEmpty(..))
+import qualified Data.List.NonEmpty
 
-type ContentIdentifierLog = Log [ContentIdentifier]
+-- A ContentIdentifier can contain "", so to avoid ambiguity
+-- in parsing, the list of them in the log must be non-empty.
+type ContentIdentifierLog = Log (NonEmpty ContentIdentifier)
+
+contentIdentifierList :: Maybe (NonEmpty ContentIdentifier) -> [ContentIdentifier]
+contentIdentifierList (Just l) = Data.List.NonEmpty.toList l
+contentIdentifierList Nothing = []
 
 buildLog :: ContentIdentifierLog -> Builder
 buildLog = buildLogNew buildContentIdentifierList
 
-buildContentIdentifierList :: [ContentIdentifier] -> Builder
+buildContentIdentifierList :: (NonEmpty ContentIdentifier) -> Builder
 buildContentIdentifierList l = case l of
-	[] -> mempty
-	[c] -> buildcid c
-	(c:cs) -> buildcid c <> charUtf8 ':' <> buildContentIdentifierList cs
+	c :| [] -> buildcid c
+	(c :| cs) -> go (c:cs)
   where
 	buildcid (ContentIdentifier c)
 		| S8.any (`elem` [':', '\r', '\n']) c || "!" `S8.isPrefixOf` c =
 			charUtf8 '!' <> byteString (toB64' c)
 		| otherwise = byteString c
+	go (c:cs) = buildcid c <> charUtf8 ':' <> go cs
+	go [] = mempty
 
 parseLog :: L.ByteString -> ContentIdentifierLog
 parseLog = parseLogNew parseContentIdentifierList
 
-parseContentIdentifierList :: A.Parser [ContentIdentifier]
-parseContentIdentifierList = reverse . catMaybes <$> valueparser []
+parseContentIdentifierList :: A.Parser (NonEmpty ContentIdentifier)
+parseContentIdentifierList = do
+	first <- cidparser
+	listparser first []
   where
-	valueparser l = do
+	cidparser = do
 		b <- A8.takeWhile (/= ':')
-		let cid = if "!" `S8.isPrefixOf` b
-			then ContentIdentifier <$> fromB64Maybe' (S.drop 1 b)
-			else Just $ ContentIdentifier b
+		return $ if "!" `S8.isPrefixOf` b
+			then ContentIdentifier $ fromMaybe b (fromB64Maybe' (S.drop 1 b))
+			else ContentIdentifier b
+	listparser first rest = do
+		cid <- cidparser
 		ifM A8.atEnd
-			( return (cid:l)
+			( return (first :| reverse (cid:rest))
 			, do
 				_ <- A8.char ':'
-				valueparser (cid:l)
+				listparser first (cid:rest)
 			)
 
 prop_parse_build_contentidentifier_log :: ContentIdentifierLog -> Bool

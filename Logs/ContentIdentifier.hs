@@ -20,6 +20,7 @@ import Logs.ContentIdentifier.Pure as X
 import qualified Annex
 
 import qualified Data.Map as M
+import Data.List.NonEmpty (NonEmpty(..))
 
 -- | Records a remote's content identifier and the key that it corresponds to.
 --
@@ -32,7 +33,7 @@ recordContentIdentifier u cid k = do
 	Annex.Branch.change (remoteContentIdentifierLogFile config k) $
 		buildLog . addcid c . parseLog
   where
-	addcid c l = changeMapLog c u (cid:fromMaybe [] (M.lookup u m)) l
+	addcid c l = changeMapLog c u (cid :| contentIdentifierList (M.lookup u m)) l
 	  where
 		m = simpleMap l
 
@@ -40,5 +41,5 @@ recordContentIdentifier u cid k = do
 getContentIdentifiers :: UUID -> Key -> Annex [ContentIdentifier]
 getContentIdentifiers u k = do
 	config <- Annex.getGitConfig
-	fromMaybe [] . M.lookup u . simpleMap . parseLog
+	contentIdentifierList . M.lookup u . simpleMap . parseLog
 		<$> Annex.Branch.get (remoteContentIdentifierLogFile config k)
