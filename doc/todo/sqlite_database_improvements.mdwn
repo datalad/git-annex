@@ -1,0 +1,27 @@
+Collection of non-ideal things about git-annex's use of sqlite databases.
+Would be good to improve these sometime, but it would need a migration
+process.
+
+* Database.Export.getExportedKey would be faster if there was an index
+  in the database, eg "ExportedIndex file key". This only affects
+  the speed of `git annex export`, which is probably swamped by the actual
+  upload of the data to the remote.
+
+* There may be other selects elsewhere that are not indexed.
+
+* Database.Types has some suboptimal encodings for Key and InodeCache.
+  They are both slow due to being implemented using String
+  (which may be fixable w/o changing the DB schema),
+  and the VARCHARs they generate are longer than necessary
+  since they look like eg `SKey "whatever"` and `I "whatever"`
+
+* SFilePath is stored efficiently, and has to be a String anyway,
+  (until ByteStringFilePath is used)
+  but since it's stored as a VARCHAR, which sqlite interprets using the
+  current locale, there can be encoding problems. This is at least worked
+  around with a hack that escapes FilePaths that contain unusual
+  characters. It would be much better to use a BLOB.
+
+* IKey could fail to round-trip as well, when a Key contains something
+  (eg, a filename extension) that is not valid in the current locale,
+  for similar reasons to SFilePath. Using BLOB would be better.
