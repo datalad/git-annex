@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import qualified Data.UUID as U
 import Data.Maybe
 import Data.String
-import Data.Char
 import Data.ByteString.Builder
 import qualified Data.Semigroup as Sem
 
@@ -87,11 +86,5 @@ instance Proto.Serializable UUID where
 instance Arbitrary UUID where
 	arbitrary = frequency [(1, return NoUUID), (3, UUID <$> arb)]
 	  where
-		-- Avoid non-ascii because fully arbitrary
-		-- strings may not be encoded using the filesystem
-       		-- encoding, which is normally applied to all input.
-		-- Avoid whitespace because UUIDs are used in log files.
-		-- Avoid empty because that's NoUUID
-		arb = encodeBS . getNonEmpty <$> arbitrary
-			`suchThat` (all isAscii . getNonEmpty)
-			`suchThat` (all (not . isSpace) . getNonEmpty)
+		arb = encodeBS <$> listOf1 (elements uuidchars)
+		uuidchars = '-' : ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
