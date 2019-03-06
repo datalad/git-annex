@@ -41,7 +41,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateContentIdentifier"] [persistLowe
 ContentIdentifiers
   remote UUID
   cid ContentIdentifier
-  key SKey
+  key IKey
   ContentIdentifiersIndexRemoteKey remote key
   ContentIdentifiersIndexRemoteCID remote cid
   UniqueRemoteCidKey remote cid key
@@ -79,12 +79,12 @@ flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
 -- Be sure to also update the git-annex branch when using this.
 recordContentIdentifier :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> Key -> IO ()
 recordContentIdentifier h u cid k = queueDb h $ do
-	void $ insertUnique $ ContentIdentifiers u cid (toSKey k)
+	void $ insertUnique $ ContentIdentifiers u cid (toIKey k)
 
 getContentIdentifiers :: ContentIdentifierHandle -> UUID -> Key -> IO [ContentIdentifier]
 getContentIdentifiers (ContentIdentifierHandle h) u k = H.queryDbQueue h $ do
 	l <- selectList
-		[ ContentIdentifiersKey ==. toSKey k
+		[ ContentIdentifiersKey ==. toIKey k
 		, ContentIdentifiersRemote ==. u
 		] []
 	return $ map (contentIdentifiersCid . entityVal) l
@@ -96,4 +96,4 @@ getContentIdentifierKeys (ContentIdentifierHandle h) u cid =
 			[ ContentIdentifiersCid ==. cid
 			, ContentIdentifiersRemote ==. u
 			] []
-		return $ map (fromSKey . contentIdentifiersKey . entityVal) l
+		return $ map (fromIKey . contentIdentifiersKey . entityVal) l
