@@ -90,4 +90,8 @@ instance Arbitrary UUID where
 		-- Avoid non-ascii because fully arbitrary
 		-- strings may not be encoded using the filesystem
        		-- encoding, which is normally applied to all input.
-		arb = encodeBS <$> arbitrary `suchThat` all isAscii
+		-- Avoid whitespace because UUIDs are used in log files.
+		-- Avoid empty because that's NoUUID
+		arb = encodeBS . getNonEmpty <$> arbitrary
+			`suchThat` (all isAscii . getNonEmpty)
+			`suchThat` (all (not . isSpace) . getNonEmpty)
