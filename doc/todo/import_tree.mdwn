@@ -21,14 +21,6 @@ this.
   and conflicting new files. Note need to check both sequences
   import,export and export,import.
 
-* Should the ContentIdentifier db be multiwriter? It would simplify
-  the situation with the long-lived lock of it in adjustExportImport
-
-  OTOH, if a single process, such as the assistant, exported one tree,
-  and then another, multiwriter would mean no guarantee that reading
-  from the contentidentifier database would see values that were earlier
-  written by the same process.
-
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 

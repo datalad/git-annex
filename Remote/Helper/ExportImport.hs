@@ -19,7 +19,6 @@ import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier
 import Annex.Export
 import Annex.Import
-import Annex.LockFile
 import Config
 import Git.Types (fromRef)
 import Logs.Export
@@ -263,24 +262,22 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 		exportupdated <- liftIO $ newTMVarIO ()
 		return (dbv, lcklckv, exportinconflict, exportupdated)
 
-	-- Only open the database once it's needed, and take an
-	-- exclusive write lock. The write lock will then remain
-	-- held while the process is running.
+	-- Only open the database once it's needed.
 	getciddb (dbtv, lcklckv) =
 		liftIO (atomically (tryReadTMVar dbtv)) >>= \case
-			Just (db, _lck) -> return db
+			Just db -> return db
 			-- let only one thread take the lock
 			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
 				( do
-					lck <- takeExclusiveLock gitAnnexContentIdentifierLock
 					db <- ContentIdentifier.openDb
-					liftIO $ atomically $ putTMVar dbtv (db, lck)
+					liftIO $ atomically $ putTMVar dbtv db
 					return db
 				-- loser waits for winner to open the db and
 				-- can then also use its handle
-				, liftIO $ fst <$> atomically (readTMVar dbtv)
+				, liftIO $ atomically (readTMVar dbtv)
 				)
 	
+	-- Only open the database once it's needed.
 	getexportdb (dbv, lcklckv, _, _) = 
 		liftIO (atomically (tryReadTMVar dbv)) >>= \case
 			Just db -> return db
