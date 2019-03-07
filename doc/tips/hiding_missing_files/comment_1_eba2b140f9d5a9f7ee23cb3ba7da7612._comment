@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="comment 1"
+ date="2019-03-07T20:15:10Z"
+ content="""
+i have had many problems trying this on a ntfs filesystem. the idea was to share files with a friend using a Mac (we're desperate) and having a partial checkout that only showed the files that were present.
+
+first, `git annex upgrade --version=7` doesn't work - i don't know when or if [[git-annex-upgrade]] ever supported that option.
+
+then `git annex sync --content some_file some_directory --no-push --no-pull` doesn't work either: this will tell you that `some_file` is not a remote, because that's the argument git-annex expects to `sync`. I tried the `-C` (`--content-of`) option, but it doesn't work on missing files:
+
+    git-annex: /media/anarcat/red-rhl/video/tv/directory/missing-file.mkv not found
+
+note that this is the local repository path, not the remote. `missing-file.mkv` *is* present on the remote, but is totally missing locally. I have no idea how I can fetch that file, even in unlocked mode, it's really strange... -- [[anarcat]]
+"""]]
