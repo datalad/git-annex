@@ -17,16 +17,20 @@ this.
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
-* Test behavior when multiple repos import from same special remote;
-  the second importer should not re-download as long as it has pulled
-  from the first importer.
-
 * When on an adjusted unlocked branch, need to import the files unlocked.
   Also, the tracking branch code needs to know about such branches,
   currently it will generate the wrong tracking branch.
 
   The test case for `export_import` currently has a line commented out
   that fails on adjusted unlocked branches.
+
+  Alternatively, could not do anything special for adjusted branches,
+  so generating a non-adjusted branch, and require the user use `git annex
+  sync` to merge in that branch. Rationalle: After fetching from a normal
+  git repo in an adjusted branch, merging does the same thing, and the docs
+  say to use `git annex sync` instead. Any improvments to that workflow
+  (like eg a way to merge a specified branch and update the adjustment)
+  would thus benefit both uses cases.
 
 * What if the remote lists importable filenames that are absolute paths,
   or contain a "../" attack? Does git already guard against merging such

@@ -307,12 +307,13 @@ updateContentIdentifierDbFromBranch :: CIDDb.ContentIdentifierHandle -> Annex ()
 updateContentIdentifierDbFromBranch db = do
 	oldtree <- liftIO $ CIDDb.getAnnexBranchTree db
 	inRepo (Git.Ref.tree Annex.Branch.fullname) >>= \case
-		Just t | t /= oldtree -> do
-			(l, cleanup) <- inRepo $ DiffTree.diffTree oldtree t
+		Just currtree | currtree /= oldtree -> do
+			(l, cleanup) <- inRepo $
+				DiffTree.diffTreeRecursive oldtree currtree
 			mapM_ go l
 			void $ liftIO $ cleanup
 			liftIO $ do
-				CIDDb.recordAnnexBranchTree db t 
+				CIDDb.recordAnnexBranchTree db t currtree
 				CIDDb.flushDbQueue db
 		_ -> return ()
   where
