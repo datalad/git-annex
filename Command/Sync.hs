@@ -59,7 +59,6 @@ import Annex.Ssh
 import Annex.BloomFilter
 import Annex.UpdateInstead
 import Annex.Export
-import Annex.LockFile
 import Annex.TaggedPush
 import Annex.CurrentBranch
 import qualified Database.Export as Export
@@ -691,8 +690,11 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 seekExportContent :: [Remote] -> CurrBranch -> Annex Bool
 seekExportContent rs (currbranch, _) = or <$> forM rs go
   where
-	go r = withExclusiveLock (gitAnnexExportLock (Remote.uuid r)) $ do
-		db <- Export.openDb (Remote.uuid r)
+	go r = bracket
+		(Export.openDb (Remote.uuid r))
+		Export.closeDb
+		(\db -> Export.writeLockDbWhile db (go' r db))
+	go' r db = do
 		(exported, mtbcommitsha) <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 			Nothing -> nontracking r
 			Just b -> do
@@ -706,7 +708,7 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 					Just cur -> do
 						Command.Export.changeExport r db cur
 						return ([mkExported cur []], mtbcommitsha)
-		Export.closeDb db `after` fillexport r db (exportedTreeishes exported) mtbcommitsha
+		fillexport r db (exportedTreeishes exported) mtbcommitsha
 		
 	nontracking r = do
 		exported <- getExport (Remote.uuid r)

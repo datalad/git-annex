@@ -24,7 +24,6 @@ import Annex.Export
 import Annex.Content
 import Annex.Transfer
 import Annex.CatFile
-import Annex.LockFile
 import Annex.RemoteTrackingBranch
 import Logs.Location
 import Logs.Export
@@ -84,12 +83,12 @@ seek o = do
 	tree <- fromMaybe (giveup "unknown tree") <$>
 		inRepo (Git.Ref.tree (fromMaybe (exportTreeish o) (fmap snd mtbcommitsha)))
 
-	withExclusiveLock (gitAnnexExportLock (uuid r)) $ do
-		db <- openDb (uuid r)
+	db <- openDb (uuid r)
+	writeLockDbWhile db $ do
 		changeExport r db tree
 		unlessM (Annex.getState Annex.fast) $ do
 			void $ fillExport r db tree mtbcommitsha
-		closeDb db
+	closeDb db
 
 -- | When the treeish is a branch like master or refs/heads/master
 -- (but not refs/remotes/...), find the commit it points to

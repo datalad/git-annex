@@ -128,15 +128,15 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 					importedtree
 				return (Just commit)
 
-	updateexportdb importedtree = 
-		withExclusiveLock (gitAnnexExportLock (Remote.uuid remote)) $ do
-			db <- Export.openDb (Remote.uuid remote)
+	updateexportdb importedtree = do
+		db <- Export.openDb (Remote.uuid remote)
+		Export.writeLockDbWhile db $ do
 			prevtree <- liftIO $ fromMaybe emptyTree
 				<$> Export.getExportTreeCurrent db
 			when (importedtree /= prevtree) $ do
 				Export.updateExportDb db prevtree importedtree
 				liftIO $ Export.recordExportTreeCurrent db importedtree
-			Export.closeDb db
+		Export.closeDb db
 	
 	updateexportlog importedtree = do
 		oldexport <- getExport (Remote.uuid remote)

@@ -15,6 +15,7 @@ module Database.Export (
 	ExportHandle,
 	openDb,
 	closeDb,
+	writeLockDbWhile,
 	flushDbQueue,
 	addExportedLocation,
 	removeExportedLocation,
@@ -48,6 +49,7 @@ import Types.Export
 import Annex.Export
 import qualified Logs.Export as Log
 import Annex.LockFile
+import Annex.LockPool
 import Git.Types
 import Git.Sha
 import Git.FilePath
@@ -258,22 +260,72 @@ updateExportDb = runExportDiffUpdater $ mkExportDiffUpdater removeold addnew
 		addExportTree h k loc
 		addExportedLocation h k loc
 
+{- Runs an action with the database locked for write. Waits for any other
+ - writers to finish first. The queue is flushed at the end.
+ -
+ - This first updates the ExportTree table with any new information 
+ - from the git-annex branch export log.
+ -}
+writeLockDbWhile :: ExportHandle -> Annex a -> Annex a
+writeLockDbWhile db@(ExportHandle _ u) a = do
+	updatelck <- takeExclusiveLock (gitAnnexExportUpdateLock u)
+	withExclusiveLock (gitAnnexExportLock u) $ do
+		bracket_ (setup updatelck) cleanup a
+  where
+	setup updatelck = do
+		void $ updateExportTreeFromLog' db
+		-- flush the update so it's available immediately to
+		-- anything waiting on the updatelck
+		liftIO $ flushDbQueue db
+		liftIO $ dropLock updatelck
+	cleanup = liftIO $ flushDbQueue db
+
 data ExportUpdateResult = ExportUpdateSuccess | ExportUpdateConflict
 	deriving (Eq)
 
+{- Updates the ExportTree table with information from the
+ - git-annex branch export log.
+ -
+ - This can safely be called whether the database is locked for write or
+ - not. Either way, it will block until the update is complete.
+ -}
 updateExportTreeFromLog :: ExportHandle -> Annex ExportUpdateResult
-updateExportTreeFromLog db@(ExportHandle _ u) = 
-	withExclusiveLock (gitAnnexExportLock u) $ do
-		old <- liftIO $ fromMaybe emptyTree
-			<$> getExportTreeCurrent db
-		l <- Log.getExport u
-		case Log.exportedTreeishes l of
-			[] -> return ExportUpdateSuccess
-			(new:[]) 
-				| new /= old -> do
-					updateExportTree db old new
-					liftIO $ recordExportTreeCurrent db new
-					liftIO $ flushDbQueue db
-					return ExportUpdateSuccess
-				| new == old -> return ExportUpdateSuccess
-			_ts -> return ExportUpdateConflict
+updateExportTreeFromLog db@(ExportHandle _ u) =
+	-- If another process or thread is performing the update,
+	-- this will block until it's done.
+	withExclusiveLock (gitAnnexExportUpdateLock u) $ do
+		-- If the database is locked by something else,
+		-- this will not run the update. But, in that case,
+		-- writeLockDbWhile is running, and has already
+		-- completed the update, so we don't need to do anything.
+		mr <- tryExclusiveLock (gitAnnexExportLock u) $
+			updateExportTreeFromLog' db
+		case mr of
+			Just r -> return r
+			Nothing -> do
+				old <- liftIO $ fromMaybe emptyTree
+					<$> getExportTreeCurrent db
+				l <- Log.getExport u
+				return $ case Log.exportedTreeishes l of
+					[] -> ExportUpdateSuccess
+					(new:[]) 
+						| new /= old -> ExportUpdateSuccess
+						| new == old -> ExportUpdateSuccess
+					_ts -> ExportUpdateConflict
+
+{- The database should be locked when calling this. -}
+updateExportTreeFromLog' :: ExportHandle -> Annex ExportUpdateResult
+updateExportTreeFromLog' db@(ExportHandle _ u) = do
+	old <- liftIO $ fromMaybe emptyTree
+		<$> getExportTreeCurrent db
+	l <- Log.getExport u
+	case Log.exportedTreeishes l of
+		[] -> return ExportUpdateSuccess
+		(new:[]) 
+			| new /= old -> do
+				updateExportTree db old new
+				liftIO $ recordExportTreeCurrent db new
+				liftIO $ flushDbQueue db
+				return ExportUpdateSuccess
+			| new == old -> return ExportUpdateSuccess
+		_ts -> return ExportUpdateConflict
