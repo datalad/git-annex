@@ -1,0 +1,7 @@
+Two more days into [[todo/import_tree]] and I'm running out of steam.
+
+However.. Imports from the same special remote into several clones of a
+repository are now fully working!
+
+The hard part should be behind me now. Hoping to merge it on Monday after
+improving the command's output a bit.
