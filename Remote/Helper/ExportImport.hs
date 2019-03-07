@@ -19,6 +19,7 @@ import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier
 import Annex.Export
 import Annex.Import
+import Annex.LockFile
 import Config
 import Git.Types (fromRef)
 import Logs.Export
@@ -155,7 +156,9 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 					storeExportWithContentIdentifier (importActions r') f k loc knowncids p >>= \case
 						Nothing -> return False
 						Just newcid -> do
-							liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
+							withExclusiveLock gitAnnexContentIdentifierLock $ do
+								liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
+								liftIO $ ContentIdentifier.flushDbQueue db
 							recordContentIdentifier (uuid r') newcid k
 							return True
 				, removeExport = \k loc -> do

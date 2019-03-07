@@ -15,9 +15,6 @@ this.
 
   Note that updating the db needs to write lock it.
 
-* Remote.Helper.ExportImport calls recordContentIdentifier on a database
-  that is not write locked.
-
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
