@@ -1,0 +1,76 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="more details on coreutils cp treatment of reflink"
+ date="2019-03-06T16:00:35Z"
+ content="""
+> git-annex looks at the file's stat() and only if the device id is the same
+
+<details>
+<summary>They are indeed not the same across subvolumes of the same BTRFS file system</summary>
+
+```
+$> time cp --reflink=auto home/yoh/reprotraining.ova scrap/tmp
+cp --reflink=auto home/yoh/reprotraining.ova scrap/tmp  0.00s user 0.00s system 92% cpu 0.004 total
+
+$> stat home/yoh/reprotraining.ova scrap/tmp/reprotraining.ova
+  File: home/yoh/reprotraining.ova
+  Size: 5081213952	Blocks: 9924248    IO Block: 4096   regular file
+Device: 2fh/47d	Inode: 61771704    Links: 1
+Access: (0600/-rw-------)  Uid: (47521/     yoh)   Gid: (47522/     yoh)
+Access: 2018-06-14 19:23:25.000000000 -0400
+Modify: 2018-06-11 15:35:57.000000000 -0400
+Change: 2018-06-14 19:23:25.891351983 -0400
+ Birth: -
+  File: scrap/tmp/reprotraining.ova
+  Size: 5081213952	Blocks: 9924248    IO Block: 4096   regular file
+Device: 30h/48d	Inode: 190040764   Links: 1
+Access: (0600/-rw-------)  Uid: (47521/     yoh)   Gid: (47522/     yoh)
+Access: 2019-03-06 10:38:02.610657786 -0500
+Modify: 2019-03-06 10:38:02.610657786 -0500
+Change: 2019-03-06 10:38:02.610657786 -0500
+ Birth: -
+```
+</details>
+
+`cp` seems to just to attempt a cheap clone
+
+```
+/* Perform the O(1) btrfs clone operation, if possible.
+   Upon success, return 0.  Otherwise, return -1 and set errno.  */
+static inline int
+clone_file (int dest_fd, int src_fd)
+{
+#ifdef FICLONE
+  return ioctl (dest_fd, FICLONE, src_fd);
+#else
+  (void) dest_fd;
+  (void) src_fd;
+  errno = ENOTSUP;
+  return -1;
+#endif
+```
+
+and if that one fails, assumes that full copy is required:
+
+```c
+  /* --attributes-only overrides --reflink.  */
+  if (data_copy_required && x->reflink_mode)
+    {
+      bool clone_ok = clone_file (dest_desc, source_desc) == 0;
+      if (clone_ok || x->reflink_mode == REFLINK_ALWAYS)
+        {
+          if (!clone_ok)
+            {
+              error (0, errno, _(\"failed to clone %s from %s\"),
+                     quoteaf_n (0, dst_name), quoteaf_n (1, src_name));
+              return_val = false;
+              goto close_src_and_dst_desc;
+            }
+          data_copy_required = false;
+        }
+    }
+```
+
+BTW, why `rsync` instead of a regular `cp` for local filesystem if it is across the devices?
+"""]]
