@@ -24,6 +24,8 @@ module Database.ContentIdentifier (
 	getContentIdentifierKeys,
 	recordAnnexBranchTree,
 	getAnnexBranchTree,
+	needsUpdateFromLog,
+	updateFromLog,
 	ContentIdentifiersId,
 	AnnexBranchId,
 ) where
@@ -33,9 +35,15 @@ import qualified Database.Queue as H
 import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
+import qualified Annex.Branch
 import Types.Import
 import Git.Types
 import Git.Sha
+import Git.FilePath
+import qualified Git.Ref
+import qualified Git.DiffTree as DiffTree
+import Logs
+import qualified Logs.ContentIdentifier as Log
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
@@ -119,3 +127,32 @@ getAnnexBranchTree (ContentIdentifierHandle h) = H.queryDbQueue h $ do
         case l of
                 (s:[]) -> return $ fromSRef $ annexBranchTree $ entityVal s
                 _ -> return emptyTree
+
+{- Check if the git-annex branch has been updated and the database needs
+ - to be updated with any new content identifiers in it. -}
+needsUpdateFromLog :: ContentIdentifierHandle -> Annex (Maybe (Sha, Sha))
+needsUpdateFromLog db = do
+	oldtree <- liftIO $ getAnnexBranchTree db
+	inRepo (Git.Ref.tree Annex.Branch.fullname) >>= \case
+		Just currtree | currtree /= oldtree ->
+			return $ Just (oldtree, currtree)
+		_ -> return Nothing
+
+{- The database should be locked for write when calling this. -}
+updateFromLog :: ContentIdentifierHandle -> (Sha, Sha) -> Annex ()
+updateFromLog db (oldtree, currtree) = do
+	(l, cleanup) <- inRepo $
+		DiffTree.diffTreeRecursive oldtree currtree
+	mapM_ go l
+	void $ liftIO $ cleanup
+	liftIO $ do
+		recordAnnexBranchTree db currtree
+		flushDbQueue db
+  where
+	go ti = case extLogFileKey remoteContentIdentifierExt (getTopFilePath (DiffTree.file ti)) of
+		Nothing -> return ()
+		Just k -> do
+			l <- Log.getContentIdentifiers k
+			liftIO $ forM_ l $ \(u, cids) ->
+				forM_ cids $ \cid ->
+					recordContentIdentifier db u cid k

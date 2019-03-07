@@ -25,9 +25,7 @@ import Git.Sha
 import Git.FilePath
 import qualified Git.Ref
 import qualified Git.Branch
-import qualified Git.DiffTree as DiffTree
 import qualified Annex
-import qualified Annex.Branch
 import Annex.Link
 import Annex.LockFile
 import Annex.Content
@@ -38,7 +36,6 @@ import Types.Key
 import Types.KeySource
 import Utility.Metered
 import Utility.DataUnits
-import Logs
 import Logs.Export
 import Logs.Location
 import qualified Database.Export as Export
@@ -223,7 +220,8 @@ downloadImport remote importtreeconfig importablecontents = do
 	cidmap <- liftIO $ newTVarIO M.empty
 	withExclusiveLock gitAnnexContentIdentifierLock $
 		bracket CIDDb.openDb CIDDb.closeDb $ \db -> do
-			updateContentIdentifierDbFromBranch db
+			CIDDb.needsUpdateFromLog db
+				>>= maybe noop (CIDDb.updateFromLog db)
 			go cidmap importablecontents db
 	-- TODO really support concurrency; avoid donwloading the same
 	-- ContentIdentifier twice.
@@ -295,32 +293,3 @@ importKey (ContentIdentifier cid) size = stubKey
 	, keyVariety = OtherKey "CID"
 	, keySize = Just size
 	}
-
-{- Updates the ContentIdentifier database with information from the
- - git-annex branch. This way, ContentIdentifiers that have been imported
- - in other clones of the repository will be known, and not unncessarily
- - downloaded again.
- -
- - The database should already be locked for write.
- -}
-updateContentIdentifierDbFromBranch :: CIDDb.ContentIdentifierHandle -> Annex ()
-updateContentIdentifierDbFromBranch db = do
-	oldtree <- liftIO $ CIDDb.getAnnexBranchTree db
-	inRepo (Git.Ref.tree Annex.Branch.fullname) >>= \case
-		Just currtree | currtree /= oldtree -> do
-			(l, cleanup) <- inRepo $
-				DiffTree.diffTreeRecursive oldtree currtree
-			mapM_ go l
-			void $ liftIO $ cleanup
-			liftIO $ do
-				CIDDb.recordAnnexBranchTree db t currtree
-				CIDDb.flushDbQueue db
-		_ -> return ()
-  where
-	go ti = case extLogFileKey remoteContentIdentifierExt (getTopFilePath (DiffTree.file ti)) of
-		Nothing -> return ()
-		Just k -> do
-			l <- CIDLog.getContentIdentifiers k
-			liftIO $ forM_ l $ \(u, cids) ->
-				forM_ cids $ \cid ->
-					CIDDb.recordContentIdentifier db u cid k
