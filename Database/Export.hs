@@ -19,11 +19,11 @@ module Database.Export (
 	addExportedLocation,
 	removeExportedLocation,
 	getExportedLocation,
-	getExportedKey,
 	isExportDirectoryEmpty,
 	getExportTreeCurrent,
 	recordExportTreeCurrent,
 	getExportTree,
+	getExportTreeKey,
 	addExportTree,
 	removeExportTree,
 	updateExportTree,
@@ -155,20 +155,6 @@ getExportedLocation (ExportHandle h _) k = H.queryDbQueue h $ do
   where
 	ik = toIKey k
 
-{- Get the key that was exported to a location.
- -
- - Note that the database does not currently have an index to make this
- - fast.
- -
- - Note that this does not see recently queued changes.
- -}
-getExportedKey :: ExportHandle -> ExportLocation -> IO [Key]
-getExportedKey (ExportHandle h _) el = H.queryDbQueue h $ do
-	l <- selectList [ExportedFile ==. ef] []
-	return $ map (fromIKey . exportedKey . entityVal) l
-  where
-	ef = toSFilePath (fromExportLocation el)
-
 {- Note that this does not see recently queued changes. -}
 isExportDirectoryEmpty :: ExportHandle -> ExportDirectory -> IO Bool
 isExportDirectoryEmpty (ExportHandle h _) d = H.queryDbQueue h $ do
@@ -184,6 +170,20 @@ getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
 	return $ map (mkExportLocation . fromSFilePath . exportTreeFile . entityVal) l
   where
 	ik = toIKey k
+
+{- Get keys that might be currently exported to a location.
+ -
+ - Note that the database does not currently have an index to make this
+ - fast.
+ -
+ - Note that this does not see recently queued changes.
+ -}
+getExportTreeKey :: ExportHandle -> ExportLocation -> IO [Key]
+getExportTreeKey (ExportHandle h _) el = H.queryDbQueue h $ do
+	map (fromIKey . exportTreeKey . entityVal) 
+		<$> selectList [ExportTreeFile ==. ef] []
+  where
+	ef = toSFilePath (fromExportLocation el)
 
 addExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportTree h k loc = queueDb h $

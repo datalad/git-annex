@@ -135,25 +135,27 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 	isimport r' exportdbv = do
 		ciddbv <- prepciddb
 
-		let getknowncids db loc = do
-			exportdb <- getexportdb exportdbv
-			ks <- liftIO $ Export.getExportedKey exportdb loc
-			liftIO $ concat
-				<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) ks
-
-		let checkpresent k loc = do
+		let keycids k = do
 			db <- getciddb ciddbv
+			liftIO $ ContentIdentifier.getContentIdentifiers db (uuid r') k
+
+		let checkpresent k loc = 
 			checkPresentExportWithContentIdentifier
 				(importActions r')
-				k loc
-				=<< getknowncids db loc
+				k loc 
+				=<< keycids k
 
 		return $ r'
 			{ exportActions = (exportActions r')
 				{ storeExport = \f k loc p -> do
 					db <- getciddb ciddbv
-					knowncids <- getknowncids db loc
-					storeExportWithContentIdentifier (importActions r') f k loc knowncids p >>= \case
+					exportdb <- getexportdb exportdbv
+					updateexportdb exportdb exportdbv
+					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
+					oldcids <- liftIO $ concat
+						<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) oldks
+					liftIO $ print ("cids", oldcids)
+					storeExportWithContentIdentifier (importActions r') f k loc oldcids p >>= \case
 						Nothing -> return False
 						Just newcid -> do
 							withExclusiveLock gitAnnexContentIdentifierLock $ do
@@ -161,10 +163,9 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 								liftIO $ ContentIdentifier.flushDbQueue db
 							recordContentIdentifier (uuid r') newcid k
 							return True
-				, removeExport = \k loc -> do
-					db <- getciddb ciddbv
+				, removeExport = \k loc ->
 					removeExportWithContentIdentifier (importActions r') k loc
-						=<< getknowncids db loc
+						=<< keycids k
 				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r')
 				-- renameExport is optional, and the
 				-- remote's implementation may
@@ -273,6 +274,10 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
 				( do
 					db <- ContentIdentifier.openDb
+					ContentIdentifier.needsUpdateFromLog db >>= \case
+						Just v -> withExclusiveLock gitAnnexContentIdentifierLock $
+							ContentIdentifier.updateFromLog db v
+						Nothing -> noop
 					liftIO $ atomically $ putTMVar dbtv db
 					return db
 				-- loser waits for winner to open the db and
