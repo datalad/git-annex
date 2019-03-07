@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="parallelizing checksum and get"
+ date="2019-03-07T18:21:22Z"
+ content="""
+one thing I would definitely like to see parallelize is CPU and network. right now `git annex get` will:
+
+ 1. download file A
+ 2. checksum file A
+ 3. download file B
+ 4. checksum file B
+
+... serially. If parallelism (`-J2`) is enabled, the following happens, assuming files are roughly the same size:
+
+ 1. download file A and B
+ 2. checksum file A and B
+
+This is not much of an improvement... We can get away with maximizing the bandwidth usage *if* file transfers are somewhat interleaved (because of size differences) but the above degenerate case happens actually quite often. The alternative (`-J3` or more) might just download more files in parallel, which is not optimal.
+
+So could we at least batch the checksum jobs separately from downloads? This would already be an improvement and maximize resource usage while at the same time reducing total transfer time.
+
+Thanks! :)
+"""]]
