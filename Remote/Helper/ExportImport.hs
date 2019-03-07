@@ -157,7 +157,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 						Just newcid -> do
 							liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
 							recordContentIdentifier (uuid r') newcid k
-							return True			
+							return True
 				, removeExport = \k loc -> do
 					db <- getciddb ciddbv
 					removeExportWithContentIdentifier (importActions r') k loc
