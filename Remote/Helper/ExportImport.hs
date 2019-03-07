@@ -154,7 +154,6 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
 					oldcids <- liftIO $ concat
 						<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) oldks
-					liftIO $ print ("cids", oldcids)
 					storeExportWithContentIdentifier (importActions r') f k loc oldcids p >>= \case
 						Nothing -> return False
 						Just newcid -> do
