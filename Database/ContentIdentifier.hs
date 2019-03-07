@@ -1,9 +1,5 @@
 {- Sqlite database of ContentIdentifiers imported from special remotes.
  -
- - This contains a mapping from ContentIdentifier to Key.
- - The reverse mapping from Key to ContentIdentifier is stored in the
- - git-annex branch, see Logs.ContentIdentifier.
- -
  - Copyright 2019 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU AGPL version 3 or higher.
