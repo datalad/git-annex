@@ -10,6 +10,24 @@ this.
 
 ## implementation notes
 
+* updateExportTreeFromLog deadlocks when running git-annex export because
+  it locks the export db first.
+
+  Could switch to fine-grained locking, but Command.Export would need to
+  lock and flush writes to the database many times, and that may be too
+  expensive.
+
+  How about this: Make an action that waits to lock the export db and
+  runs updateExportTreeFromLog. While the update is running take an
+  exclusive lock on an update lock file. Only lock the database using that,
+  in Command.Export etc.
+
+  Then, in ExportImport, it only has to try to run that action;
+  if the action fails due to the lock being held by the same or another
+  process, it suffices to take a shared lock of the update lock file
+  (and immediately release it), in order to wait for the update to
+  complete.
+
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
