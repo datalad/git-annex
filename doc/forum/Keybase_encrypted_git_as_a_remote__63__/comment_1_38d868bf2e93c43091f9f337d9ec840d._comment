@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="501st_alpha1"
+ avatar="http://cdn.libravatar.org/avatar/b6fde94dbf127b822f7b6109399d50c9"
+ subject="Figured out how to sync with Keybase"
+ date="2019-03-07T06:52:25Z"
+ content="""
+While it doesn't \"just work\", I was able to get a solution set up that allows me to use a Keybase encrypted Git repo as a remote.  I added the encrypted remote (with URL e.g. `keybase://private/<user>/<repo>.git`).  A plain `git annex sync` worked, since that just syncs the normal Git branches.  When I tried to do a sync with `--content`, it failed with `unable to check keybase`.  My current workaround is to add a special remote that points to KBFS, e.g. `git annex initremote keybase-rsync type=rsync directory=/keybase/private/<user>/git-annex-files/<repo>/ encryption=none`.  I originally tried a `directory` special remote, but when I did `git annex sync --content keybase-directory`, it worked for a while, but I started getting `rename: interrupted (Interrupted system call)` and similar errors.  Switching to an rsync remote fixed the errors.  I added a script [here](https://github.com/501st-alpha1/scott-script/blob/eba2827ebc1b61fe6b0c2fb2acc9b8cf6641465c/git-annex-add-keybase) to automate that plus a few other checks.
+
+Part way through the sync, I ran into an issue where it would hang immediately after sending a file to KBFS.  As documented [here](https://github.com/keybase/client/issues/16467), running `run_keybase` to restart all the Keybase services fixed the issue for me.
+"""]]
