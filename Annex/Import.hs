@@ -136,7 +136,6 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			when (importedtree /= prevtree) $ do
 				Export.updateExportDb db prevtree importedtree
 				liftIO $ Export.recordExportTreeCurrent db importedtree
-				-- TODO: addExportedLocation etc
 			Export.closeDb db
 	
 	updateexportlog importedtree = do
