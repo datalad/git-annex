@@ -13,8 +13,6 @@ this.
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
-* progress bars when downloading from import
-
 * When on an adjusted unlocked branch, need to import the files unlocked.
   Also, the tracking branch code needs to know about such branches,
   currently it will generate the wrong tracking branch.
@@ -29,10 +27,6 @@ this.
   say to use `git annex sync` instead. Any improvments to that workflow
   (like eg a way to merge a specified branch and update the adjustment)
   would thus benefit both uses cases.
-
-* What if the remote lists importable filenames that are absolute paths,
-  or contain a "../" attack? Does git already guard against merging such
-  trees?
 
 * Need to support annex.largefiles when importing.
 

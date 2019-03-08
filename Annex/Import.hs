@@ -35,7 +35,7 @@ import Backend
 import Config
 import Types.Key
 import Types.KeySource
-import Utility.Metered
+import Messages.Progress
 import Utility.DataUnits
 import Logs.Export
 import Logs.Location
@@ -255,7 +255,7 @@ downloadImport remote importtreeconfig importablecontents = do
 		(k:_) -> return $ Left $ Just (loc, k)
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
-			let rundownload = do
+			let downloadaction = do
 				showStart "import" (fromImportLocation loc)
 				next $ tryNonAsync (download cidmap db i) >>= \case
 					Left e -> next $ do
@@ -270,24 +270,25 @@ downloadImport remote importtreeconfig importablecontents = do
 			commandAction $ bracket_
 				(waitstart downloading cid)
 				(signaldone downloading cid)
-				rundownload
+				downloadaction
 			return (Right job)
 	
-	download cidmap db (loc, (cid, sz)) =
+	download cidmap db (loc, (cid, sz)) = do
+		let rundownload tmpfile p = 
+			Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile) p >>= \case
+				Just k -> tryNonAsync (moveAnnex k tmpfile) >>= \case
+					Right True -> do
+						recordcidkey cidmap db cid k
+						logStatus k InfoPresent
+						logChange k (Remote.uuid remote) InfoPresent
+						return $ Just (loc, k)
+					_ -> return Nothing
+				Nothing -> return Nothing
 		checkDiskSpaceToGet tmpkey Nothing $
 			withTmp tmpkey $ \tmpfile ->
-				Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile) p >>= \case
-					Just k -> tryNonAsync (moveAnnex k tmpfile) >>= \case
-						Right True -> do
-							recordcidkey cidmap db cid k
-							logStatus k InfoPresent
-							logChange k (Remote.uuid remote) InfoPresent
-							return $ Just (loc, k)
-						_ -> return Nothing
-					Nothing -> return Nothing
+				metered Nothing tmpkey (return Nothing) $
+					const (rundownload tmpfile)
 	  where
-		-- TODO progress bar
-		p = nullMeterUpdate
 		ia = Remote.importActions remote
 		tmpkey = importKey cid sz
 	
