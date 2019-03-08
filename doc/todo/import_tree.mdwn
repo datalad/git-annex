@@ -13,8 +13,7 @@ this.
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 
-* git-annex import needs to say when it's downloading files, display
-  progress bars, and support concurrent downloads.
+* progress bars when downloading from import
 
 * When on an adjusted unlocked branch, need to import the files unlocked.
   Also, the tracking branch code needs to know about such branches,

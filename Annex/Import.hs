@@ -30,6 +30,7 @@ import Annex.Link
 import Annex.LockFile
 import Annex.Content
 import Annex.Export
+import Command
 import Backend
 import Config
 import Types.Key
@@ -44,9 +45,7 @@ import qualified Logs.ContentIdentifier as CIDLog
 
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
-
-importTree :: Remote.RemoteConfig -> Bool
-importTree c = fromMaybe False $ yesNo =<< M.lookup "importtree" c
+import qualified Data.Set as S
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -217,20 +216,24 @@ downloadImport remote importtreeconfig importablecontents = do
 	-- importablecontents (eg when it has a history), 
 	-- they will only be downloaded once.
 	cidmap <- liftIO $ newTVarIO M.empty
+	-- When concurrency is enabled, this set is needed to
+	-- avoid two threads both downloading the same content identifier.
+	downloading <- liftIO $ newTVarIO S.empty
 	withExclusiveLock gitAnnexContentIdentifierLock $
 		bracket CIDDb.openDb CIDDb.closeDb $ \db -> do
 			CIDDb.needsUpdateFromLog db
 				>>= maybe noop (CIDDb.updateFromLog db)
-			go cidmap importablecontents db
-	-- TODO really support concurrency; avoid donwloading the same
-	-- ContentIdentifier twice.
+			go cidmap downloading importablecontents db
   where
-	go cidmap (ImportableContents l h) db = do
-		l' <- mapM (download cidmap db) l
+	go cidmap downloading (ImportableContents l h) db = do
+		jobs <- forM l $ \i ->
+			startdownload cidmap downloading db i
+		l' <- liftIO $ forM jobs $
+			either pure (atomically . takeTMVar)
 		if any isNothing l'
 			then return Nothing
 			else do
-				h' <- mapM (\ic -> go cidmap ic db) h
+				h' <- mapM (\ic -> go cidmap downloading ic db) h
 				if any isNothing h'
 					then return Nothing
 					else return $ Just $
@@ -238,9 +241,40 @@ downloadImport remote importtreeconfig importablecontents = do
 							(catMaybes l')
 							(catMaybes h')
 	
-	download cidmap db (loc, (cid, sz)) = getcidkey cidmap db cid >>= \case
-		(k:_) -> return $ Just (loc, k)
-		[] -> checkDiskSpaceToGet tmpkey Nothing $
+	waitstart downloading cid = liftIO $ atomically $ do
+		s <- readTVar downloading
+		if S.member cid s
+			then retry
+			else writeTVar downloading $ S.insert cid s
+	
+	signaldone downloading cid = liftIO $ atomically $ do
+		s <- readTVar downloading
+		writeTVar downloading $ S.delete cid s
+	
+	startdownload cidmap downloading db i@(loc, (cid, _sz)) = getcidkey cidmap db cid >>= \case
+		(k:_) -> return $ Left $ Just (loc, k)
+		[] -> do
+			job <- liftIO $ newEmptyTMVarIO
+			let rundownload = do
+				showStart "import" (fromImportLocation loc)
+				next $ tryNonAsync (download cidmap db i) >>= \case
+					Left e -> next $ do
+						warning (show e)
+						liftIO $ atomically $
+							putTMVar job Nothing
+						return False
+					Right r -> next $ do
+						liftIO $ atomically $
+							putTMVar job r
+						return True
+			commandAction $ bracket_
+				(waitstart downloading cid)
+				(signaldone downloading cid)
+				rundownload
+			return (Right job)
+	
+	download cidmap db (loc, (cid, sz)) =
+		checkDiskSpaceToGet tmpkey Nothing $
 			withTmp tmpkey $ \tmpfile ->
 				Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile) p >>= \case
 					Just k -> tryNonAsync (moveAnnex k tmpfile) >>= \case

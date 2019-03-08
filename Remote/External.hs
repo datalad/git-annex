@@ -20,7 +20,6 @@ import Git.Config (isTrue, boolConfig)
 import Git.Env
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
-import Annex.Export
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
 import Utility.Metered

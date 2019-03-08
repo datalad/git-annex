@@ -18,7 +18,6 @@ import Remote.Helper.Encryptable (isEncrypted)
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier
 import Annex.Export
-import Annex.Import
 import Annex.LockFile
 import Config
 import Git.Types (fromRef)

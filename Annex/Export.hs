@@ -13,11 +13,9 @@ import Types
 import Types.Key
 import qualified Git
 import qualified Types.Remote as Remote
-import Config
 import Messages
 import Utility.FileSystemEncoding
 
-import qualified Data.Map as M
 import Control.Applicative
 import Data.Maybe
 import Prelude
@@ -43,9 +41,6 @@ exportKey sha = mk <$> catKey sha
 		, keyChunkSize = Nothing
 		, keyChunkNum = Nothing
 		}
-
-exportTree :: Remote.RemoteConfig -> Bool
-exportTree c = fromMaybe False $ yesNo =<< M.lookup "exporttree" c
 
 warnExportConflict :: Remote -> Annex ()
 warnExportConflict r = toplevelWarning True $

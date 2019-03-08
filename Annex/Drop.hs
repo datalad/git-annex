@@ -16,7 +16,6 @@ import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
-import Annex.Export
 import Config
 import Annex.Content.Direct
 import qualified Database.Keys

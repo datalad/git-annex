@@ -261,7 +261,7 @@ seekRemote remote branch msubdir = allowConcurrentOutput $ do
 	parentcommit <- fromtrackingbranch Git.Ref.sha
 	let importcommitconfig = ImportCommitConfig parentcommit ManualCommit importmessage
 
-	importable <- download importtreeconfig =<< enumerate
+	importable <- download importtreeconfig =<< listcontents
 	void $ includeCommandAction $
 		commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable
   where
@@ -271,8 +271,8 @@ seekRemote remote branch msubdir = allowConcurrentOutput $ do
 
 	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
 
-	enumerate = do
-		showStart' "import" (Just (Remote.name remote))
+	listcontents = do
+		showStart' "list" (Just (Remote.name remote))
 		Remote.listImportableContents (Remote.importActions remote) >>= \case
 			Nothing -> do
 				showEndFail

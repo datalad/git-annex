@@ -94,6 +94,12 @@ setRemoteIgnore r b = setConfig (remoteConfig r "ignore") (Git.Config.boolConfig
 setRemoteBare :: Git.Repo -> Bool -> Annex ()
 setRemoteBare r b = setConfig (remoteConfig r "bare") (Git.Config.boolConfig b)
 
+exportTree :: Remote.RemoteConfig -> Bool
+exportTree c = fromMaybe False $ yesNo =<< M.lookup "exporttree" c
+
+importTree :: Remote.RemoteConfig -> Bool
+importTree c = fromMaybe False $ yesNo =<< M.lookup "importtree" c
+
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare
 
