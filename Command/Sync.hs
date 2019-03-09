@@ -49,6 +49,7 @@ import Annex.Content
 import Command.Get (getKey')
 import qualified Command.Move
 import qualified Command.Export
+import qualified Command.Import
 import Annex.Drop
 import Annex.UUID
 import Logs.UUID
@@ -191,8 +192,10 @@ seek o = allowConcurrentOutput $ do
 				-- Send content to any exports first, in 
 				-- case that lets content be dropped from
 				-- other repositories.
-				exportedcontent <- withbranch $ seekExportContent exportremotes
-				syncedcontent <- withbranch $ seekSyncContent o dataremotes
+				exportedcontent <- withbranch $
+					seekExportContent (Just o) exportremotes
+				syncedcontent <- withbranch $
+					seekSyncContent o dataremotes
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
 				-- git-annex branch on the remotes in the
@@ -687,13 +690,16 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
  - 
  - Returns True if any file transfers were made.
  -}
-seekExportContent :: [Remote] -> CurrBranch -> Annex Bool
-seekExportContent rs (currbranch, _) = or <$> forM rs go
+seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
+seekExportContent o rs (currbranch, _) = or <$> forM rs go
   where
-	go r = bracket
-		(Export.openDb (Remote.uuid r))
-		Export.closeDb
-		(\db -> Export.writeLockDbWhile db (go' r db))
+	go r
+		| not (maybe True pullOption o) = return False
+		| not (remoteAnnexPush (Remote.gitconfig r)) = return False
+		| otherwise = bracket
+			(Export.openDb (Remote.uuid r))
+			Export.closeDb
+			(\db -> Export.writeLockDbWhile db (go' r db))
 	go' r db = do
 		(exported, mtbcommitsha) <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 			Nothing -> nontracking r
