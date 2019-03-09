@@ -10,6 +10,16 @@ this.
 
 ## implementation notes
 
+* renameExport is disabled in a way that makes export tree
+  complain unncessarily verbosely. Perhaps change renameExport
+  to a Maybe so it can know when it's not available.
+
+* Does export of master:subdir update the remote tracking branch right?
+
+* Does sync --content with remote.name.annex-tracking-branch=master:subdir
+  export the right tree and update the remote tracking branch right?
+  Does it import correctly?
+
 * Need to support annex-tracking-branch configuration, which documentation
   says makes git-annex sync and assistant do imports.
 

@@ -39,6 +39,7 @@ import qualified Git.Merge
 import qualified Git.Types as Git
 import qualified Git.Ref
 import qualified Git
+import Git.FilePath
 import qualified Remote.Git
 import Config
 import Config.GitConfig
@@ -171,6 +172,7 @@ seek o = allowConcurrentOutput $ do
 	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 	let exportremotes = filter (exportTree . Remote.config) dataremotes
+	let importremotes = filter (importTree . Remote.config) dataremotes
 
 	if cleanupOption o
 		then do
@@ -187,11 +189,13 @@ seek o = allowConcurrentOutput $ do
 				, map (withbranch . pullRemote o mergeConfig) gitremotes
 				,  [ mergeAnnex ]
 				]
-			
+				
 			whenM shouldsynccontent $ do
-				-- Send content to any exports first, in 
-				-- case that lets content be dropped from
-				-- other repositories.
+				mapM_ (withbranch . importRemote o mergeConfig) importremotes
+			
+				-- Send content to any exports before other
+				-- repositories, in case that lets content
+				-- be dropped from other repositories.
 				exportedcontent <- withbranch $
 					seekExportContent (Just o) exportremotes
 				syncedcontent <- withbranch $
@@ -225,10 +229,11 @@ mergeConfig :: [Git.Merge.MergeConfig]
 mergeConfig = 
 	[ Git.Merge.MergeNonInteractive
 	-- In several situations, unrelated histories should be merged
-	-- together. This includes pairing in the assistant, and merging
-	-- from a remote into a newly created direct mode repo.
+	-- together. This includes pairing in the assistant, merging
+	-- from a remote into a newly created direct mode repo,
+	-- and an initial merge from an import from a special remote.
 	-- (Once direct mode is removed, this could be changed, so only
-	-- the assistant uses it.)
+	-- the assistant and import from special remotes use it.)
 	, Git.Merge.MergeUnrelatedHistories
 	]
 
@@ -402,6 +407,23 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 		inRepoWithSshOptionsTo repo (Remote.gitconfig remote) $
 			Git.Command.runBool
 				[Param "fetch", Param $ Remote.name remote]
+	wantpull = remoteAnnexPull (Remote.gitconfig remote)
+
+importRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
+importRemote o mergeconfig remote currbranch
+	| not (pullOption o) || not wantpull = noop
+	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
+		Nothing -> noop
+		Just tb -> do
+			let (b, s) = separate (== ':') (Git.fromRef tb)
+			let branch = Git.Ref b
+			let subdir = if null s
+				then Nothing
+				else Just (asTopFilePath s)
+			Command.Import.seekRemote remote branch subdir
+			void $ mergeRemote remote currbranch mergeconfig
+				(resolveMergeOverride o)
+  where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
 {- The remote probably has both a master and a synced/master branch.

@@ -104,12 +104,12 @@ seek o@(LocalImportOptions {}) = allowConcurrentOutput $ do
 		`withPathContents` importFiles o
 seek o@(RemoteImportOptions {}) = allowConcurrentOutput $ do
 	r <- getParsed (importFromRemote o)
+	unlessM (Remote.isImportSupported r) $
+		giveup "That remote does not support imports."
 	subdir <- maybe
 		(pure Nothing)
 		(Just <$$> inRepo . toTopFilePath)
 		(importToSubDir o)
-	unlessM (Remote.isImportSupported remote) $
-		giveup "That remote does not support imports."
 	seekRemote r (importToBranch o) subdir
 
 startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
