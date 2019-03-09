@@ -148,7 +148,8 @@ subdirectories).
 
 * `import [path ...]`
 
-  Move and add files from outside git working copy into the annex.
+  Add files from a non-version-controlled directory or a 
+  special remote into the annex.
   
   See [[git-annex-import]](1) for details.
 
@@ -1268,16 +1269,17 @@ Here are all the supported configuration settings.
 
 * `remote.<name>.annex-tracking-branch`
 
+  This is for use with special remotes that support exports and imports.
+
   When set to eg, "master", this tells git-annex that you want the
   special remote to track that branch.
 
   When set to eg, "master:subdir", the special remote tracks only
   the subdirectory of that branch.
 
-  `git-annex sync --content` and the git-annex assistant will
-  import changes from the remote and merge them into the
-  annex-tracking-branch. They also export changes made to the branch to the
-  remote.
+  `git-annex sync --content` will import changes from the remote and 
+  merge them into the annex-tracking-branch. They also export changes
+  made to the branch to the remote.
 
 * `remote.<name>.annex-export-tracking`
 

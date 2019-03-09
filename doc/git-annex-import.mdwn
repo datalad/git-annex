@@ -1,6 +1,6 @@
 # NAME
 
-git-annex import - add files from a directory or special remote
+git-annex import - add files from a non-versioned directory or a special remote
 
 # SYNOPSIS
 

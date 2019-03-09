@@ -37,7 +37,7 @@ cmd :: Command
 cmd = notBareRepo $
 	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
 		command "import" SectionCommon 
-			"move and add files from outside git working copy"
+			"import files from elsewhere into the repository"
 			(paramPaths ++ "|BRANCH[:SUBDIR]")
 			(seek <$$> optParser)
 
