@@ -102,12 +102,14 @@ seek o@(LocalImportOptions {}) = allowConcurrentOutput $ do
 	largematcher <- largeFilesMatcher
 	(commandAction . startLocal largematcher (duplicateMode o))
 		`withPathContents` importFiles o
-seek o@(RemoteImportOptions {}) = do
+seek o@(RemoteImportOptions {}) = allowConcurrentOutput $ do
 	r <- getParsed (importFromRemote o)
 	subdir <- maybe
 		(pure Nothing)
 		(Just <$$> inRepo . toTopFilePath)
 		(importToSubDir o)
+	unlessM (Remote.isImportSupported remote) $
+		giveup "That remote does not support imports."
 	seekRemote r (importToBranch o) subdir
 
 startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
@@ -245,9 +247,7 @@ verifyExisting key destfile (yes, no) = do
 		(const yes) no
 
 seekRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandSeek
-seekRemote remote branch msubdir = allowConcurrentOutput $ do
-	unlessM (Remote.isImportSupported remote) $
-		giveup "That remote does not support imports."
+seekRemote remote branch msubdir = do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir ->
