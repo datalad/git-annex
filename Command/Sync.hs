@@ -726,16 +726,13 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 		(exported, mtbcommitsha) <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 			Nothing -> nontracking r
 			Just b -> do
+				mtree <- inRepo $ Git.Ref.tree b
 				mtbcommitsha <- Command.Export.getExportCommit r b
-				mcur <- maybe
-					(return Nothing)
-					(inRepo . Git.Ref.tree)
-					(fmap snd mtbcommitsha)
-				case mcur of
-					Nothing -> nontracking r
-					Just cur -> do
-						Command.Export.changeExport r db cur
-						return ([mkExported cur []], mtbcommitsha)
+				case (mtree, mtbcommitsha) of
+					(Just tree, Just _) -> do
+						Command.Export.changeExport r db tree
+						return ([mkExported tree []], mtbcommitsha)
+					_ -> nontracking r
 		fillexport r db (exportedTreeishes exported) mtbcommitsha
 		
 	nontracking r = do

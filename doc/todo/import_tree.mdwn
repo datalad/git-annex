@@ -10,13 +10,6 @@ this.
 
 ## implementation notes
 
-* Does sync --content with remote.name.annex-tracking-branch=master:subdir
-  export the right tree and update the remote tracking branch right?
-  Does it import correctly?
-
-* Need to support annex-tracking-branch configuration, which documentation
-  says makes git-annex sync and assistant do imports.
-
 * When on an adjusted unlocked branch, need to import the files unlocked.
   Also, the tracking branch code needs to know about such branches,
   currently it will generate the wrong tracking branch.
