@@ -107,9 +107,7 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 		mkcommits origtree basecommit imported >>= \case
 			Nothing -> return Nothing
 			Just finalcommit -> do
-				updateexportdb finaltree
-				oldexport <- updateexportlog finaltree
-				updatelocationlog oldexport finaltree
+				updatestate finaltree
 				return (Just finalcommit)
 
 	mkcommits origtree basecommit (History importedtree hs) = do
@@ -126,6 +124,18 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 					commitparents
 					importedtree
 				return (Just commit)
+	
+	updatestate committedtree = do
+		importedtree <- case subdir of
+			Nothing -> pure committedtree
+			Just dir -> 
+				let subtreeref = Ref $
+					fromRef committedtree ++ ":" ++ getTopFilePath dir
+				in fromMaybe emptyTree
+					<$> inRepo (Git.Ref.tree subtreeref)
+		updateexportdb importedtree
+		oldexport <- updateexportlog importedtree
+		updatelocationlog oldexport importedtree
 
 	updateexportdb importedtree = do
 		db <- Export.openDb (Remote.uuid remote)

@@ -10,14 +10,6 @@ this.
 
 ## implementation notes
 
-* When doing `git annex export master:subdir` followed by
-  `git annex import master:subdir` which imports a new file,
-  followed by merging the import and re-export, it does unncessary
-  work deleting stuff not in the subdir from the remote. 
-  
-  Why? Seems that the import recorded the exported tree wrong, using the
-  whole tree and not the sub-tree.
-
 * Does sync --content with remote.name.annex-tracking-branch=master:subdir
   export the right tree and update the remote tracking branch right?
   Does it import correctly?
