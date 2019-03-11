@@ -288,7 +288,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexCheckUUID = getbool "checkuuid" True
 		, remoteAnnexVerify = getbool "verify" True
 		, remoteAnnexTrackingBranch = Git.Ref <$>
-			( notempty (getmaybe "annex-tracking-branch")
+			( notempty (getmaybe "tracking-branch")
 			<|> notempty (getmaybe "export-tracking") -- old name
 			)
 		, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
