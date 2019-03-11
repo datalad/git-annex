@@ -16,6 +16,8 @@ and `git annex sync --content` can be configured to use it.
 * Currently only directory special remote supports importing, at least S3
   can also support it.
 
+* Write a tip or tips to document using this new feature.
+
 * Add to external special remote protocol.
 
 * Support importing from adb special remotes, webdav, etc?
