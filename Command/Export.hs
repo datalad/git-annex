@@ -79,9 +79,10 @@ seek o = do
 		setConfig (remoteConfig r "annex-tracking-branch")
 			(fromRef $ exportTreeish o)
 	
-	mtbcommitsha <- getExportCommit r (exportTreeish o)
 	tree <- fromMaybe (giveup "unknown tree") <$>
-		inRepo (Git.Ref.tree (fromMaybe (exportTreeish o) (fmap snd mtbcommitsha)))
+		inRepo (Git.Ref.tree (exportTreeish o))
+	
+	mtbcommitsha <- getExportCommit r (exportTreeish o)
 
 	db <- openDb (uuid r)
 	writeLockDbWhile db $ do
@@ -93,6 +94,10 @@ seek o = do
 -- | When the treeish is a branch like master or refs/heads/master
 -- (but not refs/remotes/...), find the commit it points to
 -- and the corresponding remote tracking branch.
+--
+-- The treeish may also be a subdir within a branch, like master:subdir,
+-- that results in this returning the same thing it does for the master
+-- branch.
 getExportCommit :: Remote -> Git.Ref -> Annex (Maybe (RemoteTrackingBranch, Sha))
 getExportCommit r treeish
 	| '/' `notElem` fromRef baseref = do
@@ -101,7 +106,8 @@ getExportCommit r treeish
 		return (fmap (tb, ) commitsha)
 	| otherwise = return Nothing
   where
-	baseref = Git.Ref.removeBase refsheads treeish
+	baseref = Ref $ takeWhile (/= ':') $ fromRef $ 
+		Git.Ref.removeBase refsheads treeish
 	refsheads = "refs/heads"
 
 -- | Changes what's exported to the remote. Does not upload any new
