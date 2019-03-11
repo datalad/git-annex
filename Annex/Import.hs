@@ -266,7 +266,7 @@ downloadImport remote importtreeconfig importablecontents = do
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
 			let downloadaction = do
-				showStart "import" (fromImportLocation loc)
+				showStart ("import " ++ Remote.name remote) (fromImportLocation loc)
 				next $ tryNonAsync (download cidmap db i) >>= \case
 					Left e -> next $ do
 						warning (show e)
