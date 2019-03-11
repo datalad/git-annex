@@ -171,7 +171,7 @@ seek o = allowConcurrentOutput $ do
 	let gitremotes = filter Remote.gitSyncableRemote remotes
 	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
-	let exportremotes = filter (exportTree . Remote.config) dataremotes
+	let (exportremotes, keyvalueremotes) = partition (exportTree . Remote.config) dataremotes
 	let importremotes = filter (importTree . Remote.config) dataremotes
 
 	if cleanupOption o
@@ -199,7 +199,7 @@ seek o = allowConcurrentOutput $ do
 				exportedcontent <- withbranch $
 					seekExportContent (Just o) exportremotes
 				syncedcontent <- withbranch $
-					seekSyncContent o dataremotes
+					seekSyncContent o keyvalueremotes
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
 				-- git-annex branch on the remotes in the
