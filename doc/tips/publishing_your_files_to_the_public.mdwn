@@ -40,19 +40,26 @@ Each exported file will be available to the public at
 Note: Bear in mind that Amazon will charge the owner of the bucket
 for public downloads from that bucket.
 
-# Tracking changes to master
+# Using `git-annex sync --content`
 
 So far, the current contents of the master branch have been exported to
 public-s3, and to update the export when the branch changes, you have to
-remember to run `git annex export` again. To automate updating the export,
-enable tracking.
+remember to run `git annex export` again.
+
+If you use a `git annex sync` workflow, it's useful to configure
+it to also export changes to the remote. This is done by setting
+the remote's `annex-tracking-branch` configuration:
 	
-	git annex export --tracking master --to public-s3
+	git config remote.public-s3.annex-tracking-branch master
 
 That tells git-annex that the export should track changes to master.
 When you run `git annex sync --content`, it will update all tracking
 exports. The git-annex assistant also automatically updates tracking
 exports.
+
+Want to only export files in a subdirectory of the master branch?
+
+	git config remote.public-s3.annex-tracking-branch master:subdir
 
 # Amazon S3 indexes
 
