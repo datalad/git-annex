@@ -27,12 +27,12 @@ recordFingerprint :: Fingerprint -> UUID -> Annex ()
 recordFingerprint fp uuid = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change multicastLog $
-		buildLog buildFindgerPrint
+		buildLogOld buildFindgerPrint
 			. changeLog c uuid fp
-			. parseLog fingerprintParser
+			. parseLogOld fingerprintParser
 
 knownFingerPrints :: Annex (M.Map UUID Fingerprint)
-knownFingerPrints = simpleMap . parseLog fingerprintParser
+knownFingerPrints = simpleMap . parseLogOld fingerprintParser
 	<$> Annex.Branch.get activityLog
 
 fingerprintParser :: A.Parser Fingerprint

@@ -34,7 +34,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Annex.UUID
 import Annex.Content
 import Logs.RemoteState
@@ -58,6 +58,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = tahoeSetup
 	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -80,6 +81,7 @@ gen r u c gc = do
 		, checkPresent = checkKey u hdl
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
+		, importActions = importUnsupported
 		, whereisKey = Just (getWhereisKey u)
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

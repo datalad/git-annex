@@ -630,6 +630,7 @@ Executable git-annex
     Annex.GitOverlay
     Annex.HashObject
     Annex.Hook
+    Annex.Import
     Annex.Ingest
     Annex.Init
     Annex.InodeSentinal
@@ -649,6 +650,7 @@ Executable git-annex
     Annex.Perms
     Annex.Queue
     Annex.ReplaceFile
+    Annex.RemoteTrackingBranch
     Annex.SpecialRemote
     Annex.Ssh
     Annex.TaggedPush
@@ -808,6 +810,7 @@ Executable git-annex
     Config.Smudge
     Creds
     Crypto
+    Database.ContentIdentifier
     Database.Export
     Database.Fsck
     Database.Handle
@@ -869,6 +872,8 @@ Executable git-annex
     Logs.Chunk
     Logs.Chunk.Pure
     Logs.Config
+    Logs.ContentIdentifier
+    Logs.ContentIdentifier.Pure
     Logs.Difference
     Logs.Difference.Pure
     Logs.Export
@@ -928,7 +933,7 @@ Executable git-annex
     Remote.Helper.Chunked
     Remote.Helper.Chunked.Legacy
     Remote.Helper.Encryptable
-    Remote.Helper.Export
+    Remote.Helper.ExportImport
     Remote.Helper.Git
     Remote.Helper.Hooks
     Remote.Helper.Messages
@@ -973,6 +978,7 @@ Executable git-annex
     Types.FileMatcher
     Types.GitConfig
     Types.Group
+    Types.Import
     Types.Key
     Types.KeySource
     Types.LockCache

@@ -25,7 +25,7 @@ import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Utility.Hash
 import Utility.UserInfo
 import Annex.UUID
@@ -41,6 +41,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = bupSetup
 	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -67,6 +68,7 @@ gen r u c gc = do
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = bupLocal buprepo
 		, exportActions = exportUnsupported
+		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

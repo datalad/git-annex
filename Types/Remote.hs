@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,7 +20,10 @@ module Types.Remote
 	, unVerified
 	, RetrievalSecurityPolicy(..)
 	, isExportSupported
+	, isImportSupported
 	, ExportActions(..)
+	, ImportActions(..)
+	, ByteSize
 	)
 	where
 
@@ -36,11 +39,13 @@ import Types.Creds
 import Types.UrlContents
 import Types.NumCopies
 import Types.Export
+import Types.Import
 import Config.Cost
 import Utility.Metered
 import Git.Types (RemoteName)
 import Utility.SafeCommand
 import Utility.Url
+import Utility.DataUnits
 
 type RemoteConfigKey = String
 
@@ -61,6 +66,8 @@ data RemoteTypeA a = RemoteType
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
 	-- check if a remote of this type is able to support export
 	, exportSupported :: RemoteConfig -> RemoteGitConfig -> a Bool
+	-- check if a remote of this type is able to support import
+	, importSupported :: RemoteConfig -> RemoteGitConfig -> a Bool
 	}
 
 instance Eq (RemoteTypeA a) where
@@ -102,8 +109,10 @@ data RemoteA a = Remote
 	-- Some remotes can checkPresent without an expensive network
 	-- operation.
 	, checkPresentCheap :: Bool
-	-- Some remotes support exports of trees.
+	-- Some remotes support export of trees.
 	, exportActions :: ExportActions a
+	-- Some remotes support import of trees.
+	, importActions :: ImportActions a
 	-- Some remotes can provide additional details for whereis.
 	, whereisKey :: Maybe (Key -> a [String])
 	-- Some remotes can run a fsck operation on the remote,
@@ -207,6 +216,9 @@ data RetrievalSecurityPolicy
 isExportSupported :: RemoteA a -> a Bool
 isExportSupported r = exportSupported (remotetype r) (config r) (gitconfig r)
 
+isImportSupported :: RemoteA a -> a Bool
+isImportSupported r = importSupported (remotetype r) (config r) (gitconfig r)
+
 data ExportActions a = ExportActions 
 	-- Exports content to an ExportLocation.
 	-- The exported file should not appear to be present on the remote
@@ -230,7 +242,82 @@ data ExportActions a = ExportActions
 	-- Throws an exception if the remote cannot be accessed.
 	, checkPresentExport :: Key -> ExportLocation -> a Bool
 	-- Renames an already exported file.
-	-- This may fail, if the file doesn't exist, or the remote does not
-	-- support renames.
-	, renameExport :: Key -> ExportLocation -> ExportLocation -> a Bool
+	-- This may fail with False, if the file doesn't exist.
+	-- If the remote does not support renames, it can return Nothing.
+	, renameExport :: Key -> ExportLocation -> ExportLocation -> a (Maybe Bool)
+	}
+
+data ImportActions a = ImportActions
+	-- Finds the current set of files that are stored in the remote,
+	-- along with their content identifiers and size.
+	--
+	-- May also find old versions of files that are still stored in the
+	-- remote.
+	{ listImportableContents :: a (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+	-- Retrieves a file from the remote. Ensures that the file
+	-- it retrieves has the requested ContentIdentifier.
+	--
+	-- This has to be used rather than retrieveExport
+	-- when a special remote supports imports, since files on such a
+	-- special remote can be changed at any time.
+	, retrieveExportWithContentIdentifier 
+		:: ExportLocation
+		-> ContentIdentifier
+		-> FilePath
+		-- ^ file to write content to
+		-> a (Maybe Key)
+		-- ^ callback that generates a key from the downloaded content
+		-> MeterUpdate
+		-> a (Maybe Key)
+	-- Exports content to an ExportLocation, and returns the
+	-- ContentIdentifier corresponding to the content it stored.
+	--
+	-- This is used rather than storeExport when a special remote
+	-- supports imports, since files on such a special remote can be
+	-- changed at any time.
+	--
+	-- Since other things can modify the same file on the special
+	-- remote, this must take care to not overwrite such modifications,
+	-- and only overwrite a file that has one of the ContentIdentifiers
+	-- passed to it, unless listContents can recover an overwritten file.
+	--
+	-- Also, since there can be concurrent writers, the implementation
+	-- needs to make sure that the ContentIdentifier it returns
+	-- corresponds to what it wrote, not to what some other writer
+	-- wrote.
+	, storeExportWithContentIdentifier
+		:: FilePath
+		-> Key
+		-> ExportLocation
+		-> [ContentIdentifier]
+		-- ^ old content that it's safe to overwrite
+		-> MeterUpdate
+		-> a (Maybe ContentIdentifier)
+	-- This is used rather than removeExport when a special remote
+	-- supports imports.
+	--
+	-- It should only remove a file from the remote when it has one
+	-- of the ContentIdentifiers passed to it, unless listContents
+	-- can recover an overwritten file.
+	--
+	-- It needs to handle races similar to storeExportWithContentIdentifier.
+	, removeExportWithContentIdentifier
+		:: Key
+		-> ExportLocation
+		-> [ContentIdentifier]
+		-> a Bool
+	-- Removes a directory from the export, but only when it's empty.
+	-- Used instead of removeExportDirectory when a special remote
+	-- supports imports.
+	--
+	-- If the directory is not empty, it should succeed.
+	, removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> a Bool)
+	-- Checks if the specified ContentIdentifier is exported to the
+	-- remote at the specified ExportLocation.
+	-- Throws an exception if the remote cannot be accessed.
+	, checkPresentExportWithContentIdentifier
+		:: Key
+		-> ExportLocation
+		-> [ContentIdentifier]
+		-> a Bool
 	}

@@ -1,22 +1,29 @@
 {- types for SQL databases
  -
- - Copyright 2015-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Database.Types where
 
 import Database.Persist.TH
+import Database.Persist.Class hiding (Key)
+import Database.Persist.Sql hiding (Key)
 import Data.Maybe
 import Data.Char
+import qualified Data.ByteString as S
+import qualified Data.Text as T
 
 import Utility.PartialPrelude
 import Key
 import Utility.InodeCache
 import Git.Types (Ref(..))
+import Types.UUID
+import Types.Import
 
 -- A serialized Key
 newtype SKey = SKey String
@@ -112,3 +119,26 @@ toSRef = SRef
 
 fromSRef :: SRef -> Ref
 fromSRef (SRef r) = r
+
+instance PersistField UUID where
+	toPersistValue u = toPersistValue b
+	  where
+		b :: S.ByteString
+		b = fromUUID u
+	fromPersistValue v = toUUID <$> go
+	  where
+	 	go :: Either T.Text S.ByteString
+		go = fromPersistValue v
+
+instance PersistFieldSql UUID where
+	sqlType _ = SqlBlob
+
+instance PersistField ContentIdentifier where
+	toPersistValue (ContentIdentifier b) = toPersistValue b
+	fromPersistValue v = ContentIdentifier <$> go
+	  where
+	 	go :: Either T.Text S.ByteString
+		go = fromPersistValue v
+
+instance PersistFieldSql ContentIdentifier where
+	sqlType _ = SqlBlob

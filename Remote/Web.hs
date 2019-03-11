@@ -10,7 +10,7 @@ module Remote.Web (remote, getWebUrls) where
 import Annex.Common
 import Types.Remote
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Git
 import qualified Git.Construct
 import Annex.Content
@@ -29,6 +29,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = error "not supported"
 	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	}
 
 -- There is only one web remote, and it always exists.
@@ -57,6 +58,7 @@ gen r _ c gc = do
 		, checkPresent = checkKey
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
+		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

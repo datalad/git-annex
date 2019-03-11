@@ -28,7 +28,7 @@ viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> v -> m ()) -> FilePath -> v -
 viaTmp a file content = bracketIO setup cleanup use
   where
 	(dir, base) = splitFileName file
-	template = base ++ ".tmp"
+	template = relatedTemplate (base ++ ".tmp")
 	setup = do
 		createDirectoryIfMissing True dir
 		openTempFile dir template

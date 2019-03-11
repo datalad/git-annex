@@ -18,6 +18,7 @@ import Data.ByteString.Builder
 import qualified Data.Semigroup as Sem
 
 import Utility.FileSystemEncoding
+import Utility.QuickCheck
 import qualified Utility.SimpleProtocol as Proto
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
@@ -81,3 +82,9 @@ type UUIDDescMap = M.Map UUID UUIDDesc
 instance Proto.Serializable UUID where
 	serialize = fromUUID
 	deserialize = Just . toUUID
+
+instance Arbitrary UUID where
+	arbitrary = frequency [(1, return NoUUID), (3, UUID <$> arb)]
+	  where
+		arb = encodeBS <$> listOf1 (elements uuidchars)
+		uuidchars = '-' : ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']

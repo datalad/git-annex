@@ -20,6 +20,7 @@ module Logs.MapLog (
 import Common
 import Annex.VectorClock
 import Logs.Line
+import Utility.QuickCheck
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
@@ -31,6 +32,9 @@ data LogEntry v = LogEntry
 	{ changed :: VectorClock
 	, value :: v
 	} deriving (Eq, Show)
+
+instance Arbitrary v => Arbitrary (LogEntry v) where
+	arbitrary = LogEntry <$> arbitrary <*> arbitrary
 
 type MapLog f v = M.Map f (LogEntry v)
 

@@ -209,11 +209,17 @@ The situations to keep in mind are these:
 
 This is an extension to the ExportActions api.
 
-	listContents :: Annex (Tree [(ExportLocation, ContentIdentifier)])
+	listContents :: Annex (ContentHistory [(ExportLocation, ContentIdentifier)])
 
 	retrieveExportWithContentIdentifier :: ExportLocation -> ContentIdentifier -> (FilePath -> Annex Key) -> MeterUpdate -> Annex (Maybe Key)
 
-	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> Maybe ContentIdentifier -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+	storeExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+
+	removeExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+
+	removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> Annex Bool)
+
+	checkPresentExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex (Maybe Bool)
 
 listContents finds the current set of files that are stored in the remote,
 some of which may have been written by other programs than git-annex,
@@ -222,8 +228,14 @@ a single node tree.
 
 listContents may also find past versions of files that are stored in the
 remote, when it supports storing multiple versions of files. Since it
-returns a tree of lists of files, it can represent anything from a linear
-history to a full branching version control history.
+returns a history tree of lists of files, it can represent anything from a
+linear history to a full branching version control history.
+
+Note that listContents does not need to worry about generating an
+ExportLocation that contains a ".." attack or an absolute path or other
+such mischief. Since a git tree is built from the ExportLocations, and is
+merged the same as a tree pulled from a regular git remote is, 
+git's usual safety measures avoid such attacks.
 
 retrieveExportWithContentIdentifier is used when downloading a new file from 
 the remote that listContents found. retrieveExport can't be used because
@@ -235,6 +247,11 @@ retrieveExportWithContentIdentifier should detect when the file it's
 downloaded may not match the requested content identifier (eg when
 something else wrote to it while it was being retrieved), and fail
 in that case.
+
+When a remote supports imports and exports, storeExport and removeExport 
+should not be used when exporting to it, and instead 
+storeExportWithContentIdentifier and removeExportWithContentIdentifier
+be used.
 
 storeExportWithContentIdentifier stores content and returns the 
 content identifier corresponding to what it stored. It can either get
@@ -248,11 +265,30 @@ to it, to avoid overwriting a file that was modified by something else.
 But alternatively, if listContents can later recover the modified file, it can
 overwrite the modified file.
 
-storeExportWithContentIdentifier needs to handle the case when there's a
-race with a concurrent writer. It needs to avoid getting the wrong
-ContentIdentifier for data written by the other writer. It may detect such
-races and fail, or it could succeed and overwrite the other file, so long
-as it can later be recovered by listContents.
+Similarly, removeExportWithContentIdentifier must only remove a file
+on the remote if it has the same content identifier that's passed to it,
+or if listContent can later recover the modified file. 
+Otherwise it should fail. (Like removeExport, removeExportWithContentIdentifier
+also succeeds if the file is not present.)
+
+Both storeExportWithContentIdentifier and removeExportWithContentIdentifier
+need to handle the case when there's a race with a concurrent writer.
+They can detect such races and fail. Or, if overwritten/deleted modified
+files can later be recovered by listContents, it's acceptable to not detect
+the race.
+
+removeExportDirectoryWhenEmpty is used instead of removeExportDirectory.
+It should only remove empty directories, and succeeds if there are files
+in the directory.
+
+checkPresentExportWithContentIdentifier is used instead of
+checkPresentExport. It should verify that one of the provided
+ContentIdentifiers matches the current content of the file.
+
+Note that renameExport is never used when the special remote supports
+imports, because it may have an implementation that loses changes
+to imported files. (For example, it may copy the file to the new name,
+and delete the old name.)
 
 ## multiple git-annex repos accessing a special remote
 

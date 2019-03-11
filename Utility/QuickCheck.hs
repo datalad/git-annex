@@ -17,6 +17,7 @@ import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
 import Data.Ratio
 import System.Posix.Types
+import Data.List.NonEmpty (NonEmpty(..))
 import Prelude
 
 {- Times before the epoch are excluded. Half with decimal and half without. -}
@@ -40,6 +41,10 @@ instance Arbitrary FileID where
 {- File sizes are never negative. -}
 instance Arbitrary FileOffset where
 	arbitrary = nonNegative arbitrarySizedIntegral
+
+{- Quickcheck lacks this instance. -}
+instance Arbitrary l => Arbitrary (NonEmpty l) where
+	arbitrary = (:|) <$> arbitrary <*> arbitrary
 
 nonNegative :: (Num a, Ord a) => Gen a -> Gen a
 nonNegative g = g `suchThat` (>= 0)

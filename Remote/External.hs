@@ -19,8 +19,7 @@ import Config
 import Git.Config (isTrue, boolConfig)
 import Git.Env
 import Remote.Helper.Special
-import Remote.Helper.Export
-import Annex.Export
+import Remote.Helper.ExportImport
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
 import Utility.Metered
@@ -48,6 +47,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = externalSetup
 	, exportSupported = checkExportSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -119,6 +119,7 @@ gen r u c gc
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, exportActions = exportactions
+			, importActions = importUnsupported
 			, whereisKey = towhereis
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -306,25 +307,28 @@ removeExportDirectoryM external dir = safely $
   where
 	req = REMOVEEXPORTDIRECTORY dir
 
-renameExportM :: External -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportM external k src dest = safely $
+renameExportM :: External -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportM external k src dest = safely' (Just False) $
 	handleRequestExport external src req k Nothing $ \resp -> case resp of
 		RENAMEEXPORT_SUCCESS k'
-			| k' == k -> result True
+			| k' == k -> result (Just True)
 		RENAMEEXPORT_FAILURE k' 
-			| k' == k -> result False
-		UNSUPPORTED_REQUEST -> result False
+			| k' == k -> result (Just False)
+		UNSUPPORTED_REQUEST -> result Nothing
 		_ -> Nothing
   where
 	req sk = RENAMEEXPORT sk dest
 
 safely :: Annex Bool -> Annex Bool
-safely a = go =<< tryNonAsync a
+safely = safely' False
+
+safely' :: a -> Annex a -> Annex a
+safely' onerr a = go =<< tryNonAsync a
   where
 	go (Right r) = return r
 	go (Left e) = do
 		toplevelWarning False (show e)
-		return False
+		return onerr
 
 {- Sends a Request to the external remote, and waits for it to generate
  - a Response. That is fed into the responsehandler, which should return

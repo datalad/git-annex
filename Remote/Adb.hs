@@ -17,7 +17,7 @@ import qualified Git
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Annex.UUID
 import Utility.Metered
 
@@ -35,6 +35,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = adbSetup
 	, exportSupported = exportIsSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -61,6 +62,7 @@ gen r u c gc = do
 			, removeExportDirectory = Just $ removeExportDirectoryM serial adir
 			, renameExport = renameExportM serial adir
 			}
+		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -220,9 +222,9 @@ checkPresentExportM r serial adir _k loc = checkKey' r serial aloc
   where
 	aloc = androidExportLocation adir loc
 
-renameExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportM serial adir _k old new = liftIO $ adbShellBool serial
-	[Param "mv", Param "-f", File oldloc, File newloc]
+renameExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportM serial adir _k old new = liftIO $ Just <$> 
+	adbShellBool serial [Param "mv", Param "-f", File oldloc, File newloc]
   where
 	oldloc = fromAndroidPath $ androidExportLocation adir old
 	newloc = fromAndroidPath $ androidExportLocation adir new

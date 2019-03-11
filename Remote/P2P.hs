@@ -23,7 +23,7 @@ import Annex.UUID
 import Config
 import Config.Cost
 import Remote.Helper.Git
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Remote.Helper.P2P
 import Utility.AuthToken
 
@@ -38,6 +38,7 @@ remote = RemoteType
 	, generate = \_ _ _ _ -> return Nothing
 	, setup = error "P2P remotes are set up using git-annex p2p"
 	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	}
 
 chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -59,6 +60,7 @@ chainGen addr r u c gc = do
 		, checkPresent = checkpresent protorunner
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
+		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing

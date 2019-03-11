@@ -51,7 +51,8 @@ by running "git annex sync" on the remote.
 
 * `--pull`, `--no-pull`
 
-  By default, git pulls from remotes. Use --no-pull to disable all pulling.
+  By default, git pulls from remotes and imports from some special remotes.
+  Use --no-pull to disable all pulling.
 
   When `remote.<name>.annex-pull` or `remote.<name>.annex-sync`
   are set to false, pulling is disabled for those remotes, and using
@@ -59,8 +60,8 @@ by running "git annex sync" on the remote.
 
 * `--push`, `--no-push` 
 
-  By default, git pushes changes to remotes.
-  Use --no-push to disable all pushing.
+  By default, git pushes changes to remotes and exports to some 
+  special remotes. Use --no-push to disable all pushing.
   
   When `remote.<name>.annex-push` or `remote.<name>.annex-sync` are
   set to false, or `remote.<name>.annex-readonly` is set to true,
@@ -82,9 +83,12 @@ by running "git annex sync" on the remote.
   This behavior can be overridden by configuring the preferred content
   of a repository. See [[git-annex-preferred-content]](1).
 
-  When a special remote is configured as an export and is tracking a branch,
-  the export will be updated to the current content of the branch.
-  See [[git-annex-export]](1).
+  When `remote.<name>.annex-tracking-branch` is configured for a special remote
+  and that branch is checked out, syncing will import changes from
+  the remote, merge them into the branch, and export any changes that have
+  been committed to the branch back to the remote. See 
+  See [[git-annex-import]](1) and [[git-annex-export]](1) for details about
+  how importing and exporting work.
 
 * `--content-of=path` `-C path`
 

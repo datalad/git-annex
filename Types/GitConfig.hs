@@ -231,7 +231,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexReadOnly :: Bool
 	, remoteAnnexVerify :: Bool
 	, remoteAnnexCheckUUID :: Bool
-	, remoteAnnexExportTracking :: Maybe Git.Ref
+	, remoteAnnexTrackingBranch :: Maybe Git.Ref
 	, remoteAnnexTrustLevel :: Maybe String
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
@@ -287,8 +287,10 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexReadOnly = getbool "readonly" False
 		, remoteAnnexCheckUUID = getbool "checkuuid" True
 		, remoteAnnexVerify = getbool "verify" True
-		, remoteAnnexExportTracking = Git.Ref
-			<$> notempty (getmaybe "export-tracking")
+		, remoteAnnexTrackingBranch = Git.Ref <$>
+			( notempty (getmaybe "tracking-branch")
+			<|> notempty (getmaybe "export-tracking") -- old name
+			)
 		, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
 		, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"

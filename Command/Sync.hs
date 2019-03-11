@@ -1,10 +1,12 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE FlexibleContexts #-}
 
 module Command.Sync (
 	cmd,
@@ -37,6 +39,7 @@ import qualified Git.Merge
 import qualified Git.Types as Git
 import qualified Git.Ref
 import qualified Git
+import Git.FilePath
 import qualified Remote.Git
 import Config
 import Config.GitConfig
@@ -47,6 +50,7 @@ import Annex.Content
 import Command.Get (getKey')
 import qualified Command.Move
 import qualified Command.Export
+import qualified Command.Import
 import Annex.Drop
 import Annex.UUID
 import Logs.UUID
@@ -57,7 +61,6 @@ import Annex.Ssh
 import Annex.BloomFilter
 import Annex.UpdateInstead
 import Annex.Export
-import Annex.LockFile
 import Annex.TaggedPush
 import Annex.CurrentBranch
 import qualified Database.Export as Export
@@ -168,7 +171,8 @@ seek o = allowConcurrentOutput $ do
 	let gitremotes = filter Remote.gitSyncableRemote remotes
 	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
-	let exportremotes = filter (exportTree . Remote.config) dataremotes
+	let (exportremotes, keyvalueremotes) = partition (exportTree . Remote.config) dataremotes
+	let importremotes = filter (importTree . Remote.config) dataremotes
 
 	if cleanupOption o
 		then do
@@ -185,13 +189,17 @@ seek o = allowConcurrentOutput $ do
 				, map (withbranch . pullRemote o mergeConfig) gitremotes
 				,  [ mergeAnnex ]
 				]
-			
+				
 			whenM shouldsynccontent $ do
-				-- Send content to any exports first, in 
-				-- case that lets content be dropped from
-				-- other repositories.
-				exportedcontent <- withbranch $ seekExportContent exportremotes
-				syncedcontent <- withbranch $ seekSyncContent o dataremotes
+				mapM_ (withbranch . importRemote o mergeConfig) importremotes
+			
+				-- Send content to any exports before other
+				-- repositories, in case that lets content
+				-- be dropped from other repositories.
+				exportedcontent <- withbranch $
+					seekExportContent (Just o) exportremotes
+				syncedcontent <- withbranch $
+					seekSyncContent o keyvalueremotes
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
 				-- git-annex branch on the remotes in the
@@ -221,10 +229,11 @@ mergeConfig :: [Git.Merge.MergeConfig]
 mergeConfig = 
 	[ Git.Merge.MergeNonInteractive
 	-- In several situations, unrelated histories should be merged
-	-- together. This includes pairing in the assistant, and merging
-	-- from a remote into a newly created direct mode repo.
+	-- together. This includes pairing in the assistant, merging
+	-- from a remote into a newly created direct mode repo,
+	-- and an initial merge from an import from a special remote.
 	-- (Once direct mode is removed, this could be changed, so only
-	-- the assistant uses it.)
+	-- the assistant and import from special remotes use it.)
 	, Git.Merge.MergeUnrelatedHistories
 	]
 
@@ -398,6 +407,23 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 		inRepoWithSshOptionsTo repo (Remote.gitconfig remote) $
 			Git.Command.runBool
 				[Param "fetch", Param $ Remote.name remote]
+	wantpull = remoteAnnexPull (Remote.gitconfig remote)
+
+importRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
+importRemote o mergeconfig remote currbranch
+	| not (pullOption o) || not wantpull = noop
+	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
+		Nothing -> noop
+		Just tb -> do
+			let (b, s) = separate (== ':') (Git.fromRef tb)
+			let branch = Git.Ref b
+			let subdir = if null s
+				then Nothing
+				else Just (asTopFilePath s)
+			Command.Import.seekRemote remote branch subdir
+			void $ mergeRemote remote currbranch mergeconfig
+				(resolveMergeOverride o)
+  where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
 {- The remote probably has both a master and a synced/master branch.
@@ -680,32 +706,39 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 	put dest = includeCommandAction $ 
 		Command.Move.toStart' dest Command.Move.RemoveNever af k (mkActionItem af)
 
-{- When a remote has an export-tracking branch, change the export to
- - follow the current content of the branch. Otherwise, transfer any files
+{- When a remote has an annex-tracking-branch configuration, change the export
+ - to contain the current content of the branch. Otherwise, transfer any files
  - that were part of an export but are not in the remote yet.
  - 
  - Returns True if any file transfers were made.
  -}
-seekExportContent :: [Remote] -> CurrBranch -> Annex Bool
-seekExportContent rs (currbranch, _) = or <$> forM rs go
+seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
+seekExportContent o rs (currbranch, _) = or <$> forM rs go
   where
-	go r = withExclusiveLock (gitAnnexExportLock (Remote.uuid r)) $ do
-		db <- Export.openDb (Remote.uuid r)
-		exported <- case remoteAnnexExportTracking (Remote.gitconfig r) of
+	go r
+		| not (maybe True pullOption o) = return False
+		| not (remoteAnnexPush (Remote.gitconfig r)) = return False
+		| otherwise = bracket
+			(Export.openDb (Remote.uuid r))
+			Export.closeDb
+			(\db -> Export.writeLockDbWhile db (go' r db))
+	go' r db = do
+		(exported, mtbcommitsha) <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 			Nothing -> nontracking r
 			Just b -> do
-				mcur <- inRepo $ Git.Ref.tree b
-				case mcur of
-					Nothing -> nontracking r
-					Just cur -> do
-						Command.Export.changeExport r db cur
-						return [mkExported cur []]
-		Export.closeDb db `after` fillexport r db (exportedTreeishes exported)
+				mtree <- inRepo $ Git.Ref.tree b
+				mtbcommitsha <- Command.Export.getExportCommit r b
+				case (mtree, mtbcommitsha) of
+					(Just tree, Just _) -> do
+						Command.Export.changeExport r db tree
+						return ([mkExported tree []], mtbcommitsha)
+					_ -> nontracking r
+		fillexport r db (exportedTreeishes exported) mtbcommitsha
 		
 	nontracking r = do
 		exported <- getExport (Remote.uuid r)
 		maybe noop (warnnontracking r exported) currbranch
-		return exported
+		return (exported, Nothing)
 	
 	warnnontracking r exported currb = inRepo (Git.Ref.tree currb) >>= \case
 		Just currt | not (any (== currt) (exportedTreeishes exported)) ->
@@ -713,15 +746,15 @@ seekExportContent rs (currbranch, _) = or <$> forM rs go
 				[ "Not updating export to " ++ Remote.name r
 				, "to reflect changes to the tree, because export"
 				, "tracking is not enabled. "
-				, "(Use git-annex export's --tracking option"
-				, "to enable it.)"
+				, "(Set " ++ gitconfig ++ " to enable it.)"
 				]
 		_ -> noop
+	  where
+		gitconfig = show (remoteConfig r "tracking-branch")
 
-
-	fillexport _ _ [] = return False
-	fillexport r db (t:[]) = Command.Export.fillExport r db t
-	fillexport r _ _ = do
+	fillexport _ _ [] _ = return False
+	fillexport r db (t:[]) mtbcommitsha = Command.Export.fillExport r db t mtbcommitsha
+	fillexport r _ _ _ = do
 		warnExportConflict r
 		return False
 

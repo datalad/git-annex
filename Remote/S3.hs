@@ -39,14 +39,13 @@ import Control.Concurrent.STM.TVar
 import Annex.Common
 import Types.Remote
 import Types.Export
-import Annex.Export
 import qualified Git
 import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Http
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Annex.UUID
@@ -72,6 +71,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = s3Setup
 	, exportSupported = exportIsSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -112,6 +112,7 @@ gen r u c gc = do
 				, removeExportDirectory = Nothing
 				, renameExport = renameExportS3 hdl this info
 				}
+			, importActions = importUnsupported
 			, whereisKey = Just (getPublicWebUrls u info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -397,15 +398,17 @@ checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 			giveup "No S3 credentials configured"
 
 -- S3 has no move primitive; copy and delete.
-renameExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 hv r info k src dest = withS3Handle hv $ \case
-	Just h -> checkVersioning info (uuid r) k $ 
-		catchNonAsync (go h) (\_ -> return False)
-	Nothing -> do 
-		warning $ needS3Creds (uuid r)
-		return False
+renameExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportS3 hv r info k src dest = Just <$> go
   where
-	go h = liftIO $ runResourceT $ do
+	go = withS3Handle hv $ \case
+		Just h -> checkVersioning info (uuid r) k $ 
+			catchNonAsync (go' h) (\_ -> return False)
+		Nothing -> do 
+			warning $ needS3Creds (uuid r)
+			return False
+	
+	go' h = liftIO $ runResourceT $ do
 		let co = S3.copyObject (bucket info) dstobject
 			(S3.ObjectId (bucket info) srcobject Nothing)
 			S3.CopyMetadata
@@ -413,6 +416,7 @@ renameExportS3 hv r info k src dest = withS3Handle hv $ \case
 		void $ sendS3Handle h $ co { S3.coAcl = acl info }
 		void $ sendS3Handle h $ S3.DeleteObject srcobject (bucket info)
 		return True
+	
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
 

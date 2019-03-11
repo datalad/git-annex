@@ -96,7 +96,8 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		MonadMask,
 		Fail.MonadFail,
 		Functor,
-		Applicative
+		Applicative,
+		Alternative
 	)
 
 -- internal state storage

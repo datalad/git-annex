@@ -1,9 +1,11 @@
 {- git-annex command
  -
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE ApplicativeDo #-}
 
 module Command.Import where
 
@@ -12,6 +14,8 @@ import qualified Git
 import qualified Annex
 import qualified Command.Add
 import qualified Command.Reinject
+import qualified Types.Remote as Remote
+import qualified Git.Ref
 import Utility.CopyFile
 import Backend
 import Types.KeySource
@@ -20,28 +24,51 @@ import Annex.NumCopies
 import Annex.FileMatcher
 import Annex.Ingest
 import Annex.InodeSentinal
+import Annex.Import
+import Annex.RemoteTrackingBranch
 import Utility.InodeCache
 import Logs.Location
+import Git.FilePath
+import Git.Types
+import Git.Branch
+import Types.Import
 
 cmd :: Command
 cmd = notBareRepo $
 	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
 		command "import" SectionCommon 
-			"move and add files from outside git working copy"
-			paramPaths (seek <$$> optParser)
+			"import files from elsewhere into the repository"
+			(paramPaths ++ "|BRANCH[:SUBDIR]")
+			(seek <$$> optParser)
+
+data ImportOptions 
+	= LocalImportOptions
+		{ importFiles :: CmdParams
+		, duplicateMode :: DuplicateMode
+		}
+	| RemoteImportOptions
+		{ importFromRemote :: DeferredParse Remote
+		, importToBranch :: Branch
+		, importToSubDir :: Maybe FilePath
+		}
+
+optParser :: CmdParamsDesc -> Parser ImportOptions
+optParser desc = do
+	ps <- cmdParams desc
+	mfromremote <- optional $ parseRemoteOption <$> parseFromOption
+	dupmode <- fromMaybe Default <$> optional duplicateModeParser
+	return $ case mfromremote of
+		Nothing -> LocalImportOptions ps dupmode
+		Just r -> case ps of
+			[bs] -> 
+				let (branch, subdir) = separate (== ':') bs
+				in RemoteImportOptions r
+					(Ref branch)
+					(if null subdir then Nothing else Just subdir)
+			_ -> giveup "expected BRANCH[:SUBDIR]"
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
 	deriving (Eq)
-
-data ImportOptions = ImportOptions
-	{ importFiles :: CmdParams
-	, duplicateMode :: DuplicateMode
-	}
-
-optParser :: CmdParamsDesc -> Parser ImportOptions
-optParser desc = ImportOptions
-	<$> cmdParams desc
-	<*> (fromMaybe Default <$> optional duplicateModeParser)
 
 duplicateModeParser :: Parser DuplicateMode
 duplicateModeParser = 
@@ -67,17 +94,26 @@ duplicateModeParser =
 		)
 
 seek :: ImportOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o@(LocalImportOptions {}) = allowConcurrentOutput $ do
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
 		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	largematcher <- largeFilesMatcher
-	(commandAction . start largematcher (duplicateMode o))
+	(commandAction . startLocal largematcher (duplicateMode o))
 		`withPathContents` importFiles o
+seek o@(RemoteImportOptions {}) = allowConcurrentOutput $ do
+	r <- getParsed (importFromRemote o)
+	unlessM (Remote.isImportSupported r) $
+		giveup "That remote does not support imports."
+	subdir <- maybe
+		(pure Nothing)
+		(Just <$$> inRepo . toTopFilePath)
+		(importToSubDir o)
+	seekRemote r (importToBranch o) subdir
 
-start :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
-start largematcher mode (srcfile, destfile) =
+startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
+startLocal largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
 			showStart "import" destfile
@@ -209,3 +245,62 @@ verifyExisting key destfile (yes, no) = do
 	(tocheck, preverified) <- verifiableCopies key []
 	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
 		(const yes) no
+
+seekRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandSeek
+seekRemote remote branch msubdir = do
+	importtreeconfig <- case msubdir of
+		Nothing -> return ImportTree
+		Just subdir ->
+			let mk tree = pure $ ImportSubTree subdir tree
+			in fromtrackingbranch Git.Ref.tree >>= \case
+				Just tree -> mk tree
+				Nothing -> inRepo (Git.Ref.tree branch) >>= \case
+					Just tree -> mk tree
+					Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
+	
+	parentcommit <- fromtrackingbranch Git.Ref.sha
+	let importcommitconfig = ImportCommitConfig parentcommit ManualCommit importmessage
+
+	importable <- download importtreeconfig =<< listcontents
+	void $ includeCommandAction $
+		commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable
+  where
+	importmessage = "import from " ++ Remote.name remote
+
+	tb = mkRemoteTrackingBranch remote branch
+
+	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
+
+	listcontents = do
+		showStart' "list" (Just (Remote.name remote))
+		Remote.listImportableContents (Remote.importActions remote) >>= \case
+			Nothing -> do
+				showEndFail
+				giveup $ "Unable to list contents of " ++ Remote.name remote
+			Just importable -> do
+				showEndOk
+				return importable
+
+	download importtreeconfig importablecontents =
+		downloadImport remote importtreeconfig importablecontents >>= \case
+			Nothing -> giveup $ "Failed to import some files from " ++ Remote.name remote ++ ". Re-run command to resume import."
+			Just importable -> return importable
+
+commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents Key -> CommandStart
+commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable = do
+	showStart' "update" (Just $ fromRef $ fromRemoteTrackingBranch tb)
+	next $ do
+		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
+		next $ updateremotetrackingbranch importcommit
+		
+  where
+	-- Update the tracking branch. Done even when there
+	-- is nothing new to import, to make sure it exists.
+	updateremotetrackingbranch importcommit =
+		case importcommit <|> parentcommit of
+			Just c -> do
+				setRemoteTrackingBranch tb c
+				return True
+			Nothing -> do
+				warning $ "Nothing to import and " ++ fromRef branch ++ " does not exist."
+				return False

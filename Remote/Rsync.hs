@@ -28,7 +28,7 @@ import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import Types.Export
 import Remote.Rsync.RsyncUrl
 import Crypto
@@ -51,6 +51,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = rsyncSetup
 	, exportSupported = exportIsSupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -85,6 +86,7 @@ gen r u c gc = do
 				, removeExportDirectory = Just (removeExportDirectoryM o)
 				, renameExport = renameExportM o
 				}
+			, importActions = importUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
@@ -291,8 +293,8 @@ removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
 		Nothing -> []
 		Just f' -> includes f'
 
-renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportM _ _ _ _ = return False
+renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportM _ _ _ _ = return Nothing
 
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete

@@ -18,7 +18,7 @@ import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.Messages
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Utility.Metered
@@ -36,6 +36,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = glacierSetup
 	, exportSupported = exportUnsupported
+	, importSupported = importUnsupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -65,6 +66,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, exportActions = exportUnsupported
+			, importActions = importUnsupported
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
 			, repairRepo = Nothing

@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -26,12 +26,14 @@ import Config.Cost
 import Config
 import Utility.FileMode
 import Remote.Helper.Special
-import Remote.Helper.Export
+import Remote.Helper.ExportImport
+import Types.Import
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
 import Utility.Metered
 import Utility.Tmp
+import Utility.InodeCache
 
 remote :: RemoteType
 remote = RemoteType
@@ -40,6 +42,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
+	, importSupported = importIsSupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -72,6 +75,14 @@ gen r u c gc = do
 				-- auto-removes empty directories.
 				, removeExportDirectory = Nothing
 				, renameExport = renameExportM dir
+				}
+			, importActions = ImportActions
+				{ listImportableContents = listImportableContentsM dir
+				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir
+				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
+				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
+				, removeExportDirectoryWhenEmpty = Nothing
+				, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM dir
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -227,14 +238,17 @@ checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations k
 checkPresentM d _ k = checkPresentGeneric d (locations d k)
 
 checkPresentGeneric :: FilePath -> [FilePath] -> Annex Bool
-checkPresentGeneric d ps = liftIO $
-	ifM (anyM doesFileExist ps)
-		( return True
-		, ifM (doesDirectoryExist d)
-			( return False
-			, giveup $ "directory " ++ d ++ " is not accessible"
-			)
+checkPresentGeneric d ps = checkPresentGeneric' d $
+	liftIO $ anyM doesFileExist ps
+
+checkPresentGeneric' :: FilePath -> Annex Bool -> Annex Bool
+checkPresentGeneric' d check = ifM check
+	( return True
+	, ifM (liftIO $ doesDirectoryExist d)
+		( return False
+		, giveup $ "directory " ++ d ++ " is not accessible"
 		)
+	)
 
 storeExportM :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportM d src _k loc p = liftIO $ catchBoolIO $ do
@@ -265,13 +279,15 @@ checkPresentExportM :: FilePath -> Key -> ExportLocation -> Annex Bool
 checkPresentExportM d _k loc =
 	checkPresentGeneric d [exportPath d loc]
 
-renameExportM :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportM d _k oldloc newloc = liftIO $ catchBoolIO $ do
-	createDirectoryIfMissing True (takeDirectory dest)
-	renameFile src dest
-	removeExportLocation d oldloc
-	return True
+renameExportM :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportM d _k oldloc newloc = liftIO $ Just <$> go
   where
+	go = catchBoolIO $ do
+		createDirectoryIfMissing True (takeDirectory dest)
+		renameFile src dest
+		removeExportLocation d oldloc
+		return True
+	
 	src = exportPath d oldloc
 	dest = exportPath d newloc
 
@@ -288,3 +304,157 @@ removeExportLocation topdir loc =
 	go Nothing _ = return ()
 	go (Just loc') _ = go (upFrom loc')
 		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation loc'))
+
+listImportableContentsM :: FilePath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContentsM dir = catchMaybeIO $ liftIO $ do
+	l <- dirContentsRecursive dir
+	l' <- mapM go l
+	return $ ImportableContents (catMaybes l') []
+  where
+	go f = do
+		st <- getFileStatus f
+		mkContentIdentifier f st >>= \case
+			Nothing -> return Nothing
+			Just cid -> do
+				relf <- relPathDirToFile dir f
+				sz <- getFileSize' f st
+				return $ Just (mkImportLocation relf, (cid, sz))
+
+-- Make a ContentIdentifier that contains an InodeCache.
+--
+-- The InodeCache is generated without checking a sentinal file.
+-- So in a case when a remount etc causes all the inodes to change,
+-- files may appear to be modified when they are not, which will only
+-- result in extra work to re-import them.
+--
+-- If the file is not a regular file, this will return Nothing.
+mkContentIdentifier :: FilePath -> FileStatus -> IO (Maybe ContentIdentifier)
+mkContentIdentifier f st =
+	fmap (ContentIdentifier . encodeBS . showInodeCache)
+		<$> toInodeCache noTSDelta f st
+
+retrieveExportWithContentIdentifierM :: FilePath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
+retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = 
+	catchDefaultIO Nothing $ precheck $ docopy postcheck
+  where
+	f = exportPath dir loc
+
+	docopy cont = do
+#ifndef mingw32_HOST_OS
+		-- Need a duplicate fd for the post check, since
+		-- hGetContentsMetered closes its handle.
+		fd <- liftIO $ openFd f ReadOnly Nothing defaultFileFlags
+		dupfd <- liftIO $ dup fd
+		h <- liftIO $ fdToHandle fd
+#else
+		h <- liftIO $ openBinaryFile f ReadMode
+#endif
+		liftIO $ hGetContentsMetered h p >>= L.writeFile dest
+		k <- mkkey
+#ifndef mingw32_HOST_OS
+		cont dupfd (return k)
+#else
+		cont (return k)
+#endif
+	
+	-- Check before copy, to avoid expensive copy of wrong file
+	-- content.
+	precheck cont = comparecid cont
+		=<< liftIO . mkContentIdentifier f
+		=<< liftIO (getFileStatus f)
+
+	-- Check after copy, in case the file was changed while it was
+	-- being copied.
+	--
+	-- When possible (not on Windows), check the same handle
+	-- Check the same handle that the file was copied from.
+	-- Avoids some race cases where the file is modified while
+	-- it's copied but then gets restored to the original content
+	-- afterwards.
+	--
+	-- This does not guard against every possible race, but neither
+	-- can InodeCaches detect every possible modification to a file.
+	-- It's probably as good or better than git's handling of similar
+	-- situations with files being modified while it's updating the
+	-- working tree for a merge.
+#ifndef mingw32_HOST_OS
+	postcheck fd cont = do
+#else
+	postcheck cont = do
+#endif
+		currcid <- liftIO $ mkContentIdentifier f
+#ifndef mingw32_HOST_OS
+			=<< getFdStatus fd
+#else
+			=<< getFileStatus f
+#endif
+		comparecid cont currcid
+	
+	comparecid cont currcid
+		| currcid == Just cid = cont
+		| otherwise = return Nothing
+
+storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
+	catchDefaultIO Nothing $ do
+		liftIO $ createDirectoryIfMissing True destdir
+		withTmpFileIn destdir template $ \tmpf tmph -> do
+			liftIO $ withMeteredFile src p (L.hPut tmph)
+			liftIO $ hFlush tmph
+			liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
+				Nothing -> return Nothing
+				Just newcid ->
+					checkExportContent dir loc (newcid:overwritablecids) Nothing $ const $ do
+						liftIO $ rename tmpf dest
+						return (Just newcid)
+  where
+	dest = exportPath dir loc
+	(destdir, base) = splitFileName dest
+	template = relatedTemplate (base ++ ".tmp")
+
+removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+removeExportWithContentIdentifierM dir k loc removeablecids =
+	checkExportContent dir loc removeablecids False $ \case
+		DoesNotExist -> return True
+		KnownContentIdentifier -> removeExportM dir k loc
+
+checkPresentExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+checkPresentExportWithContentIdentifierM dir _k loc knowncids =
+	checkPresentGeneric' dir $
+		checkExportContent dir loc knowncids False $ \case
+			DoesNotExist -> return False
+			KnownContentIdentifier -> return True
+
+data CheckResult = DoesNotExist | KnownContentIdentifier
+
+-- Checks if the content at an ExportLocation is in the knowncids,
+-- and only runs the callback that modifies it if it's safe to do so.
+--
+-- This should avoid races to the extent possible. However,
+-- if something has the file open for write, it could write to the handle
+-- after the callback has overwritten or deleted it, and its write would
+-- be lost, and we don't need to detect that.
+-- (In similar situations, git doesn't either!) 
+--
+-- It follows that if something is written to the destination file
+-- shortly before, it's acceptable to run the callback anyway, as that's
+-- nearly indistinguishable from the above case.
+--
+-- So, it suffices to check if the destination file's current
+-- content is known, and immediately run the callback.
+checkExportContent :: FilePath -> ExportLocation -> [ContentIdentifier] -> a -> (CheckResult -> Annex a) -> Annex a
+checkExportContent dir loc knowncids unsafe callback = 
+	tryWhenExists (liftIO $ getFileStatus dest) >>= \case
+		Just destst
+			| not (isRegularFile destst) -> return unsafe
+			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier dest destst) >>= \case
+				Just destcid
+					| destcid `elem` knowncids -> callback KnownContentIdentifier
+					-- dest exists with other content
+					| otherwise -> return unsafe
+				-- should never happen
+				Nothing -> return unsafe
+		-- dest does not exist
+		Nothing -> callback DoesNotExist
+  where
+	dest = exportPath dir loc

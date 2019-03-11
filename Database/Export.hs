@@ -1,6 +1,6 @@
 {- Sqlite database used for exports to special remotes.
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2019 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ module Database.Export (
 	ExportHandle,
 	openDb,
 	closeDb,
+	writeLockDbWhile,
 	flushDbQueue,
 	addExportedLocation,
 	removeExportedLocation,
@@ -23,16 +24,20 @@ module Database.Export (
 	getExportTreeCurrent,
 	recordExportTreeCurrent,
 	getExportTree,
+	getExportTreeKey,
 	addExportTree,
 	removeExportTree,
 	updateExportTree,
 	updateExportTree',
 	updateExportTreeFromLog,
+	updateExportDb,
 	ExportedId,
 	ExportedDirectoryId,
 	ExportTreeId,
 	ExportTreeCurrentId,
 	ExportUpdateResult(..),
+	ExportDiffUpdater,
+	runExportDiffUpdater,
 ) where
 
 import Database.Types
@@ -44,6 +49,7 @@ import Types.Export
 import Annex.Export
 import qualified Logs.Export as Log
 import Annex.LockFile
+import Annex.LockPool
 import Git.Types
 import Git.Sha
 import Git.FilePath
@@ -167,6 +173,20 @@ getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
   where
 	ik = toIKey k
 
+{- Get keys that might be currently exported to a location.
+ -
+ - Note that the database does not currently have an index to make this
+ - fast.
+ -
+ - Note that this does not see recently queued changes.
+ -}
+getExportTreeKey :: ExportHandle -> ExportLocation -> IO [Key]
+getExportTreeKey (ExportHandle h _) el = H.queryDbQueue h $ do
+	map (fromIKey . exportTreeKey . entityVal) 
+		<$> selectList [ExportTreeFile ==. ef] []
+  where
+	ef = toSFilePath (fromExportLocation el)
+
 addExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportTree h k loc = queueDb h $
 	void $ insertUnique $ ExportTree ik ef
@@ -181,48 +201,131 @@ removeExportTree h k loc = queueDb h $
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation loc)
 
-{- Diff from the old to the new tree and update the ExportTree table. -}
-updateExportTree :: ExportHandle -> Sha -> Sha -> Annex ()
-updateExportTree h old new = do
+-- An action that is passed the old and new values that were exported,
+-- and updates state.
+type ExportDiffUpdater
+	= ExportHandle
+	-> Maybe ExportKey
+	-- ^ old exported key
+	-> Maybe ExportKey
+	-- ^ new exported key
+	-> Git.DiffTree.DiffTreeItem
+	-> Annex ()
+
+mkExportDiffUpdater
+	:: (ExportHandle -> Key -> ExportLocation -> IO ())
+	-> (ExportHandle -> Key -> ExportLocation -> IO ())
+	-> ExportDiffUpdater
+mkExportDiffUpdater removeold addnew h srcek dstek i = do
+	case srcek of
+		Nothing -> return ()
+		Just k -> liftIO $ removeold h (asKey k) loc
+	case dstek of
+		Nothing -> return ()
+		Just k -> liftIO $ addnew h (asKey k) loc
+  where
+	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
+
+runExportDiffUpdater :: ExportDiffUpdater -> ExportHandle -> Sha -> Sha -> Annex ()
+runExportDiffUpdater updater h old new = do
 	(diff, cleanup) <- inRepo $
 		Git.DiffTree.diffTreeRecursive old new
 	forM_ diff $ \i -> do
 		srcek <- getek (Git.DiffTree.srcsha i)
 		dstek <- getek (Git.DiffTree.dstsha i)
-		updateExportTree' h srcek dstek i
+		updater h srcek dstek i
 	void $ liftIO cleanup
   where
 	getek sha
 		| sha == nullSha = return Nothing
 		| otherwise = Just <$> exportKey sha
 
-updateExportTree' :: ExportHandle -> Maybe ExportKey -> Maybe ExportKey -> Git.DiffTree.DiffTreeItem -> Annex ()
-updateExportTree' h srcek dstek i = do
-	case srcek of
-		Nothing -> return ()
-		Just k -> liftIO $ removeExportTree h (asKey k) loc
-	case dstek of
-		Nothing -> return ()
-		Just k -> liftIO $ addExportTree h (asKey k) loc
+{- Diff from the old to the new tree and update the ExportTree table. -}
+updateExportTree :: ExportHandle -> Sha -> Sha -> Annex ()
+updateExportTree = runExportDiffUpdater updateExportTree'
+
+updateExportTree' :: ExportDiffUpdater
+updateExportTree' = mkExportDiffUpdater removeExportTree addExportTree
+
+{- Diff from the old to the new tree and update all tables in the export
+ - database. Should only be used when all the files in the new tree have
+ - been verified to already be present in the export remote. -}
+updateExportDb :: ExportHandle -> Sha -> Sha -> Annex ()
+updateExportDb = runExportDiffUpdater $ mkExportDiffUpdater removeold addnew
   where
-	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
+	removeold h k loc = liftIO $ do
+		removeExportTree h k loc
+		removeExportedLocation h k loc
+	addnew h k loc = liftIO $ do
+		addExportTree h k loc
+		addExportedLocation h k loc
+
+{- Runs an action with the database locked for write. Waits for any other
+ - writers to finish first. The queue is flushed at the end.
+ -
+ - This first updates the ExportTree table with any new information 
+ - from the git-annex branch export log.
+ -}
+writeLockDbWhile :: ExportHandle -> Annex a -> Annex a
+writeLockDbWhile db@(ExportHandle _ u) a = do
+	updatelck <- takeExclusiveLock (gitAnnexExportUpdateLock u)
+	withExclusiveLock (gitAnnexExportLock u) $ do
+		bracket_ (setup updatelck) cleanup a
+  where
+	setup updatelck = do
+		void $ updateExportTreeFromLog' db
+		-- flush the update so it's available immediately to
+		-- anything waiting on the updatelck
+		liftIO $ flushDbQueue db
+		liftIO $ dropLock updatelck
+	cleanup = liftIO $ flushDbQueue db
 
 data ExportUpdateResult = ExportUpdateSuccess | ExportUpdateConflict
 	deriving (Eq)
 
+{- Updates the ExportTree table with information from the
+ - git-annex branch export log.
+ -
+ - This can safely be called whether the database is locked for write or
+ - not. Either way, it will block until the update is complete.
+ -}
 updateExportTreeFromLog :: ExportHandle -> Annex ExportUpdateResult
-updateExportTreeFromLog db@(ExportHandle _ u) = 
-	withExclusiveLock (gitAnnexExportLock u) $ do
-		old <- liftIO $ fromMaybe emptyTree
-			<$> getExportTreeCurrent db
-		l <- Log.getExport u
-		case Log.exportedTreeishes l of
-			[] -> return ExportUpdateSuccess
-			(new:[]) 
-				| new /= old -> do
-					updateExportTree db old new
-					liftIO $ recordExportTreeCurrent db new
-					liftIO $ flushDbQueue db
-					return ExportUpdateSuccess
-				| new == old -> return ExportUpdateSuccess
-			_ts -> return ExportUpdateConflict
+updateExportTreeFromLog db@(ExportHandle _ u) =
+	-- If another process or thread is performing the update,
+	-- this will block until it's done.
+	withExclusiveLock (gitAnnexExportUpdateLock u) $ do
+		-- If the database is locked by something else,
+		-- this will not run the update. But, in that case,
+		-- writeLockDbWhile is running, and has already
+		-- completed the update, so we don't need to do anything.
+		mr <- tryExclusiveLock (gitAnnexExportLock u) $
+			updateExportTreeFromLog' db
+		case mr of
+			Just r -> return r
+			Nothing -> do
+				old <- liftIO $ fromMaybe emptyTree
+					<$> getExportTreeCurrent db
+				l <- Log.getExport u
+				return $ case Log.exportedTreeishes l of
+					[] -> ExportUpdateSuccess
+					(new:[]) 
+						| new /= old -> ExportUpdateSuccess
+						| new == old -> ExportUpdateSuccess
+					_ts -> ExportUpdateConflict
+
+{- The database should be locked when calling this. -}
+updateExportTreeFromLog' :: ExportHandle -> Annex ExportUpdateResult
+updateExportTreeFromLog' db@(ExportHandle _ u) = do
+	old <- liftIO $ fromMaybe emptyTree
+		<$> getExportTreeCurrent db
+	l <- Log.getExport u
+	case Log.exportedTreeishes l of
+		[] -> return ExportUpdateSuccess
+		(new:[]) 
+			| new /= old -> do
+				updateExportTree db old new
+				liftIO $ recordExportTreeCurrent db new
+				liftIO $ flushDbQueue db
+				return ExportUpdateSuccess
+			| new == old -> return ExportUpdateSuccess
+		_ts -> return ExportUpdateConflict

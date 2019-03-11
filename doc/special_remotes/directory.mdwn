@@ -35,6 +35,10 @@ remote:
   by [[git-annex-export]]. It will not be usable as a general-purpose
   special remote.
 
+* `importtree` - Set to "yes" to make this special remote usable
+  by [[git-annex-import]]. It will not be usable as a general-purpose
+  special remote.
+
 Setup example:
 
 	# git annex initremote usbdrive type=directory directory=/media/usbdrive/ encryption=none
