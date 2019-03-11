@@ -379,15 +379,16 @@ startMoveFromTempName r db ek f = do
 	f' = getTopFilePath f
 
 performRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
-performRename r db ek src dest = do
-	ifM (renameExport (exportActions r) (asKey ek) src dest)
-		( next $ cleanupRename r db ek src dest
-		-- In case the special remote does not support renaming,
-		-- unexport the src instead.
-		, do
+performRename r db ek src dest =
+	renameExport (exportActions r) (asKey ek) src dest >>= \case
+		Just True -> next $ cleanupRename r db ek src dest
+		Just False -> do
 			warning "rename failed; deleting instead"
-			performUnexport r db [ek] src
-		)
+			fallbackdelete
+		-- Remote does not support renaming, so don't warn about it.
+		Nothing -> fallbackdelete
+  where
+	fallbackdelete = performUnexport r db [ek] src
 
 cleanupRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup
 cleanupRename r db ek src dest = do

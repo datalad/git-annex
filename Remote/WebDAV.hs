@@ -239,19 +239,21 @@ removeExportDirectoryDav r dir = withDAVHandle r $ \mh -> runExport mh $ \_dav -
 	safely (inLocation d delContentM)
 		>>= maybe (return False) (const $ return True)
 
-renameExportDav :: Remote -> Key -> ExportLocation -> ExportLocation -> Annex Bool
+renameExportDav :: Remote -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
 renameExportDav r _k src dest = case (exportLocation src, exportLocation dest) of
 	(Right srcl, Right destl) -> withDAVHandle r $ \case
 		Just h
 			-- box.com's DAV endpoint has buggy handling of renames,
 			-- so avoid renaming when using it.
-			| boxComUrl `isPrefixOf` baseURL h -> return False
-			| otherwise -> runExport (Just h) $ \dav -> do
-				maybe noop (void . mkColRecursive) (locationParent destl)
-				moveDAV (baseURL dav) srcl destl
-				return True
-		Nothing -> return False
-	_ -> return False
+			| boxComUrl `isPrefixOf` baseURL h -> return Nothing
+			| otherwise -> do
+				v <- runExport (Just h) $ \dav -> do
+					maybe noop (void . mkColRecursive) (locationParent destl)
+					moveDAV (baseURL dav) srcl destl
+					return True
+				return (Just v)
+		Nothing -> return (Just False)
+	_ -> return (Just False)
 
 runExport :: Maybe DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
 runExport Nothing _ = return False

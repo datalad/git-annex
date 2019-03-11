@@ -398,15 +398,17 @@ checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 			giveup "No S3 credentials configured"
 
 -- S3 has no move primitive; copy and delete.
-renameExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportS3 hv r info k src dest = withS3Handle hv $ \case
-	Just h -> checkVersioning info (uuid r) k $ 
-		catchNonAsync (go h) (\_ -> return False)
-	Nothing -> do 
-		warning $ needS3Creds (uuid r)
-		return False
+renameExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportS3 hv r info k src dest = Just <$> go
   where
-	go h = liftIO $ runResourceT $ do
+	go = withS3Handle hv $ \case
+		Just h -> checkVersioning info (uuid r) k $ 
+			catchNonAsync (go' h) (\_ -> return False)
+		Nothing -> do 
+			warning $ needS3Creds (uuid r)
+			return False
+	
+	go' h = liftIO $ runResourceT $ do
 		let co = S3.copyObject (bucket info) dstobject
 			(S3.ObjectId (bucket info) srcobject Nothing)
 			S3.CopyMetadata
@@ -414,6 +416,7 @@ renameExportS3 hv r info k src dest = withS3Handle hv $ \case
 		void $ sendS3Handle h $ co { S3.coAcl = acl info }
 		void $ sendS3Handle h $ S3.DeleteObject srcobject (bucket info)
 		return True
+	
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
 

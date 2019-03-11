@@ -293,8 +293,8 @@ removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
 		Nothing -> []
 		Just f' -> includes f'
 
-renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportM _ _ _ _ = return False
+renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportM _ _ _ _ = return Nothing
 
 {- Rsync params to enable resumes of sending files safely,
  - ensure that files are only moved into place once complete

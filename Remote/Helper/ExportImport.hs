@@ -43,7 +43,7 @@ instance HasExportUnsupported (ExportActions Annex) where
 		, checkPresentExport = \_ _ -> return False
 		, removeExport = \_ _ -> return False
 		, removeExportDirectory = Just $ \_ -> return False
-		, renameExport = \_ _ _ -> return False
+		, renameExport = \_ _ _ -> return Nothing
 		}
 
 -- | Use for remotes that do not support imports.
@@ -170,7 +170,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				-- lose modifications to the file
 				-- (by eg copying and then deleting)
 				-- so don't use it
-				, renameExport = \_ _ _ -> return False
+				, renameExport = \_ _ _ -> return Nothing
 				, checkPresentExport = checkpresent
 				}
 			, checkPresent = if appendonly r'

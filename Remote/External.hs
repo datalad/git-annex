@@ -307,25 +307,28 @@ removeExportDirectoryM external dir = safely $
   where
 	req = REMOVEEXPORTDIRECTORY dir
 
-renameExportM :: External -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportM external k src dest = safely $
+renameExportM :: External -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportM external k src dest = safely' (Just False) $
 	handleRequestExport external src req k Nothing $ \resp -> case resp of
 		RENAMEEXPORT_SUCCESS k'
-			| k' == k -> result True
+			| k' == k -> result (Just True)
 		RENAMEEXPORT_FAILURE k' 
-			| k' == k -> result False
-		UNSUPPORTED_REQUEST -> result False
+			| k' == k -> result (Just False)
+		UNSUPPORTED_REQUEST -> result Nothing
 		_ -> Nothing
   where
 	req sk = RENAMEEXPORT sk dest
 
 safely :: Annex Bool -> Annex Bool
-safely a = go =<< tryNonAsync a
+safely = safely' False
+
+safely' :: a -> Annex a -> Annex a
+safely' onerr a = go =<< tryNonAsync a
   where
 	go (Right r) = return r
 	go (Left e) = do
 		toplevelWarning False (show e)
-		return False
+		return onerr
 
 {- Sends a Request to the external remote, and waits for it to generate
  - a Response. That is fed into the responsehandler, which should return

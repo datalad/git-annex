@@ -279,13 +279,15 @@ checkPresentExportM :: FilePath -> Key -> ExportLocation -> Annex Bool
 checkPresentExportM d _k loc =
 	checkPresentGeneric d [exportPath d loc]
 
-renameExportM :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex Bool
-renameExportM d _k oldloc newloc = liftIO $ catchBoolIO $ do
-	createDirectoryIfMissing True (takeDirectory dest)
-	renameFile src dest
-	removeExportLocation d oldloc
-	return True
+renameExportM :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportM d _k oldloc newloc = liftIO $ Just <$> go
   where
+	go = catchBoolIO $ do
+		createDirectoryIfMissing True (takeDirectory dest)
+		renameFile src dest
+		removeExportLocation d oldloc
+		return True
+	
 	src = exportPath d oldloc
 	dest = exportPath d newloc
 

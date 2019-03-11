@@ -10,10 +10,6 @@ this.
 
 ## implementation notes
 
-* renameExport is disabled in a way that makes export tree
-  complain unncessarily verbosely. Perhaps change renameExport
-  to a Maybe so it can know when it's not available.
-
 * Does export of master:subdir update the remote tracking branch right?
 
 * Does sync --content with remote.name.annex-tracking-branch=master:subdir

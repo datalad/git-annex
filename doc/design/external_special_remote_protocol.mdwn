@@ -211,7 +211,8 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   Requests the remote rename a file stored on it from the previously
   provided Name to the NewName.  
   The remote responds with `RENAMEEXPORT-SUCCESS` or
-  `RENAMEEXPORT-FAILURE`.
+  `RENAMEEXPORT-FAILURE` or with `UNSUPPORTED-REQUEST` if renaming is not
+  supported.
 
 To support old external special remote programs that have not been updated
 to support exports, git-annex will need to handle an `ERROR` response
@@ -318,7 +319,8 @@ while it's handling a request.
 * `REMOVEEXPORTDIRECTORY-FAILURE`  
   Indicates that a `REMOVEEXPORTDIRECTORY` failed for whatever reason.
 * `UNSUPPORTED-REQUEST`  
-  Indicates that the special remote does not know how to handle a request.
+  Indicates that the special remote does not know how to handle a request,
+  or cannot handle the request.
 
 ## special remote messages
 
