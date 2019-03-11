@@ -5,10 +5,25 @@ The command could be `git annex import --from remote`
 
 There also ought to be a way to make `git annex sync` automatically import.
 
-See [[design/importing_trees_from_special_remotes]] for current design for
+See [[design/importing_trees_from_special_remotes]] for the design for
 this.
 
-## implementation notes
+Status: Basic git annex export treeish --to remote` is working,
+and `git annex sync --content` can be configured to use it.
+
+## remaining todo
+
+* Currently only directory special remote supports importing, at least S3
+  can also support it.
+
+* Add to external special remote protocol.
+
+* Support importing from adb special remotes, webdav, etc?
+  Problem is that these may have no way to avoid an export
+  overwriting changed content that would have been imported otherwise.
+  So if they're supported the docs need to reflect the problem so the user
+  avoids situations that cause data loss, or decides to accept the
+  possibility of data loss.
 
 * When on an adjusted unlocked branch, need to import the files unlocked.
   Also, the tracking branch code needs to know about such branches,
