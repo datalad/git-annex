@@ -1,0 +1,28 @@
+Whew, I got the finishing touches on the import tree feature, and it's
+merged into master! Still work to do on that, particularly supporting more
+interesting special remotes than directory. It may be two or three weeks
+until I get back to working on it.
+
+Even with only directory special remotes, some nice things can be done with
+this. Like bi-directional syncing between a removable drive with no
+git-annex repository on it, and a subdirectory of the git-annex repository:
+
+	$ git config remote.drive.annex-tracking-branch master:subdir
+	$ date > /mnt/new-from-drive
+	$ date > subdir/new-from-repo
+	$ git annex add
+	add subdir/new-from-repo ok
+	$ git annex sync --content
+	commit
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 subdir/new-from-repo
+	ok
+	list drive ok
+	import drive new-from-drive ok
+	update refs/remotes/drive/master ok
+	
+	Merge made by the 'recursive' strategy.
+	 subdir/new-from-drive | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 subdir/new-from-drive
+	export drive new-from-repo ok
