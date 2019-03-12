@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="gioele@678b7c03f524f2669b179b603f65352fcc16774e"
+ nickname="gioele"
+ avatar="http://cdn.libravatar.org/avatar/366dbda84e78aff8a8a070622aeb63ce"
+ subject="FAT/NTFS and POSIX allow different characters in file names"
+ date="2019-03-12T10:51:19Z"
+ content="""
+Lack of support for \"dumb FAT32\" and \"dumb NTFS\" is indeed the reason  why most of the people in my circle of acquaintances do not use git-annex.
+
+V7 and import/export tree should solve most the problems related to the synchronization.
+
+One last issue remains, however: FAT/NTFS and POSIX have different sets of allowed characters in file names. To address this, git-annex should \"smudge\" file names when dealing with a FAT/NTFS remote. For example `Moby-Dick: or, The Whale.epub` should be exported as `Moby-Dick_ or_ The Whale.epub`.
+"""]]
