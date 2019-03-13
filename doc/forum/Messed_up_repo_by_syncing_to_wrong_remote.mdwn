@@ -1,0 +1,39 @@
+I screwed up my (pretty urgently-needed) git-annex repo by adding a completely wrong remote (like, an entirely different git directory) and then doing "git annex sync [name]"
+
+The repos in question:
+
+/foo/good   -   A repo on a hard drive
+/bar/good   -   The same repo on my local computer
+/bar/bad    -   An entirely unrelated repo on my local computer
+
+What I did was basically:
+
+    cd /bar
+    git clone /foo/good
+    cd good
+    git annex init bar
+    cd /foo/good
+    git remote add bar /bar/bad   # BAD!
+    git annex sync bar
+
+This pulled in the entire history of this 100% unrelated git repo. I realize what I've done, do "git reflog" and find the last good commit, and:
+
+    git reset --hard [last-good-commit]
+    git status
+    git fsck
+    git annex fsck
+    git log
+
+Everything looks normal.
+
+Then I:
+
+    git remote remove bar
+    git remote add bar /bar/good
+    git annex sync bar
+
+And I get the whole /bar/bad repo's history again!
+
+There are lots of other weird things I've encountered now I'm in this state, but to keep this as simple as I can: what should I do in this situation?!
+
+Thank you!!
