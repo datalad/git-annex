@@ -1,0 +1,1 @@
+"git worktree remove" fails if git-annex has operated on the worktree, because git expects .git in a worktree to be a file, while git-annex changes it to a symlink ([[tips/Using_git-worktree_with_annex/]]).  Also, git-annex-test does not currently seem to test git-annex operation on worktrees added by git-worktree?
