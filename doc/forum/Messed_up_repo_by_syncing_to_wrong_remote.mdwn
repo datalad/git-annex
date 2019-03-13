@@ -2,9 +2,10 @@ I screwed up my (pretty urgently-needed) git-annex repo by adding a completely w
 
 The repos in question:
 
-/foo/good   -   A repo on a hard drive
-/bar/good   -   The same repo on my local computer
-/bar/bad    -   An entirely unrelated repo on my local computer
+
+    /foo/good   -   A repo on a hard drive
+    /bar/good   -   The same repo on my local computer
+    /bar/bad    -   An entirely unrelated repo on my local computer
 
 What I did was basically:
 
