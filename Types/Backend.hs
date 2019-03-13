@@ -4,7 +4,7 @@
  -
  - Copyright 2010-2017 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Types.Backend where

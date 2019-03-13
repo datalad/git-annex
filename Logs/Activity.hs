@@ -2,7 +2,7 @@
  -
  - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Logs.Activity (

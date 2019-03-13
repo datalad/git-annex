@@ -3,7 +3,7 @@
  - Copyright 2013 Joey Hess <id@joeyh.name>
  - Copyright 2013 Antoine Beaupré
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Command.List where

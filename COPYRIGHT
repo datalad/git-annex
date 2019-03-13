@@ -3,21 +3,17 @@ Source: native package
 
 Files: *
 Copyright: © 2010-2019 Joey Hess <id@joeyh.name>
-License: GPL-3+
+License: AGPL-3+
 
 Files: Assistant/WebApp.hs Assistant/WebApp/* templates/* static/*
 Copyright: © 2012-2017 Joey Hess <id@joeyh.name>
            © 2014 Sören Brunk
 License: AGPL-3+
 
-Files: Annex/AdjustedBranch.hs Annex/AdjustedBranch/Name.hs Annex/CurrentBranch.hs Annex/Import.hs Annex/RemoteTrackingBranch.hs Benchmark.hs Database/ContentIdentifier.hs Logs/File.hs Logs/Line.hs Logs/Smudge.hs Logs/ContentIdentifier.hs Logs/ContentIdentifier/Pure.hs Remote/Git.hs Remote/Helper/Ssh.hs Remote/Adb.hs Remote/External.hs Remote/Extermal/Types.hs Types/AdjustedBranch.hs Types/RepoVersion.hs Upgrade/V6.hs
-Copyright: © 2011-2019 Joey Hess <id@joeyh.name>
-License: AGPL-3+
-
 Files: Remote/Ddar.hs
 Copyright: © 2011 Joey Hess <id@joeyh.name>
            © 2014 Robie Basak <robie@justgohome.co.uk>
-License: GPL-3+
+License: AGPL-3+
 
 Files: Utility/ThreadScheduler.hs
 Copyright: 2011 Bas van Dijk & Roel van Dijk
@@ -43,7 +39,7 @@ License: icon-license
 Files: Annex/DirHashes.hs
 Copyright: 2001 Ian Lynagh
            2010-2015 Joey Hess <id@joeyh.name>
-License: GPL-3+
+License: AGPL-3+
 
 Files: doc/tips/automatically_adding_metadata/pre-commit-annex 
 Copyright: 2014 Joey Hess <id@joeyh.name>
