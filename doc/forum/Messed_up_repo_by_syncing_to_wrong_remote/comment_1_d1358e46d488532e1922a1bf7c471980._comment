@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2019-03-13T08:33:37Z"
+ content="""
+1) Delete the incorrect remote and any local branches it has created
+2) Revert branches to commits before the sync (including the git-annex branch)
+3) Delete .git/annex/index (safe to do so, git-annex will rebuild it)
+4) Make sure .git/annex/journal is empty
+
+It's been a while since I've needed to do this, but I think that covers everything needed. I'm in the IRC channel (GMT/BST waking hours) if you need any further help!
+"""]]
