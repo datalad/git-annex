@@ -1,0 +1,11 @@
+Ok, so I just set up git-annex on by Raspberry Pi 3 B (from apt from the raspbian repos), and got it working with a phone backup workflow. (udev automation, the specifics are in [a gist](https://gist.github.com/astronouth7303/624b499d213e607617187fee6a190ed1), but I don't think I'm doing anything super weird?)
+
+I'm encountering a problem where it apparently just spins at 100% CPU on a small text file.
+
+The command that's hanging is `git-annex smudge --clean sdcard/Android/data/ccc71.bmw/support/crash_reports.txt`
+
+This has happened on this file from both `git annex add` and `git annex sync` (with and without `--content`).
+
+The file itself is 2006B in size, and just contains some plaintext information (some header-type data and a java backtrace). But this process has been running for over an hour, and it's taken exceptionally long before.
+
+This seems really abnormal? The repo is 8.7GB overall, and it's running on an RPi from a microSD card, but taking hours to perform repository operations seem off.
