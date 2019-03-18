@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jamie@b5676b90eec0401ca8faac7c972eaf5676891601"
+ nickname="jamie"
+ avatar="http://cdn.libravatar.org/avatar/b9aa71e237c7bc49af04ec66194be8e0"
+ subject="comment 2"
+ date="2019-03-17T03:29:31Z"
+ content="""
+I just checked on it, it did eventually process that file, but `git annex sync` has been running for over 6 hours and is still going.
+"""]]

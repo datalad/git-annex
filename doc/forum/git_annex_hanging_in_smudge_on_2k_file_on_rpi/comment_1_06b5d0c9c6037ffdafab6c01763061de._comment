@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="jamie@b5676b90eec0401ca8faac7c972eaf5676891601"
+ nickname="jamie"
+ avatar="http://cdn.libravatar.org/avatar/b9aa71e237c7bc49af04ec66194be8e0"
+ subject="strace"
+ date="2019-03-16T22:17:37Z"
+ content="""
+I attached strace, and it seems to be deadlocked?
+
+It just spews this continuously:
+
+    --- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=NULL}} ---
+    sigreturn({mask=[]})                    = 84432420
+    futex(0x5085624, FUTEX_WAIT_PRIVATE, 5795, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+    --- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=NULL}} ---
+    sigreturn({mask=[]})                    = 84432420
+    futex(0x5085624, FUTEX_WAIT_PRIVATE, 5795, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+    --- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=NULL}} ---
+    sigreturn({mask=[]})                    = 84432420
+    futex(0x5085624, FUTEX_WAIT_PRIVATE, 5795, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+    --- SIGVTALRM {si_signo=SIGVTALRM, si_code=SI_TIMER, si_timerid=0, si_overrun=0, si_value={int=0, ptr=NULL}} ---
+    sigreturn({mask=[]})                    = 84432420
+    futex(0x5085624, FUTEX_WAIT_PRIVATE, 5795, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+
+"""]]

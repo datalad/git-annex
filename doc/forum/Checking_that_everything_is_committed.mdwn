@@ -1,0 +1,32 @@
+I use this to check that git repos have nothing untracked:
+
+        # 1st command: check index against HEAD
+        # 2nd command: check working tree against index
+        # 3rd command: check for untracked files
+        # 4th command: check for stashes
+        git diff-index --quiet --cached HEAD \
+            && git diff-files --quiet \
+            && test -z "$(git status --porcelain)" \
+            && test -z "$(git stash list)"
+
+The call to git-diff-files(1) fails in a v7 repo with output like this (if I drop the `--quiet`):
+
+    spwhitton@iris:~/lib/athena-apt>git diff-files
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/buster-backports/main/binary-amd64/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/buster-backports/main/binary-i386/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/buster/main/binary-amd64/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/buster/main/binary-i386/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/rc-buggy/main/binary-amd64/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/rc-buggy/main/binary-i386/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/sid/main/binary-amd64/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/sid/main/binary-i386/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/stretch/main/binary-amd64/Packages
+    :100644 100644 f8e47b9532ea17ac825c39bddc35dbd68f120a46 0000000000000000000000000000000000000000 M	dists/stretch/main/binary-i386/Packages
+
+I note that the listed files are empty.
+
+Is there a git-annex command that I can run to normalise my repo so that git-diff-files(1) produces no output?  Or does it not make sense to run git-diff-files(1) in a v7 repo?
+
+Thanks.
+
+--spwhitton

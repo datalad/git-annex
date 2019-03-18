@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="sameerds"
+ avatar="http://cdn.libravatar.org/avatar/b6d36a03115d3ececaafe16e327e9e27"
+ subject="did not work for me"
+ date="2019-03-16T10:07:09Z"
+ content="""
+I tried this on a version 7 repo, and nothing happened. The \"git annex fsck --fast\" returned immediately. Is there any git stuff missing in the above instructions? I would expect that we should at least setup the refs correctly and check out a working directory, right?
+"""]]
