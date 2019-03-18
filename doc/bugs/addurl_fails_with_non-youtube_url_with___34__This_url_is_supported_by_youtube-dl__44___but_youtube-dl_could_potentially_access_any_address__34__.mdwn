@@ -29,3 +29,5 @@ local repository version: 5
 The same happens if I remove `youtube-dl` from the system entirely!
 [[!meta author=yoh]]
 
+> due to using --file which bypasses the usual check that youtube-dl
+> can extract media. [[fixed|done]] --[[Joey]]

@@ -218,7 +218,7 @@ performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPe
 performWeb o url file urlinfo = ifAnnexed file addurl geturl
   where
 	geturl = next $ isJust <$> addUrlFile (downloadOptions o) url urlinfo file
-	addurl = addUrlChecked o url file webUUID $ \k -> 
+	addurl = addUrlChecked o url file webUUID $ \k ->
 		ifM (pure (not (rawOption (downloadOptions o))) <&&> youtubeDlSupported url)
 			( return (True, True, setDownloader url YoutubeDownloader)
 			, return (Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k, url)
@@ -277,7 +277,6 @@ downloadWeb o url urlinfo file =
 		liftIO $ createDirectoryIfMissing True (parentDir file)
 		finishDownloadWith tmp webUUID url file
 	tryyoutubedl tmp
-		| isJust (fileOption o) = dl file
 		-- Ask youtube-dl what filename it will download
 		-- first, and check if that is already an annexed file,
 		-- to avoid unnecessary work in that case.
@@ -285,6 +284,12 @@ downloadWeb o url urlinfo file =
 			Right dest -> ifAnnexed dest 
 				(alreadyannexed dest)
 				(dl dest)
+			Left _ -> normalfinish tmp
+		-- Ask youtube-dl what filename it will download
+		-- fist, so it's only used when the file contains embedded
+		-- media.
+		| isJust (fileOption o) = youtubeDlFileNameHtmlOnly url >>= \case
+			Right _ -> dl file
 			Left _ -> normalfinish tmp
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
