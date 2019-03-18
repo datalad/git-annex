@@ -34,6 +34,7 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
   * Removed bundled gpg from the Linux standalone build and OSX dmg,
     because gpg now always wants to use gpg-agent, and shipping such a daemon
     in those is not a good idea.
+  * import: Let --force overwrite symlinks, not only regular files.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 

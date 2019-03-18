@@ -146,7 +146,12 @@ startLocal largematcher mode (srcfile, destfile) =
 					Nothing -> importfilechecked ld k
 					Just s
 						| isDirectory s -> notoverwriting "(is a directory)"
-						| isSymbolicLink s -> notoverwriting "(is a symlink)"
+						| isSymbolicLink s -> ifM (Annex.getState Annex.force)
+							( do
+								liftIO $ nukeFile destfile
+								importfilechecked ld k
+							, notoverwriting "(is a symlink)"
+							)
 						| otherwise -> ifM (Annex.getState Annex.force)
 							( do
 								liftIO $ nukeFile destfile
