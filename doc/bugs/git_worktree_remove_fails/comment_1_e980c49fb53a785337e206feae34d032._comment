@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-03-18T17:35:20Z"
+ content="""
+This seems like something the git developers might consider a bug in git
+worktree, since generally git doesn't care if .git is a symlink or a
+pointer file. 
+
+Although perhaps the reason it checks is to avoid deleting something it
+didn't set up.
+
+I don't see any way to improve this in git-annex though, if .git is not a
+symlink then every git-annex symlink in the repository will need to change
+to point to the real path to .git/annex/objects, which is not practical.
+"""]]
