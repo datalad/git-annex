@@ -62,7 +62,7 @@ and that file seems to be freshly touched and initially was not staged for a com
 [[!format sh """
 fmriprep001]$ ls -l freesurfer/sub-000457/mri/lh.ribbon.mgz
 ... Mar 18 18:19 freesurfer/sub-000457/mri/lh.ribbon.mgz -> ../../../.git/annex/objects/61/87/MD5E-s103445--f9f251a9f80317fbcf46cf11fa7be520.mgz/MD5E-s103445--f9f251a9f80317fbcf46cf11fa7be520.mgz
-"""]
+"""]]
 
 here is ps
 
