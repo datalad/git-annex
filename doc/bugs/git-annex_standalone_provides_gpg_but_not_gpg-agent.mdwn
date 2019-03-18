@@ -2,3 +2,4 @@ In the sandbox environment used by git-annex standalone, the gpg binary exists, 
 
 If I want to use my own gpg version (compatible with my own gpg-agent), is it safe to just delete all files named 'gpg' from the git-annex.linux directory?
 
+> [[fixed|done]] --[[Joey]]

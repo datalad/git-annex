@@ -24,14 +24,6 @@ bundledPrograms = preferredBundledPrograms ++ extraBundledPrograms
  -}
 extraBundledPrograms :: [FilePath]
 extraBundledPrograms = catMaybes
-	-- The system gpg is probably better, because it may better
-	-- integrate with the system gpg-agent, etc.
-	-- On Windows, gpg is bundled with git for windows.
-#ifndef mingw32_HOST_OS
-	[ BuildInfo.gpg
-#else
-	[
-#endif
 #ifndef darwin_HOST_OS
 #ifndef mingw32_HOST_OS
 	-- OS X has ssh installed by default.

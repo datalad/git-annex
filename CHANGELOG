@@ -31,6 +31,9 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
     re-run git-annex init.)
   * fsck: Detect situations where annex.thin has caused data loss
     to the content of locked files.
+  * Removed bundled gpg from the Linux standalone build and OSX dmg,
+    because gpg now always wants to use gpg-agent, and shipping such a daemon
+    in those is not a good idea.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 
