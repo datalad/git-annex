@@ -22,3 +22,5 @@ If I manually open the browser and I copy-paste the url to it, then it works.
 
 Not yet: I tried to use it some years ago to handle my photo collection but I think digikam didn't like the sim links and it was very slow; I also was not lucky with the external (NTFS) drive that I used for sync/backup.
 But I like this project so much that I frequently come back to check for updates and test myself with it.
+
+> closing as not a git-annex bug [[done]] --[[Joey]]
