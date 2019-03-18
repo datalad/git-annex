@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-03-18T19:54:04Z"
+ content="""
+Maybe git considers .git an internal detail, so they might not guarantee things working correctly if it's changed to a symlink?
+A clean way to handle this would be to add a 'git annex worktree' command, which normally just passes the rest of the command line to 'git worktree', but handles any git-annex-specific details as needed: e.g. 'git annex worktree add' calls 'git worktree add' then replaces the .git pointer file with symlink; 'git annex worktree remove' puts the .git pointer back then calls 'git worktree remove', etc. 
+"""]]
