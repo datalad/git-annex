@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-03-18T17:38:40Z"
+ content="""
+git-annex uses the xdg-open command in termux to open the webapp,
+so you will probably get the same error message if you run a command like
+
+	xdg-open http://google.com/
+
+So this is a problem with termux, or perhaps something in your Android is
+preventing termux from communicating with it correctly. It's not a problem
+I can address in git-annex, so I'm going to close this bug report.
+"""]]
