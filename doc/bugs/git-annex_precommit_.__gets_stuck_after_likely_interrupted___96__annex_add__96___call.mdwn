@@ -1,0 +1,99 @@
+### Please describe the problem.
+
+TL;DR - it seems that obsolete `.git/annex/index.lck  .git/annex/journal.lck  .git/annex/precommit.lck` could cause a new process to hang  on `git commit` or `git annex add` without announcing any problem. git annex version installed is 7.20181211-g1cdb7a2.  But that seems to be not a complete reason - and after removing them still gets stuck
+
+
+I think we initiated `git annex add` invocation over remote ssh session, and then connection eventually dropped before `git annex add` finished.  The repository is large - 47k files.
+So we ended up with some files annex/staged, some just annexed (symlinks to keys), and some not yet tracked by git and in their original form.
+
+I thought to commit first at least what we had already staged, but `git commit` pretty much hanged there for an hour.  It is an NFS mount on an HPC, so IO is not stellar but an hour with little to no CPU consumed sounds like it just got stuck.
+I have checked ps and saw that it is in the `pre-commit` hook with two zombies.  Interrupted and ran manually with `--debug`:
+
+[[!format sh """
+ fmriprep001]$ git annex --debug pre-commit .
+[2019-03-18 18:08:36.049933] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2019-03-18 18:08:36.060284] process done ExitSuccess
+[2019-03-18 18:08:36.060364] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2019-03-18 18:08:36.081517] process done ExitSuccess
+[2019-03-18 18:08:36.081776] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--cached","--name-only","-z","--diff-filter=ACMRT","--","."]
+[2019-03-18 18:08:44.780003] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--name-only","--diff-filter=T","-z","--cached","--","."]
+[2019-03-18 18:08:44.817133] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2019-03-18 18:08:44.827942] process done ExitSuccess
+[2019-03-18 18:08:44.827996] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2019-03-18 18:08:44.837793] process done ExitSuccess
+
+# just hanging there, no notable CPU utilization
+# ps output -- I think I did mistake and didn't grep for git but for annex
+    5765  0.0  0.0 127208  3800 pts/145  Ss   Mar07   0:00     /bin/bash
+   21340  0.0  0.0 113940  1400 pts/145  S+   18:08   0:00       git annex --debug pre-commit .
+   21341  2.0  0.0 1074154224 19164 pts/145 Sl+ 18:08   0:01         /ihome/crc/install/datalad/python3.7/bin/git-annex --debug pre-commit .
+   21353  0.0  0.0      0     0 pts/145  Z+   18:08   0:00           [git] <defunct>
+   21397  0.0  0.0      0     0 pts/145  Z+   18:08   0:00           [git] <defunct>
+
+$ git annex version
+git-annex version: 7.20181211-g1cdb7a2
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.2 feed-1.0.0.0 ghc-8.2.2 http-client-0.5.13.1 persistent-sqlite-2.8.1.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+
+"""]]
+
+Retrying to add everything again seems to lead to a stall as well:
+
+[[!format sh """
+fmriprep001]$ git annex --debug add *
+[2019-03-18 18:19:54.527228] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2019-03-18 18:19:54.537078] process done ExitSuccess
+[2019-03-18 18:19:54.537377] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2019-03-18 18:19:54.547586] process done ExitSuccess
+[2019-03-18 18:19:54.547873] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--others","--exclude-standard","-z","--","fmriprep","freesurfer"]
+[2019-03-18 18:19:55.557577] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+[2019-03-18 18:19:55.558288] read: git ["--version"]
+[2019-03-18 18:19:55.560309] process done ExitSuccess
+add freesurfer/sub-000457/mri/lh.ribbon.mgz   
+"""]]
+
+and that file seems to be freshly touched and initially was not staged for a commit according to `git status`:
+
+[[!format sh """
+fmriprep001]$ ls -l freesurfer/sub-000457/mri/lh.ribbon.mgz
+lrwxrwxrwx 1 anm212 amanelis 135 Mar 18 18:19 freesurfer/sub-000457/mri/lh.ribbon.mgz -> ../../../.git/annex/objects/61/87/MD5E-s103445--f9f251a9f80317fbcf46cf11fa7be520.mgz/MD5E-s103445--f9f251a9f80317fbcf46cf11fa7be520.mgz
+"""]
+
+here is ps
+
+[[!format sh """
+# ps auxw -H | grep annex    -- showing only relevant portion, no other annex processes detected; 
+#    should have grepped for git! :-/
+   26125  0.0  0.0 113940  1404 pts/145  S+   18:19   0:00       git annex --debug add fmriprep freesurfer
+   26126  0.4  0.0 1074154224 108492 pts/145 Sl+ 18:19   0:00         /ihome/crc/install/datalad/python3.7/bin/git-annex --debug add fmriprep freesurfer
+   26138  0.0  0.0 115916  3432 pts/145  S+   18:19   0:00           git --git-dir=.git --work-tree=. --literal-pathspecs check-attr -z --stdin annex.backend annex.numcopies annex.largefiles --
+"""]]
+
+looking at the list of files for 26126 process I see `.git/annex/journal.lck`  which seems to date to ` Feb 27 ` (3 weeks ago!), and altogether there are 3 lock files from that date:
+`.git/annex/index.lck  .git/annex/journal.lck  .git/annex/precommit.lck`. 
+FWIW, NFS mount options `type nfs4 (rw,relatime,vers=4.1,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,clientaddr=10.201.0.82,local_lock=none,addr=10.201.2.178)`
+
+I have removed them, and then called `git commit` which seemed to proceed normally, got to report `(recording state in git...)` but then seemed to get stuck as well:
+
+[[!format sh """
+   31711  0.0  0.0 1460028 3876 pts/145  S+   18:27   0:00       git commit -m Annexed portion of the results, probably was disconnected, so not all  Also there were some stale lock files present .git/annex/index.lck  .git/annex/journal.lck  .git/annex/precommit.lck  which caused precommit and add to hang, removed them
+   31788  0.0  0.0 113184  1412 pts/145  S+   18:27   0:00         /bin/sh .git/hooks/pre-commit
+   31789  0.0  0.0 113940  1404 pts/145  S+   18:27   0:00           git annex pre-commit .
+   31791  1.1  0.0 1074154220 19240 pts/145 Dl+ 18:27   0:04             /ihome/crc/install/datalad/python3.7/bin/git-annex pre-commit .
+   31802  0.0  0.0      0     0 pts/145  Z+   18:27   0:00               [git] <defunct>
+   31889  0.0  0.0      0     0 pts/145  Z+   18:27   0:00               [git] <defunct>
+   31901  1.6  0.0 113964  1608 pts/145  S+   18:27   0:06               git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+    1075  0.0  0.0 113944  1624 pts/145  S+   18:29   0:00               git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+    1076  0.0  0.0 113944  1408 pts/145  S+   18:29   0:00               git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+"""]]
+
+There is also two `.git/annex/misctmp/jlog*` files with one from Feb 28 and one from today.  Today's one is bigger, and used by 31901 but seems not to change for the last 15 minutes.
+
+what could be a reason and any way to mitigate?
+
+[[!meta author=yoh]]
