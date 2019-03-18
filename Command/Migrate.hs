@@ -70,7 +70,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 	go (Just (newkey, knowngoodcontent))
 		| knowngoodcontent = finish newkey
 		| otherwise = stopUnless checkcontent $ finish newkey
-	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyLocked afile
+	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyPresent afile
 	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
 		( do
 			_ <- copyMetaData oldkey newkey

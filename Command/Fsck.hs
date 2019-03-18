@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -227,7 +227,7 @@ verifyLocationLog :: Key -> KeyStatus -> ActionItem -> Annex Bool
 verifyLocationLog key keystatus ai = do
 	direct <- isDirect
 	obj <- calcRepo $ gitAnnexLocation key
-	present <- if not direct && isKeyUnlocked keystatus
+	present <- if not direct && isKeyUnlockedThin keystatus
 		then liftIO (doesFileExist obj)
 		else inAnnex key
 	u <- getUUID
@@ -235,9 +235,10 @@ verifyLocationLog key keystatus ai = do
 	{- Since we're checking that a key's object file is present, throw
 	 - in a permission fixup here too. -}
 	when (present && not direct) $ do
-		void $ tryIO $ if isKeyUnlocked keystatus
-			then thawContent obj
-			else freezeContent obj
+		void $ tryIO $ case keystatus of
+			KeyUnlockedThin -> thawContent obj
+			KeyLockedThin -> thawContent obj
+			_ -> freezeContent obj
 		unlessM (isContentWritePermOk obj) $
 			warning $ "** Unable to set correct write mode for " ++ obj ++ " ; perhaps you don't own that file"
 	whenM (liftIO $ doesDirectoryExist $ parentDir obj) $
@@ -326,13 +327,11 @@ verifyAssociatedFiles key keystatus file = do
 		forM_ fs $ \f -> 
 			unlessM (liftIO $ doesFileExist f) $
 				void $ Direct.removeAssociatedFile key f
-	goindirect = case keystatus of
-		KeyUnlocked -> do
-			f <- inRepo $ toTopFilePath file
-			afs <- Database.Keys.getAssociatedFiles key
-			unless (getTopFilePath f `elem` map getTopFilePath afs) $
-				Database.Keys.addAssociatedFile key f
-		_ -> return ()
+	goindirect = when (isKeyUnlockedThin keystatus) $ do
+		f <- inRepo $ toTopFilePath file
+		afs <- Database.Keys.getAssociatedFiles key
+		unless (getTopFilePath f `elem` map getTopFilePath afs) $
+			Database.Keys.addAssociatedFile key f
 
 verifyWorkTree :: Key -> FilePath -> Annex Bool
 verifyWorkTree key file = do
@@ -372,7 +371,7 @@ verifyWorkTree key file = do
  - Not checked when a file is unlocked, or in direct mode.
  -}
 checkKeySize :: Key -> KeyStatus -> ActionItem -> Annex Bool
-checkKeySize _ KeyUnlocked _ = return True
+checkKeySize _ KeyUnlockedThin _ = return True
 checkKeySize key _ ai = do
 	file <- calcRepo $ gitAnnexLocation key
 	ifM (liftIO $ doesFileExist file)
@@ -450,7 +449,7 @@ checkBackend backend key keystatus afile = go =<< isDirect
   where
 	go False = do
 		content <- calcRepo $ gitAnnexLocation key
-		ifM (pure (isKeyUnlocked keystatus) <&&> (not <$> isUnmodified key content))
+		ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 			( nocheck
 			, checkBackendOr badContent backend key content (mkActionItem afile)
 			)
@@ -700,28 +699,42 @@ withFsckDb (StartIncremental h) a = a h
 withFsckDb NonIncremental _ = noop
 withFsckDb (ScheduleIncremental _ _ i) a = withFsckDb i a
 
-data KeyStatus = KeyLocked | KeyUnlocked | KeyMissing
+data KeyStatus
+	= KeyMissing
+	| KeyPresent
+	| KeyUnlockedThin
+	-- ^ An annex.thin worktree file is hard linked to the object.
+	| KeyLockedThin
+	-- ^ The object has hard links, but the file being fscked
+	-- is not the one that hard links to it.
+	deriving (Show)
 
-isKeyUnlocked :: KeyStatus -> Bool
-isKeyUnlocked KeyUnlocked = True
-isKeyUnlocked KeyLocked = False
-isKeyUnlocked KeyMissing = False
+isKeyUnlockedThin :: KeyStatus -> Bool
+isKeyUnlockedThin KeyUnlockedThin = True
+isKeyUnlockedThin KeyLockedThin = False
+isKeyUnlockedThin KeyPresent = False
+isKeyUnlockedThin KeyMissing = False
 
 getKeyStatus :: Key -> Annex KeyStatus
 getKeyStatus key = ifM isDirect
-	( return KeyUnlocked
+	( return KeyUnlockedThin
 	, catchDefaultIO KeyMissing $ do
-		unlocked <- not . null <$> Database.Keys.getAssociatedFiles key
-		return $ if unlocked then KeyUnlocked else KeyLocked
+		afs <- not . null <$> Database.Keys.getAssociatedFiles key
+		obj <- calcRepo $ gitAnnexLocation key
+		multilink <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
+		return $ if multilink && afs
+			then KeyUnlockedThin
+			else KeyPresent
 	)
 
 getKeyFileStatus :: Key -> FilePath -> Annex KeyStatus
 getKeyFileStatus key file = do
 	s <- getKeyStatus key
 	case s of
-		KeyLocked -> catchDefaultIO KeyLocked $
+		KeyUnlockedThin -> catchDefaultIO KeyUnlockedThin $
 			ifM (isJust <$> isAnnexLink file)
-				( return KeyLocked
-				, return KeyUnlocked
+				( return KeyLockedThin
+				, return KeyUnlockedThin
 				)
 		_ -> return s
+

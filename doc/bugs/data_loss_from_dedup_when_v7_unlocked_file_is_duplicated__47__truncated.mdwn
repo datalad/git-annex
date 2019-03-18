@@ -110,3 +110,5 @@ fsck ffoo ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I'm hopeful! But just getting started :(
 
+> git-annex fsck made to detect and clean up after this, which I consider
+> sufficient, so [[done]] --[[Joey]]

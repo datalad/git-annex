@@ -29,6 +29,8 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
     to support filenames starting with dashes.
     (To update the config of existing repositories, you can
     re-run git-annex init.)
+  * fsck: Detect situations where annex.thin has caused data loss
+    to the content of locked files.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 
