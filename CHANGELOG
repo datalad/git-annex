@@ -25,6 +25,10 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
     the HOME directory.
   * addurl --file: Fix a bug that made youtube-dl be used unneccessarily
     when adding an html url that does not contain any media.
+  * Add -- before %f in the smudge/clean filter configuration,
+    to support filenames starting with dashes.
+    (To update the config of existing repositories, you can
+    re-run git-annex init.)
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 
