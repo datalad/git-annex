@@ -29,12 +29,12 @@ import Prelude
 
 systemwideInstall :: IO Bool
 #ifndef mingw32_HOST_OS 
-systemwideInstall = isroot <||> destdirset
+systemwideInstall = isroot <||> (not <$> userdirset)
   where
 	isroot = do
 		uid <- fromIntegral <$> getRealUserID
 		return $ uid == (0 :: Int)
-	destdirset = isJust <$> catchMaybeIO (getEnv "DESTDIR")
+	userdirset = isJust <$> catchMaybeIO (getEnv "USERDIR")
 #else
 systemwideInstall = return False
 #endif

@@ -21,6 +21,8 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
   * S3: Support enabling bucket versioning when built with aws-0.21.1.
   * stack.yaml: Build with aws-0.21.1
   * Fix cleanup of git-annex:export.log after git-annex forget --drop-dead.
+  * Makefile: Added install-home target which installs git-annex into
+    the HOME directory.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 

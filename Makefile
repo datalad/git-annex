@@ -18,6 +18,16 @@ endif
 
 build: $(all)
 
+# install system-wide
+# Set PREFIX and DESTDIR to configure where it is installed
+install: install-bins install-docs install-desktop
+
+# installs into your home directory
+install-home:
+	$(MAKE) install-bins PREFIX=$(HOME)/.local
+	$(MAKE) install-mans PREFIX=$(HOME)/.local
+	$(MAKE) install-desktop PREFIX=$(HOME)/.local USERDIR=1
+
 tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
@@ -61,8 +71,10 @@ install-bins: build
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-remote-tor-annex
 
-install-misc: build Build/InstallDesktopFile
+install-desktop: build Build/InstallDesktopFile
 	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
+
+install-completions:
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions
 	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions/git-annex
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions
@@ -71,8 +83,6 @@ install-misc: build Build/InstallDesktopFile
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions
 	@./git-annex --fish-completion-script git-annex 2>/dev/null > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish || \
 		echo "** fish completions not installed; built with too old version of optparse-applicative"
-
-install: install-bins install-docs install-misc
 
 test: git-annex git-annex-shell
 	./git-annex test

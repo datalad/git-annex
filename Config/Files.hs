@@ -56,7 +56,7 @@ removeAutoStartFile path = do
 	modifyAutoStartFile $
 		filter (not . equalFilePath path')
 
-{- The path to git-annex is written here; which is useful when cabal
+{- The path to git-annex is written here; which is useful when something
  - has installed it to some awful non-PATH location. -}
 programFile :: IO FilePath
 programFile = userConfigFile "program"
