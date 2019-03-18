@@ -24,6 +24,7 @@ bundledPrograms = preferredBundledPrograms ++ extraBundledPrograms
  -}
 extraBundledPrograms :: [FilePath]
 extraBundledPrograms = catMaybes
+	[ Nothing
 #ifndef darwin_HOST_OS
 #ifndef mingw32_HOST_OS
 	-- OS X has ssh installed by default.
