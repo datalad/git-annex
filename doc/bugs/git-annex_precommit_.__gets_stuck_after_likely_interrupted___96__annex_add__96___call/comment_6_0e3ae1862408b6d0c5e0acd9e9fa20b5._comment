@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="more info on hanging"
+ date="2019-03-19T21:04:54Z"
+ content="""
+[[!format sh \"\"\"
+$ strace -f -p  15565
+strace: Process 15565 attached with 5 threads
+[pid 15570] futex(0x7f0c2c000924, FUTEX_WAIT_PRIVATE, 15, NULL <unfinished ...>
+[pid 15568] restart_syscall(<... resuming interrupted poll ...> <unfinished ...>
+[pid 15566] read(3,  <unfinished ...>
+[pid 15567] futex(0x4a454a4, FUTEX_WAIT_PRIVATE, 27143, NULL <unfinished ...>
+[pid 15566] <... read resumed> \"\1\0\0\0\0\0\0\0\", 8) = 8
+[pid 15566] read(3, \"\1\0\0\0\0\0\0\0\", 8) = 8
+[pid 15566] read(3, \"\1\0\0\0\0\0\0\0\", 8) = 8
+.... keeps going, had to bf, kill -9 strace process
+\"\"\"]]
+and that 15566 is a thread:
+[[!format sh \"\"\"
+$ ps -L -p 15565
+  PID   LWP TTY          TIME CMD
+15565 15565 pts/50   00:00:01 git-annex
+15565 15566 pts/50   00:00:31 ghc_ticker
+15565 15567 pts/50   00:00:00 ghc_worker
+15565 15568 pts/50   00:00:00 ghc_worker
+15565 15570 pts/50   00:00:00 ghc_worker
+
+$ ls -l /proc/15566/fd | anon
+total 0
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 0 -> /dev/pts/50
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 1 -> /dev/pts/50
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 10 -> anon_inode:[eventfd]
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 11 -> /dev/shm/cd6281f9a8c5f62e1da78a60ca9ca1b4D_fmriprep001_.git_annex_pidlock.lck
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 12 -> /zfs1/GROUP/USER/R03/WM-R03/DIAMOND/fmriprep001/.git/annex/misctmp/jlog15565-2
+l-wx------ 1 USER GROUP 64 Mar 19 17:03 13 -> pipe:[233188705]
+lr-x------ 1 USER GROUP 64 Mar 19 17:03 14 -> pipe:[233188706]
+l-wx------ 1 USER GROUP 64 Mar 19 17:03 16 -> pipe:[233188711]
+lr-x------ 1 USER GROUP 64 Mar 19 17:03 17 -> pipe:[233188712]
+l-wx------ 1 USER GROUP 64 Mar 19 17:03 18 -> pipe:[233188714]
+lr-x------ 1 USER GROUP 64 Mar 19 17:03 19 -> pipe:[233188715]
+lrwx------ 1 USER GROUP 64 Mar 19 16:59 2 -> /dev/pts/50
+l-wx------ 1 USER GROUP 64 Mar 19 17:03 20 -> pipe:[233188718]
+lr-x------ 1 USER GROUP 64 Mar 19 17:03 21 -> pipe:[233188719]
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 3 -> anon_inode:[timerfd]
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 4 -> anon_inode:[eventpoll]
+lr-x------ 1 USER GROUP 64 Mar 19 17:03 5 -> pipe:[233191520]
+l-wx------ 1 USER GROUP 64 Mar 19 17:03 6 -> pipe:[233191520]
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 7 -> anon_inode:[eventfd]
+lr-x------ 1 USER GROUP 64 Mar 19 17:03 8 -> pipe:[233191523]
+l-wx------ 1 USER GROUP 64 Mar 19 17:03 9 -> pipe:[233191523]
+
+\"\"\"]]
+"""]]
