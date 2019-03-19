@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-03-19T17:35:52Z"
+ content="""
+Does seem like a good idea.
+
+Piping avoids needing to link git-annex with multiple compression
+libraries, or picking the wrong compression libraries. 
+I suppose that it's no big deal for a special remote to require that
+everyone who uses it has xz or whatever installed.
+
+But: The *name* of the command that is used cannot be stored in the remote
+config in the git-annex branch because that would be insecure. A mapping in
+the git-annex code from compression formats to known-safe command names
+would be one way, or a git config setting that has to be manually set when
+enabling the remote. Or both.
+"""]]
