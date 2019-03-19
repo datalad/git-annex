@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-03-19T17:06:50Z"
+ content="""
+This is essentially using namespacing on the remote to implement an
+equivilant of S3 versioning, though with less efficiency.
+
+A remote's implementation could do the same thing and claim it supports
+versioning, without any change to the current remote interface or user
+interface.
+
+Except for removing versioned content, which indeed would need to update
+the tree to reflect the removal. From Remote.Helper.ExportImport:
+
+                -- Removing a key from an export would need to
+                -- change the tree in the export log to not include
+                -- the file. Otherwise, conflicts when removing
+                -- files would not be dealt with correctly.
+                -- There does not seem to be a good use case for
+                -- removing a key from an export in any case.
+                , removeKey = \_k -> do
+                        warning "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the
+                        return False
+
+I think that there are two separate things here that of course would work
+well together, but neither depends on the other. Generic versioning via
+namespacing could be done with or without support for removeKey (and vice-versa).
+"""]]
