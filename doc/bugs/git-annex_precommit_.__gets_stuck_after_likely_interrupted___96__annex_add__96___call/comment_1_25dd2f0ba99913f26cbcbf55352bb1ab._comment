@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-03-19T02:33:02Z"
+ content="""
+Since this is NFS, does it have annex.pidlock set?
+
+If so, an stale pid lock (.git/annex/pidlock) can cause a stall, for up to
+annex.pidlockimeout seconds.
+
+The hang points seem consistent with it preparing to commit the journal to
+the git-annex branch and indeed something related to locking.
+An strace would tell for sure.
+"""]]
