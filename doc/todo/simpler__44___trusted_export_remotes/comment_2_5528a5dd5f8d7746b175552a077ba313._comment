@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-03-19T20:40:49Z"
+ content="""
+\"A remote's implementation could do the same thing\" -- right, but if git-annex implements this (through the current special remote protocol) then one implementation covers all export-supporting remotes.  Also, implementing special remotes would become simpler, since they could just implement the export part of the protocol, and the key-value store then gets implemented in terms of that. But the main plus would be the uniformity: export remotes would be key-value remotes with an added ability (to store files in human-readable locations), rather than a separate untrustworthy species.
+"""]]
