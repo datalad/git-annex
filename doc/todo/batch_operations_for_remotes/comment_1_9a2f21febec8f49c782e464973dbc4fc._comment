@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-03-19T17:41:19Z"
+ content="""
+What is being optimised here? A single external special remote process
+is already used for multiple operations, and the overhead is only
+in the necessary context switches between processes and pipe IO.
+
+Note that git-annex -J will start up several external special remote
+processes and distribute jobs between them. The way git-annex processes
+files, it never builds up a big list of queries to make later; each query or
+other operation needs to be completed before it knows what the next
+operation will be for a given key. So it seems hard to see how it could
+use something like this if it were in the protocol.
+"""]]
