@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-03-19T19:55:24Z"
+ content="""
+Although, the haskell RTS uses a select loop with a timeout and so might use
+a small amount of CPU while otherwise blocked waiting on a lock..
+"""]]
