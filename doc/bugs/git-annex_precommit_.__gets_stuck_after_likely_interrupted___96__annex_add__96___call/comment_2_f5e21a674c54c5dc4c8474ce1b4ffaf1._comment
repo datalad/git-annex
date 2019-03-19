@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reporting back"
+ date="2019-03-19T17:01:10Z"
+ content="""
+Removing .lck, setting `annex.pidlock=true` worked! got just one complaint from git:
+
+[[!format sh \"\"\"
+$ git commit -m 'Committing staged changes after annex process was killed
+>
+> Also removed stale .git/annex/*.lck and now set annex.pidlock=True for the repo'
+(recording state in git...)
+git-annex: .git/annex/journal/e64_e4a_MD5E-s55076--a7352bf6fd37902fc1dfb6228f2e8a53.log: removeLink: does not exist (No such file or directory)
+
+\"\"\"]]
+I found that file (via `find *  -lname *MD5E-s55076--a7352bf6fd37902fc1dfb6228f2e8a53*` FTR), it was not known to git yet, so I am now running `annex add` on it (takes awhile -- I guess repo is indeed got large + NFS) -- will report back when done/if there is more.
+
+
+
+"""]]
