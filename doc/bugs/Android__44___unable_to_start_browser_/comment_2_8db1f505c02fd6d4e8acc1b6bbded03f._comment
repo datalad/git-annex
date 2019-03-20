@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Fabio"
+ avatar="http://cdn.libravatar.org/avatar/2bf56b78ae28b64d6131ba3115df238b"
+ subject="no problem with xdg-open"
+ date="2019-03-20T21:57:00Z"
+ content="""
+I tried xdg-open http://www.google.com and it actually works fine. I also tried with xdg-open http://127.0.0.1:annexport/annexurlpath and I don't have any issue with that: the browser opens up and it shows the assistant page.
+
+Any other idea?
+"""]]
