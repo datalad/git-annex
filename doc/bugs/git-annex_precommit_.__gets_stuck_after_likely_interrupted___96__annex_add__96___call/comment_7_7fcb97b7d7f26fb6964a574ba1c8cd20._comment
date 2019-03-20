@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2019-03-20T15:52:45Z"
+ content="""
+Hard to see for sure from this strace tail end, but the fd number sequence
+suggests it first took the pid lock:
+
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 11 -> /dev/shm/cd6281f9a8c5f62e1da78a60ca9ca1b4D_fmriprep001_.git_annex_pidlock.lck
+
+And since it then seems to have proceeded to start to write to this file,
+the pid lock is apparently not the hang point.
+
+lrwx------ 1 USER GROUP 64 Mar 19 17:03 12 -> /zfs1/GROUP/USER/R03/WM-R03/DIAMOND/fmriprep001/.git/annex/misctmp/jlog15565-2
+
+So stageJournal is running, after openjlog. That does not involve any
+further locks, and would not normally take a long time unless 
+.git/annex/journal/ has an unusual number of files in it. It seems to have
+stalled for some reason. It should have started a git update-index process
+and fed data into it.
+
+Do you know if this process had a child git update-index running 
+at this point? It could be that child is what is stalled, somehow.
+
+The number of lines in the jlog15565-2 file would also be a clue to how far
+ it got before it got stuck.
+
+But I think a full strace may be needed to find the sticking point.
+"""]]
