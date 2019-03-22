@@ -10,6 +10,7 @@ module Git.Merge (
 	CommitMode(..),
 	merge,
 	merge',
+	mergeUnrelatedHistoriesParam,
 	stageMerge,
 ) where
 
@@ -44,14 +45,20 @@ merge' extraparams branch mergeconfig commitmode r
 
 merge'' :: [CommandParam] -> [MergeConfig] -> Repo -> IO Bool
 merge'' ps mergeconfig r
-	| MergeUnrelatedHistories `elem` mergeconfig =
-		ifM (Git.Version.older "2.9.0")
-			( go ps
-			, go (ps ++ [Param "--allow-unrelated-histories"])
-			)
+	| MergeUnrelatedHistories `elem` mergeconfig = do
+		up <- mergeUnrelatedHistoriesParam
+		go (ps ++ maybeToList up)
 	| otherwise = go ps
   where
 	go ps' = runBool ps' r
+
+{- Git used to default to merging unrelated histories; newer versions need
+ - an option. -}
+mergeUnrelatedHistoriesParam :: IO (Maybe CommandParam)
+mergeUnrelatedHistoriesParam = ifM (Git.Version.older "2.9.0")
+	( return Nothing
+	, return (Just (Param "--allow-unrelated-histories"))
+	)
 
 {- Stage the merge into the index, but do not commit it.-}
 stageMerge :: Ref -> [MergeConfig] -> Repo -> IO Bool

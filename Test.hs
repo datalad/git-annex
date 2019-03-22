@@ -36,6 +36,7 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
+import qualified Git.Merge
 import qualified Annex.Locations
 #ifndef mingw32_HOST_OS
 import qualified Types.GitConfig
@@ -1739,7 +1740,9 @@ test_export_import = intmpclonerepoInDirect $ do
 
 	writedir "import" (content "import")
 	git_annex "import" ["master", "--from", "foo"] @? "import from dir failed"
-	boolSystem "git" [Param "merge", Param "foo/master", Param "-mmerge", Param "--allow-unrelated-histories"] @? "git merge foo/master failed"
+	up <- Git.Merge.mergeUnrelatedHistoriesParam
+	let mergeps = [Param "merge", Param "foo/master", Param "-mmerge"] ++ maybeToList up
+	boolSystem "git" mergeps @? "git merge foo/master failed"
 	-- FIXME fails when in an adjusted unlocked branch because
 	-- it's imported locked
 	--annexed_present "import"
