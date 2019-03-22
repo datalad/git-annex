@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-03-22T13:50:10Z"
+ content="""
+I've fixed the two problems you spotted in the tip.
+
+git annex sync -C does work for me to get missing files.
+It would be good to file a bug report if you know how to make it not work.
+"""]]

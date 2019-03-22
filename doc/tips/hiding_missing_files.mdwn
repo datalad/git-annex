@@ -95,7 +95,7 @@ operate on. (This might be improved later, but it's how things are currently.)
 What will work is to use `git annex sync`, which knows you're in an adjusted branch
 and can get hidden files.
 
-	git annex sync --content some_file some_directory --no-push --no-pull
+	git annex sync --content-of some_file --no-push --no-pull
 
 Unlike getting files that are hidden, dropping files is no problem, since
 the file you want to drop will be present. But, after dropping a file,
