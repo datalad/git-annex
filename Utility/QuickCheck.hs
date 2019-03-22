@@ -5,6 +5,7 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
@@ -42,9 +43,11 @@ instance Arbitrary FileID where
 instance Arbitrary FileOffset where
 	arbitrary = nonNegative arbitrarySizedIntegral
 
-{- Quickcheck lacks this instance. -}
+{- Latest Quickcheck lacks this instance. -}
+#if MIN_VERSION_QuickCheck(2,10,0)
 instance Arbitrary l => Arbitrary (NonEmpty l) where
 	arbitrary = (:|) <$> arbitrary <*> arbitrary
+#endif
 
 nonNegative :: (Num a, Ord a) => Gen a -> Gen a
 nonNegative g = g `suchThat` (>= 0)
