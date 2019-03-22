@@ -1,0 +1,15 @@
+Currently annex.thin needs hard link support to be efficient;
+it hard links the content from .git/annex/objects into the work tree.
+When hard links are not supported, two copie of checked out files exist on
+disk.
+
+Would it be possible to make it work w/o hard links? Note that direct mode
+does avoid two copies of files.
+
+IIRC the main reason for the hard link is so, when git checkout deletes a
+work tree file, the only copy of the file is not lost. Seems this would
+need a git hook run before checkout to rescue such files.
+
+Also some parts of git-annex's code, including `withObjectLoc`, assume
+that the .annex/objects is present, and so it would need to be changed
+to look at the work tree file. --[[Joey]]
