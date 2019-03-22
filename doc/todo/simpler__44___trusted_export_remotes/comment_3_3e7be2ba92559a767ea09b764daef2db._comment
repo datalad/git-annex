@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-03-22T14:10:41Z"
+ content="""
+I'm doubtful that this would actually let the interface be simplified,
+there are too many differences in the capabilities of different remotes.
+
+For example, if a S3 bucket has versioning disabled, and git-annex imports
+from it, then in this scheme it would need to re-upload the import to the
+key-value location. But, if a S3 bucket has versioning enabled, that upload
+would be redundant and should not be done. And, if a S3 bucket is
+read-only, then an import can't re-upload.
+
+Also, not all users are going to want export remotes to store past versions 
+of files; if they're used for some kind of publication, you may not want
+the exposure/cost of publishing old versions of files there. Of course, you
+could drop the old versions from the remote later, but this would be a
+workflow change from how export remotes work now.
+
+So it seems to me that this would need to be an optional thing.
+"""]]
