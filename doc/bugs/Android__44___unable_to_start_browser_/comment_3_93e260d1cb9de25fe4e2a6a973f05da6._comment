@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-03-22T13:42:43Z"
+ content="""
+Reopened the bug since you confirmed xdg-open usually works.
+
+Why is it failing when git-annex runs it but not otherwise?
+Perhaps it has something to do with the environment set up by runshell.
+"""]]
