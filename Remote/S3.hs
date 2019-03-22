@@ -590,7 +590,7 @@ s3Configuration c = cfg
 	cfgproto = case M.lookup "protocol" c of
 		Just "https" -> Just AWS.HTTPS
 		Just "http" -> Just AWS.HTTP
-		Just _ -> giveup $ "bad S3 protocol value"
+		Just s -> giveup $ "bad S3 protocol value: " ++ s
 		Nothing -> Nothing
 	proto = case cfgproto of
 		Just v -> v
