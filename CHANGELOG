@@ -35,6 +35,8 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
     because gpg now always wants to use gpg-agent, and shipping such a daemon
     in those is not a good idea.
   * import: Let --force overwrite symlinks, not only regular files.
+  * Android: Fix typo of name of armv7l in installation script.
+    Thanks, 4omecha.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 
