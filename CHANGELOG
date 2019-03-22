@@ -1,4 +1,4 @@
-git-annex (7.20190220) UNRELEASED; urgency=medium
+git-annex (7.20190322) upstream; urgency=medium
 
   * New feature allows importing from special remotes, using
     git annex import branch:subdir --from remote
@@ -40,7 +40,7 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
   * S3: Added protocol= initremote setting, to allow https to be used
     on a non-standard port.
 
- -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 22 Mar 2019 13:56:51 -0400
 
 git-annex (7.20190219) upstream; urgency=medium
 
