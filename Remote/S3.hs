@@ -146,6 +146,7 @@ s3Setup' ss u mcreds c gc
 		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.S3)
 		, ("storageclass", "STANDARD")
 		, ("host", AWS.s3DefaultHost)
+		, ("port", "80")
 		, ("bucket", defbucket)
 		]
 		
@@ -581,7 +582,13 @@ s3Configuration c = cfg
 	port = case M.lookup "port" c of
 		Just s -> 
 			case reads s of
-				[(p, _)] -> p
+				[(p, _)]
+					-- Let protocol setting override
+					-- default port 80.
+					| p == 80 -> case cfgproto of
+						Just AWS.HTTPS -> 443
+						_ -> p
+					| otherwise -> p
 				_ -> giveup $ "bad S3 port value: " ++ s
 		Nothing -> case cfgproto of
 			Just AWS.HTTPS -> 443
