@@ -4,8 +4,9 @@ local and remote), that store the file contents in their own git-annex
 directory.
 
 But, git-annex also extends git's concept of remotes, with these special
-types of remotes. These can be used just like any normal remote by git-annex.
-They cannot be used by other git commands though.
+types of remotes. These can be used by git-annex to store and retrieve
+the content of files. They cannot be used by other git commands, and
+the git history is not stored in them.
 
 * [[adb]] (for Android devices)
 * [[Amazon_Glacier|glacier]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-03-22T13:58:06Z"
+ content="""
+Thanks, I see how that could be confusing and have adjusted the
+description.
+
+annex-rsync-transport will work, but you have to put it in the
+configuration of the remote you want it to apply to. annex.rsync-transport
+sets it for all rsync remotes.
+"""]]
