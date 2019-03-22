@@ -62,7 +62,11 @@ the S3 remote.
   service.
 
 * `protocol` - Either "http" (the default) or "https". Setting
-  protocol=https implies port=443.
+  protocol=https implies port=443. 
+  
+  This option was added in git-annex version 7.20190322; to make
+  a special remote that uses http with older versions of git-annex,
+  explicitly specify port=443.
 
 * `port` - Specify the port to connect to. Only needed when using a service
   on an unusual port. Setting port=443 implies protocol=https.
