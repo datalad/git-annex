@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-03-22T13:25:22Z"
+ content="""
+annex.thin will only make one hard link to a given annex object file, so if
+the file that is not getting hard linked has the same content as another
+file in the repository that is getting hard linked, that explains why.
+
+It would be very susprising for two different files in the repo to end up
+hard linked together and then a modification to one change both files.
+
+You should really upgrade to git-annex 7.x when using v7 mode. You
+are both using versions that are missing quite a lot of the fixes needed to
+get v7 to release quality. 
+So please upgrade to a current version and see if your execute bit problems
+persist there.
+"""]]
