@@ -9,3 +9,5 @@ Version 7.20181121 on MacOS and 7.20190130-g024120065 on FreeBSD
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes. I only encountered the problem because git-annex works well enough for me that I want to put a lot more data into it.
+
+> [[fixed|done]] --[[Joey]]

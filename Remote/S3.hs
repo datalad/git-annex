@@ -146,7 +146,6 @@ s3Setup' ss u mcreds c gc
 		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.S3)
 		, ("storageclass", "STANDARD")
 		, ("host", AWS.s3DefaultHost)
-		, ("port", "80")
 		, ("bucket", defbucket)
 		]
 		
@@ -571,9 +570,6 @@ s3Configuration c = cfg
 		Nothing -> S3.s3RequestStyle cfg
 	}
   where
-	proto
-		| port == 443 = AWS.HTTPS
-		| otherwise = AWS.HTTP
 	h = fromJust $ M.lookup "host" c
 	datacenter = fromJust $ M.lookup "datacenter" c
 	-- When the default S3 host is configured, connect directly to
@@ -582,10 +578,25 @@ s3Configuration c = cfg
 	endpoint
 		| h == AWS.s3DefaultHost = AWS.s3HostName $ T.pack datacenter
 		| otherwise = T.encodeUtf8 $ T.pack h
-	port = let s = fromJust $ M.lookup "port" c in
-		case reads s of
-		[(p, _)] -> p
-		_ -> giveup $ "bad S3 port value: " ++ s
+	port = case M.lookup "port" c of
+		Just s -> 
+			case reads s of
+				[(p, _)] -> p
+				_ -> giveup $ "bad S3 port value: " ++ s
+		Nothing -> case cfgproto of
+			Just AWS.HTTPS -> 443
+			Just AWS.HTTP -> 80
+			Nothing -> 80
+	cfgproto = case M.lookup "protocol" c of
+		Just "https" -> Just AWS.HTTPS
+		Just "http" -> Just AWS.HTTP
+		Just _ -> giveup $ "bad S3 protocol value"
+		Nothing -> Nothing
+	proto = case cfgproto of
+		Just v -> v
+		Nothing
+			| port == 443 -> AWS.HTTPS
+			| otherwise -> AWS.HTTP
 	cfg = S3.s3 proto endpoint False
 
 data S3Info = S3Info
@@ -735,6 +746,7 @@ s3Info c info = catMaybes
 	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
 	, Just ("endpoint", w82s (BS.unpack (S3.s3Endpoint s3c)))
 	, Just ("port", show (S3.s3Port s3c))
+	, Just ("protocol", map toLower (show (S3.s3Protocol s3c)))
 	, Just ("storage class", showstorageclass (getStorageClass c))
 	, if configIA c
 		then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)

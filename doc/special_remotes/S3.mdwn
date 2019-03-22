@@ -58,8 +58,14 @@ the S3 remote.
   affect new objects sent to the remote, but not objects already
   stored there.
 
-* `host` and `port` - Specify in order to use a different, S3 compatable
+* `host` - Specify in order to use a different, S3 compatable
   service.
+
+* `protocol` - Either "http" (the default) or "https". Setting
+  protocol=https implies port=443.
+
+* `port` - Specify the port to connect to. Only needed when using a service
+  on an unusual port. Setting port=443 implies protocol=https.
 
 * `requeststyle` - Set to "path" to use path style requests, instead of the
   default DNS style requests. This is needed with some S3 services.

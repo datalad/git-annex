@@ -37,6 +37,8 @@ git-annex (7.20190220) UNRELEASED; urgency=medium
   * import: Let --force overwrite symlinks, not only regular files.
   * Android: Fix typo of name of armv7l in installation script.
     Thanks, 4omecha.
+  * S3: Added protocol= initremote setting, to allow https to be used
+    on a non-standard port.
 
  -- Joey Hess <id@joeyh.name>  Wed, 20 Feb 2019 14:20:59 -0400
 
