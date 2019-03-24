@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2019-03-24T23:49:48Z"
+ content="""
+actually not sure if that is a matter of multiple files with the same key since with a subsequent call to `datalad publish` 3 files did get published, so I guess it was something else.
+"""]]
