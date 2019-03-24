@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="The issue persists with recent git-annex"
+ date="2019-03-24T23:00:30Z"
+ content="""
+The same with annex locally 7.20190219+git191-g2d6a364d4-1~ndall+1 and on remote  7.20190129+git78-g3fa6be1fe-1~ndall+1, while copying to the remote host a LOT (59k) of files, 3 \"failed\" and I get datalad print me a summary of those 3 error messages
+
+[[!format sh \"\"\"
+git-annex: <stdin>: hGetChar: illegal operation (handle is closed)git-annex-shell: p2pstdio: 1 failed  Lost connection (fd:20: hGetChar: end of file)
+  This could have failed because --fast is enabled.
+git-annex: <stdin>: hGetChar: illegal operation (handle is closed)git-annex-shell: p2pstdio: 1 failed  Lost connection (fd:19: hGetChar: end of file)
+  This could have failed because --fast is enabled.
+git-annex: <stdin>: hGetChar: illegal operation (handle is closed)git-annex-shell: p2pstdio: 1 failed  Lost connection (fd:19: hGetChar: end of file)
+  This could have failed because --fast is enabled.
+git-annex: copy: 3 failed
+
+\"\"\"]]
+I guess it is because the files are actually pointing to the same key(s), which get transferred in some other parallel batch.
+"""]]
