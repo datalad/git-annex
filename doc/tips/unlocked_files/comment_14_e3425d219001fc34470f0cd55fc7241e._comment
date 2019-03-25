@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="annex.thin without hardlinks  would be useful for non-crippled systems as well"
+ date="2019-03-25T18:57:36Z"
+ content="""
+One of the concerns with use of git-annex on HPC and other heavily loaded systems is the >3x consumption of inodes due to all the symlinks etc.  In some cases it could be completely avoided probably, if repository is instructed to be installed just for consumption (to access data) only.  In this way it would be nice if we could get the same \"annex.thin without hardlinks\" that there would not be even any `.git/annex/objects` (`superthin`?) and files just get installed in-place.
+"""]]
