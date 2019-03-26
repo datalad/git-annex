@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 5"
+ date="2019-03-26T18:27:04Z"
+ content="""
+Another approach would be to let a key-value remote and an export remote be combined into one \"combo\" remote.  To the user, this would look like one trusted, versioned remote supporting both key-value and export operations.  Keys overwritten in the export remote would be stored in the key-value remote. Either keys or trees could be copied to the combo remote, keys going to the key-value remote and trees to the export remote.  The downside is that files could not be moved directly between the backing remotes.  But the inefficiency might not always matter. Also, TRANSFER and TRANSFEREXPORT could be extended to optionally accept URIs in lieu of content, and to do the transfer in the cloud.
+
+More generically, maybe repository groups could be treated as special remotes?  You'd configure the minimum number of copies of a key in a group.  You could then put a key-value remote and an export remote in a group.  When copying a tree to the group, if this would cause old keys to be overwritten, git-annex would first copy them to a key-value remote in the group, to preserve the per-group minimum number of copies constraint.
+
+"""]]
