@@ -11,16 +11,16 @@ remote that is only accessible on the current system, by passing
 "buprepo=/big/mybup".
 """]]
 
-	# git annex initremote mybup type=bup encryption=none buprepo=example.com:/big/mybup
+	$ git annex initremote mybup type=bup encryption=none buprepo=example.com:/big/mybup
 	initremote bup (bup init)
 	Initialized empty Git repository in /big/mybup/
 	ok
-	# git annex describe mybup "my bup repository at example.com"
+	$ git annex describe mybup "my bup repository at example.com"
 	describe mybup ok
 
 Now the remote can be used like any other remote.
 
-	# git annex move my_cool_big_file --to mybup
+	$ git annex move my_cool_big_file --to mybup
 	move my_cool_big_file (to mybup...)
 	Receiving index from server: 1100/1100, done.
 	ok
@@ -28,7 +28,7 @@ Now the remote can be used like any other remote.
 Note that, unlike other remotes, bup does not really support removing
 content from its git repositories. This is a feature. :)
 
-	# git annex move my_cool_big_file --from mybup
+	$ git annex move my_cool_big_file --from mybup
 	move my_cool_big_file (from mybup...)
 	  content cannot be removed from bup remote
 	failed

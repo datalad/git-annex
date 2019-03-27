@@ -3,7 +3,7 @@ remotes, and verify that they still have a file. After all, it could
 have been dropped from them too. If the remotes are not mounted/available,
 you'll see something like this.
 
-	# git annex drop important_file other.iso
+	$ git annex drop important_file other.iso
 	drop important_file (unsafe)
 	  Could only verify the existence of 0 out of 1 necessary copies
 	  Unable to access these remotes: usbdrive

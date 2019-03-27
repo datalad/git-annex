@@ -2,7 +2,7 @@ Fsck never deletes possibly bad data; instead it will be moved to
 `.git/annex/bad/` for you to recover. Here is a sample of what fsck
 might say about a badly messed up annex:
 
-	# git annex fsck
+	$ git annex fsck
 	fsck my_cool_big_file (checksum...)
 	git-annex: Bad file content; moved to .git/annex/bad/SHA1:7da006579dd64330eb2456001fd01948430572f2
 	git-annex: ** No known copies exist of my_cool_big_file

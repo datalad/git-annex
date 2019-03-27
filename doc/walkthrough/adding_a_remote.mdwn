@@ -1,14 +1,14 @@
 Like any other git repository, git-annex repositories have remotes.
 Let's start by adding a USB drive as a remote.
 
-	# sudo mount /media/usb
-	# cd /media/usb
-	# git clone ~/annex
-	# cd annex
-	# git annex init "portable USB drive"
-	# git remote add laptop ~/annex
-	# cd ~/annex
-	# git remote add usbdrive /media/usb/annex
+	$ sudo mount /media/usb
+	$ cd /media/usb
+	$ git clone ~/annex
+	$ cd annex
+	$ git annex init "portable USB drive"
+	$ git remote add laptop ~/annex
+	$ cd ~/annex
+	$ git remote add usbdrive /media/usb/annex
 
 This is all standard ad-hoc distributed git repository setup.
 

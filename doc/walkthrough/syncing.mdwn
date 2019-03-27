@@ -5,8 +5,8 @@ get them.
 
 Let's look at what the sync command does in more detail:
 
-	# cd /media/usb/annex
-	# git annex sync
+	$ cd /media/usb/annex
+	$ git annex sync
 	commit
 	nothing to commit (working directory clean)
 	ok

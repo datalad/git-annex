@@ -16,16 +16,16 @@ remote that is only accessible on the current system, by passing
 "ddarrepo=/big/myddar".
 """]]
 
-	# git annex initremote myddar type=ddar encryption=none ddarrepo=example.com:/big/myddar
+	$ git annex initremote myddar type=ddar encryption=none ddarrepo=example.com:/big/myddar
 	initremote ddar (ddar init)
 	Initialized empty Git repository in /big/myddar/
 	ok
-	# git annex describe myddar "my ddar repository at example.com"
+	$ git annex describe myddar "my ddar repository at example.com"
 	describe myddar ok
 
 Now the remote can be used like any other remote.
 
-	# git annex move my_cool_big_file --to myddar
+	$ git annex move my_cool_big_file --to myddar
 	move my_cool_big_file (to myddar...)
 	ok
 

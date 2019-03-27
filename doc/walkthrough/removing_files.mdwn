@@ -9,7 +9,7 @@ repository to save space. This is called "dropping" the file.
 You can always drop files safely. Git-annex checks that some other
 repository still has the file before removing it.
 
-	# git annex drop iso/debian.iso
+	$ git annex drop iso/debian.iso
 	drop iso/Debian_5.0.iso ok
 
 Once dropped, the file will still appear in your work tree as a broken symlink.

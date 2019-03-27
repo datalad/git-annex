@@ -4,7 +4,7 @@ You don't have to try to keep all that straight; git-annex does
 or file server is not accessible, it will let you know what it needs to get
 it:
 
-	# git annex get video/hackity_hack_and_kaxxt.mov
+	$ git annex get video/hackity_hack_and_kaxxt.mov
 	get video/hackity_hack_and_kaxxt.mov (not available)
 	  Unable to access these remotes: usbdrive, server
 	  Try making some of these repositories available:
@@ -12,6 +12,6 @@ it:
 	   	58d84e8a-d9ae-11df-a1aa-ab9aa8c00826  -- portable USB drive
 	   	ca20064c-dbb5-11df-b2fe-002170d25c55  -- backup SATA drive
 	failed
-	# sudo mount /media/usb
-	# git annex get video/hackity_hack_and_kaxxt.mov
+	$ sudo mount /media/usb
+	$ git annex get video/hackity_hack_and_kaxxt.mov
 	get video/hackity_hack_and_kaxxt.mov (from usbdrive...) ok

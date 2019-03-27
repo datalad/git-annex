@@ -1,8 +1,8 @@
 One behavior of git-annex is sometimes confusing at first, but it turns out
 to be useful once you get to know it.
 
-	# git annex drop *
-	# 
+	$ git annex drop *
+	$ 
 
 Why didn't git-annex seem to do anything despite being asked to drop all the
 files? Because it checked them all, and none of them are present.
@@ -14,8 +14,8 @@ Running a git-annex command without specifying any file name will
 make git-annex look for files in the current directory and its
 subdirectories. So, we can add all new files to the annex easily:
 
-	# echo hi > subdir/subsubdir/newfile
-	# git annex add
+	$ echo hi > subdir/subsubdir/newfile
+	$ git annex add
 	add subdir/subsubdir/newfile ok
 
 When doing this kind of thing, having nothing shown for files
