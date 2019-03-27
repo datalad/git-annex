@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="simplifying the interface"
+ date="2019-03-26T17:40:32Z"
+ content="""
+\"I'm doubtful that this would actually let the interface be simplified\" -- I only meant that the minimum required interface would be simplified, in that git-annex could provide a default implementation of key-value remote methods in terms of the export remote interface; but any given remote could provide a more efficient implementation of these methods, overriding the default ones.
+
+But the main benefit would be to simplify the user-facing interface: as far as the user is concerned, all special remotes could be trusted, and accessed with the same basic commands, whether configured as export or not.
+
+\"if a S3 bucket is read-only, then an import can't re-upload.\" -- if the special remote is configured as read-only, then git-annex itself would not attempt to upload things there, no?
+
+\"not all users are going to want export remotes to store past versions of files\" -- maybe, there could be an option to store past versions encrypted, while storing current versions plain?
+"""]]
