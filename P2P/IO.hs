@@ -369,7 +369,7 @@ relayReader v hout = loop
 				putMVar v $ RelayToPeer (L.fromChunks bs)
 				loop
 	
-	-- Waiit for the first available chunk. Then, without blocking,
+	-- Wait for the first available chunk. Then, without blocking,
 	-- try to get more chunks, in case a stream of chunks is being
 	-- written in close succession. 
 	--

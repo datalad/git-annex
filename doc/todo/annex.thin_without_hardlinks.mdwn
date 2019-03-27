@@ -1,6 +1,6 @@
 Currently annex.thin needs hard link support to be efficient;
 it hard links the content from .git/annex/objects into the work tree.
-When hard links are not supported, two copie of checked out files exist on
+When hard links are not supported, two copies of checked out files exist on
 disk.
 
 Would it be possible to make it work w/o hard links? Note that direct mode
