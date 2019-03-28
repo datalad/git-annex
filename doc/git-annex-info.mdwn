@@ -13,7 +13,7 @@ which can be a directory, or a file, or a treeish, or a remote,
 or the description or uuid of a repository.
   
 When no item is specified, displays statistics and information
-for the repository as a whole.
+for the local repository and all known annexed files.
 
 # OPTIONS
 
