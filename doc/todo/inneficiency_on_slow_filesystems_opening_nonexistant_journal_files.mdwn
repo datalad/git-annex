@@ -26,6 +26,12 @@ So, this optimisation seems it would be limited to commands that
 are not in batch mode and do strictly read-only queries. Which seems a bit
 hard to plumb through to the git-annex branch reading code.
 
+> Unless, perhaps, we can rely on the process that modifies the git-annex
+> branch having cleanly exited, and so committed its changes to the branch,
+> before the next batch query. Can we rely on that, or might a batch
+> mode command expect to see changes made up to the point it started
+> by a concurrent command?
+
 An easier alternative would be an option that bypasses reading the journal.
 But maybe there's some other, better way to avoid this slow case?
 --[[Joey]]
