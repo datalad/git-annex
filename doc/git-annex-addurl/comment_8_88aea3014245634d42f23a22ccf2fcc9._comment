@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="pellman.john@e59e5c6d98d49cd9632d6fbe0c5026ddc71d52fd"
+ nickname="pellman.john"
+ avatar="http://cdn.libravatar.org/avatar/eaca2e5f6d5888d139129293c7293b1f"
+ subject="Re: Inconsistent idiom"
+ date="2019-03-28T03:59:04Z"
+ content="""
+Hi @joey,
+
+Thanks for your continued work on git-annex and for responding to my last comment.  I agree that consistency is not everything, but I do think that it's also important to balance functionality against the amount of cognitive load that an interface places on an end-user.  My perspective is no doubt influenced by my cognitive science background, but whenever I find an interface where it's easy to confuse two similar operations that use different syntaxes, I'm reminded of Don Norman's [rant about the early Unix UI](https://www.researchgate.net/publication/202165676_The_trouble_with_UNIX_The_user_interface_is_horrid).  I'm also reminded of common phenomena described in memory research such as [retroactive interference](https://en.wikipedia.org/wiki/Interference_theory#Proactive_interference), wherein a more recently learned memory interferes with something that was learned previously.  In this case, if I were to learn the syntax for addurl first, and then learned the syntax for rmurl much later, my internal representation of rmurl would to some degree \"overwrite\" my previous knowledge of addurl and compete with it.  Making the two syntaxes consistent with each other in this case would eliminate any competition between internal mental representations of how the two commands are structured.
+
+I'm also not entirely sure why a positional argument can't be optional.  If there's a good reason for this not to be so then I won't argue my point anymore, but something like the following syntax would make the most sense from my view:
+
+``git annex rmurl [url] [file]``
+
+``git annex addurl [url] [file; optional positional argument]``
+"""]]
