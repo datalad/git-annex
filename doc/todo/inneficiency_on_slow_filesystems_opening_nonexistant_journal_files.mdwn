@@ -10,6 +10,25 @@ either commit the journal to the branch once at startup, or check if the
 journal is empty, and once there's known to be nothing in the journal,
 avoid opening files from there.
 
+Minimum patch to test if this is a significant performance impact:
+
+	diff --git a/Annex/Branch.hs b/Annex/Branch.hs
+	index 0d8eb7944..686791a3a 100644
+	--- a/Annex/Branch.hs
+	+++ b/Annex/Branch.hs
+	@@ -222,7 +222,7 @@ get file = do
+	  - (Changing the value this returns, and then merging is always the
+	  - same as using get, and then changing its value.) -}
+	 getLocal :: FilePath -> Annex L.ByteString
+	-getLocal file = go =<< getJournalFileStale file
+	+getLocal file = go =<< pure Nothing -- getJournalFileStale file
+	   where
+	 	go (Just journalcontent) = return journalcontent
+	 	go Nothing = getRef fullname file
+
+I don't see any measuable speed gain with this on my laptop SSD, but maybe
+on a slower filesystem it will?
+
 But: Concurrency. Another process may be writing changes to the git-annex
 branch, via the journal, and so this would be a behavior change. Mostly
 that seems acceptible, because there's no defined ordering of events in
