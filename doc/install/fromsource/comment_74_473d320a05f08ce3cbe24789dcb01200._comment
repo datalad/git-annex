@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="driusan@4d47e7deeb2f5d3846792d049ed06f96a0c3ca98"
+ nickname="driusan"
+ avatar="http://cdn.libravatar.org/avatar/409b69c3ae7b431fc16129ccdadae9cd"
+ subject="Warning building with cabal"
+ date="2019-03-30T00:19:10Z"
+ content="""
+I had to build with cabal on DragonFlyBSD because stack isn't available (which is presumably the reason it's not in dports even though it builds cleanly.)
+
+Everything worked after, except all the cabal commands gave warnings of the type:
+
+> Warning: The install command is a part of the legacy v1 style of cabal usage.
+> 
+> Please switch to using either the new project style and the new-install
+command or the legacy v1-install alias as new-style projects will become the
+default in the next version of cabal-install. Please file a bug if you cannot
+replicate a working v1- use case with the new-style commands.
+>
+> For more information, see: https://wiki.haskell.org/Cabal/NewBuild
+
+I don't know much about \"new style\" and \"legacy\" commands in cabal, but instructions should probably be cleaned up to get around these warnings at some point.
+"""]]
