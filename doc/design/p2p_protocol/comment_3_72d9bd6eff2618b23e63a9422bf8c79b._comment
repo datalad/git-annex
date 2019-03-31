@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="driusan@4d47e7deeb2f5d3846792d049ed06f96a0c3ca98"
+ nickname="driusan"
+ avatar="http://cdn.libravatar.org/avatar/409b69c3ae7b431fc16129ccdadae9cd"
+ subject="key content size"
+ date="2019-03-31T16:31:09Z"
+ content="""
+Is there a mechanism for a client to determine the size of the content pointed to by the key on the remote? How do you determine that all the content is received? If you rely on verifying sha256 (or whatever hash) of the key, I don't see any way you can tell if the object in a local annex is corrupted or just not fully received and should be updated with GET from a higher offset.
+"""]]
