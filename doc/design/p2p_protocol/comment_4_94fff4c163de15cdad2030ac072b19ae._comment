@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="re: key content size"
+ date="2019-04-01T17:44:29Z"
+ content="""
+Most keys do include the size of the content as part of the key: see [[internals/key_format]], [[git-annex-examinekey]].
+"""]]
