@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-04-03T17:12:38Z"
+ content="""
+There is a comprehensive list (AFAIK) in the debian/control file's
+Depends, Recommends, and Suggests.
+
+As far as exactly where each is used, that's pretty easy to grep the code
+for (search for `"$command"`) and would be a lot of documentation to write
+and keep up to date.
+"""]]
