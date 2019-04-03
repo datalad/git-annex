@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-04-03T17:19:36Z"
+ content="""
+So specifically, this happens for unlocked files in a v7 repository, 
+but only when the files are empty.
+
+I suspect this is a bug in git. It might have something to do with
+the mention in git-diff-files(1) and git-diff(1) about empty files:
+
+       --ita-invisible-in-index
+           By default entries added by "git add -N" appear as an existing
+           empty file in "git diff" and a new file in "git diff --cached".
+
+And `git diff` similarly shows a diff for these empty unlocked files.
+
+Makes me suspect there's some hack going on in git WRT empty
+files and perhaps it bypasses the smudge/clean filters?
+
+I usually use `git diff --cached` for this kind of thing, and it doesn't have
+the problem, but I don't know if it meets your needs either.
+"""]]
