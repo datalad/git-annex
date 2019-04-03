@@ -794,7 +794,7 @@ may not be explicitly listed on their individual man pages.
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository.
 
-* `--trust-glacier-inventory`
+* `--trust-glacier`
 
   Amazon Glacier inventories take hours to retrieve, and may not represent
   the current state of a repository. So git-annex does not trust that
