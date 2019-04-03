@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-04-03T17:03:04Z"
+ content="""
+While it's true that most keys have a size field giving their size, in the
+context of this protocol, it's more relevant that the DATA message
+indicates the number of bytes of content that are going to be transmitted;
+once the receiver has sucessfully read that many bytes of content, it knows
+it has the whole content of the key.
+
+When resuming a previous transfer that has been interrupted, if the
+reciever happened to have all the content of the key, it would send GET
+with the number of bytes it already has, and the reply would be "DATA 0"
+which tells it that it already has all the content.
+
+If the whole content of the key has been received and a hash verification
+fails, git-annex throws away the corrupt data, since this protocol does not
+provide a way to recover from such a problem.
+"""]]
