@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-04-03T16:58:53Z"
+ content="""
+git-annex has several global options that are documented in the main
+git-annex man page.
+"""]]
