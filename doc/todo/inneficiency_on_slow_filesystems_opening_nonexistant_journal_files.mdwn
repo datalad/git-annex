@@ -54,3 +54,7 @@ hard to plumb through to the git-annex branch reading code.
 An easier alternative would be an option that bypasses reading the journal.
 But maybe there's some other, better way to avoid this slow case?
 --[[Joey]]
+
+> yoh benchmarked the above patch on the slow NFS system, and it did not
+> result in a notable difference in speed, so it seems the basis of this
+> todo is false. [[done]] --[[Joey]]
