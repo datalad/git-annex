@@ -193,12 +193,23 @@ The situations to keep in mind are these:
    and before it's downloaded, so the wrong version gets downloaded.
    Need to detect this and fail the import.
 
-The api design has some requirements that, if followed, makes those
-situations be handled well.
+The API design has some requirements that, if followed, makes those
+situations be handled well. The directory special remote is thus
+able to avoid these situations as well as git does, and the S3 special
+remote with versioning is able to recover data after those situations.
 
-## api design
+But.. Other types of remotes are limited by remote APIs that don't
+let this be dealt with. If the limitation is explained to the user,
+and they understand how to avoid these situations, importing from
+such remotes could still be supported. Eg, if a user understands
+that modifications they make to files using their phone may get overwritten
+while git-annex is exporting to it, and so avoids using their phone during
+that process (or chooses to only ever modify certian files on their phone),
+then git-annex can safely support importing from their phone.
 
-This is an extension to the ExportActions api.
+## API design
+
+This is an extension to the ExportActions API.
 
 	listContents :: Annex (ContentHistory [(ExportLocation, ContentIdentifier)])
 
