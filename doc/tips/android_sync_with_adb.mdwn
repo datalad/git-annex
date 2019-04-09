@@ -1,0 +1,110 @@
+While git-annex can be [[installed_on_your_Android_device|/Android]],
+it might be easier not to install it there, but run it on your computer
+using `adb` to pull and push changes to the Android device.
+
+A few reasons for going this route:
+
+* Easier than installing git-annex on Android.
+* Avoids needing to type commands into a terminal on Android.
+* Avoids problems with putting a git-annex repository on Android's `/sdcard`,
+  which is crippled by not supporting hard links etc.
+
+All you should need is a USB cable (or adb over wifi), and the `adb`
+command.
+
+## setting it up
+
+First, initialize your git-annex repository on your computer, if you haven't
+already.
+
+Then, in that repository, set up an adb special remote:
+
+	initremote android type=adb androiddirectory=/sdcard/DCIM encryption=none exporttree=yes importtree=yes
+
+The above example imports files from the /sdcard/DCIM directory of the
+Android device, so it will only import photos and videos, not other files.
+If you wanted to import everything, you could instead use 
+"androiddirectory=/sdcard".
+
+## initial import
+
+Now you can import all files from your Android device:
+
+	git annex import master:android --from android
+	git merge --allow-unrelated-histories android/master
+
+That merges the imported files into the existing contents of your git-annex
+repository. In the example above, the imported files were put into an
+"android" subdirectory, to keep them separate from your other files.
+If you leave off the ":android", the files will be imported into the top of
+the repository.
+
+## initial export
+
+With the files from the Android device imported, you might want to remove
+them from it, to free up space on it. Or, you might add more files that you
+want to export to it, or change files. Whatever changes you make,
+you can `git annex add` and `git commit` as usual. Then to export
+the changed branch to the Android device:
+
+	git annex export master:android --to android
+
+(Again the ":android" limits it to the android directory,
+so leave thatoff if you want to export everything.)
+
+It's fine to export and import in any order and at any time, and you can
+make changes to files on the Android device at any time too. git-annex will
+keep it all in sync.
+
+## automation
+
+Let's automate that syncing process some more.
+
+        git config remote.android.annex-tracking-branch master:android
+
+That configures git-annex to know that you want sync up the master
+branch (specifically the android subdirectory) and your Android device.
+
+Now, you only have to run a single command to sync everything:
+        
+	git annex sync --content
+
+## sample workflows
+
+### photos
+
+The examples above showed how to import photos from your Android device
+into an android subdirectory. If you don't want to keep old photos on your
+Android device, you can simply `git mv` the files out of the android
+directory, and the next sync with the phone will delete them from the
+Android device:
+
+	git mv android/* .
+	git annex sync --content
+
+### music and podcasts
+
+Set up the remote to use the /sdcard/Music directory:
+
+	initremote android type=adb androiddirectory=/sdcard/Music encryption=none exporttree=yes importtree=yes
+
+The rest of the commands are unchanged:
+
+	git annex import master:android --from android
+	git merge --allow-unrelated-histories android/master
+	git annex export master:android --to android
+        git config remote.android.annex-tracking-branch master:android
+	git annex sync --content
+
+With this setup, you can copy music and podcasts you want to listen 
+to over to the Android device, by first copying them to the Android
+directory of your git-annex repo:
+
+	cp -a podcasts/LibreLounge/Episode_14__Secure_Scuttlebutt_with_Joey_Hess.ogg android/
+	git annex add android
+	git annex sync --content
+
+Once you're done with listening to something on the Android device,
+you can simply delete on the device, and the next time git-annex syncs, it
+will get removed from the android directory.
+
