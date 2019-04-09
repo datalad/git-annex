@@ -1,0 +1,11 @@
+It was not very hard to get `git annex import` working with adb special
+remotes. This is a nice alternative to installing git-annex on an Android
+device for syncing with it. See [[tips/android_sync_with_adb]].
+
+I'm still thinking about supporting import from special remotes that can't
+avoid most race conditions. But for adb, the only race conditions that
+I couldn't avoid are reasonably narrow, nearly as narrow as `git
+checkout`'s own race conditions, with only the added overhead of
+adb. So I let them slide.
+
+Today's work was sponsored by Trenton Cronholm on Patreon.
