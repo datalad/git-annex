@@ -6,7 +6,7 @@
  -}
 
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts, EmptyDataDecls #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
 
@@ -51,9 +51,6 @@ ContentIdentifiers
   remote UUID
   cid ContentIdentifier
   key IKey
-  ContentIdentifiersIndexRemoteKey remote key
-  ContentIdentifiersIndexRemoteCID remote cid
-  UniqueRemoteCidKey remote cid key
 -- The last git-annex branch tree sha that was used to update
 -- ContentIdentifiers
 AnnexBranch
@@ -93,7 +90,7 @@ flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
 -- Be sure to also update the git-annex branch when using this.
 recordContentIdentifier :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> Key -> IO ()
 recordContentIdentifier h u cid k = queueDb h $ do
-	void $ insertUnique $ ContentIdentifiers u cid (toIKey k)
+	void $ insert_ $ ContentIdentifiers u cid (toIKey k)
 
 getContentIdentifiers :: ContentIdentifierHandle -> UUID -> Key -> IO [ContentIdentifier]
 getContentIdentifiers (ContentIdentifierHandle h) u k = H.queryDbQueue h $ do

@@ -355,9 +355,13 @@ gitAnnexExportLock u r = gitAnnexExportDbDir u r ++ ".lck"
 gitAnnexExportUpdateLock :: UUID -> Git.Repo -> FilePath
 gitAnnexExportUpdateLock u r = gitAnnexExportDbDir u r ++ ".upl"
 
-{- Directory containing database used to record remote content ids. -}
+{- Directory containing database used to record remote content ids.
+ -
+ - (This used to be "cid", but a problem with the database caused it to
+ - need to be rebuilt with a new name.)
+ -}
 gitAnnexContentIdentifierDbDir :: Git.Repo -> FilePath
-gitAnnexContentIdentifierDbDir r = gitAnnexDir r </> "cid"
+gitAnnexContentIdentifierDbDir r = gitAnnexDir r </> "cids"
 
 {- Lock file for writing to the content id database. -}
 gitAnnexContentIdentifierLock :: Git.Repo -> FilePath
