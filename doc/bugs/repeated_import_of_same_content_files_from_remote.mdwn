@@ -1,0 +1,5 @@
+`git-annex import master --from phone` imports the same files over and
+over from my phone. Not all files, just a few of them. The affected
+files all seem to have multiple copies in the imported tree, with different
+ContentIdentifiers for each. Seems the import code is getting confused and
+unncessarly importing in that case. --[[Joey]]
