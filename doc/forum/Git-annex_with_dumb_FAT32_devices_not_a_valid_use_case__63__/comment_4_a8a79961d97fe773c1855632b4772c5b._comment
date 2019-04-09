@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-04-09T15:09:24Z"
+ content="""
+I see no reason to add such filename munging to git-annex, controlling the
+names of files in the working tree is well out of its scope. It could be in
+scope for git, but more likely, if this is a problem for you, you need to
+set up your own policy for what filenames are allowed in your repository,
+and use existing facilities to enforce it (git hooks, etc).
+"""]]
