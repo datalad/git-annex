@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-04-09T15:16:12Z"
+ content="""
+       Each - is matched against the set of refs accu‐
+       mulated  so far.  Any matching refs are removed
+       from the set.
+
+It matches against the literal text of the ref that was added, so if you
+ use "+*", it adds refs/heads/master, and then to remove that, you need
+ "-refs/heads/master" not "-master". On the other hand, "+master:-master"
+results in "master" being added and then removed.
+
+Clarified to mention that it matches by name; I suppose perhaps you were
+thinking it matches based on what sha1 the ref name resolves to. The reason it
+doesn't do that is that it would be surprising for "+foo:-master" to not include
+ref foo just because it happens to currently have the same sha1 as master does.
+"""]]
