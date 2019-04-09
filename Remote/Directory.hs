@@ -367,10 +367,9 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 	-- being copied.
 	--
 	-- When possible (not on Windows), check the same handle
-	-- Check the same handle that the file was copied from.
-	-- Avoids some race cases where the file is modified while
-	-- it's copied but then gets restored to the original content
-	-- afterwards.
+	-- that the file was copied from. Avoids some race cases where
+	-- the file is modified while it's copied but then gets restored
+	-- to the original content afterwards.
 	--
 	-- This does not guard against every possible race, but neither
 	-- can InodeCaches detect every possible modification to a file.

@@ -31,4 +31,7 @@ Alternatively, the documentation could tell the user to avoid modifying files
 on their android device while git-annex is exporting to it, or to instead
 only ever modify files on the android device, and import from it, but not
 export any changes to it. (Or some combination of those 
-for different subdirectories on it.)
+for different subdirectories on it.) But it seems like this won't be
+necessary.
+
+> [[done]] --[[Joey]]

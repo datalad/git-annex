@@ -2,6 +2,11 @@ git-annex is available for Android inside Termux. This includes the
 [[git-annex assistant|/assistant]], for easy syncing between your Android
 and other devices. You do not need to root your Android to use git-annex.
 
+(Alternatively, rather than installing git-annex on your Android device,
+git-annex can run on your computer and use `adb` to pull and push changes
+to the Android device. See [[tips/android_sync_with_adb]] for instructions
+on using git-annex that way.)
+
 [[!toc ]]
 
 ## Installation

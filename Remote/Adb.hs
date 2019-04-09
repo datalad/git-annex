@@ -1,18 +1,17 @@
 {- Remote on Android device accessed using adb.
  -
- - Copyright 2018 Joey Hess <id@joeyh.name>
+ - Copyright 2018-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Remote.Adb (remote) where
 
-import qualified Data.Map as M
-
 import Annex.Common
 import Types.Remote
 import Types.Creds
 import Types.Export
+import Types.Import
 import qualified Git
 import Config.Cost
 import Remote.Helper.Special
@@ -20,6 +19,9 @@ import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Annex.UUID
 import Utility.Metered
+
+import qualified Data.Map as M
+import qualified System.FilePath.Posix as Posix
 
 -- | Each Android device has a serial number.
 newtype AndroidSerial = AndroidSerial { fromAndroidSerial :: String }
@@ -35,7 +37,7 @@ remote = RemoteType
 	, generate = gen
 	, setup = adbSetup
 	, exportSupported = exportIsSupported
-	, importSupported = importUnsupported
+	, importSupported = importIsSupported
 	}
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
@@ -62,7 +64,14 @@ gen r u c gc = do
 			, removeExportDirectory = Just $ removeExportDirectoryM serial adir
 			, renameExport = renameExportM serial adir
 			}
-		, importActions = importUnsupported
+		, importActions = ImportActions
+			{ listImportableContents = listImportableContentsM serial adir
+			, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM serial adir
+			, storeExportWithContentIdentifier = storeExportWithContentIdentifierM serial adir
+			, removeExportWithContentIdentifier = removeExportWithContentIdentifierM serial adir
+			, removeExportDirectoryWhenEmpty = Nothing
+			, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM serial adir
+			}
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
@@ -136,15 +145,26 @@ store serial adir = fileStorer $ \k src _p ->
 	in store' serial dest src
 
 store' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
-store' serial dest src = do
+store' serial dest src = store'' serial dest src False (return (Just True))
+
+store'' :: AndroidSerial -> AndroidPath -> FilePath -> a -> Annex (Maybe a) -> Annex a
+store'' serial dest src onfail postcheck = do
 	let destdir = takeDirectory $ fromAndroidPath dest
 	liftIO $ void $ adbShell serial [Param "mkdir", Param "-p", File destdir]
 	showOutput -- make way for adb push output
-	let tmpdest = fromAndroidPath dest ++ ".tmp"
+	let tmpdest = fromAndroidPath dest ++ ".annextmp"
 	ifM (liftIO $ boolSystem "adb" (mkAdbCommand serial [Param "push", File src, File tmpdest]))
-		-- move into place atomically
-		( liftIO $ adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)]
-		, return False
+		( postcheck >>= \case
+			Just r ->
+				-- move into place atomically
+				ifM (liftIO $ adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)])
+					( return r
+					, return onfail
+					)
+			Nothing -> do
+				void $ remove' serial (AndroidPath tmpdest)
+				return onfail
+		, return onfail
 		)
 
 retrieve :: AndroidSerial -> AndroidPath -> Retriever
@@ -175,16 +195,16 @@ checkKey r serial adir k = checkKey' r serial (androidLocation adir k)
 checkKey' :: Remote -> AndroidSerial -> AndroidPath -> Annex Bool
 checkKey' r serial aloc = do
 	showChecking r
-	(out, st) <- liftIO $ adbShellRaw serial $ unwords
+	out <- liftIO $ adbShellRaw serial $ unwords
 		[ "if test -e ", shellEscape (fromAndroidPath aloc)
 		, "; then echo y"
 		, "; else echo n"
 		, "; fi"
 		]
-	case (out, st) of
-		(["y"], ExitSuccess) -> return True
-		(["n"], ExitSuccess) -> return False
-		_ -> giveup $ "unable to access Android device" ++ show out
+	case out of
+		Just ["y"] -> return True
+		Just ["n"] -> return False
+		_ -> giveup "unable to access Android device"
 
 androidLocation :: AndroidPath -> Key -> AndroidPath
 androidLocation adir k = AndroidPath $
@@ -229,6 +249,83 @@ renameExportM serial adir _k old new = liftIO $ Just <$>
 	oldloc = fromAndroidPath $ androidExportLocation adir old
 	newloc = fromAndroidPath $ androidExportLocation adir new
 
+listImportableContentsM :: AndroidSerial -> AndroidPath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContentsM serial adir = liftIO $
+	process <$> adbShell serial
+		[ Param "find"
+		-- trailing slash is needed, or android's find command
+		-- won't recurse into the directory
+		, File $ fromAndroidPath adir ++ "/"
+		, Param "-type", Param "f"
+		, Param "-exec", Param "stat"
+		, Param "-c", Param statformat
+		, Param "{}", Param "+"
+		]
+  where
+	process Nothing = Nothing
+	process (Just ls) = Just $ ImportableContents (mapMaybe mk ls) []
+
+	statformat = adbStatFormat ++ "\t%n"
+
+	mk ('S':'T':'\t':l) =
+		let (stat, fn) = separate (== '\t') l
+		    sz = fromMaybe 0 (readish (takeWhile (/= ' ') stat))
+		    cid = ContentIdentifier (encodeBS' stat)
+		    loc = mkImportLocation $ 
+		    	Posix.makeRelative (fromAndroidPath adir) fn
+		in Just (loc, (cid, sz))
+	mk _ = Nothing
+
+-- This does not guard against every possible race. As long as the adb
+-- connection is resonably fast, it's probably as good as
+-- git's handling of similar situations with files being modified while
+-- it's updating the working tree for a merge.
+retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
+retrieveExportWithContentIdentifierM serial adir loc cid dest mkkey _p = catchDefaultIO Nothing $
+	ifM (retrieve' serial src dest)
+		( do
+			k <- mkkey
+			currcid <- liftIO $ getExportContentIdentifier serial adir loc
+			return $ if currcid == Right (Just cid)
+				then k
+				else Nothing
+		, return Nothing
+		)
+  where
+	src = androidExportLocation adir loc
+
+storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p = catchDefaultIO Nothing $
+	-- Check if overwrite is safe before sending, because sending the
+	-- file is expensive and don't want to do it unncessarily.
+	liftIO (getExportContentIdentifier serial adir loc) >>= \case
+		Right Nothing -> go
+		Right (Just cid) | cid `elem` overwritablecids -> go
+		_ -> return Nothing
+  where
+	go = store'' serial dest src Nothing checkcanoverwrite
+	dest = androidExportLocation adir loc
+	checkcanoverwrite = liftIO $
+		getExportContentIdentifier serial adir loc >>= return . \case
+			Right (Just cid) | cid `elem` overwritablecids ->
+				Just (Just cid)
+			_ -> Nothing
+
+removeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+removeExportWithContentIdentifierM serial adir k loc removeablecids = catchBoolIO $
+	liftIO (getExportContentIdentifier serial adir loc) >>= \case
+		Right Nothing -> return True
+		Right (Just cid) | cid `elem` removeablecids ->
+			removeExportM serial adir k loc
+		_ -> return False
+
+checkPresentExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+checkPresentExportWithContentIdentifierM serial adir _k loc knowncids = 
+	liftIO $ getExportContentIdentifier serial adir loc >>= \case
+		Right (Just cid) | cid `elem` knowncids -> return True
+		Right _ -> return False
+		Left _ -> giveup "unable to access Android device"
+
 androidExportLocation :: AndroidPath -> ExportLocation -> AndroidPath
 androidExportLocation adir loc = AndroidPath $
 	fromAndroidPath adir ++ "/" ++ fromExportLocation loc
@@ -246,39 +343,60 @@ enumerateAdbConnected =
 
 -- | Runs a command on the android device with the given serial number.
 --
--- adb shell does not propigate the exit code of the command, so
--- it is echoed out in a trailing line, and the output is read to determine
--- it. Any stdout from the command is returned, separated into lines.
-adbShell :: AndroidSerial -> [CommandParam] -> IO ([String], ExitCode)
+-- Any stdout from the command is returned, separated into lines.
+adbShell :: AndroidSerial -> [CommandParam] -> IO (Maybe [String])
 adbShell serial cmd = adbShellRaw serial $
 	unwords $ map shellEscape (toCommand cmd)
 
 adbShellBool :: AndroidSerial -> [CommandParam] -> IO Bool
-adbShellBool serial cmd = do
-	(_ , ec) <- adbShell serial cmd
-	return (ec == ExitSuccess)
+adbShellBool serial cmd =
+	adbShellRaw serial cmd' >>= return . \case
+		Just l -> end l == ["y"]
+		Nothing -> False
+  where
+	cmd' = "if " ++ unwords (map shellEscape (toCommand cmd))
+		++ "; then echo y; else echo n; fi"
 
 -- | Runs a raw shell command on the android device.
 -- Any necessary shellEscaping must be done by caller.
-adbShellRaw :: AndroidSerial -> String -> IO ([String], ExitCode)
-adbShellRaw serial cmd = processoutput <$> readProcess "adb"
-	[ "-s"
-	, fromAndroidSerial serial
-	, "shell"
-	-- The extra echo is in case cmd does not output a trailing
-	-- newline after its other output.
-	, cmd ++ "; echo; echo $?"
-	]
+adbShellRaw :: AndroidSerial -> String -> IO (Maybe [String])
+adbShellRaw serial cmd = catchMaybeIO $ 
+	processoutput <$> readProcess "adb"
+		[ "-s"
+		, fromAndroidSerial serial
+		, "shell"
+		, cmd
+		]
   where
-	processoutput s = case reverse (map trimcr (lines s)) of
-		(c:"":rest) -> case readish c of
-			Just 0 -> (reverse rest, ExitSuccess)
-			Just n -> (reverse rest, ExitFailure n)
-			Nothing -> (reverse rest, ExitFailure 1)
-		ls -> (reverse ls, ExitFailure 1)
+	processoutput s = map trimcr (lines s)
 	-- For some reason, adb outputs lines with \r\n on linux,
 	-- despite both linux and android being unix systems.
 	trimcr = takeWhile (/= '\r')
 
 mkAdbCommand :: AndroidSerial -> [CommandParam] -> [CommandParam]
 mkAdbCommand serial cmd = [Param "-s", Param (fromAndroidSerial serial)] ++ cmd
+
+-- Gets the current content identifier for a file on the android device.
+getExportContentIdentifier :: AndroidSerial -> AndroidPath -> ExportLocation -> IO (Either ExitCode (Maybe ContentIdentifier))
+getExportContentIdentifier serial adir loc = liftIO $ do
+	ls <- adbShellRaw serial $ unwords
+		[ "if test -e ", shellEscape aloc
+		, "; then stat -c"
+		, shellEscape adbStatFormat
+		, shellEscape aloc
+		, "; else echo n"
+		, "; fi"
+		]
+	return $ case ls of
+		Just ["n"] -> Right Nothing
+		Just (('S':'T':'\t':stat):[]) -> Right $ Just $
+			ContentIdentifier (encodeBS' stat)
+		_ -> Left (ExitFailure 1)
+  where
+	aloc = fromAndroidPath $ androidExportLocation adir loc
+
+-- Includes size, modificiation time, and inode.
+-- Device not included because the adb interface ensures we're talking to
+-- the same android device.
+adbStatFormat :: String
+adbStatFormat = "ST\t%s %Y %i"
