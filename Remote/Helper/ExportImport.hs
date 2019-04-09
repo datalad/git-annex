@@ -308,7 +308,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 			Just () -> Export.updateExportTreeFromLog db >>= \case
 				Export.ExportUpdateSuccess -> return ()
 				Export.ExportUpdateConflict -> do
-					warnExportConflict r
+					warnExportImportConflict r
 					liftIO $ atomically $
 						writeTVar exportinconflict True
 			Nothing -> return ()

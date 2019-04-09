@@ -50,6 +50,9 @@ to expect there to be one, and if it later turns out that the last exported
 commit needs to be available across clones, store it in the git-annex
 branch then.
 
+Currently: There's a remote tracking branch, but no storage of tracking
+branch info in the git-annex branch.
+
 ## command line interface
 
 `git annex import master --from foo` will import a tree from the remote
@@ -68,7 +71,7 @@ it does not makes sense to import *to* a particular sha.
 Should `git annex import` merge the tracking branch by itself, or leave it
 up to the user? Seems most ergonomic to merge by default; if the user
 wants to not merge it could be `git annex import --fetch --from remote`
-or a separate command.
+or a separate command. Currently: It does not merge.
 
 Also, there should be a way to configure the default tracking branch, so
 `git annex sync --content` first imports from a remote, merges that, and
@@ -77,7 +80,8 @@ configure the latter. It seems to only make sense to import and export the
 same tracking branch. So, should `git annex export --tracking` set the same
 thing, or perhaps it would be better to move the tracking branch
 configuration out of `git annex export` and into an interface that
-explicitly configures both import and export?
+explicitly configures both import and export? Decision: Moved to
+remote.name.annex-tracking-branch setting.
 
 ## content identifiers
 
@@ -144,6 +148,10 @@ could be limited to the size of a typical hash, and if a remote for some
 reason gets something larger, it could simply hash it to generate
 the content identifier.
 
+Decision: Content identifiers do get stored in the git-annex branch.
+It's up to the remote to generate content identifiers that are reasonably
+short.
+
 ## safety
 
 Since the special remote can be written to at any time by something other
@@ -184,6 +192,9 @@ The situations to keep in mind are these:
 3. File is changed on the remote after its content identifier is checked
    and before it's downloaded, so the wrong version gets downloaded.
    Need to detect this and fail the import.
+
+The api design has some requirements that, if followed, makes those
+situations be handled well.
 
 ## api design
 
