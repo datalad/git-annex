@@ -145,26 +145,23 @@ store serial adir = fileStorer $ \k src _p ->
 	in store' serial dest src
 
 store' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
-store' serial dest src = store'' serial dest src False (return (Just True))
+store' serial dest src = store'' serial dest src (return True)
 
-store'' :: AndroidSerial -> AndroidPath -> FilePath -> a -> Annex (Maybe a) -> Annex a
-store'' serial dest src onfail postcheck = do
+store'' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool -> Annex Bool
+store'' serial dest src canoverwrite = do
 	let destdir = takeDirectory $ fromAndroidPath dest
 	liftIO $ void $ adbShell serial [Param "mkdir", Param "-p", File destdir]
 	showOutput -- make way for adb push output
 	let tmpdest = fromAndroidPath dest ++ ".annextmp"
 	ifM (liftIO $ boolSystem "adb" (mkAdbCommand serial [Param "push", File src, File tmpdest]))
-		( postcheck >>= \case
-			Just r ->
-				-- move into place atomically
-				ifM (liftIO $ adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)])
-					( return r
-					, return onfail
-					)
-			Nothing -> do
+		( ifM canoverwrite
+			-- move into place atomically
+			( liftIO $ adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)]
+			, do
 				void $ remove' serial (AndroidPath tmpdest)
-				return onfail
-		, return onfail
+				return False
+			)
+		, return False
 		)
 
 retrieve :: AndroidSerial -> AndroidPath -> Retriever
@@ -298,18 +295,21 @@ storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath ->
 storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p = catchDefaultIO Nothing $
 	-- Check if overwrite is safe before sending, because sending the
 	-- file is expensive and don't want to do it unncessarily.
-	liftIO (getExportContentIdentifier serial adir loc) >>= \case
-		Right Nothing -> go
-		Right (Just cid) | cid `elem` overwritablecids -> go
-		_ -> return Nothing
+	ifM checkcanoverwrite
+		( ifM (store'' serial dest src checkcanoverwrite)
+			( liftIO $ either (const Nothing) id 
+				<$> getExportContentIdentifier serial adir loc
+			, return Nothing
+			)
+		, return Nothing
+		)
   where
-	go = store'' serial dest src Nothing checkcanoverwrite
 	dest = androidExportLocation adir loc
 	checkcanoverwrite = liftIO $
 		getExportContentIdentifier serial adir loc >>= return . \case
-			Right (Just cid) | cid `elem` overwritablecids ->
-				Just (Just cid)
-			_ -> Nothing
+			Right (Just cid) | cid `elem` overwritablecids -> True
+			Right Nothing -> True
+			_ -> False
 
 removeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 removeExportWithContentIdentifierM serial adir k loc removeablecids = catchBoolIO $
