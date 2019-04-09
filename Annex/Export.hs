@@ -42,8 +42,12 @@ exportKey sha = mk <$> catKey sha
 		, keyChunkNum = Nothing
 		}
 
-warnExportConflict :: Remote -> Annex ()
-warnExportConflict r = toplevelWarning True $
-	"Export conflict detected. Different trees have been exported to " ++ 
-	Remote.name r ++ 
-	". Use git-annex export to resolve this conflict."
+warnExportImportConflict :: Remote -> Annex ()
+warnExportImportConflict r = do
+	ops <- Remote.isImportSupported r >>= return . \case
+		True -> "exported to and/or imported from"
+		False -> "exported to"
+	toplevelWarning True $
+		"Conflict detected. Different trees have been " ++ ops ++
+		Remote.name r ++ 
+		". Use git-annex export to resolve this conflict."

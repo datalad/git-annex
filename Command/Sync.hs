@@ -755,7 +755,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 	fillexport _ _ [] _ = return False
 	fillexport r db (t:[]) mtbcommitsha = Command.Export.fillExport r db t mtbcommitsha
 	fillexport r _ _ _ = do
-		warnExportConflict r
+		warnExportImportConflict r
 		return False
 
 cleanupLocal :: CurrBranch -> CommandStart

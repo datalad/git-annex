@@ -156,7 +156,7 @@ changeExport r db new = do
 						startMoveFromTempName r db ek newf
 					_ -> stop
 		ts -> do
-			warning "Export conflict detected. Different trees have been exported to the same special remote. Resolving.."
+			warning "Resolving export conflict.."
 			forM_ ts $ \oldtreesha -> do
 				-- Unexport both the srcsha and the dstsha,
 				-- because the wrong content may have
