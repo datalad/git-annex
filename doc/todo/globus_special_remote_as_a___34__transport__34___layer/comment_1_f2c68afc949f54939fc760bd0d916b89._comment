@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-04-09T14:54:51Z"
+ content="""
+It's not currently possible for two special remotes to have the same uuid,
+because the remote.log is indexed by uuid, and so their configurations would
+overlap, including the type= and remotetype= settings.
+
+But I think in this case, that may not be a problem, it seems you have a
+regular remote accessed via ssh, and you want to add a special remote with
+the same uuid that transfers from the same remote using globus. This is
+like accessing the same repo via two ssh remotes etc, should work ok.
+
+You can pass uuid=whatever to git-annex initremote to force it to use the
+same uuid as the ssh remote.
+
+(Returning to the question of two special remotes with the same uuid,
+supporting that would need some way to separate their configurations
+in remote.log into different namespaces. Seems doable.)
+"""]]
