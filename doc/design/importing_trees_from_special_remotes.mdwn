@@ -50,26 +50,6 @@ to expect there to be one, and if it later turns out that the last exported
 commit needs to be available across clones, store it in the git-annex
 branch then.
 
-## export conflict resolution
-
-What if the export log indicates an unresolved export conflict,
-and the user tries to import from the special remote?
-
-Well, two trees got exported to the remote independently. The content of
-the remote is not known to export code when there's a conflict, but import
-will resolve that by getting a list of its contents. Although that may be
-an admixture of the two exported trees, and so not necessarily a change the
-user will want to merge into master.
-
-One approach is to not allow imports in this situation; require the export
-conflict be resolved first. (--force could override if the user just wants
-to import whatever ended up on the special remote.)
-
-Another approach, if the commits that contain the trees that were exported
-is known, is to do the import and make a commit that uses those commits
-as its parents. Which nicely indicates to git that there was a conflict and
-it got "resolved".
-
 ## command line interface
 
 `git annex import master --from foo` will import a tree from the remote
@@ -306,3 +286,36 @@ update the export log to say that the remote has that treeish exported
 to it. A conflict between two export log entries will be handled as
 usual, with the user being prompted to re-export the tree they want
 to be on the remote. (May need to reword that prompt.)
+
+----
+
+What if the export log indicates an unresolved export conflict,
+and the user tries to import from the special remote?
+
+Well, two trees got exported to the remote independently. The content of
+the remote is not known to export code when there's a conflict, but import
+will resolve that by getting a list of its contents. Although that may be
+an admixture of the two exported trees, and so not necessarily a change the
+user will want to merge into master.
+
+One approach is to not allow imports in this situation; require the export
+conflict be resolved first. (--force could override if the user just wants
+to import whatever ended up on the special remote.)
+
+Another approach, if the commits that contain the trees that were exported
+is known, is to do the import and make a commit that uses those commits
+as its parents. Which nicely indicates to git that there was a conflict and
+it got "resolved".
+
+However, note that there can be an export conflict that occurred on another
+clone, and that the local repo does not know about yet (git-annex branch 
+not synced). Importing will then import whatever the current state of the
+export conflict is. The export conflict will eventually be caught at export
+time, and the user can resolve it then. Since this is unavoidable, the two
+approaches above don't seem worth bothering with.
+
+Also, if an export is running at the same time as an import
+(presumably on two different clones), part of the
+changes made by the export will be imported and part not. Again this will
+lead to an export conflict being recorded and the user will have to sort it
+out later at export time.
