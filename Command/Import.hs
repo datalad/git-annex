@@ -33,6 +33,8 @@ import Git.Types
 import Git.Branch
 import Types.Import
 
+import Control.Concurrent.STM
+
 cmd :: Command
 cmd = notBareRepo $
 	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
@@ -265,10 +267,20 @@ seekRemote remote branch msubdir = do
 	
 	parentcommit <- fromtrackingbranch Git.Ref.sha
 	let importcommitconfig = ImportCommitConfig parentcommit ManualCommit importmessage
+	let commitimport = commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig
 
-	importable <- download importtreeconfig =<< listcontents
-	void $ includeCommandAction $
-		commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable
+	importabletvar <- liftIO $ newTVarIO Nothing
+	void $ includeCommandAction (listContents remote importabletvar)
+	liftIO (atomically (readTVar importabletvar)) >>= \case
+		Nothing -> return ()
+		Just importable -> downloadImport remote importtreeconfig importable >>= \case
+			Nothing -> warning $ concat
+				[ "Failed to import some files from "
+				, Remote.name remote
+				, ". Re-run command to resume import."
+				]
+			Just imported -> void $
+				includeCommandAction $ commitimport imported
   where
 	importmessage = "import from " ++ Remote.name remote
 
@@ -276,20 +288,14 @@ seekRemote remote branch msubdir = do
 
 	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
 
-	listcontents = do
-		showStart' "list" (Just (Remote.name remote))
-		Remote.listImportableContents (Remote.importActions remote) >>= \case
-			Nothing -> do
-				showEndFail
-				giveup $ "Unable to list contents of " ++ Remote.name remote
-			Just importable -> do
-				showEndOk
-				return importable
-
-	download importtreeconfig importablecontents =
-		downloadImport remote importtreeconfig importablecontents >>= \case
-			Nothing -> giveup $ "Failed to import some files from " ++ Remote.name remote ++ ". Re-run command to resume import."
-			Just importable -> return importable
+listContents :: Remote -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
+listContents remote tvar = do
+	showStart' "list" (Just (Remote.name remote))
+	next $ Remote.listImportableContents (Remote.importActions remote) >>= \case
+		Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
+		Just importable -> next $ do
+			liftIO $ atomically $ writeTVar tvar (Just importable)
+			return True
 
 commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents Key -> CommandStart
 commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable = do

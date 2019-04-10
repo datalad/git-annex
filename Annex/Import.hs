@@ -214,8 +214,8 @@ buildImportTrees basetree msubdir importable = History
 {- Downloads all new ContentIdentifiers as needed to generate Keys. 
  - Supports concurrency when enabled.
  -
- - If any download fails, the whole thing fails, but it will resume where
- - it left off.
+ - If any download fails, the whole thing fails with Nothing, 
+ - but it will resume where it left off.
  -}
 downloadImport :: Remote -> ImportTreeConfig -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (Maybe (ImportableContents Key))
 downloadImport remote importtreeconfig importablecontents = do

@@ -9,6 +9,8 @@ git-annex (7.20190323) UNRELEASED; urgency=medium
     content.
   * Made git-annex sync --content much faster when all the remotes it's
     syncing with are export/import remotes.
+  * sync: When listing contents on an import remote fails, proceed with
+    other syncing instead of aborting.
 
  -- Joey Hess <id@joeyh.name>  Tue, 09 Apr 2019 14:07:53 -0400
 
