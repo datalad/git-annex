@@ -1,0 +1,75 @@
+Originally reported [here](https://github.com/CONP-PCNO/conp-dataset/pull/14)
+
+[[!format sh """
+$> wget https://datahub-khvul4ng.udes.genap.ca/ALL.chr10.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
+--2019-04-10 09:26:54--  https://datahub-khvul4ng.udes.genap.ca/ALL.chr10.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
+Resolving datahub-khvul4ng.udes.genap.ca (datahub-khvul4ng.udes.genap.ca)... 204.19.23.238
+Connecting to datahub-khvul4ng.udes.genap.ca (datahub-khvul4ng.udes.genap.ca)|204.19.23.238|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 773788987 (738M) [application/octet-stream]
+Saving to: ‘ALL.chr10.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz’
+
+hr10.phase3_shapeit2_mvncall_integr   1%[                                                                  ]   9.44M  2.02MB/s    eta 6m 16s ^C
+# so wget works - I interrupted
+
+$> git annex addurl -d https://datahub-khvul4ng.udes.genap.ca/ALL.chr10.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz 
+[2019-04-10 09:27:04.412248] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2019-04-10 09:27:04.416582] process done ExitSuccess
+[2019-04-10 09:27:04.416692] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2019-04-10 09:27:04.420688] process done ExitSuccess
+[2019-04-10 09:27:04.420852] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..3db4e3c3bf941c1cff0936d4441366bd10c9b2f1","--pretty=%H","-n1"]
+[2019-04-10 09:27:04.424774] process done ExitSuccess
+[2019-04-10 09:27:04.425311] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2019-04-10 09:27:04.42596] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+addurl https://datahub-khvul4ng.udes.genap.ca/ALL.chr10.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz [2019-04-10 09:27:04.449013] Request {
+  host                 = "datahub-khvul4ng.udes.genap.ca"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("User-Agent","git-annex/7.20190322+git23-g9662cb332-1~ndallstack+1")]
+  path                 = "/ALL.chr10.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
+  queryString          = ""
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+
+[2019-04-10 09:27:04.711525] Request {
+  host                 = "datahub-khvul4ng.udes.genap.ca"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding","identity"),("User-Agent","git-annex/7.20190322+git23-g9662cb332-1~ndallstack+1")]
+  path                 = "/ALL.chr10.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
+  queryString          = ""
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+download failed: InvalidHeader "preload"
+failed
+[2019-04-10 09:27:04.956626] process done ExitSuccess
+[2019-04-10 09:27:04.957293] process done ExitSuccess
+git-annex: addurl: 1 failed
+
+$> git annex version
+git-annex version: 7.20190322+git23-g9662cb332-1~ndallstack+1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.17.1 bloomfilter-2.0.1.0 cryptonite-0.23 DAV-1.3.1 feed-0.3.12.0 ghc-8.0.2 http-client-0.5.7.0 persistent-sqlite-2.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+
+"""]]
+
+
+[[!meta author=yoh]]
