@@ -12,3 +12,30 @@ been listened to.
 It seems doable to make `git annex export` honor whatever
 preferred content settings have been configured for the remote.
 (And `git annex sync --content` too.)
+
+> `git annex import` of a tree from a special remote would also be
+> influenced by this.
+> 
+> It would make sense for the ImportableContents to have files
+> that are not preferred content filtered out of it. Eg, if a .wav file
+> is added to the remote, it shouldn't be downloaded. Or a better example,
+> if directory Music is excluded from an android remote, importing from
+> it should exclude that directory.
+
+> Problem: If a tree is exported with eg, no .wav files, and then an import
+> is made from the remote, and necessarily lacks .wav files, the remote
+> tracking branch will have a tree with no .wav
+> files. Merging that into master will delete all the .wav files.
+> 
+> If the remote tracking branch has a disconnected history from master,
+> then git wouldn't delete files on
+> merge. But: This would prevent actual deletions made on the special
+> remote from happening in master too. So not a good idea.
+> 
+> So it seems that, when updating the remote tracking branch, the files
+> that were excluded from being exported to it need to be added back in.
+> That can be done by keeping a pointer to the tree that was last exported, 
+> including all exported files, and generating a tree from it that deletes
+> all exported files. The diff between those trees is all the excluded
+> files, so when updating the remote tracking branch, take the tree that
+> was imported, and merge that diff into it.
