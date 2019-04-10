@@ -5,10 +5,10 @@ allows connecting to it in various ways like a USB cable or wifi.
 
 ## example
 
-To make git-annex store files in the /sdcard/annex directory
-on the Android device, and export the current master tree to it:
+To add a remote for the /sdcard/DCIM directory
+on the Android device, allowing to import and export photos:
 
-	git annex initremote android type=adb androiddirectory=/sdcard/annex encryption=none exporttree=yes
+	git annex initremote android type=adb androiddirectory=/sdcard/DCIM encryption=none exporttree=yes importtree=yes
 	git annex export master --to android
 
 ## configuration
@@ -27,6 +27,10 @@ the adb remote.
   by [[git-annex-export]]. It will not be usable as a general-purpose
   special remote. Since this makes the exported files easily browsable
   on the Android device, you will almost always want to enable this.
+
+* `importtree` - Set to "yes" to make this special remote usable
+  by [[git-annex-import]]. When set in combination with exporttree,
+  this lets files be imported from it, and changes exported back to it.
 
 * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
   See [[encryption]].
