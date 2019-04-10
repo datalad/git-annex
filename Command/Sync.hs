@@ -592,6 +592,7 @@ newer remote b = do
  - When concurrency is enabled, files are processed concurrently.
  -}
 seekSyncContent :: SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
+seekSyncContent _ [] _ = return False
 seekSyncContent o rs currbranch = do
 	mvar <- liftIO newEmptyMVar
 	bloom <- case keyOptions o of
