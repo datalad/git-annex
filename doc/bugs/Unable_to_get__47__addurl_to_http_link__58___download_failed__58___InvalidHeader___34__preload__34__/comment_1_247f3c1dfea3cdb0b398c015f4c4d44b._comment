@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-04-10T13:58:03Z"
+ content="""
+curl -v shows the problem response
+
+	< Server: openresty/1.7.10.1
+	< Date: Wed, 10 Apr 2019 13:57:10 GMT
+	< Content-Type: application/octet-stream
+	< Content-Length: 773788987
+	< Connection: keep-alive
+	< Last-Modified: Mon, 11 Mar 2019 16:35:02 GMT
+	< ETag: "5c868e36-2e1f153b"
+	< Accept-Ranges: bytes
+	< Strict-Transport-Security: max-age=15768000; includeSubdomains;
+	< preload
+	< X-Frame-Options: DENY
+	< X-Content-Type-Options: nosniff
+
+It looks like the server is sending "preload" on its own line rather
+than being part of the Strict-Transport-Security header.
+
+Just in case, I found another url that uses HSTS preload, and git-annex
+can download that:
+
+	joey@darkstar:~>curl -v -o foo https://www.torproject.org/ 2>&1 | grep preload
+	< Strict-Transport-Security: max-age=15768000; preload
+	joey@darkstar:~/tmp/c>git annex addurl https://www.torproject.org/
+	addurl https://www.torproject.org/ 
+	(to www.torproject.org_) ok
+
+The web server is probably violating standard HTTP to some extent with that
+response. Of course, it's possible to parse the response less strictly and
+not fail on the malformed header. Still, fixing the web server is probably the
+fastest way to fix the immediate problem (as well as make HSTS preloading
+actually be used).
+
+Issue filed on http-client, <https://github.com/snoyberg/http-client/issues/398>
+with a prospective patch.
+
+I don't see any changes to git-annex that can help with the problem, so
+I'll close this bug report.
+"""]]
