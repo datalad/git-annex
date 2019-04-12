@@ -1,0 +1,38 @@
+The rsync special remote supports exporttree; it would be useful to also
+support importtree.
+
+The adb special remote shows this is possible using just some fairly
+standard commands, although `find` and `stat` are not well enough
+standardized to work on all unixes, it would be easy to at least support
+linux.
+
+So far, the rsync special remote really only needs rsync on the server.
+And can be used with servers that lock down their shell to only 
+allow rsync to be run. It would be good to also only need rsync for
+importtree, but there are several roadblocks:
+
+* listing contents: Using rsync would involve a command like
+  `rsync --checksum -avz -i --dry-run --out-format='%C %l %M %f\n' $rsync-url empty-directory`;
+  that makes the remote rsync checksum all the files, which could be very
+  expensive. But without checksum, only mtime and size is available,
+  which is not really enough to be sure all edits to a file are imported
+  (eg a rename swap of two files that have the same mtime would not be
+  noticed).
+
+  It would be a lot nicer to use `find | stat`
+
+* retrieving file with a specific content identifier:
+  If rsync --checksum is used, git-annex can just do the same checksum
+  on the downloaded file and make sure rsync retrieved the same content
+  identifier that was requested.
+
+* store/remove/checkpresent with a content identifier:
+  If the only way available to check a content identifier is to run
+  rsync to get the current remote checksum of a file, very wide race
+  windows will be open when the file is large. So a file that is unmodified
+  at the start may get modified and that modification be overwritten.
+
+  **This is not acceptable**
+
+So, it seems that, importtree would need to be able to run commands
+other than rsync on the server. --[[Joey]]
