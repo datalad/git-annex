@@ -17,3 +17,5 @@ excluding some files from a tree exported to android.
 
 > Status: Remote implemented, but not yet [[import tree]] and
 > [[export preferred content]]. --[[Joey]]
+
+> Update: Import from adb is now implemented. Closing [[done]] --[[Joey]]
