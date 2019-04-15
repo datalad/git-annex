@@ -13,14 +13,15 @@ and `git annex sync --content` can be configured to use it.
 
 ## remaining todo
 
-* Currently only directory special remote supports importing, at least S3
-  can also support it.
+* Currently only directory and adb special remotes support importing,
+  at least S3 can also support it.
 
 * Write a tip or tips to document using this new feature.
+  (Have one for adb now.)
 
 * Add to external special remote protocol.
 
-* Support importing from adb special remotes, webdav, etc?
+* Support importing from webdav, etc?
   Problem is that these may have no way to avoid an export
   overwriting changed content that would have been imported otherwise.
   So if they're supported the docs need to reflect the problem so the user
