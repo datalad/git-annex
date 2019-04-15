@@ -1,0 +1,11 @@
+Hi,
+
+I'm always confused when I try to copy a file within an annex repository. I know that I can just copy the symlink, so I don't have to move the actual data around. But what do I do with the new symlink: "git add" or "git annex add"? And what happens when I do the wrong one?
+
+Since "git annex add FILE" usually creates a symlink to FILE (and then git add on the symlink) I wonder if I'll end up with a symlink to a symlink. Would be somehow logical but pretty confusing.
+
+So I think both "git add LINK" and "git annex add LINK" should behave identical when LINK is a copy of symlink of an annexed file. However, this would still be confusing, since one would not expect that both commands behave identical in some situations but different in other situations.
+
+So, what's the best way to copy an already annexed file (destination in the same repository)?
+
+Best, Mario

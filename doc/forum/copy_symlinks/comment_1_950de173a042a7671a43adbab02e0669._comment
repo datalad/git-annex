@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2019-04-15T07:34:21Z"
+ content="""
+`git add` and `git annex add` do both behave the same on symlinks (at least, in indirect annexes).
+
+They are just staged (then fixed on commit, if required).
+"""]]
