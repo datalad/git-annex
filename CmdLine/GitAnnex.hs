@@ -54,6 +54,7 @@ import qualified Command.Init
 import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
+import qualified Command.RenameRemote
 import qualified Command.EnableTor
 import qualified Command.Multicast
 import qualified Command.Expire
@@ -145,6 +146,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.Describe.cmd
 	, Command.InitRemote.cmd
 	, Command.EnableRemote.cmd
+	, Command.RenameRemote.cmd
 	, Command.EnableTor.cmd
 	, Command.Multicast.cmd
 	, Command.Reinject.cmd

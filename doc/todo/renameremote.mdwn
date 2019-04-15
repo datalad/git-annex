@@ -9,16 +9,15 @@ with the same name, and so enableremote would need to be run with a uuid
 instead of a name to specify which one to enable, which is not a desirable
 state of affairs.
 
-So, add `git annex renameremote oldname newname`. This could also do a `git
+So, add `git annex renameremote oldname newname`. Updates the remote.log
+with the new name.
+
+This could also do a `git
 remote rename`, or equivilant. (`git remote rename` gets confused by special
 remotes not having a fetch url and fails; this can be worked around by
-manually renaming the stanza in git config.)
+manually renaming the stanza in git config.) But.. Perhaps it's better to
+keep it simple and not do that. There's no necessarily a correspondance
+between the name of a remote in the local repo and the name of a
+special remote in the remote.log.
 
-Implementing that would need a way to remove the old name from remote.log.
-We can't remove lines from union merged files, but what we could do is
-add a new line like:
-
-	- name=oldname timestamp=<latest>
-
-And in parsing remote.log, if the UUID is "-", don't include the
-remote with that name in the the resulting map.
+[[done]] --[[Joey]]

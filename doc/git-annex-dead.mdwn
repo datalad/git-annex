@@ -32,6 +32,8 @@ by using eg, `git-annex reinject`.)
 
 [[git-annex-untrust]](1)
 
+[[git-annex-renameremote]](1)
+
 [[git-annex-expire]](1)
 
 [[git-annex-fsck]](1)

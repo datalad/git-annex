@@ -27,16 +27,26 @@ All special remotes support encryption. You can specify
 address associated with a key). For details about ways to configure
 encryption, see <https://git-annex.branchable.com/encryption/>
 
-If you anticipate using the new special remote in other clones of the
-repository, you can pass "autoenable=true". Then when [[git-annex-init]](1)
+Once a special remote has been initialized once with this command,
+other clones of the repository can also be set up to access it using
+`git annex enableremote`.
+
+To avoid `git annex enableremote` needing to be run,
+you can pass "autoenable=true". Then when [[git-annex-init]](1)
 is run in a new clone, it will attempt to enable the special remote. Of
 course, this works best when the special remote does not need anything
 special to be done to get it enabled.
 
+The name you provide for the remote can't be one that's been used for any
+other special remote before, because `git-annex enableremote` uses the name
+to identify which special remote to enable. If some old special remote
+that's no longer used has taken the name you want to reuse, you might
+want to use `git annex renameremote`.
+
 Normally, git-annex generates a new UUID for the new special remote.
 If you want to, you can specify a UUID for it to use, by passing a
 uuid=whatever parameter. This can be useful in some situations, eg when the
-same data can be accessed via two different special remote backends.
+same data can be accessed via two different remote backends.
 But if in doubt, don't do this.
 
 # OPTIONS
@@ -54,6 +64,8 @@ But if in doubt, don't do this.
 [[git-annex]](1)
 
 [[git-annex-enableremote]](1)
+
+[[git-annex-renameremote]](1)
 
 # AUTHOR
 

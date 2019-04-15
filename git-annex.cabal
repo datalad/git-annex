@@ -104,6 +104,7 @@ Extra-Source-Files:
   doc/git-annex-reinject.mdwn
   doc/git-annex-rekey.mdwn
   doc/git-annex-remotedaemon.mdwn
+  doc/git-annex-renameremote.mdwn
   doc/git-annex-repair.mdwn
   doc/git-annex-required.mdwn
   doc/git-annex-resolvemerge.mdwn
@@ -766,6 +767,7 @@ Executable git-annex
     Command.Reinit
     Command.Reinject
     Command.RemoteDaemon
+    Command.RenameRemote
     Command.Repair
     Command.Required
     Command.ResolveMerge
