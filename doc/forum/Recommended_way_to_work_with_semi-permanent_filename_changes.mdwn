@@ -1,0 +1,8 @@
+Hi,
+I'm still wrapping my head around various aspects of the relationship between git and git-annex in everyday use.
+
+I have a set of files whose original filenames I want to keep, but only very rarely work with. That is, the everyday, "normal" use for these files will happen with the filenames changed. I want to have the watcher running in this repository, handling syncing with remotes, changes in filenames and directory structure etc.
+
+How would you set this up? A shared clone (not sure I fully get how that works), a separate branch for the original filenames that is checked out when needed (i.e. everyday changes are committed to master) or something else?
+
+Many thanks!  

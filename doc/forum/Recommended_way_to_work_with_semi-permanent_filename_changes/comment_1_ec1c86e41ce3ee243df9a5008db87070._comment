@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 1"
+ date="2019-04-16T13:10:03Z"
+ content="""
+Depends on how often and what \"work\" is done with the original filenames. Can you explain more what you are trying to do?
+
+Perhaps you can use metadata/metadata views.. though this would give you the original filename as a directory, containing a file with the current filename. e.g. ~/annex/originalfilename.txt/currentfilename.txt
+"""]]

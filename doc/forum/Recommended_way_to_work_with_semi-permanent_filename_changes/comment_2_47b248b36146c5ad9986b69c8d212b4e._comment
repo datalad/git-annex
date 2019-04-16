@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="strmd"
+ avatar="http://cdn.libravatar.org/avatar/035707b9756129bbdea6b36a7f7b38d3"
+ subject="comment 2"
+ date="2019-04-16T15:12:57Z"
+ content="""
+Thanks for your reply.
+
+One example is when working with scanned images and digitized sound recordings:
+
+The original file names [`unmodified`] are needed to source which analog original they are paired with in an archival system beyond my control, but as I manually work with these files, the structure changes to [`modified`], which I'd like to be the repo's default state. So when new data arrives (via a remote) new files should be checked into the [`unmodified`] state with their original file names, and then be worked on in the [`modified`] state. I'd like this [`unmodified`] state to be singular, as opposed to checking out a specific commit for a specific subset of files.
+
+Another, perhaps simpler, example is music files:
+They come in various combinations of file and folder names as they are ripped from CD or downloaded. I'd like an external program (beets) to handle organizing these files (the symlinks, really) into a folder structure, as I need them to be presented in a particular way to an indexer/player, i.e. as [`modified`]. So again, I'd like to ingest (from a remote) into git-annex using the original file names (if needed at a later point) while still letting beets move things around structurally. At some point in time, I'd like to be able to easily hop back to my music library in its [`unmodified`] state without having to find the particular point in time when I added that particular subset.
+
+I'm trying to achieve this with as little manual massaging as possible.
+
+Metadata and views are a great option to have, but from what I understand not the right fit here.
+
+This was long but I hope it made some sense.
+"""]]
