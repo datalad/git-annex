@@ -19,35 +19,19 @@ For a list and details, see <https://git-annex.branchable.com/special_remotes/>
  
 The remote's configuration is specified by the parameters passed
 to this command. Different types of special remotes need different
-configuration values. The command will prompt for parameters as needed.
-
-All special remotes support encryption. You can specify
-`encryption=none` to disable encryption, or specify
-`encryption=hybrid keyid=$keyid ...` to specify a GPG key id (or an email
-address associated with a key). For details about ways to configure
-encryption, see <https://git-annex.branchable.com/encryption/>
+configuration values. The command will prompt for parameters as needed. A
+few parameters that are supported by all special remotes are documented in
+the next section below.
 
 Once a special remote has been initialized once with this command,
 other clones of the repository can also be set up to access it using
 `git annex enableremote`.
-
-To avoid `git annex enableremote` needing to be run,
-you can pass "autoenable=true". Then when [[git-annex-init]](1)
-is run in a new clone, it will attempt to enable the special remote. Of
-course, this works best when the special remote does not need anything
-special to be done to get it enabled.
 
 The name you provide for the remote can't be one that's been used for any
 other special remote before, because `git-annex enableremote` uses the name
 to identify which special remote to enable. If some old special remote
 that's no longer used has taken the name you want to reuse, you might
 want to use `git annex renameremote`.
-
-Normally, git-annex generates a new UUID for the new special remote.
-If you want to, you can specify a UUID for it to use, by passing a
-uuid=whatever parameter. This can be useful in some situations, eg when the
-same data can be accessed via two different remote backends.
-But if in doubt, don't do this.
 
 # OPTIONS
 
@@ -58,6 +42,36 @@ But if in doubt, don't do this.
   or take a long time while generating the key, you may want to Ctrl-c it
   and re-run with `--fast`, which causes it to use a lower-quality source of
   randomness. (Ie, /dev/urandom instead of /dev/random)
+
+# COMMON CONFIGURATION PARAMETERS
+
+* `encryption`
+
+  All special remotes support encryption. You will need to specify
+  what encryption, if any, to use. 
+
+  If you do not want any encryption, use `encryption=none`
+
+  To encrypt to a GPG key, use `encryption=hybrid keyid=$keyid ...`
+  and fill in the GPG key id (or an email address associated with a GPG key).
+  
+  For details about this and other encrpytion settings, see
+  <https://git-annex.branchable.com/encryption/>
+
+* `autoenable`
+
+  To avoid `git annex enableremote` needing to be run,
+  you can pass "autoenable=true". Then when [[git-annex-init]](1)
+  is run in a new clone, it will attempt to enable the special remote. Of
+  course, this works best when the special remote does not need anything
+  special to be done to get it enabled.
+
+* `uuid`
+
+  Normally, git-annex initremote generates a new UUID for the new special
+  remote. If you want to, you can specify a UUID for it to use, by passing a
+  uuid=whatever parameter. This can be useful in some unusual situations.
+  But if in doubt, don't do this.
 
 # SEE ALSO
 
