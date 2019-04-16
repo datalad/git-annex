@@ -1,0 +1,75 @@
+I recently added a file and for some reason it doesn't show up as being available locally, but I just added it.
+
+```
+find .git/annex | grep -i harry
+.git/annex/objects/f1/36/WORM-s2046008512-m1537755616--Harry,32Brown,32,402009,41,321080p.mp4
+.git/annex/objects/f1/36/WORM-s2046008512-m1537755616--Harry,32Brown,32,402009,41,321080p.mp4/WORM-s2046008512-m1537755616--Harry,32Brown,32,402009,41,321080p.mp4
+```
+
+```
+git annex find --in here --debug
+[2019-04-16 17:45:49.540555] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2019-04-16 17:45:49.5474] process done ExitSuccess
+[2019-04-16 17:45:49.547482] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2019-04-16 17:45:49.557155] process done ExitSuccess
+[2019-04-16 17:45:49.557621] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--"]
+[2019-04-16 17:45:49.565683] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2019-04-16 17:45:49.571062] process done ExitSuccess
+[2019-04-16 17:45:49.571143] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2019-04-16 17:45:49.576242] process done ExitSuccess
+[2019-04-16 17:45:49.577407] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..739c33e04bd4d714eff432f630d1dcbb69625d6a","--pretty=%H","-n1"]
+[2019-04-16 17:45:49.584986] process done ExitSuccess
+[2019-04-16 17:45:49.585072] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..404abbb2b903597ee753eba0f9213125d41a31f6","--pretty=%H","-n1"]
+[2019-04-16 17:45:49.591936] process done ExitSuccess
+[2019-04-16 17:45:49.636082] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2019-04-16 17:45:49.638359] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2019-04-16 17:45:49.643613] read: git ["config","--null","--list"]
+[2019-04-16 17:45:49.727427] process done ExitSuccess
+[2019-04-16 17:45:49.727735] process done ExitSuccess
+```
+
+In the past, adding the file always resulted in behavior that made sense. I'm at a loss as to what to do. If I try to add it again, nothing happens. I can't copy it to another remote; it's like it doesn't actually exist.
+
+
+```
+git annex version
+git-annex version: 7.20190220-g1812ec5da
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV FsEvents TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.3 http-client-0.5.14 persistent-sqlite-2.9.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: darwin x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+
+cat .gitattributes
+* annex.largefiles=(largerthan=500kb)
+* annex.backend=WORM
+
+cat .git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[annex]
+	thin = true
+	uuid = UUID
+	version = 5
+	direct = false
+[filter "annex"]
+	smudge = git-annex smudge %f
+	clean = git-annex smudge --clean %f
+[remote "WD-1TB-USB"]
+	url = /Volumes/WD-1TB-USB/repos/film
+	fetch = +refs/heads/*:refs/remotes/WD-1TB-USB/*
+	annex-uuid = UUID
+[remote "quorra"]
+	url = 192.168.70.10:/home/jasonb/repos/film
+	fetch = +refs/heads/*:refs/remotes/quorra/*
+	annex-uuid = UUID
+	#annex-rsync-transport = ssh -c blowfish
+	annex-ssh-options = -c aes128-gcm@openssh.com
+```
