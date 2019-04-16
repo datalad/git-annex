@@ -1,0 +1,41 @@
+# NAME
+
+git-annex renameremote - changes name of a special remote
+
+# SYNOPSIS
+
+git annex renameremote `name|uuid|desc newname`
+
+# DESCRIPTION
+
+Changes the name that is used to enable a special remote.
+
+Normally the current name is used to identify the special remote, 
+but its uuid or description can also be used.
+
+This is especially useful when an old special remote used a name, and now you
+want to use that name for a new special remote. `git annex initremote`
+won't let you create a remote with a conflicting name, so rename the old
+remote first.
+
+	git annex renameremote phone lost-phone
+	git annex initremote phone ...
+
+This only updates the name that git-annex has stored for use 
+by `git annex enableremote`. It does not update the git config stanza
+for the special remote to use the new name, but of course you can edit
+the git config if you want to rename it there.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-initremote]](1)
+
+[[git-annex-enableremote]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
