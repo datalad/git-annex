@@ -8,6 +8,7 @@
 module Command.RenameRemote where
 
 import Command
+import qualified Annex.SpecialRemote
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Remote
@@ -24,15 +25,24 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start (oldname:newname:[]) = do
-	m <- Logs.Remote.readRemoteLog
-	Remote.nameToUUID' oldname >>= \case
+start (oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
+	Just (u, cfg) -> Annex.SpecialRemote.findExisting newname >>= \case
+		Just _ -> giveup $ "The name " ++ newname ++ " is already used by a special remote."
+		Nothing -> go u cfg
+	-- Support lookup by uuid or description as well as remote name,
+	-- as a fallback when there is nothing with the name in the
+	-- special remote log.
+	Nothing -> Remote.nameToUUID' oldname >>= \case
 		Left e -> giveup e
-		Right u -> case M.lookup u m of
-			Nothing -> giveup "That is not a special remote."
-			Just cfg -> do
-				showStart' "rename" Nothing
-				next $ perform u cfg newname
+		Right u -> do
+			m <- Logs.Remote.readRemoteLog
+			case M.lookup u m of
+				Nothing -> giveup "That is not a special remote."
+				Just cfg -> go u cfg
+  where
+	go u cfg = do
+		showStart' "rename" Nothing
+		next $ perform u cfg newname
 start _ = giveup "Specify an old name (or uuid or description) and a new name."
 
 perform :: UUID -> R.RemoteConfig -> String -> CommandPerform
