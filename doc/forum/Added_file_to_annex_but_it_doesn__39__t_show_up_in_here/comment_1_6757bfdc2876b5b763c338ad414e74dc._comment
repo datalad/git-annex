@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="Unusual behavior"
+ date="2019-04-18T01:36:04Z"
+ content="""
+So I ran:
+
+```
+git annex --numcopies=0 dropunused 1-2
+dropunused 1 ok
+dropunused 2 ok
+(recording state in git...)
+```
+
+Which is fine, then:
+
+```
+cat Harry\ Brown\ \(2009\)\ 1080p.mp4
+/annex/objects/WORM-s2046008512-m1537755616--Harry,32Brown,32,402009,41,321080p.mp4
+```
+
+And that is strange.
+
+```
+$ rm Harry\ Brown\ \(2009\)\ 1080p.mp4
+override r--r--r--  jasonb/staff for Harry Brown (2009) 1080p.mp4? y
+$ cp -a ~/Downloads/Harry\ Brown\ \(2009\)\ 1080p.mp4 .
+$ git annex add Harry\ Brown\ \(2009\)\ 1080p.mp4
+add Harry Brown (2009) 1080p.mp4 ok
+(recording state in git...)
+$ ls -l Harry\ Brown\ \(2009\)\ 1080p.mp4
+lrwxr-xr-x  1 jasonb  staff  162 Apr 17 21:24 Harry Brown (2009) 1080p.mp4 -> .git/annex/objects/XV/Wx/WORM-s2046008512-m1555550686--Harry,32Brown,32,402009,41,321080p.mp4/WORM-s2046008512-m1555550686--Harry,32Brown,32,402009,41,321080p.mp4
+```
+
+And that's what I expected. I'm lost as to what happened.
+"""]]
