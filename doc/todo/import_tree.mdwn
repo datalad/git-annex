@@ -161,6 +161,126 @@ file got lost:
 
 Since this is acceptable in git, I suppose we can accept it here too..
 
-----
+## S3 versioning and import
+
+Listing a versioned S3 bucket with past versions results in S3 sending
+a list that's effectively:
+
+	foo current-version
+	foo past-version
+	bar deleted
+	bar past-version
+	bar even-older-version
+
+Each item on the list also has a LastModified date, and IsLatest
+is set for the current version of each file.
+
+This needs to be converted into a ImportableContents tree of file trees.
+
+Getting the current file tree is easy, just filter on IsLatest.
+
+Getting the past file trees seems hard. Two things are in tension:
+
+* Want to generate the same file tree in this import that was used in past
+  imports. Since the file tree is converted to a git tree, this avoids
+  a proliferation of git trees.
+
+* Want the past file trees to reflect what was actually in the
+  S3 bucket at different past points in time. 
+  
+So while it would work fine to just make one past file tree for each
+file, that contains only that single file, the user would not like
+the resulting history when they explored it with git.
+
+With the example above, the user expects something like this:
+
+  	ImportableContents [(foo, current-version)]
+		[ ImportableContents [(foo, past-version), (bar, past-version)]
+			[ ImportableContents [(bar, even-older-version)]
+				[]
+			]
+		]
+
+And the user would like for the inner-most list to also include
+(foo, past-version) if it were in the S3 bucket at the same time
+(bar, even-older-version) was added. So depending on the past 
+modificatio times of foo vs bar, they may really expect:
+
+  	let l = ImportableContents [(foo, current-version)]
+		[ ImportableContents [(foo, past-version), (bar, past-version)]
+			[ ImportableContents [(foo, past-version), (bar, even-older-version)]
+				[ ImportableContents [(foo, past-version)]
+					[]
+				]
+			]
+		]
+  	
+Now, suppose that foo is deleted and subsequently bar is added back,
+so S3 now sends this list:
+
+	bar new-version
+	bar deleted
+	bar past-version
+	bar even-older-version
+	foo deleted
+	foo current-version
+	foo past-version
+
+The user would expect this to result in:
+
+	ImportableContents [(bar, new-version)]
+		[ ImportableContents []
+			l
+		]
+
+But l needs to be the same as the l above to avoid git trees proliferation.
+
+What is the algorythm here?
+
+It's got two parts, the first finds the current file tree that's
+in the bucket:
+
+1. Remove the first item from the list, and add it to the file tree.
+   (This is the most recently changed item.)
+   (If the item is a deletion, remove from list but don't add anything to
+   file tree.)
+2. Skip forward past past versions of the file from #1 to another file.
+3. Go through the rest of the list, and the first time a file is seen, add
+   it to the file tree. (Unless it's a deletion.)
+   Don't remove these from the list, unless their
+   modification time is the same as the modification time of the item in
+   #1.
+
+The second part takes the remaining list from the first part, and
+recursively generates past file trees:
+
+1. Find the most recently modified item in the list.
+2. Remove the most recently modified item from the list, and add it to the
+   file tree.
+   (If the item is a deletion, remove from list but don't add anything to
+   file tree.)
+3. Skip forward past past versions of the file from #1 to another file.
+4. Go through the rest of the list, and the first time a file is seen, add
+   it to the file tree. (Unless it's a deletion.)
+   Don't remove these from the list, unless their
+   modification time is the same as the modification time of the item in
+   #1.
+5. The file tree now corresponds to the most recent past version of the S3
+   bucket, so make a ImportableContents that has it as the
+   importableContents. For the importableHistory, recurse this function
+   again, with the remaining contents of the list.
+
+The only expensive op here is finding the most recently modified item
+in the list. There are only two possibilities for where that is in the
+list:
+
+1. It may be the first item in the list.
+2. It may be the first mention of some other file than the first
+   one mentioned in the list.
+
+So that only needs a small scan forward to the next file,
+and a single date comparison.
+
+---
 
 See also, [[adb_special_remote]]
