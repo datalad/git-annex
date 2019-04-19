@@ -4,6 +4,14 @@ git-annex (7.20190323) UNRELEASED; urgency=medium
     to allow git-annex import of files from an Android device. This can be
     combined with exporttree=yes and git-annex export used to send changes
     back to the Android device.
+  * S3 special remote supports being configured with importree=yes,
+    to allow git-annex import of files from a S3 bucket. This can be
+    combined with exporttree=yes and git-annex export used to send changes
+    back to the S3 bucket.
+  * S3: When versioning is enabled on a bucket, importing from it will
+    import old versions of files that were written to the bucket as well
+    as the current versions. A git history is synthesized to reflect the way
+    the bucket changed over time.
   * Fix bug that caused importing from a special remote to repeatedly
     download unchanged files when multiple files in the remote have the same
     content.

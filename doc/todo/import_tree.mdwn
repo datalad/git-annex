@@ -13,8 +13,17 @@ and `git annex sync --content` can be configured to use it.
 
 ## remaining todo
 
-* Currently only directory and adb special remotes support importing,
-  at least S3 can also support it.
+* There's a bug in the way the import history is added to the
+  previous history for the remote. This leads to an ever-growing history
+  when importing from a versioned S3 remote,
+  although the head of it does reflect the current state of the remote.
+
+* Two undefs in Remote.S3 remain.
+
+* Need to test S3 import from unversioned bucket.
+
+* Need to test S3 import from versioned bucket, including handling
+  of deletion of files.
 
 * Write a tip or tips to document using this new feature.
   (Have one for adb now.)
