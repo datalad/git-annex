@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="indeed a useful use case"
+ date="2019-04-19T13:26:05Z"
+ content="""
+Indeed it would be nice if there was an easy way to split a git annex repository into smaller ones, while those smaller ones also obtain all the git-annex branch availability/metadata information about the files they inherit.  The situations comes up quite frequently whenever it is desired to modularize bigger repositories. The simplest use case is to make a specific subdirectory into a git/git-annex submodule.  Is there a way/recipe to easily accomplish also moving all git-annex branch metadata. And the original repository should get those files removed within its git tree.
+
+One possible way we see is to clone the original repository, remove all other files, move subdirectory files \"up\" needed number of directories, and then rewrite git history to forget and then use `annex forget` but that one wouldn't \"forget\" information about the files which are not in the current tree, so would also require some manual trimming of `git-annex` branch before `annex forget`.
+
+But may be there is a better way?
+"""]]
