@@ -233,17 +233,17 @@ downloadImport remote importtreeconfig importablecontents = do
 		bracket CIDDb.openDb CIDDb.closeDb $ \db -> do
 			CIDDb.needsUpdateFromLog db
 				>>= maybe noop (CIDDb.updateFromLog db)
-			go cidmap downloading importablecontents db
+			go False cidmap downloading importablecontents db
   where
-	go cidmap downloading (ImportableContents l h) db = do
+	go oldversion cidmap downloading (ImportableContents l h) db = do
 		jobs <- forM l $ \i ->
-			startdownload cidmap downloading db i
+			startdownload cidmap downloading db i oldversion
 		l' <- liftIO $ forM jobs $
 			either pure (atomically . takeTMVar)
 		if any isNothing l'
 			then return Nothing
 			else do
-				h' <- mapM (\ic -> go cidmap downloading ic db) h
+				h' <- mapM (\ic -> go True cidmap downloading ic db) h
 				if any isNothing h'
 					then return Nothing
 					else return $ Just $
@@ -261,12 +261,14 @@ downloadImport remote importtreeconfig importablecontents = do
 		s <- readTVar downloading
 		writeTVar downloading $ S.delete cid s
 	
-	startdownload cidmap downloading db i@(loc, (cid, _sz)) = getcidkey cidmap db cid >>= \case
+	startdownload cidmap downloading db i@(loc, (cid, _sz)) oldversion = getcidkey cidmap db cid >>= \case
 		(k:_) -> return $ Left $ Just (loc, k)
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
 			let downloadaction = do
 				showStart ("import " ++ Remote.name remote) (fromImportLocation loc)
+				when oldversion $
+					showNote "old version"
 				next $ tryNonAsync (download cidmap db i) >>= \case
 					Left e -> next $ do
 						warning (show e)
