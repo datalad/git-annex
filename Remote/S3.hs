@@ -199,20 +199,20 @@ s3Setup' ss u mcreds c gc
 			writeUUIDFile archiveconfig u info
 		use archiveconfig info
 	
-	checkexportimportsafe c' info = 
-		checkexportimportsafe' c' info
-			=<< Annex.getState Annex.force
-	checkexportimportsafe' c' info force
-		| force = return ()
+	checkexportimportsafe c' info =
+		unlessM (Annex.getState Annex.force) $
+			checkexportimportsafe' c' info
+	checkexportimportsafe' c' info
 		| versioning info = return ()
-		| exportTree c' && importTree c' = giveup $ unwords
-			[ "Combining exporttree=yes and importtree=yes"
-			, "with an unversioned S3 bucket is not safe;"
-			, "exporting can overwrite other modifications"
-			, "to files in the bucket."
-			, "Recommend you add versioning=yes."
-			, "(Or use --force if you don't mind possibly losing data.)"
-			]
+		| otherwise = when (exportTree c' && importTree c') $
+			giveup $ unwords
+				[ "Combining exporttree=yes and importtree=yes"
+				, "with an unversioned S3 bucket is not safe;"
+				, "exporting can overwrite other modifications"
+				, "to files in the bucket."
+				, "Recommend you add versioning=yes."
+				, "(Or use --force if you don't mind possibly losing data.)"
+				]
 
 store :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> Storer
 store mh r info magic = fileStorer $ \k f p -> withS3HandleOrFail (uuid r) mh $ \h -> do
@@ -479,7 +479,8 @@ listImportableContentsS3 hv r info =
 					}
 			liftIO $ print rsp'
 			continuelistunversioned h (rsp:l) rsp'
-		| otherwise = return (mklistunversioned (reverse (rsp:l)))
+		| otherwise = return $
+			mkImportableContentsUnversioned info (reverse (rsp:l))
 	
 	continuelistversioned h l rsp
 		| S3.gbovrIsTruncated rsp = do
@@ -490,23 +491,71 @@ listImportableContentsS3 hv r info =
 					}
 			liftIO $ print rsp
 			continuelistversioned h (rsp:l) rsp'
-		| otherwise = return (mklistversioned (reverse (rsp:l)))
+		| otherwise = do
+			let v = mkImportableContentsVersioned info (reverse (rsp:l))
+			liftIO $ print v
+			return v
+
+mkImportableContentsUnversioned :: S3Info -> [S3.GetBucketResponse] -> ImportableContents (ContentIdentifier, ByteSize)
+mkImportableContentsUnversioned info l = ImportableContents 
+	{ importableContents = concatMap (mapMaybe extract . S3.gbrContents) l
+	, importableHistory = []
+	}
+  where
+	extract oi = do
+		loc <- bucketImportLocation info $
+			T.unpack $ S3.objectKey oi
+		let sz  = S3.objectSize oi
+		let cid = mkS3UnversionedContentIdentifier $
+			S3.objectETag oi
+		return (loc, (cid, sz))
+
+mkImportableContentsVersioned :: S3Info -> [S3.GetBucketObjectVersionsResponse] -> ImportableContents (ContentIdentifier, ByteSize)
+mkImportableContentsVersioned info = build . groupfiles
+  where
+	build [] = ImportableContents [] []
+	build l =
+		let (l', v) = latestversion l
+		in ImportableContents
+			{ importableContents = mapMaybe extract v
+			, importableHistory = case build l' of
+				ImportableContents [] [] -> []
+				h -> [h]
+			}
+  	
+	extract ovi@(S3.ObjectVersion {}) = do
+		loc <- bucketImportLocation info $
+			T.unpack $ S3.oviKey ovi
+		let sz  = S3.oviSize ovi
+		let cid = mkS3UnversionedContentIdentifier $
+			S3.oviETag ovi
+		return (loc, (cid, sz))
+	extract (S3.DeleteMarker {}) = Nothing
 	
-	mklistunversioned l = ImportableContents 
-		{ importableContents =
-			concatMap (mapMaybe go . S3.gbrContents) l
-		, importableHistory = []
-		}
+	-- group files so all versions of a file are in a sublist,
+	-- with the newest first. S3 uses such an order, so it's just a
+	-- matter of breaking up the response list into sublists.
+	groupfiles = groupBy (\a b -> S3.oviKey a == S3.oviKey b) 
+		. concatMap S3.gbovrContents
+
+	latestversion [] = ([], [])
+	latestversion ([]:rest) = latestversion rest
+	latestversion l@((first:_old):remainder) =
+		go (S3.oviLastModified first) [first] remainder
 	  where
-	  	go oi = do
-			loc <- bucketImportLocation info $
-				T.unpack $ S3.objectKey oi
-			let sz  = S3.objectSize oi
-			let cid = mkS3UnversionedContentIdentifier $
-				S3.objectETag oi
-			return (loc, (cid, sz))
+		go mtime c [] = (removemostrecent mtime l, reverse c)
+		go mtime c ([]:rest) = go mtime c rest
+		go mtime c ((latest:_old):rest) = 
+			let !mtime' = max mtime (S3.oviLastModified latest)
+			in go mtime' (latest:c) rest
 	
-	mklistversioned l = ImportableContents [] [] -- FIXME
+	removemostrecent _ [] = []
+	removemostrecent mtime ([]:rest) = removemostrecent mtime rest
+	removemostrecent mtime (i@(curr:old):rest)
+		| S3.oviLastModified curr == mtime =
+			old : removemostrecent mtime rest
+		| otherwise =
+			i : removemostrecent mtime rest
 
 retrieveExportWithContentIdentifierS3 :: S3HandleVar -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
 retrieveExportWithContentIdentifierS3 hv info loc cid dest mkkey p = undefined
@@ -977,13 +1026,15 @@ mkS3VersionedContentIdentifier :: S3VersionID -> ContentIdentifier
 mkS3VersionedContentIdentifier (S3VersionID _ v) = 
 	ContentIdentifier $ T.encodeUtf8 v
 
+-- S3 returns etags surrounded by double quotes, and the quotes are
+-- included here.
 type S3Etag = T.Text
 
 -- For an unversioned bucket, the S3Etag is instead used as the
 -- ContentIdentifier.
 mkS3UnversionedContentIdentifier :: S3Etag -> ContentIdentifier
 mkS3UnversionedContentIdentifier t =
-	ContentIdentifier $ T.encodeUtf8 t
+	ContentIdentifier $ T.encodeUtf8 $ T.filter (/= '"') t
 
 setS3VersionID :: S3Info -> UUID -> Key -> Maybe S3VersionID -> Annex ()
 setS3VersionID info u k vid

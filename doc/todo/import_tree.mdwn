@@ -237,49 +237,26 @@ But l needs to be the same as the l above to avoid git trees proliferation.
 
 What is the algorythm here?
 
-It's got two parts, the first finds the current file tree that's
-in the bucket:
+1. Build a list of files with historical versions ([[a]]). 
+2. Extract a snapshot from the list
+3. Remove too new versions from the list
+4. Recurse with the new list.
 
-1. Remove the first item from the list, and add it to the file tree.
-   (This is the most recently changed item.)
-   (If the item is a deletion, remove from list but don't add anything to
-   file tree.)
-2. Skip forward past past versions of the file from #1 to another file.
-3. Go through the rest of the list, and the first time a file is seen, add
-   it to the file tree. (Unless it's a deletion.)
-   Don't remove these from the list, unless their
-   modification time is the same as the modification time of the item in
-   #1.
+Extracting a snapshot:
 
-The second part takes the remaining list from the first part, and
-recursively generates past file trees:
+Map over the list, taking the head version of each item and tracking
+the most recent modification time. Add the filenames to a snapshot list
+(unless the item is a deletion).
 
-1. Find the most recently modified item in the list.
-2. Remove the most recently modified item from the list, and add it to the
-   file tree.
-   (If the item is a deletion, remove from list but don't add anything to
-   file tree.)
-3. Skip forward past past versions of the file from #1 to another file.
-4. Go through the rest of the list, and the first time a file is seen, add
-   it to the file tree. (Unless it's a deletion.)
-   Don't remove these from the list, unless their
-   modification time is the same as the modification time of the item in
-   #1.
-5. The file tree now corresponds to the most recent past version of the S3
-   bucket, so make a ImportableContents that has it as the
-   importableContents. For the importableHistory, recurse this function
-   again, with the remaining contents of the list.
+Removing too new versions:
 
-The only expensive op here is finding the most recently modified item
-in the list. There are only two possibilities for where that is in the
-list:
+Map over the list, and when the head version of a file matches the most
+recent modification time, pop it off.
 
-1. It may be the first item in the list.
-2. It may be the first mention of some other file than the first
-   one mentioned in the list.
+This results in a list that is only versions before the snapshot.
 
-So that only needs a small scan forward to the next file,
-and a single date comparison.
+Overall this is perhaps a bit better than O(n^2) because the size of the list
+decreases as it goes?
 
 ---
 
