@@ -344,33 +344,13 @@ checkKey hv r c info k = withS3Handle hv $ \case
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
 checkKeyHelper info h loc = liftIO $ runResourceT $ do
-#if MIN_VERSION_aws(0,10,0)
-	rsp <- go
+	rsp <- sendS3Handle h req
 	return (isJust $ S3.horMetadata rsp)
-#else
-	catchMissingException $ do
-		void go
-		return True
-#endif
   where
-	go = sendS3Handle h req
 	req = case loc of
 		Left o -> S3.headObject (bucket info) o
 		Right (S3VersionID o vid) -> (S3.headObject (bucket info) o)
 			{ S3.hoVersionId = Just vid }
-
-#if ! MIN_VERSION_aws(0,10,0)
-	{- Catch exception headObject returns when an object is not present
-	 - in the bucket, and returns False. All other exceptions indicate a
-	 - check error and are let through. -}
-	catchMissingException :: Annex Bool -> Annex Bool
-	catchMissingException a = catchJust missing a (const $ return False)
-	  where
-		missing :: AWS.HeaderException -> Maybe ()
-		missing e
-			| AWS.headerErrorMessage e == "ETag missing" = Just ()
-			| otherwise = Nothing
-#endif
 
 storeExportS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportS3 hv r info magic f k loc p = fst
@@ -614,21 +594,17 @@ genBucket c gc u = do
 					(S3.putBucket (bucket info))
 						{ S3.pbCannedAcl = acl info
 						, S3.pbLocationConstraint = locconstraint
-#if MIN_VERSION_aws(0,13,0)
 						, S3.pbXStorageClass = storageclass
-#endif
 						}
 		writeUUIDFile c u info h
 	
 	locconstraint = mkLocationConstraint $ T.pack datacenter
 	datacenter = fromJust $ M.lookup "datacenter" c
-#if MIN_VERSION_aws(0,13,0)
 	-- "NEARLINE" as a storage class when creating a bucket is a
 	-- nonstandard extension of Google Cloud Storage.
 	storageclass = case getStorageClass c of
 		sc@(S3.OtherStorageClass "NEARLINE") -> Just sc
 		_ -> Nothing
-#endif
 
 {- Writes the UUID to an annex-uuid file within the bucket.
  -
@@ -830,9 +806,7 @@ getBucketName = map toLower <$$> M.lookup "bucket"
 getStorageClass :: RemoteConfig -> S3.StorageClass
 getStorageClass c = case M.lookup "storageclass" c of
 	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
-#if MIN_VERSION_aws(0,13,0)
 	Just s -> S3.OtherStorageClass (T.pack s)
-#endif
 	_ -> S3.Standard
 
 getPartSize :: RemoteConfig -> Maybe Integer
@@ -946,9 +920,7 @@ s3Info c info = catMaybes
 	]
   where
 	s3c = s3Configuration c
-#if MIN_VERSION_aws(0,13,0)
 	showstorageclass (S3.OtherStorageClass t) = T.unpack t
-#endif
 	showstorageclass sc = show sc
 
 getPublicWebUrls :: UUID -> S3Info -> RemoteConfig -> Key -> Annex [URLString]
