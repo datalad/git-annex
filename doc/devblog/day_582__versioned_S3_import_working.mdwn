@@ -1,0 +1,9 @@
+Despite struggling with a keyboard controller that's increasingly prone to
+flaking out and not registering some key presses while doubling others, I
+managed to finis implementing import from versioned S3 buckets. It's quite
+nice to see it download past versions of files and construct a git history.
+
+Still enough unimplemented stuff and bugs to need to work on this for
+probably one more day.
+
+(Imagine here me stuggling for a full minute to :wq)
