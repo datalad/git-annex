@@ -77,13 +77,15 @@ perform :: ImportFeedOptions -> Cache -> URLString -> CommandPerform
 perform opts cache url = go =<< downloadFeed url
   where
 	go Nothing = next $ feedProblem url "downloading the feed failed"
-	go (Just f) = case findDownloads url f of
-		[] -> next $
-			feedProblem url "bad feed content; no enclosures to download"
-		l -> do
-			showOutput
-			ok <- and <$> mapM (performDownload opts cache) l
-			next $ cleanup url ok
+	go (Just feedcontent) = case parseFeedString feedcontent of
+		Nothing -> next $ feedProblem url "parsing the feed failed"
+		Just f -> case findDownloads url f of
+			[] -> next $
+				feedProblem url "bad feed content; no enclosures to download"
+			l -> do
+				showOutput
+				ok <- and <$> mapM (performDownload opts cache) l
+				next $ cleanup url ok
 
 cleanup :: URLString -> Bool -> CommandCleanup
 cleanup url True = do
@@ -142,14 +144,14 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 			Nothing -> Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
-downloadFeed :: URLString -> Annex (Maybe Feed)
+downloadFeed :: URLString -> Annex (Maybe String)
 downloadFeed url
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = Url.withUrlOptions $ \uo ->
 		liftIO $ withTmpFile "feed" $ \f h -> do
 			hClose h
 			ifM (Url.download nullMeterUpdate url f uo)
-				( parseFeedString <$> readFileStrict f
+				( Just <$> readFileStrict f
 				, return Nothing
 				)
 
