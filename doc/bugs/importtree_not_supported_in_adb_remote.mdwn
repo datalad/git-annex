@@ -22,6 +22,7 @@ git annex initremote android type=adb androiddirectory=/sdcard/DCIM encryption=n
 
 ### What version of git-annex are you using? On what operating system?
 Latest conda one in Ubuntu 18.04 LTS
+
 ```
 $ git annex version
 git-annex version: 7.20190322-g7e5502b
