@@ -1,7 +1,8 @@
 ### Please describe the problem.
 I am following these instructions:
-https://git-annex.branchable.com/tips/android_sync_with_adb/
+<https://git-annex.branchable.com/tips/android_sync_with_adb/>
 but encouter this issue:
+
 ```
 $ git annex initremote android type=adb androiddirectory=/sdcard/DCIM encryption=none exporttree=yes importtree=yes
 initremote android 
@@ -35,14 +36,7 @@ local repository version: 5
 ```
 
 ### Please provide any additional information below.
-
-[[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
-
-
-# End of transcript or log.
-"""]]
+Not needed
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git-annex has worked wonderfully well for me in the past two years of use and having the described workflow to sync with my Android would be icing on the cake! Moreover, Joey is an awesome dev!
