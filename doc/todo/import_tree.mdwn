@@ -23,9 +23,6 @@ and `git annex sync --content` can be configured to use it.
 
 * Need to test S3 import from unversioned bucket.
 
-* Need to test S3 import from versioned bucket, including handling
-  of deletion of files.
-
 * Write a tip or tips to document using this new feature.
   (Have one for adb now.)
 
