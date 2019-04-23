@@ -177,6 +177,9 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 				then checkPresent r'
 				else \k -> anyM (checkpresent k)
 					=<< getexportlocs exportdbv k
+			, getInfo = do
+				is <- getInfo r'
+				return (is++[("import", "yes")])
 			}
 
 	isexport dbv = return $ r
