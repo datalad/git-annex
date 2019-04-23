@@ -1,0 +1,17 @@
+Got S3 import and export working fully for both versioned and unversioned
+buckets. This included developing a patch to the aws library; only
+versioned buckets are fully supported until that gets merged.
+
+I'm left with one blocking problem before merging `import-from-s3`: The commit
+history when importing from a versioned bucket is too long. It needs to
+find the point in the versioned import that has already been committed and
+avoid committing it again. Have started on that, but didn't get all the way
+today.
+
+Also, this S3 import feature should be able to be used with anonymous S3
+access to a bucket, and indeed that might be more common than wanting to
+import from a bucket you own or have credentials to allow access to. 
+But the S3 remote does not currently try to use anonymous S3 access,
+so supporting that will need some more changes.
+
+(Keyboard is fixed, yay!)
