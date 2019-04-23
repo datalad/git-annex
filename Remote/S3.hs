@@ -351,7 +351,7 @@ checkKeyHelper info h loc = checkKeyHelper' info h o limit
 	(o, limit) = case loc of
 		Left obj ->
 			(obj, id)
-		Right (S3VersionID o vid) ->
+		Right (S3VersionID obj vid) ->
 			(obj, \ho -> ho { S3.hoVersionId = Just vid })
 
 checkKeyHelper' :: S3Info -> S3Handle -> S3.Object -> (S3.HeadObject -> S3.HeadObject) -> Annex Bool
