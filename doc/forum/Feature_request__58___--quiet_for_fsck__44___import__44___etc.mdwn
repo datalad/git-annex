@@ -1,0 +1,9 @@
+My main use for git-annex is to manage a photo/video archive of my extended family.
+
+I regularly use `git annex import --clean-duplicates` to clean up old copies before going through the effort of manually putting data into the global directory structure. I only care about seeing how much data was removed, i.e. `git annex import --clean-duplicates foo | grep -v 'not duplicate; skipping'`. It would be a lot nicer to suppress this natively with `--quiet`. Ideally, in this case, only files which are being deleted (i.e. destructive actions), errors, and final stats (how many files were not deleted and how many were deleted) would be printed.
+
+Along similar lines, I don't care about everything which goes right in an `fsck`; I care about anything going wrong. A `--quiet` should print errors and final stats, nothing more.
+
+
+Best,
+Richard
