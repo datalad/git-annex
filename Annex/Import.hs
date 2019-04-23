@@ -65,13 +65,13 @@ data ImportCommitConfig = ImportCommitConfig
 	, importCommitMessage :: String
 	}
 
-{- Builds a commit for an import from a special remote. 
+{- Buils a commit for an import from a special remote. 
  -
  - When a remote provided a history of versions of files,
  - builds a corresponding tree of git commits.
  -
- - When there are no changes to commit (ie, the imported tree is the same
- - as the tree in the importCommitParent), returns Nothing.
+ - When there are no changes to commit on top of the importCommitParent,
+ - returns Nothing.
  -
  - After importing from a remote, exporting the same thing back to the
  - remote should be a no-op. So, the export log and database are
@@ -111,7 +111,7 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 				return (Just finalcommit)
 
 	mkcommits origtree basecommit (History importedtree hs) = do
-		parents <- catMaybes <$> mapM (mkcommits origtree basecommit) hs
+		parents <- catMaybes <$> mapM (mkcommits origtree basecommit) (S.toList hs)
 		if importedtree == origtree && null parents
 			then return Nothing -- no changes to commit
 			else do
@@ -176,8 +176,8 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Export.runExportDiffUpdater updater db oldtree finaltree
 		Export.closeDb db
 
-data History t = History t [History t]
-	deriving (Show)
+data History t = History t (S.Set (History t))
+	deriving (Show, Eq, Ord)
 
 {- Builds a history of git trees reflecting the ImportableContents.
  -
@@ -190,10 +190,14 @@ buildImportTrees
 	-> ImportableContents Key
 	-> Annex (History Sha)
 buildImportTrees basetree msubdir importable = History
-	<$> (go (importableContents importable) =<< Annex.gitRepo)
-	<*> mapM (buildImportTrees basetree msubdir) (importableHistory importable)
+	<$> (buildtree (importableContents importable) =<< Annex.gitRepo)
+	<*> buildhistory
   where
-	go ls repo = withMkTreeHandle repo $ \hdl -> do
+	buildhistory = S.fromList
+		<$> mapM (buildImportTrees basetree msubdir)
+			(importableHistory importable)
+	
+	buildtree ls repo = withMkTreeHandle repo $ \hdl -> do
 		importtree <- liftIO . recordTree' hdl 
 			. treeItemsToTree
 			=<< mapM mktreeitem ls
@@ -201,6 +205,7 @@ buildImportTrees basetree msubdir importable = History
 			Nothing -> return importtree
 			Just subdir -> liftIO $ 
 				graftTree' importtree subdir basetree repo hdl
+	
 	mktreeitem (loc, k) = do
 		let lf = fromImportLocation loc
 		let treepath = asTopFilePath lf
