@@ -18,6 +18,16 @@ and `git annex sync --content` can be configured to use it.
   when importing from a versioned S3 remote,
   although the head of it does reflect the current state of the remote.
 
+* S3 buckets can be set up to allow reads and listing by an anonymous user.
+  That should allow importing from such a bucket, but the S3 remote
+  will need changes, since it currently avoids using the S3 API when
+  it does not have creds.
+
+* Allow configuring importtree=yes w/o exporttree=yes, for eg anonymous S3
+  bucket import.
+  
+  Note that in S3, this should let unversioned buckets be used  w/o --force.
+
 * Write a tip or tips to document using this new feature.
   (Have one for adb now, but not for S3.)
 
