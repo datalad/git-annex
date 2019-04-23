@@ -42,3 +42,4 @@ Not needed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git-annex has worked wonderfully well for me in the past two years of use and having the described workflow to sync with my Android would be icing on the cake! Moreover, Joey is an awesome dev!
 
+> [[done]] --[[Joey]]
