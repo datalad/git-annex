@@ -222,7 +222,7 @@ store mh r info magic = fileStorer $ \k f p -> withS3HandleOrFail (uuid r) mh $ 
 		setUrlPresent k (iaPublicUrl info (bucketObject info k))
 	return True
 
-storeHelper :: S3Info -> S3Handle -> Maybe Magic -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3VersionID)
+storeHelper :: S3Info -> S3Handle -> Maybe Magic -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
 storeHelper info h magic f object p = liftIO $ case partSize info of
 	Just partsz | partsz > 0 -> do
 		fsz <- getFileSize f
@@ -236,8 +236,16 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 		rbody <- liftIO $ httpBodyStorer f p
 		let req = (putObject info object rbody)
 			{ S3.poContentType = encodeBS <$> contenttype }
-		vid <- S3.porVersionId <$> sendS3Handle h req
-		return (mkS3VersionID object vid)
+		resp <- sendS3Handle h req
+		let vid = mkS3VersionID object (S3.porVersionId resp)
+		-- FIXME Actual aws version that supports this is not known,
+		-- patch not merged yet.
+		-- https://github.com/aristidb/aws/issues/258
+#if MIN_VERSION_aws(0,99,0)
+		return (Just (S3.porETag resp), vid)
+#else
+		return (Nothing, vid)
+#endif
 	multipartupload fsz partsz = runResourceT $ do
 #if MIN_VERSION_aws(0,16,0)
 		contenttype <- liftIO getcontenttype
@@ -276,9 +284,9 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 						sendparts (offsetMeterUpdate meter (toBytesProcessed sz)) (etag:etags) (partnum + 1)
 			sendparts p [] 1
 
-		r <- sendS3Handle h $ S3.postCompleteMultipartUpload
+		resp <- sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
-		return (mkS3VersionID object (S3.cmurVersionId r))
+		return (Just (S3.cmurETag resp), mkS3VersionID object (S3.cmurVersionId resp))
 #else
 		warningIO $ "Cannot do multipart upload (partsize " ++ show partsz ++ ") of large file (" ++ show fsz ++ "); built with too old a version of the aws library."
 		singlepartupload
@@ -365,18 +373,18 @@ storeExportS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> K
 storeExportS3 hv r info magic f k loc p = fst
 	<$> storeExportS3' hv r info magic f k loc p
 
-storeExportS3' :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Bool, Maybe S3VersionID)
+storeExportS3' :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Bool, (Maybe S3Etag, Maybe S3VersionID))
 storeExportS3' hv r info magic f k loc p = withS3Handle hv $ \case
-	Just h -> catchNonAsync (go h) (\e -> warning (show e) >> return (False, Nothing))
+	Just h -> catchNonAsync (go h) (\e -> warning (show e) >> return (False, (Nothing, Nothing)))
 	Nothing -> do
 		warning $ needS3Creds (uuid r)
-		return (False, Nothing)
+		return (False, (Nothing, Nothing))
   where
 	go h = do
 		let o = T.pack $ bucketExportLocation info loc
-		mvid <- storeHelper info h magic f o p
+		(metag, mvid) <- storeHelper info h magic f o p
 		setS3VersionID info (uuid r) k mvid
-		return (True, mvid)
+		return (True, (metag, mvid))
 
 retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
 retrieveExportS3 hv r info _k loc f p =
@@ -568,18 +576,28 @@ rewritePreconditionException a = catchJust (Url.matchStatusCodeException want) a
 -- When the bucket is not versioned, data loss can result.
 -- This is why that configuration requires --force to enable.
 storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
-storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p = 
-	storeExportS3' hv r info magic src k loc p >>= \case
+storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p
+	| versioning info = go
+	-- FIXME Actual aws version that supports getting Etag for a store
+	-- is not known; patch not merged yet.
+	-- https://github.com/aristidb/aws/issues/258
+#if MIN_VERSION_aws(0,99,0)
+	| otherwise = go
+#else
+	| otherwise = do
+		warning "git-annex is built with too old a version of the aws library to support this operation"
+		return Nothing
+#endif
+  where
+	go = storeExportS3' hv r info magic src k loc p >>= \case
 		(False, _) -> return Nothing
-		(True, Just vid) -> return $ Just $
+		(True, (_, Just vid)) -> return $ Just $
 			mkS3VersionedContentIdentifier vid
-		(True, Nothing) -> return $ Just $
-			-- FIXME for an unversioned bucket, should use the etag
-			-- of the file, which is its md5sum, as the ContentIdentifier
-			-- NOT mempty!
-			-- This is blocked by 
-			-- https://github.com/aristidb/aws/issues/258
-			mkS3UnversionedContentIdentifier mempty
+		(True, (Just etag, Nothing)) -> return $ Just $
+			mkS3UnversionedContentIdentifier etag
+		(True, (Nothing, Nothing)) -> do
+			warning "did not get ETag for store to S3 bucket"
+			return Nothing
 
 -- Does not guarantee that the removed object has the content identifier,
 -- but when the bucket is versioned, the removed object content can still
