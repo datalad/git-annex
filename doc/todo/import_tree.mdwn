@@ -18,10 +18,8 @@ and `git annex sync --content` can be configured to use it.
   when importing from a versioned S3 remote,
   although the head of it does reflect the current state of the remote.
 
-* Need to test S3 import from unversioned bucket.
-
 * Write a tip or tips to document using this new feature.
-  (Have one for adb now.)
+  (Have one for adb now, but not for S3.)
 
 * Add to external special remote protocol.
 
