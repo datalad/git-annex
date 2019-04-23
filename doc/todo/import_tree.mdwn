@@ -18,7 +18,8 @@ and `git annex sync --content` can be configured to use it.
   when importing from a versioned S3 remote,
   although the head of it does reflect the current state of the remote.
 
-* Two undefs in Remote.S3 remain.
+* storeExportWithContentIdentifierS3 has a FIXME that needs a change to
+  aws.
 
 * Need to test S3 import from unversioned bucket.
 
