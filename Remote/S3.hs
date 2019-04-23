@@ -118,9 +118,9 @@ gen r u c gc = do
                                 { listImportableContents = listImportableContentsS3 hdl this info
                                 , retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierS3 hdl this info
                                 , storeExportWithContentIdentifier = storeExportWithContentIdentifierS3 hdl this info magic
-                                , removeExportWithContentIdentifier = removeExportWithContentIdentifierS3 hdl info
+                                , removeExportWithContentIdentifier = removeExportWithContentIdentifierS3 hdl this info
                                 , removeExportDirectoryWhenEmpty = Nothing
-                                , checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierS3 hdl info
+                                , checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierS3 hdl this info
                                 }
 			, whereisKey = Just (getPublicWebUrls u info c)
 			, remoteFsck = Nothing
@@ -346,14 +346,20 @@ checkKey hv r c info k = withS3Handle hv $ \case
 				anyM check us
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
-checkKeyHelper info h loc = liftIO $ runResourceT $ do
+checkKeyHelper info h loc = checkKeyHelper' info h o limit
+  where
+	(o, limit) = case loc of
+		Left obj ->
+			(obj, id)
+		Right (S3VersionID o vid) ->
+			(obj, \ho -> ho { S3.hoVersionId = Just vid })
+
+checkKeyHelper' :: S3Info -> S3Handle -> S3.Object -> (S3.HeadObject -> S3.HeadObject) -> Annex Bool
+checkKeyHelper' info h o limit = liftIO $ runResourceT $ do
 	rsp <- sendS3Handle h req
 	return (isJust $ S3.horMetadata rsp)
   where
-	req = case loc of
-		Left o -> S3.headObject (bucket info) o
-		Right (S3VersionID o vid) -> (S3.headObject (bucket info) o)
-			{ S3.hoVersionId = Just vid }
+	req = limit $ S3.headObject (bucket info) o
 
 storeExportS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportS3 hv r info magic f k loc p = fst
@@ -575,11 +581,26 @@ storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p
 			-- https://github.com/aristidb/aws/issues/258
 			mkS3UnversionedContentIdentifier mempty
 
-removeExportWithContentIdentifierS3 :: S3HandleVar -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
-removeExportWithContentIdentifierS3 hv info k loc removeablecids = undefined
+-- Does not guarantee that the removed object has the content identifier,
+-- but when the bucket is versioned, the removed object content can still
+-- be recovered (and listImportableContentsS3 will find it).
+-- 
+-- When the bucket is not versioned, data loss can result.
+-- This is why that configuration requires --force to enable.
+removeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+removeExportWithContentIdentifierS3 hv r info k loc _removeablecids =
+	removeExportS3 hv r info k loc
 
-checkPresentExportWithContentIdentifierS3 :: S3HandleVar -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
-checkPresentExportWithContentIdentifierS3 hv info _k loc knowncids = undefined
+checkPresentExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+checkPresentExportWithContentIdentifierS3 hv r info _k loc knowncids =
+	withS3Handle hv $ \case
+		Just h -> flip anyM knowncids $
+			checkKeyHelper' info h o . limitHeadToContentIdentifier
+		Nothing -> do
+			warning $ needS3Creds (uuid r)
+			giveup "No S3 credentials configured"
+  where
+	o = T.pack $ bucketExportLocation info loc
 
 {- Generate the bucket if it does not already exist, including creating the
  - UUID file within the bucket.
@@ -1030,13 +1051,25 @@ mkS3UnversionedContentIdentifier t =
 -- Makes a GetObject request be guaranteed to get the object version
 -- matching the ContentIdentifier, or fail.
 limitGetToContentIdentifier :: ContentIdentifier -> S3.GetObject -> S3.GetObject
-limitGetToContentIdentifier (ContentIdentifier v) req =
+limitGetToContentIdentifier cid req =
+	limitToContentIdentifier cid
+		(\etag -> req { S3.goIfMatch = etag })
+		(\versionid -> req { S3.goVersionId = versionid })
+
+limitHeadToContentIdentifier :: ContentIdentifier -> S3.HeadObject -> S3.HeadObject
+limitHeadToContentIdentifier cid req =
+	limitToContentIdentifier cid
+		(\etag -> req { S3.hoIfMatch = etag })
+		(\versionid -> req { S3.hoVersionId = versionid })
+
+limitToContentIdentifier :: ContentIdentifier -> (Maybe S3Etag -> a) -> (Maybe T.Text -> a) -> a
+limitToContentIdentifier (ContentIdentifier v) limitetag limitversionid =
 	let t = either mempty id (T.decodeUtf8' v)
 	in case T.take 1 t of
 		"#" -> 
 			let etag = T.drop 1 t
-			in req { S3.goIfMatch = Just etag }
-		_ -> req { S3.goVersionId = Just t }
+			in limitetag (Just etag)
+		_ -> limitversionid (Just t)
 
 setS3VersionID :: S3Info -> UUID -> Key -> Maybe S3VersionID -> Annex ()
 setS3VersionID info u k vid
