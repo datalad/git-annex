@@ -55,9 +55,10 @@ For example:
 
 You can combine using `git annex export` to send changes to a special 
 remote with `git annex import` to fetch changes from a special remote.
-When a file on a special remote has been modified, exporting to it will
-not overwrite the modified file, and the export will not succeed.
-You can resolve this conflict by using `git annex import`.
+When a file on a special remote has been modified by software other than
+git-annex, exporting to it will not overwrite the modified file, and the
+export will not succeed. You can resolve this conflict by using
+`git annex import`.
 
 (Some types of special remotes such as S3 with versioning may instead
 let an export overwrite the modified file; then `git annex import`

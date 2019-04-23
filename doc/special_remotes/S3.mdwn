@@ -81,20 +81,35 @@ the S3 remote.
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.
 
+* `versioning` - Indicate whether the S3 bucket should have versioning
+  enabled.
+  
+  Setting this to "yes" along with "exporttree=yes"
+  allows git-annex to access old versions of files that were 
+  exported to the special remote by [[git-annex export|git-annex-export]].
+
+  And setting this to "yes" along with "importtree=yes"
+  allows [[git-annex import|git-annex-import]] to import the whole
+  history of files in the bucket, synthesizing a series of git commits.
+
+  Also note that git-annex does not support dropping content from versioned
+  S3 buckets, since the versioning preserves the content.
+
 * `exporttree` - Set to "yes" to make this special remote usable
   by [[git-annex export|git-annex-export]].
   It will not be usable as a general-purpose special remote.
 
-* `versioning` - Setting this to "yes" along with "exporttree=yes",
-  allows git-annex to access old versions of files that were 
-  exported to the special remote by [[git-annex export|git-annex-export]].
+* `importtree` - Set to "yes" to make this special remote usable
+  by [[git-annex-import]]. When set in combination with exporttree,
+  this lets files be imported from it, and changes exported back to it.
 
-  Note that git-annex needs to remember S3 version IDs for files
-  sent to a remote configured this way, which will make the git-annex
-  branch a bit larger.
-
-  Also note that git-annex does not support dropping content from versioned
-  S3 buckets.
+  Note that exporting files to a S3 bucket may overwrite changes that
+  have been made to files in the bucket by other software since the last
+  time git-annex imported from the bucket. When versioning is enabled,
+  the content of files overwritten in this way can still be recovered,
+  but you may have to look through the git history to find them.
+  When versioning is not enabled, this risks data loss, and so git-annex
+  will not let you enable a remote with that configuration unless forced.
 
 * `public` - Set to "yes" to allow public read access to files sent
   to the S3 remote. This is accomplished by setting an ACL when each 
