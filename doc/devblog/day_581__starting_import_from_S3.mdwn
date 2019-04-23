@@ -1,0 +1,27 @@
+Started today on `git annex import` from S3, in the "import-from-s3"
+branch.
+
+It looks like I'm going to support both versioned and unversioned buckets;
+the latter will need --force to initialize since it can lose data. 
+
+One thought I had about that is: It's probably better for git-annex to be
+able to import data from an unversioned S3 bucket with caveats about
+avoiding unsafe operations (export) that could lose data, than it is for
+git-annex to not be able to import from the bucket at all, guaranteeing
+that past versions of modified files will be lost. (Rationalization is a
+powerful drug.)
+
+To support unversioned buckets, some kind of stable content identifier is
+needed other than the S3 version id. Luckily, S3 has etags, which are
+md5sum of the content, so will work great. But, the `aws` haskell library
+needs one small change to return an etag, so this will be
+blocked on that change.
+
+I've gotten listing importable contents from S3 working for unversioned
+buckets, including dealing with S3's 1000 item limit by paging.
+Listing importable contents from versioned buckets is harder, because
+it needs to synthesize a git version history from the information that S3
+provides. I think I have a method for doing this that will generate the
+trees that users will expect to see, and also will generate the same past
+trees every time, avoiding a proliferation of git trees. Next step: 
+Converting my prose description of how to do that into haskell.
