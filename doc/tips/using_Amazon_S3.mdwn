@@ -32,7 +32,12 @@ Notice that to enable an existing S3 remote, you have to provide the Amazon
 AWS credentials because they were not stored in the repository. (It is
 possible to configure git-annex to do that, but not the default.)
 
+## further reading
+
+See [[special_remotes/S3]] for details about configuring S3 remotes.
+
 See [[public_Amazon_S3_remote]] for how to set up a Amazon S3 remote that
 can be used by the public, without them needing AWS credentials.
 
-See [[special_remotes/S3]] for details about configuring S3 remotes.
+If you want to publish files to S3 so they can be accessed without using
+git-annex, see [[publishing_your_files_to_the_public]].
