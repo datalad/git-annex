@@ -18,6 +18,8 @@ and `git annex sync --content` can be configured to use it.
   when importing from a versioned S3 remote,
   although the head of it does reflect the current state of the remote.
 
+  Note: Merge commits may complicate this.
+
 * S3 buckets can be set up to allow reads and listing by an anonymous user.
   That should allow importing from such a bucket, but the S3 remote
   will need changes, since it currently avoids using the S3 API when

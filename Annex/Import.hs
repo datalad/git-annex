@@ -179,6 +179,51 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 data History t = History t (S.Set (History t))
 	deriving (Show, Eq, Ord)
 
+historyDepth :: History t -> Integer
+historyDepth (History _ s)
+	| S.null s = 1
+	| otherwise = 1 + maximum (map historyDepth (S.toList s))
+
+truncateHistoryToDepth :: Ord t => Integer -> History t -> History t
+truncateHistoryToDepth n (History t s) = History t (go 1 s)
+  where
+	go depth s
+		| depth >= n = S.empty
+		| otherwise = 
+			let depth' = succ depth
+			in flip S.map s $ \(History t' s') ->
+				History t' (go depth' s')
+
+{- Finds the part of the History of git trees that is new and should be
+ - committed on top of the basecommit, skipping parts that have
+ - already been committed.
+ -
+ - Will be Nothing if the basecommit already matches the top of the History.
+ -
+ - In the simple case where there is only one level of History,
+ - if the basecommit matches it, it's nothing and otherwise it should be
+ - committed on top of the basecommit.
+ -
+ - In the complex case where there are several levels of History, finds
+ - the point where it first starts matching up with the trees from the
+ - basecommit.
+ -}
+skipOldHistory :: Maybe Sha -> History Sha -> Annex (Maybe (History Sha))
+skipOldHistory basecommit importedhistory = undefined
+
+{- The knownhistory does not need to be complete; it can be 
+ - truncated to the same depth as the importedhistory to avoid reading
+ - in a lot of past history.
+ -}
+skipOldHistory' :: Ord t => History t -> History t -> Maybe (History t)
+skipOldHistory' knownhistory importedhistory@(History top rest)
+	| sametodepth importedhistory knownhistory = Nothing
+	| otherwise = Just $ 
+		History top $ S.fromList $ catMaybes $
+			map (skipOldHistory' knownhistory) (S.toList rest)
+  where
+	sametodepth a b = a == truncateHistoryToDepth (historyDepth a) b
+
 {- Builds a history of git trees reflecting the ImportableContents.
  -
  - When a subdir is provided, imported tree is grafted into the basetree at
