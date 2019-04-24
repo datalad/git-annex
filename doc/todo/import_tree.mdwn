@@ -18,7 +18,19 @@ and `git annex sync --content` can be configured to use it.
   when importing from a versioned S3 remote,
   although the head of it does reflect the current state of the remote.
 
-  Note: Merge commits may complicate this.
+  This is mostly dealt with, but still doesn't do the right thing
+  in this situation:
+
+  1. import from s3
+  2. merge 
+  3. make a change
+  4. export to s3
+  5. import from s3
+  6. merge
+
+  This results in the whole S3 history being on top of the s3/master
+  branch, followed by the commit that made the change, which of course
+  has as its parent most of the S3 history.
 
 * S3 buckets can be set up to allow reads and listing by an anonymous user.
   That should allow importing from such a bucket, but the S3 remote
