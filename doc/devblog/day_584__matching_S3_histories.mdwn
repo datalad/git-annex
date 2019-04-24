@@ -1,0 +1,16 @@
+I've been working on matching up the git history with the history from a 
+versioned S3 export. Got sidetracked for quite a while building an
+efficient way to get the git history up to a certian depth (including all
+sides of merge commits) without reading the entire `git log` output.
+
+The history matching is mostly working now, but there's a problem when a
+rename is exported to S3, because it's non-atomic on S3 and atomic in git,
+and so the histories stop matching up. This is not fatal, just results
+in an ugly git history with the right tree at the top of it. It's
+not entirely wrong; the git repo and the S3 bucket did legitimately diverge
+for a while, so shouldn't the merged history reflect that? The problem is
+just that the divergence is not represented in the opimal way.
+
+I hate giving up at the final hurdle, but I feel I need to think about this
+some more, so merging `import-from-s3` is postponed for another day, or
+likely until Monday.
