@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="avar"
+ avatar="http://cdn.libravatar.org/avatar/57332d67a86eb51e06bf78d2baf42c3c"
+ subject="A useful command in combination with this"
+ date="2019-04-24T12:37:35Z"
+ content="""
+I've found this useful in combination with this:
+
+```
+git annex find --copies 1 --and --in=NAME --print0 | xargs -0 git annex drop --force
+```
+
+Where `NAME` is some remote of \"incoming downloads\". If nobody's fetched stuff from it let's just \"drop\" it. Running this before the command Joey suggested is best.
+"""]]
