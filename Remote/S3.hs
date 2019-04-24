@@ -555,7 +555,12 @@ retrieveExportWithContentIdentifierS3 hv r info loc cid dest mkkey p = withS3Han
 		rewritePreconditionException $ retrieveHelper' h dest p $
 			limitGetToContentIdentifier cid $
 				S3.getObject (bucket info) o
-		mkkey
+		mk <- mkkey
+		case (mk, extractContentIdentifier cid o) of
+			(Just k, Right vid) -> 
+				setS3VersionID info (uuid r) k vid
+			_ -> noop
+		return mk
   where
 	o = T.pack $ bucketExportLocation info loc
 
@@ -1088,6 +1093,14 @@ limitToContentIdentifier (ContentIdentifier v) limitetag limitversionid =
 			let etag = T.drop 1 t
 			in limitetag (Just etag)
 		_ -> limitversionid (Just t)
+
+-- A ContentIdentifier contains either a etag or a S3 version id.
+extractContentIdentifier :: ContentIdentifier -> S3.Object -> Either S3Etag (Maybe S3VersionID)
+extractContentIdentifier (ContentIdentifier v) o =
+	let t = either mempty id (T.decodeUtf8' v)
+	in case T.take 1 t of
+		"#" -> Left (T.drop 1 t)
+		_ -> Right (mkS3VersionID o (Just t))
 
 setS3VersionID :: S3Info -> UUID -> Key -> Maybe S3VersionID -> Annex ()
 setS3VersionID info u k vid

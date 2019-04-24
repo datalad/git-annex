@@ -23,6 +23,7 @@ import Git.Types
 import Git.Tree
 import Git.Sha
 import Git.FilePath
+import Git.History
 import qualified Git.Ref
 import qualified Git.Branch
 import qualified Annex
@@ -89,10 +90,10 @@ buildImportCommit
 	-> Annex (Maybe Ref)
 buildImportCommit remote importtreeconfig importcommitconfig importable =
 	case importCommitParent importcommitconfig of
-		Nothing -> go emptyTree Nothing
+		Nothing -> go Nothing
 		Just basecommit -> inRepo (Git.Ref.tree basecommit) >>= \case
-			Nothing -> go emptyTree Nothing
-			Just origtree -> go origtree (Just basecommit)
+			Nothing -> go Nothing
+			Just _ -> go (Just basecommit)
   where
 	basetree = case importtreeconfig of
 		ImportTree -> emptyTree
@@ -101,29 +102,26 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 		ImportTree -> Nothing
 		ImportSubTree dir _ -> Just dir
 	
-	go origtree basecommit = do
+	go basecommit = do
 		imported@(History finaltree _) <-
 			buildImportTrees basetree subdir importable
-		mkcommits origtree basecommit imported >>= \case
-			Nothing -> return Nothing
-			Just finalcommit -> do
+		skipOldHistory basecommit imported >>= \case
+			Just toadd -> do
+				finalcommit <- mkcommits basecommit toadd
 				updatestate finaltree
 				return (Just finalcommit)
+			Nothing -> return Nothing
 
-	mkcommits origtree basecommit (History importedtree hs) = do
-		parents <- catMaybes <$> mapM (mkcommits origtree basecommit) (S.toList hs)
-		if importedtree == origtree && null parents
-			then return Nothing -- no changes to commit
-			else do
-				let commitparents = if null parents
-					then catMaybes [basecommit]
-					else parents
-				commit <- inRepo $ Git.Branch.commitTree
-					(importCommitMode importcommitconfig)
-					(importCommitMessage importcommitconfig)
-					commitparents
-					importedtree
-				return (Just commit)
+	mkcommits basecommit (History importedtree hs) = do
+		parents <- mapM (mkcommits basecommit) (S.toList hs)
+		let commitparents = if null parents
+			then catMaybes [basecommit]
+			else parents
+		inRepo $ Git.Branch.commitTree
+			(importCommitMode importcommitconfig)
+			(importCommitMessage importcommitconfig)
+			commitparents
+			importedtree
 	
 	updatestate committedtree = do
 		importedtree <- case subdir of
@@ -136,7 +134,7 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 		updateexportdb importedtree
 		oldexport <- updateexportlog importedtree
 		updatelocationlog oldexport importedtree
-
+	
 	updateexportdb importedtree = do
 		db <- Export.openDb (Remote.uuid remote)
 		Export.writeLockDbWhile db $ do
@@ -176,24 +174,6 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Export.runExportDiffUpdater updater db oldtree finaltree
 		Export.closeDb db
 
-data History t = History t (S.Set (History t))
-	deriving (Show, Eq, Ord)
-
-historyDepth :: History t -> Integer
-historyDepth (History _ s)
-	| S.null s = 1
-	| otherwise = 1 + maximum (map historyDepth (S.toList s))
-
-truncateHistoryToDepth :: Ord t => Integer -> History t -> History t
-truncateHistoryToDepth n (History t s) = History t (go 1 s)
-  where
-	go depth s
-		| depth >= n = S.empty
-		| otherwise = 
-			let depth' = succ depth
-			in flip S.map s $ \(History t' s') ->
-				History t' (go depth' s')
-
 {- Finds the part of the History of git trees that is new and should be
  - committed on top of the basecommit, skipping parts that have
  - already been committed.
@@ -209,7 +189,11 @@ truncateHistoryToDepth n (History t s) = History t (go 1 s)
  - basecommit.
  -}
 skipOldHistory :: Maybe Sha -> History Sha -> Annex (Maybe (History Sha))
-skipOldHistory basecommit importedhistory = undefined
+skipOldHistory Nothing importedhistory = return (Just importedhistory)
+skipOldHistory (Just basecommit) importedhistory =
+	inRepo (getTreeHistoryToDepth (historyDepth importedhistory) basecommit) >>= \case
+		Just knownhistory -> return $ skipOldHistory' knownhistory importedhistory
+		Nothing -> return $ Just importedhistory
 
 {- The knownhistory does not need to be complete; it can be 
  - truncated to the same depth as the importedhistory to avoid reading
