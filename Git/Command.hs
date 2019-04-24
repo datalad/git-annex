@@ -47,7 +47,7 @@ runQuiet params repo = withQuietOutput createProcessSuccess $
 {- Runs a git command and returns its output, lazily.
  -
  - Also returns an action that should be used when the output is all
- - read (or no more is needed), that will wait on the command, and
+ - read, that will wait on the command, and
  - return True if it succeeded. Failure to wait will result in zombies.
  -}
 pipeReadLazy :: [CommandParam] -> Repo -> IO (String, IO Bool)
