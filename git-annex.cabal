@@ -844,6 +844,7 @@ Executable git-annex
     Git.Fsck
     Git.GCrypt
     Git.HashObject
+    Git.History
     Git.Hook
     Git.Index
     Git.LockFile
