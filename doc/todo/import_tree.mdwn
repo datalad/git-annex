@@ -23,14 +23,42 @@ and `git annex sync --content` can be configured to use it.
 
   1. import from s3
   2. merge 
-  3. make a change
+  3. rename a file
   4. export to s3
   5. import from s3
   6. merge
 
   This results in the whole S3 history being on top of the s3/master
   branch, followed by the commit that made the change, which of course
-  has as its parent most of the S3 history.
+  has as its parent most of the S3 history again etc.
+
+  The problem is the rename -- in git, that's atomic, so the history
+  has a single commit. But on S3, that's a delete followed by a put
+  (or a copy followed by a delete, but in practice, it seems to be delete
+  and then put). So the tree History from S3 has this extra event in it.
+
+  Eg, the git history is
+  [[newname, foo, bar], [oldname, foo, bar], etc]
+  while the S3 history is 
+  [[newname, foo, bar], [foo, bar], [oldname, foo, bar], etc]
+
+  (Both of the "etc" values are the same.
+
+  While perhaps a heuristic to detect renames could be added to the History
+  comparison, maybe it would be better to make it notice that these
+  are the same after a certian point, and so preserve the divergence,
+  but with a less ugly history.
+
+  Ie, rather than creating a history like:
+
+  [[newname, foo, bar], [foo, bar], [oldname, foo, bar], etc, [newname, foo, bar], [oldname, foo, bar], etc]
+
+  Create:
+
+  [[newname, foo, bar], [oldname, foo, bar], etc]
+
+  and then upon merge of that s3/master, there will be two lines of
+  devlopment that branch out after "etc" and rejoin at the top.
 
 * S3 buckets can be set up to allow reads and listing by an anonymous user.
   That should allow importing from such a bucket, but the S3 remote
