@@ -1,0 +1,5 @@
+ATM there is no `--json-progress` in `git annex add` (only `--json`), so no feedback to the user could be provided on ETA etc.  Would be nice to have `--json-progress` there to echo similar one for `get` and `copy`.
+
+Cheers!
+
+[[!meta author=yoh]]
