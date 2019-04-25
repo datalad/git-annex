@@ -1,0 +1,3 @@
+Hi!
+
+I'm using a rclone special remote for Wasabi, with hybrid encryption. I'd like to switch to S3 remote instead of rclone (as Wasabi is S3-compatible). Is it possible? I'd like to keep the same uploaded files, with the same encryption.
