@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-04-26T14:17:58Z"
+ content="""
+First things first.. There is no progress of any kind for add of an
+individual item.
+
+This would need changes to the Backend interface so it can display progress
+while hashing..
+"""]]
