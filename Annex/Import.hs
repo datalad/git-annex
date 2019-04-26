@@ -174,33 +174,64 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Export.runExportDiffUpdater updater db oldtree finaltree
 		Export.closeDb db
 
-{- Finds the part of the History of git trees that is new and should be
- - committed on top of the basecommit, skipping parts that have
+{- Finds what to commit to update a basecommit with an imported History
+ - of git trees.
+ -
+ - Returns a generally truncated History, as well as the Sha that it should
+ - be committed on top of. Typically, the latter is the same as the
+ - basecommit.
+ -
+ - This uses skipOldHistory to try to match up common trees.
+ - Sometimes, that matching doesn't work. For example, a remote without an
+ - atomic rename operation might result in a History with two trees for
+ - each rename, one with the old file removed an another with the new file
+ - added. Since the remote tracking branch is updated on export to the git
+ - commit that was exported, the basecommit could have a single tree for a
+ - rename.
+ -
+ - In that situation, the top tree in the History will match the
+ - basecommit's tree, but then there will be a run of different trees
+ - before they re-converge. That is detected, and the History returned is
+ - truncated to the part above the re-convergence point, and the Sha
+ - returned is the re-convergence point.
+ -}
+whatToCommit :: Maybe Sha -> History Sha -> Annex (Maybe (History Sha, Sha))
+whatToCommit Nothing importedhistory = return (Just importedhistory)
+whatToCommit (Just basecommit) importedhistory =
+	maybe (Just importedhistory) (whatToCommit' importedhistory) 
+		<$> getknownhistory
+  where
+	getknownhistory = inRepo (getTreeHistoryToDepth (historyDepth importedhistory) basecommit)
+
+whatToCommit' :: History Sha -> History Sha -> Maybe (History Sha, Sha)
+whatToCommit' importedhistory knownhistory@(History ktop _) =
+	case skipOldHistory knownhistory importedhistory of
+		Nothing -> Nothing
+		Just newhistory@(History ntop _)
+			| ntop /= ktop -> newhistory
+			| otherwise -> 
+				-- XXX find convergence point
+
+{- Finds the part of the importedhistory of git trees that is new and
+ - should be committed on top of the knownhistory, skipping parts that have
  - already been committed.
  -
- - Will be Nothing if the basecommit already matches the top of the History.
+ - Will be Nothing if the knownhistory already matches the top of the
+ - importedhistory.
  -
- - In the simple case where there is only one level of History,
- - if the basecommit matches it, it's nothing and otherwise it should be
- - committed on top of the basecommit.
+ - In the simple case where there is only one level of importedhistory,
+ - when the knownhistory is has the same tree at its top, there's nothing
+ - to commit. And otherwise it should be committed on top of the knownhistory.
  -
- - In the complex case where there are several levels of History, finds
- - the point where it first starts matching up with the trees from the
- - basecommit.
- -}
-skipOldHistory :: Maybe Sha -> History Sha -> Annex (Maybe (History Sha))
-skipOldHistory Nothing importedhistory = return (Just importedhistory)
-skipOldHistory (Just basecommit) importedhistory =
-	inRepo (getTreeHistoryToDepth (historyDepth importedhistory) basecommit) >>= \case
-		Just knownhistory -> return $ skipOldHistory' knownhistory importedhistory
-		Nothing -> return $ Just importedhistory
-
-{- The knownhistory does not need to be complete; it can be 
+ - In the complex case where there are several levels of importedhistory, 
+ - finds the point where it first starts matching up with the knownhistory.
+ -
+ - The knownhistory does not need to be complete; it can be 
  - truncated to the same depth as the importedhistory to avoid reading
  - in a lot of past history.
  -}
-skipOldHistory' :: Ord t => History t -> History t -> Maybe (History t)
-skipOldHistory' knownhistory importedhistory@(History top rest)
+skipOldHistory :: Ord t => History t -> History t -> Maybe (History t)
+skipOldHistory knownhistory importedhistory@(History top rest)
 	| sametodepth importedhistory knownhistory = Nothing
 	| otherwise = Just $ 
 		History top $ S.fromList $ catMaybes $
