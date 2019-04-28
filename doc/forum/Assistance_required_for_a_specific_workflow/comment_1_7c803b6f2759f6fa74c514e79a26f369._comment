@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="use git-annex-untrust"
+ date="2019-04-28T17:32:29Z"
+ content="""
+`[[git annex untrust|git-annex-untrust]] here`
+
+will tell git-annex not to count the local copy towards `numcopies`.
+"""]]
