@@ -37,22 +37,29 @@ truncateHistoryToDepth n (History t ps) = History t (go 1 ps)
 			in flip S.map s $ \(History t' s') ->
 				History t' (go depth' s')
 
-{- Gets a History of trees from commits starting with the provided commit,
- - and down to the requested depth. -}
-getTreeHistoryToDepth :: Integer -> Ref -> Repo -> IO (Maybe (History Sha))
-getTreeHistoryToDepth n commit r = do
+
+data HistoryCommit = HistoryCommit
+	{ historyCommit :: Sha
+	, historyCommitTree :: Sha
+	, historyCommitParents :: [Sha]
+	} deriving (Show, Eq, Ord)
+
+{- Gets a History starting with the provided commit, and down to the
+ - requested depth. -}
+getHistoryToDepth :: Integer -> Ref -> Repo -> IO (Maybe (History HistoryCommit))
+getHistoryToDepth n commit r = do
 	(_, Just inh, _, pid) <- createProcess (gitCreateProcess params r)
 		{ std_out = CreatePipe }
 	!h <- fmap (truncateHistoryToDepth n) 
 		. build Nothing 
-		. map treecommitparents 
+		. map parsehistorycommit
 		. lines
 		<$> hGetContents inh
 	hClose inh
 	void $ waitForProcess pid
 	return h
   where
-	build h [] = fmap (mapHistory fst) h
+	build h [] = h
 	build _ (Nothing:_) = Nothing
 	build Nothing (Just v:rest) =
 		build (Just (History v S.empty)) rest
@@ -63,20 +70,21 @@ getTreeHistoryToDepth n commit r = do
 			-- have been found, and avoid processing any more,
 			-- this makes it much faster when there is a lot of
 			-- history.
-			if parentsfound 1 h' then [] else rest
+			if parentsfound h' then [] else rest
 
-	traverseadd v@(t, (c, ps)) (History v'@(t', (c', ps')) s)
-		| c `elem` ps' =
-			let ps'' = filter (/= c) ps'
-			    v'' = (t', (c', ps''))
-			in History v'' (S.insert (History v S.empty) s)
-		| otherwise = History v' (S.map (traverseadd v) s)
+	traverseadd hc (History hc' s)
+		| historyCommit hc `elem` historyCommitParents hc' =
+			let otherps = filter (/= historyCommit hc) (historyCommitParents hc')
+			    hc'' = hc' { historyCommitParents = otherps }
+			in History hc'' (S.insert (History hc S.empty) s)
+		| otherwise = History hc' (S.map (traverseadd hc) s)
 
-	parentsfound depth (History (_t, (_c, ps)) s)
-		| not (null ps) = False
-		| null ps && depth == n = True
+	parentsfound = parentsfound' 1
+	parentsfound' depth (History hc s)
+		| not (null (historyCommitParents hc)) = False
+		| null (historyCommitParents hc) && depth == n = True
 		| depth >= n = True
-		| otherwise = all (parentsfound (succ depth)) (S.toList s)
+		| otherwise = all (parentsfound' (succ depth)) (S.toList s)
 
 	params =
 		[ Param "log"
@@ -86,6 +94,10 @@ getTreeHistoryToDepth n commit r = do
 		, Param "--format=%T %H %P"
 		]
 	
-	treecommitparents l = case map extractSha (splitc ' ' l) of
-		(Just t:Just c:ps) -> Just (t, (c, catMaybes ps))
+	parsehistorycommit l = case map extractSha (splitc ' ' l) of
+		(Just t:Just c:ps) -> Just $ HistoryCommit
+			{ historyCommit = c
+			, historyCommitTree = t
+			, historyCommitParents = catMaybes ps
+			}
 		_ -> Nothing
