@@ -56,4 +56,4 @@ getMagicMimeType :: Magic -> FilePath -> IO (Maybe MimeType)
 getMagicMimeType m f = fmap fst <$> getMagicMime m f
 
 getMagicMimeEncoding :: Magic -> FilePath -> IO (Maybe MimeEncoding)
-getMagicMimeEncoding m f = fmap fst <$> getMagicMime m f
+getMagicMimeEncoding m f = fmap snd <$> getMagicMime m f
