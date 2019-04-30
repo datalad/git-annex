@@ -60,19 +60,16 @@ data ImportTreeConfig
 
 {- Configures how to build an import commit. -}
 data ImportCommitConfig = ImportCommitConfig
-	{ importCommitParent :: Maybe Sha
-	-- ^ Commit to use as a parent of the import commit.
+	{ importCommitTracking :: Maybe Sha
+	-- ^ Current commit on the remote tracking branch.
 	, importCommitMode :: Git.Branch.CommitMode
 	, importCommitMessage :: String
 	}
 
-{- Buils a commit for an import from a special remote. 
+{- Buils a commit for an import from a special remote.
  -
- - When a remote provided a history of versions of files,
- - builds a corresponding tree of git commits.
- -
- - When there are no changes to commit on top of the importCommitParent,
- - returns Nothing.
+ - When there are no changes to make (importCommitTracking
+ - already matches what was imported), returns Nothing.
  -
  - After importing from a remote, exporting the same thing back to the
  - remote should be a no-op. So, the export log and database are
@@ -89,11 +86,11 @@ buildImportCommit
 	-> ImportableContents Key
 	-> Annex (Maybe Ref)
 buildImportCommit remote importtreeconfig importcommitconfig importable =
-	case importCommitParent importcommitconfig of
+	case importCommitTracking importcommitconfig of
 		Nothing -> go Nothing
-		Just basecommit -> inRepo (Git.Ref.tree basecommit) >>= \case
+		Just trackingcommit -> inRepo (Git.Ref.tree trackingcommit) >>= \case
 			Nothing -> go Nothing
-			Just _ -> go (Just basecommit)
+			Just _ -> go (Just trackingcommit)
   where
 	basetree = case importtreeconfig of
 		ImportTree -> emptyTree
@@ -102,26 +99,14 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 		ImportTree -> Nothing
 		ImportSubTree dir _ -> Just dir
 	
-	go basecommit = do
+	go trackingcommit = do
 		imported@(History finaltree _) <-
 			buildImportTrees basetree subdir importable
-		whatToCommit basecommit imported >>= \case
-			Just (toadd, basecommit') -> do
-				finalcommit <- mkcommits basecommit' toadd
+		buildImportCommit' importcommitconfig trackingcommit imported >>= \case
+			Just finalcommit -> do
 				updatestate finaltree
 				return (Just finalcommit)
 			Nothing -> return Nothing
-
-	mkcommits basecommit (History importedtree hs) = do
-		parents <- mapM (mkcommits basecommit) (S.toList hs)
-		let commitparents = if null parents
-			then catMaybes [basecommit]
-			else parents
-		inRepo $ Git.Branch.commitTree
-			(importCommitMode importcommitconfig)
-			(importCommitMessage importcommitconfig)
-			commitparents
-			importedtree
 	
 	updatestate committedtree = do
 		importedtree <- case subdir of
@@ -174,72 +159,49 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Export.runExportDiffUpdater updater db oldtree finaltree
 		Export.closeDb db
 
-{- Finds what to commit to update a basecommit with an imported History
- - of git trees.
- -
- - Returns the part of the imported history that should be committed, 
- - as well as the commit sha that it should be committed on top of. 
- - Typically, the latter is the same as the basecommit.
- -
- - This uses skipOldHistory to try to match up common trees.
- - Sometimes, that matching doesn't work. For example, a remote without an
- - atomic rename operation might result in an imported History with two trees
- - for each rename, one with the old file removed an another with the new file
- - added. Since the remote tracking branch is updated on export to the git
- - commit that was exported, the basecommit could have a single tree for a
- - rename.
- -
- - In that situation, the top tree in the History will match the
- - basecommit's tree, but then there will be a run of different trees
- - before they re-converge. That is detected, and the History returned is
- - truncated to the part above the re-convergence point, to be committed
- - on top of the re-convergence point.
- -}
-whatToCommit :: Maybe Sha -> History Sha -> Annex (Maybe (History Sha, Maybe Sha))
-whatToCommit (Just basecommit) importedhistory = getknownhistory >>= return . \case
-	Just knownhistory -> whatToCommit' importedhistory basecommit knownhistory
-	Nothing -> Just (importedhistory, Nothing)
+buildImportCommit' :: ImportCommitConfig -> Maybe Sha -> History Sha -> Annex (Maybe Sha)
+buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
+	case mtrackingcommit of
+		Nothing -> Just <$> mkcommits imported
+		Just trackingcommit -> do
+			-- Get history of tracking branch to at most
+			-- one more level deep, so sametodepth will
+			-- always have enough history to compare,
+			-- but unncessary history won't be loaded.
+			let maxdepth = succ (historyDepth imported)
+			inRepo (getHistoryToDepth maxdepth trackingcommit)
+				>>= go trackingcommit
   where
-	getknownhistory = inRepo $
-		getHistoryToDepth (historyDepth importedhistory) basecommit
-whatToCommit Nothing importedhistory = return $ Just (importedhistory, Nothing)
+	go _ Nothing = Just <$> mkcommits imported
+	go trackingcommit (Just h)
+		| sametodepth imported h' = return Nothing
+		| t == ti && any (sametodepth imported) (S.toList s) = return Nothing
+		| otherwise = do
+			ci <- mkcommits imported
+			-- Make a merge commit, with one side being the
+			-- import, and the other being the trackingcommit.
+			-- This way the history as imported is preserved,
+			-- even when it differs from the history as exported,
+			-- and git merge will understand that the history
+			-- is connected.
+			let parents = 
+				[ trackingcommit
+				, ci
+				]
+			Just <$> mkcommit parents ti
+	  where
+		h'@(History t s) = mapHistory historyCommitTree h
 
-whatToCommit' :: History Sha -> Sha -> History HistoryCommit -> Maybe (History Sha, Maybe Sha)
-whatToCommit' importedhistory basecommit knownhistory@(History ktop _) =
-	case skipOldHistory (mapHistory historyCommitTree knownhistory) importedhistory of
-		Nothing -> Nothing
-		Just newhistory@(History ntop _)
-			| ntop /= historyCommitTree ktop -> 
-				Just (newhistory, Just basecommit)
-			-- XXX find convergence point
-			| otherwise -> undefined
-
-{- Finds the part of the importedhistory of git trees that is new and
- - should be committed on top of the knownhistory, skipping parts that have
- - already been committed.
- -
- - Will be Nothing if the knownhistory is already present at the top of
- - the importedhistory.
- -
- - In the simple case where there is only one level of importedhistory,
- - when the knownhistory has the same tree at its top, there's nothing
- - to commit. And otherwise it should be committed on top of the knownhistory.
- -
- - In the complex case where there are several levels of importedhistory, 
- - finds the point where it first starts matching up with the knownhistory.
- -
- - The knownhistory does not need to be complete; it can be 
- - truncated to the same depth as the importedhistory to avoid reading
- - in a lot of past history.
- -}
-skipOldHistory :: Ord t => History t -> History t -> Maybe (History t)
-skipOldHistory knownhistory importedhistory@(History top rest)
-	| sametodepth importedhistory knownhistory = Nothing
-	| otherwise = Just $ 
-		History top $ S.fromList $ catMaybes $
-			map (skipOldHistory knownhistory) (S.toList rest)
-  where
 	sametodepth a b = a == truncateHistoryToDepth (historyDepth a) b
+
+	mkcommits (History importedtree hs) = do
+		parents <- mapM mkcommits (S.toList hs)
+		mkcommit parents importedtree
+	mkcommit parents tree = inRepo $ Git.Branch.commitTree
+		(importCommitMode importcommitconfig)
+		(importCommitMessage importcommitconfig)
+		parents
+		tree
 
 {- Builds a history of git trees reflecting the ImportableContents.
  -

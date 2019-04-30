@@ -42,23 +42,26 @@ and `git annex sync --content` can be configured to use it.
   while the S3 history is 
   [[newname, foo, bar], [foo, bar], [oldname, foo, bar], etc]
 
-  (Both of the "etc" values are the same.
+  (Both of the "etc" values are the same.)
 
   While perhaps a heuristic to detect renames could be added to the History
-  comparison, maybe it would be better to make it notice that these
-  are the same after a certian point, and so preserve the divergence,
-  but with a less ugly history.
+  comparison, better would be to generate a merge between the git commit
+  that was exported to the remote before, and the imported history from the
+  remote. The merge just needs to have as its tree the current imported
+  tree.
+  
+  This way whatever happened on the remote as a consequence of
+  exports and other changes is preserved in the git history in full.
 
-  Ie, rather than creating a history like:
+  When creating such a merge, first check if the old value of the remote
+  tracking branch matches the imported history. If so, nothing to do.
 
-  [[newname, foo, bar], [foo, bar], [oldname, foo, bar], etc, [newname, foo, bar], [oldname, foo, bar], etc]
+  Next, check if the old value of the remote tracking branch is a merge,
+  and its tree matches the top of the imported history, and one
+  of its parents matches the full imported history. If so, nothing to do
+  because that is what we want to generate.
 
-  Create:
-
-  [[newname, foo, bar], [oldname, foo, bar], etc]
-
-  and then upon merge of that s3/master, there will be two lines of
-  devlopment that branch out after "etc" and rejoin at the top.
+  Otherwise, commit the imported history and generate a merge commit.
 
 * S3 buckets can be set up to allow reads and listing by an anonymous user.
   That should allow importing from such a bucket, but the S3 remote

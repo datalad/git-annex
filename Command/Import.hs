@@ -265,9 +265,9 @@ seekRemote remote branch msubdir = do
 					Just tree -> mk tree
 					Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
 	
-	parentcommit <- fromtrackingbranch Git.Ref.sha
-	let importcommitconfig = ImportCommitConfig parentcommit ManualCommit importmessage
-	let commitimport = commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig
+	trackingcommit <- fromtrackingbranch Git.Ref.sha
+	let importcommitconfig = ImportCommitConfig trackingcommit ManualCommit importmessage
+	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 
 	importabletvar <- liftIO $ newTVarIO Nothing
 	void $ includeCommandAction (listContents remote importabletvar)
@@ -298,7 +298,7 @@ listContents remote tvar = do
 			return True
 
 commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents Key -> CommandStart
-commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig importable = do
+commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable = do
 	showStart' "update" (Just $ fromRef $ fromRemoteTrackingBranch tb)
 	next $ do
 		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
@@ -308,7 +308,7 @@ commitRemote remote branch tb parentcommit importtreeconfig importcommitconfig i
 	-- Update the tracking branch. Done even when there
 	-- is nothing new to import, to make sure it exists.
 	updateremotetrackingbranch importcommit =
-		case importcommit <|> parentcommit of
+		case importcommit <|> trackingcommit of
 			Just c -> do
 				setRemoteTrackingBranch tb c
 				return True
