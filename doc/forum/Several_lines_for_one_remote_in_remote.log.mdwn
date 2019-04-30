@@ -1,0 +1,3 @@
+Hi!
+
+I found more than one line per special remote in git-annex:remote.log file. Is it the same for you?
