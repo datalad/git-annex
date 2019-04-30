@@ -13,55 +13,14 @@ and `git annex sync --content` can be configured to use it.
 
 ## remaining todo
 
-* There's a bug in the way the import history is added to the
-  previous history for the remote. This leads to an ever-growing history
-  when importing from a versioned S3 remote,
-  although the head of it does reflect the current state of the remote.
+* When generating commits for an imported history, provide a stable author,
+  committer, and date, so the same commit sha1 is always generated.
 
-  This is mostly dealt with, but still doesn't do the right thing
-  in this situation:
+* When the imported history has only one level and matches the last export,
+  there is no need to generate a merge commit, can just add a new commit on
+  top of the last export. A simple fast-forward.
 
-  1. import from s3
-  2. merge 
-  3. rename a file
-  4. export to s3
-  5. import from s3
-  6. merge
-
-  This results in the whole S3 history being on top of the s3/master
-  branch, followed by the commit that made the change, which of course
-  has as its parent most of the S3 history again etc.
-
-  The problem is the rename -- in git, that's atomic, so the history
-  has a single commit. But on S3, that's a delete followed by a put
-  (or a copy followed by a delete, but in practice, it seems to be delete
-  and then put). So the tree History from S3 has this extra event in it.
-
-  Eg, the git history is
-  [[newname, foo, bar], [oldname, foo, bar], etc]
-  while the S3 history is 
-  [[newname, foo, bar], [foo, bar], [oldname, foo, bar], etc]
-
-  (Both of the "etc" values are the same.)
-
-  While perhaps a heuristic to detect renames could be added to the History
-  comparison, better would be to generate a merge between the git commit
-  that was exported to the remote before, and the imported history from the
-  remote. The merge just needs to have as its tree the current imported
-  tree.
-  
-  This way whatever happened on the remote as a consequence of
-  exports and other changes is preserved in the git history in full.
-
-  When creating such a merge, first check if the old value of the remote
-  tracking branch matches the imported history. If so, nothing to do.
-
-  Next, check if the old value of the remote tracking branch is a merge,
-  and its tree matches the top of the imported history, and one
-  of its parents matches the full imported history. If so, nothing to do
-  because that is what we want to generate.
-
-  Otherwise, commit the imported history and generate a merge commit.
+* Detect more complex fast-forwards from the import? This may be hard..
 
 * S3 buckets can be set up to allow reads and listing by an anonymous user.
   That should allow importing from such a bucket, but the S3 remote
