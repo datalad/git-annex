@@ -79,7 +79,7 @@ gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
 	info <- extractS3Info c
 	hdl <- mkS3HandleVar c gc u
-	magic <- liftIO initMagicMimeType
+	magic <- liftIO initMagicMime
 	return $ new cst info hdl magic
   where
 	new cst info hdl magic = Just $ specialRemote c

@@ -135,14 +135,27 @@ preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu e
 
 mkLargeFilesParser :: Annex (String -> [ParseResult])
 mkLargeFilesParser = do
-	magicmime <- liftIO initMagicMimeType
-	let parse = parseToken $ commonTokens
+	magicmime <- liftIO initMagicMime
 #ifdef WITH_MAGICMIME
-		++ [ ValueToken "mimetype" (usev $ matchMagic magicmime) ]
+	let mimer n f = ValueToken n (usev $ f magicmime)
 #else
-		++ [ ValueToken "mimetype" (const $ Left "\"mimetype\" not supported; not built with MagicMime support") ]
+	let mimer n = ValueToken n (const $ Left "\""++n++"\" not supported; not built with MagicMime support")
+#endif
+	let parse = parseToken $ commonTokens ++
+#ifdef WITH_MAGICMIME
+		[ mimer "mimetype" $
+			matchMagic "mimetype" getMagicMimeType providedMimeType
+		, mimer "mimeencoding" $
+			matchMagic "mimeencoding" getMagicMimeEncoding providedMimeEncoding
+		]
+#else
+		[ mimer "mimetype"
+		, mimer "mimeencoding"
+		, 
+		]
 #endif
 	return $ map parse . tokenizeMatcher
+  where
 
 {- Generates a matcher for files large enough (or meeting other criteria)
  - to be added to the annex, rather than directly to git. -}

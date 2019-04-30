@@ -14,6 +14,10 @@ git-annex (7.20190323) UNRELEASED; urgency=medium
   * renameremote: New command, changes the name that is used to enable 
     a special remote. Especially useful when you want to reuse the name
     of an old remote for something new.
+  * Added mimeencoding= term to annex.largefiles expressions.
+    This is probably mostly useful to match non-text files with eg
+    "mimeencoding=binary"
+  * git-annex matchexpression: Added --mimeencoding option.
 
  -- Joey Hess <id@joeyh.name>  Tue, 09 Apr 2019 14:07:53 -0400
 

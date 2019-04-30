@@ -48,6 +48,11 @@ For example, this will exit 0:
   Tell what the mime type of the file is. Only needed when using
   --largefiles with a mimetype= expression.
 
+* `--mimeencoding=`
+
+  Tell what the mime encoding of the file is. Only needed when using
+  --largefiles with a mimeencoding= expression.
+
 # SEE ALSO
 
 [[git-annex]](1)

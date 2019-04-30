@@ -90,20 +90,22 @@ matchGlobFile glob = go
   where
 	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingFile fi) = pure $ matchGlob cglob (matchFile fi)
-	go (MatchingInfo af _ _ _) = matchGlob cglob <$> getInfo af
+	go (MatchingInfo p) = matchGlob cglob <$> getInfo (providedFilePath p)
 	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
 	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob af
 
-matchMagic :: Maybe Magic -> MkLimit Annex
-matchMagic (Just magic) glob = Right $ const go
+matchMagic :: String -> (Magic -> FilePath -> IO (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> Maybe Magic -> MkLimit Annex
+matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = Right $ const go
   where
  	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingKey _ _) = pure False
 	go (MatchingFile fi) = liftIO $ catchBoolIO $
 		maybe False (matchGlob cglob)
-			<$> getMagicMimeType magic (currFile fi)
-	go (MatchingInfo _ _ _ mimeval) = matchGlob cglob <$> getInfo mimeval
-matchMagic Nothing _ = Left "unable to load magic database; \"mimetype\" cannot be used"
+			<$> querymagic magic (currFile fi)
+	go (MatchingInfo p) =
+		matchGlob cglob <$> getInfo (selectprovidedinfo p)
+matchMagic limitname _ _ Nothing _ = 
+	Left $ "unable to load magic database; \""++limitname++"\" cannot be used"
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
@@ -149,7 +151,7 @@ limitInDir dir = const go
 	go (MatchingFile fi) = checkf $ matchFile fi
 	go (MatchingKey _ (AssociatedFile Nothing)) = return False
 	go (MatchingKey _ (AssociatedFile (Just af))) = checkf af
-	go (MatchingInfo af _ _ _) = checkf =<< getInfo af
+	go (MatchingInfo p) = checkf =<< getInfo (providedFilePath p)
 	checkf = return . elem dir . splitPath . takeDirectory
 
 {- Adds a limit to skip files not believed to have the specified number
@@ -197,7 +199,7 @@ limitLackingCopies approx want = case readish want of
 			else case mi of
 				MatchingFile fi -> getGlobalFileNumCopies $ matchFile fi
 				MatchingKey _ _ -> approxNumCopies
-				MatchingInfo _ _ _ _ -> approxNumCopies
+				MatchingInfo {} -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
 			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
 		return $ numcopies - length us >= needed
@@ -211,8 +213,8 @@ limitLackingCopies approx want = case readish want of
 limitUnused :: MatchFiles Annex
 limitUnused _ (MatchingFile _) = return False
 limitUnused _ (MatchingKey k _) = S.member k <$> unusedKeys
-limitUnused _ (MatchingInfo _ ak _ _) = do
-	k <- getInfo ak
+limitUnused _ (MatchingInfo p) = do
+	k <- getInfo (providedKey p)
 	S.member k <$> unusedKeys
 
 {- Limit that matches any version of any file or key. -}
@@ -274,8 +276,9 @@ limitSize vs s = case readSize dataUnits s of
   where
 	go sz _ (MatchingFile fi) = lookupFileKey fi >>= check fi sz
 	go sz _ (MatchingKey key _) = checkkey sz key
-	go sz _ (MatchingInfo _ _ as _) =
-		getInfo as >>= \sz' -> return (Just sz' `vs` Just sz)
+	go sz _ (MatchingInfo p) =
+		getInfo (providedFileSize p) 
+			>>= \sz' -> return (Just sz' `vs` Just sz)
 	checkkey sz key = return $ keySize key `vs` Just sz
 	check _ sz (Just key) = checkkey sz key
 	check fi sz Nothing = do
@@ -326,4 +329,5 @@ lookupFileKey = lookupFile . currFile
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a
 checkKey a (MatchingKey k _) = a k
-checkKey a (MatchingInfo _ ak _ _) = a =<< getInfo ak
+checkKey a (MatchingInfo p) = a =<< getInfo (providedKey p)
+
