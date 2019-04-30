@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="format of log files on the git-annex branch"
+ date="2019-04-30T17:52:41Z"
+ content="""
+I think only the line with the latest timestamp matters; this format lets [[git-annex-sync]] resolve merge conflicts on the git-annex branch by simply merging the set of lines in the two files. The [[internals]] webpage does refer repeatedly to \"one line per repository\".  @joeyh can you clarify?
+"""]]
