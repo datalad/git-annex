@@ -188,8 +188,9 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 			importedcommit <- case getRemoteTrackingBranchImportHistory h of
 				Nothing ->
 					mkcommits imported
-				Just oldimported ->
-					mknewcommits oldimported imported
+				Just oldimported@(History oldhc _) -> do
+					let oldimportedtrees = mapHistory historyCommitTree oldimported
+					mknewcommits oldhc oldimportedtrees imported
 			Just <$> makeRemoteTrackingBranchMergeCommit'
 				trackingcommit importedcommit ti
 	  where
@@ -207,19 +208,12 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 		parents <- mapM mkcommits (S.toList hs)
 		mkcommit parents importedtree
 
-	-- Reuse the commits from the oldimported History when possible.
-	mknewcommits old@(History oldhc _) new@(History importedtree hs)
-		| sameasold old new = return $ historyCommit oldhc
+	-- Reuse the commits from the old imported History when possible.
+	mknewcommits oldhc old new@(History importedtree hs)
+		| old == new = return $ historyCommit oldhc
 		| otherwise = do
-			parents <- mapM (mknewcommits old) (S.toList hs)
+			parents <- mapM (mknewcommits oldhc old) (S.toList hs)
 			mkcommit parents importedtree
-	
-	-- Are the trees in the old History the same as the newly imported
-	-- trees, all the way down?
-	sameasold (History oldhc olds) (History importedtree hs)
-		| historyCommitTree oldhc /= importedtree = False
-		| otherwise = all (sameasold' olds) (S.toList hs)
-	sameasold' olds h = any (\old -> sameasold old h) (S.toList olds)
 
 {- Builds a history of git trees reflecting the ImportableContents.
  -
