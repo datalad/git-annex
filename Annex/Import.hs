@@ -31,6 +31,7 @@ import Annex.Link
 import Annex.LockFile
 import Annex.Content
 import Annex.Export
+import Annex.RemoteTrackingBranch
 import Command
 import Backend
 import Config
@@ -188,12 +189,9 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 		-- history as exported, and git merge will understand that
 		-- the history is connected.
 		| otherwise = do
-			ci <- mkcommits imported
-			let parents = 
-				[ trackingcommit
-				, ci
-				]
-			Just <$> mkcommit parents ti
+			importedcommit <- mkcommits imported
+			Just <$> makeRemoteTrackingBranchMergeCommit'
+				trackingcommit importedcommit ti
 	  where
 		h'@(History t s) = mapHistory historyCommitTree h
 

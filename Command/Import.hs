@@ -266,7 +266,7 @@ seekRemote remote branch msubdir = do
 					Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
 	
 	trackingcommit <- fromtrackingbranch Git.Ref.sha
-	let importcommitconfig = ImportCommitConfig trackingcommit ManualCommit importmessage
+	let importcommitconfig = ImportCommitConfig trackingcommit AutomaticCommit importmessage
 	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 
 	importabletvar <- liftIO $ newTVarIO Nothing

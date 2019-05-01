@@ -235,7 +235,8 @@ fillExport r db newtree mtbcommitsha = do
 		Nothing -> noop
 		Just (tb, commitsha) ->
 			whenM (liftIO $ fromAllFilled <$> takeMVar allfilledvar) $
-				setRemoteTrackingBranch tb commitsha
+				makeRemoteTrackingBranchMergeCommit tb commitsha newtree
+					>>= setRemoteTrackingBranch tb
 	
 	liftIO $ fromFileUploaded <$> takeMVar cvar
 
