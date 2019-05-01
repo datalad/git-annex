@@ -1,0 +1,92 @@
+Not sure actually if anything could be done on git annex side, and I am still waiting for it to be fixed in the "source".  But since it succeeds in serial (no `-J 5`) mode (not shown here), I thought it might be something to look for to fixup in git-annex
+
+[[!format sh """
+$> git clone http://github.com/OpenNeuroDatasets/ds000201
+...
+$> cd ds000201
+$> git annex enableremote s3-PUBLIC
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+enableremote s3-PUBLIC ok
+(recording state in git...)
+
+$> git annex get -J5 code
+get code/convert_physio_files.py (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+
+  unknown export location
+
+  Unable to access these remotes: s3-PUBLIC
+  
+  Try making some of these repositories available:
+        251a9a3d-4684-43b2-94d9-7079346f9a5b -- root@197dae0f1c68:/datalad/ds000201
+        d46236ce-1f9e-4216-9676-35f10fd6c553 -- [s3-PUBLIC]
+  
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get code/convert_emb_dataset.R (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  
+  unknown export location
+  
+  Unable to access these remotes: s3-PUBLIC
+  
+  Try making some of these repositories available:
+        251a9a3d-4684-43b2-94d9-7079346f9a5b -- root@197dae0f1c68:/datalad/ds000201
+        d46236ce-1f9e-4216-9676-35f10fd6c553 -- [s3-PUBLIC]
+  
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+...
+get code/plot_event_file.R (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  
+  unknown export location
+  
+  Unable to access these remotes: s3-PUBLIC
+  
+  Try making some of these repositories available:
+        251a9a3d-4684-43b2-94d9-7079346f9a5b -- root@197dae0f1c68:/datalad/ds000201
+        d46236ce-1f9e-4216-9676-35f10fd6c553 -- [s3-PUBLIC]
+  
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get code/create_mosaic_for_image_file.sh (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+(recording state in git...)
+git-annex: get: 5 failed
+
+# and then "succeeds" on subsequent call since I guess load was already downloaded
+$> git annex get -J5 code
+get code/convert_edf_dataset.R (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get code/convert_emb_dataset.R (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get code/convert_physio_files.py (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get code/plot_event_file.R (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get code/BIDS_WalkerToGetScans.ipynb (from s3-PUBLIC...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+(recording state in git...)
+
+$> git annex version
+git-annex version: 7.20190322+git133-g59922f1f4-1~ndall+1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+"""]]
+
