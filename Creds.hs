@@ -50,7 +50,7 @@ data CredPairStorage = CredPairStorage
  -
  - The remote's configuration should have already had a cipher stored in it
  - if that's going to be done, so that the creds can be encrypted using the
- - cipher. The EncryptionIsSetup phantom type ensures that is the case.
+ - cipher. The EncryptionIsSetup is witness to that being the case.
  -}
 setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
 setRemoteCredPair encsetup c gc storage mcreds = case mcreds of

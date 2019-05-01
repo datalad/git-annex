@@ -1,0 +1,16 @@
+I could not find a good solution to the S3 history matching problem, so I
+think that was the wrong approach. Now I have what seems to be a better
+approach implemented: When an import of history from S3 contains some trees
+that differ from the trees that were exported to S3, all git-annex needs to
+do is make git aware of that, and it can do so by making the remote
+tracking branch contain a merge between what was exported to S3 and what
+was imported from it.
+
+That does mean that there can be some extra commits generated form an
+import, with the same trees as commits that the user made, but a different
+message. That seems acceptable. Less so is that repeated imports generate
+different commits each time; I need to make it generate stable commits. I
+should also add back detection of the simple fast-forward case which was
+working but got broken today.
+
+So still not done with this, but the end is in sight!

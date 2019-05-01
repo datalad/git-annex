@@ -987,6 +987,7 @@ Executable git-annex
     Types.LockCache
     Types.Messages
     Types.MetaData
+    Types.Mime
     Types.NumCopies
     Types.RefSpec
     Types.Remote

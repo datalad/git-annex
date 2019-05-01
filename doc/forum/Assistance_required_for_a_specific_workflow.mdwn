@@ -1,0 +1,19 @@
+I'm having troubles trying to setup something like this:
+
+* Setup a git-annex locally on my laptop with multiple special remotes.
+   * These are mainly free cloud services mounted with git-annex-remote-rclone
+* Set the number of copies to 2 (so I can have some redundancy on my annexed files, and spread two different copies into two random special remotes)
+* Use my local annex folder, but due to the (potentially) large size of it, be able to "git annex drop some/files" while maintaining the numcopies:2 setting
+* Set it up so that once I copy/create a file in the annex folder, automatically replicated twice (since numcopies:2) to any of my special remotes.
+
+So far, I have setup my local repo as repository group: client, and all my special remotes as "incremental backup" (since I do not wanted them to each hold a full backup of my whole annex, since it might be much larger than the available space provided by the cloud provider, Box for example).
+
+I had numcopies set to 2, but this only copies one version of each file to another special remote (I assume the other copy is the one in my local repo)
+
+Setting numcopies to 3, copies to two special remotes (plus my local copy) but "git annex drop some/file" does not work, complaining that only two other copies are available, so it is not working as expected.
+
+I'm sure I'm missing something obvious here but how would I set this up so it works as automatically/transparent as possible?
+
+Maybe I could utilize the "/archive" folder and move files there, but i hate destroying my directory structure by moving files there, and I would rather "drop" the files in place, and "get" them when i need them...
+
+A big thanks to the collective git-annex brain out there... :)

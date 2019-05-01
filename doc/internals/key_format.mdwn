@@ -26,5 +26,5 @@ a key. Older versions of git-annex would parse keys with the fields in other
 orders (although the name field must always come last), but the current
 version requires the fields come in the order shown above.
 
-The `git annex examinekey` command can be used to extract information from
+The [[`git annex examinekey`|git-annex-examinekey]] command can be used to extract information from
 a key.

@@ -10,8 +10,10 @@
 module Annex.Magic (
 	Magic,
 	MimeType,
-	initMagicMimeType,
+	MimeEncoding,
+	initMagicMime,
 	getMagicMimeType,
+	getMagicMimeEncoding,
 ) where
 
 #ifdef WITH_MAGICMIME
@@ -21,25 +23,37 @@ import Common
 #else
 type Magic = ()
 #endif
+import Types.Mime
 
-initMagicMimeType :: IO (Maybe Magic)
+initMagicMime :: IO (Maybe Magic)
 #ifdef WITH_MAGICMIME
-initMagicMimeType = catchMaybeIO $ do
-	m <- magicOpen [MagicMimeType]
+initMagicMime = catchMaybeIO $ do
+	m <- magicOpen [MagicMime]
 	liftIO $ getEnv "GIT_ANNEX_DIR" >>= \case
 		Nothing -> magicLoadDefault m
 		Just d -> magicLoad m
 			(d </> "magic" </> "magic.mgc")
 	return m
 #else
-initMagicMimeType = return Nothing
+initMagicMime = return Nothing
 #endif
 
-type MimeType = String
+getMagicMime :: Magic -> FilePath -> IO (Maybe (MimeType, MimeEncoding))
+#ifdef WITH_MAGICMIME
+getMagicMime m f = Just . parse <$> magicFile m f
+  where
+	parse s = 
+		let (mimetype, rest) = separate (== ';') s
+		in case rest of
+			(' ':'c':'h':'a':'r':'s':'e':'t':'=':mimeencoding) -> 
+				(mimetype, mimeencoding)
+			_ -> (mimetype, "")
+#else
+getMagicMime _ _ = return Nothing
+#endif
 
 getMagicMimeType :: Magic -> FilePath -> IO (Maybe MimeType)
-#ifdef WITH_MAGICMIME
-getMagicMimeType m f = Just <$> magicFile m f
-#else
-getMagicMimeType _ _ = return Nothing
-#endif
+getMagicMimeType m f = fmap fst <$> getMagicMime m f
+
+getMagicMimeEncoding :: Magic -> FilePath -> IO (Maybe MimeEncoding)
+getMagicMimeEncoding m f = fmap snd <$> getMagicMime m f
