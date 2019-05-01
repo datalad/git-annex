@@ -59,7 +59,7 @@ getHistoryToDepth n commit r = do
 	void $ waitForProcess pid
 	return h
   where
-	build h [] = h
+	build h [] = fmap (mapHistory fst) h
 	build _ (Nothing:_) = Nothing
 	build Nothing (Just v:rest) =
 		build (Just (History v S.empty)) rest
@@ -72,17 +72,16 @@ getHistoryToDepth n commit r = do
 			-- history.
 			if parentsfound h' then [] else rest
 
-	traverseadd hc (History hc' s)
-		| historyCommit hc `elem` historyCommitParents hc' =
-			let otherps = filter (/= historyCommit hc) (historyCommitParents hc')
-			    hc'' = hc' { historyCommitParents = otherps }
-			in History hc'' (S.insert (History hc S.empty) s)
-		| otherwise = History hc' (S.map (traverseadd hc) s)
+	traverseadd v@(hc, _ps) (History v'@(hc', ps') s)
+		| historyCommit hc `elem` ps' =
+			let ps'' = filter (/= historyCommit hc) ps'
+			in History (hc', ps'') (S.insert (History v S.empty) s)
+		| otherwise = History v' (S.map (traverseadd v) s)
 
 	parentsfound = parentsfound' 1
-	parentsfound' depth (History hc s)
-		| not (null (historyCommitParents hc)) = False
-		| null (historyCommitParents hc) && depth == n = True
+	parentsfound' depth (History (_hc, ps) s)
+		| not (null ps) = False
+		| null ps && depth == n = True
 		| depth >= n = True
 		| otherwise = all (parentsfound' (succ depth)) (S.toList s)
 
@@ -95,9 +94,12 @@ getHistoryToDepth n commit r = do
 		]
 	
 	parsehistorycommit l = case map extractSha (splitc ' ' l) of
-		(Just t:Just c:ps) -> Just $ HistoryCommit
-			{ historyCommit = c
-			, historyCommitTree = t
-			, historyCommitParents = catMaybes ps
-			}
+		(Just t:Just c:ps) -> Just $ 
+			( HistoryCommit
+				{ historyCommit = c
+				, historyCommitTree = t
+				, historyCommitParents = catMaybes ps
+				}
+			, catMaybes ps
+			)
 		_ -> Nothing
