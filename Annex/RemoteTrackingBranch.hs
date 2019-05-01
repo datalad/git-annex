@@ -12,14 +12,17 @@ module Annex.RemoteTrackingBranch
 	, setRemoteTrackingBranch
 	, makeRemoteTrackingBranchMergeCommit
 	, makeRemoteTrackingBranchMergeCommit'
+	, getRemoteTrackingBranchImportHistory
 	) where
 
 import Annex.Common
 import Git.Types
 import qualified Git.Ref
 import qualified Git.Branch
-import qualified Git.History
+import Git.History
 import qualified Types.Remote as Remote
+
+import qualified Data.Set as S
 
 newtype RemoteTrackingBranch = RemoteTrackingBranch
 	{ fromRemoteTrackingBranch :: Ref }
@@ -54,9 +57,9 @@ makeRemoteTrackingBranchMergeCommit tb commitsha treesha =
 	-- Check if the tracking branch exists.
 	inRepo (Git.Ref.sha (fromRemoteTrackingBranch tb)) >>= \case
 		Nothing -> return commitsha
-		Just _ -> inRepo (Git.History.getHistoryToDepth 1 (fromRemoteTrackingBranch tb)) >>= \case
+		Just _ -> inRepo (getHistoryToDepth 1 (fromRemoteTrackingBranch tb)) >>= \case
 			Nothing -> return commitsha
-			Just (Git.History.History hc _) -> case Git.History.historyCommitParents hc of
+			Just (History hc _) -> case historyCommitParents hc of
 				[_, importhistory] ->
 					makeRemoteTrackingBranchMergeCommit' commitsha importhistory treesha
 				-- Earlier versions of git-annex did not
@@ -72,3 +75,17 @@ makeRemoteTrackingBranchMergeCommit' commitsha importedhistory treesha =
 			"remote tracking branch"
 			[commitsha, importedhistory]
 			treesha
+
+{- When makeRemoteTrackingBranchMergeCommit was used, this finds the
+ - import history, starting from the second parent of the merge commit.
+ -}
+getRemoteTrackingBranchImportHistory :: History HistoryCommit -> Maybe (History HistoryCommit)
+getRemoteTrackingBranchImportHistory (History hc s) = 
+	case historyCommitParents hc of
+		[_, importhistory] -> go importhistory (S.toList s)
+		_ -> Nothing
+  where
+	go _ [] = Nothing
+	go i (h@(History hc' _):hs)
+		| historyCommit hc' == i = Just h
+		| otherwise = go i hs

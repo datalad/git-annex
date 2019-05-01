@@ -166,30 +166,30 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 		Nothing -> Just <$> mkcommits imported
 		Just trackingcommit -> do
 			-- Get history of tracking branch to at most
-			-- one more level deep, so sametodepth will
-			-- always have enough history to compare,
-			-- but unncessary history won't be loaded.
+			-- one more level deep than what was imported,
+			-- so we'll have enough history to compare,
+			-- but not spend too much time getting it.
 			let maxdepth = succ (historyDepth imported)
 			inRepo (getHistoryToDepth maxdepth trackingcommit)
 				>>= go trackingcommit
   where
 	go _ Nothing = Just <$> mkcommits imported
 	go trackingcommit (Just h)
-		-- If the tracking branch matches the history,
-		-- nothing new needs to be committed.
-		| sametodepth imported h' = return Nothing
 		-- If the tracking branch head is a merge commit
 		-- with a tree that matches the head of the history,
 		-- and one side of the merge matches the history,
 		-- nothing new needs to be committed.
 		| t == ti && any (sametodepth imported) (S.toList s) = return Nothing
-		-- Make a merge commit, with one side being the import, and
-		-- the other being the trackingcommit. This way the history
-		-- as imported is preserved, even when it differs from the
-		-- history as exported, and git merge will understand that
-		-- the history is connected.
+		-- If the tracking branch matches the history,
+		-- nothing new needs to be committed.
+		-- (This is unlikely to happen.)
+		| sametodepth imported h' = return Nothing
 		| otherwise = do
-			importedcommit <- mkcommits imported
+			importedcommit <- case getRemoteTrackingBranchImportHistory h of
+				Nothing ->
+					mkcommits imported
+				Just oldimported ->
+					mknewcommits oldimported imported
 			Just <$> makeRemoteTrackingBranchMergeCommit'
 				trackingcommit importedcommit ti
 	  where
@@ -197,14 +197,29 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 
 	sametodepth a b = a == truncateHistoryToDepth (historyDepth a) b
 
-	mkcommits (History importedtree hs) = do
-		parents <- mapM mkcommits (S.toList hs)
-		mkcommit parents importedtree
 	mkcommit parents tree = inRepo $ Git.Branch.commitTree
 		(importCommitMode importcommitconfig)
 		(importCommitMessage importcommitconfig)
 		parents
 		tree
+
+	mkcommits (History importedtree hs) = do
+		parents <- mapM mkcommits (S.toList hs)
+		mkcommit parents importedtree
+
+	-- Reuse the commits from the oldimported History when possible.
+	mknewcommits old@(History oldhc _) new@(History importedtree hs)
+		| sameasold old new = return $ historyCommit oldhc
+		| otherwise = do
+			parents <- mapM (mknewcommits old) (S.toList hs)
+			mkcommit parents importedtree
+	
+	-- Are the trees in the old History the same as the newly imported
+	-- trees, all the way down?
+	sameasold (History oldhc olds) (History importedtree hs)
+		| historyCommitTree oldhc /= importedtree = False
+		| otherwise = all (sameasold' olds) (S.toList hs)
+	sameasold' olds h = any (\old -> sameasold old h) (S.toList olds)
 
 {- Builds a history of git trees reflecting the ImportableContents.
  -

@@ -13,14 +13,11 @@ and `git annex sync --content` can be configured to use it.
 
 ## remaining todo
 
-* When generating commits for an imported history, provide a stable author,
-  committer, and date, so the same commit sha1 is always generated.
-
 * When the imported history has only one level and matches the last export,
   there is no need to generate a merge commit, can just add a new commit on
   top of the last export. A simple fast-forward.
 
-* Detect more complex fast-forwards from the import? This may be hard..
+  May not be needed?
 
 * S3 buckets can be set up to allow reads and listing by an anonymous user.
   That should allow importing from such a bucket, but the S3 remote
