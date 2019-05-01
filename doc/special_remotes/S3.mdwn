@@ -82,17 +82,17 @@ the S3 remote.
   and UUID. This can be specified to pick a bucket name.
 
 * `versioning` - Indicate whether the S3 bucket should have versioning
-  enabled.
+  enabled. Set to "yes" to enable.
   
-  Setting this to "yes" along with "exporttree=yes"
+  Enabling versioning along with "exporttree=yes"
   allows git-annex to access old versions of files that were 
   exported to the special remote by [[git-annex export|git-annex-export]].
 
-  And setting this to "yes" along with "importtree=yes"
+  And enabling versioning along with "importtree=yes"
   allows [[git-annex import|git-annex-import]] to import the whole
   history of files in the bucket, synthesizing a series of git commits.
 
-  Also note that git-annex does not support dropping content from versioned
+  Note that git-annex does not support dropping content from versioned
   S3 buckets, since the versioning preserves the content.
 
 * `exporttree` - Set to "yes" to make this special remote usable
