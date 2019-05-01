@@ -1,0 +1,18 @@
+Finally got the remote tracking branch for import from S3 into a good shape.
+
+Rather than coaxing git into generating the same commits each time for
+imports (which would have needed commit dates to be stable somehow), 
+I made git-annex always preserve a reference to the last import commit.
+
+[[s3rename.png]]
+
+Here's how it looks when a rename was exported to S3, which resulted in a
+history in S3 that diverged and reconverged with the git history.
+
+[[s3history.png]]
+
+And here's how the history develops as more changes get exported and
+imported.
+
+With adb and S3 import done, the first phase of [[todo/import_tree]] is
+complete.
