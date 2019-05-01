@@ -174,16 +174,21 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
   where
 	go _ Nothing = Just <$> mkcommits imported
 	go trackingcommit (Just h)
+		-- If the tracking branch matches the history,
+		-- nothing new needs to be committed.
 		| sametodepth imported h' = return Nothing
+		-- If the tracking branch head is a merge commit
+		-- with a tree that matches the head of the history,
+		-- and one side of the merge matches the history,
+		-- nothing new needs to be committed.
 		| t == ti && any (sametodepth imported) (S.toList s) = return Nothing
+		-- Make a merge commit, with one side being the import, and
+		-- the other being the trackingcommit. This way the history
+		-- as imported is preserved, even when it differs from the
+		-- history as exported, and git merge will understand that
+		-- the history is connected.
 		| otherwise = do
 			ci <- mkcommits imported
-			-- Make a merge commit, with one side being the
-			-- import, and the other being the trackingcommit.
-			-- This way the history as imported is preserved,
-			-- even when it differs from the history as exported,
-			-- and git merge will understand that the history
-			-- is connected.
 			let parents = 
 				[ trackingcommit
 				, ci
