@@ -18,7 +18,9 @@ import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
 import Data.Ratio
 import System.Posix.Types
+#if MIN_VERSION_QuickCheck(2,10,0)
 import Data.List.NonEmpty (NonEmpty(..))
+#endif
 import Prelude
 
 {- Times before the epoch are excluded. Half with decimal and half without. -}
