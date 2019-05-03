@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2019-05-03T16:31:18Z"
+ content="""
+I guess this could also be implemented with a read-only external special remote, which has the path to the `speculate-can-get` clone as a config param, and `speculate-present` is then set to true for this external special remote.
+"""]]
