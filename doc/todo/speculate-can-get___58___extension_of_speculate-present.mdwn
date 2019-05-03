@@ -1,0 +1,4 @@
+Add `remote.<name>.annex-speculate-can-get` config setting for non-special remotes, with the meaning "speculate that the remote knows how to get the key".  It's like `remote.<name>.annex-speculate-present`, except you'd first try [[`git-annex-get`|git-annex-get]] in the remote before looking in its annex.
+
+Then one can make a quick clone of the current repo, and instead of re-configuring all its remotes in the new clone, just configure the origin to be a `speculate-can-get` remote.
+This would also be useful when you have unconnected but related repos, and want to occasionally share files between them without merging their histories.
