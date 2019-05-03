@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 5"
+ date="2019-05-03T15:50:43Z"
+ content="""
+I think I added that line to the docs, and yes, it's not for git-annex metadata.  I'll clarify the page.
+
+I'm not sure there is a well-defined way to set git-annex metadata via .gitattributes, given the different semantics of git-annex metadata (it's tied to timestamps, and is shared between all branches).  Maybe one could define some unified-metadata, which interprets git-annex metadata on an annexed file as implicitly setting .gitattributes for that file in that directory.
+"""]]
