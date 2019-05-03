@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-05-03T15:39:07Z"
+ content="""
+This would involve an extension to the P2P protocol to ask a remote to
+git-annex get a key from its remotes.
+
+But, I'd worry this could be abused. Imagine for example that you have
+published a sanitized dataset by cloning the complete dataset and getting
+only the files you wish to publish, and then exposed that over the P2P
+protocol, with a locked-down ssh key. Such a new feature would make this
+previously secure setup be exploitable to expose the unsantizied data.
+
+In such a scenario, `GIT_ANNEX_SHELL_READONLY` might be set, and could be
+used to avoid the unwanted behavior. But consider, the repo might be
+publishing the sanitized dataset and also accepting uploads of derived data
+from the people who have been given ssh keys to use it and so not have
+readonly set.
+
+A DOS attack seems even more likely, where you've only gotten a subset of
+files into a particular clone to avoid using up too much disk space,
+and then this is used to get many more files than you want there. This
+could happen without a trust boundary as well. Of course, git-annex repos with
+the assistant running and a bad preferred content configuration can
+similarly download too much data, but that takes an explicit configuration.
+This would change a scenario where "git annex get --from remote" had just
+failed into one where it suddenly ran the remote out of disk.
+
+---
+
+There's also the problem that it could take the remote arbitrarily long to
+perform the get, and so would it need to send back progress information?
+And how would that indirect download progress info be presented to the
+user? Consider there could be a chain of several transfers. If it was
+possible to stream the file back to the requestor as the remote received
+it, the progress display would work as-is, but many file retrievals are not
+streamable.
+"""]]
