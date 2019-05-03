@@ -139,7 +139,8 @@ mkLargeFilesParser = do
 #ifdef WITH_MAGICMIME
 	let mimer n f = ValueToken n (usev $ f magicmime)
 #else
-	let mimer n = ValueToken n (const $ Left "\""++n++"\" not supported; not built with MagicMime support")
+	let mimer n = ValueToken n $ 
+		const $ Left $ "\""++n++"\" not supported; not built with MagicMime support"
 #endif
 	let parse = parseToken $ commonTokens ++
 #ifdef WITH_MAGICMIME
