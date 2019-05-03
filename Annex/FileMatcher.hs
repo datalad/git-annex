@@ -151,7 +151,6 @@ mkLargeFilesParser = do
 #else
 		[ mimer "mimetype"
 		, mimer "mimeencoding"
-		, 
 		]
 #endif
 	return $ map parse . tokenizeMatcher
