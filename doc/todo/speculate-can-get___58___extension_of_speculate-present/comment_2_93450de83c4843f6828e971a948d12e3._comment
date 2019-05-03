@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-05-03T16:11:06Z"
+ content="""
+How about limiting this to just the local non-special remotes, i.e. git clones of the repo?  Not ones accessible over ssh. And requiring the origin repo to have an explicitly set config setting, like annex.allow-speculate-can-get-from-this-repo, before it can be used that way.
+
+I was thinking of something much simpler / less powerful than what you're describing, but it would address the real use cases I have.
+
+git-annex already has several security settings that can expose data or enable attacks if used badly, but require enough explicit configuration that people who use them likely know what they're doing.
+"""]]
