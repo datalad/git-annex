@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2019-05-03T16:26:40Z"
+ content="""
+Re: disk space problem, can just drop the file from the `speculate-can-get` repo, after getting the file from it?  In my usage scenarios, `annex.hardlink` would also be on, so only one copy of the file would exist.
+"""]]
