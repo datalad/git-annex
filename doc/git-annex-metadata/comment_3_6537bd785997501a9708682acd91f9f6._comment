@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="question about .gitattributes"
+ date="2019-05-03T15:21:41Z"
+ content="""
+Joey, I feel like I have asked it before, but can't quickly search it up, so asking again (sorry if repeating). By
+
+> To attach metadata to a particular path, rather than a particular key, use .gitattributes .
+
+you meant attaching some other metadata, not really \"git-annex\" metadata, right? 
+Or there is a way to specify metadata `key=value` pairs to be attached to annexed files, e.g. smth like
+
+```
+*_scans.json annex.metadata=(distribution-restrictions=sensitive)
+```
+?
+"""]]
