@@ -22,18 +22,12 @@ contains the date the field was last changed. Unlike other metadata,
 this cannot be directly modified by this command. It is updated
 automatically.
 
-Note that the metadata is attached to the particular content of a file,
-not to a particular filename on a particular git branch.  More precisely,
-metadata is attached to the key used for the file, which can reflect
-file contents and/or name, depending on the key-value backend used for the file.
+Note that the metadata is attached to git-annex key corresponding to the 
+content of a file, not to a particular filename on a particular git branch.
 All files with the same key share the same metadata, which is
-stored in the git-annex branch. If a file is edited, old
-metadata will be copied to the new key when you [[git-annex-add]]
-the edited file.  Note also that changes to a file's git-annex metadata will
-not be reflected in the git log of the file, since they are stored on the 
-git-annex branch. To attach metadata to a particular path,
-rather than a particular key, use .gitattributes .
-
+stored in the git-annex branch. If a file is modified, the metadata
+of the previous version will be copied to the new key when git-annex adds
+the modified file.
 
 # OPTIONS
 
