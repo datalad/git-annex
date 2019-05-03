@@ -16,6 +16,7 @@ module Annex.Magic (
 	getMagicMimeEncoding,
 ) where
 
+import Types.Mime
 #ifdef WITH_MAGICMIME
 import Magic
 import Utility.Env
@@ -23,7 +24,6 @@ import Common
 #else
 type Magic = ()
 #endif
-import Types.Mime
 
 initMagicMime :: IO (Maybe Magic)
 #ifdef WITH_MAGICMIME
