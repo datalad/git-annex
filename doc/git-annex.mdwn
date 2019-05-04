@@ -862,15 +862,15 @@ Here are all the supported configuration settings.
 * `annex.securehashesonly`
 
   Set to true to indicate that the repository should only use
-  cryptographically secure hashes
-  (SHA2, SHA3) and not insecure hashes (MD5, SHA1) for content.
+  cryptographically secure hashes (SHA2, SHA3) and not insecure
+  hashes (MD5, SHA1) for content.
 
   When this is set, the contents of files using cryptographically
   insecure hashes will not be allowed to be added to the repository.
-  
+
   Also, git-annex fsck` will complain about any files present in
   the repository that use insecure hashes.
-  
+
   To configure the behavior in new clones of the repository,
   this can be set in [[git-annex-config]].
 
