@@ -64,3 +64,5 @@ git-annex-standalone:
 
 """]]
 
+> [[done]], the magic database changing behavior is not a bug in git-annex
+> --[[Joey]]
