@@ -1,0 +1,1 @@
+When running multiple git-annex commands in parallel on different [[worktrees|tips/Using_git-worktree_with_annex]] linked to the same repo, they all may be writing to the git-annex branch.  Could this potentially lead to errors/undefined behaviors, or is git-annex designed with this usage in mind?
