@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-05-06T18:41:26Z"
+ content="""
+As far as different worktrees go, git-annex mostly doesn't distinguish
+between multiple worktrees, at the level of annexed content and the
+git-annex branch there is no difference between one worktree and another.
+So it will be just the same as running multiple git-annex commands in the
+same worktree.
+"""]]
