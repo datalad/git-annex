@@ -146,7 +146,7 @@ delete oldvalue ref = run
 {- Gets the sha of the tree a ref uses. -}
 tree :: Ref -> Repo -> IO (Maybe Sha)
 tree (Ref ref) = extractSha <$$> pipeReadStrict
-	[ Param "rev-parse", Param ref' ]
+	[ Param "rev-parse", Param "--quiet", Param ref' ]
   where
 	ref' = if ":" `isInfixOf` ref
 		then ref
