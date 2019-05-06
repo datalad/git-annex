@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 31"""
+ date="2019-05-06T16:27:44Z"
+ content="""
+@Ilya, importing before exporting does not avoid losing any data that gets
+written at just the wrong time. Versioning is the only way to guarantee no
+data loss.
+
+If you enable versioning for the bucket and then disable it or don't
+version some items, git-annex won't notice and if you then do an export I'm
+afraid you again risk losing data.
+"""]]
