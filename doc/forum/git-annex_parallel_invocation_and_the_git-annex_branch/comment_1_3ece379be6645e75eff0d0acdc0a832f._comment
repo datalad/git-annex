@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-05-06T17:58:45Z"
+ content="""
+git-annex is fully safe both with parallel --jobs and with multiple
+git-annex programs run at the same time. It makes extensive use of locking.
+
+(This assumes that git is also safe when multiple git jobs are running;
+ttbomk it is, although its locking around the index file is not very
+fine-grained.)
+"""]]
