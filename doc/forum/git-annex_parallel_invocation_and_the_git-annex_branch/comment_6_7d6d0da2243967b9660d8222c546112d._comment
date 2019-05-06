@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 6"
+ date="2019-05-06T22:38:43Z"
+ content="""
+During parallel running of git-annex commands, I also get errors like
+
+git-annex: .git/annex/othertmp/inge59014-3: getFileStatus: does not exist (No such file or directory)
+failed
+
+git-annex: .git/annex/othertmp/ingest-assemble_den59014-8: removeLink: does not exist (No such file or directory)
+failed
+
+Is this also now fixed by [[todo/only_allow_one_git_queue_to_be_flushed_at_a_time]], or is it a separate issue?
+
+Also, is it correct that linked worktrees must be on the same filesystem as the main worktree, when using git-annex, because the linked worktrees must be on the same filesystem as .git/annex/othertmp ?
+"""]]
