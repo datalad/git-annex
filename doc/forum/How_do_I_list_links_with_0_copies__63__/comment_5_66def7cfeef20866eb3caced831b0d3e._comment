@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-05-06T16:05:40Z"
+ content="""
+Other git-annex comnands than find support the same options for matching
+files, so you can just use:
+
+	git annex drop --copies=1 --and in=NAME
+"""]]
