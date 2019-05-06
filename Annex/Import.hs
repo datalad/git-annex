@@ -192,7 +192,7 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 					let oldimportedtrees = mapHistory historyCommitTree oldimported
 					mknewcommits oldhc oldimportedtrees imported
 			Just <$> makeRemoteTrackingBranchMergeCommit'
-				trackingcommit importedcommit
+				trackingcommit importedcommit ti
 	  where
 		h'@(History t s) = mapHistory historyCommitTree h
 

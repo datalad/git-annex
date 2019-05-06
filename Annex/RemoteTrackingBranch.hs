@@ -59,20 +59,20 @@ makeRemoteTrackingBranchMergeCommit tb commitsha =
 		Just _ -> inRepo (getHistoryToDepth 1 (fromRemoteTrackingBranch tb)) >>= \case
 			Nothing -> return commitsha
 			Just (History hc _) -> case historyCommitParents hc of
-				[_, importhistory] ->
-					makeRemoteTrackingBranchMergeCommit' commitsha importhistory
+				[_, importhistory] -> do
+					treesha <- maybe
+						(giveup $ "Unable to cat commit " ++ fromRef commitsha)
+						commitTree
+						<$> catCommit commitsha
+					makeRemoteTrackingBranchMergeCommit' commitsha importhistory treesha
 				-- Earlier versions of git-annex did not
 				-- make the merge commit, or perhaps
 				-- something else changed where the
 				-- tracking branch pointed.
 				_ -> return commitsha
 
-makeRemoteTrackingBranchMergeCommit' :: Sha -> Sha -> Annex Sha
-makeRemoteTrackingBranchMergeCommit' commitsha importedhistory = do
-	treesha <- maybe
-		(giveup $ "Unable to cat commit " ++ fromRef commitsha)
-		commitTree
-		<$> catCommit commitsha
+makeRemoteTrackingBranchMergeCommit' :: Sha -> Sha -> Sha -> Annex Sha
+makeRemoteTrackingBranchMergeCommit' commitsha importedhistory treesha =
 	inRepo $ Git.Branch.commitTree
 			Git.Branch.AutomaticCommit
 			"remote tracking branch"
