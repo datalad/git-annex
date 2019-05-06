@@ -49,3 +49,4 @@ ls
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git-annex does a great job in managing my distributed backups. Thanks!
 
+> [[fixed|done]] --[[Joey]]

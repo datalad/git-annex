@@ -16,6 +16,7 @@ module Annex.RemoteTrackingBranch
 	) where
 
 import Annex.Common
+import Annex.CatFile
 import Git.Types
 import qualified Git.Ref
 import qualified Git.Branch
@@ -49,11 +50,9 @@ setRemoteTrackingBranch tb commit =
  - But since we know that the second parent consists entirely of such
  - import commits, they can be reused when updating the
  - RemoteTrackingBranch.
- -
- - The commitsha should have the treesha as its tree.
  -}
-makeRemoteTrackingBranchMergeCommit :: RemoteTrackingBranch -> Sha -> Sha -> Annex Sha
-makeRemoteTrackingBranchMergeCommit tb commitsha treesha =
+makeRemoteTrackingBranchMergeCommit :: RemoteTrackingBranch -> Sha -> Annex Sha
+makeRemoteTrackingBranchMergeCommit tb commitsha =
 	-- Check if the tracking branch exists.
 	inRepo (Git.Ref.sha (fromRemoteTrackingBranch tb)) >>= \case
 		Nothing -> return commitsha
@@ -61,15 +60,19 @@ makeRemoteTrackingBranchMergeCommit tb commitsha treesha =
 			Nothing -> return commitsha
 			Just (History hc _) -> case historyCommitParents hc of
 				[_, importhistory] ->
-					makeRemoteTrackingBranchMergeCommit' commitsha importhistory treesha
+					makeRemoteTrackingBranchMergeCommit' commitsha importhistory
 				-- Earlier versions of git-annex did not
 				-- make the merge commit, or perhaps
 				-- something else changed where the
 				-- tracking branch pointed.
 				_ -> return commitsha
 
-makeRemoteTrackingBranchMergeCommit' :: Sha -> Sha -> Sha -> Annex Sha
-makeRemoteTrackingBranchMergeCommit' commitsha importedhistory treesha = 
+makeRemoteTrackingBranchMergeCommit' :: Sha -> Sha -> Annex Sha
+makeRemoteTrackingBranchMergeCommit' commitsha importedhistory = do
+	treesha <- maybe
+		(giveup $ "Unable to cat commit " ++ fromRef commitsha)
+		commitTree
+		<$> catCommit commitsha
 	inRepo $ Git.Branch.commitTree
 			Git.Branch.AutomaticCommit
 			"remote tracking branch"
