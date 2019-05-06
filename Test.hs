@@ -209,6 +209,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
 	, testCase "export_import" test_export_import
+	, testCase "export_import_subdir" test_export_import_subdir
 	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
 	, testCase "import" test_import
@@ -1777,3 +1778,47 @@ test_export_import = intmpclonerepoInDirect $ do
 		((v==) <$> readFile ("dir" </> f))
 			@? ("did not find expected content of " ++ "dir" </> f)
 	writedir f = writecontent ("dir" </> f)
+
+test_export_import_subdir :: Assertion
+test_export_import_subdir = intmpclonerepoInDirect $ do
+	createDirectory "dir"
+	git_annex "initremote" (words "foo type=directory encryption=none directory=dir exporttree=yes importtree=yes") @? "initremote failed"
+	git_annex "get" [] @? "get of files failed"
+	annexed_present annexedfile
+
+	createDirectory subdir
+	boolSystem "git" [Param "mv", File annexedfile, File subannexedfile]
+		@? "git mv failed"
+	boolSystem "git" [Param "commit", Param "-m", Param "moved"]
+		@? "git commit failed"
+
+	-- Run three times because there was a bug that took a couple
+	-- of runs to lead to the wrong tree being written to the remote
+	-- tracking branch.
+	testimport
+	testexport
+	testimport
+	testexport
+	testimport
+	testexport
+  where
+	dircontains f v = 
+		((v==) <$> readFile ("dir" </> f))
+			@? ("did not find expected content of " ++ "dir" </> f)
+	
+	subdir = "subdir"
+	subannexedfile = "subdir" </> annexedfile
+	
+	testexport = do
+		git_annex "export" ["master:"++subdir, "--to", "foo"] @? "export of subdir failed"
+		dircontains annexedfile (content annexedfile)
+	
+	testimport = do
+		git_annex "import" ["master:"++subdir, "--from", "foo"] @? "import of subdir failed"
+		up <- Git.Merge.mergeUnrelatedHistoriesParam
+		let mergeps = [Param "merge", Param "foo/master", Param "-mmerge"] ++ maybeToList up
+		boolSystem "git" mergeps @? "git merge foo/master failed"
+
+		-- Make sure that import did not import the file to the top
+		-- of the repo.
+		checkdoesnotexist annexedfile
