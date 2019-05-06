@@ -43,9 +43,7 @@ dupState = do
 	st <- Annex.getState id
 	return $ st
 		{ Annex.workers = []
-		-- each thread has its own repoqueue, but the repoqueuesem
-		-- is shared to prevent more than one thread flushing its
-		-- queue at the same time
+		-- each thread has its own repoqueue
 		, Annex.repoqueue = Nothing
 		-- avoid sharing eg, open file handles
 		, Annex.catfilehandles = M.empty

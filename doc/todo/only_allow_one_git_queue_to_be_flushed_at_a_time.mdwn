@@ -9,3 +9,5 @@ at a time. That locking is handled in `Annex.Queue.flush'` using a
 semaphore.
 
 Seems that it would be better to use a lock file. --[[Joey]]
+
+> [[done]] --[[Joey]]

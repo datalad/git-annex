@@ -61,6 +61,7 @@ module Annex.Locations (
 	gitAnnexMergeDir,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
+	gitAnnexGitQueueLock,
 	gitAnnexPreCommitLock,
 	gitAnnexMergeLock,
 	gitAnnexIndex,
@@ -409,6 +410,11 @@ gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
 {- Lock file for the journal. -}
 gitAnnexJournalLock :: Git.Repo -> FilePath
 gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
+
+{- Lock file for flushing a git queue that writes to the git index or
+ - other git state that should only have one writer at a time. -}
+gitAnnexGitQueueLock :: Git.Repo -> FilePath
+gitAnnexGitQueueLock r = gitAnnexDir r </> "gitqueue.lck"
 
 {- Lock file for the pre-commit hook. -}
 gitAnnexPreCommitLock :: Git.Repo -> FilePath

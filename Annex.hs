@@ -75,7 +75,6 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import qualified Control.Monad.Fail as Fail
-import qualified Control.Concurrent.SSem as SSem
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
@@ -116,7 +115,6 @@ data AnnexState = AnnexState
 	, daemon :: Bool
 	, branchstate :: BranchState
 	, repoqueue :: Maybe Git.Queue.Queue
-	, repoqueuesem :: SSem.SSem
 	, catfilehandles :: M.Map FilePath CatFileHandle
 	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
@@ -159,7 +157,6 @@ newState c r = do
 	emptyactivekeys <- newTVarIO M.empty
 	o <- newMessageState
 	sc <- newTMVarIO False
-	qsem <- SSem.new 1
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
@@ -175,7 +172,6 @@ newState c r = do
 		, daemon = False
 		, branchstate = startBranchState
 		, repoqueue = Nothing
-		, repoqueuesem = qsem
 		, catfilehandles = M.empty
 		, hashobjecthandle = Nothing
 		, checkattrhandle = Nothing

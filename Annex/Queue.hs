@@ -1,6 +1,6 @@
 {- git-annex command queue
  -
- - Copyright 2011, 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2011, 2012, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,10 +20,9 @@ module Annex.Queue (
 
 import Annex.Common
 import Annex hiding (new)
+import Annex.LockFile
 import qualified Git.Queue
 import qualified Git.UpdateIndex
-
-import qualified Control.Concurrent.SSem as SSem
 
 {- Adds a git command to the queue. -}
 addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
@@ -59,22 +58,16 @@ flush = do
 		store =<< flush' q
 
 {- When there are multiple worker threads, each has its own queue.
+ - And of course multiple git-annex processes may be running each with its
+ - own queue.
  -
  - But, flushing two queues at the same time could lead to failures due to
  - git locking files. So, only one queue is allowed to flush at a time.
- - The repoqueuesem is shared between threads.
  -}
 flush' :: Git.Queue.Queue -> Annex Git.Queue.Queue
-flush' q = bracket lock unlock go
-  where
-	lock = do
-		s <- getState repoqueuesem
-		liftIO $ SSem.wait s
-		return s
-	unlock = liftIO . SSem.signal
-	go _ = do
-		showStoringStateAction
-		inRepo $ Git.Queue.flush q
+flush' q = withExclusiveLock gitAnnexGitQueueLock $ do
+	showStoringStateAction
+	inRepo $ Git.Queue.flush q
 
 {- Gets the size of the queue. -}
 size :: Annex Int
