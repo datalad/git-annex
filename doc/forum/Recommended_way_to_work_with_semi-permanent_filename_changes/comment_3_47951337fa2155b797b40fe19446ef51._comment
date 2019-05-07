@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-05-07T15:15:10Z"
+ content="""
+It seems to me that what you are describing is fundamentally a branch,
+call it "orig". Whenever you add a new file, you do so in a repository
+with the orig branch checked out. Then you `git merge orig` into a
+repository with the master branch checked out, and get on with renaming the
+files.
+
+I would be wary of changing the branch that is checked out when the
+git-annex watcher/assistant is running as that might confuse it. I would
+probably just make a separate clone of the repository that has the orig
+branch checked out all the time, do the imports into there, and then 
+`git annex move` the file contents over to the main repository.
+"""]]
