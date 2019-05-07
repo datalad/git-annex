@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2019-05-07T15:39:54Z"
+ content="""
+[[bugs/withOtherTmp_file_escapes]]
+
+I don't think you need to use the same filesystem, but it will be slower
+when git-annex can't hard link and has to fall back to copying.
+"""]]
