@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2019-05-07T16:05:00Z"
+ content="""
+I think that has a good chance of being out of date; I can't think of any
+use of that temp directory that doesn't gracefully handle 
+the case of a hard link into it failing.
+"""]]
