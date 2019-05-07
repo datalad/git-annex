@@ -18,5 +18,5 @@ This is a fairly new problem because the code to have other processes
 cleanup stale othertmp files was only added a couple months back.
 
 I audited other uses of withOtherTmp, and the only other problem I found is
-similar, in Annex.Branch.stageJournal.
+similar, in Annex.Branch.stageJournal. Fixed that one.
 --[[Joey]]

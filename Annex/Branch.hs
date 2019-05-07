@@ -177,9 +177,8 @@ updateTo' pairs = do
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
 	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
-	go branchref dirty tomerge jl = withIndex $ do
+	go branchref dirty tomerge jl = stagejournalwhen dirty jl $ do
 		let (refs, branches) = unzip tomerge
-		cleanjournal <- if dirty then stageJournal jl else return noop
 		merge_desc <- if null tomerge
 			then commitMessage
 			else return $ "merging " ++
@@ -203,7 +202,9 @@ updateTo' pairs = do
 					else commitIndex jl branchref merge_desc commitrefs
 			)
 		addMergedRefs tomerge
-		liftIO cleanjournal
+	stagejournalwhen dirty jl a
+		| dirty = stageJournal jl a
+		| otherwise = withIndex a
 
 {- Gets the content of a file, which may be in the journal, or in the index
  - (and committed to the branch).
@@ -281,11 +282,10 @@ commit = whenM journalDirty . forceCommit
 {- Commits the current index to the branch even without any journalled
  - changes. -}
 forceCommit :: String -> Annex ()
-forceCommit message = lockJournal $ \jl -> do
-	cleanjournal <- stageJournal jl
-	ref <- getBranch
-	withIndex $ commitIndex jl ref message [fullname]
-	liftIO cleanjournal
+forceCommit message = lockJournal $ \jl ->
+	stageJournal jl $ do
+		ref <- getBranch
+		commitIndex jl ref message [fullname]
 
 {- Commits the staged changes in the index to the branch.
  - 
@@ -447,9 +447,9 @@ setIndexSha ref = do
 	writeLogFile f $ fromRef ref ++ "\n"
 	runAnnexHook postUpdateAnnexHook
 
-{- Stages the journal into the index and returns an action that will
- - clean up the staged journal files, which should only be run once
- - the index has been committed to the branch.
+{- Stages the journal into the index, and runs an action that
+ - commits the index to the branch. Note that the action is run
+ - inside withIndex so will automatically use the branch's index.
  -
  - Before staging, this removes any existing git index file lock.
  - This is safe to do because stageJournal is the only thing that
@@ -458,17 +458,18 @@ setIndexSha ref = do
  - stale, and the journal must contain any data that was in the process
  - of being written to the index file when it crashed.
  -}
-stageJournal :: JournalLocked -> Annex (IO ())
-stageJournal jl = withIndex $ do
+stageJournal :: JournalLocked -> Annex () -> Annex ()
+stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	prepareModifyIndex jl
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
-	(jlogf, jlogh) <- openjlog
+	(jlogf, jlogh) <- openjlog tmpdir
 	h <- hashObjectHandle
 	withJournalHandle $ \jh ->
 		Git.UpdateIndex.streamUpdateIndex g
 			[genstream dir h jh jlogh]
-	return $ cleanup dir jlogh jlogf
+	commitindex
+	liftIO $ cleanup dir jlogh jlogf
   where
 	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
 		Nothing -> return ()
@@ -490,8 +491,7 @@ stageJournal jl = withIndex $ do
 		mapM_ (removeFile . (dir </>)) stagedfs
 		hClose jlogh
 		nukeFile jlogf
-	openjlog = withOtherTmp $ \tmpdir -> 
-		liftIO $ openTempFile tmpdir "jlog"
+	openjlog tmpdir = liftIO $ openTempFile tmpdir "jlog"
 
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.
