@@ -30,7 +30,6 @@ import Backend
 import Annex.Content
 import Annex.Content.Direct
 import Annex.Perms
-import Annex.Tmp
 import Annex.Link
 import Annex.MetaData
 import Annex.CurrentBranch
@@ -58,8 +57,10 @@ data LockedDown = LockedDown
 	deriving (Show)
 
 data LockDownConfig = LockDownConfig
-	{ lockingFile :: Bool -- ^ write bit removed during lock down
-	, hardlinkFileTmp :: Bool -- ^ hard link to temp directory
+	{ lockingFile :: Bool
+	-- ^ write bit removed during lock down
+	, hardlinkFileTmpDir :: Maybe FilePath
+	-- ^ hard link to temp directory
 	}
 	deriving (Show)
 
@@ -83,27 +84,35 @@ lockDown cfg file = either
 	=<< lockDown' cfg file
 
 lockDown' :: LockDownConfig -> FilePath -> Annex (Either IOException LockedDown)
-lockDown' cfg file = ifM (pure (not (hardlinkFileTmp cfg)) <||> crippledFileSystem)
-	( withTSDelta $ liftIO . tryIO . nohardlink
-	, tryIO $ withOtherTmp $ \tmp -> do
-		when (lockingFile cfg) $
-			freezeContent file
-		withTSDelta $ \delta -> liftIO $ do
-			(tmpfile, h) <- openTempFile tmp $
-				relatedTemplate $ "ingest-" ++ takeFileName file
-			hClose h
-			nukeFile tmpfile
-			withhardlink delta tmpfile `catchIO` const (nohardlink delta)
+lockDown' cfg file = tryIO $ ifM crippledFileSystem
+	( nohardlink
+	, case hardlinkFileTmpDir cfg of
+		Nothing -> nohardlink
+		Just tmpdir -> withhardlink tmpdir
 	)
   where
-	nohardlink delta = do
+	nohardlink = withTSDelta $ liftIO . nohardlink'
+
+	nohardlink' delta = do
 		cache <- genInodeCache file delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file
 			, contentLocation = file
 			, inodeCache = cache
 			}
-	withhardlink delta tmpfile = do
+	
+	withhardlink tmpdir = do
+		when (lockingFile cfg) $
+			freezeContent file
+		withTSDelta $ \delta -> liftIO $ do
+			(tmpfile, h) <- openTempFile tmpdir $
+				relatedTemplate $ "ingest-" ++ takeFileName file
+			hClose h
+			nukeFile tmpfile
+			withhardlink' delta tmpfile
+				`catchIO` const (nohardlink' delta)
+
+	withhardlink' delta tmpfile = do
 		createLink file tmpfile
 		cache <- genInodeCache tmpfile delta
 		return $ LockedDown cfg $ KeySource

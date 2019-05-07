@@ -214,7 +214,7 @@ startLocal largematcher mode (srcfile, destfile) =
 		-- has to be done to clean up from it.
 		let cfg = LockDownConfig
 			{ lockingFile = lockingfile
-			, hardlinkFileTmp = False
+			, hardlinkFileTmpDir = Nothing
 			}
 		v <- lockDown cfg srcfile
 		case v of

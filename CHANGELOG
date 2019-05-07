@@ -1,3 +1,10 @@
+git-annex (7.20190508) UNRELEASED; urgency=medium
+
+  * Fixed bug that caused git-annex to fail to add a file when another
+    git-annex process cleaned up the temp directory it was using.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
+
 git-annex (7.20190507) upstream; urgency=medium
 
   * Fix reversion in last release that caused wrong tree to be written
