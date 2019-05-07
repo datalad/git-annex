@@ -1,6 +1,6 @@
 {- git-annex assistant commit thread
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012, 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -29,7 +29,7 @@ import Config
 import Annex.Content
 import Annex.Ingest
 import Annex.Link
-import Annex.Tmp
+import Annex.Perms
 import Annex.CatFile
 import Annex.InodeSentinal
 import Annex.Version
@@ -56,8 +56,14 @@ commitThread = namedThread "Committer" $ do
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig
 	msg <- liftAnnex Command.Sync.commitMsg
+	lockdowndir <- liftAnnex $ fromRepo gitAnnexTmpWatcherDir
+	liftAnnex $ do
+		-- Clean up anything left behind by a previous process
+		-- on unclean shutdown.
+		void $ liftIO $ tryIO $ removeDirectoryRecursive lockdowndir
+		void $ createAnnexDirectory lockdowndir
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds havelsof delayadd $
+		readychanges <- handleAdds lockdowndir havelsof delayadd $
 			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
@@ -265,21 +271,21 @@ delayaddDefault = return Nothing
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
-handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
+handleAdds :: FilePath -> Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
 	unlocked <- liftAnnex versionSupportsUnlockedPointers
 	let lockingfiles = not (unlocked || direct)
 	let lockdownconfig = LockDownConfig
 		{ lockingFile = lockingfiles
-		, hardlinkFileTmp = True
+		, hardlinkFileTmpDir = Just lockdowndir
 		}
 	(pending', cleanup) <- if unlocked || direct
 		then return (pending, noop)
 		else findnew pending
 	(postponed, toadd) <- partitionEithers
-		<$> safeToAdd lockdownconfig havelsof delayadd pending' inprocess
+		<$> safeToAdd lockdowndir lockdownconfig havelsof delayadd pending' inprocess
 	cleanup
 
 	unless (null postponed) $
@@ -294,7 +300,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		if DirWatcher.eventsCoalesce || null added || unlocked || direct
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds havelsof delayadd =<< getChanges
+				r <- handleAdds lockdowndir havelsof delayadd =<< getChanges
 				return $ r ++ added ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
@@ -341,7 +347,7 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 		delta <- liftAnnex getTSDelta
 		let cfg = LockDownConfig
 			{ lockingFile = False
-			, hardlinkFileTmp = True
+			, hardlinkFileTmpDir = Just lockdowndir
 			}
 		if M.null m
 			then forM toadd (add cfg)
@@ -429,9 +435,9 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
  -
  - Check by running lsof on the repository.
  -}
-safeToAdd :: LockDownConfig -> Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
-safeToAdd _ _ _ [] [] = return []
-safeToAdd lockdownconfig havelsof delayadd pending inprocess = do
+safeToAdd :: FilePath -> LockDownConfig -> Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
+safeToAdd _ _ _ _ [] [] = return []
+safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
 		lockeddown <- forM pending $ lockDown lockdownconfig . changeFile
@@ -478,7 +484,7 @@ safeToAdd lockdownconfig havelsof delayadd pending inprocess = do
 
 	allRight = return . map Right
 
-	{- Normally the KeySources are locked down inside the temp directory,
+	{- Normally the KeySources are locked down inside the lockdowndir,
 	 - so can just lsof that, which is quite efficient.
 	 -
 	 - In crippled filesystem mode, there is no lock down, so must run lsof
@@ -488,7 +494,7 @@ safeToAdd lockdownconfig havelsof delayadd pending inprocess = do
 		( liftIO $ do
 			let segments = segmentXargsUnordered $ map keyFilename keysources
 			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
-		, withOtherTmp $ liftIO . Lsof.queryDir
+		, liftIO $ Lsof.queryDir lockdowndir
 		)
 
 {- After a Change is committed, queue any necessary transfers or drops

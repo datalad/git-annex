@@ -4,6 +4,8 @@ git-annex (7.20190504) UNRELEASED; urgency=medium
     to remote tracking branch after an export of a subtree.
   * Improved locking when multiple git-annex processes are writing to 
     the .git/index file
+  * Fixed bug that caused git-annex to fail to add a file when another
+    git-annex process cleaned up the temp directory it was using.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 

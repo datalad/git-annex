@@ -31,6 +31,7 @@ module Annex.Locations (
 	gitAnnexTmpOtherDir,
 	gitAnnexTmpOtherLock,
 	gitAnnexTmpOtherDirOld,
+	gitAnnexTmpWatcherDir,
 	gitAnnexTmpObjectDir,
 	gitAnnexTmpObjectLocation,
 	gitAnnexTmpWorkDir,
@@ -264,9 +265,13 @@ gitAnnexTmpOtherDir r = addTrailingPathSeparator $ gitAnnexDir r </> "othertmp"
 gitAnnexTmpOtherLock :: Git.Repo -> FilePath
 gitAnnexTmpOtherLock r = gitAnnexDir r </> "othertmp.lck"
 
-{- Directory used by old versions of git-annex. -}
+{- Tmp directory used by old versions of git-annex. -}
 gitAnnexTmpOtherDirOld :: Git.Repo -> FilePath
 gitAnnexTmpOtherDirOld r = addTrailingPathSeparator $ gitAnnexDir r </> "misctmp"
+
+{- .git/annex/watchtmp/ is used by the watcher and assistant -}
+gitAnnexTmpWatcherDir :: Git.Repo -> FilePath
+gitAnnexTmpWatcherDir r = addTrailingPathSeparator $ gitAnnexDir r </> "watchtmp"
 
 {- The temp file to use for a given key's content. -}
 gitAnnexTmpObjectLocation :: Key -> Git.Repo -> FilePath

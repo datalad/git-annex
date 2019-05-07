@@ -19,6 +19,7 @@ import Config
 import Annex.FileMatcher
 import Annex.Link
 import Annex.Version
+import Annex.Tmp
 import Git.FilePath
 
 cmd :: Command
@@ -137,11 +138,11 @@ start file = do
 		next $ next $ addFile file
 
 perform :: FilePath -> CommandPerform
-perform file = do
+perform file = withOtherTmp $ \tmpdir -> do
 	lockingfile <- not <$> addUnlocked
 	let cfg = LockDownConfig
 		{ lockingFile = lockingfile
-		, hardlinkFileTmp = True
+		, hardlinkFileTmpDir = Just tmpdir
 		}
 	lockDown cfg file >>= ingestAdd >>= finish
   where

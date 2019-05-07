@@ -14,6 +14,8 @@ temp filepath. So, it's escaped the locking that `withOtherTmp` does, and
 another process can clean up the temp files at the wrong point in time.
 This will need some significant code reworking to fix.
 
+> [[fixed|done]] --[[Joey]]
+
 This is a fairly new problem because the code to have other processes
 cleanup stale othertmp files was only added a couple months back.
 
