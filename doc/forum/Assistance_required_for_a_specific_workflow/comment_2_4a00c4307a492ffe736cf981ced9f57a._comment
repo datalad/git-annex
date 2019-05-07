@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-05-07T14:57:05Z"
+ content="""
+You should not need to untrust any repository to do this kind of thing.
+Only use untrust if you really expect that a repository could lose data at
+any time. So while Ilya's suggestion will technically work, I don't
+think it's a good idea.
+
+By setting the special remotes to "incremental backup", you've told git-annex
+you only want one copy of the file spread amoung all of them whenever possible.
+So you've shot yourself in the foot there if your goal is to have more than one
+copy of the file amoung the special remotes. 
+
+The easiest thing to do is pick some of the special remotes to be "archive"
+and keep the rest "incremental backup", and each file will be stored twice,
+once in each of those two different types of repositories.
+
+There is also a paragraph in [[preferred_content/standard_groups]] that
+explains how to configure archive repositories to keep more than one copy,
+and following this could let you use only archive repositories and have them
+keep as many copies as you eventually want:
+
+   Note that if you want to archive multiple copies (not a bad idea!),
+   you can set `git-annex groupwanted archive` to a version of
+   the above preferred content expression with a larger number of copies
+   than 1. Then make the archive repositories have a preferred
+   content expression of "groupwanted" in order to use your modified
+   version.
+
+Ie:
+
+	git annex groupwanted archive "(not (copies=archive:2 or copies=smallarchive:2)) or approxlackingcopies=1"
+	git annex group boxdotcom archive
+	git annex group othercloud archive
+	git annex wanted boxdotcom groupwanted
+	git annex wanted othercloud groupwanted
+"""]]
