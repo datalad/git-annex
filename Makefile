@@ -20,7 +20,7 @@ build: $(all)
 
 # install system-wide
 # Set PREFIX and DESTDIR to configure where it is installed
-install: install-bins install-docs install-desktop
+install: install-bins install-docs install-completions install-desktop
 
 # installs into your home directory
 install-home:
