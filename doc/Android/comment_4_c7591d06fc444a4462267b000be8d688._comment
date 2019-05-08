@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="quzhengrobot@6237b7730f478778d064c18a5a314535129357dd"
+ nickname="quzhengrobot"
+ avatar="http://cdn.libravatar.org/avatar/c49bd522689736d9dd10d29cebee6be3"
+ subject="Android - gitlab repo"
+ date="2019-05-08T11:35:04Z"
+ content="""
+I realized that the webapp of this android version does not support synchronizing a gitlab repo with local repo. Is it possible to achieve it using command line?
+"""]]
