@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-05-09T21:07:38Z"
+ content="""
+\"Finding concurrency bugs seems to need the test repos to contain more files than the two or three\" -- it should be enough to run a concurrent operation many times on a small repo.  This will test the different possible orders of operation.  Most concurrency bugs only involve a conflict of two or three operations.
+
+Running under something like https://rr-project.org/ can be used to reliably reproduce concurrency bugs.
+
+\"I can think of only one concurrency bug that ever caused even theoretical data loss\" -- that's good.  But beyond data loss, when a complex operation fails in the middle, it can be non-trivial to figure out which parts to redo.
+"""]]
