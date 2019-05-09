@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+Redoing example from elderly and fixed [issue](https://git-annex.branchable.com/bugs/annex_drop_fails_to_determine_availability_on_a_http_url_redirecting_to_ftp/) which now fails even one step ahead (at `addurl` not `drop` where I guess it would fail too):
+
+[[!format sh """
+$> git annex addurl --debug --pathdepth=-1 http://www.nitrc.org/frs/downloadlink.php/1637
+[2019-05-09 16:37:34.647058788] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2019-05-09 16:37:34.651237646] process done ExitSuccess
+[2019-05-09 16:37:34.651310462] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2019-05-09 16:37:34.654835492] process done ExitSuccess
+[2019-05-09 16:37:34.655059565] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..fc38e19e73cbb843c7d4824256a40eb37cad38fc","--pretty=%H","-n1"]
+[2019-05-09 16:37:34.667342071] process done ExitSuccess
+[2019-05-09 16:37:34.667770788] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2019-05-09 16:37:34.668256112] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+addurl http://www.nitrc.org/frs/downloadlink.php/1637 [2019-05-09 16:37:34.696706993] Request {
+  host                 = "www.nitrc.org"
+  port                 = 80
+  secure               = False
+  requestHeaders       = [("Accept-Encoding",""),("User-Agent","git-annex/7.20190322+git133-g59922f1f4-1~ndall+1")]
+  path                 = "/frs/downloadlink.php/1637"
+  queryString          = ""
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+
+[2019-05-09 16:37:35.881856173] Request {
+  host                 = "www.nitrc.org"
+  port                 = 80
+  secure               = False
+  requestHeaders       = [("Accept-Encoding","identity"),("User-Agent","git-annex/7.20190322+git133-g59922f1f4-1~ndall+1")]
+  path                 = "/frs/downloadlink.php/1637"
+  queryString          = ""
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+download failed: Found
+failed
+[2019-05-09 16:37:36.064903879] process done ExitSuccess
+[2019-05-09 16:37:36.065541286] process done ExitSuccess
+git-annex: addurl: 1 failed
+1 10323 ->1.....................................:Thu 09 May 2019 04:37:36 PM EDT:.
+(git)smaug:/tmp[master]
+$> git annex version
+git-annex version: 7.20190322+git133-g59922f1f4-1~ndall+1
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+
+"""]]
+
+Originally [reported in DataLad #3321](https://github.com/datalad/datalad/issues/3321) with workarounds to force `curl` downloads
+
+[[!meta author=yoh]]
