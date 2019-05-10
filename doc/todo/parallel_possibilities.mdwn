@@ -1,13 +1,24 @@
-One of my reasons for using haskell was that it provides the possibility of
-some parallell processing. Although since git-annex hits the filesystem
-heavily and mostly runs other git commands, maybe not a whole lot.
+git-annex has good support for running commands in parallel, but there
+are still some things that could be improved, tracked here:
 
-Anyway, each git-annex command is broken down into a series of independant 
-actions, which has some potential for parallelism.
+* Maybe support -Jn in more commands. Just needs changing a few lines of code
+  and testing each.
 
-Each action has 3 distinct phases, basically "check", "perform", and
-"cleanup". The perform actions are probably parellizable; the cleanup may be
-(but not if it has to run git commands to stage state; it can queue
-commands though); the check should be easily parallelizable, although they
-may access the disk or run minor git query commands, so would probably not
-want to run too many of them at once.
+* Maybe extend --jobs/annex.jobs for more control. `--jobs=cpus` is already
+  supported; it might be good to have `--jobs=cpus-1` to leave a spare
+  cpu to avoid contention, or `--jobs=remotes*2` to run 2 jobs per remote.
+
+* Parallelism is often used when the user wants to full saturate the pipe
+  to a remote, since having some extra transfers running avoid being
+  delayed while git-annex runs cleanup actions, checksum verification,
+  and other non-transfer stuff.
+
+  But, the user will sometimes be disappointed, because every job
+  can still end up stuck doing checksum verification at the same time, 
+  so the pipe to the remote is not saturated.
+
+  Running cleanup actions in a separate queue from the main job queue
+  wouldn't be sufficient for this, because verification is done as part
+  of the same action that transfers content. That needs to somehow be
+  refactored to a cleanup action that ingests the file, and then
+  the cleanup action can be run in a separate queue.
