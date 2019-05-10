@@ -368,7 +368,7 @@ jobsOption =
 	[ globalSetter set $ 
 		option (maybeReader parseConcurrency)
 			( long "jobs" <> short 'J' 
-			<> metavar (paramNumber `paramOr` "cpu")
+			<> metavar (paramNumber `paramOr` "cpus")
 			<> help "enable concurrent jobs"
 			<> hidden
 			)
