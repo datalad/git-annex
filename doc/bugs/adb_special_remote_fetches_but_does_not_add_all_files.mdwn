@@ -1,0 +1,21 @@
+### Please describe the problem.
+I added an adb special remote (to a fresh repo) with androiddirectory=/storage/self/primary/DCIM and while importing fetches all the files from the device, they are not all added to the repo. For example, all the thumbnail files seem to be stored, but of the 9 mp4 files in DCIM/Camera fetched, only 1 is stored.
+
+While git-annex does mention that "there was an error fetching files, rerun to resume", there is no error output anywhere I could see (e.g. with --debug). All the file fetches are shown as "OK".
+
+Making the special remote with androiddirectory=/storage/self/primary/DCIM/Camera instead, results in the 9 files being fetched and stored as expected.
+
+### What steps will reproduce the problem?
+    git init android
+    git annex init mycomputer
+    git annex initremote int_dcim type=adb androiddirectory=/storage/self/primary/DCIM encryption=none exporttree=yes importtree=yes
+    git annex import --from int_dcim master:somedir
+
+### What version of git-annex are you using? On what operating system?
+* git-annex version: 7.20190503-g4da50456a3
+* Operating System: Arch Linux
+
+### Have you had any luck using git-annex before?
+(in a gamedev IRC channel, discussing my use of git-annex)
+
+    > Oh, I know. it is difficult to not notice how much you fangirl over it :p
