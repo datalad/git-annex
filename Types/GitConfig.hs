@@ -177,7 +177,8 @@ extractGitConfig r = GitConfig
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 		getmaybe (annex "security.allow-unverified-downloads")
 	, annexMaxExtensionLength = getmayberead (annex "maxextensionlength")
-	, annexJobs = maybe NonConcurrent Concurrent $ getmayberead (annex "jobs")
+	, annexJobs = fromMaybe NonConcurrent $ 
+		parseConcurrency =<< getmaybe (annex "jobs")
 	, annexCacheCreds = getbool (annex "cachecreds") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r

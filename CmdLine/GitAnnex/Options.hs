@@ -366,14 +366,15 @@ jsonProgressOption =
 jobsOption :: [GlobalOption]
 jobsOption = 
 	[ globalSetter set $ 
-		option auto
-			( long "jobs" <> short 'J' <> metavar paramNumber
+		option (maybeReader parseConcurrency)
+			( long "jobs" <> short 'J' 
+			<> metavar (paramNumber `paramOr` "cpu")
 			<> help "enable concurrent jobs"
 			<> hidden
 			)
 	]
   where
-	set n = Annex.changeState $ \s -> s { Annex.concurrency = Concurrent n }
+	set v = Annex.changeState $ \s -> s { Annex.concurrency = v }
 
 timeLimitOption :: [GlobalOption]
 timeLimitOption = 

@@ -5,4 +5,11 @@
 
 module Types.Concurrency where
 
-data Concurrency = NonConcurrent | Concurrent Int
+import Utility.PartialPrelude
+
+data Concurrency = NonConcurrent | Concurrent Int | ConcurrentPerCpu
+
+parseConcurrency :: String -> Maybe Concurrency
+parseConcurrency "cpus" = Just ConcurrentPerCpu
+parseConcurrency "cpu" = Just ConcurrentPerCpu
+parseConcurrency s = Concurrent <$> readish s

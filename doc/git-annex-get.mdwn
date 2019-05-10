@@ -33,6 +33,8 @@ or transferring them from some kind of key-value store.
   Enables parallel download with up to the specified number of jobs
   running at once. For example: `-J10`
 
+  Setting this to "cpus" will run one job per CPU core.
+
   When files can be downloaded from multiple remotes, enabling parallel
   downloads will split the load between the remotes. For example, if
   the files are available on remotes A and B, then one file will be

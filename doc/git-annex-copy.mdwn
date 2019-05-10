@@ -34,6 +34,8 @@ Copies the content of files from or to another remote.
   Enables parallel transfers with up to the specified number of jobs
   running at once. For example: `-J10`
 
+  Setting this to "cpus" will run one job per CPU core.
+
 * `--auto`
 
   Rather than copying all files, only copy files that don't yet have

@@ -952,6 +952,8 @@ Here are all the supported configuration settings.
   Only git-annex commands that support the --jobs option will
   use this.
 
+  Setting this to "cpus" will run one job per CPU core.
+
 * `annex.queuesize`
 
   git-annex builds a queue of git commands, in order to combine similar

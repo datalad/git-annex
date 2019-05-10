@@ -36,6 +36,8 @@ contents. Use [[git-annex-sync]](1) for that.
   Enables parallel transfers with up to the specified number of jobs
   running at once. For example: `-J10`
 
+  Setting this to "cpus" will run one job per CPU core.
+
 * `--all` `-A`
 
   Mirror all objects stored in the git annex, not only objects used by

@@ -112,6 +112,8 @@ by running "git annex sync" on the remote.
   Enables parallel syncing with up to the specified number of jobs
   running at once. For example: `-J10`
 
+  Setting this to "cpus" will run one job per CPU core.
+
   When there are multiple git remotes, pushes will be made to them in
   parallel. Pulls are not done in parallel because that tends to be
   less efficient. When --content is synced, the files are processed

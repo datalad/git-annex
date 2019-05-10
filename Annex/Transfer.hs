@@ -247,20 +247,29 @@ pickRemote l a = debugLocks $ go l =<< Annex.getState Annex.concurrency
   where
 	go [] _ = return observeFailure
 	go (r:[]) _ = a r
-	go rs (Concurrent n) | n > 1 = do
-		mv <- Annex.getState Annex.activeremotes
-		active <- liftIO $ takeMVar mv
-		let rs' = sortBy (lessActiveFirst active) rs
-		goconcurrent mv active rs'
-	go (r:rs) _ = do
+	go rs NonConcurrent = gononconcurrent rs
+	go rs (Concurrent n)
+		| n <= 1 = gononconcurrent rs
+		| otherwise = goconcurrent rs
+	go rs ConcurrentPerCpu = goconcurrent rs
+	
+	gononconcurrent [] = return observeFailure
+	gononconcurrent (r:rs) = do
 		ok <- a r
 		if observeBool ok
 			then return ok
-			else go rs NonConcurrent
-	goconcurrent mv active [] = do
+			else gononconcurrent rs
+	
+	goconcurrent rs = do
+		mv <- Annex.getState Annex.activeremotes
+		active <- liftIO $ takeMVar mv
+		let rs' = sortBy (lessActiveFirst active) rs
+		goconcurrent' mv active rs'
+
+	goconcurrent' mv active [] = do
 		liftIO $ putMVar mv active
 		return observeFailure
-	goconcurrent mv active (r:rs) = do
+	goconcurrent' mv active (r:rs) = do
 		let !active' = M.insertWith (+) r 1 active
 		liftIO $ putMVar mv active'
 		let getnewactive = do
@@ -279,7 +288,7 @@ pickRemote l a = debugLocks $ go l =<< Annex.getState Annex.concurrency
 				-- because other threads could have
 				-- been assigned them in the meantime.
 				let rs' = sortBy (lessActiveFirst active'') rs
-				goconcurrent mv active'' rs'
+				goconcurrent' mv active'' rs'
 
 lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
 lessActiveFirst active a b

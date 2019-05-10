@@ -189,8 +189,9 @@ prepSocket socketfile sshhost sshparams = do
 	let socketlock = socket2lock socketfile
 
 	Annex.getState Annex.concurrency >>= \case
+		NonConcurrent -> return ()
 		Concurrent {} -> makeconnection socketlock
-		_ -> return ()
+		ConcurrentPerCpu -> makeconnection socketlock
 	
 	lockFileCached socketlock
   where

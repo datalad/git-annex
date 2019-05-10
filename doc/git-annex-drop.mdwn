@@ -77,6 +77,8 @@ safe to do so.
   when git-annex has to contact remotes to check if it can drop files.
   For example: `-J4`  
 
+  Setting this to "cpus" will run one job per CPU core.
+
 * `--batch`
 
   Enables batch mode, in which lines containing names of files to drop
