@@ -7,3 +7,8 @@ SpiderOak is a great backup service and many of us have unlimited accounts with 
 Bonus option:
 
 3. Can the SpiderOak API be useful? https://spideroak.com/faq/questions/37/how_do_i_use_the_spideroak_web_api/
+
+> I don't hear much about spideroak these days, and it seems nobody has
+> wanted it enough to build an external special remote. So keeping a todo
+> about building it into git-annex seems not worthwhile. [[done]]
+> --[[Joey]]
