@@ -6,4 +6,9 @@ Doing the same for downloads is less useful, because the data is there locally t
 
 --[[Joey]]
 
-[[!meta title="do checksum verification on upload to special remotes"]
+[[!meta title="do checksum verification on upload to special remotes"]]
+
+> [[done]]; I don't see any way to do checksum verification on upload
+> to a special remote, without it somehow having a way to verify an
+> arbitrary checksum method of data stored in it, which nothing supports.
+> --[[Joey]]
