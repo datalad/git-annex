@@ -11,24 +11,17 @@ Speed improvements, including:
   <https://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/>
   <https://git-annex.branchable.com/todo/Long_Running_Filter_Process/>
 
-* Improve speed of git-annex when operating on large numbers of files.
-  Approaches include better caching of data, and using ByteString
-  more where String is used, and other better data structures.
-
 * Enable parallelism by default.
   <https://git-annex.branchable.com/todo/config_option_to_use_all_processors_by_default/>
+
+* [[todo/sqlite_database_improvements]] to avoid using String and better
+  encode data stored in sqlite.
 
 Improvements to tree export support, including supporting export to more
 external special remotes, exporting only preferred content, more
 efficient renames, and improving support for exporting non-annexed files.
 <https://git-annex.branchable.com/todo/export_preferred_content/>
 <https://git-annex.branchable.com/todo/export_paired_rename_innefficenctcy/>
-<https://git-annex.branchable.com/todo/Exporting_with_exporttree_should_sync_files_deleted_from_the_remote/>
-
-Complimenting tree export, support importing trees from special remotes so eg a
-S3 bucket of data can be pulled into a git-annex repository easily, and the
-repository updated when the bucket is changed.
-<https://git-annex.branchable.com/todo/import_tree/>
 
 Improve support for branches where annexed files without content locally
 present are hidden (adjust --hide-missing). Including interface for
