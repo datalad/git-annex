@@ -17,3 +17,6 @@ The browser/webapp is never started.
 
 Version 1.0.52 for Android. I made sure to install the correct APK files for each version of Android.
 
+> There is no longer an Android port per se; the Linux port is used in
+> termux. So, many architectures are supported that way. [[done]]
+> --[[Joey]]
