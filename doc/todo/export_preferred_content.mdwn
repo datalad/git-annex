@@ -35,6 +35,8 @@ a subtree.
 > if directory Music is excluded from an android remote, importing from
 > it should exclude that directory.
 
+----
+
 > Problem: If a tree is exported with eg, no .wav files, and then an import
 > is made from the remote, and necessarily lacks .wav files, the remote
 > tracking branch will have a tree with no .wav
@@ -62,3 +64,70 @@ a subtree.
 > Logs.Export already records the whole exported tree in the git-annex
 > branch, so extend it to also record the tree of excluded files.
 > Complication: Export conflicts.
+
+---
+
+> Matching a preferred content expression at import time before the content
+> is downloaded means that the imported key may not yet be known. (Only
+> when the ContentIdentifier is known can it can be mapped back to an
+> already known key.) This is a problem for every preferred content term
+> that relates to a key. 
+> 
+> Maybe the problem expressions can be guessed:
+>
+> * For copies, lackingcopies, and approxlackingcopies, inallgroup, 
+>   the number of copies could be assumed to be 1 (the remote being
+>   imported from). But if it turns out to hash to a known key,
+>   they would have matched wrong.
+> 
+> * For inbackend and securehash, the backend that will be used for the
+>   import is probably known. But if annex.largefiles becomes
+>   supported for imports, it would not be any longer.
+> 
+> * For smallerthan, largerthan, the file size of an import is known.
+> 
+> * For metadata, if we assume the imported file is new content, 
+>   is has no metadata attached. But if it turns out to hash
+>   to a known key, this would have matched wrong.
+> 
+> * For present, the content is in the remote, so it's definitely present.
+> 
+> * For unused, the file is going to be added to the tree, its key
+>   will definitely not be unused.
+> 
+> So in some cases the guess is wrong and a problem expression
+> matches when it should not. This either results in a file being imported
+> that should not, or a file not being imported that should be.
+> In the former case, when the file reaches the master branch and
+> a later export is done, the file may or may not be preferred content
+> for the special remote then, and when it's not it will get removed from
+> the special remote.
+> 
+> So for example: The user sets a preferred content expression of
+> "metadata=notforexport=true" and has some files with that set.
+> Then they import from a remote, and it downloads a new file that happens
+> to have the same content as one of those files.  The new file gets
+> added to their master branch, and they export to the remote and the
+> new file is then removed from the remote. Seems fairly ok?
+> 
+> Another example: The user sets a preferred content expression of "not
+> inallgroup=backup". The import/export remote is not in that group.
+> They import from it, and find that no new files that are added to the
+> remote ever get imported. That seems to be what they asked for.
+> 
+> Another example: The user sets a preferred content expression of "not
+> inallgroup=exports". The import/export remote *is* in that group,
+> and so are several other import/export remotes.
+> They import from it, and find that no new files that are added to the
+> remote ever get imported. Even if the same file got added to all other
+> remote in that group. This seems surprising!
+> 
+> Maybe better than guessing would be to limit preferred content
+> expression matching for importing to terms that don't require guessing.
+> If an expression is found to require guessing, display a warning and 
+  make the whole expression match. OR download the content
+> from the remote, generate a key from it, and match the preferred
+> content expression at that point. That avoids any surprises at
+> the expense of an unnessary download. As long as the ContentIdentifier to
+> Key mapping gets updated, it will only download a given file unncessarily
+  one time.
