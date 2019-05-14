@@ -109,7 +109,7 @@ commonTokens =
  - Open and close parens are always treated as standalone tokens;
  - otherwise tokens must be separated by whitespace. -}
 tokenizeMatcher :: String -> [String]
-tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
+tokenizeMatcher = filter (not . null) . concatMap splitparens . words
   where
 	splitparens = segmentDelim (`elem` "()")
 
