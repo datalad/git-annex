@@ -74,12 +74,12 @@ References to directories in the preferred content expression
 are relative to the top of the special remote, not of the git repository
 it's being imported into.
 
-Preferred content expressions that relate
-to the content of a file will make the file be downloaded from the
-special remote, even when it turns out not to be preferred content.
-This includes "copies=", "metadata=", and other things that depend on the
-key, but it does not include "smallerthan=", "largerthan=", "include=",
-"exclude="
+Preferred content expressions that relate to the content of a file will
+make the file be downloaded from the special remote, even when it turns out
+not to be preferred content. The download will only happen once for each
+version of a file, and the unwanted content will be thrown away. Such
+expressions include "copies=", "metadata=", and other things that depend on
+the key, but not "smallerthan=", "largerthan=", "include=", "exclude="
 
 # IMPORTING FROM A DIRECTORY
 
