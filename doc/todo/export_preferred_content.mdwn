@@ -123,11 +123,21 @@ a subtree.
 > remote in that group. This seems surprising!
 > 
 > Maybe better than guessing would be to limit preferred content
-> expression matching for importing to terms that don't require guessing.
-> If an expression is found to require guessing, display a warning and 
-  make the whole expression match. OR download the content
-> from the remote, generate a key from it, and match the preferred
-> content expression at that point. That avoids any surprises at
-> the expense of an unnessary download. As long as the ContentIdentifier to
+> expression matching for importing to terms that don't require the key.
+> If an expression is found to require the key, display a warning and 
+> don't import. 
+> 
+> OR download the content
+> from the remote, generate a key from it, and re-match the preferred
+> content expression. That avoids any surprises and supports all
+> expressions at the expense of an unnessary download. As long as the ContentIdentifier to
 > Key mapping gets updated, it will only download a given file unncessarily
-  one time.
+> one time.
+> 
+> Which approach is better? Note that almost all of the standard groups
+> do depend on the key. But it seems very likely that most actual
+> uses of this feature would involve the name or size of a file that's
+> being imported, and nothing else.
+> 
+> > started work on this in the `preferred` branch. --[[Joey]]
+

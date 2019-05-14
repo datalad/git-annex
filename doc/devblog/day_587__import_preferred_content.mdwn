@@ -1,0 +1,20 @@
+I've developed a plan for how to handle [[todo/export_preferred_content]].
+And today I'm working on making `git annex import --from remote` honor
+the preferred content of the remote. It doesn't make sense to support it
+for one and not the other, so this is on the `preferred` git branch for now.
+
+One use case for this is to configure an import to exclude certain file
+extensions or directories. Such unwanted content will be left as-is 
+in the remote's data store, but won't be imported, so from git-annex's
+POV, it won't be present on the remote.
+
+The tricky thing is, when importing, the key is not known until the file
+is downloaded, but you don't want git-annex downloading content that is not
+preferred. I'm finessing that problem by checking the subset of preferred
+content expressions that are not dependent on the file's content, which will
+avoid downloads of unwanted content in probably most cases.
+
+What should it do when the preferred content expression is dependent on
+the file's content? I'm undecided if it's better to warn and not import,
+or to download the content once in order to check the preferred content
+expression, and then throw unwanted content away.
