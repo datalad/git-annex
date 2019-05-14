@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="michael.hanke@c60e12358aa3fc6060531bdead1f530ac4d582ec"
+ nickname="michael.hanke"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Empty lines sent by git-annex to an external special remote"
+ date="2019-05-14T06:36:11Z"
+ content="""
+I am implementing a special remote using https://github.com/Lykos153/AnnexRemote
+
+I found that the annexremote leaves the `readline()` loop once it receives an empty line from git-annex over stdin (https://github.com/Lykos153/AnnexRemote/blob/master/annexremote/annexremote.py#L410). Given that the protocol description says nothing about empty lines this may or may not be sensible. However, I also found that git-annex does (sometimes?) sends empty lines. Here is an excerpt:
+
+```
+% git annex --debug copy --to inm7 down/cope1.feat/report_log.html
+...
+[2019-05-14 07:45:43.350358695] git-annex-remote-inm7[1] <-- TRANSFER STORE MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html .git/annex/objects/mj/Kx/MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html/MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html
+<<INCOMING ''
+(repeated a total of 22 times)
+...
+<<INCOMING 'TRANSFER STORE MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html .git/annex/objects/mj/Kx/MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html/MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html\n'
+```
+
+where '<<INCOMING' reports anything that is read via `readline()` from the special remote's `stdin`. So 22 empty lines are read from
+`stdin` before the `TRANSFER STORE` reported by git-annex to have been sent actually appears.
+
+If I drive the remote implementation \"by hand\" I don't see anything wrong, and no non-protocol output:
+
+```
+% git-annex-remote-inm7
+VERSION 1
+EXTENSIONS INFO
+EXTENSIONS
+PREPARE
+GETCONFIG dataset_uuid
+VALUE dda42d6c-7231-11e9-a901-0050b6902ef0
+PREPARE-SUCCESS
+CHECKPRESENT MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html
+DIRHASH MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html
+VALUE mj/Kx/
+CHECKPRESENT-FAILURE MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html
+TRANSFER STORE MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html .git/annex/objects/mj/Kx/MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html/MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html
+DIRHASH MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html
+VALUE mj/Kx/
+TRANSFER-SUCCESS STORE MD5E-s48796--33a9884cc35c891f693958b9dd7fccd6.html
+```
+
+If git-annex runs it, I see empty lines appearing only after `CHECKPRESENT-FAILURE`.
+
+Which purpose do these empty lines serve? Under what conditions would an empty response from git-annex occur?
+
+Thx!
+"""]]
