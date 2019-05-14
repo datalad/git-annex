@@ -13,6 +13,19 @@ It seems doable to make `git annex export` honor whatever
 preferred content settings have been configured for the remote.
 (And `git annex sync --content` too.)
 
+Problem: A preferred content expression include=subdir/foo or
+exclude=subdir/bar matches relative to the top of the repository.
+But `git annex export` may be exporting a sub-tree, and it has no way
+of knowing where a provided sub-tree sha is rooted within the larger tree.
+What it could do is when provided "master:subdir" know that it's operating
+within subdir and prefix that to filenames when matching preferred content.
+But that would be inconsistent behavior and could violate least surprise. 
+It may be better to add a note that preferred content expressions include=
+exclude= etc match relative to the top of the exported tree when exporting
+a subtree.
+
+----
+
 > `git annex import` of a tree from a special remote would also be
 > influenced by this.
 > 
@@ -32,10 +45,20 @@ preferred content settings have been configured for the remote.
 > merge. But: This would prevent actual deletions made on the special
 > remote from happening in master too. So not a good idea.
 > 
-> So it seems that, when updating the remote tracking branch, the files
-> that were excluded from being exported to it need to be added back in.
-> That can be done by keeping a pointer to the tree that was last exported, 
-> including all exported files, and generating a tree from it that deletes
-> all exported files. The diff between those trees is all the excluded
-> files, so when updating the remote tracking branch, take the tree that
-> was imported, and merge that diff into it.
+> So it seems that, when updating the remote tracking branch for an import,
+> the files that were excluded from being exported to it need to be added
+> back in. So that tree of excluded files needs to somehow be kept track of
+> when exporting, or generated from records.
+> 
+> To generated the excluded tree, would need the whole tree that was
+> exported, and the remote's preferred content expression at export time.
+> But expressions like inallgroup would also need to look at location
+> tracking info at that time. So it would need to remember the
+> head of the git-annex branch at export time and query against that
+> version of the branch for preferred content and location tracking.
+> (And use of `git-annex forget` could break it.)
+> 
+> It seems easier to instead record the tree of excluded files somewhere,
+> Logs.Export already records the whole exported tree in the git-annex
+> branch, so extend it to also record the tree of excluded files.
+> Complication: Export conflicts.
