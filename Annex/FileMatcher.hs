@@ -1,6 +1,6 @@
 {- git-annex file matching
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,7 +13,11 @@ module Annex.FileMatcher (
 	checkFileMatcher',
 	checkMatcher,
 	matchAll,
+	PreferredContentData(..),
+	preferredContentTokens,
+	preferredContentKeylessTokens,
 	preferredContentParser,
+	ParseToken,
 	parsedToMatcher,
 	mkLargeFilesParser,
 	largeFilesMatcher,
@@ -94,17 +98,6 @@ parseToken l t = case syntaxToken t of
 	go (_ : ps) = go ps
 	(k, v) = separate (== '=') t
 
-commonTokens :: [ParseToken (MatchFiles Annex)]
-commonTokens =
-	[ SimpleToken "unused" (simply limitUnused)
-	, SimpleToken "anything" (simply limitAnything)
-	, SimpleToken "nothing" (simply limitNothing)
-	, ValueToken "include" (usev limitInclude)
-	, ValueToken "exclude" (usev limitExclude)
-	, ValueToken "largerthan" (usev $ limitSize (>))
-	, ValueToken "smallerthan" (usev $ limitSize (<))
-	]
-
 {- This is really dumb tokenization; there's no support for quoted values.
  - Open and close parens are always treated as standalone tokens;
  - otherwise tokens must be separated by whitespace. -}
@@ -113,25 +106,65 @@ tokenizeMatcher = filter (not . null) . concatMap splitparens . words
   where
 	splitparens = segmentDelim (`elem` "()")
 
-preferredContentParser :: FileMatcher Annex -> FileMatcher Annex -> Annex GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [ParseResult (MatchFiles Annex)]
-preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu expr =
-	map parse $ tokenizeMatcher expr
+commonKeylessTokens :: [ParseToken (MatchFiles Annex)]
+commonKeylessTokens =
+	[ SimpleToken "anything" (simply limitAnything)
+	, SimpleToken "nothing" (simply limitNothing)
+	, ValueToken "include" (usev limitInclude)
+	, ValueToken "exclude" (usev limitExclude)
+	, ValueToken "largerthan" (usev $ limitSize (>))
+	, ValueToken "smallerthan" (usev $ limitSize (<))
+	]
+
+commonKeyedTokens :: [ParseToken (MatchFiles Annex)]
+commonKeyedTokens = 
+	[ SimpleToken "unused" (simply limitUnused)
+	]
+
+data PreferredContentData = PCD
+	{ matchStandard :: FileMatcher Annex
+	, matchGroupWanted :: FileMatcher Annex
+	, getGroupMap :: Annex GroupMap
+	, configMap :: M.Map UUID RemoteConfig
+	, repoUUID :: Maybe UUID
+	}
+
+-- Tokens of preferred content expressions that do not need a Key to be
+-- known. 
+--
+-- When importing from a special remote, this is used to match
+-- some preferred content expressions before the content is downloaded,
+-- so the Key is not known.
+preferredContentKeylessTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
+preferredContentKeylessTokens pcd =
+	[ SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
+	] ++ commonKeylessTokens
   where
- 	parse = parseToken $
-		[ SimpleToken "standard" (call matchstandard)
-		, SimpleToken "groupwanted" (call matchgroupwanted)
-		, SimpleToken "present" (simply $ limitPresent mu)
-		, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
-		, SimpleToken "securehash" (simply limitSecureHash)
-		, ValueToken "copies" (usev limitCopies)
-		, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
-		, ValueToken "approxlackingcopies" (usev $ limitLackingCopies True)
-		, ValueToken "inbacked" (usev limitInBackend)
-		, ValueToken "metadata" (usev limitMetaData)
-		, ValueToken "inallgroup" (usev $ limitInAllGroup getgroupmap)
-		] ++ commonTokens
 	preferreddir = fromMaybe "public" $
-		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
+		M.lookup "preferreddir" =<< (`M.lookup` configMap pcd) =<< repoUUID pcd
+
+preferredContentKeyedTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
+preferredContentKeyedTokens pcd =
+	[ SimpleToken "standard" (call $ matchStandard pcd)
+	, SimpleToken "groupwanted" (call $ matchGroupWanted pcd)
+	, SimpleToken "present" (simply $ limitPresent $ repoUUID pcd)
+	, SimpleToken "securehash" (simply limitSecureHash)
+	, ValueToken "copies" (usev limitCopies)
+	, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
+	, ValueToken "approxlackingcopies" (usev $ limitLackingCopies True)
+	, ValueToken "inbacked" (usev limitInBackend)
+	, ValueToken "metadata" (usev limitMetaData)
+	, ValueToken "inallgroup" (usev $ limitInAllGroup $ getGroupMap pcd)
+	] ++ commonKeyedTokens
+
+preferredContentTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
+preferredContentTokens pcd = concat
+	[ preferredContentKeylessTokens pcd
+	, preferredContentKeyedTokens pcd
+	]
+
+preferredContentParser :: [ParseToken (MatchFiles Annex)] -> String -> [ParseResult (MatchFiles Annex)]
+preferredContentParser tokens = map (parseToken tokens) . tokenizeMatcher
 
 mkLargeFilesParser :: Annex (String -> [ParseResult (MatchFiles Annex)])
 mkLargeFilesParser = do
@@ -142,7 +175,7 @@ mkLargeFilesParser = do
 	let mimer n = ValueToken n $ 
 		const $ Left $ "\""++n++"\" not supported; not built with MagicMime support"
 #endif
-	let parse = parseToken $ commonTokens ++
+	let parse = parseToken $ commonKeyedTokens ++ commonKeylessTokens ++
 #ifdef WITH_MAGICMIME
 		[ mimer "mimetype" $
 			matchMagic "mimetype" getMagicMimeType providedMimeType

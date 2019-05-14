@@ -76,8 +76,15 @@ seek :: MatchExpressionOptions -> CommandSeek
 seek o = do
 	parser <- if largeFilesExpression o
 		then mkLargeFilesParser
-		else preferredContentParser 
-			matchAll matchAll groupMap M.empty . Just <$> getUUID
+		else do
+			u <- getUUID
+			pure $ preferredContentParser $ preferredContentTokens $ PCD
+				{ matchStandard = matchAll
+				, matchGroupWanted = matchAll
+				, getGroupMap = groupMap
+				, configMap = M.empty
+				, repoUUID = Just u
+				}
 	case parsedToMatcher $ parser ((matchexpr o)) of
 		Left e -> liftIO $ bail $ "bad expression: " ++ e
 		Right matcher -> ifM (checkmatcher matcher)

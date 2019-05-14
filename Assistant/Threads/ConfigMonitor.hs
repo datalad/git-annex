@@ -23,6 +23,7 @@ import qualified Git.LsTree as LsTree
 import Git.Types
 import Git.FilePath
 import qualified Annex.Branch
+import Annex.FileMatcher
 
 import qualified Data.Set as S
 
@@ -73,7 +74,7 @@ configFilesActions =
 reloadConfigs :: Configs -> Assistant ()
 reloadConfigs changedconfigs = do
 	sequence_ as
-	void $ liftAnnex preferredRequiredMapsLoad
+	void $ liftAnnex $ preferredRequiredMapsLoad preferredContentTokens
 	{- Changes to the remote log, or the trust log, can affect the
 	 - syncRemotes list. Changes to the uuid log may affect its
 	 - display so are also included. -}

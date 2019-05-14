@@ -62,19 +62,19 @@ checkMap getmap mu notpresent mkey afile d = do
 		Just matcher -> checkMatcher matcher mkey afile notpresent (return d) (return d)
 
 preferredContentMap :: Annex (FileMatcherMap Annex)
-preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad) return
+preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad preferredContentTokens) return
 	=<< Annex.getState Annex.preferredcontentmap
 
 requiredContentMap :: Annex (FileMatcherMap Annex)
-requiredContentMap = maybe (snd <$> preferredRequiredMapsLoad) return
+requiredContentMap = maybe (snd <$> preferredRequiredMapsLoad preferredContentTokens) return
 	=<< Annex.getState Annex.requiredcontentmap
 
-preferredRequiredMapsLoad :: Annex (FileMatcherMap Annex, FileMatcherMap Annex)
-preferredRequiredMapsLoad = do
+preferredRequiredMapsLoad :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (FileMatcherMap Annex, FileMatcherMap Annex)
+preferredRequiredMapsLoad mktokens = do
 	groupmap <- groupMap
 	configmap <- readRemoteLog
 	let genmap l gm = simpleMap
-		. parseLogOldWithUUID (\u -> makeMatcher groupmap configmap gm u . decodeBS <$> A.takeByteString)
+		. parseLogOldWithUUID (\u -> makeMatcher groupmap configmap gm u mktokens . decodeBS <$> A.takeByteString)
 		<$> Annex.Branch.get l
 	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
 	rc <- genmap requiredContentLog M.empty
@@ -95,15 +95,23 @@ makeMatcher
 	-> M.Map UUID RemoteConfig
 	-> M.Map Group PreferredContentExpression
 	-> UUID
+	-> (PreferredContentData -> [ParseToken (MatchFiles Annex)])
 	-> PreferredContentExpression
 	-> FileMatcher Annex
-makeMatcher groupmap configmap groupwantedmap u = go True True
+makeMatcher groupmap configmap groupwantedmap u mktokens = go True True
   where
 	go expandstandard expandgroupwanted expr
 		| null (lefts tokens) = generate $ rights tokens
 		| otherwise = unknownMatcher u
 	  where
-		tokens = preferredContentParser matchstandard matchgroupwanted (pure groupmap) configmap (Just u) expr
+		tokens = preferredContentParser (mktokens pcd) expr
+		pcd = PCD
+			{ matchStandard = matchstandard
+			, matchGroupWanted = matchgroupwanted
+			, getGroupMap = pure groupmap
+			, configMap = configmap
+			, repoUUID = Just u
+			}
 		matchstandard
 			| expandstandard = maybe (unknownMatcher u) (go False False)
 				(standardPreferredContent <$> getStandardGroup mygroups)
@@ -134,7 +142,14 @@ checkPreferredContentExpression expr = case parsedToMatcher tokens of
 	Left e -> Just e
 	Right _ -> Nothing
   where
-	tokens = preferredContentParser matchAll matchAll (pure emptyGroupMap) M.empty Nothing expr
+	tokens = preferredContentParser (preferredContentTokens pcd) expr
+	pcd = PCD
+		{ matchStandard = matchAll
+		, matchGroupWanted = matchAll
+		, getGroupMap = pure emptyGroupMap
+		, configMap = M.empty
+		, repoUUID = Nothing
+		}
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group (unless preferred content is

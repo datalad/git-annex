@@ -84,8 +84,6 @@ a subtree.
 >   import is probably known. But if annex.largefiles becomes
 >   supported for imports, it would not be any longer.
 > 
-> * For smallerthan, largerthan, the file size of an import is known.
-> 
 > * For metadata, if we assume the imported file is new content, 
 >   is has no metadata attached. But if it turns out to hash
 >   to a known key, this would have matched wrong.
