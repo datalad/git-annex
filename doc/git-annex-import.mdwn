@@ -49,10 +49,10 @@ separate git repository with its own files. If you first
 `git annex export` files to a remote, and then `git annex import` from it,
 you won't need that option.
 
-You can also limit the import to a subdirectory, using the
-"branch:subdir" syntax. For example, if "camera" is a special remote
-that accesses a camera, and you want to import those into the photos
-directory, rather than to the root of your repository:
+You can import into a subdirectory, using the "branch:subdir" syntax. For
+example, if "camera" is a special remote that accesses a camera, and you
+want to import those into the photos directory, rather than to the root of
+your repository:
 
 	git annex import master:photos --from camera
 	git merge camera/master
@@ -64,6 +64,22 @@ to tell it what branch to track. For example:
 
 	git config remote.myremote.annex-tracking-branch master
 	git annex sync --content
+
+If a preferred content expression is configured for the special remote,
+it will be honored when importing from it. Files that are not preferred
+content of the remote will not be imported from it, but will be left on the
+remote. A couple of caveats:
+
+References to directories in the preferred content expression
+are relative to the top of the special remote, not of the git repository
+it's being imported into.
+
+Preferred content expressions that relate
+to the content of a file will make the file be downloaded from the
+special remote, even when it turns out not to be preferred content.
+This includes "copies=", "metadata=", and other things that depend on the
+key, but it does not include "smallerthan=", "largerthan=", "include=",
+"exclude="
 
 # IMPORTING FROM A DIRECTORY
 
@@ -169,6 +185,8 @@ instead of to the annex.
 [[git-annex-add]](1)
 
 [[git-annex-export]](1)
+
+[[git-annex-preferred-content]](1)
 
 # AUTHOR
 
