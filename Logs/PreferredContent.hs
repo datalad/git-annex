@@ -73,9 +73,12 @@ preferredRequiredMapsLoad :: (PreferredContentData -> [ParseToken (MatchFiles An
 preferredRequiredMapsLoad mktokens = do
 	groupmap <- groupMap
 	configmap <- readRemoteLog
-	let genmap l gm = simpleMap
-		. parseLogOldWithUUID (\u -> makeMatcher groupmap configmap gm u mktokens . decodeBS <$> A.takeByteString)
-		<$> Annex.Branch.get l
+	let genmap l gm = 
+		let mk u = fromRight (unknownMatcher u) .
+			makeMatcher groupmap configmap gm u mktokens
+		in simpleMap
+			. parseLogOldWithUUID (\u -> mk u . decodeBS <$> A.takeByteString)
+			<$> Annex.Branch.get l
 	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
 	rc <- genmap requiredContentLog M.empty
 	-- Required content is implicitly also preferred content, so
@@ -97,12 +100,12 @@ makeMatcher
 	-> UUID
 	-> (PreferredContentData -> [ParseToken (MatchFiles Annex)])
 	-> PreferredContentExpression
-	-> FileMatcher Annex
+	-> Either String (FileMatcher Annex)
 makeMatcher groupmap configmap groupwantedmap u mktokens = go True True
   where
 	go expandstandard expandgroupwanted expr
-		| null (lefts tokens) = generate $ rights tokens
-		| otherwise = unknownMatcher u
+		| null (lefts tokens) = Right $ generate $ rights tokens
+		| otherwise = Left (unwords (lefts tokens))
 	  where
 		tokens = preferredContentParser (mktokens pcd) expr
 		pcd = PCD
@@ -113,13 +116,13 @@ makeMatcher groupmap configmap groupwantedmap u mktokens = go True True
 			, repoUUID = Just u
 			}
 		matchstandard
-			| expandstandard = maybe (unknownMatcher u) (go False False)
+			| expandstandard = maybe (Right $ unknownMatcher u) (go False False)
 				(standardPreferredContent <$> getStandardGroup mygroups)
-			| otherwise = unknownMatcher u
+			| otherwise = Right $ unknownMatcher u
 		matchgroupwanted
-			| expandgroupwanted = maybe (unknownMatcher u) (go True False)
+			| expandgroupwanted = maybe (Right $ unknownMatcher u) (go True False)
 				(groupwanted mygroups)
-			| otherwise = unknownMatcher u
+			| otherwise = Right $ unknownMatcher u
 		mygroups = fromMaybe S.empty (u `M.lookup` groupsByUUID groupmap)
 		groupwanted s = case M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
 			[pc] -> Just pc
@@ -144,8 +147,8 @@ checkPreferredContentExpression expr = case parsedToMatcher tokens of
   where
 	tokens = preferredContentParser (preferredContentTokens pcd) expr
 	pcd = PCD
-		{ matchStandard = matchAll
-		, matchGroupWanted = matchAll
+		{ matchStandard = Right matchAll
+		, matchGroupWanted = Right matchAll
 		, getGroupMap = pure emptyGroupMap
 		, configMap = M.empty
 		, repoUUID = Nothing

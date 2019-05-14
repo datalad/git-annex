@@ -79,8 +79,8 @@ seek o = do
 		else do
 			u <- getUUID
 			pure $ preferredContentParser $ preferredContentTokens $ PCD
-				{ matchStandard = matchAll
-				, matchGroupWanted = matchAll
+				{ matchStandard = Right matchAll
+				, matchGroupWanted = Right matchAll
 				, getGroupMap = groupMap
 				, configMap = M.empty
 				, repoUUID = Just u

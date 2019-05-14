@@ -122,8 +122,8 @@ commonKeyedTokens =
 	]
 
 data PreferredContentData = PCD
-	{ matchStandard :: FileMatcher Annex
-	, matchGroupWanted :: FileMatcher Annex
+	{ matchStandard :: Either String (FileMatcher Annex)
+	, matchGroupWanted :: Either String (FileMatcher Annex)
 	, getGroupMap :: Annex GroupMap
 	, configMap :: M.Map UUID RemoteConfig
 	, repoUUID :: Maybe UUID
@@ -137,7 +137,9 @@ data PreferredContentData = PCD
 -- so the Key is not known.
 preferredContentKeylessTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
 preferredContentKeylessTokens pcd =
-	[ SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
+	[ SimpleToken "standard" (call $ matchStandard pcd)
+	, SimpleToken "groupwanted" (call $ matchGroupWanted pcd)
+	, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
 	] ++ commonKeylessTokens
   where
 	preferreddir = fromMaybe "public" $
@@ -145,9 +147,7 @@ preferredContentKeylessTokens pcd =
 
 preferredContentKeyedTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
 preferredContentKeyedTokens pcd =
-	[ SimpleToken "standard" (call $ matchStandard pcd)
-	, SimpleToken "groupwanted" (call $ matchGroupWanted pcd)
-	, SimpleToken "present" (simply $ limitPresent $ repoUUID pcd)
+	[ SimpleToken "present" (simply $ limitPresent $ repoUUID pcd)
 	, SimpleToken "securehash" (simply limitSecureHash)
 	, ValueToken "copies" (usev limitCopies)
 	, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
@@ -215,6 +215,7 @@ simply = Right . Operation
 usev :: MkLimit Annex -> String -> ParseResult (MatchFiles Annex)
 usev a v = Operation <$> a v
 
-call :: FileMatcher Annex -> ParseResult (MatchFiles Annex)
-call sub = Right $ Operation $ \notpresent mi ->
+call :: Either String (FileMatcher Annex) -> ParseResult (MatchFiles Annex)
+call (Right sub) = Right $ Operation $ \notpresent mi ->
 	matchMrun sub $ \a -> a notpresent mi
+call (Left err) = Left err
