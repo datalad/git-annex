@@ -20,8 +20,7 @@
 module Utility.Matcher (
 	Token(..),
 	Matcher(..),
-	token,
-	tokens,
+	syntaxToken,
 	generate,
 	match,
 	matchM,
@@ -47,16 +46,13 @@ data Matcher op = MAny
 	deriving (Show, Eq)
 
 {- Converts a word of syntax into a token. Doesn't handle operations. -}
-token :: String -> Token op
-token "and" = And
-token "or" = Or
-token "not" = Not
-token "(" = Open
-token ")" = Close
-token t = error $ "unknown token " ++ t
-
-tokens :: [String]
-tokens = words "and or not ( )"
+syntaxToken :: String -> Either String (Token op)
+syntaxToken "and" = Right And
+syntaxToken "or" = Right Or
+syntaxToken "not" = Right Not
+syntaxToken "(" = Right Open
+syntaxToken ")" = Right Close
+syntaxToken t = Left $ "unknown token " ++ t
 
 {- Converts a list of Tokens into a Matcher. -}
 generate :: [Token op] -> Matcher op

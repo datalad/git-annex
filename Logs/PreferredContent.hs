@@ -34,7 +34,7 @@ import qualified Annex.Branch
 import qualified Annex
 import Logs
 import Logs.UUIDBased
-import Utility.Matcher hiding (tokens)
+import Utility.Matcher
 import Annex.FileMatcher
 import Annex.UUID
 import Types.Group

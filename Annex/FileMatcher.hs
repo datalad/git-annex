@@ -84,9 +84,9 @@ data ParseToken t
 type ParseResult t = Either String (Token t)
 
 parseToken :: [ParseToken t] -> String -> ParseResult t
-parseToken l t
-	| t `elem` tokens = Right $ token t
-	| otherwise = go l
+parseToken l t = case syntaxToken t of
+	Right st -> Right st
+	Left _ -> go l
   where
 	go [] = Left $ "near " ++ show t
 	go (SimpleToken s r : _) | s == t = r

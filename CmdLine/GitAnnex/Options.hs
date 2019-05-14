@@ -324,8 +324,8 @@ combiningOptions =
 	, shortopt ')' "close group of options"
 	]
   where
-	longopt o h = globalFlag (Limit.addToken o) ( long o <> help h <> hidden )
-	shortopt o h = globalFlag (Limit.addToken [o]) ( short o <> help h <> hidden )
+	longopt o h = globalFlag (Limit.addSyntaxToken o) ( long o <> help h <> hidden )
+	shortopt o h = globalFlag (Limit.addSyntaxToken [o]) ( short o <> help h <> hidden )
 
 jsonOptions :: [GlobalOption]
 jsonOptions = 
