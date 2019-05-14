@@ -12,7 +12,7 @@ This command is a way to import files from elsewhere into your git-annex
 repository. It can import files from a directory into your repository, 
 or it can import files from a git-annex special remote.
 
-## IMPORTING FROM A SPECIAL REMOTE
+# IMPORTING FROM A SPECIAL REMOTE
 
 Importing from a special remote first downloads all new content from it,
 and then constructs a git commit that reflects files that have changed on
@@ -65,7 +65,7 @@ to tell it what branch to track. For example:
 	git config remote.myremote.annex-tracking-branch master
 	git annex sync --content
 
-## IMPORTING FROM A DIRECTORY
+# IMPORTING FROM A DIRECTORY
 
 When run with a path, `git annex import` moves files from somewhere outside
 the git working copy, and adds them to the annex.
