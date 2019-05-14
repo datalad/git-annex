@@ -72,18 +72,18 @@ fileMatchInfo file = do
 matchAll :: FileMatcher Annex
 matchAll = generate []
 
-parsedToMatcher :: [ParseResult] -> Either String (FileMatcher Annex)
+parsedToMatcher :: [ParseResult (MatchFiles Annex)] -> Either String (FileMatcher Annex)
 parsedToMatcher parsed = case partitionEithers parsed of
 	([], vs) -> Right $ generate vs
 	(es, _) -> Left $ unwords $ map ("Parse failure: " ++) es
 
-data ParseToken
-	= SimpleToken String ParseResult
-	| ValueToken String (String -> ParseResult)
+data ParseToken t
+	= SimpleToken String (ParseResult t)
+	| ValueToken String (String -> ParseResult t)
 
-type ParseResult = Either String (Token (MatchFiles Annex))
+type ParseResult t = Either String (Token t)
 
-parseToken :: [ParseToken] -> String -> ParseResult
+parseToken :: [ParseToken t] -> String -> ParseResult t
 parseToken l t
 	| t `elem` tokens = Right $ token t
 	| otherwise = go l
@@ -94,7 +94,7 @@ parseToken l t
 	go (_ : ps) = go ps
 	(k, v) = separate (== '=') t
 
-commonTokens :: [ParseToken]
+commonTokens :: [ParseToken (MatchFiles Annex)]
 commonTokens =
 	[ SimpleToken "unused" (simply limitUnused)
 	, SimpleToken "anything" (simply limitAnything)
@@ -113,7 +113,7 @@ tokenizeMatcher = filter (not . null ) . concatMap splitparens . words
   where
 	splitparens = segmentDelim (`elem` "()")
 
-preferredContentParser :: FileMatcher Annex -> FileMatcher Annex -> Annex GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [ParseResult]
+preferredContentParser :: FileMatcher Annex -> FileMatcher Annex -> Annex GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [ParseResult (MatchFiles Annex)]
 preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu expr =
 	map parse $ tokenizeMatcher expr
   where
@@ -133,7 +133,7 @@ preferredContentParser matchstandard matchgroupwanted getgroupmap configmap mu e
 	preferreddir = fromMaybe "public" $
 		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
 
-mkLargeFilesParser :: Annex (String -> [ParseResult])
+mkLargeFilesParser :: Annex (String -> [ParseResult (MatchFiles Annex)])
 mkLargeFilesParser = do
 	magicmime <- liftIO initMagicMime
 #ifdef WITH_MAGICMIME
@@ -176,12 +176,12 @@ largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
 		either badexpr return $ parsedToMatcher $ parser expr
 	badexpr e = giveup $ "bad annex.largefiles configuration: " ++ e
 
-simply :: MatchFiles Annex -> ParseResult
+simply :: MatchFiles Annex -> ParseResult (MatchFiles Annex)
 simply = Right . Operation
 
-usev :: MkLimit Annex -> String -> ParseResult
+usev :: MkLimit Annex -> String -> ParseResult (MatchFiles Annex)
 usev a v = Operation <$> a v
 
-call :: FileMatcher Annex -> ParseResult
+call :: FileMatcher Annex -> ParseResult (MatchFiles Annex)
 call sub = Right $ Operation $ \notpresent mi ->
 	matchMrun sub $ \a -> a notpresent mi
