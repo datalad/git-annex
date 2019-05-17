@@ -141,3 +141,17 @@ a subtree.
 > 
 > > started work on this in the `preferred` branch. --[[Joey]]
 
+## different preferred content for export and import?
+
+May be cases where this makes sense. For example, I might make my phone
+prefer all content that has some metadata set, but want to import all files
+from my phone (or all files except those in the music directory).
+
+OTOH, that config would cause files imported from the phone to be removed
+from it on the next export, unless the necessary metadata got set; git
+annex sync --content would not work well.
+
+Better example: Make the phone want all content that is in the laptop
+group, so all files on my laptop export to the phone but not others that I
+have archived. But want to import all files from the phone, which is not in
+the laptop group, so need a separate expression for import.
