@@ -5,6 +5,8 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
   * Makefile: Added install-completions to install target.
   * Added the ability to run one job per CPU (core), by setting
     annex.jobs=cpus, or using option --jobs=cpus or -Jcpus.
+  * Honor preferred content of a special remote when exporting trees to it;
+    unwanted files are filtered out of the tree that is exported.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 

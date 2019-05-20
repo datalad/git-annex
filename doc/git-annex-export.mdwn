@@ -23,6 +23,9 @@ The treeish to export can be the name of a git branch, or a tag, or any
 other treeish accepted by git, including eg master:subdir to only export a
 subdirectory from a branch.
 
+When the remote has a preferred content setting, the treeish is filtered
+through it, excluding files it does not want from being exported to it.
+
 Repeated exports are done efficiently, by diffing the old and new tree,
 and transferring only the changed files, and renaming files as necessary.
 
@@ -64,6 +67,8 @@ export will not succeed. You can resolve this conflict by using
 let an export overwrite the modified file; then `git annex import`
 will create a sequence of commits that includes the modified file,
 so the overwritten modification is not lost.)
+
+# PREFERRED 
 
 # OPTIONS
 
@@ -131,6 +136,8 @@ export`, it will detect the export conflict, and resolve it.
 [[git-annex-import]](1)
 
 [[git-annex-sync]](1)
+
+[[git-annex-preferred-content]](1)
 
 # HISTORY
 
