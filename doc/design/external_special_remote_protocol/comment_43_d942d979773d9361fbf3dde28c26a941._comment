@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 43"""
+ date="2019-05-14T19:27:11Z"
+ content="""
+Notice that the --debug flag shows how this protocol is flowing in
+both directions.
+
+	<-- TRANSFER STORE ...
+	--> TRANSFER-SUCCESS STORE ...
+
+The first line was sent from git-annex to the external special remote
+program, and the second line was its reply to git-annex.
+
+This is very handy for understanding when something strange seems to be
+happening with the protocol.
+"""]]

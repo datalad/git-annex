@@ -1,0 +1,17 @@
+It seems that the [[issue with parallel git-annex-add|bugs/withOtherTmp_file_escapes]] is not yet quite fixed; I'm seeing it in the git-annex version 7.20190507-g0c2cc3d .  Repeating the git-annex-add command succeeds in adding the files that failed the first time.
+
+[[!format sh """
+add benchmarks/rabies200/analysis-FK7BF7Q0761xKv6V3z3gzZgK/benchmark_variants/v1.23.0_spades-3.13.0-trinity-metaspades-01/inputs-local.json
+git-annex: .git/annex/othertmp/inge11793-2931: rename: permission denied (Permission denied)
+failed
+add benchmarks/rabies200/analysis-FK7BKGj0761VgPb22550gfBX/benchmark_variants/v1.23.0_spades-3.13.0-trinity-metaspades-01/inputs-local.json
+git-annex: .git/annex/othertmp/inge11793-3330: rename: permission denied (Permission denied)
+failed
+git-annex: add: 2 failed
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex has become an essential tool for organizing my bioinformatics data analyses.  It scales well to large repos.  It lets me keep track of analyses without
+locking myself into any specific cloud platform.  It lets me quickly free up space on demand by moving data to cheaper storage, with the assurance that nothing will get lost.
+Thanks @joeyh for all your work on it.
