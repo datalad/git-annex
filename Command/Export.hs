@@ -14,6 +14,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.DiffTree
 import qualified Git.LsTree
+import qualified Git.Tree
 import qualified Git.Ref
 import Git.Types
 import Git.FilePath
@@ -24,13 +25,17 @@ import Annex.Export
 import Annex.Content
 import Annex.Transfer
 import Annex.CatFile
+import Annex.FileMatcher
+import Types.FileMatcher
 import Annex.RemoteTrackingBranch
 import Logs.Location
 import Logs.Export
+import Logs.PreferredContent
 import Database.Export
 import Config
 import Utility.Tmp
 import Utility.Metered
+import Utility.Matcher
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -79,7 +84,8 @@ seek o = do
 		setConfig (remoteConfig r "annex-tracking-branch")
 			(fromRef $ exportTreeish o)
 	
-	tree <- fromMaybe (giveup "unknown tree") <$>
+	tree <- filterPreferredContent r =<<
+		fromMaybe (giveup "unknown tree") <$>
 		inRepo (Git.Ref.tree (exportTreeish o))
 	
 	mtbcommitsha <- getExportCommit r (exportTreeish o)
@@ -112,8 +118,8 @@ getExportCommit r treeish
 
 -- | Changes what's exported to the remote. Does not upload any new
 -- files, but does delete and rename files already exported to the remote.
-changeExport :: Remote -> ExportHandle -> Git.Ref -> CommandSeek
-changeExport r db new = do
+changeExport :: Remote -> ExportHandle -> PreferredFiltered Git.Ref -> CommandSeek
+changeExport r db (PreferredFiltered new) = do
 	old <- getExport (uuid r)
 	recordExportBeginning (uuid r) new
 	
@@ -223,8 +229,8 @@ newtype AllFilled = AllFilled { fromAllFilled :: Bool }
 --
 -- Once all exported files have reached the remote, updates the
 -- remote tracking branch.
-fillExport :: Remote -> ExportHandle -> Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> Annex Bool
-fillExport r db newtree mtbcommitsha = do
+fillExport :: Remote -> ExportHandle -> PreferredFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> Annex Bool
+fillExport r db (PreferredFiltered newtree) mtbcommitsha = do
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive newtree
 	cvar <- liftIO $ newMVar (FileUploaded False)
 	allfilledvar <- liftIO $ newMVar (AllFilled True)
@@ -431,3 +437,34 @@ removeEmptyDirectories r db loc ks
 			( removeexportdirectory d
 			, return True
 			)
+
+-- | A value that has been filtered through the remote's preferred content
+-- expression.
+newtype PreferredFiltered t = PreferredFiltered t
+
+filterPreferredContent :: Remote -> Git.Ref -> Annex (PreferredFiltered Git.Ref)
+filterPreferredContent r tree = do
+	m <- preferredContentMap
+	case M.lookup (uuid r) m of
+		Just matcher | not (isEmpty matcher) -> 
+			PreferredFiltered <$> go matcher
+		_ -> return (PreferredFiltered tree)
+  where
+	go matcher = do
+		g <- Annex.gitRepo
+		Git.Tree.adjustTree (checkmatcher matcher) [] [] tree g
+	
+	checkmatcher matcher ti@(Git.Tree.TreeItem topf _ sha) =
+		catKey sha >>= \case
+			Just k -> do
+				-- Match filename relative to the
+				-- top of the tree.
+				let af = AssociatedFile $ Just $
+					getTopFilePath topf
+				let mi = MatchingKey k af
+				ifM (checkMatcher' matcher mi mempty)
+					( return (Just ti)
+					, return Nothing
+					)
+			-- Always export non-annexed files.
+			Nothing -> return (Just ti)

@@ -12,6 +12,7 @@ module Annex.FileMatcher (
 	checkFileMatcher,
 	checkFileMatcher',
 	checkMatcher,
+	checkMatcher',
 	matchAll,
 	PreferredContentData(..),
 	preferredContentTokens,
@@ -63,7 +64,11 @@ checkMatcher matcher mkey afile notpresent notconfigured d
 		(Just key, _) -> go (MatchingKey key afile)
 		_ -> d
   where
-	go mi = matchMrun matcher $ \a -> a notpresent mi
+	go mi = checkMatcher' matcher mi notpresent
+
+checkMatcher' :: FileMatcher Annex -> MatchInfo -> AssumeNotPresent -> Annex Bool
+checkMatcher' matcher mi notpresent =
+	matchMrun matcher $ \a -> a notpresent mi
 
 fileMatchInfo :: FilePath -> Annex MatchInfo
 fileMatchInfo file = do

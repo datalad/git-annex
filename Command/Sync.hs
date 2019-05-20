@@ -723,23 +723,22 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 			(Export.openDb (Remote.uuid r))
 			Export.closeDb
 			(\db -> Export.writeLockDbWhile db (go' r db))
-	go' r db = do
-		(exported, mtbcommitsha) <- case remoteAnnexTrackingBranch (Remote.gitconfig r) of
-			Nothing -> nontracking r
-			Just b -> do
-				mtree <- inRepo $ Git.Ref.tree b
-				mtbcommitsha <- Command.Export.getExportCommit r b
-				case (mtree, mtbcommitsha) of
-					(Just tree, Just _) -> do
-						Command.Export.changeExport r db tree
-						return ([mkExported tree []], mtbcommitsha)
-					_ -> nontracking r
-		fillexport r db (exportedTreeishes exported) mtbcommitsha
-		
-	nontracking r = do
+	go' r db = case remoteAnnexTrackingBranch (Remote.gitconfig r) of
+		Nothing -> nontracking r db
+		Just b -> do
+			mtree <- inRepo $ Git.Ref.tree b
+			mtbcommitsha <- Command.Export.getExportCommit r b
+			case (mtree, mtbcommitsha) of
+				(Just tree, Just _) -> do
+					filteredtree <- Command.Export.filterPreferredContent r tree
+					Command.Export.changeExport r db filteredtree
+					Command.Export.fillExport r db filteredtree mtbcommitsha
+				_ -> nontracking r db
+	
+	nontracking r db = do
 		exported <- getExport (Remote.uuid r)
 		maybe noop (warnnontracking r exported) currbranch
-		return (exported, Nothing)
+		fillexport r db (exportedTreeishes exported) Nothing
 	
 	warnnontracking r exported currb = inRepo (Git.Ref.tree currb) >>= \case
 		Just currt | not (any (== currt) (exportedTreeishes exported)) ->
@@ -754,7 +753,9 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 		gitconfig = show (remoteConfig r "tracking-branch")
 
 	fillexport _ _ [] _ = return False
-	fillexport r db (t:[]) mtbcommitsha = Command.Export.fillExport r db t mtbcommitsha
+	fillexport r db (tree:[]) mtbcommitsha = do
+		let filteredtree = Command.Export.PreferredFiltered tree
+		Command.Export.fillExport r db filteredtree mtbcommitsha
 	fillexport r _ _ _ = do
 		warnExportImportConflict r
 		return False
