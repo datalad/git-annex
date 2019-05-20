@@ -1,0 +1,76 @@
+[[!comment format=mdwn
+ username="ply"
+ avatar="http://cdn.libravatar.org/avatar/1270501a59ed4a4042366b00295fe236"
+ subject="comment 3"
+ date="2019-05-17T20:55:48Z"
+ content="""
+Hello, I have similar problem, but with exFAT on macOS 10.13.6. Output is not stripped, it's no filename there:
+
+```
+$ git annex info --fast --debug               
+[2019-05-17 22:42:09.997466] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2019-05-17 22:42:12.914831] process done ExitSuccess
+[2019-05-17 22:42:12.915017] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2019-05-17 22:42:12.953171] process done ExitSuccess
+[2019-05-17 22:42:12.953815] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..a0409bc558f0ed6679bf591e80f9782f1cd81da3\",\"--pretty=%H\",\"-n1\"]
+[2019-05-17 22:42:12.995305] process done ExitSuccess
+[2019-05-17 22:42:12.996023] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2019-05-17 22:42:13.014492] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2019-05-17 22:42:13.029075] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2019-05-17 22:42:13.043862] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2019-05-17 22:42:13.050909] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"refs/heads/git-annex\",\"--\"]
+[2019-05-17 22:42:14.066638] process done ExitSuccess
+[2019-05-17 22:42:14.08207] process done ExitSuccess
+[2019-05-17 22:42:14.090912] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2019-05-17 22:42:15.852868] process done ExitSuccess
+(recording state in git...)
+[2019-05-17 22:42:15.868392] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2019-05-17 22:42:17.763573] process done ExitSuccess
+[2019-05-17 22:42:17.763746] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"20ab70e8f50d62cc8d9657eaaff71cce88dfaa21\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+[2019-05-17 22:42:17.800472] process done ExitSuccess
+[2019-05-17 22:42:17.800747] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"e0259808f7fbed2ce7cf0d8080dabb8d208c0da1\"]
+[2019-05-17 22:42:17.867585] process done ExitSuccess
+
+git-annex: openFile: resource busy (file is locked)
+failed
+[2019-05-17 22:42:17.870299] process done ExitSuccess
+[2019-05-17 22:42:17.875024] process done ExitSuccess
+[2019-05-17 22:42:17.886388] process done ExitSuccess
+```
+
+I tried `sudo dtruss -f git annex info --fast --debug`, and this is an excerpt from the terminal:
+
+```
+82503/0x1b0045:  write(0x2, \"[2019-05-17 22:29:55.91659] process done ExitSuccess\n\0\", 0x35)		 = 53 0
+82503/0x1b0045:  mkdir(\".git/annex\0\", 0x1FF, 0x0)		 = -1 Err#17
+82503/0x1b0045:  stat64(\".git/annex\0\", 0x4200038E40, 0x0)		 = 0 0
+82503/0x1b0045:  getpid(0x0, 0x0, 0x0)		 = 82503 0
+82503/0x1b0045:  open(\".git/annex/index.lck82503-2.tmp\0\", 0x20A06, 0x180)		 = 13 0
+82503/0x1b0045:  fstat64(0xD, 0x420004D050, 0x0)		 = 0 0
+82503/0x1b0045:  stat64(\".git/annex\0\", 0x420004D1D0, 0x0)		 = 0 0
+82503/0x1b0045:  mkdir(\".git/annex\0\", 0x1FF, 0x0)		 = -1 Err#17
+82503/0x1b0045:  stat64(\".git/annex\0\", 0x420004D3A0, 0x0)		 = 0 0
+82503/0x1b0045:  open(\".git/annex/index.lck82503-3.tmp\0\", 0x20A06, 0x180)		 = 21 0
+82503/0x1b0045:  fstat64(0x15, 0x420004D580, 0x0)		 = 0 0
+82503/0x1b0045:  close(0xC)		 = 0 0
+82503/0x1b0045:  poll(0x7FFEEC5CC810, 0x1, 0x0)		 = 1 0
+82503/0x1b0045:  write(0x1, \"\n\0\", 0x1)		 = 1 0
+82503/0x1b0045:  poll(0x7FFEEC5CC810, 0x1, 0x0)		 = 1 0
+82503/0x1b0045:  write(0x2, \"git-annex: openFile: resource busy (file is locked)\n\0\", 0x34)		 = 52 0
+```
+
+Removing `.git/annex/*.lck*` hadn't helped.
+
+I use git-annex version 7.20190322 from Homebrew:
+
+```
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV FsEvents TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.2.2 http-client-0.5.14 persistent-sqlite-2.6.4 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: darwin x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 7
+```
+"""]]
