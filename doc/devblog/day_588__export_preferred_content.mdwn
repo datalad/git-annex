@@ -1,0 +1,8 @@
+Made `git annex export --to remote` honor the preferred content of the
+remote. In a nice bit of code reuse, `adjustTree` was just what I needed to
+filter unwanted content out of the exported tree.
+
+Then a hard problem: When a tree is exported with some non-preferred
+content filtered out, importing from the remote generates a tree that is
+lacking those files, but merging that tree would delete the files
+from the working tree. Solving that took the rest of the day.
