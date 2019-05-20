@@ -27,3 +27,5 @@ git: 'annex' is not a git command. See 'git --help'.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, been using it for many years and couldn't live without it.
+
+[[!meta title="termux install adds git-annex only to bash path, not zsh etc"]]
