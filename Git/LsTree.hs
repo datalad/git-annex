@@ -15,6 +15,7 @@ module Git.LsTree (
 	lsTreeParams,
 	lsTreeFiles,
 	parseLsTree,
+	formatLsTree,
 ) where
 
 import Common
@@ -90,3 +91,12 @@ parseLsTree l = TreeItem
 	!f = drop 1 past_s
 	!smode = fst $ Prelude.head $ readOct m
 	!sfile = asTopFilePath $ Git.Filename.decode f
+
+{- Inverse of parseLsTree -}
+formatLsTree :: TreeItem -> String
+formatLsTree ti = unwords
+	[ showOct (mode ti) ""
+	, typeobj ti
+	, fromRef (sha ti)
+	, getTopFilePath (file ti)
+	]

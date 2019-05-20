@@ -15,6 +15,8 @@ module Logs.Export (
 	incompleteExportedTreeishes,
 	recordExport,
 	recordExportBeginning,
+	logExportExcluded,
+	getExportExcluded,
 ) where
 
 import qualified Data.Map as M
@@ -26,6 +28,9 @@ import Git.Sha
 import Git.FilePath
 import Logs
 import Logs.MapLog
+import Logs.File
+import qualified Git.LsTree
+import qualified Git.Tree
 import Annex.UUID
 
 import qualified Data.ByteString.Lazy as L
@@ -156,3 +161,23 @@ exportedParser = Exported <$> refparser <*> many refparser
   where
 	refparser = (Git.Ref . decodeBS <$> A8.takeWhile1 (/= ' ') )
 		<* ((const () <$> A8.char ' ') <|> A.endOfInput)
+
+logExportExcluded :: UUID -> ((Git.Tree.TreeItem -> IO ()) -> Annex a) -> Annex a
+logExportExcluded u a = do
+	logf <- fromRepo $ gitAnnexExportExcludeLog u
+	withLogHandle logf $ \logh -> do
+		liftIO $ hSetNewlineMode logh noNewlineTranslation
+		a (writer logh)
+  where
+	writer logh = hPutStrLn logh
+		. Git.LsTree.formatLsTree
+		. Git.Tree.treeItemToLsTreeItem
+
+getExportExcluded :: UUID -> Annex [Git.Tree.TreeItem]
+getExportExcluded u = do
+	logf <- fromRepo $ gitAnnexExportExcludeLog u
+	liftIO $ catchDefaultIO [] $ 
+		(map parser . lines)
+			<$> readFile logf
+  where
+	parser = Git.Tree.lsTreeItemToTreeItem . Git.LsTree.parseLsTree

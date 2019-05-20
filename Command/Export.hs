@@ -442,19 +442,29 @@ removeEmptyDirectories r db loc ks
 -- expression.
 newtype PreferredFiltered t = PreferredFiltered t
 
+-- | Filters the tree to files that are preferred content of the remote.
+--
+-- A log is written with files that were filtered out, so they can be added
+-- back in when importing from the remote.
 filterPreferredContent :: Remote -> Git.Ref -> Annex (PreferredFiltered Git.Ref)
-filterPreferredContent r tree = do
+filterPreferredContent r tree = logExportExcluded (uuid r) $ \logwriter -> do
 	m <- preferredContentMap
 	case M.lookup (uuid r) m of
-		Just matcher | not (isEmpty matcher) -> 
-			PreferredFiltered <$> go matcher
+		Just matcher | not (isEmpty matcher) -> do
+			PreferredFiltered <$> go matcher logwriter
 		_ -> return (PreferredFiltered tree)
   where
-	go matcher = do
+	go matcher logwriter = do
 		g <- Annex.gitRepo
-		Git.Tree.adjustTree (checkmatcher matcher) [] [] tree g
+		Git.Tree.adjustTree
+			(checkmatcher matcher logwriter)
+			[]
+			(\_old new -> new)
+			[]
+			tree
+			g
 	
-	checkmatcher matcher ti@(Git.Tree.TreeItem topf _ sha) =
+	checkmatcher matcher logwriter ti@(Git.Tree.TreeItem topf _ sha) =
 		catKey sha >>= \case
 			Just k -> do
 				-- Match filename relative to the
@@ -464,7 +474,9 @@ filterPreferredContent r tree = do
 				let mi = MatchingKey k af
 				ifM (checkMatcher' matcher mi mempty)
 					( return (Just ti)
-					, return Nothing
+					, do
+						() <- liftIO $ logwriter ti
+						return Nothing
 					)
 			-- Always export non-annexed files.
 			Nothing -> return (Just ti)

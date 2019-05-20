@@ -50,6 +50,7 @@ module Annex.Locations (
 	gitAnnexExportDbDir,
 	gitAnnexExportLock,
 	gitAnnexExportUpdateLock,
+	gitAnnexExportExcludeLog,
 	gitAnnexContentIdentifierDbDir,
 	gitAnnexContentIdentifierLock,
 	gitAnnexScheduleState,
@@ -360,6 +361,11 @@ gitAnnexExportLock u r = gitAnnexExportDbDir u r ++ ".lck"
 {- Lock file for updating the export state for a special remote. -}
 gitAnnexExportUpdateLock :: UUID -> Git.Repo -> FilePath
 gitAnnexExportUpdateLock u r = gitAnnexExportDbDir u r ++ ".upl"
+
+{- Log file used to keep track of files that were in the tree exported to a
+ - remote, but were excluded by its preferred content settings. -}
+gitAnnexExportExcludeLog :: UUID -> Git.Repo -> FilePath
+gitAnnexExportExcludeLog u r = gitAnnexDir r </> "export.ex" </> fromUUID u
 
 {- Directory containing database used to record remote content ids.
  -

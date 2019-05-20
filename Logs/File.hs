@@ -5,11 +5,12 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Logs.File (writeLogFile, appendLogFile, streamLogFile) where
+module Logs.File (writeLogFile, withLogHandle, appendLogFile, streamLogFile) where
 
 import Annex.Common
 import Annex.Perms
 import Annex.LockFile
+import Annex.ReplaceFile
 import qualified Git
 import Utility.Tmp
 
@@ -22,6 +23,19 @@ writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog f c
 	writelog f' c' = do
 		liftIO $ writeFile f' c'
 		setAnnexFilePerm f'
+
+-- | Runs the action with a handle connected to a temp file.
+-- The temp file replaces the log file once the action succeeds.
+withLogHandle :: FilePath -> (Handle -> Annex a) -> Annex a
+withLogHandle f a = do
+	createAnnexDirectory (parentDir f)
+	replaceFile f $ \tmp ->
+		bracket (setup tmp) cleanup a
+  where
+	setup tmp = do
+		setAnnexFilePerm tmp
+		liftIO $ openFile tmp WriteMode
+	cleanup h = liftIO $ hClose h
 
 -- | Appends a line to a log file, first locking it to prevent
 -- concurrent writers.

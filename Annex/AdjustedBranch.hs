@@ -265,7 +265,12 @@ adjustCommit adj basis = do
 adjustTree :: Adjustment -> BasisBranch -> Annex Sha
 adjustTree adj (BasisBranch basis) = do
 	let toadj = adjustTreeItem adj
-	treesha <- Git.Tree.adjustTree toadj [] [] basis =<< Annex.gitRepo
+	treesha <- Git.Tree.adjustTree
+		toadj 
+		[] 
+		(\_old new -> new)
+		[]
+		basis =<< Annex.gitRepo
 	return treesha
 
 type CommitsPrevented = Git.LockFile.LockHandle
@@ -544,6 +549,7 @@ reverseAdjustedTree basis adj csha = do
 	treesha <- Git.Tree.adjustTree
 		(propchanges changes)
 		adds'
+		(\_old new -> new)
 		(map Git.DiffTree.file removes)
 		basis
 		=<< Annex.gitRepo

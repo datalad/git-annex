@@ -15,6 +15,8 @@ module Git.Tree (
 	recordTree',
 	TreeItem(..),
 	treeItemsToTree,
+	treeItemToLsTreeItem,
+	lsTreeItemToTreeItem,
 	adjustTree,
 	graftTree,
 	graftTree',
@@ -127,6 +129,20 @@ data TreeItem = TreeItem TopFilePath FileMode Sha
 treeItemToTreeContent :: TreeItem -> TreeContent
 treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
 
+treeItemToLsTreeItem :: TreeItem -> LsTree.TreeItem
+treeItemToLsTreeItem (TreeItem f mode sha) = LsTree.TreeItem
+	{ LsTree.mode = mode
+	, LsTree.typeobj = show BlobObject
+	, LsTree.sha = sha
+	, LsTree.file = f
+	}
+
+lsTreeItemToTreeItem :: LsTree.TreeItem -> TreeItem
+lsTreeItemToTreeItem ti = TreeItem
+	(LsTree.file ti)
+	(LsTree.mode ti)
+	(LsTree.sha ti)
+
 treeItemsToTree :: [TreeItem] -> Tree
 treeItemsToTree = go M.empty
   where
@@ -179,12 +195,16 @@ adjustTree
 	-- Cannot move the item to a different tree.
 	-> [TreeItem]
 	-- ^ New items to add to the tree.
+	-> (TreeContent -> TreeContent -> TreeContent)
+	-- ^ When adding a new item to the tree and an item with the same
+	-- name already exists, this function picks which to use.
+	-- The first one is the item that was already in the tree.
 	-> [TopFilePath]
 	-- ^ Files to remove from the tree.
 	-> Ref
 	-> Repo
 	-> m Sha
-adjustTree adjusttreeitem addtreeitems removefiles r repo =
+adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 	withMkTreeHandle repo $ \h -> do
 		(l, cleanup) <- liftIO $ lsTreeWithObjects LsTree.LsTreeRecursive r repo
 		(l', _, _) <- go h False [] 1 inTopTree l
@@ -223,16 +243,30 @@ adjustTree adjusttreeitem addtreeitems removefiles r repo =
 	adjustlist h depth ishere underhere l = do
 		let (addhere, rest) = partition ishere addtreeitems
 		let l' = filter (not . removed) $
-			map treeItemToTreeContent addhere ++ l
+			addoldnew l (map treeItemToTreeContent addhere)
 		let inl i = any (\t -> beneathSubTree t i) l'
 		let (Tree addunderhere) = flattenTree depth $ treeItemsToTree $
 			filter (\i -> underhere i && not (inl i)) rest
 		addunderhere' <- liftIO $ mapM (recordSubTree h) addunderhere
-		return (addunderhere'++l')
+		return (addoldnew l' addunderhere')
 
 	removeset = S.fromList $ map (normalise . gitPath) removefiles
 	removed (TreeBlob f _ _) = S.member (normalise (gitPath f)) removeset
 	removed _ = False
+
+	addoldnew [] new = new
+	addoldnew old [] = old
+	addoldnew old new = addoldnew' (M.fromList $ map (\i -> (mkk i, i)) old) new
+	addoldnew' oldm (n:ns) = 
+			let k = mkk n
+			in case M.lookup k oldm of
+				Just o -> 
+					resolveaddconflict o n
+					: 
+					addoldnew' (M.delete k oldm) ns
+				Nothing -> n : addoldnew' oldm ns
+	addoldnew' oldm [] = M.elems oldm
+	mkk = normalise . gitPath
 
 {- Grafts subtree into the basetree at the specified location, replacing
  - anything that the basetree already had at that location.

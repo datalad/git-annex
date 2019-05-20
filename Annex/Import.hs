@@ -103,7 +103,7 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 	go trackingcommit = do
 		imported@(History finaltree _) <-
 			buildImportTrees basetree subdir importable
-		buildImportCommit' importcommitconfig trackingcommit imported >>= \case
+		buildImportCommit' remote importcommitconfig trackingcommit imported >>= \case
 			Just finalcommit -> do
 				updatestate finaltree
 				return (Just finalcommit)
@@ -160,8 +160,8 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Export.runExportDiffUpdater updater db oldtree finaltree
 		Export.closeDb db
 
-buildImportCommit' :: ImportCommitConfig -> Maybe Sha -> History Sha -> Annex (Maybe Sha)
-buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
+buildImportCommit' :: Remote -> ImportCommitConfig -> Maybe Sha -> History Sha -> Annex (Maybe Sha)
+buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History ti _) =
 	case mtrackingcommit of
 		Nothing -> Just <$> mkcommits imported
 		Just trackingcommit -> do
@@ -176,7 +176,6 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 	go _ Nothing = Just <$> mkcommits imported
 	go trackingcommit (Just h)
 		-- If the tracking branch head is a merge commit
-		-- with a tree that matches the head of the history,
 		-- and one side of the merge matches the history,
 		-- nothing new needs to be committed.
 		| t == ti && any (sametodepth imported) (S.toList s) = return Nothing
@@ -191,8 +190,9 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 				Just oldimported@(History oldhc _) -> do
 					let oldimportedtrees = mapHistory historyCommitTree oldimported
 					mknewcommits oldhc oldimportedtrees imported
+			ti' <- addBackNonPreferredContent remote ti
 			Just <$> makeRemoteTrackingBranchMergeCommit'
-				trackingcommit importedcommit ti
+				trackingcommit importedcommit ti'
 	  where
 		h'@(History t s) = mapHistory historyCommitTree h
 
@@ -380,3 +380,30 @@ importKey (ContentIdentifier cid) size = stubKey
 	, keyVariety = OtherKey "CID"
 	, keySize = Just size
 	}
+
+{-- Export omits non-preferred content from the tree stored on the
+ -- remote. So the import will normally have that content
+ -- omitted (unless something else added files with the same names to the
+ -- special remote).
+ --
+ -- That presents a problem: Merging the imported tree would result
+ -- in deletion of the non-preferred content. To avoid that happening,
+ -- this adds the non-preferred content back to the imported tree.
+ --}
+addBackNonPreferredContent :: Remote -> Sha -> Annex Sha
+addBackNonPreferredContent remote importtree =
+	getExportExcluded (Remote.uuid remote) >>= \case
+		[] -> return importtree
+		-- TODO: does this overwrite newly imported files
+		-- with excluded files? CHECK
+		excludedlist -> inRepo $
+			adjustTree
+				-- don't remove any
+				(pure . Just)
+				excludedlist
+				-- if something was imported with the same
+				-- name as a file that was previously
+				-- excluded from import, use what was imported
+				(\imported _excluded -> imported)
+				[]
+				importtree
