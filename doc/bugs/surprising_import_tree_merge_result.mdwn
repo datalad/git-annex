@@ -13,9 +13,3 @@ raw/photos/something
 This is quite surprising. It seems somehow when it modified the old
 tree, it rooted the new at the location the old had been moved to in
 master.
-
-----
-
-Also, commit cd55a5be377020b7261c3a737b5e32a01e22f4b8 had no parent, so
-git diff --stat shows it as adding every file that was in the tree before
-as well as the imported files, which seems wrong at least visually.
