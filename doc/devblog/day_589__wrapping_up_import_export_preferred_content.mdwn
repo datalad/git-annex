@@ -1,0 +1,7 @@
+Kind of surprised it all came together so well today, especially because I
+noticed another big problem with the design, but I was able to work around
+that and import/export with preferred content works great.
+
+I did end up limiting import to supported a subset of preferred
+content expressions. Downloading content that it doesn't yet know if it
+wants to import seemed too surprising and potentially very expensive.
