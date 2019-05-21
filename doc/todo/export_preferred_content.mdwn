@@ -2,6 +2,8 @@
 which is generally what the user wants.
 But, in some situations, the user may want to export a subset of files,
 in a way that can be well expressed by a preferred content expression.
+ 
+> started work on this in the `preferred` branch. --[[Joey]]
 
 For example, they may want to export .mp3 files but not the .wav
 files used to produce those.
@@ -53,7 +55,7 @@ TODO
 > if directory Music is excluded from an android remote, importing from
 > it should exclude that directory.
 
-----
+## import after limited export
 
 > Problem: If a tree is exported with eg, no .wav files, and then an import
 > is made from the remote, and necessarily lacks .wav files, the remote
@@ -86,7 +88,7 @@ TODO
 > 
 > > done
 
----
+## matching preferred content expressions on import
 
 > Matching a preferred content expression at import time before the content
 > is downloaded means that the imported key may not yet be known. (Only
@@ -149,16 +151,21 @@ TODO
 > OR download the content
 > from the remote, generate a key from it, and re-match the preferred
 > content expression. That avoids any surprises and supports all
-> expressions at the expense of an unnessary download. As long as the ContentIdentifier to
-> Key mapping gets updated, it will only download a given file unncessarily
-> one time.
+> expressions at the expense of an unnessary download. As long as the
+> ContentIdentifier to Key mapping gets updated, it will only download
+> a given file unncessarily one time.
 > 
 > Which approach is better? Note that almost all of the standard groups
 > do depend on the key. But it seems very likely that most actual
 > uses of this feature would involve the name or size of a file that's
 > being imported, and nothing else.
 > 
-> > started work on this in the `preferred` branch. --[[Joey]]
+> Imagine an import of all non-mp3s from the phone, and the phone has
+> a 20 gb mp3 collection. Downloading them all just to check the preferred
+> content expression would be an enormous amount of unnecessary work.
+> If the user started with `exclude=*.mp3`, they'd expect it to be fast,
+> and if they changed to `exclude=*.mp3 or metadata=tag=podcast`
+> and it did all that extra work, that would be surprising.
 
 ## different preferred content for export and import?
 
@@ -172,5 +179,61 @@ annex sync --content would not work well.
 
 Better example: Make the phone want all content that is in the laptop
 group, so all files on my laptop export to the phone but not others that I
-have archived. But want to import all files from the phone, which is not in
-the laptop group, so need a separate expression for import.
+have archived. But want to import all files from the phone except for mp3s.
+
+One way would be new preferred content terminals that match when importing
+and exporting:
+
+	(exporting and copies=laptop:1) or (importing and exclude=*.mp3)
+
+This needs preferred content expressions for import to be able to
+support things like copies= that need to know the key, as discussed above.
+
+If the import preferred content expression is limited to not include those
+terms, the above example can't be used at import time. Unless it can be
+simplified before being checked for those terms:
+
+	(false and copies=laptop:1) or (true and exclude=*.mp3)
+
+	false or (true and exclude=*.mp3)
+
+Or there could be separate expressions for import and export.
+And this kind of makes sense; the normal preferred content expression
+controls what is stored on a remote, so affects export, and the import
+preferred content expression is only used to fine-tune which files get
+imported from it.
+
+Problem: Suppose a tree is exported to a special remote, and the tree includes some
+mp3 files. And then an import is done, excluding mp3 files. That will
+create a remote tracking branch that lacks the mp3 files; merging it will
+delete them from master. That could be surprising! This is the inverse of
+the "import after limited export" problem, but it seems it 
+can't be solved in a similar way.
+
+That problem might be a fatal blow to this idea of separate expressions
+for import and export. But it's worse than that! -- 
+
+Problem: Suppose a tree is exported to a special remote and the tree
+includes mp3 files. Then the remote's preferred content is set to exclude
+mp3 files. Then on import from the remote, a tree will be constructed that
+lacks the mp3 files that were exported before; merging it will delete them
+from master.
+
+That could be avoided by making the import notice that the preferred
+content expression has changed, and so throw away the old remote tracking
+branch history and import a commit with no parent, avoiding the deletion.
+But, if some other file got deleted from the special remote after the
+export, the import would then not delete it.
+
+Alternatively, when a preferred content expression doesn't match a file at
+import, could check if the same file was present in the last export. (With
+same or different content.) If so, assume the preferred content has changed
+and that the user does not want to delete this file, so keep it in the
+import anyway (using the content that was last exported to it). 
+(The state does not currently differentiate between the last export
+and the last import, so the file would keep being included in
+imports until an export was made that removed it.)
+
+OR, don't match preferred content expressions on import at all; download
+everything, and let the user delete unwanted imports locally. Does avoid
+all these complications.
