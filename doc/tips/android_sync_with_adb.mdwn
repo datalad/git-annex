@@ -19,14 +19,13 @@ already.
 
 Then, in that repository, set up an adb special remote:
 
-	initremote android type=adb androiddirectory=/sdcard/DCIM encryption=none exporttree=yes importtree=yes
+	initremote android type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes
 
-The above example imports files from the /sdcard/DCIM directory of the
-Android device, so it will only import photos and videos, not other files.
-If you wanted to import everything, you could instead use 
-"androiddirectory=/sdcard".
+The above example syncs with the /sdcard directory of the
+Android device. That can be a lot of files, so you may want a more
+limited directory. See the sample workflows below for some more examples.
 
-Next, configure how file trees imported from it will be merged into your
+Next, configure how trees of files imported from it will be merged into your
 git repository.
 
         git config remote.android.annex-tracking-branch master:android
@@ -35,6 +34,14 @@ Setting "master:android" makes the phone be treated as containing a branch
 of the master branch, and makes all its files appear to be inside a
 subdirectory named `android`. If you want its files to not be in a
 subdirectory, set it to "master" instead.
+
+Finally, you may want to configure a preferred content expression for the
+remote. That will limit both what is exported to it, and what is imported
+from it. If you want to fully sync all files, you don't need to do this.
+
+For example, to limit the files that get imported and exported to sound files:
+
+	git annex wanted android 'include=*.mp3 or include=*.ogg'
 
 ## syncing with it
 
@@ -57,21 +64,32 @@ these to only import from or export to the android device:
 
 ### photos
 
-The examples above showed how to import photos from your Android device
-into an android subdirectory. If you don't want to keep old photos on your
-Android device, you can simply `git mv` the files out of the android
-directory, and the next sync with the phone will delete them from the
-Android device:
+Set up the remote to use the /sdcard/DCIM directory where the phone's
+camera stores them.
+
+	initremote android type=adb androiddirectory=/sdcard/DCIM encryption=none exporttree=yes importtree=yes
+       
+The annex-tracking-branch can be the same as before, to limit
+the files that are synced to those in an android directory:
+
+	git config remote.android.annex-tracking-branch master:android
+
+If you don't want to keep old photos on your Android device, you can simply
+`git mv` the files from the android directory to another directory, and
+the next sync with the phone will delete them from the Android device:
 
 	git mv android/* .
 	git annex sync --content
 
 ### music and podcasts
 
-Set up the remote to use the /sdcard/Music directory:
+You could set up the remote to use the /sdcard/Music directory.
+But, I sometimes download music to other locations, and perhaps you do too.
+Let's instead limit the remote to mp3 and ogg files:
 
-	initremote android type=adb androiddirectory=/sdcard/Music encryption=none exporttree=yes importtree=yes
-       
+	initremote android type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes
+	git annex wanted android 'include=*.mp3 or include=*.ogg'
+
 The annex-tracking-branch can be the same as before, to limit
 the files that are synced to those in an android directory:
 	
@@ -82,14 +100,17 @@ And then do an initial sync:
 	git annex sync --content android
 
 Now, you can copy music and podcasts you want to listen 
-to over to the Android device, by first copying them to the Android
+to over to the Android device, by first copying them to the android
 directory of your git-annex repo:
 
 	cp -a podcasts/LibreLounge/Episode_14__Secure_Scuttlebutt_with_Joey_Hess.ogg android/
 	git annex add android
 	git annex sync --content android
 
-Once you're done with listening to something on the Android device,
-you can simply delete on the device, and the next time git-annex syncs, it
+That will also import any new sound files from the Android device into 
+your git-annex repo.
+
+Once you're done with listening to something on the Android device, you can
+simply delete it from the device, and the next time git-annex syncs, it
 will get removed from the android directory. Or, you can delete it from the
 android directory and the next sync will delete it from the Android device.
