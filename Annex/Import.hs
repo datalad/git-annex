@@ -406,8 +406,6 @@ addBackNonPreferredContent :: Remote -> Sha -> Annex Sha
 addBackNonPreferredContent remote importtree =
 	getExportExcluded (Remote.uuid remote) >>= \case
 		[] -> return importtree
-		-- TODO: does this overwrite newly imported files
-		-- with excluded files? CHECK
 		excludedlist -> inRepo $
 			adjustTree
 				-- don't remove any
