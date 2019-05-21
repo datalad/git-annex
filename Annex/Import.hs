@@ -163,40 +163,44 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 buildImportCommit' :: ImportCommitConfig -> Maybe Sha -> History Sha -> Annex (Maybe Sha)
 buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 	case mtrackingcommit of
-		Nothing -> Just <$> mkcommits imported
+		Nothing -> Just <$> mkcommitsunconnected imported
 		Just trackingcommit -> do
 			-- Get history of tracking branch to at most
 			-- one more level deep than what was imported,
 			-- so we'll have enough history to compare,
 			-- but not spend too much time getting it.
-			let maxdepth = succ (historyDepth imported)
+			let maxdepth = succ importeddepth
 			inRepo (getHistoryToDepth maxdepth trackingcommit)
 				>>= go trackingcommit
   where
-	go _ Nothing = Just <$> mkcommits imported
+	go _ Nothing = Just <$> mkcommitsunconnected imported
 	go trackingcommit (Just h)
 		-- If the tracking branch head is a merge commit
 		-- with a tree that matches the head of the history,
 		-- and one side of the merge matches the history,
 		-- nothing new needs to be committed.
-		| t == ti && any (sametodepth imported) (S.toList s) = return Nothing
+		| t == ti && any sametodepth (S.toList s) = return Nothing
 		-- If the tracking branch matches the history,
 		-- nothing new needs to be committed.
 		-- (This is unlikely to happen.)
-		| sametodepth imported h' = return Nothing
+		| sametodepth h' = return Nothing
 		| otherwise = do
 			importedcommit <- case getRemoteTrackingBranchImportHistory h of
-				Nothing ->
-					mkcommits imported
-				Just oldimported@(History oldhc _) -> do
-					let oldimportedtrees = mapHistory historyCommitTree oldimported
-					mknewcommits oldhc oldimportedtrees imported
+				Nothing -> mkcommitsunconnected imported
+				Just oldimported@(History oldhc _)
+					| importeddepth == 1 ->
+						mkcommitconnected imported oldimported
+					| otherwise -> do
+						let oldimportedtrees = mapHistory historyCommitTree oldimported
+						mknewcommits oldhc oldimportedtrees imported
 			Just <$> makeRemoteTrackingBranchMergeCommit'
 				trackingcommit importedcommit ti
 	  where
 		h'@(History t s) = mapHistory historyCommitTree h
 
-	sametodepth a b = a == truncateHistoryToDepth (historyDepth a) b
+	importeddepth = historyDepth imported
+
+	sametodepth b = imported == truncateHistoryToDepth importeddepth b
 
 	mkcommit parents tree = inRepo $ Git.Branch.commitTree
 		(importCommitMode importcommitconfig)
@@ -204,8 +208,16 @@ buildImportCommit' importcommitconfig mtrackingcommit imported@(History ti _) =
 		parents
 		tree
 
-	mkcommits (History importedtree hs) = do
-		parents <- mapM mkcommits (S.toList hs)
+	-- Start a new history of import commits, not connected to any
+	-- prior import commits.
+	mkcommitsunconnected (History importedtree hs) = do
+		parents <- mapM mkcommitsunconnected (S.toList hs)
+		mkcommit parents importedtree
+
+	-- Commit the new history connected with the old history.
+	-- Used when the import is not versioned, so the history depth is 1.
+	mkcommitconnected (History importedtree _) (History oldhc _) = do
+		let parents = [historyCommit oldhc]
 		mkcommit parents importedtree
 
 	-- Reuse the commits from the old imported History when possible.

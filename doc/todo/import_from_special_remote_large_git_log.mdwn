@@ -18,3 +18,5 @@ and adds more commits on top of those, so this is mostly not a problem
 there. If the old and new imported histories are disjoint, a commit or
 commits will be made with no parent, but that seems acceptable; it's an
 edge case and it's replicating the information from the remote.
+
+> [[done]] --[[Joey]]
