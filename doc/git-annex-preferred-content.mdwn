@@ -44,9 +44,9 @@ elsewhere to allow removing it).
   when you're done with them. Then you could configure your laptop to prefer
   to not retain those files, like this: `exclude=*/archive/*`
 
-  When a subdirectory is being exported to a special remote (see
-  [[git-annex-export]](1)), these match relative to the top of the
-  subdirectory.
+  When a subdirectory is being exported or imported to a special remote (see
+  [[git-annex-export]](1)) and [[git-annex-import]](1), these match relative
+  to the top of the subdirectory.
 
 * `copies=number`
 

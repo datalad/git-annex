@@ -68,8 +68,6 @@ let an export overwrite the modified file; then `git annex import`
 will create a sequence of commits that includes the modified file,
 so the overwritten modification is not lost.)
 
-# PREFERRED 
-
 # OPTIONS
 
 * `--to=remote`

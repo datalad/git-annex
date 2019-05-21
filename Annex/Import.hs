@@ -13,7 +13,9 @@ module Annex.Import (
 	ImportCommitConfig(..),
 	buildImportCommit,
 	buildImportTrees,
-	downloadImport
+	downloadImport,
+	filterImportableContents,
+	makeImportMatcher,
 ) where
 
 import Annex.Common
@@ -41,6 +43,10 @@ import Messages.Progress
 import Utility.DataUnits
 import Logs.Export
 import Logs.Location
+import Logs.PreferredContent
+import Types.FileMatcher
+import Annex.FileMatcher
+import Utility.Matcher (isEmpty)
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as CIDDb
 import qualified Logs.ContentIdentifier as CIDLog
@@ -192,7 +198,7 @@ buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History t
 					| otherwise -> do
 						let oldimportedtrees = mapHistory historyCommitTree oldimported
 						mknewcommits oldhc oldimportedtrees imported
-			ti' <- addBackNonPreferredContent remote ti
+			ti' <- addBackExportExcluded remote ti
 			Just <$> makeRemoteTrackingBranchMergeCommit'
 				trackingcommit importedcommit ti'
 	  where
@@ -399,11 +405,11 @@ importKey (ContentIdentifier cid) size = stubKey
  -- special remote).
  --
  -- That presents a problem: Merging the imported tree would result
- -- in deletion of the non-preferred content. To avoid that happening,
- -- this adds the non-preferred content back to the imported tree.
+ -- in deletion of the files that were excluded from export.
+ -- To avoid that happening, this adds them back to the imported tree.
  --}
-addBackNonPreferredContent :: Remote -> Sha -> Annex Sha
-addBackNonPreferredContent remote importtree =
+addBackExportExcluded :: Remote -> Sha -> Annex Sha
+addBackExportExcluded remote importtree =
 	getExportExcluded (Remote.uuid remote) >>= \case
 		[] -> return importtree
 		excludedlist -> inRepo $
@@ -417,3 +423,60 @@ addBackNonPreferredContent remote importtree =
 				(\imported _excluded -> imported)
 				[]
 				importtree
+
+{- Match the preferred content of the remote at import time.
+ -
+ - Only keyless tokens are supported, because the keys are not known
+ - until an imported file is downloaded, which is too late to bother
+ - excluding it from an import.
+ -}
+makeImportMatcher :: Remote -> Annex (Either String (FileMatcher Annex))
+makeImportMatcher r = load preferredContentKeylessTokens >>= \case
+	Nothing -> return $ Right matchAll
+	Just (Right v) -> return $ Right v
+	Just (Left err) -> load preferredContentTokens >>= \case
+		Just (Left err') -> return $ Left err'
+		_ -> return $ Left $
+			"The preferred content expression contains terms that cannot be checked when importing: " ++ err
+  where
+	load t = M.lookup (Remote.uuid r) . fst <$> preferredRequiredMapsLoad' t
+
+wantImport :: FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
+wantImport matcher loc sz = checkMatcher' matcher mi mempty
+  where
+	mi = MatchingInfo $ ProvidedInfo
+		{ providedFilePath = Right $ fromImportLocation loc
+		, providedKey = unavail "key"
+		, providedFileSize = Right sz
+		, providedMimeType = unavail "mime"
+		, providedMimeEncoding = unavail "mime"
+		}
+	-- This should never run, as long as the FileMatcher was generated
+	-- using the preferredContentKeylessTokens.
+	unavail v = Left $ error $ "Internal error: unavailable " ++ v
+
+{- If a file is not preferred content, but it was previously exported or
+ - imported to the remote, not importing it would result in a remote
+ - tracking branch that, when merged, would delete the file.
+ -
+ - To avoid that problem, such files are included in the import.
+ - The next export will remove them from the remote.
+ -}
+shouldImport :: Export.ExportHandle -> FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
+shouldImport dbhandle matcher loc sz = 
+	wantImport matcher loc sz
+		<||>
+	liftIO (not . null <$> Export.getExportTreeKey dbhandle loc)
+
+filterImportableContents :: Remote -> FileMatcher Annex -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (ImportableContents (ContentIdentifier, ByteSize))
+filterImportableContents r matcher importable
+	| isEmpty matcher = return importable
+	| otherwise = do
+		dbhandle <- Export.openDb (Remote.uuid r)
+		go dbhandle importable
+  where
+	go dbhandle ic = ImportableContents
+		<$> filterM (match dbhandle) (importableContents ic)
+		<*> mapM (go dbhandle) (importableHistory ic)
+	
+	match dbhandle (loc, (_cid, sz)) = shouldImport dbhandle matcher loc sz

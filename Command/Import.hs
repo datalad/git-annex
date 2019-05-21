@@ -293,9 +293,13 @@ listContents remote tvar = do
 	showStart' "list" (Just (Remote.name remote))
 	next $ Remote.listImportableContents (Remote.importActions remote) >>= \case
 		Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
-		Just importable -> next $ do
-			liftIO $ atomically $ writeTVar tvar (Just importable)
-			return True
+		Just importable -> do
+			importable' <- makeImportMatcher remote >>= \case
+				Right matcher -> filterImportableContents remote matcher importable
+				Left err -> giveup $ "Cannot import from " ++ Remote.name remote ++ " because of a problem with its configuration: " ++ err
+			next $ do
+				liftIO $ atomically $ writeTVar tvar (Just importable')
+				return True
 
 commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents Key -> CommandStart
 commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable = do

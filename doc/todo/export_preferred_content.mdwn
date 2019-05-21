@@ -4,6 +4,8 @@ But, in some situations, the user may want to export a subset of files,
 in a way that can be well expressed by a preferred content expression.
  
 > started work on this in the `preferred` branch. --[[Joey]]
+>
+> > And [[done]]! --[[Joey]]
 
 For example, they may want to export .mp3 files but not the .wav
 files used to produce those.
@@ -39,10 +41,9 @@ exclude= etc match relative to the top of the exported tree when exporting
 a subtree.
 > done
 
-Problem: Each `git-annex sync --content` re-filters the exported tree.
+Note: Each `git-annex sync --content` re-filters the exported tree.
 Unnecessary work. If there were a way to look up the original tree that
 corresponds with the filtered exported tree, that could be avoided.
-TODO
 
 ----
 
@@ -54,6 +55,7 @@ TODO
 > is added to the remote, it shouldn't be downloaded. Or a better example,
 > if directory Music is excluded from an android remote, importing from
 > it should exclude that directory.
+> > done
 
 ## import after limited export
 
@@ -167,6 +169,9 @@ TODO
 > and if they changed to `exclude=*.mp3 or metadata=tag=podcast`
 > and it did all that extra work, that would be surprising.
 
+> > done; it seemed to make sense at least at first to make import
+> > fail when the preferred content dependened on a key.
+
 ## different preferred content for export and import?
 
 May be cases where this makes sense. For example, I might make my phone
@@ -226,14 +231,10 @@ But, if some other file got deleted from the special remote after the
 export, the import would then not delete it.
 
 Alternatively, when a preferred content expression doesn't match a file at
-import, could check if the same file was present in the last export. (With
-same or different content.) If so, assume the preferred content has changed
-and that the user does not want to delete this file, so keep it in the
-import anyway (using the content that was last exported to it). 
-(The state does not currently differentiate between the last export
-and the last import, so the file would keep being included in
-imports until an export was made that removed it.)
-
-OR, don't match preferred content expressions on import at all; download
-everything, and let the user delete unwanted imports locally. Does avoid
-all these complications.
+import, could check if the same file is known to be present on the remote
+as of the last import or export. (With same or different content.) If so,
+assume the preferred content has changed and that the user does not want to
+delete this file, so keep it in the import anyway. This way the import does
+not delete files from master, and when the next export removes it from
+the remote it will still not get deleted from master.
+> done

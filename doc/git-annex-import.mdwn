@@ -68,18 +68,14 @@ to tell it what branch to track. For example:
 If a preferred content expression is configured for the special remote,
 it will be honored when importing from it. Files that are not preferred
 content of the remote will not be imported from it, but will be left on the
-remote. A couple of caveats:
+remote. 
 
-References to directories in the preferred content expression
-are relative to the top of the special remote, not of the git repository
-it's being imported into.
-
-Preferred content expressions that relate to the content of a file will
-make the file be downloaded from the special remote, even when it turns out
-not to be preferred content. The download will only happen once for each
-version of a file, and the unwanted content will be thrown away. Such
-expressions include "copies=", "metadata=", and other things that depend on
-the key, but not "smallerthan=", "largerthan=", "include=", "exclude="
+However, preferred content expressions that relate to the key
+can't be matched when importing, because the content of the file is not
+known. Importing will fail when such a preferred content expression is
+set. This includes expressions containing "copies=", "metadata=", and other
+things that depend on the key. Preferred content expressions containing
+"include=", "exclude=" "smallerthan=", "largerthan=" will work.
 
 # IMPORTING FROM A DIRECTORY
 

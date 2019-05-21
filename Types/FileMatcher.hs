@@ -31,7 +31,7 @@ data FileInfo = FileInfo
 	}
 
 -- This is used when testing a matcher, with values to match against
--- provided by the user, rather than queried from files.
+-- provided in some way, rather than queried from files on disk.
 data ProvidedInfo = ProvidedInfo
 	{ providedFilePath :: OptInfo FilePath
 	, providedKey :: OptInfo Key
@@ -48,7 +48,7 @@ getInfo :: MonadIO m => OptInfo a -> m a
 getInfo (Right i) = return i
 getInfo (Left e) = liftIO e
 
-type FileMatcherMap a = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> MatchInfo -> a Bool))
+type FileMatcherMap a = M.Map UUID (FileMatcher a)
 
 type MkLimit a = String -> Either String (MatchFiles a)
 

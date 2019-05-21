@@ -20,6 +20,7 @@ module Logs.PreferredContent (
 	setStandardGroup,
 	defaultStandardGroup,
 	preferredRequiredMapsLoad,
+	preferredRequiredMapsLoad',
 	prop_standardGroups_parse,
 ) where
 
@@ -71,24 +72,37 @@ requiredContentMap = maybe (snd <$> preferredRequiredMapsLoad preferredContentTo
 
 preferredRequiredMapsLoad :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (FileMatcherMap Annex, FileMatcherMap Annex)
 preferredRequiredMapsLoad mktokens = do
+	(pc, rc) <- preferredRequiredMapsLoad' mktokens
+	let pc' = handleunknown pc
+	let rc' = handleunknown rc
+	Annex.changeState $ \s -> s
+		{ Annex.preferredcontentmap = Just pc'
+		, Annex.requiredcontentmap = Just rc'
+		}
+	return (pc', rc')
+  where
+	handleunknown = M.mapWithKey $ \u -> 
+		fromRight (unknownMatcher u)
+
+preferredRequiredMapsLoad' :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (M.Map UUID (Either String (FileMatcher Annex)), M.Map UUID (Either String (FileMatcher Annex)))
+preferredRequiredMapsLoad' mktokens = do
 	groupmap <- groupMap
 	configmap <- readRemoteLog
 	let genmap l gm = 
-		let mk u = fromRight (unknownMatcher u) .
-			makeMatcher groupmap configmap gm u mktokens
+		let mk u = makeMatcher groupmap configmap gm u mktokens
 		in simpleMap
 			. parseLogOldWithUUID (\u -> mk u . decodeBS <$> A.takeByteString)
 			<$> Annex.Branch.get l
 	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
 	rc <- genmap requiredContentLog M.empty
-	-- Required content is implicitly also preferred content, so
-	-- combine.
-	let m = M.unionWith combineMatchers pc rc
-	Annex.changeState $ \s -> s
-		{ Annex.preferredcontentmap = Just m
-		, Annex.requiredcontentmap = Just rc
-		}
-	return (m, rc)
+	-- Required content is implicitly also preferred content, so combine.
+	let pc' = M.unionWith combiner pc rc
+	return (pc', rc)
+  where
+	combiner (Right a) (Right b) = Right (combineMatchers a b)
+	combiner (Left a)  (Left b)  = Left (a ++ " " ++ b)
+	combiner (Left a)  (Right _) = Left a
+	combiner (Right _) (Left b)  = Left b
 
 {- This intentionally never fails, even on unparsable expressions,
  - because the configuration is shared among repositories and newer

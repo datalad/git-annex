@@ -7,6 +7,10 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     annex.jobs=cpus, or using option --jobs=cpus or -Jcpus.
   * Honor preferred content of a special remote when exporting trees to it;
     unwanted files are filtered out of the tree that is exported.
+  * Importing from a special remote honors its preferred content too;
+    unwanted files are not imported. But, some preferred content
+    expressions can't be checked before files are imported, and trying to
+    import with such an expression will fail.
   * Improve shape of commit tree when importing from unversioned special
     remotes.
 
