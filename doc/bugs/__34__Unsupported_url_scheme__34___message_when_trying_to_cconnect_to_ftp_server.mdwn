@@ -1,0 +1,52 @@
+I am trying to use git-annex as part of a datalad install on an Ubuntu 18.04 VirtualBox VM to set up a repository linking to some datasets at a public ftp server.  When I use git-annex version 7.20190219 (installed with apt-get install git-annex-standalone from NeuroDebian) to add the links, I get the following error:
+
+emmet@emmet-VirtualBox:~/conp-dataset/projects/1KGP-22May2019$ git annex addurl ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz –file=1KGP_chr6-vcf.gz
+addurl ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz Unsupported url scheme ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
+
+download failed: Unsupported url scheme ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
+failed
+git-annex: addurl: 1 failed
+
+
+
+However when I use git-annex v 6.20180227 (installed from the apt repository that came with Ubuntu 18.04) the link is generated correctly:
+
+emmet@emmet-VirtualBox:~/conp-dataset/projects/1KGP-22May2019$ git annex addurl ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz --file=1KGP_chr6-vcf.gz
+addurl ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
+ALL.chr6.phase3_shapeit2_mvncall_integrated_ 100%[===========================================================================================>] 953.14M  9.81MB/s    in 93s    
+2019-05-22 16:10:44 URL: ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr6.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz [999436830] -> "/home/emmet/conp-dataset/projects/1KGP-22May2019/.git/annex/tmp/URL-s999436830--ftp&c%%ftp.1000genomes.ebi.ac.uk-dda0592051d00d19f6c947a6b3aae6a5" [1]
+(to 1KGP_chr6-vcf.gz) ok
+(recording state in git...)
+
+
+
+Similarly, after publishing the correctly formed links generated with 6.20180227 to github, trying to download them on another Ubuntu VirtualBox VM with git-annex 7.20190219 installed causes the following error:
+
+emmet@emmet-VirtualBox:~/conp-dataset/projects/1KGP-22May2019$ git annex get 1KGP_chr2-vcf.gz
+get 1KGP_chr2-vcf.gz (from web...)
+download failed: Unsupported url scheme ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr2.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
+
+  Unable to access these remotes: web
+
+  Try making some of these repositories available:
+      00000000-0000-0000-0000-000000000001 -- web
+       2cc9a182-813f-4740-8157-c7a560560238 -- emmet@emmet-VirtualBox:~/conp-dataset/projects/1KGP-22May2019
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+git-annex: get: 1 failed
+
+
+
+but downloading them on that same VM with git-annex v 6.20180227 installed instead works:
+
+emmet@emmet-VirtualBox:~/conp-dataset/projects/1KGP-22May2019$ git annex get 1KGP_chr2-vcf.gz
+get 1KGP_chr2-vcf.gz (from web...)
+ALL.chr2.phase3_sha 100%[===================>]   1.22G  6.99MB/s    in 3m 11s 
+2019-05-22 16:25:44 URL: ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr2.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz [1312735578] -> "/home/emmet/conp-dataset/projects/1KGP-22May2019/.git/annex/tmp/MD5E-s1312735578--774370621affaf125e6994089f975ed7.gz" [1]
+(checksum...) ok
+(recording state in git...)
+
+
+Would you know why this is happening?  And how I can avoid this failure mode in the more up-to-date version of git-annex?
+ 
