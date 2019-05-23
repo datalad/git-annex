@@ -18,9 +18,8 @@ Speed improvements, including:
   encode data stored in sqlite.
 
 Improvements to tree export support, including supporting export to more
-external special remotes, exporting only preferred content, more
+external special remotes, more
 efficient renames, and improving support for exporting non-annexed files.
-<https://git-annex.branchable.com/todo/export_preferred_content/>
 <https://git-annex.branchable.com/todo/export_paired_rename_innefficenctcy/>
 
 Improve support for branches where annexed files without content locally
