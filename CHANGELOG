@@ -13,6 +13,9 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     import with such an expression will fail.
   * Improve shape of commit tree when importing from unversioned special
     remotes.
+  * init: When the repository already has a description, don't change it.
+  * describe: When run with no description parameter it used to set
+    the description to "", now it will error out.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 

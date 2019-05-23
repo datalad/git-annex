@@ -21,7 +21,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start (name:description) = do
+start (name:description) | not (null description) = do
 	showStart' "describe" (Just name)
 	u <- Remote.nameToUUID name
 	next $ perform u $ unwords description

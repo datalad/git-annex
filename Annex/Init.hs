@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -52,6 +52,8 @@ import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
 #endif
 
+import qualified Data.Map as M
+
 checkCanInitialize :: Annex a -> Annex a
 checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case
 	Nothing -> a
@@ -88,7 +90,10 @@ initialize mdescription mversion = checkCanInitialize $ do
 	initSharedClone sharedclone
 
 	u <- getUUID
-	describeUUID u =<< genDescription mdescription
+	{- Avoid overwriting existing description with a default
+	 - description. -}
+	whenM (pure (isJust mdescription) <||> not . M.member u <$> uuidDescMap) $
+		describeUUID u =<< genDescription mdescription
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
