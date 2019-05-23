@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-05-23T18:06:39Z"
+ content="""
+I remeber that git message, it's trying to remove the world read bit
+from .git/config and the hack that is /sdcard does not support that.
+
+On my phone (Android 8.1), neither git nor git-annex has the problem.
+/sdcard still doesn't really support unix file permissions, but chmod on 
+it no longer fails, just silently leaves wrong permissions.
+
+Given that there are plenty of places in git-annex that set file modes,
+I'd rather not complicate it by ignoring a failure to do so.
+It would not be a problem to fix this one specific case of it, which
+is in Database/Init.hs's callto setFileMode, but I don't know if fixing
+that won't just expose lots of other problems.
+"""]]
