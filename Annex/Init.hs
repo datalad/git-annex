@@ -43,10 +43,10 @@ import Annex.Environment
 import Annex.Hook
 import Annex.InodeSentinal
 import Upgrade
-import Annex.Perms
 import Annex.Tmp
 import Utility.UserInfo
 #ifndef mingw32_HOST_OS
+import Annex.Perms
 import Utility.FileMode
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix

@@ -12,7 +12,9 @@ module Annex.ReplaceFile where
 import Annex.Common
 import Annex.Tmp
 import Utility.Tmp.Dir
+#ifndef mingw32_HOST_OS
 import Utility.Path.Max
+#endif
 
 {- Replaces a possibly already existing file with a new version, 
  - atomically, by running an action.

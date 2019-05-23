@@ -12,7 +12,6 @@ module Logs.Transfer where
 import Types.Transfer
 import Types.ActionItem
 import Annex.Common
-import Annex.Perms
 import qualified Git
 import Utility.Metered
 import Utility.Percentage
@@ -20,6 +19,9 @@ import Utility.PID
 import Annex.LockPool
 import Utility.TimeStamp
 import Logs.File
+#ifndef mingw32_HOST_OS
+import Annex.Perms
+#endif
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
