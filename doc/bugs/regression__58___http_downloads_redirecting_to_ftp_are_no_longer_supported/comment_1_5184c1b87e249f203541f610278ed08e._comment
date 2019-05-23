@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-05-23T17:39:36Z"
+ content="""
+The old behavior changed due to a security fix in commit
+[[!commit b54b2cdc0ef1373fc200c0d28fded3c04fd57212]].
+
+When git-annex followed a http redirect with curl, the http server
+could provide a ftp url that causes curl to access localhost or the lan.
+Which basically violates annex.security.allowed-http-addresses.
+(That is aimed at http, but accessing a ftp server would have similar
+security problems.)
+
+(For the same reason, non-redirect ftp urls don't work unless using 
+curl is enabled.)
+
+To avoid that attack while following the ftp redirect, git-annex would need
+to parse out the ftp server's hostname, resolve it and I suppose substitute
+the IP address back into the ftp url before passing it to curl. (To avoid
+DNS tricks.)
+
+I don't know if replacing a ftp hostname with an IP address would always
+work; there may be something that cares about the specific ftp hostname
+to eg decide what password to give the ftp server? Been a while since I FTPed.
+
+----
+
+Maybe a new configuration item is a better fix?
+`git config annex.security.allowed-ftp-addresses all` could enable
+use of curl as needed for ftp, without forcing use of curl for http.
+"""]]
