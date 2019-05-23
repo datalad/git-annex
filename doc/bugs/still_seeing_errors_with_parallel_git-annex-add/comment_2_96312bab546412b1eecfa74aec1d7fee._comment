@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-05-23T17:07:40Z"
+ content="""
+I'll try to reproduce this and re-run under `strace`.  Maybe also, take another look at [[todo/add_tests_under_concurrency]]?  I think that re-running concurrent operations on a small repo many times should test all relevant operation interleavings, and bring out the concurrency-specific bugs.
+
+With large repos, concurrency is the only way to make operations run in sane time.  So fixing this would help a lot.
+
+"""]]
