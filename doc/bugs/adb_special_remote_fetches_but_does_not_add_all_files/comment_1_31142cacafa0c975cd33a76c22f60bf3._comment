@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-05-23T17:21:53Z"
+ content="""
+"Failed to import some files from remotename. Re-run command to resume import."
+
+AFAICS if it displayed that, it would not go on to add *any* files
+to the remote's tracking branch. Only when it's been able to import all
+the files it found on the remote does a commit get made.
+
+I have seen the adb pull of a file fail once or twice (out of several
+hundred imports so far), and adb did display an error message, and I
+assume git-annex also then said the import of that file failed.
+
+The other way it could fail to download a file is if the content seems to
+have changed since file list for the import was built. In that case,
+there would be no error message, just "import foo failed" rather than 
+"import foo ok"
+
+Can you paste a transcript of the problem?
+"""]]
