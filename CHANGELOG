@@ -16,6 +16,8 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
   * init: When the repository already has a description, don't change it.
   * describe: When run with no description parameter it used to set
     the description to "", now it will error out.
+  * Android: Improve installation process when the user's login shell is not
+    bash.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 

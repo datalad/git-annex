@@ -185,7 +185,7 @@ case "$os" in
 	# Make this bundle work well on Android.
 	Android)
 		if [ -e "$base/git" ]; then
-			echo "Running on Android.. Adding git-annex to PATH for you, and tuning for optimal behavior." >&2
+			echo "Running on Android.. Tuning for optimal behavior." >&2
 			# The bundled git does not work well on sdcard, so delete
 			# it and use termux's git which works better.
 			cd "$base"
@@ -197,8 +197,13 @@ case "$os" in
 			termux-fix-shebang bin/* runshell git-annex git-annex-shell git-annex-webapp 
 			cd "$orig"
 			# Save the poor Android user the typing.
-			if ! [ -e "$HOME/.profile" ] || ! grep -q "$base" "$HOME/.profile"; then
-				echo 'PATH=$PATH:'"$base" >> $HOME/.profile
+			if echo "$SHELL" | grep -q '/bash'; then
+				if ! [ -e "$HOME/.profile" ] || ! grep -q "$base" "$HOME/.profile"; then
+					echo "Adding git-annex to PATH for you, in $HOME/.profile"
+					echo 'PATH=$PATH:'"$base" >> $HOME/.profile
+				fi
+			else
+				echo "To use git-annex, you will need to add $base to your shell's PATH."
 			fi
 		fi
 		

@@ -29,3 +29,7 @@ git: 'annex' is not a git command. See 'git --help'.
 Yes, been using it for many years and couldn't live without it.
 
 [[!meta title="termux install adds git-annex only to bash path, not zsh etc"]]
+
+> made it detect when the login shell is not bash, and rather than add to
+> .profile, print out a message letting the user know what they need to
+> add to their shell's path [[done]]
