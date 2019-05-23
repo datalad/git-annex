@@ -81,8 +81,8 @@ preferredRequiredMapsLoad mktokens = do
 		}
 	return (pc', rc')
   where
-	handleunknown = M.mapWithKey $ \u -> 
-		either (unknownMatcher u) id
+	handleunknown = M.mapWithKey $ \u ->
+		either (const $ unknownMatcher u) id
 
 preferredRequiredMapsLoad' :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (M.Map UUID (Either String (FileMatcher Annex)), M.Map UUID (Either String (FileMatcher Annex)))
 preferredRequiredMapsLoad' mktokens = do
