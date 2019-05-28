@@ -18,6 +18,8 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     the description to "", now it will error out.
   * Android: Improve installation process when the user's login shell is not
     bash.
+  * When a remote is configured to be readonly, don't allow changing
+    what's exported to it.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 
