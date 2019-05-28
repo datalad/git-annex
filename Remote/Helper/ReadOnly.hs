@@ -15,6 +15,8 @@ module Remote.Helper.ReadOnly
 import Annex.Common
 import Types.Remote
 import Types.StoreRetrieve
+import Types.Import
+import Types.Export
 import Utility.Metered
 
 {- Adds support for read-only remotes, by replacing the
@@ -28,14 +30,14 @@ adjustReadOnly r
 		{ storeKey = readonlyStoreKey
 		, removeKey = readonlyRemoveKey
 		, repairRepo = Nothing
-		, exportActions = exportActions r
+		, exportActions = (exportActions r)
 			{ storeExport = readonlyStoreExport
 			, removeExport = readonlyRemoveExport
 			, removeExportDirectory = Just readonlyRemoveExportDirectory
 			, renameExport = readonlyRenameExport
 			}
-		, importActions = importActions r
-			{ storeExportWithContentIdentifier = readonlyStoreExportWithContentIdentifiera
+		, importActions = (importActions r)
+			{ storeExportWithContentIdentifier = readonlyStoreExportWithContentIdentifier
 			, removeExportWithContentIdentifier = readonlyRemoveExportWithContentIdentifier
 			, removeExportDirectoryWhenEmpty = Just readonlyRemoveExportDirectory
 			}
@@ -68,8 +70,8 @@ readonlyStoreExportWithContentIdentifier _ _ _ _ _ = do
 	readonlyWarning
 	return Nothing
 
-removeExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
-removeExportWithContentIdentifier _ _ _ = readonlyFail
+readonlyRemoveExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+readonlyRemoveExportWithContentIdentifier _ _ _ = readonlyFail
 
 readonlyFail :: Annex Bool
 readonlyFail = do
@@ -77,4 +79,4 @@ readonlyFail = do
 	return False
 
 readonlyWarning :: Annex ()
-readonylWarning = warning "this remote is readonly"
+readonlyWarning = warning "this remote is readonly"
