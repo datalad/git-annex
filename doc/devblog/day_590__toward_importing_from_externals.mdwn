@@ -1,0 +1,11 @@
+I've added an
+[[external_special_remote_protocol/export_and_import_appendix]]
+to the [[external_special_remote_protocol]] which documents how
+the protocol might be extended to allow for importing from external special
+remotes.
+
+Feel this needs more thought. It's complicated by there already
+being an interface that only supports export, and import needing all
+the same operations, but with more checks that the content has not been
+modified behind git-annex's back. Unifying them at the protocol level would
+be possible, but perhaps more confusing.
