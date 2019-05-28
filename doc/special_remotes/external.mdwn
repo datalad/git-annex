@@ -21,13 +21,18 @@ It's not hard!
 * If you build a new special remote, please add it to the list
   of [[special_remotes]].
 
+## libraries
+
+For Python, there is a [library](https://github.com/Lykos153/AnnexRemote)
+that takes care of all the protocol details.
+
+## examples
+
 Here's an example of using an external special remote to add torrent
 support to git-annex: [[external/git-annex-remote-torrent]]
 
 Here's a simple shell script example, which can easily be adapted
 to run whatever commands you need. Or better, re-written in some better
 language of your choice.
-
-For Python, there is a [library](https://github.com/Lykos153/AnnexRemote) that takes care of all the protocol details.
 
 [[!inline pages="special_remotes/external/example.sh" feeds=no]]
