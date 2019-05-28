@@ -281,7 +281,9 @@ the race.
 
 removeExportDirectoryWhenEmpty is used instead of removeExportDirectory.
 It should only remove empty directories, and succeeds if there are files
-in the directory.
+in the directory. This is needed because removeExportDirectory removes
+non-empty directories, but when importing the stuff in those directories is
+stuff that ought to be imported.
 
 checkPresentExportWithContentIdentifier is used instead of
 checkPresentExport. It should verify that one of the provided

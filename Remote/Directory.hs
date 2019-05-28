@@ -81,6 +81,8 @@ gen r u c gc = do
 				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir
 				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
+				-- Not needed because removeExportWithContentIdentifier
+				-- auto-removes empty directories.
 				, removeExportDirectoryWhenEmpty = Nothing
 				, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM dir
 				}

@@ -198,8 +198,8 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
   respond with `REMOVE-SUCCESS`.
 * `REMOVEEXPORTDIRECTORY Directory`  
   Requests the remote remove an exported directory.  
-  If the remote does not use directories, or automatically cleans up
-  empty directories, this does not need to be implemented.  
+  If the remote does not use directories, or REMOVEEXPORT cleans up
+  directories that are empty, this does not need to be implemented.  
   The directory will be in the form of a relative path, and may contain path
   separators, whitespace, and other special characters.  
   Typically the directory will be empty, but it could possibly contain
