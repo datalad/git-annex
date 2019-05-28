@@ -114,7 +114,9 @@ The following requests *must* all be supported by the special remote.
   So any one-time setup tasks should be done idempotently.
 * `PREPARE`  
   Tells the remote that it's time to prepare itself to be used.  
-  Only EXTENSIONS and INITREMOTE or EXPORTSUPPORTED can come before this.
+  Only a few requests for details about the remote can come before this.
+  Those include EXTENSIONS, INITREMOTE, EXPORTSUPPORTED, and may later
+  include others.
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For STORE, the File is the file to upload;
   for RETRIEVE the File is where to store the download.  
