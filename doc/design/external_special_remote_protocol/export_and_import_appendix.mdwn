@@ -1,0 +1,303 @@
+This is an appendix to the [[external_special_remote_protocol]].
+
+Some special remotes interface to a key/value datastore using keys that are
+eg hashes, and it won't make sense for them to implement any of this.
+
+When a special remote interfaces with something that looks like a directory
+of files, the simple export interface can be implemented to allow the
+[[git-annex-export]] command to be used to store file trees on the special
+remote.
+
+If other tools can write files to the special remote too, the import/export
+interface can be implemented. This allows for both [[git-annex-import]] and 
+[[git-annex-export]] to be used with the special remote.
+
+[[!toc]]
+
+## simple export interface
+
+git-annex will use this when the special remote is initialized with
+exporttree=yes but without importtree=yes and indicates that it supports
+exports.
+
+These are requests git-annex sends to the special remote program.
+Once the special remote has finished performing a request, it
+should send one of the listed replies. Or, if it does not support
+a request, it can reply with `UNSUPPORTED-REQUEST`.
+
+* `EXPORTSUPPORTED`  
+  Used to check if a special remote supports exports.
+  Note that this request may be made before or after `PREPARE`.
+  * `EXPORTSUPPORTED-SUCCESS`  
+    Indicates that it makes sense to export to this special remote.
+  * `EXPORTSUPPORTED-FAILURE`  
+    Indicates that it does not make sense to export to this special remote.
+* `EXPORT Name`  
+  Comes immediately before each of the following requests, 
+  specifying the name of the exported file. It will be in the form
+  of a relative path, and may contain path separators, whitespace,
+  and other special characters.  
+  No response is made to this message.
+* `TRANSFEREXPORT STORE|RETRIEVE Key File`  
+  Requests the transfer of a File on local disk to or from the previously 
+  provided Name on the special remote.  
+  Note that it's important that, while a file is being stored,
+  `CHECKPRESENTEXPORT` not indicate it's present until all the data has
+  been transferred.  
+  While the transfer is running, the remote can send any number of
+  `PROGRESS` messages. Once the transfer is complete, it finishes by
+  sending one of these replies:
+  * `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
+    Indicates the transfer completed successfully.
+  * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
+    Indicates the transfer failed.
+* `CHECKPRESENTEXPORT Key`  
+  Requests the remote to check if the previously provided Name is present
+  in it.  
+  * `CHECKPRESENT-SUCCESS Key`  
+    Indicates that a content has been positively verified to be present in the
+    remote.
+  * `CHECKPRESENT-FAILURE Key`  
+    Indicates that a contents has been positively verified to not be present in the
+    remote.
+  * `CHECKPRESENT-UNKNOWN Key ErrorMsg`  
+    Indicates that it is not currently possible to verify if content is
+    present in the remote. (Perhaps the remote cannot be contacted.)
+* `REMOVEEXPORT Key`  
+  Requests the remote to remove content stored by `TRANSFEREXPORT`
+  with the previously provided Name.  
+  * `REMOVE-SUCCESS Key`  
+    Indicates the content has been removed from the remote. May be returned when
+    the content was already not present.
+  * `REMOVE-FAILURE Key ErrorMsg`  
+    Indicates that the content was unable to be removed from the remote.
+* `REMOVEEXPORTDIRECTORY Directory`  
+  Requests the remote remove an exported directory.  
+  If the remote does not use directories, or `REMOVEEXPORT` cleans up
+  directories that are empty, this does not need to be implemented.  
+  The directory will be in the form of a relative path, and may contain path
+  separators, whitespace, and other special characters.  
+  Typically the directory will be empty, but it could possibly contain
+  files or other directories, and it's ok to remove those.  
+  * `REMOVEEXPORTDIRECTORY-SUCCESS`  
+    Indicates that a `REMOVEEXPORTDIRECTORY` was done successfully.
+  * `REMOVEEXPORTDIRECTORY-FAILURE`  
+    Indicates that a `REMOVEEXPORTDIRECTORY` failed for whatever reason.
+    Should not be returned if the directory did not exist.
+* `RENAMEEXPORT Key NewName`  
+  Requests the remote rename a file stored on it from the previously
+  provided Name to the NewName. Remotes that support exports but not
+  renaming do not need to implement this.  
+  * `RENAMEEXPORT-SUCCESS Key`  
+    Indicates that a `RENAMEEXPORT` was done successfully.
+  * `RENAMEEXPORT-FAILURE Key`  
+    Indicates that a `RENAMEEXPORT` failed for whatever reason.
+
+## import/export interface
+
+(This part is a draft, not implemented yet.)
+
+git-annex will use this interface when the special remote is
+initialized with both exporttree=yes and importtree=yes and indicates
+that it supports both imports and exports.
+
+### content identifiers
+
+The special remote needs to have some way to identify a particular version of a
+file. This is called a ContentIdentifier. A good ContentIdentifier needs to:
+
+* Be stable, so when a file has not changed, its content identifier
+  remains the same.
+* Change when a file is modified.
+* Be as unique as possible, but not necessarily fully unique.
+  A hash of the content would be ideal.
+  A (size, mtime, inode) tuple is as good a content identifier as git uses in
+  its index.
+* Be reasonably short, since it will be stored in the git-annex branch.
+
+It's up to the implementor of a external special remote program what
+to use for their ContentIdentifier, but not meeting those criteria
+will leas to unhappy users, and it's better not to implement this interface if
+you can't do it well.
+
+### protocol messages
+
+These are requests that git-annex sends to the special remote
+program. Once the special remote has finished performing a request,
+it should send one of the listed replies. Or, if it does not
+support a request, it can reply with `UNSUPPORTED-REQUEST`.
+
+* `EXPORTSUPPORTED`  
+  Used to check if a special remote supports exports.
+  Note that this request may be made before or after `PREPARE`.
+  * `EXPORTSUPPORTED-SUCCESS`  
+    Indicates that it makes sense to use this special remote as an export.
+  * `EXPORTSUPPORTED-FAILURE`  
+    Indicates that it does not make sense to use this special remote as an
+    export.
+* `IMPORTSUPPORTED`  
+  Used to check if a special remote supports imports.
+  Note that this request may be made before or after `PREPARE`.
+  * `IMPORTSUPPORTED-SUCCESS`  
+    Indicates that it makes sense to import from this special remote.
+  * `IMPORTSUPPORTED-FAILURE`  
+    Indicates that it does not make sense to import from this special remote.
+* `LISTIMPORTABLECONTENTS`  
+  Used to get a list of all the files that are stored in the special 
+  remote. A block of responses
+  can be made to this, which must always end with `END`.
+  * `CONTENT Size Name`  
+    An file stored in the special remote. The Size is its size
+    in bytes. The Name is the name of the file on the remote,
+    in the form of a relative path, and may contain path separators,
+    whitespace, and other special characters.  
+    Always followed by `CONTENTIDENTIFIER`.
+  * `CONTENTIDENTIFIER ContentIdentifier`  
+    Provide the ContentIdentifier for the previous `CONTENT`.
+  * `HISTORY`  
+    When a special remote stores historical versions of files,
+    this can be used to list those versions. It opens a new
+    block of responses. This can be repeated any number of times
+    (indicating a branching history), and histories can also
+    be nested multiple levels deep.
+  * `END`  
+    Indicates the end of a block of responses.
+* `LOCATION Name`  
+  Comes before each of the following requests, 
+  specifying the name of the file on the remote. It will be in the
+  form of a relative path, and may contain path separators,
+  whitespace, and other special characters.  
+  No response is made to this message.
+* `EXPECTED ContentIdentifier`  
+  Comes before each of the following requests, specifying the
+  ContentIdentifier that is expected to be present on the remote.
+* `NOTHINGEXPECTED`  
+  If no ContentIdentifier is expected to be present, this is sent
+  rather than `EXPECTED`.
+* `RETRIEVEEXPORTEXPECTED File`  
+  Retrieves the content of a file from the special remote
+  to the File on local disk. Must take care to only retrieve
+  content that has the ContentIdentifier specified by 
+  by `EXPECTED`.  
+  While the transfer is running, the remote can send any number of
+  `PROGRESS` messages. Once the transfer is complete, it finishes by
+  sending one of these replies:
+  * `RETRIEVE-SUCCESS`
+    Indicates that the retrieve was successful.
+  * `RETRIEVE-FAILURE ErrorMsg`  
+    Indicates the retrieve failed.
+* `STOREEXPORTEXPECTED Key File`  
+  Stores the content of File on the local disk to the previously
+  provided Name on the remote. If the Name already exists on the remote,
+  must take care to only overwrite it when it has the
+  ContentIdentifier that was previously provided by `EXPECTED`.
+  If some other content has been written to the Name,
+  it should not overwrite it.  
+  While the transfer is running, the remote can send any number of
+  `PROGRESS` messages. Once the transfer is complete, it finishes by
+  sending one of these replies:
+  * `STORE-SUCCESS Key ContentIdentifier`
+    Indicates that the store was successful. The ContentIdentifier
+    must be for the content that was stored.
+  * `STORE-FAILURE Key ErrorMsg`  
+    Indicates the store failed.
+* `CHECKPRESENTEXPORTEXPECTED Key`  
+  Requests the remote to check if the previously provided Name
+  is present in it, and still has the ContentIdentifier that was
+  previously provided by `EXPECTED`.  
+  * `CHECKPRESENT-SUCCESS Key`  
+    Indicates that a content has been positively verified to be present
+    in the remote.
+  * `CHECKPRESENT-FAILURE Key`  
+    Indicates that a content has been positively verified to not be
+    present in the remote, or does not have the expected
+    ContentIdentifier.
+  * `CHECKPRESENT-UNKNOWN Key ErrorMsg`  
+    Indicates that it is not currently possible to verify if content is
+    present in the remote. (Perhaps the remote cannot be contacted.)
+* `REMOVEEXPORTEXPECTED Key`  
+  Requests the remote to remove the content at the previously
+  provided Name, but only when it matches the ContentIdentifier
+  that was provided by `EXPECTED`.
+  * `REMOVE-SUCCESS Key`  
+    Indicates the content has been removed from the remote. May be returned when
+    the content was already not present.
+  * `REMOVE-FAILURE Key ErrorMsg`  
+    Indicates that the content was unable to be removed from the remote.
+* `REMOVEEXPORTDIRECTORYWHENEMPTY Directory`  
+  Requests the remote remove an exported directory, so long as it's empty.  
+  If the remote does not use directories, or `REMOVEEXPORTEXPECTED`
+  cleans up directories that are empty, this does not need to be implemented.  
+  The directory will be in the form of a relative path, and may contain path
+  separators, whitespace, and other special characters.  
+  * `REMOVEEXPORTDIRECTORY-SUCCESS`  
+    Indicates that the directory was removed, or was not empty.
+  * `REMOVEEXPORTDIRECTORY-FAILURE`  
+    Indicates that the directory was empty, but could not be
+    removed for some reason.
+
+## protocol example
+
+The protocol starts off with VERSION etc as usual, and
+then git-annex asks the special remote if it supports
+export and import, which it does:
+
+	VERSION 1
+	EXTENSIONS INFO
+	EXTENSIONS
+	PREPARE
+	EXPORTSUPPORTED
+	EXPORTSUPPORTED-SUCCESS
+	IMPORTSUPPORTED
+	IMPORTSUPPORTED-SUCCESS
+
+git-annex asks for a list of files stored in the special remote:
+
+	LISTIMPORTABLECONTENTS
+
+Which in the simple case looks like this:
+
+	CONTENT 100 foo
+	CONTENTIDENTIFIER 100 48511528411921470
+	CONTENT 200 bar
+	CONTENTIDENTIFIER 200 48511528411963410
+	END
+
+Or it could look like this, for a special remote that supports
+versions, and has two branches of history, with one branch having
+several different versions of the file "foo", and the second
+branch having a single version. Here the blocks have been indented to aid
+understanding; the real protocol does not include indenation.
+
+	  CONTENT 100 foo
+	  CONTENTIDENTIFIER 100 48511528411921470
+	  CONTENT 200 bar
+	  CONTENTIDENTIFIER 200 48511528411963410
+	  HISTORY
+	    CONTENT 99 foo
+	    CONTENTIDENTIFIER 99 2113620116963530
+	    HISTORY
+	      CONTENT 1 foo
+	      CONTENTIDENTIFIER 1 2110338579019192
+	    END
+	  END
+	  HISTORY
+	    CONTENT 88 foo
+	    CONTENTIDENTIFIER 88 2104982727272727
+	  END
+	END
+
+(Note that "bar" is a new file; it was not present in any
+of the older versions.)
+
+Next git-annex asks for the content of a file to be retrieved.
+
+	LOCATION foo
+	EXPECTED 100 48511528411921470	
+	RETRIEVEEXPORTEXPECTED tmpfile
+
+But, the file "foo" has been modified and so the
+ContentIdentifier no longer matches.
+
+	RETRIEVE-FAILURE content has changed
+

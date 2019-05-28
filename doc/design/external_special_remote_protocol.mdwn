@@ -156,6 +156,12 @@ The following requests *must* all be supported by the special remote.
   * `REMOVE-FAILURE Key ErrorMsg`  
     Indicates that the key was unable to be removed from the remote.
 
+Special remotes can optionally support tree exports and imports,
+which makes the [[git-annex-export]] and [[git-annex-import]] commands
+work with them. See the [[export_and_import_appendix]] for
+additional requests that git-annex will make when using special remotes in
+this way.
+
 The following requests can optionally be supported. If not supported,
 the special remote can reply with `UNSUPPORTED-REQUEST`.
 
@@ -230,74 +236,6 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     Gives the value of an info field.
   * `INFOEND`  
     Indicates the end of the response block.
-* `EXPORTSUPPORTED`  
-  Used to check if a special remote supports exports.
-  Note that this request may be made before or after `PREPARE`.
-  * `EXPORTSUPPORTED-SUCCESS`  
-    Indicates that it makes sense to use this special remote as an export.
-  * `EXPORTSUPPORTED-FAILURE`  
-    Indicates that it does not make sense to use this special remote as an
-    export.
-* `EXPORT Name`  
-  Comes immediately before each of the following export-related requests, 
-  specifying the name of the exported file. It will be in the form
-  of a relative path, and may contain path separators, whitespace,
-  and other special characters.  
-  No response is made to this message.
-* `TRANSFEREXPORT STORE|RETRIEVE Key File`  
-  Requests the transfer of a File on local disk to or from the previously 
-  provided Name on the special remote.  
-  Note that it's important that, while a file is being stored,
-  CHECKPRESENTEXPORT not indicate it's present until all the data has
-  been transferred.  
-  While the transfer is running, the remote can send any number of
-  `PROGRESS` messages. Once the transfer is complete, it finishes by
-  sending one of these replies:
-  * `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
-    Indicates the transfer completed successfully.
-  * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
-    Indicates the transfer failed.
-* `CHECKPRESENTEXPORT Key`  
-  Requests the remote to check if the previously provided Name is present
-  in it.  
-  * `CHECKPRESENT-SUCCESS Key`  
-    Indicates that a content has been positively verified to be present in the
-    remote.
-  * `CHECKPRESENT-FAILURE Key`  
-    Indicates that a contents has been positively verified to not be present in the
-    remote.
-  * `CHECKPRESENT-UNKNOWN Key ErrorMsg`  
-    Indicates that it is not currently possible to verify if content is
-    present in the remote. (Perhaps the remote cannot be contacted.)
-* `REMOVEEXPORT Key`  
-  Requests the remote to remove content stored by `TRANSFEREXPORT`
-  with the previously provided Name.  
-  * `REMOVE-SUCCESS Key`  
-    Indicates the content has been removed from the remote. May be returned when
-    the content was already not present.
-  * `REMOVE-FAILURE Key ErrorMsg`  
-    Indicates that the content was unable to be removed from the remote.
-* `REMOVEEXPORTDIRECTORY Directory`  
-  Requests the remote remove an exported directory.  
-  If the remote does not use directories, or REMOVEEXPORT cleans up
-  directories that are empty, this does not need to be implemented.  
-  The directory will be in the form of a relative path, and may contain path
-  separators, whitespace, and other special characters.  
-  Typically the directory will be empty, but it could possibly contain
-  files or other directories, and it's ok to remove those.  
-  * `REMOVEEXPORTDIRECTORY-SUCCESS`  
-    Indicates that a `REMOVEEXPORTDIRECTORY` was done successfully.
-  * `REMOVEEXPORTDIRECTORY-FAILURE`  
-    Indicates that a `REMOVEEXPORTDIRECTORY` failed for whatever reason.
-    Should not be returned if the directory did not exist.
-* `RENAMEEXPORT Key NewName`  
-  Requests the remote rename a file stored on it from the previously
-  provided Name to the NewName. Remotes that support exports but not
-  renaming do not need to implement this.  
-  * `RENAMEEXPORT-SUCCESS Key`  
-    Indicates that a `RENAMEEXPORT` was done successfully.
-  * `RENAMEEXPORT-FAILURE Key`  
-    Indicates that a `RENAMEEXPORT` failed for whatever reason.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, don't crash, just reply with
