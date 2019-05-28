@@ -1,0 +1,23 @@
+### Please describe the problem.
+I am running NixOS, so the automatic configuration of the tor hidden service does not work because system state is not mutable. Could you provide a way to configure the tor hidden service manually, perhaps printing out the configuration instead of installing it?
+
+### What steps will reproduce the problem?
+N/A
+
+### What version of git-annex are you using? On what operating system?
+7.2, NixOS
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes, I love it.
+
+
