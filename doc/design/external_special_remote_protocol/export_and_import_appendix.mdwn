@@ -236,7 +236,7 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
     Indicates that the directory was empty, but could not be
     removed for some reason.
 
-## protocol example
+### protocol example
 
 The protocol starts off with VERSION etc as usual, and
 then git-annex asks the special remote if it supports
