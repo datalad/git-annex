@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="configuration variable"
+ date="2019-05-23T19:31:46Z"
+ content="""
+I think then we could add in DataLad ability to record in the repository's configuration custom git annex configuration options to be passed to git annex calls (for that repo) and this way mitigate it where needed
+"""]]
