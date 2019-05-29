@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-05-29T14:22:57Z"
+ content="""
+The netrc(5) file does use the hostname of the ftp server, so if git-annex
+swapped in an IP address it resolved it would not match the netrc file. But
+curl only reads the file when --netrc is used.
+
+If annex.web-options is set to --netrc (or anything), and
+annex.security.allowed-http-addresses=all, git-annex uses curl already
+and the security measures are disabled.
+
+So, git-annex could replace the ftp server hostname with the IP address
+when not so configured, and nothing that currently works would break, and
+this problem would be solved without needing any new configuration.
+"""]]
