@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-05-29T13:19:08Z"
+ content="""
+Behavior change due to a security hole being fixed. See the discussion
+here:
+<http://git-annex.branchable.com/bugs/regression__58___http_downloads_redirecting_to_ftp_are_no_longer_supported/>
+
+While that bug was specific to redirects, as I note in the comment it's a
+more general reversion, but necessary due to the security fix. Perhaps
+I'll find a fix though.
+
+The workaround is this which makes git-annex use curl: 
+
+	git config annex.web-options -n
+	git config annex.security.allowed-http-addresses all
+"""]]
