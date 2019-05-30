@@ -4,6 +4,17 @@
  date="2019-05-30T15:59:57Z"
  content="""
 Yet another problem: A ftp server might have both IPv4 and IPv6 addresses,
-and only one might work, so it seems git-annex will need to run curl more
-than once.
+and only one might work. So git-annex would need to run curl more
+than once if substituting in IP.
+
+Hmm.. curl has a --resolve that could be used instead of git-annex
+replacing the server hostname with its IP. This allows passing both ipv6
+and ipv4 addresses:
+
+	curl --resolve *:80:[::1],127.0.0.1 http://google.com/
+
+And it does also work for ftp and other protocols, but the protocol port
+number has to be included and can't be wildcarded. In particular, if 
+the ftp url is on a nonstandard port, that port has to be included,
+otherwise port 21.
 """]]
