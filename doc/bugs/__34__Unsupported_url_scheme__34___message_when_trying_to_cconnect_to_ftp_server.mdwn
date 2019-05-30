@@ -50,3 +50,5 @@ ALL.chr2.phase3_sha 100%[===================>]   1.22G  6.99MB/s    in 3m 11s
 
 Would you know why this is happening?  And how I can avoid this failure mode in the more up-to-date version of git-annex?
  
+> Added back support for ftp urls with no special configuration needed.
+> [[done]] --[[Joey]]

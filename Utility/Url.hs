@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -19,6 +19,7 @@ module Utility.Url (
 	mkScheme,
 	allowedScheme,
 	UrlDownloader(..),
+	NonHttpUrlDownloader(..),
 	UrlOptions(..),
 	defUrlOptions,
 	mkUrlOptions,
@@ -40,18 +41,25 @@ module Utility.Url (
 import Common
 import Utility.Metered
 import Utility.HttpManagerRestricted
+import Utility.IPAddress
 
 import Network.URI
 import Network.HTTP.Types
+import qualified Network.Connection as NC
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
+import Control.Exception (throwIO)
 import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit
 import Network.HTTP.Client
+import Network.Socket
+import Network.BSD (getProtocolNumber)
+import Data.Either
 import Data.Conduit
+import Text.Read
 import System.Log.Logger
 
 #if ! MIN_VERSION_http_client(0,5,0)
@@ -92,14 +100,17 @@ data UrlOptions = UrlOptions
 	}
 
 data UrlDownloader
-	= DownloadWithConduit
+	= DownloadWithConduit NonHttpUrlDownloader
 	| DownloadWithCurl [CommandParam]
+
+data NonHttpUrlDownloader
+	= DownloadWithCurlRestricted Restriction
 
 defUrlOptions :: IO UrlOptions
 defUrlOptions = UrlOptions
 	<$> pure Nothing
 	<*> pure []
-	<*> pure DownloadWithConduit
+	<*> pure (DownloadWithConduit (DownloadWithCurlRestricted mempty))
 	<*> pure id
 	<*> newManager managerSettings
 	<*> pure (S.fromList $ map mkScheme ["http", "https", "ftp"])
@@ -132,7 +143,7 @@ curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams ++ schemeparams
 		Just ua -> [Param "--user-agent", Param ua]
 	headerparams = concatMap (\h -> [Param "-H", Param h]) (reqHeaders uo)
 	addedparams = case urlDownloader uo of
-		DownloadWithConduit -> []
+		DownloadWithConduit _ -> []
 		DownloadWithCurl l -> l
 	schemeparams =
 		[ Param "--proto"
@@ -197,25 +208,28 @@ getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
 	Just u -> checkPolicy uo u dne warnError $
 		case (urlDownloader uo, parseUrlRequest (show u)) of
-			(DownloadWithConduit, Just req) ->
+			(DownloadWithConduit _, Just req) ->
 				existsconduit req
 					`catchNonAsync` (const $ return dne)
-			(DownloadWithConduit, Nothing)
+			(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 				| isfileurl u -> existsfile u
+				| isftpurl u -> existscurlrestricted r u 21
+					`catchNonAsync` (const $ return dne)
 				| otherwise -> do
 					unsupportedUrlScheme u warnError
 					return dne
 			(DownloadWithCurl _, _) 
 				| isfileurl u -> existsfile u
-				| otherwise -> existscurl u
+				| otherwise -> existscurl u basecurlparams
 	Nothing -> return dne
   where
 	dne = UrlInfo False Nothing Nothing
 	found sz f = return $ UrlInfo True sz f
 
 	isfileurl u = uriScheme u == "file:"
+	isftpurl u = uriScheme u == "ftp:"
 
-	curlparams = curlParams uo $
+	basecurlparams = curlParams uo $
 		[ Param "-s"
 		, Param "--head"
 		, Param "-L", Param url
@@ -247,7 +261,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 					(extractfilename resp)
 				else return dne
 
-	existscurl u = do
+	existscurl u curlparams = do
 		output <- catchDefaultIO "" $
 			readProcess "curl" $ toCommand curlparams
 		let len = extractlencurl output
@@ -264,6 +278,9 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			_ | isftp && isJust len -> good
 			_ -> return dne
 	
+	existscurlrestricted r u defport = existscurl u 
+		=<< curlRestrictedParams r u defport basecurlparams
+
 	existsfile u = do
 		let f = unEscapeString (uriPath u)
 		s <- catchMaybeIO $ getFileStatus f
@@ -310,19 +327,22 @@ download' noerror meterupdate url file uo =
 	go = case parseURIRelaxed url of
 		Just u -> checkPolicy uo u False dlfailed $
 			case (urlDownloader uo, parseUrlRequest (show u)) of
-				(DownloadWithConduit, Just req) ->
+				(DownloadWithConduit _, Just req) ->
 					downloadconduit req
-				(DownloadWithConduit, Nothing)
+				(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 					| isfileurl u -> downloadfile u
+					| isftpurl u -> downloadcurlrestricted r u 21
+						`catchNonAsync` (dlfailed . show)
 					| otherwise -> unsupportedUrlScheme u dlfailed
 				(DownloadWithCurl _, _)
 					| isfileurl u -> downloadfile u
-					| otherwise -> downloadcurl
+					| otherwise -> downloadcurl basecurlparams
 		Nothing -> do
 			liftIO $ debugM "url" url
 			dlfailed "invalid url"
 	
 	isfileurl u = uriScheme u == "file:"
+	isftpurl u = uriScheme u == "ftp:"
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
 		Nothing -> runResourceT $ do
@@ -405,21 +425,25 @@ download' noerror meterupdate url file uo =
 		sinkResponseFile meterupdate initialp file mode resp
 		return True
 	
-	downloadcurl = do
+	basecurlparams = curlParams uo
+		[ if noerror
+			then Param "-S"
+			else Param "-sS"
+		, Param "-f"
+		, Param "-L"
+		, Param "-C", Param "-"
+		]
+
+	downloadcurl curlparams = do
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
 		unlessM (doesFileExist file) $
 			writeFile file ""
-		let ps = curlParams uo
-			[ if noerror
-				then Param "-S"
-				else Param "-sS"
-			, Param "-f"
-			, Param "-L"
-			, Param "-C", Param "-"
-			]
-		boolSystem "curl" (ps ++ [Param "-o", File file, File url])
-	
+		boolSystem "curl" (curlparams ++ [Param "-o", File file, File url])
+
+	downloadcurlrestricted r u defport =
+		downloadcurl =<< curlRestrictedParams r u defport basecurlparams
+
 	downloadfile u = do
 		let src = unEscapeString (uriPath u)
 		withMeteredFile src meterupdate $
@@ -554,3 +578,57 @@ matchHttpExceptionContent want e
 	| want e = Just e
 	| otherwise = Nothing
 #endif
+
+{- Constructs parameters that prevent curl from accessing any IP addresses
+ - blocked by the Restriction. These are added to the input parameters,
+ - which should tell curl what to do.
+ -
+ - This has to disable redirects because it looks up the IP addresses 
+ - of the host and after limiting to those allowed by the Restriction,
+ - makes curl resolve the host to those IP addresses. It doesn't make sense
+ - to use this for http anyway, only for ftp or perhaps other protocols
+ - supported by curl.
+ -
+ - Throws an exception if the Restriction blocks all addresses, or
+ - if the dns lookup fails. A malformed url will also cause an exception.
+ -}
+curlRestrictedParams :: Restriction -> URI -> Int -> [CommandParam] -> IO [CommandParam]
+curlRestrictedParams r u defport ps = case uriAuthority u of
+	Nothing -> giveup "malformed url"
+	Just uath -> case uriPort uath of
+		"" -> go (uriRegName uath) defport
+		-- strict parser because the port we provide to curl
+		-- needs to match the port in the url
+		(':':s) -> case readMaybe s :: Maybe Int of
+			Just p -> go (uriRegName uath) p
+			Nothing -> giveup "malformed url"
+		_ -> giveup "malformed url"
+  where
+	go hostname p = do
+		proto <- getProtocolNumber "tcp"
+		let serv = show p
+		let hints = defaultHints
+			{ addrFlags = [AI_ADDRCONFIG]
+			, addrProtocol = proto
+			, addrSocketType = Stream
+			}
+		addrs <- getAddrInfo (Just hints) (Just hostname) (Just serv)
+		case partitionEithers (map checkrestriction addrs) of
+			((e:_es), []) -> throwIO e
+			(_, as)
+				| null as -> throwIO $ 
+					NC.HostNotResolved hostname
+				| otherwise -> return $
+					(limitresolve p) as ++ ps
+	checkrestriction addr = maybe (Right addr) Left $
+		checkAddressRestriction r addr
+	limitresolve p addrs =
+		[ Param "--resolve"
+		, Param $ "*:" ++ show p ++ ":" ++ intercalate ":"
+			(mapMaybe (bracketaddr <$$> extractIPAddress . addrAddress) addrs)
+		-- Don't let a ftp server provide an IP address.
+		, Param "--ftp-skip-pasv-ip"
+		-- Prevent all http redirects.
+		, Param "--max-redirs", Param "0"
+		]
+	bracketaddr a = "[" ++ a ++ "]"

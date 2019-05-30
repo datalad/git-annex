@@ -30,10 +30,38 @@ import qualified Data.ByteString.UTF8 as BU
 import Data.Default
 import Data.Typeable
 import Control.Applicative
+#if MIN_VERSION_base(4,9,0)
+import qualified Data.Semigroup as Sem
+#endif
+import Data.Monoid
+import Prelude
 
 data Restriction = Restriction
-	{ addressRestriction :: AddrInfo -> Maybe ConnectionRestricted
+	{ checkAddressRestriction :: AddrInfo -> Maybe ConnectionRestricted
 	}
+
+appendRestrictions :: Restriction -> Restriction -> Restriction
+appendRestrictions a b = Restriction
+	{ checkAddressRestriction = \addr ->
+		checkAddressRestriction a addr <|> checkAddressRestriction b addr
+	}
+
+-- | mempty does not restrict HTTP connections in any way
+instance Monoid Restriction where
+	mempty = Restriction
+		{ checkAddressRestriction = \_ -> Nothing
+		}
+#if MIN_VERSION_base(4,11,0)
+#elif MIN_VERSION_base(4,9,0)
+	mappend = (Sem.<>)
+#else
+	mappend = appendRestrictions
+#endif
+
+#if MIN_VERSION_base(4,9,0)
+instance Sem.Semigroup Restriction where
+	(<>) = appendRestrictions
+#endif
 
 -- | An exception used to indicate that the connection was restricted.
 data ConnectionRestricted = ConnectionRestricted String
@@ -117,7 +145,7 @@ restrictProxy cfg base = do
 			return $ proxy $ f $ dummyreq https
 	
 	mkproxy Nothing = (noProxy, Nothing)
-	mkproxy (Just proxyaddr) = case addressRestriction cfg proxyaddr of
+	mkproxy (Just proxyaddr) = case checkAddressRestriction cfg proxyaddr of
 		Nothing -> (addrtoproxy (addrAddress proxyaddr), Nothing)
 		Just _ -> (noProxy, Just ProxyRestricted)
 	
@@ -200,7 +228,7 @@ getConnection cfg tls = do
 			close
 			(\sock -> NC.connectFromSocket context sock connparams)
 	  where
-		tryToConnect addr = case addressRestriction cfg addr of
+		tryToConnect addr = case checkAddressRestriction cfg addr of
 			Nothing -> bracketOnError
 				(socket (addrFamily addr) (addrSocketType addr) (addrProtocol addr))
 				close

@@ -12,8 +12,21 @@ import Utility.Exception
 import Network.Socket
 import Data.Word
 import Data.Memory.Endian
+import Data.List
 import Control.Applicative
+import Text.Printf
 import Prelude
+
+extractIPAddress :: SockAddr -> Maybe String
+extractIPAddress (SockAddrInet _ ipv4) =
+	let (a,b,c,d) = hostAddressToTuple ipv4
+	in Just $ intercalate "." [show a, show b, show c, show d]
+extractIPAddress (SockAddrInet6 _ _ ipv6 _) =
+	let (a,b,c,d,e,f,g,h) = hostAddress6ToTuple ipv6
+	in Just $ intercalate ":" [s a, s b, s c, s d, s e, s f, s g, s h]
+  where
+	s = printf "%x"
+extractIPAddress _ = Nothing
 
 {- Check if an IP address is a loopback address; connecting to it
  - may connect back to the local host. -}

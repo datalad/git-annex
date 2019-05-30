@@ -59,7 +59,8 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			-- it from accessing specific IP addresses.
 			curlopts <- map Param . annexWebOptions <$> Annex.getGitConfig
 			let urldownloader = if null curlopts
-				then U.DownloadWithConduit
+				then U.DownloadWithConduit $
+					U.DownloadWithCurlRestricted mempty
 				else U.DownloadWithCurl curlopts
 			manager <- liftIO $ U.newManager U.managerSettings
 			return (urldownloader, manager)
@@ -78,7 +79,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			let connectionrestricted = addrConnectionRestricted 
 				("Configuration of annex.security.allowed-ip-addresses does not allow accessing address " ++)
 			let r = Restriction
-				{ addressRestriction = \addr ->
+				{ checkAddressRestriction = \addr ->
 					if isallowed (addrAddress addr)
 						then Nothing
 						else Just (connectionrestricted addr)
@@ -90,7 +91,9 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 				Just ProxyRestricted -> toplevelWarning True
 					"http proxy settings not used due to annex.security.allowed-ip-addresses configuration"
 			manager <- liftIO $ U.newManager settings
-			return (U.DownloadWithConduit, manager)
+			let urldownloader = U.DownloadWithConduit $
+				U.DownloadWithCurlRestricted r
+			return (urldownloader, manager)
 
 ipAddressesUnlimited :: Annex Bool
 ipAddressesUnlimited = 

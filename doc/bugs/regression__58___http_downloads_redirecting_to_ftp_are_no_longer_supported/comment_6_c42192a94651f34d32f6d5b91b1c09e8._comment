@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2019-05-30T18:50:18Z"
+ content="""
+I've gotten secure ftp url downloading working now. Have not yet put back
+in the handling of http-to-ftp redirects.
+"""]]

@@ -24,6 +24,10 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     annex.security.allowed-ip-addresses because it is not really specific
     to the http protocol, also limiting eg, git-annex's use of ftp.
     The old name for the config will still work.
+  * Add back support for ftp urls, which was disabled as part of the fix for
+    security hole CVE-2018-10857 (except for configurations which enabled curl
+    and bypassed public IP address restrictions). Now it will work
+    if allowed by annex.security.allowed-ip-addresses.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 
