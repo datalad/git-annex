@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-05-30T15:59:57Z"
+ content="""
+Yet another problem: A ftp server might have both IPv4 and IPv6 addresses,
+and only one might work, so it seems git-annex will need to run curl more
+than once.
+"""]]

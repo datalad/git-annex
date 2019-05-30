@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""ftp bounce attack"""
+ date="2019-05-30T15:53:26Z"
+ content="""
+In a PASV ftp connection, the server provides to the client an IP address
+and port to connect to. That is exploited by a ftp bounce attack.
+(Which I last thought about in like 1998? Why are we still using these bad
+old protocols?)
+
+So it seems git-annex can't rely on checking the ftp server IP is not
+local, because the non-local ftp server could use that to get the client to
+connect to a local ftp server. After content from that gets added to the
+git annex, we're back to CVE-2018-10857.
+
+curl defaults to PASV of course (active FTP is unlikely to work on the
+"modern" non-p2p internet). Seems curl does have a --ftp-skip-pasv-ip
+that makes it ignore whatever IP address the FTP server might present and
+just continue to use the same server IP.
+"""]]
