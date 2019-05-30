@@ -55,6 +55,7 @@ import Control.Exception (throwIO)
 import Control.Monad.Trans.Resource
 import Network.HTTP.Conduit
 import Network.HTTP.Client
+import Network.HTTP.Simple (getResponseHeader)
 import Network.Socket
 import Network.BSD (getProtocolNumber)
 import Data.Either
@@ -208,19 +209,25 @@ getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
 getUrlInfo url uo = case parseURIRelaxed url of
 	Just u -> checkPolicy uo u dne warnError $
 		case (urlDownloader uo, parseUrlRequest (show u)) of
-			(DownloadWithConduit _, Just req) ->
-				existsconduit req
+			(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
+				-- When http redirects to a protocol which 
+				-- conduit does not support, it will throw
+				-- a StatusCodeException with found302
+				-- and a Response with the redir Location.
+				(matchStatusCodeException (== found302))
+				(existsconduit req)
+				(followredir r)
 					`catchNonAsync` (const $ return dne)
 			(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 				| isfileurl u -> existsfile u
-				| isftpurl u -> existscurlrestricted r u 21
+				| isftpurl u -> existscurlrestricted r u url ftpport
 					`catchNonAsync` (const $ return dne)
 				| otherwise -> do
 					unsupportedUrlScheme u warnError
 					return dne
 			(DownloadWithCurl _, _) 
 				| isfileurl u -> existsfile u
-				| otherwise -> existscurl u basecurlparams
+				| otherwise -> existscurl u (basecurlparams url)
 	Nothing -> return dne
   where
 	dne = UrlInfo False Nothing Nothing
@@ -229,10 +236,12 @@ getUrlInfo url uo = case parseURIRelaxed url of
 	isfileurl u = uriScheme u == "file:"
 	isftpurl u = uriScheme u == "ftp:"
 
-	basecurlparams = curlParams uo $
+	ftpport = 21
+
+	basecurlparams u = curlParams uo $
 		[ Param "-s"
 		, Param "--head"
-		, Param "-L", Param url
+		, Param "-L", Param u
 		, Param "-w", Param "%{http_code}"
 		]
 
@@ -278,8 +287,8 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			_ | isftp && isJust len -> good
 			_ -> return dne
 	
-	existscurlrestricted r u defport = existscurl u 
-		=<< curlRestrictedParams r u defport basecurlparams
+	existscurlrestricted r u url defport = existscurl u 
+		=<< curlRestrictedParams r u defport (basecurlparams url)
 
 	existsfile u = do
 		let f = unEscapeString (uriPath u)
@@ -288,6 +297,22 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			Just stat -> do
 				sz <- getFileSize' f stat
 				found (Just sz) Nothing
+			Nothing -> return dne
+#if MIN_VERSION_http_client(0,5,0)
+	followredir r (HttpExceptionRequest _ (StatusCodeException resp _)) = 
+		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of
+#else
+	followredir r (StatusCodeException _ respheaders _) =
+		case headMaybe $ map (decodeBS . snd) $ filter (\(h, _) -> h == hLocation) respheaders
+#endif
+			Just url' -> case parseURIRelaxed url' of
+				-- only follow http to ftp redirects;
+				-- http to file redirect would not be secure,
+				-- and http-conduit follows http to http.
+				Just u' | isftpurl u' ->
+					checkPolicy uo u' dne warnError $
+						existscurlrestricted r u' url' ftpport
+				_ -> return dne
 			Nothing -> return dne
 
 -- Parse eg: attachment; filename="fname.ext"
@@ -327,22 +352,26 @@ download' noerror meterupdate url file uo =
 	go = case parseURIRelaxed url of
 		Just u -> checkPolicy uo u False dlfailed $
 			case (urlDownloader uo, parseUrlRequest (show u)) of
-				(DownloadWithConduit _, Just req) ->
-					downloadconduit req
+				(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
+					(matchStatusCodeException (== found302))
+					(downloadconduit req)
+					(followredir r)
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 					| isfileurl u -> downloadfile u
-					| isftpurl u -> downloadcurlrestricted r u 21
+					| isftpurl u -> downloadcurlrestricted r u url ftpport
 						`catchNonAsync` (dlfailed . show)
 					| otherwise -> unsupportedUrlScheme u dlfailed
 				(DownloadWithCurl _, _)
 					| isfileurl u -> downloadfile u
-					| otherwise -> downloadcurl basecurlparams
+					| otherwise -> downloadcurl url basecurlparams
 		Nothing -> do
 			liftIO $ debugM "url" url
 			dlfailed "invalid url"
 	
 	isfileurl u = uriScheme u == "file:"
 	isftpurl u = uriScheme u == "ftp:"
+
+	ftpport = 21
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
 		Nothing -> runResourceT $ do
@@ -434,21 +463,35 @@ download' noerror meterupdate url file uo =
 		, Param "-C", Param "-"
 		]
 
-	downloadcurl curlparams = do
+	downloadcurl rawurl curlparams = do
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
 		unlessM (doesFileExist file) $
 			writeFile file ""
-		boolSystem "curl" (curlparams ++ [Param "-o", File file, File url])
+		boolSystem "curl" (curlparams ++ [Param "-o", File file, File rawurl])
 
-	downloadcurlrestricted r u defport =
-		downloadcurl =<< curlRestrictedParams r u defport basecurlparams
+	downloadcurlrestricted r u rawurl defport =
+		downloadcurl rawurl =<< curlRestrictedParams r u defport basecurlparams
 
 	downloadfile u = do
 		let src = unEscapeString (uriPath u)
 		withMeteredFile src meterupdate $
 			L.writeFile file
 		return True
+
+#if MIN_VERSION_http_client(0,5,0)
+	followredir r ex@(HttpExceptionRequest _ (StatusCodeException resp _)) = 
+		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of
+#else
+	followredir r ex@(StatusCodeException _ respheaders _) =
+		case headMaybe $ map (decodeBS . snd) $ filter (\(h, _) -> h == hLocation) respheaders
+#endif
+			Just url' -> case parseURIRelaxed url' of
+				Just u' | isftpurl u' ->
+					checkPolicy uo u' False dlfailed $
+						downloadcurlrestricted r u' url' ftpport
+				_ -> throwIO ex
+			Nothing -> throwIO ex
 
 {- Sinks a Response's body to a file. The file can either be opened in
  - WriteMode or AppendMode. Updates the meter as data is received.
