@@ -31,13 +31,13 @@ import Control.Concurrent.Async
 -- localhost or a private address. So, it's only allowed to download
 -- content if the user has allowed access to all addresses.
 youtubeDlAllowed :: Annex Bool
-youtubeDlAllowed = httpAddressesUnlimited
+youtubeDlAllowed = ipAddressesUnlimited
 
 youtubeDlNotAllowedMessage :: String
 youtubeDlNotAllowedMessage = unwords
 	[ "This url is supported by youtube-dl, but"
 	, "youtube-dl could potentially access any address, and the"
-	, "configuration of annex.security.allowed-http-addresses"
+	, "configuration of annex.security.allowed-ip-addresses"
 	, "does not allow that. Not using youtube-dl."
 	]
 
@@ -55,7 +55,7 @@ youtubeDlNotAllowedMessage = unwords
 -- (Note that we can't use --output to specifiy the file to download to,
 -- due to <https://github.com/rg3/youtube-dl/issues/14864>)
 youtubeDl :: URLString -> FilePath -> Annex (Either String (Maybe FilePath))
-youtubeDl url workdir = ifM httpAddressesUnlimited
+youtubeDl url workdir = ifM ipAddressesUnlimited
 	( withUrlOptions $ youtubeDl' url workdir
 	, return $ Left youtubeDlNotAllowedMessage
 	)

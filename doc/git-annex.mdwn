@@ -1426,7 +1426,7 @@ Here are all the supported configuration settings.
   Or to make curl use your ~/.netrc file, set it to "--netrc".
 
   Setting this option makes git-annex use curl, but only
-  when annex.security.allowed-http-addresses is configured in a
+  when annex.security.allowed-ip-addresses is configured in a
   specific way. See its documentation.
 
 * `annex.youtube-dl-options`
@@ -1469,10 +1469,11 @@ Here are all the supported configuration settings.
   Some special remotes support their own domain-specific URL
   schemes; those are not affected by this configuration setting.
 
-* `annex.security.allowed-http-addresses`
+* `annex.security.allowed-ip-addresses`
 
-  By default, git-annex only makes HTTP connections to public IP addresses;
-  it will refuse to use HTTP servers on localhost or on a private network.
+  By default, git-annex only makes connections to public IP addresses;
+  it will refuse to use HTTP and other servers on localhost or on a
+  private network.
 
   This setting can override that behavior, allowing access to particular
   IP addresses. For example "127.0.0.1 ::1" allows access to localhost
@@ -1480,13 +1481,19 @@ Here are all the supported configuration settings.
   
   Think very carefully before changing this; there are security
   implications. Anyone who can get a commit into your git-annex repository
-  could `git annex addurl` an url on a private http server, possibly
+  could `git annex addurl` an url on a private server, possibly
   causing it to be downloaded into your repository and transferred to
   other remotes, exposing its content.
 
   Note that, since the interfaces of curl and youtube-dl do not allow
   these IP address restrictions to be enforced, curl and youtube-dl will
-  never be used unless annex.security.allowed-http-addresses=all.
+  never be used unless annex.security.allowed-ip-addresses=all.
+
+* `annex.security.allowed-http-addresses`
+
+  Old name for annex.security.allowed-ip-addresses.
+  If set, this is treated the same as having
+  annex.security.allowed-ip-addresses set.
 
 * `annex.security.allow-unverified-downloads`
 

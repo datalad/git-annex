@@ -98,7 +98,7 @@ data GitConfig = GitConfig
 	, annexRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
 	, annexAllowedUrlSchemes :: S.Set Scheme
-	, annexAllowedHttpAddresses :: String
+	, annexAllowedIPAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
 	, annexMaxExtensionLength :: Maybe Int
 	, annexJobs :: Concurrency
@@ -172,8 +172,10 @@ extractGitConfig r = GitConfig
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
 		maybe ["http", "https", "ftp"] words $
 			getmaybe (annex "security.allowed-url-schemes")
-	, annexAllowedHttpAddresses = fromMaybe "" $
-		getmaybe (annex "security.allowed-http-addresses")
+	, annexAllowedIPAddresses = fromMaybe "" $
+		getmaybe (annex "security.allowed-ip-addresses")
+			<|>
+		getmaybe (annex "security.allowed-http-addresses") -- old name
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 		getmaybe (annex "security.allow-unverified-downloads")
 	, annexMaxExtensionLength = getmayberead (annex "maxextensionlength")

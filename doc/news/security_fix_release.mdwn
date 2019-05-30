@@ -21,7 +21,7 @@ security fixes:
 
 * A related security fix prevents git-annex from connecting to http
   servers (and proxies) on localhost or private networks. This can
-  be overridden, at your own risk, using annex.security.allowed-http-addresses.
+  be overridden, at your own risk, using annex.security.allowed-ip-addresses.
 
 * Setting annex.web-options no longer is enough to make curl be used,
   and youtube-dl is also no longer used by default. See the

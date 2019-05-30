@@ -20,6 +20,10 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     bash.
   * When a remote is configured to be readonly, don't allow changing
     what's exported to it.
+  * Renamed annex.security.allowed-http-addresses to
+    annex.security.allowed-ip-addresses because it is not really specific
+    to the http protocol, also limiting eg, git-annex's use of ftp.
+    The old name for the config will still work.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 

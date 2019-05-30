@@ -11,7 +11,7 @@ module Annex.Url (
 	withUrlOptions,
 	getUrlOptions,
 	getUserAgent,
-	httpAddressesUnlimited,
+	ipAddressesUnlimited,
 ) where
 
 import Annex.Common
@@ -52,7 +52,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
 		Nothing -> annexHttpHeaders <$> Annex.getGitConfig
 	
-	checkallowedaddr = words . annexAllowedHttpAddresses <$> Annex.getGitConfig >>= \case
+	checkallowedaddr = words . annexAllowedIPAddresses <$> Annex.getGitConfig >>= \case
 		["all"] -> do
 			-- Only allow curl when all are allowed,
 			-- as its interface does not allow preventing
@@ -76,7 +76,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 				| isPrivateAddress addr = False
 				| otherwise = True
 			let connectionrestricted = addrConnectionRestricted 
-				("Configuration of annex.security.allowed-http-addresses does not allow accessing address " ++)
+				("Configuration of annex.security.allowed-ip-addresses does not allow accessing address " ++)
 			let r = Restriction
 				{ addressRestriction = \addr ->
 					if isallowed (addrAddress addr)
@@ -88,13 +88,13 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			case pr of
 				Nothing -> return ()
 				Just ProxyRestricted -> toplevelWarning True
-					"http proxy settings not used due to annex.security.allowed-http-addresses configuration"
+					"http proxy settings not used due to annex.security.allowed-ip-addresses configuration"
 			manager <- liftIO $ U.newManager settings
 			return (U.DownloadWithConduit, manager)
 
-httpAddressesUnlimited :: Annex Bool
-httpAddressesUnlimited = 
-	("all" == ) . annexAllowedHttpAddresses <$> Annex.getGitConfig
+ipAddressesUnlimited :: Annex Bool
+ipAddressesUnlimited = 
+	("all" == ) . annexAllowedIPAddresses <$> Annex.getGitConfig
 
 withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
 withUrlOptions a = a =<< getUrlOptions

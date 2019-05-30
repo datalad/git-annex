@@ -79,7 +79,7 @@ When you have youtube-dl installed, you can just
 it is a video and download the video content for offline viewing.
 
 (However, this is disabled by default as it can be a security risk. 
-See the documentation of annex.security.allowed-http-addresses
+See the documentation of annex.security.allowed-ip-addresses
 in [[git-annex]] for details.)
 
 Later, in another clone of the repository, you can run `git annex get` on
