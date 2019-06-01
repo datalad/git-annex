@@ -1,0 +1,4 @@
+Is there a place to submit pull requests for git-annex?
+
+I've made a small change to the docs, adding html anchors to enable hyperlinks to docs for specific config settings, on a branch here:
+<https://github.com/notestaff/git-annex/tree/is-doc-add-html-anchors-for-config-vars>
