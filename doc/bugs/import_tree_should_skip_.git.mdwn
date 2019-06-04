@@ -20,3 +20,5 @@ The solution is certianly to
 2. avoid deleting .git when exporting
 
 --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]
