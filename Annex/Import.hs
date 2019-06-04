@@ -16,6 +16,7 @@ module Annex.Import (
 	downloadImport,
 	filterImportableContents,
 	makeImportMatcher,
+	listImportableContents,
 ) where
 
 import Annex.Common
@@ -54,6 +55,7 @@ import qualified Logs.ContentIdentifier as CIDLog
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import qualified System.FilePath.Posix as Posix
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -480,3 +482,22 @@ filterImportableContents r matcher importable
 		<*> mapM (go dbhandle) (importableHistory ic)
 	
 	match dbhandle (loc, (_cid, sz)) = shouldImport dbhandle matcher loc sz
+	
+{- Gets the ImportableContents from the remote.
+ -
+ - Filters out any paths that include a ".git" component, because git does
+ - not allow storing ".git" in a git repository. While it is possible to
+ - write a git tree that contains that, git will complain and refuse to
+ - check it out.
+ -}
+listImportableContents :: Remote -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContents r = fmap removegitspecial
+	<$> Remote.listImportableContents (Remote.importActions r)
+  where
+	removegitspecial ic = ImportableContents
+		{ importableContents = 
+			filter (not . gitspecial . fst) (importableContents ic)
+		, importableHistory =
+			map removegitspecial (importableHistory ic)
+		}
+	gitspecial l = ".git" `elem` Posix.splitDirectories (fromImportLocation l)

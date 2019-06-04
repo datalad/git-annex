@@ -291,7 +291,7 @@ seekRemote remote branch msubdir = do
 listContents :: Remote -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
 listContents remote tvar = do
 	showStart' "list" (Just (Remote.name remote))
-	next $ Remote.listImportableContents (Remote.importActions remote) >>= \case
+	next $ listImportableContents remote >>= \case
 		Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
 		Just importable -> do
 			importable' <- makeImportMatcher remote >>= \case

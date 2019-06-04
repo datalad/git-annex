@@ -19,6 +19,14 @@ The solution is certianly to
 1. filter out .git when importing
 2. avoid deleting .git when exporting
 
+   As long as the export tracking branch did not contain .git,
+   an export will harm no .git directories, because an exporttree
+   remote uses removeExportDirectoryWhenEmpty, not removeExportDirectory,
+   so will not delete non-empty directories. And other than deleting
+   directories, exporting only deletes files that are removed in the git
+   diff between two trees; if neither tree contained .git, the diff won't
+   contain it either, and so if importing skips .git, this will be ok.
+
 --[[Joey]]
 
 > [[fixed|done]] --[[Joey]]
