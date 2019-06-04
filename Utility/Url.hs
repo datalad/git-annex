@@ -287,8 +287,8 @@ getUrlInfo url uo = case parseURIRelaxed url of
 			_ | isftp && isJust len -> good
 			_ -> return dne
 	
-	existscurlrestricted r u url defport = existscurl u 
-		=<< curlRestrictedParams r u defport (basecurlparams url)
+	existscurlrestricted r u url' defport = existscurl u 
+		=<< curlRestrictedParams r u defport (basecurlparams url')
 
 	existsfile u = do
 		let f = unEscapeString (uriPath u)
@@ -314,6 +314,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 						existscurlrestricted r u' url' ftpport
 				_ -> return dne
 			Nothing -> return dne
+	followredir _ _ = return dne
 
 -- Parse eg: attachment; filename="fname.ext"
 -- per RFC 2616
@@ -492,6 +493,7 @@ download' noerror meterupdate url file uo =
 						downloadcurlrestricted r u' url' ftpport
 				_ -> throwIO ex
 			Nothing -> throwIO ex
+	followredir _ ex = throwIO ex
 
 {- Sinks a Response's body to a file. The file can either be opened in
  - WriteMode or AppendMode. Updates the meter as data is received.
