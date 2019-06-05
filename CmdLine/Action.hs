@@ -24,7 +24,6 @@ import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Exception (throwIO)
 import GHC.Conc
-import Data.Either
 import qualified Data.Map.Strict as M
 import qualified System.Console.Regions as Regions
 
@@ -61,7 +60,9 @@ commandAction a = Annex.getState Annex.concurrency >>= \case
 	run = void $ includeCommandAction a
 
 	runconcurrent n = do
-		ws <- liftIO . drainTo (n-1) =<< Annex.getState Annex.workers
+		tv <- Annex.getState Annex.workers
+		ws <- liftIO $ drainTo (n-1) (== PerformStage) 
+			=<< atomically (takeTMVar tv)
 		(st, ws') <- case ws of
 			UnallocatedWorkerPool -> do
 				-- Generate the remote list now, to avoid
@@ -72,61 +73,99 @@ commandAction a = Annex.getState Annex.concurrency >>= \case
 				_ <- remoteList
 				st <- dupState
 				return (st, allocateWorkerPool st (n-1))
-			WorkerPool l -> findFreeSlot l
+			WorkerPool _ -> findFreeSlot (== PerformStage) ws
 		w <- liftIO $ async $ snd <$> Annex.run st
 			(inOwnConsoleRegion (Annex.output st) run)
-		Annex.changeState $ \s -> s
-			{ Annex.workers = addWorkerPool ws' (Right w) }
+		liftIO $ atomically $ putTMVar tv $
+			addWorkerPool (ActiveWorker w PerformStage) ws'
 
 commandActions :: [CommandStart] -> Annex ()
 commandActions = mapM_ commandAction
 
-{- Waits for any forked off command actions to finish.
+{- Waits for any worker threads to finish.
  -
- - Merge together the cleanup actions of all the AnnexStates used by
- - threads, into the current Annex's state, so they'll run at shutdown.
- -
- - Also merge together the errcounters of the AnnexStates.
+ - Merge the AnnexStates used by the threads back into the current Annex's
+ - state.
  -}
 finishCommandActions :: Annex ()
 finishCommandActions = do
-	ws <- Annex.getState Annex.workers
-	Annex.changeState $ \s -> s { Annex.workers = UnallocatedWorkerPool }
-	ws' <- liftIO $ drainTo 0 ws
-	forM_ (idleWorkers ws') mergeState
+	tv <- Annex.getState Annex.workers
+	let get = liftIO $ atomically $ takeTMVar tv
+	let put = liftIO . atomically . putTMVar tv
+	bracketOnError get put $ \ws -> do
+		ws' <- liftIO $ drainTo 0 (const True) ws
+		forM_ (idleWorkers ws') mergeState
+		put UnallocatedWorkerPool
 
 {- Wait for jobs from the WorkerPool to complete, until
- - the number of running jobs is not larger than the specified number.
+ - the number of running jobs of the desired stage
+ - is not larger than the specified number.
  -
  - If a job throws an exception, it is propigated, but first
  - all other jobs are waited for, to allow for a clean shutdown.
  -}
-drainTo :: Int -> WorkerPool t -> IO (WorkerPool t)
-drainTo _ UnallocatedWorkerPool = pure UnallocatedWorkerPool
-drainTo sz (WorkerPool l)
+drainTo :: Int -> (WorkerStage -> Bool) -> WorkerPool t -> IO (WorkerPool t)
+drainTo _ _ UnallocatedWorkerPool = pure UnallocatedWorkerPool
+drainTo sz wantstage (WorkerPool l)
 	| null as || sz >= length as = pure (WorkerPool l)
 	| otherwise = do
-		(done, ret) <- waitAnyCatch as
-		let as' = filter (/= done) as
+		(done, ret) <- waitAnyCatch (mapMaybe workerAsync as)
+		let (ActiveWorker _ donestage:[], as') =
+			partition (\w -> workerAsync w == Just done) as
 		case ret of
 			Left e -> do
-				void $ drainTo 0 $ WorkerPool $
-					map Left sts ++ map Right as'
+				void $ drainTo 0 (const True) $ WorkerPool $
+					sts ++ as' ++ otheras
 				throwIO e
 			Right st -> do
-				drainTo sz $ WorkerPool $
-					map Left (st:sts) ++ map Right as'
+				let w = IdleWorker st donestage
+				drainTo sz wantstage $ WorkerPool $
+					w : sts ++ as' ++ otheras
   where
-	(sts, as) = partitionEithers l
+	(sts, allas) = partition isidle l
+	(as, otheras) = partition (wantstage . workerStage) allas
+	isidle (IdleWorker _ _) = True
+	isidle (ActiveWorker _ _) = False
 
-findFreeSlot :: [Worker Annex.AnnexState] -> Annex (Annex.AnnexState, WorkerPool Annex.AnnexState)
-findFreeSlot = go []
+findFreeSlot :: (WorkerStage -> Bool) -> WorkerPool Annex.AnnexState -> Annex (Annex.AnnexState, WorkerPool Annex.AnnexState)
+findFreeSlot wantstage (WorkerPool l) = go [] l
   where
 	go c [] = do
 		st <- dupState
 		return (st, WorkerPool c)
-	go c (Left st:rest) = return (st, WorkerPool (c ++ rest))
+	go c ((IdleWorker st stage):rest) | wantstage stage = 
+		return (st, WorkerPool (c ++ rest))
 	go c (v:rest) = go (v:c) rest
+findFreeSlot _ UnallocatedWorkerPool = do
+	st <- dupState
+	return (st, UnallocatedWorkerPool)
+
+{- Changes the current thread's stage in the worker pool.
+ -
+ - An idle worker with the desired stage is found in the pool
+ - (waiting if necessary for one to become idle)
+ - and the stages of it and the current thread are swapped.
+ -}
+changeStageTo :: WorkerStage -> Annex ()
+changeStageTo newstage = Annex.getState Annex.concurrency >>= \case
+	NonConcurrent -> noop
+	Concurrent n -> go n
+	ConcurrentPerCpu -> go =<< liftIO getNumProcessors
+  where
+	go n = do
+		tv <- Annex.getState Annex.workers
+		let get = liftIO $ atomically $ takeTMVar tv
+		let put = liftIO . atomically . putTMVar tv
+		bracketOnError get put $ \pool -> do
+			pool' <- liftIO $ drainTo (n-1) (== newstage) pool
+			(idlest, pool'') <- findFreeSlot (== newstage) pool'
+			mytid <- liftIO myThreadId
+			case removeThreadIdWorkerPool mytid pool'' of
+				Just ((myaid, oldstage), pool''') -> do
+					liftIO $ print "switching"
+					put $ addWorkerPool (IdleWorker idlest oldstage) $
+						addWorkerPool (ActiveWorker myaid newstage) pool'''
+				Nothing -> put pool'
 
 {- Like commandAction, but without the concurrency. -}
 includeCommandAction :: CommandStart -> CommandCleanup
@@ -161,7 +200,9 @@ callCommandActionQuiet :: CommandStart -> Annex (Maybe Bool)
 callCommandActionQuiet = start
   where
 	start   = stage $ maybe skip perform
-	perform = stage $ maybe failure cleanup
+	perform = stage $ maybe failure $ \a -> do
+		changeStageTo CleanupStage
+		cleanup a
 	cleanup = stage $ status
 	stage = (=<<)
 	skip = return Nothing

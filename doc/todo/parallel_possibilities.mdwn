@@ -17,8 +17,7 @@ are still some things that could be improved, tracked here:
   can still end up stuck doing checksum verification at the same time, 
   so the pipe to the remote is not saturated.
 
-  Running cleanup actions in a separate queue from the main job queue
-  wouldn't be sufficient for this, because verification is done as part
-  of the same action that transfers content. That needs to somehow be
-  refactored to a cleanup action that ingests the file, and then
-  the cleanup action can be run in a separate queue.
+  Now that cleanup actions don't occupy space in the main worker queue,
+  all that needs to be done is make checksum verification be done as the
+  cleanup action. Currently, it's bundled into the same action that
+  transfers content.
