@@ -232,10 +232,10 @@ data ExportActions a = ExportActions
 	, removeExport :: Key -> ExportLocation -> a Bool
 	-- Removes an exported directory. Typically the directory will be
 	-- empty, but it could possibly contain files or other directories,
-	-- and it's ok to delete those. If the remote does not use
-	-- directories, or automatically cleans up empty directories,
-	-- this can be Nothing. Should not fail if the directory was
-	-- already removed.
+	-- and it's ok to delete those (but not required to). 
+	-- If the remote does not use directories, or automatically cleans
+	-- up empty directories, this can be Nothing.
+	-- Should not fail if the directory was already removed.
 	, removeExportDirectory :: Maybe (ExportDirectory -> a Bool)
 	-- Checks if anything is exported to the remote at the specified
 	-- ExportLocation.

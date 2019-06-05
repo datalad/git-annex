@@ -78,7 +78,8 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
   The directory will be in the form of a relative path, and may contain path
   separators, whitespace, and other special characters.  
   Typically the directory will be empty, but it could possibly contain
-  files or other directories, and it's ok to remove those.  
+  files or other directories, and it's ok to remove those, but not required
+  to do so.  
   * `REMOVEEXPORTDIRECTORY-SUCCESS`  
     Indicates that a `REMOVEEXPORTDIRECTORY` was done successfully.
   * `REMOVEEXPORTDIRECTORY-FAILURE`  
