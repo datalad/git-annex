@@ -1,0 +1,96 @@
+### Please describe the problem.
+
+As of a14f6ce75 (fix repo description setting bugs, 2019-05-23), `git annex init` without a description sets the description to a blank string.  AFAICT from the description of that change and from the corresponding [bug report][0], that isn't an intentional change.
+
+[0]: https://git-annex.branchable.com/bugs/git-annex-init_with_no_args_overwrites_existing_repo_description/
+### What steps will reproduce the problem?
+
+```
+cd $(mktemp -dt gx-XXXXXXX)
+git init
+git annex init
+git annex info --json | jq
+```
+
+On the parent of a14f6ce75, this shows
+
+```
+Initialized empty Git repository in /tmp/gx-BLmU7TJ/.git/
+init  ok
+(recording state in git...)
+{
+  "local annex size": "0 bytes",
+  "size of annexed files in working tree": "0 bytes",
+  "command": "info",
+  "untrusted repositories": [],
+  "success": true,
+  "semitrusted repositories": [
+    {
+      "here": false,
+      "uuid": "00000000-0000-0000-0000-000000000001",
+      "description": "web"
+    },
+    {
+      "here": false,
+      "uuid": "00000000-0000-0000-0000-000000000002",
+      "description": "bittorrent"
+    },
+    {
+      "here": true,
+      "uuid": "d1ef2ae8-9604-4c33-8c3c-181f81c4348f",
+      "description": "kyle@hylob:/tmp/gx-BLmU7TJ"
+    }
+  ],
+  "bloom filter size": "32 mebibytes (0% full)",
+  "repository mode": "indirect",
+  "backend usage": {},
+  "transfers in progress": [],
+  "local annex keys": 0,
+  "available local disk space": "301.33 gigabytes (+1 megabyte reserved)",
+  "annexed files in working tree": 0,
+  "file": null,
+  "trusted repositories": []
+}
+```
+
+On a14f6ce75, this shows
+
+```
+Initialized empty Git repository in /tmp/gx-pK345zF/.git/
+init  ok
+{
+  "local annex size": "0 bytes",
+  "size of annexed files in working tree": "0 bytes",
+  "command": "info",
+  "untrusted repositories": [],
+  "success": true,
+  "semitrusted repositories": [
+    {
+      "here": false,
+      "uuid": "00000000-0000-0000-0000-000000000001",
+      "description": "web"
+    },
+    {
+      "here": false,
+      "uuid": "00000000-0000-0000-0000-000000000002",
+      "description": "bittorrent"
+    },
+    {
+      "here": true,
+      "uuid": "00b8da69-41a5-4de8-9a6a-9ed991289f81",
+      "description": ""
+    }
+  ],
+  "bloom filter size": "32 mebibytes (0% full)",
+  "repository mode": "indirect",
+  "backend usage": {},
+  "transfers in progress": [],
+  "local annex keys": 0,
+  "available local disk space": "301.22 gigabytes (+1 megabyte reserved)",
+  "annexed files in working tree": 0,
+  "file": null,
+  "trusted repositories": []
+}
+```
+
+Note that the description for here is a blank string.
