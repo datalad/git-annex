@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="uuid.log is also not created"
+ date="2019-06-05T15:18:30Z"
+ content="""
+As of that same commit (a14f6ce75), running `git annex init` in a fresh repository no longer creates uuid.log:
+
+```
+% cd $(mktemp -dt gx-XXXXXXX)            
+% git init
+Initialized empty Git repository in /tmp/gx-kpnGSjg/.git/
+% git annex init
+init  ok
+% git ls-tree -r git-annex  ;# no output
+```
+
+"""]]
