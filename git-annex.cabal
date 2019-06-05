@@ -1001,6 +1001,7 @@ Executable git-annex
     Types.UUID
     Types.UrlContents
     Types.View
+    Types.WorkerPool
     Upgrade
     Upgrade.V0
     Upgrade.V1

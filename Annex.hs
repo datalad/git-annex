@@ -66,13 +66,13 @@ import Types.LockCache
 import Types.DesktopNotify
 import Types.CleanupActions
 import Types.AdjustedBranch
+import Types.WorkerPool
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
-import Control.Concurrent.Async
 import Control.Concurrent.STM
 import qualified Control.Monad.Fail as Fail
 import qualified Data.Map.Strict as M
@@ -142,7 +142,7 @@ data AnnexState = AnnexState
 	, tempurls :: M.Map Key URLString
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
-	, workers :: [Either AnnexState (Async AnnexState)]
+	, workers :: WorkerPool AnnexState
 	, activekeys :: TVar (M.Map Key ThreadId)
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
@@ -199,7 +199,7 @@ newState c r = do
 		, tempurls = M.empty
 		, existinghooks = M.empty
 		, desktopnotify = mempty
-		, workers = []
+		, workers = UnallocatedWorkerPool
 		, activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
 		, keysdbhandle = Nothing

@@ -11,6 +11,7 @@ import Annex
 import Annex.Common
 import Annex.Action
 import qualified Annex.Queue
+import Types.WorkerPool
 
 import qualified Data.Map as M
 
@@ -42,7 +43,7 @@ dupState :: Annex AnnexState
 dupState = do
 	st <- Annex.getState id
 	return $ st
-		{ Annex.workers = []
+		{ Annex.workers = UnallocatedWorkerPool
 		-- each thread has its own repoqueue
 		, Annex.repoqueue = Nothing
 		-- avoid sharing eg, open file handles
