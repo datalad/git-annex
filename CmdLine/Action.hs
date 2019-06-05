@@ -74,8 +74,8 @@ commandAction a = Annex.getState Annex.concurrency >>= \case
 			else do
 				l <- liftIO $ drainTo (n-1) ws
 				findFreeSlot l
-		w <- liftIO $ async
-			$ snd <$> Annex.run st (inOwnConsoleRegion (Annex.output st) run)
+		w <- liftIO $ async $ snd <$> Annex.run st
+			(inOwnConsoleRegion (Annex.output st) run)
 		Annex.changeState $ \s -> s { Annex.workers = Right w:ws' }
 
 commandActions :: [CommandStart] -> Annex ()
