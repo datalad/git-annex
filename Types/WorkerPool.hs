@@ -67,3 +67,14 @@ removeThreadIdWorkerPool tid (WorkerPool l) = go [] l
 	go c (ActiveWorker a stage : rest)
 		| asyncThreadId a == tid = Just ((a, stage), WorkerPool (c++rest))
 	go c (v : rest) = go (v:c) rest
+
+deactivateWorker :: WorkerPool t -> Async t -> t -> WorkerPool t
+deactivateWorker UnallocatedWorkerPool _ _ = UnallocatedWorkerPool
+deactivateWorker (WorkerPool l) aid t = WorkerPool $ go l
+  where
+	go [] = []
+	go (w@(IdleWorker _ _) : rest) = w : go rest
+	go (w@(ActiveWorker a st) : rest)
+		| a == aid = IdleWorker t st : rest
+		| otherwise = w : go rest
+
