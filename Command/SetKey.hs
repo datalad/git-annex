@@ -20,9 +20,8 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start (keyname:file:[]) = do
-	showStart "setkey" file
-	next $ perform file (mkKey keyname)
+start (keyname:file:[]) = starting "setkey" (ActionItemOther (Just file)) $
+	perform file (mkKey keyname)
 start _ = giveup "specify a key and a content file"
 
 mkKey :: String -> Key

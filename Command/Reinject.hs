@@ -41,28 +41,27 @@ seek os
 startSrcDest :: [FilePath] -> CommandStart
 startSrcDest (src:dest:[])
 	| src == dest = stop
-	| otherwise = notAnnexed src $ do
-		showStart "reinject" dest
-		next $ ifAnnexed dest go stop
+	| otherwise = notAnnexed src $ ifAnnexed dest go stop
   where
-	go key = ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src)
-		( perform src key
-		, giveup $ src ++ " does not have expected content of " ++ dest
-		)
+	go key = starting "reinject" (ActionItemOther (Just src)) $
+		ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src)
+			( perform src key
+			, giveup $ src ++ " does not have expected content of " ++ dest
+			)
 startSrcDest _ = giveup "specify a src file and a dest file"
 
 startKnown :: FilePath -> CommandStart
-startKnown src = notAnnexed src $ do
-	showStart "reinject" src
-	mkb <- genKey (KeySource src src Nothing) Nothing
-	case mkb of
-		Nothing -> error "Failed to generate key"
-		Just (key, _) -> ifM (isKnownKey key)
-			( next $ perform src key
-			, do
-				warning "Not known content; skipping"
-				next $ next $ return True
-			)
+startKnown src = notAnnexed src $
+	starting "reinject" (ActionItemOther (Just src)) $ do
+		mkb <- genKey (KeySource src src Nothing) Nothing
+		case mkb of
+			Nothing -> error "Failed to generate key"
+			Just (key, _) -> ifM (isKnownKey key)
+				( perform src key
+				, do
+					warning "Not known content; skipping"
+					next $ return True
+				)
 
 notAnnexed :: FilePath -> CommandStart -> CommandStart
 notAnnexed src = ifAnnexed src $

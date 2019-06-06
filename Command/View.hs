@@ -29,16 +29,15 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start [] = giveup "Specify metadata to include in view"
-start ps = do
-	showStart' "view" Nothing
-	ifM safeToEnterView
-		( do
-			view <- mkView ps
-			go view  =<< currentView
-		, giveup "Not safe to enter view."
-		)
+start ps = ifM safeToEnterView
+	( do
+		view <- mkView ps
+		go view  =<< currentView
+	, giveup "Not safe to enter view."
+	)
   where
-	go view Nothing = next $ perform view
+	go view Nothing = starting "view" (ActionItemOther Nothing) $
+		perform view
 	go view (Just v)
 		| v == view = stop
 		| otherwise = giveup "Already in a view. Use the vfilter and vadd commands to further refine this view."

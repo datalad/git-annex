@@ -24,7 +24,6 @@ import qualified Limit
 import CmdLine.GitAnnex.Options
 import Logs.Location
 import Logs.Unused
-import Types.ActionItem
 import Types.Transfer
 import Logs.Transfer
 import Remote.List

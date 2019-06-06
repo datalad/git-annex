@@ -249,14 +249,14 @@ fillExport r db (PreferredFiltered newtree) mtbcommitsha = do
 startExport :: Remote -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> Git.LsTree.TreeItem -> CommandStart
 startExport r db cvar allfilledvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
-	stopUnless (notrecordedpresent ek) $ do
-		showStart ("export " ++ name r) f
-		ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) (asKey ek) loc))
-			( next $ next $ cleanupExport r db ek loc False
-			, do
-				liftIO $ modifyMVar_ cvar (pure . const (FileUploaded True))
-				next $ performExport r db ek af (Git.LsTree.sha ti) loc allfilledvar
-			)
+	stopUnless (notrecordedpresent ek) $
+		starting ("export " ++ name r) (ActionItemOther (Just f)) $
+			ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) (asKey ek) loc))
+				( next $ cleanupExport r db ek loc False
+				, do
+					liftIO $ modifyMVar_ cvar (pure . const (FileUploaded True))
+					performExport r db ek af (Git.LsTree.sha ti) loc allfilledvar
+				)
   where
 	loc = mkExportLocation f
 	f = getTopFilePath (Git.LsTree.file ti)
@@ -313,17 +313,15 @@ startUnexport r db f shas = do
 	eks <- forM (filter (/= nullSha) shas) exportKey
 	if null eks
 		then stop
-		else do
-			showStart ("unexport " ++ name r) f'
-			next $ performUnexport r db eks loc
+		else starting ("unexport " ++ name r) (ActionItemOther (Just f')) $
+			performUnexport r db eks loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 startUnexport' :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startUnexport' r db f ek = do
-	showStart ("unexport " ++ name r) f'
-	next $ performUnexport r db [ek] loc
+startUnexport' r db f ek = starting ("unexport " ++ name r) (ActionItemOther (Just f')) $
+	performUnexport r db [ek] loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
@@ -365,17 +363,17 @@ startRecoverIncomplete r db sha oldf
 	| otherwise = do
 		ek <- exportKey sha
 		let loc = exportTempName ek
-		showStart ("unexport " ++ name r) (fromExportLocation loc)
-		liftIO $ removeExportedLocation db (asKey ek) oldloc
-		next $ performUnexport r db [ek] loc
+		starting ("unexport " ++ name r) (ActionItemOther (Just (fromExportLocation loc))) $ do
+			liftIO $ removeExportedLocation db (asKey ek) oldloc
+			performUnexport r db [ek] loc
   where
 	oldloc = mkExportLocation oldf'
 	oldf' = getTopFilePath oldf
 
 startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startMoveToTempName r db f ek = do
-	showStart ("rename " ++ name r) (f' ++ " -> " ++ fromExportLocation tmploc)
-	next $ performRename r db ek loc tmploc
+startMoveToTempName r db f ek = starting ("rename " ++ name r) 
+	(ActionItemOther $ Just $ f' ++ " -> " ++ fromExportLocation tmploc)
+	(performRename r db ek loc tmploc)
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
@@ -384,9 +382,9 @@ startMoveToTempName r db f ek = do
 startMoveFromTempName :: Remote -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
 startMoveFromTempName r db ek f = do
 	let tmploc = exportTempName ek
-	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $ do
-		showStart ("rename " ++ name r) (fromExportLocation tmploc ++ " -> " ++ f')
-		next $ performRename r db ek tmploc loc
+	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $
+		starting ("rename " ++ name r) (ActionItemOther (Just (fromExportLocation tmploc ++ " -> " ++ f'))) $
+			performRename r db ek tmploc loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f

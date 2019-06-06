@@ -124,10 +124,9 @@ checkUrl r o u = do
 		(Remote.checkUrl r)
   where
 
-	go _ (Left e) = void $ commandAction $ do
-		showStartAddUrl u o
+	go _ (Left e) = void $ commandAction $ startingAddUrl u o $ do
 		warning (show e)
-		next $ next $ return False
+		next $ return False
 	go deffile (Right (UrlContents sz mf)) = do
 		let f = adjustFile o (fromMaybe (maybe deffile fromSafeFilePath mf) (fileOption (downloadOptions o)))
 		void $ commandAction $ startRemote r o f u sz
@@ -151,10 +150,10 @@ startRemote :: Remote -> AddUrlOptions -> FilePath -> URLString -> Maybe Integer
 startRemote r o file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let file' = joinPath $ map (truncateFilePath pathmax) $ splitDirectories file
-	showStartAddUrl uri o
-	showNote $ "from " ++ Remote.name r 
-	showDestinationFile file'
-	next $ performRemote r o uri file' sz
+	startingAddUrl uri o $ do
+		showNote $ "from " ++ Remote.name r 
+		showDestinationFile file'
+		performRemote r o uri file' sz
 
 performRemote :: Remote -> AddUrlOptions -> URLString -> FilePath -> Maybe Integer -> CommandPerform
 performRemote r o uri file sz = ifAnnexed file adduri geturi
@@ -194,8 +193,7 @@ startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
   where
 	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
-	go url = do
-		showStartAddUrl urlstring o
+	go url = startingAddUrl urlstring o $ do
 		pathmax <- liftIO $ fileNameLengthLimit "."
 		urlinfo <- if relaxedOption (downloadOptions o)
 			then pure Url.assumeUrlExists
@@ -212,7 +210,7 @@ startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
 						( pure $ url2file url (pathdepthOption o) pathmax
 						, pure f
 						)
-		next $ performWeb o urlstring file urlinfo
+		performWeb o urlstring file urlinfo
 
 performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
 performWeb o url file urlinfo = ifAnnexed file addurl geturl
@@ -323,12 +321,12 @@ downloadWeb o url urlinfo file =
 {- The destination file is not known at start time unless the user provided
  - a filename. It's not displayed then for output consistency, 
  - but is added to the json when available. -}
-showStartAddUrl :: URLString -> AddUrlOptions -> Annex ()
-showStartAddUrl url o = do
-	showStart' "addurl" (Just url)
+startingAddUrl :: URLString -> AddUrlOptions -> CommandPerform -> CommandStart
+startingAddUrl url o p = starting "addurl" (ActionItemOther (Just url)) $ do
 	case fileOption (downloadOptions o) of
 		Nothing -> noop
 		Just file -> maybeShowJSON $ JSONChunk [("file", file)]
+	p
 
 showDestinationFile :: FilePath -> Annex ()
 showDestinationFile file = do

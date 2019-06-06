@@ -24,9 +24,8 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start ws = do
-	showStart' "reinit" (Just s)
-	next $ perform s
+start ws = starting "reinit" (ActionItemOther (Just s)) $
+	perform s
   where
 	s = unwords ws
 

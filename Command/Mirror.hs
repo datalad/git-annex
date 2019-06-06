@@ -54,7 +54,7 @@ start o file k = startKey o afile (k, ai)
 	ai = mkActionItem (k, afile)
 
 startKey :: MirrorOptions -> AssociatedFile -> (Key, ActionItem) -> CommandStart
-startKey o afile (key, ai) = onlyActionOn key $ case fromToOptions o of
+startKey o afile (key, ai) = case fromToOptions o of
 	ToRemote r -> checkFailedTransferDirection ai Upload $ ifM (inAnnex key)
 		( Command.Move.toStart Command.Move.RemoveNever afile key ai =<< getParsed r
 		, do

@@ -66,12 +66,12 @@ wrapUnannex a = ifM (versionSupportsUnlockedPointers <||> isDirect)
 		)
 
 start :: FilePath -> Key -> CommandStart
-start file key = stopUnless (inAnnex key) $ do
-	showStart "unannex" file
-	next $ ifM isDirect
-		( performDirect file key
-		, performIndirect file key
-		)
+start file key = stopUnless (inAnnex key) $
+	starting "unannex" (mkActionItem (key, file)) $
+		ifM isDirect
+			( performDirect file key
+			, performIndirect file key
+			)
 
 performIndirect :: FilePath -> Key -> CommandPerform
 performIndirect file key = do

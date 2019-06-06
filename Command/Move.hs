@@ -74,7 +74,7 @@ startKey fromto removewhen =
 	uncurry $ start' fromto removewhen (AssociatedFile Nothing)
 
 start' :: FromToHereOptions -> RemoveWhen -> AssociatedFile -> Key -> ActionItem -> CommandStart
-start' fromto removewhen afile key ai = onlyActionOn key $
+start' fromto removewhen afile key ai =
 	case fromto of
 		Right (FromRemote src) ->
 			checkFailedTransferDirection ai Download $
@@ -86,9 +86,9 @@ start' fromto removewhen afile key ai = onlyActionOn key $
 			checkFailedTransferDirection ai Download $
 				toHereStart removewhen afile key ai
 
-showMoveAction :: RemoveWhen -> Key -> ActionItem -> Annex ()
-showMoveAction RemoveNever = showStartKey "copy"
-showMoveAction _ = showStartKey "move"
+describeMoveAction :: RemoveWhen -> String
+describeMoveAction RemoveNever = "copy"
+describeMoveAction _ = "move"
 
 toStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
 toStart removewhen afile key ai dest = do
@@ -108,9 +108,8 @@ toStart' dest removewhen afile key ai = do
 			)
 		else go False (Remote.hasKey dest key)
   where
-	go fastcheck isthere = do
-		showMoveAction removewhen key ai
-		next $ toPerform dest removewhen key afile fastcheck =<< isthere
+	go fastcheck isthere = starting (describeMoveAction removewhen) ai $
+		toPerform dest removewhen key afile fastcheck =<< isthere
 
 expectedPresent :: Remote -> Key -> Annex Bool
 expectedPresent dest key = do
@@ -182,9 +181,9 @@ fromStart removewhen afile key ai src = case removewhen of
 	RemoveNever -> stopUnless (not <$> inAnnex key) go
 	RemoveSafe -> go
   where
-	go = stopUnless (fromOk src key) $ do
-		showMoveAction removewhen key ai
-		next $ fromPerform src removewhen key afile
+	go = stopUnless (fromOk src key) $
+		starting (describeMoveAction removewhen) ai $
+			fromPerform src removewhen key afile
 
 fromOk :: Remote -> Key -> Annex Bool
 fromOk src key 
@@ -250,9 +249,9 @@ toHereStart removewhen afile key ai = case removewhen of
 	go = do
 		rs <- Remote.keyPossibilities key
 		forM_ rs $ \r ->
-			includeCommandAction $ do
-				showMoveAction removewhen key ai
-				next $ fromPerform r removewhen key afile
+			includeCommandAction $
+				starting (describeMoveAction removewhen) ai $
+					fromPerform r removewhen key afile
 		stop
 
 {- The goal of this command is to allow the user maximum freedom to move

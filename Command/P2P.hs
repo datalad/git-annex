@@ -96,9 +96,8 @@ genAddresses addrs = do
 
 -- Address is read from stdin, to avoid leaking it in shell history.
 linkRemote :: RemoteName -> CommandStart
-linkRemote remotename = do
-	showStart' "p2p link" (Just remotename)
-	next $ next promptaddr
+linkRemote remotename = starting "p2p link" (ActionItemOther (Just remotename)) $
+	next promptaddr
   where
 	promptaddr = do
 		liftIO $ putStrLn ""
@@ -122,12 +121,11 @@ linkRemote remotename = do
 
 startPairing :: RemoteName -> [P2PAddress] -> CommandStart
 startPairing _ [] = giveup "No P2P networks are currrently available."
-startPairing remotename addrs = do
-	showStart' "p2p pair" (Just remotename)
-	ifM (liftIO Wormhole.isInstalled)
-		( next $ performPairing remotename addrs
-		, giveup "Magic Wormhole is not installed, and is needed for pairing. Install it from your distribution or from https://github.com/warner/magic-wormhole/"
-		) 
+startPairing remotename addrs = ifM (liftIO Wormhole.isInstalled)
+	( starting "p2p pair" (ActionItemOther (Just remotename)) $
+		performPairing remotename addrs
+	, giveup "Magic Wormhole is not installed, and is needed for pairing. Install it from your distribution or from https://github.com/warner/magic-wormhole/"
+	) 
 
 performPairing :: RemoteName -> [P2PAddress] -> CommandPerform
 performPairing remotename addrs = do

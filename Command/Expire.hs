@@ -58,16 +58,18 @@ seek o = do
 start :: Expire -> Bool -> Log Activity -> UUIDDescMap -> UUID -> CommandStart
 start (Expire expire) noact actlog descs u =
 	case lastact of
-		Just ent | notexpired ent -> checktrust (== DeadTrusted) $ do
-			showStart' "unexpire" (Just desc)
-			showNote =<< whenactive
-			unless noact $
-				trustSet u SemiTrusted
-		_ -> checktrust (/= DeadTrusted) $ do
-			showStart' "expire" (Just desc)
-			showNote =<< whenactive
-			unless noact $
-				trustSet u DeadTrusted
+		Just ent | notexpired ent -> checktrust (== DeadTrusted) $
+			starting "unexpire" (ActionItemOther (Just desc)) $ do
+				showNote =<< whenactive
+				unless noact $
+					trustSet u SemiTrusted
+				next $ return True
+		_ -> checktrust (/= DeadTrusted) $
+			starting "expire" (ActionItemOther (Just desc)) $ do
+				showNote =<< whenactive
+				unless noact $
+					trustSet u DeadTrusted
+				next $ return True
   where
 	lastact = changed <$> M.lookup u actlog
 	whenactive = case lastact of
@@ -83,12 +85,7 @@ start (Expire expire) noact actlog descs u =
 			_ -> True
 	lookupexpire = headMaybe $ catMaybes $
 		map (`M.lookup` expire) [Just u, Nothing]
-	checktrust want a = ifM (want <$> lookupTrust u)
-		( do
-			void a
-			next $ next $ return True
-		, stop
-		)
+	checktrust want = stopUnless (want <$> lookupTrust u)
 
 data Expire = Expire (M.Map (Maybe UUID) (Maybe POSIXTime))
 

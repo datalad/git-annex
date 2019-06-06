@@ -27,9 +27,8 @@ trustCommand c level = withWords (commandAction . start)
   where
 	start ws = do
 		let name = unwords ws
-		showStart' c (Just name)
 		u <- Remote.nameToUUID name
-		next $ perform u
+		starting c (ActionItemOther (Just name)) (perform u)
 	perform uuid = do
 		trustSet uuid level
 		when (level == DeadTrusted) $

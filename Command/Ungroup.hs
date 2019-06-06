@@ -23,9 +23,9 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (name:g:[]) = do
-	showStart' "ungroup" (Just name)
 	u <- Remote.nameToUUID name
-	next $ perform u (toGroup g)
+	starting "ungroup" (ActionItemOther (Just name)) $
+		perform u (toGroup g)
 start _ = giveup "Specify a repository and a group."
 
 perform :: UUID -> Group -> CommandPerform

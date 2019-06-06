@@ -54,9 +54,7 @@ start fixwhat file key = do
 			FixAll -> fixthin
 			FixSymlinks -> stop
   where
-	fixby a = do
-		showStart "fix" file
-		next a
+	fixby = starting "fix" (mkActionItem (key, file))
 	fixthin = do
 		obj <- calcRepo $ gitAnnexLocation key
 		stopUnless (isUnmodified key file <&&> isUnmodified key obj) $ do

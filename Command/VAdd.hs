@@ -22,16 +22,15 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start params = do
-	showStart' "vadd" Nothing
+start params = starting "vadd" (ActionItemOther Nothing) $ 
 	withCurrentView $ \view -> do
 		let (view', change) = refineView view $
 			map parseViewParam $ reverse params
 		case change of
 			Unchanged -> do
 				showNote "unchanged"
-				next $ next $ return True
-			Narrowing -> next $ next $ do
+				next $ return True
+			Narrowing -> next $ do
 				if visibleViewSize view' == visibleViewSize view
 					then giveup "That would not add an additional level of directory structure to the view. To filter the view, use vfilter instead of vadd."
 					else checkoutViewBranch view' narrowView

@@ -51,15 +51,14 @@ start os = do
 		then case readish =<< headMaybe os of
 			Nothing -> giveup "Need user-id parameter."
 			Just userid -> go uuid userid
-		else do
-			showStart' "enable-tor" Nothing
+		else starting "enable-tor" (ActionItemOther Nothing) $ do
 			gitannex <- liftIO readProgramFile
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps
 			maybe noop showLongNote
 				(describePasswordPrompt' sucommand)
 			ifM (liftIO $ runSuCommand sucommand)
-				( next $ next checkHiddenService
+				( next checkHiddenService
 				, giveup $ unwords $
 					[ "Failed to run as root:" , gitannex ] ++ toCommand ps
 				)

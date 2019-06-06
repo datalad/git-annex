@@ -20,11 +20,10 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start params = do
-	showStart' "vfilter" Nothing
+start params = starting "vfilter" (ActionItemOther Nothing) $
 	withCurrentView $ \view -> do
 		let view' = filterView view $
 			map parseViewParam $ reverse params
-		next $ next $ if visibleViewSize view' > visibleViewSize view
+		next $ if visibleViewSize view' > visibleViewSize view
 			then giveup "That would add an additional level of directory structure to the view, rather than filtering it. If you want to do that, use vadd instead of vfilter."
 			else checkoutViewBranch view' narrowView

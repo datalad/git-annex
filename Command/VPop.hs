@@ -27,17 +27,16 @@ start :: [String] -> CommandStart
 start ps = go =<< currentView
   where
 	go Nothing = giveup "Not in a view."
-	go (Just v) = do
-		showStart' "vpop" (Just $ show num)
+	go (Just v) = starting "vpop" (ActionItemOther (Just $ show num)) $ do
 		removeView v
 		(oldvs, vs) <- splitAt (num - 1) . filter (sameparentbranch v)
 			<$> recentViews
 		mapM_ removeView oldvs
 		case vs of
-			(oldv:_) -> next $ next $ do
+			(oldv:_) -> next $ do
 				showOutput
 				checkoutViewBranch oldv (return . branchView)
-			_ -> next $ next $ do
+			_ -> next $ do
 				showOutput
 				inRepo $ Git.Command.runBool
 					[ Param "checkout"

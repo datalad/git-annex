@@ -22,7 +22,7 @@ seek :: CmdParams -> CommandSeek
 seek = withStrings (commandAction . start)
 
 start :: String -> CommandStart
-start gcryptid = next $ next $ do
+start gcryptid = starting "gcryptsetup" (ActionItemOther Nothing) $ do
 	u <- getUUID
 	when (u /= NoUUID) $
 		giveup "gcryptsetup refusing to run; this repository already has a git-annex uuid!"
@@ -34,6 +34,6 @@ start gcryptid = next $ next $ do
 		then if Git.repoIsLocalBare g
 			then do
 				void $ Remote.GCrypt.setupRepo gcryptid g
-				return True
+				next $ return True
 			else giveup "cannot use gcrypt in a non-bare repository"
 		else giveup "gcryptsetup uuid mismatch"

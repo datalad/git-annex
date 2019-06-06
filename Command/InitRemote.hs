@@ -37,9 +37,8 @@ start (name:ws) = ifM (isJust <$> findExisting name)
 			, do
 				let c = newConfig name
 				t <- either giveup return (findType config)
-
-				showStart' "initremote" (Just name)
-				next $ perform t name $ M.union config c
+				starting "initremote" (ActionItemOther (Just name)) $
+					perform t name $ M.union config c
 			)
 	)
   where

@@ -196,17 +196,16 @@ callCommandAction' a = callCommandActionQuiet a >>= \case
 	Just r -> implicitMessage (showEndResult r) >> return (Just r)
 
 callCommandActionQuiet :: CommandStart -> Annex (Maybe Bool)
-callCommandActionQuiet = start
-  where
-	start   = stage $ maybe skip perform
-	perform = stage $ maybe failure $ \a -> do
-		changeStageTo CleanupStage
-		cleanup a
-	cleanup = stage $ status
-	stage = (=<<)
-	skip = return Nothing
-	failure = return (Just False)
-	status = return . Just
+callCommandActionQuiet start =
+	start >>= \case
+		Nothing -> return Nothing
+		Just (startmsg, perform) -> do
+			showStartMessage startmsg
+			perform >>= \case
+				Nothing -> return (Just False)
+				Just cleanup -> do
+					changeStageTo CleanupStage
+					Just <$> cleanup
 
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a
@@ -255,6 +254,7 @@ allowConcurrentOutput a = do
 
 {- Ensures that only one thread processes a key at a time.
  - Other threads will block until it's done. -}
+{-
 onlyActionOn :: Key -> CommandStart -> CommandStart
 onlyActionOn k a = onlyActionOn' k run
   where
@@ -263,7 +263,10 @@ onlyActionOn k a = onlyActionOn' k run
 	run = callCommandActionQuiet a >>= \case
 		Nothing -> return Nothing
 		Just r' -> return $ Just $ return $ Just $ return r'
+-}
 
+{- Ensures that only one thread processes a key at a time.
+ - Other threads will block until it's done. -}
 onlyActionOn' :: Key -> Annex a -> Annex a
 onlyActionOn' k a = go =<< Annex.getState Annex.concurrency
   where

@@ -60,9 +60,8 @@ start (file, newkey) = ifAnnexed file go stop
   where
 	go oldkey
 		| oldkey == newkey = stop
-		| otherwise = do
-			showStart "rekey" file
-			next $ perform file oldkey newkey
+		| otherwise = starting "rekey" (ActionItemWorkTreeFile file) $
+			perform file oldkey newkey
 
 perform :: FilePath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do

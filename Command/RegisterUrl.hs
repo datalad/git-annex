@@ -39,16 +39,16 @@ seek o = case (batchOption o, keyUrlPairs o) of
 	(NoBatch, ps) -> withWords (commandAction . start) ps
 
 start :: [String] -> CommandStart
-start (keyname:url:[]) = do
-	let key = mkKey keyname
-	showStart' "registerurl" (Just url)
-	next $ perform key url
+start (keyname:url:[]) = 
+	starting "registerurl" (ActionItemOther (Just url)) $ do
+		let key = mkKey keyname
+		perform key url
 start _ = giveup "specify a key and an url"
 
 startMass :: BatchFormat -> CommandStart
-startMass fmt = do
-	showStart' "registerurl" (Just "stdin")
-	next (massAdd fmt)
+startMass fmt = 
+	starting "registerurl" (ActionItemOther (Just "stdin")) $
+		massAdd fmt
 
 massAdd :: BatchFormat -> CommandPerform
 massAdd fmt = go True =<< map (separate (== ' ')) <$> batchLines fmt

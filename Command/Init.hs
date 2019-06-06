@@ -46,9 +46,8 @@ seek :: InitOptions -> CommandSeek
 seek = commandAction . start
 
 start :: InitOptions -> CommandStart
-start os = do
-	showStart' "init" (Just $ initDesc os)
-	next $ perform os
+start os = starting "init" (ActionItemOther (Just $ initDesc os)) $
+	perform os
 
 perform :: InitOptions -> CommandPerform
 perform os = do
