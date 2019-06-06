@@ -1,0 +1,17 @@
+A long day spent making CommandCleanup actions run in a separate job pool 
+than CommandPerform actions. I don't think this will speed anything up much
+yet, but it's useful groundwork. Now expensive things that are not
+the main action of a command can be moved into CommandCleanup and won't
+delay git-annex moving on to the next file. The main thing I want to move
+is checksum verification after a transfer. But there are probably other
+things I have not thought of.
+
+CommandCleanup was always not well distinguised from CommandPerform,
+and so there was little incentive to put things in it. Now that's changed.
+
+I also noticed that with -J, git-annex takes significantly longer than
+without to get started, when the first file it needs to process is quite a
+way down the ls-tree. This must be concurrency overhead. But, when
+CommandStart is skipping over a file that it doesn't need to process,
+there is no need to do that bookkeeping. Planning to take some time
+tomorrow to see if I can refactor CommandStart to avoid that overhead.
