@@ -48,9 +48,10 @@ seek o = allowConcurrentOutput $
 		=<< workTreeItems (mirrorFiles o)
 
 start :: MirrorOptions -> FilePath -> Key -> CommandStart
-start o file k = startKey o afile (k, mkActionItem afile)
+start o file k = startKey o afile (k, ai)
   where
 	afile = AssociatedFile (Just file)
+	ai = mkActionItem (k, afile)
 
 startKey :: MirrorOptions -> AssociatedFile -> (Key, ActionItem) -> CommandStart
 startKey o afile (key, ai) = onlyActionOn key $ case fromToOptions o of

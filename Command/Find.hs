@@ -73,7 +73,7 @@ start o file key = ifM (limited <||> inAnnex key)
 	)
 
 startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
-startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf)) = 
+startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 
 	start o (getTopFilePath topf) key
 startKeys _ _ = stop
 

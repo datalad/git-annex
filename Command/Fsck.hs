@@ -114,7 +114,7 @@ start from inc file key = Backend.getBackend file key >>= \case
 			Nothing -> go $ perform key file backend numcopies
 			Just r -> go $ performRemote key afile backend numcopies r
   where
-	go = runFsck inc (mkActionItem afile) key
+	go = runFsck inc (mkActionItem (key, afile)) key
 	afile = AssociatedFile (Just file)
 
 perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
@@ -134,7 +134,7 @@ perform key file backend numcopies = do
 		]
   where
 	afile = AssociatedFile (Just file)
-	ai = ActionItemAssociatedFile afile
+	ai = mkActionItem (key, afile)
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
@@ -161,7 +161,7 @@ performRemote key afile backend numcopies remote =
 		, withLocalCopy localcopy $ checkBackendRemote backend key remote ai
 		, checkKeyNumCopies key afile numcopies
 		]
-	ai = ActionItemAssociatedFile afile
+	ai = mkActionItem (key, afile)
 	withtmp a = do
 		pid <- liftIO getPID
 		t <- fromRepo gitAnnexTmpObjectDir
@@ -275,7 +275,7 @@ verifyLocationLog' key ai present u updatestatus = do
 			fix InfoMissing
 			warning $
 				"** Based on the location log, " ++
-				actionItemDesc ai key ++
+				actionItemDesc ai ++
 				"\n** was expected to be present, " ++
 				"but its content is missing."
 			return False
@@ -295,7 +295,7 @@ verifyLocationLog' key ai present u updatestatus = do
 {- Verifies that all repos that are required to contain the content do,
  - checking against the location log. -}
 verifyRequiredContent :: Key -> ActionItem -> Annex Bool
-verifyRequiredContent key ai@(ActionItemAssociatedFile afile) = do
+verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = do
 	requiredlocs <- S.fromList . M.keys <$> requiredContentMap
 	if S.null requiredlocs
 		then return True
@@ -310,7 +310,7 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile) = do
 					missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
 					warning $
 						"** Required content " ++
-						actionItemDesc ai key ++
+						actionItemDesc ai ++
 						" is missing from these repositories:\n" ++
 						missingrequired
 					return False
@@ -401,7 +401,7 @@ checkKeySizeOr bad key file ai = case keySize key of
 	badsize a b = do
 		msg <- bad key
 		warning $ concat
-			[ actionItemDesc ai key
+			[ actionItemDesc ai
 			, ": Bad file size ("
 			, compareSizes storageUnits True a b
 			, "); "
@@ -419,7 +419,7 @@ checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
 	case Types.Backend.canUpgradeKey backend of
 		Just a | a key -> do
 			warning $ concat
-				[ actionItemDesc ai key
+				[ actionItemDesc ai
 				, ": Can be upgraded to an improved key format. "
 				, "You can do so by running: git annex migrate --backend="
 				, decodeBS (formatKeyVariety (keyVariety key)) ++ " "
@@ -451,17 +451,19 @@ checkBackend backend key keystatus afile = go =<< isDirect
 		content <- calcRepo $ gitAnnexLocation key
 		ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 			( nocheck
-			, checkBackendOr badContent backend key content (mkActionItem afile)
+			, checkBackendOr badContent backend key content ai
 			)
 	go True = case afile of
 		AssociatedFile Nothing -> nocheck
 		AssociatedFile (Just f) -> checkdirect f
 	checkdirect file = ifM (Direct.goodContent key file)
-		( checkBackendOr' (badContentDirect file) backend key file (mkActionItem afile)
+		( checkBackendOr' (badContentDirect file) backend key file ai
 			(Direct.goodContent key file)
 		, nocheck
 		)
 	nocheck = return True
+
+	ai = mkActionItem (key, afile)
 
 checkBackendRemote :: Backend -> Key -> Remote -> ActionItem -> FilePath -> Annex Bool
 checkBackendRemote backend key remote ai localcopy =
@@ -485,7 +487,7 @@ checkBackendOr' bad backend key file ai postcheck =
 					unless ok $ do
 						msg <- bad key
 						warning $ concat
-							[ actionItemDesc ai key
+							[ actionItemDesc ai
 							, ": Bad file content; "
 							, msg
 							]

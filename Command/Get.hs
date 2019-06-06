@@ -49,9 +49,10 @@ seek o = allowConcurrentOutput $ do
 			=<< workTreeItems (getFiles o)
 
 start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
-start o from file key = start' expensivecheck from key afile (mkActionItem afile)
+start o from file key = start' expensivecheck from key afile ai
   where
 	afile = AssociatedFile (Just file)
+	ai = mkActionItem (key, afile)
 	expensivecheck
 		| autoMode o = numCopiesCheck file key (<)
 			<||> wantGet False (Just key) afile

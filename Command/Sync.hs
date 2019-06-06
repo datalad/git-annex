@@ -690,7 +690,7 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 		, return []
 		)
 	get have = includeCommandAction $ do
-		showStartKey "get" k (mkActionItem af)
+		showStartKey "get" k ai
 		next $ next $ getKey' k af have
 
 	wantput r
@@ -705,7 +705,9 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 		, return []
 		)
 	put dest = includeCommandAction $ 
-		Command.Move.toStart' dest Command.Move.RemoveNever af k (mkActionItem af)
+		Command.Move.toStart' dest Command.Move.RemoveNever af k ai
+
+	ai = mkActionItem (k, af)
 
 {- When a remote has an annex-tracking-branch configuration, change the export
  - to contain the current content of the branch. Otherwise, transfer any files

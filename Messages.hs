@@ -77,7 +77,7 @@ showStart' command mdesc = outputMessage json $
 
 showStartKey :: String -> Key -> ActionItem -> Annex ()
 showStartKey command key i = outputMessage json $
-	command ++ " " ++ actionItemDesc i key ++ " "
+	command ++ " " ++ actionItemDesc i ++ " "
   where
 	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
 

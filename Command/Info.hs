@@ -445,9 +445,8 @@ transfer_list = stat desc $ nojson $ lift $ do
 	desc = "transfers in progress"
 	line uuidmap t i = unwords
 		[ formatDirection (transferDirection t) ++ "ing"
-		, actionItemDesc
-			(ActionItemAssociatedFile (associatedFile i))
-			(transferKey t)
+		, actionItemDesc $ mkActionItem
+			(transferKey t, associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap

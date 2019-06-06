@@ -63,9 +63,10 @@ seek o = allowConcurrentOutput $
 	go = whenAnnexed $ start o
 
 start :: DropOptions -> FilePath -> Key -> CommandStart
-start o file key = start' o key afile (mkActionItem afile)
+start o file key = start' o key afile ai
   where
 	afile = AssociatedFile (Just file)
+	ai = mkActionItem (key, afile)
 
 start' :: DropOptions -> Key -> AssociatedFile -> ActionItem -> CommandStart
 start' o key afile ai = onlyActionOn key $ do

@@ -64,10 +64,10 @@ seek o = allowConcurrentOutput $ do
 			=<< workTreeItems (moveFiles o)
 
 start :: FromToHereOptions -> RemoveWhen -> FilePath -> Key -> CommandStart
-start fromto removewhen f k =
-	start' fromto removewhen afile k (mkActionItem afile)
+start fromto removewhen f k = start' fromto removewhen afile k ai
   where
 	afile = AssociatedFile (Just f)
+	ai = mkActionItem (k, afile)
 
 startKey :: FromToHereOptions -> RemoveWhen -> (Key, ActionItem) -> CommandStart
 startKey fromto removewhen = 

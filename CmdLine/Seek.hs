@@ -186,7 +186,7 @@ withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
 		matcher <- Limit.getMatcher
 		return $ \v@(k, ai) ->
 			let i = case ai of
-				ActionItemBranchFilePath (BranchFilePath _ topf) ->
+				ActionItemBranchFilePath (BranchFilePath _ topf) _ ->
 					MatchingKey k (AssociatedFile $ Just $ getTopFilePath topf)
 				_ -> MatchingKey k (AssociatedFile Nothing)
 			in whenM (matcher i) $
@@ -229,10 +229,11 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
 			(l, cleanup) <- inRepo $ LsTree.lsTree LsTree.LsTreeRecursive b
-			forM_ l $ \i -> do
-				let bfp = mkActionItem $ BranchFilePath b (LsTree.file i)
-				maybe noop (\k -> keyaction (k, bfp))
-					=<< catKey (LsTree.sha i)
+			forM_ l $ \i -> catKey (LsTree.sha i) >>= \case
+				Nothing -> noop
+				Just k -> 
+					let bfp = mkActionItem (BranchFilePath b (LsTree.file i), k)
+					in keyaction (k, bfp)
 			unlessM (liftIO cleanup) $
 				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
 	runfailedtransfers = do

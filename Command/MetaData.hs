@@ -93,7 +93,7 @@ seek o = case batchOption o of
 		_ -> giveup "--batch is currently only supported in --json mode"
 
 start :: VectorClock -> MetaDataOptions -> FilePath -> Key -> CommandStart
-start c o file k = startKeys c o (k, mkActionItem afile)
+start c o file k = startKeys c o (k, mkActionItem (k, afile))
   where
 	afile = AssociatedFile (Just file)
 
@@ -164,7 +164,7 @@ startBatch (i, (MetaData m)) = case i of
 	Left f -> do
 		mk <- lookupFile f
 		case mk of
-			Just k -> go k (mkActionItem (AssociatedFile (Just f)))
+			Just k -> go k (mkActionItem (k, AssociatedFile (Just f)))
 			Nothing -> giveup $ "not an annexed file: " ++ f
 	Right k -> go k (mkActionItem k)
   where

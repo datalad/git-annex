@@ -48,7 +48,7 @@ seek o = do
 				=<< workTreeItems (whereisFiles o)
 
 start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
-start remotemap file key = startKeys remotemap (key, mkActionItem afile)
+start remotemap file key = startKeys remotemap (key, mkActionItem (key, afile))
   where
 	afile = AssociatedFile (Just file)
 

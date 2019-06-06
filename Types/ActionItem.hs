@@ -1,6 +1,6 @@
 {- items that a command can act on
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,36 +14,45 @@ import Types.Transfer
 import Git.FilePath
 
 data ActionItem 
-	= ActionItemAssociatedFile AssociatedFile
-	| ActionItemKey
-	| ActionItemBranchFilePath BranchFilePath
+	= ActionItemAssociatedFile AssociatedFile Key
+	| ActionItemKey Key
+	| ActionItemBranchFilePath BranchFilePath Key
 	| ActionItemFailedTransfer Transfer TransferInfo
 
 class MkActionItem t where
 	mkActionItem :: t -> ActionItem
 
-instance MkActionItem AssociatedFile where
-	mkActionItem = ActionItemAssociatedFile
+instance MkActionItem (AssociatedFile, Key) where
+	mkActionItem = uncurry ActionItemAssociatedFile
+
+instance MkActionItem (Key, AssociatedFile) where
+	mkActionItem = uncurry $ flip ActionItemAssociatedFile
 
 instance MkActionItem Key where
-	mkActionItem _ = ActionItemKey
+	mkActionItem = ActionItemKey
 
-instance MkActionItem BranchFilePath where
-	mkActionItem = ActionItemBranchFilePath
+instance MkActionItem (BranchFilePath, Key) where
+	mkActionItem = uncurry ActionItemBranchFilePath
 
 instance MkActionItem (Transfer, TransferInfo) where
 	mkActionItem = uncurry ActionItemFailedTransfer
 
-actionItemDesc :: ActionItem -> Key -> String
-actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f))) _ = f
-actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing)) k = serializeKey k
-actionItemDesc ActionItemKey k = serializeKey k
-actionItemDesc (ActionItemBranchFilePath bfp) _ = descBranchFilePath bfp
-actionItemDesc (ActionItemFailedTransfer _ i) k =
-	actionItemDesc (ActionItemAssociatedFile (associatedFile i)) k
+actionItemDesc :: ActionItem -> String
+actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = f
+actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing) k) = serializeKey k
+actionItemDesc (ActionItemKey k) = serializeKey k
+actionItemDesc (ActionItemBranchFilePath bfp _) = descBranchFilePath bfp
+actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
+	ActionItemAssociatedFile (associatedFile i) (transferKey t)
+
+actionItemKey :: ActionItem -> Key
+actionItemKey (ActionItemAssociatedFile _ k) = k
+actionItemKey (ActionItemKey k) = k
+actionItemKey (ActionItemBranchFilePath _ k) = k
+actionItemKey (ActionItemFailedTransfer t _) = transferKey t
 
 actionItemWorkTreeFile :: ActionItem -> Maybe FilePath
-actionItemWorkTreeFile (ActionItemAssociatedFile (AssociatedFile af)) = af
+actionItemWorkTreeFile (ActionItemAssociatedFile (AssociatedFile af) _) = af
 actionItemWorkTreeFile _ = Nothing
 
 actionItemTransferDirection :: ActionItem -> Maybe Direction
