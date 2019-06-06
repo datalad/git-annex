@@ -22,6 +22,9 @@ are still some things that could be improved, tracked here:
   cleanup action. Currently, it's bundled into the same action that
   transfers content.
 
+* onlyActionOn collapses the cleanup action into the start action,
+  and so prevents use of the separate cleanup queue.
+
 * Don't parallelize start stage actions. They are supposed to run fast,
   and often a huge number of them don't print out anything. The overhead of
   bookkeeping for parallizing those swamps the benefit of parallelizing by
