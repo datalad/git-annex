@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="anthony@ad39673d230d75cbfd19d2757d754030049c7673"
+ nickname="anthony"
+ avatar="http://cdn.libravatar.org/avatar/05b48b72766177b3b0a6ff4afdb70790"
+ subject="comment 2"
+ date="2019-06-10T16:52:23Z"
+ content="""
+I worked around that one (I think I fully checked it out to Termux's $HOME, then moved it to sdcard. If I recall correctly, adjusted mode failed with more permission issues. But direct mode works... (I don't have the device in front of me, but it may be an actual SD card, not the fake sdcard. Which of course doesn't support permissions either.)
+
+I wonder if it'd be easy enough to do a LD_PRELOAD hack to \"fix\" chmod. 
+"""]]
