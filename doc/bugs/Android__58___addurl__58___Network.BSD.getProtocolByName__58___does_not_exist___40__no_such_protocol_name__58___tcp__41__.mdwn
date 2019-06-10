@@ -2,6 +2,8 @@
 
 Attempting to use git-annex addurl on Android 9 (Pixel 3a) fails with "ConnectionFailure Network.BSD.getProtocolByName: does not exist (no such protocol name: tcp)"
 
+To be clear, this is the installed the current way, inside of Termux. Not the obsolete apk.
+
 [[!format sh """
 # If you can, paste a complete transcript of the problem occurring here.
 # If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
