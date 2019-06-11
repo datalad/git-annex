@@ -1,0 +1,1 @@
+If a repo is cloned using `git clone --single-branch --depth 1`, `git-annex-init` and `git-annex-sync` do not seem to correctly fetch the `git-annex` and `synced/git-annex` branches.  `git-annex-info` does not list remotes that were known at the cloned repo.
