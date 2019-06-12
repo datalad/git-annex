@@ -47,14 +47,18 @@ data StartMessage
 	| StartUsualMessages String ActionItem
 	-- ^ Like StartMessage, but makes sure to enable usual message
 	-- display in case it was disabled by cmdnomessages.
+	| StartNoMessage ActionItem
+	-- ^ Starts, without displaying any message but also without
+	-- disabling display of any of the usual messages.
 	| CustomOutput ActionItem
-	-- ^ Prevents any start, end, or other implicit messages from
+	-- ^ Prevents any start, end, or other usual messages from
 	-- being displayed, letting a command output its own custom format.
 	deriving (Show)
 
 instance MkActionItem StartMessage where
 	mkActionItem (StartMessage _ ai) = ai
 	mkActionItem (StartUsualMessages _ ai) = ai
+	mkActionItem (StartNoMessage ai) = ai
 	mkActionItem (CustomOutput ai) = ai
 
 {- A command is defined by specifying these things. -}

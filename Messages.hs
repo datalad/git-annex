@@ -98,13 +98,14 @@ showStartMessage (StartUsualMessages command ai) = do
 		QuietOutput -> Annex.setOutput NormalOutput
 		_ -> noop
 	showStartMessage (StartMessage command ai)
-showStartMessage (CustomOutput _) = do
-	Annex.setOutput QuietOutput
+showStartMessage (StartNoMessage _) = noop
+showStartMessage (CustomOutput _) = Annex.setOutput QuietOutput
 
 -- Only show end result if the StartMessage is one that gets displayed.
 showEndMessage :: StartMessage -> Bool -> Annex ()
 showEndMessage (StartMessage _ _) = showEndResult
 showEndMessage (StartUsualMessages _ _) = showEndResult
+showEndMessage (StartNoMessage _) = const noop
 showEndMessage (CustomOutput _) = const noop
 
 showNote :: String -> Annex ()

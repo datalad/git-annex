@@ -630,7 +630,7 @@ seekSyncContent o rs currbranch = do
 		-- Run syncFile as a command action so file transfers run
 		-- concurrently.
 		let ai = OnlyActionOn k (ActionItemKey k)
-		commandAction $ startingCustomOutput ai $ do
+		commandAction $ startingNoMessage ai $ do
 			whenM (syncFile ebloom rs af k) $
 				void $ liftIO $ tryPutMVar mvar ()
 			next $ return True

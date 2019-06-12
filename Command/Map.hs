@@ -40,7 +40,7 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing (commandAction start)
 
 start :: CommandStart
-start = starting "map" (ActionItemOther Nothing) $ do
+start = startingNoMessage (ActionItemOther Nothing) $ do
 	rs <- combineSame <$> (spider =<< gitRepo)
 
 	umap <- uuidDescMap

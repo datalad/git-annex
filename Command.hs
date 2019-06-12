@@ -1,6 +1,6 @@
 {- git-annex command infrastructure
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -81,6 +81,11 @@ starting msg t a = next (StartMessage msg (mkActionItem t), a)
  - usual messages after all. -}
 startingUsualMessages :: MkActionItem t => String -> t -> CommandPerform -> CommandStart
 startingUsualMessages msg t a = next (StartUsualMessages msg (mkActionItem t), a)
+
+{- When no message should be displayed at start/end, but messages can still 
+ - be displayed when using eg includeCommandAction. -}
+startingNoMessage :: MkActionItem t => t -> CommandPerform -> CommandStart
+startingNoMessage t a = next (StartNoMessage (mkActionItem t), a)
 
 {- For commands that do not display usual start or end messages, 
  - but have some other custom output. -}

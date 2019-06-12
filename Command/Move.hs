@@ -247,7 +247,7 @@ toHereStart removewhen afile key ai = case removewhen of
 	RemoveNever -> stopUnless (not <$> inAnnex key) go
 	RemoveSafe -> go
   where
-	go = startingCustomOutput (OnlyActionOn key ai) $ do
+	go = startingNoMessage (OnlyActionOn key ai) $ do
 		rs <- Remote.keyPossibilities key
 		forM_ rs $ \r ->
 			includeCommandAction $
