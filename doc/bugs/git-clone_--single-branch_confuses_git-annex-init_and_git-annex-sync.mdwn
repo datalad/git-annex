@@ -1,0 +1,14 @@
+If a repo is cloned using `git clone --single-branch --depth 1`, `git-annex-init` and `git-annex-sync` do not seem to correctly fetch the `git-annex` and `synced/git-annex` branches.  `git-annex-info` does not list remotes that were known at the cloned repo.
+
+> This is not a bug. You have cloned a repository without cloning the
+> git-annex branch, so as far as git-annex can *possibly* know, this is a
+> git repository in which git-annex has never been used before.
+> 
+> As soon as you fetch the git-annex branch from origin, git-annex will
+> know all the information that you expected it to know. So all you have to
+> do is: `git fetch origin git-annex`
+> 
+> There is no possible change I can make that will prevent or amelorate
+> this particular means of shooting yourself in the foot.
+> 
+> [[done]] --[[Joey]] 

@@ -1,0 +1,9 @@
+When on an adjusted branch, git annex sync --content with an exportree
+remote that  should commit changes, merge back to master, and then when
+the remote's annex-tracking-branch is master, the updated master should be
+exported to the remote.
+
+I'm told there's a one sync lag in changes reaching the remote. Ie, it's
+exporting to the remote before merging adjusted/master into master, or
+something like that. Have not verified and it could be some other root
+cause than that. --[[Joey]]

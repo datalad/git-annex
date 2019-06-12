@@ -1,0 +1,4 @@
+I have a 2500 line patch on the `starting` branch that refactors how start
+messages get displayed. Prerequisite for faster parallel starts. This
+touched every single command, and quite a few needed non-trivial changes, 
+so it took all day to get it to even compile.
