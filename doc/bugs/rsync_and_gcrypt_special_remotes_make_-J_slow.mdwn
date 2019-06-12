@@ -1,0 +1,10 @@
+When a rsync or gcrypt special remote is enabled, all git-annex commands
+with -J become slow, even those that don't access the remote.
+
+The problem is that Remote.Rsync.gen and Remote.Gcrypt.gen 
+call rsyncTransport which calls sshOptions. 
+When concurrency is enabled, that blocks for a ssh connection to be set up.
+Even though the ssh connection will often not be used.
+
+It should be possible for it not to block until the ssh connection is used.
+--[[Joey]]
