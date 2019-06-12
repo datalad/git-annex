@@ -101,22 +101,21 @@ commandAction start = Annex.getState Annex.concurrency >>= \case
 	
 	mkjob workerst startmsg perform = 
 		inOwnConsoleRegion (Annex.output workerst) $
-			void $ accountCommandAction $
+			void $ accountCommandAction startmsg $
 				performconcurrent startmsg perform
 
-	-- Like callCommandAction, but the start stage has already run,
-	-- and the worker thread's stage is changed before starting the
-	-- cleanup action.
+	-- Like performCommandAction' but the worker thread's stage
+	-- is changed before starting the cleanup action.
 	performconcurrent startmsg perform = do
 		showStartMessage startmsg
 		perform >>= \case
 			Just cleanup -> do
 				changeStageTo CleanupStage
 				r <- cleanup
-				implicitMessage (showEndResult r)
+				showEndMessage startmsg r
 				return r
 			Nothing -> do
-				implicitMessage (showEndResult False)
+				showEndMessage startmsg False
 				return False
 
 -- | Wait until there's an idle worker in the pool, remove it from the
@@ -206,17 +205,23 @@ changeStageTo newstage = do
 
 {- Like commandAction, but without the concurrency. -}
 includeCommandAction :: CommandStart -> CommandCleanup
-includeCommandAction = accountCommandAction . callCommandAction
+includeCommandAction start =
+	start >>= \case
+		Nothing -> return True
+		Just (startmsg, perform) -> do
+			showStartMessage startmsg
+			accountCommandAction startmsg $
+				performCommandAction' startmsg perform
 
-accountCommandAction :: CommandCleanup -> CommandCleanup
-accountCommandAction a = tryNonAsync a >>= \case
+accountCommandAction :: StartMessage -> CommandCleanup -> CommandCleanup
+accountCommandAction startmsg cleanup = tryNonAsync cleanup >>= \case
 	Right True -> return True
 	Right False -> incerr
 	Left err -> case fromException err of
 		Just exitcode -> liftIO $ exitWith exitcode
 		Nothing -> do
 			toplevelWarning True (show err)
-			implicitMessage showEndFail
+			showEndMessage startmsg False
 			incerr
   where
 	incerr = do
@@ -232,19 +237,23 @@ callCommandAction = fromMaybe True <$$> callCommandAction'
 {- Like callCommandAction, but returns Nothing when the command did not
  - perform any action. -}
 callCommandAction' :: CommandStart -> Annex (Maybe Bool)
-callCommandAction' a = callCommandActionQuiet a >>= \case
-	Nothing -> return Nothing
-	Just r -> implicitMessage (showEndResult r) >> return (Just r)
-
-callCommandActionQuiet :: CommandStart -> Annex (Maybe Bool)
-callCommandActionQuiet start =
+callCommandAction' start = 
 	start >>= \case
 		Nothing -> return Nothing
 		Just (startmsg, perform) -> do
 			showStartMessage startmsg
-			perform >>= \case
-				Nothing -> return (Just False)
-				Just cleanup -> Just <$> cleanup
+			Just <$> performCommandAction' startmsg perform
+
+performCommandAction' :: StartMessage -> CommandPerform -> CommandCleanup
+performCommandAction' startmsg perform = 
+	perform >>= \case
+		Nothing -> do
+			showEndMessage startmsg False
+			return False
+		Just cleanup -> do
+			r <- cleanup
+			showEndMessage startmsg r
+			return r
 
 {- Do concurrent output when that has been requested. -}
 allowConcurrentOutput :: Annex a -> Annex a

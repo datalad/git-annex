@@ -9,6 +9,7 @@ module Messages (
 	showStart,
 	showStart',
 	showStartMessage,
+	showEndMessage,
 	StartMessage(..),
 	ActionItem(..),
 	mkActionItem,
@@ -43,7 +44,6 @@ module Messages (
 	debugEnabled,
 	commandProgressDisabled,
 	outputMessage,
-	implicitMessage,
 	withMessageState,
 	prompt,
 ) where
@@ -97,13 +97,15 @@ showStartMessage (StartUsualMessages command ai) = do
 	outputType <$> Annex.getState Annex.output >>= \case
 		QuietOutput -> Annex.setOutput NormalOutput
 		_ -> noop
-	Annex.changeState $ \s -> s
-		{ Annex.output = (Annex.output s) { implicitMessages = True } }
 	showStartMessage (StartMessage command ai)
 showStartMessage (CustomOutput _) = do
 	Annex.setOutput QuietOutput
-	Annex.changeState $ \s -> s
-		{ Annex.output = (Annex.output s) { implicitMessages = False } }
+
+-- Only show end result if the StartMessage is one that gets displayed.
+showEndMessage :: StartMessage -> Bool -> Annex ()
+showEndMessage (StartMessage _ _) = showEndResult
+showEndMessage (StartUsualMessages _ _) = showEndResult
+showEndMessage (CustomOutput _) = const noop
 
 showNote :: String -> Annex ()
 showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "
@@ -274,12 +276,6 @@ commandProgressDisabled = withMessageState $ \s -> return $
 		QuietOutput -> True
 		JSONOutput _ -> True
 		NormalOutput -> concurrentOutputEnabled s
-
-{- Use to show a message that is displayed implicitly, and so might be
- - disabled when running a certian command that needs more control over its
- - output. -}
-implicitMessage :: Annex () -> Annex ()
-implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)
 
 {- Prevents any concurrent console access while running an action, so
  - that the action is the only thing using the console, and can eg prompt

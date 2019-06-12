@@ -35,7 +35,6 @@ data MessageState = MessageState
 	{ outputType :: OutputType
 	, concurrentOutputEnabled :: Bool
 	, sideActionBlock :: SideActionBlock
-	, implicitMessages :: Bool
 	, consoleRegion :: Maybe ConsoleRegion
 	, consoleRegionErrFlag :: Bool
 	, jsonBuffer :: Maybe Aeson.Object
@@ -49,7 +48,6 @@ newMessageState = do
 		{ outputType = NormalOutput
 		, concurrentOutputEnabled = False
 		, sideActionBlock = NoBlock
-		, implicitMessages = True 
 		, consoleRegion = Nothing
 		, consoleRegionErrFlag = False
 		, jsonBuffer = Nothing
