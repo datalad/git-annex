@@ -1,0 +1,3 @@
+What is the current status of v7 repositories?  What has been people's experience in using them?
+
+`git-annex` still defaults to v5, so it sounds like v7 is still in beta?
