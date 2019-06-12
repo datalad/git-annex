@@ -1,0 +1,12 @@
+Finished the refactoring that I had started on Thursday. This was only
+a partial success, because it didn't result in the speedup to -J that I had
+hoped for. The slow start with -J turns out to not be caused by concurrency
+overhead at all, but a bug,
+[[bugs/rsync_and_gcrypt_special_remotes_make_-J_slow]].
+
+What was successful is that I got rid of the oldest implementation wart in
+git-annex, the implicitMessages state. And, I made progress toward
+separately parallizing checksum verification.
+
+This refactoring is still cooking in the `starting` branch and will be
+merged after the next release.
