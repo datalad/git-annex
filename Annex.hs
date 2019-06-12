@@ -142,7 +142,7 @@ data AnnexState = AnnexState
 	, tempurls :: M.Map Key URLString
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
-	, workers :: TMVar (WorkerPool AnnexState)
+	, workers :: WorkerPool AnnexState
 	, activekeys :: TVar (M.Map Key ThreadId)
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
@@ -155,7 +155,6 @@ newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
 	emptyactiveremotes <- newMVar M.empty
 	emptyactivekeys <- newTVarIO M.empty
-	emptyworkerpool <- newTMVarIO UnallocatedWorkerPool
 	o <- newMessageState
 	sc <- newTMVarIO False
 	return $ AnnexState
@@ -200,7 +199,7 @@ newState c r = do
 		, tempurls = M.empty
 		, existinghooks = M.empty
 		, desktopnotify = mempty
-		, workers = emptyworkerpool
+		, workers = UnallocatedWorkerPool
 		, activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
 		, keysdbhandle = Nothing

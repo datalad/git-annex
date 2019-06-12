@@ -30,10 +30,6 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     security hole CVE-2018-10857 (except for configurations which enabled curl
     and bypassed public IP address restrictions). Now it will work
     if allowed by annex.security.allowed-ip-addresses.
-  * When running multiple concurrent actions, the cleanup phase is run
-    in a separate queue than the main action queue. This can make some
-    commands faster, because less time is spent on bookkeeping in
-    between each file transfer.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 
