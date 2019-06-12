@@ -21,7 +21,3 @@ are still some things that could be improved, tracked here:
   all that needs to be done is make checksum verification be done as the
   cleanup action. Currently, it's bundled into the same action that
   transfers content.
-
-* Using -J can sometimes lead to a slowdown while a rsync special remote
-  runs Remote.Rsync.rsyncTransport, which sets up a ssh connection to the
-  remote. This is done even when the remote is not used.
