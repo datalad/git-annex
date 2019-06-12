@@ -41,14 +41,21 @@ type CommandCleanup = Annex Bool
 {- Message that is displayed when starting to perform an action on
  - something. The String is typically the name of the command or action
  - being performed.
- -
- - CustomOutput prevents any start, end, or other implicit messages from
- - being displayed, letting a command output its own custom format.
  -}
 data StartMessage
 	= StartMessage String ActionItem
 	| StartUsualMessages String ActionItem
-	| CustomOutput
+	-- ^ Like StartMessage, but makes sure to enable usual message
+	-- display in case it was disabled by cmdnomessages.
+	| CustomOutput ActionItem
+	-- ^ Prevents any start, end, or other implicit messages from
+	-- being displayed, letting a command output its own custom format.
+	deriving (Show)
+
+instance MkActionItem StartMessage where
+	mkActionItem (StartMessage _ ai) = ai
+	mkActionItem (StartUsualMessages _ ai) = ai
+	mkActionItem (CustomOutput ai) = ai
 
 {- A command is defined by specifying these things. -}
 data Command = Command

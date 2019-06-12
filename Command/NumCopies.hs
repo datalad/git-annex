@@ -33,7 +33,7 @@ start [s] = case readish s of
 start _ = giveup "Specify a single number."
 
 startGet :: CommandStart
-startGet = startingCustomOutput $ next $ do
+startGet = startingCustomOutput (ActionItemOther Nothing) $ next $ do
 	v <- getGlobalNumCopies
 	case v of
 		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n

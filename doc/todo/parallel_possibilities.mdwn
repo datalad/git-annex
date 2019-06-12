@@ -22,18 +22,6 @@ are still some things that could be improved, tracked here:
   cleanup action. Currently, it's bundled into the same action that
   transfers content.
 
-* onlyActionOn collapses the cleanup action into the start action,
-  and so prevents use of the separate cleanup queue.
-
-* Don't parallelize start stage actions. They are supposed to run fast,
-  and often a huge number of them don't print out anything. The overhead of
-  bookkeeping for parallizing those swamps the benefit of parallelizing by
-  what seems to be a large degree. Compare `git annex get` in a directory
-  where the first several thousand files are already present with and
-  without -J.
-  
-  Only once the start stage has decided
-  something needs to be done should a job be started up.
-
-  This probably needs display of any output to be moved out of the start
-  stage, because no console region will be allocated for it.
+* Using -J can sometimes lead to a slowdown while a rsync special remote
+  runs Remote.Rsync.rsyncTransport, which sets up a ssh connection to the
+  remote. This is done even when the remote is not used.

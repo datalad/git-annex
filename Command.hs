@@ -84,8 +84,8 @@ startingUsualMessages msg t a = next (StartUsualMessages msg (mkActionItem t), a
 
 {- For commands that do not display usual start or end messages, 
  - but have some other custom output. -}
-startingCustomOutput :: CommandPerform -> CommandStart
-startingCustomOutput a = next (CustomOutput, a)
+startingCustomOutput :: MkActionItem t => t -> CommandPerform -> CommandStart
+startingCustomOutput t a = next (CustomOutput (mkActionItem t), a)
 
 {- For perform stage to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)

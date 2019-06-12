@@ -279,7 +279,8 @@ seekRemote remote branch msubdir = do
 				, ". Re-run command to resume import."
 				]
 			Just imported -> void $
-				includeCommandAction $ commitimport imported
+				includeCommandAction $ 
+					commitimport imported
   where
 	importmessage = "import from " ++ Remote.name remote
 

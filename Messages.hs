@@ -92,6 +92,7 @@ showStartMessage (StartMessage command ai) = case ai of
 	ActionItemFailedTransfer t _ -> showStartKey command (transferKey t) ai
 	ActionItemWorkTreeFile file -> showStart command file
 	ActionItemOther msg -> showStart' command msg
+	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai')
 showStartMessage (StartUsualMessages command ai) = do
 	outputType <$> Annex.getState Annex.output >>= \case
 		QuietOutput -> Annex.setOutput NormalOutput
@@ -99,7 +100,7 @@ showStartMessage (StartUsualMessages command ai) = do
 	Annex.changeState $ \s -> s
 		{ Annex.output = (Annex.output s) { implicitMessages = True } }
 	showStartMessage (StartMessage command ai)
-showStartMessage CustomOutput = do
+showStartMessage (CustomOutput _) = do
 	Annex.setOutput QuietOutput
 	Annex.changeState $ \s -> s
 		{ Annex.output = (Annex.output s) { implicitMessages = False } }

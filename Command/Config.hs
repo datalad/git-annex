@@ -59,7 +59,7 @@ seek (UnsetConfig name) = commandAction $
 		unsetConfig (ConfigKey name)
 		next $ return True
 seek (GetConfig name) = commandAction $
-	startingCustomOutput $ do
+	startingCustomOutput (ActionItemOther Nothing) $ do
 		getGlobalConfig name >>= \case
 			Nothing -> return ()
 			Just v -> liftIO $ putStrLn v

@@ -22,6 +22,10 @@ data ActionItem
 	| ActionItemFailedTransfer Transfer TransferInfo
 	| ActionItemWorkTreeFile FilePath
 	| ActionItemOther (Maybe String)
+	-- Use to avoid more than one thread concurrently processing the
+	-- same Key.
+	| OnlyActionOn Key ActionItem
+	deriving (Show, Eq)
 
 class MkActionItem t where
 	mkActionItem :: t -> ActionItem
@@ -60,6 +64,7 @@ actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
 actionItemDesc (ActionItemWorkTreeFile f) = f
 actionItemDesc (ActionItemOther s) = fromMaybe "" s
+actionItemDesc (OnlyActionOn _ ai) = actionItemDesc ai
 
 actionItemKey :: ActionItem -> Maybe Key
 actionItemKey (ActionItemAssociatedFile _ k) = Just k
@@ -68,13 +73,16 @@ actionItemKey (ActionItemBranchFilePath _ k) = Just k
 actionItemKey (ActionItemFailedTransfer t _) = Just (transferKey t)
 actionItemKey (ActionItemWorkTreeFile _) = Nothing
 actionItemKey (ActionItemOther _) = Nothing
+actionItemKey (OnlyActionOn _ ai) = actionItemKey ai
 
 actionItemWorkTreeFile :: ActionItem -> Maybe FilePath
 actionItemWorkTreeFile (ActionItemAssociatedFile (AssociatedFile af) _) = af
 actionItemWorkTreeFile (ActionItemWorkTreeFile f) = Just f
+actionItemWorkTreeFile (OnlyActionOn _ ai) = actionItemWorkTreeFile ai
 actionItemWorkTreeFile _ = Nothing
 
 actionItemTransferDirection :: ActionItem -> Maybe Direction
 actionItemTransferDirection (ActionItemFailedTransfer t _) = Just $
 	transferDirection t
+actionItemTransferDirection (OnlyActionOn _ ai) = actionItemTransferDirection ai
 actionItemTransferDirection _ = Nothing

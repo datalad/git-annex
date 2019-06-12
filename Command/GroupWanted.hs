@@ -22,7 +22,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start (g:[]) = startingCustomOutput $
+start (g:[]) = startingCustomOutput (ActionItemOther Nothing) $
 	performGet groupPreferredContentMapRaw (toGroup g)
 start (g:expr:[]) = startingUsualMessages "groupwanted" (ActionItemOther (Just g)) $
 	performSet groupPreferredContentSet expr (toGroup g)

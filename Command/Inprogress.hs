@@ -48,7 +48,7 @@ start s _file k
 	| otherwise = stop
 
 start' :: Key -> CommandStart
-start' k = startingCustomOutput $ do
+start' k = startingCustomOutput k $ do
 	tmpf <- fromRepo $ gitAnnexTmpObjectLocation k
 	whenM (liftIO $ doesFileExist tmpf) $
 		liftIO $ putStrLn tmpf

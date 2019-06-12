@@ -34,6 +34,10 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     in a separate queue than the main action queue. This can make some
     commands faster, because less time is spent on bookkeeping in
     between each file transfer.
+  * When a command like git-annex get skips over a lot of files
+    that it does not need to do anything with, the -J switch used to slow
+    it down significantly due to unncessary concurrenty overhead.
+    That slowdown has been fixed.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
 

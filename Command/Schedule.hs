@@ -27,7 +27,7 @@ start = parse
   where
 	parse (name:[]) = do
 		u <- Remote.nameToUUID name
-		startingCustomOutput $
+		startingCustomOutput (ActionItemOther Nothing) $
 			performGet u
 	parse (name:expr:[]) = do
 		u <- Remote.nameToUUID name

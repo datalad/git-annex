@@ -27,7 +27,7 @@ seek [u] = commandAction $ start $ toUUID u
 seek _ = giveup "missing UUID parameter"
 
 start :: UUID -> CommandStart
-start theiruuid = startingCustomOutput $ do
+start theiruuid = startingCustomOutput (ActionItemOther Nothing) $ do
 	servermode <- liftIO $ do
 		ro <- Checks.checkEnvSet Checks.readOnlyEnv
 		ao <- Checks.checkEnvSet Checks.appendOnlyEnv

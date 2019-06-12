@@ -99,7 +99,7 @@ start c o file k = startKeys c o (k, mkActionItem (k, afile))
 
 startKeys :: VectorClock -> MetaDataOptions -> (Key, ActionItem) -> CommandStart
 startKeys c o (k, ai) = case getSet o of
-	Get f -> startingCustomOutput $ do
+	Get f -> startingCustomOutput k $ do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
 			B8.putStrLn . fromMetaValue

@@ -108,8 +108,9 @@ toStart' dest removewhen afile key ai = do
 			)
 		else go False (Remote.hasKey dest key)
   where
-	go fastcheck isthere = starting (describeMoveAction removewhen) ai $
-		toPerform dest removewhen key afile fastcheck =<< isthere
+	go fastcheck isthere =
+		starting (describeMoveAction removewhen) (OnlyActionOn key ai) $
+			toPerform dest removewhen key afile fastcheck =<< isthere
 
 expectedPresent :: Remote -> Key -> Annex Bool
 expectedPresent dest key = do
@@ -182,7 +183,7 @@ fromStart removewhen afile key ai src = case removewhen of
 	RemoveSafe -> go
   where
 	go = stopUnless (fromOk src key) $
-		starting (describeMoveAction removewhen) ai $
+		starting (describeMoveAction removewhen) (OnlyActionOn key ai) $
 			fromPerform src removewhen key afile
 
 fromOk :: Remote -> Key -> Annex Bool
@@ -246,13 +247,13 @@ toHereStart removewhen afile key ai = case removewhen of
 	RemoveNever -> stopUnless (not <$> inAnnex key) go
 	RemoveSafe -> go
   where
-	go = do
+	go = startingCustomOutput (OnlyActionOn key ai) $ do
 		rs <- Remote.keyPossibilities key
 		forM_ rs $ \r ->
 			includeCommandAction $
 				starting (describeMoveAction removewhen) ai $
 					fromPerform r removewhen key afile
-		stop
+		next $ return True
 
 {- The goal of this command is to allow the user maximum freedom to move
  - files as they like, while avoiding making bad situations any worse

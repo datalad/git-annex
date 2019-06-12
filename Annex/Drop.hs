@@ -47,8 +47,8 @@ type Reason = String
  - In direct mode, all associated files are checked, and only if all
  - of them are unwanted are they dropped.
  -
- - The runner is used to run commands, and so can be either callCommand
- - or commandAction.
+ - The runner is used to run CommandStart sequentially, it's typically 
+ - callCommandAction.
  -}
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
 handleDropsFrom locs rs reason fromhere key afile preverified runner = do

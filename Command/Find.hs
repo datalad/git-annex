@@ -66,7 +66,7 @@ seek o = case batchOption o of
 start :: FindOptions -> FilePath -> Key -> CommandStart
 start o file key =
 	stopUnless (limited <||> inAnnex key) $
-		startingCustomOutput $ do
+		startingCustomOutput key $ do
 			showFormatted (formatOption o) file $ ("file", file) : keyVars key
 			next $ return True
 

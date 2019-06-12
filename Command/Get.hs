@@ -71,7 +71,7 @@ start' expensivecheck from key afile ai =
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src Command.Move.RemoveNever key afile
   where
-	go = starting "get" ai
+	go = starting "get" (OnlyActionOn key ai)
 
 perform :: Key -> AssociatedFile -> CommandPerform
 perform key afile = stopUnless (getKey key afile) $

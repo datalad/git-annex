@@ -626,10 +626,14 @@ seekSyncContent o rs currbranch = do
 	
 	gokey mvar bloom (k, _) = go (Left bloom) mvar (AssociatedFile Nothing) k
 
-	go ebloom mvar af k = commandAction $ do
-		whenM (syncFile ebloom rs af k) $
-			void $ liftIO $ tryPutMVar mvar ()
-		return Nothing
+	go ebloom mvar af k = do
+		-- Run syncFile as a command action so file transfers run
+		-- concurrently.
+		let ai = OnlyActionOn k (ActionItemKey k)
+		commandAction $ startingCustomOutput ai $ do
+			whenM (syncFile ebloom rs af k) $
+				void $ liftIO $ tryPutMVar mvar ()
+			next $ return True
 
 {- If it's preferred content, and we don't have it, get it from one of the
  - listed remotes (preferring the cheaper earlier ones).
@@ -645,7 +649,7 @@ seekSyncContent o rs currbranch = do
  - Returns True if any file transfers were made.
  -}
 syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
-syncFile ebloom rs af k = onlyActionOn' k $ do
+syncFile ebloom rs af k = do
 	inhere <- inAnnex k
 	locs <- map Remote.uuid <$> Remote.keyPossibilities k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs

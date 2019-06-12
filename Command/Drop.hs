@@ -91,12 +91,12 @@ startKeys o (key, ai) = start' o key (AssociatedFile Nothing) ai
 startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
 startLocal afile ai numcopies key preverified =
 	stopUnless (inAnnex key) $
-		starting "drop" ai $
+		starting "drop" (OnlyActionOn key ai) $
 			performLocal key afile numcopies preverified
 
 startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile ai numcopies key remote = 
-	starting ("drop " ++ Remote.name remote) ai $
+	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) $
 		performRemote key afile numcopies remote
 
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform

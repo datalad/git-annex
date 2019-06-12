@@ -28,7 +28,7 @@ start (name:g:[]) = do
 		setGroup u (toGroup g)
 start (name:[]) = do
 	u <- Remote.nameToUUID name
-	startingCustomOutput $ do
+	startingCustomOutput (ActionItemOther Nothing) $ do
 		liftIO . putStrLn . unwords . map fmt . S.toList
 			=<< lookupGroups u
 		next $ return True

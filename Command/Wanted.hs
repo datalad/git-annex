@@ -34,7 +34,7 @@ cmd' name desc getter setter = noMessages $
 
 	start (rname:[]) = do
 		u <- Remote.nameToUUID rname
-		startingCustomOutput $
+		startingCustomOutput (ActionItemOther Nothing) $
 			performGet getter u
 	start (rname:expr:[]) = do
 		u <- Remote.nameToUUID rname
