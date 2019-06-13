@@ -110,15 +110,18 @@ gen r u c gc = do
 		-- Rsync displays its own progress.
 		{ displayProgress = False }
 
-genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> [CommandParam] -> RsyncUrl -> RsyncOpts
+genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts
 genRsyncOpts c gc transport url = RsyncOpts
 	{ rsyncUrl = url
-	, rsyncOptions = transport ++ opts []
-	, rsyncUploadOptions = transport ++ opts (remoteAnnexRsyncUploadOptions gc)
-	, rsyncDownloadOptions = transport ++ opts (remoteAnnexRsyncDownloadOptions gc)
+	, rsyncOptions = appendtransport $ opts []
+	, rsyncUploadOptions = appendtransport $
+		opts (remoteAnnexRsyncUploadOptions gc)
+	, rsyncDownloadOptions = appendtransport $
+		opts (remoteAnnexRsyncDownloadOptions gc)
 	, rsyncShellEscape = (yesNo =<< M.lookup "shellescape" c) /= Just False
 	}
   where
+	appendtransport l = (++ l) <$> transport
 	opts specificopts = map Param $ filter safe $
 		remoteAnnexRsyncOptions gc ++ specificopts
 	safe opt
@@ -129,23 +132,23 @@ genRsyncOpts c gc transport url = RsyncOpts
 		| opt == "--delete-excluded" = False
 		| otherwise = True
 
-rsyncTransport :: RemoteGitConfig -> RsyncUrl -> Annex ([CommandParam], RsyncUrl)
+rsyncTransport :: RemoteGitConfig -> RsyncUrl -> Annex (Annex [CommandParam], RsyncUrl)
 rsyncTransport gc url
 	| rsyncUrlIsShell url =
-		(\rsh -> return (rsyncShell rsh, url)) =<<
+		(\transport -> return (rsyncShell <$> transport, url)) =<<
 		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
 			"ssh":sshopts -> do
 				let (port, sshopts') = sshReadPort sshopts
 				    userhost = either error id $ mkSshHost $ 
 				    	takeWhile (/= ':') url
-				(Param "ssh":) <$> sshOptions ConsumeStdin
+				return $ (Param "ssh":) <$> sshOptions ConsumeStdin
 					(userhost, port) gc
 					(map Param $ loginopt ++ sshopts')
-			"rsh":rshopts -> return $ map Param $ "rsh" :
+			"rsh":rshopts -> return $ pure $ map Param $ "rsh" :
 				loginopt ++ rshopts
 			rsh -> giveup $ "Unknown Rsync transport: "
 				++ unwords rsh
-	| otherwise = return ([], url)
+	| otherwise = return (pure [], url)
   where
 	login = case separate (=='@') url of
 		(_h, "") -> Nothing
@@ -232,9 +235,10 @@ remove o k = removeGeneric o includes
 removeGeneric :: RsyncOpts -> [String] -> Annex Bool
 removeGeneric o includes = do
 	ps <- sendParams
+	opts <- rsyncOptions o
 	withRsyncScratchDir $ \tmp -> liftIO $ do
 		{- Send an empty directory to rysnc to make it delete. -}
-		rsync $ rsyncOptions o ++ ps ++
+		rsync $ opts ++ ps ++
 			map (\s -> Param $ "--include=" ++ s) includes ++
 			[ Param "--exclude=*" -- exclude everything else
 			, Param "--quiet", Param "--delete", Param "--recursive"
@@ -249,14 +253,14 @@ checkKey r o k = do
 	checkPresentGeneric o (rsyncUrls o k)
 
 checkPresentGeneric :: RsyncOpts -> [RsyncUrl] -> Annex Bool
-checkPresentGeneric o rsyncurls =
+checkPresentGeneric o rsyncurls = do
+	opts <- rsyncOptions o
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
 	untilTrue rsyncurls $ \u -> 
 		liftIO $ catchBoolIO $ do
 			withQuietOutput createProcessSuccess $
-				proc "rsync" $ toCommand $
-					rsyncOptions o ++ [Param u]
+				proc "rsync" $ toCommand $ opts ++ [Param u]
 			return True
 
 storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
@@ -341,13 +345,14 @@ showResumable a = ifM a
 rsyncRemote :: Direction -> RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncRemote direction o m params = do
 	showOutput -- make way for progress bar
+	opts <- mkopts
+	let ps = opts ++ Param "--progress" : params
 	case m of
 		Nothing -> liftIO $ rsync ps
 		Just meter -> do
 			oh <- mkOutputHandler
 			liftIO $ rsyncProgress oh meter ps
   where
-	ps = opts ++ Param "--progress" : params
-	opts
+	mkopts
 		| direction == Download = rsyncDownloadOptions o
 		| otherwise = rsyncUploadOptions o

@@ -25,9 +25,9 @@ type RsyncUrl = String
 
 data RsyncOpts = RsyncOpts
 	{ rsyncUrl :: RsyncUrl
-	, rsyncOptions :: [CommandParam]
-	, rsyncUploadOptions :: [CommandParam]
-	, rsyncDownloadOptions :: [CommandParam]
+	, rsyncOptions :: Annex [CommandParam]
+	, rsyncUploadOptions :: Annex [CommandParam]
+	, rsyncDownloadOptions :: Annex [CommandParam]
 	, rsyncShellEscape :: Bool
 }
 

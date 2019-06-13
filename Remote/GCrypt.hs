@@ -150,12 +150,12 @@ gen' r u c gc = do
 			{ displayProgress = False }
 		| otherwise = specialRemoteCfg c
 
-rsyncTransportToObjects :: Git.Repo -> RemoteGitConfig -> Annex ([CommandParam], String)
+rsyncTransportToObjects :: Git.Repo -> RemoteGitConfig -> Annex (Annex [CommandParam], String)
 rsyncTransportToObjects r gc = do
 	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
 	return (rsynctransport, rsyncurl ++ "/annex/objects")
 
-rsyncTransport :: Git.Repo -> RemoteGitConfig -> Annex ([CommandParam], String, AccessMethod)
+rsyncTransport :: Git.Repo -> RemoteGitConfig -> Annex (Annex [CommandParam], String, AccessMethod)
 rsyncTransport r gc
 	| "ssh://" `isPrefixOf` loc = sshtransport $ break (== '/') $ drop (length "ssh://") loc
 	| "//:" `isInfixOf` loc = othertransport
@@ -168,9 +168,10 @@ rsyncTransport r gc
 			then drop 3 path
 			else path
 		let sshhost = either error id (mkSshHost host)
-		opts <- sshOptions ConsumeStdin (sshhost, Nothing) gc []
-		return (rsyncShell $ Param "ssh" : opts, fromSshHost sshhost ++ ":" ++ rsyncpath, AccessShell)
-	othertransport = return ([], loc, AccessDirect)
+		let mkopts = rsyncShell . (Param "ssh" :) 
+			<$> sshOptions ConsumeStdin (sshhost, Nothing) gc []
+		return (mkopts, fromSshHost sshhost ++ ":" ++ rsyncpath, AccessShell)
+	othertransport = return (pure [], loc, AccessDirect)
 
 noCrypto :: Annex a
 noCrypto = giveup "cannot use gcrypt remote without encryption enabled"
@@ -263,14 +264,15 @@ setupRepo gcryptid r
 		dummycfg <- liftIO dummyRemoteGitConfig
 		(rsynctransport, rsyncurl, _) <- rsyncTransport r dummycfg
 		let tmpconfig = tmp </> "config"
-		void $ liftIO $ rsync $ rsynctransport ++
+		opts <- rsynctransport
+		void $ liftIO $ rsync $ opts ++
 			[ Param $ rsyncurl ++ "/config"
 			, Param tmpconfig
 			]
 		liftIO $ do
 			void $ Git.Config.changeFile tmpconfig coreGCryptId gcryptid
 			void $ Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig False)
-		ok <- liftIO $ rsync $ rsynctransport ++
+		ok <- liftIO $ rsync $ opts ++
 			[ Param "--recursive"
 			, Param $ tmp ++ "/"
 			, Param rsyncurl
@@ -456,9 +458,10 @@ getGCryptId fast r gc
 getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, String))
 getConfigViaRsync r gc = do
 	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
+	opts <- rsynctransport
 	liftIO $ do
 		withTmpFile "tmpconfig" $ \tmpconfig _ -> do
-			void $ rsync $ rsynctransport ++
+			void $ rsync $ opts ++
 				[ Param $ rsyncurl ++ "/config"
 				, Param tmpconfig
 				]
