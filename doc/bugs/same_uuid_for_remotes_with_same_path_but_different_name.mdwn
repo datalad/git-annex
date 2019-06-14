@@ -1,0 +1,188 @@
+### Please describe the problem.
+As a result of the steps below git-annex end up in a state with multiple remotes (pointing to a USB). The crux is that each has a different name, but same UUID and same path. 
+
+All, except one of the remotes is marked as dead. During sync git-annex tries to sync to all of them, and quite surprisingly appears to be successfull. 
+
+The core problem I guess is that git-annex mistakes one remote for another.
+
+I was just experimenting with git-annex, but I think this could happen for real. You put stuff on a usb, you loose the usb, you mark the usb remote as dead, time passes, you put stuff on a different usb and type the same remote name. Bang, it gets the same UUID.
+
+Not knowing much about git-annex it seems that it generates the UUID before checking for name clash and renaming?
+
+### What steps will reproduce the problem?
+Init ~/annex with CLI. (I had version 7, but probably bug on 5 too). Then add an example file, in my case "The Rust Programming Language.pdf". Finally mount usb drive at /mnt/usb.
+
+    - 1) Start git-annex-webapp.
+    - 2) Create an unencrypted usb remote using the webapp. In my case its name was "smallusb".
+    - 3) Sync files to the drive. Verify all is ok.
+    - 4) Imitate drive loss. Delete annex folder on usb drive: rm -rf /mnt/usb/annex
+    - 5) Imitate drive loss. Change to ~/annex and mark smallusb (or smallusb1, smallusb2) as dead.
+    - 6) Stop git-annex-webapp.
+
+Repeat the steps 1-6 at least 2 times in a loop :)
+git-annex appends a number to smallusb, hence the "(or smallusb1, smallusb2)".
+
+### What version of git-annex are you using? On what operating system?
+Arch Linux, version 7.20190504-gf98e97669 downloaded as a binary from git-annex website.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+-- .git/annex/daemon.log
+[2019-06-14 06:02:25.999232228] main: starting assistant version 7.20190504-gf98e97669
+[2019-06-14 06:02:26.023575476] Cronner: You should enable consistency checking to protect your data. 
+[2019-06-14 06:02:26.058871795] read: git ["config","--null","--list"]
+[2019-06-14 06:02:26.064856922] process done ExitSuccess
+[2019-06-14 06:02:26.065157988] Tor hidden service not enabled
+(scanning...) [2019-06-14 06:02:26.136886408] Watcher: Performing startup scan
+(started...) 
+gpg: assuming signed data in '/tmp/git-annex.tmpxo2fXm/info'
+gpg: Signature made Wed 08 May 2019 01:26:23 AM MSK
+gpg:                using DSA key 40055C6AFD2D526B2961E78F5EE1DBA789C809CB
+gpg: /tmp/git-annex-gpg.tmp28lKKy/trustdb.gpg: trustdb created
+gpg: Good signature from "git-annex distribution signing key (for Joey Hess) <id@joeyh.name>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 4005 5C6A FD2D 526B 2961  E78F 5EE1 DBA7 89C8 09CB
+gcrypt: Repository not found: /mnt/usb/annex7
+(recording state in git...)
+warning: no common commits
+From /mnt/usb/annex7
+ * [new branch]      git-annex  -> usb/git-annex
+(merging usb/git-annex into git-annex...)
+(recording state in git...)
+[2019-06-14 06:02:45.460756129] main: Syncing with usb 
+To /mnt/usb/annex7
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+[2019-06-14 06:02:45.731237811] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2019-06-14 06:02:45.736487217] process done ExitSuccess
+[2019-06-14 06:02:45.736545194] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2019-06-14 06:02:45.741412826] process done ExitSuccess
+[2019-06-14 06:02:45.741780286] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..c19630d0a5366076f7da95a2a5fa2e3cfc51445e","--pretty=%H","-n1"]
+[2019-06-14 06:02:45.74683984] process done ExitSuccess
+[2019-06-14 06:02:45.746899694] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..874014cc02ad2383e612a5a200691adfb279fab6","--pretty=%H","-n1"]
+[2019-06-14 06:02:45.751857523] process done ExitSuccess
+[2019-06-14 06:02:45.752059154] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2019-06-14 06:02:45.755772389] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2019-06-14 06:02:45.760705559] read: git ["config","--null","--list"]
+[2019-06-14 06:02:45.766315456] process done ExitSuccess
+[2019-06-14 06:02:45.766455838] read: git ["config","--null","--list"]
+[2019-06-14 06:02:45.771340045] process done ExitSuccess
+[2019-06-14 06:02:45.77170679] read: git ["config","--null","--list"]
+[2019-06-14 06:02:45.776625026] process done ExitSuccess
+[2019-06-14 06:02:45.776753592] read: git ["config","--null","--list"]
+[2019-06-14 06:02:45.782541882] process done ExitSuccess
+
+[2019-06-14 06:02:45.784051825] read: rsync ["--progress","--inplace","--perms",".git/annex/objects/XV/v2/SHA256E-s11122109--bbf1b9a6d9bc3be5515e3114aea5a7cf7a93ea406bbe53cf37eef81ba578b73f.pdf/SHA256E-s11122109--bbf1b9a6d9bc3be5515e3114aea5a7cf7a93ea406bbe53cf37eef81ba578b73f.pdf","../../../mnt/usb/annex7/annex/tmp/SHA256E-s11122109--bbf1b9a6d9bc3be5515e3114aea5a7cf7a93ea406bbe53cf37eef81ba578b73f.pdf"]
+SHA256E-s11122109--bbf1b9a6d9bc3be5515e3114aea5a7cf7a93ea406bbe53cf37eef81ba578b73f.pdf
+     11,122,109 100%  480.71MB/s    0:00:00 (xfr#1, to-chk=0/1)
+[2019-06-14 06:02:46.647226687] process done ExitSuccess
+(checksum...) [2019-06-14 06:02:46.732000864] chat: git ["--git-dir=../../../mnt/usb/annex7","--literal-pathspecs","--literal-pathspecs","cat-file","--batch"]
+[2019-06-14 06:02:46.732316108] chat: git ["--git-dir=../../../mnt/usb/annex7","--literal-pathspecs","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2019-06-14 06:02:46.737658146] process done ExitSuccess
+[2019-06-14 06:02:46.737894862] process done ExitSuccess
+[2019-06-14 06:02:46.738498152] Transferrer: Uploaded The Rust ..guage.pdf
+[2019-06-14 06:02:46.739276009] Pusher: Syncing with usb, smallusb2, smallusb1, smallusb 
+(recording state in git...)
+remote: error: cannot lock ref 'refs/heads/synced/git-annex': is at bb6dbcca16e11c47a129063b29fc26e1af0b6529 but expected c19630d0a5366076f7da95a2a5fa2e3cfc51445e        
+remote: error: cannot lock ref 'refs/heads/synced/git-annex': is at bb6dbcca16e11c47a129063b29fc26e1af0b6529 but expected c19630d0a5366076f7da95a2a5fa2e3cfc51445e        
+remote: error: cannot lock ref 'refs/heads/synced/git-annex': is at bb6dbcca16e11c47a129063b29fc26e1af0b6529 but expected c19630d0a5366076f7da95a2a5fa2e3cfc51445e        
+To /mnt/usb/annex7
+   c19630d..bb6dbcc  git-annex -> synced/git-annex
+To /mnt/usb/annex7
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+error: failed to push some refs to '/mnt/usb/annex7'
+To /mnt/usb/annex7
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+error: failed to push some refs to '/mnt/usb/annex7'
+To /mnt/usb/annex7
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+error: failed to push some refs to '/mnt/usb/annex7'
+From /mnt/usb/annex7
+   874014c..bb6dbcc  synced/git-annex -> smallusb2/synced/git-annex
+From /mnt/usb/annex7
+   874014c..bb6dbcc  git-annex        -> smallusb1/git-annex
+   874014c..bb6dbcc  synced/git-annex -> smallusb1/synced/git-annex
+From /mnt/usb/annex7
+   874014c..bb6dbcc  git-annex        -> smallusb/git-annex
+   874014c..bb6dbcc  synced/git-annex -> smallusb/synced/git-annex
+Everything up-to-date
+Everything up-to-date
+Everything up-to-date
+[2019-06-14 06:03:26.105979618] Pusher: Syncing with smallusb3, smallusb2, smallusb1, smallusb 
+(recording state in git...)
+remote: error: cannot lock ref 'refs/heads/synced/git-annex': is at 63d983955552f44ad51550dd017da9d3e089bb37 but expected bb6dbcca16e11c47a129063b29fc26e1af0b6529        
+remote: error: cannot lock ref 'refs/heads/synced/git-annex': is at 63d983955552f44ad51550dd017da9d3e089bb37 but expected bb6dbcca16e11c47a129063b29fc26e1af0b6529        
+remote: error: cannot lock ref 'refs/heads/synced/git-annex': is at 63d983955552f44ad51550dd017da9d3e089bb37 but expected bb6dbcca16e11c47a129063b29fc26e1af0b6529        
+To /mnt/usb/annex7
+   bb6dbcc..63d9839  git-annex -> synced/git-annex
+To /mnt/usb/annex7
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+error: failed to push some refs to '/mnt/usb/annex7'
+To /mnt/usb/annex7
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+error: failed to push some refs to '/mnt/usb/annex7'
+To /mnt/usb/annex7
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+error: failed to push some refs to '/mnt/usb/annex7'
+From /mnt/usb/annex7
+   c19630d..63d9839  git-annex        -> smallusb3/git-annex
+   bb6dbcc..63d9839  synced/git-annex -> smallusb3/synced/git-annex
+From /mnt/usb/annex7
+   bb6dbcc..63d9839  git-annex        -> smallusb2/git-annex
+   bb6dbcc..63d9839  synced/git-annex -> smallusb2/synced/git-annex
+From /mnt/usb/annex7
+   bb6dbcc..63d9839  git-annex        -> smallusb1/git-annex
+   bb6dbcc..63d9839  synced/git-annex -> smallusb1/synced/git-annex
+Everything up-to-date
+Everything up-to-date
+Everything up-to-date
+[2019-06-14 06:04:26.120035368] Pusher: Syncing with smallusb3, smallusb2, smallusb1, smallusb 
+Everything up-to-date
+Everything up-to-date
+Everything up-to-date
+Everything up-to-date
+
+
+-- .git/config
+
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = 2517eda3-c212-486e-a3a8-ffc085b842ba
+	version = 7
+	diskreserve = 1 megabyte
+	autoupgrade = ask
+	debug = true
+[filter "annex"]
+	smudge = git-annex smudge -- %f
+	clean = git-annex smudge --clean -- %f
+[remote "smallusb"]
+	url = /mnt/usb/annex7
+	annex-uuid = c52d9a9f-9362-4698-bb1b-fee40779de4c
+	fetch = +refs/heads/*:refs/remotes/smallusb/*
+[remote "smallusb1"]
+	url = /mnt/usb/annex7
+	annex-uuid = c52d9a9f-9362-4698-bb1b-fee40779de4c
+	fetch = +refs/heads/*:refs/remotes/smallusb1/*
+[remote "smallusb2"]
+	url = /mnt/usb/annex7
+	annex-uuid = c52d9a9f-9362-4698-bb1b-fee40779de4c
+	fetch = +refs/heads/*:refs/remotes/smallusb2/*
+[remote "smallusb3"]
+	url = /mnt/usb/annex7
+	annex-uuid = c52d9a9f-9362-4698-bb1b-fee40779de4c
+	fetch = +refs/heads/*:refs/remotes/smallusb3/*
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I think this is genius software and just love the docs, the effort put into it shines through! :)
