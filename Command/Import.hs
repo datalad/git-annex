@@ -117,9 +117,8 @@ seek o@(RemoteImportOptions {}) = allowConcurrentOutput $ do
 startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 startLocal largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
-		( do
-			showStart "import" destfile
-			next pickaction
+		( starting "import" (ActionItemWorkTreeFile destfile)
+			pickaction
 		, stop
 		)
   where
@@ -280,7 +279,8 @@ seekRemote remote branch msubdir = do
 				, ". Re-run command to resume import."
 				]
 			Just imported -> void $
-				includeCommandAction $ commitimport imported
+				includeCommandAction $ 
+					commitimport imported
   where
 	importmessage = "import from " ++ Remote.name remote
 
@@ -289,9 +289,8 @@ seekRemote remote branch msubdir = do
 	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
 
 listContents :: Remote -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
-listContents remote tvar = do
-	showStart' "list" (Just (Remote.name remote))
-	next $ listImportableContents remote >>= \case
+listContents remote tvar = starting "list" (ActionItemOther (Just (Remote.name remote))) $
+	listImportableContents remote >>= \case
 		Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
 		Just importable -> do
 			importable' <- makeImportMatcher remote >>= \case
@@ -302,9 +301,8 @@ listContents remote tvar = do
 				return True
 
 commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents Key -> CommandStart
-commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable = do
-	showStart' "update" (Just $ fromRef $ fromRemoteTrackingBranch tb)
-	next $ do
+commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable =
+	starting "update" (ActionItemOther (Just $ fromRef $ fromRemoteTrackingBranch tb)) $ do
 		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
 		next $ updateremotetrackingbranch importcommit
 		

@@ -45,9 +45,9 @@ seek :: TransferKeyOptions -> CommandSeek
 seek o = withKeys (commandAction . start o) (keyOptions o)
 
 start :: TransferKeyOptions -> Key -> CommandStart
-start o key = case fromToOptions o of
-	ToRemote dest -> next $ toPerform key (fileOption o) =<< getParsed dest
-	FromRemote src -> next $ fromPerform key (fileOption o) =<< getParsed src
+start o key = startingCustomOutput key $ case fromToOptions o of
+	ToRemote dest -> toPerform key (fileOption o) =<< getParsed dest
+	FromRemote src -> fromPerform key (fileOption o) =<< getParsed src
 
 toPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 toPerform key file remote = go Upload file $

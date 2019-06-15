@@ -40,7 +40,7 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing (commandAction start)
 
 start :: CommandStart
-start = do
+start = startingNoMessage (ActionItemOther Nothing) $ do
 	rs <- combineSame <$> (spider =<< gitRepo)
 
 	umap <- uuidDescMap
@@ -49,7 +49,7 @@ start = do
 	file <- (</>) <$> fromRepo gitAnnexDir <*> pure "map.dot"
 
 	liftIO $ writeFile file (drawMap rs trustmap umap)
-	next $ next $
+	next $
 		ifM (Annex.getState Annex.fast)
 			( runViewer file []
 			, runViewer file

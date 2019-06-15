@@ -37,11 +37,10 @@ seek ps = withFilesInGit (commandAction . whenAnnexed start) =<< workTreeItems p
  - to a pointer. -}
 start :: FilePath -> Key -> CommandStart
 start file key = ifM (isJust <$> isAnnexLink file)
-	( do
-		showStart "unlock" file
+	( starting "unlock" (mkActionItem (key, AssociatedFile (Just file))) $
 		ifM versionSupportsUnlockedPointers
-			( next $ performNew file key
-			, startOld file key
+			( performNew file key
+			, performOld file key
 			)
 	, stop
 	)
@@ -67,22 +66,22 @@ cleanupNew dest key destmode = do
 	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 	return True
 
-startOld :: FilePath -> Key -> CommandStart
-startOld file key = 
+performOld :: FilePath -> Key -> CommandPerform
+performOld file key = 
 	ifM (inAnnex key)
 		( ifM (isJust <$> catKeyFileHEAD file)
-			( next $ performOld file key
+			( performOld' file key
 			, do
 				warning "this has not yet been committed to git; cannot unlock it"
-				next $ next $ return False
+				next $ return False
 			)
 		, do
 			warning "content not present; cannot unlock"
-			next $ next $ return False
+			next $ return False
 		)
 
-performOld :: FilePath -> Key -> CommandPerform
-performOld dest key = ifM (checkDiskSpace Nothing key 0 True)
+performOld' :: FilePath -> Key -> CommandPerform
+performOld' dest key = ifM (checkDiskSpace Nothing key 0 True)
 	( do
 		src <- calcRepo $ gitAnnexLocation key
 		tmpdest <- fromRepo $ gitAnnexTmpObjectLocation key

@@ -1,3 +1,12 @@
+git-annex (7.20190616) UNRELEASED; urgency=medium
+
+  * When running multiple concurrent actions, the cleanup phase is run
+    in a separate queue than the main action queue. This can make some
+    commands faster, because less time is spent on bookkeeping in
+    between each file transfer.
+
+ -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
+
 git-annex (7.20190615) upstream; urgency=medium
 
   * Fixed bug that caused git-annex to fail to add a file when another

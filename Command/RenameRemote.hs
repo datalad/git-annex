@@ -40,9 +40,8 @@ start (oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
 				Nothing -> giveup "That is not a special remote."
 				Just cfg -> go u cfg
   where
-	go u cfg = do
-		showStart' "rename" Nothing
-		next $ perform u cfg newname
+	go u cfg = starting "rename" (ActionItemOther Nothing) $
+		perform u cfg newname
 start _ = giveup "Specify an old name (or uuid or description) and a new name."
 
 perform :: UUID -> R.RemoteConfig -> String -> CommandPerform

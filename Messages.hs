@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,8 +8,10 @@
 module Messages (
 	showStart,
 	showStart',
-	showStartKey,
-	ActionItem,
+	showStartMessage,
+	showEndMessage,
+	StartMessage(..),
+	ActionItem(..),
 	mkActionItem,
 	showNote,
 	showAction,
@@ -42,7 +44,6 @@ module Messages (
 	debugEnabled,
 	commandProgressDisabled,
 	outputMessage,
-	implicitMessage,
 	withMessageState,
 	prompt,
 ) where
@@ -58,6 +59,8 @@ import Types
 import Types.Messages
 import Types.ActionItem
 import Types.Concurrency
+import Types.Command (StartMessage(..))
+import Types.Transfer (transferKey)
 import Messages.Internal
 import Messages.Concurrent
 import qualified Messages.JSON as JSON
@@ -80,6 +83,30 @@ showStartKey command key i = outputMessage json $
 	command ++ " " ++ actionItemDesc i ++ " "
   where
 	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
+
+showStartMessage :: StartMessage -> Annex ()
+showStartMessage (StartMessage command ai) = case ai of
+	ActionItemAssociatedFile _ k -> showStartKey command k ai
+	ActionItemKey k -> showStartKey command k ai
+	ActionItemBranchFilePath _ k -> showStartKey command k ai
+	ActionItemFailedTransfer t _ -> showStartKey command (transferKey t) ai
+	ActionItemWorkTreeFile file -> showStart command file
+	ActionItemOther msg -> showStart' command msg
+	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai')
+showStartMessage (StartUsualMessages command ai) = do
+	outputType <$> Annex.getState Annex.output >>= \case
+		QuietOutput -> Annex.setOutput NormalOutput
+		_ -> noop
+	showStartMessage (StartMessage command ai)
+showStartMessage (StartNoMessage _) = noop
+showStartMessage (CustomOutput _) = Annex.setOutput QuietOutput
+
+-- Only show end result if the StartMessage is one that gets displayed.
+showEndMessage :: StartMessage -> Bool -> Annex ()
+showEndMessage (StartMessage _ _) = showEndResult
+showEndMessage (StartUsualMessages _ _) = showEndResult
+showEndMessage (StartNoMessage _) = const noop
+showEndMessage (CustomOutput _) = const noop
 
 showNote :: String -> Annex ()
 showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "
@@ -250,12 +277,6 @@ commandProgressDisabled = withMessageState $ \s -> return $
 		QuietOutput -> True
 		JSONOutput _ -> True
 		NormalOutput -> concurrentOutputEnabled s
-
-{- Use to show a message that is displayed implicitly, and so might be
- - disabled when running a certian command that needs more control over its
- - output. -}
-implicitMessage :: Annex () -> Annex ()
-implicitMessage = whenM (implicitMessages <$> Annex.getState Annex.output)
 
 {- Prevents any concurrent console access while running an action, so
  - that the action is the only thing using the console, and can eg prompt

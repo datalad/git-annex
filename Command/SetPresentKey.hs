@@ -47,9 +47,8 @@ parseKeyStatus (ks:us:vs:[]) = do
 parseKeyStatus _ = Left "Bad input. Expected: key uuid value"
 
 start :: KeyStatus -> CommandStart
-start (KeyStatus k u s) = do
-	showStartKey "setpresentkey" k (mkActionItem k)
-	next $ perform k u s
+start (KeyStatus k u s) = starting "setpresentkey" (mkActionItem k) $
+	perform k u s
 
 perform :: Key -> UUID -> LogStatus -> CommandPerform
 perform k u s = next $ do

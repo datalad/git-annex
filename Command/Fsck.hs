@@ -586,16 +586,12 @@ badContentRemote remote localcopy key = do
 		(_, False) -> "failed to drop from" ++ Remote.name remote
 
 runFsck :: Incremental -> ActionItem -> Key -> Annex Bool -> CommandStart
-runFsck inc ai key a = ifM (needFsck inc key)
-	( do
-		showStartKey "fsck" key ai
-		next $ do
-			ok <- a
-			when ok $
-				recordFsckTime inc key
-			next $ return ok
-	, stop
-	)
+runFsck inc ai key a = stopUnless (needFsck inc key) $
+	starting "fsck" ai $ do
+		ok <- a
+		when ok $
+			recordFsckTime inc key
+		next $ return ok
 
 {- Check if a key needs to be fscked, with support for incremental fscks. -}
 needFsck :: Incremental -> Key -> Annex Bool

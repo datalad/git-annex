@@ -48,23 +48,19 @@ optParser _ = setconfig <|> getconfig <|> unsetconfig
 		)
 
 seek :: Action -> CommandSeek
-seek (SetConfig name val) = commandAction $ do
-	allowMessages
-	showStart' name (Just val)
-	next $ next $ do
+seek (SetConfig name val) = commandAction $
+	startingUsualMessages name (ActionItemOther (Just val)) $ do
 		setGlobalConfig name val
 		setConfig (ConfigKey name) val
-		return True
-seek (UnsetConfig name) = commandAction $ do
-	allowMessages
-	showStart' name (Just "unset")
-	next $ next $ do
+		next $ return True
+seek (UnsetConfig name) = commandAction $
+	startingUsualMessages name (ActionItemOther (Just "unset")) $do
 		unsetGlobalConfig name
 		unsetConfig (ConfigKey name)
-		return True
+		next $ return True
 seek (GetConfig name) = commandAction $
-	getGlobalConfig name >>= \case
-		Nothing -> stop
-		Just v -> do
-			liftIO $ putStrLn v
-			stop
+	startingCustomOutput (ActionItemOther Nothing) $ do
+		getGlobalConfig name >>= \case
+			Nothing -> return ()
+			Just v -> liftIO $ putStrLn v
+		next $ return True

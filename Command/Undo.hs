@@ -46,9 +46,8 @@ seek ps = do
 	withStrings (commandAction . start) ps
 
 start :: FilePath -> CommandStart
-start p = do
-	showStart "undo" p
-	next $ perform p
+start p = starting "undo" (ActionItemOther (Just p)) $
+	perform p
 
 perform :: FilePath -> CommandPerform
 perform p = do

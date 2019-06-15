@@ -23,14 +23,15 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (name:g:[]) = do
-	allowMessages
-	showStart' "group" (Just name)
 	u <- Remote.nameToUUID name
-	next $ setGroup u (toGroup g)
+	startingUsualMessages "group" (ActionItemOther (Just name)) $
+		setGroup u (toGroup g)
 start (name:[]) = do
 	u <- Remote.nameToUUID name
-	liftIO . putStrLn . unwords . map fmt . S.toList =<< lookupGroups u
-	stop
+	startingCustomOutput (ActionItemOther Nothing) $ do
+		liftIO . putStrLn . unwords . map fmt . S.toList
+			=<< lookupGroups u
+		next $ return True
   where
 	fmt (Group g) = decodeBS g
 start _ = giveup "Specify a repository and a group."

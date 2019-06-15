@@ -122,10 +122,8 @@ findCmd fuzzyok argv cmds
 
 prepRunCommand :: Command -> GlobalSetter -> Annex ()
 prepRunCommand cmd globalconfig = do
-	when (cmdnomessages cmd) $ do
+	when (cmdnomessages cmd) $
 		Annex.setOutput QuietOutput
-		Annex.changeState $ \s -> s 
-			{ Annex.output = (Annex.output s) { implicitMessages = False } }
 	getParsed globalconfig
 	whenM (annexDebug <$> Annex.getGitConfig) $
 		liftIO enableDebugOutput

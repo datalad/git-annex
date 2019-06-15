@@ -1,6 +1,6 @@
 {- git-annex command data types
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ import Options.Applicative.Types (Parser)
 
 import Types
 import Types.DeferredParse
+import Types.ActionItem
 
 {- A command runs in these stages.
  -
@@ -25,17 +26,40 @@ data CommandCheck = CommandCheck { idCheck :: Int, runCheck :: Annex () }
  -    the repo to find things to act on (ie, new files to add), and
  -    runs commandAction to handle all necessary actions. -}
 type CommandSeek = Annex ()
-{- d. The start stage is run before anything is printed about the
- -    command, is passed some input, and can early abort it
- -    if nothing needs to be done. It should run quickly and
- -    should not modify Annex state. -}
-type CommandStart = Annex (Maybe CommandPerform)
+{- d. The start stage is run before anything is output, is passed some
+ -    value from the seek stage, and can check if anything needs to be
+ -    done, and early abort if not. It should run quickly and should
+ -    not modify Annex state or output anything. -}
+type CommandStart = Annex (Maybe (StartMessage, CommandPerform))
 {- e. The perform stage is run after a message is printed about the command
  -    being run, and it should be where the bulk of the work happens. -}
 type CommandPerform = Annex (Maybe CommandCleanup)
 {- f. The cleanup stage is run only if the perform stage succeeds, and it
  -    returns the overall success/fail of the command. -}
 type CommandCleanup = Annex Bool
+
+{- Message that is displayed when starting to perform an action on
+ - something. The String is typically the name of the command or action
+ - being performed.
+ -}
+data StartMessage
+	= StartMessage String ActionItem
+	| StartUsualMessages String ActionItem
+	-- ^ Like StartMessage, but makes sure to enable usual message
+	-- display in case it was disabled by cmdnomessages.
+	| StartNoMessage ActionItem
+	-- ^ Starts, without displaying any message but also without
+	-- disabling display of any of the usual messages.
+	| CustomOutput ActionItem
+	-- ^ Prevents any start, end, or other usual messages from
+	-- being displayed, letting a command output its own custom format.
+	deriving (Show)
+
+instance MkActionItem StartMessage where
+	mkActionItem (StartMessage _ ai) = ai
+	mkActionItem (StartUsualMessages _ ai) = ai
+	mkActionItem (StartNoMessage ai) = ai
+	mkActionItem (CustomOutput ai) = ai
 
 {- A command is defined by specifying these things. -}
 data Command = Command

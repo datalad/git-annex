@@ -33,7 +33,7 @@ start [s] = case readish s of
 start _ = giveup "Specify a single number."
 
 startGet :: CommandStart
-startGet = next $ next $ do
+startGet = startingCustomOutput (ActionItemOther Nothing) $ next $ do
 	v <- getGlobalNumCopies
 	case v of
 		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n
@@ -46,9 +46,6 @@ startGet = next $ next $ do
 	return True
 
 startSet :: Int -> CommandStart
-startSet n = do
-	allowMessages
-	showStart' "numcopies" (Just $ show n)
-	next $ next $ do
-		setGlobalNumCopies $ NumCopies n
-		return True
+startSet n = startingUsualMessages "numcopies" (ActionItemOther (Just $ show n)) $ do
+	setGlobalNumCopies $ NumCopies n
+	next $ return True

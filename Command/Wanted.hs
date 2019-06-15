@@ -32,16 +32,15 @@ cmd' name desc getter setter = noMessages $
 
 	seek = withWords (commandAction . start)
 
-	start (rname:[]) = go rname (performGet getter)
-	start (rname:expr:[]) = go rname $ \uuid -> do
-		allowMessages
-		showStart' name (Just rname)
-		performSet setter expr uuid
-	start _ = giveup "Specify a repository."
-		
-	go rname a = do
+	start (rname:[]) = do
 		u <- Remote.nameToUUID rname
-		next $ a u
+		startingCustomOutput (ActionItemOther Nothing) $
+			performGet getter u
+	start (rname:expr:[]) = do
+		u <- Remote.nameToUUID rname
+		startingUsualMessages name (ActionItemOther (Just rname)) $
+			performSet setter expr u
+	start _ = giveup "Specify a repository."
 
 performGet :: Ord a => Annex (M.Map a PreferredContentExpression) -> a -> CommandPerform
 performGet getter a = do

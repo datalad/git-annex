@@ -78,9 +78,8 @@ seek o = allowConcurrentOutput $ do
 
 {- Pass file off to git-add. -}
 startSmall :: FilePath -> CommandStart
-startSmall file = do
-	showStart "add" file
-	next $ next $ addSmall file
+startSmall file = starting "add" (ActionItemWorkTreeFile file) $
+	next $ addSmall file
 
 addSmall :: FilePath -> Annex Bool
 addSmall file = do
@@ -107,11 +106,11 @@ start file = do
 		Nothing -> stop
 		Just s 
 			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
-			| otherwise -> do
-				showStart "add" file
-				next $ if isSymbolicLink s
-					then next $ addFile file
-					else perform file
+			| otherwise -> 
+				starting "add" (ActionItemWorkTreeFile file) $
+					if isSymbolicLink s
+						then next $ addFile file
+						else perform file
 	addpresent key = ifM versionSupportsUnlockedPointers
 		( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
@@ -124,18 +123,16 @@ start file = do
 			, fixuplink key
 			)
 		)
-	fixuplink key = do
+	fixuplink key = starting "add" (ActionItemWorkTreeFile file) $ do
 		-- the annexed symlink is present but not yet added to git
-		showStart "add" file
 		liftIO $ removeFile file
 		addLink file key Nothing
-		next $ next $
+		next $
 			cleanup key =<< inAnnex key
-	fixuppointer key = do
+	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) $ do
 		-- the pointer file is present, but not yet added to git
-		showStart "add" file
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
-		next $ next $ addFile file
+		next $ addFile file
 
 perform :: FilePath -> CommandPerform
 perform file = withOtherTmp $ \tmpdir -> do

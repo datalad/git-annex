@@ -14,7 +14,6 @@ import Command
 import Annex.Content
 import Limit
 import Types.Key
-import Types.ActionItem
 import Git.FilePath
 import qualified Utility.Format
 import Utility.DataUnits
@@ -65,12 +64,11 @@ seek o = case batchOption o of
 -- only files inAnnex are shown, unless the user has requested
 -- others via a limit
 start :: FindOptions -> FilePath -> Key -> CommandStart
-start o file key = ifM (limited <||> inAnnex key)
-	( do
-		showFormatted (formatOption o) file $ ("file", file) : keyVars key
-		next $ next $ return True
-	, stop
-	)
+start o file key =
+	stopUnless (limited <||> inAnnex key) $
+		startingCustomOutput key $ do
+			showFormatted (formatOption o) file $ ("file", file) : keyVars key
+			next $ return True
 
 startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
 startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 

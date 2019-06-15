@@ -63,7 +63,7 @@ startKeys from (key, ai) = checkFailedTransferDirection ai Download $
 	start' (return True) from key (AssociatedFile Nothing) ai
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' expensivecheck from key afile ai = onlyActionOn key $
+start' expensivecheck from key afile ai =
 	stopUnless (not <$> inAnnex key) $ stopUnless expensivecheck $
 		case from of
 			Nothing -> go $ perform key afile
@@ -71,9 +71,7 @@ start' expensivecheck from key afile ai = onlyActionOn key $
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src Command.Move.RemoveNever key afile
   where
-	go a = do
-		showStartKey "get" key ai
-		next a
+	go = starting "get" (OnlyActionOn key ai)
 
 perform :: Key -> AssociatedFile -> CommandPerform
 perform key afile = stopUnless (getKey key afile) $

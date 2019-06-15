@@ -280,11 +280,10 @@ syncRemotes' ps available =
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: SyncOptions -> CommandStart
-commit o = stopUnless shouldcommit $ next $ next $ do
+commit o = stopUnless shouldcommit $ starting "commit" (ActionItemOther Nothing) $ do
 	commitmessage <- maybe commitMsg return (messageOption o)
-	showStart' "commit" Nothing
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
-	ifM isDirect
+	next $ ifM isDirect
 		( do
 			void stageDirect
 			void preCommitDirect
@@ -321,20 +320,19 @@ commitStaged commitmode commitmessage = do
 
 mergeLocal :: [Git.Merge.MergeConfig] -> ResolveMergeOverride -> CurrBranch -> CommandStart
 mergeLocal mergeconfig resolvemergeoverride currbranch@(Just _, _) =
-	go =<< needMerge currbranch
-  where
-	go Nothing = stop
-	go (Just syncbranch) = do
-		showStart' "merge" (Just $ Git.Ref.describe syncbranch)
-		next $ next $ merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit syncbranch
+	needMerge currbranch >>= \case
+		Nothing -> stop
+		Just syncbranch ->
+			starting "merge" (ActionItemOther (Just $ Git.Ref.describe syncbranch)) $
+				next $ merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit syncbranch
 mergeLocal _ _ (Nothing, madj) = do
 	b <- inRepo Git.Branch.currentUnsafe
-	ifM (isJust <$> needMerge (b, madj))
-		( do
-			warning $ "There are no commits yet in the currently checked out branch, so cannot merge any remote changes into it."
-			next $ next $ return False
-		, stop
-		)
+	needMerge (b, madj) >>= \case
+		Nothing -> stop
+		Just syncbranch ->
+			starting "merge" (ActionItemOther (Just $ Git.Ref.describe syncbranch)) $ do
+				warning $ "There are no commits yet in the currently checked out branch, so cannot merge any remote changes into it."
+				next $ return False
 
 -- Returns the branch that should be merged, if any.
 needMerge :: CurrBranch -> Annex (Maybe Git.Branch)
@@ -395,12 +393,13 @@ updateBranch syncbranch updateto g =
 		] g
 
 pullRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandStart
-pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && wantpull) $ do
-	showStart' "pull" (Just (Remote.name remote))
-	next $ do
+pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && wantpull) $
+	starting "pull" (ActionItemOther (Just (Remote.name remote))) $ do
 		showOutput
-		stopUnless fetch $
-			next $ mergeRemote remote branch mergeconfig (resolveMergeOverride o)
+		ifM fetch
+			( next $ mergeRemote remote branch mergeconfig (resolveMergeOverride o)
+			, next $ return True
+			)
   where
 	fetch = do
 		repo <- Remote.getRepo remote
@@ -451,9 +450,8 @@ mergeRemote remote currbranch mergeconfig resolvemergeoverride = ifM isBareRepo
 
 pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pushRemote _o _remote (Nothing, _) = stop
-pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> needpush) $ do
-	showStart' "push" (Just (Remote.name remote))
-	next $ next $ do
+pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> needpush) $
+	starting "push" (ActionItemOther (Just (Remote.name remote))) $ next $ do
 		repo <- Remote.getRepo remote
 		showOutput
 		ok <- inRepoWithSshOptionsTo repo gc $
@@ -628,10 +626,14 @@ seekSyncContent o rs currbranch = do
 	
 	gokey mvar bloom (k, _) = go (Left bloom) mvar (AssociatedFile Nothing) k
 
-	go ebloom mvar af k = commandAction $ do
-		whenM (syncFile ebloom rs af k) $
-			void $ liftIO $ tryPutMVar mvar ()
-		return Nothing
+	go ebloom mvar af k = do
+		-- Run syncFile as a command action so file transfers run
+		-- concurrently.
+		let ai = OnlyActionOn k (ActionItemKey k)
+		commandAction $ startingNoMessage ai $ do
+			whenM (syncFile ebloom rs af k) $
+				void $ liftIO $ tryPutMVar mvar ()
+			next $ return True
 
 {- If it's preferred content, and we don't have it, get it from one of the
  - listed remotes (preferring the cheaper earlier ones).
@@ -647,7 +649,7 @@ seekSyncContent o rs currbranch = do
  - Returns True if any file transfers were made.
  -}
 syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
-syncFile ebloom rs af k = onlyActionOn' k $ do
+syncFile ebloom rs af k = do
 	inhere <- inAnnex k
 	locs <- map Remote.uuid <$> Remote.keyPossibilities k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
@@ -689,9 +691,8 @@ syncFile ebloom rs af k = onlyActionOn' k $ do
 		( return [ get have ]
 		, return []
 		)
-	get have = includeCommandAction $ do
-		showStartKey "get" k ai
-		next $ next $ getKey' k af have
+	get have = includeCommandAction $ starting "get" ai $
+		next $ getKey' k af have
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
@@ -764,24 +765,23 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 
 cleanupLocal :: CurrBranch -> CommandStart
 cleanupLocal (Nothing, _) = stop
-cleanupLocal (Just currb, _) = do
-	showStart' "cleanup" (Just "local")
-	next $ next $ do
-		delbranch $ syncBranch currb
-		delbranch $ syncBranch $ Git.Ref.base $ Annex.Branch.name
-		mapM_ (\(s,r) -> inRepo $ Git.Ref.delete s r)
-			=<< listTaggedBranches
-		return True
+cleanupLocal (Just currb, _) = 
+	starting "cleanup" (ActionItemOther (Just "local")) $ 
+		next $ do
+			delbranch $ syncBranch currb
+			delbranch $ syncBranch $ Git.Ref.base $ Annex.Branch.name
+			mapM_ (\(s,r) -> inRepo $ Git.Ref.delete s r)
+				=<< listTaggedBranches
+			return True
   where
 	delbranch b = whenM (inRepo $ Git.Ref.exists $ Git.Ref.branchRef b) $
 		inRepo $ Git.Branch.delete b
 
 cleanupRemote :: Remote -> CurrBranch -> CommandStart
 cleanupRemote _ (Nothing, _) = stop
-cleanupRemote remote (Just b, _) = do
-	showStart' "cleanup" (Just (Remote.name remote))
-	next $ next $
-		inRepo $ Git.Command.runBool
+cleanupRemote remote (Just b, _) =
+	starting "cleanup" (ActionItemOther (Just (Remote.name remote))) $
+		next $ inRepo $ Git.Command.runBool
 			[ Param "push"
 			, Param "--quiet"
 			, Param "--delete"

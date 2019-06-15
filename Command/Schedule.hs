@@ -25,16 +25,15 @@ seek = withWords (commandAction . start)
 start :: [String] -> CommandStart
 start = parse
   where
-	parse (name:[]) = go name performGet
-	parse (name:expr:[]) = go name $ \uuid -> do
-		allowMessages
-		showStart' "schedule" (Just name)
-		performSet expr uuid
-	parse _ = giveup "Specify a repository."
-
-	go name a = do
+	parse (name:[]) = do
 		u <- Remote.nameToUUID name
-		next $ a u
+		startingCustomOutput (ActionItemOther Nothing) $
+			performGet u
+	parse (name:expr:[]) = do
+		u <- Remote.nameToUUID name
+		startingUsualMessages "schedule" (ActionItemOther (Just name)) $
+			performSet expr u
+	parse _ = giveup "Specify a repository."
 
 performGet :: UUID -> CommandPerform
 performGet uuid = do

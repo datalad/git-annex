@@ -70,8 +70,7 @@ start o = do
 		Just "." -> (".", checkUnused refspec)
 		Just "here" -> (".", checkUnused refspec)
 		Just n -> (n, checkRemoteUnused n refspec)
-	showStart' "unused" (Just name)
-	next perform
+	starting "unused" (ActionItemOther (Just name)) perform
 
 checkUnused :: RefSpec -> CommandPerform
 checkUnused refspec = chain 0
@@ -335,6 +334,6 @@ startUnused message unused badunused tmpunused maps n = search
 	search ((m, a):rest) =
 		case M.lookup n m of
 			Nothing -> search rest
-			Just key -> do
-				showStart' message (Just $ show n)
-				next $ a key
+			Just key -> starting message
+				(ActionItemOther $ Just $ show n)
+				(a key)

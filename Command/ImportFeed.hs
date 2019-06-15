@@ -66,32 +66,27 @@ optParser desc = ImportFeedOptions
 seek :: ImportFeedOptions -> CommandSeek
 seek o = do
 	cache <- getCache (templateOption o)
-	withStrings (commandAction . start o cache) (feedUrls o)
+	forM_ (feedUrls o) (getFeed o cache)
 
-start :: ImportFeedOptions -> Cache -> URLString -> CommandStart
-start opts cache url = do
-	showStart' "importfeed" (Just url)
-	next $ perform opts cache url
-
-perform :: ImportFeedOptions -> Cache -> URLString -> CommandPerform
-perform opts cache url = go =<< downloadFeed url
-  where
-	go Nothing = next $ feedProblem url "downloading the feed failed"
-	go (Just feedcontent) = case parseFeedString feedcontent of
-		Nothing -> next $ feedProblem url "parsing the feed failed"
-		Just f -> case findDownloads url f of
-			[] -> next $
-				feedProblem url "bad feed content; no enclosures to download"
-			l -> do
-				showOutput
-				ok <- and <$> mapM (performDownload opts cache) l
-				next $ cleanup url ok
-
-cleanup :: URLString -> Bool -> CommandCleanup
-cleanup url True = do
-	clearFeedProblem url
-	return True
-cleanup url False = feedProblem url "problem downloading some item(s) from feed"
+getFeed :: ImportFeedOptions -> Cache -> URLString -> CommandSeek
+getFeed opts cache url = do
+	showStart "importfeed" url
+	downloadFeed url >>= \case
+		Nothing -> showEndResult =<< feedProblem url
+			"downloading the feed failed"
+		Just feedcontent -> case parseFeedString feedcontent of
+			Nothing -> showEndResult =<< feedProblem url
+				"parsing the feed failed"
+			Just f -> case findDownloads url f of
+				[] -> showEndResult =<< feedProblem url
+					"bad feed content; no enclosures to download"
+				l -> do
+					showEndOk
+					ifM (and <$> mapM (performDownload opts cache) l)
+						( clearFeedProblem url
+						, void $ feedProblem url 
+							"problem downloading some item(s) from feed"
+						)
 
 data ToDownload = ToDownload
 	{ feed :: Feed

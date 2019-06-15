@@ -69,7 +69,7 @@ start o file key = start' o key afile ai
 	ai = mkActionItem (key, afile)
 
 start' :: DropOptions -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' o key afile ai = onlyActionOn key $ do
+start' o key afile ai = do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
 		stopUnless (want from) $
@@ -89,14 +89,15 @@ startKeys :: DropOptions -> (Key, ActionItem) -> CommandStart
 startKeys o (key, ai) = start' o key (AssociatedFile Nothing) ai
 
 startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
-startLocal afile ai numcopies key preverified = stopUnless (inAnnex key) $ do
-	showStartKey "drop" key ai
-	next $ performLocal key afile numcopies preverified
+startLocal afile ai numcopies key preverified =
+	stopUnless (inAnnex key) $
+		starting "drop" (OnlyActionOn key ai) $
+			performLocal key afile numcopies preverified
 
 startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
-startRemote afile ai numcopies key remote = do
-	showStartKey ("drop " ++ Remote.name remote) key ai
-	next $ performRemote key afile numcopies remote
+startRemote afile ai numcopies key remote = 
+	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) $
+		performRemote key afile numcopies remote
 
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
 performLocal key afile numcopies preverified = lockContentForRemoval key $ \contentlock -> do

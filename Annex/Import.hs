@@ -326,11 +326,11 @@ downloadImport remote importtreeconfig importablecontents = do
 		(k:_) -> return $ Left $ Just (loc, k)
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
-			let downloadaction = do
-				showStart ("import " ++ Remote.name remote) (fromImportLocation loc)
+			let ai = ActionItemOther (Just (fromImportLocation loc))
+			let downloadaction = starting ("import " ++ Remote.name remote) ai $ do
 				when oldversion $
 					showNote "old version"
-				next $ tryNonAsync (download cidmap db i) >>= \case
+				tryNonAsync (download cidmap db i) >>= \case
 					Left e -> next $ do
 						warning (show e)
 						liftIO $ atomically $

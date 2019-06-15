@@ -66,8 +66,7 @@ seek :: TestRemoteOptions -> CommandSeek
 seek = commandAction . start 
 
 start :: TestRemoteOptions -> CommandStart
-start o = do
-	showStart' "testremote" (Just (testRemote o))
+start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 	fast <- Annex.getState Annex.fast
 	r <- either giveup disableExportTree =<< Remote.byName' (testRemote o)
 	ks <- case testReadonlyFile o of
@@ -89,7 +88,7 @@ start o = do
 	exportr <- if Remote.readonly r'
 		then return Nothing
 		else exportTreeVariant r'
-	next $ perform rs unavailrs exportr ks
+	perform rs unavailrs exportr ks
   where
 	basesz = fromInteger $ sizeOption o
 

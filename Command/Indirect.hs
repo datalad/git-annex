@@ -36,20 +36,19 @@ start = ifM isDirect
 			giveup "Git is configured to not use symlinks, so you must use direct mode."
 		whenM probeCrippledFileSystem $
 			giveup "This repository seems to be on a crippled filesystem, you must use direct mode."
-		next perform
+		starting "indirect" (ActionItemOther Nothing) 
+			perform
 	, stop
 	)
 
 perform :: CommandPerform
 perform = do
-	showStart' "commit" Nothing
 	whenM stageDirect $ do
 		showOutput
 		void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
 			[ Param "-m"
 			, Param "commit before switching to indirect mode"
 			]
-	showEndOk
 
 	-- Note that we set indirect mode early, so that we can use
 	-- moveAnnex in indirect mode.
@@ -59,7 +58,7 @@ perform = do
 	(l, clean) <- inRepo $ Git.LsFiles.stagedOthersDetails [top]
 	forM_ l go
 	void $ liftIO clean
-	next cleanup
+	next $ return True
   where
 	{- Walk tree from top and move all present direct mode files into
 	 - the annex, replacing with symlinks. Also delete direct mode
@@ -80,7 +79,6 @@ perform = do
 	go _ = noop
 
 	fromdirect f k = do
-		showStart "indirect" f
 		removeInodeCache k
 		removeAssociatedFiles k
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
@@ -92,14 +90,7 @@ perform = do
 				Right False -> warnlocked "Failed to move file to annex"
 				Left e -> catchNonAsync (restoreFile f k e) $
 					warnlocked . show
-		showEndOk
 
 	warnlocked msg = do
 		warning msg
 		warning "leaving this file as-is; correct this problem and run git annex add on it"
-	
-cleanup :: CommandCleanup
-cleanup = do
-	showStart' "indirect" Nothing
-	showEndOk
-	return True

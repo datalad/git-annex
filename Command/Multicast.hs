@@ -79,8 +79,7 @@ seek (MultiCastOptions Receive ups []) = commandAction $ receive ups
 seek (MultiCastOptions Receive _ _) = giveup "Cannot specify list of files with --receive; this receives whatever files the sender chooses to send."
 
 genAddress :: CommandStart
-genAddress = do
-	showStart' "gen-address" Nothing
+genAddress = starting "gen-address" (ActionItemOther Nothing) $ do
 	k <- uftpKey
 	(s, ok) <- case k of
 		KeyContainer s -> liftIO $ genkey (Param s)
@@ -91,7 +90,7 @@ genAddress = do
 	case (ok, parseFingerprint s) of
 		(False, _) -> giveup $ "uftp_keymgt failed: " ++ s
 		(_, Nothing) -> giveup $ "Failed to find fingerprint in uftp_keymgt output: " ++ s
-		(True, Just fp) -> next $ next $ do
+		(True, Just fp) -> next $ do
 			recordFingerprint fp =<< getUUID
 			return True
   where
@@ -123,7 +122,7 @@ parseFingerprint = Fingerprint <$$> lastMaybe . filter isfingerprint . words
 		in length os == 20
 	
 send :: [CommandParam] -> [FilePath] -> CommandStart
-send ups fs = withTmpFile "send" $ \t h -> do
+send ups fs = do
 	-- Need to be able to send files with the names of git-annex
 	-- keys, and uftp does not allow renaming the files that are sent.
 	-- In a direct mode repository, the annex objects do not have
@@ -131,47 +130,43 @@ send ups fs = withTmpFile "send" $ \t h -> do
 	-- expensive.
 	whenM isDirect $
 		giveup "Sorry, multicast send cannot be done from a direct mode repository."
-	
-	showStart' "generating file list" Nothing
-	fs' <- seekHelper LsFiles.inRepo =<< workTreeItems fs
-	matcher <- Limit.getMatcher
-	let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
-		liftIO $ hPutStrLn h o
-	forM_ fs' $ \f -> do
-		mk <- lookupFile f
-		case mk of
-			Nothing -> noop
-			Just k -> withObjectLoc k (addlist f) (const noop)
-	liftIO $ hClose h
-	showEndOk
-
-	showStart' "sending files" Nothing
-	showOutput
-	serverkey <- uftpKey
-	u <- getUUID
-	withAuthList $ \authlist -> do
-		let ps =
-			-- Force client authentication.
-			[ Param "-c"
-			, Param "-Y", Param "aes256-cbc"
-			, Param "-h", Param "sha512"
-			-- Picked ecdh_ecdsa for perfect forward secrecy,
-			-- and because a EC key exchange algorithm is
-			-- needed since all keys are EC.
-			, Param "-e", Param "ecdh_ecdsa"
-			, Param "-k", uftpKeyParam serverkey
-			, Param "-U", Param (uftpUID u)
-			-- only allow clients on the authlist
-			, Param "-H", Param ("@"++authlist)
-			-- pass in list of files to send
-			, Param "-i", File t
-			] ++ ups
-		liftIO (boolSystem "uftp" ps) >>= showEndResult
-	stop
+	starting "sending files" (ActionItemOther Nothing) $
+		withTmpFile "send" $ \t h -> do
+			fs' <- seekHelper LsFiles.inRepo =<< workTreeItems fs
+			matcher <- Limit.getMatcher
+			let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
+				liftIO $ hPutStrLn h o
+			forM_ fs' $ \f -> do
+				mk <- lookupFile f
+				case mk of
+					Nothing -> noop
+					Just k -> withObjectLoc k (addlist f) (const noop)
+			liftIO $ hClose h
+			
+			serverkey <- uftpKey
+			u <- getUUID
+			withAuthList $ \authlist -> do
+				let ps =
+					-- Force client authentication.
+					[ Param "-c"
+					, Param "-Y", Param "aes256-cbc"
+					, Param "-h", Param "sha512"
+					-- Picked ecdh_ecdsa for perfect forward secrecy,
+					-- and because a EC key exchange algorithm is
+					-- needed since all keys are EC.
+					, Param "-e", Param "ecdh_ecdsa"
+					, Param "-k", uftpKeyParam serverkey
+					, Param "-U", Param (uftpUID u)
+					-- only allow clients on the authlist
+					, Param "-H", Param ("@"++authlist)
+					-- pass in list of files to send
+					, Param "-i", File t
+					] ++ ups
+				liftIO (boolSystem "uftp" ps) >>= showEndResult
+			next $ return True
 
 receive :: [CommandParam] -> CommandStart
-receive ups = do
-	showStart' "receiving multicast files" Nothing
+receive ups = starting "receiving multicast files" (ActionItemOther Nothing) $ do
 	showNote "Will continue to run until stopped by ctrl-c"
 	
 	showOutput
@@ -204,7 +199,7 @@ receive ups = do
 				`after` boolSystemEnv "uftpd" ps (Just environ)
 		mapM_ storeReceived . lines =<< liftIO (hGetContents statush)
 		showEndResult =<< liftIO (wait runner)
-	stop
+	next $ return True
 
 storeReceived :: FilePath -> Annex ()
 storeReceived f = do

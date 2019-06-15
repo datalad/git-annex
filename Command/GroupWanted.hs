@@ -22,9 +22,8 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start (g:[]) = next $ performGet groupPreferredContentMapRaw (toGroup g)
-start (g:expr:[]) = do
-	allowMessages
-	showStart' "groupwanted" (Just g)
-	next $ performSet groupPreferredContentSet expr (toGroup g)
+start (g:[]) = startingCustomOutput (ActionItemOther Nothing) $
+	performGet groupPreferredContentMapRaw (toGroup g)
+start (g:expr:[]) = startingUsualMessages "groupwanted" (ActionItemOther (Just g)) $
+	performSet groupPreferredContentSet expr (toGroup g)
 start _ = giveup "Specify a group."

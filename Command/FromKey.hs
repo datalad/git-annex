@@ -51,9 +51,8 @@ seekBatch fmt = batchInput fmt parse commandAction
 		in if not (null keyname) && not (null file)
 			then Right $ go file (mkKey keyname)
 			else Left "Expected pairs of key and filename"
-	go file key = do
-		showStart "fromkey" file
-		next $ perform key file
+	go file key = starting "fromkey" (mkActionItem (key, file)) $
+		perform key file
 
 start :: Bool -> (String, FilePath) -> CommandStart
 start force (keyname, file) = do
@@ -62,8 +61,8 @@ start force (keyname, file) = do
 		inbackend <- inAnnex key
 		unless inbackend $ giveup $
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
-	showStart "fromkey" file
-	next $ perform key file
+	starting "fromkey" (mkActionItem (key, file)) $
+		perform key file
 
 -- From user input to a Key.
 -- User can input either a serialized key, or an url.

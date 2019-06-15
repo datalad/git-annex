@@ -45,17 +45,11 @@ seek o = do
 start :: S.Set Key -> FilePath -> Key -> CommandStart
 start s _file k
 	| S.member k s = start' k
-	| otherwise = notInprogress
+	| otherwise = stop
 
 start' :: Key -> CommandStart
-start' k = do
+start' k = startingCustomOutput k $ do
 	tmpf <- fromRepo $ gitAnnexTmpObjectLocation k
-	ifM (liftIO $ doesFileExist tmpf)
-		( next $ next $ do
-			liftIO $ putStrLn tmpf
-			return True
-		, notInprogress
-		)
-
-notInprogress :: CommandStart
-notInprogress = stop
+	whenM (liftIO $ doesFileExist tmpf) $
+		liftIO $ putStrLn tmpf
+	next $ return True

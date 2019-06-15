@@ -38,9 +38,8 @@ start file key = do
 			newbackend <- maybe defaultBackend return 
 				=<< chooseBackend file
 			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
-				then do
-					showStart "migrate" file
-					next $ perform file key oldbackend newbackend
+				then starting "migrate" (mkActionItem (key, file)) $
+					perform file key oldbackend newbackend
 				else stop
 
 {- Checks if a key is upgradable to a newer representation.

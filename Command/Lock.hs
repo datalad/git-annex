@@ -41,8 +41,7 @@ seek ps = do
 startNew :: FilePath -> Key -> CommandStart
 startNew file key = ifM (isJust <$> isAnnexLink file)
 	( stop
-	, do
-		showStart "lock" file
+	, starting "lock" (mkActionItem (key, file)) $
 		go =<< liftIO (isPointerFile file)
 	)
   where
@@ -57,7 +56,7 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 				, errorModified
 				)
 			)
-	cont = next $ performNew file key
+	cont = performNew file key
 
 performNew :: FilePath -> Key -> CommandPerform
 performNew file key = do
@@ -106,10 +105,10 @@ cleanupNew file key = do
 
 startOld :: FilePath -> CommandStart
 startOld file = do
-	showStart "lock" file
 	unlessM (Annex.getState Annex.force)
 		errorModified
-	next $ performOld file
+	starting "lock" (ActionItemWorkTreeFile file) $
+		performOld file
 
 performOld :: FilePath -> CommandPerform
 performOld file = do

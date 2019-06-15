@@ -1,6 +1,6 @@
 {- git-annex command infrastructure
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,14 +22,12 @@ import CmdLine.GlobalSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 import CmdLine.Batch as ReExported
 import Options.Applicative as ReExported hiding (command)
-import qualified Annex
 import qualified Git
 import Annex.Init
 import Config
 import Utility.Daemon
 import Types.Transfer
 import Types.ActionItem
-import Types.Messages
 
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
@@ -61,18 +59,10 @@ noCommit c = c { cmdnocommit = True }
  - starting or stopping processing a file or other item. Unless --json mode
  - is enabled, this also enables quiet output mode, so only things
  - explicitly output by the command are shown and not progress messages
- - etc. -}
+ - etc.
+ -}
 noMessages :: Command -> Command
 noMessages c = c { cmdnomessages = True }
-
-{- Undoes noMessages -}
-allowMessages :: Annex ()
-allowMessages = do
-	outputType <$> Annex.getState Annex.output >>= \case
-		QuietOutput -> Annex.setOutput NormalOutput
-		_ -> noop
-	Annex.changeState $ \s -> s
-		{ Annex.output = (Annex.output s) { implicitMessages = True } }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}
@@ -83,11 +73,30 @@ noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 withGlobalOptions :: [[GlobalOption]] -> Command -> Command
 withGlobalOptions os c = c { cmdglobaloptions = cmdglobaloptions c ++ concat os }
 
-{- For start and perform stages to indicate what step to run next. -}
+{- For start stage to indicate what will be done. -}
+starting:: MkActionItem t => String -> t -> CommandPerform -> CommandStart
+starting msg t a = next (StartMessage msg (mkActionItem t), a)
+
+{- Use when noMessages was used but the command is going to output
+ - usual messages after all. -}
+startingUsualMessages :: MkActionItem t => String -> t -> CommandPerform -> CommandStart
+startingUsualMessages msg t a = next (StartUsualMessages msg (mkActionItem t), a)
+
+{- When no message should be displayed at start/end, but messages can still 
+ - be displayed when using eg includeCommandAction. -}
+startingNoMessage :: MkActionItem t => t -> CommandPerform -> CommandStart
+startingNoMessage t a = next (StartNoMessage (mkActionItem t), a)
+
+{- For commands that do not display usual start or end messages, 
+ - but have some other custom output. -}
+startingCustomOutput :: MkActionItem t => t -> CommandPerform -> CommandStart
+startingCustomOutput t a = next (CustomOutput (mkActionItem t), a)
+
+{- For perform stage to indicate what step to run next. -}
 next :: a -> Annex (Maybe a)
 next a = return $ Just a
 
-{- Or to indicate nothing needs to be done. -}
+{- For start and perform stage to indicate nothing needs to be done. -}
 stop :: Annex (Maybe a)
 stop = return Nothing
 

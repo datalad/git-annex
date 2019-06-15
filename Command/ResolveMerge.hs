@@ -22,8 +22,7 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing (commandAction start)
 
 start :: CommandStart
-start = do
-	showStart' "resolvemerge" Nothing
+start = starting "resolvemerge" (ActionItemOther Nothing) $ do
 	us <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	d <- fromRepo Git.localGitDir
 	let merge_head = d </> "MERGE_HEAD"
@@ -32,7 +31,7 @@ start = do
 	ifM (resolveMerge (Just us) them False)
 		( do
 			void $ commitResolvedMerge Git.Branch.ManualCommit
-			next $ next $ return True
+			next $ return True
 		, giveup "Merge conflict could not be automatically resolved."
 		)
   where

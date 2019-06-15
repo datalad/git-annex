@@ -23,13 +23,11 @@ seek _ = do
 	commandAction mergeSynced
 
 mergeBranch :: CommandStart
-mergeBranch = do
-	showStart' "merge" (Just "git-annex")
-	next $ do
-		Annex.Branch.update
-		-- commit explicitly, in case no remote branches were merged
-		Annex.Branch.commit =<< Annex.Branch.commitMessage
-		next $ return True
+mergeBranch = starting "merge" (ActionItemOther (Just "git-annex")) $ do
+	Annex.Branch.update
+	-- commit explicitly, in case no remote branches were merged
+	Annex.Branch.commit =<< Annex.Branch.commitMessage
+	next $ return True
 
 mergeSynced :: CommandStart
 mergeSynced = do

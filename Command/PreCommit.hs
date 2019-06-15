@@ -84,23 +84,22 @@ seek ps = lockPreCommitHook $ ifM isDirect
 	
 
 startInjectUnlocked :: FilePath -> CommandStart
-startInjectUnlocked f = next $ do
+startInjectUnlocked f = startingCustomOutput (ActionItemOther Nothing) $ do
 	unlessM (callCommandAction $ Command.Add.start f) $
 		error $ "failed to add " ++ f ++ "; canceling commit"
 	next $ return True
 
 startDirect :: [String] -> CommandStart
-startDirect _ = next $ next preCommitDirect
+startDirect _ = startingCustomOutput (ActionItemOther Nothing) $ 
+	next preCommitDirect
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
-addViewMetaData v f k = do
-	showStart "metadata" f
-	next $ next $ changeMetaData k $ fromView v f
+addViewMetaData v f k = starting "metadata" (mkActionItem (k, f)) $
+	next $ changeMetaData k $ fromView v f
 
 removeViewMetaData :: View -> ViewedFile -> Key -> CommandStart
-removeViewMetaData v f k = do
-	showStart "metadata" f
-	next $ next $ changeMetaData k $ unsetMetaData $ fromView v f
+removeViewMetaData v f k = starting "metadata" (mkActionItem (k, f)) $
+	next $ changeMetaData k $ unsetMetaData $ fromView v f
 
 changeMetaData :: Key -> MetaData -> CommandCleanup
 changeMetaData k metadata = do

@@ -22,9 +22,8 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing (commandAction start)
 
 start :: CommandStart
-start = do
-	showStart' "upgrade" Nothing
+start = starting "upgrade" (ActionItemOther Nothing) $ do
 	whenM (isNothing <$> getVersion) $ do
 		initialize Nothing Nothing
 	r <- upgrade False latestVersion
-	next $ next $ return r
+	next $ return r

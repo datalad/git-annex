@@ -99,14 +99,13 @@ start c o file k = startKeys c o (k, mkActionItem (k, afile))
 
 startKeys :: VectorClock -> MetaDataOptions -> (Key, ActionItem) -> CommandStart
 startKeys c o (k, ai) = case getSet o of
-	Get f -> do
+	Get f -> startingCustomOutput k $ do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
 			B8.putStrLn . fromMetaValue
-		stop
-	_ -> do
-		showStartKey "metadata" k ai
-		next $ perform c o k
+		next $ return True
+	_ -> starting "metadata" ai $
+		perform c o k
 
 perform :: VectorClock -> MetaDataOptions -> Key -> CommandPerform
 perform c o k = case getSet o of
@@ -168,8 +167,7 @@ startBatch (i, (MetaData m)) = case i of
 			Nothing -> giveup $ "not an annexed file: " ++ f
 	Right k -> go k (mkActionItem k)
   where
-	go k ai = do
-		showStartKey "metadata" k ai
+	go k ai = starting "metadata" ai $ do
 		let o = MetaDataOptions
 			{ forFiles = []
 			, getSet = if MetaData m == emptyMetaData
@@ -187,7 +185,7 @@ startBatch (i, (MetaData m)) = case i of
 		-- probably less expensive than cleaner methods,
 		-- such as taking from a list of increasing timestamps.
 		liftIO $ threadDelay 1
-		next $ perform t o k
+		perform t o k
 	mkModMeta (f, s)
 		| S.null s = DelMeta f Nothing
 		| otherwise = SetMeta f s
