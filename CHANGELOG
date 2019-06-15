@@ -1,4 +1,4 @@
-git-annex (7.20190508) UNRELEASED; urgency=medium
+git-annex (7.20190615) upstream; urgency=medium
 
   * Fixed bug that caused git-annex to fail to add a file when another
     git-annex process cleaned up the temp directory it was using.
@@ -34,7 +34,7 @@ git-annex (7.20190508) UNRELEASED; urgency=medium
     rsync or gcrypt special remotes, which was caused by git-annex
     opening a ssh connection to the remote too early.
 
- -- Joey Hess <id@joeyh.name>  Mon, 06 May 2019 13:52:02 -0400
+ -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
 
 git-annex (7.20190507) upstream; urgency=medium
 
