@@ -21,3 +21,17 @@ are still some things that could be improved, tracked here:
   all that needs to be done is make checksum verification be done as the
   cleanup action. Currently, it's bundled into the same action that
   transfers content.
+
+  > Had a closer look at moving the checksum verification to cleanup, 
+  > and it's really quite difficult to do. Things like runTransfer 
+  > and pickRemote expect to be able to run the entire transfer action,
+  > including verification, and if it fails may retry it or try to
+  > transfer from a different remote instead.
+  > 
+  > It feels like inverting all that control to move verification to
+  > cleanup would introduce a lot of complexity if it's even possible to do
+  > cleanly at all.
+  > 
+  > Makes me wonder about just calling changeStageTo once the transfer
+  > is complete and before verification. Feels like a hack, but I think it
+  > would just work.
