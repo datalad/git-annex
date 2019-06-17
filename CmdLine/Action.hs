@@ -193,11 +193,12 @@ changeStageTo newstage = do
 	liftIO $ atomically $ waitWorkerSlot' (== newstage) tv >>= \case
 		Just idlest -> do
 			pool <- takeTMVar tv
+			let restorepool = addWorkerPool (IdleWorker idlest newstage) pool
 			let pool' = case removeThreadIdWorkerPool mytid pool of
 				Just ((myaid, oldstage), p) ->
 					addWorkerPool (IdleWorker idlest oldstage) $
 						addWorkerPool (ActiveWorker myaid newstage) p
-				Nothing -> pool
+				Nothing -> restorepool
 			putTMVar tv pool'
 		-- No worker pool is allocated, not running in concurrent
 		-- mode.
