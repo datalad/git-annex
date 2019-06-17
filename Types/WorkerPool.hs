@@ -14,6 +14,7 @@ import Control.Concurrent.Async
 data WorkerPool t
 	= UnallocatedWorkerPool
 	| WorkerPool [Worker t]
+	deriving (Show)
 
 -- | A worker can either be idle or running an Async action.
 -- And it is used for some stage.
@@ -21,9 +22,13 @@ data Worker t
 	= IdleWorker t WorkerStage
 	| ActiveWorker (Async t) WorkerStage
 
+instance Show (Worker t) where
+	show (IdleWorker _ s) = "IdleWorker " ++ show s
+	show (ActiveWorker _ s) = "ActiveWorker " ++ show s
+
 -- | These correspond to CommandPerform and CommandCleanup.
 data WorkerStage = PerformStage | CleanupStage
-	deriving (Eq)
+	deriving (Show, Eq)
 
 workerStage :: Worker t -> WorkerStage
 workerStage (IdleWorker _ s) = s

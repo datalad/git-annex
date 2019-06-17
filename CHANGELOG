@@ -1,9 +1,11 @@
 git-annex (7.20190616) UNRELEASED; urgency=medium
 
-  * When running multiple concurrent actions, the cleanup phase is run
-    in a separate queue than the main action queue. This can make some
-    commands faster, because less time is spent on bookkeeping in
-    between each file transfer.
+  * get, move, copy, sync: When -J or annex.jobs has enabled concurrency,
+    checksum verification uses a separate job pool than is used for
+    downloads, to keep bandwidth saturated.
+  * Other commands also run their cleanup phase using a separate job pool
+    than their perform phase, which may make some of them somewhat faster
+    when running concurrently as well.
 
  -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
 

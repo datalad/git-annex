@@ -7,6 +7,9 @@ module Types.Concurrency where
 
 import Utility.PartialPrelude
 
+-- Note that Concurrent 1 is not the same as NonConcurrent;
+-- the former specifies 1 job of each particular kind, but there can be
+-- more than one kind of job running concurrently.
 data Concurrency = NonConcurrent | Concurrent Int | ConcurrentPerCpu
 
 parseConcurrency :: String -> Maybe Concurrency

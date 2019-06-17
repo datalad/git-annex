@@ -28,6 +28,7 @@ import Config
 import Utility.Daemon
 import Types.Transfer
 import Types.ActionItem
+import Types.WorkerPool
 
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
@@ -103,6 +104,24 @@ stop = return Nothing
 {- Stops unless a condition is met. -}
 stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
+
+{- This can be used in the perform stage to run the action that is the bulk
+ - of the work to do in that stage. If the action succeeds, then any actions
+ - run after it will be scheduled as if they were run in the cleanup stage
+ - instead of the perform stage.
+ -
+ - This is not needed for a perform stage that uses `next` to run the
+ - cleanup stage action. But sometimes a larger action is being built up
+ - and it's not practical to separate out the cleanup stage part from the
+ - rest of the action.
+ -}
+performJob :: Observable a => Annex a -> Annex a
+performJob a = do
+	r <- a
+	if observeBool r
+		then changeStageTo CleanupStage
+		else noop
+	return r
 
 {- When acting on a failed transfer, stops unless it was in the specified
  - direction. -}

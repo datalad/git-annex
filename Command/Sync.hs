@@ -692,7 +692,8 @@ syncFile ebloom rs af k = do
 		, return []
 		)
 	get have = includeCommandAction $ starting "get" ai $
-		next $ getKey' k af have
+		stopUnless (getKey' k af have) $
+			next $ return True
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False

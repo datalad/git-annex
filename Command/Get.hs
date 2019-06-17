@@ -108,7 +108,7 @@ getKey' key afile = dispatch
 		| Remote.hasKeyCheap r =
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
-	docopy r witness = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key $ \dest ->
+	docopy r witness = performJob $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key $ \dest ->
 		download (Remote.uuid r) key afile stdRetry
 			(\p -> do
 				showAction $ "from " ++ Remote.name r

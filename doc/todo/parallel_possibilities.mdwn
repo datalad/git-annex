@@ -8,30 +8,8 @@ are still some things that could be improved, tracked here:
   supported; it might be good to have `--jobs=cpus-1` to leave a spare
   cpu to avoid contention, or `--jobs=remotes*2` to run 2 jobs per remote.
 
-* Parallelism is often used when the user wants to full saturate the pipe
-  to a remote, since having some extra transfers running avoid being
-  delayed while git-annex runs cleanup actions, checksum verification,
-  and other non-transfer stuff.
-
-  But, the user will sometimes be disappointed, because every job
-  can still end up stuck doing checksum verification at the same time, 
-  so the pipe to the remote is not saturated.
-
-  Now that cleanup actions don't occupy space in the main worker queue,
-  all that needs to be done is make checksum verification be done as the
-  cleanup action. Currently, it's bundled into the same action that
-  transfers content.
-
-  > Had a closer look at moving the checksum verification to cleanup, 
-  > and it's really quite difficult to do. Things like runTransfer 
-  > and pickRemote expect to be able to run the entire transfer action,
-  > including verification, and if it fails may retry it or try to
-  > transfer from a different remote instead.
-  > 
-  > It feels like inverting all that control to move verification to
-  > cleanup would introduce a lot of complexity if it's even possible to do
-  > cleanly at all.
-  > 
-  > Makes me wonder about just calling changeStageTo once the transfer
-  > is complete and before verification. Feels like a hack, but I think it
-  > would just work.
+* Checksum verification is done in the cleanup stage job pool now for
+  `git-annex get`, and `git-annex move --from` etc. But only for downloads.
+  When an upload involves checksum verification, eg `git annex move --to` a
+  removable drive, that checksum verification is done inside Remote.Git,
+  and still runs in the perform stage job pool.
