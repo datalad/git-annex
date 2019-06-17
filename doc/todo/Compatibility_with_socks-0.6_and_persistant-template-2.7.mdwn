@@ -1,0 +1,5 @@
+The current Hackage version (7.20190615) only compiles with the constraints socks<0.6, persistent-template<2.7.
+
+The compiler errors can be fixed with the attached patches.
+
+In the case of the socks changes (for Tor), I am not sure if it will actually work correctly.
