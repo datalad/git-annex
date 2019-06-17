@@ -1,0 +1,14 @@
+Finally got checksum verification running in a separate job pool from
+downloads, to better keep bandwidth saturated.
+
+I had to resort to what felt like a bit of a hack, but I can't see a better
+way to do it. Also, I got stuck for far too long on a STM deadlock bug.
+
+Interestingly, this means that -J1 now has a purpose, it's not the same as
+no -J option. Instead, it lets one download and also one concurrent
+checksum of the previous download run at the same time.
+
+It would be nice if -J1 could be the default.. One problem with that is
+that it needs a unicode locale to work due to a limitation of
+concurrent-output. Changing the concurrency method based on the locale does
+not seem like a good idea.
