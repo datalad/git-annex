@@ -1,0 +1,11 @@
+When doing `git-annex-sync` with a [Bitbucket](https://bitbucket.org) repository, I get the errors:
+
+>(master_env_v17) /web/personal/ilya > git annex sync
+>
+>Failed to get annex.uuid configuration of repository origin
+>
+>Instead, got: "logged in as notestaff\n\nYou can use git or hg to connect to Bitbucket. Shell access is disabled\n"
+>
+>This is unexpected; please check the network transport!
+
+What is the right way to fix this?  Thanks!
