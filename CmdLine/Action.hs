@@ -215,19 +215,20 @@ startConcurrency usedstages a = do
   where
 	goconcurrent n = do
 		raisecapabilitiesto n
-		initworkerpool n
 		withMessageState $ \s -> case outputType s of
 			NormalOutput -> ifM (liftIO concurrentOutputSupported)
 				( Regions.displayConsoleRegions $
-					goconcurrent' True
-				, goconcurrent' False
+					goconcurrent' n True
+				, goconcurrent' n False
 				)
-			_ -> goconcurrent' False
-	goconcurrent' b = bracket_ (setup b) cleanup a
+			_ -> goconcurrent' n False
+	goconcurrent' n b = bracket_ (setup n b) cleanup a
 
 	goconcurrentpercpu = goconcurrent =<< liftIO getNumProcessors
 
-	setup = setconcurrentoutputenabled
+	setup n b = do
+		setconcurrentoutputenabled b
+		initworkerpool n
 
 	cleanup = do
 		finishCommandActions
@@ -247,10 +248,11 @@ startConcurrency usedstages a = do
 		-- could cause threads to contend over eg, calls to
 		-- setConfig.
 		_ <- remoteList
-		st <- dupState
-		tv <- liftIO $ newTMVarIO $
-			allocateWorkerPool st (max n 1) usedstages
+		tv <- liftIO newEmptyTMVarIO
 		Annex.changeState $ \s -> s { Annex.workers = Just tv }
+		st <- dupState
+		liftIO $ atomically $ putTMVar tv $
+			allocateWorkerPool st (max n 1) usedstages
 
 {- Ensures that only one thread processes a key at a time.
  - Other threads will block until it's done.
