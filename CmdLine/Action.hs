@@ -129,8 +129,8 @@ finishCommandActions = Annex.getState Annex.workers >>= \case
 	Nothing -> noop
 	Just tv -> do
 		Annex.changeState $ \s -> s { Annex.workers = Nothing }
-		WorkerPool _ l <- liftIO $ atomically $ takeTMVar tv
-		forM_ (mapMaybe workerAsync l) $ \aid ->
+		pool <- liftIO $ atomically $ takeTMVar tv
+		forM_ (mapMaybe workerAsync $ workerList pool) $ \aid ->
 			liftIO (waitCatch aid) >>= \case
 				Left _ -> noop
 				Right st -> mergeState st

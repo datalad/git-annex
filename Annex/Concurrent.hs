@@ -84,11 +84,6 @@ stopCoProcesses = do
  -
  - Also a noop if the stage is not one of the stages that the worker pool
  - uses.
- -
- - The pool needs to continue to contain the same number of worker threads
- - for each stage. So, an idle worker with the desired stage is found in 
- - the pool (waiting if necessary for one to become idle), and the stages
- - of it and the current thread are swapped.
  -}
 enteringStage :: WorkerStage -> Annex a -> Annex a
 enteringStage newstage a = Annex.getState Annex.workers >>= \case
@@ -99,26 +94,49 @@ enteringStage newstage a = Annex.getState Annex.workers >>= \case
 		let restore = maybe noop (void . changeStageTo mytid tv)
 		bracket set restore (const a)
 
+{- This needs to leave the WorkerPool with the same number of
+ - idle and active threads, and with the same number of threads for each
+ - WorkerStage. So, all it can do is swap the WorkerStage of our thread's
+ - ActiveWorker with an IdleWorker.
+ -
+ - Must avoid a deadlock if all worker threads end up here at the same
+ - time, or if there are no suitable IdleWorkers left. So we first
+ - replace our ActiveWorker with an IdleWorker in the pool, to allow
+ - some other thread to use it, before waiting for a suitable IdleWorker
+ - for us to use.
+ -
+ - Note that the spareVals in the WorkerPool does not get anything added to
+ - it when adding the IdleWorker, so there will for a while be more IdleWorkers
+ - in the pool than spareVals. That does not prevent other threads that call
+ - this from using them though, so it's fine.
+ -}
 changeStageTo :: ThreadId -> TMVar (WorkerPool AnnexState) -> WorkerStage -> Annex (Maybe WorkerStage)
-changeStageTo mytid tv newstage = liftIO $ atomically $ do
-	pool <- takeTMVar tv
-	case pool of
-		WorkerPool usedstages _
-			| memberStage newstage usedstages ->
-				case removeThreadIdWorkerPool mytid pool of
-					Just ((myaid, oldstage), WorkerPool usedstages' l)
-						| oldstage /= newstage -> do
-							(idlest, restpool) <- waitWorkerSlot usedstages' newstage l
-							let pool' = addWorkerPool (IdleWorker idlest oldstage) $
-								addWorkerPool (ActiveWorker myaid newstage) restpool
-							putTMVar tv pool'
-							return (Just oldstage)
-					_ -> do
+changeStageTo mytid tv newstage = liftIO $
+	replaceidle >>= maybe (return Nothing) waitidle
+  where
+	replaceidle = atomically $ do
+		pool <- takeTMVar tv
+		if memberStage newstage (usedStages pool)
+			then case removeThreadIdWorkerPool mytid pool of
+				Just ((myaid, oldstage), pool')
+					| oldstage /= newstage -> do
+						putTMVar tv $
+							addWorkerPool (IdleWorker oldstage) pool'
+						return $ Just (myaid, oldstage)
+					| otherwise -> do
 						putTMVar tv pool
 						return Nothing
-		_ -> do
-			putTMVar tv pool
-			return Nothing
+				_ -> do
+					putTMVar tv pool
+					return Nothing
+			else do
+				putTMVar tv pool
+				return Nothing
+	
+	waitidle (myaid, oldstage) = atomically $ do
+		pool <- waitIdleWorkerSlot newstage =<< takeTMVar tv
+		putTMVar tv $ addWorkerPool (ActiveWorker myaid newstage) pool
+		return (Just oldstage)
 
 -- | Waits until there's an idle worker in the worker pool
 -- for its initial stage, removes it from the pool, and returns its state.
@@ -126,18 +144,24 @@ changeStageTo mytid tv newstage = liftIO $ atomically $ do
 -- If the worker pool is not already allocated, returns Nothing.
 waitInitialWorkerSlot :: TMVar (WorkerPool Annex.AnnexState) -> STM (Maybe (Annex.AnnexState, WorkerStage))
 waitInitialWorkerSlot tv = do
-	WorkerPool usedstages l <- takeTMVar tv
-	let stage = initialStage usedstages
-	(st, pool') <- waitWorkerSlot usedstages stage l
-	putTMVar tv pool'
+	pool <- takeTMVar tv
+	let stage = initialStage (usedStages pool)
+	st <- go stage pool
 	return $ Just (st, stage)
+  where
+	go wantstage pool = case spareVals pool of
+		[] -> retry
+		(v:vs) -> do
+			let pool' = pool { spareVals = vs }
+			putTMVar tv =<< waitIdleWorkerSlot wantstage pool'
+			return v
 
--- | Waits until there's an idle worker for the specified stage, and returns
--- its state and a WorkerPool containing all the other workers.
-waitWorkerSlot :: UsedStages -> WorkerStage -> [Worker Annex.AnnexState] -> STM (Annex.AnnexState, WorkerPool Annex.AnnexState)
-waitWorkerSlot usedstages wantstage = findidle []
+waitIdleWorkerSlot :: WorkerStage -> WorkerPool Annex.AnnexState -> STM (WorkerPool Annex.AnnexState)
+waitIdleWorkerSlot wantstage pool = do
+	l <- findidle [] (workerList pool)
+	return $ pool { workerList = l }
   where
 	findidle _ [] = retry
-	findidle c ((IdleWorker st stage):rest) 
-		| stage == wantstage = return (st, WorkerPool usedstages (c ++ rest))
+	findidle c ((IdleWorker stage):rest) | stage == wantstage =
+		return (c ++ rest)
 	findidle c (w:rest) = findidle (w:c) rest

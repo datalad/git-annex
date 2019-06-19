@@ -12,17 +12,23 @@ import Control.Concurrent.Async
 import qualified Data.Set as S
 
 -- | Pool of worker threads. 
-data WorkerPool t = WorkerPool UsedStages [Worker t]
+data WorkerPool t = WorkerPool
+	{ usedStages :: UsedStages
+	, workerList :: [Worker t]
+	, spareVals :: [t]
+	-- ^ Normally there is one value for each IdleWorker,
+	-- but there can temporarily be fewer.
+	} 
 	deriving (Show)
 
 -- | A worker can either be idle or running an Async action.
 -- And it is used for some stage.
 data Worker t
-	= IdleWorker t WorkerStage
+	= IdleWorker WorkerStage
 	| ActiveWorker (Async t) WorkerStage
 
 instance Show (Worker t) where
-	show (IdleWorker _ s) = "IdleWorker " ++ show s
+	show (IdleWorker s) = "IdleWorker " ++ show s
 	show (ActiveWorker _ s) = "ActiveWorker " ++ show s
 
 data WorkerStage
@@ -46,12 +52,12 @@ data WorkerStage
 -- stage, and so there will be no blocking before starting them.
 data UsedStages = UsedStages
 	{ initialStage :: WorkerStage
-	, usedStages :: S.Set WorkerStage
+	, stageSet :: S.Set WorkerStage
 	}
 	deriving (Show)
 
 memberStage :: WorkerStage -> UsedStages -> Bool
-memberStage s u = S.member s (usedStages u)
+memberStage s u = S.member s (stageSet u)
 
 -- | The default is to use only the CommandPerform and CommandCleanup
 -- stages. Since cleanup actions often don't contend much with
@@ -60,7 +66,7 @@ memberStage s u = S.member s (usedStages u)
 commandStages :: UsedStages
 commandStages = UsedStages
 	{ initialStage = PerformStage
-	, usedStages = S.fromList [PerformStage, CleanupStage]
+	, stageSet = S.fromList [PerformStage, CleanupStage]
 	}
 
 -- | When a command is transferring content, it can use this instead.
@@ -70,15 +76,15 @@ commandStages = UsedStages
 transferStages :: UsedStages
 transferStages = UsedStages
 	{ initialStage = TransferStage
-	, usedStages = S.fromList [TransferStage, VerifyStage]
+	, stageSet = S.fromList [TransferStage, VerifyStage]
 	}
 
 workerStage :: Worker t -> WorkerStage
-workerStage (IdleWorker _ s) = s
+workerStage (IdleWorker s) = s
 workerStage (ActiveWorker _ s) = s
 
 workerAsync :: Worker t -> Maybe (Async t)
-workerAsync (IdleWorker _ _) = Nothing
+workerAsync (IdleWorker _) = Nothing
 workerAsync (ActiveWorker aid _) = Just aid
 
 -- | Allocates a WorkerPool that has the specified number of workers
@@ -86,39 +92,41 @@ workerAsync (ActiveWorker aid _) = Just aid
 --
 -- The stages are distributed evenly throughout.
 allocateWorkerPool :: t -> Int -> UsedStages -> WorkerPool t
-allocateWorkerPool t n u = WorkerPool u $ take (n+n) $
-	map (uncurry IdleWorker) $ zip (repeat t) stages
+allocateWorkerPool t n u = WorkerPool
+	{ usedStages = u
+	, workerList = take totalthreads $ map IdleWorker stages
+	, spareVals = replicate totalthreads t
+	}
   where
-	stages = concat $ repeat $ S.toList $ usedStages u
+	stages = concat $ repeat $ S.toList $ stageSet u
+	totalthreads = n * S.size (stageSet u)
 
 addWorkerPool :: Worker t -> WorkerPool t -> WorkerPool t
-addWorkerPool w (WorkerPool u l) = WorkerPool u (w:l)
-
-idleWorkers :: WorkerPool t -> [t]
-idleWorkers (WorkerPool _ l) = go l
-  where
-	go [] = []
-	go (IdleWorker t _ : rest) = t : go rest
-	go (ActiveWorker _ _ : rest) = go rest
+addWorkerPool w pool = pool { workerList = w : workerList pool }
 
 -- | Removes a worker from the pool whose Async uses the ThreadId.
 --
 -- Each Async has its own ThreadId, so this stops once it finds
 -- a match.
 removeThreadIdWorkerPool :: ThreadId -> WorkerPool t -> Maybe ((Async t, WorkerStage), WorkerPool t)
-removeThreadIdWorkerPool tid (WorkerPool u l) = go [] l
+removeThreadIdWorkerPool tid pool = go [] (workerList pool)
   where
 	go _ [] = Nothing
 	go c (ActiveWorker a stage : rest)
-		| asyncThreadId a == tid = Just ((a, stage), WorkerPool u (c++rest))
+		| asyncThreadId a == tid =
+			let pool' = pool { workerList = (c++rest) }
+			in Just ((a, stage), pool')
 	go c (v : rest) = go (v:c) rest
 
 deactivateWorker :: WorkerPool t -> Async t -> t -> WorkerPool t
-deactivateWorker (WorkerPool u l) aid t = WorkerPool u $ go l
+deactivateWorker pool aid t = pool
+	{ workerList = go (workerList pool)
+	, spareVals = t : spareVals pool
+	}
   where
 	go [] = []
-	go (w@(IdleWorker _ _) : rest) = w : go rest
+	go (w@(IdleWorker _) : rest) = w : go rest
 	go (w@(ActiveWorker a st) : rest)
-		| a == aid = IdleWorker t st : rest
+		| a == aid = IdleWorker st : rest
 		| otherwise = w : go rest
 
