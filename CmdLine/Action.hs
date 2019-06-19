@@ -129,11 +129,12 @@ finishCommandActions = Annex.getState Annex.workers >>= \case
 	Nothing -> noop
 	Just tv -> do
 		Annex.changeState $ \s -> s { Annex.workers = Nothing }
-		pool <- liftIO $ atomically $ takeTMVar tv
-		forM_ (mapMaybe workerAsync $ workerList pool) $ \aid ->
-			liftIO (waitCatch aid) >>= \case
-				Left _ -> noop
-				Right st -> mergeState st
+		sts <- liftIO $ atomically $ do
+			pool <- readTMVar tv
+			if allIdle pool
+				then return (spareVals pool)
+				else retry
+		mapM_ mergeState sts
 
 {- Like commandAction, but without the concurrency. -}
 includeCommandAction :: CommandStart -> CommandCleanup

@@ -17,7 +17,8 @@ data WorkerPool t = WorkerPool
 	, workerList :: [Worker t]
 	, spareVals :: [t]
 	-- ^ Normally there is one value for each IdleWorker,
-	-- but there can temporarily be fewer.
+	-- but there can temporarily be fewer values, when a thread is
+	-- changing between stages.
 	} 
 	deriving (Show)
 
@@ -130,3 +131,11 @@ deactivateWorker pool aid t = pool
 		| a == aid = IdleWorker st : rest
 		| otherwise = w : go rest
 
+allIdle :: WorkerPool t -> Bool
+allIdle pool = all idle (workerList pool)
+	-- If this does not hold, a thread must be transitioning between
+	-- states, so it's not really idle.
+	&& length (spareVals pool) == length (workerList pool)
+  where
+	idle (IdleWorker _) = True
+	idle (ActiveWorker _ _) = False
