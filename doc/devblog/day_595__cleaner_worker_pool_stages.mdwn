@@ -1,0 +1,23 @@
+I mentioned the other day about "a bit of a hack" that I couldn't find a
+way to avoid. After sleeping on it, I did find a much cleaner way.
+
+The problem involved classifying threads in a worker pool, so eg only a
+certian number of transfer threads and a certian number of checksum threads
+run at the same time.
+
+I had been relying on the stages used internally by git-annex commands to
+classify the threads. And that is a reasonable default for random git-annex
+commands that might do anything, but for a specific command like `git annex
+get` that is all about transferring and checksumming, it would be better to
+mark the segments of code that do transfers and checksums, and have a way to
+specify which what classifications matter for scheduling the actions of the
+command.
+
+As well as cleaning up the design, that also fixed one bug in the thread
+classification. And, it would now be easy to classify threads in other
+ways specific to particular commands.
+
+---
+
+Then I spent too long fixing a STM deadlock. Same one I spent too long
+"fixing" the other day, but I really understaood it and fixed it this time.
