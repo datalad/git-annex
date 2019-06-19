@@ -12,9 +12,7 @@ import Control.Concurrent.Async
 import qualified Data.Set as S
 
 -- | Pool of worker threads. 
-data WorkerPool t
-	= UnallocatedWorkerPool
-	| WorkerPool UsedStages [Worker t]
+data WorkerPool t = WorkerPool UsedStages [Worker t]
 	deriving (Show)
 
 -- | A worker can either be idle or running an Async action.
@@ -95,10 +93,8 @@ allocateWorkerPool t n u = WorkerPool u $ take (n+n) $
 
 addWorkerPool :: Worker t -> WorkerPool t -> WorkerPool t
 addWorkerPool w (WorkerPool u l) = WorkerPool u (w:l)
-addWorkerPool _ UnallocatedWorkerPool = UnallocatedWorkerPool
 
 idleWorkers :: WorkerPool t -> [t]
-idleWorkers UnallocatedWorkerPool = []
 idleWorkers (WorkerPool _ l) = go l
   where
 	go [] = []
@@ -110,7 +106,6 @@ idleWorkers (WorkerPool _ l) = go l
 -- Each Async has its own ThreadId, so this stops once it finds
 -- a match.
 removeThreadIdWorkerPool :: ThreadId -> WorkerPool t -> Maybe ((Async t, WorkerStage), WorkerPool t)
-removeThreadIdWorkerPool _  UnallocatedWorkerPool = Nothing
 removeThreadIdWorkerPool tid (WorkerPool u l) = go [] l
   where
 	go _ [] = Nothing
@@ -119,7 +114,6 @@ removeThreadIdWorkerPool tid (WorkerPool u l) = go [] l
 	go c (v : rest) = go (v:c) rest
 
 deactivateWorker :: WorkerPool t -> Async t -> t -> WorkerPool t
-deactivateWorker UnallocatedWorkerPool _ _ = UnallocatedWorkerPool
 deactivateWorker (WorkerPool u l) aid t = WorkerPool u $ go l
   where
 	go [] = []

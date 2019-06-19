@@ -91,12 +91,13 @@ stopCoProcesses = do
  - of it and the current thread are swapped.
  -}
 enteringStage :: WorkerStage -> Annex a -> Annex a
-enteringStage newstage a = do
-	mytid <- liftIO myThreadId
-	tv <- Annex.getState Annex.workers
-	let set = changeStageTo mytid tv newstage
-	let restore = maybe noop (void . changeStageTo mytid tv)
-	bracket set restore (const a)
+enteringStage newstage a = Annex.getState Annex.workers >>= \case
+	Nothing -> a
+	Just tv -> do
+		mytid <- liftIO myThreadId
+		let set = changeStageTo mytid tv newstage
+		let restore = maybe noop (void . changeStageTo mytid tv)
+		bracket set restore (const a)
 
 changeStageTo :: ThreadId -> TMVar (WorkerPool AnnexState) -> WorkerStage -> Annex (Maybe WorkerStage)
 changeStageTo mytid tv newstage = liftIO $ atomically $ do
@@ -124,16 +125,12 @@ changeStageTo mytid tv newstage = liftIO $ atomically $ do
 --
 -- If the worker pool is not already allocated, returns Nothing.
 waitInitialWorkerSlot :: TMVar (WorkerPool Annex.AnnexState) -> STM (Maybe (Annex.AnnexState, WorkerStage))
-waitInitialWorkerSlot tv =
-	takeTMVar tv >>= \case
-		UnallocatedWorkerPool -> do
-			putTMVar tv UnallocatedWorkerPool 
-			return Nothing
-		WorkerPool usedstages l -> do
-			let stage = initialStage usedstages
-			(st, pool') <- waitWorkerSlot usedstages stage l
-			putTMVar tv pool'
-			return $ Just (st, stage)
+waitInitialWorkerSlot tv = do
+	WorkerPool usedstages l <- takeTMVar tv
+	let stage = initialStage usedstages
+	(st, pool') <- waitWorkerSlot usedstages stage l
+	putTMVar tv pool'
+	return $ Just (st, stage)
 
 -- | Waits until there's an idle worker for the specified stage, and returns
 -- its state and a WorkerPool containing all the other workers.

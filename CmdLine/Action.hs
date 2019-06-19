@@ -60,10 +60,11 @@ commandAction start = Annex.getState Annex.concurrency >>= \case
 	ConcurrentPerCpu -> runconcurrent
   where
 	runnonconcurrent = void $ includeCommandAction start
-	runconcurrent = do
-		tv <- Annex.getState Annex.workers
-		liftIO (atomically (waitInitialWorkerSlot tv)) >>=
-			maybe runnonconcurrent (runconcurrent' tv)
+	runconcurrent = Annex.getState Annex.workers >>= \case
+		Nothing -> runnonconcurrent
+		Just tv -> 
+			liftIO (atomically (waitInitialWorkerSlot tv)) >>=
+				maybe runnonconcurrent (runconcurrent' tv)
 	runconcurrent' tv (workerst, workerstage) = do
 		aid <- liftIO $ async $ snd <$> Annex.run workerst
 			(concurrentjob workerst)
@@ -124,13 +125,12 @@ commandAction start = Annex.getState Annex.concurrency >>= \case
  - back into the current Annex's state.
  -}
 finishCommandActions :: Annex ()
-finishCommandActions = do
-	tv <- Annex.getState Annex.workers
-	pool <- liftIO $ atomically $
-		swapTMVar tv UnallocatedWorkerPool
-	case pool of
-		UnallocatedWorkerPool -> noop
-		WorkerPool _ l -> forM_ (mapMaybe workerAsync l) $ \aid ->
+finishCommandActions = Annex.getState Annex.workers >>= \case
+	Nothing -> noop
+	Just tv -> do
+		Annex.changeState $ \s -> s { Annex.workers = Nothing }
+		WorkerPool _ l <- liftIO $ atomically $ takeTMVar tv
+		forM_ (mapMaybe workerAsync l) $ \aid ->
 			liftIO (waitCatch aid) >>= \case
 				Left _ -> noop
 				Right st -> mergeState st
@@ -248,9 +248,9 @@ startConcurrency usedstages a = do
 		-- setConfig.
 		_ <- remoteList
 		st <- dupState
-		tv <- Annex.getState Annex.workers
-		liftIO $ atomically $ putTMVar tv $
+		tv <- liftIO $ newTMVarIO $
 			allocateWorkerPool st (max n 1) usedstages
+		Annex.changeState $ \s -> s { Annex.workers = Just tv }
 
 {- Ensures that only one thread processes a key at a time.
  - Other threads will block until it's done.
