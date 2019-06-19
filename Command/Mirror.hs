@@ -41,7 +41,7 @@ instance DeferredParseClass MirrorOptions where
 		<*> pure (keyOptions v)
 
 seek :: MirrorOptions -> CommandSeek
-seek o = startConcurrency commandStages $ 
+seek o = startConcurrency transferStages $ 
 	withKeyOptions (keyOptions o) False
 		(commandAction . startKey o (AssociatedFile Nothing))
 		(withFilesInGit (commandAction . (whenAnnexed $ start o)))

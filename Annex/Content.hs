@@ -91,6 +91,7 @@ import Utility.InodeCache
 import Annex.Content.LowLevel
 import Annex.Content.PointerFile
 import Annex.Concurrent
+import Types.WorkerPool
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -388,7 +389,7 @@ verifyKeyContent rsp v verification k f = case (rsp, verification) of
 		)
 	(_, MustVerify) -> verify
   where
-	verify = verifysize <&&> verifycontent
+	verify = enteringStage VerifyStage $ verifysize <&&> verifycontent
 	verifysize = case keySize k of
 		Nothing -> return True
 		Just size -> do

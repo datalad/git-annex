@@ -164,7 +164,7 @@ instance DeferredParseClass SyncOptions where
 seek :: SyncOptions -> CommandSeek
 seek o = do
 	prepMerge
-	startConcurrency commandStages (seek' o)
+	startConcurrency transferStages (seek' o)
 	
 seek' :: SyncOptions -> CommandSeek
 seek' o = do

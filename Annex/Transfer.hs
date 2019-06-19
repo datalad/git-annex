@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -30,7 +30,9 @@ import Utility.ThreadScheduler
 import Annex.LockPool
 import Types.Key
 import qualified Types.Remote as Remote
+import Annex.Concurrent
 import Types.Concurrency
+import Types.WorkerPool
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M
@@ -77,7 +79,7 @@ alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider 
 alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile retrydecider transferaction = debugLocks $ checkSecureHashes t $ do
+runTransfer' ignorelock t afile retrydecider transferaction = enteringStage TransferStage $ debugLocks $ checkSecureHashes t $ do
 	shouldretry <- retrydecider
 	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info

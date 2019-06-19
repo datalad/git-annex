@@ -54,7 +54,7 @@ data RemoveWhen = RemoveSafe | RemoveNever
 	deriving (Show, Eq)
 
 seek :: MoveOptions -> CommandSeek
-seek o = startConcurrency commandStages $ do
+seek o = startConcurrency transferStages $ do
 	let go = whenAnnexed $ start (fromToOptions o) (removeWhen o)
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt go
@@ -208,7 +208,7 @@ fromPerform src removewhen key afile = do
   where
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile stdRetry $ \p ->
-			performJob $ getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
+			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
 				Remote.retrieveKeyFile src key afile t p
 	dispatch _ _ False = stop -- failed
 	dispatch RemoveNever _ True = next $ return True -- copy complete
