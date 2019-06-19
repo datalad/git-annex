@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="Set remote.<name>.annex-ignore"
+ date="2019-06-19T14:18:19Z"
+ content="""
+I think in this case you should set remote.origin.annex-ignore to true.
+"""]]

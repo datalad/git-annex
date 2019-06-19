@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="Issue with description cache?"
+ date="2019-06-17T21:11:14Z"
+ content="""
+I took another look at this thinking that maybe I could spot something obvious in the condition added in a14f6ce75
+
+```
+	{- Avoid overwriting existing description with a default
+	 - description. -}
+	whenM (pure (isJust mdescription) <||> not . M.member u <$> uuidDescMap) $
+		describeUUID u =<< genDescription mdescription
+```
+
+but that looks fine.  Grepping around for uuidDescMap, I spotted a couple of places where the cache needed to be invalidated.  Blindly applying that same approach I did
+
+```
+diff --git a/Annex/Init.hs b/Annex/Init.hs
+index cb7f8905e..6303103df 100644
+--- a/Annex/Init.hs
++++ b/Annex/Init.hs
+@@ -76,6 +76,7 @@ genDescription Nothing = do
+ 
+ initialize :: Maybe String -> Maybe RepoVersion -> Annex ()
+ initialize mdescription mversion = checkCanInitialize $ do
++	uuidDescMapLoad
+ 	{- Has to come before any commits are made as the shared
+ 	 - clone heuristic expects no local objects. -}
+ 	sharedclone <- checkSharedClone
+```
+
+That fixes the problem on my end (i.e., `git annex init` sets the description to the default user@host:dir description) while still addressing the original issue fixed by a14f6ce75.
+
+So it seems like it has something to do with the uuidDescMap cache, but I haven't been able to figure out what in particular.
+"""]]

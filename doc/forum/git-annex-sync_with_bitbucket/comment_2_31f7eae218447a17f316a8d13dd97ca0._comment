@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-06-19T16:51:31Z"
+ content="""
+But I do want git-annex-sync to sync the git-annex branch with that remote.
+Normally, git-annex deals with the case of git remotes that don't support git-annex-shell without giving an error.
+"""]]
