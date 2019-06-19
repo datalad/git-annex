@@ -94,10 +94,9 @@ enteringStage :: WorkerStage -> Annex a -> Annex a
 enteringStage newstage a = do
 	mytid <- liftIO myThreadId
 	tv <- Annex.getState Annex.workers
-	let setup = changeStageTo mytid tv newstage
-	let cleanup Nothing = noop
-	let cleanup (Just oldstage) = changeStageTo mytid tv oldstage
-	bracket setup cleanup (const a)
+	let set = changeStageTo mytid tv newstage
+	let restore = maybe noop (void . changeStageTo mytid tv)
+	bracket set restore (const a)
 
 changeStageTo :: ThreadId -> TMVar (WorkerPool AnnexState) -> WorkerStage -> Annex (Maybe WorkerStage)
 changeStageTo mytid tv newstage = liftIO $ atomically $ do
