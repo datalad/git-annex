@@ -162,9 +162,12 @@ instance DeferredParseClass SyncOptions where
 		<*> pure (resolveMergeOverride v)
 
 seek :: SyncOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = do
 	prepMerge
-
+	startConcurrency commandStages (seek' o)
+	
+seek' :: SyncOptions -> CommandSeek
+seek' o = do
 	let withbranch a = a =<< getCurrentBranch
 
 	remotes <- syncRemotes (syncWith o)

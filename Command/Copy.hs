@@ -44,7 +44,7 @@ instance DeferredParseClass CopyOptions where
 		<*> pure (batchOption v)
 
 seek :: CopyOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = startConcurrency commandStages $ do
 	let go = whenAnnexed $ start o
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt go

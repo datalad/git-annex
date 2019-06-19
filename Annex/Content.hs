@@ -90,6 +90,7 @@ import Annex.InodeSentinal
 import Utility.InodeCache
 import Annex.Content.LowLevel
 import Annex.Content.PointerFile
+import Annex.Concurrent
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool

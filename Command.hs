@@ -28,7 +28,7 @@ import Config
 import Utility.Daemon
 import Types.Transfer
 import Types.ActionItem
-import Types.WorkerPool
+import Types.WorkerPool as ReExported
 
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command

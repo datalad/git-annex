@@ -50,7 +50,7 @@ optParser desc = AddOptions
 		)
 
 seek :: AddOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = startConcurrency commandStages $ do
 	matcher <- largeFilesMatcher
 	let gofile file = ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
 		( start file

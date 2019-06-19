@@ -52,7 +52,7 @@ parseDropFromOption = parseRemoteOption <$> strOption
 	)
 
 seek :: DropOptions -> CommandSeek
-seek o = allowConcurrentOutput $
+seek o = startConcurrency commandStages $
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt go
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)

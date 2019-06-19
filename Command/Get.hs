@@ -38,7 +38,7 @@ optParser desc = GetOptions
 	<*> parseBatchOption
 
 seek :: GetOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = startConcurrency commandStages $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
 	let go = whenAnnexed $ start o from
 	case batchOption o of

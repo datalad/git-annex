@@ -88,7 +88,7 @@ optParser desc = FsckOptions
 			))
 
 seek :: FsckOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = startConcurrency commandStages $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (fsckFromOption o)
 	u <- maybe getUUID (pure . Remote.uuid) from
 	checkDeadRepo u

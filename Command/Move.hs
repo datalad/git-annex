@@ -54,7 +54,7 @@ data RemoveWhen = RemoveSafe | RemoveNever
 	deriving (Show, Eq)
 
 seek :: MoveOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = startConcurrency commandStages $ do
 	let go = whenAnnexed $ start (fromToOptions o) (removeWhen o)
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt go

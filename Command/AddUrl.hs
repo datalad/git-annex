@@ -93,7 +93,7 @@ parseDownloadOptions withfileoption = DownloadOptions
 		else pure Nothing
 
 seek :: AddUrlOptions -> CommandSeek
-seek o = allowConcurrentOutput $ do
+seek o = startConcurrency commandStages $ do
 	forM_ (addUrls o) (\u -> go (o, u))
 	case batchOption o of
 		Batch fmt -> batchInput fmt (parseBatchInput o) go

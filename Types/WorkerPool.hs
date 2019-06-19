@@ -1,4 +1,4 @@
-{- Command worker pool.
+{- Worker thread pool.
  -
  - Copyright 2019 Joey Hess <id@joeyh.name>
  -
@@ -9,11 +9,12 @@ module Types.WorkerPool where
 
 import Control.Concurrent
 import Control.Concurrent.Async
+import qualified Data.Set as S
 
 -- | Pool of worker threads. 
 data WorkerPool t
 	= UnallocatedWorkerPool
-	| WorkerPool [Worker t]
+	| WorkerPool UsedStages [Worker t]
 	deriving (Show)
 
 -- | A worker can either be idle or running an Async action.
@@ -26,9 +27,53 @@ instance Show (Worker t) where
 	show (IdleWorker _ s) = "IdleWorker " ++ show s
 	show (ActiveWorker _ s) = "ActiveWorker " ++ show s
 
--- | These correspond to CommandPerform and CommandCleanup.
-data WorkerStage = PerformStage | CleanupStage
-	deriving (Show, Eq)
+data WorkerStage
+	= PerformStage
+	-- ^ Running a CommandPerform action.
+	| CleanupStage
+	-- ^ Running a CommandCleanup action.
+	| TransferStage
+	-- ^ Transferring content to or from a remote.
+	| VerifyStage
+	-- ^ Verifying content, eg by calculating a checksum.
+	deriving (Show, Eq, Ord)
+
+-- | Set of stages that make sense to be used while performing an action,
+-- and the stage to use initially.
+-- 
+-- Transitions between these stages will block as needed until there's a
+-- free Worker in the pool for the new stage.
+-- 
+-- Actions that indicate they are in some other stage won't change the
+-- stage, and so there will be no blocking before starting them.
+data UsedStages = UsedStages
+	{ initialStage :: WorkerStage
+	, usedStages :: S.Set WorkerStage
+	}
+	deriving (Show)
+
+memberStage :: WorkerStage -> UsedStages -> Bool
+memberStage s u = S.member s (usedStages u)
+
+-- | The default is to use only the CommandPerform and CommandCleanup
+-- stages. Since cleanup actions often don't contend much with
+-- perform actions, this prevents blocking starting the next perform action
+-- on finishing the previous cleanup action.
+commandStages :: UsedStages
+commandStages = UsedStages
+	{ initialStage = PerformStage
+	, usedStages = S.fromList [PerformStage, CleanupStage]
+	}
+
+-- | When a command is transferring content, it can use this instead.
+-- Transfers are often bottlenecked on the network another disk than the one
+-- containing the repository, while verification bottlenecks on
+-- the disk containing the repository or on the CPU.
+transferStages :: UsedStages
+transferStages = UsedStages
+	{ initialStage = TransferStage
+	, usedStages = S.fromList [TransferStage, VerifyStage]
+	}
 
 workerStage :: Worker t -> WorkerStage
 workerStage (IdleWorker _ s) = s
@@ -42,19 +87,19 @@ workerAsync (ActiveWorker aid _) = Just aid
 -- in it, of each stage.
 --
 -- The stages are distributed evenly throughout.
-allocateWorkerPool :: t -> Int -> WorkerPool t
-allocateWorkerPool t n = WorkerPool $ take (n+n) $
+allocateWorkerPool :: t -> Int -> UsedStages -> WorkerPool t
+allocateWorkerPool t n u = WorkerPool u $ take (n+n) $
 	map (uncurry IdleWorker) $ zip (repeat t) stages
   where
-	stages = concat $ repeat [PerformStage, CleanupStage]
+	stages = concat $ repeat $ S.toList $ usedStages u
 
 addWorkerPool :: Worker t -> WorkerPool t -> WorkerPool t
-addWorkerPool w (WorkerPool l) = WorkerPool (w:l)
-addWorkerPool w UnallocatedWorkerPool = WorkerPool [w]
+addWorkerPool w (WorkerPool u l) = WorkerPool u (w:l)
+addWorkerPool _ UnallocatedWorkerPool = UnallocatedWorkerPool
 
 idleWorkers :: WorkerPool t -> [t]
 idleWorkers UnallocatedWorkerPool = []
-idleWorkers (WorkerPool l) = go l
+idleWorkers (WorkerPool _ l) = go l
   where
 	go [] = []
 	go (IdleWorker t _ : rest) = t : go rest
@@ -65,17 +110,17 @@ idleWorkers (WorkerPool l) = go l
 -- Each Async has its own ThreadId, so this stops once it finds
 -- a match.
 removeThreadIdWorkerPool :: ThreadId -> WorkerPool t -> Maybe ((Async t, WorkerStage), WorkerPool t)
-removeThreadIdWorkerPool _ UnallocatedWorkerPool = Nothing
-removeThreadIdWorkerPool tid (WorkerPool l) = go [] l
+removeThreadIdWorkerPool _  UnallocatedWorkerPool = Nothing
+removeThreadIdWorkerPool tid (WorkerPool u l) = go [] l
   where
 	go _ [] = Nothing
 	go c (ActiveWorker a stage : rest)
-		| asyncThreadId a == tid = Just ((a, stage), WorkerPool (c++rest))
+		| asyncThreadId a == tid = Just ((a, stage), WorkerPool u (c++rest))
 	go c (v : rest) = go (v:c) rest
 
 deactivateWorker :: WorkerPool t -> Async t -> t -> WorkerPool t
 deactivateWorker UnallocatedWorkerPool _ _ = UnallocatedWorkerPool
-deactivateWorker (WorkerPool l) aid t = WorkerPool $ go l
+deactivateWorker (WorkerPool u l) aid t = WorkerPool u $ go l
   where
 	go [] = []
 	go (w@(IdleWorker _ _) : rest) = w : go rest

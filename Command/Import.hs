@@ -96,7 +96,7 @@ duplicateModeParser =
 		)
 
 seek :: ImportOptions -> CommandSeek
-seek o@(LocalImportOptions {}) = allowConcurrentOutput $ do
+seek o@(LocalImportOptions {}) = startConcurrency commandStages $ do
 	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
@@ -104,7 +104,7 @@ seek o@(LocalImportOptions {}) = allowConcurrentOutput $ do
 	largematcher <- largeFilesMatcher
 	(commandAction . startLocal largematcher (duplicateMode o))
 		`withPathContents` importFiles o
-seek o@(RemoteImportOptions {}) = allowConcurrentOutput $ do
+seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 	r <- getParsed (importFromRemote o)
 	unlessM (Remote.isImportSupported r) $
 		giveup "That remote does not support imports."
