@@ -375,13 +375,13 @@ download' noerror meterupdate url file uo =
 	ftpport = 21
 
 	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
-		Nothing -> runResourceT $ do
+		Just sz | sz > 0 -> resumeconduit req' sz
+		_ -> runResourceT $ do
 			liftIO $ debugM "url" (show req')
 			resp <- http req' (httpManager uo)
 			if responseStatus resp == ok200
 				then store zeroBytesProcessed WriteMode resp
 				else showrespfailure resp
-		Just sz -> resumeconduit req' sz
 	  where
 		req' = applyRequest uo $ req
 			-- Override http-client's default decompression of gzip

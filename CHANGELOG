@@ -6,6 +6,10 @@ git-annex (7.20190616) UNRELEASED; urgency=medium
   * Other commands also run their cleanup phase using a separate job pool
     than their perform phase, which may make some of them somewhat faster
     when running concurrently as well.
+  * When downloading an url and the destination file exists but is empty,
+    avoid using http range to resume, since a range "bytes=0-" is an unusual
+    edge case that it's best to avoid relying on working. This is known to
+    fix a case where importfeed downloaded a partial feed from such a server.
 
  -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
 

@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-06-20T15:18:49Z"
+ content="""
+Somehow git-annex receives a truncated file from the web server,
+so it is unable to parse it.
+
+That only happens when using the haskell http library to download.
+When git-annex is configured to use curl, it works.
+
+So, workaround:
+
+	git -c annex.security.allowed-http-addresses=all -c annex.web-options=-4 annex importfeed \
+		https://www.deutschlandfunk.de/podcast-deutschlandfunk-der-tag.3417.de.podcast.xml
+
+git-annex addurl downloads the complete file, so the problem does not
+seem to be with the haskell http library, but something to do with how
+importfeed is using it that causes a truncation.
+
+Aha, importfeed uses withTmpFile, so the destination file exists with 0
+size. This triggers a resume code path. And it looks to me like this web
+server may not handle resume very well, it appears to send ~32kb
+of data and not the whole file in that case.
+
+So, the obvious fix is to not resume when the destination file is empty,
+and I've done that.
+"""]]
