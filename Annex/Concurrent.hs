@@ -118,6 +118,9 @@ changeStageTo mytid tv newstage = liftIO $
   where
 	replaceidle = atomically $ do
 		pool <- takeTMVar tv
+		let notchanging = do
+			putTMVar tv pool
+			return Nothing
 		if memberStage newstage (usedStages pool)
 			then case removeThreadIdWorkerPool mytid pool of
 				Just ((myaid, oldstage), pool')
@@ -132,15 +135,9 @@ changeStageTo mytid tv newstage = liftIO $
 								addWorkerPool (IdleWorker oldstage) $
 									addWorkerPool (ActiveWorker myaid newstage) pool''
 							return $ Just $ Right oldstage
-					| otherwise -> do
-						putTMVar tv pool
-						return Nothing
-				_ -> do
-					putTMVar tv pool
-					return Nothing
-			else do
-				putTMVar tv pool
-				return Nothing
+					| otherwise -> notchanging
+				_ -> notchanging
+			else notchanging
 	
 	waitidle (myaid, oldstage) = atomically $ do
 		pool <- waitIdleWorkerSlot newstage =<< takeTMVar tv
