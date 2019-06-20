@@ -21,6 +21,7 @@ import Data.Time.Format
 import System.Locale
 #endif
 import qualified Data.Text as T
+import System.Log.Logger
 
 import Command
 import qualified Annex
@@ -75,11 +76,9 @@ getFeed opts cache url = do
 		Nothing -> showEndResult =<< feedProblem url
 			"downloading the feed failed"
 		Just feedcontent -> case parseFeedString feedcontent of
-			Nothing -> showEndResult =<< feedProblem url
-				"parsing the feed failed"
+			Nothing -> debugfeedcontent feedcontent "parsing the feed failed"
 			Just f -> case findDownloads url f of
-				[] -> showEndResult =<< feedProblem url
-					"bad feed content; no enclosures to download"
+				[] -> debugfeedcontent feedcontent "bad feed content; no enclosures to download"
 				l -> do
 					showEndOk
 					ifM (and <$> mapM (performDownload opts cache) l)
@@ -87,6 +86,15 @@ getFeed opts cache url = do
 						, void $ feedProblem url 
 							"problem downloading some item(s) from feed"
 						)
+  where
+	debugfeedcontent feedcontent msg = do
+		liftIO $ debugM "feed content" $ unlines
+			[ "start of feed content"
+			, feedcontent
+			, "end of feed content"
+			]
+		showEndResult =<< feedProblem url
+			(msg ++ " (use --debug to see the feed content that was downloaded)")
 
 data ToDownload = ToDownload
 	{ feed :: Feed
