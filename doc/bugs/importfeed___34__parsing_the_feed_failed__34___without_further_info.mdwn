@@ -1,0 +1,51 @@
+### Please describe the problem.
+
+git-annex fails to parse the "Dlf - Der Tag" RSS feed. It doesn't give me helpful info with debug and verbose flags either. In other RSS reader (tested Akregator), the feed is working.
+
+### What steps will reproduce the problem?
+
+```
+cd ~/podcasts # into any annexed dir
+git annex importfeed https://www.deutschlandfunk.de/podcast-deutschlandfunk-der-tag.3417.de.podcast.xml
+```
+
+### What version of git-annex are you using? On what operating system?
+
+- git-annex version: 7.20190507-g6eaa0af42f
+- Archlinux (Linux 5.1.11-arch1-1-ARCH)
+
+### Please provide any additional information below.
+
+[[!format sh """
+importfeed checking known urls [2019-06-20 11:01:31.01738567] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2019-06-20 11:01:31.018774597] process done ExitSuccess
+[2019-06-20 11:01:31.018844437] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2019-06-20 11:01:31.019935278] process done ExitSuccess
+[2019-06-20 11:01:31.020116376] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..776b1321007e3f2570b7bfdff9ac2f6a03f9b3f7","--pretty=%H","-n1"]
+[2019-06-20 11:01:31.021636336] process done ExitSuccess
+[2019-06-20 11:01:31.02184214] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--","."]
+[2019-06-20 11:01:31.023188187] process done ExitSuccess
+ok
+importfeed https://www.deutschlandfunk.de/podcast-deutschlandfunk-der-tag.3417.de.podcast.xml [2019-06-20 11:01:31.04530659] Request {
+  host                 = "www.deutschlandfunk.de"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Range","bytes=0-"),("Accept-Encoding","identity"),("User-Agent","git-annex/7.20190507-g6eaa0af42f")]
+  path                 = "/podcast-deutschlandfunk-der-tag.3417.de.podcast.xml"
+  queryString          = ""
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+
+  warning: parsing the feed failed
+ok
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+<3
