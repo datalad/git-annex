@@ -100,8 +100,8 @@ enteringStage newstage a = Annex.getState Annex.workers >>= \case
  - ActiveWorker with an IdleWorker.
  -
  - Must avoid a deadlock if all worker threads end up here at the same
- - time, or if there are no suitable IdleWorkers left. So we first
- - replace our ActiveWorker with an IdleWorker in the pool, to allow
+ - time, or if there are no suitable IdleWorkers left. So if necessary
+ - we first replace our ActiveWorker with an IdleWorker in the pool, to allow
  - some other thread to use it, before waiting for a suitable IdleWorker
  - for us to use.
  -
@@ -112,17 +112,26 @@ enteringStage newstage a = Annex.getState Annex.workers >>= \case
  -}
 changeStageTo :: ThreadId -> TMVar (WorkerPool AnnexState) -> WorkerStage -> Annex (Maybe WorkerStage)
 changeStageTo mytid tv newstage = liftIO $
-	replaceidle >>= maybe (return Nothing) waitidle
+	replaceidle >>= maybe
+		(return Nothing)
+		(either waitidle (return . Just))
   where
 	replaceidle = atomically $ do
 		pool <- takeTMVar tv
 		if memberStage newstage (usedStages pool)
 			then case removeThreadIdWorkerPool mytid pool of
 				Just ((myaid, oldstage), pool')
-					| oldstage /= newstage -> do
-						putTMVar tv $
-							addWorkerPool (IdleWorker oldstage) pool'
-						return $ Just (myaid, oldstage)
+					| oldstage /= newstage -> case getIdleWorkerSlot newstage pool' of
+						Nothing -> do
+							putTMVar tv $
+								addWorkerPool (IdleWorker oldstage) pool'
+							return $ Just $ Left (myaid, oldstage)
+						Just pool'' -> do
+							-- optimisation
+							putTMVar tv $
+								addWorkerPool (IdleWorker oldstage) $
+									addWorkerPool (ActiveWorker myaid newstage) pool''
+							return $ Just $ Right oldstage
 					| otherwise -> do
 						putTMVar tv pool
 						return Nothing
@@ -157,11 +166,14 @@ waitInitialWorkerSlot tv = do
 			return v
 
 waitIdleWorkerSlot :: WorkerStage -> WorkerPool Annex.AnnexState -> STM (WorkerPool Annex.AnnexState)
-waitIdleWorkerSlot wantstage pool = do
+waitIdleWorkerSlot wantstage = maybe retry return . getIdleWorkerSlot wantstage
+
+getIdleWorkerSlot :: WorkerStage -> WorkerPool Annex.AnnexState -> Maybe (WorkerPool Annex.AnnexState)
+getIdleWorkerSlot wantstage pool = do
 	l <- findidle [] (workerList pool)
 	return $ pool { workerList = l }
   where
-	findidle _ [] = retry
-	findidle c ((IdleWorker stage):rest) | stage == wantstage =
-		return (c ++ rest)
+	findidle _ [] = Nothing
+	findidle c ((IdleWorker stage):rest)
+		| stage == wantstage = Just (c ++ rest)
 	findidle c (w:rest) = findidle (w:c) rest
