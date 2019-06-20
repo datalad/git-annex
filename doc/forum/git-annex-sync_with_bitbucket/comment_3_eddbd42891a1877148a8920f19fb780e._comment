@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="annex-ignore and syncing"
+ date="2019-06-20T02:37:26Z"
+ content="""
+> But I do want git-annex-sync to sync the git-annex branch with that remote.
+
+When annex-ignore is true, git-annex won't try to store content there, but `git annex sync` should still sync with the remote.  From the `man git-annex`
+
+    This does not prevent git-annex sync (or the git-annex assistant) from
+    syncing the git repository to the remote.
+
+Setting `annex-sync=false` on the other hand will prevent `git annex sync` from syncing the remote unless it is explicitly named.
+
+> Normally, git-annex deals with the case of git remotes that don't support git-annex-shell without giving an error.
+
+AFAIK it deals with this by automatically setting annex-ignore on failure (fetching first to make sure it is not a connectivity issue).  I don't know why the error is getting through in this case.
+"""]]
