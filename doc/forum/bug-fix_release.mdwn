@@ -1,0 +1,2 @@
+Given that the current git-annex release fails the DataLad test suite (due to [[bugs/annex_init_no_longer_generates_default_description]] ?), I'm a bit wary of making it the default release on conda-forge.  Would it be possible to make a bug-fix release?  Thanks!
+

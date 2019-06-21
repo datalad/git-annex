@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2019-06-20T19:42:35Z"
+ content="""
+> Given that the current git-annex release fails the DataLad test suite (due to annex init no longer generates default description ?)
+
+Yes, that bugs seems to be responsible for the failures.  FWIW the corresponding DataLad issue is <https://github.com/datalad/datalad/issues/3472>.
+"""]]

@@ -1,0 +1,3 @@
+Hi there,
+
+I would like to install git-annex on a server, but do not have root access.  I am not an experienced linux user and was wondering what the best approach is.  I could clone the git repo but am at a loss what to do next.  Any help would be appreciated!
