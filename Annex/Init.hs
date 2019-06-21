@@ -92,7 +92,7 @@ initialize mdescription mversion = checkCanInitialize $ do
 	u <- getUUID
 	{- Avoid overwriting existing description with a default
 	 - description. -}
-	whenM (pure (isJust mdescription) <||> not . M.member u <$> uuidDescMap) $
+	whenM (pure (isJust mdescription) <||> not . M.member u <$> uuidDescMapRaw) $
 		describeUUID u =<< genDescription mdescription
 
 -- Everything except for uuid setup, shared clone setup, and initial

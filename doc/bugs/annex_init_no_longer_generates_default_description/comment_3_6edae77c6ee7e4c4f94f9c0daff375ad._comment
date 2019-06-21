@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-06-21T00:12:51Z"
+ content="""
+Thanks Kyle, that does point at the problem. In uuidDescMapLoad
+it implicitly adds the UUID of the current repo, with an empty 
+description if none is set. So, the added check of uuidDescMap
+always finds the UUID in it already. Your uuidDescMapLoad hack
+avoids this by loading the map before the current repo has a UUID.
+
+Fixed more cleanly..
+"""]]

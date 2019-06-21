@@ -12,6 +12,8 @@ git-annex (7.20190616) UNRELEASED; urgency=medium
     fix a case where importfeed downloaded a partial feed from such a server.
   * importfeed: When there's a problem parsing the feed, --debug will
     output the feed content that was downloaded.
+  * init: Fix a reversion in the last release that prevented automatically
+    generating and setting a description for the repository.
 
  -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
 

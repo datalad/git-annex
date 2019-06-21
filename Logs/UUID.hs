@@ -11,7 +11,8 @@ module Logs.UUID (
 	uuidLog,
 	describeUUID,
 	uuidDescMap,
-	uuidDescMapLoad
+	uuidDescMapLoad,
+	uuidDescMapRaw,
 ) where
 
 import Types.UUID
@@ -38,19 +39,23 @@ describeUUID uuid desc = do
 uuidDescMap :: Annex UUIDDescMap
 uuidDescMap = maybe uuidDescMapLoad return =<< Annex.getState Annex.uuiddescmap
 
-{- Read the uuidLog into a simple Map.
+{- Read the uuidLog into a map, and cache it for later use.
  -
- - The UUID of the current repository is included explicitly, since
- - it may not have been described and otherwise would not appear. -}
+ - If the current repository has not been described, it is still included
+ - in the map with an empty description. -}
 uuidDescMapLoad :: Annex UUIDDescMap
 uuidDescMapLoad = do
-	m <- simpleMap . parseUUIDLog <$> Annex.Branch.get uuidLog
+	m <- uuidDescMapRaw
 	u <- Annex.UUID.getUUID
 	let m' = M.insertWith preferold u mempty m
 	Annex.changeState $ \s -> s { Annex.uuiddescmap = Just m' }
 	return m'
   where
 	preferold = flip const
+
+{- Read the uuidLog into a map. Includes only actually set descriptions. -}
+uuidDescMapRaw :: Annex UUIDDescMap
+uuidDescMapRaw = simpleMap . parseUUIDLog <$> Annex.Branch.get uuidLog
 
 parseUUIDLog :: L.ByteString -> Log UUIDDesc
 parseUUIDLog = parseLogOld (UUIDDesc <$> A.takeByteString)
