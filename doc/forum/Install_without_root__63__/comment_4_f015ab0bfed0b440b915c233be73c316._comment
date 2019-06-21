@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="stephanlindner"
+ avatar="http://cdn.libravatar.org/avatar/78cc245bf89bdcc1005e5443cd8e8b2c"
+ subject="comment 4"
+ date="2019-06-21T19:10:32Z"
+ content="""
+I can confirm that this worked for me.  I installed conda using the installed, then installed git-annex via conda.  Thanks, this is great!
+"""]]
