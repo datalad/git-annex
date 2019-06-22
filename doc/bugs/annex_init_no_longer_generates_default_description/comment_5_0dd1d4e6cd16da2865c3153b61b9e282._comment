@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="bug fix release"
+ date="2019-06-22T16:14:58Z"
+ content="""
+@joeyh Thanks for fixing this.  Would it be possible to make a new release on Hackage?  I'd like to make a new [[install/conda]] release that incorporates the improvements in version `7.20190615`, but don't want to make a release that fails DataLad tests the default one.  Thanks!
+"""]]
