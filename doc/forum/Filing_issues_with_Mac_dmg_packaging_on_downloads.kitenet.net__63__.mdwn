@@ -1,0 +1,11 @@
+Where should questions re: the packaging of the Mac dmg on kitenet.net be directed?  Or, bugs filed?
+
+
+E.g. the CFBundleVersion and CFBundleShortVersionString are never bumped from "0.0.1" which makes it difficult to retrieve and deploy via Autopkg/Munki.
+
+
+Or, the data in git-annex.dmg.info for the current Mac release(s) (as of 2019-06-23) does not match any version reported in News on git-annex.brancheable.com
+(currently distributionVersion = "7.20190508", but  distributionReleasedate = 2019-06-15) when installed git annex version reports 7.20190508.
+
+Thank you
+
