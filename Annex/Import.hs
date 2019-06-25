@@ -360,7 +360,7 @@ downloadImport remote importtreeconfig importablecontents = do
 				Nothing -> return Nothing
 		checkDiskSpaceToGet tmpkey Nothing $
 			withTmp tmpkey $ \tmpfile ->
-				metered Nothing tmpkey (return Nothing) $
+				metered Nothing tmpkey $
 					const (rundownload tmpfile)
 	  where
 		ia = Remote.importActions remote

@@ -1,9 +1,11 @@
 {- git-annex progress output
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE FlexibleInstances #-}
 
 module Messages.Progress where
 
@@ -19,16 +21,38 @@ import Messages.Concurrent
 import qualified System.Console.Regions as Regions
 import qualified System.Console.Concurrent as Console
 
-{- Shows a progress meter while performing a transfer of a key.
- - The action is passed the meter and a callback to use to update the meter.
- -
- - When the key's size is not known, the srcfile is statted to get the size.
+{- Class of things from which a size can be gotten to display a progress
+ - meter. -}
+class MeterSize t where
+	getMeterSize :: t -> Annex (Maybe Integer)
+
+instance MeterSize (Maybe Integer) where
+	getMeterSize = pure
+
+instance MeterSize Key where
+	getMeterSize = pure . keySize
+
+{- When the key's size is not known, the file is statted to get the size.
  - This allows uploads of keys without size to still have progress
  - displayed.
+ -}
+data KeySizer = KeySizer Key (Annex (Maybe FilePath))
+
+instance MeterSize KeySizer where
+	getMeterSize (KeySizer k getsrcfile) = case keySize k of
+		Just sz -> return (Just sz)
+		Nothing -> do
+			srcfile <- getsrcfile
+			case srcfile of
+				Nothing -> return Nothing
+				Just f -> catchMaybeIO $ liftIO $ getFileSize f
+
+{- Shows a progress meter while performing an action.
+ - The action is passed the meter and a callback to use to update the meter.
  --}
-metered :: Maybe MeterUpdate -> Key -> Annex (Maybe FilePath) -> (Meter -> MeterUpdate -> Annex a) -> Annex a
-metered othermeter key getsrcfile a = withMessageState $ \st ->
-	flip go st =<< getsz
+metered :: MeterSize sizer => Maybe MeterUpdate -> sizer -> (Meter -> MeterUpdate -> Annex a) -> Annex a
+metered othermeter sizer a = withMessageState $ \st ->
+	flip go st =<< getMeterSize sizer
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
 	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
@@ -66,19 +90,11 @@ metered othermeter key getsrcfile a = withMessageState $ \st ->
 	combinemeter m = case othermeter of
 		Nothing -> m
 		Just om -> combineMeterUpdate m om
-	
-	getsz = case keySize key of
-		Just sz -> return (Just sz)
-		Nothing -> do
-			srcfile <- getsrcfile
-			case srcfile of
-				Nothing -> return Nothing
-				Just f -> catchMaybeIO $ liftIO $ getFileSize f
 
 {- Poll file size to display meter. -}
 meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
 meteredFile file combinemeterupdate key a = 
-	metered combinemeterupdate key (return Nothing) $ \_ p ->
+	metered combinemeterupdate key $ \_ p ->
 		watchFileSize file p a
 
 {- Progress dots. -}
