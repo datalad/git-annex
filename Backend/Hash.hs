@@ -25,6 +25,8 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Data.Char
+import Control.DeepSeq
+import Control.Exception (evaluate)
 
 data Hash
 	= MD5Hash
@@ -88,10 +90,10 @@ hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
 
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> MeterUpdate -> Annex (Maybe Key)
-keyValue hash source meterupate = do
+keyValue hash source meterupdate = do
 	let file = contentLocation source
 	filesize <- liftIO $ getFileSize file
-	s <- hashFile hash file
+	s <- hashFile hash file meterupdate
 	return $ Just $ stubKey
 		{ keyName = encodeBS s
 		, keyVariety = hashKeyVariety hash (HasExt False)
@@ -134,7 +136,7 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	case (exists, fast) of
 		(True, False) -> do
 			showAction "checksum"
-			check <$> hashFile hash file
+			check <$> hashFile hash file nullMeterUpdate
 		_ -> return True
   where
 	expected = decodeBS (keyHash key)
@@ -206,11 +208,14 @@ trivialMigrate' oldkey newbackend afile maxextlen
 	oldvariety = keyVariety oldkey
 	newvariety = backendVariety newbackend
 
-hashFile :: Hash -> FilePath -> Annex String
-hashFile hash file = liftIO $ do
-	h <- hasher <$> L.readFile file
-	-- Force full evaluation so file is read and closed.
-	return (length h `seq` h)
+hashFile :: Hash -> FilePath -> MeterUpdate -> Annex String
+hashFile hash file meterupdate = 
+	liftIO $ withMeteredFile file meterupdate $ \b -> do
+		let h = hasher b
+		-- Force full evaluation of hash so whole file is read
+		-- before returning.
+		evaluate (rnf h)
+		return h
   where
 	hasher = case hash of
 		MD5Hash -> md5Hasher

@@ -358,6 +358,7 @@ Executable git-annex
    crypto-api,
    cryptonite,
    memory,
+   deepseq,
    split,
    attoparsec,
    concurrent-output (>= 1.6),
@@ -593,7 +594,7 @@ Executable git-annex
       CPP-Options: -DWITH_MAGICMIME
 
   if flag(Benchmark)
-    Build-Depends: criterion, deepseq
+    Build-Depends: criterion
     CPP-Options: -DWITH_BENCHMARK
   
   if flag(DebugLocks)
