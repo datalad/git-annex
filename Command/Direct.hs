@@ -46,7 +46,7 @@ perform = do
 	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
 	forM_ l go
 	void $ liftIO clean
-	next $ return True
+	next cleanup
   where
 	go = whenAnnexed $ \f k -> do
 		toDirectGen k f >>= \case
@@ -60,3 +60,8 @@ perform = do
 	warnlocked f e = do
 		warning $ f ++ ": " ++ show e
 		warning "leaving this file as-is; correct this problem and run git annex fsck on it"
+
+cleanup :: CommandCleanup
+cleanup = do
+	setDirect True
+	return True
