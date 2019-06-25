@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="emanuele.olivetti@47d88ed185b03191e25329caa6fabc2efb3118b2"
+ nickname="emanuele.olivetti"
+ avatar="http://cdn.libravatar.org/avatar/f51cc5c6c3a0eb28faa6491c3cbcfcce"
+ subject="git-annex on armel now working on Debian unstable (sid)"
+ date="2019-06-25T10:07:56Z"
+ content="""
+I am very happy to announce that git-annex for the armel architecture, as provided by Debian unstable (sid), now works correctly! Details [here](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=928882). Soon it should be available in Debian testing too. The misconfiguration of the Haskell compiler (ghc) for the armel architecture, that triggered the bug reported in this page, has been addressed and all Haskell packages have been re-built, git-annex included. Thanks to Ilias Tsitsimpis and Paul Gevers for all the work done!
+
+@Joey: if you'll use the updated compiler from Debian unstable (or, soon, from Debian testing too), then you'll be able to generate an arm standalone that works on armel architectures too.
+"""]]

@@ -52,3 +52,5 @@ On Mac, versions 7.20190220 (latest download) or 7.20190508 (latest autobuild)
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 YES! Git annex is an amazing tool and it's the backbone of my long term archiving workflow. I also use it for archive management at work and it's proven to be incredibly useful. Thank you for continuing to maintain and innovate with git annex!
+
+[[done]]

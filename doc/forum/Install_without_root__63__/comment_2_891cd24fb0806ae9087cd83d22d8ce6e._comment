@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 2"
+ date="2019-06-21T07:38:36Z"
+ content="""
+Using `conda` doesn't work if it isn't installed and they don't have root..
+
+The [Linux standalone](https://git-annex.branchable.com/install/Linux_standalone/) is very useful for these situations.
+"""]]
