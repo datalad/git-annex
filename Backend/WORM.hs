@@ -13,6 +13,7 @@ import Types.Backend
 import Types.KeySource
 import Backend.Utilities
 import Git.FilePath
+import Utility.Metered
 
 import qualified Data.ByteString.Char8 as S8
 
@@ -32,8 +33,8 @@ backend = Backend
 {- The key includes the file size, modification time, and the
  - original filename relative to the top of the git repository.
  -}
-keyValue :: KeySource -> Annex (Maybe Key)
-keyValue source = do
+keyValue :: KeySource -> MeterUpdate -> Annex (Maybe Key)
+keyValue source _ = do
 	let f = contentLocation source
 	stat <- liftIO $ getFileStatus f
 	sz <- liftIO $ getFileSize' f stat

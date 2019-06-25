@@ -21,6 +21,7 @@ import Git.FilePath
 import qualified Git
 import qualified Git.Ref
 import Backend
+import Utility.Metered
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -122,7 +123,7 @@ clean file = do
 		let norestage = Restage False
 		liftIO . emitPointer
 			=<< postingest
-			=<< (\ld -> ingest' oldbackend ld Nothing norestage)
+			=<< (\ld -> ingest' oldbackend nullMeterUpdate ld Nothing norestage)
 			=<< lockDown cfg file
 
 	postingest (Just k, _) = do

@@ -42,6 +42,7 @@ import Types.Key
 import Types.KeySource
 import Messages.Progress
 import Utility.DataUnits
+import Utility.Metered
 import Logs.Export
 import Logs.Location
 import Logs.PreferredContent
@@ -373,7 +374,7 @@ downloadImport remote importtreeconfig importablecontents = do
 			, contentLocation = tmpfile
 			, inodeCache = Nothing
 			}
-		fmap fst <$> genKey ks backend
+		fmap fst <$> genKey ks nullMeterUpdate backend
 
 	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
 		ImportTree -> fromImportLocation loc

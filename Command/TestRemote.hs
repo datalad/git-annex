@@ -320,7 +320,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		, inodeCache = Nothing
 		}
 	k <- fromMaybe (error "failed to generate random key")
-		<$> Backend.getKey Backend.Hash.testKeyBackend ks
+		<$> Backend.getKey Backend.Hash.testKeyBackend ks nullMeterUpdate
 	_ <- moveAnnex k f
 	return k
 

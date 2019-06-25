@@ -372,7 +372,7 @@ finishDownloadWith tmp u url file = do
 		, contentLocation = tmp
 		, inodeCache = Nothing
 		}
-	genKey source backend >>= \case
+	genKey source nullMeterUpdate backend >>= \case
 		Nothing -> return Nothing
 		Just (key, _) -> do
 			addWorkTree u url file key (Just tmp)

@@ -41,6 +41,7 @@ import qualified Utility.Env.Set
 import qualified Utility.Exception
 import qualified Utility.ThreadScheduler
 import qualified Utility.Tmp.Dir
+import qualified Utility.Metered
 import qualified Command.Uninit
 import qualified CmdLine.GitAnnex as GitAnnex
 
@@ -567,9 +568,9 @@ backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety . encodeBS
 getKey :: Types.Backend -> FilePath -> IO Types.Key
 getKey b f = fromJust <$> annexeval go
   where
-	go = Types.Backend.getKey b
-		Types.KeySource.KeySource
-			{ Types.KeySource.keyFilename = f
-			, Types.KeySource.contentLocation = f
-			, Types.KeySource.inodeCache = Nothing
-			}
+	go = Types.Backend.getKey b ks Utility.Metered.nullMeterUpdate
+	ks = Types.KeySource.KeySource
+		{ Types.KeySource.keyFilename = f
+		, Types.KeySource.contentLocation = f
+		, Types.KeySource.inodeCache = Nothing
+		}

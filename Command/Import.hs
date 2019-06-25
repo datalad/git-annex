@@ -32,6 +32,7 @@ import Git.FilePath
 import Git.Types
 import Git.Branch
 import Types.Import
+import Utility.Metered
 
 import Control.Concurrent.STM
 
@@ -198,7 +199,7 @@ startLocal largematcher mode (srcfile, destfile) =
 				}
 			}
 		ifM (checkFileMatcher largematcher destfile)
-			( ingestAdd' (Just ld') (Just k)
+			( ingestAdd' nullMeterUpdate (Just ld') (Just k)
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)
@@ -219,7 +220,7 @@ startLocal largematcher mode (srcfile, destfile) =
 		case v of
 			Just ld -> do
 				backend <- chooseBackend destfile
-				v' <- genKey (keySource ld) backend
+				v' <- genKey (keySource ld) nullMeterUpdate backend
 				case v' of
 					Just (k, _) -> a (ld, k)
 					Nothing -> giveup "failed to generate a key"

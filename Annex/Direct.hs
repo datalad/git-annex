@@ -40,6 +40,7 @@ import Git.Index
 import Annex.GitOverlay
 import Annex.LockFile
 import Annex.InodeSentinal
+import Utility.Metered
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -130,7 +131,7 @@ addDirect file cache = do
 		, contentLocation = file
 		, inodeCache = Just cache
 		}
-	got =<< genKey source =<< chooseBackend file
+	got =<< genKey source nullMeterUpdate=<< chooseBackend file
   where
 	got Nothing = do
 		showEndFail

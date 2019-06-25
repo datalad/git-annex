@@ -22,6 +22,7 @@ import Annex.CheckAttr
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
+import Utility.Metered
 
 -- When adding a new backend, import it here and add it to the list.
 import qualified Backend.Hash
@@ -50,10 +51,10 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 	lookupname = lookupBackendVariety . parseKeyVariety . encodeBS
 
 {- Generates a key for a file. -}
-genKey :: KeySource -> Maybe Backend -> Annex (Maybe (Key, Backend))
-genKey source preferredbackend = do
+genKey :: KeySource -> MeterUpdate -> Maybe Backend -> Annex (Maybe (Key, Backend))
+genKey source meterupdate preferredbackend = do
 	b <- maybe defaultBackend return preferredbackend
-	B.getKey b source >>= return . \case
+	B.getKey b source meterupdate >>= return . \case
 		Nothing -> Nothing
 		Just k -> Just (makesane k, b)
   where

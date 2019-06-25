@@ -41,6 +41,7 @@ import qualified Database.Keys
 import qualified Command.Sync
 import qualified Git.Branch
 import Utility.Tuple
+import Utility.Metered
 
 import Data.Time.Clock
 import qualified Data.Set as S
@@ -331,7 +332,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 		doadd = sanitycheck ks $ do
 			(mkey, mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
-				ingest (Just $ LockedDown lockdownconfig ks) Nothing
+				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
 			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
 	add _ _ = return Nothing
 

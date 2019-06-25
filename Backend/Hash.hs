@@ -19,6 +19,7 @@ import Types.Key
 import Types.Backend
 import Types.KeySource
 import Utility.Hash
+import Utility.Metered
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
@@ -86,8 +87,8 @@ hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
 #endif
 
 {- A key is a hash of its contents. -}
-keyValue :: Hash -> KeySource -> Annex (Maybe Key)
-keyValue hash source = do
+keyValue :: Hash -> KeySource -> MeterUpdate -> Annex (Maybe Key)
+keyValue hash source meterupate = do
 	let file = contentLocation source
 	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file
@@ -98,8 +99,9 @@ keyValue hash source = do
 		}
 
 {- Extension preserving keys. -}
-keyValueE :: Hash -> KeySource -> Annex (Maybe Key)
-keyValueE hash source = keyValue hash source >>= maybe (return Nothing) addE
+keyValueE :: Hash -> KeySource -> MeterUpdate -> Annex (Maybe Key)
+keyValueE hash source meterupdate =
+	keyValue hash source meterupdate >>= maybe (return Nothing) addE
   where
 	addE k = do
 		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
@@ -286,7 +288,7 @@ md5Hasher = show . md5
 testKeyBackend :: Backend
 testKeyBackend = 
 	let b = genBackendE (SHA2Hash (HashSize 256))
-	in b { getKey = (fmap addE) <$$> getKey b } 
+	in b { getKey = \ks p -> (fmap addE) <$> getKey b ks p } 
   where
 	addE k = k { keyName = keyName k <> longext }
 	longext = ".this-is-a-test-key"

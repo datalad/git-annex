@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,11 +12,12 @@ module Types.Backend where
 import Types.Key
 import Types.KeySource
 
+import Utility.Metered
 import Utility.FileSystemEncoding
 
 data BackendA a = Backend
 	{ backendVariety :: KeyVariety
-	, getKey :: KeySource -> a (Maybe Key) 
+	, getKey :: KeySource -> MeterUpdate -> a (Maybe Key) 
 	-- Verifies the content of a key.
 	, verifyKeyContent :: Maybe (Key -> FilePath -> a Bool)
 	-- Checks if a key can be upgraded to a better form.

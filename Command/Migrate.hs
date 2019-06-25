@@ -17,6 +17,7 @@ import qualified Command.Fsck
 import qualified Annex
 import Logs.MetaData
 import Logs.Web
+import Utility.Metered
 
 cmd :: Command
 cmd = notDirect $ withGlobalOptions [annexedMatchingOptions] $
@@ -88,7 +89,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 			, contentLocation = content
 			, inodeCache = Nothing
 			}
-		v <- genKey source (Just newbackend)
+		v <- genKey source nullMeterUpdate (Just newbackend)
 		return $ case v of
 			Just (newkey, _) -> Just (newkey, False)
 			_ -> Nothing

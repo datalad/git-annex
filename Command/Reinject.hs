@@ -12,6 +12,7 @@ import Logs.Location
 import Annex.Content
 import Backend
 import Types.KeySource
+import Utility.Metered
 
 cmd :: Command
 cmd = command "reinject" SectionUtility 
@@ -53,7 +54,7 @@ startSrcDest _ = giveup "specify a src file and a dest file"
 startKnown :: FilePath -> CommandStart
 startKnown src = notAnnexed src $
 	starting "reinject" (ActionItemOther (Just src)) $ do
-		mkb <- genKey (KeySource src src Nothing) Nothing
+		mkb <- genKey (KeySource src src Nothing) nullMeterUpdate Nothing
 		case mkb of
 			Nothing -> error "Failed to generate key"
 			Just (key, _) -> ifM (isKnownKey key)

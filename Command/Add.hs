@@ -21,6 +21,7 @@ import Annex.Link
 import Annex.Version
 import Annex.Tmp
 import Git.FilePath
+import Utility.Metered
 
 cmd :: Command
 cmd = notBareRepo $ 
@@ -141,7 +142,7 @@ perform file = withOtherTmp $ \tmpdir -> do
 		{ lockingFile = lockingfile
 		, hardlinkFileTmpDir = Just tmpdir
 		}
-	lockDown cfg file >>= ingestAdd >>= finish
+	lockDown cfg file >>= ingestAdd nullMeterUpdate >>= finish
   where
 	finish (Just key) = next $ cleanup key True
 	finish Nothing = stop

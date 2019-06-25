@@ -1,6 +1,6 @@
 {- git-annex content ingestion
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -44,6 +44,7 @@ import Annex.ReplaceFile
 import Utility.Tmp
 import Utility.CopyFile
 import Utility.Touch
+import Utility.Metered
 import Git.FilePath
 import Annex.InodeSentinal
 import Annex.AdjustedBranch
@@ -123,13 +124,13 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 
 {- Ingests a locked down file into the annex. Updates the work tree and
  - index. -}
-ingestAdd :: Maybe LockedDown -> Annex (Maybe Key)
-ingestAdd ld = ingestAdd' ld Nothing
+ingestAdd :: MeterUpdate -> Maybe LockedDown -> Annex (Maybe Key)
+ingestAdd meterupdate ld = ingestAdd' meterupdate ld Nothing
 
-ingestAdd' :: Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
-ingestAdd' Nothing _ = return Nothing
-ingestAdd' ld@(Just (LockedDown cfg source)) mk = do
-	(mk', mic) <- ingest ld mk
+ingestAdd' :: MeterUpdate -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
+ingestAdd' _ Nothing _ = return Nothing
+ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
+	(mk', mic) <- ingest meterupdate ld mk
 	case mk' of
 		Nothing -> return Nothing
 		Just k -> do
@@ -148,16 +149,16 @@ ingestAdd' ld@(Just (LockedDown cfg source)) mk = do
 
 {- Ingests a locked down file into the annex. Does not update the working
  - tree or the index. -}
-ingest :: Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
-ingest ld mk = ingest' Nothing ld mk (Restage True)
+ingest :: MeterUpdate -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key, Maybe InodeCache)
+ingest meterupdate ld mk = ingest' Nothing meterupdate ld mk (Restage True)
 
-ingest' :: Maybe Backend -> Maybe LockedDown -> Maybe Key -> Restage -> Annex (Maybe Key, Maybe InodeCache)
-ingest' _ Nothing _ _ = return (Nothing, Nothing)
-ingest' preferredbackend (Just (LockedDown cfg source)) mk restage = withTSDelta $ \delta -> do
+ingest' :: Maybe Backend -> MeterUpdate -> Maybe LockedDown -> Maybe Key -> Restage -> Annex (Maybe Key, Maybe InodeCache)
+ingest' _ _ Nothing _ _ = return (Nothing, Nothing)
+ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage = withTSDelta $ \delta -> do
 	k <- case mk of
 		Nothing -> do
 			backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
-			fmap fst <$> genKey source backend
+			fmap fst <$> genKey source meterupdate backend
 		Just k -> return (Just k)
 	let src = contentLocation source
 	ms <- liftIO $ catchMaybeIO $ getFileStatus src
