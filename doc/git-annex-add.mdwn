@@ -68,6 +68,10 @@ annexed content, and other symlinks.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+* `--json-progress`
+
+  Include progress objects in JSON output.
+
 * `--json-error-messages`
 
   Messages that would normally be output to standard error are included in

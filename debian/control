@@ -12,6 +12,7 @@ Build-Depends:
 	libghc-pcre-light-dev,
 	libghc-cryptonite-dev,
 	libghc-memory-dev,
+	libghc-deepseq-dev,
 	libghc-attoparsec-dev,
 	libghc-sandi-dev,
 	libghc-utf8-string-dev,

@@ -13,6 +13,7 @@
 module Utility.InodeCache (
 	InodeCache,
 	InodeComparisonType(..),
+	inodeCacheFileSize,
 
 	compareStrong,
 	compareWeak,
@@ -57,6 +58,9 @@ data InodeCachePrim = InodeCachePrim FileID FileSize MTime
 
 newtype InodeCache = InodeCache InodeCachePrim
 	deriving (Show)
+
+inodeCacheFileSize :: InodeCache -> FileSize
+inodeCacheFileSize (InodeCache (InodeCachePrim _ sz _)) = sz
 
 {- Inode caches can be compared in two different ways, either weakly
  - or strongly. -}

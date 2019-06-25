@@ -15,6 +15,8 @@ import Utility.Metered
 import Types
 import Types.Messages
 import Types.Key
+import Types.KeySource
+import Utility.InodeCache
 import qualified Messages.JSON as JSON
 import Messages.Concurrent
 
@@ -24,13 +26,23 @@ import qualified System.Console.Concurrent as Console
 {- Class of things from which a size can be gotten to display a progress
  - meter. -}
 class MeterSize t where
-	getMeterSize :: t -> Annex (Maybe Integer)
+	getMeterSize :: t -> Annex (Maybe FileSize)
 
-instance MeterSize (Maybe Integer) where
-	getMeterSize = pure
+instance MeterSize t => MeterSize (Maybe t) where
+	getMeterSize Nothing = pure Nothing
+	getMeterSize (Just t) = getMeterSize t
+
+instance MeterSize FileSize where
+	getMeterSize = pure . Just
 
 instance MeterSize Key where
 	getMeterSize = pure . keySize
+
+instance MeterSize InodeCache where
+	getMeterSize = pure . Just . inodeCacheFileSize
+
+instance MeterSize KeySource where
+	getMeterSize = maybe (pure Nothing) getMeterSize . inodeCache
 
 {- When the key's size is not known, the file is statted to get the size.
  - This allows uploads of keys without size to still have progress

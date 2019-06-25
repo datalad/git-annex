@@ -20,12 +20,12 @@ import Annex.FileMatcher
 import Annex.Link
 import Annex.Version
 import Annex.Tmp
+import Messages.Progress
 import Git.FilePath
-import Utility.Metered
 
 cmd :: Command
 cmd = notBareRepo $ 
-	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
+	withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, fileMatchingOptions] $
 		command "add" SectionCommon "add files to annex"
 			paramPaths (seek <$$> optParser)
 
@@ -142,7 +142,11 @@ perform file = withOtherTmp $ \tmpdir -> do
 		{ lockingFile = lockingfile
 		, hardlinkFileTmpDir = Just tmpdir
 		}
-	lockDown cfg file >>= ingestAdd nullMeterUpdate >>= finish
+	ld <- lockDown cfg file
+	let sizer = keySource <$> ld
+	v <- metered Nothing sizer $ \_meter meterupdate ->
+		ingestAdd meterupdate ld
+	finish v
   where
 	finish (Just key) = next $ cleanup key True
 	finish Nothing = stop
