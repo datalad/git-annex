@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-06-26T15:55:36Z"
+ content="""
+Occurs to me that the same problems discussed above also can happen when a
+new hash is added to git-annex and is used in a repo, that then gets used
+by an older version of git-annex.
+
+The blake2 hashes are one such.
+
+So, external backends shouldn't really be blocked by that bad behavior,
+agurably.
+"""]]
