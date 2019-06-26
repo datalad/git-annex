@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-06-26T14:54:01Z"
+ content="""
+The main operations on keys are:
+
+* generate
+* verify
+* is stable (always refers to the same data, used only to determine if
+  chunks can be used when storing the content on a special remote)
+* is verifiable with a hash (for annex.security.allow-unverified-downloads)
+* is cryptographically secure hash
+
+Note that the last two of those are not currently part of the Backend
+object but would need to be moved to it to implement external backends.
+
+Now, if a external backend is not installed or is broken, how would those
+operations failing be handled?
+
+* generate: Not a problem, git-annex already falls back to another backend
+  if a backend fails to generate a key.
+* verify: This would need to return False. Since verification
+  is done after download in the default configuration, this would make 
+  the downloaded content be thrown away. Seems likely it would result in
+  repeated downloads of the same content when git-annex is run
+  repeatedly, or when using the assistant.  
+  fsck and reinject would also fail, so if a repo contained content using
+  an external backend and the program broken, fsck could move all the
+  content to .git/annex/bad/
+* is verifiable with a hash: Affects downloads same as verify.
+* is cryptographically secure hash: Similar to verify, but also affects
+  uploads when annex.securehashesonly is set.
+
+So I think that all these operations except for generate would need to have
+their type changed from Bool to Maybe Bool, and all code that uses them
+handle the case where the operation was unable to be performed.
+
+For fsck, it might need to start checking files it had previously moved to
+bad, and move them back into the annex if they now verify due to the
+external backend having gotten fixed.
+
+For downloads, if it can't verify, it might move to some holding location,
+and avoid re-downloading objects that are already located there. This would
+add more problems though; what if all the objects in that holding location
+use too much disk space? Should drop also drop them?
+
+Or the external backend could be tested somehow before starting a download
+(or a fsck) and skip its key if it's not installed or broken. But such a test
+can't catch every possible breakage. It's hard to see how such a test
+can do more than checking that it can start the program and that the
+program seems to be speaking the right protocol version.
+
+I suppose we could say that, if a external backend works to that extent but
+then breaks, the resulting bad behavior is its fault and not really the
+concern of git-annex. Or I could rationalize, that an external special
+remote can break in ways that eg, prevent content being moved to it, so it
+piles up in the local repo and uses too much disk space, and that this new
+potential breakage is not much worse -- though it seems the scenarios where
+it would have an adverse affect are likely to be more common.
+"""]]

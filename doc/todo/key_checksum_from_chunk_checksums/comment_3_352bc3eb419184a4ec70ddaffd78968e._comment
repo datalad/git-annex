@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-06-26T14:51:32Z"
+ content="""
+That seems like an unusual use case that would be unncessary complication
+to add to git-annex, but that [[external_backends]] could be used to
+implenent as needed.
+"""]]
