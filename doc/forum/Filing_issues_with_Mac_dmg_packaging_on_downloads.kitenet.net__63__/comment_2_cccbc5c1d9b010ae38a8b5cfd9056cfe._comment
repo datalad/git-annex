@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="leej"
+ avatar="http://cdn.libravatar.org/avatar/eb1c6bd57680f694fb4658388e6de4ed"
+ subject="comment 2"
+ date="2019-06-26T03:16:52Z"
+ content="""
+Thanks, Joey, see Mac dmg packaging related bugs:
+
+* [CFBundleShortVersionString is not incremented with git-annex.dmg releases (downloads.kitenet.net)](http://git-annex.branchable.com/bugs/CFBundleShortVersionString_is_not_incremented_with_git-annex.dmg_releases___40__downloads.kitenet.net__41__/)
+* [downloads.kitenet.net/git-annex/OSX/current/ distribution is 7.20190508 but 7.20190615 expected ](http://git-annex.branchable.com/bugs/downloads.kitenet.net__47__git-annex__47__OSX__47__current__47___distribution_is_7.20190508_but_7.20190615_expected/)
+"""]]
