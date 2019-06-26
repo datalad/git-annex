@@ -1,1 +1,3 @@
 The [[`git-annex-drop`|git-annex-drop]] man page warns for several options: "bypasses checking the .gitattributes `annex.numcopies` setting".  I'm guessing these also bypass [[`git-annex-required`|git-annex-required]] ?  If yes, maybe add that to the manpage.
+
+> Good spotting, I've done so. [[done]] --[[Joey]]

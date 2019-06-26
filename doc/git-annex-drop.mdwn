@@ -1,4 +1,4 @@
-# NAME
+#a NAME
 
 git-annex drop - remove content of files from repository
 
@@ -12,7 +12,11 @@ Drops the content of annexed files from this repository, when
 possible.
 
 git-annex will refuse to drop content if it cannot verify it is
-safe to do so.
+safe to do so. Usually this involves verifying that the content is stored
+in some other repository.
+
+Content that is required to be stored in the repository will not be dropped
+even if enough copies exist elsewhere. See [[git-annex-required]](1).
 
 # OPTIONS
 
@@ -43,28 +47,28 @@ safe to do so.
   This is the default behavior when running git-annex drop in a bare repository.
 
   Note that this bypasses checking the .gitattributes annex.numcopies
-  setting.
+  setting and required content settings.
 
 * `--branch=ref`
 
   Drop files in the specified branch or treeish.
 
   Note that this bypasses checking the .gitattributes annex.numcopies
-  setting.
+  setting and required content settings.
 
 * `--unused`
 
   Drop files found by last run of git-annex unused.
 
   Note that this bypasses checking the .gitattributes annex.numcopies
-  setting.
+  setting and required content settings.
 
 * `--key=keyname`
 
   Use this option to drop a specified key.
 
   Note that this bypasses checking the .gitattributes annex.numcopies
-  setting.
+  setting and required content settings.
 
 * file matching options
 
