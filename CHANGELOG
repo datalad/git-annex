@@ -1,4 +1,4 @@
-git-annex (7.20190616) UNRELEASED; urgency=medium
+git-annex (7.20190626) upstream; urgency=medium
 
   * get, move, copy, sync: When -J or annex.jobs has enabled concurrency,
     checksum verification uses a separate job pool than is used for
@@ -21,7 +21,7 @@ git-annex (7.20190616) UNRELEASED; urgency=medium
     Übelacker, and Adrian Bunk for fixing ghc in Debian (bug #928882).
   * OSX dmg: Put git-annex's version in the Info.plist file.
 
- -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Jun 2019 12:29:46 -0400
 
 git-annex (7.20190615) upstream; urgency=medium
 
