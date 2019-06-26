@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-06-26T16:11:23Z"
+ content="""
+If the remotes have the same UUID, then one of them cannot be marked dead
+unless all of them are, because git-annex stores all such information under
+the UUID.
+
+git-annex checks before accessing a remote that it has the UUID
+it expects it to have. When the remote is on local media, the locally
+cached UUID is simply invalidated if a new repository with a different UUID
+appears there. Many of us git-annex users swap drives all the time on the
+same mount point. git-annex deals with this just fine.
+
+In your scenario, smallusb and smallusb2 etc
+all point to the same path. For smallusb git-annex had cached a UUID that 
+is marked dead. When a new git-annex repository appeared
+there, git-annex automatically changed the UUID that it had cached for
+smallusb to the new UUID. It then proceeds to work entirely as it's
+supposed to.
+
+I don't see a bug here. If you disagree please show how git-annex does
+something wrong in this situation.
+"""]]

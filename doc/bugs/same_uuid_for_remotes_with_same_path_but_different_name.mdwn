@@ -186,3 +186,5 @@ Everything up-to-date
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I think this is genius software and just love the docs, the effort put into it shines through! :)
+
+> [[done]]; not a bug --[[Joey]]
