@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-06-26T16:26:48Z"
+ content="""
+It's looking for /etc/protocols. May be that termux provides the same
+file in some other location.
+
+It would be difficult to make the termux package use it if so, since it's
+reusing git-annex that was compiled for a standard Linux system. I don't
+think that libc provides a way to make getprotobyname read a different
+file, other than `LD_PRELOAD` open hacks.
+"""]]
