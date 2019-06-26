@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+*Current:*
+
+In the **git-annex.app** application bundle included on each [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg) the `CFBundleShortVersionString` and `CFBundleVersion` in the `/Content/PkgInfo.plist` are fixed at "0.0.1" over consecutive releases of `git-annex`.
+
+    <key>CFBundleShortVersionString</key>
+    <string>0.0.1</string>
+    ...
+    <key>CFBundleVersion</key>
+    <string>0.0.1</string>
+
+
+This is problematic for automated package deployment systems, such as [Munki](https://www.munki.org), which compare the `CFBundleShortVersionString` of an installed application on a given system with that of deployable packages in an administrator maintained repository to determine whether newer software will be deployed.  As the `CFBundleShortVersionString` of `git-annex.app` is never incremented, the test always fails, and newer software is never deployed.
+
+This is also potentially confusing for end-users whose systems invariably report `/Application/git-annex.app` as being at version "0.0.1" in the Finder and elsewhere in the system.
+
+Compare to Firefox version 67.0.3:
+
+    <key>CFBundleShortVersionString</key>
+    <string>67.0.3</string>
+    ...
+    <key>CFBundleVersion</key>
+    <string>6719.6.19</string>
+
+Cf: [Apple Technical Note TN2420 Version Numbers and Build Numbers](https://developer.apple.com/library/archive/technotes/tn2420/_index.html)
+
+*Expected:*
+
+The `CFBundleShortVersionString` in the `git-annex.app/Content/PkgInfo.plist` matches the `distributionVersion` in [git-annex.app.info](https://downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg.info) for each release.  
+
+E.g.:  The release of [version 7.20190507](http://git-annex.branchable.com/news/version_7.20190507/) where `git-annex.app/Contents/MacOS/git-annex version` reports 
+`git-annex version: 7.20190130-gfe9bfa815` and _downloads.kitenet.net_ hosts a `git-annex.dmg.info` containing`distributionVersion = 7.20190507`, the corresponding `git-annex.dmg`'s `/Content/PkgInfo.plist` would contain:
+
+    ...
+    <key>CFBundleShortVersionString</key>
+    <string>7.20190507</string>
+    ...
+   
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes, loving git-annex, it's a great tool!
