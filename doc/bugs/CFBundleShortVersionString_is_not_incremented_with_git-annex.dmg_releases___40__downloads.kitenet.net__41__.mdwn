@@ -55,3 +55,7 @@ E.g.:  The release of [version 7.20190507](http://git-annex.branchable.com/news/
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes, loving git-annex, it's a great tool!
+
+> [[fixed|done]] in the build scripts, when the OSX app will successfully
+> build again I am not sure. Thanks for reporting this, I had no idea there
+> was a significant version in there. --[[Joey]]

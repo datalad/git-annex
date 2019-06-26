@@ -130,6 +130,8 @@ Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/Standalone: Build/Standalone.hs tmp/configure-stamp
 	$(GHC) --make $@ -Wall -fno-warn-tabs
+Build/BuildVersion: Build/BuildVersion.hs
+	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/OSXMkLibs: Build/OSXMkLibs.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/LinuxMkLibs: Build/LinuxMkLibs.hs
@@ -198,7 +200,7 @@ dpkg-buildpackage%: prep-standalone
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp:
-	$(MAKE) git-annex Build/Standalone Build/OSXMkLibs
+	$(MAKE) git-annex Build/Standalone Build/OSXMkLibs Build/BuildVersion
 
 	# Remove all RPATHs, both because this overloads the linker on
 	# OSX Sierra, and to avoid the binary looking in someone's home
@@ -210,6 +212,9 @@ osxapp:
 	rm -rf "$(OSXAPP_DEST)" "$(OSXAPP_BASE)"
 	install -d tmp/build-dmg
 	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
+	sed -e 's/GIT_ANNEX_VERSION/$(shell Build/BuildVersion)/' \
+		< standalone/osx/Info.plist.template \
+		> "$(OSXAPP_DEST)"/Contents/Info.plist
 
 	install -d "$(OSXAPP_BASE)"
 	cp git-annex "$(OSXAPP_BASE)"

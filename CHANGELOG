@@ -19,6 +19,7 @@ git-annex (7.20190616) UNRELEASED; urgency=medium
   * The Linux standalone arm build now works again on CPU versions below
     arm6. Thanks to Emanuele Olivetti, Ilias Tsitsimpis, Bernhard
     Übelacker, and Adrian Bunk for fixing ghc in Debian (bug #928882).
+  * OSX dmg: Put git-annex's version in the Info.plist file.
 
  -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
 
