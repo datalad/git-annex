@@ -13,3 +13,8 @@ I downloaded the arm tarball, unpacked and did as above. Same if do as above as 
 Is there a way of getting a working pre-built git-annex on such a system?
 
 Thanks in advance!
+
+> I've updated the builder to use the fixed ghc and the haskell libraries
+> built with it, so this is [[fixed|done]] in the git-annex armel
+> autobuild. (Not yet in the release tarball but that will happen after the
+> next git-annex release.) --[[Joey]]

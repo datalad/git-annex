@@ -16,6 +16,9 @@ git-annex (7.20190616) UNRELEASED; urgency=medium
     generating and setting a description for the repository.
   * add: Display progress meter when hashing files.
   * add: Support --json-progress option.
+  * The Linux standalone arm build now works again on CPU versions below
+    arm6. Thanks to Emanuele Olivetti, Ilias Tsitsimpis, Bernhard
+    Übelacker, and Adrian Bunk for fixing ghc in Debian (bug #928882).
 
  -- Joey Hess <id@joeyh.name>  Sat, 15 Jun 2019 12:38:25 -0400
 
