@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-06-27T14:36:59Z"
+ content="""
+It sounds like you would want to unlock all files in the repo this
+way, is that right?
+
+If so, it seems like a case for `git-annex adjust`, eg 
+`git annex adjust --hardlink`. And it would perhaps make sense to do
+that on a crippled filesystem by default instead of the current default of
+--unlock.
+
+Keeping it in adjust only avoids needing to make the unlock command do
+something that is not an unlocking, and it avoids needing to add a new
+command. 
+
+It also neatly avoids the problem that, while `git annex unlock`
+makes a change that can be committed to git (in v7 mode), this new
+operation is not something that can be committed to git
+(at least w/o some change to indicate it in the pointer file).
+"""]]
