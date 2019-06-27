@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 5"
+ date="2019-06-26T20:38:19Z"
+ content="""
+P.S. It seems that in case of missing backend implementation, the handling should revert to exactly what currently happens for WORM/URL keys?  Except with a different warning message, as custom backends are _potentially_ verifiable.
+
+If git-annex could support [[todo/alternate_keys_for_same_content]], then for a download from an external backend key you could also compute a standard checksum-based key (e.g. MD5 or SHA256), and record its presence in the remote you got the contents from, and the correspondence to the external backend key.  Then, at least, if this contents gets uploaded somewhere else, it would be verifiable even without the external backend implementation.
+"""]]

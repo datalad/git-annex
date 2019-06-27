@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="some todos that external backends would obviate (fix formatting, add one)"
+ date="2019-06-26T20:25:50Z"
+ content="""
+* [[todo/key_checksum_from_chunk_checksums]]
+* [[todo/MD5E_keys_without_file_size]]
+* [[todo/preserve_file_extensions_in_WORM_and_URL_keys]]
+* [[todo/option_to_add_user-specified_string_to_key]]
+* [[todo/shorter_keys_through_better_encoding]]
+
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2019-06-26T20:15:19Z"
+ content="""
+Thanks a lot @joeyh for looking again at supporting external backends.
+
+I think the issues with missing backend implementations are similar to issues with a missing external special remote implementation: something that the repo owner/maintainer needs to deal with.  I periodically forget to put mine into the PATH, and then `git-annex` tells me to a special remote available.  Fixing these issues has been manageable in practice.
+
+For reference, these are some of the todos that support for external backends would obviate: [[todo/key_checksum_from_chunk_checksums]] [[todo/MD5E_keys_without_file_size]] [[todo/preserve_file_extensions_in_WORM_and_URL_keys]] [[todo/option_to_add_user-specified_string_to_key]] [[todo/add_xxHash_backend]] .
+
+
+
+"""]]
