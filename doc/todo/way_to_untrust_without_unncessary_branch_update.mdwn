@@ -1,0 +1,13 @@
+Currently running `git annex untrust` on a remote that is already untrusted
+will still update the git-annex branch. And that should not change, because
+one use case is overriding a change made elsewhere, in a semi-split brain
+situation, and so indication it's still untrusted is useful.
+
+But, if a program, or even an external special remote wants to untrust
+itself, it currently needs to parse `git annex info` to see if it's
+currently untrusted, and only run untrust if not, otherwise each time it
+runs it will pile up a change in the git-annex branch.
+
+So, suggest a flag to avoid generally unnecessary branch update.
+It would also make sense to add it to the other trust level commands,
+and possibly other config setting commands. --[[Joey]]
