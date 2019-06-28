@@ -1,0 +1,11 @@
+When using a local git remote on eg a removable drive, error messages don't
+make clear if the problem occurred in the local git repo or the remote
+repo.
+
+For example, I was copying files to a removable drive and got an error
+about a broken git object, but it was not clear which repo had the broken
+object in it.
+
+This should be fixable by eg, catching all exceptions when running Annex
+operations on a remote, adding its path to the message and rethrowing.
+--[[Joey]]
