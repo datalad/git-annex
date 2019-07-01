@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="I wonder if &quot;thin mode&quot; could generalize beyond hardlinks"
+ date="2019-07-01T16:19:47Z"
+ content="""
+Was not sure if  I should file a new issue for related discussion, but I thought it might align with the last comment from Ilya, but let me know if it is off-topic too much.
+
+One of the most common \"consumer\" use cases across platforms is just to get the dataset and files to be processed, and then possibly even wipe it all out.  Not all file systems support hard linking or CoW.  I wondered if \"thin\" mode could be something explicit like `hardlink`, or even a new mode -- `mv`.  In `mv` I would see annex just moving the file in its needed location upon `unlock` (and probably marking in `git-annex` branch it to be not present \"here\") (and probably retaining their \"read-only\" for some level of protection? or have `mv` and `mv-rw` modes?).
+
+And then may be if `annex get` would get an option `--unlocked`, then in `thin=mv` mode, annex could take a shortcut and just place the file in a target location right away without even bothering to change any availability information in \"git-annex\" branch?  That would also avoid stressing file systems with consuming all the inodes for `.git/annex/objects` tree in such scenarios.
+
+"""]]
