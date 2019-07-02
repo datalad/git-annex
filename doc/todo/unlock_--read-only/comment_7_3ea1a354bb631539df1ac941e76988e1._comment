@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 7"
+ date="2019-07-02T18:36:15Z"
+ content="""
+To \"just to get the dataset and files to be processed, and then possibly even wipe it all out\", maybe you could just use the [[directory special remote|special_remotes/directory]]?
+
+Which common file systems do not support hardlinking?  It seems that [Windows does](https://docs.microsoft.com/en-us/windows/desktop/fileio/hard-links-and-junctions).
+
+To fix the problem that unlocking a file causes `git status` to report it as changed (\"typechange\"), maybe git-annex could [tell git to locally ignore the change](https://dev.to/nishina555/how-to-ignore-files-already-managed-with-git-locally-19oo)?
+
+
+"""]]
