@@ -5,7 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Command.ImportFeed where
@@ -17,9 +16,6 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Format
-#if ! MIN_VERSION_time(1,5,0)
-import System.Locale
-#endif
 import qualified Data.Text as T
 import System.Log.Logger
 
@@ -140,10 +136,10 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 	mk i = case getItemEnclosure i of
 		Just (enclosureurl, _, _) ->
 			Just $ ToDownload f u i $ Enclosure $ 
-				fromFeed enclosureurl
+				T.unpack enclosureurl
 		Nothing -> case getItemLink i of
 			Just link -> Just $ ToDownload f u i $ 
-				MediaLink $ fromFeed link
+				MediaLink $ T.unpack link
 			Nothing -> Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
@@ -218,7 +214,7 @@ performDownload opts cache todownload = case location todownload of
 
 	knownitemid = case getItemId (item todownload) of
 		Just (_, itemid) ->
-			S.member (fromFeed itemid) (knownitems cache)
+			S.member (T.unpack itemid) (knownitems cache)
 		_ -> False
 
 	rundownload url extension getter = do
@@ -319,7 +315,7 @@ feedFile tmpl i extension = Utility.Format.format tmpl $
 		Just (Just d) -> Just $
 			formatTime defaultTimeLocale "%F" d
 		-- if date cannot be parsed, use the raw string
-		_ -> replace "/" "-" . fromFeed
+		_ -> replace "/" "-" . T.unpack
 			<$> getItemPublishDateString itm
 
 extractMetaData :: ToDownload -> MetaData
@@ -334,7 +330,7 @@ minimalMetaData :: ToDownload -> MetaData
 minimalMetaData i = case getItemId (item i) of
 	(Nothing) -> emptyMetaData
 	(Just (_, itemid)) -> MetaData $ M.singleton itemIdField 
-		(S.singleton $ toMetaValue $ encodeBS $ fromFeed itemid)
+		(S.singleton $ toMetaValue $ encodeBS $ T.unpack itemid)
 
 {- Extract fields from the feed and item, that are both used as metadata,
  - and to generate the filename. -}
@@ -344,18 +340,18 @@ extractFields i = map (uncurry extractField)
 	, ("itemtitle", [itemtitle])
 	, ("feedauthor", [feedauthor])
 	, ("itemauthor", [itemauthor])
-	, ("itemsummary", [fromFeed <$> getItemSummary (item i)])
-	, ("itemdescription", [fromFeed <$> getItemDescription (item i)])
-	, ("itemrights", [fromFeed <$> getItemRights (item i)])
-	, ("itemid", [fromFeed . snd <$> getItemId (item i)])
+	, ("itemsummary", [T.unpack <$> getItemSummary (item i)])
+	, ("itemdescription", [T.unpack <$> getItemDescription (item i)])
+	, ("itemrights", [T.unpack <$> getItemRights (item i)])
+	, ("itemid", [T.unpack . snd <$> getItemId (item i)])
 	, ("title", [itemtitle, feedtitle])
 	, ("author", [itemauthor, feedauthor])
 	]
   where
-	feedtitle = Just $ fromFeed $ getFeedTitle $ feed i
-	itemtitle = fromFeed <$> getItemTitle (item i)
-	feedauthor = fromFeed <$> getFeedAuthor (feed i)
-	itemauthor = fromFeed <$> getItemAuthor (item i)
+	feedtitle = Just $ T.unpack $ getFeedTitle $ feed i
+	itemtitle = T.unpack <$> getItemTitle (item i)
+	feedauthor = T.unpack <$> getFeedAuthor (feed i)
+	itemauthor = T.unpack <$> getItemAuthor (item i)
 
 itemIdField :: MetaField
 itemIdField = mkMetaFieldUnchecked "itemid"
@@ -408,11 +404,3 @@ clearFeedProblem url = void $ liftIO . tryIO . removeFile =<< feedState url
 
 feedState :: URLString -> Annex FilePath
 feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing
-
-#if MIN_VERSION_feed(1,0,0)
-fromFeed :: T.Text -> String
-fromFeed = T.unpack
-#else
-fromFeed :: String -> String
-fromFeed = id
-#endif

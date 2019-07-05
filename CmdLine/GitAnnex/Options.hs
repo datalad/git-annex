@@ -5,14 +5,11 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, CPP #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 module CmdLine.GitAnnex.Options where
 
 import Options.Applicative
-#if ! MIN_VERSION_optparse_applicative(0,14,1)
-import Options.Applicative.Builder.Internal
-#endif
 import qualified Data.Map as M
 
 import Annex.Common

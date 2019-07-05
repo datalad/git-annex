@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Database.Init where
 
 import Annex.Common
@@ -16,11 +14,7 @@ import Utility.FileMode
 import Database.Persist.Sqlite
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as T
-#if MIN_VERSION_persistent_sqlite(2,6,2)
 import Lens.Micro
-#else
-import qualified Database.Sqlite as Sqlite
-#endif
 
 {- Ensures that the database is freshly initialized. Deletes any
  - existing database. Pass the migration action for the database.
@@ -38,12 +32,7 @@ initDb db migration = do
 	let tdb = T.pack tmpdb	
 	liftIO $ do
 		createDirectoryIfMissing True tmpdbdir
-#if MIN_VERSION_persistent_sqlite(2,6,2)
 		runSqliteInfo (enableWAL tdb) migration
-#else
-		enableWAL tdb
-		runSqlite tdb migration
-#endif
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring
 	-- less restrictive umasks.
@@ -61,16 +50,6 @@ initDb db migration = do
  -
  - Note that once WAL mode is enabled, it will persist whenever the
  - database is opened. -}
-#if MIN_VERSION_persistent_sqlite(2,6,2)
 enableWAL :: T.Text -> SqliteConnectionInfo
 enableWAL db = over walEnabled (const True) $ 
 	mkSqliteConnectionInfo db
-#else
-enableWAL :: T.Text -> IO ()
-enableWAL db = do
-	conn <- Sqlite.open db
-	stmt <- Sqlite.prepare conn (T.pack "PRAGMA journal_mode=WAL;")
-	void $ Sqlite.step stmt
-	void $ Sqlite.finalize stmt
-	Sqlite.close conn
-#endif

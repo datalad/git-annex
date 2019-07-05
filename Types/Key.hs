@@ -5,7 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Types.Key where
@@ -155,7 +154,6 @@ parseKeyVariety "SKEIN512"     = SKEINKey (HashSize 512) (HasExt False)
 parseKeyVariety "SKEIN512E"    = SKEINKey (HashSize 512) (HasExt True)
 parseKeyVariety "SKEIN256"     = SKEINKey (HashSize 256) (HasExt False)
 parseKeyVariety "SKEIN256E"    = SKEINKey (HashSize 256) (HasExt True)
-#if MIN_VERSION_cryptonite(0,23,0)
 parseKeyVariety "BLAKE2B160"   = Blake2bKey (HashSize 160) (HasExt False)
 parseKeyVariety "BLAKE2B160E"  = Blake2bKey (HashSize 160) (HasExt True)
 parseKeyVariety "BLAKE2B224"   = Blake2bKey (HashSize 224) (HasExt False)
@@ -176,7 +174,6 @@ parseKeyVariety "BLAKE2SP224"  = Blake2spKey (HashSize 224) (HasExt False)
 parseKeyVariety "BLAKE2SP224E" = Blake2spKey (HashSize 224) (HasExt True)
 parseKeyVariety "BLAKE2SP256"  = Blake2spKey (HashSize 256) (HasExt False)
 parseKeyVariety "BLAKE2SP256E" = Blake2spKey (HashSize 256) (HasExt True)
-#endif
 parseKeyVariety "SHA1"        = SHA1Key (HasExt False)
 parseKeyVariety "SHA1E"       = SHA1Key (HasExt True)
 parseKeyVariety "MD5"         = MD5Key (HasExt False)

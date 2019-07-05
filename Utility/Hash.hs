@@ -1,7 +1,5 @@
 {- Convenience wrapper around cryptonite's hashing. -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.Hash (
 	sha1,
 	sha2_224,
@@ -14,7 +12,6 @@ module Utility.Hash (
 	sha3_512,
 	skein256,
 	skein512,
-#if MIN_VERSION_cryptonite(0,23,0)
 	blake2s_160,
 	blake2s_224,
 	blake2s_256,
@@ -25,7 +22,6 @@ module Utility.Hash (
 	blake2b_256,
 	blake2b_384,
 	blake2b_512,
-#endif
 	md5,
 	prop_hashes_stable,
 	Mac(..),
@@ -73,7 +69,6 @@ skein256 = hashlazy
 skein512 :: L.ByteString -> Digest Skein512_512
 skein512 = hashlazy
 
-#if MIN_VERSION_cryptonite(0,23,0)
 blake2s_160 :: L.ByteString -> Digest Blake2s_160
 blake2s_160 = hashlazy
 
@@ -103,7 +98,6 @@ blake2b_384 = hashlazy
 
 blake2b_512 :: L.ByteString -> Digest Blake2b_512
 blake2b_512 = hashlazy
-#endif
 
 -- Disabled because it's buggy with some versions of cryptonite.
 --blake2bp_512 :: L.ByteString -> Digest Blake2bp_512
@@ -126,7 +120,6 @@ prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
 	, (show . sha3_256, "76d3bc41c9f588f7fcd0d5bf4718f8f84b1c41b20882703100b9eb9413807c01")
 	, (show . sha3_384, "665551928d13b7d84ee02734502b018d896a0fb87eed5adb4c87ba91bbd6489410e11b0fbcc06ed7d0ebad559e5d3bb5")
 	, (show . sha3_512, "4bca2b137edc580fe50a88983ef860ebaca36c857b1f492839d6d7392452a63c82cbebc68e3b70a2a1480b4bb5d437a7cba6ecf9d89f9ff3ccd14cd6146ea7e7")
-#if MIN_VERSION_cryptonite(0,23,0)
 	, (show . blake2s_160, "52fb63154f958a5c56864597273ea759e52c6f00")
 	, (show . blake2s_224, "9466668503ac415d87b8e1dfd7f348ab273ac1d5e4f774fced5fdb55")
 	, (show . blake2s_256, "08d6cad88075de8f192db097573d0e829411cd91eb6ec65e8fc16c017edfdb74")
@@ -138,7 +131,6 @@ prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
 	, (show . blake2b_384, "e629ee880953d32c8877e479e3b4cb0a4c9d5805e2b34c675b5a5863c4ad7d64bb2a9b8257fac9d82d289b3d39eb9cc2")
 	, (show . blake2b_512, "ca002330e69d3e6b84a46a56a6533fd79d51d97a3bb7cad6c2ff43b354185d6dc1e723fb3db4ae0737e120378424c714bb982d9dc5bbd7a0ab318240ddd18f8d")
 	--, (show . blake2bp_512, "")
-#endif
 	, (show . md5, "acbd18db4cc2f85cedef654fccc4a4d8")
 	]
   where

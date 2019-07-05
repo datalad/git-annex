@@ -5,8 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Utility.TimeStamp where
 
 import Utility.Data
@@ -19,9 +17,6 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Attoparsec.ByteString as A
 import Data.Attoparsec.ByteString.Char8 (char, decimal, signed, isDigit_w8)
-#if ! MIN_VERSION_time(1,5,0)
-import System.Locale
-#endif
 
 {- Parses how POSIXTime shows itself: "1431286201.113452s"
  - (The "s" is included for historical reasons and is optional.)

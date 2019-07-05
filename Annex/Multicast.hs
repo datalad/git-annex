@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.Multicast where
 
 import Config.Files
@@ -16,9 +14,6 @@ import Utility.PartialPrelude
 import System.Process
 import System.IO
 import GHC.IO.Handle.FD
-#if ! MIN_VERSION_process(1,4,2)
-import System.Posix.IO (handleToFd)
-#endif
 import Control.Applicative
 import Prelude
 
@@ -28,14 +23,9 @@ multicastReceiveEnv = "GIT_ANNEX_MULTICAST_RECEIVE"
 multicastCallbackEnv :: IO (FilePath, [(String, String)], Handle)
 multicastCallbackEnv = do
 	gitannex <- readProgramFile
-#if MIN_VERSION_process(1,4,2)
 	-- This will even work on Windows
 	(rfd, wfd) <- createPipeFd
 	rh <- fdToHandle rfd
-#else
-	(rh, wh) <- createPipe
-	wfd <- handleToFd wh
-#endif
 	environ <- addEntry multicastReceiveEnv (show wfd) <$> getEnvironment
 	return (gitannex, environ, rh)
 

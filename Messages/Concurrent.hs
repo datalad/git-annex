@@ -119,12 +119,8 @@ concurrentOutputSupported = return True -- Windows is always unicode
 #endif
 
 {- Hide any currently displayed console regions while running the action,
- - so that the action can use the console itself.
- - This needs a new enough version of concurrent-output; otherwise
- - the regions will not be hidden, but the action still runs, garbling the
- - display. -}
+ - so that the action can use the console itself. -}
 hideRegionsWhile :: MessageState -> Annex a -> Annex a
-#if MIN_VERSION_concurrent_output(1,9,0)
 hideRegionsWhile s a 
 	| concurrentOutputEnabled s = bracketIO setup cleanup go
 	| otherwise = a
@@ -134,6 +130,3 @@ hideRegionsWhile s a
 	go _ = do
 		liftIO $ hFlush stdout
 		a
-#else
-hideRegionsWhile _ = id
-#endif

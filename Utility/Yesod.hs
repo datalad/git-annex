@@ -7,7 +7,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, RankNTypes, FlexibleContexts #-}
+{-# LANGUAGE RankNTypes, FlexibleContexts #-}
 
 module Utility.Yesod 
 	( module Y
@@ -34,9 +34,5 @@ hamletTemplate :: FilePath -> FilePath
 hamletTemplate f = globFile "hamlet" f
 
 {- Lift Handler to Widget -}
-#if MIN_VERSION_yesod_core(1,6,0)
 liftH :: HandlerFor site a -> WidgetFor site a 
-#else
-liftH :: Monad m => HandlerT site m a -> WidgetT site m a
-#endif
 liftH = handlerToWidget

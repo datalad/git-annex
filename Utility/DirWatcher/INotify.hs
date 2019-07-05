@@ -1,5 +1,3 @@
-{-# LANGUAGE CPP #-}
-
 {- higher-level inotify interface
  -
  - Copyright 2012 Joey Hess <id@joeyh.name>
@@ -199,14 +197,8 @@ querySysctl ps = getM go ["sysctl", "/sbin/sysctl", "/usr/sbin/sysctl"]
 			Just s -> return $ parsesysctl s
 	parsesysctl s = readish =<< lastMaybe (words s)
 
-#if MIN_VERSION_hinotify(0,3,10)
 toInternalFilePath :: FilePath -> RawFilePath
 toInternalFilePath = toRawFilePath
+
 fromInternalFilePath :: RawFilePath -> FilePath
 fromInternalFilePath = fromRawFilePath
-#else
-toInternalFilePath :: FilePath -> FilePath
-toInternalFilePath = id
-fromInternalFilePath :: FilePath -> FilePath
-fromInternalFilePath = id
-#endif

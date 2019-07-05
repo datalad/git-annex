@@ -9,7 +9,6 @@
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE CPP #-}
 
 module Database.Export (
 	ExportHandle,
@@ -130,11 +129,7 @@ addExportedLocation h k el = queueDb h $ do
 	let edirs = map
 		(\ed -> ExportedDirectory (toSFilePath (fromExportDirectory ed)) ef)
 		(exportDirectories el)
-#if MIN_VERSION_persistent(2,8,1)
 	putMany edirs
-#else
-	mapM_ insertUnique edirs
-#endif
   where
 	ik = toIKey k
 	ef = toSFilePath (fromExportLocation el)

@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, CPP #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Git.Fsck (
 	FsckResults(..),
@@ -61,9 +61,6 @@ instance Sem.Semigroup FsckOutput where
 
 instance Monoid FsckOutput where
 	mempty = NoFsckOutput
-#if ! MIN_VERSION_base(4,11,0)
-	mappend = (Sem.<>)
-#endif
 
 {- Runs fsck to find some of the broken objects in the repository.
  - May not find all broken objects, if fsck fails on bad data in some of
