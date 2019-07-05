@@ -22,6 +22,7 @@ module Utility.Hash (
 	blake2b_256,
 	blake2b_384,
 	blake2b_512,
+	blake2bp_512,
 	md5,
 	prop_hashes_stable,
 	Mac(..),
@@ -99,9 +100,8 @@ blake2b_384 = hashlazy
 blake2b_512 :: L.ByteString -> Digest Blake2b_512
 blake2b_512 = hashlazy
 
--- Disabled because it's buggy with some versions of cryptonite.
---blake2bp_512 :: L.ByteString -> Digest Blake2bp_512
---blake2bp_512 = hashlazy
+blake2bp_512 :: L.ByteString -> Digest Blake2bp_512
+blake2bp_512 = hashlazy
 
 md5 ::  L.ByteString -> Digest MD5
 md5 = hashlazy
@@ -130,7 +130,7 @@ prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
 	, (show . blake2b_256, "b8fe9f7f6255a6fa08f668ab632a8d081ad87983c77cd274e48ce450f0b349fd")
 	, (show . blake2b_384, "e629ee880953d32c8877e479e3b4cb0a4c9d5805e2b34c675b5a5863c4ad7d64bb2a9b8257fac9d82d289b3d39eb9cc2")
 	, (show . blake2b_512, "ca002330e69d3e6b84a46a56a6533fd79d51d97a3bb7cad6c2ff43b354185d6dc1e723fb3db4ae0737e120378424c714bb982d9dc5bbd7a0ab318240ddd18f8d")
-	--, (show . blake2bp_512, "")
+	, (show . blake2bp_512, "8ca9ccee7946afcb686fe7556628b5ba1bf9a691da37ca58cd049354d99f37042c007427e5f219b9ab5063707ec6823872dee413ee014b4d02f2ebb6abb5f643")
 	, (show . md5, "acbd18db4cc2f85cedef654fccc4a4d8")
 	]
   where

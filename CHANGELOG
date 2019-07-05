@@ -1,5 +1,7 @@
   * Drop support for building with ghc older than 8.4.4,
     and with older versions of serveral haskell libraries.
+  * Add BLAKE2BP512 and BLAKE2BP512E backends, using a blake2 variant
+    optimised for 4-way CPUs.
 
 git-annex (7.20190627) UNRELEASED; urgency=medium
 

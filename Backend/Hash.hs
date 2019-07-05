@@ -34,6 +34,7 @@ data Hash
 	| SHA3Hash HashSize
 	| SkeinHash HashSize
 	| Blake2bHash HashSize
+	| Blake2bpHash HashSize
 	| Blake2sHash HashSize
 	| Blake2spHash HashSize
 
@@ -45,6 +46,7 @@ hashes = concat
 	, map (SHA3Hash . HashSize) [256, 512, 224, 384]
 	, map (SkeinHash . HashSize) [256, 512]
 	, map (Blake2bHash . HashSize) [256, 512, 160, 224, 384]
+	, map (Blake2bpHash . HashSize) [512]
 	, map (Blake2sHash . HashSize) [256, 160, 224]
 	, map (Blake2spHash . HashSize) [256, 224]
 	, [SHA1Hash]
@@ -78,6 +80,7 @@ hashKeyVariety (SHA2Hash size) he = SHA2Key size he
 hashKeyVariety (SHA3Hash size) he = SHA3Key size he
 hashKeyVariety (SkeinHash size) he = SKEINKey size he
 hashKeyVariety (Blake2bHash size) he = Blake2bKey size he
+hashKeyVariety (Blake2bpHash size) he = Blake2bpKey size he
 hashKeyVariety (Blake2sHash size) he = Blake2sKey size he
 hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
 
@@ -217,6 +220,7 @@ hashFile hash file meterupdate =
 		SHA3Hash hashsize -> sha3Hasher hashsize
 		SkeinHash hashsize -> skeinHasher hashsize
 		Blake2bHash hashsize -> blake2bHasher hashsize
+		Blake2bpHash hashsize -> blake2bpHasher hashsize
 		Blake2sHash hashsize -> blake2sHasher hashsize
 		Blake2spHash hashsize -> blake2spHasher hashsize
 
@@ -252,6 +256,11 @@ blake2bHasher (HashSize hashsize)
 	| hashsize == 224 = show . blake2b_224
 	| hashsize == 384 = show . blake2b_384
 	| otherwise = error $ "unsupported BLAKE2B size " ++ show hashsize
+
+blake2bpHasher :: HashSize -> (L.ByteString -> String)
+blake2bpHasher (HashSize hashsize)
+	| hashsize == 512 = show . blake2bp_512
+	| otherwise = error $ "unsupported BLAKE2BP size " ++ show hashsize
 
 blake2sHasher :: HashSize -> (L.ByteString -> String)
 blake2sHasher (HashSize hashsize)

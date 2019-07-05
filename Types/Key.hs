@@ -36,6 +36,7 @@ data KeyVariety
 	| SHA3Key HashSize HasExt
 	| SKEINKey HashSize HasExt
 	| Blake2bKey HashSize HasExt
+	| Blake2bpKey HashSize HasExt
 	| Blake2sKey HashSize HasExt
 	| Blake2spKey HashSize HasExt
 	| SHA1Key HasExt
@@ -60,6 +61,7 @@ hasExt (SHA2Key _ (HasExt b)) = b
 hasExt (SHA3Key _ (HasExt b)) = b
 hasExt (SKEINKey _ (HasExt b)) = b
 hasExt (Blake2bKey _ (HasExt b)) = b
+hasExt (Blake2bpKey _ (HasExt b)) = b
 hasExt (Blake2sKey _ (HasExt b)) = b
 hasExt (Blake2spKey _ (HasExt b)) = b
 hasExt (SHA1Key (HasExt b)) = b
@@ -73,6 +75,7 @@ sameExceptExt (SHA2Key sz1 _) (SHA2Key sz2 _) = sz1 == sz2
 sameExceptExt (SHA3Key sz1 _) (SHA3Key sz2 _) = sz1 == sz2
 sameExceptExt (SKEINKey sz1 _) (SKEINKey sz2 _) = sz1 == sz2
 sameExceptExt (Blake2bKey sz1 _) (Blake2bKey sz2 _) = sz1 == sz2
+sameExceptExt (Blake2bpKey sz1 _) (Blake2bpKey sz2 _) = sz1 == sz2
 sameExceptExt (Blake2sKey sz1 _) (Blake2sKey sz2 _) = sz1 == sz2
 sameExceptExt (Blake2spKey sz1 _) (Blake2spKey sz2 _) = sz1 == sz2
 sameExceptExt (SHA1Key _) (SHA1Key _) = True
@@ -86,6 +89,7 @@ cryptographicallySecure (SHA2Key _ _) = True
 cryptographicallySecure (SHA3Key _ _) = True
 cryptographicallySecure (SKEINKey _ _) = True
 cryptographicallySecure (Blake2bKey _ _) = True
+cryptographicallySecure (Blake2bpKey _ _) = True
 cryptographicallySecure (Blake2sKey _ _) = True
 cryptographicallySecure (Blake2spKey _ _) = True
 cryptographicallySecure _ = False
@@ -99,6 +103,7 @@ isVerifiable (SHA2Key _ _) = True
 isVerifiable (SHA3Key _ _) = True
 isVerifiable (SKEINKey _ _) = True
 isVerifiable (Blake2bKey _ _) = True
+isVerifiable (Blake2bpKey _ _) = True
 isVerifiable (Blake2sKey _ _) = True
 isVerifiable (Blake2spKey _ _) = True
 isVerifiable (SHA1Key _) = True
@@ -113,6 +118,7 @@ formatKeyVariety v = case v of
 	SHA3Key sz e -> adde e (addsz sz "SHA3_")
 	SKEINKey sz e -> adde e (addsz sz "SKEIN")
 	Blake2bKey sz e -> adde e (addsz sz "BLAKE2B")
+	Blake2bpKey sz e -> adde e (addsz sz "BLAKE2BP")
 	Blake2sKey sz e -> adde e (addsz sz "BLAKE2S")
 	Blake2spKey sz e -> adde e (addsz sz "BLAKE2SP")
 	SHA1Key e -> adde e "SHA1"
@@ -164,6 +170,8 @@ parseKeyVariety "BLAKE2B384"   = Blake2bKey (HashSize 384) (HasExt False)
 parseKeyVariety "BLAKE2B384E"  = Blake2bKey (HashSize 384) (HasExt True)
 parseKeyVariety "BLAKE2B512"   = Blake2bKey (HashSize 512) (HasExt False)
 parseKeyVariety "BLAKE2B512E"  = Blake2bKey (HashSize 512) (HasExt True)
+parseKeyVariety "BLAKE2BP512"  = Blake2bpKey (HashSize 512) (HasExt False)
+parseKeyVariety "BLAKE2BP512E" = Blake2bpKey (HashSize 512) (HasExt True)
 parseKeyVariety "BLAKE2S160"   = Blake2sKey (HashSize 160) (HasExt False)
 parseKeyVariety "BLAKE2S160E"  = Blake2sKey (HashSize 160) (HasExt True)
 parseKeyVariety "BLAKE2S224"   = Blake2sKey (HashSize 224) (HasExt False)
