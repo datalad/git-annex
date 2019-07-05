@@ -1,0 +1,32 @@
+As of 436f10771 (make CommandStart return a StartMessage, 2019-06-06),
+`find --json` no longer outputs json.
+
+For example, with
+
+[[!format sh """
+cd $(mktemp -dt gx-find-json-XXXXXXX)
+git init && git annex init
+echo one >one && git annex add one && git commit -mone
+git annex find --json -- one
+"""]]
+
+the last command outputs
+
+```
+one
+```
+
+rather than
+
+```
+{"bytesize":"4","mtime":"unknown","keyname":"2c8b08da5ce60398e1f19af0e5dccc744df274b826abe585eaba68c525434806","backend":"SHA256E","key":"SHA256E-s4--2c8b08da5ce60398e1f19af0e5dccc744df274b826abe585eaba68c525434806","humansize":"4 B","hashdirmixed":"0J/J1/","file":"one","hashdirlower":"171/8dc/"}
+```
+
+436f10771 appears to touch a lot of things, so perhaps other commands
+show similar issues and `find` is just the first I noticed.
+
+### On what operating system?
+
+GNU/Linux, building git-annex with Guix
+
+[[!meta author=kyle]]

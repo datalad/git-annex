@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="jk@3f2b4ce16bbac41470815333505aa47b91b7a9a6"
+ nickname="jk"
+ avatar="http://cdn.libravatar.org/avatar/c55729c75302ae278a98d1622b30fe49"
+ subject="spurious processes being started"
+ date="2019-06-28T06:50:53Z"
+ content="""
+On debian buster, copying to or from tahoe seems to alway cause an attempt to start a new tahoe process, even if one is already running, resulting in error messages like this  on second or subsequent attempts:
+
+    copy P5273249.JPG STARTING '/home/jk/.tahoe-git-annex/3677c81a-5cd0-4817-9ad3-a7c29b74a7b7'
+    starting node in '/home/jk/.tahoe-git-annex/3677c81a-5cd0-4817-9ad3-a7c29b74a7b7'
+    Another twistd server is running, PID 20860
+   
+    This could either be a previously started instance of your application or a
+    different application entirely. To start a new one, either run it in some other
+    directory, or use the --pidfile and --logfile parameters to avoid clashes.
+
+Not a massive problem as everything seems to work.
+"""]]

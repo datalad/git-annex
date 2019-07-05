@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="verifying and external backends"
+ date="2019-06-28T17:14:17Z"
+ content="""
+In fact, it seems you'd _always_ have to treat external-backend keys as unverified by default, and require explicit configuration to override that?  Even if an external backend claims to compute a cryptographically secure hash, you can't guarantee that it does.  It seems that the handling should be exactly as for URL/WORM keys, except that, instead of completely disabling verification with `annex.security.allow-unverified-downloads`, the user could enable verification by an external backend implementation which the user trusts.
+"""]]

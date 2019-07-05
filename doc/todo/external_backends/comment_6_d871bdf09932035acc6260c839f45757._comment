@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="dockerized external backends"
+ date="2019-06-28T16:36:10Z"
+ content="""
+Similar to [[todo/dockerized_external_special_remotes]], you could support dockerized external backends.  You could run a docker container with [networking disabled](https://docs.docker.com/network/none/) and with file access only to the to-be-annexed file(s), through a [read-only volume](https://docs.docker.com/storage/volumes/#use-a-read-only-volume).  You could also require the docker image to be [signed](https://docs.docker.com/engine/security/trust/content_trust/) by someone you trust.  Then git-annex repos with external-backend keys could still be self-contained.
+"""]]

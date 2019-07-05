@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="read-only unlock of only some files"
+ date="2019-06-28T15:57:04Z"
+ content="""
+There are still use cases for read-only unlock of just some files.  One issue with symlinks is that Docker doesn't follow them.  So if I want to let Dockerized code read annexed files, I have to unlock them first.  But, if these files are to be only used as input, unlocking them for modification is not really what I want to do.  I don't want `git status` to list these files as modified.
+"""]]

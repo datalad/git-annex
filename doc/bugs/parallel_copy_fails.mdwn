@@ -1,0 +1,79 @@
+### Please describe the problem.
+
+I keep encountering situations where git-annex fails on parallel operations.  Retrying the operation several times sometimes resolves the issue -- it would be better if git-annex could be configured to do the retrying.  I have set `annex.retry` and `annex.retry-delay`, but these don't seem to be enough.  Maybe, these config vars could apply to all idempotent operations?
+
+I have also seen a parallel copy operation, copying to an S3 remote, hang indefinitely.  Killing and retrying fixed the problem; it would be better if git-annex could have a timeout for operations, and kill and retry them automatically.  This especially matters when building scripts on top of git-annex.
+
+### What steps will reproduce the problem?
+
+I have included the log below.  I think repeatedly trying to copy from a local repo to an S3 bucket (non-export-tree) should eventually reproduce the problem.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+
+(master_env_v142_py36) 17:29  [v1.23.0-rc29] $ git annex version
+git-annex version: 7.20190626-g85db42d
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.4.2 http-client-0.5.14 persistent-sql\
+ite-2.9.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_2\
+24 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE\
+2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256\
+ BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+(master_env_v142_py36) 17:32  [v1.23.0-rc29] $ uname -a
+Linux ip-172-31-81-187.ec2.internal 4.14.128-112.105.amzn2.x86_64 #1 SMP Wed Jun 19 16:53:40 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+(master_env_v142_py36) 17:32  [v1.23.0-rc29] $
+
+# End of transcript or log.
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+2019-07-03 17:30:22,365 - workflow_utils:289:_run - INFO - running command: git annex copy . --to=viral-ngs-benchmarks-s3 cwd=/dev/shm\
+/crogrun_190703_162305_36571/viral-ngs-benchmarks kw={'cwd': '/dev/shm/crogrun_190703_162305_36571/viral-ngs-benchmarks/benchmarks/rab\
+ies200/analysis-FK7B7p00761bfq2516zQb58F/benchmark_variants/v1.23.0-rc29'}
+copy assemble_denovo.wdl (checking viral-ngs-benchmarks-s3...) ok
+copy input-spec.json (checking viral-ngs-benchmarks-s3...) ok
+copy analysis_labels.json (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...) ok
+copy inputs-git-links.json (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...) ok
+copy inputs-local.json (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...) ok
+copy inputs-orig.json (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...) ok
+copy imports.zip (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...) ok
+(recording state in git...)
+error: git-annex died of signal 11
+2019-07-03 17:30:23,429 - workflow_utils:303:_run - INFO - RETRY 2 sleep 4 command (cwd=/dev/shm/crogrun_190703_162305_36571/viral-ngs\
+-benchmarks, kw={'cwd': '/dev/shm/crogrun_190703_162305_36571/viral-ngs-benchmarks/benchmarks/rabies200/analysis-FK7B7p00761bfq2516zQb\
+58F/benchmark_variants/v1.23.0-rc29'}) in 1.063608169555664s: git annex copy . --to=viral-ngs-benchmarks-s3 exception Command 'git ann\
+ex copy . --to=viral-ngs-benchmarks-s3' returned non-zero exit status 139.
+2019-07-03 17:30:27,434 - workflow_utils:312:_run - INFO - command (cwd=/dev/shm/crogrun_190703_162305_36571/viral-ngs-benchmarks, kw=\
+{'cwd': '/dev/shm/crogrun_190703_162305_36571/viral-ngs-benchmarks/benchmarks/rabies200/analysis-FK7B7p00761bfq2516zQb58F/benchmark_va\
+riants/v1.23.0-rc29'}) FAILED in 5.06814980506897s: git annex copy . --to=viral-ngs-benchmarks-s3
+copy assemble_denovo.wdl (checking viral-ngs-benchmarks-s3...) ok
+copy analysis_labels.json (checking viral-ngs-benchmarks-s3...) ok
+copy inputs-local.json (checking viral-ngs-benchmarks-s3...) ok
+copy inputs-orig.json (checking viral-ngs-benchmarks-s3...) ok
+copy input-spec.json (checking viral-ngs-benchmarks-s3...) ok
+copy imports.zip (checking viral-ngs-benchmarks-s3...) ok
+copy inputs-git-links.json (checking viral-ngs-benchmarks-s3...) ok
+2019-07-03 17:30:27,952 - workflow_utils:312:_run - INFO - command (cwd=/dev/shm/crogrun_190703_162305_36571/viral-ngs-benchmarks, kw=\
+{'cwd': '/dev/shm/crogrun_190703_162305_36571/viral-ngs-benchmarks/benchmarks/rabies200/analysis-FK7B7p00761bfq2516zQb58F/benchmark_va\
+riants/v1.23.0-rc29'}) SUCCEEDED in 5.586166620254517s: git annex copy . --to=viral-ngs-benchmarks-s3
+2
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
