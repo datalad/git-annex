@@ -99,7 +99,10 @@ showStartMessage (StartUsualMessages command ai) = do
 		_ -> noop
 	showStartMessage (StartMessage command ai)
 showStartMessage (StartNoMessage _) = noop
-showStartMessage (CustomOutput _) = Annex.setOutput QuietOutput
+showStartMessage (CustomOutput _) =
+	outputType <$> Annex.getState Annex.output >>= \case
+		NormalOutput -> Annex.setOutput QuietOutput
+		_ -> noop
 
 -- Only show end result if the StartMessage is one that gets displayed.
 showEndMessage :: StartMessage -> Bool -> Annex ()

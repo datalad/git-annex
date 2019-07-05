@@ -30,3 +30,5 @@ show similar issues and `find` is just the first I noticed.
 GNU/Linux, building git-annex with Guix
 
 [[!meta author=kyle]]
+
+> [[fixed|done]] --[[Joey]]
