@@ -1,0 +1,125 @@
+### Please describe the problem.
+
+I'm unable to use adjusted branches (`---unlock`) on WSL because of sqlite crashes. `smudge` tends to fail with output like:
+
+```
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare "SELECT null from content limit 1": locking protocol(while opening database connection))
+git-annex: sqlite query crashed
+CallStack (from HasCallStack):
+  error, called at ./Database/Handle.hs:98:42 in main:Database.Handle
+git-annex: smudge: 1 failed
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+```
+
+### What steps will reproduce the problem?
+
+```
+git init test
+cd test
+git annex init test
+git annex upgrade
+echo asdf > asdf
+git annex add asdf # fails for some reason on DrvFs
+git annex add asdf # works when executed second time
+git annex sync
+git annex --debug adjust --unlock
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+Windows - WSL (Arch)
+
+```
+git-annex version: 7.20190615-g0bd9e8c0e2
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.3 feed-1.1.0.0 ghc-8.6.5 http-client-0.6.4 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 7
+```
+
+
+### Terminal log
+
+[[!format sh """
+$ git init test
+Initialized empty Git repository in /mnt/d/debug/test/.git/
+$ cd test
+$ git annex init test
+init test
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(recording state in git...)
+$ git annex upgrade
+upgrade (v5 to v6...) (v6 to v7...) ok
+$ echo asdf > asdf
+$ git annex add asdf
+add asdf
+git-annex: .git/annex/othertmp/asdf.0/asdf: rename: permission denied (Permission denied)
+failed
+git-annex: add: 1 failed
+zsh: exit 1     git annex add asdf
+$ git annex add asdf
+add asdf ok
+(recording state in git...)
+$ git annex sync
+commit
+[master (root-commit) 54e120b] git-annex in test
+ 1 file changed, 1 insertion(+)
+ create mode 120000 asdf
+ok
+$ git annex --debug adjust --unlock
+[2019-07-06 11:23:39.4031313] read: git ["--version"]
+[2019-07-06 11:23:39.4128108] process done ExitSuccess
+adjust [2019-07-06 11:23:39.4137008] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2019-07-06 11:23:39.4273287] process done ExitSuccess
+[2019-07-06 11:23:39.4276698] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2019-07-06 11:23:39.4436791] process done ExitSuccess
+[2019-07-06 11:23:39.4440342] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/heads/adjusted/master(unlocked)"]
+[2019-07-06 11:23:39.4571275] process done ExitFailure 1
+[2019-07-06 11:23:39.4579141] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/basis/adjusted/master(unlocked)","refs/heads/master"]
+[2019-07-06 11:23:39.4740989] process done ExitSuccess
+[2019-07-06 11:23:39.4745965] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","mktree","--batch","-z"]
+[2019-07-06 11:23:39.4770107] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","-r","-t","--","refs/basis/adjusted/master(unlocked)"]
+[2019-07-06 11:23:39.4940556] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2019-07-06 11:23:39.4960848] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2019-07-06 11:23:39.5412121] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","diff.external=","-c","filter.annex.smudge=","-c","filter.annex.clean=","diff","--cached","--raw","-z","--abbrev=40","-G^/annex/objects/","--diff-filter=AMUT","--no-renames","--ignore-submodules=all","--no-ext-diff"]
+[2019-07-06 11:23:39.5743181] process done ExitSuccess
+[2019-07-06 11:23:39.5754474] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2019-07-06 11:23:39.5981937] process done ExitSuccess
+[2019-07-06 11:23:39.5990927] process done ExitSuccess
+[2019-07-06 11:23:39.6010222] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","69b3149d64ac2eb225c6f5336fa15c518dcd4d83","--no-gpg-sign","-p","refs/basis/adjusted/master(unlocked)"]
+[2019-07-06 11:23:39.6194551] process done ExitSuccess
+[2019-07-06 11:23:39.6199068] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","-m","entering adjusted branch","refs/heads/adjusted/master(unlocked)","c4e772ae22f9b1146b798404d85268ea3ca40e03"]
+[2019-07-06 11:23:39.6402592] process done ExitSuccess
+
+[2019-07-06 11:23:39.6409432] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","checkout","adjusted/master(unlocked)","--progress"]
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare "SELECT null from content limit 1": locking protocol(while opening database connection))
+git-annex: thread blocked indefinitely in an MVar operation
+error: external filter 'git-annex smudge -- %f' failed 1
+error: external filter 'git-annex smudge -- %f' failed
+Switched to branch 'adjusted/master(unlocked)'
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare "SELECT null from content limit 1": locking protocol(while opening database connection))
+git-annex: sqlite query crashed
+CallStack (from HasCallStack):
+  error, called at ./Database/Handle.hs:98:42 in main:Database.Handle
+git-annex: smudge: 1 failed
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+[2019-07-06 11:24:03.3626765] process done ExitSuccess
+ok
+[2019-07-06 11:24:03.372672] process done ExitSuccess
+[2019-07-06 11:24:03.3742067] process done ExitSuccess
+[2019-07-06 11:24:03.3756292] process done ExitSuccess
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes, on macOS & HFS+ :)
+
