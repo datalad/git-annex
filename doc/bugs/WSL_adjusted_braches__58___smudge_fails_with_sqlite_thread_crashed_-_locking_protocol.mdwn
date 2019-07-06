@@ -29,7 +29,7 @@ git annex --debug adjust --unlock
 
 ### What version of git-annex are you using? On what operating system?
 
-Windows - WSL (Arch)
+Windows 10 Pro v1903 build 18362.207 - WSL (Arch)
 
 ```
 git-annex version: 7.20190615-g0bd9e8c0e2
