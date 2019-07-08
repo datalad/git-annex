@@ -1,0 +1,3 @@
+git-annex 7.20190708 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix find --json to output json once more."""]]
