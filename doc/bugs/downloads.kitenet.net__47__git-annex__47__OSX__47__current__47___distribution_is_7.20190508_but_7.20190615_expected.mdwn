@@ -39,3 +39,5 @@
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Absolutely! I've been using git-annex for a few years now to version control and distribute a [Munki](https://www.munki.org) repository of Mac software distribution packages and their meta-data. git-annex integrates well with [Ansible](https://docs.ansible.com/#project), and has been rock solid.  Thank you! 
+
+> [[fixed|done]], OSX build is current with today's release. --[[Joey]]
