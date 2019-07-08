@@ -1,8 +1,8 @@
-git-annex (7.20190627) UNRELEASED; urgency=medium
+git-annex (7.20190708) upstream; urgency=medium
 
   * Fix find --json to output json once more.
 
- -- Joey Hess <id@joeyh.name>  Fri, 05 Jul 2019 09:49:52 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:58:16 -0400
 
 git-annex (7.20190626) upstream; urgency=medium
 
