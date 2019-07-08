@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+Originally shown/discussed in [local caching](http://git-annex.branchable.com/tips/local_caching_of_annexed_files/#comment-7f214f4eaa629b7731f82014a2e98964) tips page. Decided to give it a separate page for easier tracking etc.
+
+In my use case I have `/home` and `/mnt/btrfs/` as two subvolumes of the same drive
+
+[[!format sh """
+/dev/md10 on /mnt/btrfs type btrfs (rw,noatime,compress=lzo,space_cache,subvolid=5,subvol=/)
+/dev/md10 on /home type btrfs (rw,noatime,compress=lzo,space_cache,subvolid=257,subvol=/home)
+"""]]
+
+BTRFS's CoW is a great feature for annex, but whenever I try to `annex get` across those two (git annex version was 7.20190322+git133-g59922f1f4-1~ndall+1) - `rsync` is used instead of `cp`, disks got really busy, and I end up with >70GB of additional space utilization, which is "suboptimal".
+
+As in the original comments thread, I wonder on what is the advantage of using `rsync` over a regular `cp` across devices? (`Device` from `stat` seems to return different ids across volumes, so a bad indicator)
+
+If there is some generic benefit from `rsync`, could it may be at least be a configuration setting which I would set globally on machines with btrfs to use `cp` instead of `rsync` for local transfers?
+
+
+[[!meta author="yoh"]]
