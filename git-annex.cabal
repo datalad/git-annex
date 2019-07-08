@@ -294,22 +294,22 @@ source-repository head
   location: git://git-annex.branchable.com/
 
 custom-setup
-  Setup-Depends: base (>= 4.9), hslogger, split, unix-compat, process,
+  Setup-Depends: base (>= 4.11.1.0), hslogger, split, unix-compat, process,
     filepath, exceptions, bytestring, directory, IfElse, data-default,
     utf8-string, transformers, Cabal
 
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends:
-   base (>= 4.9 && < 5.0),
+   base (>= 4.11.1.0 && < 5.0),
    network-uri (>= 2.6),
-   optparse-applicative (>= 0.11.0),
+   optparse-applicative (>= 0.14.1),
    containers (>= 0.5.7.1),
    exceptions (>= 0.6),
    stm (>= 2.3),
    mtl (>= 2),
    uuid (>= 1.2.6),
-   process,
+   process (>= 1.4.2),
    data-default,
    case-insensitive,
    random,
@@ -330,39 +330,39 @@ Executable git-annex
    sandi,
    monad-control,
    transformers,
-   bloomfilter,
+   bloomfilter (>= 2.0.0),
    edit-distance,
    resourcet,
    connection (>= 0.2.6),
-   http-client (>= 0.4.31),
+   http-client (>= 0.5.0),
    http-client-tls,
    http-types (>= 0.7),
-   http-conduit (>= 2.0),
+   http-conduit (>= 2.3.0),
    conduit,
-   time,
+   time (>= 1.5.0),
    old-locale,
-   persistent-sqlite (>= 2.1.3),
-   persistent,
+   persistent-sqlite (>= 2.8.1),
+   persistent (>= 2.8.1),
    persistent-template,
    microlens,
    aeson,
    vector,
    tagsoup,
    unordered-containers,
-   feed (>= 0.3.9),
+   feed (>= 1.0.0),
    regex-tdfa,
    socks,
    byteable,
    stm-chans,
    securemem,
    crypto-api,
-   cryptonite,
+   cryptonite (>= 0.23),
    memory,
    deepseq,
    split,
    attoparsec,
-   concurrent-output (>= 1.6),
-   QuickCheck (>= 2.8.2),
+   concurrent-output (>= 1.10),
+   QuickCheck (>= 2.10.0),
    tasty (>= 0.7),
    tasty-hunit,
    tasty-quickcheck,
@@ -403,7 +403,7 @@ Executable git-annex
     Build-Depends: network (< 3.0.0.0), network (>= 2.6.3.0)
 
   if flag(S3)
-    Build-Depends: aws (>= 0.14)
+    Build-Depends: aws (>= 0.20)
     CPP-Options: -DWITH_S3
     Other-Modules: Remote.S3
 
@@ -499,7 +499,7 @@ Executable git-annex
       Utility.OSX
 
     if os(linux)
-      Build-Depends: hinotify
+      Build-Depends: hinotify (>= 0.3.10)
       CPP-Options: -DWITH_INOTIFY
       Other-Modules: Utility.DirWatcher.INotify
     else
@@ -531,7 +531,7 @@ Executable git-annex
      yesod (>= 1.4.3), 
      yesod-static (>= 1.5.1),
      yesod-form (>= 1.4.8),
-     yesod-core (>= 1.4.25),
+     yesod-core (>= 1.6.0),
      path-pieces (>= 0.2.1),
      warp (>= 3.2.8),
      warp-tls (>= 3.2.2),

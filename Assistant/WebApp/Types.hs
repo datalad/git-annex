@@ -95,11 +95,7 @@ instance LiftAnnex Handler where
 		, liftAssistant $ liftAnnex a
 		)
 
-#if MIN_VERSION_yesod_core(1,6,0)
 instance LiftAnnex (WidgetFor WebApp) where
-#else
-instance LiftAnnex (WidgetT WebApp IO) where
-#endif
 	liftAnnex = liftH . liftAnnex
 
 class LiftAssistant m where
@@ -109,11 +105,7 @@ instance LiftAssistant Handler where
 	liftAssistant a = liftIO . flip runAssistant a
 		=<< assistantData <$> getYesod
 
-#if MIN_VERSION_yesod_core(1,6,0)
 instance LiftAssistant (WidgetFor WebApp) where
-#else
-instance LiftAssistant (WidgetT WebApp IO) where
-#endif
 	liftAssistant = liftH . liftAssistant
 
 type MkMForm x = MForm Handler (FormResult x, Widget)

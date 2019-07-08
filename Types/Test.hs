@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Types.Test where
 
 import Test.Tasty.Options
@@ -32,8 +30,5 @@ instance Sem.Semigroup TestOptions where
 
 instance Monoid TestOptions where
 	mempty = TestOptions mempty False False mempty
-#if ! MIN_VERSION_base(4,11,0)
-	mappend = (Sem.<>)
-#endif
 
 type TestRunner = TestOptions -> IO ()

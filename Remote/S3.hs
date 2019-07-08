@@ -247,7 +247,6 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 		return (Nothing, vid)
 #endif
 	multipartupload fsz partsz = runResourceT $ do
-#if MIN_VERSION_aws(0,16,0)
 		contenttype <- liftIO getcontenttype
 		let startreq = (S3.postInitiateMultipartUpload (bucket info) object)
 				{ S3.imuStorageClass = Just (storageClass info)
@@ -287,10 +286,6 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 		resp <- sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
 		return (Just (S3.cmurETag resp), mkS3VersionID object (S3.cmurVersionId resp))
-#else
-		warningIO $ "Cannot do multipart upload (partsize " ++ show partsz ++ ") of large file (" ++ show fsz ++ "); built with too old a version of the aws library."
-		singlepartupload
-#endif
 	getcontenttype = maybe (pure Nothing) (flip getMagicMimeType f) magic
 
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
@@ -735,10 +730,7 @@ mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $ do
 	case mcreds of
 		Just creds -> do
 			awscreds <- liftIO $ genCredentials creds
-			let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper
-#if MIN_VERSION_aws(0,17,0)
-				Nothing
-#endif
+			let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper Nothing
 			ou <- getUrlOptions
 			return $ Just $ S3Handle (httpManager ou) awscfg s3cfg
 		Nothing -> return Nothing

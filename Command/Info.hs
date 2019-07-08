@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, DeriveDataTypeable, CPP #-}
+{-# LANGUAGE BangPatterns, DeriveDataTypeable #-}
 
 module Command.Info where
 
@@ -68,9 +68,6 @@ instance Sem.Semigroup KeyData where
 
 instance Monoid KeyData where
 	mempty = KeyData 0 0 0 M.empty
-#if ! MIN_VERSION_base(4,11,0)
-	mappend = (Sem.<>)
-#endif
 
 data NumCopiesStats = NumCopiesStats
 	{ numCopiesVarianceMap :: M.Map Variance Integer

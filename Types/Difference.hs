@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Types.Difference (
 	Difference(..),
 	Differences(..),
@@ -83,9 +81,6 @@ instance Sem.Semigroup Differences where
 
 instance Monoid Differences where
 	mempty = Differences False False False
-#if ! MIN_VERSION_base(4,11,0)
-	mappend = (Sem.<>)
-#endif
 
 readDifferences :: String -> Differences
 readDifferences = maybe UnknownDifferences mkDifferences . readish

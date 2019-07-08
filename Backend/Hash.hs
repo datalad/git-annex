@@ -5,7 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Backend.Hash (
@@ -34,11 +33,10 @@ data Hash
 	| SHA2Hash HashSize
 	| SHA3Hash HashSize
 	| SkeinHash HashSize
-#if MIN_VERSION_cryptonite(0,23,0)
 	| Blake2bHash HashSize
+	| Blake2bpHash HashSize
 	| Blake2sHash HashSize
 	| Blake2spHash HashSize
-#endif
 
 {- Order is slightly significant; want SHA256 first, and more general
  - sizes earlier. -}
@@ -47,11 +45,10 @@ hashes = concat
 	[ map (SHA2Hash . HashSize) [256, 512, 224, 384]
 	, map (SHA3Hash . HashSize) [256, 512, 224, 384]
 	, map (SkeinHash . HashSize) [256, 512]
-#if MIN_VERSION_cryptonite(0,23,0)
 	, map (Blake2bHash . HashSize) [256, 512, 160, 224, 384]
+	, map (Blake2bpHash . HashSize) [512]
 	, map (Blake2sHash . HashSize) [256, 160, 224]
 	, map (Blake2spHash . HashSize) [256, 224]
-#endif
 	, [SHA1Hash]
 	, [MD5Hash]
 	]
@@ -82,11 +79,10 @@ hashKeyVariety SHA1Hash he = SHA1Key he
 hashKeyVariety (SHA2Hash size) he = SHA2Key size he
 hashKeyVariety (SHA3Hash size) he = SHA3Key size he
 hashKeyVariety (SkeinHash size) he = SKEINKey size he
-#if MIN_VERSION_cryptonite(0,23,0)
 hashKeyVariety (Blake2bHash size) he = Blake2bKey size he
+hashKeyVariety (Blake2bpHash size) he = Blake2bpKey size he
 hashKeyVariety (Blake2sHash size) he = Blake2sKey size he
 hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
-#endif
 
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> MeterUpdate -> Annex (Maybe Key)
@@ -223,11 +219,10 @@ hashFile hash file meterupdate =
 		SHA2Hash hashsize -> sha2Hasher hashsize
 		SHA3Hash hashsize -> sha3Hasher hashsize
 		SkeinHash hashsize -> skeinHasher hashsize
-#if MIN_VERSION_cryptonite(0,23,0)
 		Blake2bHash hashsize -> blake2bHasher hashsize
+		Blake2bpHash hashsize -> blake2bpHasher hashsize
 		Blake2sHash hashsize -> blake2sHasher hashsize
 		Blake2spHash hashsize -> blake2spHasher hashsize
-#endif
 
 sha2Hasher :: HashSize -> (L.ByteString -> String)
 sha2Hasher (HashSize hashsize)
@@ -253,7 +248,6 @@ skeinHasher (HashSize hashsize)
 	| hashsize == 512 = show . skein512
 	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
 
-#if MIN_VERSION_cryptonite(0,23,0)
 blake2bHasher :: HashSize -> (L.ByteString -> String)
 blake2bHasher (HashSize hashsize)
 	| hashsize == 256 = show . blake2b_256
@@ -262,6 +256,11 @@ blake2bHasher (HashSize hashsize)
 	| hashsize == 224 = show . blake2b_224
 	| hashsize == 384 = show . blake2b_384
 	| otherwise = error $ "unsupported BLAKE2B size " ++ show hashsize
+
+blake2bpHasher :: HashSize -> (L.ByteString -> String)
+blake2bpHasher (HashSize hashsize)
+	| hashsize == 512 = show . blake2bp_512
+	| otherwise = error $ "unsupported BLAKE2BP size " ++ show hashsize
 
 blake2sHasher :: HashSize -> (L.ByteString -> String)
 blake2sHasher (HashSize hashsize)
@@ -275,7 +274,6 @@ blake2spHasher (HashSize hashsize)
 	| hashsize == 256 = show . blake2sp_256
 	| hashsize == 224 = show . blake2sp_224
 	| otherwise = error $ "unsupported BLAKE2SP size " ++ show hashsize
-#endif
 
 sha1Hasher :: L.ByteString -> String
 sha1Hasher = show . sha1

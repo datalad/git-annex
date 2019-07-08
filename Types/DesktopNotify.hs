@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Types.DesktopNotify where
 
 import Data.Monoid
@@ -25,9 +23,6 @@ instance Sem.Semigroup DesktopNotify where
 
 instance Monoid DesktopNotify where
 	mempty = DesktopNotify False False
-#if ! MIN_VERSION_base(4,11,0)
-	mappend = (Sem.<>)
-#endif
 
 mkNotifyStart :: DesktopNotify
 mkNotifyStart = DesktopNotify True False

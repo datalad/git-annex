@@ -30,6 +30,9 @@ These are the recommended backends to use.
   `BLAKE2S160E`, `BLAKE2S224E`, `BLAKE2S256E`
   -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 32 bit
   platforms.
+* `BLAKE2BP512`, `BLAKE2BP512E`
+  -- Fast [Blake2 hash](https://blake2.net/) variants optimised for
+  4-way CPUs.
 * `BLAKE2SP224`, `BLAKE2SP256`
   `BLAKE2SP224E`, `BLAKE2SP256E`
   -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 

@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Command.Log where
 
 import qualified Data.Set as S
@@ -14,9 +12,6 @@ import qualified Data.Map as M
 import Data.Char
 import Data.Time.Clock.POSIX
 import Data.Time
-#if ! MIN_VERSION_time(1,5,0)
-import System.Locale
-#endif
 
 import Command
 import Logs
@@ -273,11 +268,7 @@ parseRawChangeLine = go . words
 
 parseTimeStamp :: String -> POSIXTime
 parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .
-#if MIN_VERSION_time(1,5,0)
 	parseTimeM True defaultTimeLocale "%s"
-#else
-	parseTime defaultTimeLocale "%s"
-#endif
 
 showTimeStamp :: TimeZone -> POSIXTime -> String
 showTimeStamp zone = formatTime defaultTimeLocale rfc822DateFormat 

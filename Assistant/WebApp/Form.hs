@@ -7,7 +7,6 @@
 
 {-# LANGUAGE FlexibleContexts, TypeFamilies, QuasiQuotes #-}
 {-# LANGUAGE MultiParamTypeClasses, TemplateHaskell #-}
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings, RankNTypes #-}
 
 module Assistant.WebApp.Form where
@@ -68,11 +67,7 @@ withExpandableNote field (toggle, note) = withNote field $ [whamlet|
 	ident = "toggle_" ++ toggle
 
 {- Adds a check box to an AForm to control encryption. -}
-#if MIN_VERSION_yesod_core(1,6,0)
 enableEncryptionField :: (RenderMessage site FormMessage) => AForm (HandlerFor site) EnableEncryption
-#else
-enableEncryptionField :: (RenderMessage site FormMessage) => AForm (HandlerT site IO) EnableEncryption
-#endif
 enableEncryptionField = areq (selectFieldList choices) (bfs "Encryption") (Just SharedEncryption)
   where
 	choices :: [(Text, EnableEncryption)]

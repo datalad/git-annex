@@ -5,7 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Remote.WebDAV (remote, davCreds, configUrl) where
@@ -16,9 +15,8 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import Network.HTTP.Client (HttpException(..), RequestBody)
-#if MIN_VERSION_http_client(0,5,0)
 import qualified Network.HTTP.Client as HTTP
-#endif
+import Network.HTTP.Client (HttpExceptionContent(..), responseStatus)
 import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
@@ -41,10 +39,6 @@ import Utility.Metered
 import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionContent)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
-
-#if MIN_VERSION_http_client(0,5,0)
-import Network.HTTP.Client (HttpExceptionContent(..), responseStatus)
-#endif
 
 remote :: RemoteType
 remote = RemoteType
@@ -415,7 +409,6 @@ goDAV (DavHandle ctx user pass _) a = choke $ run $ prettifyExceptions $ do
 {- Catch StatusCodeException and trim it to only the statusMessage part,
  - eliminating a lot of noise, which can include the whole request that
  - failed. The rethrown exception is no longer a StatusCodeException. -}
-#if MIN_VERSION_http_client(0,5,0)
 prettifyExceptions :: DAVT IO a -> DAVT IO a
 prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
   where
@@ -428,17 +421,6 @@ prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
 		, show (HTTP.path req)
 		]
 	go e = throwM e
-#else
-prettifyExceptions :: DAVT IO a -> DAVT IO a
-prettifyExceptions a = catchJust (matchStatusCodeException (const True)) a go
-  where
-	go (StatusCodeException status _ _) = giveup $ unwords
-		[ "DAV failure:"
-		, show (statusCode status)
-		, show (statusMessage status)
-		]
-	go e = throwM e
-#endif
 
 prepDAV :: DavUser -> DavPass -> DAVT IO ()
 prepDAV user pass = do

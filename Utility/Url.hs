@@ -5,7 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -63,17 +62,8 @@ import Data.Conduit
 import Text.Read
 import System.Log.Logger
 
-#if ! MIN_VERSION_http_client(0,5,0)
-responseTimeoutNone :: Maybe Int
-responseTimeoutNone = Nothing
-#endif
-
 managerSettings :: ManagerSettings
-#if MIN_VERSION_http_conduit(2,1,7)
 managerSettings = tlsManagerSettings
-#else
-managerSettings = conduitManagerSettings
-#endif
 	{ managerResponseTimeout = responseTimeoutNone }
 
 type URLString = String
@@ -298,13 +288,8 @@ getUrlInfo url uo = case parseURIRelaxed url of
 				sz <- getFileSize' f stat
 				found (Just sz) Nothing
 			Nothing -> return dne
-#if MIN_VERSION_http_client(0,5,0)
 	followredir r (HttpExceptionRequest _ (StatusCodeException resp _)) = 
 		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of
-#else
-	followredir r (StatusCodeException _ respheaders _) =
-		case headMaybe $ map (decodeBS . snd) $ filter (\(h, _) -> h == hLocation) respheaders
-#endif
 			Just url' -> case parseURIRelaxed url' of
 				-- only follow http to ftp redirects;
 				-- http to file redirect would not be secure,
@@ -427,7 +412,6 @@ download' noerror meterupdate url file uo =
 	showrespfailure = liftIO . dlfailed . B8.toString 
 		. statusMessage . responseStatus
 	showhttpexception he = do
-#if MIN_VERSION_http_client(0,5,0)
 		let msg = case he of
 			HttpExceptionRequest _ (StatusCodeException r _) ->
 				B8.toString $ statusMessage $ responseStatus r
@@ -437,12 +421,6 @@ download' noerror meterupdate url file uo =
 					Just (ConnectionRestricted why) -> why
 			HttpExceptionRequest _ other -> show other
 			_ -> show he
-#else
-		let msg = case he of
-			StatusCodeException status _ _ -> 
-				B8.toString (statusMessage status)
-			_ -> show he
-#endif
 		dlfailed msg
 	dlfailed msg
 		| noerror = return False
@@ -480,13 +458,8 @@ download' noerror meterupdate url file uo =
 			L.writeFile file
 		return True
 
-#if MIN_VERSION_http_client(0,5,0)
 	followredir r ex@(HttpExceptionRequest _ (StatusCodeException resp _)) = 
 		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of
-#else
-	followredir r ex@(StatusCodeException _ respheaders _) =
-		case headMaybe $ map (decodeBS . snd) $ filter (\(h, _) -> h == hLocation) respheaders
-#endif
 			Just url' -> case parseURIRelaxed url' of
 				Just u' | isftpurl u' ->
 					checkPolicy uo u' False dlfailed $
@@ -506,19 +479,11 @@ sinkResponseFile
 	-> BytesProcessed
 	-> FilePath
 	-> IOMode
-#if MIN_VERSION_http_conduit(2,3,0)
 	-> Response (ConduitM () B8.ByteString m ())
-#else
-	-> Response (ResumableSource m B8.ByteString)
-#endif
 	-> m ()
 sinkResponseFile meterupdate initialp file mode resp = do
 	(fr, fh) <- allocate (openBinaryFile file mode) hClose
-#if MIN_VERSION_http_conduit(2,3,0)
 	runConduit $ responseBody resp .| go initialp fh
-#else
-	responseBody resp $$+- go initialp fh
-#endif
 	release fr
   where
 	go sofar fh = await >>= \case
@@ -590,19 +555,11 @@ resumeFromHeader sz = (hRange, renderByteRanges [ByteRangeFrom sz])
 matchStatusCodeException :: (Status -> Bool) -> HttpException -> Maybe HttpException
 matchStatusCodeException want = matchStatusCodeHeadersException (\s _h -> want s)
 
-#if MIN_VERSION_http_client(0,5,0)
 matchStatusCodeHeadersException :: (Status -> ResponseHeaders -> Bool) -> HttpException -> Maybe HttpException
 matchStatusCodeHeadersException want e@(HttpExceptionRequest _ (StatusCodeException r _))
 	| want (responseStatus r) (responseHeaders r) = Just e
 	| otherwise = Nothing
 matchStatusCodeHeadersException _ _ = Nothing
-#else
-matchStatusCodeHeadersException :: (Status -> ResponseHeaders -> Bool) -> HttpException -> Maybe HttpException
-matchStatusCodeHeadersException want e@(StatusCodeException s r _)
-	| want s r = Just e
-	| otherwise = Nothing
-matchStatusCodeHeadersException _ _ = Nothing
-#endif
 
 {- Use with eg: 
  -
@@ -611,18 +568,11 @@ matchStatusCodeHeadersException _ _ = Nothing
 matchHttpException :: HttpException -> Maybe HttpException
 matchHttpException = Just
 
-#if MIN_VERSION_http_client(0,5,0)
 matchHttpExceptionContent :: (HttpExceptionContent -> Bool) -> HttpException -> Maybe HttpException
 matchHttpExceptionContent want e@(HttpExceptionRequest _ hec)
 	| want hec = Just e
 	| otherwise = Nothing
 matchHttpExceptionContent _ _ = Nothing
-#else
-matchHttpExceptionContent :: (HttpException -> Bool) -> HttpException -> Maybe HttpException
-matchHttpExceptionContent want e
-	| want e = Just e
-	| otherwise = Nothing
-#endif
 
 {- Constructs parameters that prevent curl from accessing any IP addresses
  - blocked by the Restriction. These are added to the input parameters,

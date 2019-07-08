@@ -5,7 +5,6 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
@@ -18,9 +17,7 @@ import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
 import Data.Ratio
 import System.Posix.Types
-#if MIN_VERSION_QuickCheck(2,10,0)
 import Data.List.NonEmpty (NonEmpty(..))
-#endif
 import Prelude
 
 {- Times before the epoch are excluded. Half with decimal and half without. -}
@@ -45,11 +42,8 @@ instance Arbitrary FileID where
 instance Arbitrary FileOffset where
 	arbitrary = nonNegative arbitrarySizedIntegral
 
-{- Latest Quickcheck lacks this instance. -}
-#if MIN_VERSION_QuickCheck(2,10,0)
 instance Arbitrary l => Arbitrary (NonEmpty l) where
 	arbitrary = (:|) <$> arbitrary <*> arbitrary
-#endif
 
 nonNegative :: (Num a, Ord a) => Gen a -> Gen a
 nonNegative g = g `suchThat` (>= 0)

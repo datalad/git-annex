@@ -5,8 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
-{-# LANGUAGE CPP, FlexibleContexts #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings, FlexibleContexts #-}
 
 module Assistant.WebApp.Configurators.Ssh where
 
@@ -378,10 +377,8 @@ sshAuthTranscript sshinput opts sshhost cmd input = case inputAuthMethod sshinpu
 	 - is no controlling terminal. -}
 	askPass environ p = p
 		{ env = environ
-#if MIN_VERSION_process(1,3,0)
 		, detach_console = True
 		, new_session = True
-#endif
 		}
 
 	setupAskPass = do
