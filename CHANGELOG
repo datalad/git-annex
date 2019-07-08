@@ -1,13 +1,18 @@
+git-annex (7.20190709) UNRELEASED; urgency=medium
+
+  * Drop support for building with ghc older than 8.4.4,
+    and with older versions of serveral haskell libraries.
+  * Add BLAKE2BP512 and BLAKE2BP512E backends, using a blake2 variant
+    optimised for 4-way CPUs.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:59:54 -0400
+
 git-annex (7.20190708) upstream; urgency=medium
 
   * Fix find --json to output json once more.
 
  -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:58:16 -0400
 
-  * Drop support for building with ghc older than 8.4.4,
-    and with older versions of serveral haskell libraries.
-  * Add BLAKE2BP512 and BLAKE2BP512E backends, using a blake2 variant
-    optimised for 4-way CPUs.
 git-annex (7.20190626) upstream; urgency=medium
 
   * get, move, copy, sync: When -J or annex.jobs has enabled concurrency,
