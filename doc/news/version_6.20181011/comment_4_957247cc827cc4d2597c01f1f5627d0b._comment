@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 4"
- date="2018-10-12T00:06:16Z"
- content="""
-a test failure: https://circleci.com/gh/conda-forge/git-annex-feedstock/116?utm_campaign=vcs-integration-link&utm_medium=referral&utm_source=github-build-link
-"""]]
