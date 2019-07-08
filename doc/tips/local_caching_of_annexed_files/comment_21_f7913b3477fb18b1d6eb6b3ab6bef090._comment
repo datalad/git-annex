@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="FTR: a dedicated issue on CoW across subvolumes"
- date="2019-07-08T19:04:03Z"
- content="""
-https://git-annex.branchable.com/bugs/Uses_rsync_instead_of___96__cp_--reflink__61__auto__96___on_volumes_of_the_same_BTRFS_partition/?updated
-"""]]
