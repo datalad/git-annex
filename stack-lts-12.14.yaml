@@ -1,0 +1,28 @@
+flags:
+  git-annex:
+    production: true
+    assistant: true
+    pairing: true
+    s3: true
+    webdav: true
+    torrentparser: true
+    webapp: true
+    magicmime: false
+    dbus: false
+    debuglocks: false
+    benchmark: false
+    networkbsd: false
+packages:
+- '.'
+extra-deps:
+- IfElse-0.85
+- aws-0.21.1
+- bloomfilter-2.0.1.0
+- tasty-1.1.0.4
+- tasty-rerun-1.1.13
+- torrent-10000.1.1
+- sandi-0.5
+- http-client-0.5.14
+explicit-setup-deps:
+  git-annex: true
+resolver: lts-12.14
