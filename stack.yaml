@@ -22,6 +22,7 @@ extra-deps:
 - tasty-rerun-1.1.13
 - torrent-10000.1.1
 - sandi-0.5
+- http-client-0.5.14
 explicit-setup-deps:
   git-annex: true
 resolver: lts-13.6
