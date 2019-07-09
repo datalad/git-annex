@@ -59,8 +59,8 @@ getextra () {
 getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 
 # Upgrade stack
-#stack --version
-#stack upgrade --git
+stack --version
+stack upgrade --git
 stack --version
 
 # Update version info for git rev being built.
