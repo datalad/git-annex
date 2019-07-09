@@ -65,16 +65,15 @@ stack --version
 
 # Update version info for git rev being built.
 mkdir -p dist
-stack ghc --stack-yaml stack-windows.yaml --no-haddock Build/BuildVersion.hs
+stack ghc --no-haddock Build/BuildVersion.hs
 ./Build/BuildVersion > dist/build-version
 
 # Build git-annex
-stack setup --stack-yaml stack-windows.yaml
-stack install -j 1 --stack-yaml stack-windows.yaml --no-haddock \
-	--local-bin-path .
+stack setup
+stack install -j 1 --no-haddock --local-bin-path .
 
 # Build the installer
-withcygpreferred stack ghc --stack-yaml stack-windows.yaml --no-haddock \
+withcygpreferred stack ghc --no-haddock \
 	--package nsis Build/NullSoftInstaller.hs
 ./Build/NullSoftInstaller
 
