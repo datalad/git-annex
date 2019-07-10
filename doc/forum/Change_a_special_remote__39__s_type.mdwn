@@ -1,0 +1,7 @@
+Hello,
+
+I have accidentally created a special remote of the wrong type (rsync instead of webdav). I would like to reuse the name of that special remote for consistency with other repos, but marking dead does and initremote still not allows me to reuse the name. A new enableremote with the correct configuration succeeds, but the `git annex show XXX` still shows the remote as type rsync and dead.
+
+Is there a way to a) revive the remote and b) change the type of it?
+
+Thanks!
