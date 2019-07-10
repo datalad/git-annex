@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2019-07-10T16:29:25Z"
+ content="""
+Could you just reset the git-annex branch to its state before creating the remote?
+"""]]
