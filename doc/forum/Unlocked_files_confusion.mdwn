@@ -1,0 +1,36 @@
+I'm having trouble getting unlocked files in version 7 repositories to work and I think I'm pretty confused (what I mean is that it's not git annex's fault).
+
+I have my Calibre library in a git-annex repo. I want ```metadata.db```, Calibre's sqlite database to stay unlocked but I don't get the expected results.
+Also I put ```metadata.db annex.largefiles=nothing``` in my ```.gitattributes``` file, could this be causing an issue?
+
+
+ 
+Version information:  
+  
+OS X 10.14  
+
+    $ git annex version
+    git-annex version: 7.20190322
+    ...
+    local repository version: 7
+
+Edit metadata for book in Calibre and then (using git add here to just make sure):  
+
+    $ git add metadata.db
+    $ git commit -m "metadata changes"
+    [master 5602968d1] metadata changes
+      1 file changed, 0 insertions(+), 0 deletions(-)
+    $ git annex find metadata.db
+    $ echo $?
+    0 
+
+Are git annex pointer files hardlinks? I tried:  
+
+    $ ls -i metadata.db
+    1497387 metadata.db
+    $ find . -inum 1497387
+    metadata.db 
+
+I was expecting a second file there?
+
+Anyway, thanks for any help with this. 
