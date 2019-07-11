@@ -1,0 +1,56 @@
+Origin: [ReproNim/containers](https://github.com/ReproNim/containers/pull/17) repo where we were brave enough to start using v7 with unlocked files to avoid having symlinks for an image.  TL;DR: here is command to replicate:
+
+[[!format sh """
+$> git clone --depth=50 http://github.com/repronim/containers && cd containers && git fetch origin +refs/pull/19/merge: && git checkout -qf 'HEAD^{}' && git branch && git fetch origin git-annex && git remote add --fetch datalad.datasets.org http://datasets.datalad.org/repronim/containers/.git && git annex upgrade && git annex get scripts/tests/ && ls -l scripts/tests/                                    
+Cloning into 'containers'...                                                                                                                  
+warning: redirecting to https://github.com/repronim/containers/
+remote: Enumerating objects: 404, done.
+remote: Counting objects: 100% (404/404), done.
+remote: Compressing objects: 100% (208/208), done.
+remote: Total 404 (delta 198), reused 367 (delta 171), pack-reused 0
+Receiving objects: 100% (404/404), 59.13 KiB | 1.34 MiB/s, done.
+Resolving deltas: 100% (198/198), done.
+LICENSE  README.md  binds/  images/  scripts/
+warning: redirecting to https://github.com/repronim/containers/
+remote: Enumerating objects: 21, done.
+remote: Counting objects: 100% (21/21), done.
+remote: Compressing objects: 100% (10/10), done.
+remote: Total 12 (delta 9), reused 4 (delta 2), pack-reused 0
+Unpacking objects: 100% (12/12), done.
+From http://github.com/repronim/containers
+ * branch            refs/pull/19/merge -> FETCH_HEAD
+* (HEAD detached at 44d55ad)
+  master
+warning: redirecting to https://github.com/repronim/containers/
+remote: Enumerating objects: 798, done.
+remote: Counting objects: 100% (798/798), done.
+remote: Compressing objects: 100% (167/167), done.
+remote: Total 795 (delta 423), reused 788 (delta 416), pack-reused 0
+Receiving objects: 100% (795/795), 55.50 KiB | 1.50 MiB/s, done.
+Resolving deltas: 100% (423/423), done.
+From http://github.com/repronim/containers
+ * branch            git-annex  -> FETCH_HEAD
+Updating datalad.datasets.org
+From http://datasets.datalad.org/repronim/containers/
+ * [new branch]      git-annex     -> datalad.datasets.org/git-annex
+ * [new branch]      master        -> datalad.datasets.org/master
+ * [new branch]      synced/master -> datalad.datasets.org/synced/master
+upgrade (merging datalad.datasets.org/git-annex into git-annex...)
+(recording state in git...)
+(v5 to v6...) (v6 to v7...) ok
+(recording state in git...)
+get scripts/tests/arg-test.simg 
+  Remote origin not usable by git-annex; setting annex-ignore
+(from datalad.datasets.org...) 
+(checksum...) ok                  
+(recording state in git...)
+total 12
+-rw------- 1 yoh yoh 259 Jul 11 16:10 Singularity.arg-test
+-rw------- 1 yoh yoh  68 Jul 11 16:10 arg-test.simg
+-rwx------ 1 yoh yoh 981 Jul 11 16:10 test_singularity_cmd.bats*
+"""]]
+
+as you can see the arg-test.sim is only 68 bytes, not 2MB or a symlink.
+
+
+[[!meta author=yoh]]
