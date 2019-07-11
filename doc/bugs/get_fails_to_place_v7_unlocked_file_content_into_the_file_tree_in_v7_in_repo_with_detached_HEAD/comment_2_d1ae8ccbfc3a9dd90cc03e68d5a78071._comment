@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="a reduced script"
+ date="2019-07-11T20:19:23Z"
+ content="""
+```
+#!/bin/sh
+
+cd $(mktemp -dt gx-XXXXXXX)
+
+git init a
+cd a
+git annex init --version=7
+echo foo >foo
+git add foo
+git commit -mfoo
+
+cd ..
+git clone a b
+cd b
+
+git checkout HEAD^{}
+git annex init
+git annex upgrade
+
+git annex get foo
+cat foo
+
+```
+
+Output:
+
+```
+Initialized empty Git repository in /tmp/gx-RqdQyBF/a/.git/
+init  ok
+(recording state in git...)
+(recording state in git...)
+[master (root-commit) 2b5f739] foo
+ 1 file changed, 1 insertion(+)
+ create mode 100644 foo
+Cloning into 'b'...
+done.
+Note: checking out 'HEAD^{}'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at 2b5f739 foo
+init  (merging origin/git-annex into git-annex...)
+ok
+(recording state in git...)
+upgrade (v5 to v6...) (v6 to v7...) ok
+get foo (from origin...) (checksum...) ok
+(recording state in git...)
+/annex/objects/SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c
+
+```
+"""]]
