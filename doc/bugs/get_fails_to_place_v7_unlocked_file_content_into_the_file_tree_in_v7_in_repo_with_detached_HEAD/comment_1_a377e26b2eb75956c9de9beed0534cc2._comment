@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2019-07-11T20:15:45Z"
+ content="""
+further debugging showed that the bug appears if `annex upgrade` is done in detached HEAD mode.
+"""]]
