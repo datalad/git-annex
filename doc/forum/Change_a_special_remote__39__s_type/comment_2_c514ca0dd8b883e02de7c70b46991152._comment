@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Horus"
+ avatar="http://cdn.libravatar.org/avatar/8f0ee08b98ea5bba76c3fe112c08851c"
+ subject="comment 2"
+ date="2019-07-11T06:51:26Z"
+ content="""
+In the meantime I have learned about `git annex forget --drop-dead --force`. With that I managed to make the repo forget about the dead remote.
+"""]]
