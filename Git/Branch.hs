@@ -21,7 +21,7 @@ import qualified Git.BuildVersion
  -
  - In a just initialized git repo before the first commit,
  - symbolic-ref will show the master branch, even though that
- - branch is not created yet. So, this also looks at show-ref HEAD
+ - branch is not created yet. So, this also looks at show-ref
  - to double-check.
  -}
 current :: Repo -> IO (Maybe Branch)
