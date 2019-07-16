@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-07-16T16:13:49Z"
+ content="""
+I notice that the keys database is not populated in the clone.
+
+Also, the upgrade does not display "scanning for unlocked files".
+And in Annex.WorkTree, we can see why:
+
+	scanUnlockedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ do
+	        showSideAction "scanning for unlocked files"
+
+There is no current git branch in this case.
+
+That check was added in [[!commit 9b995954731e05727d77c7bff487af10da9cb4b9]]
+"only do scan when there's a branch, not in freshly created new repo"
+
+Since it does a ls-tree of HEAD, what it really ought to check for is that
+HEAD is set, which it's not in a fresh new repo. Done.
+"""]]

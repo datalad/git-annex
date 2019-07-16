@@ -73,13 +73,13 @@ ifAnnexed file yes no = maybe no yes =<< lookupFile file
  - 
  - This is expensive, and so normally the associated files are updated
  - incrementally when changes are noticed. So, this only needs to be done
- - when initializing/upgrading a v6 mode repository.
+ - when initializing/upgrading a v6+ mode repository.
  -
  - Also, the content for the unlocked file may already be present as
  - an annex object. If so, make the unlocked file use that content.
  -}
 scanUnlockedFiles :: Annex ()
-scanUnlockedFiles = whenM (isJust <$> inRepo Git.Branch.current) $ do
+scanUnlockedFiles = whenM (inRepo $ Git.Ref.exists Git.Ref.headRef) $ do
 	showSideAction "scanning for unlocked files"
 	Database.Keys.runWriter $
 		liftIO . Database.Keys.SQL.dropAllAssociatedFiles

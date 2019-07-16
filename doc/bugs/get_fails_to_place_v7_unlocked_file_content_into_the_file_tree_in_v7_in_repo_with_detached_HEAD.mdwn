@@ -54,3 +54,5 @@ as you can see the arg-test.sim is only 68 bytes, not 2MB or a symlink.
 
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

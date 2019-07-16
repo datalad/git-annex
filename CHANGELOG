@@ -6,6 +6,8 @@ git-annex (7.20190709) UNRELEASED; urgency=medium
     parsing.
   * Add BLAKE2BP512 and BLAKE2BP512E backends, using a blake2 variant
     optimised for 4-way CPUs.
+  * Support running v7 upgrade in a repo where there is no branch checked
+    out, but HEAD is set directly to some other ref.
 
  -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:59:54 -0400
 
