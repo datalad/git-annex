@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="alex@5dec96d07f0e61bed8256e9d54a61aa1e2083a70"
+ nickname="alex"
+ avatar="http://cdn.libravatar.org/avatar/28d2177f7678c6cc0b677c34927eba06"
+ subject="comment 1"
+ date="2019-07-16T19:49:08Z"
+ content="""
+I've realized my confusion but wanted to leave this up in case it can help anyone.  I'm sorry I really should have read the unlocked files page closer.
+
+I do have a related question though: is there any way to have ```annex.addunlocked``` applied to only a specific file?
+"""]]
