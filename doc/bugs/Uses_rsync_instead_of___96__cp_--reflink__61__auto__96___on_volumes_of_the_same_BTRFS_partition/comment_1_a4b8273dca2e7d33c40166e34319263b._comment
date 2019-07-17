@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-07-17T15:52:20Z"
+ content="""
+The reason git-annex uses rsync is it can resume interrupted transfers,
+and cp cannot.
+
+As well as this btrfs subvolume problem, the current behavior has the
+problem that when it uses cp on a non-CoW filesystem, it doesn't resume.
+
+It would really be nice to have a way to probe if CoW is supported for a
+given combination of src, dest.
+
+One way would be to use `cp --reflink=always` and if it fails fall back to
+rsync. But the overhead of running an extra cp command for each file, while
+at first seemingly small, is actually fairly large. 
+
+I benchmarked two shell loops over 1000 files. One did a `cp
+--reflink=always`, which always failed. That took 2 seconds. One used rsync
+to copy the (empty) file to 1000 different destination files. That took 3.7
+seconds.
+
+It seems that it would be worth the complication to try `cp --reflink=always`
+just once per remote, and if it fails, fall back to rsync for the remainder
+of the process's operations on that remote.
+"""]]
