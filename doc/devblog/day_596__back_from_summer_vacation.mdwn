@@ -1,0 +1,17 @@
+I've been back from summer vacation for a couple of days.
+My contract to work on git-annex has expired, at least for now,
+but I have a lot of Patreon rewards to catch up on anyway. I've been
+pushing hard for months on that contract and made a lot of progress on
+long-term goals. Plan for the next little while is to cut back a little
+bit, and work on easier stuff.
+
+Today I improved how git-annex uses Copy-On-Write when copying between
+two repositories on the same drive. It had relied on matching up device
+numbers, but it turns out that with eg BTRFS subvolumes, CoW is supported
+even when the device numbers don't match. Also, it was using cp even on
+filesystems that don't support CoW, which prevented resuming after an
+interruption. The new approach is to try to make a CoW copy once per remote,
+and if it fails, fall back to rsync.
+
+Today's work was sponsored by Trenton Cronholm
+<a href="https://patreon.com/joeyh">on Patreon</a>.
