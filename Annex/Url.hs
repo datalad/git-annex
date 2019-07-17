@@ -22,6 +22,8 @@ import Utility.HttpManagerRestricted
 import qualified BuildInfo
 
 import Network.Socket
+import Network.HTTP.Client
+import Network.HTTP.Client.TLS
 
 defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
@@ -62,7 +64,8 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 				then U.DownloadWithConduit $
 					U.DownloadWithCurlRestricted mempty
 				else U.DownloadWithCurl curlopts
-			manager <- liftIO $ U.newManager U.managerSettings
+			manager <- liftIO $ U.newManager $ 
+				avoidtimeout $ tlsManagerSettings
 			return (urldownloader, manager)
 		allowedaddrs -> do
 			addrmatcher <- liftIO $ 
@@ -76,24 +79,28 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 				| isLoopbackAddress addr = False
 				| isPrivateAddress addr = False
 				| otherwise = True
-			let connectionrestricted = addrConnectionRestricted 
+			let connectionrestricted = connectionRestricted 
 				("Configuration of annex.security.allowed-ip-addresses does not allow accessing address " ++)
-			let r = Restriction
-				{ checkAddressRestriction = \addr ->
-					if isallowed (addrAddress addr)
-						then Nothing
-						else Just (connectionrestricted addr)
-				}
+			let r = addressRestriction $ \addr ->
+				if isallowed (addrAddress addr)
+					then Nothing
+					else Just (connectionrestricted addr)
 			(settings, pr) <- liftIO $ 
-				restrictManagerSettings r U.managerSettings
+				mkRestrictedManagerSettings r Nothing Nothing
 			case pr of
 				Nothing -> return ()
 				Just ProxyRestricted -> toplevelWarning True
 					"http proxy settings not used due to annex.security.allowed-ip-addresses configuration"
-			manager <- liftIO $ U.newManager settings
+			manager <- liftIO $ U.newManager $ 
+				avoidtimeout settings
 			let urldownloader = U.DownloadWithConduit $
 				U.DownloadWithCurlRestricted r
 			return (urldownloader, manager)
+	
+	-- http-client defailts to timing out a request after 30 seconds
+	-- or so, but some web servers are slower and git-annex has its own
+	-- separate timeout controls, so disable that.
+	avoidtimeout s = s { managerResponseTimeout = responseTimeoutNone }
 
 ipAddressesUnlimited :: Annex Bool
 ipAddressesUnlimited = 

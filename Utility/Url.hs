@@ -11,7 +11,6 @@
 
 module Utility.Url (
 	newManager,
-	managerSettings,
 	URLString,
 	UserAgent,
 	Scheme,
@@ -62,10 +61,6 @@ import Data.Conduit
 import Text.Read
 import System.Log.Logger
 
-managerSettings :: ManagerSettings
-managerSettings = tlsManagerSettings
-	{ managerResponseTimeout = responseTimeoutNone }
-
 type URLString = String
 
 type Headers = [String]
@@ -103,7 +98,7 @@ defUrlOptions = UrlOptions
 	<*> pure []
 	<*> pure (DownloadWithConduit (DownloadWithCurlRestricted mempty))
 	<*> pure id
-	<*> newManager managerSettings
+	<*> newManager tlsManagerSettings
 	<*> pure (S.fromList $ map mkScheme ["http", "https", "ftp"])
 
 mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> UrlOptions

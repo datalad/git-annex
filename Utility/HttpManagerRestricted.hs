@@ -1,7 +1,7 @@
-{- | Restricted Manager for http-client-tls
+{- | Restricted `ManagerSettings` for <https://haskell-lang.org/library/http-client>
  -
  - Copyright 2018 Joey Hess <id@joeyh.name>
- - 
+ -
  - Portions from http-client-tls Copyright (c) 2013 Michael Snoyman
  -
  - License: MIT
@@ -10,10 +10,12 @@
 {-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable, LambdaCase, PatternGuards #-}
 
 module Utility.HttpManagerRestricted (
-	restrictManagerSettings,
-	Restriction(..),
+	Restriction,
+	checkAddressRestriction,
+	addressRestriction,
+	mkRestrictedManagerSettings,
 	ConnectionRestricted(..),
-	addrConnectionRestricted,
+	connectionRestricted,
 	ProxyRestricted(..),
 	IPAddrString,
 ) where
@@ -21,21 +23,41 @@ module Utility.HttpManagerRestricted (
 import Network.HTTP.Client
 import Network.HTTP.Client.Internal
 	(ManagerSettings(..), Connection, runProxyOverride, makeConnection)
+import Network.HTTP.Client.TLS (mkManagerSettingsContext)
 import Network.Socket
 import Network.BSD (getProtocolNumber)
 import Control.Exception
 import qualified Network.Connection as NC
 import qualified Data.ByteString.UTF8 as BU
+import Data.Maybe
 import Data.Default
 import Data.Typeable
-import Control.Applicative
 import qualified Data.Semigroup as Sem
 import Data.Monoid
+import Control.Applicative
 import Prelude
 
+-- | Configuration of which HTTP connections to allow and which to
+-- restrict.
 data Restriction = Restriction
 	{ checkAddressRestriction :: AddrInfo -> Maybe ConnectionRestricted
 	}
+
+-- | Decide if a HTTP connection is allowed based on the IP address
+-- of the server.
+--
+-- After the restriction is checked, the same IP address is used
+-- to connect to the server. This avoids DNS rebinding attacks
+-- being used to bypass the restriction.
+--
+-- > myRestriction :: Restriction
+-- > myRestriction = addressRestriction $ \addr ->
+-- >	if isPrivateAddress addr
+-- >		then Just $ connectionRestricted
+-- >			("blocked connection to private IP address " ++)
+-- > 		else Nothing
+addressRestriction :: (AddrInfo -> Maybe ConnectionRestricted) -> Restriction
+addressRestriction f = mempty { checkAddressRestriction = f }
 
 appendRestrictions :: Restriction -> Restriction -> Restriction
 appendRestrictions a b = Restriction
@@ -52,38 +74,85 @@ instance Monoid Restriction where
 instance Sem.Semigroup Restriction where
 	(<>) = appendRestrictions
 
--- | An exception used to indicate that the connection was restricted.
+-- | Value indicating that a connection was restricted, and giving the
+-- reason why.
 data ConnectionRestricted = ConnectionRestricted String
 	deriving (Show, Typeable)
 
 instance Exception ConnectionRestricted
 
+-- | A string containing an IP address, for display to a user.
 type IPAddrString = String
 
 -- | Constructs a ConnectionRestricted, passing the function a string
--- containing the IP address.
-addrConnectionRestricted :: (IPAddrString -> String) -> AddrInfo -> ConnectionRestricted
-addrConnectionRestricted mkmessage = 
+-- containing the IP address of the HTTP server.
+connectionRestricted :: (IPAddrString -> String) -> AddrInfo -> ConnectionRestricted
+connectionRestricted mkmessage = 
 	ConnectionRestricted . mkmessage . showSockAddress . addrAddress
 
+-- | Value indicating that the http proxy will not be used.
 data ProxyRestricted = ProxyRestricted
 	deriving (Show)
 
--- | Adjusts a ManagerSettings to enforce a Restriction. The restriction
+-- Adjusts a ManagerSettings to enforce a Restriction. The restriction
 -- will be checked each time a Request is made, and for each redirect
 -- followed.
+--
+-- This overrides the `managerRawConnection`
+-- and `managerTlsConnection` with its own implementations that check 
+-- the Restriction. They should otherwise behave the same as the
+-- ones provided by http-client-tls.
+--
+-- This function is not exported, because using it with a ManagerSettings
+-- produced by something other than http-client-tls would result in
+-- surprising behavior, since its connection methods would not be used.
 --
 -- The http proxy is also checked against the Restriction, and if
 -- access to it is blocked, the http proxy will not be used.
 restrictManagerSettings
-	:: Restriction
+	:: Maybe NC.ConnectionContext
+	-> Maybe NC.TLSSettings
+	-> Restriction
 	-> ManagerSettings
 	-> IO (ManagerSettings, Maybe ProxyRestricted)
-restrictManagerSettings cfg base = restrictProxy cfg $ base
+restrictManagerSettings mcontext mtls cfg base = restrictProxy cfg $ base
 	{ managerRawConnection = restrictedRawConnection cfg
-	, managerTlsConnection = restrictedTlsConnection cfg
+	, managerTlsConnection = restrictedTlsConnection mcontext mtls cfg
 	, managerWrapException = wrapOurExceptions base
 	}
+
+-- | Makes a TLS-capable ManagerSettings with a Restriction applied to it.
+--
+-- The Restriction will be checked each time a Request is made, and for
+-- each redirect followed.
+--
+-- Aside from checking the Restriction, it should behave the same as
+-- `Network.HTTP.Client.TLS.mkManagerSettingsContext`
+-- from http-client-tls.
+--
+-- > main = do
+-- > 	manager <- newManager . fst 
+-- > 		=<< mkRestrictedManagerSettings myRestriction Nothing Nothing
+-- >	request <- parseRequest "http://httpbin.org/get"
+-- > 	response <- httpLbs request manager
+-- > 	print $ responseBody response
+--
+-- The HTTP proxy is also checked against the Restriction, and will not be
+-- used if the Restriction does not allow it. Just ProxyRestricted
+-- is returned when the HTTP proxy has been restricted.
+-- 
+-- See `mkManagerSettingsContext` for why
+-- it can be useful to provide a `NC.ConnectionContext`.
+-- 
+-- Note that SOCKS is not supported.
+mkRestrictedManagerSettings
+	:: Restriction
+	-> Maybe NC.ConnectionContext
+	-> Maybe NC.TLSSettings
+	-> IO (ManagerSettings, Maybe ProxyRestricted)
+mkRestrictedManagerSettings cfg mcontext mtls =
+	restrictManagerSettings mcontext mtls cfg $
+		mkManagerSettingsContext mcontext (fromMaybe def mtls) Nothing
 
 restrictProxy
 	:: Restriction
@@ -154,27 +223,24 @@ wrapOurExceptions base req a =
 	 in managerWrapException base req (handle (throwIO . wrapper) a)
 
 restrictedRawConnection :: Restriction -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
-restrictedRawConnection cfg = getConnection cfg Nothing
+restrictedRawConnection cfg = getConnection cfg Nothing Nothing
 
-restrictedTlsConnection :: Restriction -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
-restrictedTlsConnection cfg = getConnection cfg $
-	-- It's not possible to access the TLSSettings
-	-- used in the base ManagerSettings. So, use the default
-	-- value, which is the same thing http-client-tls defaults to.
-	-- Since changing from the default settings can only make TLS
-	-- less secure, this is not a big problem.
-	Just def
-
-
+restrictedTlsConnection :: Maybe NC.ConnectionContext -> Maybe NC.TLSSettings -> Restriction -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
+restrictedTlsConnection mcontext mtls cfg = 
+	getConnection cfg (Just (fromMaybe def mtls)) mcontext
 
 -- Based on Network.HTTP.Client.TLS.getTlsConnection.
 --
 -- Checks the Restriction
 --
 -- Does not support SOCKS.
-getConnection :: Restriction -> Maybe NC.TLSSettings -> IO (Maybe HostAddress -> String -> Int -> IO Connection)
-getConnection cfg tls = do
-	context <- NC.initConnectionContext
+getConnection
+	:: Restriction
+	-> Maybe NC.TLSSettings
+	-> Maybe NC.ConnectionContext
+	-> IO (Maybe HostAddress -> String -> Int -> IO Connection)
+getConnection cfg tls mcontext = do
+	context <- maybe NC.initConnectionContext return mcontext
 	return $ \_ha h p -> bracketOnError
 		(go context h p)
 		NC.connectionClose
