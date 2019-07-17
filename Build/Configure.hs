@@ -23,7 +23,7 @@ tests =
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_preserve_timestamps" "--preserve=timestamps"
-	, testCp "cp_reflink_auto" "--reflink=auto"
+	, testCp "cp_reflink_supported" "--reflink=auto"
 	, TestCase "xargs -0" $ testCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ testCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"

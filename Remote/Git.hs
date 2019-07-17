@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -335,7 +335,7 @@ inAnnex rmt st key = do
 	inAnnex' repo rmt st key
 
 inAnnex' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
-inAnnex' repo rmt (State connpool duc _) key
+inAnnex' repo rmt (State connpool duc _ _) key
 	| Git.repoIsHttp repo = checkhttp
 	| Git.repoIsUrl repo = checkremote
 	| otherwise = checklocal
@@ -382,7 +382,7 @@ dropKey r st key = do
 		(\e -> warning (show e) >> return False)
 
 dropKey' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
-dropKey' repo r (State connpool duc _) key
+dropKey' repo r (State connpool duc _ _) key
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (return False) $
 			commitOnCleanup repo r $ onLocalFast repo r $ do
@@ -406,7 +406,7 @@ lockKey r st key callback = do
 	lockKey' repo r st key callback
 
 lockKey' :: Git.Repo -> Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey' repo r (State connpool duc _) key callback
+lockKey' repo r (State connpool duc _ _) key callback
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo failedlock $ do
 			inorigrepo <- Annex.makeRunner
@@ -474,7 +474,7 @@ copyFromRemote' forcersync r st key file dest meterupdate = do
 	copyFromRemote'' repo forcersync r st key file dest meterupdate
 
 copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-copyFromRemote'' repo forcersync r (State connpool _ _) key file dest meterupdate
+copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meterupdate
 	| Git.repoIsHttp repo = unVerified $ do
 		gc <- Annex.getGitConfig
 		Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
@@ -489,7 +489,7 @@ copyFromRemote'' repo forcersync r (State connpool _ _) key file dest meterupdat
 			case v of
 				Nothing -> return (False, UnVerified)
 				Just (object, checksuccess) -> do
-					copier <- mkCopier hardlink params
+					copier <- mkCopier hardlink st params
 					runTransfer (Transfer Download u key)
 						file stdRetry
 						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
@@ -600,7 +600,7 @@ copyToRemote r st key file meterupdate = do
 	copyToRemote' repo r st key file meterupdate
 
 copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote' repo r (State connpool duc _) key file meterupdate
+copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (return False) $ commitOnCleanup repo r $
 			copylocal =<< Annex.Content.prepSendAnnex key
@@ -627,7 +627,7 @@ copyToRemote' repo r (State connpool duc _) key file meterupdate
 			( return True
 			, do
 				ensureInitialized
-				copier <- mkCopier hardlink params
+				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure
 				runTransfer (Transfer Download u key) file stdRetry $ \p ->
@@ -704,27 +704,46 @@ onLocal repo r a = do
 onLocalFast :: Git.Repo -> Remote -> Annex a -> Annex a
 onLocalFast repo r a = onLocal repo r $ Annex.BranchState.disableUpdate >> a
 
-{- Copys a file with rsync unless both locations are on the same
- - filesystem. Then cp could be faster. -}
-rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
-rsyncOrCopyFile rsyncparams src dest p =
+-- To avoid the overhead of trying copy-on-write every time, it's tried
+-- once and if it fails, is not tried again.
+newtype CopyCoWTried = CopyCoWTried (MVar Bool)
+
+newCopyCoWTried :: IO CopyCoWTried
+newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
+
+{- Copys a file. Uses copy-on-write if it is supported. Otherwise,
+ - uses rsync, so that interrupted copies can be resumed. -}
+rsyncOrCopyFile :: State -> [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
+rsyncOrCopyFile st rsyncparams src dest p =
 #ifdef mingw32_HOST_OS
-	-- rsync is only available on Windows in some inatallation methods,
+	-- rsync is only available on Windows in some installation methods,
 	-- and is not strictly needed here, so don't use it.
-	docopy
+	docopywith copyFileExternal
   where
 #else
-	ifM (sameDeviceIds src dest) (docopy, dorsync)
+	-- If multiple threads reach this at the same time, they
+	-- will both try CoW, which is acceptable.
+	ifM (liftIO $ isEmptyMVar copycowtried)
+		( do
+			ok <- docopycow
+			void $ liftIO $ tryPutMVar copycowtried ok
+			pure ok <||> dorsync
+		, ifM (liftIO $ readMVar copycowtried)
+			( docopycow <||> dorsync
+			, dorsync
+			)
+		)
   where
-	sameDeviceIds a b = (==) <$> getDeviceId a <*> getDeviceId b
-	getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
+	copycowtried = case st of
+		State _ _ (CopyCoWTried v) _ -> v
 	dorsync = do
 		oh <- mkOutputHandler
 		Ssh.rsyncHelper oh (Just p) $
 			rsyncparams ++ [File src, File dest]
+	docopycow = docopywith copyCoW
 #endif
-	docopy = liftIO $ watchFileSize dest p $
-		copyFileExternal CopyTimeStamps src dest
+	docopywith a = liftIO $ watchFileSize dest p $
+		a CopyTimeStamps src dest
 
 commitOnCleanup :: Git.Repo -> Remote -> Annex a -> Annex a
 commitOnCleanup repo r a = go `after` a
@@ -768,10 +787,10 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 -- done.
 type Copier = FilePath -> FilePath -> MeterUpdate -> Annex Bool -> Annex (Bool, Verification)
 
-mkCopier :: Bool -> [CommandParam] -> Annex Copier
-mkCopier remotewanthardlink rsyncparams = do
+mkCopier :: Bool -> State -> [CommandParam] -> Annex Copier
+mkCopier remotewanthardlink st rsyncparams = do
 	let copier = \src dest p check -> unVerified $
-		rsyncOrCopyFile rsyncparams src dest p <&&> check
+		rsyncOrCopyFile st rsyncparams src dest p <&&> check
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
 	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
@@ -790,20 +809,21 @@ mkCopier remotewanthardlink rsyncparams = do
  - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
-data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck (Annex (Git.Repo, GitConfig))
+data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig))
 
 getRepoFromState :: State -> Annex Git.Repo
-getRepoFromState (State _ _ a) = fst <$> a
+getRepoFromState (State _ _ _ a) = fst <$> a
 
 {- The config of the remote git repository, cached for speed. -}
 getGitConfigFromState :: State -> Annex GitConfig
-getGitConfigFromState (State _ _ a) = snd <$> a
+getGitConfigFromState (State _ _ _ a) = snd <$> a
 
 mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
 mkState r u gc = do
 	pool <- Ssh.mkP2PSshConnectionPool
+	copycowtried <- liftIO newCopyCoWTried
 	(duc, getrepo) <- go
-	return $ State pool duc getrepo
+	return $ State pool duc copycowtried getrepo
   where
 	go
 		| remoteAnnexCheckUUID gc = return

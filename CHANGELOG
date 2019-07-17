@@ -8,6 +8,10 @@ git-annex (7.20190709) UNRELEASED; urgency=medium
     optimised for 4-way CPUs.
   * Support running v7 upgrade in a repo where there is no branch checked
     out, but HEAD is set directly to some other ref.
+  * Improved probing when CoW copies can be made between files on the same
+    drive. Now supports CoW between BTRFS subvolumes. And, falls back to rsync
+    instead of using cp when CoW won't work, eg copies between repos on the
+    same EXT4 filesystem.
 
  -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:59:54 -0400
 
