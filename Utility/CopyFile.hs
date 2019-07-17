@@ -38,8 +38,9 @@ copyMetaDataParams meta = map snd $ filter fst
  - and because this allows easy access to features like cp --reflink. -}
 copyFileExternal :: CopyMetaData -> FilePath -> FilePath -> IO Bool
 copyFileExternal meta src dest = do
-	whenM (doesFileExist dest) $
-		removeFile dest
+	-- Delete any existing dest file because an unwritable file
+	-- would prevent cp from working.
+	void $ tryIO $ removeFile dest
 	boolSystem "cp" $ params ++ [File src, File dest]
   where
 	params
@@ -52,8 +53,7 @@ copyFileExternal meta src dest = do
 copyCoW :: CopyMetaData -> FilePath -> FilePath -> IO Bool
 copyCoW meta src dest
 	| BuildInfo.cp_reflink_supported = do
-		whenM (doesFileExist dest) $
-			removeFile dest
+		void $ tryIO $ removeFile dest
 		-- When CoW is not supported, cp will complain to stderr,
 		-- so have to discard its stderr.
 		ok <- catchBoolIO $ do
