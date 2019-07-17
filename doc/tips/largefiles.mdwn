@@ -1,7 +1,7 @@
 [[!meta title="annex.largefiles: configuring mixed content repositories"]]
 
 Normally commands like `git annex add` always add files to the annex.
-And when using the v6 repository mode, even `git add` and `git commit -a`
+And when using the v7 repository mode, even `git add` and `git commit -a`
 will add files to the annex.
 
 Let's suppose you're developing a video game, written in C. You have
@@ -12,7 +12,7 @@ possibly enormous files, but still version control them.
 
 The annex.largefiles configuration is useful for such mixed content
 repositories. It's checked by `git annex add`, by `git add` and `git commit -a`
-(in v6 repositories), by `git annex import` and the assistant. It's
+(in v7 repositories), by `git annex import` and the assistant. It's
 also used by `git annex addurl` and `git annex importfeed` when downloading
 files. When a file does not match annex.largefiles, these commands will
 add its content to git instead of to the annex.

@@ -17,7 +17,7 @@ Note that git commands that operate on the work tree will refuse to
 run in direct mode repositories. Use `git annex proxy` to safely run such
 commands.
 
-Note that the direct mode/indirect mode distinction is removed in v6
+Note that the direct mode/indirect mode distinction is removed in v7
 git-annex repositories. In such a repository, you can
 use [[git-annex-unlock]](1) to make a file's content be directly present.
 You can also use [[git-annex-adjust]](1) to enter a branch where all
