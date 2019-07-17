@@ -83,20 +83,6 @@ run :: [TestCase] -> IO ()
 run ts = do
 	setup
 	config <- runTests ts
-	v <- getEnv "CROSS_COMPILE"
-	case v of
-		Just "Android" -> writeSysConfig $ androidConfig config
-		_ -> writeSysConfig config
+	writeSysConfig config
 	writeVersion =<< getVersion
 	cleanup
-
-{- Hard codes some settings to cross-compile for Android. -}
-androidConfig :: [Config] -> [Config]
-androidConfig c = overrides ++ filter (not . overridden) c
-  where
-	overrides = 
-		[ Config "cp_reflink_auto" $ BoolConfig False
-		, Config "curl" $ BoolConfig False
-		]
-	overridden (Config k _) = k `elem` overridekeys
-	overridekeys = map (\(Config k _) -> k) overrides
