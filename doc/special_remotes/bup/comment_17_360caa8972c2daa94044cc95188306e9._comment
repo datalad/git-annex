@@ -1,0 +1,18 @@
+[[!comment format=sh
+ username="eigood"
+ avatar="http://cdn.libravatar.org/avatar/fa5ae017e5432f6cfbf82109a94afaea"
+ subject="Add support for bup daemon?"
+ date="2019-07-16T23:45:18Z"
+ content="""
+==
+git annex --debug initremote originbup type=bup autoenable=true encryption=none buprepo=bup://localhost:1982/srv/app/fs/global-storage/XXXX/bup
+...
+[2019-07-16 23:24:01.852275553] process done ExitSuccess
+(storing uuid...) [2019-07-16 23:24:01.852581845] call: ssh [\"bup\",\"-S\",\".git/annex/ssh/bup\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"cd '//localhost:1982/srv/app/fs/global-storage/XXXX/bup' && git config annex.uuid 11ddfb21-f6ca-4281-a0a1-aef9b17437e0\"]
+...
+==
+
+Annex is attempting to ssh to a machine called \"bup\", then doing a cd to a very wrong path.  To get this far, I had to do a few fixed to client.py in bup, as that code has decayed since 2017.  I haven't yet looked at the annex source, to see why it needs to do that cd, but I would prefer *not* have ssh access for this.
+
+This scenario I have locally is git-annex+bup+duplicity running inside a reduced, isolated, docker-container, where everything is trusted, and I can throw all pieces away.  
+"""]]

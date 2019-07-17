@@ -1,9 +1,13 @@
+**EDIT:** Is there a way to apply ```annex.addunlocked``` permanently to a single file? It would be great if it could be added to the ```annex.largefiles``` options. This way a repository could have locked large files, unlocked large files, and regular files added directly to git.
+
+Leaving my confusion below for reference (Sorry should have read the unlocked files page more before I posted).
+
+---  
+
 I'm having trouble getting unlocked files in version 7 repositories to work and I think I'm pretty confused (what I mean is that it's not git annex's fault).
 
 I have my Calibre library in a git-annex repo. I want ```metadata.db```, Calibre's sqlite database to stay unlocked but I don't get the expected results.
 Also I put ```metadata.db annex.largefiles=nothing``` in my ```.gitattributes``` file, could this be causing an issue?
-
-
  
 Version information:  
   
