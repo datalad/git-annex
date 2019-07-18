@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/45b0925215b6b772921a50eca1f55b55"
+ subject="sync only git-annex branch"
+ date="2019-07-18T19:52:35Z"
+ content="""
+I've finally taken the time to learn git-annex and am extraordinarily impressed by its usefulness and documentation.
+
+I'm currently using git-annex as part of a scientific workflow, wherein I use git to track my analysis source code and LaTeX reports, and git-annex to handle large binary files (typically input data).
+`git annex sync` is really handy for making sure my `git-annex` branch propagates between my remotes, and it's hard to beat the usefulness of `git annex sync --content` now that I've wrapped my head around [standard groups](http://git-annex.branchable.com/preferred_content/standard_groups/).
+However, I'd prefer if there was a flag (or configurable option) to suppress `git annex sync` from pushing/pulling whatever branch currently happens to be checked out.
+I'm a pretty thoughtful committer and want more control over where my code branches (e.g., `master`) get pushed around.
+I saw the `--no-pull` and `no-push` options for `git annex sync`, but it seems that this suppresses *all* push/pull behavior, and thus `git annex sync --no-push --no-pull` will not sync up my special `git-annex` branch.
+Is there an option or workflow that accomplishes what I'm looking for?
+
+TLDR
+I want a way to tell `git annex sync` to leave my `master` (or whatever currently checked out branch is) alone (no pushing/pulling), but otherwise behave normally (e.g., `git annex sync` will just push/pull my special `git-annex-branch` around, or `git annex sync --content` will push/pull the special `git-annex` branch, and also move content around as it makes sense).
+Apologies if this is already possible, but I haven't been able to figure it out.
+"""]]
