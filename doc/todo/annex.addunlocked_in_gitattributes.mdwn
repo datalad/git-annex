@@ -1,0 +1,11 @@
+Make annex.addunlocked be able to be configured in .gitattributes,
+the same way as annex.largefiles can be.
+
+This would be useful if certain filename extensions need to be unlocked to
+be used, and others are desired to be kept locked.
+
+The annex.addunlocked git config is a boolean, but this gitattributes one
+would effectively build up a file match expression. So it might then follow
+that the git config should also be a file match expression, with "true"
+being the same as "anything" and "false" the same as "nothing" for
+back-compat. --[[Joey]]
