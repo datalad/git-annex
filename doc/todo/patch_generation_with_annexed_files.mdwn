@@ -1,0 +1,119 @@
+It would be nice if something like `git format-patch` 
+could be done that supports sending annex objects along with the git patch.
+Then something like `git am` would apply the patch and at the same time
+extract the annex objects, verify them, and inject them into the
+repository.
+
+Some email servers have size limitations, which could limit the
+use cases.
+
+## UI
+
+This could be done with either a wrapper around git format-patch 
+or a subsequent command. Either way, it would examine the patch file
+to find the git-annex objects added in it, then modify it to include those
+objects.
+
+Similarly, a wrapper around git-am or a subsequent command to extract those
+objects and inject them into the repository.
+
+Which would be better, wrappers or post-processing commands?
+
+## optimal objects to include
+
+It seems that only objects added in a patch need to be included, not
+objects that are removed.
+
+If an object is removed and also added, we can assume that the receiver
+already has a copy, so no need to include that object in the patch. This
+will make renames of existing files avoid a redundant attachment of an
+object.
+
+When adding objects to a set of patch files, it can remember which objects
+it's added already, and avoid adding those to subsequent patches.
+
+That's close to optimal. But here are two non-optimal cases:
+
+1. A copy if made of a file. So the reciever already has the object,
+   but the patch only adds the new file, so the object gets added to it.
+2. A special remote has a copy of some of the objects, and the reciever
+   has access to it. Including any objects that are present in that special
+   remote would be non-optimal. But other objects should be included.
+
+Both cases could be handled by adding an option to specify a repository,
+and if an object is in that repository, skip adding it to the patch.
+
+## patch mangling
+
+git uses base-85 encoding for binary patches, which is more efficient than
+MIME's base64. git-annex could do the same (sandi provides a base-85 module).
+
+The git patch format has two expansion points.
+
+	From 4a3d9cb8f775036b0e0253730ea381d963e1684b Mon Sep 17 00:00:00 2001
+	From: Joey Hess <joeyh@joeyh.name>
+	Date: Fri, 19 Jul 2019 14:10:14 -0400
+	Subject: [PATCH] add
+	
+	---
+	 bash | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 bash
+	
+	expansion point 1
+	
+	diff --git a/bash b/bash
+	new file mode 120000
+	index 0000000..a30f89b
+	--- /dev/null
+	+++ b/bash
+	@@ -0,0 +1 @@
+	+.git/annex/objects/k5/Zv/SHA256E-s1168776--059fce560704769f9ee72e095e85c77cbcd528dc21cc51d9255cfe46856b5f02/SHA256E-s1168776--059fce560704769f9ee72e095e85c77cbcd528dc21cc51d9255cfe46856b5f02
+	\ No newline at end of file
+	-- 
+	2.22.0
+	
+	expansion point 2
+
+The second seems better, because it puts the big binary chunk after
+the diff so makes it easier to read. Although the ending git version
+is formatted as an email signature, so the annex part would go inside
+the signature in a way. 
+
+git ignores anything after the signature, so putting it there also avoids any
+risk of confusing git if the annex object content looks too much like a patch
+to it.
+
+`git format-patch --attach` generates a MIME message. That would need
+a MIME library to deal with, and git-annex would need to add one or more
+attachments to it. But that option seems rarely used; I've never seen it used
+in the wild.
+
+## git-annex branch patches
+
+Patches to the git-annex branch are not handled by this. One consequence
+is that the receiver, upon applying the patch, doesn't add location
+tracking info for the sender's git-annex repo. Often that's fine;
+you don't want to bloat your repo with information about some random
+repo belonging to someone else when you can't directly access that repo.
+
+In some cases, other git-annex branch files could need to be modified as 
+part of a patch. This should not be raw git-annex branch patches because
+the format of that branch is optimised for union merging and machine
+readability, not manual patch review.
+
+A diff between `git annex vicfg` might work, as a way to include config
+changes in a patch. But does not seem very necessary.
+
+More useful would be location tracking information for the web
+remote and perhaps other remotes that the receiver has access to.
+And remote state files: log.web, log.rmt, log.rmet, log.cid, and log.cnk.
+
+Also, it would be nice to be able to include git-annex metadata changes
+in a patch.
+
+Not clear how to know when to include these, because they're not tied 
+to a change to the master branch. 
+
+But room needs to be left to add this kind of thing. Ie, what git-annex
+adds to the git patch needs to have its own expansion point.
