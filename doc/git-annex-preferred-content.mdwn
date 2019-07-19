@@ -36,9 +36,9 @@ elsewhere to allow removing it).
 
   Match files to include, or exclude.
 
-  While --include=glob and --exclude=glob match files relative to the current
-  directory, preferred content expressions match files relative to the
-  top of the git repository.
+  While the command-line options --include=glob and --exclude=glob match
+  files relative to the current directory, preferred content expressions
+  match files relative to the top of the git repository.
 
   For example, suppose you put files into `archive` directories
   when you're done with them. Then you could configure your laptop to prefer

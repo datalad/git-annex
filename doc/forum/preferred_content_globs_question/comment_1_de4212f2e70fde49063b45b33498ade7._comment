@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-07-19T17:24:35Z"
+ content="""
+Yes, --include and --exclude are the command-line options.
+"""]]
