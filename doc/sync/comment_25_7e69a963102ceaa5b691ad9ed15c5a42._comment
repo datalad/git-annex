@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: sync only git-annex branch"""
+ date="2019-07-19T16:55:33Z"
+ content="""
+@Dan, there's an open todo about that, 
+<http://git-annex.branchable.com/todo/sync_--branches__to_sync_only_specified_branches___40__e.g._git-annex__41__/>
+
+Please followup there if the suggested new option would work for you.
+"""]]
