@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-07-19T17:10:41Z"
+ content="""
+I'd encourage you to stop using direct mode, which is well on its way to
+being deprecated and has never been flexible enough to do this kind of
+thing easily.
+
+If you `git annex upgrade` that repository, you will get a v7 repository
+with an adjusted unlocked branch checked out, which is equivilant to a
+direct mode repository, but lets you use arbitrary git commands for merging
+etc.
+"""]]
