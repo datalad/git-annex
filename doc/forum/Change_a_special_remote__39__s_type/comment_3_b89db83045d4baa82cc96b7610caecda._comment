@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-07-19T17:13:46Z"
+ content="""
+It should work to use `git annex enableremote remotename type=webdav`
+"""]]
