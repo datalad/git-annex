@@ -1,0 +1,5 @@
+How does [[git-annex-watch]] handle files that are actively being written?  The documentation says it "takes care of automatically adding new files".  Is it guaranteed to wait until a file is no longer opened for writing, before adding the file?
+
+Also, is there a way to have newly added files be automatically copied to a specified remote?
+
+Thanks!
