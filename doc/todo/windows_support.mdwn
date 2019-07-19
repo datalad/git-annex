@@ -161,3 +161,6 @@ Seems like this would need Windows 10.
 > > 
 > > > The sqlite problem may be fixed in git-annex 7. I fixed some similar,
 > > > less frequent crashes on Linux. Need to test on windows. --[[Joey]]
+
+> > > > But here's a bug about sqlite in WSL:
+> > > > [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]] --[[Joey]]

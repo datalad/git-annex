@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-07-19T17:16:37Z"
+ content="""
+I have seen several sqlite-related problems in WSL, they seem to come and
+go for me.
+
+I guess this is WSL not emulating Linux very well and so breaking sqlite.
+There is not much that git-annex can do about it.
+
+(Here's stack having to work around a similar problem 
+https://github.com/commercialhaskell/stack/issues/4876 and the error
+message looks very similar. But git-annex
+cannot afford to disable WAL mode as that would break concurrent operation.)
+
+I hear they've given up on emulating Linux syscalls and the next version of
+WSL will just use the Linux kernel. Which should avoid this problem.
+"""]]
