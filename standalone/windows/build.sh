@@ -63,13 +63,15 @@ stack --version
 #stack upgrade --force-download
 #stack --version
 
+stack setup
+stack build --only-dependencies
+
 # Update version info for git rev being built.
 mkdir -p dist
 stack ghc --no-haddock Build/BuildVersion.hs
 ./Build/BuildVersion > dist/build-version
 
 # Build git-annex
-stack setup
 stack install -j 1 --no-haddock --local-bin-path .
 
 # Build the installer
