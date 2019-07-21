@@ -60,8 +60,8 @@ getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
 
 # Upgrade stack
 stack --version
-stack upgrade --force-download
-stack --version
+#stack upgrade --force-download
+#stack --version
 
 # Update version info for git rev being built.
 mkdir -p dist
