@@ -25,4 +25,4 @@ extra-deps:
 - http-client-0.5.14
 explicit-setup-deps:
   git-annex: true
-resolver: lts-13.19
+resolver: lts-13.29
