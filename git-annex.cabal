@@ -1048,14 +1048,9 @@ Executable git-annex
     Utility.HumanTime
     Utility.InodeCache
     Utility.IPAddress
-    Utility.LinuxMkLibs
     Utility.LockFile
-    Utility.LockFile.LockStatus
-    Utility.LockFile.PidLock
     Utility.LockPool
     Utility.LockPool.LockHandle
-    Utility.LockPool.PidLock
-    Utility.LockPool.STM
     Utility.LogFile
     Utility.Lsof
     Utility.MagicWormhole
@@ -1111,3 +1106,8 @@ Executable git-annex
       Utility.LockFile.Posix
       Utility.LockPool.Posix
       Annex.LockPool.PosixOrPid
+      Utility.LockFile.LockStatus
+      Utility.LockFile.PidLock
+      Utility.LockPool.PidLock
+      Utility.LockPool.STM
+      Utility.LinuxMkLibs
