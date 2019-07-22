@@ -17,6 +17,9 @@ git-annex (7.20190709) UNRELEASED; urgency=medium
     old version of git-annex-shell.
   * Windows build is now 64 bit, and using it with the 64 bit git for
     Windows is fully supported.
+  * Windows problems with long filenames should be fixed now,
+    since the Windows build is made with a newer ghc version that works
+    around the problems.
 
  -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:59:54 -0400
 

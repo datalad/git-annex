@@ -4,19 +4,6 @@ usable!
 
 ## status
 
-* There can be problems when the git-annex repository is in a deep
-  or long path. Ie, `C:\loooooooooooooooooongdir\`.
-  [Details here](http://git-annex.branchable.com/bugs/__34__git-annex:_direct:_1_failed__34___on_Windows)
-
-  Workaround: Put your git-annex repo in `C:\annex` or some similar short
-  path if possible.
-
-  Workaround: Enable long paths in the registry. See 
-  <https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247#maxpath>
-
-  ghc 8.61 fixes this!
-  <https://downloads.haskell.org/%7Eghc/8.6.1/docs/html/users_guide/win32-dlls.html#windows-file-paths>
-
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
   so only pairing with a !Windows box will work.)
@@ -28,16 +15,6 @@ usable!
   permision denied ... file is being used by another process"
 
 * Tor remotes are not supported yet. Should not be very hard to get it working.
-
-* Due to bundling rsync.exe, the windows installer needs to be installed
-  with git for windows 32 bit, not 64 bit. It would be possible to switch
-  to a 64 bit rsync.exe build, but then 32 bit git for windows would not
-  work. Better, perhaps, to drop rsync.exe from the bundle; it's only
-  needed when talking to older versions of git-annex-shell, and of course
-  for rsync special remotes, but if the users wants to use the latter, they
-  can install rsync themselves.
-
-  Postponed until old versions of git-annex-shell are less common..
 
 ## potential encoding problems
 
