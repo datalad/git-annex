@@ -173,8 +173,8 @@ preferredContentParser tokens = map (parseToken tokens) . tokenizeMatcher
 
 mkLargeFilesParser :: Annex (String -> [ParseResult (MatchFiles Annex)])
 mkLargeFilesParser = do
-	magicmime <- liftIO initMagicMime
 #ifdef WITH_MAGICMIME
+	magicmime <- liftIO initMagicMime
 	let mimer n f = ValueToken n (usev $ f magicmime)
 #else
 	let mimer n = ValueToken n $ 
