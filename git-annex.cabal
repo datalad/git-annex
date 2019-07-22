@@ -641,7 +641,6 @@ Executable git-annex
     Annex.Locations
     Annex.LockFile
     Annex.LockPool
-    Annex.LockPool.PosixOrPid
     Annex.Magic
     Annex.MetaData
     Annex.MetaData.StandardFields
@@ -1111,3 +1110,4 @@ Executable git-annex
     Other-Modules:
       Utility.LockFile.Posix
       Utility.LockPool.Posix
+      Annex.LockPool.PosixOrPid
