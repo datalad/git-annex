@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/45b0925215b6b772921a50eca1f55b55"
+ subject="Still Wanted"
+ date="2019-07-22T17:06:20Z"
+ content="""
+Thanks for directing me here from our conversation on the [git-sync page](http://git-annex.branchable.com/sync/).
+
+RE your [first comment here](http://git-annex.branchable.com/todo/sync_--branches__to_sync_only_specified_branches___40__e.g._git-annex__41__/#comment-f5d79cf275bac5578a05cfb9f5b66292) this sounds like the behavior I'm looking for, and in particular for `git annex sync --branch git-annex` to be a special case (ideally configurable so I don't have to type it all the time); not sure if it should be handled by `git`'s config or tracked in the `git-annex` branch, but probably the former (since otherwise the behavior could change pre and post sync, which might be surprising).
+
+I'm trying to understand your [second comment](http://git-annex.branchable.com/todo/sync_--branches__to_sync_only_specified_branches___40__e.g._git-annex__41__/#comment-96120307c5584a563e4bf3ca3c4c3df3). I'm not 100% clear on what `git annex sync` actually does under the hood; if it's pushing and pulling, then presumably I'd need to tweak the git config entries for `remote.name.{push,pull}`, no? OTOH, with the `synced/` branch workflow, perhaps it's fetching, then merging, then pushing, and that's why I should tweak the fetch settings? This would need to get set for *all* of my remotes too, right?
+
+Assuming I'm understanding correctly, the downside to this approach is that it would also change the way base `git` works. Really, I'm looking for a workflow where `git annex` is (insofar as possible) narrowly responsible for managing the annex, and base `git` is responsible for everything it normally is. This would let me minimally modify my git-habits and just run `git annex add` and `git annex sync --content` from time to time to make sure that things are propagating in a sensible way based on how I've configured wanted/preferences. In particular, I'd like `git fetch` to still behave in the way that it used to, I just don't want `git annex sync` pulling and pushing around my code.
+"""]]
