@@ -34,35 +34,12 @@ rm -f git-annex-installer.exe
 rm -f git-annex.exe
 rm -rf dist
 
-# Get extra programs to bundle with git-annex.
-# These are msys2 programs, from https://msys2.github.io/.
-# Since git for windows uses msys2, and includes its libraries,
-# these programs will work well with it. Note that these are 32 bit
-# programs, so the 32 bit version of git for windows needs to be installed,
-# not the 64 bit.
-getextra () {
-	extrap="$1"
-	extrasha="$2"
-	curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
-	if [ ! -e "$extrap" ] || [ "$curextrasha" != "$extrasha" ]; then
-		rm -f "$extrap" || true
-		wget https://downloads.kitenet.net/git-annex/windows/assets/$extrap
-		curextrasha="$(sha1sum $extrap | sed 's/ .*//')"
-		if [ "$curextrasha" != "$extrasha" ]; then
-			rm -f "$extrap"
-			echo "CHECKSUM FAILURE" >&2
-			exit 1
-		fi
-		chmod +x $extrap
-	fi
-}
-getextra rsync.exe 85cb7a4d16d274fcf8069b39042965ad26abd6aa
-
 # Upgrade stack
 stack --version
 #stack upgrade --force-download
 #stack --version
 
+# Get stack build environment set up before trying to build any binaries.
 stack setup
 stack build --only-dependencies
 

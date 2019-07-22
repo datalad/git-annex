@@ -54,13 +54,12 @@ preferredBundledPrograms = catMaybes
 	, Just "git-upload-pack"
 	, Just "git-receive-pack"
 	, Just "git-shell"
-#endif
-#ifndef mingw32_HOST_OS
 	-- using xargs on windows led to problems, so it's not used there
 	, Just "xargs"
-#endif
+	-- rsync is not a core dependency, but good to have.
+	-- On windows, bundling rsync required the build be used with a
+	-- particular version of git for windows, so not included there.
 	, Just "rsync"
-#ifndef mingw32_HOST_OS
 	, Just "sh"
 	-- used by git-annex when available
 	, Just "uname"
