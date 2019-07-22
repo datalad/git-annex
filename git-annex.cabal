@@ -1051,6 +1051,7 @@ Executable git-annex
     Utility.LockFile
     Utility.LockPool
     Utility.LockPool.LockHandle
+    Utility.LockPool.STM
     Utility.LogFile
     Utility.Lsof
     Utility.MagicWormhole
@@ -1109,5 +1110,4 @@ Executable git-annex
       Utility.LockFile.LockStatus
       Utility.LockFile.PidLock
       Utility.LockPool.PidLock
-      Utility.LockPool.STM
       Utility.LinuxMkLibs
