@@ -30,11 +30,9 @@ branch, and updating it more frequently.
 Also unify adjusted branches and view branches.
 <https://git-annex.branchable.com/todo/unify_adjust_with_view/>
 
-Improve Windows support. Long filenames may be possible on Windows now
-thanks to fixes in recent versions of ghc. Further improve using
-git-annex in Windows Subsystem for Linux (WSL). Get Windows fully
-supported with no caveats. Possibly even supporting indirect mode with
-symlinks.
+Improve Windows support. Further improve using git-annex in Windows
+Subsystem for Linux (WSL). Get Windows fully supported with no caveats.
+Possibly even supporting indirect mode with symlinks.
 <https://git-annex.branchable.com/todo/windows_support/>
 <https://git-annex.branchable.com/todo/utilising_the_mklink_command_on_windows_to_utilise_symlinks_and_therefore_indirect_mode_on_windows/>
 
