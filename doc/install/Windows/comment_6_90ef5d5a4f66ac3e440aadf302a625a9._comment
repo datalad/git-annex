@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="error when building on windows"
+ date="2019-07-22T18:04:29Z"
+ content="""
+Building on Windows gives this error:
+
+[[!format sh \"\"\"
+Extracting  ghc-8.6.5.tar
+
+Everything is Ok
+
+Size:       1773445120
+Compressed: 280280296
+Extracting ghc-8.6.5.tar...
+Extracted total of 9780 files from ghc-8.6.5.tar
+C:\Users\ilya\AppData\Local\Programs\stack\x86_64-windows\ghc-8.6.5-tmp6568\ghc-8.6.5\: renamePath:MoveFileEx \"C:\\Users\\ilya\\AppData\\Local\\Programs\\stack\\x86_64-windows\\ghc-8.6.5-tmp6568\\ghc-8.6.5\\\" \"C:\\Users\\ilya\\AppData\\Local\\Programs\\stack\\x86_64-windows\\ghc-8.6.5\\\": permission denied (Access is denied.)
+
+\"\"\"]]
+
+Running Git Bash with Administrator privileges does not seem to help.  Anyone else run into this / know how to fix it?  Thanks!
+"""]]

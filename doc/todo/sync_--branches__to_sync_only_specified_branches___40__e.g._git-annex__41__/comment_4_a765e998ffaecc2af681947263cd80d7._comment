@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="git annex sync commits changes, too?"
+ date="2019-07-22T17:25:39Z"
+ content="""
+I took a closer look at the [man page for `git-annex-sync`](http://git-annex.branchable.com/git-annex-sync/).
+
+My understanding is that running it without any options will
+
+1. commit any changes (presumably something like `commit -am 'some default message?'`)
+2. fetch and merge `synced/$(currentbranch)` and `git-annex` branches (presumably from *all* remotes unless o/w configured)
+3. push the branches from (2) back to the remotes
+
+I'm realizing that what I really want is a `git-annex-sync` command that will *just* sync `git-annex` content. The workflow I'd like is
+
+1. fetch and merge `git-annex` branch from all remotes (or as specified by arguments)
+2. push `git-annex` branch back to remotes from (1)
+3. If _content_ related flags in the style of arguments from `git-annex-sync` (e.g., `--content`) are passed, sync them around.
+
+So the command I think I'm looking for is something like `git annex sync --no-commit --branch git-annex`, but since it's still in todo, I assume the `--branch git-annex` behavior is not yet implemented. 
+Moreover, it seems I can configure the `--no-commit` option to be the default by setting the `annex.autocommit` option to false (and this setting is handled by the `git-annex` branch, with options for local override via local gitconfig). If `--branch` gets implemented, I'd love for there to be a similar config-level option like `annex.synccurrentbranch` with true giving the current (default) behavior wherein the current branch is fetch/merge/pushed, and `annex.synccurrentbranch` giving an alternate behavior akin to the hypothetical `git annex sync --branch git-annex`.
+
+Of course I think both features (adding `--branch` option to `git-annex-sync`; supporting `annex.synccurrentbranch` config) would be useful, but really just the latter would be enough for what I'm looking to do.
+
+Thanks for your consideration and for such an excellent tool; it's really been a gamechanger for me.
+"""]]
