@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-07-23T16:11:18Z"
+ content="""
+The main blocker to v7 becoming the default is that its replacement for
+direct mode, adjusted unlocked branches, is still a new feature that has
+not gotten a great deal of testing and could have bugs. See 
+<http://git-annex.branchable.com/todo/v7_path_toward_default/>
+(I don't consider it to still be beta level though; on balance the many well
+known problems with direct mode are certianly worse.)
+
+When v7 is used without any unlocked files, it is nearly identical to v5
+indirect, and so is just as good. With that said, I'm not personally using
+it yet on my repos, because it also doesn't add any new features either..
+
+When v7 is used with unlocked files, it is still a relatively new feature
+and could have bugs. That said, people do appear to be using it
+increasingly widely, and the last bugs fixed in it were in December 2018.
+
+Unlocked files are also affected by 
+<http://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/>
+although that has been worked around sufficiently well it still has some
+slight negative consequences.
+"""]]
