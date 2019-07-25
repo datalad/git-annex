@@ -1,0 +1,1 @@
+Does git-annex support [git sparse checkout](https://git-scm.com/docs/git-read-tree#_sparse_checkout)?  Are there any known issues when using it in git-annex repos, especially in conjunction with [git-worktree](https://git-scm.com/docs/git-worktree)?
