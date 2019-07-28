@@ -13,7 +13,7 @@ License: AGPL-3+
 Files: Remote/Ddar.hs
 Copyright: © 2011 Joey Hess <id@joeyh.name>
            © 2014 Robie Basak <robie@justgohome.co.uk>
-License: AGPL-3+
+License: GPL-3+
 
 Files: Utility/ThreadScheduler.hs
 Copyright: 2011 Bas van Dijk & Roel van Dijk
@@ -36,10 +36,11 @@ Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
 License: icon-license
   Free to modify and redistribute with due credit, and obviously free to use.
 
-Files: Annex/DirHashes.hs
+Files: Utility/MD5.hs
 Copyright: 2001 Ian Lynagh
-           2010-2015 Joey Hess <id@joeyh.name>
-License: AGPL-3+
+License: GPL-2
+ The full text of version 2 of the GPL is distributed in
+ /usr/share/common-licenses/GPL-2 on Debian systems.
 
 Files: doc/tips/automatically_adding_metadata/pre-commit-annex 
 Copyright: 2014 Joey Hess <id@joeyh.name>

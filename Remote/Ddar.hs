@@ -3,7 +3,7 @@
  - Copyright 2011 Joey Hess <id@joeyh.name>
  - Copyright 2014 Robie Basak <robie@justgohome.co.uk>
  -
- - Licensed under the GNU AGPL version 3 or higher.
+ - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Remote.Ddar (remote) where

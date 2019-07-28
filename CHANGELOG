@@ -20,6 +20,7 @@ git-annex (7.20190709) UNRELEASED; urgency=medium
   * Windows problems with long filenames should be fixed now,
     since the Windows build is made with a newer ghc version that works
     around the problems.
+  * Corrected some license statements.
 
  -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:59:54 -0400
 

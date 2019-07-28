@@ -1056,6 +1056,7 @@ Executable git-annex
     Utility.Lsof
     Utility.MagicWormhole
     Utility.Matcher
+    Utility.MD5
     Utility.Metered
     Utility.Misc
     Utility.Monad
