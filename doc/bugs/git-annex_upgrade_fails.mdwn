@@ -1,0 +1,46 @@
+Running git-annex upgrade von a v5 repo fails:
+----------------
+$ git-annex upgrade
+upgrade (v5 to v6...) (scanning for unlocked files...)
+(recording state in git...)
+
+git status will show some files to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh <file>
+(recording state in git...)
+
+git status will show some files to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh <file>
+
+git-annex: user error (git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","status","--porcelain"] exited -9)
+failed
+(recording state in git...)
+
+git status will show some files to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh <file>
+git-annex: upgrade: 1 failed
+$
+----------------
+
+I have tried to run 
+`git update-index -q --refresh`
+in the working tree. This produced no output and the problem above persists.
+
+Also
+`git-annex repair`
+did return without output (after a few hours) and the problem above persists. 
+
+Version info:
+  apt policy git-annex
+  git-annex:
+    Installed: 7.20190129-2~bpo9+1
+    Candidate: 7.20190129-2~bpo9+1
+    Version table:
+  *** 7.20190129-2~bpo9+1 100
+          100 http://ftp.debian.org/debian stretch-backports/main amd64 Packages
+          100 /var/lib/dpkg/status
+       6.20170101-1+deb9u2 990
+          990 http://ftp.de.debian.org/debian stretch/main amd64 Packages
+       6.20170101-1+deb9u1 990
+          990 http://security.debian.org stretch/updates/main amd64 Packages
+
+Would be happy if anybody could share some insight on how to get that repo to v7.
+
+Regards,
+Felix
