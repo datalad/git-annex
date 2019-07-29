@@ -78,3 +78,5 @@ Thanks for your great work! :) -- [[anarcat]]
 > That seems to be all the complications involved in implementing this,
 > aside from git-annex needing to know the sha256 and size of an object.
 > --[[Joey]]
+
+> Started some initial work in the `git-lfs` branch. --[[Joey]]
