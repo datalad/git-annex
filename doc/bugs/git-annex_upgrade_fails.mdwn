@@ -15,7 +15,6 @@ failed
 
 git status will show some files to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh <file>
 git-annex: upgrade: 1 failed
-$
 ----------------
 
 I have tried to run 
