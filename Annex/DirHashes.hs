@@ -18,6 +18,7 @@ module Annex.DirHashes (
 ) where
 
 import Data.Default
+import Data.Bits
 import qualified Data.ByteArray
 
 import Common
