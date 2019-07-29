@@ -7,3 +7,74 @@ I'm not talking about supporting the *client*-side LFS datastructures. Everythin
 Could that work? Would it be possible to just make this into a separate remote without having to hack at git-annex's core?
 
 Thanks for your great work! :) -- [[anarcat]]
+
+> git lfs has some fairly complicated endpoint guessing and discovery;
+> to find the lfs http endpoint for a ssh remote it sshs to the server,
+> runs git-lfs-authenticate there and parses the resulting json. The
+> authentication generates a http basic auth header, which is valid for a
+> few hours or so.
+> 
+> One consequence is that the endpoint can change over time to some other
+> server. It may also be possible for the authentication to return more
+> than one endpoint, not sure. Anyway, I guess that git-annex would need to
+> treat a given lfs remote as a single copy, irrespective of what
+> endpoints discovery finds. So a lfs special remote will get a uuid
+> assigned like any other special remote.
+> 
+> When a git-lfs repo is forked, the fork shares the lfs endpoint of its
+> parent. (And github's lfs bandwidth and storage quotas do too, so it
+> seems it may be possible to fork someone's repo, push big objects to it
+> and eat up *their* quota!) If a special remote is initialized for the
+> parent and another for the clone, git-annex would see two different
+> uuids, and so think there were two copies of objects in them, while
+> there's really just effectively 1 copy.
+> 
+> In the git-lfs protocol, the upload action has an optional "ref"
+> parameter, which is a git ref that the object is associated with.
+> In some cases, a user may only be able to upload objects if the right ref
+> is provided
+> <https://github.com/git-lfs/git-lfs/blob/master/docs/api/batch.md#ref-property>.
+> This could be problimatic because from git-annex's perspective, there's
+> no particular git ref associated with an annex object. I suppose it could
+> always send the current ref. It will need to handle the case where the
+> lfs endpoint rejects a request due to the wrong ref, and communicate this
+> as an error to git-annex, especially in the `checkPresent`
+> implementation.
+> 
+> To implement `checkPresent`, git-annex will need send a "download"
+> request. The response contains a url to use to download the blob;
+> git-annex could either HEAD it to verify it's present, or assume that the
+> lfs endpoint has verified enough that it's present in order to send that
+> response. Since lfs has no way to delete objects, all that `checkPresent`
+> will detect is when the server has lost an object for some reason.
+> 
+> git-lfs has "transfer adapters", but the only important one currently is 
+> the "basic" adaptor, which uses the standard lfs API. The "custom"
+> adapter is equivilant to a git-annex external special remote.
+> 
+> The lfs API is intended to batch together several uploads or downloads
+> into a single response to the endpoint. But git-annex doesn't have a good
+> capacity for batching; for example when git-annex is downloading all 
+> the files in a directory, it goes through them sequentially and expects
+> each download to complete before stating the next.
+> (This limitation also makes Amazon Glacier's
+> batch downloads suboptimal so perhaps git-annex should be improved in
+> some way to support batch requests.) The simple implementation would be
+> to make API requests with a single object in each. Besides being somewhat
+> slower, that risks running into whatever API rate limit the endpoint
+> might have.
+> 
+> > I probed the github lfs endpoint for rate limiting by forcing git-lfs
+> > to re-download a small object repeatedly (deleting the object and running
+> > `git lfs pull`). I tried this with both a http remote with no
+> > authentication (about 1 request per second) and a ssh remote
+> > (one request per 4 seconds). Both successfully got through 1000
+> > requests w/o hitting a rate limit.
+> > 
+> > But, github's rate limiting probably changes dynamically, and google
+> > finds git lfs hitting rate limit when they're having problems in the
+> > past, so this is only a rough idea of the current picture.
+> 
+> That seems to be all the complications involved in implementing this,
+> aside from git-annex needing to know the sha256 and size of an object.
+> --[[Joey]]
