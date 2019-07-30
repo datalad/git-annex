@@ -20,6 +20,7 @@ git-annex (7.20190730) upstream; urgency=medium
     parsing.
   * Drop support for building with ghc older than 8.4.4,
     and with older versions of serveral haskell libraries.
+  * Support building with socks-0.6 and persistant-template-2.7.
   * Corrected some license statements.
     Thanks, Sean Whitton.
 

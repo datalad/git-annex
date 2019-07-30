@@ -3,3 +3,5 @@ The current Hackage version (7.20190615) only compiles with the constraints sock
 The compiler errors can be fixed with the attached patches.
 
 In the case of the socks changes (for Tor), I am not sure if it will actually work correctly.
+
+> Found the necessary changes to get it to compile. [[done]] --[[Joey]]
