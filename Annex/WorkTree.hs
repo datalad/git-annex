@@ -19,7 +19,6 @@ import Utility.InodeCache
 import Config
 import Git.FilePath
 import qualified Git.Ref
-import qualified Git.Branch
 import qualified Git.LsTree
 import qualified Git.Types
 import Database.Types
