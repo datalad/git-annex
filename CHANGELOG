@@ -1,17 +1,13 @@
-git-annex (7.20190709) UNRELEASED; urgency=medium
+git-annex (7.20190730) upstream; urgency=medium
 
-  * Drop support for building with ghc older than 8.4.4,
-    and with older versions of serveral haskell libraries.
-  * stack.yaml: Build with http-client-0.5.14 to get a bug fix to http header
-    parsing.
-  * Add BLAKE2BP512 and BLAKE2BP512E backends, using a blake2 variant
-    optimised for 4-way CPUs.
-  * Support running v7 upgrade in a repo where there is no branch checked
-    out, but HEAD is set directly to some other ref.
   * Improved probing when CoW copies can be made between files on the same
     drive. Now supports CoW between BTRFS subvolumes. And, falls back to rsync
     instead of using cp when CoW won't work, eg copies between repos on the
     same EXT4 filesystem.
+  * Add BLAKE2BP512 and BLAKE2BP512E backends, using a blake2 variant
+    optimised for 4-way CPUs.
+  * Support running v7 upgrade in a repo where there is no branch checked
+    out, but HEAD is set directly to some other ref.
   * Windows build no longer ships with a copy of rsync, since that is only
     used any more to access rsync special remotes or remotes with a very
     old version of git-annex-shell.
@@ -20,9 +16,14 @@ git-annex (7.20190709) UNRELEASED; urgency=medium
   * Windows problems with long filenames should be fixed now,
     since the Windows build is made with a newer ghc version that works
     around the problems.
+  * stack.yaml: Build with http-client-0.5.14 to get a bug fix to http header
+    parsing.
+  * Drop support for building with ghc older than 8.4.4,
+    and with older versions of serveral haskell libraries.
   * Corrected some license statements.
+    Thanks, Sean Whitton.
 
- -- Joey Hess <id@joeyh.name>  Mon, 08 Jul 2019 08:59:54 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 30 Jul 2019 12:22:25 -0400
 
 git-annex (7.20190708) upstream; urgency=medium
 
