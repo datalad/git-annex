@@ -175,6 +175,22 @@ instance ToJSON OperationParams where
 
 instance FromJSON OperationParams
 
+data Verification = Verification
+	{ verification_oid :: SHA256
+	, verification_size :: Integer
+	}
+	deriving (Generic, Show)
+
+instance ToJSON Verification where
+	toJSON = genericToJSON verifyBodyOptions
+	toEncoding = genericToEncoding verifyBodyOptions
+
+instance FromJSON Verification where
+	parseJSON = genericParseJSON verifyBodyOptions
+
+verifyBodyOptions :: Options
+verifyBodyOptions = stripFieldPrefix defaultOptions
+
 data GitRef = GitRef
 	{ name :: T.Text }
 	deriving (Generic, Show)
@@ -252,24 +268,8 @@ uploadOperation op content oid size =
 	mkverifyreq' r = addLfsJsonHeaders $ r
 		{ method = "POST"
 		, requestBody = RequestBodyLBS $ encode $
-			VerifyBody oid size
+			Verification oid size
 		}
-
-data VerifyBody = VerifyBody
-	{ verifybody_oid :: SHA256
-	, verifybody_size :: Integer
-	}
-	deriving (Generic, Show)
-
-instance ToJSON VerifyBody where
-	toJSON = genericToJSON verifyBodyOptions
-	toEncoding = genericToEncoding verifyBodyOptions
-
-instance FromJSON VerifyBody where
-	parseJSON = genericParseJSON verifyBodyOptions
-
-verifyBodyOptions :: Options
-verifyBodyOptions = stripFieldPrefix defaultOptions
 
 operationParamsRequest :: OperationParams -> Maybe Request
 operationParamsRequest ps = do
