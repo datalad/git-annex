@@ -27,12 +27,14 @@ import GHC.Generics
 import Network.HTTP.Client
 import System.Process
 import Control.Exception
+import Data.String
+import Data.List
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.ByteString.Lazy as L
 import qualified Data.CaseInsensitive as CI
-import Data.String
+import qualified Network.URI as URI
 
 data TransferRequest = TransferRequest
 	{ req_operation :: TransferRequestOperation
@@ -243,8 +245,9 @@ type SHA256 = T.Text
 
 -- | The endpoint of a git-lfs server.
 data Endpoint
-	= EndpointRequest Url
+	= EndpointURI URI.URI
 	| EndpointDiscovered SshDiscoveryResponse
+	deriving (Show)
 
 -- | Discovers an LFS endpoint for a git remote using ssh.
 --
@@ -266,11 +269,34 @@ sshDiscoverEndpoint hostuser remotepath tro =
 			RequestUpload -> "upload"
 		]
 
+-- | Guesses the LFS endpoint from the http url of a git remote.
+--
+-- https://github.com/git-lfs/git-lfs/blob/master/docs/api/server-discovery.md
+guessEndpoint :: Url -> Maybe Endpoint
+guessEndpoint remoteurl = do
+	uri <- URI.parseURI (T.unpack remoteurl)
+	let guessedpath
+		| ".git" `isSuffixOf` URI.uriPath uri =
+			URI.uriPath uri ++ "/info/lfs"
+		| ".git/" `isSuffixOf` URI.uriPath uri =
+			URI.uriPath uri ++ "info/lfs"
+		| otherwise = (droptrailing '/' (URI.uriPath uri)) ++ ".git/info/lfs"
+	let endpoint = EndpointURI $ uri
+		{ URI.uriScheme = "https"
+		, URI.uriPath = guessedpath
+		}
+	case URI.uriScheme uri of
+		"https:" -> Just endpoint
+		"http:" -> Just endpoint
+		_ -> Nothing
+  where
+	droptrailing c = reverse . dropWhile (== c) . reverse
+
 -- | Makes a Request that will start the process of making a transfer to or
 -- from the LFS endpoint.
 startTransferRequest :: Endpoint -> TransferRequest -> Maybe Request
-startTransferRequest (EndpointRequest url) tr = do
-	r <- parseRequest $ T.unpack url
+startTransferRequest (EndpointURI uri) tr = do
+	r <- requestFromURI uri
 	return $ addLfsJsonHeaders $ r
 		-- Since this uses the LFS batch API, it adds /objects/batch
 		-- to the endpoint url.
@@ -279,7 +305,8 @@ startTransferRequest (EndpointRequest url) tr = do
 		, requestBody = RequestBodyLBS (encode tr)
 		}
 startTransferRequest (EndpointDiscovered sr) tr = do
-	req <- startTransferRequest (EndpointRequest (endpoint_href sr)) tr
+	uri <- URI.parseURI (T.unpack (endpoint_href sr))
+	req <- startTransferRequest (EndpointURI uri) tr
 	let headers = map convheader $ maybe [] M.toList $ endpoint_header sr
 	return $ req { requestHeaders = requestHeaders req ++ headers }
   where
