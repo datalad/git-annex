@@ -1,15 +1,38 @@
+{- git-lfs API
+ - 
+ - https://github.com/git-lfs/git-lfs/blob/master/docs/api
+ -
+ - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ -
+ - Licensed under the GNU AGPL version 3 or higher.
+ -}
+
+-- | This implementation of the git-lfs API uses http Request and Response,
+-- but leaves actually connecting up the http client to the user.
+--
+-- You'll want to use a Manager that supports https, since the protocol
+-- uses http basic auth.
+--
+-- Some LFS servers, notably Github's, may require a User-Agent header
+-- in some of the requests, in order to allow eg, uploads. No such header
+-- is added by dedault, so be sure to add your own.
+
 {-# LANGUAGE DeriveGeneric, FlexibleInstances, FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 
 import Data.Aeson
 import Data.Aeson.Types
 import GHC.Generics
+import Network.HTTP.Client
+import System.Process
+import Control.Exception
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.ByteString.Lazy as L
 import qualified Data.CaseInsensitive as CI
-import Network.HTTP.Client
+import Data.String
 
 data TransferRequest = TransferRequest
 	{ req_operation :: TransferRequestOperation
@@ -191,6 +214,24 @@ instance FromJSON Verification where
 verifyBodyOptions :: Options
 verifyBodyOptions = stripFieldPrefix defaultOptions
 
+-- | Sent over ssh connection when using that to find the endpoint.
+data SshDiscoveryResponse = SshDiscoveryResponse
+	{ endpoint_href :: Url
+	, endpoint_header :: Maybe (M.Map HTTPHeader HTTPHeaderValue)
+	, endpoint_expires_in :: Maybe NumSeconds
+	, endpoint_expires_at :: Maybe T.Text
+	} deriving (Generic, Show)
+
+instance ToJSON SshDiscoveryResponse where
+	toJSON = genericToJSON sshDiscoveryResponseOptions
+	toEncoding = genericToEncoding sshDiscoveryResponseOptions
+
+instance FromJSON SshDiscoveryResponse where
+	parseJSON = genericParseJSON sshDiscoveryResponseOptions
+
+sshDiscoveryResponseOptions :: Options
+sshDiscoveryResponseOptions = stripFieldPrefix nonNullOptions
+
 data GitRef = GitRef
 	{ name :: T.Text }
 	deriving (Generic, Show)
@@ -212,6 +253,38 @@ startTransferRequest r tr = addLfsJsonHeaders $ r
 	, method = "POST"
 	, requestBody = RequestBodyLBS (encode tr)
 	}
+
+-- | Makes a Request using an endpoint discovered via ssh.
+startTransferRequestSsh :: SshDiscoveryResponse -> TransferRequest -> Maybe Request
+startTransferRequestSsh sr tr = do
+	basereq <- parseRequest $ T.unpack $ endpoint_href sr
+	let req = startTransferRequest basereq tr 
+	let headers = map convheader $ maybe [] M.toList $ endpoint_header sr
+	return $ req { requestHeaders = requestHeaders req ++ headers }
+  where
+	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
+
+-- | Discovers an LFS endpoint for a git remote using ssh.
+--
+-- May generate console output, including error messages from ssh or the
+-- remote server, and ssh password prompting.
+sshDiscovery :: HostUser -> FilePath -> TransferRequestOperation -> IO (Maybe SshDiscoveryResponse)
+sshDiscovery hostuser remotepath tro =
+	(try (readProcess "ssh" ps "") :: IO (Either IOError String)) >>= \case
+		Left _err -> return Nothing
+		Right resp -> return $ decode $ fromString resp
+  where
+	ps =
+		[ hostuser
+		, "git-lfs-authenticate"
+		, remotepath
+		, case tro of
+			RequestDownload -> "download"
+			RequestUpload -> "upload"
+		]
+
+-- | "user@host" or just the hostname.
+type HostUser = String
 
 addLfsJsonHeaders :: Request -> Request
 addLfsJsonHeaders r = r
