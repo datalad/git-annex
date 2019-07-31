@@ -241,38 +241,21 @@ instance ToJSON GitRef
 
 type SHA256 = T.Text
 
--- | Adds necessary headers to a Request and makes it post the 
--- specified TransferRequest.
---
--- The input Request's url should be the discovered LFS endpoint.
--- Since this uses the LFS batch API, it adds /objects/batch to the end of
--- that url.
-startTransferRequest :: Request -> TransferRequest -> Request
-startTransferRequest r tr = addLfsJsonHeaders $ r
-	{ path = path r <> "/objects/batch"
-	, method = "POST"
-	, requestBody = RequestBodyLBS (encode tr)
-	}
-
--- | Makes a Request using an endpoint discovered via ssh.
-startTransferRequestSsh :: SshDiscoveryResponse -> TransferRequest -> Maybe Request
-startTransferRequestSsh sr tr = do
-	basereq <- parseRequest $ T.unpack $ endpoint_href sr
-	let req = startTransferRequest basereq tr 
-	let headers = map convheader $ maybe [] M.toList $ endpoint_header sr
-	return $ req { requestHeaders = requestHeaders req ++ headers }
-  where
-	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
+-- | The endpoint of a git-lfs server.
+data Endpoint
+	= EndpointRequest Url
+	| EndpointDiscovered SshDiscoveryResponse
 
 -- | Discovers an LFS endpoint for a git remote using ssh.
 --
 -- May generate console output, including error messages from ssh or the
 -- remote server, and ssh password prompting.
-sshDiscovery :: HostUser -> FilePath -> TransferRequestOperation -> IO (Maybe SshDiscoveryResponse)
-sshDiscovery hostuser remotepath tro =
+sshDiscoverEndpoint :: HostUser -> FilePath -> TransferRequestOperation -> IO (Maybe Endpoint)
+sshDiscoverEndpoint hostuser remotepath tro =
 	(try (readProcess "ssh" ps "") :: IO (Either IOError String)) >>= \case
 		Left _err -> return Nothing
-		Right resp -> return $ decode $ fromString resp
+		Right resp -> return $
+			EndpointDiscovered <$> decode (fromString resp)
   where
 	ps =
 		[ hostuser
@@ -282,6 +265,25 @@ sshDiscovery hostuser remotepath tro =
 			RequestDownload -> "download"
 			RequestUpload -> "upload"
 		]
+
+-- | Makes a Request that will start the process of making a transfer to or
+-- from the LFS endpoint.
+startTransferRequest :: Endpoint -> TransferRequest -> Maybe Request
+startTransferRequest (EndpointRequest url) tr = do
+	r <- parseRequest $ T.unpack url
+	return $ addLfsJsonHeaders $ r
+		-- Since this uses the LFS batch API, it adds /objects/batch
+		-- to the endpoint url.
+		{ path = path r <> "/objects/batch"
+		, method = "POST"
+		, requestBody = RequestBodyLBS (encode tr)
+		}
+startTransferRequest (EndpointDiscovered sr) tr = do
+	req <- startTransferRequest (EndpointRequest (endpoint_href sr)) tr
+	let headers = map convheader $ maybe [] M.toList $ endpoint_header sr
+	return $ req { requestHeaders = requestHeaders req ++ headers }
+  where
+	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
 
 -- | "user@host" or just the hostname.
 type HostUser = String
