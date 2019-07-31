@@ -1,10 +1,49 @@
-{-# LANGUAGE DeriveGeneric, FlexibleInstances, OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 import Data.Aeson
 import Data.Aeson.Types
 import GHC.Generics
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.ByteString.Lazy as L
+import Network.HTTP.Client
+
+-- | Adds necessary headers to a Request and makes it post the 
+-- specified TransferRequest.
+--
+-- The input Request's url should be the discovered LFS endpoint.
+-- Since this uses the LFS batch API, it adds /objects/batch to the end of
+-- that url.
+transferRequest :: Request -> TransferRequest -> Request
+transferRequest r tr = r
+	{ path = path r <> "/objects/batch"
+	, requestHeaders =
+		[ ("Accept", lfsjson)
+		, ("Content-Type", lfsjson)
+		]
+	, method = "POST"
+	, requestBody = RequestBodyLBS (encode tr)
+	}
+  where
+	lfsjson = "application/vnd.git-lfs+json"
+
+type ParsedTransferResponse op =
+	Either (Either String TransferResponseError) (TransferResponse op)
+
+-- | Parse the body of a response to a transfer request.
+parseResponseBody
+	:: IsTransferResponseOperation op
+	=> L.ByteString
+	-> ParsedTransferResponse op
+parseResponseBody resp = case eitherDecode resp of
+	-- If unable to decode as a TransferResponse, try to decode
+	-- as a TransferResponseError instead, in case the LFS server
+	-- sent an error message.
+	Left err -> case eitherDecode resp of
+		Right responseerror -> Left (Right responseerror)
+		Left _ -> Left $ Left err
+	Right resp -> Right resp
 
 data TransferRequest = TransferRequest
 	{ req_operation :: TransferRequestOperation
@@ -48,15 +87,16 @@ instance FromJSON TransferRequestOperation where
 	parseJSON invalid = typeMismatch "TransferRequestOperation" invalid
 
 data TransferResponse op = TransferResponse
-	{ transfer :: TransferAdapter
+	{ transfer :: Maybe TransferAdapter
 	, objects :: [TransferResponseOperation op]
 	}
 	deriving (Generic, Show)
 
-instance ToJSON (TransferResponse DownloadOperation)
-instance FromJSON (TransferResponse DownloadOperation)
-instance ToJSON (TransferResponse UploadOperation)
-instance FromJSON (TransferResponse UploadOperation)
+instance IsTransferResponseOperation op => ToJSON (TransferResponse op) where
+	toJSON = genericToJSON nonNullOptions
+	toEncoding = genericToEncoding nonNullOptions
+
+instance IsTransferResponseOperation op => FromJSON (TransferResponse op)
 
 data TransferResponseError = TransferResponseError
 	{ message :: T.Text
@@ -84,7 +124,7 @@ instance FromJSON TransferAdapter where
 data TransferResponseOperation op = TransferResponseOperation
 	{ resp_oid :: SHA256
 	, resp_size :: Integer
-	, resp_authenticated :: Bool
+	, resp_authenticated :: Maybe Bool
 	, resp_actions :: op
 	}
 	deriving (Generic, Show)
@@ -97,14 +137,19 @@ instance FromJSON op => FromJSON (TransferResponseOperation op) where
 	parseJSON = genericParseJSON transferResponseOperationOptions
 
 transferResponseOperationOptions :: Options
-transferResponseOperationOptions = defaultOptions
+transferResponseOperationOptions = nonNullOptions
 	-- remove "resp_"
 	{ fieldLabelModifier = drop 5 }
+
+-- | Class of types that can be responses to a transfer request,
+-- that contain an operation to use to make the transfer.
+class (FromJSON op, ToJSON op) => IsTransferResponseOperation op
 
 data DownloadOperation = DownloadOperation
 	{ download :: OperationParams }
 	deriving (Generic, Show)
 
+instance IsTransferResponseOperation DownloadOperation
 instance ToJSON DownloadOperation
 instance FromJSON DownloadOperation
 
@@ -112,12 +157,13 @@ data UploadOperation = UploadOperation
 	{ upload :: OperationParams }
 	deriving (Generic, Show)
 
+instance IsTransferResponseOperation UploadOperation
 instance FromJSON UploadOperation
 instance ToJSON UploadOperation
 
 data OperationParams = OperationParams
 	{ href :: Url
-	, header :: M.Map HTTPHeader HTTPHeaderValue
+	, header :: Maybe (M.Map HTTPHeader HTTPHeaderValue)
 	, expires_in :: Maybe NumSeconds
 	, expires_at :: Maybe T.Text
 	}
