@@ -27,18 +27,23 @@ instance FromJSON TransferRequest where
 	parseJSON = genericParseJSON transferRequestOptions
 
 transferRequestOptions :: Options
-transferRequestOptions = nonNullOptions
-	-- remove "req_"
-	{ fieldLabelModifier = drop 4 }
+transferRequestOptions = stripFieldPrefix nonNullOptions
 
 data TransferRequestObject = TransferRequestObject
-	{ oid :: SHA256
-	, size :: Integer
+	{ req_oid :: SHA256
+	, req_size :: Integer
 	}
 	deriving (Generic, Show)
 
-instance ToJSON TransferRequestObject
-instance FromJSON TransferRequestObject
+instance ToJSON TransferRequestObject where
+	toJSON = genericToJSON transferRequestObjectOptions
+	toEncoding = genericToEncoding transferRequestObjectOptions
+
+instance FromJSON TransferRequestObject where
+	parseJSON = genericParseJSON transferRequestObjectOptions
+
+transferRequestObjectOptions :: Options
+transferRequestObjectOptions = stripFieldPrefix defaultOptions
 
 data TransferRequestOperation = RequestDownload | RequestUpload
 	deriving (Show)
@@ -64,18 +69,42 @@ instance IsTransferResponseOperation op => ToJSON (TransferResponse op) where
 
 instance IsTransferResponseOperation op => FromJSON (TransferResponse op)
 
+-- | This is an error with a TransferRequest as a whole. It's also possible
+-- for a TransferRequest to overall succeed, but fail for some
+-- objects; such failures use TransferResponseObjectError.
 data TransferResponseError = TransferResponseError
-	{ message :: T.Text
-	, request_id :: Maybe T.Text
-	, documentation_url :: Maybe Url
+	{ resperr_message :: T.Text
+	, resperr_request_id :: Maybe T.Text
+	, resperr_documentation_url :: Maybe Url
 	}
 	deriving (Generic, Show)
 
 instance ToJSON TransferResponseError where
-	toJSON = genericToJSON nonNullOptions
-	toEncoding = genericToEncoding nonNullOptions
+	toJSON = genericToJSON transferResponseErrorOptions
+	toEncoding = genericToEncoding transferResponseErrorOptions
 
-instance FromJSON TransferResponseError
+instance FromJSON TransferResponseError where
+	parseJSON = genericParseJSON transferResponseErrorOptions
+
+transferResponseErrorOptions :: Options
+transferResponseErrorOptions = stripFieldPrefix nonNullOptions
+
+-- | An error with a single object within a TransferRequest.
+data TransferResponseObjectError = TransferResponseObjectError
+	{ respobjerr_code :: Int
+	, respobjerr_message :: T.Text
+	}
+	deriving (Generic, Show)
+
+instance ToJSON TransferResponseObjectError where
+	toJSON = genericToJSON transferResponseObjectErrorOptions
+	toEncoding = genericToEncoding transferResponseObjectErrorOptions
+
+instance FromJSON TransferResponseObjectError where
+	parseJSON = genericParseJSON transferResponseObjectErrorOptions
+
+transferResponseObjectErrorOptions :: Options
+transferResponseObjectErrorOptions = stripFieldPrefix nonNullOptions
 
 data TransferAdapter = Basic
 	deriving (Show)
@@ -91,7 +120,8 @@ data TransferResponseOperation op = TransferResponseOperation
 	{ resp_oid :: SHA256
 	, resp_size :: Integer
 	, resp_authenticated :: Maybe Bool
-	, resp_actions :: op
+	, resp_actions :: Maybe op
+	, resp_error :: Maybe TransferResponseObjectError
 	}
 	deriving (Generic, Show)
 
@@ -103,9 +133,7 @@ instance FromJSON op => FromJSON (TransferResponseOperation op) where
 	parseJSON = genericParseJSON transferResponseOperationOptions
 
 transferResponseOperationOptions :: Options
-transferResponseOperationOptions = nonNullOptions
-	-- remove "resp_"
-	{ fieldLabelModifier = drop 5 }
+transferResponseOperationOptions = stripFieldPrefix nonNullOptions
 
 -- | Class of types that can be responses to a transfer request,
 -- that contain an operation to use to make the transfer.
@@ -120,12 +148,18 @@ instance ToJSON DownloadOperation
 instance FromJSON DownloadOperation
 
 data UploadOperation = UploadOperation
-	{ upload :: OperationParams }
+	{ upload :: OperationParams
+	, verify :: Maybe OperationParams
+	}
 	deriving (Generic, Show)
 
 instance IsTransferResponseOperation UploadOperation
+
+instance ToJSON UploadOperation where
+	toJSON = genericToJSON nonNullOptions
+	toEncoding = genericToEncoding nonNullOptions
+
 instance FromJSON UploadOperation
-instance ToJSON UploadOperation
 
 data OperationParams = OperationParams
 	{ href :: Url
@@ -156,15 +190,19 @@ type SHA256 = T.Text
 -- The input Request's url should be the discovered LFS endpoint.
 -- Since this uses the LFS batch API, it adds /objects/batch to the end of
 -- that url.
-transferRequest :: Request -> TransferRequest -> Request
-transferRequest r tr = r
+startTransferRequest :: Request -> TransferRequest -> Request
+startTransferRequest r tr = addLfsJsonHeaders $ r
 	{ path = path r <> "/objects/batch"
-	, requestHeaders =
+	, method = "POST"
+	, requestBody = RequestBodyLBS (encode tr)
+	}
+
+addLfsJsonHeaders :: Request -> Request
+addLfsJsonHeaders r = r
+	{ requestHeaders = 
 		[ ("Accept", lfsjson)
 		, ("Content-Type", lfsjson)
 		]
-	, method = "POST"
-	, requestBody = RequestBodyLBS (encode tr)
 	}
   where
 	lfsjson = "application/vnd.git-lfs+json"
@@ -186,28 +224,59 @@ parseResponseBody resp = case eitherDecode resp of
 		Left _ -> Left $ Left err
 	Right tr -> Right tr
 
--- | Builds http requests that can be used to download the objects that
--- were requested using a TransferRequest.
-downloadRequests :: TransferResponse DownloadOperation -> ([(TransferResponseOperation DownloadOperation, Maybe Request)])
-downloadRequests = transferRequests download
+-- | Builds a http request to perform a download.
+downloadOperationRequest :: DownloadOperation -> Maybe Request
+downloadOperationRequest = operationParamsRequest . download
 
--- | Builds http requests that can be used to upload objects.
+-- | Builds http request to perform an upload. The content to upload is
+-- provided in the RequestBody, along with its SHA256 and size.
 --
--- When the server already has an object, no request will be generated.
---
--- The requestBody is not set here. When making a request,
--- the content of the object needs to be provided as the body.
-uploadRequests :: TransferResponse UploadOperation -> ([(TransferResponseOperation UploadOperation, Maybe Request)])
-uploadRequests = transferRequests upload
-
-transferRequests :: (op -> OperationParams) -> TransferResponse op -> ([(TransferResponseOperation op, Maybe Request)])
-transferRequests getps = map mkreq . objects
+-- If the LFS server requested verification, there will be a second
+-- Request that does that; it should be run only after the upload has
+-- succeeded.
+uploadOperation :: UploadOperation -> RequestBody -> SHA256 -> Integer -> Maybe [Request]
+uploadOperation op content oid size = 
+	case (mkdlreq, mkverifyreq) of
+		(Nothing, _) -> Nothing
+		(Just dlreq, Nothing) -> Just [dlreq]
+		(Just dlreq, Just verifyreq) -> Just [dlreq, verifyreq]
   where
-	mkreq op = (op, mkreq' (getps (resp_actions op)))
-	mkreq' ps = do
-		r <- parseRequest (T.unpack (href ps))
-		let headers = map convheader $ maybe [] M.toList (header ps)
-		return $ r { requestHeaders = headers }
+	mkdlreq = mkdlreq'
+		<$> operationParamsRequest (upload op)
+	mkdlreq' r = r
+		{ method = "PUT"
+		, requestBody = content
+		}
+	mkverifyreq = mkverifyreq'
+		<$> (operationParamsRequest =<< verify op)
+	mkverifyreq' r = addLfsJsonHeaders $ r
+		{ method = "POST"
+		, requestBody = RequestBodyLBS $ encode $
+			VerifyBody oid size
+		}
+
+data VerifyBody = VerifyBody
+	{ verifybody_oid :: SHA256
+	, verifybody_size :: Integer
+	}
+	deriving (Generic, Show)
+
+instance ToJSON VerifyBody where
+	toJSON = genericToJSON verifyBodyOptions
+	toEncoding = genericToEncoding verifyBodyOptions
+
+instance FromJSON VerifyBody where
+	parseJSON = genericParseJSON verifyBodyOptions
+
+verifyBodyOptions :: Options
+verifyBodyOptions = stripFieldPrefix defaultOptions
+
+operationParamsRequest :: OperationParams -> Maybe Request
+operationParamsRequest ps = do
+	r <- parseRequest (T.unpack (href ps))
+	let headers = map convheader $ maybe [] M.toList (header ps)
+	return $ r { requestHeaders = headers }
+  where
 	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
 
 type Url = T.Text
@@ -221,3 +290,8 @@ type HTTPHeaderValue = T.Text
 -- Prevent Nothing from serializing to null.
 nonNullOptions :: Options
 nonNullOptions = defaultOptions { omitNothingFields = True }
+
+-- Remove prefix from field names.
+stripFieldPrefix :: Options -> Options
+stripFieldPrefix o =
+	o { fieldLabelModifier = drop 1 . dropWhile (/= '_') }
