@@ -6,7 +6,11 @@ import Data.Aeson.Types
 import GHC.Generics
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
 import qualified Data.ByteString.Lazy as L
+import qualified Data.CaseInsensitive as CI
+import Data.Maybe
+import Network.HTTP.Types
 import Network.HTTP.Client
 
 -- | Adds necessary headers to a Request and makes it post the 
@@ -44,6 +48,18 @@ parseResponseBody resp = case eitherDecode resp of
 		Right responseerror -> Left (Right responseerror)
 		Left _ -> Left $ Left err
 	Right resp -> Right resp
+
+-- | Builds http requests that can be used to download the objects that
+-- were requested using a TransferRequest.
+downloadRequests :: TransferResponse DownloadOperation -> ([(TransferResponseOperation DownloadOperation, Maybe Request)])
+downloadRequests = map mkreq . objects 
+  where
+	mkreq op = (op, mkreq' (download (resp_actions op)))
+	mkreq' ps = do
+		r <- parseRequest (T.unpack (href ps))
+		let headers = map convheader $ maybe [] M.toList (header ps)
+		return $ r { requestHeaders = headers }
+	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
 
 data TransferRequest = TransferRequest
 	{ req_operation :: TransferRequestOperation
@@ -195,5 +211,3 @@ type HTTPHeaderValue = T.Text
 -- Prevent Nothing from serializing to null.
 nonNullOptions :: Options
 nonNullOptions = defaultOptions { omitNothingFields = True }
-
-
