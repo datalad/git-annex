@@ -1,0 +1,687 @@
+### Please describe the problem.
+Running the test suite on windows gives test failures.
+
+### What steps will reproduce the problem?
+Install Git for Windows (64-bit), install git-annex into the Git installation dir, open Git bash, run git-annex-test .
+
+### What version of git-annex are you using? On what operating system?
+7.20190730-ga63bf35dc on Windows 10
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+MINGW64_NT-10.0-17763 WPAE9-305 3.0.7-338.x86_64 2019-04-30 21:52 UTC x86_64 Msys
+git-annex version: 7.20190730-ga63bf35dc
+build flags: Assistant Webapp Pairing S3 WebDAV TorrentParser Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: mingw32 x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 2 3 4 5 6
+Tests
+  QuickCheck
+    prop_encode_decode_roundtrip:                         OK (0.11s)
+      +++ OK, passed 1000 tests.
+    prop_encode_c_decode_c_roundtrip:                     OK (0.09s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_key_encode:                           OK (0.04s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_shellEscape:                          OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_shellEscape_multiword:                OK (0.85s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_configEscape:                         OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_parse_show_Config:                               OK (0.05s)
+      +++ OK, passed 1000 tests.
+    prop_upFrom_basics:                                   OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_relPathDirToFile_basics:                         OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_relPathDirToFile_regressionTest:                 OK
+      +++ OK, passed 1 test.
+    prop_cost_sane:                                       OK
+      +++ OK, passed 1 test.
+    prop_matcher_sane:                                    OK
+      +++ OK, passed 1 test.
+    prop_HmacSha1WithCipher_sane:                         OK
+      +++ OK, passed 1 test.
+    prop_VectorClock_sane:                                OK
+      +++ OK, passed 1 test.
+    prop_addMapLog_sane:                                  OK
+      +++ OK, passed 1 test.
+    prop_verifiable_sane:                                 OK (0.08s)
+      +++ OK, passed 1000 tests.
+    prop_segment_regressionTest:                          OK
+      +++ OK, passed 1 test.
+    prop_read_write_transferinfo:                         OK (0.04s)
+      +++ OK, passed 1000 tests.
+    prop_read_show_inodecache:                            OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_parse_build_presence_log:                        OK (1.43s)
+      +++ OK, passed 1000 tests.
+    prop_parse_build_contentidentifier_log:               OK (1.43s)
+      +++ OK, passed 1000 tests.
+    prop_read_show_TrustLevel:                            OK
+      +++ OK, passed 1 test.
+    prop_parse_build_TrustLevelLog:                       OK
+      +++ OK, passed 1 test.
+    prop_hashes_stable:                                   OK
+      +++ OK, passed 1 test.
+    prop_mac_stable:                                      OK
+      +++ OK, passed 1 test.
+    prop_schedule_roundtrips:                             OK
+      +++ OK, passed 1000 tests.
+    prop_past_sane:                                       OK
+      +++ OK, passed 1 test.
+    prop_duration_roundtrips:                             OK
+      +++ OK, passed 1000 tests.
+    prop_metadata_sane:                                   OK (0.87s)
+      +++ OK, passed 1000 tests.
+    prop_metadata_serialize:                              OK (1.09s)
+      +++ OK, passed 1000 tests.
+    prop_branchView_legal:                                OK (0.72s)
+      +++ OK, passed 1000 tests.
+    prop_viewPath_roundtrips:                             OK (0.04s)
+      +++ OK, passed 1000 tests.
+    prop_view_roundtrips:                                 OK (0.48s)
+      +++ OK, passed 1000 tests.
+    prop_viewedFile_rountrips:                            OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_b64_roundtrips:                                  OK
+      +++ OK, passed 1000 tests.
+    prop_standardGroups_parse:                            OK
+      +++ OK, passed 1 test.
+  Unit Tests v7 unlocked
+    add dup:                                              Init Tests
+  init: init test repo 
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+ok
+(recording state in git...)
+OK (2.25s)
+  add:  git-annex.exe: NUL: openFile: does not exist (No such file or directory)
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+FAIL (0.52s)
+    .\Test\Framework.hs:347:
+    foo failed to look up key
+
+1 out of 2 tests failed (2.78s)
+FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    add extras:                                           FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    export_import:                                        FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    export_import_subdir:                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    shared clone:                                         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    log:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    import:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    reinject:                                             FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    unannex (no copy):                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    unannex (with copy):                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    drop (no remote):                                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    drop (with remote):                                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    drop (untrusted remote):                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    get:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    get (ssh remote):                                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    move:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    move (ssh remote):                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    copy:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    lock:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    lock (v7 --force):                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    edit (no pre-commit):                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+Init Tests
+    edit (pre-commit):                                      init: FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    partial commit:                                       FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fix:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    direct:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    trust:                                                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (basics):                                        FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (bare):                                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (local untrusted):                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (remote untrusted):                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck --from remote:                                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    migrate:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    migrate (via gitattributes):                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    unused:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    describe:                                             FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    find:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    merge:                                                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    info:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    version:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    sync:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    union merge regression:                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    adjusted branch merge regression:                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    adjusted branch subtree regression:                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution:                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (adjusted branch):                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution movein regression:                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (mixed directory and file):       FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution symlink bit:                      FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (uncommitted local file):         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (removed file):                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (nonannexed file):                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (nonannexed symlink):             FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (mixed locked and unlocked file): FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    map:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    uninit:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    uninit (in git-annex branch):                         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    upgrade:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    whereis:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    hook remote:                                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    directory remote:                                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    rsync remote:                                         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    bup remote:                                           FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    crypto:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    preferred content:                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    add subdirs:                                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    addurl:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+  Unit Tests v5 direct
+    add dup:                                              init test repo 
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+ok
+(recording state in git...)
+Direct mode is not supported by this repository version. Use git-annex unlock instead.
+FAIL (2.28s)
+    .\Test\Framework.hs:474:
+    git annex direct failed
+  add:  git-annex.exe: NUL: openFile: does not exist (No such file or directory)
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+FAIL (0.78s)
+    .\Test\Framework.hs:283:
+    foo is not a (crippled) symlink
+
+2 out of 2 tests failed (3.06s)
+FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    add extras:                                           FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    export_import:                                        FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    export_import_subdir:                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    shared clone:                                         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    log:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    import:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    reinject:                                             FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    unannex (no copy):                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    unannex (with copy):                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    drop (no remote):                                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    drop (with remote):                                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    drop (untrusted remote):                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    get:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    get (ssh remote):                                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    move:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    move (ssh remote):                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    copy:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    lock:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    lock (v7 --force):                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    edit (no pre-commit):                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    edit (pre-commit):                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    partial commit:                                       FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fix:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    direct:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    trust:                                                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (basics):                                        FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (bare):                                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (local untrusted):                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck (remote untrusted):                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    fsck --from remote:                                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    migrate:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    migrate (via gitattributes):                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    unused:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    describe:                                             FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    find:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    merge:                                                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    info:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    version:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    sync:                                                 FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    union merge regression:                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    adjusted branch merge regression:                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    adjusted branch subtree regression:                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution:                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (adjusted branch):                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution movein regression:                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (mixed directory and file):       FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution symlink bit:                      FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (uncommitted local file):         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (removed file):                   FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (nonannexed file):                FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (nonannexed symlink):             FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    conflict resolution (mixed locked and unlocked file): FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    map:                                                  FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    uninit:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    uninit (in git-annex branch):                         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    upgrade:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    whereis:                                              FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    hook remote:                                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    directory remote:                                     FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    rsync remote:                                         FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    bup remote:                                           FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    crypto:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    preferred content:                                    FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    add subdirs:                                          FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+    addurl:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\Test\Framework.hs:431:33 in main:Test.Framework
+
+132 out of 168 tests failed (13.35s)
+  (Failures above could be due to a bug in git-annex, or an incompatibility
+   with utilities, such as git, installed on this system.)
+.t\repo\.git\objects\f9\b6e5e36be4911f475c5a96dbc0c2c5d4b256af: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:DeleteFile "\\\\?\\C:\\Users\\ilya\\.t\\repo\\.git\\objects\\f9\\b6e5e36be4911f475c5a96dbc0c2c5d4b256af": permission denied (Access is denied.)
+sleeping 10 seconds and will retry directory cleanup
+git-annex: .t\repo\.git\objects\f9\b6e5e36be4911f475c5a96dbc0c2c5d4b256af: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:DeleteFile "\\\\?\\C:\\Users\\ilya\\.t\\repo\\.git\\objects\\f9\\b6e5e36be4911f475c5a96dbc0c2c5d4b256af": permission denied (Access is denied.)
+
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
