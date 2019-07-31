@@ -1,4 +1,7 @@
 Information about all known security holes in git-annex, and their fixes.
 Subscribe to the RSS feed to be kept up to date.
 
+If you have discovered a security hole and wish to report it privately, see
+[[contact]].
+
 [[!inline pages="./security/* and !./security/*/* and !*/Discussion" rootpage="security" show="0"]]
