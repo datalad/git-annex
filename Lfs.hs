@@ -9,57 +9,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.ByteString.Lazy as L
 import qualified Data.CaseInsensitive as CI
-import Data.Maybe
-import Network.HTTP.Types
 import Network.HTTP.Client
-
--- | Adds necessary headers to a Request and makes it post the 
--- specified TransferRequest.
---
--- The input Request's url should be the discovered LFS endpoint.
--- Since this uses the LFS batch API, it adds /objects/batch to the end of
--- that url.
-transferRequest :: Request -> TransferRequest -> Request
-transferRequest r tr = r
-	{ path = path r <> "/objects/batch"
-	, requestHeaders =
-		[ ("Accept", lfsjson)
-		, ("Content-Type", lfsjson)
-		]
-	, method = "POST"
-	, requestBody = RequestBodyLBS (encode tr)
-	}
-  where
-	lfsjson = "application/vnd.git-lfs+json"
-
-type ParsedTransferResponse op =
-	Either (Either String TransferResponseError) (TransferResponse op)
-
--- | Parse the body of a response to a transfer request.
-parseResponseBody
-	:: IsTransferResponseOperation op
-	=> L.ByteString
-	-> ParsedTransferResponse op
-parseResponseBody resp = case eitherDecode resp of
-	-- If unable to decode as a TransferResponse, try to decode
-	-- as a TransferResponseError instead, in case the LFS server
-	-- sent an error message.
-	Left err -> case eitherDecode resp of
-		Right responseerror -> Left (Right responseerror)
-		Left _ -> Left $ Left err
-	Right resp -> Right resp
-
--- | Builds http requests that can be used to download the objects that
--- were requested using a TransferRequest.
-downloadRequests :: TransferResponse DownloadOperation -> ([(TransferResponseOperation DownloadOperation, Maybe Request)])
-downloadRequests = map mkreq . objects 
-  where
-	mkreq op = (op, mkreq' (download (resp_actions op)))
-	mkreq' ps = do
-		r <- parseRequest (T.unpack (href ps))
-		let headers = map convheader $ maybe [] M.toList (header ps)
-		return $ r { requestHeaders = headers }
-	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
 
 data TransferRequest = TransferRequest
 	{ req_operation :: TransferRequestOperation
@@ -199,6 +149,66 @@ instance FromJSON GitRef
 instance ToJSON GitRef
 
 type SHA256 = T.Text
+
+-- | Adds necessary headers to a Request and makes it post the 
+-- specified TransferRequest.
+--
+-- The input Request's url should be the discovered LFS endpoint.
+-- Since this uses the LFS batch API, it adds /objects/batch to the end of
+-- that url.
+transferRequest :: Request -> TransferRequest -> Request
+transferRequest r tr = r
+	{ path = path r <> "/objects/batch"
+	, requestHeaders =
+		[ ("Accept", lfsjson)
+		, ("Content-Type", lfsjson)
+		]
+	, method = "POST"
+	, requestBody = RequestBodyLBS (encode tr)
+	}
+  where
+	lfsjson = "application/vnd.git-lfs+json"
+
+type ParsedTransferResponse op =
+	Either (Either String TransferResponseError) (TransferResponse op)
+
+-- | Parse the body of a response to a transfer request.
+parseResponseBody
+	:: IsTransferResponseOperation op
+	=> L.ByteString
+	-> ParsedTransferResponse op
+parseResponseBody resp = case eitherDecode resp of
+	-- If unable to decode as a TransferResponse, try to decode
+	-- as a TransferResponseError instead, in case the LFS server
+	-- sent an error message.
+	Left err -> case eitherDecode resp of
+		Right responseerror -> Left (Right responseerror)
+		Left _ -> Left $ Left err
+	Right tr -> Right tr
+
+-- | Builds http requests that can be used to download the objects that
+-- were requested using a TransferRequest.
+downloadRequests :: TransferResponse DownloadOperation -> ([(TransferResponseOperation DownloadOperation, Maybe Request)])
+downloadRequests = transferRequests download
+
+-- | Builds http requests that can be used to upload objects.
+--
+-- When the server already has an object, no request will be generated.
+--
+-- The requestBody is not set here. When making a request,
+-- the content of the object needs to be provided as the body.
+uploadRequests :: TransferResponse UploadOperation -> ([(TransferResponseOperation UploadOperation, Maybe Request)])
+uploadRequests = transferRequests upload
+
+transferRequests :: (op -> OperationParams) -> TransferResponse op -> ([(TransferResponseOperation op, Maybe Request)])
+transferRequests getps = map mkreq . objects
+  where
+	mkreq op = (op, mkreq' (getps (resp_actions op)))
+	mkreq' ps = do
+		r <- parseRequest (T.unpack (href ps))
+		let headers = map convheader $ maybe [] M.toList (header ps)
+		return $ r { requestHeaders = headers }
+	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
 
 type Url = T.Text
 
