@@ -1,3 +1,11 @@
+git-annex (7.20190731) UNRELEASED; urgency=medium
+
+  * Use the same optimisation for --in=here as has always been
+    used for --in=. rather than the slow code path that unncessarily
+    queries the git-annex branch.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
+
 git-annex (7.20190730) upstream; urgency=medium
 
   * Improved probing when CoW copies can be made between files on the same

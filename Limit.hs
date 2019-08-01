@@ -110,15 +110,15 @@ matchMagic limitname _ _ Nothing _ =
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
 addIn :: String -> Annex ()
-addIn s = addLimit =<< mk
+addIn s = do
+	u <- Remote.nameToUUID name
+	hereu <- getUUID
+	addLimit $ if u == hereu && null date
+		then use inhere
+		else use (inuuid u)
   where
 	(name, date) = separate (== '@') s
-	mk
-		| name == "." = if null date
-			then use inhere
-			else use . inuuid =<< getUUID
-		| otherwise = use . inuuid =<< Remote.nameToUUID name
-	use a = return $ Right $ \notpresent -> checkKey (a notpresent)
+	use a = Right $ checkKey . a
 	inuuid u notpresent key
 		| null date = do
 			us <- Remote.keyLocations key
