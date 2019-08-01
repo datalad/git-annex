@@ -25,6 +25,10 @@ Copyright: 2018 Joey Hess <id@joeyh.name>
            2013 Michael Snoyman
 License: Expat
 
+Files: Utility/GitLFS.hs
+Copyright: © 2019 Joey Hess <id@joeyh.name>
+License: AGPL-3+
+
 Files: Utility/*
 Copyright: 2012-2019 Joey Hess <id@joeyh.name>
 License: BSD-2-clause

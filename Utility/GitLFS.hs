@@ -2,10 +2,48 @@
  - 
  - https://github.com/git-lfs/git-lfs/blob/master/docs/api
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE DeriveGeneric, FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
+
+module Utility.GitLFS (
+	-- * transfer requests
+	TransferRequest(..),
+	TransferAdapter(..),
+	TransferRequestObject(..),
+	startTransferRequest,
+	-- * responses to transfer requests
+	TransferResponse(..),
+	TransferResponseOperation(..),
+	IsTransferResponseOperation,
+	DownloadOperation,
+	UploadOperation,
+	ParsedTransferResponse,
+	parseTransferResponse,
+	-- * making transfers
+	downloadOperationRequest,
+	uploadOperationRequests,
+	-- * endpoint discovery
+	Endpoint,
+	guessEndpoint,
+	HostUser,
+	sshDiscoverEndpoint,
+	-- * errors
+	TransferResponseError(..),
+	TransferResponseObjectError(..),
+	-- * additional data types
+	Url,
+	SHA256,
+	GitRef(..),
+	NumSeconds,
+	HTTPHeader,
+	HTTPHeaderValue,
+) where
 
 -- | This implementation of the git-lfs API uses http Request and Response,
 -- but leaves actually connecting up the http client to the user.
@@ -16,10 +54,6 @@
 -- Some LFS servers, notably Github's, may require a User-Agent header
 -- in some of the requests, in order to allow eg, uploads. No such header
 -- is added by dedault, so be sure to add your own.
-
-{-# LANGUAGE DeriveGeneric, FlexibleInstances, FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
 
 import Data.Aeson
 import Data.Aeson.Types
@@ -207,14 +241,14 @@ data Verification = Verification
 	deriving (Generic, Show)
 
 instance ToJSON Verification where
-	toJSON = genericToJSON verifyBodyOptions
-	toEncoding = genericToEncoding verifyBodyOptions
+	toJSON = genericToJSON verificationOptions
+	toEncoding = genericToEncoding verificationOptions
 
 instance FromJSON Verification where
-	parseJSON = genericParseJSON verifyBodyOptions
+	parseJSON = genericParseJSON verificationOptions
 
-verifyBodyOptions :: Options
-verifyBodyOptions = stripFieldPrefix defaultOptions
+verificationOptions :: Options
+verificationOptions = stripFieldPrefix defaultOptions
 
 -- | Sent over ssh connection when using that to find the endpoint.
 data SshDiscoveryResponse = SshDiscoveryResponse
@@ -329,11 +363,11 @@ type ParsedTransferResponse op =
 	Either (Either String TransferResponseError) (TransferResponse op)
 
 -- | Parse the body of a response to a transfer request.
-parseResponseBody
+parseTransferResponse
 	:: IsTransferResponseOperation op
 	=> L.ByteString
 	-> ParsedTransferResponse op
-parseResponseBody resp = case eitherDecode resp of
+parseTransferResponse resp = case eitherDecode resp of
 	-- If unable to decode as a TransferResponse, try to decode
 	-- as a TransferResponseError instead, in case the LFS server
 	-- sent an error message.
@@ -352,8 +386,8 @@ downloadOperationRequest = operationParamsRequest . download
 -- If the LFS server requested verification, there will be a second
 -- Request that does that; it should be run only after the upload has
 -- succeeded.
-uploadOperation :: UploadOperation -> RequestBody -> SHA256 -> Integer -> Maybe [Request]
-uploadOperation op content oid size = 
+uploadOperationRequests :: UploadOperation -> RequestBody -> SHA256 -> Integer -> Maybe [Request]
+uploadOperationRequests op content oid size = 
 	case (mkdlreq, mkverifyreq) of
 		(Nothing, _) -> Nothing
 		(Just dlreq, Nothing) -> Just [dlreq]
