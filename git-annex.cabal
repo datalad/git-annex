@@ -931,6 +931,7 @@ Executable git-annex
     Remote.External.Types
     Remote.GCrypt
     Remote.Git
+    Remote.GitLFS
     Remote.Glacier
     Remote.Helper.AWS
     Remote.Helper.Chunked
@@ -1039,6 +1040,7 @@ Executable git-annex
     Utility.FileSystemEncoding
     Utility.Format
     Utility.FreeDesktop
+    Utility.GitLFS
     Utility.Glob
     Utility.Gpg
     Utility.Hash

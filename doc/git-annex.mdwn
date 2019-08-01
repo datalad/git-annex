@@ -1619,6 +1619,13 @@ Here are all the supported configuration settings.
   If the gcrypt remote is accessible over ssh and has git-annex-shell
   available to manage it, it's set to "shell".
 
+* `remote.<name>.annex-git-lfs`
+
+  Used to identify git-lfs special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+  It is set to "true" if this is a git-lfs remote.
+
 * `remote.<name>.annex-hooktype`, `remote.<name>.annex-externaltype`
 
   Used by hook special remotes and external special remotes to record
