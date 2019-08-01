@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2019-08-01T16:34:22Z"
+ content="""
+I made a restic repo with 2000 single-file snapshots.
+Adding the first snapshot took 0.55s. Adding the 2000th
+snapshot took 1.10s.
+
+So that's a very big scalability problem with using restic with single-file
+snapshots.
+
+2000 files in a directory is not going to cause that kind of slowdown;
+my guess is restic needs to load all past snapshots, or something like
+that.
+"""]]
