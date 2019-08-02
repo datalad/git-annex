@@ -14,6 +14,7 @@
 module Utility.GitLFS (
 	-- * transfer requests
 	TransferRequest(..),
+	TransferRequestOperation(..),
 	TransferAdapter(..),
 	TransferRequestObject(..),
 	startTransferRequest,
@@ -303,24 +304,24 @@ parseSshDiscoverEndpointResponse resp = EndpointDiscovered <$> decode resp
 -- | Guesses the LFS endpoint from the http url of a git remote.
 --
 -- https://github.com/git-lfs/git-lfs/blob/master/docs/api/server-discovery.md
-guessEndpoint :: Url -> Maybe Endpoint
-guessEndpoint remoteurl = do
-	uri <- URI.parseURI (T.unpack remoteurl)
-	let guessedpath
+guessEndpoint :: URI.URI -> Maybe Endpoint
+guessEndpoint uri = case URI.uriScheme uri of
+	"https:" -> Just endpoint
+	"http:" -> Just endpoint
+	_ -> Nothing
+  where
+	endpoint = EndpointURI $ uri
+		{ URI.uriScheme = "https"
+		, URI.uriPath = guessedpath
+		}
+	
+	guessedpath
 		| ".git" `isSuffixOf` URI.uriPath uri =
 			URI.uriPath uri ++ "/info/lfs"
 		| ".git/" `isSuffixOf` URI.uriPath uri =
 			URI.uriPath uri ++ "info/lfs"
 		| otherwise = (droptrailing '/' (URI.uriPath uri)) ++ ".git/info/lfs"
-	let endpoint = EndpointURI $ uri
-		{ URI.uriScheme = "https"
-		, URI.uriPath = guessedpath
-		}
-	case URI.uriScheme uri of
-		"https:" -> Just endpoint
-		"http:" -> Just endpoint
-		_ -> Nothing
-  where
+	
 	droptrailing c = reverse . dropWhile (== c) . reverse
 
 -- | Makes a Request that will start the process of making a transfer to or
