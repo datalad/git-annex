@@ -287,6 +287,10 @@ data Endpoint
 --
 -- May generate console output, including error messages from ssh or the
 -- remote server, and ssh password prompting.
+--
+-- Note that this does not sanitize the hostname. It is the responsibility
+-- of the caller to avoid calling this with a value that ssh will
+-- interpert as an option, such as "-oProxyCommand="
 sshDiscoverEndpoint :: HostUser -> FilePath -> TransferRequestOperation -> IO (Maybe Endpoint)
 sshDiscoverEndpoint hostuser remotepath tro =
 	(try (readProcess "ssh" ps "") :: IO (Either IOError String)) >>= \case
