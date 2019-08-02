@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="leej"
+ avatar="http://cdn.libravatar.org/avatar/eb1c6bd57680f694fb4658388e6de4ed"
+ subject="Thank you, CFBundleShortVersionString is present and matches the internal git-annex version"
+ date="2019-08-02T15:57:10Z"
+ content="""
+I can confirm that this works just fine with Munki tools version 3.6.2.3776.
+Thank you again, Joey
+"""]]
