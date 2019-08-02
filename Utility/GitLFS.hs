@@ -32,7 +32,8 @@ module Utility.GitLFS (
 	Endpoint,
 	guessEndpoint,
 	HostUser,
-	sshDiscoverEndpoint,
+	sshDiscoverEndpointCommand,
+	parseSshDiscoverEndpointResponse,
 	-- * errors
 	TransferResponseError(..),
 	TransferResponseObjectError(..),
@@ -59,9 +60,6 @@ import Data.Aeson
 import Data.Aeson.Types
 import GHC.Generics
 import Network.HTTP.Client
-import System.Process
-import Control.Exception
-import Data.String
 import Data.List
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -283,29 +281,24 @@ data Endpoint
 	| EndpointDiscovered SshDiscoveryResponse
 	deriving (Show)
 
--- | Discovers an LFS endpoint for a git remote using ssh.
+-- | Command to run via ssh with to discover an endpoint. The FilePath is
+-- the location of the git repository on the ssh server.
 --
--- May generate console output, including error messages from ssh or the
--- remote server, and ssh password prompting.
---
--- Note that this does not sanitize the hostname. It is the responsibility
--- of the caller to avoid calling this with a value that ssh will
--- interpert as an option, such as "-oProxyCommand="
-sshDiscoverEndpoint :: HostUser -> FilePath -> TransferRequestOperation -> IO (Maybe Endpoint)
-sshDiscoverEndpoint hostuser remotepath tro =
-	(try (readProcess "ssh" ps "") :: IO (Either IOError String)) >>= \case
-		Left _err -> return Nothing
-		Right resp -> return $
-			EndpointDiscovered <$> decode (fromString resp)
-  where
-	ps =
-		[ hostuser
-		, "git-lfs-authenticate"
-		, remotepath
-		, case tro of
-			RequestDownload -> "download"
-			RequestUpload -> "upload"
-		]
+-- Note that, when sshing to the server, you should take care that the
+-- hostname you pass to ssh is really a hostname and not something that ssh
+-- will parse an an option, such as -oProxyCommand=".
+sshDiscoverEndpointCommand :: FilePath -> TransferRequestOperation -> [String]
+sshDiscoverEndpointCommand remotepath tro =
+	[ "git-lfs-authenticate"
+	, remotepath
+	, case tro of
+		RequestDownload -> "download"
+		RequestUpload -> "upload"
+	]
+
+-- | Parse the json output when doing ssh endpoint discovery.
+parseSshDiscoverEndpointResponse :: L.ByteString -> Maybe Endpoint
+parseSshDiscoverEndpointResponse resp = EndpointDiscovered <$> decode resp
 
 -- | Guesses the LFS endpoint from the http url of a git remote.
 --
