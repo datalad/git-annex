@@ -381,9 +381,12 @@ downloadOperationRequest = operationParamsRequest . download
 -- | Builds http request to perform an upload. The content to upload is
 -- provided in the RequestBody, along with its SHA256 and size.
 --
--- If the LFS server requested verification, there will be a second
+-- When the LFS server requested verification, there will be a second
 -- Request that does that; it should be run only after the upload has
 -- succeeded.
+--
+-- When the LFS server already contains the object, an empty list will be
+-- returned.
 uploadOperationRequests :: UploadOperation -> RequestBody -> SHA256 -> Integer -> Maybe [Request]
 uploadOperationRequests op content oid size = 
 	case (mkdlreq, mkverifyreq) of

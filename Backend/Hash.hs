@@ -10,6 +10,7 @@
 module Backend.Hash (
 	backends,
 	testKeyBackend,
+	keyHash,
 ) where
 
 import Annex.Common

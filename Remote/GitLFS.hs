@@ -10,6 +10,7 @@ module Remote.GitLFS (remote, gen) where
 import Annex.Common
 import Types.Remote
 import Annex.Url
+import Types.Key
 import Types.Creds
 import qualified Git
 import qualified Git.Types as Git
@@ -19,16 +20,26 @@ import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.Git
+import Remote.Helper.Http
 import qualified Remote.Helper.Ssh as Ssh
 import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
 import qualified Utility.GitLFS as LFS
+import Backend.Hash
+import Utility.Hash
+import Utility.FileSize
+import Crypto
 
 import Control.Concurrent.STM
 import Data.String
+import Network.HTTP.Client
+import System.Log.Logger
 import qualified Data.Map as M
 import qualified Network.URI as URI
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
 
 remote :: RemoteType
 remote = RemoteType
@@ -194,12 +205,97 @@ getLFSEndpoint tro hv = do
 		LFS.RequestDownload -> downloadEndpoint
 		LFS.RequestUpload -> uploadEndpoint
 
+sendTransferRequest
+	:: LFS.IsTransferResponseOperation op
+	=> LFS.TransferRequest
+	-> LFS.Endpoint
+	-> Annex (Either String (LFS.TransferResponse op))
+sendTransferRequest req endpoint = do
+	uo <- getUrlOptions
+	case applyRequest uo <$> LFS.startTransferRequest endpoint req of
+		Just httpreq -> do
+			liftIO $ debugM "git-lfs" (show httpreq)
+			httpresp <- liftIO $ httpLbs
+				(setRequestCheckStatus httpreq)
+				(httpManager uo)
+			return $ case LFS.parseTransferResponse (responseBody httpresp) of
+				Left (Right tro) -> Left $
+					T.unpack $ LFS.resperr_message tro
+				Left (Left err) -> Left err
+				Right resp -> Right resp
+		Nothing -> return (Left "unable to parse git-lfs endpoint url")
+
+extractKeySha256 :: Key -> Maybe LFS.SHA256
+extractKeySha256 k = case keyVariety k of
+	SHA2Key (HashSize 256) (HasExt hasext)
+		| hasext -> eitherToMaybe $ E.decodeUtf8' (keyHash k)
+		| otherwise -> eitherToMaybe $ E.decodeUtf8' (keyName k)
+	_ -> Nothing
+
+-- The size of an encrypted key is the size of the input data, but we need
+-- the actual object size.
+extractKeySize :: Key -> Maybe Integer
+extractKeySize k
+	| isEncKey k = Nothing
+	| otherwise = keySize k
+
 store :: TVar LFSHandle -> Storer
 store h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
 	Nothing -> return False
-	Just endpoint -> do
-		liftIO $ print ("endpoint", endpoint)
-		return False
+	Just endpoint -> flip catchNonAsync (const $ return False) $ do
+		sha256 <- case extractKeySha256 k of
+			Just sha -> pure sha
+			Nothing -> do
+				sha <- liftIO $
+					show . sha2_256 <$> L.readFile src
+				-- TODO: rmemeber the sha256 for this key,
+				-- to use when retrieving it.
+				return (T.pack sha)
+		size <- case extractKeySize k of
+			Just size -> pure size
+			Nothing -> do
+				-- TODO: remember the size of this key,
+				-- to use when retrieving it.
+				liftIO $ getFileSize src
+		let obj = LFS.TransferRequestObject
+			{ LFS.req_oid = sha256
+			, LFS.req_size = size
+			}
+		let req = LFS.TransferRequest
+			{ LFS.req_operation = LFS.RequestUpload
+			, LFS.req_transfers = [LFS.Basic]
+			, LFS.req_ref = Nothing 
+			, LFS.req_objects = [obj]
+			}
+		sendTransferRequest req endpoint >>= \case
+			Left err -> do
+				warning err
+				return False
+			Right resp -> do
+				body <- liftIO $ httpBodyStorer src p
+				forM_ (LFS.objects resp) $
+					send body sha256 size
+				return True
+  where
+	send body sha256 size tro
+		| LFS.resp_oid tro /= sha256 =
+			giveup "git-lfs server requested other sha256 than the one we asked to send"
+		| LFS.resp_size tro /= size =
+			giveup "git-lfs server requested other object size than we asked to send"
+		| otherwise = case LFS.resp_error tro of
+			Just err -> giveup $
+				T.unpack $ LFS.respobjerr_message err
+			Nothing -> case LFS.resp_actions tro of
+				Nothing -> noop
+				Just op -> case LFS.uploadOperationRequests op body sha256 size of
+					Nothing -> giveup "unable to parse git-lfs server upload url"
+					Just [] -> noop -- server already has it
+					Just reqs -> do
+						uo <- getUrlOptions
+						let reqs' = map (setRequestCheckStatus . applyRequest uo) reqs
+						liftIO $ forM_ reqs $ \r -> do
+							debugM "git-lfs" (show r)
+							httpLbs r (httpManager uo)
 
 retrieve :: TVar LFSHandle -> Retriever
 retrieve h = byteRetriever $ \k sink -> getLFSEndpoint LFS.RequestDownload h >>= \case
