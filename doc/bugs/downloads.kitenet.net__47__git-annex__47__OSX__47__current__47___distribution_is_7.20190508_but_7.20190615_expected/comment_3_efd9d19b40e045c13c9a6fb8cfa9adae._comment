@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="leej"
+ avatar="http://cdn.libravatar.org/avatar/eb1c6bd57680f694fb4658388e6de4ed"
+ subject="Currently, 7.20190730 is expected but 7.20190709-gee3885d15 present on OSX/current"
+ date="2019-08-02T15:49:11Z"
+ content="""
+The distribution directories are all showing 2019-07-30, but the build and distribution at downloads.kitenet.net/git-annex/OSX/current/<OSX version>/
+distributionVersion = \"7.20190709\", distributionReleasedate = 2019-07-30 20:37:03.710335378 UTC
+
+
+Let me know if you'd like a new ticket opened instead of re-opening this issue.
+
+"""]]
