@@ -349,7 +349,7 @@ type HostUser = String
 
 addLfsJsonHeaders :: Request -> Request
 addLfsJsonHeaders r = r
-	{ requestHeaders = 
+	{ requestHeaders = requestHeaders r ++
 		[ ("Accept", lfsjson)
 		, ("Content-Type", lfsjson)
 		]
