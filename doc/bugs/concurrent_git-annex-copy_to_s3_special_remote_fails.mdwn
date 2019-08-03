@@ -1,0 +1,61 @@
+### Please describe the problem.
+
+I'm trying to copy a directory full of photos (~9GB) to an S3 special remote. It seems to fail when running multiple jobs. The machine I am using has two cores (4 logical due to hyperthreading) and I initially used -J8 and that failed quickly. I haven't retried that yet to see if it always fails quickly but I immediately retried with -J4 and that seemed to run okay for a little over an hour and a half before failing again. This is the second large directory I've tried to copy to this remote and had a similar problem the last time (many retries seemed to allow me to get through).
+
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex was installed via homebrew on macos 10.14.5
+
+[[!format sh """
+
+15:23 $ git annex version
+git-annex version: 7.20190322
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV FsEvents TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.19 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.2.2 http-client-0.5.14 persistent-sqlite-2.6.4 torrent-10000.1.1 uuid-1.3.13 yesod-1.4.5
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLA
+KE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: darwin x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+
+"""]]
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+22:56 $ git annex copy -J8 photos/ --to s3
+copy photos/2001/01/IMAG0003.JPG (checking s3...) (to s3...) ok
+copy photos/2001/01/IMAG0006.JPG (checking s3...) (to s3...)
+88%   319.84 KiB       68 KiB/s 0s
+copy photos/2001/01/IMAG0001-1.JPG (checking s3...) (to s3...)
+63%   255.88 KiB       25 KiB/s 6s
+copy photos/2001/01/IMAG0002.JPG (checking s3...) (to s3...)
+63%   223.89 KiB       17 KiB/s 7s
+copy photos/2001/01/IMAG0004.JPG (checking s3...) (to s3...)
+copy photos/2001/01/IMAG0005.JPG (checking s3...) (to s3...)
+80%   287.86 KiB      159 KiB/s 0s
+copy photos/2001/01/IMAG0001.JPG (checking s3...) (to s3...)
+74%   255.88 KiB       49 KiB/s 1s
+copy photos/2001/01/IMAG0002-1.JPG (checking s3...) (to s3...)
+  ParseError {errorContexts = [], errorMessage = "Failed reading: takeWhile1", errorPosition = 4:2 (285)}
+copy photos/2001/01/IMAG0007.JPG (checking s3...) (to s3...)
+10%   31.98 KiB       102 KiB/s 2s
+git-annex(21112,0x70000dd5b000) malloc: Incorrect checksum for freed object 0x7fe0b3e02bf8: probably modified after being freed.
+Corrupt value: 0x6574636f2f6e6f69
+git-annex(21112,0x70000dd5b000) malloc: *** set a breakpoint in malloc_error_break to debug
+error: git-annex died of signal 6
+
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+I'm a new git-annex user and besides these occasional issues with concurrent with git-annex-copy I found it really easy to get going with git-annex and to manage my imported files. In particular I really appreciate the extensive documentation!
