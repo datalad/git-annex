@@ -205,19 +205,26 @@ getLFSEndpoint tro hv = do
 		LFS.RequestDownload -> downloadEndpoint
 		LFS.RequestUpload -> uploadEndpoint
 
+-- makeAPIRequest :: Request -> Annex (Response t)
+makeAPIRequest req = do
+	uo <- getUrlOptions
+	let req' = applyRequest uo req
+	liftIO $ debugM "git-lfs" (show req')
+	resp <- liftIO $ httpLbs req' (httpManager uo)
+	-- Only debug the http status code, not the json
+	-- which may include an authentication token.
+	liftIO $ debugM "git-lfs" (show $ responseStatus resp)
+	return resp
+
 sendTransferRequest
 	:: LFS.IsTransferResponseOperation op
 	=> LFS.TransferRequest
 	-> LFS.Endpoint
 	-> Annex (Either String (LFS.TransferResponse op))
-sendTransferRequest req endpoint = do
-	uo <- getUrlOptions
-	case applyRequest uo <$> LFS.startTransferRequest endpoint req of
+sendTransferRequest req endpoint = 
+	case LFS.startTransferRequest endpoint req of
 		Just httpreq -> do
-			liftIO $ debugM "git-lfs" (show httpreq)
-			httpresp <- liftIO $ httpLbs
-				(setRequestCheckStatus httpreq)
-				(httpManager uo)
+			httpresp <- makeAPIRequest $ setRequestCheckStatus httpreq
 			return $ case LFS.parseTransferResponse (responseBody httpresp) of
 				Left (Right tro) -> Left $
 					T.unpack $ LFS.resperr_message tro
@@ -290,12 +297,8 @@ store h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
 				Just op -> case LFS.uploadOperationRequests op body sha256 size of
 					Nothing -> giveup "unable to parse git-lfs server upload url"
 					Just [] -> noop -- server already has it
-					Just reqs -> do
-						uo <- getUrlOptions
-						let reqs' = map (setRequestCheckStatus . applyRequest uo) reqs
-						liftIO $ forM_ reqs $ \r -> do
-							debugM "git-lfs" (show r)
-							httpLbs r (httpManager uo)
+					Just reqs -> forM_ reqs $
+						makeAPIRequest . setRequestCheckStatus
 
 retrieve :: TVar LFSHandle -> Retriever
 retrieve h = byteRetriever $ \k sink -> getLFSEndpoint LFS.RequestDownload h >>= \case
