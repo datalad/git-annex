@@ -34,6 +34,7 @@ import Crypto
 import Control.Concurrent.STM
 import Data.String
 import Network.HTTP.Client
+import Network.HTTP.Types
 import System.Log.Logger
 import qualified Data.Map as M
 import qualified Network.URI as URI
@@ -205,7 +206,7 @@ getLFSEndpoint tro hv = do
 		LFS.RequestDownload -> downloadEndpoint
 		LFS.RequestUpload -> uploadEndpoint
 
--- makeAPIRequest :: Request -> Annex (Response t)
+makeAPIRequest :: Request -> Annex (Response L.ByteString)
 makeAPIRequest req = do
 	uo <- getUrlOptions
 	let req' = applyRequest uo req
@@ -226,11 +227,11 @@ sendTransferRequest req endpoint =
 		Just httpreq -> do
 			httpresp <- makeAPIRequest $ setRequestCheckStatus httpreq
 			return $ case LFS.parseTransferResponse (responseBody httpresp) of
-				Left (Right tro) -> Left $
+				LFS.ParsedTransferResponse resp -> Right resp
+				LFS.ParsedTransferResponseError tro -> Left $
 					T.unpack $ LFS.resperr_message tro
-				Left (Left err) -> Left err
-				Right resp -> Right resp
-		Nothing -> return (Left "unable to parse git-lfs endpoint url")
+				LFS.ParseFailed err -> Left err
+		Nothing -> return $ Left "unable to parse git-lfs endpoint url"
 
 extractKeySha256 :: Key -> Maybe LFS.SHA256
 extractKeySha256 k = case keyVariety k of
@@ -246,10 +247,28 @@ extractKeySize k
 	| isEncKey k = Nothing
 	| otherwise = keySize k
 
+mkDownloadRequest :: Key -> Annex (Maybe LFS.TransferRequest)
+mkDownloadRequest k = case (extractKeySha256 k, extractKeySize k) of
+	(Just sha256, Just sz) -> go sha256 sz
+	-- TODO get from git-annex branch
+	_ -> return Nothing
+  where
+	go sha256 sz = do
+		let obj = LFS.TransferRequestObject
+			{ LFS.req_oid = sha256
+			, LFS.req_size = sz
+			}
+		return $ Just $ LFS.TransferRequest
+			{ LFS.req_operation = LFS.RequestDownload
+			, LFS.req_transfers = [LFS.Basic]
+			, LFS.req_ref = Nothing 
+			, LFS.req_objects = [obj]
+			}
+
 store :: TVar LFSHandle -> Storer
 store h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
 	Nothing -> return False
-	Just endpoint -> flip catchNonAsync (const $ return False) $ do
+	Just endpoint -> flip catchNonAsync failederr $ do
 		sha256 <- case extractKeySha256 k of
 			Just sha -> pure sha
 			Nothing -> do
@@ -299,6 +318,9 @@ store h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
 					Just [] -> noop -- server already has it
 					Just reqs -> forM_ reqs $
 						makeAPIRequest . setRequestCheckStatus
+	failederr e = do
+		warning (show e)
+		return False
 
 retrieve :: TVar LFSHandle -> Retriever
 retrieve h = byteRetriever $ \k sink -> getLFSEndpoint LFS.RequestDownload h >>= \case
@@ -310,9 +332,34 @@ retrieve h = byteRetriever $ \k sink -> getLFSEndpoint LFS.RequestDownload h >>=
 checkKey :: TVar LFSHandle -> CheckPresent
 checkKey h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 	Nothing -> giveup "unable to connect to git-lfs endpoint"
-	Just endpoint -> do
-		liftIO $ print ("endpoint", endpoint)
-		return False
+	Just endpoint -> mkDownloadRequest key >>= \case
+		-- Unable to find enough information to request the key
+		-- from git-lfs, so it's not present there.
+		Nothing -> return False
+		Just req -> case LFS.startTransferRequest endpoint req of
+			Nothing -> giveup "unable to parse git-lfs endpoint url"
+			Just httpreq -> go =<< makeAPIRequest httpreq
+  where
+	go httpresp
+		| responseStatus httpresp == status200 =
+			go' $ LFS.parseTransferResponse (responseBody httpresp)
+		| otherwise =
+			giveup $ "git-lfs server refused request: " ++ show (responseStatus httpresp)
+	
+	go' :: LFS.ParsedTransferResponse LFS.DownloadOperation -> Annex Bool
+	go' (LFS.ParseFailed err) =
+		giveup $ "unable to parse response from git-lfs server: " ++ err
+	-- If the server responds with a json error message,
+	-- the content is presumably not present.
+	go' (LFS.ParsedTransferResponseError _) = return False
+	-- If the server responds with at least one download operation,
+	-- we will assume the content is present. We could also try to HEAD
+	-- that download, but there's no guarantee HEAD is supported, and
+	-- at most that would detect breakage where the server is confused
+	-- about what objects it has.
+	go' (LFS.ParsedTransferResponse resp) = 
+		return $ not $ null $
+			mapMaybe LFS.resp_actions $ LFS.objects resp
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False

@@ -24,7 +24,7 @@ module Utility.GitLFS (
 	IsTransferResponseOperation,
 	DownloadOperation,
 	UploadOperation,
-	ParsedTransferResponse,
+	ParsedTransferResponse(..),
 	parseTransferResponse,
 	-- * making transfers
 	downloadOperationRequest,
@@ -311,7 +311,9 @@ guessEndpoint uri = case URI.uriScheme uri of
 	_ -> Nothing
   where
 	endpoint = EndpointURI $ uri
-		{ URI.uriScheme = "https"
+		-- force https because the git-lfs protocol uses http
+		-- basic auth tokens, which should not be exposed
+		{ URI.uriScheme = "https:"
 		, URI.uriPath = guessedpath
 		}
 	
@@ -357,8 +359,10 @@ addLfsJsonHeaders r = r
   where
 	lfsjson = "application/vnd.git-lfs+json"
 
-type ParsedTransferResponse op =
-	Either (Either String TransferResponseError) (TransferResponse op)
+data ParsedTransferResponse op
+	= ParsedTransferResponse (TransferResponse op)
+	| ParsedTransferResponseError TransferResponseError
+	| ParseFailed String
 
 -- | Parse the body of a response to a transfer request.
 parseTransferResponse
@@ -366,13 +370,13 @@ parseTransferResponse
 	=> L.ByteString
 	-> ParsedTransferResponse op
 parseTransferResponse resp = case eitherDecode resp of
+	Right tr -> ParsedTransferResponse tr
 	-- If unable to decode as a TransferResponse, try to decode
 	-- as a TransferResponseError instead, in case the LFS server
 	-- sent an error message.
-	Left err -> case eitherDecode resp of
-		Right responseerror -> Left (Right responseerror)
-		Left _ -> Left $ Left err
-	Right tr -> Right tr
+	Left err ->
+		either (const $ ParseFailed err) ParsedTransferResponseError $
+			eitherDecode resp
 
 -- | Builds a http request to perform a download.
 downloadOperationRequest :: DownloadOperation -> Maybe Request
