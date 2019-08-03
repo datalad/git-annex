@@ -1,0 +1,90 @@
+### Please describe the problem.
+
+original report: https://github.com/datalad/datalad/issues/3583
+
+### What steps will reproduce the problem?
+
+initial get -J8 largely fails (ok for 1 file in one thread I guess) but subsequent succeeds:
+
+[[!format sh """
+hopa:/tmp
+$> git clone https://github.com/OpenNeuroDatasets/ds000248 && cd ds000248 && git annex init && git annex get -J 8 sub-01 
+Cloning into 'ds000248'...                                                                                     
+remote: Enumerating objects: 161, done.
+remote: Total 161 (delta 0), reused 0 (delta 0), pack-reused 161
+Receiving objects: 100% (161/161), 18.55 KiB | 863.00 KiB/s, done.
+Resolving deltas: 100% (20/20), done.
+CHANGES  acq-epi_T1w.json  acq-flipangle05_run-01_MEFLASH.json  acq-flipangle30_run-01_MEFLASH.json  dataset_description.json  derivatives/  sub-01/  sub-emptyroom/
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+(Auto enabling special remote s3-PUBLIC...)
+ok
+(recording state in git...)
+get sub-01/meg/sub-01_task-audiovisual_run-01_meg.fif (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+
+  unknown export location
+
+  Unable to access these remotes: s3-PUBLIC
+
+  Try making some of these repositories available:
+  	82a4b182-753f-4d93-a59e-20cfdd4d4237 -- [s3-PUBLIC]
+   	e3612a8a-0c48-4374-9bfb-888f4010be54 -- root@1f69c4ed80cf:/datalad/ds000248
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get sub-01/anat/sub-01_acq-flipangle30_run-01_MEFLASH.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+
+  unknown export location
+
+  Unable to access these remotes: s3-PUBLIC
+
+  Try making some of these repositories available:
+  	82a4b182-753f-4d93-a59e-20cfdd4d4237 -- [s3-PUBLIC]
+   	e3612a8a-0c48-4374-9bfb-888f4010be54 -- root@1f69c4ed80cf:/datalad/ds000248
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get sub-01/anat/sub-01_T1w.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+
+  unknown export location
+
+  Unable to access these remotes: s3-PUBLIC
+
+  Try making some of these repositories available:
+  	82a4b182-753f-4d93-a59e-20cfdd4d4237 -- [s3-PUBLIC]
+   	e3612a8a-0c48-4374-9bfb-888f4010be54 -- root@1f69c4ed80cf:/datalad/ds000248
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get sub-01/anat/sub-01_acq-flipangle05_run-01_MEFLASH.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+(recording state in git...)
+git-annex: get: 3 failed
+
+$> git annex get -J 8 sub-01
+get sub-01/anat/sub-01_T1w.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get sub-01/anat/sub-01_acq-flipangle30_run-01_MEFLASH.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get sub-01/meg/sub-01_task-audiovisual_run-01_meg.fif (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+(recording state in git...)
+
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+7.20190708+git36-g32d526164-1~ndall+1
+
+
+[[!meta author=yoh]]
