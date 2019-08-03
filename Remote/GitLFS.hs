@@ -246,7 +246,7 @@ extractKeySize k
 	| isEncKey k = Nothing
 	| otherwise = keySize k
 
-mkDownloadRequest :: Key -> Annex (Maybe LFS.TransferRequest)
+mkDownloadRequest :: Key -> Annex (Maybe (LFS.TransferRequest, LFS.SHA256, Integer))
 mkDownloadRequest k = case (extractKeySha256 k, extractKeySize k) of
 	(Just sha256, Just sz) -> go sha256 sz
 	-- TODO get from git-annex branch
@@ -257,12 +257,13 @@ mkDownloadRequest k = case (extractKeySha256 k, extractKeySize k) of
 			{ LFS.req_oid = sha256
 			, LFS.req_size = sz
 			}
-		return $ Just $ LFS.TransferRequest
+		let req = LFS.TransferRequest
 			{ LFS.req_operation = LFS.RequestDownload
 			, LFS.req_transfers = [LFS.Basic]
 			, LFS.req_ref = Nothing 
 			, LFS.req_objects = [obj]
 			}
+		return $ Just (req, sha256, sz)
 
 store :: TVar LFSHandle -> Storer
 store h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
@@ -303,10 +304,8 @@ store h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
 				return True
   where
 	send body sha256 size tro
-		| LFS.resp_oid tro /= sha256 =
-			giveup "git-lfs server requested other sha256 than the one we asked to send"
-		| LFS.resp_size tro /= size =
-			giveup "git-lfs server requested other object size than we asked to send"
+		| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size =
+			giveup "git-lfs server requested other object than the one we asked to send"
 		| otherwise = case LFS.resp_error tro of
 			Just err -> giveup $
 				T.unpack $ LFS.respobjerr_message err
@@ -326,12 +325,14 @@ retrieve h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h >
 	Nothing -> giveup "unable to connect to git-lfs endpoint"
 	Just endpoint -> mkDownloadRequest k >>= \case
 		Nothing -> giveup "unable to download this object from git-lfs"
-		Just req -> sendTransferRequest req endpoint >>= \case
+		Just (req, sha256, size) -> sendTransferRequest req endpoint >>= \case
 			Left err -> giveup (show err)
 			Right resp -> case LFS.objects resp of
 				[] -> giveup "git-lfs server did not provide a way to download this object"
-				(tro:_) -> receive dest p tro
-				
+				(tro:_)
+					| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size ->
+						giveup "git-lfs server replied with other object than the one we requested"
+					| otherwise -> receive dest p tro
   where
 	receive dest p tro = case LFS.resp_error tro of
 		Just err -> giveup $ T.unpack $ LFS.respobjerr_message err
@@ -351,30 +352,34 @@ checkKey h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 		-- Unable to find enough information to request the key
 		-- from git-lfs, so it's not present there.
 		Nothing -> return False
-		Just req -> case LFS.startTransferRequest endpoint req of
+		Just (req, sha256, size) -> case LFS.startTransferRequest endpoint req of
 			Nothing -> giveup "unable to parse git-lfs endpoint url"
-			Just httpreq -> go =<< makeSmallAPIRequest httpreq
+			Just httpreq -> go sha256 size =<< makeSmallAPIRequest httpreq
   where
-	go httpresp
-		| responseStatus httpresp == status200 =
-			go' $ LFS.parseTransferResponse (responseBody httpresp)
-		| otherwise =
-			giveup $ "git-lfs server refused request: " ++ show (responseStatus httpresp)
+	go sha256 size httpresp
+		| responseStatus httpresp == status200 = go' sha256 size $
+			LFS.parseTransferResponse (responseBody httpresp)
+		| otherwise = giveup $
+			"git-lfs server refused request: " ++ show (responseStatus httpresp)
 	
-	go' :: LFS.ParsedTransferResponse LFS.DownloadOperation -> Annex Bool
-	go' (LFS.ParseFailed err) =
+	go' :: LFS.SHA256 -> Integer -> LFS.ParsedTransferResponse LFS.DownloadOperation -> Annex Bool
+	go' _ _ (LFS.ParseFailed err) =
 		giveup $ "unable to parse response from git-lfs server: " ++ err
 	-- If the server responds with a json error message,
 	-- the content is presumably not present.
-	go' (LFS.ParsedTransferResponseError _) = return False
+	go' _ _ (LFS.ParsedTransferResponseError _) = return False
 	-- If the server responds with at least one download operation,
 	-- we will assume the content is present. We could also try to HEAD
 	-- that download, but there's no guarantee HEAD is supported, and
 	-- at most that would detect breakage where the server is confused
 	-- about what objects it has.
-	go' (LFS.ParsedTransferResponse resp) = 
-		return $ not $ null $
-			mapMaybe LFS.resp_actions $ LFS.objects resp
+	go' sha256 size (LFS.ParsedTransferResponse resp) =
+		case LFS.objects resp of
+			[] -> return False
+			(tro:_)
+				| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size ->
+					giveup "git-lfs server replied with other object than the one we requested"
+				| otherwise -> return True
 
 retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
