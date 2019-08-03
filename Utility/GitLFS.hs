@@ -385,7 +385,7 @@ downloadOperationRequest = operationParamsRequest . download
 -- Request that does that; it should be run only after the upload has
 -- succeeded.
 --
--- When the LFS server already contains the object, an empty list will be
+-- When the LFS server already contains the object, an empty list may be
 -- returned.
 uploadOperationRequests :: UploadOperation -> RequestBody -> SHA256 -> Integer -> Maybe [Request]
 uploadOperationRequests op content oid size = 
