@@ -21,23 +21,20 @@ import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.Git
 import Remote.Helper.Http
-import qualified Remote.Helper.Ssh as Ssh
 import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
 import qualified Utility.GitLFS as LFS
 import Backend.Hash
 import Utility.Hash
-import Utility.FileSize
 import Crypto
 
 import Control.Concurrent.STM
 import Data.String
-import Network.HTTP.Client
+import Network.HTTP.Client hiding (port)
 import Network.HTTP.Types
 import System.Log.Logger
 import qualified Data.Map as M
-import qualified Network.URI as URI
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
@@ -56,13 +53,13 @@ remote = RemoteType
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
-	handle <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing r gc
+	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing r gc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ store handle)
-		(simplyPrepare $ retrieve handle)
-		(simplyPrepare $ remove handle)
-		(simplyPrepare $ checkKey handle)
+		(simplyPrepare $ store h)
+		(simplyPrepare $ retrieve h)
+		(simplyPrepare $ remove h)
+		(simplyPrepare $ checkKey h)
 		(this cst)
   where
 	this cst = Remote
@@ -206,8 +203,10 @@ getLFSEndpoint tro hv = do
 		LFS.RequestDownload -> downloadEndpoint
 		LFS.RequestUpload -> uploadEndpoint
 
-makeAPIRequest :: Request -> Annex (Response L.ByteString)
-makeAPIRequest req = do
+-- Make an API request that is expected to have a small response body.
+-- Not for use in downloading an object.
+makeSmallAPIRequest :: Request -> Annex (Response L.ByteString)
+makeSmallAPIRequest req = do
 	uo <- getUrlOptions
 	let req' = applyRequest uo req
 	liftIO $ debugM "git-lfs" (show req')
@@ -225,7 +224,7 @@ sendTransferRequest
 sendTransferRequest req endpoint = 
 	case LFS.startTransferRequest endpoint req of
 		Just httpreq -> do
-			httpresp <- makeAPIRequest $ setRequestCheckStatus httpreq
+			httpresp <- makeSmallAPIRequest $ setRequestCheckStatus httpreq
 			return $ case LFS.parseTransferResponse (responseBody httpresp) of
 				LFS.ParsedTransferResponse resp -> Right resp
 				LFS.ParsedTransferResponseError tro -> Left $
@@ -317,17 +316,33 @@ store h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
 					Nothing -> giveup "unable to parse git-lfs server upload url"
 					Just [] -> noop -- server already has it
 					Just reqs -> forM_ reqs $
-						makeAPIRequest . setRequestCheckStatus
+						makeSmallAPIRequest . setRequestCheckStatus
 	failederr e = do
 		warning (show e)
 		return False
 
 retrieve :: TVar LFSHandle -> Retriever
-retrieve h = byteRetriever $ \k sink -> getLFSEndpoint LFS.RequestDownload h >>= \case
-	Nothing -> return False
-	Just endpoint -> do
-		liftIO $ print ("endpoint", endpoint)
-		return False
+retrieve h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h >>= \case
+	Nothing -> giveup "unable to connect to git-lfs endpoint"
+	Just endpoint -> mkDownloadRequest k >>= \case
+		Nothing -> giveup "unable to download this object from git-lfs"
+		Just req -> sendTransferRequest req endpoint >>= \case
+			Left err -> giveup (show err)
+			Right resp -> case LFS.objects resp of
+				[] -> giveup "git-lfs server did not provide a way to download this object"
+				(tro:_) -> receive dest p tro
+				
+  where
+	receive dest p tro = case LFS.resp_error tro of
+		Just err -> giveup $ T.unpack $ LFS.respobjerr_message err
+		Nothing -> case LFS.resp_actions tro of
+			Nothing -> giveup "git-lfs server did not provide a way to download this object"
+			Just op -> case LFS.downloadOperationRequest op of
+				Nothing -> giveup "unable to parse git-lfs server download url"
+				Just req ->
+					-- TODO stream to file
+					-- TODO resume and append if the file already exists
+					giveup "TODO"
 
 checkKey :: TVar LFSHandle -> CheckPresent
 checkKey h key = getLFSEndpoint LFS.RequestDownload h >>= \case
@@ -338,7 +353,7 @@ checkKey h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 		Nothing -> return False
 		Just req -> case LFS.startTransferRequest endpoint req of
 			Nothing -> giveup "unable to parse git-lfs endpoint url"
-			Just httpreq -> go =<< makeAPIRequest httpreq
+			Just httpreq -> go =<< makeSmallAPIRequest httpreq
   where
 	go httpresp
 		| responseStatus httpresp == status200 =
@@ -365,6 +380,6 @@ retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
 
 remove :: TVar LFSHandle -> Remover
-remove h key = do
+remove _h _key = do
 	warning "git-lfs does not support removing content"
 	return False
