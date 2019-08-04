@@ -1,6 +1,9 @@
 git-annex can store data in [git-lfs](https://git-lfs.github.com/)
 repositories, using the [[git-lfs special remote|special_remotes/git-lfs]].
 
+You do not need the git-lfs program installed to use it, just a recent
+enough version of git-annex.
+
 Here's how to initialize a git-lfs special remote on Github.
 
 	git annex initremote lfs type=git-lfs encryption=none url=git@github.com:yourname/yourrepo.git
