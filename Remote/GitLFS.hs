@@ -23,16 +23,19 @@ import Remote.Helper.Git
 import Remote.Helper.Http
 import Annex.Ssh
 import Annex.UUID
-import Utility.SshHost
-import qualified Utility.GitLFS as LFS
+import Crypto
 import Backend.Hash
 import Utility.Hash
-import Crypto
+import Utility.Metered
+import Utility.SshHost
+import qualified Utility.GitLFS as LFS
 
 import Control.Concurrent.STM
 import Data.String
-import Network.HTTP.Client hiding (port)
 import Network.HTTP.Types
+import Network.HTTP.Client hiding (port)
+import Network.HTTP.Conduit (http)
+import Control.Monad.Trans.Resource (runResourceT)
 import System.Log.Logger
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
@@ -332,18 +335,17 @@ retrieve h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h >
 				(tro:_)
 					| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size ->
 						giveup "git-lfs server replied with other object than the one we requested"
-					| otherwise -> receive dest p tro
+					| otherwise -> go dest p tro
   where
-	receive dest p tro = case LFS.resp_error tro of
+	go dest p tro = case LFS.resp_error tro of
 		Just err -> giveup $ T.unpack $ LFS.respobjerr_message err
 		Nothing -> case LFS.resp_actions tro of
 			Nothing -> giveup "git-lfs server did not provide a way to download this object"
 			Just op -> case LFS.downloadOperationRequest op of
 				Nothing -> giveup "unable to parse git-lfs server download url"
-				Just req ->
-					-- TODO stream to file
-					-- TODO resume and append if the file already exists
-					giveup "TODO"
+				Just req -> do
+					uo <- getUrlOptions
+					liftIO $ downloadConduit p req dest uo
 
 checkKey :: TVar LFSHandle -> CheckPresent
 checkKey h key = getLFSEndpoint LFS.RequestDownload h >>= \case
