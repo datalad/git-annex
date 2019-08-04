@@ -47,6 +47,9 @@ store its SHA256 checksum in the git-annex branch.
 
 ## limitations
 
+The git-lfs protocol does not support deleting content, so git-annex
+**cannot delete anything** from a git-lfs special remote.
+
 The git-lfs protocol does not support resuming uploads, and so an
 interrupted upload will have to restart from the beginning. Interrupted
 downloads will resume.

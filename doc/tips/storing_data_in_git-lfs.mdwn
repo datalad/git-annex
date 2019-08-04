@@ -22,5 +22,14 @@ url as long as it points to the same git-lfs repository.
 Note that http urls currently only allow read access to the git-lfs
 repository.
 
+Once the remote is set up, you git-annex can store and retrieve content in
+the usual ways:
+
+	git annex copy * --to lfs
+	git annex get --from lfs
+
+But, git-annex **cannot delete anything** from a git-lfs special remote,
+because the protocol does not support deletion.
+
 A git-lfs special remote also functions as a regular git remote. You can
 use things like `git push` and `git pull` with it.

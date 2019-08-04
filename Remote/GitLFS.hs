@@ -107,6 +107,11 @@ mySetup _ mu _ c gc = do
 
 	let repo = fromMaybe (giveup "Specify url=") $
 		M.lookup "url" c
+	-- TODO: don't allow using encryption w/o the user indicating they
+	-- know it will only encrypt git-annex objects, not git pushes
+	-- TODO: don't allow using encryption=shared w/o the user
+	-- indicating that pushing to the git-lfs remote will expose the
+	-- encrypted data.
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The repo is not stored in the remote log, because the same
