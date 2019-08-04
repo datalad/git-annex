@@ -336,9 +336,9 @@ download' noerror meterupdate url file uo =
 			case (urlDownloader uo, parseUrlRequest (show u)) of
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
 					(matchStatusCodeException (== found302))
-					((downloadConduit meterupdate req file uo >> return True)
-						`catchNonAsync` (dlfailed . show))
+					(downloadConduit meterupdate req file uo >> return True)
 					(followredir r)
+						`catchNonAsync` (dlfailed . show)
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 					| isfileurl u -> downloadfile u
 					| isftpurl u -> downloadcurlrestricted r u url ftpport
