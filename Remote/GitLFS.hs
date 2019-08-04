@@ -379,6 +379,8 @@ checkKey h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 		case LFS.objects resp of
 			[] -> return False
 			(tro:_)
+				| isNothing (LFS.resp_actions tro) -> return False
+				| isJust (LFS.resp_error tro) -> return False
 				| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size ->
 					giveup "git-lfs server replied with other object than the one we requested"
 				| otherwise -> return True
