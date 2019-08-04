@@ -26,7 +26,6 @@ import Annex.UUID
 import Crypto
 import Backend.Hash
 import Utility.Hash
-import Utility.Metered
 import Utility.SshHost
 import qualified Utility.GitLFS as LFS
 
@@ -34,8 +33,6 @@ import Control.Concurrent.STM
 import Data.String
 import Network.HTTP.Types
 import Network.HTTP.Client hiding (port)
-import Network.HTTP.Conduit (http)
-import Control.Monad.Trans.Resource (runResourceT)
 import System.Log.Logger
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
