@@ -1,0 +1,23 @@
+git-annex can store data in [git-lfs](https://git-lfs.github.com/)
+repositories, using the [[git-lfs special remote|special_remotes/git-lfs]].
+
+Here's how to initialize a git-lfs special remote on Github.
+
+	git annex initremote lfs type=git-lfs encryption=none url=git@github.com:yourname/yourrepo.git
+
+If you want git-annex to encrypt the objects it stores in the remote,
+change the encryption= parameter. But be sure to read the
+[[git-lfs special remote|special_remotes/git-lfs]] page's
+**encryption notes** first!
+
+To enable the same remote in another clone of the repository,
+you'll need to provide an url to it again. It's ok to provide a different
+url as long as it points to the same git-lfs repository.
+	
+	git annex enableremote lfs url=https://github.com/yourname/yourrepo.git
+
+Note that http urls currently only allow read access to the git-lfs
+repository.
+
+A git-lfs special remote also functions as a regular git remote. You can
+use things like `git push` and `git pull` with it.
