@@ -81,6 +81,8 @@ Thanks for your great work! :) -- [[anarcat]]
 
 > Started some initial work in the `git-lfs` branch. --[[Joey]]
 
+[[done]]! --[[Joey]]
+
 ---
 
 ## related ideas
