@@ -4,6 +4,12 @@ remote allows git-annex to also store its files in such repositories.
 Naturally, git-annex encrypts the files it stores too, so everything
 stored on the remote is encrypted.
 
+This special remote needs the server hosting the remote repository
+to either have git-annex-shell or rsync accessible via ssh. git-annex
+uses those to store its content in the remote. If the remote repository
+is instead hosted on a server using git-lfs, you can use the [[git-lfs]]
+special remote instead of this one; it also supports using gcrypt.
+
 See [[tips/fully_encrypted_git_repositories_with_gcrypt]] for some examples
 of using gcrypt.
 
@@ -35,11 +41,12 @@ shell access, and `rsync` must be installed. Those are the minimum
 requirements, but it's also recommended to install git-annex on the remote
 server, so that [[git-annex-shell]] can be used.
 
-While you can use git-remote-gcrypt with servers like github, git-annex
-can't store files on them. In such a case, you can just use
-git-remote-gcrypt directly.
+If you can't run `rsync` or `git-annex-shell` on the remote server,
+you can't use this special remote. Other options are the [[git-lfs]]
+special remote, which can also be combined with gcrypt, or 
+using git-remote-gcrypt to encrypt a remote that git-annex cannot use.
 
-If you use encryption=hybrid, you can add more gpg keys that can access
+If you use encryption=hybrid, you can later add more gpg keys that can access
 the files git-annex stored in the gcrypt repository. However, due to the
 way git-remote-gcrypt encrypts the git repository, you will need to somehow
 force it to re-push everything again, so that the encrypted repository can

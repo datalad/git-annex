@@ -1,5 +1,10 @@
 git-annex (7.20190731) UNRELEASED; urgency=medium
 
+  * New git-lfs special remote, which can be used to store data on any git-lfs
+    server, including github, gitlab, and gogs.
+  * Support fully encrypting all data sent to a git-lfs special remote,
+    using a combination of gcrypt to encrypt the git data, and git-annex's
+    encryption of its data.
   * Use the same optimisation for --in=here as has always been
     used for --in=. rather than the slow code path that unncessarily
     queries the git-annex branch.

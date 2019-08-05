@@ -12,6 +12,7 @@ module Remote.GCrypt (
 	coreGCryptId,
 	setupRepo,
 	accessShellConfig,
+	setGcryptEncryption,
 ) where
 
 import qualified Data.Map as M

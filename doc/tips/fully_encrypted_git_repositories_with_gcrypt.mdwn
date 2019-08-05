@@ -1,8 +1,7 @@
 [git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
-adds support for encrypted remotes to git. The git-annex 
-[[gcrypt special remote|special_remotes/gcrypt]] allows git-annex to
-also store its files in such repositories. Naturally, git-annex encrypts
-the files it stores too, so everything stored on the remote is encrypted.
+adds support for encrypted remotes to git. Combine this with git-annex
+encrypting the files it stores in a remote, and you can fully encrypt
+all the data stored on a remote.
 
 Here are some ways you can use this awesome stuff..
 
@@ -15,7 +14,12 @@ repositories.
 ## prerequisites
 
 * Install [git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
-* Install git-annex version 4.20130909 or newer.
+
+* Set up a gpg key. You might consider generating a special purpose key
+  just for this use case, since you may end up wanting to put the key
+  on multiple machines that you would not trust with your main gpg key.
+
+  The examples below use "$mykey" where you should put your gpg keyid.
 
 ## encrypted backup drive
 
@@ -24,17 +28,17 @@ both the full contents of your git repository, and all the files you
 instruct git-annex to store on it, and everything will be encrypted so that
 only you can see it.
 
-First, you need to set up a gpg key. You might consider generating a
-special purpose key just for this use case, since you may end up wanting to
-put the key on multiple machines that you would not trust with your
-main gpg key.
-
-You need to tell git-annex the keyid of the key when setting up the
-encrypted repository:
+Here's how to set up the encrypted repository:
 
 	git init --bare /mnt/encryptedbackup
 	git annex initremote encryptedbackup type=gcrypt gitrepo=/mnt/encryptedbackup keyid=$mykey
 	git annex sync encryptedbackup
+
+(Remember to replace "$mykey" with the keyid of your gpg key.)
+
+This uses the [[gcrypt special remote|special_remotes/gcrypt]] to encrypt
+pushes to the git remote, and git-annex will also encrypt the files it
+stores there.
 
 Now you can copy (or even move) files to the repository. After
 sending files to it, you'll probably want to do a sync, which pushes
@@ -62,22 +66,24 @@ the gpg key used to encrypt it, and then:
 
 ## encrypted git-annex repository on a ssh server
 
-If you have a ssh server that has rsync installed, you can set up an
-encrypted repository there. Works just like the encrypted drive except
-without the cable.
+If you have a ssh server that has git-annex or rsync installed on it, you
+can set up an encrypted repository there. Works just like the encrypted
+drive except without the cable.
 
 First, on the server, run:
 
 	git init --bare encryptedrepo
 
-(Also, install git-annex on the server if it's possible & easy to do so.
-While this will work without git-annex being installed on the server, it
-is recommended to have it installed.)
-
 Now, in your existing git-annex repository, set up the encrypted remote:
 
 	git annex initremote encryptedrepo type=gcrypt gitrepo=ssh://my.server/home/me/encryptedrepo keyid=$mykey
 	git annex sync encryptedrepo
+
+(Remember to replace "$mykey" with the keyid of your gpg key.)
+
+This uses the [[gcrypt special remote|special_remotes/gcrypt]] to encrypt
+pushes to the git remote, and git-annex will also encrypt the files it
+stores there.
 
 If you're going to be sharing this repository with others, be sure to also
 include their keyids, by specifying keyid= repeatedly.
@@ -97,11 +103,31 @@ used to encrypt it can check it out:
 	git annex enableremote encryptedrepo gitrepo=ssh://my.server/home/me/encryptedrepo
 	git annex get --from encryptedrepo
 
-## private encrypted git remote on hosting site
+## private encrypted git remote on a git-lfs hosting site
+
+Some git repository hosting sites do not support git-annex, but do support
+the similar git-lfs for storing large files alongside a git repository.
+git-annex can use the git-lfs protocol to store files in such repositories,
+and with gcrypt, everything stored in the remote can be encrypted.
+
+First, make a new, empty git repository on the hosting site.
+Get the ssh clone url for the repository, which might look
+like "git@github.com:username/somerepo.git"
+
+Then, in your git-annex repository, set up the encrypted remote:
+
+	git annex initremote lfstest type=git-lfs url=gcrypt::git@github.com:username/somerepo.git keyid=$mykey
+
+(Remember to replace "$mykey" with the keyid of your gpg key.)
+
+This uses the [[git-lfs special remote|special_remotes/git-lfs]], and the
+`gcrypt::` prefix on the url makes pushes be encrypted with gcrypt.
+
+## private encrypted git remote on a git hosting site
 
 You can use gcrypt to store your git repository in encrypted form on any
-hosting site that supports git. Only you can decrypt its contents.
-Using it this way, git-annex does not store large files on the hosting site; it's
+hosting site that supports git. Only you can decrypt its contents. Using it
+this way, git-annex does not store large files on the hosting site; it's
 only used to store your git repository itself.
 
 	git remote add encrypted gcrypt::ssh://hostingsite/myrepo.git
@@ -115,7 +141,7 @@ url you used when setting it up:
 
 	git clone gcrypt::ssh://hostingsite/myrepo.git
 
-## multiuser encrypted git remote on hosting site
+## multiuser encrypted git remote on a git hosting site
 
 Suppose two users want to share an encrypted git remote. Both of you
 need to set up the remote, and configure gcrypt to encrypt it so that both

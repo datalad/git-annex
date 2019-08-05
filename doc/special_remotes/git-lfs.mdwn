@@ -23,8 +23,8 @@ the git-lfs special remote:
 
 * `keyid` - Specifies the gpg key to use for encryption of both the files
   git-annex stores in the repository, as well as to encrypt the git
-  repository itself. May be repeated when multiple participants
-  should have access to the repository.
+  repository itself when using gcrypt. May be repeated when
+  multiple participants should have access to the repository.
 
 ## efficiency note
 
@@ -41,15 +41,43 @@ store its SHA256 checksum in the git-annex branch.
 
 ## encryption notes
 
-The encryption= parameter only makes git-annex encrypt data it stores
-on the remote. `git push` can also be used with the remote
-(it is a git repository after all), and data pushed to it with
-git will *not* be encrypted.
+To encrypt a git-lfs repository, there are two separate things that
+have to be encrypted: the data git-annex stores there, and the content
+of the git repository itself. After all, a git-lfs remote is a git remote
+and git push doesn't encrypt data by default.
 
-Using encryption=shared with a git-lfs special remote is especially
-unlikely to be secure, because the encryption key is committed to the git
-repository. It would only make sense if you never pushed it to the
-remote, or trusted the remote's host to keep it secure.
+To encrypt your git pushes, you can use 
+[git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
+and prefix the repository url with "gcrypt::"
+
+To make git-annex encrypt the data it stores, you can use the encrption=
+configuration.
+
+An example of combining the two:
+
+	git annex initremote lfstest type=git-lfs url=gcrypt::git@github.com:username/somerepo.git encryption=shared
+
+In that example, the git-annex shared encryption key is stored in
+git, but that's ok because git push will encrypt it, along with all
+the other git data, using your gpg key. You could instead use
+"encryption=shared keyid=" to make git-annex and gcrypt both encrypt
+to a specified gpg key.
+
+git-annex will detect if one part of the repository is encrypted,
+but you forgot to encrypt the other part, and will refuse to set up
+such an insecure half-encrypted repository.
+
+If you use encryption=hybrid, you can later add more gpg keys that can access
+the files git-annex stored in the git-lfs repository. However, due to the
+way git-remote-gcrypt encrypts the git repository, you will need to somehow
+force it to re-push everything again, so that the encrypted repository can
+be decrypted by the added keys. Probably this can be done by setting
+`GCRYPT_FULL_REPACK` and doing a forced push of branches.
+
+git-annex will set `remote.<name>`gcrypt-publish-participants` when setting
+up a repository that uses gcrypt. This is done to avoid unncessary gpg
+passphrase prompts, but it does publish the gpg keyids that can decrypt the
+repository. Unset it if you need to obscure that.
 
 ## limitations
 

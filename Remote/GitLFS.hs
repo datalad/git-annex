@@ -16,12 +16,14 @@ import qualified Annex
 import qualified Git
 import qualified Git.Types as Git
 import qualified Git.Url
+import qualified Git.GCrypt
 import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.Git
 import Remote.Helper.Http
+import qualified Remote.GCrypt
 import Annex.Ssh
 import Annex.UUID
 import Crypto
@@ -55,7 +57,14 @@ remote = RemoteType
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
-	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing r gc
+	-- If the repo uses gcrypt, get the underlaying repo without the
+	-- gcrypt url, to do LFS endpoint discovery on.
+	r' <- if Git.GCrypt.isEncrypted r
+		then do
+			g <- Annex.gitRepo
+			liftIO $ Git.GCrypt.encryptedRemote g r
+		else pure r
+	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing r' gc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store u h)
@@ -107,36 +116,45 @@ mySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteG
 mySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
-	let repo = fromMaybe (giveup "Specify url=") $
-		M.lookup "url" c
-	
-	when (isEncrypted c) $
-		unlessM (Annex.getState Annex.force) $
+	(c', _encsetup) <- encryptionSetup c gc
+	case (isEncrypted c', Git.GCrypt.urlPrefix `isPrefixOf` url) of
+		(False, False) -> noop
+		(True, True) -> Remote.GCrypt.setGcryptEncryption c' remotename
+		(True, False) -> unlessM (Annex.getState Annex.force) $
 			giveup $ unwords $
-				[ "You asked that encryption be enabled for"
-				, "this remote, but only the files that"
-				, "git-annex stores on it would be encrypted;"
+				[ "Encryption is enabled for this remote,"
+				, "but only the files that git-annex stores on"
+				, "it would be encrypted; "
 				, "anything that git push sends to it would"
-				, "not be encrypted. Even encryption=shared"
-				, "encryption keys will be stored on the"
-				, "remote for anyone who can access it to"
-				, "see."
+				, "not be encrypted. Recommend prefixing the"
+				, "url with \"gcrypt::\" to also encrypt"
+				, "git pushes."
 				, "(Use --force if you want to use this"
 				, "likely insecure configuration.)"
 				]
-	(c', _encsetup) <- encryptionSetup c gc
+		(False, True) -> unlessM (Annex.getState Annex.force) $
+			giveup $ unwords $
+				[ "You used a \"gcrypt::\" url for this remote,"
+				, "but encryption=none prevents git-annex"
+				, "from encrypting files it stores there."
+				, "(Use --force if you want to use this"
+				, "likely insecure configuration.)"
+				]
 
-	-- The repo is not stored in the remote log, because the same
+	-- The url is not stored in the remote log, because the same
 	-- git-lfs repo can be accessed using different urls by different
 	-- people (eg over ssh or http).
 	--
 	-- Instead, set up remote.name.url to point to the repo,
 	-- (so it's also usable by git as a non-special remote),
 	-- and set remote.name.git-lfs = true
-	let c'' = M.delete "repo" c'
+	let c'' = M.delete "url" c'
 	gitConfigSpecialRemote u c'' [("git-lfs", "true")]
-	setConfig (ConfigKey ("remote." ++ getRemoteName c ++ ".url")) repo
+	setConfig (ConfigKey ("remote." ++ getRemoteName c ++ ".url")) url
 	return (c'', u)
+  where
+	url = fromMaybe (giveup "Specify url=") (M.lookup "url" c)
+	remotename = fromJust (M.lookup "name" c)
 
 data LFSHandle = LFSHandle
 	{ downloadEndpoint :: Maybe LFS.Endpoint
