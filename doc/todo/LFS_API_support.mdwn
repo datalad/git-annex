@@ -78,3 +78,22 @@ Thanks for your great work! :) -- [[anarcat]]
 > That seems to be all the complications involved in implementing this,
 > aside from git-annex needing to know the sha256 and size of an object.
 > --[[Joey]]
+
+> Started some initial work in the `git-lfs` branch. --[[Joey]]
+
+---
+
+## related ideas
+
+A couple ideas for possible things that could also be done with git-lfs
+integration. Just to keep in mind while implementing the above.
+
+* git-annex could support git-lfs pointer files. This would let a lfs 
+  repo be cloned and git-annex used to manage the files in it with the
+  finer control it allows compared to git-lfs.
+
+* A lfs API endpoint could serve out of a git-annex repository.
+  One neat thing this would allow is, when git-annex knows an url
+  where an object is located (from the web special remote or another
+  special remote that registers an url), it could direct the lfs
+  client to that url when it requests to download the object.

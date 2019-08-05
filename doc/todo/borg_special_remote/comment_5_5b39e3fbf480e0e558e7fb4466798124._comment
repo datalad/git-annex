@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-08-01T16:02:06Z"
+ content="""
+Half a second to store a single annex object with restic is pretty slow,
+and that's before the snapshots directory gets bloated with a hundred
+thousand files.
+
+I wonder if my original idea up top was not a better approach: Let these
+backup tools back up a whole annex repo (or at least .git/annex/objects),
+and then make git-annex interoperate with the backups by peering inside
+them and learning what has been backed up.
+
+In the meantime, git-annex has gotten tree import facilities,
+which is a similar concept, of listing content in a data store
+and so learning what's stored in there, and then being able to
+retrieve objects out of that data store on demand.
+
+Importing annex objects from a backup is not quite the same as a tree
+import, because it wouldn't result in any kind of file tree that
+you'd want to merge back into your git repo. Also tree importing has
+to download files in order to hash them, while in this case the
+object's annex key can be seen in the backup.
+
+But from a user perspective it could be quite similar, something like:
+
+	git annex initremote restic type=restic repolocation=...
+	git annex import --from restic
+	git annex get
+
+That would use `restic list snapshots` and then `restic ls` each
+snapshot and find filenames that look like annex keys
+(perhaps looking for part of the annex directory structure to avoid
+false positives). Keys it found would be marked as present in
+the remote, and the snapshot(s) that contain them recorded in
+the git-annex branch for use by git-annex get.
+"""]]
