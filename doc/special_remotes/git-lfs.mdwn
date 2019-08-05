@@ -19,7 +19,7 @@ the git-lfs special remote:
   at different times as long as they point to the same git-lfs repository.
 
 * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
-  Required. See [[encryption]].
+  Required. See [[encryption]]. Also see the encryption notes below.
 
 * `keyid` - Specifies the gpg key to use for encryption of both the files
   git-annex stores in the repository, as well as to encrypt the git
@@ -36,14 +36,19 @@ other backend, git-annex has to additionally store the SHA256 checksum
 into the git-annex branch when storing content in git-lfs. That adds a
 small bit of size overhead to using this remote.
 
+When encrypting data sent to the git-lfs remote, git-annex always has to
+store its SHA256 checksum in the git-annex branch.
+
 ## encryption notes
 
 The encryption= parameter only makes git-annex encrypt data stored on the
-remote, `git push` can also be used with the remote (it is a git repository
+remote. `git push` can also be used with the remote (it is a git repository
 after all), and data pushed to it with git will *not* be encrypted.
 
-When encrypting data sent to the git-lfs remote, git-annex always has to
-store its SHA256 checksum in the git-annex branch.
+This makes using encryption=shared with a git-lfs special remote very
+unlikely to be secure, because the encryption key is committed to the git
+repository. It would only make sense if you never pushed it to the
+remote, or trusted the remote's host to keep it secure.
 
 ## limitations
 
