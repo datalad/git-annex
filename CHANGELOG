@@ -3,6 +3,7 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
   * Use the same optimisation for --in=here as has always been
     used for --in=. rather than the slow code path that unncessarily
     queries the git-annex branch.
+  * Allow setting up a gcrypt special remote with encryption=shared.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 
