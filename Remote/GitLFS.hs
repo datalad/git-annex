@@ -12,6 +12,7 @@ import Types.Remote
 import Annex.Url
 import Types.Key
 import Types.Creds
+import qualified Annex
 import qualified Git
 import qualified Git.Types as Git
 import qualified Git.Url
@@ -108,11 +109,21 @@ mySetup _ mu _ c gc = do
 
 	let repo = fromMaybe (giveup "Specify url=") $
 		M.lookup "url" c
-	-- TODO: don't allow using encryption w/o the user indicating they
-	-- know it will only encrypt git-annex objects, not git pushes
-	-- TODO: don't allow using encryption=shared w/o the user
-	-- indicating that pushing to the git-lfs remote will expose the
-	-- encrypted data.
+	
+	when (isEncrypted c) $
+		unlessM (Annex.getState Annex.force) $
+			giveup $ unwords $
+				[ "You asked that encryption be enabled for"
+				, "this remote, but only the files that"
+				, "git-annex stores on it would be encrypted;"
+				, "anything that git push sends to it would"
+				, "not be encrypted. Even encryption=shared"
+				, "encryption keys will be stored on the"
+				, "remote for anyone who can access it to"
+				, "see."
+				, "(Use --force if you want to use this"
+				, "likely insecure configuration.)"
+				]
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The repo is not stored in the remote log, because the same

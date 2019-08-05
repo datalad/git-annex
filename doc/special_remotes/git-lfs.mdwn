@@ -41,11 +41,12 @@ store its SHA256 checksum in the git-annex branch.
 
 ## encryption notes
 
-The encryption= parameter only makes git-annex encrypt data stored on the
-remote. `git push` can also be used with the remote (it is a git repository
-after all), and data pushed to it with git will *not* be encrypted.
+The encryption= parameter only makes git-annex encrypt data it stores
+on the remote. `git push` can also be used with the remote
+(it is a git repository after all), and data pushed to it with
+git will *not* be encrypted.
 
-This makes using encryption=shared with a git-lfs special remote very
+Using encryption=shared with a git-lfs special remote is especially
 unlikely to be secure, because the encryption key is committed to the git
 repository. It would only make sense if you never pushed it to the
 remote, or trusted the remote's host to keep it secure.
