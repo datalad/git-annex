@@ -22,8 +22,9 @@ module Utility.GitLFS (
 	TransferResponse(..),
 	TransferResponseOperation(..),
 	IsTransferResponseOperation,
-	DownloadOperation,
-	UploadOperation,
+	DownloadOperation(..),
+	UploadOperation(..),
+	OperationParams(..),
 	ParsedTransferResponse(..),
 	parseTransferResponse,
 	-- * making transfers
