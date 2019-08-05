@@ -15,6 +15,7 @@ the git history is not stored in them.
 * [[ddar]]
 * [[directory]]
 * [[gcrypt]] (encrypted git repositories!)
+* [[git-lfs]]
 * [[hook]]
 * [[rclone]]
 * [[rsync]]

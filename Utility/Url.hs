@@ -29,6 +29,7 @@ module Utility.Url (
 	assumeUrlExists,
 	download,
 	downloadQuiet,
+	downloadConduit,
 	sinkResponseFile,
 	downloadPartial,
 	parseURIRelaxed,
@@ -335,8 +336,9 @@ download' noerror meterupdate url file uo =
 			case (urlDownloader uo, parseUrlRequest (show u)) of
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
 					(matchStatusCodeException (== found302))
-					(downloadconduit req)
+					(downloadConduit meterupdate req file uo >> return True)
 					(followredir r)
+						`catchNonAsync` (dlfailed . show)
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 					| isfileurl u -> downloadfile u
 					| isftpurl u -> downloadcurlrestricted r u url ftpport
@@ -354,58 +356,6 @@ download' noerror meterupdate url file uo =
 
 	ftpport = 21
 
-	downloadconduit req = catchMaybeIO (getFileSize file) >>= \case
-		Just sz | sz > 0 -> resumeconduit req' sz
-		_ -> runResourceT $ do
-			liftIO $ debugM "url" (show req')
-			resp <- http req' (httpManager uo)
-			if responseStatus resp == ok200
-				then store zeroBytesProcessed WriteMode resp
-				else showrespfailure resp
-	  where
-		req' = applyRequest uo $ req
-			-- Override http-client's default decompression of gzip
-			-- compressed files. We want the unmodified file content.
-			{ requestHeaders = (hAcceptEncoding, "identity") :
-				filter ((/= hAcceptEncoding) . fst)
-					(requestHeaders req)
-			, decompress = const False
-			}
-	
-	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
-		&& case lookup hContentRange h of
-			-- This could be improved by fixing
-			-- https://github.com/aristidb/http-types/issues/87
-			Just crh -> crh == B8.fromString ("bytes */" ++ show sz)
-			-- Some http servers send no Content-Range header when
-			-- the range extends beyond the end of the file.
-			-- There is no way to distinguish between the file
-			-- being the same size on the http server, vs
-			-- it being shorter than the file we already have.
-			-- So assume we have the whole content of the file
-			-- already, the same as wget and curl do.
-			Nothing -> True
-
-	-- Resume download from where a previous download was interrupted, 
-	-- when supported by the http server. The server may also opt to
-	-- send the whole file rather than resuming.
-	resumeconduit req sz = catchJust
-		(matchStatusCodeHeadersException (alreadydownloaded sz))
-		dl
-		(const $ return True)
-	  where
-		dl = runResourceT $ do
-			let req' = req { requestHeaders = resumeFromHeader sz : requestHeaders req }
-			liftIO $ debugM "url" (show req')
-			resp <- http req' (httpManager uo)
-			if responseStatus resp == partialContent206
-				then store (BytesProcessed sz) AppendMode resp
-				else if responseStatus resp == ok200
-					then store zeroBytesProcessed WriteMode resp
-					else showrespfailure resp
-	
-	showrespfailure = liftIO . dlfailed . B8.toString 
-		. statusMessage . responseStatus
 	showhttpexception he = do
 		let msg = case he of
 			HttpExceptionRequest _ (StatusCodeException r _) ->
@@ -417,16 +367,13 @@ download' noerror meterupdate url file uo =
 			HttpExceptionRequest _ other -> show other
 			_ -> show he
 		dlfailed msg
+	
 	dlfailed msg
 		| noerror = return False
 		| otherwise = do
 			hPutStrLn stderr $ "download failed: " ++ msg
 			hFlush stderr
 			return False
-	
-	store initialp mode resp = do
-		sinkResponseFile meterupdate initialp file mode resp
-		return True
 	
 	basecurlparams = curlParams uo
 		[ if noerror
@@ -453,6 +400,8 @@ download' noerror meterupdate url file uo =
 			L.writeFile file
 		return True
 
+	-- Conduit does not support ftp, so will throw an exception on a
+	-- redirect to a ftp url; fall back to curl.
 	followredir r ex@(HttpExceptionRequest _ (StatusCodeException resp _)) = 
 		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of
 			Just url' -> case parseURIRelaxed url' of
@@ -463,6 +412,68 @@ download' noerror meterupdate url file uo =
 			Nothing -> throwIO ex
 	followredir _ ex = throwIO ex
 
+{- Download a perhaps large file using conduit, with auto-resume
+ - of incomplete downloads.
+ -
+ - Does not catch exceptions.
+ -}
+downloadConduit :: MeterUpdate -> Request -> FilePath -> UrlOptions -> IO ()
+downloadConduit meterupdate req file uo =
+	catchMaybeIO (getFileSize file) >>= \case
+		Just sz | sz > 0 -> resumedownload sz
+		_ -> runResourceT $ do
+			liftIO $ debugM "url" (show req')
+			resp <- http req' (httpManager uo)
+			if responseStatus resp == ok200
+				then store zeroBytesProcessed WriteMode resp
+				else respfailure resp
+  where
+	req' = applyRequest uo $ req
+		-- Override http-client's default decompression of gzip
+		-- compressed files. We want the unmodified file content.
+		{ requestHeaders = (hAcceptEncoding, "identity") :
+			filter ((/= hAcceptEncoding) . fst)
+				(requestHeaders req)
+		, decompress = const False
+		}
+
+	-- Resume download from where a previous download was interrupted, 
+	-- when supported by the http server. The server may also opt to
+	-- send the whole file rather than resuming.
+	resumedownload sz = catchJust
+		(matchStatusCodeHeadersException (alreadydownloaded sz))
+		dl
+		(const noop)
+	  where
+		dl = runResourceT $ do
+			let req'' = req' { requestHeaders = resumeFromHeader sz : requestHeaders req }
+			liftIO $ debugM "url" (show req'')
+			resp <- http req'' (httpManager uo)
+			if responseStatus resp == partialContent206
+				then store (BytesProcessed sz) AppendMode resp
+				else if responseStatus resp == ok200
+					then store zeroBytesProcessed WriteMode resp
+					else respfailure resp
+	
+	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
+		&& case lookup hContentRange h of
+			-- This could be improved by fixing
+			-- https://github.com/aristidb/http-types/issues/87
+			Just crh -> crh == B8.fromString ("bytes */" ++ show sz)
+			-- Some http servers send no Content-Range header when
+			-- the range extends beyond the end of the file.
+			-- There is no way to distinguish between the file
+			-- being the same size on the http server, vs
+			-- it being shorter than the file we already have.
+			-- So assume we have the whole content of the file
+			-- already, the same as wget and curl do.
+			Nothing -> True
+	
+	store initialp mode resp =
+		sinkResponseFile meterupdate initialp file mode resp
+	
+	respfailure = giveup . B8.toString . statusMessage . responseStatus
+	
 {- Sinks a Response's body to a file. The file can either be opened in
  - WriteMode or AppendMode. Updates the meter as data is received.
  -

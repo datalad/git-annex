@@ -11,9 +11,10 @@ module Git.Url (
 	port,
 	hostuser,
 	authority,
+	path,
 ) where
 
-import Network.URI hiding (scheme, authority)
+import Network.URI hiding (scheme, authority, path)
 
 import Common
 import Git.Types
@@ -65,6 +66,11 @@ authority = authpart assemble
 authpart :: (URIAuth -> a) -> Repo -> Maybe a
 authpart a Repo { location = Url u } = a <$> uriAuthority u
 authpart _ repo = notUrl repo
+
+{- Path part of an URL repo. -}
+path :: Repo -> FilePath
+path Repo { location = Url u } = uriPath u
+path repo = notUrl repo
 
 notUrl :: Repo -> a
 notUrl repo = error $

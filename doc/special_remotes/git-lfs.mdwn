@@ -1,0 +1,101 @@
+git-annex has a special remote that lets it store content in git-lfs
+repositories.
+
+See [[tips/storing_data_in_git-lfs]] for some examples of how to use this.
+
+## configuration
+
+These parameters can be passed to `git annex initremote` to configure
+the git-lfs special remote:
+
+* `url` - Required. The url to the git-lfs repository to use.
+  Can be either a ssh url (scp-style is also accepted) or a http url.
+  But currently, a http url accesses the git-lfs repository without
+  authentication. To authenticate, you will need to use a ssh url.
+
+  This parameter needs to be specified in the initial `git annex
+  initremote` but also each time you `git annex enableremote`
+  an existing git-lfs special remote. It's fine to use different urls
+  at different times as long as they point to the same git-lfs repository.
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  Required. See [[encryption]]. Also see the encryption notes below.
+
+* `keyid` - Specifies the gpg key to use for encryption of both the files
+  git-annex stores in the repository, as well as to encrypt the git
+  repository itself when using gcrypt. May be repeated when
+  multiple participants should have access to the repository.
+
+## efficiency note
+
+Since git-lfs uses SHA256 checksums, git-annex needs to keep track of the
+SHA256 of content stored in it, in order to be able to retrieve that
+content. When a git-annex key uses a [[backend|backends]]
+of SHA256 or SHA256E, that's easy. But, if a git-annex key uses some
+other backend, git-annex has to additionally store the SHA256 checksum
+into the git-annex branch when storing content in git-lfs. That adds a
+small bit of size overhead to using this remote.
+
+When encrypting data sent to the git-lfs remote, git-annex always has to
+store its SHA256 checksum in the git-annex branch.
+
+## encryption notes
+
+To encrypt a git-lfs repository, there are two separate things that
+have to be encrypted: the data git-annex stores there, and the content
+of the git repository itself. After all, a git-lfs remote is a git remote
+and git push doesn't encrypt data by default.
+
+To encrypt your git pushes, you can use 
+[git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
+and prefix the repository url with "gcrypt::"
+
+To make git-annex encrypt the data it stores, you can use the encrption=
+configuration.
+
+An example of combining the two:
+
+	git annex initremote lfstest type=git-lfs url=gcrypt::git@github.com:username/somerepo.git encryption=shared
+
+In that example, the git-annex shared encryption key is stored in
+git, but that's ok because git push will encrypt it, along with all
+the other git data, using your gpg key. You could instead use
+"encryption=shared keyid=" to make git-annex and gcrypt both encrypt
+to a specified gpg key.
+
+git-annex will detect if one part of the repository is encrypted,
+but you forgot to encrypt the other part, and will refuse to set up
+such an insecure half-encrypted repository.
+
+If you use encryption=hybrid, you can later add more gpg keys that can access
+the files git-annex stored in the git-lfs repository. However, due to the
+way git-remote-gcrypt encrypts the git repository, you will need to somehow
+force it to re-push everything again, so that the encrypted repository can
+be decrypted by the added keys. Probably this can be done by setting
+`GCRYPT_FULL_REPACK` and doing a forced push of branches.
+
+git-annex will set `remote.<name>`gcrypt-publish-participants` when setting
+up a repository that uses gcrypt. This is done to avoid unncessary gpg
+passphrase prompts, but it does publish the gpg keyids that can decrypt the
+repository. Unset it if you need to obscure that.
+
+## limitations
+
+The git-lfs protocol does not support deleting content, so git-annex
+**cannot delete anything** from a git-lfs special remote.
+
+The git-lfs protocol does not support resuming uploads, and so an
+interrupted upload will have to restart from the beginning. Interrupted
+downloads will resume.
+
+git-lfs has a concept of git ref based access control, so a user may only
+be able to send content associated with a particular git ref. git-annex
+does not currently provide any git ref, so won't work with a git-lfs server
+that uses that.
+
+git-annex only supports the "basic" git-lfs transfer adapter, but that's
+the one used by most git-lfs servers.
+
+The git-lfs protocol is designed around batching of transfers, but
+git-annex doesn't do batching. This may cause it to fall afoul of
+rate limiting of git-lfs servers when transferring a lot of files.

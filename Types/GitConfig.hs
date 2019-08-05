@@ -263,6 +263,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexAndroidDirectory :: Maybe FilePath
 	, remoteAnnexAndroidSerial :: Maybe String
 	, remoteAnnexGCrypt :: Maybe String
+	, remoteAnnexGitLFS :: Bool
 	, remoteAnnexDdarRepo :: Maybe String
 	, remoteAnnexHookType :: Maybe String
 	, remoteAnnexExternalType :: Maybe String
@@ -321,6 +322,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexAndroidDirectory = notempty $ getmaybe "androiddirectory"
 		, remoteAnnexAndroidSerial = notempty $ getmaybe "androidserial"
 		, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
+		, remoteAnnexGitLFS = getbool "git-lfs" False
 		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 		, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"

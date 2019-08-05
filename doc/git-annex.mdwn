@@ -1546,71 +1546,71 @@ Here are all the supported configuration settings.
 
   For example, to use the wipe command, set it to `wipe -f %file`.
 
-* `remote.<name>.rsyncurl`
+* `remote.<name>.annex-rsyncurl`
 
   Used by rsync special remotes, this configures
   the location of the rsync repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
-* `remote.<name>.buprepo`
+* `remote.<name>.annex-buprepo`
 
   Used by bup special remotes, this configures
   the location of the bup repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
-* `remote.<name>.ddarrepo`
+* `remote.<name>.annex-ddarrepo`
 
   Used by ddar special remotes, this configures
   the location of the ddar repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
-* `remote.<name>.directory`
+* `remote.<name>.annex-directory`
 
   Used by directory special remotes, this configures
   the location of the directory where annexed files are stored for this
   remote. Normally this is automatically set up by `git annex initremote`,
   but you can change it if needed.
 
-* `remote.<name>.adb`
+* `remote.<name>.annex-adb`
 
   Used to identify remotes on Android devices accessed via adb.
   Normally this is automatically set up by `git annex initremote`.
 
-* `remote.<name>.androiddirectory`
+* `remote.<name>.annex-androiddirectory`
 
   Used by adb special remotes, this is the directory on the Android
   device where files are stored for this remote. Normally this is
   automatically set up by `git annex initremote`, but you can change
   it if needed.
 
-* `remote.<name>.androidserial`
+* `remote.<name>.annex-androidserial`
 
   Used by adb special remotes, this is the serial number of the Android
   device used by the remote. Normally this is automatically set up by
   `git annex initremote`, but you can change it if needed, eg when
   upgrading to a new Android device.
 
-* `remote.<name>.s3`
+* `remote.<name>.annex-s3`
 
   Used to identify Amazon S3 special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
-* `remote.<name>.glacier`
+* `remote.<name>.annex-glacier`
 
   Used to identify Amazon Glacier special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
-* `remote.<name>.webdav`
+* `remote.<name>.annex-webdav`
 
   Used to identify webdav special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
-* `remote.<name>.tahoe`
+* `remote.<name>.annex-tahoe`
 
   Used to identify tahoe special remotes.
   Points to the configuration directory for tahoe.
 
-* `remote.<name>.gcrypt`
+* `remote.<name>.annex-gcrypt`
 
   Used to identify gcrypt special remotes.
   Normally this is automatically set up by `git annex initremote`.
@@ -1619,7 +1619,14 @@ Here are all the supported configuration settings.
   If the gcrypt remote is accessible over ssh and has git-annex-shell
   available to manage it, it's set to "shell".
 
-* `remote.<name>.hooktype`, `remote.<name>.externaltype`
+* `remote.<name>.annex-git-lfs`
+
+  Used to identify git-lfs special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+  It is set to "true" if this is a git-lfs remote.
+
+* `remote.<name>.annex-hooktype`, `remote.<name>.annex-externaltype`
 
   Used by hook special remotes and external special remotes to record
   the type of the remote.

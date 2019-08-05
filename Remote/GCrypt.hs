@@ -12,6 +12,7 @@ module Remote.GCrypt (
 	coreGCryptId,
 	setupRepo,
 	accessShellConfig,
+	setGcryptEncryption,
 ) where
 
 import qualified Data.Map as M
@@ -318,16 +319,18 @@ shellOrRsync r ashell arsync
 setGcryptEncryption :: RemoteConfig -> String -> Annex ()
 setGcryptEncryption c remotename = do
 	let participants = remoteconfig Git.GCrypt.remoteParticipantConfigKey
-	case cipherKeyIds =<< extractCipher c of
+	case extractCipher c of
 		Nothing -> noCrypto
-		Just (KeyIds { keyIds = ks}) -> do
-			setConfig participants (unwords ks)
-			let signingkey = ConfigKey $ Git.GCrypt.remoteSigningKey remotename
-			cmd <- gpgCmd <$> Annex.getGitConfig
-			skeys <- M.keys <$> liftIO (secretKeys cmd)
-			case filter (`elem` ks) skeys of
-				[] -> noop
-				(k:_) -> setConfig signingkey k
+		Just cip -> case cipherKeyIds cip of
+			Nothing -> noop
+			Just (KeyIds { keyIds = ks}) -> do
+				setConfig participants (unwords ks)
+				let signingkey = ConfigKey $ Git.GCrypt.remoteSigningKey remotename
+				cmd <- gpgCmd <$> Annex.getGitConfig
+				skeys <- M.keys <$> liftIO (secretKeys cmd)
+				case filter (`elem` ks) skeys of
+					[] -> noop
+					(k:_) -> setConfig signingkey k
 	setConfig (remoteconfig Git.GCrypt.remotePublishParticipantConfigKey)
 		(Git.Config.boolConfig True)
   where

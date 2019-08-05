@@ -51,6 +51,7 @@ import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
+import qualified Remote.GitLFS
 import qualified Remote.P2P
 import qualified Remote.Helper.P2P as P2PHelper
 import P2P.Address
@@ -143,6 +144,9 @@ configRead autoinit r = do
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
+	-- Remote.GitLFS may be used with a repo that is also encrypted
+	-- with gcrypt so is checked first.
+	| remoteAnnexGitLFS gc = Remote.GitLFS.gen r u c gc
 	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
 	| otherwise = case repoP2PAddress r of
 		Nothing -> do
