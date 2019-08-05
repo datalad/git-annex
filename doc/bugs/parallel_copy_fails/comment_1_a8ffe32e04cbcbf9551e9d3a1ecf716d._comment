@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="similar bug report"
+ date="2019-08-05T17:55:21Z"
+ content="""
+[[bugs/concurrent_git-annex-copy_to_s3_special_remote_fails]]
+"""]]
