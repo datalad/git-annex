@@ -1,0 +1,16 @@
+I've spent a week making git-annex be able to store files in a remote
+on a server using git-lfs.
+
+That included writing a haskell implementation of the git-lfs protocol.
+That could be split out of git-annex into a library if someone wants to use
+it for something else.
+
+Now [[git-lfs is now just another special remote|special_remotes/git-lfs]]
+as far as git-annex is concerned. Albeit one that it can't drop data from,
+because the git-lfs protocol does not have a way to delete an object.
+
+Once nice thing about git-annex's support for git-lfs is it can be used
+along with git-remote-gcrypt, and the result is a remote where both the
+annexed files and the git repo contents are both encrypted.
+
+See [[tips/storing_data_in_git-lfs]] for details.
