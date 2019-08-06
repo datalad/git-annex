@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="issues with concurrent copy"
+ date="2019-08-05T17:53:37Z"
+ content="""
+I've seen similar issues with concurrent copy: [[bugs/parallel_copy_fails]]
+"""]]
