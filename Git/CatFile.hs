@@ -182,7 +182,7 @@ querySize r repo = maybe Nothing (readMaybe . takeWhile (/= '\n'))
 
 queryObjectType :: Ref -> Repo -> IO (Maybe ObjectType)
 queryObjectType r repo = maybe Nothing (readObjectType . takeWhile (/= '\n'))
-	<$> querySingle (Param "cat-file") r repo hGetContentsStrict
+	<$> querySingle (Param "-t") r repo hGetContentsStrict
 
 queryContent :: Ref -> Repo -> IO (Maybe L.ByteString)
 queryContent r repo = fmap (\b -> L.fromChunks [b])

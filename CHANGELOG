@@ -9,6 +9,8 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
     used for --in=. rather than the slow code path that unncessarily
     queries the git-annex branch.
   * Allow setting up a gcrypt special remote with encryption=shared.
+  * Fix querying git for object type when operating on a file containing
+    newlines.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 
