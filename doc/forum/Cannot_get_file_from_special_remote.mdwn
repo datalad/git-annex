@@ -1,0 +1,62 @@
+Hello,
+
+I have an enabled special remote called StorageBox:
+
+```
+% git annex whereis esp\ 07.odt             
+whereis esp 07.odt (3 copies) 
+        00638e8a-ce29-4c41-b0df-e38bbbea303c -- [StorageBox]
+        2f41eb74-5f33-4737-bb6b-1cd31dd67ee5 -- External
+        8aca09c1-30bb-4c2a-9ea4-94a7096fc8b0 -- Horus [horus]
+ok
+```
+
+but getting the file fails:
+
+```
+% git annex get esp\ 07.odt --from StorageBox
+get esp 07.odt (from StorageBox...) 
+failed
+git-annex: get: 1 failed
+```
+
+with `--debug`
+
+```
+% git annex --debug get esp\ 07.odt --from StorageBox
+[2019-08-07 10:19:16.795808079] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","git-annex"]
+[2019-08-07 10:19:16.798356234] process done ExitSuccess
+[2019-08-07 10:19:16.798450913] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2019-08-07 10:19:16.800783647] process done ExitSuccess
+[2019-08-07 10:19:16.80113337] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","log","refs/heads/git-annex..a41476d65829e7e2bc2c7abb8bc5dbc54690bce2","--pretty=%H","-n1"]
+[2019-08-07 10:19:16.803608041] process done ExitSuccess
+[2019-08-07 10:19:16.803697638] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","log","refs/heads/git-annex..156c3e15a2aad0b1207c1574609044170312ea9f","--pretty=%H","-n1"]
+[2019-08-07 10:19:16.806435853] process done ExitSuccess
+[2019-08-07 10:19:16.806527203] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","log","refs/heads/git-annex..ea4446ee38012a32e58a041ccb538135c3e942be","--pretty=%H","-n1"]
+[2019-08-07 10:19:16.809451267] process done ExitSuccess
+[2019-08-07 10:19:16.809558251] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","log","refs/heads/git-annex..4f376a557a384044ef4b7ca481e9ca4c724cf13d","--pretty=%H","-n1"]
+[2019-08-07 10:19:16.811953178] process done ExitSuccess
+[2019-08-07 10:19:16.816776692] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch"]
+[2019-08-07 10:19:16.817315416] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2019-08-07 10:19:16.821800692] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2019-08-07 10:19:16.823817987] process done ExitSuccess
+[2019-08-07 10:19:16.823920732] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","refs/heads/master"]
+[2019-08-07 10:19:16.826402914] process done ExitSuccess
+[2019-08-07 10:19:16.82657316] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","ls-files","--cached","-z","--","esp 07.odt"]
+get esp 07.odt (from StorageBox...) [2019-08-07 10:19:16.835457997] chat: gpg ["--quiet","--trust-model","always","--decrypt"]
+[2019-08-07 10:19:16.983557153] process done ExitSuccess
+
+[2019-08-07 10:19:17.006493687] retrieve 065/2b5/GPGHMACSHA1--ae77770aef3b651d6fd0da47386891e23015809b/GPGHMACSHA1--ae77770aef3b651d6fd0da47386891e23015809b
+[2019-08-07 10:19:17.32316296] retrieve d8f/3a4/GPGHMACSHA1--ab824710fe31cc23b667dff462af11739d4e116d/GPGHMACSHA1--ab824710fe31cc23b667dff462af11739d4e116d
+failed
+[2019-08-07 10:19:17.338120828] process done ExitSuccess
+[2019-08-07 10:19:17.338792003] process done ExitSuccess
+git-annex: get: 1 failed
+```
+
+The testing when I did `enableremote` was successful.
+
+What can be the reason for that failure?
+
+Thanks,
+Florian
