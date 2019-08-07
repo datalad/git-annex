@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-08-07T21:20:58Z"
+ content="""
+Tracked it back to runSqliteInfo. Both that and runSqlite use NUL
+somewhere.
+
+So the bug is in persistent-sqlite, or one of its dependencies.
+
+Aha! silently-1.2.5, used by persistent in runMigrationSilent,
+and it's already been fixed in a point release. I've bumped the dependency,
+hopefully that will fix this.
+"""]]

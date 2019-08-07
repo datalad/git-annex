@@ -393,7 +393,8 @@ Executable git-annex
       Win32 (>= 2.6.1.0),
       unix-compat (>= 0.5),
       setenv,
-      process (>= 1.6.2.0)
+      silently (>= 1.2.5.1)
+      process (>= 1.6.2.0),
   else
     Build-Depends: unix (>= 2.7.2)
 

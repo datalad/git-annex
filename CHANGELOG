@@ -13,6 +13,8 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
     newlines.
   * Windows installer: Always install to 64 bit program files directory,
     since it needs 64 bit git now.
+  * Build with silently-1.2.5.1 on Windows; the old one used "NUL" which
+    is not supported with recent versions of ghc.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 
