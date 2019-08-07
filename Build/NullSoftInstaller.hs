@@ -94,10 +94,7 @@ gitInstallDir64 :: Exp FilePath
 gitInstallDir64 = fromString "$PROGRAMFILES64\\Git"
 
 gitInstallDir :: Exp FilePath
-gitInstallDir = fileExists gitInstallDir32 ?
-	( gitInstallDir32
-	, fileExists gitInstallDir64 ? (gitInstallDir64, gitInstallDir32)
-	)
+gitInstallDir = gitInstallDir64
 
 -- This intentionally has a different name than git-annex or
 -- git-annex-webapp, since it is itself treated as an executable file.
