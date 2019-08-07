@@ -1,0 +1,14 @@
+After an unobserved problem a few days ago, one of my git annex repositories has become corrupt
+
+    [frederik@maui Documents]$ git status
+    error: object file .git/objects/e2/98e448aa2473a52c0abaef99aed1bf1a5fe94e is empty
+    error: object file .git/objects/e2/98e448aa2473a52c0abaef99aed1bf1a5fe94e is empty
+    error: object file .git/objects/e2/98e448aa2473a52c0abaef99aed1bf1a5fe94e is empty
+    fatal: loose object e298e448aa2473a52c0abaef99aed1bf1a5fe94e (stored in .git/objects/e2/98e448aa2473a52c0abaef99aed1bf1a5fe94e) is corrupt
+
+Most advice I can find relating to this error centers around re-cloning the repository - as does [this wiki's disaster recovery page](https://git-annex.branchable.com/design/assistant/disaster_recovery/)
+
+I have 2 remotes that should have most if not all of the content of the local one, but they're on the internet and downloading all content will take a while. Are there any steps I can safely take before having to re-clone? I was unable to work out from the above page what the best steps in this particular situation are. `git fsck` also stops with the same fatal error as above.
+
+
+
