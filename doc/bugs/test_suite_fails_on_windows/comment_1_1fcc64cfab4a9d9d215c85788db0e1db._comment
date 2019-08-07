@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-07T17:14:22Z"
+ content="""
+Just running "git-annex add" on a file on windows is enough to reproduce
+the bug.
+
+This must be related to ghc 8.6.1's change to Windows paths that made "NUL"
+not work, but git-annex has been using the device namespace workaround for
+nearly a year now.
+
+Presumably the recent upgrade of the windows autobuilder's toolchain
+exposed the problem. Maybe something had a reversion?
+
+In ghci 8.6.5, this works fine, no error:
+
+	withFile "\\\\.\\NUL" ReadMode (\h -> print "opened NUL ok")
+
+Need to try ghci Utility/Process.hs on windows and see if running
+`withNullHandle (const noop)` works.
+"""]]
