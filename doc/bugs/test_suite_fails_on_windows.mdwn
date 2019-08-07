@@ -685,3 +685,4 @@ git-annex: .t\repo\.git\objects\f9\b6e5e36be4911f475c5a96dbc0c2c5d4b256af: remov
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> Confirmed that my silently fix fixed it, [[done]] --[[Joey]]
