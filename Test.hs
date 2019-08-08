@@ -1585,6 +1585,7 @@ test_directory_remote = intmpclonerepo $ do
 
 test_rsync_remote :: Assertion
 test_rsync_remote = intmpclonerepo $ do
+#ifndef mingw32_HOST_OS
 	createDirectory "dir"
 	git_annex "initremote" (words "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
 	git_annex "get" [annexedfile] @? "get of file failed"
@@ -1597,6 +1598,7 @@ test_rsync_remote = intmpclonerepo $ do
 	annexed_present annexedfile
 	git_annex_shouldfail "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
+#endif
 
 test_bup_remote :: Assertion
 test_bup_remote = intmpclonerepo $ when BuildInfo.bup $ do
