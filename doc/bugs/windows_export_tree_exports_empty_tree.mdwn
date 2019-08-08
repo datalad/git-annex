@@ -1,0 +1,24 @@
+The test suite's `test_export_import` fails on Windows.
+It seems that exporting a tree that contains annexed files
+somehow ends up exporting an empty tree.
+
+The test is running in an adjusted unlocked branch. But it exports
+the master branch. The master branch indeed contains an empty tree.
+
+The origin repo is also using an adjusted unlocked branch. Some changes
+have been committed there, but not synced back to the master branch.
+
+On clone from that, git-annex sets up an adjusted unlocked branch,
+and it merges origin's adjusted unlocked branch in. So the annexed files
+are present in that branch, but still not in master.
+
+This is not really a windows-specific problem. Only on windows or perhaps
+on a crippled FS does the test suite actually test opeation in an unlocked
+adjusted branch, because it enters that mode only on demand. Arguably
+the test suite should run all the tests separately on an adjusted branch,
+but that would add a lot of extra time to the test suite and very few
+tests are likely to behave any differently there.
+
+On balance, I think that making the test case run a git-annex sync
+before exporting is good enough.
+--[[Joey]]
