@@ -16,10 +16,10 @@ import System.Posix.Types
 import System.Posix.IO
 import Utility.Env
 import Utility.Env.Set
+import Utility.FileMode
 #else
 import Utility.Tmp
 #endif
-import Utility.FileMode
 import Utility.Format (decode_c)
 
 import Control.Concurrent

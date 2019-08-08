@@ -48,7 +48,6 @@ import Data.Time.Clock.POSIX
 
 #ifdef mingw32_HOST_OS
 import Data.Word (Word64)
-import System.Directory
 #else
 import System.Posix.Files
 #endif

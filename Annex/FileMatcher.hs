@@ -35,8 +35,10 @@ import Types.FileMatcher
 import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Annex.CheckAttr
-import Annex.Magic
 import Git.CheckAttr (unspecifiedAttr)
+#ifdef WITH_MAGICMIME
+import Annex.Magic
+#endif
 
 import Data.Either
 import qualified Data.Set as S
