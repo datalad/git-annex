@@ -15,6 +15,9 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
     since it needs 64 bit git now.
   * Build with silently-1.2.5.1 on Windows; the old one used "NUL" which
     is not supported with recent versions of ghc.
+  * init: When the repo is already initialized, and --version requests a
+    different version, error out rather than silently not changing the
+    version.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 

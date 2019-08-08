@@ -51,6 +51,12 @@ start os = starting "init" (ActionItemOther (Just $ initDesc os)) $
 
 perform :: InitOptions -> CommandPerform
 perform os = do
+	case initVersion os of
+		Nothing -> noop
+		Just wantversion -> getVersion >>= \case
+			Just v | v /= wantversion ->
+				giveup $ "This repository is already a initialized with version " ++ show (fromRepoVersion v) ++ ", not changing to requested version."
+			_ -> noop
 	initialize
 		(if null (initDesc os) then Nothing else Just (initDesc os))
 		(initVersion os)

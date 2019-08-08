@@ -9,3 +9,9 @@ I have not managed to reproduce this outside of the test suite.
 I wonder if perhaps the environment variable that the test suite sets
 to communicate with itself is not working on Windows, which sometimes
 has gotchas around environment variables. --[[Joey]]
+
+Hmm, I reordered the direct mode tests to come first, and the failure went
+away. Think that .t/repo gets reused, and being already a v7 repo, git annex
+init --version=7 silently did not change it. (Made that error out.)
+So the test suite should use different paths for the base repo in each test
+pass.
