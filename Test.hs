@@ -1598,6 +1598,8 @@ test_rsync_remote = intmpclonerepo $ do
 	annexed_present annexedfile
 	git_annex_shouldfail "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
+#else
+	noop
 #endif
 
 test_bup_remote :: Assertion
