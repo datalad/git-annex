@@ -18,6 +18,7 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
   * init: When the repo is already initialized, and --version requests a
     different version, error out rather than silently not changing the
     version.
+  * Fix some test suite failures on Windows.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 

@@ -102,7 +102,9 @@ innewrepo :: Assertion -> Assertion
 innewrepo a = withgitrepo $ \r -> indir r a
 
 inmainrepo :: Assertion -> Assertion
-inmainrepo = indir mainrepodir
+inmainrepo a = do
+	d <- mainrepodir
+	indir d a
 
 with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
 with_ssh_origin cloner a = cloner $ do
@@ -151,7 +153,8 @@ withtmpclonerepo = withtmpclonerepo' newCloneRepoConfig
 withtmpclonerepo' :: CloneRepoConfig -> (FilePath -> Assertion) -> Assertion
 withtmpclonerepo' cfg a = do
 	dir <- tmprepodir
-	clone <- clonerepo mainrepodir dir cfg
+	maindir <- mainrepodir
+	clone <- clonerepo maindir dir cfg
 	r <- tryNonAsync (a clone)
 	case r of
 		Right () -> return ()
@@ -164,7 +167,9 @@ disconnectOrigin :: Assertion
 disconnectOrigin = boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
 
 withgitrepo :: (FilePath -> Assertion) -> Assertion
-withgitrepo = bracket (setuprepo mainrepodir) return
+withgitrepo a = do
+	maindir <- mainrepodir
+	bracket (setuprepo maindir) return a
 
 indir :: FilePath -> IO a -> IO a
 indir dir a = do
@@ -425,12 +430,13 @@ withTestMode testmode inittests = withResource prepare release . const
   where
 	prepare = do
 		setTestMode testmode
+		setmainrepodir =<< newmainrepodir
 		case tryIngredients [consoleTestReporter] mempty inittests of
 			Nothing -> error "No tests found!?"
 			Just act -> unlessM act $
 				error "init tests failed! cannot continue"
 		return ()
-	release _ = cleanup mainrepodir
+	release _ = noop
 
 setTestMode :: TestMode -> IO ()
 setTestMode testmode = do
@@ -456,7 +462,6 @@ setTestMode testmode = do
 		, ("GIT_ANNEX_USE_GIT_SSH", "1")
 		, ("TESTMODE", show testmode)
 		]
-
 runFakeSsh :: [String] -> IO ()
 runFakeSsh ("-n":ps) = runFakeSsh ps
 runFakeSsh (_host:cmd:[]) = do
@@ -481,8 +486,24 @@ changeToTmpDir t = do
 tmpdir :: String
 tmpdir = ".t"
 
-mainrepodir :: FilePath
-mainrepodir = tmpdir </> "repo"
+mainrepodir :: IO FilePath
+mainrepodir = Utility.Env.getEnvDefault "MAINREPODIR"
+	(giveup "MAINREPODIR not set")
+
+setmainrepodir :: FilePath -> IO ()
+setmainrepodir d = Utility.Env.Set.setEnv "MAINREPODIR" d True
+
+newmainrepodir :: IO FilePath
+newmainrepodir = go (0 :: Int)
+  where
+	go n = do
+		let d = tmpdir </> "main" ++ show n
+		ifM (doesDirectoryExist d)
+			( go $ n + 1
+			, do
+				createDirectory d
+				return d
+			)
 
 tmprepodir :: IO FilePath
 tmprepodir = go (0 :: Int)

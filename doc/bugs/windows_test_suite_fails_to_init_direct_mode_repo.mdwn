@@ -2,16 +2,13 @@ For some reason the test suite on windows is failing to set up the direct
 mode repo; git-annex direct fails because the repo is a v7 repo in adjusted
 unlocked mode.
 
-It seems it's not running git-annex init with --version=5,
-or it does and it gets ignored.
-
 I have not managed to reproduce this outside of the test suite.
-I wonder if perhaps the environment variable that the test suite sets
-to communicate with itself is not working on Windows, which sometimes
-has gotchas around environment variables. --[[Joey]]
 
 Hmm, I reordered the direct mode tests to come first, and the failure went
-away. Think that .t/repo gets reused, and being already a v7 repo, git annex
-init --version=7 silently did not change it. (Made that error out.)
-So the test suite should use different paths for the base repo in each test
-pass.
+away. Think that .t/repo gets reused somehow, and being already a v7 repo, 
+git annex init --version=7 silently did not change it. (Now it will error
+out instead.)
+
+.t/repo is supposed to be deleted between each pass, but deleting
+directories on Windows is a fairly probabalistic venture. It would be
+better to use a different repo path for each pass. [[done]] --[[Joey]]
