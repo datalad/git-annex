@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="HOWTO"
+ date="2019-08-08T20:21:10Z"
+ content="""
+Hi,
+I think this is what you are looking for: 
+http://git-annex.branchable.com/tips/what_to_do_when_a_repository_is_corrupted/
+"""]]
