@@ -470,7 +470,12 @@ test_get :: Assertion
 test_get = test_get' intmpclonerepo
 
 test_get_ssh_remote :: Assertion
-test_get_ssh_remote = test_get' (with_ssh_origin intmpclonerepo)
+test_get_ssh_remote = 
+#ifndef mingw32_HOST_OS
+	test_get' (with_ssh_origin intmpclonerepo)
+#else
+	noop
+#endif
 
 test_get' :: (Assertion -> Assertion) -> Assertion
 test_get' setup = setup $ do
@@ -493,7 +498,12 @@ test_move :: Assertion
 test_move = test_move' intmpclonerepo
 
 test_move_ssh_remote :: Assertion
-test_move_ssh_remote = test_move' (with_ssh_origin intmpclonerepo)
+test_move_ssh_remote =
+#ifndef mingw32_HOST_OS
+	test_move' (with_ssh_origin intmpclonerepo)
+#else
+	noop
+#endif
 
 test_move' :: (Assertion -> Assertion) -> Assertion
 test_move' setup = setup $ do
