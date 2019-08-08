@@ -1743,7 +1743,7 @@ test_export_import = intmpclonerepoInDirect $ do
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
 	-- to be exported.
-	git_annex "sync" [] @? "sync failed"
+	git_annex "sync" ["--no-pull", "--no-push"] @? "sync failed"
 
 	git_annex "export" ["master", "--to", "foo"] @? "export to dir failed"
 	dircontains annexedfile (content annexedfile)
@@ -1804,7 +1804,7 @@ test_export_import_subdir = intmpclonerepoInDirect $ do
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
 	-- to be exported.
-	git_annex "sync" [] @? "sync failed"
+	git_annex "sync" ["--no-pull", "--no-push"] @? "sync failed"
 
 	-- Run three times because there was a bug that took a couple
 	-- of runs to lead to the wrong tree being written to the remote
