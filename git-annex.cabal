@@ -394,7 +394,7 @@ Executable git-annex
       unix-compat (>= 0.5),
       setenv,
       process (>= 1.6.2.0),
-      silently (>= 1.2.5.1),
+      silently (>= 1.2.5.1)
   else
     Build-Depends: unix (>= 2.7.2)
 
