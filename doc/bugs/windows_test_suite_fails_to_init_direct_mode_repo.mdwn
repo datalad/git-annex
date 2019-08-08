@@ -1,0 +1,11 @@
+For some reason the test suite on windows is failing to set up the direct
+mode repo; git-annex direct fails because the repo is a v7 repo in adjusted
+unlocked mode.
+
+It seems it's not running git-annex init with --version=5,
+or it does and it gets ignored.
+
+I have not managed to reproduce this outside of the test suite.
+I wonder if perhaps the environment variable that the test suite sets
+to communicate with itself is not working on Windows, which sometimes
+has gotchas around environment variables. --[[Joey]]
