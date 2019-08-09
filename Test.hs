@@ -36,7 +36,6 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
-import qualified Git.Merge
 import qualified Annex.Locations
 #ifndef mingw32_HOST_OS
 import qualified Types.GitConfig
@@ -387,20 +386,6 @@ test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \import
 		let importf = subdir </> "f"
 		writecontent (importdir </> importf) (content importf)
 		return (importdir </> subdir, importdir </> importf, importf)
-	annexed_present_imported f = ifM (annexeval Config.crippledFileSystem)
-		( annexed_present_unlocked f
-		, ifM (adjustedUnlockedBranch <$> getTestMode) 
-			( annexed_present_unlocked f
-			, annexed_present_locked f
-			)
-		)
-	annexed_notpresent_imported f = ifM (annexeval Config.crippledFileSystem)
-		( annexed_notpresent_unlocked f
-		, ifM (adjustedUnlockedBranch <$> getTestMode)
-			( annexed_notpresent_unlocked f
-			, annexed_notpresent_locked f
-			)
-		)
 
 test_reinject :: Assertion
 test_reinject = intmpclonerepoInDirect $ do
@@ -1759,27 +1744,22 @@ test_export_import = intmpclonerepoInDirect $ do
 	git_annex "get" [] @? "get of files failed"
 	annexed_present annexedfile
 
-	-- When on an adjusted branch, this updates the master branch
-	-- to match it, which is necessary since the master branch is going
-	-- to be exported.
-	git_annex "sync" ["--no-pull", "--no-push"] @? "sync failed"
-
+	-- Nothing to commit, but this makes sure the master branch
+	-- is in sync with the adjusted branch, which it may not be
+	-- depending on how the repository was set up.
+	commitchanges
 	git_annex "export" ["master", "--to", "foo"] @? "export to dir failed"
 	dircontains annexedfile (content annexedfile)
 
 	writedir "import" (content "import")
 	git_annex "import" ["master", "--from", "foo"] @? "import from dir failed"
-	up <- Git.Merge.mergeUnrelatedHistoriesParam
-	let mergeps = [Param "merge", Param "foo/master", Param "-mmerge"] ++ maybeToList up
-	boolSystem "git" mergeps @? "git merge foo/master failed"
-	-- FIXME fails when in an adjusted unlocked branch because
-	-- it's imported locked
-	--annexed_present "import"
+	git_annex "merge" ["foo/master"] @? "git annex merge foo/master failed"
+	annexed_present_imported "import"
 
 	nukeFile "import"
 	writecontent "import" (content "newimport1")
 	git_annex "add" ["import"] @? "add of import failed"
-	boolSystem "git" [Param "commit", Param "-q", Param "-mchanged"] @? "git commit failed"
+	commitchanges
 	git_annex "export" ["master", "--to", "foo"] @? "export modified file to dir failed"
 	dircontains "import" (content "newimport1")
 
@@ -1788,7 +1768,7 @@ test_export_import = intmpclonerepoInDirect $ do
 	nukeFile "import"
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
-	boolSystem "git" [Param "commit", Param "-q", Param "-mchanged"] @? "git commit failed"
+	commitchanges
 	git_annex_shouldfail "export" ["master", "--to", "foo"] @? "export failed to fail in conflict"
 	dircontains "import" (content "newimport2")
 
@@ -1798,7 +1778,7 @@ test_export_import = intmpclonerepoInDirect $ do
 	nukeFile "import"
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
-	boolSystem "git" [Param "commit", Param "-q", Param "-mchanged"] @? "git commit failed"
+	commitchanges
 	git_annex "export" ["master", "--to", "foo"] @? "export failed after import conflict"
 	dircontains "import" (content "newimport3")
   where
@@ -1806,6 +1786,10 @@ test_export_import = intmpclonerepoInDirect $ do
 		((v==) <$> readFile ("dir" </> f))
 			@? ("did not find expected content of " ++ "dir" </> f)
 	writedir f = writecontent ("dir" </> f)
+	-- When on an adjusted branch, this updates the master branch
+	-- to match it, which is necessary since the master branch is going
+	-- to be exported.
+	commitchanges = git_annex "sync" ["--no-pull", "--no-push"] @? "sync failed"
 
 test_export_import_subdir :: Assertion
 test_export_import_subdir = intmpclonerepoInDirect $ do

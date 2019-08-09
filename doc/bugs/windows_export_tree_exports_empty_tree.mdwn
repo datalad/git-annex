@@ -21,4 +21,5 @@ tests are likely to behave any differently there.
 
 On balance, I think that making the test case run a git-annex sync
 before exporting is good enough.
---[[Joey]]
+
+[[done]] --[[Joey]]

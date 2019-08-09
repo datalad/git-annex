@@ -400,6 +400,24 @@ annexed_present_locked f = ifM (annexeval Config.crippledFileSystem)
 annexed_present_unlocked :: FilePath -> Assertion
 annexed_present_unlocked = runchecks
 	[checkregularfile, checkcontent, checkwritable, inlocationlog]
+	
+annexed_present_imported :: FilePath -> Assertion
+annexed_present_imported f = ifM (annexeval Config.crippledFileSystem)
+	( annexed_present_unlocked f
+	, ifM (adjustedUnlockedBranch <$> getTestMode) 
+		( annexed_present_unlocked f
+		, annexed_present_locked f
+		)
+	)
+
+annexed_notpresent_imported :: FilePath -> Assertion
+annexed_notpresent_imported f = ifM (annexeval Config.crippledFileSystem)
+	( annexed_notpresent_unlocked f
+	, ifM (adjustedUnlockedBranch <$> getTestMode)
+		( annexed_notpresent_unlocked f
+		, annexed_notpresent_locked f
+		)
+	)
 
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]

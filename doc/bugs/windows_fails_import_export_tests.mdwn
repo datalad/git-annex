@@ -19,3 +19,6 @@ legitimate merge conflict.
 If so, note that the git-annex-import man page suggests doing just such a
 merge, so perhaps the docs will need to be updated, if some git-annex
 command is instead used to do the merge. --[[Joey]]
+
+> Probably down to only one test failure now after some fixes. Have not
+> checked. --[[Joey]]
