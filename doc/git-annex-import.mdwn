@@ -35,17 +35,23 @@ kinds of special remotes will let you configure them this way.
 To import from a special remote, you must specify the name of a branch.
 A corresponding remote tracking branch will be updated by `git annex
 import`. After that point, it's the same as if you had run a `git fetch`
-from a regular git remote; you can `git merge` the changes into your
+from a regular git remote; you can merge the changes into your
 currently checked out branch.
 
 For example:
 
 	git annex import master --from myremote
-	git merge myremote/master
+	git annex merge myremote/master
 
-Note that you may need to pass `--allow-unrelated-histories` the first time
-you `git merge` from an import. Think of this as the remote being a
-separate git repository with its own files. If you first
+You could just as well use `git merge myremote/master` as the second step,
+but using `git-annex merge` avoids a couple of gotchas. When using adjusted
+branches, it adjusts the branch before merging from it. And it avoids
+the merge failing on the first merge from an import due to unrelated
+histories.
+
+If you do use `git merge`, you can pass `--allow-unrelated-histories` the
+first time you `git merge` from an import. Think of this as the remote
+being a separate git repository with its own files. If you first
 `git annex export` files to a remote, and then `git annex import` from it,
 you won't need that option.
 

@@ -1848,9 +1848,7 @@ test_export_import_subdir = intmpclonerepoInDirect $ do
 	
 	testimport = do
 		git_annex "import" ["master:"++subdir, "--from", "foo"] @? "import of subdir failed"
-		up <- Git.Merge.mergeUnrelatedHistoriesParam
-		let mergeps = [Param "merge", Param "foo/master", Param "-mmerge"] ++ maybeToList up
-		boolSystem "git" mergeps @? "git merge foo/master failed"
+		git_annex "merge" ["foo/master"] @? "git annex merge foo/master failed"
 
 		-- Make sure that import did not import the file to the top
 		-- of the repo.

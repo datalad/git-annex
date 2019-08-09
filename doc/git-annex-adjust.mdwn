@@ -24,6 +24,11 @@ To propagate commits from the adjusted branch back to the original branch,
 and to other repositories, as well as to merge in changes from other
 repositories, run `git annex sync`.
 
+When in an adjusted branch, using `git merge otherbranch` is often not
+ideal, because merging a non-adjusted branch may lead to unncessary
+merge conflicts, or add files in non-adjusted form. To avoid those
+problems, use `git annex merge otherbranch`.
+
 Re-running this command with the same options
 while inside the adjusted branch will update the adjusted branch
 as necessary (eg for `--hide-missing`), and will also propagate commits

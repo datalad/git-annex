@@ -57,7 +57,7 @@ for more details, and bear in mind that you can also use commands like
 these to only import from or export to the android device:
 
 	git annex import master:android --from android
-	git merge android/master
+	git annex merge android/master
 	git annex export master:android --to android
 
 ## sample workflows

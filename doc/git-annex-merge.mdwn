@@ -1,16 +1,21 @@
 # NAME
 
-git-annex merge - automatically merge changes from remotes
+git-annex merge - merge changes from remotes
 
 # SYNOPSIS
 
-git annex merge
+git annex merge [branch]
 
 # DESCRIPTION
 
-This performs the same merging (and merge conflict resolution)
-that is done by the sync command, but without pushing or pulling any
-data.
+When run without any parameters, this performs the same merging (and merge
+conflict resolution) that is done by the sync command, but without pushing
+or pulling any data.
+
+When a branch to merge is specified, this merges it, using the same merge
+conflict resolution as the sync command. This is especially useful on
+an adjusted branch, because it applies the same adjustment to the
+branch before merging it.
 
 When annex.resolvemerge is set to false, merge conflict resolution
 will not be done.
@@ -20,6 +25,8 @@ will not be done.
 [[git-annex]](1)
 
 [[git-annex-sync]](1)
+
+[[git-annex-adjust]](1)
 
 # AUTHOR
 
