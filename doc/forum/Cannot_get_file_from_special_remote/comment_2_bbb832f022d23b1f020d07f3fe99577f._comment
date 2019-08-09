@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-08-09T19:38:36Z"
+ content="""
+What does `git annex info StorageBox` say about it?
+"""]]
