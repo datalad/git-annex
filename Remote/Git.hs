@@ -43,6 +43,7 @@ import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
 import Utility.Metered
 import Utility.CopyFile
+import Utility.FileMode
 import Utility.Env
 import Utility.Batch
 import Utility.SimpleProtocol
@@ -741,6 +742,8 @@ rsyncOrCopyFile st rsyncparams src dest p =
 	copycowtried = case st of
 		State _ _ (CopyCoWTried v) _ -> v
 	dorsync = do
+		-- dest may already exist, so make sure rsync can write to it
+		void $ liftIO $ tryIO $ allowWrite dest
 		oh <- mkOutputHandler
 		Ssh.rsyncHelper oh (Just p) $
 			rsyncparams ++ [File src, File dest]
