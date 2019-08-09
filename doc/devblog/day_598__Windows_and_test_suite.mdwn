@@ -1,0 +1,21 @@
+Spent several days fixing test suite failures on Windows. This started out
+really annoying; I had to chase back a "NUL" -- the string not the
+pointer! -- to a indirect dependency that needed an update to work with
+recent ghc on Windows.
+
+Then yesterday I fixed most of the other test suite failures on Windows.
+But, it became clear that the test suite was only testing adjusted unlocked
+branches on Windows, and was finding non-Windows-specific problems
+involving them. So, today I added a fifth pass to the test suite, so it
+will always test adjusted unlocked branches. And fixed all the problems
+with them that test suite turned up.
+
+It turned out there was no good way to use `git-annex import`
+with an adjusted branch. Merging the imported branch into an adjusted
+branch is likely to result in spurious merge conflicts, and the merged
+files don't get adjusted. The solution was adding a new way to merge
+a single branch in the same way that git-annex sync handles merges: 
+`git-annex merge remote/master`
+
+Sadly, I think there are still a couple of test failures on Windows.
+(Can't win em all..)
