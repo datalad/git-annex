@@ -1,6 +1,6 @@
 {- git-annex test suite framework
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -374,7 +374,7 @@ runchecks (a:as) f = do
 	runchecks as f
 
 annexed_notpresent :: FilePath -> Assertion
-annexed_notpresent f = ifM (unlockedFiles <$> getTestMode)
+annexed_notpresent f = ifM (hasUnlockedFiles <$> getTestMode)
 	( annexed_notpresent_unlocked f
 	, annexed_notpresent_locked f
 	)
@@ -386,7 +386,7 @@ annexed_notpresent_unlocked :: FilePath -> Assertion
 annexed_notpresent_unlocked = runchecks [checkregularfile, checkispointerfile, notinlocationlog]
 
 annexed_present :: FilePath -> Assertion
-annexed_present f = ifM (unlockedFiles <$> getTestMode)
+annexed_present f = ifM (hasUnlockedFiles <$> getTestMode)
 	( annexed_present_unlocked f
 	, annexed_present_locked f
 	)
@@ -413,6 +413,7 @@ add_annex f = ifM (unlockedFiles <$> getTestMode)
 data TestMode = TestMode
 	{ forceDirect :: Bool
 	, unlockedFiles :: Bool
+	, adjustedUnlockedBranch :: Bool
 	, annexVersion :: Types.RepoVersion.RepoVersion
 	, keepFailures :: Bool
 	} deriving (Read, Show)
@@ -421,9 +422,13 @@ testMode :: TestOptions -> Types.RepoVersion.RepoVersion -> TestMode
 testMode opts v = TestMode
 	{ forceDirect = False
 	, unlockedFiles = False
+	, adjustedUnlockedBranch = False
 	, annexVersion = v
 	, keepFailures = keepFailuresOption opts
 	}
+
+hasUnlockedFiles :: TestMode -> Bool
+hasUnlockedFiles m = unlockedFiles m || adjustedUnlockedBranch m
 
 withTestMode :: TestMode -> TestTree -> TestTree -> TestTree
 withTestMode testmode inittests = withResource prepare release . const
@@ -477,6 +482,9 @@ setupTestMode = do
 	testmode <- getTestMode
 	when (forceDirect testmode) $
 		git_annex "direct" ["-q"] @? "git annex direct failed"
+	when (adjustedUnlockedBranch testmode) $ do
+		boolSystem "git" [Param "commit", Param "--allow-empty", Param "-m", Param "empty"] @? "git commit failed"
+		git_annex "adjust" ["--unlock"] @? "git annex adjust failed"
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do

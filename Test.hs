@@ -147,7 +147,8 @@ tests crippledfilesystem opts = testGroup "Tests" $ properties :
 	map (\(d, te) -> withTestMode te initTests (unitTests d)) testmodes
   where
 	testmodes = catMaybes
-		[ Just ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
+		[ Just ("v7 adjusted unlocked branch", (testMode opts (RepoVersion 7)) { adjustedUnlockedBranch = True })
+		, Just ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
 		, unlesscrippled ("v5", testMode opts (RepoVersion 5))
 		, unlesscrippled ("v7 locked", testMode opts (RepoVersion 7))
 		, Just ("v5 direct", (testMode opts (RepoVersion 5)) { forceDirect = True })
@@ -388,11 +389,17 @@ test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \import
 		return (importdir </> subdir, importdir </> importf, importf)
 	annexed_present_imported f = ifM (annexeval Config.crippledFileSystem)
 		( annexed_present_unlocked f
-		, annexed_present_locked f
+		, ifM (adjustedUnlockedBranch <$> getTestMode) 
+			( annexed_present_unlocked f
+			, annexed_present_locked f
+			)
 		)
 	annexed_notpresent_imported f = ifM (annexeval Config.crippledFileSystem)
 		( annexed_notpresent_unlocked f
-		, annexed_notpresent_locked f
+		, ifM (adjustedUnlockedBranch <$> getTestMode)
+			( annexed_notpresent_unlocked f
+			, annexed_notpresent_locked f
+			)
 		)
 
 test_reinject :: Assertion
@@ -602,7 +609,7 @@ test_lock :: Assertion
 test_lock = intmpclonerepoInDirect $ do
 	annexed_notpresent annexedfile
 	unlessM (annexeval Annex.Version.versionSupportsUnlockedPointers) $
-		ifM (unlockedFiles <$> getTestMode)
+		ifM (hasUnlockedFiles <$> getTestMode)
 			( git_annex_shouldfail "lock" [annexedfile] @? "lock failed to fail with not present file"
 			, git_annex_shouldfail "unlock" [annexedfile] @? "unlock failed to fail with not present file"
 			)
@@ -708,7 +715,7 @@ test_partial_commit = intmpclonerepoInDirect $ do
 		)
 
 test_fix :: Assertion
-test_fix = intmpclonerepoInDirect $ unlessM (unlockedFiles <$> getTestMode) $ do
+test_fix = intmpclonerepoInDirect $ unlessM (hasUnlockedFiles <$> getTestMode) $ do
 	annexed_notpresent annexedfile
 	git_annex "fix" [annexedfile] @? "fix of not present failed"
 	annexed_notpresent annexedfile
@@ -779,7 +786,7 @@ test_fsck_basic = intmpclonerepo $ do
 		git_annex "get" [f] @? "get of file failed"
 		Utility.FileMode.allowWrite f
 		writecontent f (changedcontent f)
-		ifM (annexeval Config.isDirect <||> unlockedFiles <$> getTestMode)
+		ifM (annexeval Config.isDirect <||> hasUnlockedFiles <$> getTestMode)
 			( git_annex "fsck" [] @? "fsck failed on unlocked file with changed file content"
 			, git_annex_shouldfail "fsck" [] @? "fsck failed to fail with corrupted file content"
 			)
@@ -860,7 +867,7 @@ test_migrate' usegitattributes = intmpclonerepoInDirect $ do
 	checkbackend sha1annexedfile backendSHA256
 
 test_unused :: Assertion
--- This test is broken in direct mode
+-- This test is broken in direct mode.
 test_unused = intmpclonerepoInDirect $ do
 	checkunused [] "in new clone"
 	git_annex "get" [annexedfile] @? "get of file failed"
@@ -870,13 +877,15 @@ test_unused = intmpclonerepoInDirect $ do
 	checkunused [] "after get"
 	boolSystem "git" [Param "rm", Param "-fq", File annexedfile] @? "git rm failed"
 	checkunused [] "after rm"
-	boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "foo"] @? "git commit failed"
+	-- commit the rm, and when on an adjusted branch, sync it back to
+	-- the master branch
+	git_annex "sync" ["--no-push", "--no-pull"] @? "git-annex sync failed"
 	checkunused [] "after commit"
 	-- unused checks origin/master; once it's gone it is really unused
 	boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "git remote rm origin failed"
 	checkunused [annexedfilekey] "after origin branches are gone"
 	boolSystem "git" [Param "rm", Param "-fq", File sha1annexedfile] @? "git rm failed"
-	boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "foo"] @? "git commit failed"
+	git_annex "sync" ["--no-push", "--no-pull"] @? "git-annex sync failed"
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
@@ -894,7 +903,7 @@ test_unused = intmpclonerepoInDirect $ do
 	-- This is only relevant when using locked files; if the file is
 	-- unlocked, the work tree file has the content, and there's no way
 	-- to associate it with the key.
-	unlessM (unlockedFiles <$> getTestMode) $ do
+	unlessM (hasUnlockedFiles <$> getTestMode) $ do
 		writecontent "unusedfile" "unusedcontent"
 		git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 		unusedfilekey <- getKey backendSHA256E "unusedfile"
@@ -926,7 +935,7 @@ test_unused = intmpclonerepoInDirect $ do
 	-- When an unlocked file is modified, git diff will cause git-annex
 	-- to add its content to the repository. Make sure that's not
 	-- found as unused.
-	whenM (unlockedFiles <$> getTestMode) $ do
+	whenM (hasUnlockedFiles <$> getTestMode) $ do
 		let f = "unlockedfile"
 		writecontent f "unlockedcontent1"
 		boolSystem "git" [Param "add", File "unlockedfile"] @? "git add failed"
@@ -1386,7 +1395,7 @@ test_uncommitted_conflict_resolution = do
  - lost track of whether a file was a symlink. 
  -}
 test_conflict_resolution_symlink_bit :: Assertion
-test_conflict_resolution_symlink_bit = unlessM (unlockedFiles <$> getTestMode) $
+test_conflict_resolution_symlink_bit = unlessM (hasUnlockedFiles <$> getTestMode) $
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 ->
 			withtmpclonerepo $ \r3 -> do
@@ -1719,7 +1728,7 @@ test_add_subdirs = intmpclonerepo $ do
 
 	{- Regression test for Windows bug where symlinks were not
 	 - calculated correctly for files in subdirs. -}
-	unlessM (unlockedFiles <$> getTestMode) $ do
+	unlessM (hasUnlockedFiles <$> getTestMode) $ do
 		git_annex "sync" [] @? "sync failed"
 		l <- annexeval $ Utility.FileSystemEncoding.decodeBL
 			<$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
