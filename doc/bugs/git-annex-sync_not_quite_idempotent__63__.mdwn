@@ -1,0 +1,90 @@
+### Please describe the problem.
+I had thought that, after running git-annex-sync in a repo, running it again should always do nothing (if no remote has changed).
+But I'm seeing an example where I have to run git-annex-sync twice for subsequent runs to do nothing.
+
+### What steps will reproduce the problem?
+See below.  The repo has one submodule, in the directory viral-ngs/ .
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+(master_env_v150_py36) 16:44  [viral-ngs-benchmarks] $ uname -a
+Linux ip-172-31-80-189.ec2.internal 4.14.133-113.112.amzn2.x86_64 #1 SMP Tue Jul 30 18:29:50 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+(master_env_v150_py36) 16:46  [viral-ngs-benchmarks] $ git annex version
+git-annex version: 7.20190730-g1030771
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sql\
+ite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_2\
+24 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE\
+2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224\
+ BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+(master_env_v150_py36) 16:44  [viral-ngs-benchmarks] $ git annex sync
+On branch is-import-rabies200
+Your branch is up to date with 'origin/is-import-rabies200'.
+
+
+It took 5.25 seconds to enumerate untracked files. 'status -uno'
+may speed it up, but you have to be careful not to forget to add
+new files yourself (see 'git help status').
+nothing to commit, working tree clean
+commit ok
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 0), reused 1 (delta 0), pack-reused 0
+Unpacking objects: 100% (1/1), done.
+From github.com:broadinstitute/viral-ngs-benchmarks
+   1d808d3a08c..de7758ca784  is-import-rabies200        -> origin/is-import-rabies200
+   1d808d3a08c..de7758ca784  synced/is-import-rabies200 -> origin/synced/is-import-rabies200
+Updating 1d808d3a08c..de7758ca784
+Fast-forward
+ viral-ngs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+Already up to date.
+pull origin ok
+(master_env_v150_py36) 16:44  [viral-ngs-benchmarks] $ git annex sync
+[is-import-rabies200 f3e0898cd33] git-annex in viral-ngs-benchmarks copy on /ilya
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+commit ok
+pull origin ok
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (2/2), 946 bytes | 946.00 KiB/s, done.
+Total 2 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To github.com:broadinstitute/viral-ngs-benchmarks.git
+   63fe6905f53..1d808d3a08c  is-import-rabies200 -> synced/is-import-rabies200
+push origin ok
+(master_env_v150_py36) 16:42  [viral-ngs-benchmarks] $ git annex sync
+On branch is-import-rabies200
+Your branch is up to date with 'origin/is-import-rabies200'.
+
+
+It took 5.36 seconds to enumerate untracked files. 'status -uno'
+may speed it up, but you have to be careful not to forget to add
+new files yourself (see 'git help status').
+nothing to commit, working tree clean
+commit ok
+pull origin ok
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
