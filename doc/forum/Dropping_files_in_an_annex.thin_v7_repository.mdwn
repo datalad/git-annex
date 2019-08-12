@@ -1,0 +1,16 @@
+I think git-annex is an excellent project and could solve all my backup problems if I can just figure out how to use it properly!
+My primary usage is as a backup tool: I'm a commercial artist and animator so I have a large archive of projects and assets to manage. About two months ago I found out about git-annex and could see how it could help me create a distributed backup system and easily locate which external HDD the data is stored on.
+The tools I use don't play nicely with symlinks, so my local repository is upgraded to v7 and set to annex.thin.
+I had some issues with speed so I followed some steps [here](https://git-annex.branchable.com/tips/Repositories_with_large_number_of_files/) to get backups to complete in less than 30mins.
+
+Now a few months later, I've completed some projects and want to free up the space on my local HDD and just keep the backups - still being able to pull them down when I need to. I moved the files I want to drop into a directory '_archive' inside the repository. I ran 'git annex sync --content --to backupHDD01' at this point
+
+I tried running 'git annex drop _archive' but I get no output and the size of the directory stays the same.
+
+Then I tried locking every file in the directory and dropping it but again, no change.
+
+Looking through the directory, some of the files are broken symlinks (this is what I wanted) but most are still just hardlinks. Furthermore,'git annex whereis file.ext' only returns output on some of the files. 'git status' reports a clean working tree.
+
+Have I misinterpreted this whole annex.thin thing? Is there a better way to do what I want to do?
+
+Thanks! J.
