@@ -65,18 +65,17 @@ readonlyRemoveExportDirectory _ = readonlyFail
 readonlyRenameExport :: Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
 readonlyRenameExport _ _ _ = return Nothing
 
-readonlyStoreExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
-readonlyStoreExportWithContentIdentifier _ _ _ _ _ = do
-	readonlyWarning
-	return Nothing
+readonlyStoreExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
+readonlyStoreExportWithContentIdentifier _ _ _ _ _ =
+	return $ Left readonlyWarning
 
 readonlyRemoveExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 readonlyRemoveExportWithContentIdentifier _ _ _ = readonlyFail
 
 readonlyFail :: Annex Bool
 readonlyFail = do
-	readonlyWarning
+	warning readonlyWarning
 	return False
 
-readonlyWarning :: Annex ()
-readonlyWarning = warning "this remote is readonly"
+readonlyWarning :: String
+readonlyWarning = "this remote is readonly"

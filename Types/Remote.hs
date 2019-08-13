@@ -292,7 +292,7 @@ data ImportActions a = ImportActions
 		-> [ContentIdentifier]
 		-- ^ old content that it's safe to overwrite
 		-> MeterUpdate
-		-> a (Maybe ContentIdentifier)
+		-> a (Either String ContentIdentifier)
 	-- This is used rather than removeExport when a special remote
 	-- supports imports.
 	--

@@ -395,20 +395,22 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 		| currcid == Just cid = cont
 		| otherwise = return Nothing
 
-storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
 storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
-	catchDefaultIO Nothing $ do
+	catchIO go (return . Left . show)
+  where
+	go = do
 		liftIO $ createDirectoryIfMissing True destdir
 		withTmpFileIn destdir template $ \tmpf tmph -> do
 			liftIO $ withMeteredFile src p (L.hPut tmph)
 			liftIO $ hFlush tmph
 			liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
-				Nothing -> return Nothing
+				Nothing -> 
+					return $ Left "unable to generate content identifier"
 				Just newcid ->
-					checkExportContent dir loc (newcid:overwritablecids) Nothing $ const $ do
+					checkExportContent dir loc (newcid:overwritablecids) (Left "unsafe to overwrite file") $ const $ do
 						liftIO $ rename tmpf dest
-						return (Just newcid)
-  where
+						return (Right newcid)
 	dest = exportPath dir loc
 	(destdir, base) = splitFileName dest
 	template = relatedTemplate (base ++ ".tmp")

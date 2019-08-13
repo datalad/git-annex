@@ -575,7 +575,7 @@ rewritePreconditionException a = catchJust (Url.matchStatusCodeException want) a
 --
 -- When the bucket is not versioned, data loss can result.
 -- This is why that configuration requires --force to enable.
-storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
+storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
 storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p
 	| versioning info = go
 	-- FIXME Actual aws version that supports getting Etag for a store
@@ -584,20 +584,18 @@ storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p
 #if MIN_VERSION_aws(0,99,0)
 	| otherwise = go
 #else
-	| otherwise = do
-		warning "git-annex is built with too old a version of the aws library to support this operation"
-		return Nothing
+	| otherwise = return $
+		Left "git-annex is built with too old a version of the aws library to support this operation"
 #endif
   where
 	go = storeExportS3' hv r info magic src k loc p >>= \case
-		(False, _) -> return Nothing
-		(True, (_, Just vid)) -> return $ Just $
+		(False, _) -> return $ Left "failed to store content in S3 bucket"
+		(True, (_, Just vid)) -> return $ Right $
 			mkS3VersionedContentIdentifier vid
-		(True, (Just etag, Nothing)) -> return $ Just $
+		(True, (Just etag, Nothing)) -> return $ Right $
 			mkS3UnversionedContentIdentifier etag
-		(True, (Nothing, Nothing)) -> do
-			warning "did not get ETag for store to S3 bucket"
-			return Nothing
+		(True, (Nothing, Nothing)) -> 
+			return $ Left "did not get ETag for store to S3 bucket"
 
 -- Does not guarantee that the removed object has the content identifier,
 -- but when the bucket is versioned, the removed object content can still

@@ -57,7 +57,7 @@ instance HasImportUnsupported (ImportActions Annex) where
 	importUnsupported = ImportActions
 		{ listImportableContents = return Nothing
 		, retrieveExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
-		, storeExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
+		, storeExportWithContentIdentifier = \_ _ _ _ _ -> return (Left "import not supported")
 		, removeExportWithContentIdentifier = \_ _ _ -> return False
 		, removeExportDirectoryWhenEmpty = Just $ \_ -> return False
 		, checkPresentExportWithContentIdentifier = \_ _ _ -> return False
@@ -154,8 +154,10 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 					oldcids <- liftIO $ concat
 						<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) oldks
 					storeExportWithContentIdentifier (importActions r') f k loc oldcids p >>= \case
-						Nothing -> return False
-						Just newcid -> do
+						Left err -> do
+							warning err
+							return False
+						Right newcid -> do
 							withExclusiveLock gitAnnexContentIdentifierLock $ do
 								liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
 								liftIO $ ContentIdentifier.flushDbQueue db

@@ -291,17 +291,19 @@ retrieveExportWithContentIdentifierM serial adir loc cid dest mkkey _p = catchDe
   where
 	src = androidExportLocation adir loc
 
-storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Maybe ContentIdentifier)
-storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p = catchDefaultIO Nothing $
+storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
+storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
 	-- Check if overwrite is safe before sending, because sending the
 	-- file is expensive and don't want to do it unncessarily.
 	ifM checkcanoverwrite
 		( ifM (store'' serial dest src checkcanoverwrite)
-			( liftIO $ either (const Nothing) id 
-				<$> getExportContentIdentifier serial adir loc
-			, return Nothing
+			( liftIO $ getExportContentIdentifier serial adir loc >>= return . \case
+				Right (Just cid) -> Right cid
+				Right Nothing -> Left "adb failed to store file"
+				Left _ -> Left "unable to get content identifier for file stored on adtb"
+			, return $ Left "adb failed to store file"
 			)
-		, return Nothing
+		, return $ Left "unsafe to overwrite file"
 		)
   where
 	dest = androidExportLocation adir loc
@@ -377,6 +379,7 @@ mkAdbCommand :: AndroidSerial -> [CommandParam] -> [CommandParam]
 mkAdbCommand serial cmd = [Param "-s", Param (fromAndroidSerial serial)] ++ cmd
 
 -- Gets the current content identifier for a file on the android device.
+-- If the file is not present, returns Right Nothing
 getExportContentIdentifier :: AndroidSerial -> AndroidPath -> ExportLocation -> IO (Either ExitCode (Maybe ContentIdentifier))
 getExportContentIdentifier serial adir loc = liftIO $ do
 	ls <- adbShellRaw serial $ unwords
