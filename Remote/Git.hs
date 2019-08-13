@@ -821,9 +821,11 @@ data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck CopyCoWTried (Anne
 getRepoFromState :: State -> Annex Git.Repo
 getRepoFromState (State _ _ _ a) = fst <$> a
 
+#ifndef mingw32_HOST_OS
 {- The config of the remote git repository, cached for speed. -}
 getGitConfigFromState :: State -> Annex GitConfig
 getGitConfigFromState (State _ _ _ a) = snd <$> a
+#endif
 
 mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
 mkState r u gc = do
