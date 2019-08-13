@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2019-08-12T20:15:01Z"
+ content="""
+Could there be some point release to facilitate Windows getting a version with not broken dependency?  We are still experiencing tests failures while installing/using [https://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe](https://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe) which reports git annex 
+7.20190709-g15a972dd3.  Ref: https://ci.appveyor.com/project/mih/datalad/builds/26646252/job/yvrb8hxqjo4ly6v1
+
+"""]]

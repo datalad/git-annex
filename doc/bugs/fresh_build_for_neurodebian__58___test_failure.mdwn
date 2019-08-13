@@ -1,0 +1,31 @@
+might be a flaky test/operation, happened while building in i386 buster environment:
+
+[[!format sh """
+neurodebian@smaug ..7.20190730+git103-g070fbd693-1~ndall+1 % grep -B20 -A1 FAIL git-annex_7.20190730+git103-g070fbd693-1~ndall+1_i386.build
+             20 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+(checksum...) (recording state in git...)
+ok
+(recording state in git...)
+OK (1.00s)
+    move (ssh remote):                                    move foo (from origin...) 
+(checksum...) ok                  
+(recording state in git...)
+move foo (to origin...) 
+ok                                
+(recording state in git...)
+OK (0.99s)
+    copy:                                                 copy foo (from origin...) 
+SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+             20 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+
+SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+             20 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+failed
+copy: 1 failed
+FAIL (0.34s)
+      Test.hs:530:
+"""]]
+
+I have tried to rebuild (`debian/rules binary`) second time while in the same environment -- didn't succeed... but then I proceeded to build amd64 fine, and redid i386 build just fine
+
+[[!meta author=yoh]]

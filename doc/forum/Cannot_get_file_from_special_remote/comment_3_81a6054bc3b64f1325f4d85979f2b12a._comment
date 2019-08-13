@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="Horus"
+ avatar="http://cdn.libravatar.org/avatar/8f0ee08b98ea5bba76c3fe112c08851c"
+ subject="comment 3"
+ date="2019-08-12T07:40:57Z"
+ content="""
+It gives me:
+
+```
+% git annex info StorageBox
+uuid: 00638e8a-ce29-4c41-b0df-e38bbbea303c
+description: [StorageBox]
+remote: StorageBox
+trust: semitrusted
+cost: 250.0
+type: webdav
+creds: embedded in git repository (gpg encrypted)
+url: https://xyz.your-storagebox.de/annex/Documents
+encryption: hybrid (to gpg keys: 4F4FB5E450C86B8F)
+chunking: 10 megabyteschunks
+remote annex keys: 9629
+remote annex size: 44.27 gigabytes
+```
+"""]]
