@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2019-08-13T18:15:36Z"
+ content="""
+and git-annex cannot rely on the check that size of the receiving file has reached the target size?
+"""]]
