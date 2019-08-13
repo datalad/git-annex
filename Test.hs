@@ -147,7 +147,7 @@ tests crippledfilesystem opts = testGroup "Tests" $ properties :
   where
 	testmodes = catMaybes
 		[ Just ("v7 adjusted unlocked branch", (testMode opts (RepoVersion 7)) { adjustedUnlockedBranch = True })
-		, Just ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
+		, unlesscrippled ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
 		, unlesscrippled ("v5", testMode opts (RepoVersion 5))
 		, unlesscrippled ("v7 locked", testMode opts (RepoVersion 7))
 		, Just ("v5 direct", (testMode opts (RepoVersion 5)) { forceDirect = True })
