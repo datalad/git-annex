@@ -28,3 +28,5 @@ so the hook can be installed and will work. On Windows, a hook can start
 with #!/bin/sh and not be executable, and will be run by the bash bundled
 with git for windows.
 --[[Joey]]
+
+> [[fixed|done]]; 100% test pass on windows now --[[Joey]]
