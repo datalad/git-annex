@@ -27,7 +27,6 @@ seek [] = do
 seek bs = do
 	prepMerge
 	forM_ bs (commandAction . mergeBranch . Git.Ref)
-seek _ = giveup ""
 
 mergeAnnexBranch :: CommandStart
 mergeAnnexBranch = starting "merge" (ActionItemOther (Just "git-annex")) $ do
@@ -42,5 +41,4 @@ mergeSyncedBranch = mergeLocal mergeConfig def =<< getCurrentBranch
 mergeBranch :: Git.Ref -> CommandStart
 mergeBranch r = starting "merge" (ActionItemOther (Just (Git.fromRef r))) $ do
 	currbranch <- getCurrentBranch
-	merge currbranch mergeConfig def Git.Branch.ManualCommit r
-	next $ return True
+	nest $ merge currbranch mergeConfig def Git.Branch.ManualCommit r
