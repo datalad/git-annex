@@ -9,6 +9,9 @@ remote.
 
 No indication of why it failed.
 
+> Update: Now it shows the problem, which is that the exported file is
+> locked so statting it fails. --[[Joey]]
+
 The second test fails in an import. It gets as far as updating foo/master,
 but then when it tries to merge that branch, there's a merge conflict.
 That merge conflict seems very likely due to being on an adjusted branch;

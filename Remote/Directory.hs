@@ -404,6 +404,7 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
 		withTmpFileIn destdir template $ \tmpf tmph -> do
 			liftIO $ withMeteredFile src p (L.hPut tmph)
 			liftIO $ hFlush tmph
+			liftIO $ hClose tmph
 			liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
 				Nothing -> 
 					return $ Left "unable to generate content identifier"
