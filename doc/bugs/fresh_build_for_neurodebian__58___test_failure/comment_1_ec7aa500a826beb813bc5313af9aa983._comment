@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-13T17:28:15Z"
+ content="""
+This is the same problem I tried to deal with in 
+[[!commit f27c5db5c566bdc0baae256b67df04a50027679f]].
+Apparently not fully
+
+Or at least the double run of rsync with no indication
+why it thought the first one failed appears to be the same.
+And IIRC I saw that sometimes without the permissions error and it still
+failed.
+
+I was having to run git-annex test in a loop for an hour or so to reproduce
+it.
+
+So, for some reason git-annex thinks the rsync failed, although it got to
+100%. If that happens once, it retries automatically. The second time it
+thinks rsync has failed, it sees the file didn't get any larger,
+and so gives up. That makes sense, but I don't know how rsync would get 
+to 100% and then apparently exit nonzero, without displaying any error
+message.
+"""]]
