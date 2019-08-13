@@ -41,4 +41,4 @@ mergeSyncedBranch = mergeLocal mergeConfig def =<< getCurrentBranch
 mergeBranch :: Git.Ref -> CommandStart
 mergeBranch r = starting "merge" (ActionItemOther (Just (Git.fromRef r))) $ do
 	currbranch <- getCurrentBranch
-	nest $ merge currbranch mergeConfig def Git.Branch.ManualCommit r
+	next $ merge currbranch mergeConfig def Git.Branch.ManualCommit r
