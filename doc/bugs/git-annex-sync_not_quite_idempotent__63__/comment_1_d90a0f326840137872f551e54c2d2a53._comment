@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-13T16:39:00Z"
+ content="""
+sync should be idempotent as long as the remote it's syncing with is not
+getting other changes made/pushed to it at the same time
+
+There are things in your transcript that are hard to understand:
+
+* The first sync does not have a "push origin" line, or any git output
+* indicating it pushed, but it made a commit and so it would normally
+  then try to push it.
+* The first sync does not have a "pull origin" line
+  at the beginning, but it does say 
+  "Your branch is up to date"
+  so it must have tried to pull from origin at the start,
+  which sync always does do.
+* Several other parts of the output appear to be
+  in a different order than could have occurred.
+  For example, the first thing sync does is "pull origin", but the
+  transcript has that as the last thing output by the first sync.
+* The highest bit of weirdness is that the first sync seems to pull
+  commit 1d808d3a08c..de7758ca784 from github, but the second sync
+  pushes 63fe6905f53..1d808d3a08c to github. Which kind of appears
+  as if the two syncs have been pasted in the opposite order than they were
+  run.
+
+This makes me suspect you didn't paste the output exactly as it appeared,
+and perhaps left part of it out.
+"""]]
