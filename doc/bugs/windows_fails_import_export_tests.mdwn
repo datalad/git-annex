@@ -1,27 +1,30 @@
-Two test failures on windows in the import/export tests. The tests fail on
-a v7 adjusted unlocked branch, but pass a direct mode. It may be that
-there's a problem with the tests outside of windows on an adjusted branch.
+Windows test suite fails the import/export tests.
 
-The first test fails to export all annexed files to a directory special
-remote.
+It imports a file, but the worktree file remains a unlocked pointer
+file. So the test fails. Running `git annex smudge--update` fixed the
+file content. 
 
-	export foo sha1foo failed
+Reproduced outside the test suite, and tried with GIT_TRACE=1.
+When `git-annex merge remote/master``runs git merge, it does then smudge
+--clean the imported files. But smudge --update does not get run. The
+post-merge hook should run it.
 
-No indication of why it failed.
+Ahh -- on windows, hooks are not written, because the code skips that
+for a crippled filesystem, assuming it has no execute bit.
 
-> Update: Now it shows the problem, which is that the exported file is
-> locked so statting it fails. --[[Joey]]
+So, this is both a problem on windows and on crippled filesystems.
+The user needs to run smudge --update themselves, or maybe git-annex
+can do it sometimes. Eg, `git annex merge` (and sync) could certianly
+smudge --update when on a crippled filesystem. And that would be
+enough to fix the test suite.
 
-The second test fails in an import. It gets as far as updating foo/master,
-but then when it tries to merge that branch, there's a merge conflict.
-That merge conflict seems very likely due to being on an adjusted branch;
-foo/master will have the non-adjusted version of the file and merging it
-into a branch where it's been adjusted does sound like there could be a
-legitimate merge conflict.
+But if a user is on a crippled filesystem with an adjusted branch, and
+they do some other operation that would be covered by post-merge or
+post-checkout hook, they will be surprised to find unpopulated pointer
+files in the working tree.
 
-If so, note that the git-annex-import man page suggests doing just such a
-merge, so perhaps the docs will need to be updated, if some git-annex
-command is instead used to do the merge. --[[Joey]]
-
-> Probably down to only one test failure now after some fixes. Have not
-> checked. --[[Joey]]
+I think this can be avoided. On eg fat on linux, all files are executable,
+so the hook can be installed and will work. On Windows, a hook can start
+with #!/bin/sh and not be executable, and will be run by the bash bundled
+with git for windows.
+--[[Joey]]

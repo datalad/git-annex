@@ -31,7 +31,18 @@ hookFile :: Hook -> Repo -> FilePath
 hookFile h r = localGitDir r </> "hooks" </> hookName h
 
 {- Writes a hook. Returns False if the hook already exists with a different
- - content. Upgrades old scripts. -}
+ - content. Upgrades old scripts.
+ -
+ - This can install hooks on both filesystem like FAT that do not support
+ - execute bits, and on Windows.
+ -
+ - If the filesystem does not support execute bits, it's typically mounted
+ - such that all files have the execute bit set. So just write the hook
+ - and ignore failure to make it executable.
+ -
+ - On Windows, git will run hooks that are not executable. The hook
+ - is run with a bundled bash, so should start with #!/bin/sh
+ -}
 hookWrite :: Hook -> Repo -> IO Bool
 hookWrite h r = ifM (doesFileExist f)
 	( expectedContent h r >>= \case
@@ -45,7 +56,7 @@ hookWrite h r = ifM (doesFileExist f)
 	go = do
 		viaTmp writeFile f (hookScript h)
 		p <- getPermissions f
-		setPermissions f $ p {executable = True}
+		void $ tryIO $ setPermissions f $ p {executable = True}
 		return True
 
 {- Removes a hook. Returns False if the hook contained something else, and

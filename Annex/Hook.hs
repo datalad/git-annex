@@ -13,7 +13,6 @@ module Annex.Hook where
 
 import Annex.Common
 import qualified Git.Hook as Git
-import Config
 import qualified Annex
 import Utility.Shell
 
@@ -57,11 +56,8 @@ mkHookScript s = unlines
 	]
 
 hookWrite :: Git.Hook -> Annex ()
-hookWrite h = 
-	-- cannot have git hooks in a crippled filesystem (no execute bit)
-	unlessM crippledFileSystem $
-		unlessM (inRepo $ Git.hookWrite h) $
-			hookWarning h "already exists, not configuring"
+hookWrite h = unlessM (inRepo $ Git.hookWrite h) $
+	hookWarning h "already exists, not configuring"
 
 hookUnWrite :: Git.Hook -> Annex ()
 hookUnWrite h = unlessM (inRepo $ Git.hookUnWrite h) $

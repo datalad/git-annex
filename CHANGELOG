@@ -23,6 +23,10 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
     it applies the same adjustment to the branch before merging it.
   * test: Add pass using adjusted unlocked branch.
   * Fix some test suite failures on Windows.
+  * init: Install working hook scripts when run on a crippled filesystem
+    and on Windows. If your repository was set up by an old version
+    of git-annex that omitted the hooks, you can simply re-run git-annex init
+    to install them.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 
