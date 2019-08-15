@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-15T18:52:51Z"
+ content="""
+Debian also supports /usr/local/share/zsh/site-functions/,
+it's just that it's for local sysadmin use and not a place that
+packages should install files, so they added /usr/share/zsh/vendor-completions/
+for that.
+
+However, checking `/etc/os_release` probably entails keeping track of the
+name of every debian derivative, so I'd really rather not do that.
+
+Also, even if the Makefile were changed to use
+/usr/local/share/zsh/site-functions/, it sounds as if that might not be a
+path that works universally either.
+
+Surely there must be a way to ask zsh where to install completions to?
+But short of taking the first item from $fpath, which doesn't seem robust,
+I don't know how to. And zsh may not even be installed when building a
+package that should later integrate with zsh.
+
+FWIW, I checked half a dozen packages like curl that include zsh
+completions, and none of them installed them with `make install`,
+they were just there to be installed manually. It seems zsh is making this
+too hard for software to bother integrating with it.
+"""]]
