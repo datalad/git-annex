@@ -62,6 +62,7 @@ import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
 import qualified Annex.VectorClock
+import qualified Annex.AdjustedBranch
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -93,7 +94,7 @@ import qualified Types.Remote
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> suiteOptionParser ingredients (tests False mempty)
+	<$> suiteOptionParser ingredients (tests False True mempty)
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -125,7 +126,8 @@ runner opts
 	runsubprocesstests (Just _) = isolateGitConfig $ do
 		ensuretmpdir
 		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem' tmpdir
-		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem opts) of
+		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
+		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem adjustedbranchok opts) of
 			Nothing -> error "No tests found!?"
 			Just act -> ifM act
 				( exitSuccess
@@ -141,12 +143,13 @@ ingredients =
 	, rerunningTests [consoleTestReporter]
 	]
 
-tests :: Bool -> TestOptions -> TestTree
-tests crippledfilesystem opts = testGroup "Tests" $ properties :
-	map (\(d, te) -> withTestMode te initTests (unitTests d)) testmodes
+tests :: Bool -> Bool -> TestOptions -> TestTree
+tests crippledfilesystem adjustedbranchok opts = 
+	testGroup "Tests" $ properties :
+		map (\(d, te) -> withTestMode te initTests (unitTests d)) testmodes
   where
 	testmodes = catMaybes
-		[ Just ("v7 adjusted unlocked branch", (testMode opts (RepoVersion 7)) { adjustedUnlockedBranch = True })
+		[ canadjust ("v7 adjusted unlocked branch", (testMode opts (RepoVersion 7)) { adjustedUnlockedBranch = True })
 		, unlesscrippled ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
 		, unlesscrippled ("v5", testMode opts (RepoVersion 5))
 		, unlesscrippled ("v7 locked", testMode opts (RepoVersion 7))
@@ -155,6 +158,9 @@ tests crippledfilesystem opts = testGroup "Tests" $ properties :
 	unlesscrippled v
 		| crippledfilesystem = Nothing
 		| otherwise = Just v
+	canadjust v
+		| adjustedbranchok = Just v
+		| otherwise = Nothing
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
