@@ -1,0 +1,32 @@
+Using URL keys can lead to data loss. Two remotes can have two different
+objects for the same URL key, as the content of an url may change over
+time. If git-annex gets part of an object from the first remote, but is
+then interrupted or fails, and then resumes from the second remote's
+object, it will stitch together a chimera that has never existed at the
+url. Then dropping the URL objects from both remotes will result in no
+valid copies of the object remaining.
+
+This could also happen with WORM, but it would be much less likely. Two
+files with the same mtime, size, and path would have to be added to two
+repos.
+
+And it could happen if an old git-annex is being used in a repo that uses
+some new key that it doesn't support, like a new checksum type.
+
+Special remotes are affected if they use chunking, or if they resume
+when the destination file already exists and don't have their own
+checksumming. So the rsync special remote is affected when it's used with
+chunking, but not otherwise.
+
+With the default annex.security.allow-unverified-downloads config, 
+encrypted special remotes already don't allow downloading the problem keys.
+
+The bug affects remotes using the git-annex P2P protocol, but not ssh remotes
+using rsync. So the introduction of the P2P protocol made this bug more
+prevelant.
+
+Best fix for this seems to be to prevent resuming download of keys 
+when their content is not verifiable.
+
+The P2P protocol could also be extended to use a checksum to verify a
+resume is safe to do. That would only be worth doing for the affected keys.
