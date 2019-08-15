@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+Installing git-annex via the Makefile results in a zsh completion installed to `$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions`
+
+This is not used by zsh, since the builtin zsh fpath is `$(PREFIX)/$(SHAREDIR)/zsh/site-functions` -- as a result, zsh completions do not work.
+
+Some system distributions of zsh may change the builtin fpath, in which case git-annex may have working zsh completions out of the box -- I believe the current installation method is designed based on Debian's preferred layout.
+
+### What steps will reproduce the problem?
+
+Install git-annex on a non-Debian system
+
+### What version of git-annex are you using? On what operating system?
+
+version 7.20190730 on an Arch Linux system.
+
+### Recommended fix
+
+Make the installation directory configurable. Use /etc/os-release to check if the system is a Debian-based system, and if so, continue to use vendor-completions, if not, use site-functions.
