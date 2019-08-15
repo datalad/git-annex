@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-08-15T21:18:20Z"
+ content="""
+I tested a git-annex made to say when the rsync process succeeded,
+and rsync is actually not failing.
+
+So something in git-annex is silently making the transfer fail.
+Could be, for example, that it thinks the file was modified while
+it was being transferred.
+"""]]
