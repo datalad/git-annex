@@ -29,6 +29,7 @@ import Network.Socket (HostName)
 import Network.HTTP.Conduit (Manager)
 import Network.HTTP.Client (responseStatus, responseBody, RequestBody(..))
 import Network.HTTP.Types
+import Network.URI
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.IORef
@@ -387,15 +388,15 @@ retrieveExportS3 hv r info _k loc f p =
   where
 	go = withS3Handle hv $ \case
 		Just h -> do
-			retrieveHelper info h (Left (T.pack exporturl)) f p
+			retrieveHelper info h (Left (T.pack exportloc)) f p
 			return True
 		Nothing -> case getPublicUrlMaker info of
 			Nothing -> do
 				warning $ needS3Creds (uuid r)
 				return False
 			Just geturl -> Url.withUrlOptions $ 
-				liftIO . Url.download p (geturl exporturl) f
-	exporturl = bucketExportLocation info loc
+				liftIO . Url.download p (geturl exportloc) f
+	exportloc = bucketExportLocation info loc
 
 removeExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
 removeExportS3 hv r info k loc = withS3Handle hv $ \case
@@ -928,7 +929,14 @@ awsPublicUrl info = genericPublicUrl $
 	"https://" ++ T.unpack (bucket info) ++ ".s3.amazonaws.com/" 
 
 genericPublicUrl :: URLString -> BucketObject -> URLString
-genericPublicUrl baseurl p = baseurl Posix.</> p
+genericPublicUrl baseurl p = 
+	baseurl Posix.</> escapeURIString skipescape p
+ where
+	-- Don't need to escape '/' because the bucket object
+	-- is not necessarily a single url component. 
+	-- But do want to escape eg '+' and ' '
+	skipescape '/' = True
+	skipescape c = isUnescapedInURIComponent c
 
 genCredentials :: CredPair -> IO AWS.Credentials
 genCredentials (keyid, secret) = AWS.Credentials
@@ -1126,8 +1134,8 @@ eitherS3VersionID info u c k fallback
 	| otherwise = return (Right (Left fallback))
 
 s3VersionIDPublicUrl :: (S3Info -> BucketObject -> URLString) -> S3Info -> S3VersionID -> URLString
-s3VersionIDPublicUrl mk info (S3VersionID obj vid) = mk info $ concat
-	[ T.unpack obj
+s3VersionIDPublicUrl mk info (S3VersionID obj vid) = concat
+	[ mk info (T.unpack obj)
 	, "?versionId="
 	, T.unpack vid -- version ID is "url ready" so no escaping needed
 	]
