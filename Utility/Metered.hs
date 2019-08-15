@@ -210,7 +210,14 @@ type ProgressParser = String -> (Maybe BytesProcessed, String)
  - to update a meter.
  -}
 commandMeter :: ProgressParser -> OutputHandler -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
-commandMeter progressparser oh meterupdate cmd params = 
+commandMeter progressparser oh meterupdate cmd params = do
+	ret <- commandMeter' progressparser oh meterupdate cmd params
+	return $ case ret of
+		Just ExitSuccess -> True
+		_ -> False
+
+commandMeter' :: ProgressParser -> OutputHandler -> MeterUpdate -> FilePath -> [CommandParam] -> IO (Maybe ExitCode)
+commandMeter' progressparser oh meterupdate cmd params = 
 	outputFilter cmd params Nothing
 		(feedprogress zeroBytesProcessed [])
 		handlestderr
@@ -245,9 +252,13 @@ demeterCommand :: OutputHandler -> FilePath -> [CommandParam] -> IO Bool
 demeterCommand oh cmd params = demeterCommandEnv oh cmd params Nothing
 
 demeterCommandEnv :: OutputHandler -> FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
-demeterCommandEnv oh cmd params environ = outputFilter cmd params environ
-	(\outh -> avoidProgress True outh stdouthandler)
-	(\errh -> avoidProgress True errh $ stderrHandler oh)
+demeterCommandEnv oh cmd params environ = do
+	ret <- outputFilter cmd params environ
+		(\outh -> avoidProgress True outh stdouthandler)
+		(\errh -> avoidProgress True errh $ stderrHandler oh)
+	return $ case ret of
+		Just ExitSuccess -> True
+		_ -> False
   where
 	stdouthandler l = 
 		unless (quietMode oh) $
@@ -270,16 +281,15 @@ outputFilter
 	-> Maybe [(String, String)]
 	-> (Handle -> IO ())
 	-> (Handle -> IO ())
-	-> IO Bool
-outputFilter cmd params environ outfilter errfilter = catchBoolIO $ do
+	-> IO (Maybe ExitCode)
+outputFilter cmd params environ outfilter errfilter = catchMaybeIO $ do
 	(_, Just outh, Just errh, pid) <- createProcess p
 		{ std_out = CreatePipe
 		, std_err = CreatePipe
 		}
 	void $ async $ tryIO (outfilter outh) >> hClose outh
 	void $ async $ tryIO (errfilter errh) >> hClose errh
-	ret <- checkSuccessProcess pid
-	return ret
+	waitForProcess pid
   where
 	p = (proc cmd (toCommand params))
 		{ env = environ }

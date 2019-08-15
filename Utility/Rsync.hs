@@ -103,7 +103,16 @@ rsyncUrlIsPath s
  - The params must enable rsync's --progress mode for this to work.
  -}
 rsyncProgress :: OutputHandler -> MeterUpdate -> [CommandParam] -> IO Bool
-rsyncProgress oh meter = commandMeter parseRsyncProgress oh meter "rsync" . rsyncParamsFixup
+rsyncProgress oh meter ps =
+	commandMeter' parseRsyncProgress oh meter "rsync" (rsyncParamsFixup ps) >>= \case
+		Just ExitSuccess -> return True
+		Just (ExitFailure exitcode) -> do
+			when (exitcode /= 1) $
+				hPutStrLn stderr $ "rsync exited " ++ show exitcode
+			return False
+		Nothing -> do
+			hPutStrLn stderr $ "unable to run rsync"
+			return False
 
 {- Strategy: Look for chunks prefixed with \r (rsync writes a \r before
  - the first progress output, and each thereafter). The first number

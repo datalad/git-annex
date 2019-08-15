@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-08-15T18:00:42Z"
+ content="""
+And even if we assume rsync never pre-allocates a file before receiving it, it
+probably does do some things at the end, like setting the final permissions and
+timestamp.
+
+The permissions error looked like this:
+
+    get foo (from origin...)
+    SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+                 20 100%    0.00kB/s    0:00:00  ^M             20 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    (from origin...)
+    SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+                 20 100%    0.00kB/s    0:00:00  ^M             20 100%    0.00kB/s    0:00:00 (xfr#1, to-chk=0/1)
+    rsync: open "/home/joey/src/git-annex/.t/tmprepo1103/.git/annex/tmp/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77" failed: Permission denied (13)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1207) [sender=3.1.3]
+ 
+That looked as if the first rsync had gotten as far as removing the write bit
+from the file. Interestingly, the second rsync seems to have received the whole
+(small) file content before ever trying to open the file for write.
+
+The only recent change I can think of involving rsync was the CoW probing
+change, but I don't see how that could possibly lead to this behavior.
+
+And I'm not sure this is a new problem. The test suite has been intermittently
+failing for several months, around this same point. The failure did not
+include any useful error message, so I could not debug it, and I have IIRC
+done a few things to try to get the test suite to display an error message.
+Perhaps I succeeded.
+
+The intermittent test suite failure looks like this:
+
+	copy: [adjusted/master(unlocked) 05b89a6] empty
+	adjust ok
+	copy foo (from origin...)
+	SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+	20 100% 0.00kB/s 0:00:00 20 100% 0.00kB/s 0:00:00 (xfr#1, to-chk=0/1)
+	
+	SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+	20 100% 0.00kB/s 0:00:00 20 100% 0.00kB/s 0:00:00 (xfr#1, to-chk=0/1)
+	failed
+	copy: 1 failed
+	FAIL (1.12s)
+
+I am not sure if it only happens when testing adjusted unlocked branches/
+v7 unlocked files.
+
+I've run git-annex get; git-annex drop in a tight loop for
+thousands of iterations on an adjusted unlocked branch,
+and can't reproduce the failure that way.
+
+I've made git-annex display rsync's exit status when it's not 0 or 1,
+it has a lot of other exit statuses, so perhaps that will help track
+down how it's failing.
+"""]]
