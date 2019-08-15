@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="eschwartz@5abb721e66990e478c7d1caf96beb4f9794eb168"
+ nickname="eschwartz"
+ avatar="http://cdn.libravatar.org/avatar/16ec8475b4e3507f8d1a71101c16b208"
+ subject="comment 2"
+ date="2019-08-15T21:15:09Z"
+ content="""
+The greatness of os-release (dash, not underscore) is that you can use the ID_LIKE field. From the os-release(5) man page:
+
+\"A space-separated list of operating system identifiers in the same syntax as the ID= setting. It should list identifiers of operating systems that are closely related to the local operating system in regards to packaging and programming interfaces [...]\". If \"debian\" is the value of ID, or is contained in the space-separated value of ID_LIKE, then you don't need to know what the specific OS is.
+
+Before os-release, it was common to check if the file /etc/debian_version existed, and if not, check for other distros using /etc/arch-release, /etc/fedora-release, and so on. Ubuntu historically included /etc/debian_version just so tools could identify the distro as debian-compatible, while identifying as Ubuntu only if you used lsb-release...
+
+...
+
+The site-functions directory should work everywhere, I think, since both the /usr/share and /usr/local/share equivalents are defined by the zsh build system (and I'm not aware of any distributors other than Debian which override the former). On my Arch system:
+
+```
+echo $fpath
+/usr/local/share/zsh/site-functions /usr/share/zsh/site-functions /usr/share/zsh/functions/Calendar /usr/share/zsh/functions/Chpwd /usr/share/zsh/functions/Completion /usr/share/zsh/functions/Completion/Base /usr/share/zsh/functions/Completion/Linux /usr/share/zsh/functions/Completion/Unix /usr/share/zsh/functions/Completion/X /usr/share/zsh/functions/Completion/Zsh /usr/share/zsh/functions/Exceptions /usr/share/zsh/functions/Math /usr/share/zsh/functions/MIME /usr/share/zsh/functions/Misc /usr/share/zsh/functions/Newuser /usr/share/zsh/functions/Prompts /usr/share/zsh/functions/TCP /usr/share/zsh/functions/VCS_Info /usr/share/zsh/functions/VCS_Info/Backends /usr/share/zsh/functions/Zftp /usr/share/zsh/functions/Zle
+```
+Specifically, if you look at the configure.ac, it will:
+
+- take a configurable --enable-site-fndir (the packaging location), which defaults to /usr/share/zsh/site-functions but which Debian overrides (this is SITEFPATH_DIR in Src/init.c)
+- if enable-site-fndir did not already get defined to /usr/local/share/zsh/site-functions (the local sysadmin location), then guarantee it is included by defining it as $fixed_sitefndir and embedding it in the binary as FIXED_FPATH_DIR (Src/init.c)
+- additionally include anything configured via --enable-additional-fpath, because enable-site-fndir is a string rather than an array, and the additional-fpath can be a comma-separated array (ADDITIONAL_FPATH in Src/init.c)
+
+It's regrettable that unlike bash-completion, there is no pkg-config file for this. :( That would at least allow the build system to build-depend on zsh in order to automatically grab this information. But ultimately, the only thing you need to worry about is which distribution-modified value to use for/instead of /usr/share/zsh/site-functions
+
+In the case of curl, the make install only installs to site-functions, but provides an option --with-zsh-functions-dir=/usr/share/zsh/vendor-completions used at https://salsa.debian.org/debian/curl/blob/27e07a35cb9c727d6005c0afa291e2a3dc3bc5af/debian/rules#L20
+
+Various other programs I have seen will often install to site-functions and let debian's packaging move it if needed, or try to check whether any of several known directories exist. Here is an elaborate detection mechanism which works for a proliferation of possible locations, and can be successfully packaged in a distro build recipe if you first mkdir -p \"$DESTDIR/usr/share/zsh/site-functions\" (or vendor-completions, depending): https://github.com/kovidgoyal/calibre/blob/7460a12a4bcd05efc822f7fe421626772e2f6575/src/calibre/linux.py#L192-L210
+
+The downside of that is that the packager needs to know they should do this first. :(
+"""]]
