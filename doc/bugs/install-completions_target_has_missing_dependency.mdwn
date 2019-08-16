@@ -1,0 +1,17 @@
+### Please describe the problem.
+
+When running `make install-desktop install-completions`, the git-annex binary may not exist yet. Depending on the order in which Make runs the requested targets, the git-annex target (install-desktop -> build -> $(all) -> git-annex) may or may not have run, to a) check that dist/build/git-annex/git-annex is up to date, b) create the symlink in the root directory, by the time the install-completions target gets run.
+
+### What steps will reproduce the problem?
+
+`make install-completions` without the git-annex binary having been built already.
+
+### What version of git-annex are you using? On what operating system?
+
+Trying to package git-annex for Arch Linux, using the following build recipe:
+
+https://git.archlinux.org/svntogit/community.git/tree/trunk/PKGBUILD?h=packages/git-annex#n34
+
+reference downstream bug: https://bugs.archlinux.org/task/62775
+
+(This is building the binary via runhaskell Setup configure/build instead of using the Makefile -- I don't know exactly why, but I suspect it was originally packaged that way due to needing custom options for Arch's ghc.)
