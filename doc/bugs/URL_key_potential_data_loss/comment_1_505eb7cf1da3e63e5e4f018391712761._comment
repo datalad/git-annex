@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="storing checksums for non-checksum keys in metadata"
+ date="2019-08-16T16:02:41Z"
+ content="""
+One related improvement would be for git-annex to compute and store, as metadata, checksum-based keys corresponding to non-checksum-based keys, when git-annex sees the contents of the non-checksum-based key ( e.g. [todo/alternate_keys_for_same_content]] ).  There is of course [[git-annex-migrate]], but it requires manual invocation, clouds the commit history of the main git branch with commits that don't really change the content, and leads to either duplicate content in remotes or (if duplicates are dropped) inability to git-annex-get the contents of some past commits.
+"""]]
