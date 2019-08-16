@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2019-08-15T21:55:43Z"
+ content="""
+It is indeed detecting that the file it was sending
+appears to have been modified after the download started.
+
+Probably the file has not really been modified. Instead the inode cache
+for it is somehow wrong.
+
+An instrumented run had cached:
+
+	InodeCache (InodeCachePrim 21765306 20 (MTimeHighRes 1565905801.196804558s)
+	InodeCache (InodeCachePrim 22158907 20 (MTimeHighRes 1565905801.196804558s))
+
+And after the download the file it was sending had:
+
+	InodeCache (InodeCachePrim 21765305 20 (MTimeHighRes 1565905802.380791792s))
+
+Note that the test suite moves the same file from origin,
+and then moves it back, and a while after that get fails.
+So at least one of the cached inodes is for the old copy of the file.
+The other one is probably the work tree copy.
+
+Still have not had luck reproducing outside the test suite with a tight loop
+of move --from and --to and get.
+
+Hypothesis: The test suite uses Annex.main for many of its runs of git-annex,
+and so sqlite does not do whatever it normally does atexit. If flushing
+a change to the db file gets deferred for whatever reason, a later call to
+Annex.main might see old information.
+
+If so, converting the test suite to run git-annex instead of Annex.main
+would avoid the problem.
+"""]]
