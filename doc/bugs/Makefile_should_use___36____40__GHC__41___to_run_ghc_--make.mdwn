@@ -1,0 +1,12 @@
+### Please describe the problem.
+In line 32, Makefile runs "ghc --make Setup" which ignores the variable $(GHC).
+
+### What steps will reproduce the problem?
+Arch Linux doesn't ship with static libraries of ghc boot libraries by default, so I am passing GHC="ghc -dynamic" to Makefile, which sadly doesn't work as intended.
+
+### What version of git-annex are you using? On what operating system?
+7.20190730
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Sure！
+
