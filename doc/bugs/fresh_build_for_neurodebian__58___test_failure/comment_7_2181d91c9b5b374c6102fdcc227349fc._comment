@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2019-08-16T15:03:11Z"
+ content="""
+Confirmed; avoiding calling main has gotten the test suite to be able to
+run at least 500 iterations over 12 hours w/o failing. It had been failing
+in under 1 hour.
+"""]]
