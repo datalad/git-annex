@@ -74,7 +74,7 @@ install-bins: build
 install-desktop: build Build/InstallDesktopFile
 	./Build/InstallDesktopFile $(PREFIX)/bin/git-annex || true
 
-install-completions:
+install-completions: build
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions
 	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions/git-annex
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions

@@ -15,3 +15,5 @@ https://git.archlinux.org/svntogit/community.git/tree/trunk/PKGBUILD?h=packages/
 reference downstream bug: https://bugs.archlinux.org/task/62775
 
 (This is building the binary via runhaskell Setup configure/build instead of using the Makefile -- I don't know exactly why, but I suspect it was originally packaged that way due to needing custom options for Arch's ghc.)
+
+> [[fixed|done]] --[[Joey]]
