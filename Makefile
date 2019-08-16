@@ -78,11 +78,11 @@ install-completions: build
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions
 	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions/git-annex
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions
-	@./git-annex --zsh-completion-script git-annex 2>/dev/null > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions/_git-annex || \
-		echo "** zsh completions not installed; built with too old version of optparse-applicative"
+	./git-annex --zsh-completion-script git-annex 2>/dev/null \
+		> $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions/_git-annex
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions
-	@./git-annex --fish-completion-script git-annex 2>/dev/null > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish || \
-		echo "** fish completions not installed; built with too old version of optparse-applicative"
+	./git-annex --fish-completion-script git-annex 2>/dev/null \
+		> $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish
 
 test: git-annex git-annex-shell
 	./git-annex test
