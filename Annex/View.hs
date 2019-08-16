@@ -283,8 +283,12 @@ fromView view f = MetaData $
  - MetaFields that were present in the input metadata
  - (excluding fields that are not visible). -}
 prop_view_roundtrips :: FilePath -> MetaData -> Bool -> Bool
-prop_view_roundtrips f metadata visible = null f || viewTooLarge view ||
-	all hasfields (viewedFiles view viewedFileFromReference f metadata)
+prop_view_roundtrips f metadata visible = or
+	[ null f
+	, null (takeFileName f) && null (takeDirectory f)
+	, viewTooLarge view
+	, all hasfields (viewedFiles view viewedFileFromReference f metadata)
+	]
   where
 	view = View (Git.Ref "master") $
 		map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . B.null . fromMetaValue) mv) visible)
