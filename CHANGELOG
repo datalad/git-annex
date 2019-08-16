@@ -28,6 +28,9 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
     of git-annex that omitted the hooks, you can simply re-run git-annex init
     to install them.
   * S3: Fix encoding when generating public urls of S3 objects.
+  * Fix intermittent failure of the test suite, where its repeated opening
+    and writing to the sqlite database somehow caused inode cache information
+    to occasionally be lost.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 

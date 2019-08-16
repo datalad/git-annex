@@ -42,47 +42,26 @@ import qualified Utility.Exception
 import qualified Utility.ThreadScheduler
 import qualified Utility.Tmp.Dir
 import qualified Utility.Metered
+import qualified Utility.SafeCommand
 import qualified Command.Uninit
-import qualified CmdLine.GitAnnex as GitAnnex
 
--- This is equivilant to running git-annex, but it's all run in-process
--- so test coverage collection works.
+-- Run git-annex.
 git_annex :: String -> [String] -> IO Bool
-git_annex command params = git_annex' command params >>= \case
-	Right () -> return True
-	Left e -> do
-		hPutStrLn stderr (show e)
-		return False
+git_annex command params = do
+	pp <- Annex.Path.programPath
+	Utility.SafeCommand.boolSystem pp $
+		map Utility.SafeCommand.Param (command:params)
 
 -- For when git-annex is expected to fail.
+-- Run with -q to squelch error.
 git_annex_shouldfail :: String -> [String] -> IO Bool
-git_annex_shouldfail command params = git_annex' command ("-q":params) >>= \case
-	Right () -> return False
-	Left _ -> return True
-
-git_annex' :: String -> [String] -> IO (Either SomeException ())
-git_annex' command params = do
-	-- catch all errors, including normally fatal errors
-	try run ::IO (Either SomeException ())
-  where
-	run = GitAnnex.run dummyTestOptParser
-		dummyTestRunner
-		dummyBenchmarkGenerator
-		(command:params)
-	dummyTestOptParser = pure mempty
-	dummyTestRunner _ = noop
-	dummyBenchmarkGenerator _ _ = return noop
+git_annex_shouldfail command params = not <$> git_annex command ("-q":params)
 
 {- Runs git-annex and returns its output. -}
 git_annex_output :: String -> [String] -> IO String
 git_annex_output command params = do
 	pp <- Annex.Path.programPath
-	got <- Utility.Process.readProcess pp (command:params)
-	-- Since the above is a separate process, code coverage stats are
-	-- not gathered for things run in it.
-	-- Run same command again, to get code coverage.
-	_ <- git_annex command params
-	return got
+	Utility.Process.readProcess pp (command:params)
 
 git_annex_expectoutput :: String -> [String] -> [String] -> IO ()
 git_annex_expectoutput command params expected = do
