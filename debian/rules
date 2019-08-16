@@ -11,6 +11,8 @@ STANDALONE_BUILD=$(shell grep -qe '^Package: git-annex-standalone' debian/contro
 # Do use the changelog's version number, rather than making one up.
 export RELEASE_BUILD=1
 
+export ZSH_COMPLETIONS_PATH=/usr/share/zsh/vendor-completions
+
 %:
 	dh $@
 

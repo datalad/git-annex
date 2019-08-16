@@ -17,3 +17,5 @@ version 7.20190730 on an Arch Linux system.
 ### Recommended fix
 
 Make the installation directory configurable. Use /etc/os-release to check if the system is a Debian-based system, and if so, continue to use vendor-completions, if not, use site-functions.
+
+> [[fixed|done]] --[[Joey]]

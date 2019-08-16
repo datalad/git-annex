@@ -32,6 +32,9 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
     and writing to the sqlite database somehow caused inode cache information
     to occasionally be lost.
   * Make git-annex-standalone.deb include the shell completions again.
+  * Makefile: Changed default zsh completion location to zsh default fpath.
+    Systems such as Debian that have overridden the default fpath will
+    need to set ZSH_COMPLETIONS_PATH.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 

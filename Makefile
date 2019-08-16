@@ -11,6 +11,10 @@ endif
 PREFIX?=/usr
 SHAREDIR?=share
 
+# On Debian systems, zsh does not look here, and you will have to override
+# this to /usr/share/zsh/vendor-completions
+ZSH_COMPLETIONS_PATH?=$(PREFIX)/$(SHAREDIR)/zsh/site-functions
+
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
 all=fast
@@ -77,9 +81,9 @@ install-desktop: build Build/InstallDesktopFile
 install-completions: build
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions
 	install -m 0644 bash-completion.bash $(DESTDIR)$(PREFIX)/$(SHAREDIR)/bash-completion/completions/git-annex
-	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions
+	install -d $(DESTDIR)$(ZSH_COMPLETIONS_PATH)
 	./git-annex --zsh-completion-script git-annex 2>/dev/null \
-		> $(DESTDIR)$(PREFIX)/$(SHAREDIR)/zsh/vendor-completions/_git-annex
+		> $(DESTDIR)$(ZSH_COMPLETIONS_PATH)/_git-annex
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions
 	./git-annex --fish-completion-script git-annex 2>/dev/null \
 		> $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish
