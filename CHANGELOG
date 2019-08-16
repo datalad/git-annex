@@ -31,6 +31,7 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
   * Fix intermittent failure of the test suite, where its repeated opening
     and writing to the sqlite database somehow caused inode cache information
     to occasionally be lost.
+  * Make git-annex-standalone.deb include the shell completions again.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
 

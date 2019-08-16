@@ -22,7 +22,8 @@ override_dh_auto_build:
 	make linuxstandalone GIT_ANNEX_PACKAGE_INSTALL=1
 
 override_dh_auto_install:
-	make install-desktop install-docs DESTDIR=debian/git-annex-standalone
+	make install-desktop install-docs install-completions \
+		DESTDIR=debian/git-annex-standalone
 	# bins are linked into place, as instructed in debian/install and debian/links
 
 override_dh_fixperms:
