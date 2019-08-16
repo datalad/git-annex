@@ -29,7 +29,7 @@ install-home:
 	$(MAKE) install-desktop PREFIX=$(HOME)/.local USERDIR=1
 
 tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
-	if [ "$(BUILDER)" = ./Setup ]; then ghc --make Setup; fi
+	if [ "$(BUILDER)" = ./Setup ]; then $(GHC) --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
 		$(BUILDER) configure $(BUILDERCOMMONOPTIONS) --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
 	else \

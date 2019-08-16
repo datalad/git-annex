@@ -10,3 +10,4 @@ Arch Linux doesn't ship with static libraries of ghc boot libraries by default, 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Sure！
 
+> [[fixed|done]] --[[Joey]]
