@@ -1,4 +1,4 @@
-git-annex (7.20190731) UNRELEASED; urgency=medium
+git-annex (7.20190819) upstream; urgency=medium
 
   * New git-lfs special remote, which can be used to store data on any git-lfs
     server, including github, gitlab, and gogs.
@@ -11,32 +11,32 @@ git-annex (7.20190731) UNRELEASED; urgency=medium
   * Allow setting up a gcrypt special remote with encryption=shared.
   * Fix querying git for object type when operating on a file containing
     newlines.
-  * Windows installer: Always install to 64 bit program files directory,
-    since it needs 64 bit git now.
-  * Build with silently-1.2.5.1 on Windows; the old one used "NUL" which
-    is not supported with recent versions of ghc.
-  * init: When the repo is already initialized, and --version requests a
-    different version, error out rather than silently not changing the
-    version.
   * merge: When run with a branch parameter, merges from that branch.
     This is especially useful when using an adjusted branch, because
     it applies the same adjustment to the branch before merging it.
-  * test: Add pass using adjusted unlocked branch.
-  * Fix some test suite failures on Windows.
   * init: Install working hook scripts when run on a crippled filesystem
     and on Windows. If your repository was set up by an old version
     of git-annex that omitted the hooks, you can simply re-run git-annex init
     to install them.
+  * init: When the repo is already initialized, and --version requests a
+    different version, error out rather than silently not changing the
+    version.
   * S3: Fix encoding when generating public urls of S3 objects.
-  * Fix intermittent failure of the test suite, where its repeated opening
-    and writing to the sqlite database somehow caused inode cache information
-    to occasionally be lost.
   * Make git-annex-standalone.deb include the shell completions again.
   * Makefile: Changed default zsh completion location to zsh default fpath.
     Systems such as Debian that have overridden the default fpath will
     need to set ZSH_COMPLETIONS_PATH.
+  * test: Add pass using adjusted unlocked branch.
+  * Fix intermittent failure of the test suite, where its repeated opening
+    and writing to the sqlite database somehow caused inode cache information
+    to occasionally be lost.
+  * Fix several test suite failures on Windows.
+  * Windows installer: Always install to 64 bit program files directory,
+    since it needs 64 bit git now.
+  * Build with silently-1.2.5.1 on Windows; the old one used "NUL" device
+    which is not supported with recent versions of ghc.
 
- -- Joey Hess <id@joeyh.name>  Thu, 01 Aug 2019 00:11:56 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 19 Aug 2019 12:23:16 -0400
 
 git-annex (7.20190730) upstream; urgency=medium
 
