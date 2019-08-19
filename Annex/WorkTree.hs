@@ -78,7 +78,7 @@ ifAnnexed file yes no = maybe no yes =<< lookupFile file
  - an annex object. If so, make the unlocked file use that content.
  -}
 scanUnlockedFiles :: Annex ()
-scanUnlockedFiles = whenM (inRepo $ Git.Ref.exists Git.Ref.headRef) $ do
+scanUnlockedFiles = whenM (inRepo Git.Ref.headExists) $ do
 	showSideAction "scanning for unlocked files"
 	Database.Keys.runWriter $
 		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
