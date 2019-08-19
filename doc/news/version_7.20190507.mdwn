@@ -1,6 +1,0 @@
-git-annex 7.20190507 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix reversion in last release that caused wrong tree to be written
-     to remote tracking branch after an export of a subtree.
-   * Improved locking when multiple git-annex processes are writing to
-     the .git/index file"""]]
