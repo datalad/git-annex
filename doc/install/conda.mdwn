@@ -2,7 +2,7 @@ On Linux, an up-to-date binary distribution of git-annex can now be
 installed with the [conda package manager](https://conda.io/docs/) 
 from the [conda-forge channel](https://conda-forge.org/).
 
-After installing conda, run:
+After [installing conda](https://docs.conda.io/en/latest/miniconda.html), run:
 
 	conda install -c conda-forge git-annex
 
