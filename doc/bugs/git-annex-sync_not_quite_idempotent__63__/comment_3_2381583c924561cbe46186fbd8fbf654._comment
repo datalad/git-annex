@@ -1,0 +1,120 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="another instance of git-annex-sync not being idempotent"
+ date="2019-08-20T17:08:45Z"
+ content="""
+Here it is again:
+
+[[!format sh \"\"\"
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+(master_env_v152_py36) 13:01  [viral-ngs-benchmarks] $ git annex sync
+On branch is-import-rabies200
+Your branch is up to date with 'origin/is-import-rabies200'.
+
+
+It took 6.38 seconds to enumerate untracked files. 'status -uno'
+may speed it up, but you have to be careful not to forget to add
+new files yourself (see 'git help status').
+nothing to commit, working tree clean
+commit ok
+remote: Enumerating objects: 2, done.
+remote: Counting objects: 100% (2/2), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 2 (delta 0), reused 1 (delta 0), pack-reused 0
+Unpacking objects: 100% (2/2), done.
+From github.com:broadinstitute/viral-ngs-benchmarks
+   456ce673f18..c365f519845  is-import-rabies200        -> origin/is-import-rabies200
+   456ce673f18..c365f519845  synced/is-import-rabies200 -> origin/synced/is-import-rabies200
+Updating 456ce673f18..c365f519845
+Fast-forward
+ viral-ngs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+Already up to date.
+pull origin ok
+(master_env_v152_py36) 13:01  [viral-ngs-benchmarks] $ git annex sync
+[is-import-rabies200 fe351a22089] git-annex in viral-ngs-benchmarks copy at /data/ilya-work/benchmarks/viral-ngs-benchmarks
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+commit ok
+pull origin ok
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (2/2), 959 bytes | 959.00 KiB/s, done.
+Total 2 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To github.com:broadinstitute/viral-ngs-benchmarks.git
+   c365f519845..fe351a22089  is-import-rabies200 -> synced/is-import-rabies200
+push origin ok
+(master_env_v152_py36) 13:02  [viral-ngs-benchmarks] $ git annex sync
+On branch is-import-rabies200
+Your branch is up to date with 'origin/is-import-rabies200'.
+
+
+It took 6.40 seconds to enumerate untracked files. 'status -uno'
+may speed it up, but you have to be careful not to forget to add
+new files yourself (see 'git help status').
+nothing to commit, working tree clean
+commit ok
+pull origin ok
+(master_env_v152_py36) 13:04  [viral-ngs-benchmarks] $ uname -a
+Linux ip-172-31-93-72.ec2.internal 4.14.133-113.112.amzn2.x86_64 #1 SMP Tue Jul 30 18:29:50 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+(master_env_v152_py36) 13:05  [viral-ngs-benchmarks] $ git annex version
+git-annex version: 7.20190819-ge4cecf8
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sql\
+ite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_2\
+24 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE\
+2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224\
+ BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+
+(master_env_v152_py36) 13:05  [viral-ngs-benchmarks] $ git remote -vv
+dnanexus
+from-ilya-work
+from-ilya-work-01
+from-ilya-work-02
+from-ilya-work-03
+ilya-work       /data/ilya-work (fetch)
+ilya-work       /data/ilya-work (push)
+my-ldir
+mygs
+origin  git@github.com:broadinstitute/viral-ngs-benchmarks.git (fetch)
+origin  git@github.com:broadinstitute/viral-ngs-benchmarks.git (push)
+s3-viral-ngs-benchmarks-web
+viral-ngs-benchmarks-s3
+
+(master_env_v152_py36) 13:06  [viral-ngs-benchmarks] $ git annex info --fast
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 11
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        0928dfcc-4dbe-4c24-a5a0-ac05c4a2c829 -- ilya-work
+        0f104e0a-7126-4a4a-a342-e1bb049643f0 -- [from-ilya-work-03]
+        1a276c39-67e3-4098-b469-747ab29fb97e -- viral-ngs-benchmarks copy on /ilya
+        380286ac-2e8f-4285-94da-406eca323411 -- [dnanexus]
+        40d047cf-3548-42d4-bdb6-e1e89a83b6df -- viral-ngs-benchmarks in broad laptop vm clone
+        449efa47-a0e1-4376-a17f-42c7a1f509d1 -- Benchmarks for viral-ngs, stored on Amazon S3 [viral-ngs-benchmarks-s3]
+        6b9993bb-df07-4409-be5e-05c1cd528165 -- [mygs]
+        7205b5c0-4475-47c1-bfc1-39f57a487ac4 -- Website displaying benchmark summaries, stored on AWS S3 [s3-viral-ngs-benchmarks-web]
+        b11d667d-2f3a-432a-a167-d90a1b0559cf -- viral-ngs-benchmarks copy at /data/ilya-work/benchmarks/viral-ngs-benchmarks [here]
+untrusted repositories: 1
+        b9f389c1-2a37-4200-96d9-0f07d97b5417 -- [my-ldir]
+transfers in progress: none
+available local disk space: 427.31 gigabytes (+10 gigabytes reserved)
+
+
+# End of transcript or log.
+\"\"\"]]
+
+
+"""]]
