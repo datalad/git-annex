@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="workaround not working any more"
+ date="2019-08-21T11:34:23Z"
+ content="""
+The workaround I described above ceased to work when git-annex or aria2c got configured more strictly; attempting it now gives a \"download failed: Configuration does not allow accessing\" error message – that is understandable in a way (redirects from web pages should really not make git-annex access local files), but leaves wzhd's problem open again.
+"""]]
