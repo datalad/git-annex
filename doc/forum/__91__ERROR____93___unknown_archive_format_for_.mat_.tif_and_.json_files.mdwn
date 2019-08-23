@@ -1,0 +1,29 @@
+Hi,
+
+Some context: While adding a new dataset to Datalad (https://www.datalad.org/) by giving the download URL, git-annex is working under the cover to manage data. In this case, I see that some .tif .json and .mat (maybe others I have not tried) files do not get added to annex as expected
+
+Here I have an example with a .mat file:
+
+```$ datalad download-url --archive url_to_mask.mat```
+
+The datalad command above has a flag ```--archive``` that allows passing downloaded files under the git annex control. Git-annex does not seem to be able to support archives for this file format
+
+```[INFO   ] Downloading 'https://2a9f4.8443.dn.glob.us/5/published/publication_170/submitted_data/2015_5_6_striatum/mask/2015-5-6_mask.mat' into '/data/conp/multimodal-FRDR-dataset' 
+download_url(ok): /data/conp/multimodal-FRDR-dataset/2015-5-6_mask.mat (file)                                                         
+add(ok): 2015-5-6_mask.mat (file)
+save(ok): /data/conp/multimodal-FRDR-dataset (dataset)
+
+[INFO   ] Adding content of the archive /data/conp/multimodal-FRDR-dataset/2015-5-6_mask.mat into annex <AnnexRepo path=/data/conp/multimodal-FRDR-dataset (<class 'datalad.support.annexrepo.AnnexRepo'>)> 
+
+[ERROR  ] unknown archive format for file `/data/conp/multimodal-FRDR-dataset/.git/annex/objects/34/x8/MD5E-s575--b5333e072291f215595c9c39cd2524e5.mat/MD5E-s575--b5333e072291f215595c9c39cd2524e5.mat' [__init__.py:get_archive_format:293] (PatoolError) 
+```
+
+What is it really going on here?
+
+Is this a bug or a possible addition to be implemented? Is there any way in git annex to avoid this issue?
+
+Thank you for your help,
+
+Regards
+Giulia
+
