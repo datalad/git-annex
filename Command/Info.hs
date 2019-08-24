@@ -132,6 +132,7 @@ start o ps = do
 
 globalInfo :: InfoOptions -> Annex ()
 globalInfo o = do
+	disallowMatchingOptions
 	u <- getUUID
 	whenM ((==) DeadTrusted <$> lookupTrust u) $
 		earlyWarning "Warning: This repository is currently marked as dead."
@@ -144,6 +145,7 @@ itemInfo :: InfoOptions -> String -> Annex ()
 itemInfo o p = ifM (isdir p)
 	( dirInfo o p
 	, do
+		disallowMatchingOptions
 		v <- Remote.byName' p
 		case v of
 			Right r -> remoteInfo o r
@@ -163,6 +165,10 @@ noInfo s = do
 	showStart "info" s
 	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
 	showEndFail
+
+disallowMatchingOptions :: Annex ()
+disallowMatchingOptions = whenM Limit.limited $
+	giveup "File matching options can only be used when getting info on a directory."
 
 dirInfo :: InfoOptions -> FilePath -> Annex ()
 dirInfo o dir = showCustom (unwords ["info", dir]) $ do
