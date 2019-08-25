@@ -5,7 +5,7 @@ The main git repository for git-annex is `git://git-annex.branchable.com/`
 
 Other mirrors of the git repository:
 
-* `git://git.joey.name/git-annex` or `https://git.joeyh.name/git/git-annex.git` [[gitweb](https://git.joeyh.name/index.cgi/git-annex.git/)]
+* `git://git.joeyh.name/git-annex` or `https://git.joeyh.name/git/git-annex.git` [[gitweb](https://git.joeyh.name/index.cgi/git-annex.git/)]
 
 Releases of git-annex are uploaded
 [to hackage](http://hackage.haskell.org/package/git-annex). Note that the
