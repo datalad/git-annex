@@ -45,8 +45,7 @@ that can be determined purely by looking at the key.
 
 # EXAMPLES
 
-The location a key's value is stored (in indirect mode)
-can be looked up by running:
+The location where the content of a key is stored can be looked up by running:
 
 	git annex examinekey $KEY --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
 

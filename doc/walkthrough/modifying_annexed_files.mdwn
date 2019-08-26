@@ -1,5 +1,4 @@
 Normally, the content of files in the annex is prevented from being modified.
-(Unless your repository is using [[direct_mode]].)
 
 That's a good thing, because it might be the only copy, you wouldn't
 want to lose it in a fumblefingered mistake.
@@ -19,9 +18,8 @@ it is a regular file.
 (If you decide you don't need to modify the file after all, or want to discard
 modifications, just use `git annex lock`.)
 
-When you `git commit` it will notice that you are committing an unlocked
-file, add its new content to the annex, and a pointer to that content is
-what gets committed to git.
+When you commit an unlocked file, all that gets committed to git is a
+pointer to the content. The content of the file is stored by git-annex.
 
 	$ echo "now smaller, but even cooler" > my_cool_big_file
 	$ git commit my_cool_big_file -m "changed an annexed file"

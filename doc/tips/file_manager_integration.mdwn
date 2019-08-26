@@ -81,8 +81,7 @@ Download and install the [git-annex-turtle](https://github.com/andrewringler/git
 ## OS X (Finder) Context Menus
 
 For OS X, it is possible to get context menus in Finder. Due to how OS X
-deals with symlinks, one needs to operate on folders if using indirect
-mode. Direct mode operation has not been tested.
+deals with symlinks, one needs to operate on folders.
 
 1. Open Automator and create a new Service.
 2. Using the Drop down menus in the top create the sentence "Service receives selected folders in Finder.app" to have it work on folders. For direct mode operation it is probably reasonable to select "files or folders".

@@ -6,9 +6,7 @@ With git-annex this changes some: Very large files can be managed with git-annex
 
 In this method, you just remove annexed files whenever you want, and commit the changes. This is probably the most natural way to go.
 
-In an indirect mode repo, you can do this the same way you would in a regular git repository. For example, `git rm foo; git commit -m "removed foo"`. This leaves the contents of the files still in the annex, not really deleted yet.
-
-If you have a direct mode repo, you can't run `git rm` in it. Instead, you can just delete files using `rm` or your file manager, and then run `git annex sync` to commit the deletion. That will delete the file's content from your disk. Even if it's the only copy of the file!
+You can do this the same way you would in a regular git repository. For example, `git rm foo; git commit -m "removed foo"`. This leaves the contents of the files still in the annex, not really deleted yet.
 
 Either way, deleting files can leave some garbage lying around in either the local repository, or other repositories that contained a copy of the content of the file you deleted. Eventually you'll want to free up some disk space used by one of these repositories, and then it's time to take out the garbage.
 

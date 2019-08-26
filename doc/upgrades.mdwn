@@ -48,10 +48,6 @@ The upgrade events, so far:
 
 ## v6 -> v7 (git-annex version 7.x)
 
-The upgrade from v5 to v7 is handled manually for now.
-
-Run `git-annex upgrade` to perform the upgrade.
-
 v6 repositories are automatically upgraded to v7.
 
 The only difference between v6 and v7 is that some additional git hooks
@@ -93,7 +89,10 @@ same tradeoff.
 See [[tips/unlocked_files/]] for more details about locked files and thin
 mode.
 
-Run git-annex upgrade to perform this upgrade.
+Normally you will need to run git-annex upgrade to perform this upgrade.
+But, when a new enough git-annex is used in a direct mode repository,
+it will be automatically upgraded and configured to use unlocked files
+instead of direct mode.
 
 ## v4 -> v5 (git-annex version 5.x)
 

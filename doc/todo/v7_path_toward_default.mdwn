@@ -6,9 +6,7 @@ done
 
 ## step 2: default for new repositories that used to use direct mode
 
-Done when using the command line to init in a crippled filesystem. 
-
-Done when using the assistant.
+done
 
 ## step 3: auto-upgrade from direct mode
 
@@ -25,6 +23,8 @@ are not supported. So some users will experience the repo doubling in size.
 Limited mostly to windows, also some FAT media. This seems difficult
 to avoid though, see discussion in
 <http://git-annex.branchable.com/todo/annex.thin_without_hardlinks/>
+
+done
 
 ## step 4: default for all new repositories
 

@@ -22,7 +22,6 @@ import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Objects
-import qualified Git.LsFiles
 import qualified Annex.Branch
 import Logs.UUID
 import Logs.Trust.Basic
@@ -32,7 +31,6 @@ import Types.RepoVersion
 import Annex.Version
 import Annex.Difference
 import Annex.UUID
-import Annex.Link
 import Annex.WorkTree
 import Config
 import Config.Files
@@ -101,7 +99,7 @@ initialize' :: Maybe RepoVersion -> Annex ()
 initialize' mversion = checkCanInitialize  $ do
 	checkLockSupport
 	checkFifoSupport
-	checkCrippledFileSystem
+	checkCrippledFileSystem mversion
 	unlessM isBareRepo $ do
 		hookWrite preCommitHook
 		hookWrite postReceiveHook
@@ -124,7 +122,7 @@ initialize' mversion = checkCanInitialize  $ do
 		AdjustedBranch.InAdjustedClone -> return ()
 		AdjustedBranch.NotInAdjustedClone ->
 			ifM (crippledFileSystem <&&> (not <$> isBareRepo))
-				( adjustToCrippledFilesystem
+				( AdjustedBranch.adjustToCrippledFileSystem
 				-- Handle case where this repo was cloned from a
 				-- direct mode repo
 				, unlessM isBareRepo
@@ -148,7 +146,11 @@ uninitialize = do
  - Checks repository version and handles upgrades too.
  -}
 ensureInitialized :: Annex ()
-ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
+ensureInitialized = do
+	getVersion >>= maybe needsinit checkUpgrade
+	whenM isDirect $
+		unlessM (upgrade True versionForAdjustedBranch) $
+			giveup "Upgrading this direct mode repository failed, and direct mode is no longer supported."
   where
 	needsinit = ifM Annex.Branch.hasSibling
 			( initialize Nothing Nothing
@@ -200,9 +202,15 @@ probeCrippledFileSystem' tmp = do
 			)
 #endif
 
-checkCrippledFileSystem :: Annex ()
-checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
+checkCrippledFileSystem :: Maybe RepoVersion -> Annex ()
+checkCrippledFileSystem mversion = whenM probeCrippledFileSystem $ do
 	warning "Detected a crippled filesystem."
+
+	unlessM isBareRepo $ case mversion of
+		Just ver | ver < versionForCrippledFilesystem ->
+			giveup $ "Cannot use repo version " ++ show (fromRepoVersion ver) ++ " in a crippled filesystem."
+		_ -> noop
+
 	setCrippledFileSystem True
 
 	{- Normally git disables core.symlinks itself when the
@@ -282,22 +290,3 @@ propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
 	maybe noop (setConfig (ConfigKey "annex.securehashesonly"))
 		=<< getGlobalConfig "annex.securehashesonly"
-
-adjustToCrippledFilesystem :: Annex ()
-adjustToCrippledFilesystem = ifM versionSupportsAdjustedBranch
-	( ifM (liftIO $ AdjustedBranch.isGitVersionSupported)
-		( AdjustedBranch.adjustToCrippledFileSystem
-		, enableDirectMode 
-		)
-	, enableDirectMode
-	)
-
-enableDirectMode :: Annex ()
-enableDirectMode = unlessM isDirect $ do
-	warning "Enabling direct mode."
-	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
-	forM_ l $ \f ->
-		maybe noop (`toDirect` f) =<< isAnnexLink f
-	void $ liftIO clean
-	setDirect True

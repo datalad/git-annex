@@ -1,6 +1,6 @@
 # NAME
 
-git-annex indirect - switch repository to indirect mode
+git-annex indirect - switch repository to indirect mode (deprecated)
 
 # SYNOPSIS
 
@@ -8,11 +8,11 @@ git annex indirect
 
 # DESCRIPTION
 
-Switches a repository back from direct mode to the default, indirect
-mode.
+This command was used to switch a repository back from direct mode
+indirect mode.
 
-Note that the direct mode/indirect mode distinction is removed in v7
-git-annex repositories.
+Now git-annex automatically converts direct mode repositories to v7
+with adjusted unlocked branches, so this command does nothing.
 
 # SEE ALSO
 

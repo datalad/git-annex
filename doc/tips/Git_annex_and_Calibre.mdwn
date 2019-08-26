@@ -106,15 +106,3 @@ It might be interesting to find someway to unlock and lock the library
 only when running calibre, a simple script to launch calibre will do
 that. Note that each time you will lock and unlock, you will have a
 new commit in git.
-
-Another solution
-===================
-You could also use direct mode in place of the auto unlock feature
-
-    git annex direct
-
-Then remove the `post-commit` git hook (or do not add it). Its a
-simpler solution, but remember that interaction between git annex direct
-repositories and plain git are complex and sometimes downright dangerous. See [[direct mode]] for details.
-
-In particular, do *not* called `git add *` in the above steps, as that will commit all books into git.

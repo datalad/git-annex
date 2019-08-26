@@ -5,4 +5,3 @@
 * [[special_remotes]]
 * [[workflows|workflow]]
 * [[sync]]
-* [[direct_mode]]
