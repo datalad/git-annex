@@ -1,0 +1,11 @@
+Wow, I did not plan to remove direct mode today! The original plan was to
+work on [[todo/sqlite_database_improvements]]. But that seems to need a v8
+repository format, to avoid confusing old git-annex with the new db schemas.
+And to get to v8, we must first get to v7..
+
+Removing direct mode eliminated over 1000 lines of code. I may be able to
+remove a few hundred more yet.
+
+Did find a bug with the upgrade process just as I was wrapping up for the
+day, it's minor (involving a deleted file in the work tree), so I'll deal
+with it tomorrow.
