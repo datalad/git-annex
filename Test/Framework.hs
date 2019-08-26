@@ -31,7 +31,6 @@ import qualified Types.Messages
 import qualified Config
 import qualified Annex.WorkTree
 import qualified Annex.Link
-import qualified Annex.Init
 import qualified Annex.Path
 import qualified Annex.Action
 import qualified Annex.AdjustedBranch
@@ -98,25 +97,11 @@ with_ssh_origin cloner a = cloner $ do
 intmpclonerepo :: Assertion -> Assertion
 intmpclonerepo a = withtmpclonerepo $ \r -> indir r a
 
-intmpclonerepoInDirect :: Assertion -> Assertion
-intmpclonerepoInDirect a = intmpclonerepo $
-	ifM isdirect
-		( putStrLn "not supported in direct mode; skipping"
-		, a
-		)
-  where
-	isdirect = annexeval $ do
-		Annex.Init.initialize Nothing Nothing
-		Config.isDirect
-
 checkRepo :: Types.Annex a -> FilePath -> IO a
 checkRepo getval d = do
 	s <- Annex.new =<< Git.Construct.fromPath d
 	Annex.eval s $
 		getval `finally` Annex.Action.stopCoProcesses
-
-isInDirect :: FilePath -> IO Bool
-isInDirect = checkRepo (not <$> Config.isDirect)
 
 intmpbareclonerepo :: Assertion -> Assertion
 intmpbareclonerepo a = withtmpclonerepo' (newCloneRepoConfig { bareClone = True } ) $
@@ -259,17 +244,13 @@ finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
 			removeDirectoryRecursive tmpdir
 	
 checklink :: FilePath -> Assertion
-checklink f =
-	-- in direct mode, it may be a symlink, or not, depending
-	-- on whether the content is present.
-	unlessM (annexeval Config.isDirect) $
-		ifM (annexeval Config.crippledFileSystem)
-			( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
-				@? f ++ " is not a (crippled) symlink"
-			, do
-				s <- getSymbolicLinkStatus f
-				isSymbolicLink s @? f ++ " is not a symlink"
-			)
+checklink f = ifM (annexeval Config.crippledFileSystem)
+	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
+		@? f ++ " is not a (crippled) symlink"
+	, do
+		s <- getSymbolicLinkStatus f
+		isSymbolicLink s @? f ++ " is not a symlink"
+	)
 
 checkregularfile :: FilePath -> Assertion
 checkregularfile f = do
@@ -293,7 +274,7 @@ checkcontent f = do
 	assertEqual ("checkcontent " ++ f) (content f) c
 
 checkunwritable :: FilePath -> Assertion
-checkunwritable f = unlessM (annexeval Config.isDirect) $ do
+checkunwritable f = do
 	-- Look at permissions bits rather than trying to write or
 	-- using fileAccess because if run as root, any file can be
 	-- modified despite permissions.
@@ -408,8 +389,7 @@ add_annex f = ifM (unlockedFiles <$> getTestMode)
 	)
 
 data TestMode = TestMode
-	{ forceDirect :: Bool
-	, unlockedFiles :: Bool
+	{ unlockedFiles :: Bool
 	, adjustedUnlockedBranch :: Bool
 	, annexVersion :: Types.RepoVersion.RepoVersion
 	, keepFailures :: Bool
@@ -417,8 +397,7 @@ data TestMode = TestMode
 
 testMode :: TestOptions -> Types.RepoVersion.RepoVersion -> TestMode
 testMode opts v = TestMode
-	{ forceDirect = False
-	, unlockedFiles = False
+	{ unlockedFiles = False
 	, adjustedUnlockedBranch = False
 	, annexVersion = v
 	, keepFailures = keepFailuresOption opts
@@ -477,8 +456,6 @@ getTestMode = Prelude.read <$> Utility.Env.getEnvDefault "TESTMODE" ""
 setupTestMode :: IO ()
 setupTestMode = do
 	testmode <- getTestMode
-	when (forceDirect testmode) $
-		git_annex "direct" ["-q"] @? "git annex direct failed"
 	when (adjustedUnlockedBranch testmode) $ do
 		boolSystem "git" [Param "commit", Param "--allow-empty", Param "-m", Param "empty"] @? "git commit failed"
 		git_annex "adjust" ["--unlock"] @? "git annex adjust failed"

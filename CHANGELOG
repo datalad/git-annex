@@ -1,4 +1,4 @@
-git-annex (7.20190820) UNRELEASED; urgency=medium
+git-annex (7.20190826) UNRELEASED; urgency=medium
 
   * Automatically convert direct mode repositories to v7 with adjusted
     unlocked branches and set annex.thin.
