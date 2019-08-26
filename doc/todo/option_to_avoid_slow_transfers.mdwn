@@ -1,0 +1,13 @@
+I'd like an option that makes transfers (get,copy,etc) of files fail if the
+transfer speed falls below a given rate. 
+
+My use case is that I'm pulling files off a hard drive and read
+errors/retries (by the kernel) are slowing it down to a crawl for some
+files. I'd like to make a first pass getting all the files it can transfer
+at the usual speed and skipping the ones that are coming too slow. Then
+I can see what files it failed on and either resume those or see if I have
+a copy of them somewhere else.
+
+I imagine there could be other use cases...
+
+--[[Joey]]
