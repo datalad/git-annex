@@ -75,10 +75,11 @@ ifAnnexed file yes no = maybe no yes =<< lookupFile file
  - when initializing/upgrading a v6+ mode repository.
  -
  - Also, the content for the unlocked file may already be present as
- - an annex object. If so, make the unlocked file use that content.
+ - an annex object. If so, make the unlocked file use that content
+ - when replacefiles is True.
  -}
-scanUnlockedFiles :: Annex ()
-scanUnlockedFiles = whenM (inRepo Git.Ref.headExists) $ do
+scanUnlockedFiles :: Bool -> Annex ()
+scanUnlockedFiles replacefiles = whenM (inRepo Git.Ref.headExists) $ do
 	showSideAction "scanning for unlocked files"
 	Database.Keys.runWriter $
 		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
@@ -97,7 +98,7 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists) $ do
 		let tf = Git.LsTree.file i
 		Database.Keys.runWriter $
 			liftIO . Database.Keys.SQL.addAssociatedFileFast (toIKey k) tf
-		whenM (inAnnex k) $ do
+		whenM (pure replacefiles <&&> inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
 			ic <- replaceFile f $ \tmp ->

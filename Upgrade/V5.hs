@@ -1,6 +1,6 @@
 {- git-annex v5 -> v6 upgrade support
  -
- - Copyright 2015-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -35,35 +35,14 @@ upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	unless automatic $
 		showAction "v5 to v6"
-	whenM isDirect $ do
-		{- Direct mode makes the same tradeoff of using less disk
-		 - space, with less preservation of old versions of files
-		 - as does annex.thin. -}
-		setConfig (annexConfig "thin") (boolConfig True)
-		Annex.changeGitConfig $ \c -> c { annexThin = True }
-		{- Since upgrade from direct mode changes how files
-		 - are represented in git, by checking out an adjusted
-		 - branch, commit any changes in the work tree first. -}
-		whenM stageDirect $ do
-			unless automatic $
-				showAction "committing first"
-			upgradeDirectCommit automatic
-				"commit before upgrade to annex.version 6"
-		setDirect False
-		cur <- fromMaybe (error "Somehow no branch is checked out")
-			<$> inRepo Git.Branch.current
-		upgradeDirectWorkTree
-		removeDirectCruft
-		{- Create adjusted branch where all files are unlocked.
-		 - This should have the same content for each file as
-		 - have been staged in upgradeDirectWorkTree. -}
-		AdjBranch b <- adjustBranch (LinkAdjustment UnlockAdjustment) cur
-		{- Since the work tree was already set up by
-		 - upgradeDirectWorkTree, and contains unlocked file
-		 - contents too, don't use git checkout to check out the
-		 - adjust branch. Instead, update HEAD manually. -}
-		inRepo $ setHeadRef b
-	scanUnlockedFiles
+	ifM isDirect
+		( do
+			convertDirect automatic
+			-- Worktree files are already populated, so don't
+			-- have this try to populate them again.
+			scanUnlockedFiles False
+		, scanUnlockedFiles True
+		)
 	configureSmudgeFilter
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more
@@ -72,6 +51,36 @@ upgrade automatic = do
 	unlessM (isDirect) $
 		createInodeSentinalFile True
 	return True
+
+convertDirect :: Bool -> Annex ()
+convertDirect automatic = do
+	{- Direct mode makes the same tradeoff of using less disk
+	 - space, with less preservation of old versions of files
+	 - as does annex.thin. -}
+	setConfig (annexConfig "thin") (boolConfig True)
+	Annex.changeGitConfig $ \c -> c { annexThin = True }
+	{- Since upgrade from direct mode changes how files
+	 - are represented in git, by checking out an adjusted
+	 - branch, commit any changes in the work tree first. -}
+	whenM stageDirect $ do
+		unless automatic $
+			showAction "committing first"
+		upgradeDirectCommit automatic
+			"commit before upgrade to annex.version 6"
+	setDirect False
+	cur <- fromMaybe (error "Somehow no branch is checked out")
+		<$> inRepo Git.Branch.current
+	upgradeDirectWorkTree
+	removeDirectCruft
+	{- Create adjusted branch where all files are unlocked.
+	 - This should have the same content for each file as
+	 - have been staged in upgradeDirectWorkTree. -}
+	AdjBranch b <- adjustBranch (LinkAdjustment UnlockAdjustment) cur
+	{- Since the work tree was already set up by
+	 - upgradeDirectWorkTree, and contains unlocked file
+	 - contents too, don't use git checkout to check out the
+	 - adjust branch. Instead, update HEAD manually. -}
+	inRepo $ setHeadRef b
 
 upgradeDirectCommit :: Bool -> String -> Annex ()
 upgradeDirectCommit automatic msg = 
