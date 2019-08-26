@@ -1,0 +1,16 @@
+Upgrading a direct mode repo to v7 while it has a deleted file in it
+behaves strangely. This is after my recent change to not make it commit.
+
+A `git checkout` of the file checks out the pointer file, as the content
+of the file is not present. This is as expected.
+
+But `git whereis` thinks the content is present, which it's not any longer.
+Seems that the upgrade process needs to notice when a deleted file was the
+only copy of the content, and set its content as not present.
+
+And `git fsck` doesn't find a problem, despite the content not being
+present. And does not fix the location log.
+This part may not be specific to this case, seems it must be some bug in
+fsck?
+
+--[[Joey]]
