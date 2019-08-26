@@ -13,7 +13,6 @@ module Annex.Ingest (
 	ingestAdd',
 	ingest,
 	ingest',
-	finishIngestDirect,
 	finishIngestUnlocked,
 	cleanOldKeys,
 	addLink,
@@ -28,7 +27,6 @@ import Annex.Common
 import Types.KeySource
 import Backend
 import Annex.Content
-import Annex.Content.Direct
 import Annex.Perms
 import Annex.Link
 import Annex.MetaData
@@ -137,14 +135,9 @@ ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
 			let f = keyFilename source
 			if lockingFile cfg
 				then addLink f k mic
-				else ifM isDirect
-					( do
-						l <- calcRepo $ gitAnnexLink f k
-						stageSymlink f =<< hashSymlink l
-					, do
-						mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (contentLocation source)
-						stagePointerFile f mode =<< hashPointerFile k
-					)
+				else do
+					mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (contentLocation source)
+					stagePointerFile f mode =<< hashPointerFile k
 			return (Just k)
 
 {- Ingests a locked down file into the annex. Does not update the working
@@ -170,10 +163,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
   where
 	go (Just key) mcache (Just s)
 		| lockingFile cfg = golocked key mcache s
-		| otherwise = ifM isDirect
-			( godirect key mcache s
-			, gounlocked key mcache s
-			)
+		| otherwise = gounlocked key mcache s
 	go _ _ _ = failure "failed to generate a key"
 
 	golocked key mcache s =
@@ -197,12 +187,6 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 				success key (Just cache) s
 	gounlocked _ _ _ = failure "failed statting file"
 
-	godirect key (Just cache) s = do
-		addInodeCache key cache
-		finishIngestDirect key source
-		success key (Just cache) s
-	godirect _ _ _ = failure "failed statting file"
-
 	success k mcache s = do
 		genMetaData k (keyFilename source) s
 		return (Just k, mcache)
@@ -211,16 +195,6 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		warning $ keyFilename source ++ " " ++ msg
 		cleanCruft source
 		return (Nothing, Nothing)
-
-finishIngestDirect :: Key -> KeySource -> Annex ()
-finishIngestDirect key source = do
-	void $ addAssociatedFile key $ keyFilename source
-	cleanCruft source
-
-	{- Copy to any other locations using the same key. -}
-	otherfs <- filter (/= keyFilename source) <$> associatedFiles key
-	forM_ otherfs $
-		addContentWhenNotPresent key (keyFilename source)
 
 finishIngestUnlocked :: Key -> KeySource -> Annex ()
 finishIngestUnlocked key source = do
@@ -333,7 +307,7 @@ forceParams = ifM (Annex.getState Annex.force)
  - Also, when in an adjusted unlocked branch, always add files unlocked.
  -}
 addUnlocked :: Annex Bool
-addUnlocked = isDirect <||>
+addUnlocked =
 	(versionSupportsUnlockedPointers <&&>
 	 ((not . coreSymlinks <$> Annex.getGitConfig) <||>
 	  (annexAddUnlocked <$> Annex.getGitConfig) <||>
@@ -352,7 +326,7 @@ addUnlocked = isDirect <||>
  - When the content of the key is not accepted into the annex, returns False.
  -}
 addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex Bool
-addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
+addAnnexedFile file key mtmp = ifM addUnlocked
 	( do
 		mode <- maybe
 			(pure Nothing)
@@ -371,15 +345,8 @@ addAnnexedFile file key mtmp = ifM (addUnlocked <&&> not <$> isDirect)
 				)
 	, do
 		addLink file key Nothing
-		whenM isDirect $ do
-			void $ addAssociatedFile key file
 		case mtmp of
-			Just tmp -> do
-				{- For moveAnnex to work in direct mode, the
-				 - symlink must already exist, so flush the queue. -}
-				whenM isDirect $
-					Annex.Queue.flush
-				moveAnnex key tmp
+			Just tmp -> moveAnnex key tmp
 			Nothing -> return True
 	)
   where

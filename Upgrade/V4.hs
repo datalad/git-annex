@@ -8,16 +8,8 @@
 module Upgrade.V4 where
 
 import Annex.Common
-import Config
-import Annex.Direct
 
-{- Direct mode only upgrade. v4 to v5 indirect update is a no-op -}
+{- Was only used for direct mode upgrade. v4 to v5 indirect update is a no-op,
+ - and direct mode is no longer supported, so nothing needs to be done. -}
 upgrade :: Bool -> Annex Bool
-upgrade automatic = ifM isDirect
-	( do
-		unless automatic $
-			showAction "v4 to v5"
-		setDirect True
-		return True
-	, return True
-	)
+upgrade _automatic = return True

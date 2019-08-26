@@ -1,7 +1,4 @@
-{- git-annex file content managing for direct mode
- -
- - This is deprecated, and will be removed when direct mode gets removed
- - from git-annex.
+{- git-annex file content managing for old direct mode repositories
  -
  - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
@@ -10,22 +7,15 @@
 
 module Annex.Content.Direct (
 	associatedFiles,
-	associatedFilesRelative,
 	removeAssociatedFile,
-	removeAssociatedFileUnchecked,
 	removeAssociatedFiles,
 	addAssociatedFile,
 	goodContent,
 	recordedInodeCache,
 	updateInodeCache,
 	addInodeCache,
-	writeInodeCache,
-	compareInodeCaches,
 	sameInodeCache,
-	elemInodeCaches,
-	sameFileStatus,
 	removeInodeCache,
-	toInodeCache,
 	addContentWhenNotPresent,
 ) where
 

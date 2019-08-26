@@ -11,7 +11,6 @@ import Command
 import Annex.Ingest
 import Logs.Location
 import Annex.Content
-import Annex.Content.Direct
 import qualified Annex
 import qualified Annex.Queue
 import qualified Database.Keys
@@ -73,8 +72,7 @@ seek o = startConcurrency commandStages $ do
 			go withFilesMaybeModified
 			ifM versionSupportsUnlockedPointers
 				( go withUnmodifiedUnlockedPointers
-				, unlessM isDirect $
-					go withFilesOldUnlocked
+				, go withFilesOldUnlocked
 				)
 
 {- Pass file off to git-add. -}
@@ -116,13 +114,7 @@ start file = do
 		( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
 			_ -> add
-		, ifM isDirect
-			( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
-				Just s | isSymbolicLink s -> fixuplink key
-				_ -> ifM (goodContent key file)
-					( stop , add )
-			, fixuplink key
-			)
+		, fixuplink key
 		)
 	fixuplink key = starting "add" (ActionItemWorkTreeFile file) $ do
 		-- the annexed symlink is present but not yet added to git

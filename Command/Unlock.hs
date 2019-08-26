@@ -25,9 +25,8 @@ editcmd :: Command
 editcmd = mkcmd "edit" "same as unlock"
 
 mkcmd :: String -> String -> Command
-mkcmd n d = notDirect $ 
-	withGlobalOptions [jsonOptions, annexedMatchingOptions] $
-		command n SectionCommon d paramPaths (withParams seek)
+mkcmd n d = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
+	command n SectionCommon d paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek ps = withFilesInGit (commandAction . whenAnnexed start) =<< workTreeItems ps

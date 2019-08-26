@@ -23,14 +23,13 @@ import Assistant.Types.Changes
 import Assistant.Alert
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
+import Utility.InodeCache
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
 import qualified Git.UpdateIndex
 import qualified Git.LsFiles as LsFiles
 import Annex.WorkTree
-import Annex.Direct
-import Annex.Content.Direct
 import Annex.CatFile
 import Annex.CheckIgnore
 import Annex.Link
@@ -41,7 +40,6 @@ import Annex.Version
 import Annex.InodeSentinal
 import Git.Types
 import Git.FilePath
-import Config
 import Config.GitConfig
 import Utility.ThreadScheduler
 import Logs.Location
@@ -92,16 +90,13 @@ runWatcher :: Assistant ()
 runWatcher = do
 	startup <- asIO1 startupScan
 	matcher <- liftAnnex largeFilesMatcher
-	direct <- liftAnnex isDirect
 	unlocked <- liftAnnex versionSupportsUnlockedPointers
 	symlinkssupported <- liftAnnex $ coreSymlinks <$> Annex.getGitConfig
 	addhook <- hook $ if unlocked
 		then onAddUnlocked symlinkssupported matcher
-		else if direct
-			then onAddDirect symlinkssupported matcher
-			else onAdd matcher
+		else onAdd matcher
 	delhook <- hook onDel
-	addsymlinkhook <- hook $ onAddSymlink direct
+	addsymlinkhook <- hook onAddSymlink
 	deldirhook <- hook onDelDir
 	errhook <- hook onErr
 	let hooks = mkWatchHooks
@@ -224,7 +219,7 @@ onAddUnlocked :: Bool -> GetFileMatcher -> Handler
 onAddUnlocked symlinkssupported matcher f fs = do
 	mk <- liftIO $ isPointerFile f
 	case mk of
-		Nothing -> onAddUnlocked' False contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher f fs
+		Nothing -> onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher f fs
 		Just k -> addlink f k
   where
 	addassociatedfile key file = 
@@ -247,27 +242,15 @@ onAddUnlocked symlinkssupported matcher f fs = do
 		liftAnnex $ stagePointerFile file mode =<< hashPointerFile key
 		madeChange file $ LinkChange (Just key)
 
-{- In direct mode, add events are received for both new files, and
- - modified existing files.
- -}
-onAddDirect :: Bool -> GetFileMatcher -> Handler
-onAddDirect = onAddUnlocked' True changedDirect addassociatedfile addlink sameFileStatus
-  where
-	addassociatedfile key file = void $ addAssociatedFile key file
-	addlink file key = do
-		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
-		addLink file link (Just key)
-
 onAddUnlocked'
-	:: Bool
-	-> (Key -> FilePath -> Annex ())
+	:: (Key -> FilePath -> Annex ())
 	-> (Key -> FilePath -> Annex ())
 	-> (FilePath -> Key -> Assistant (Maybe Change))
 	-> (Key -> FilePath -> FileStatus -> Annex Bool)
 	-> Bool
 	-> GetFileMatcher
 	-> Handler
-onAddUnlocked' isdirect contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher file fs = do
+onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of
 		(Just key, Just filestatus) ->
@@ -306,31 +289,28 @@ onAddUnlocked' isdirect contentchanged addassociatedfile addlink samefilestatus 
 						Nothing -> noop
 						Just key -> liftAnnex $
 							addassociatedfile key file
-					onAddSymlink' (Just $ fromRawFilePath lt) mk isdirect file fs
+					onAddSymlink' (Just $ fromRawFilePath lt) mk file fs
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
  - before adding it.
  -}
-onAddSymlink :: Bool -> Handler
-onAddSymlink isdirect file filestatus = unlessIgnored file $ do
+onAddSymlink :: Handler
+onAddSymlink file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
 	kv <- liftAnnex (lookupFile file)
-	onAddSymlink' linktarget kv isdirect file filestatus
+	onAddSymlink' linktarget kv file filestatus
 
-onAddSymlink' :: Maybe String -> Maybe Key -> Bool -> Handler
-onAddSymlink' linktarget mk isdirect file filestatus = go mk
+onAddSymlink' :: Maybe String -> Maybe Key -> Handler
+onAddSymlink' linktarget mk file filestatus = go mk
   where
 	go (Just key) = do
-		when isdirect $
-			liftAnnex $ void $ addAssociatedFile key file
 		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
 		if linktarget == Just link
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do
-				unless isdirect $
-					liftAnnex $ replaceFile file $
-						makeAnnexLink link
+				liftAnnex $ replaceFile file $
+					makeAnnexLink link
 				addLink file link (Just key)
 	-- other symlink, not git-annex
 	go Nothing = ensurestaged linktarget =<< getDaemonStatus
@@ -376,11 +356,8 @@ onDel file _ = do
 onDel' :: FilePath -> Annex ()
 onDel' file = do
 	topfile <- inRepo (toTopFilePath file)
-	ifM versionSupportsUnlockedPointers
-		( withkey $ flip Database.Keys.removeAssociatedFile topfile
-		, whenM isDirect $
-			withkey $ \key -> void $ removeAssociatedFile key file
-		)
+	whenM versionSupportsUnlockedPointers $
+		withkey $ flip Database.Keys.removeAssociatedFile topfile
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
   where

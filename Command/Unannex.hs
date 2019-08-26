@@ -8,11 +8,9 @@
 module Command.Unannex where
 
 import Command
-import Config
 import qualified Annex
 import Annex.Content
 import Annex.Perms
-import Annex.Content.Direct
 import Annex.Version
 import qualified Git.Command
 import qualified Git.Branch
@@ -34,7 +32,7 @@ seek ps = wrapUnannex $
 	(withFilesInGit $ commandAction . whenAnnexed start) =<< workTreeItems ps
 
 wrapUnannex :: Annex a -> Annex a
-wrapUnannex a = ifM (versionSupportsUnlockedPointers <||> isDirect)
+wrapUnannex a = ifM versionSupportsUnlockedPointers
 	( a
 	{- Run with the pre-commit hook disabled, to avoid confusing
 	 - behavior if an unannexed file is added back to git as
@@ -68,13 +66,10 @@ wrapUnannex a = ifM (versionSupportsUnlockedPointers <||> isDirect)
 start :: FilePath -> Key -> CommandStart
 start file key = stopUnless (inAnnex key) $
 	starting "unannex" (mkActionItem (key, file)) $
-		ifM isDirect
-			( performDirect file key
-			, performIndirect file key
-			)
+		perform file key
 
-performIndirect :: FilePath -> Key -> CommandPerform
-performIndirect file key = do
+perform :: FilePath -> Key -> CommandPerform
+perform file key = do
 	liftIO $ removeFile file
 	inRepo $ Git.Command.run
 		[ Param "rm"
@@ -84,10 +79,10 @@ performIndirect file key = do
 		, Param "--"
 		, File file
 		]
-	next $ cleanupIndirect file key
+	next $ cleanup file key
 
-cleanupIndirect :: FilePath -> Key -> CommandCleanup
-cleanupIndirect file key = do
+cleanup :: FilePath -> Key -> CommandCleanup
+cleanup file key = do
 	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
 	src <- calcRepo $ gitAnnexLocation key
 	ifM (Annex.getState Annex.fast)
@@ -112,28 +107,3 @@ cleanupIndirect file key = do
 			( return True
 			, copyfrom src
 			)
-
-performDirect :: FilePath -> Key -> CommandPerform
-performDirect file key = do
-	-- --force is needed when the file is not committed
-	inRepo $ Git.Command.run
-		[ Param "rm"
-		, Param "--cached"
-		, Param "--force"
-		, Param "--quiet"
-		, Param "--"
-		, File file
-		]
-	next $ cleanupDirect file key
-
-{- The direct mode file is not touched during unannex, so the content
- - is already where it needs to be, so this does not need to do anything
- - except remove it from the associated file map (which also updates
- - the location log if this was the last copy), and, if this was the last
- - associated file, remove the inode cache. -}
-cleanupDirect :: FilePath -> Key -> CommandCleanup
-cleanupDirect file key = do
-	fs <- removeAssociatedFile key file
-	when (null fs) $
-		removeInodeCache key
-	return True

@@ -10,11 +10,9 @@
 module Command.PreCommit where
 
 import Command
-import Config
 import qualified Command.Add
 import qualified Command.Fix
 import qualified Command.Smudge
-import Annex.Direct
 import Annex.Hook
 import Annex.Link
 import Annex.View
@@ -38,60 +36,51 @@ cmd = command "pre-commit" SectionPlumbing
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = lockPreCommitHook $ ifM isDirect
-	( do
-		-- update direct mode mappings for committed files
-		withWords (commandAction . startDirect) ps
-		runAnnexHook preCommitAnnexHook
-	, do
-		ifM (not <$> versionSupportsUnlockedPointers <&&> liftIO Git.haveFalseIndex)
-			( do
-				(fs, cleanup) <- inRepo $ Git.typeChangedStaged ps
-				whenM (anyM isOldUnlocked fs) $
-					giveup "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
-				void $ liftIO cleanup
-			, do
-				l <- workTreeItems ps
-				-- fix symlinks to files being committed
-				flip withFilesToBeCommitted l $ \f -> commandAction $
-					maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)
-						=<< isAnnexLink f
-				ifM versionSupportsUnlockedPointers
-					-- after a merge conflict or git
-					-- cherry-pick or stash, pointer
-					-- files in the worktree won't
-					-- be populated, so populate them
-					-- here
-					( Command.Smudge.updateSmudged 
-						-- When there's a false index,
-						-- restaging the files won't work.
-						. Restage =<< liftIO Git.haveFalseIndex
-					-- inject unlocked files into the annex
-					-- (not needed when repo version uses
-					-- unlocked pointer files)
-					, withFilesOldUnlockedToBeCommitted (commandAction . startInjectUnlocked) l
-					)
-			)
-		runAnnexHook preCommitAnnexHook
-		-- committing changes to a view updates metadata
-		mv <- currentView
-		case mv of
-			Nothing -> noop
-			Just v -> withViewChanges
-				(addViewMetaData v)
-				(removeViewMetaData v)
-	)
+seek ps = lockPreCommitHook $ do
+	ifM (not <$> versionSupportsUnlockedPointers <&&> liftIO Git.haveFalseIndex)
+		( do
+			(fs, cleanup) <- inRepo $ Git.typeChangedStaged ps
+			whenM (anyM isOldUnlocked fs) $
+				giveup "Cannot make a partial commit with unlocked annexed files. You should `git annex add` the files you want to commit, and then run git commit."
+			void $ liftIO cleanup
+		, do
+			l <- workTreeItems ps
+			-- fix symlinks to files being committed
+			flip withFilesToBeCommitted l $ \f -> commandAction $
+				maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)
+					=<< isAnnexLink f
+			ifM versionSupportsUnlockedPointers
+				-- after a merge conflict or git
+				-- cherry-pick or stash, pointer
+				-- files in the worktree won't
+				-- be populated, so populate them
+				-- here
+				( Command.Smudge.updateSmudged 
+					-- When there's a false index,
+					-- restaging the files won't work.
+					. Restage =<< liftIO Git.haveFalseIndex
+				-- inject unlocked files into the annex
+				-- (not needed when repo version uses
+				-- unlocked pointer files)
+				, withFilesOldUnlockedToBeCommitted (commandAction . startInjectUnlocked) l
+				)
+		)
 	
+	runAnnexHook preCommitAnnexHook
+
+	-- committing changes to a view updates metadata
+	mv <- currentView
+	case mv of
+		Nothing -> noop
+		Just v -> withViewChanges
+			(addViewMetaData v)
+			(removeViewMetaData v)
 
 startInjectUnlocked :: FilePath -> CommandStart
 startInjectUnlocked f = startingCustomOutput (ActionItemOther Nothing) $ do
 	unlessM (callCommandAction $ Command.Add.start f) $
 		error $ "failed to add " ++ f ++ "; canceling commit"
 	next $ return True
-
-startDirect :: [String] -> CommandStart
-startDirect _ = startingCustomOutput (ActionItemOther Nothing) $ 
-	next preCommitDirect
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 addViewMetaData v f k = starting "metadata" (mkActionItem (k, f)) $

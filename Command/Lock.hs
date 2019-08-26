@@ -23,7 +23,7 @@ import Logs.Location
 import Git.FilePath
 	
 cmd :: Command
-cmd = notDirect $ withGlobalOptions [jsonOptions, annexedMatchingOptions] $
+cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 	command "lock" SectionCommon
 		"undo unlock command"
 		paramPaths (withParams seek)

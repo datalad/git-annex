@@ -17,7 +17,6 @@ import qualified Command.Drop
 import Command
 import Annex.Wanted
 import Config
-import Annex.Content.Direct
 import qualified Database.Keys
 import Git.FilePath
 
@@ -44,20 +43,13 @@ type Reason = String
  - A VerifiedCopy can be provided as an optimisation when eg, a key
  - has just been uploaded to a remote.
  -
- - In direct mode, all associated files are checked, and only if all
- - of them are unwanted are they dropped.
- -
  - The runner is used to run CommandStart sequentially, it's typically 
  - callCommandAction.
  -}
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
 handleDropsFrom locs rs reason fromhere key afile preverified runner = do
-	l <- ifM isDirect
-		( associatedFilesRelative key
-		, do
-			g <- Annex.gitRepo
-			map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
-		)
+	g <- Annex.gitRepo
+	l <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
 	let fs = case afile of
 		AssociatedFile (Just f) -> nub (f : l)
 		AssociatedFile Nothing -> l

@@ -30,7 +30,6 @@ import qualified Annex
 import qualified Annex.Branch
 import qualified Remote
 import qualified Types.Remote as Remote
-import Annex.Direct
 import Annex.Hook
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
@@ -250,7 +249,7 @@ merge currbranch mergeconfig resolvemergeoverride commitmode tomerge = case curr
 		ResolveMergeOverride False -> return False
 
 syncBranch :: Git.Branch -> Git.Branch
-syncBranch = Git.Ref.underBase "refs/heads/synced" . fromDirectBranch . fromAdjustedBranch
+syncBranch = Git.Ref.underBase "refs/heads/synced" . fromAdjustedBranch
 
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
@@ -286,20 +285,14 @@ commit :: SyncOptions -> CommandStart
 commit o = stopUnless shouldcommit $ starting "commit" (ActionItemOther Nothing) $ do
 	commitmessage <- maybe commitMsg return (messageOption o)
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
-	next $ ifM isDirect
-		( do
-			void stageDirect
-			void preCommitDirect
-			commitStaged Git.Branch.ManualCommit commitmessage
-		, do
-			showOutput
-			void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
-				[ Param "-a"
-				, Param "-m"
-				, Param commitmessage
-				]
-			return True
-		)
+	next $ do
+		showOutput
+		void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+			[ Param "-a"
+			, Param "-m"
+			, Param commitmessage
+			]
+		return True
   where
 	shouldcommit = pure (commitOption o)
 		<||> (pure (not (noCommitOption o)) <&&> getGitConfigVal annexAutoCommit)
@@ -378,12 +371,6 @@ updateBranches (Just branch, madj) = do
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) branch
 
-	-- In direct mode, we're operating on some special direct mode
-	-- branch, rather than the intended branch, so update the intended
-	-- branch.
-	whenM isDirect $
-		inRepo $ updateBranch (fromDirectBranch branch) branch
-
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 
 	unlessM go $ giveup $ "failed to update " ++ Git.fromRef syncbranch
@@ -449,7 +436,7 @@ mergeRemote remote currbranch mergeconfig resolvemergeoverride = ifM isBareRepo
 		(mapM (merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
-	branchlist (Just branch) = [fromDirectBranch (fromAdjustedBranch branch), syncBranch branch]
+	branchlist (Just branch) = [fromAdjustedBranch branch, syncBranch branch]
 
 pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pushRemote _o _remote (Nothing, _) = stop
@@ -540,7 +527,7 @@ pushBranch remote branch g = directpush `after` annexpush `after` syncpush
 		-- receive.denyCurrentBranch=updateInstead -- the user
 		-- will want to see that one.
 		let p = flip Git.Command.gitCreateProcess g $ pushparams
-			[ Git.fromRef $ Git.Ref.base $ fromDirectBranch $ fromAdjustedBranch branch ]
+			[ Git.fromRef $ Git.Ref.base $ fromAdjustedBranch branch ]
 		(transcript, ok) <- processTranscript' p Nothing
 		when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
 			hPutStr stderr transcript

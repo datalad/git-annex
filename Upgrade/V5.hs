@@ -13,11 +13,11 @@ import Config
 import Config.Smudge
 import Annex.InodeSentinal
 import Annex.Link
-import Annex.Direct
 import Annex.Content
 import Annex.CatFile
 import Annex.WorkTree
 import qualified Database.Keys
+import qualified Annex.Direct as Direct
 import qualified Annex.Content.Direct as Direct
 import qualified Git
 import qualified Git.LsFiles
@@ -48,7 +48,7 @@ upgrade automatic = do
 	-- locking down files as they were added. In v6, it's used more
 	-- extensively, so make sure it exists, since old repos that didn't
 	-- use direct mode may not have created it.
-	unlessM (isDirect) $
+	unlessM isDirect $
 		createInodeSentinalFile True
 	return True
 
@@ -62,12 +62,12 @@ convertDirect automatic = do
 	{- Since upgrade from direct mode changes how files
 	 - are represented in git, by checking out an adjusted
 	 - branch, commit any changes in the work tree first. -}
-	whenM stageDirect $ do
+	whenM Direct.stageDirect $ do
 		unless automatic $
 			showAction "committing first"
 		upgradeDirectCommit automatic
 			"commit before upgrade to annex.version 6"
-	setDirect False
+	Direct.setIndirect
 	cur <- fromMaybe (error "Somehow no branch is checked out")
 		<$> inRepo Git.Branch.current
 	upgradeDirectWorkTree

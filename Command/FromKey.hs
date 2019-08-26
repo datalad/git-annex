@@ -19,7 +19,7 @@ import qualified Backend.URL
 import Network.URI
 
 cmd :: Command
-cmd = notDirect $ notBareRepo $ withGlobalOptions [jsonOptions] $
+cmd = notBareRepo $ withGlobalOptions [jsonOptions] $
 	command "fromkey" SectionPlumbing "adds a file using a specific key"
 		(paramRepeating (paramPair paramKey paramPath))
 		(seek <$$> optParser)

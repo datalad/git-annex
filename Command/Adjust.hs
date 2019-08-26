@@ -11,7 +11,7 @@ import Command
 import Annex.AdjustedBranch
 
 cmd :: Command
-cmd = notBareRepo $ notDirect $ noDaemonRunning $
+cmd = notBareRepo $ noDaemonRunning $
 	command "adjust" SectionSetup "enter adjusted branch"
 		paramNothing (seek <$$> optParser)
 

@@ -27,7 +27,6 @@ import Utility.Hash
 import Utility.Tmp
 import Utility.Tmp.Dir
 import Utility.Process.Transcript
-import Config
 
 import Data.Char
 import qualified Data.ByteString.Lazy.UTF8 as B8
@@ -128,8 +127,6 @@ send ups fs = do
 	-- In a direct mode repository, the annex objects do not have
 	-- the names of keys, and would have to be copied, which is too
 	-- expensive.
-	whenM isDirect $
-		giveup "Sorry, multicast send cannot be done from a direct mode repository."
 	starting "sending files" (ActionItemOther Nothing) $
 		withTmpFile "send" $ \t h -> do
 			fs' <- seekHelper LsFiles.inRepo =<< workTreeItems fs

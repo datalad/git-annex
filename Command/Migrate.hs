@@ -20,7 +20,7 @@ import Logs.Web
 import Utility.Metered
 
 cmd :: Command
-cmd = notDirect $ withGlobalOptions [annexedMatchingOptions] $
+cmd = withGlobalOptions [annexedMatchingOptions] $
 	command "migrate" SectionUtility 
 		"switch data to different backend"
 		paramPaths (withParams seek)

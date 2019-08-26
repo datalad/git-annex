@@ -13,7 +13,6 @@ module Annex.AutoMerge
 
 import Annex.Common
 import qualified Annex.Queue
-import Annex.Direct
 import Annex.CatFile
 import Annex.Link
 import Annex.Content
@@ -50,9 +49,7 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
 		Nothing -> go Nothing
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
-	go old = ifM isDirect
-		( mergeDirect currbranch old branch resolvemerge mergeconfig commitmode
-		, do
+	go old = do
 			r <- inRepo (Git.Merge.merge branch mergeconfig commitmode)
 				<||> (resolvemerge <&&> commitResolvedMerge commitmode)
 			-- Merging can cause new associated files to appear
@@ -61,7 +58,6 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
 			-- close the database if it was open.
 			Database.Keys.closeDb
 			return r
-		)
 	  where
 		resolvemerge = ifM canresolvemerge
 			( resolveMerge old branch False
@@ -88,13 +84,9 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
  - the other as a directory or non-annexed file. The annexed file
  - is renamed to resolve the merge, and the other object is preserved as-is.
  -
- - In indirect mode, the merge is resolved in the work tree and files
+ - The merge is resolved in the work tree and files
  - staged, to clean up from a conflicted merge that was run in the work
  - tree. 
- -
- - In direct mode, the work tree is not touched here; files are staged to
- - the index, and written to the gitAnnexMergeDir, for later handling by
- - the direct mode merge code.
  - 
  - This is complicated by needing to support merges run in an overlay
  - work tree, in which case the CWD won't be within the work tree.
@@ -126,7 +118,7 @@ resolveMerge us them inoverlay = do
 	let merged = not (null mergedfs')
 	void $ liftIO cleanup
 
-	unlessM (pure inoverlay <||> isDirect) $ do
+	unless inoverlay $ do
 		(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
 		unless (null deleted) $
 			Annex.Queue.addCommand "rm"
@@ -136,7 +128,7 @@ resolveMerge us them inoverlay = do
 
 	when merged $ do
 		Annex.Queue.flush
-		unlessM (pure inoverlay <||> isDirect) $ do
+		unless inoverlay $ do
 			unstagedmap <- inodeMap $ inRepo $ LsFiles.notInRepo False [top]
 			cleanConflictCruft mergedks' mergedfs' unstagedmap
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
@@ -230,12 +222,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			Database.Keys.addAssociatedFile key
 				=<< inRepo (toTopFilePath dest)
 
-	withworktree f a = ifM isDirect
-		( do
-			d <- fromRepo gitAnnexMergeDir
-			a (d </> f)
-		, a f
-		)
+	withworktree f a = a f
 
 	{- Stage a graft of a directory or file from a branch
 	 - and update the work tree. -}

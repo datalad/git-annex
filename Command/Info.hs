@@ -31,7 +31,6 @@ import Logs.Trust
 import Logs.Location
 import Annex.NumCopies
 import Remote
-import Config
 import Git.Config (boolConfig)
 import qualified Git.LsTree as LsTree
 import Utility.Percentage
@@ -318,12 +317,9 @@ showStat s = maybe noop calc =<< s
 
 repository_mode :: Stat
 repository_mode = simpleStat "repository mode" $ lift $
-	ifM isDirect 
-		( return "direct"
-		, ifM (fromRepo Git.repoIsLocalBare)
-			( return "bare"
-			, return "indirect"
-			)
+	ifM (fromRepo Git.repoIsLocalBare)
+		( return "bare"
+		, return "indirect"
 		)
 
 repo_list :: TrustLevel -> Stat

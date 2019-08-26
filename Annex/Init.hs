@@ -35,7 +35,7 @@ import Annex.WorkTree
 import Config
 import Config.Files
 import Config.Smudge
-import Annex.Direct
+import qualified Annex.Direct as Direct
 import qualified Annex.AdjustedBranch as AdjustedBranch
 import Annex.Environment
 import Annex.Hook
@@ -126,7 +126,7 @@ initialize' mversion = checkCanInitialize  $ do
 				-- Handle case where this repo was cloned from a
 				-- direct mode repo
 				, unlessM isBareRepo
-					switchHEADBack
+					Direct.switchHEADBack
 				)
 	propigateSecureHashesOnly
 	createInodeSentinalFile False
