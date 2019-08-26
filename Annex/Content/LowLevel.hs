@@ -48,12 +48,11 @@ linkOrCopy :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex (Maybe Link
 linkOrCopy = linkOrCopy' (annexThin <$> Annex.getGitConfig)
 
 linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
-linkOrCopy' canhardlink key src dest destmode
-	| otherwise = catchDefaultIO Nothing $
-		ifM canhardlink
-			( hardlink
-			, copy =<< getstat
-			)
+linkOrCopy' canhardlink key src dest destmode = catchDefaultIO Nothing $
+	ifM canhardlink
+		( hardlink
+		, copy =<< getstat
+		)
   where
 	hardlink = do
 		s <- getstat
