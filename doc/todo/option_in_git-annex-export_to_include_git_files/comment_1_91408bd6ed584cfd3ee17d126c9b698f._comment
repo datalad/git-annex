@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-26T16:17:10Z"
+ content="""
+No, git-annex export *does* export regular git files.
+
+This is easy to verify, so I'm puzzled why you'd say it doesn't work.
+"""]]
