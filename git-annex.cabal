@@ -577,7 +577,7 @@ Executable git-annex
       Assistant.WebApp.RepoList
       Assistant.WebApp.SideBar
       Assistant.WebApp.Types
-      Annex.MakeRepo
+      Assistant.MakeRepo
       Utility.Yesod
       Utility.WebApp
 

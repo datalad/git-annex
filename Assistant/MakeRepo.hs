@@ -1,11 +1,11 @@
-{- making local repositories (used by webapp mostly)
+{- making local repositories
  -
  - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.MakeRepo where
+module Assistant.MakeRepo where
 
 import Assistant.WebApp.Common
 import Annex.Init
