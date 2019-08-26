@@ -59,14 +59,6 @@ convertDirect automatic = do
 	 - as does annex.thin. -}
 	setConfig (annexConfig "thin") (boolConfig True)
 	Annex.changeGitConfig $ \c -> c { annexThin = True }
-	{- Since upgrade from direct mode changes how files
-	 - are represented in git, by checking out an adjusted
-	 - branch, commit any changes in the work tree first. -}
-	whenM Direct.stageDirect $ do
-		unless automatic $
-			showAction "committing first"
-		upgradeDirectCommit automatic
-			"commit before upgrade to annex.version 6"
 	Direct.setIndirect
 	cur <- fromMaybe (error "Somehow no branch is checked out")
 		<$> inRepo Git.Branch.current
@@ -82,18 +74,11 @@ convertDirect automatic = do
 	 - adjust branch. Instead, update HEAD manually. -}
 	inRepo $ setHeadRef b
 
-upgradeDirectCommit :: Bool -> String -> Annex ()
-upgradeDirectCommit automatic msg = 
-	void $ inRepo $ Git.Branch.commitCommand commitmode
-		[ Param "-m"
-		, Param msg
-		]
-  where
-	commitmode = if automatic then Git.Branch.AutomaticCommit else Git.Branch.ManualCommit
-
 {- Walk work tree from top and convert all annex symlinks to pointer files,
  - staging them in the index, and updating the work tree files with
- - either the content of the object, or the pointer file content. -}
+ - either the content of the object, or the pointer file content.
+ - Modified work tree files are left as-is, and deleted work tree files are
+ - skipped. -}
 upgradeDirectWorkTree :: Annex ()
 upgradeDirectWorkTree = do
 	top <- fromRepo Git.repoPath
@@ -108,17 +93,16 @@ upgradeDirectWorkTree = do
 		case mk of
 			Nothing -> noop
 			Just k -> do
+				stagePointerFile f Nothing =<< hashPointerFile k
 				ifM (isJust <$> getAnnexLinkTarget f)
 					( writepointer f k
 					, fromdirect f k
 					)
-				stagePointerFile f Nothing =<< hashPointerFile k
 				Database.Keys.addAssociatedFile k
 					=<< inRepo (toTopFilePath f)
-				return ()
 	go _ = noop
 
-	fromdirect f k = do
+	fromdirect f k = whenM (Direct.goodContent k f) $ do
 		-- If linkToAnnex fails for some reason, the work tree file
 		-- still has the content; the annex object file is just
 		-- not populated with it. Since the work tree file
@@ -126,6 +110,7 @@ upgradeDirectWorkTree = do
 		-- work that way, it's just not ideal.
 		ic <- withTSDelta (liftIO . genInodeCache f)
 		void $ linkToAnnex k f ic
+	
 	writepointer f k = liftIO $ do
 		nukeFile f
 		S.writeFile f (formatPointer k)
