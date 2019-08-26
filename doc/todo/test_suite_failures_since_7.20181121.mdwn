@@ -15,3 +15,14 @@ I am inclined to think that there are several bugs here: the test suite is overl
 It seems unlikely to me that anyone has time to fix these bugs before the upcoming Debian freeze.  Getting git-annex v7.x into buster is a priority.  Maybe the test suite should be disabled during the package build, since it's flaky?  I'd like to hear Joey's opinion on doing that.
 
 --spwhitton
+
+> The logs are no longer available, but I recently did a lot
+> of pounding on the test suite to fix interrmittent failures,
+> and the mention of `git annex copy --from` sounds like
+> one of the failures I fixed. 
+> [[!commit fa62c3223383d8377d27576a0e32f7bfec0c826d]]
+> seems to have fixed the problem that made copying from v7 repos
+> sometimes fail.
+> 
+> Closing on that basis; if you see a new test suite failure, please open a
+> new bug. [[done]] --[[Joey]]
