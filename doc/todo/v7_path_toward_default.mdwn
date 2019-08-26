@@ -4,12 +4,11 @@ Tracking v7 progress toward becoming the default.
 
 done
 
-## step 2: default for new direct mode repositories
+## step 2: default for new repositories that used to use direct mode
 
 Done when using the command line to init in a crippled filesystem. 
 
-The assistant still creates direct mode repositories though,
-and will need to enable annex.thin and adjusted unlocked branch instead.
+Done when using the assistant.
 
 ## step 3: auto-upgrade from direct mode
 

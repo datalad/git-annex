@@ -28,6 +28,9 @@ supportedVersions = map RepoVersion [5, 7]
 versionForAdjustedClone :: RepoVersion
 versionForAdjustedClone = RepoVersion 7
 
+versionForAdjustedBranch :: RepoVersion
+versionForAdjustedBranch = RepoVersion 7
+
 versionForCrippledFilesystem :: RepoVersion
 versionForCrippledFilesystem = RepoVersion 7
 

@@ -15,12 +15,15 @@ import qualified Git.Command
 import qualified Git.Branch
 import qualified Annex
 import Annex.UUID
-import Annex.Direct
+import Annex.AdjustedBranch
 import Annex.Action
+import Annex.Version
+import Upgrade
 import Types.StandardGroups
 import Logs.PreferredContent
 import qualified Annex.Branch
 import Utility.Process.Transcript
+import Config
 
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}
@@ -59,13 +62,16 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 			, Param "-m"
 			, Param "created repository"
 			]
-	{- Repositories directly managed by the assistant use direct mode.
+	{- Repositories directly managed by the assistant use v7 unlocked
+	 - with annex.thin set.
 	 - 
 	 - Automatic gc is disabled, as it can be slow. Insted, gc is done
 	 - once a day.
 	 -}
 	when primary_assistant_repo $ do
-		setDirect True
+		void $ upgrade True versionForAdjustedBranch
+		void $ enterAdjustedBranch (LinkAdjustment UnlockAdjustment)
+		setConfig (annexConfig "thin") (Git.Config.boolConfig True)
 		inRepo $ Git.Command.run
 			[Param "config", Param "gc.auto", Param "0"]
 	getUUID

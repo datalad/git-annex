@@ -3,6 +3,8 @@ git-annex (7.20190820) UNRELEASED; urgency=medium
   * info: When file matching options are specified when getting
     info of something other than a directory, they won't have any effect,
     so error out to avoid confusion.
+  * assistant: When creating a new repository, no longer use direct
+    mode, instead use v7 adjusted branches with annex.thin.
 
  -- Joey Hess <id@joeyh.name>  Sat, 24 Aug 2019 12:54:35 -0400
 
