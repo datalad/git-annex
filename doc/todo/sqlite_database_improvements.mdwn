@@ -28,6 +28,9 @@ process.
 	INSERT INTO associated VALUES(4,'SHA256E-s30--7d51d2454391a40e952bea478e45d64cf0d606e1e8c0652bb815a22e0e23419a,'foo.ü');
 	INSERT INTO associated VALUES(5,'SHA256E-s30--7d51d2454391a40e952bea478e45d64cf0d606e1e8c0652bb815a22e0e23419a','"foo.\56515\56508"');
 
+  See <http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/>
+  for an example of how this can happen.
+
   And it seems likely that a query by filename would fail if the filename
   was in the database but with a different encoding.
 
@@ -93,6 +96,9 @@ process.
 > Should this instead be a annex.version bump from v7 to v8?
 > But v5 is also affected for ContentIdentifier and Export and Fsck.
 > Don't want v5.1.
+>
+> > Waiting until v5 is no longer supported and including this in v8
+> > seems the only sure way to avoid backwards compatability issues.
 
 ----
 

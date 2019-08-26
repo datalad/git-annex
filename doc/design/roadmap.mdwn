@@ -17,6 +17,9 @@ Speed improvements, including:
 * [[todo/sqlite_database_improvements]] to avoid using String and better
   encode data stored in sqlite.
 
+Default to v7 repositories, and eliminate direct mode.
+[[todo/v7_path_toward_default]]
+
 Improvements to tree export support, including supporting export to more
 external special remotes, more
 efficient renames, and improving support for exporting non-annexed files.

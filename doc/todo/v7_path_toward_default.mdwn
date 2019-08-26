@@ -16,23 +16,24 @@ and will need to enable annex.thin and adjusted unlocked branch instead.
 Direct mode is very buggy and limited, so it's easy for v7 (with adjusted
 unlocked branches) to be better than it.
 
-Need to give it some time for problems to be found though.
-
-Here are some problems that need to be investigated first:
-
-  - <http://git-annex.branchable.com/bugs/assistant_crashes_in_TransferScanner/>
-  - <http://git-annex.branchable.com/bugs/v6_appears_to_not_thin/>
-  - <http://git-annex.branchable.com/bugs/git-annex-sync_sometimes_fails_in_submodule_in_V6_adjusted_branch/>
-
 Note that direct mode repos with old git-annex interoperate with adjusted
 unlocked repos with new git-annex, so there is no need to wait for v7 to be
 widely supported.
 
+One problem with this is that direct mode stores only a single copy
+of a file, but v7 unlocked with annex.thin needs two copies if hard links
+are not supported. So some users will experience the repo doubling in size.
+Limited mostly to windows, also some FAT media. This seems difficult
+to avoid though, see discussion in
+<http://git-annex.branchable.com/todo/annex.thin_without_hardlinks/>
+
 ## step 4: default for all new repositories
 
-Could probably happen fairly soon after default in direct mode.
+Could probably happen fairly soon after switch of direct mode.
+
 This is entirely new repositories that git-annex init is run in for the
-first time (no sibling git-annex branches).
+first time (no sibling git-annex branches). Limiting to new repos
+avoids the problems discussed in step 5.
 
 ## step 5: automatic v5 to v7 upgrades
 
@@ -46,11 +47,25 @@ machines, some not supporting v7 and some that do. If one upgrades to v7
 and starts using unlocked files, those files won't be accessible on the old
 v5 machines.
 
+> v7 is in debian stable now; oldstable (stretch) has v7 available
+> as a backport but not by default, and will remain supported
+> until 2022.
+> 
+> But workflows involving unlocking and re-locking that work on v5 will
+> also work on v7 and keep the repo compatible with v5. Only if some
+> users commit unlocked files is v5 compatability lost, and even then
+> it's easy to re-lock the file to fix compatabilityagain. So the risk
+> of a too early upgrade to v7 is not very big.
+
+Note that [[sqlite_database_improvements]] seems to need a v8 mode,
+and so is blocked on v5 auto-upgrading.
+
 ## step 6: remove support for direct mode
 
 Will simplify a lot of code.
 
 ## step 7: remove support for v5
 
-This won't simplify much code, but maybe worth doing eventually.
-Best not to rush this, maybe in 5 years from when v7 is default?
+This won't simplify much code, worth doing eventually. Once automatic v5 to
+v7 upgrades happen, the remaining v5 specific code is not needed any
+longer.
