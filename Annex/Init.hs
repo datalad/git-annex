@@ -113,6 +113,7 @@ initialize' mversion = checkCanInitialize  $ do
 			)
 	whenM versionSupportsUnlockedPointers $ do
 		configureSmudgeFilter
+		showSideAction "scanning for unlocked files"
 		scanUnlockedFiles True
 		unlessM isBareRepo $ do
 			hookWrite postCheckoutHook

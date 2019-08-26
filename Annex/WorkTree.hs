@@ -80,7 +80,6 @@ ifAnnexed file yes no = maybe no yes =<< lookupFile file
  -}
 scanUnlockedFiles :: Bool -> Annex ()
 scanUnlockedFiles replacefiles = whenM (inRepo Git.Ref.headExists) $ do
-	showSideAction "scanning for unlocked files"
 	Database.Keys.runWriter $
 		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive Git.Ref.headRef
