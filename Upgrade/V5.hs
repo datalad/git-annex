@@ -76,10 +76,10 @@ convertDirect = do
 	inRepo $ setHeadRef b
 
 {- Walk work tree from top and convert all annex symlinks to pointer files,
- - staging them in the index, and updating the work tree files with
- - either the content of the object, or the pointer file content.
- - Modified work tree files are left as-is, and deleted work tree files are
- - skipped. -}
+ - staging them in the index, and populating the annex objects with
+ - hard links (or copies) of the work tree files (when not modified or
+ - deleted).
+ -}
 upgradeDirectWorkTree :: Annex ()
 upgradeDirectWorkTree = do
 	top <- fromRepo Git.repoPath
