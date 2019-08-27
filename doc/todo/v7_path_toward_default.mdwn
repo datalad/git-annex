@@ -40,9 +40,14 @@ Since v5 repos and v7 repos not using unlocked files are functionally
 almost identical, this is unlikely to break much. Unlocking files will of
 course change behavior though.
 
-This needs to be deferred until every git-annex likely to be in use
-supports v7. A v5 repository may be used by multiple
-machines, some not supporting v7 and some that do. If one upgrades to v7
+The only significant difference is that Annex.Content in v7 
+reads and writes to the keys database. So any problem with the database
+code would prevent using git-annex. On Windows, sqlite does not currently
+work in WSL. http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/
+So this would make git-annex maybe not work on WSL until that's fixed.
+
+A concern is that a v5 repository may be used by multiple machines,
+some not supporting v7 and some that do. If one upgrades to v7
 and starts using unlocked files, those files won't be accessible on the old
 v5 machines.
 
@@ -59,11 +64,7 @@ v5 machines.
 Note that [[sqlite_database_improvements]] seems to need a v8 mode,
 and so is blocked on v5 auto-upgrading.
 
-## step 6: remove support for direct mode
-
-Will simplify a lot of code.
-
-## step 7: remove support for v5
+## step 6: remove support for v5
 
 This won't simplify much code, worth doing eventually. Once automatic v5 to
 v7 upgrades happen, the remaining v5 specific code is not needed any
