@@ -24,6 +24,12 @@ Limited mostly to windows, also some FAT media. This seems difficult
 to avoid though, see discussion in
 <http://git-annex.branchable.com/todo/annex.thin_without_hardlinks/>
 
+On Windows Subsystem for Linux, adusted branches don't work due to
+some problem with sqlite, so upgrading a direct mode repo there
+would be a problem.
+<http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/>
+But, regular v5 and v7 repos do work in WSL.
+
 done
 
 ## step 4: default for all new repositories
@@ -42,9 +48,9 @@ course change behavior though.
 
 The only significant difference is that Annex.Content in v7 
 reads and writes to the keys database. So any problem with the database
-code would prevent using git-annex. On Windows, sqlite does not currently
-work in WSL. http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/
-So this would make git-annex maybe not work on WSL until that's fixed.
+code could prevent using git-annex. WSL has such a problem currently,
+but it doesn't seem to affect using v7 repos, only adjusted branches.
+<http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/>
 
 A concern is that a v5 repository may be used by multiple machines,
 some not supporting v7 and some that do. If one upgrades to v7
