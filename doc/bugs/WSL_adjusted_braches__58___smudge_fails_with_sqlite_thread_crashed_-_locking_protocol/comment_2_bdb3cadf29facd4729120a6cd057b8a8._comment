@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-08-27T19:05:02Z"
+ content="""
+I reproduced with git-annex from debian stable on WSL in MS Edge preview
+fall 2019. Also with a current git-annex autobuild.
+
+Interestingly, using v7 with unlocked files not in an adjusted branch
+seems to work ok. Which seems to indicate that sqlite is generally working.
+
+May be somehow caused by there being 2 git-annex processes running when it
+fails. They could be contending over the database in some way that
+works less well in WSL.
+
+Backing up that theory, .git/annex/keys/db does get created and is
+populated with the right tables and data.
+"""]]
