@@ -324,7 +324,7 @@ tryGitConfigRead autoinit r
 	readlocalannexconfig = do
 		let check = do
 			Annex.BranchState.disableUpdate
-			void $ tryNonAsync $ ensureInitialized
+			void $ tryNonAsync ensureInitialized
 			Annex.getState Annex.repo
 		s <- Annex.new r
 		Annex.eval s $ check `finally` stopCoProcesses
@@ -391,7 +391,6 @@ dropKey' repo r (State connpool duc _ _) key
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (return False) $
 			commitOnCleanup repo r $ onLocalFast repo r $ do
-				ensureInitialized
 				whenM (Annex.Content.inAnnex key) $ do
 					Annex.Content.lockContentForRemoval key $ \lock -> do
 						Annex.Content.removeAnnex lock
@@ -489,7 +488,6 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
 		onLocalFast repo r $ do
-			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
 				Nothing -> return (False, UnVerified)
@@ -631,7 +629,6 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		onLocalFast repo r $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, do
-				ensureInitialized
 				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure
@@ -681,21 +678,25 @@ repairRemote r a = return $ do
  - The AnnexState is cached for speed and to avoid resource leaks.
  - However, coprocesses are stopped after each call to avoid git
  - processes hanging around on removable media.
+ -
+ - The remote will be automatically initialized/upgraded first,
+ - when possible.
  -}
 onLocal :: Git.Repo -> Remote -> Annex a -> Annex a
 onLocal repo r a = do
 	m <- Annex.getState Annex.remoteannexstate
-	go =<< maybe
-		(liftIO $ Annex.new repo)
-		return
-		(M.lookup (uuid r) m)
+	case M.lookup (uuid r) m of
+		Nothing -> do
+			st <- liftIO $ Annex.new repo
+			go (st, ensureInitialized >> a)
+		Just st -> go (st, a)
   where
 	cache st = Annex.changeState $ \s -> s
 		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
-	go st = do
+	go (st, a') = do
 		curro <- Annex.getState Annex.output
 		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
-			a `finally` stopCoProcesses
+			a' `finally` stopCoProcesses
 		cache st'
 		return ret
 
