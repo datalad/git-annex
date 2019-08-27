@@ -15,6 +15,8 @@ import Annex.InodeSentinal
 import Annex.Link
 import Annex.CatFile
 import Annex.WorkTree
+import Annex.UUID
+import Logs.Location
 import qualified Annex.Content as Content
 import qualified Database.Keys
 import qualified Annex.Direct as Direct
@@ -102,14 +104,24 @@ upgradeDirectWorkTree = do
 					=<< inRepo (toTopFilePath f)
 	go _ = noop
 
-	fromdirect f k = whenM (Direct.goodContent k f) $ do
-		-- If linkToAnnex fails for some reason, the work tree file
-		-- still has the content; the annex object file is just
-		-- not populated with it. Since the work tree file
-		-- is recorded as an associated file, things will still
-		-- work that way, it's just not ideal.
-		ic <- withTSDelta (liftIO . genInodeCache f)
-		void $ Content.linkToAnnex k f ic
+	fromdirect f k = ifM (Direct.goodContent k f)
+		( do
+			-- If linkToAnnex fails for some reason, the work tree
+			-- file still has the content; the annex object file
+			-- is just not populated with it. Since the work tree
+			-- file is recorded as an associated file, things will
+			-- still work that way, it's just not ideal.
+			ic <- withTSDelta (liftIO . genInodeCache f)
+			void $ Content.linkToAnnex k f ic
+		, unlessM (Content.inAnnex k) $ do
+			-- Worktree file was deleted or modified;
+			-- if there are no other copies of the content
+			-- then it's been lost.
+			locs <- Direct.associatedFiles k
+			unlessM (anyM (Direct.goodContent k) locs) $ do
+				u <- getUUID
+				logChange k u InfoMissing
+		)
 	
 	writepointer f k = liftIO $ do
 		nukeFile f

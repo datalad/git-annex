@@ -8,6 +8,8 @@ But `git whereis` thinks the content is present, which it's not any longer.
 Seems that the upgrade process needs to notice when a deleted file was the
 only copy of the content, and set its content as not present.
 
+> [[done]] --[[Joey]]
+
 And `git fsck` doesn't find a problem, despite the content not being
 present. And does not fix the location log.
 This part may not be specific to this case, seems it must be some bug in
