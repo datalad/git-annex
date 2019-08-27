@@ -14,7 +14,6 @@ import Annex.Content
 import qualified Annex
 import qualified Annex.Queue
 import qualified Database.Keys
-import Config
 import Annex.FileMatcher
 import Annex.Link
 import Annex.Version

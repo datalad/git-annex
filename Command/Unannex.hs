@@ -56,10 +56,10 @@ wrapUnannex a = ifM versionSupportsUnlockedPointers
 		]
 	cleanindex = ifM (inRepo Git.Ref.headExists)
 		( do
-			(diff, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
+			(diff, reap) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
 			if null diff
-				then void (liftIO cleanup) >> return True
-				else void (liftIO cleanup) >> return False
+				then void (liftIO reap) >> return True
+				else void (liftIO reap) >> return False
 		, return False
 		)
 

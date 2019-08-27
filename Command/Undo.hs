@@ -8,8 +8,6 @@
 module Command.Undo where
 
 import Command
-import Config
-import Annex.CatFile
 import Git.DiffTree
 import Git.FilePath
 import Git.UpdateIndex
