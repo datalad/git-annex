@@ -13,4 +13,5 @@ present. And does not fix the location log.
 This part may not be specific to this case, seems it must be some bug in
 fsck?
 
---[[Joey]]
+> It was, a new bug introduced while removing the direct mode code. Fixed
+> that part. --[[Joey]]

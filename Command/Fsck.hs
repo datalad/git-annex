@@ -248,9 +248,7 @@ verifyLocationLog key keystatus ai = do
 		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
 			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ decodeBS (formatKeyVariety (keyVariety key)) ++ " key"
 
-	if not present
-		then return True
-		else verifyLocationLog' key ai present u (logChange key u)
+	verifyLocationLog' key ai present u (logChange key u)
 
 verifyLocationLogRemote :: Key -> ActionItem -> Remote -> Bool -> Annex Bool
 verifyLocationLogRemote key ai remote present =
