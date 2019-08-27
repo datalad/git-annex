@@ -149,13 +149,14 @@ ensureInitialized :: Annex ()
 ensureInitialized = do
 	getVersion >>= maybe needsinit checkUpgrade
 	whenM isDirect $
-		unlessM (upgrade True versionForAdjustedBranch) $
-			giveup "Upgrading this direct mode repository failed, and direct mode is no longer supported."
+		unlessM (catchBoolIO $ upgrade True versionForAdjustedBranch) $ do
+			g <- Annex.gitRepo
+			giveup $ "Upgrading direct mode repository " ++ Git.repoDescribe g ++ " failed, and direct mode is no longer supported."
   where
 	needsinit = ifM Annex.Branch.hasSibling
-			( initialize Nothing Nothing
-			, giveup "First run: git-annex init"
-			)
+		( initialize Nothing Nothing
+		, giveup $ "First run: git-annex init"
+		)
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}
 isInitialized :: Annex Bool
