@@ -32,12 +32,12 @@ import Annex.AdjustedBranch
 import qualified Data.ByteString as S
 
 upgrade :: Bool -> Annex Bool
-upgrade automatic = do
+upgrade automatic = flip catchNonAsync (const $ return False) $ do
 	unless automatic $
 		showAction "v5 to v6"
 	ifM isDirect
 		( do
-			convertDirect automatic
+			convertDirect
 			-- Worktree files are already populated, so don't
 			-- have this try to populate them again.
 			scanUnlockedFiles False
@@ -52,8 +52,8 @@ upgrade automatic = do
 		createInodeSentinalFile True
 	return True
 
-convertDirect :: Bool -> Annex ()
-convertDirect automatic = do
+convertDirect :: Annex ()
+convertDirect = do
 	{- Direct mode makes the same tradeoff of using less disk
 	 - space, with less preservation of old versions of files
 	 - as does annex.thin. -}
