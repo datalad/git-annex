@@ -84,9 +84,7 @@ checkUnused refspec = chain 0
 		return []
 	findunused False = do
 		showAction "checking for unused data"
-		-- InAnnex, not InRepository because if a direct mode
-		-- file exists, it is obviously not unused.
-		excludeReferenced refspec =<< getKeysPresent InAnnex
+		excludeReferenced refspec =<< listKeys InAnnex
 	chain _ [] = next $ return True
 	chain v (a:as) = do
 		v' <- a v

@@ -13,9 +13,9 @@ import Config
 import Config.Smudge
 import Annex.InodeSentinal
 import Annex.Link
-import Annex.Content
 import Annex.CatFile
 import Annex.WorkTree
+import qualified Annex.Content as Content
 import qualified Database.Keys
 import qualified Annex.Direct as Direct
 import qualified Annex.Content.Direct as Direct
@@ -109,7 +109,7 @@ upgradeDirectWorkTree = do
 		-- is recorded as an associated file, things will still
 		-- work that way, it's just not ideal.
 		ic <- withTSDelta (liftIO . genInodeCache f)
-		void $ linkToAnnex k f ic
+		void $ Content.linkToAnnex k f ic
 	
 	writepointer f k = liftIO $ do
 		nukeFile f
@@ -117,7 +117,7 @@ upgradeDirectWorkTree = do
 
 {- Remove all direct mode bookkeeping files. -}
 removeDirectCruft :: Annex ()
-removeDirectCruft = mapM_ go =<< getKeysPresent InAnywhere
+removeDirectCruft = mapM_ go =<< Content.listKeys Content.InAnywhere
   where
 	go k = do
 		Direct.removeInodeCache k
