@@ -51,6 +51,8 @@ reads and writes to the keys database. So any problem with the database
 code could prevent using git-annex. WSL has such a problem currently,
 but it doesn't seem to affect using v7 repos, only adjusted branches.
 <http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/>
+(Actually, v5 does read and write to the keys database some too,
+though unncessarily so.)
 
 A concern is that a v5 repository may be used by multiple machines,
 some not supporting v7 and some that do. If one upgrades to v7
