@@ -35,7 +35,7 @@ import Annex.WorkTree
 import Config
 import Config.Files
 import Config.Smudge
-import qualified Annex.Direct as Direct
+import qualified Upgrade.V5.Direct as Direct
 import qualified Annex.AdjustedBranch as AdjustedBranch
 import Annex.Environment
 import Annex.Hook

@@ -618,13 +618,11 @@ Executable git-annex
     Annex.Common
     Annex.Concurrent
     Annex.Content
-    Annex.Content.Direct
     Annex.Content.LowLevel
     Annex.Content.PointerFile
     Annex.CurrentBranch
     Annex.Difference
     Annex.DirHashes
-    Annex.Direct
     Annex.Drop
     Annex.Environment
     Annex.Export
@@ -1011,6 +1009,7 @@ Executable git-annex
     Upgrade.V3
     Upgrade.V4
     Upgrade.V5
+    Upgrade.V5.Direct
     Upgrade.V6
     Utility.Aeson
     Utility.Android

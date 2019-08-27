@@ -17,10 +17,9 @@ import Annex.CatFile
 import Annex.WorkTree
 import Annex.UUID
 import Logs.Location
+import qualified Upgrade.V5.Direct as Direct
 import qualified Annex.Content as Content
 import qualified Database.Keys
-import qualified Annex.Direct as Direct
-import qualified Annex.Content.Direct as Direct
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Branch

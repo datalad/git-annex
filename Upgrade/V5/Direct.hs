@@ -1,11 +1,15 @@
-{- git-annex file content managing for old direct mode repositories
+{- git-annex direct mode
+ -
+ - This only contains some remnants needed to convert away from direct mode.
  -
  - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.Content.Direct (
+module Upgrade.V5.Direct (
+	switchHEADBack,
+	setIndirect,
 	goodContent,
 	associatedFiles,
 	removeAssociatedFiles,
@@ -13,15 +17,63 @@ module Annex.Content.Direct (
 ) where
 
 import Annex.Common
-import Annex.Perms
+import qualified Annex
 import qualified Git
-import Logs.Location
-import Logs.File
+import qualified Git.Config
+import qualified Git.Ref
+import qualified Git.Branch
+import Git.Types
+import Config
+import Annex.Perms
 import Utility.InodeCache
-import Utility.CopyFile
-import Annex.ReplaceFile
-import Annex.Link
 import Annex.InodeSentinal
+
+setIndirect :: Annex ()
+setIndirect = do
+	setbare
+	switchHEADBack
+	setConfig (annexConfig "direct") val
+	Annex.changeGitConfig $ \c -> c { annexDirect = False }
+  where
+	val = Git.Config.boolConfig False
+	coreworktree = ConfigKey "core.worktree"
+	indirectworktree = ConfigKey "core.indirect-worktree"
+	setbare = do
+		-- core.worktree is not compatable with
+		-- core.bare; git does not allow both to be set, so
+		-- unset it when enabling direct mode, caching in
+		-- core.indirect-worktree
+		moveconfig indirectworktree coreworktree
+		setConfig (ConfigKey Git.Config.coreBare) val
+	moveconfig src dest = getConfigMaybe src >>= \case
+		Nothing -> noop
+		Just wt -> do
+			unsetConfig src
+			setConfig dest wt
+			reloadConfig
+
+{- Converts a directBranch back to the original branch.
+ -
+ - Any other ref is left unchanged.
+ -}
+fromDirectBranch :: Ref -> Ref
+fromDirectBranch directhead = case splitc '/' $ fromRef directhead of
+	("refs":"heads":"annex":"direct":rest) -> 
+		Ref $ "refs/heads/" ++ intercalate "/" rest
+	_ -> directhead
+
+switchHEADBack :: Annex ()
+switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
+  where
+	switch currhead = do
+		let orighead = fromDirectBranch currhead
+		inRepo (Git.Ref.sha currhead) >>= \case
+			Just headsha
+				| orighead /= currhead -> do
+					inRepo $ Git.Branch.update "leaving direct mode" orighead headsha
+					inRepo $ Git.Branch.checkout orighead
+					inRepo $ Git.Branch.delete currhead
+			_ -> inRepo $ Git.Branch.checkout orighead
 
 {- Absolute FilePaths of Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
@@ -36,9 +88,7 @@ associatedFilesRelative :: Key -> Annex [FilePath]
 associatedFilesRelative key = do
 	mapping <- calcRepo $ gitAnnexMapping key
 	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h ->
-		-- Read strictly to ensure the file is closed
-		-- before changeAssociatedFiles tries to write to it.
-		-- (Especially needed on Windows.)
+		-- Read strictly to ensure the file is closed promptly
 		lines <$> hGetContentsStrict h
 
 {- Removes the list of associated files. -}
