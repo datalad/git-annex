@@ -54,12 +54,6 @@ versionField = annexConfig "version"
 getVersion :: Annex (Maybe RepoVersion)
 getVersion = annexVersion <$> Annex.getGitConfig
 
-versionSupportsDirectMode :: Annex Bool
-versionSupportsDirectMode = go <$> getVersion
-  where
-	go (Just v) | v >= RepoVersion 6 = False
-	go _ = True
-
 versionSupportsUnlockedPointers :: Annex Bool
 versionSupportsUnlockedPointers = go <$> getVersion
   where
