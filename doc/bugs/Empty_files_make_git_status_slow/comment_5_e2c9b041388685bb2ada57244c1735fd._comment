@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-08-28T16:05:53Z"
+ content="""
+Since it's not clear from the above, git only behaves this way when the
+empty file is unlocked. So `git annex lock` is a good workaround too.
+
+(Also, `git annex export` has since gotten the ability to export
+non-annexed files, for the record.)
+"""]]

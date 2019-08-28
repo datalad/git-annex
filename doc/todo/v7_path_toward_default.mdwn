@@ -46,13 +46,21 @@ Since v5 repos and v7 repos not using unlocked files are functionally
 almost identical, this is unlikely to break much. Unlocking files will of
 course change behavior though.
 
-The only significant difference is that Annex.Content in v7 
-reads and writes to the keys database. So any problem with the database
-code could prevent using git-annex. WSL has such a problem currently,
-but it doesn't seem to affect using v7 repos, only adjusted branches.
-<http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/>
-(Actually, v5 does read and write to the keys database some too,
-though unncessarily so.)
+When not using unlocked files, the only significant difference is that
+Annex.Content in v7 reads and writes to the keys database. So any problem
+with the database code could prevent using git-annex.
+
+* WSL has such a problem currently,
+  but it doesn't seem to affect using v7 repos, only adjusted branches.
+  <http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/>
+* A 2016 bug reported the keys database not working on lustre,
+  presumably due to sqlite needing part of POSIX that lustre does not provide
+  or something.
+  <http://git-annex.branchable.com/bugs/drop_blows_on_lustre__58___SQLite3_returned_ErrorIO/>
+
+There are also some slight performance differences, but they go both ways,
+for example the pre-commit hook is faster in v7 than v5, but v7 runs git
+diff in reconcileStaged.
 
 A concern is that a v5 repository may be used by multiple machines,
 some not supporting v7 and some that do. If one upgrades to v7

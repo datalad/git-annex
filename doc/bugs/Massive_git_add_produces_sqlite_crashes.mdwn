@@ -60,3 +60,9 @@ Oh yeah, I am still discovering this powerfull git annex tool.
 In fact, collegues and I are forming a group during the process to exchange about different use cases, encountered problems and help each other.
 
 [[!meta title="v7: intermittent sqlite ErrorIO crash (especially in WSL)"]]
+
+> This bug still exists, and there's a more recent bug report
+> documenting how it behaves in WSL now. <http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/>
+> 
+> So I don't think there's any point leaving this open, closing as a
+> duplicate. [[done]] --[[Joey]] 

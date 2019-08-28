@@ -82,3 +82,6 @@ fatal: Out of memory, realloc failed
 
 
 Git Annex is unique piece of Art, there is nothing like it.
+
+> This bug got fixed in git. I just tested with 2.23 and verified it's
+> [[done]] --[[Joey]]
