@@ -55,10 +55,7 @@ seek ps = lockPreCommitHook $ do
 				-- files in the worktree won't
 				-- be populated, so populate them
 				-- here
-				( Command.Smudge.updateSmudged 
-					-- When there's a false index,
-					-- restaging the files won't work.
-					. Restage =<< liftIO Git.haveFalseIndex
+				( Command.Smudge.updateSmudged (Restage False)
 				-- inject unlocked files into the annex
 				-- (not needed when repo version uses
 				-- unlocked pointer files)
