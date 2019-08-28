@@ -1,0 +1,5 @@
+Finished yesterday with elminating direct mode, removing another 200 lines of
+code. I'm close to a decision on
+[[updating repos to v7 by default|todo/v7_path_toward_default]]. Been 
+reviewing open bugs that could impact the decision, taking a final look
+at the code to make, and reaching out to people who might be affected.
