@@ -55,7 +55,7 @@ lookupFileNotHidden = lookupFile' catkeyfile
 lookupFile' :: (FilePath -> Annex (Maybe Key)) -> FilePath -> Annex (Maybe Key)
 lookupFile' catkeyfile file = isAnnexLink file >>= \case
 	Just key -> return (Just key)
-	Nothing -> ifM (versionSupportsUnlockedPointers <||> isDirect)
+	Nothing -> ifM versionSupportsUnlockedPointers
 		( catkeyfile file
 		, return Nothing 
 		)

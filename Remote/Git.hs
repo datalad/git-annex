@@ -642,7 +642,7 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		-- This is too broad really, but recvkey normally
 		-- verifies content anyway, so avoid complicating
 		-- it with a local sendAnnex check and rollback.
-		unlocked <- isDirect <||> versionSupportsUnlockedPointers
+		unlocked <- versionSupportsUnlockedPointers
 		oh <- mkOutputHandlerQuiet
 		Ssh.rsyncHelper oh (Just p)
 			=<< Ssh.rsyncParamsRemote unlocked r Upload key object file
@@ -776,8 +776,6 @@ commitOnCleanup repo r a = go `after` a
 
 wantHardLink :: Annex Bool
 wantHardLink = (annexHardLink <$> Annex.getGitConfig)
-	-- Not direct mode files because they can be modified at any time.
-	<&&> (not <$> isDirect)
 	-- Not unlocked files that are hard linked in the work tree,
 	-- because they can be modified at any time.
 	<&&> (not <$> annexThin <$> Annex.getGitConfig)
@@ -801,14 +799,13 @@ mkCopier remotewanthardlink st rsyncparams = do
 		rsyncOrCopyFile st rsyncparams src dest p <&&> check
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
-	ifM (pure (remotewanthardlink || localwanthardlink) <&&> not <$> isDirect)
-		( return $ \src dest p check ->
+	if remotewanthardlink || localwanthardlink
+		then return $ \src dest p check ->
 			ifM (liftIO (catchBoolIO (linker src dest)))
 				( return (True, Verified)
 				, copier src dest p check
 				)
-		, return copier
-		)
+		else return copier
 
 {- Normally the UUID of a local repository is checked at startup,
  - but annex-checkuuid config can prevent that. To avoid getting
