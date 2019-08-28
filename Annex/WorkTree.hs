@@ -16,7 +16,6 @@ import Annex.ReplaceFile
 import Annex.CurrentBranch
 import Annex.InodeSentinal
 import Utility.InodeCache
-import Config
 import Git.FilePath
 import qualified Git.Ref
 import qualified Git.LsTree

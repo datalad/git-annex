@@ -24,7 +24,6 @@ import qualified Git
 import qualified Git.Branch
 import Git.Types (TreeItemType(..), fromTreeItemType)
 import Git.FilePath
-import Config
 import Annex.ReplaceFile
 import Annex.VariantFile
 import qualified Database.Keys
