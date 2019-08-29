@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-29T16:04:02Z"
+ content="""
+I don't think the problem will involve git-annex,
+because that error message is not emitted by git-annex.
+"""]]
