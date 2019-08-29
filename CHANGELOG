@@ -11,6 +11,9 @@ git-annex (7.20190826) UNRELEASED; urgency=medium
   * indirect: This command has become a deprecated noop.
   * proxy: This command is deprecated because it was only needed in direct
     mode. (But it continues to work.)
+  * info: Removed the "repository mode" from its output (including the
+    --json output) since with the removal of direct mode, there is no
+    repository mode.
   * info: When file matching options are specified when getting
     info of something other than a directory, they won't have any effect,
     so error out to avoid confusion.
