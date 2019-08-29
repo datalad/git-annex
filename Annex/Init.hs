@@ -51,6 +51,7 @@ import qualified Utility.LockFile.Posix as Posix
 #endif
 
 import qualified Data.Map as M
+import Data.Either
 
 checkCanInitialize :: Annex a -> Annex a
 checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case
@@ -233,9 +234,10 @@ probeLockSupport = do
 		mode <- annexFileMode
 		liftIO $ do
 			nukeFile f
-			ok <- catchBoolIO $ do
-				Posix.dropLock =<< Posix.lockExclusive (Just mode) f
-				return True
+			let locktest = 
+				Posix.lockExclusive (Just mode) f
+					>>= Posix.dropLock
+			ok <- isRight <$> tryNonAsync locktest
 			nukeFile f
 			return ok
 #endif

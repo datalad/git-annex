@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-29T16:11:14Z"
+ content="""
+No changes in the code of the lock test. Somehow the exception
+was not caught, and it's only catching IO exceptions, so it must
+be another type of exception.
+
+Oddly, I can't find any indication that waitToSetLock can throw anything
+other than an IO exception.
+
+I've changed it to catch all exceptions, which will presumably fix the
+problem, but not closing this bug as I don't fully understand it and so am
+not certian of the fix.
+"""]]

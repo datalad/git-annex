@@ -18,6 +18,7 @@ git-annex (7.20190826) UNRELEASED; urgency=medium
     fix a bug that prevented annex.thin from taking effect for the files
     in working tree.
   * Avoid making a commit when upgrading from direct mode to v7.
+  * init: Catch more exceptions when testing locking.
 
  -- Joey Hess <id@joeyh.name>  Sat, 24 Aug 2019 12:54:35 -0400
 
