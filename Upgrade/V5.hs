@@ -23,11 +23,13 @@ import qualified Database.Keys
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Branch
+import qualified Git.Version
 import Git.FilePath
 import Git.FileMode
 import Git.Config
 import Git.Ref
 import Utility.InodeCache
+import Utility.DottedVersion
 import Annex.AdjustedBranch
 
 import qualified Data.ByteString as S
@@ -38,11 +40,14 @@ upgrade automatic = flip catchNonAsync (const $ return False) $ do
 		showAction "v5 to v6"
 	ifM isDirect
 		( do
+			checkGitVersionForDirectUpgrade
 			convertDirect
 			-- Worktree files are already populated, so don't
 			-- have this try to populate them again.
 			scanUnlockedFiles False
-		, scanUnlockedFiles True
+		, do
+			checkGitVersionForIndirectUpgrade
+			scanUnlockedFiles True
 		)
 	configureSmudgeFilter
 	-- Inode sentinal file was only used in direct mode and when
@@ -52,6 +57,27 @@ upgrade automatic = flip catchNonAsync (const $ return False) $ do
 	unlessM isDirect $
 		createInodeSentinalFile True
 	return True
+
+-- git before 2.22 would OOM running git status on a large file.
+--
+-- Older versions of git that are patched (with
+-- commit 02156ab031e430bc45ce6984dfc712de9962dec8)
+-- can include "oomfix" in their version to indicate it.
+gitWillOOM :: Annex Bool
+gitWillOOM = liftIO $ do
+	v <- Git.Version.installed
+	return $ v < Git.Version.normalize "2.22" &&
+		not ("oomfix" `isInfixOf` fromDottedVersion v)
+
+-- configureSmudgeFilter has to run git status, and direct mode files
+-- are unlocked, so avoid the upgrade failing half way through.
+checkGitVersionForDirectUpgrade :: Annex ()
+checkGitVersionForDirectUpgrade = whenM gitWillOOM $
+	giveup "You must upgrade git to version 2.22 or newer in order to use this version of git-annex in this repository."
+
+checkGitVersionForIndirectUpgrade :: Annex ()
+checkGitVersionForIndirectUpgrade = whenM gitWillOOM $
+	warning "Git is older than version 2.22 and so it has a memory leak that affects using unlocked files. Recommend you upgrade git before unlocking any files in your repository."
 
 convertDirect :: Annex ()
 convertDirect = do

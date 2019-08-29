@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-08-29T17:02:02Z"
+ content="""
+It doesn't seem practical to get around the old git's OOM problem.
+I think that the best thing to do is to not allow direct mode upgrade to v7 
+until git has been upgraded.
+
+The minimum git version is 2.22. Unfortunately, Debian stable shipped 2.20.
+So direct mode users there who upgrade git-annex will need to also upgrade
+git in order for git-annex to convert their repo -- and since the next
+git-annex release drops support for direct mode, they'll have to upgrade
+git (or downgrade git-annex) in order to use git-annex in their repo at all.
+"""]]

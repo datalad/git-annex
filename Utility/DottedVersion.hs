@@ -18,7 +18,10 @@ instance Ord DottedVersion where
 	compare (DottedVersion _ x) (DottedVersion _ y) = compare x y
 
 instance Show DottedVersion where
-	show (DottedVersion s _) = s
+	show = fromDottedVersion
+
+fromDottedVersion :: DottedVersion -> String
+fromDottedVersion (DottedVersion s _) = s
 
 {- To compare dotted versions like 1.7.7 and 1.8, they are normalized to
  - a somewhat arbitrary integer representation. -}
