@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-08-29T16:24:37Z"
+ content="""
+git status exiting with -9 means it died of SIGKILL.
+The only thing I can think of that could have killed it is the OOM killer.
+
+Based on your apt config, I guess git was probably older than version 2.23,
+so it would have the [[bug that makes git status use a lot of memory|v7_unlock_big_file__58___out_of_memory]].
+
+It appears that the v5 repository was a direct mode repository.
+
+What I suggest you do to recover is, upgrade git to 2.23, and re-run
+git-annex upgrade. It should pick up where it left off.
+"""]]

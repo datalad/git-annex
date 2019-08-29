@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-08-29T16:54:35Z"
+ content="""
+I reproduced the problem using git 2.1.4. The error message was slightly
+better:
+
+	$ git annex upgrade
+	upgrade (v5 to v6...) (scanning for unlocked files...)
+	(v6 to v7...) ok
+	(recording state in git...)
+	fatal: Out of memory? mmap failed: Cannot allocate memory
+	
+	git status will show some files to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh <file>
+	$ git status
+	fatal: Out of memory? mmap failed: Cannot allocate memory
+
+And with the newer git, resuming the failed upgrade did succeed:
+
+	$ git status
+	On branch adjusted/master(unlocked)
+	nothing to commit, working tree clean
+	$ git annex upgrade
+	upgrade ok
+"""]]
