@@ -100,26 +100,20 @@ initialize' :: Maybe RepoVersion -> Annex ()
 initialize' mversion = checkCanInitialize  $ do
 	checkLockSupport
 	checkFifoSupport
-	checkCrippledFileSystem mversion
+	checkCrippledFileSystem
 	unlessM isBareRepo $ do
 		hookWrite preCommitHook
 		hookWrite postReceiveHook
 	setDifferences
 	unlessM (isJust <$> getVersion) $
-		ifM (crippledFileSystem <&&> (not <$> isBareRepo))
-			( setVersion (fromMaybe versionForCrippledFilesystem mversion)
-			, setVersion (fromMaybe defaultVersion mversion)
-			)
-	whenM versionSupportsUnlockedPointers $ do
-		configureSmudgeFilter
-		showSideAction "scanning for unlocked files"
-		scanUnlockedFiles True
-		unlessM isBareRepo $ do
-			hookWrite postCheckoutHook
-			hookWrite postMergeHook
+		setVersion (fromMaybe defaultVersion mversion)
+	configureSmudgeFilter
+	showSideAction "scanning for unlocked files"
+	scanUnlockedFiles True
+	unlessM isBareRepo $ do
+		hookWrite postCheckoutHook
+		hookWrite postMergeHook
 	AdjustedBranch.checkAdjustedClone >>= \case
-		AdjustedBranch.NeedUpgradeForAdjustedClone -> 
-			void $ upgrade True versionForAdjustedClone
 		AdjustedBranch.InAdjustedClone -> return ()
 		AdjustedBranch.NotInAdjustedClone ->
 			ifM (crippledFileSystem <&&> (not <$> isBareRepo))
@@ -147,12 +141,12 @@ uninitialize = do
  - Checks repository version and handles upgrades too.
  -}
 ensureInitialized :: Annex ()
-ensureInitialized = do
-	getVersion >>= maybe needsinit checkUpgrade
-	whenM isDirect $
-		unlessM (catchBoolIO $ upgrade True versionForAdjustedBranch) $ do
-			g <- Annex.gitRepo
-			giveup $ "Upgrading direct mode repository " ++ Git.repoDescribe g ++ " failed, and direct mode is no longer supported."
+ensureInitialized = ifM isDirect
+	( unlessM (catchBoolIO $ upgrade True defaultVersion) $ do
+		g <- Annex.gitRepo
+		giveup $ "Upgrading direct mode repository " ++ Git.repoDescribe g ++ " failed, and direct mode is no longer supported."
+	, getVersion >>= maybe needsinit checkUpgrade
+	)
   where
 	needsinit = ifM Annex.Branch.hasSibling
 		( initialize Nothing Nothing
@@ -204,15 +198,9 @@ probeCrippledFileSystem' tmp = do
 			)
 #endif
 
-checkCrippledFileSystem :: Maybe RepoVersion -> Annex ()
-checkCrippledFileSystem mversion = whenM probeCrippledFileSystem $ do
+checkCrippledFileSystem :: Annex ()
+checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	warning "Detected a crippled filesystem."
-
-	unlessM isBareRepo $ case mversion of
-		Just ver | ver < versionForCrippledFilesystem ->
-			giveup $ "Cannot use repo version " ++ show (fromRepoVersion ver) ++ " in a crippled filesystem."
-		_ -> noop
-
 	setCrippledFileSystem True
 
 	{- Normally git disables core.symlinks itself when the

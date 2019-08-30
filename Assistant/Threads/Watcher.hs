@@ -36,7 +36,6 @@ import Annex.Link
 import Annex.FileMatcher
 import Annex.Content
 import Annex.ReplaceFile
-import Annex.Version
 import Annex.InodeSentinal
 import Git.Types
 import Git.FilePath
@@ -90,11 +89,8 @@ runWatcher :: Assistant ()
 runWatcher = do
 	startup <- asIO1 startupScan
 	matcher <- liftAnnex largeFilesMatcher
-	unlocked <- liftAnnex versionSupportsUnlockedPointers
 	symlinkssupported <- liftAnnex $ coreSymlinks <$> Annex.getGitConfig
-	addhook <- hook $ if unlocked
-		then onAddUnlocked symlinkssupported matcher
-		else onAdd matcher
+	addhook <- hook $ onAddUnlocked symlinkssupported matcher
 	delhook <- hook onDel
 	addsymlinkhook <- hook onAddSymlink
 	deldirhook <- hook onDelDir
@@ -204,13 +200,6 @@ add largefilematcher file = ifM (liftAnnex $ checkFileMatcher largefilematcher f
 			[Param "--force", Param "--"] [file]
 		madeChange file AddFileChange
 	)
-
-onAdd :: GetFileMatcher -> Handler
-onAdd matcher file filestatus
-	| maybe False isRegularFile filestatus =
-		unlessIgnored file $
-			add matcher file
-	| otherwise = noChange
 
 shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
@@ -356,8 +345,7 @@ onDel file _ = do
 onDel' :: FilePath -> Annex ()
 onDel' file = do
 	topfile <- inRepo (toTopFilePath file)
-	whenM versionSupportsUnlockedPointers $
-		withkey $ flip Database.Keys.removeAssociatedFile topfile
+	withkey $ flip Database.Keys.removeAssociatedFile topfile
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
   where

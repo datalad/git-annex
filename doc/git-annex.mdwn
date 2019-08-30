@@ -908,7 +908,7 @@ Here are all the supported configuration settings.
 
   Set to true to make commands like `git-annex add` that add files to the
   repository add them in unlocked form. The default is to add files in
-  locked form. This only has effect in v7 repositories.
+  locked form.
 
   When a repository has core.symlinks set to false, it implicitly
   sets annex.addunlocked to true.
@@ -1049,8 +1049,7 @@ Here are all the supported configuration settings.
   Makes the watch and assistant commands delay for the specified number of
   seconds before adding a newly created file to the annex. Normally this
   is not needed, because they already wait for all writers of the file
-  to close it. On Mac OSX, this defaults to
-  1 second, to work around a bad interaction with software there.
+  to close it.
 
 * `annex.expireunused`
 

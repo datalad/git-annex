@@ -9,50 +9,15 @@ want to lose it in a fumblefingered mistake.
 	bash: some_file: Permission denied
 
 Sometimes though you want to modify a file. Maybe once, or maybe
-repeatedly. To modify a locked file, you have to first unlock it,
-by running `git annex unlock`.
+repeatedly. To support this, git-annex also supports unlocked files.
+They are stored in the git repository differently, and they appear as
+regular files in the working tree, instead of the symbolic links used for
+locked files.
 
-	# git annex unlock some_file
-	# echo "new content" > some_file
+## adding unlocked files
 
-Back before git-annex version 7, and its v7 repository mode, unlocking a file
-like this was a transient thing. You'd modify it and then `git annex add` the
-modified version to the annex, and finally `git commit`. The new version of
-the file was then back to being locked.
-
-	# git annex add some_file
-	add some_file
-	# git commit
-
-But, that had some problems. The main one is that some users want to be able
-to edit files repeatedly, without manually having to unlock them every time.
-The [[direct_mode]] made all files be unlocked all the time, but it
-had many problems of its own.
-
-## enter v7 mode
-
-This led to the v7 repository mode, which makes unlocked files remain
-unlocked after they're committed, so you can keep changing them and
-committing the changes whenever you'd like. It also lets you use more
-normal git commands (or even interfaces on top of git) for handling
-annexed files.
-
-To get a repository into v7 mode, you can [[upgrade|upgrades]] it.
-This will eventually happen automatically, but for now it's a manual process
-(be sure to read [[upgrades]] before doing this):
-
-	# git annex upgrade
-	
-Or, you can init a new repository in v7 mode.
-
-	# git init
-	# git annex init --version=7
-
-## using it
-
-Using a v7 repository is easy! Simply use regular git commands to add
-and commit files. In a git-annex repository, git will use git-annex
-to store the file contents, and the files will be left unlocked.
+Instead of using `git annex add`, use `git add`, and the file will be
+stored in git-annex, but left unlocked.
 
 [[!template id=note text="""
 Want `git add` to add some file contents to the annex, but store the contents of
@@ -94,7 +59,7 @@ mode is used. To make them always use unlocked mode, run:
 
 ## mixing locked and unlocked files
 
-A v7 repository can contain both locked and unlocked files. You can switch 
+A repository can contain both locked and unlocked files. You can switch 
 a file back and forth using the `git annex lock` and `git annex unlock`
 commands. This changes what's stored in git between a git-annex symlink
 (locked) and a git-annex pointer file (unlocked). To add a file to
@@ -110,7 +75,7 @@ automatically sets up a repository to use all unlocked files.
 
 ## imperfections
 
-Unlocked files in v7 repositories mostly work very well, but there are a
+Unlocked files mostly work very well, but there are a
 few imperfections which you should be aware of when using them.
 
 1. `git stash`, `git cherry-pick` and `git reset --hard` don't update

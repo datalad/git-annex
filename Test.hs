@@ -30,7 +30,6 @@ import CmdLine.GitAnnex.Options
 
 import qualified Utility.SafeCommand
 import qualified Annex
-import qualified Annex.Version
 import qualified Git.Filename
 import qualified Git.Types
 import qualified Git.Ref
@@ -151,7 +150,6 @@ tests crippledfilesystem adjustedbranchok opts =
 	testmodes = catMaybes
 		[ canadjust ("v7 adjusted unlocked branch", (testMode opts (RepoVersion 7)) { adjustedUnlockedBranch = True })
 		, unlesscrippled ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
-		, unlesscrippled ("v5", testMode opts (RepoVersion 5))
 		, unlesscrippled ("v7 locked", testMode opts (RepoVersion 7))
 		]
 	unlesscrippled v
@@ -230,7 +228,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "move (ssh remote)" test_move_ssh_remote
 	, testCase "copy" test_copy
 	, testCase "lock" test_lock
-	, testCase "lock (v7 --force)" test_lock_v7_force
+	, testCase "lock --force" test_lock_force
 	, testCase "edit (no pre-commit)" test_edit
 	, testCase "edit (pre-commit)" test_edit_precommit
 	, testCase "partial commit" test_partial_commit
@@ -584,21 +582,12 @@ test_preferred_content = intmpclonerepo $ do
 test_lock :: Assertion
 test_lock = intmpclonerepo $ do
 	annexed_notpresent annexedfile
-	unlessM (annexeval Annex.Version.versionSupportsUnlockedPointers) $
-		ifM (hasUnlockedFiles <$> getTestMode)
-			( git_annex_shouldfail "lock" [annexedfile] @? "lock failed to fail with not present file"
-			, git_annex_shouldfail "unlock" [annexedfile] @? "unlock failed to fail with not present file"
-			)
-	annexed_notpresent annexedfile
 
 	-- regression test: unlock of newly added, not committed file
-	-- should fail in v5 mode. In v7 mode, this is allowed.
+	-- should not fail.
 	writecontent "newfile" "foo"
 	git_annex "add" ["newfile"] @? "add new file failed"
-	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
-		( git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file in v7 repository"
-		, git_annex_shouldfail "unlock" ["newfile"] @? "unlock failed to fail on newly added, never committed file in v5 repository"
-		)
+	git_annex "unlock" ["newfile"] @? "unlock failed on newly added, never committed file"
 
 	git_annex "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
@@ -610,21 +599,15 @@ test_lock = intmpclonerepo $ do
 	writecontent annexedfile $ content annexedfile ++ "foo"
 	git_annex_shouldfail "lock" [annexedfile] @? "lock failed to fail without --force"
 	git_annex "lock" ["--force", annexedfile] @? "lock --force failed"
-	-- In v7 mode, the original content of the file is not always
+	-- The original content of an unlocked file is not always
 	-- preserved after modification, so re-get it.
 	git_annex "get" [annexedfile] @? "get of file failed after lock --force"
 	annexed_present_locked annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile
 	changecontent annexedfile
-	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
-		( do
-			boolSystem "git" [Param "add", Param annexedfile] @? "add of modified file failed"
-			runchecks [checkregularfile, checkwritable] annexedfile
-		, do
-			git_annex "add" [annexedfile] @? "add of modified file failed"
-			runchecks [checklink, checkunwritable] annexedfile
-		)
+	boolSystem "git" [Param "add", Param annexedfile] @? "add of modified file failed"
+	runchecks [checkregularfile, checkwritable] annexedfile
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	r' <- git_annex "drop" [annexedfile]
@@ -633,21 +616,20 @@ test_lock = intmpclonerepo $ do
 -- Regression test: lock --force when work tree file
 -- was modified lost the (unmodified) annex object.
 -- (Only occurred when the keys database was out of sync.)
-test_lock_v7_force :: Assertion
-test_lock_v7_force = intmpclonerepo $ do
+test_lock_force :: Assertion
+test_lock_force = intmpclonerepo $ do
 	git_annex "upgrade" [] @? "upgrade failed"
-	whenM (annexeval Annex.Version.versionSupportsUnlockedPointers) $ do
-		git_annex "get" [annexedfile] @? "get of file failed"
-		git_annex "unlock" [annexedfile] @? "unlock failed in v7 mode"
-		annexeval $ do
-			Just k <- Annex.WorkTree.lookupFile annexedfile
-			Database.Keys.removeInodeCaches k
-			Database.Keys.closeDb
-			liftIO . nukeFile =<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
-		writecontent annexedfile "test_lock_v7_force content"
-		git_annex_shouldfail "lock" [annexedfile] @? "lock of modified file failed to fail in v7 mode"
-		git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed in v7 mode"
-		annexed_present_locked annexedfile
+	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex "unlock" [annexedfile] @? "unlock failed"
+	annexeval $ do
+		Just k <- Annex.WorkTree.lookupFile annexedfile
+		Database.Keys.removeInodeCaches k
+		Database.Keys.closeDb
+		liftIO . nukeFile =<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
+	writecontent annexedfile "test_lock_force content"
+	git_annex_shouldfail "lock" [annexedfile] @? "lock of modified file failed to fail"
+	git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed"
+	annexed_present_locked annexedfile
 
 test_edit :: Assertion
 test_edit = test_edit' False
@@ -669,10 +651,7 @@ test_edit' precommit = intmpclonerepo $ do
 			@? "pre-commit failed"
 		else boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "contentchanged"]
 			@? "git commit of edited file failed"
-	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
-		( runchecks [checkregularfile, checkwritable] annexedfile
-		, runchecks [checklink, checkunwritable] annexedfile
-		)
+	runchecks [checkregularfile, checkwritable] annexedfile
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
 	git_annex_shouldfail "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of modified file"
@@ -683,12 +662,8 @@ test_partial_commit = intmpclonerepo $ do
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"
 	changecontent annexedfile
-	ifM (annexeval Annex.Version.versionSupportsUnlockedPointers)
-		( boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
-			@? "partial commit of unlocked file should be allowed in v7 repository"
-		, not <$> boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
-			@? "partial commit of unlocked file not blocked by pre-commit hook"
-		)
+	boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
+		@? "partial commit of unlocked file should be allowed"
 
 test_fix :: Assertion
 test_fix = intmpclonerepo $ unlessM (hasUnlockedFiles <$> getTestMode) $ do
@@ -1083,8 +1058,6 @@ test_conflict_resolution_adjusted_branch =
 				writecontent conflictor "conflictor2"
 				add_annex conflictor @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r2"
-				-- need v7 to use adjust
-				git_annex "upgrade" [] @? "upgrade failed"
 				-- We might be in an adjusted branch
 				-- already, when eg on a crippled
 				-- filesystem. So, --force it.
@@ -1348,19 +1321,19 @@ test_conflict_resolution_symlink_bit = unlessM (hasUnlockedFiles <$> getTestMode
 		all (\i -> Git.Types.toTreeItemType (Git.LsTree.mode i) == Just Git.Types.TreeSymlink) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
 
-{- A v7 unlocked file that conflicts with a locked file should be resolved
+{- An unlocked file that conflicts with a locked file should be resolved
  - in favor of the unlocked file, with no variant files, as long as they
  - both point to the same key. -}
 test_mixed_lock_conflict_resolution :: Assertion
 test_mixed_lock_conflict_resolution = 
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
-			indir r1 $ whenM shouldtest $ do
+			indir r1 $ do
 				disconnectOrigin
 				writecontent conflictor "conflictor"
 				git_annex "add" [conflictor] @? "add conflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
-			indir r2 $ whenM shouldtest $ do
+			indir r2 $ do
 				disconnectOrigin
 				writecontent conflictor "conflictor"
 				git_annex "add" [conflictor] @? "add conflicter failed"
@@ -1372,10 +1345,9 @@ test_mixed_lock_conflict_resolution =
 			checkmerge "r1" r1
 			checkmerge "r2" r2
   where
-	shouldtest = annexeval Annex.Version.versionSupportsUnlockedPointers
 	conflictor = "conflictor"
 	variantprefix = conflictor ++ ".variant"
-	checkmerge what d = indir d $ whenM shouldtest $ do
+	checkmerge what d = indir d $ do
 		l <- getDirectoryContents "."
 		let v = filter (variantprefix `isPrefixOf`) l
 		length v == 0

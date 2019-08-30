@@ -37,7 +37,6 @@ import Config
 import Config.Cost
 import Config.DynamicConfig
 import Annex.Init
-import Annex.Version
 import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
@@ -642,7 +641,7 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		-- This is too broad really, but recvkey normally
 		-- verifies content anyway, so avoid complicating
 		-- it with a local sendAnnex check and rollback.
-		unlocked <- versionSupportsUnlockedPointers
+		let unlocked = True
 		oh <- mkOutputHandlerQuiet
 		Ssh.rsyncHelper oh (Just p)
 			=<< Ssh.rsyncParamsRemote unlocked r Upload key object file

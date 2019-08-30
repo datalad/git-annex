@@ -10,11 +10,8 @@ module Command.Unlock where
 import Command
 import Annex.Content
 import Annex.Perms
-import Annex.CatFile
-import Annex.Version
 import Annex.Link
 import Annex.ReplaceFile
-import Utility.CopyFile
 import Git.FilePath
 import qualified Database.Keys
 
@@ -37,15 +34,12 @@ seek ps = withFilesInGit (commandAction . whenAnnexed start) =<< workTreeItems p
 start :: FilePath -> Key -> CommandStart
 start file key = ifM (isJust <$> isAnnexLink file)
 	( starting "unlock" (mkActionItem (key, AssociatedFile (Just file))) $
-		ifM versionSupportsUnlockedPointers
-			( performNew file key
-			, performOld file key
-			)
+		perform file key
 	, stop
 	)
 
-performNew :: FilePath -> Key -> CommandPerform
-performNew dest key = do
+perform :: FilePath -> Key -> CommandPerform
+perform dest key = do
 	destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus dest
 	replaceFile dest $ \tmp ->
 		ifM (inAnnex key)
@@ -57,47 +51,10 @@ performNew dest key = do
 					LinkAnnexFailed -> error "unlock failed"
 			, liftIO $ writePointerFile tmp key destmode
 			)
-	next $ cleanupNew dest key destmode
+	next $ cleanup dest key destmode
 
-cleanupNew ::  FilePath -> Key -> Maybe FileMode -> CommandCleanup
-cleanupNew dest key destmode = do
+cleanup ::  FilePath -> Key -> Maybe FileMode -> CommandCleanup
+cleanup dest key destmode = do
 	stagePointerFile dest destmode =<< hashPointerFile key
 	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 	return True
-
-performOld :: FilePath -> Key -> CommandPerform
-performOld file key = 
-	ifM (inAnnex key)
-		( ifM (isJust <$> catKeyFileHEAD file)
-			( performOld' file key
-			, do
-				warning "this has not yet been committed to git; cannot unlock it"
-				next $ return False
-			)
-		, do
-			warning "content not present; cannot unlock"
-			next $ return False
-		)
-
-performOld' :: FilePath -> Key -> CommandPerform
-performOld' dest key = ifM (checkDiskSpace Nothing key 0 True)
-	( do
-		src <- calcRepo $ gitAnnexLocation key
-		tmpdest <- fromRepo $ gitAnnexTmpObjectLocation key
-		liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
-		showAction "copying"
-		ifM (liftIO $ copyFileExternal CopyAllMetaData src tmpdest)
-			( do
-				liftIO $ do
-					removeFile dest
-					moveFile tmpdest dest
-				thawContent dest
-				next $ return True
-			, do
-				warning "copy failed!"
-				next $ return False
-			)
-	, do
-		warning "not enough disk space to copy file"
-		next $ return False
-	)

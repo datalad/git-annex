@@ -1,5 +1,7 @@
 git-annex (7.20190826) UNRELEASED; urgency=medium
 
+  * Default to v7 for new repositories.
+  * Automatically upgrade v5 repositories to v7.
   * Automatically convert direct mode repositories to v7 with adjusted
     unlocked branches and set annex.thin.
   * Refuse to upgrade direct mode repositories when git is older than 2.22,

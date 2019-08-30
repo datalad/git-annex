@@ -29,7 +29,6 @@ import qualified Database.Queue as H
 import Database.Init
 import Annex.Locations
 import Annex.Common hiding (delete)
-import Annex.Version (versionUsesKeysDatabase)
 import qualified Annex
 import Annex.LockFile
 import Annex.CatFile
@@ -103,10 +102,7 @@ getDbHandle = go =<< Annex.getState Annex.keysdbhandle
   where
 	go (Just h) = pure h
 	go Nothing = do
-		h <- ifM versionUsesKeysDatabase
-			( liftIO newDbHandle
-			, liftIO unavailableDbHandle
-			)
+		h <- liftIO newDbHandle
 		Annex.changeState $ \s -> s { Annex.keysdbhandle = Just h }
 		return h
 
@@ -220,7 +216,7 @@ removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toIKey
  - file.
  -}
 reconcileStaged :: H.DbQueue -> Annex ()
-reconcileStaged qh = whenM versionUsesKeysDatabase $ do
+reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRepo gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case

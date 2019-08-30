@@ -31,7 +31,6 @@ import Annex.Perms
 import Annex.Link
 import Annex.MetaData
 import Annex.CurrentBranch
-import Annex.Version
 import Logs.Location
 import qualified Annex
 import qualified Annex.Queue
@@ -308,11 +307,9 @@ forceParams = ifM (Annex.getState Annex.force)
  -}
 addUnlocked :: Annex Bool
 addUnlocked =
-	(versionSupportsUnlockedPointers <&&>
-	 ((not . coreSymlinks <$> Annex.getGitConfig) <||>
-	  (annexAddUnlocked <$> Annex.getGitConfig) <||>
-	  (maybe False isadjustedunlocked . snd <$> getCurrentBranch)
-	 )
+	((not . coreSymlinks <$> Annex.getGitConfig) <||>
+	 (annexAddUnlocked <$> Annex.getGitConfig) <||>
+	 (maybe False isadjustedunlocked . snd <$> getCurrentBranch)
 	)
   where
 	isadjustedunlocked (LinkAdjustment UnlockAdjustment) = True

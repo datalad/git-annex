@@ -17,22 +17,13 @@ import qualified Annex
 import qualified Data.Map as M
 
 defaultVersion :: RepoVersion
-defaultVersion = RepoVersion 5
+defaultVersion = RepoVersion 7
 
 latestVersion :: RepoVersion
 latestVersion = RepoVersion 7
 
 supportedVersions :: [RepoVersion]
-supportedVersions = map RepoVersion [5, 7]
-
-versionForAdjustedClone :: RepoVersion
-versionForAdjustedClone = RepoVersion 7
-
-versionForAdjustedBranch :: RepoVersion
-versionForAdjustedBranch = RepoVersion 7
-
-versionForCrippledFilesystem :: RepoVersion
-versionForCrippledFilesystem = RepoVersion 7
+supportedVersions = map RepoVersion [7]
 
 upgradableVersions :: [RepoVersion]
 #ifndef mingw32_HOST_OS
@@ -53,18 +44,6 @@ versionField = annexConfig "version"
 
 getVersion :: Annex (Maybe RepoVersion)
 getVersion = annexVersion <$> Annex.getGitConfig
-
-versionSupportsUnlockedPointers :: Annex Bool
-versionSupportsUnlockedPointers = go <$> getVersion
-  where
-	go (Just v) | v >= RepoVersion 6 = True
-	go _ = False
-
-versionSupportsAdjustedBranch :: Annex Bool
-versionSupportsAdjustedBranch = versionSupportsUnlockedPointers
-
-versionUsesKeysDatabase :: Annex Bool
-versionUsesKeysDatabase = versionSupportsUnlockedPointers
 
 setVersion :: RepoVersion -> Annex ()
 setVersion (RepoVersion v) = setConfig versionField (show v)

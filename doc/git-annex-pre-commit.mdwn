@@ -17,9 +17,6 @@ point to annexed content.
 When in a view, updates metadata to reflect changes
 made to files in the view.
 
-When in a repository that has not been upgraded to v7, 
-also handles injecting changes to unlocked files into the annex. 
-
 # SEE ALSO
 
 [[git-annex]](1)

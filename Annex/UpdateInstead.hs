@@ -9,7 +9,6 @@ module Annex.UpdateInstead where
 
 import qualified Annex
 import Annex.Common
-import Annex.Version
 import Annex.AdjustedBranch
 import Git.Branch
 import Git.ConfigTypes
@@ -21,5 +20,4 @@ needUpdateInsteadEmulation = updateinsteadset <&&> isadjusted
   where
 	updateinsteadset = (== UpdateInstead) . receiveDenyCurrentBranch
 		<$> Annex.getGitConfig
-	isadjusted = versionSupportsUnlockedPointers
-		<&&> (maybe False (isJust . getAdjustment) <$> inRepo Git.Branch.current)
+	isadjusted = (maybe False (isJust . getAdjustment) <$> inRepo Git.Branch.current)

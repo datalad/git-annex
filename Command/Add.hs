@@ -16,7 +16,6 @@ import qualified Annex.Queue
 import qualified Database.Keys
 import Annex.FileMatcher
 import Annex.Link
-import Annex.Version
 import Annex.Tmp
 import Messages.Progress
 import Git.FilePath
@@ -69,10 +68,7 @@ seek o = startConcurrency commandStages $ do
 			unless (updateOnly o) $
 				go (withFilesNotInGit (not $ includeDotFiles o))
 			go withFilesMaybeModified
-			ifM versionSupportsUnlockedPointers
-				( go withUnmodifiedUnlockedPointers
-				, go withFilesOldUnlocked
-				)
+			go withUnmodifiedUnlockedPointers
 
 {- Pass file off to git-add. -}
 startSmall :: FilePath -> CommandStart
@@ -92,12 +88,8 @@ addFile file = do
 
 start :: FilePath -> CommandStart
 start file = do
-	ifM versionSupportsUnlockedPointers
-		( do
-			mk <- liftIO $ isPointerFile file
-			maybe go fixuppointer mk
-		, go
-		)
+	mk <- liftIO $ isPointerFile file
+	maybe go fixuppointer mk
   where
 	go = ifAnnexed file addpresent add
 	add = liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
@@ -109,12 +101,10 @@ start file = do
 					if isSymbolicLink s
 						then next $ addFile file
 						else perform file
-	addpresent key = ifM versionSupportsUnlockedPointers
-		( liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
+	addpresent key = 
+		liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
 			_ -> add
-		, fixuplink key
-		)
 	fixuplink key = starting "add" (ActionItemWorkTreeFile file) $ do
 		-- the annexed symlink is present but not yet added to git
 		liftIO $ removeFile file

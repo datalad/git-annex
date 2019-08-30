@@ -114,38 +114,21 @@ withFilesToBeCommitted :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> Command
 withFilesToBeCommitted a l = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted l
 
-withFilesOldUnlocked :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesOldUnlocked = withFilesOldUnlocked' LsFiles.typeChanged
-
-{- Unlocked files before v6 have changed type from a symlink to a regular file.
- -
- - Furthermore, unlocked files used to be a git-annex symlink,
- - not some other sort of symlink.
- -}
-withFilesOldUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesOldUnlocked' typechanged a l = seekActions $
-	prepFiltered a unlockedfiles
-  where
-	unlockedfiles = filterM isOldUnlocked =<< seekHelper typechanged l
-
 isOldUnlocked :: FilePath -> Annex Bool
 isOldUnlocked f = liftIO (notSymlink f) <&&> 
 	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
-withFilesOldUnlockedToBeCommitted :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesOldUnlockedToBeCommitted = withFilesOldUnlocked' LsFiles.typeChangedStaged
-
-{- v6 unlocked pointer files that are staged, and whose content has not been
+{- unlocked pointer files that are staged, and whose content has not been
  - modified-}
 withUnmodifiedUnlockedPointers :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withUnmodifiedUnlockedPointers a l = seekActions $
 	prepFiltered a unlockedfiles
   where
-	unlockedfiles = filterM isV6UnmodifiedUnlocked 
+	unlockedfiles = filterM isUnmodifiedUnlocked 
 		=<< seekHelper LsFiles.typeChangedStaged l
 
-isV6UnmodifiedUnlocked :: FilePath -> Annex Bool
-isV6UnmodifiedUnlocked f = catKeyFile f >>= \case
+isUnmodifiedUnlocked :: FilePath -> Annex Bool
+isUnmodifiedUnlocked f = catKeyFile f >>= \case
 	Nothing -> return False
 	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
