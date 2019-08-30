@@ -36,6 +36,7 @@ autoUpgradeableVersions :: M.Map RepoVersion RepoVersion
 autoUpgradeableVersions = M.fromList
 	[ (RepoVersion 3, RepoVersion 5)
 	, (RepoVersion 4, RepoVersion 5)
+	, (RepoVersion 5, RepoVersion 6)
 	, (RepoVersion 6, RepoVersion 7)
 	]
 
