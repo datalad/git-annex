@@ -42,6 +42,8 @@ avoids the problems discussed in step 5.
 
 ## step 5: automatic v5 to v7 upgrades
 
+`v7-default` branch in git has this.
+
 Since v5 repos and v7 repos not using unlocked files are functionally
 almost identical, this is unlikely to break much. Unlocking files will of
 course change behavior though.
