@@ -836,10 +836,9 @@ may not be explicitly listed on their individual man pages.
 
   Overrides git configuration settings. May be specified multiple times.
 
-# CONFIGURATION VIA .git/config
+# CONFIGURATION
 
 Like other git commands, git-annex is configured via `.git/config`.
-Here are all the supported configuration settings.
 
 * `annex.uuid`
 
@@ -1044,54 +1043,6 @@ Here are all the supported configuration settings.
   And when multiple files in the work tree have the same content, only
   one of them gets hard linked to the annex.
 
-* `annex.delayadd`
-
-  Makes the watch and assistant commands delay for the specified number of
-  seconds before adding a newly created file to the annex. Normally this
-  is not needed, because they already wait for all writers of the file
-  to close it.
-
-* `annex.expireunused`
-
-  Controls what the assistant does about unused file contents
-  that are stored in the repository.
-
-  The default is `false`, which causes
-  all old and unused file contents to be retained, unless the assistant
-  is able to move them to some other repository (such as a backup repository).
-
-  Can be set to a time specification, like "7d" or "1m", and then
-  file contents that have been known to be unused for a week or a
-  month will be deleted.
-
-* `annex.fscknudge`
-
-  When set to false, prevents the webapp from reminding you when using
-  repositories that lack consistency checks.
-
-* `annex.autoupgrade`
-
-  When set to ask (the default), the webapp will check for new versions
-  and prompt if they should be upgraded to. When set to true, automatically
-  upgrades without prompting (on some supported platforms). When set to
-  false, disables any upgrade checking.
-
-  Note that upgrade checking is only done when git-annex is installed
-  from one of the prebuilt images from its website. This does not
-  bypass e.g., a Linux distribution's own upgrade handling code.
-
-  This setting also controls whether to restart the git-annex assistant
-  when the git-annex binary is detected to have changed. That is useful
-  no matter how you installed git-annex.
-
-* `annex.autocommit`
-
-  Set to false to prevent the git-annex assistant and git-annex sync
-  from automatically committing changes to files in the repository.
-
-  To configure the behavior in all clones of the repository,
-  this can be set in [[git-annex-config]].
-
 * `annex.resolvemerge`
 
   Set to false to prevent merge conflicts in the checked out branch
@@ -1108,19 +1059,6 @@ Here are all the supported configuration settings.
 
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]].
-
-* `annex.startupscan`
-
-  Set to false to prevent the git-annex assistant from scanning the
-  repository for new and changed files on startup. This will prevent it
-  from noticing changes that were made while it was not running, but can be
-  a useful performance tweak for a large repository.
-
-* `annex.listen`
-
-  Configures which address the webapp listens on. The default is localhost.
-  Can be either an IP address, or a hostname that resolves to the desired
-  address.
 
 * `annex.debug`
 
@@ -1171,6 +1109,27 @@ Here are all the supported configuration settings.
   they have been embedded in encrypted form in the git repository, will
   be extracted and decrypted each time git-annex needs to access the
   remote.
+
+* `annex.secure-erase-command`
+
+  This can be set to a command that should be run whenever git-annex
+  removes the content of a file from the repository.
+
+  In the command line, %file is replaced with the file that should be
+  erased.
+
+  For example, to use the wipe command, set it to `wipe -f %file`.
+
+* `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
+
+  These can be passed to `git annex init` to tune the repository.
+  They cannot be safely changed in a running repository and should never be
+  set in global git configuration.
+  For details, see <https://git-annex.branchable.com/tuning/>.
+
+# CONFIGURATION OF REMOTES
+
+Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-cost`
 
@@ -1407,6 +1366,91 @@ Here are all the supported configuration settings.
   Default options to use if a remote does not have more specific options
   as described above.
 
+* `remote.<name>.annex-rsyncurl`
+
+  Used by rsync special remotes, this configures
+  the location of the rsync repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.annex-buprepo`
+
+  Used by bup special remotes, this configures
+  the location of the bup repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.annex-ddarrepo`
+
+  Used by ddar special remotes, this configures
+  the location of the ddar repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.annex-directory`
+
+  Used by directory special remotes, this configures
+  the location of the directory where annexed files are stored for this
+  remote. Normally this is automatically set up by `git annex initremote`,
+  but you can change it if needed.
+
+* `remote.<name>.annex-adb`
+
+  Used to identify remotes on Android devices accessed via adb.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.annex-androiddirectory`
+
+  Used by adb special remotes, this is the directory on the Android
+  device where files are stored for this remote. Normally this is
+  automatically set up by `git annex initremote`, but you can change
+  it if needed.
+
+* `remote.<name>.annex-androidserial`
+
+  Used by adb special remotes, this is the serial number of the Android
+  device used by the remote. Normally this is automatically set up by
+  `git annex initremote`, but you can change it if needed, eg when
+  upgrading to a new Android device.
+
+* `remote.<name>.annex-s3`
+
+  Used to identify Amazon S3 special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.annex-glacier`
+
+  Used to identify Amazon Glacier special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.annex-webdav`
+
+  Used to identify webdav special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+* `remote.<name>.annex-tahoe`
+
+  Used to identify tahoe special remotes.
+  Points to the configuration directory for tahoe.
+
+* `remote.<name>.annex-gcrypt`
+
+  Used to identify gcrypt special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+  It is set to "true" if this is a gcrypt remote.
+  If the gcrypt remote is accessible over ssh and has git-annex-shell
+  available to manage it, it's set to "shell".
+
+* `remote.<name>.annex-git-lfs`
+
+  Used to identify git-lfs special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+  It is set to "true" if this is a git-lfs remote.
+
+* `remote.<name>.annex-hooktype`, `remote.<name>.annex-externaltype`
+
+  Used by hook special remotes and external special remotes to record
+  the type of the remote.
+
 * `annex.web-options`
 
   Options to pass to curl when git-annex uses it to download urls
@@ -1522,111 +1566,72 @@ Here are all the supported configuration settings.
   It would be a good idea to check that it downloaded the file you expected,
   too.
 
-* `remote.name.annex-security-allow-unverified-downloads`
+* `remote.<name>.annex-security-allow-unverified-downloads`
 
   Per-remote configuration of annex.security.allow-unverified-downloads.
 
-* `annex.secure-erase-command`
+# CONFIGURATION OF ASSISTANT
 
-  This can be set to a command that should be run whenever git-annex
-  removes the content of a file from the repository.
+* `annex.delayadd`
 
-  In the command line, %file is replaced with the file that should be
-  erased.
+  Makes the watch and assistant commands delay for the specified number of
+  seconds before adding a newly created file to the annex. Normally this
+  is not needed, because they already wait for all writers of the file
+  to close it.
 
-  For example, to use the wipe command, set it to `wipe -f %file`.
+* `annex.expireunused`
 
-* `remote.<name>.annex-rsyncurl`
+  Controls what the assistant does about unused file contents
+  that are stored in the repository.
 
-  Used by rsync special remotes, this configures
-  the location of the rsync repository to use. Normally this is automatically
-  set up by `git annex initremote`, but you can change it if needed.
+  The default is `false`, which causes
+  all old and unused file contents to be retained, unless the assistant
+  is able to move them to some other repository (such as a backup repository).
 
-* `remote.<name>.annex-buprepo`
+  Can be set to a time specification, like "7d" or "1m", and then
+  file contents that have been known to be unused for a week or a
+  month will be deleted.
 
-  Used by bup special remotes, this configures
-  the location of the bup repository to use. Normally this is automatically
-  set up by `git annex initremote`, but you can change it if needed.
+* `annex.fscknudge`
 
-* `remote.<name>.annex-ddarrepo`
+  When set to false, prevents the webapp from reminding you when using
+  repositories that lack consistency checks.
 
-  Used by ddar special remotes, this configures
-  the location of the ddar repository to use. Normally this is automatically
-  set up by `git annex initremote`, but you can change it if needed.
+* `annex.autoupgrade`
 
-* `remote.<name>.annex-directory`
+  When set to ask (the default), the webapp will check for new versions
+  and prompt if they should be upgraded to. When set to true, automatically
+  upgrades without prompting (on some supported platforms). When set to
+  false, disables any upgrade checking.
 
-  Used by directory special remotes, this configures
-  the location of the directory where annexed files are stored for this
-  remote. Normally this is automatically set up by `git annex initremote`,
-  but you can change it if needed.
+  Note that upgrade checking is only done when git-annex is installed
+  from one of the prebuilt images from its website. This does not
+  bypass e.g., a Linux distribution's own upgrade handling code.
 
-* `remote.<name>.annex-adb`
+  This setting also controls whether to restart the git-annex assistant
+  when the git-annex binary is detected to have changed. That is useful
+  no matter how you installed git-annex.
 
-  Used to identify remotes on Android devices accessed via adb.
-  Normally this is automatically set up by `git annex initremote`.
+* `annex.autocommit`
 
-* `remote.<name>.annex-androiddirectory`
+  Set to false to prevent the git-annex assistant and git-annex sync
+  from automatically committing changes to files in the repository.
 
-  Used by adb special remotes, this is the directory on the Android
-  device where files are stored for this remote. Normally this is
-  automatically set up by `git annex initremote`, but you can change
-  it if needed.
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]].
 
-* `remote.<name>.annex-androidserial`
+* `annex.startupscan`
 
-  Used by adb special remotes, this is the serial number of the Android
-  device used by the remote. Normally this is automatically set up by
-  `git annex initremote`, but you can change it if needed, eg when
-  upgrading to a new Android device.
+  Set to false to prevent the git-annex assistant from scanning the
+  repository for new and changed files on startup. This will prevent it
+  from noticing changes that were made while it was not running, but can be
+  a useful performance tweak for a large repository.
 
-* `remote.<name>.annex-s3`
+* `annex.listen`
 
-  Used to identify Amazon S3 special remotes.
-  Normally this is automatically set up by `git annex initremote`.
-
-* `remote.<name>.annex-glacier`
-
-  Used to identify Amazon Glacier special remotes.
-  Normally this is automatically set up by `git annex initremote`.
-
-* `remote.<name>.annex-webdav`
-
-  Used to identify webdav special remotes.
-  Normally this is automatically set up by `git annex initremote`.
-
-* `remote.<name>.annex-tahoe`
-
-  Used to identify tahoe special remotes.
-  Points to the configuration directory for tahoe.
-
-* `remote.<name>.annex-gcrypt`
-
-  Used to identify gcrypt special remotes.
-  Normally this is automatically set up by `git annex initremote`.
-
-  It is set to "true" if this is a gcrypt remote.
-  If the gcrypt remote is accessible over ssh and has git-annex-shell
-  available to manage it, it's set to "shell".
-
-* `remote.<name>.annex-git-lfs`
-
-  Used to identify git-lfs special remotes.
-  Normally this is automatically set up by `git annex initremote`.
-
-  It is set to "true" if this is a git-lfs remote.
-
-* `remote.<name>.annex-hooktype`, `remote.<name>.annex-externaltype`
-
-  Used by hook special remotes and external special remotes to record
-  the type of the remote.
-
-* `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
-
-  These can be passed to `git annex init` to tune the repository.
-  They cannot be safely changed in a running repository and should never be
-  set in global git configuration.
-  For details, see <https://git-annex.branchable.com/tuning/>.
+  Configures which address the webapp listens on. The default is localhost.
+  Can be either an IP address, or a hostname that resolves to the desired
+  address.
 
 # CONFIGURATION VIA .gitattributes
 
