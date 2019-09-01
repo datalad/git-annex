@@ -383,7 +383,7 @@ subdirectories).
 
 * `upgrade`
 
-  Upgrades the repository to current layout.
+  Upgrades the repository.
   
   See [[git-annex-upgrade]](1) for details.
 
@@ -1066,7 +1066,19 @@ Like other git commands, git-annex is configured via `.git/config`.
 
 * `annex.version`
 
-  Automatically maintained, and used to automate upgrades between versions.
+  The current version of the git-annex repository. This is
+  maintained by git-annex and should never be manually changed.
+
+* `annex.autoupgraderepository`
+
+  When an old git-annex repository version has become deprecated,
+  git-annex will normally automatically upgrade the repository to
+  the new version.
+
+  If this is set to false, git-annex won't automatically upgrade the
+  repository. Instead it will exit with an error message. You can run
+  `git annex upgrade` yourself when you are ready to upgrade the
+  repository.
 
 * `annex.crippledfilesystem`
 

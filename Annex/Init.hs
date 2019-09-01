@@ -141,12 +141,7 @@ uninitialize = do
  - Checks repository version and handles upgrades too.
  -}
 ensureInitialized :: Annex ()
-ensureInitialized = ifM isDirect
-	( unlessM (catchBoolIO $ upgrade True defaultVersion) $ do
-		g <- Annex.gitRepo
-		giveup $ "Upgrading direct mode repository " ++ Git.repoDescribe g ++ " failed, and direct mode is no longer supported."
-	, getVersion >>= maybe needsinit checkUpgrade
-	)
+ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
 		( initialize Nothing Nothing

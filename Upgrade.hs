@@ -1,6 +1,6 @@
 {- git-annex upgrade support
  -
- - Copyright 2010, 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,8 @@
 module Upgrade where
 
 import Annex.Common
+import qualified Annex
+import qualified Git
 import Annex.Version
 import Types.RepoVersion
 #ifndef mingw32_HOST_OS
@@ -36,14 +38,23 @@ needsUpgrade v
 				err "Upgrade this repository: git-annex upgrade"
 			| otherwise ->
 				err "Upgrade git-annex."
-		Just newv -> ifM (upgrade True newv)
-			( ok
-			, err "Automatic upgrade failed!"
+		Just newv -> ifM (annexAutoUpgradeRepository <$> Annex.getGitConfig)
+			( tryNonAsync (upgrade True newv) >>= \case
+				Right True -> ok
+				Right False -> "Automatic upgrade failed!"
+				Left err -> "Automatic upgrade exception! " ++ show err
+			, err "Automatic upgrade is disabled by annex.autoupgraderepository configuration. To upgrade this repository: git-annex upgrade"
 			)
   where
-	err msg = return $ Just $ "Repository version " ++
-		show (fromRepoVersion v) ++
-		" is not supported. " ++ msg
+	err msg = do
+		g <- Annex.gitRepo
+		p <- liftIO $ absPath $ Git.repoPath g
+		return $ Just $ unwords
+			[ "Repository", p
+			, "is at unsupported version"
+			, show (fromRepoVersion v) ++ "."
+			, msg
+			]
 	ok = return Nothing
 
 upgrade :: Bool -> RepoVersion -> Annex Bool
@@ -74,3 +85,4 @@ upgrade automatic destversion = do
 	up (RepoVersion 5) = Upgrade.V5.upgrade automatic
 	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
 	up _ = return True
+
