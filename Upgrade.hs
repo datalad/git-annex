@@ -41,8 +41,8 @@ needsUpgrade v
 		Just newv -> ifM (annexAutoUpgradeRepository <$> Annex.getGitConfig)
 			( tryNonAsync (upgrade True newv) >>= \case
 				Right True -> ok
-				Right False -> "Automatic upgrade failed!"
-				Left err -> "Automatic upgrade exception! " ++ show err
+				Right False -> err "Automatic upgrade failed!"
+				Left ex -> err $ "Automatic upgrade exception! " ++ show ex
 			, err "Automatic upgrade is disabled by annex.autoupgraderepository configuration. To upgrade this repository: git-annex upgrade"
 			)
   where
