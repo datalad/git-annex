@@ -1,0 +1,1 @@
+I can't addurl a file because there is a special remote which is not available. I can see that git annex is asking it if it wants to claim the url which it doesn't. I don't feel addurl should depend on the remote after CLAIMURL-FAILURE. Or do I miss something?
