@@ -1,0 +1,44 @@
+Hi,
+
+I am trying to recover files from Hubic that were at some point uploaded with a leading slash in the filename. This made it impossible to get them with the git annex rclone extension because rclone interprets the leading slash as a directory move. So I wrote a script using the swiftclient python lib to download the files anyway. Then I am decrypting them with the ga_decrypt shell script and I am trying to reinject them into my local repo. For some files, the --known flag just works and injects the contents to the symlink that is broken. For some cases, I have to submit the src and dst filename and for some cases even then git-annex will tell me that the content does not match the expected content of the file. 
+
+This is the process that I follow:
+
+For the file that is only on hubic I do a git-annex get file. The error message (since hubic integration is not working for that repo) gives me the key that I need to look that file up in hubic (what would be a cleaner way?):
+    
+    git annex get 2012-06-23\ 15\:17\:23.mp4
+    get 2012-06-23 15:17:23.mp4 (from hubic...) 
+    mv: cannot stat '/tmp/rclone-annex-tmp.diesZi1ZL/GPGHMACSHA1--b22130c742403960d80c0e9c78314e3d7034ba79': No such file or directory
+
+      Unable to access these remotes: hubic
+
+      Try making some of these repositories available:
+            396e481c-5fc9-4933-b6a4-b1398fb7c61b -- [hubic]
+    failed
+    git-annex: get: 1 failed
+
+
+I prepend the leading slash and download that file manually from hubic. I use ga_decrypt and get files that actually are readable (in this case a video). 
+However, when I do git-annex reinject src dst I get (I removed the colons because I wanted to rule out a bug):
+
+    git-annex: 2012-06-23_151723.mp4 does not have expected content of ../Pictures/Marek Handy/2012/2012-06-23_151723.mp4
+    failed
+    git-annex: reinject: 1 failed
+
+Ok so apparently, git annex does not like that content for that file. Also if I do git-annex calckey on the downloaded and decrypted file I get a different key than the original key.
+
+    git-annex calckey 2012-06-23_151723.mp4
+    SHA256E-s19520577--116c8b3101916fb1d81bf6816cc1b616a8eb30b5fe7b293053cfdd41fa178b0a.mp4
+
+but ls -l on the file gives me:
+
+    ls -larth ../Pictures/Marek\ Handy/2012/2012-06-23\ 15\:17\:23.mp4 
+    lrwxrwxrwx 1 marek marek 201 Aug  6 17:28 '../Pictures/Marek Handy/2012/2012-06-23 15:17:23.mp4' -> ../../../.git/annex/objects/jQ/mk/SHA256E-s19120318--2631ff42deb7419e97dc46e7423937694c40d09b336d9b8e7aa2c5fe94e73cc7    /SHA256E-s19120318--2631ff42deb7419e97dc46e7423937694c40d09b336d9b8e7aa2c5fe94e73cc7
+
+
+I appreciate any hints to what went wrong or where maybe my thinking is wrong?
+
+Thank you,
+Marek
+
+
