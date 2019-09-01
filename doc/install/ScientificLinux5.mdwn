@@ -1,1 +1,4 @@
-For SL6/CentOS6 install the EPEL repo and yum install git-annex. 
+For SL6/CentOS6 install the EPEL repo and yum install git-annex.
+
+However, the git-annex in EPEL is very old (from 2014 in EPEL 7).
+Use the [[Linux_standalone]] install to get a current version.
