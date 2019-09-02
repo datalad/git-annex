@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="TroisSinges"
+ avatar="http://cdn.libravatar.org/avatar/f4c62f9ebe09016b8852b04f1dd6612f"
+ subject="comment 1"
+ date="2019-09-02T22:19:04Z"
+ content="""
+Hmmm, this is strange, because according to <http://git-annex.branchable.com/special_remotes/S3/#comment-e9d48ba37aa5b01c236ab894057660b7>, files should be \"stored in a hashed directory structure with the names of their key used\". This isn't the case for me, using S3 special remote for Wasabi.
+"""]]
