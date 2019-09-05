@@ -1,0 +1,67 @@
+### Please describe the problem.
+
+It is probably not a regression (since happens with now elderly git-annex in debian sid), it could be something either changed on debian sid or on datalad side (originally ran into it while trying to build 0.11.7 package for debian sid) to make test directory name even more "tricky" than before.
+
+Summary:  `git annex init` fails even though `git init` (and other commands, not shown here) works just fine:
+
+
+[[!format sh """
+root@smaug:/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&cΔЙקم๗あ `| 1# pwd
+/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&cΔЙקم๗あ `| 1
+
+# git init was ran before already
+root@smaug:/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&cΔЙקم๗あ `| 1# git init
+Reinitialized existing Git repository in /tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&cΔЙקم๗あ `| 1/.git/
+
+root@smaug:/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&cΔЙקم๗あ `| 1# git annex init
+init  fatal: Unable to create '/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&c `| 1/.git/annex/index.lock': No such file or directory
+fatal: Unable to create '/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&c `| 1/.git/annex/index.lock': No such file or directory
+
+git-annex: failed to read sha from git write-tree
+CallStack (from HasCallStack):
+  error, called at ./Git/Sha.hs:18:15 in main:Git.Sha
+failed
+git-annex: init: 1 failed
+
+root@smaug:/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&cΔЙקم๗あ `| 1# git annex version
+git-annex version: 7.20190129
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+
+"""]]
+
+so above version is the one in Debian proper (apparently quite dated!).  I have tried with 7.20190819+git2-g908476a9b-1~ndall+1 and 7.20190819+git60-gcdb679818-1~ndall+1
+
+You can see that `git-annex` got unicode portion of the directory name stripped (reports ``` "';a&b&c `| 1``` instead of ``` "';a&b&cΔЙקم๗あ `| 1```).  
+
+My wild guess is that full path (instead of a relative path) is used somewhere, encoded/decoded with losses, and then kaboom comes.
+
+<details>
+<summary>locale is just C</summary> 
+
+[[!format sh """
+root@smaug:/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/ "';a&b&cΔЙקم๗あ `| 1# locale
+LANG=C
+LANGUAGE=
+LC_CTYPE="C"
+LC_NUMERIC="C"
+LC_TIME="C"
+LC_COLLATE="C"
+LC_MONETARY="C"
+LC_MESSAGES="C"
+LC_PAPER="C"
+LC_NAME="C"
+LC_ADDRESS="C"
+LC_TELEPHONE="C"
+LC_MEASUREMENT="C"
+LC_IDENTIFICATION="C"
+LC_ALL=C
+"""]]
+</details>
+
+[[!meta author=yoh]]

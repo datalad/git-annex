@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="buffering chunks in memory when uploading to remote"
+ date="2019-09-04T19:50:42Z"
+ content="""
+\"git-annex has to buffer chunks in memory before they are sent to a remote\" -- would it be hard to remove this restriction?  I want to have a non-chunked S3 remote, so that files in it can be accessed through a URL.  But if some files are 50GB, then git-annex running on a 16GB machine would fail when talking to this repo?
+"""]]

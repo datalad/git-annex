@@ -1,0 +1,9 @@
+### Please describe the problem.
+
+`git-annex-copy --json --json-error-messages` writes errors messages to stdout, but not to stderr.  This can be confusing in that the stderr output is empty, even though there were errors.  It would be more intuitive to (also) output error messages as json records to stderr.
+
+Also, the error messages that *are* written to stderr are not always in json format, e.g. the `git-annex: thread blocked indefinitely in an STM transaction` messages in [[bugs/git-annex-copy_fails_with___34__thread_blocked_indefinitely_in_an_STM_transaction__34__]].  Adding `--debug --verbose` also causes some non-json output.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex has been an extremely flexible and versatile tool.  So far I've been able to adapt to most usage scenarios I've encountered.
