@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-05T15:29:57Z"
+ content="""
+That comment was just bad wording or possibly I conflated S3 with how other
+remotes that do use hash directories work. I've corrected the comment.
+
+According to Amazon's documentation, S3 does not have a concept of
+directories; "foo/bar" and "foo_bar" and "foo\\bar" are all just opaque
+strings as far as it's concerned. So I don't see any point in using hash
+directories with S3.
+"""]]
