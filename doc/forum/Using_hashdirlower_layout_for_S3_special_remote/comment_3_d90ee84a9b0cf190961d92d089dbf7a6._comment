@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="directories on S3"
+ date="2019-09-05T18:40:20Z"
+ content="""
+\"S3 does not have a concept of directories; \"foo/bar\" and \"foo_bar\" and \"foo\bar\" are all just opaque strings as far as it's concerned\" -- just to note: (1) AWS [CLI](https://aws.amazon.com/cli/) commands like `aws s3 ls` and `aws s3 cp`  do have the concept of directories; (2) An [S3 tips page](https://www.sumologic.com/insight/10-things-might-not-know-using-s3/) says that \"latency on S3 operations depends on key names since prefix similarities become a bottleneck at more than about 100 requests per second. If you have need for high volumes of operations, it is essential to consider naming schemes with more variability at the beginning of the key names, like alphanumeric or hex hash codes in the first 6 to 8 characters, to avoid internal “hot spots” within S3 infrastructure.\"
+"""]]
