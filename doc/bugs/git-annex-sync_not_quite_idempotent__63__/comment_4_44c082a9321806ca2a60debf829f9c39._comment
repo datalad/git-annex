@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-09-06T16:08:19Z"
+ content="""
+The second transcript seems to show that the first sync never
+tries to push to origin. Then the second sync does push to origin. Then the
+third sync doesn't push to origin. Since sync always pushes to origin
+unless remote.name.annex-push or remote.name.annex-readonly are set,
+I remain confused why successive runs would sometimes push and other times
+not push.
+
+(It also appears as if stderr output is sometimes appearing before
+stdout output that actually comes first. Which makes me not trust this
+transcript's paste accuracy either, or maybe something to do with the
+terminal is resulting in this unusual output ordering.)
+
+Also, the second sync found one modified file to commit, so something must
+have modified that file in between the two sync runs. If a file gets
+modified in between two sync runs, they will of course not do the same
+thing.
+"""]]
