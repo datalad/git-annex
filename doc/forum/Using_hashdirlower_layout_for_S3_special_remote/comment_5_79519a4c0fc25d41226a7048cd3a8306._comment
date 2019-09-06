@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-09-06T17:53:00Z"
+ content="""
+The stuff @Ilya found about prefix similaries causing bottlenecks in S3
+infra is interesting. git-annex keys have a common prefix, and have
+the hash at the end. So it could have a performance impact.
+
+But that info also seems out of date when it talks about 6-8 characters
+prefix length. And the rate limit has also been raised significantly, to
+3000-5000 ops/sec per prefix. See 
+<https://stackoverflow.com/questions/52443839/s3-what-exactly-is-a-prefix-and-what-ratelimits-apply>
+
+From that, it seems S3 does actually treat '/' as a prefix delimiter.
+(Based on a single not very clear email from Amazon support and not
+documented anywhere else..) So a single level of hash "directories"
+could increase the rate limit accordingly.
+
+If a git-annex exceeded those rate limits, it would start getting 503
+responses from S3, so it wouldn't slow down but would instead fail whatever
+operation it was doing. I can't recall anyone complaining of 503's from
+S3.
+"""]]
