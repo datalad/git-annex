@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="flixh"
+ avatar="http://cdn.libravatar.org/avatar/1f7e89860de517a494f35ebfb385288e"
+ subject="comment 4"
+ date="2019-09-07T11:44:47Z"
+ content="""
+You are right, git is at version 2.11.0-3+deb9u4 on this machine.
+OOM killer might be, the machine has 2GB RAM. During the upgrade I observed the memory usage increasing steadily but at some point decreasing again.
+
+Unfortunately I've nuked the repo in the meantime, so I cannot try your suggestion of retrying after upgrading git. Also it looks like I need to go from stretch to testing to get a git >= 2.22. Which will probably not happen too soon.
+
+Thanks,
+Felix
+"""]]
