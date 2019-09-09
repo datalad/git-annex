@@ -1,0 +1,63 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git and submodule configs"
+ date="2019-09-09T18:47:41Z"
+ content="""
+Here is the git config:
+[[!format sh \"\"\"
+(master_env_v156_py36) 14:35  [viral-ngs-benchmarks] $ git config -l | grep annex- | grep -v uuid
+remote.origin.annex-ignore=true
+remote.ilya-work.annex-speculate-present=true
+remote.ilya-work.annex-readonly=true
+remote.ilya-work.annex-sync=false
+remote.dnanexus.annex-externaltype=dnanexus
+remote.dnanexus.annex-cost=100.0
+remote.dnanexus.annex-availability=GloballyAvailable
+remote.dnanexus.annex-security-allow-unverified-downloads=ACKTHPPT
+remote.dnanexus.annex-sync=false
+remote.dnanexus.annex-ignore=false
+remote.viral-ngs-benchmarks-s3.annex-s3=true
+remote.my-ldir.annex-externaltype=ldir
+remote.my-ldir.annex-cost=200.0
+remote.my-ldir.annex-availability=LocallyAvailable
+remote.from-ilya-work.annex-externaltype=canget
+remote.from-ilya-work.annex-readonly=true
+remote.from-ilya-work.annex-sync=false
+remote.from-ilya-work.annex-ignore=true
+remote.from-ilya-work-01.annex-externaltype=canget
+remote.from-ilya-work-01.annex-ignore=true
+remote.from-ilya-work-01.annex-cost=200.0
+remote.from-ilya-work-01.annex-availability=LocallyAvailable
+remote.from-ilya-work-01.annex-readonly=true
+remote.from-ilya-work-01.annex-sync=false
+remote.from-ilya-work-02.annex-externaltype=canget
+remote.from-ilya-work-02.annex-readonly=true
+remote.from-ilya-work-02.annex-sync=false
+remote.from-ilya-work-02.annex-ignore=true
+remote.from-ilya-work-03.annex-externaltype=canget
+remote.from-ilya-work-03.annex-cost=200.0
+remote.from-ilya-work-03.annex-availability=GloballyAvailable
+remote.from-ilya-work-03.annex-speculate-present=true
+remote.mygs.annex-externaltype=gs_uri
+remote.mygs.annex-cost=400.0
+remote.mygs.annex-availability=GloballyAvailable
+remote.s3-viral-ngs-benchmarks-web.annex-s3=true
+\"\"\"]]
+
+\"stderr output is sometimes appearing before stdout output that actually comes first\" -- probably from running in an Emacs shell terminal.  But the `git-annex-sync` commands were entered by hand, not in a script, so earlier commands' output is earlier.
+
+\"the second sync found one modified file to commit, so something must have modified that file in between the two sync runs\" -- could the first sync run have somehow modified it?
+
+If relevant, this git-annex repo has one submodule, configured as
+
+[[!format sh \"\"\"
+[submodule \"viral-ngs\"]
+        path = viral-ngs
+        url = git@github.com:broadinstitute/viral-ngs.git
+        branch = is-dx-benchmarks
+
+\"\"\"]]
+
+Maybe, add test cases for `git-annex-sync` on repos with submodules?
+"""]]
