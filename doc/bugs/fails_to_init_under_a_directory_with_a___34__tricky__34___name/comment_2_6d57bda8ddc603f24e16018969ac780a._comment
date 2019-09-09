@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-09T13:04:29Z"
+ content="""
+To reproduce this, set LANG=C. In a unicode locale, it does not have the
+problem.
+
+"קم๗あ" is a sufficient amount of unicode to cause the failure (so is "¡").
+The ascii punctuation is not involved, eg it works in a directory named
+"';a&b&c `| 1
+
+	joey@darkstar:/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg/קم๗あ>LANG=C git-annex init
+	init  fatal: Unable to create '/tmp/datalad_temp_test_create_with_obscure_name18qdmqwg//.git/annex/index.lock': No such file or directory
+
+Notice that all the unicode has been stripped out of the directory name
+somehow.
+
+This is not happening to git-annex generally; .git/annex/ get created and
+populated with several files; it's the call to git update-index to create the
+annex index file that is failing.
+
+Dumping the env that git-annex sets when running that command, it includes eg 
+`("GIT_INDEX_FILE","/tmp/\56514\56481/.git/annex/index")`; the "¡"
+has been decomposed into what I think are two unicode surrigates; that's
+produced when getting the working directory.
+
+	joey@darkstar:/tmp/¡>LANG=C ghci
+	GHCi, version 8.6.5: http://www.haskell.org/ghc/  :? for help
+	Loaded GHCi configuration from /home/joey/.etc/.ghci
+	ghci> import System.Posix.Directory
+	ghci> getWorkingDirectory 
+	"/tmp/\56514\56481"
+
+This shell command does not exhibit the problem:
+
+	printf '100644 8a1218a1024a212bb3db30becd860315f9f3ac52 1\tfrotz' | GIT_INDEX_FILE=`pwd`/.git/annex/index LANG=C git update-index --index-info
+
+So, the problem is probably in the process library's passing
+of unicode environment variables to exec. I've verified the problem in ghci,
+running createProcess with this:
+
+	CreateProcess {cmdspec = RawCommand "git" ["update-index","--index-info"], cwd = Nothing, env = Just [("GIT_INDEX_FILE","/tmp/\56514\56481/.git/annex/index")], std_in = Inherit, std_out = Inherit, std_err = Inherit, close_fds = False, create_group = False, delegate_ctlc = False, detach_console = False, create_new_console = False, new_session = False, child_group = Nothing, child_user = Nothing, use_process_jobs = False}
+
+This bug needs to be forwarded to process.
+"""]]
