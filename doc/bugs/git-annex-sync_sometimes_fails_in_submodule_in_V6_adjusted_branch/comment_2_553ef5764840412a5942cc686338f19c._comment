@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="https://tribut.de/"
+ nickname="Felix"
+ avatar="http://cdn.libravatar.org/avatar/d7508a030fd9902a76b02f7feff1327e80400a1317ee98e463c68ef4c9c40bb8"
+ subject="comment 2"
+ date="2019-09-09T09:01:26Z"
+ content="""
+Just encountered the same error. I can reproduce like this:
+
+    $ git init foobar
+    $ cd foobar/
+    $ git annex init
+    $ git annex upgrade
+    $ touch baz
+    $ git add baz
+    $ git commit -m \"baz\"
+    $ git annex adjust --unlock
+    $ git submodule add https://github.com/tribut/homeassistant-docker-venv.git qux
+    $ git add qux
+    $ git commit -m \"qux\"
+    $ git annex sync
+    commit
+    On branch adjusted/master(unlocked)
+    nothing to commit, working tree clean
+    ok
+    fatal: entry 'qux' object type (blob) doesn't match mode type (commit)
+    git-annex: user error (git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"mktree\",\"--batch\",\"-z\"] exited 128)
+
+May it is related to gpg signatures? When I ran the exact same thing on my main machine, where `commit.gpgSign` is `true` I got instead:
+
+    $ git annex sync
+    commit 
+    On branch adjusted/master(unlocked)
+    nothing to commit, working tree clean
+    ok
+    git-annex: bad srcsha
+    CallStack (from HasCallStack):
+      error, called at ./Git/DiffTree.hs:113:39 in main:Git.DiffTree
+
+I'm running git-annex 7.20190731-gbb16a2610 using the standalone version.
+"""]]
