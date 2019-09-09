@@ -277,7 +277,7 @@ processHandle (_, _, _, pid) = pid
 
 -- | Shows the command that a CreateProcess will run.
 showCmd :: CreateProcess -> String
-showCmd = go . cmdspec
+showCmd p = go (cmdspec p) ++ " " ++ show (env p)
   where
 	go (ShellCommand s) = s
 	go (RawCommand c ps) = c ++ " " ++ show ps

@@ -215,6 +215,7 @@ new :: Git.Repo -> IO AnnexState
 new r = do
 	r' <- Git.Config.read =<< Git.relPath r
 	let c = extractGitConfig r'
+	print =<< fixupRepo r' c
 	newState c =<< fixupRepo r' c
 
 {- Performs an action in the Annex monad from a starting state,

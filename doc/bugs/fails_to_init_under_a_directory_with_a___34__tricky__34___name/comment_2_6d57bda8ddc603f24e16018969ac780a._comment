@@ -42,5 +42,7 @@ running createProcess with this:
 
 	CreateProcess {cmdspec = RawCommand "git" ["update-index","--index-info"], cwd = Nothing, env = Just [("GIT_INDEX_FILE","/tmp/\56514\56481/.git/annex/index")], std_in = Inherit, std_out = Inherit, std_err = Inherit, close_fds = False, create_group = False, delegate_ctlc = False, detach_console = False, create_new_console = False, new_session = False, child_group = Nothing, child_user = Nothing, use_process_jobs = False}
 
-This bug needs to be forwarded to process.
+This bug needs to be forwarded to http://hackage.haskell.org/process,
+after checking what environment value it actually passes to the child
+process in this case.
 """]]
