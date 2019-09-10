@@ -62,3 +62,5 @@ type nfs (rw,relatime,vers=3,rsize=131072,wsize=131072,namlen=255,hard,proto=tcp
 ```
 
 [[!meta author=yoh]]
+
+> [[fixed|done]] --[[Joey]]

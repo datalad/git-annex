@@ -266,7 +266,8 @@ gitAnnexTmpOtherDir r = addTrailingPathSeparator $ gitAnnexDir r </> "othertmp"
 gitAnnexTmpOtherLock :: Git.Repo -> FilePath
 gitAnnexTmpOtherLock r = gitAnnexDir r </> "othertmp.lck"
 
-{- Tmp directory used by old versions of git-annex. -}
+{- .git/annex/misctmp/ was used by old versions of git-annex and is still
+ - used during initialization -}
 gitAnnexTmpOtherDirOld :: Git.Repo -> FilePath
 gitAnnexTmpOtherDirOld r = addTrailingPathSeparator $ gitAnnexDir r </> "misctmp"
 

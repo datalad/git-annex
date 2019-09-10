@@ -166,7 +166,7 @@ isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersi
 {- A crippled filesystem is one that does not allow making symlinks,
  - or removing write access from files. -}
 probeCrippledFileSystem :: Annex Bool
-probeCrippledFileSystem = withOtherTmp $ \tmp -> do
+probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
 	(r, warnings) <- liftIO $ probeCrippledFileSystem' tmp
 	mapM_ warning warnings
 	return r
@@ -229,7 +229,7 @@ probeLockSupport = do
 #ifdef mingw32_HOST_OS
 	return True
 #else
-	withOtherTmp $ \tmp -> do
+	withEventuallyCleanedOtherTmp $ \tmp -> do
 		let f = tmp </> "lockprobe"
 		mode <- annexFileMode
 		liftIO $ do
@@ -247,7 +247,7 @@ probeFifoSupport = do
 #ifdef mingw32_HOST_OS
 	return False
 #else
-	withOtherTmp $ \tmp -> do
+	withEventuallyCleanedOtherTmp $ \tmp -> do
 		let f = tmp </> "gaprobe"
 		let f2 = tmp </> "gaprobe2"
 		liftIO $ do

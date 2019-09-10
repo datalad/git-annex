@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-09-10T16:28:12Z"
+ content="""
+Thanks for the bisection. It's not the init code that's
+trying and failing to set a lock, but the misctmp cleanup code. Which is
+ironically now used in setting up the temp directory that init uses to
+probe for locking problems. Chicken and egg problem.
+
+Committed a fix.
+"""]]

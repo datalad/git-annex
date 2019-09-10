@@ -25,6 +25,8 @@ git-annex (7.20190826) UNRELEASED; urgency=medium
     in working tree.
   * Avoid making a commit when upgrading from direct mode to v7.
   * init: Catch more exceptions when testing locking.
+  * init: Fix a reversion that broke initialization on systems that
+    need to use pid locking.
 
  -- Joey Hess <id@joeyh.name>  Sat, 24 Aug 2019 12:54:35 -0400
 
