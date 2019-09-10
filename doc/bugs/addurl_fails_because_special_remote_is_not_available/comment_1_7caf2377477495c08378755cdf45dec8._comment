@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2019-09-02T15:49:57Z"
+ content="""
+Post the trace (with `git annex --debug --verbose`) and your config files (`git config --list`)?  (Redact any sensitive info).  Maybe, `annex.security.allowed-ip-addresses` excludes the IP address of the URL, so the built-in web remote never gets a chance to claim the URL?  I recall running into something like you describe, and the issue was with some config setting I had.
+"""]]

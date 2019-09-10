@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-09-10T18:36:06Z"
+ content="""
+It seems that the file stored in the remote must have either been deleted
+by something, or possibly gotten corrupted. But probably deleted I think,
+because a corrupted file would have a different error message.
+
+Lot of possible ways a file could get deleted. Perhaps StorageBox is
+storing the files as file on the filesystem, and had a disk problem that
+caused fsck to move the file to lost+found. Could happen, disks fail.
+
+Another way would be, if you had made a clone of your git-annex repository,
+and enabled StorageBox in there, and done a `git annex move --from
+StorageBox`. Then the clone would know it had the copy and StorageBox no
+longer did, but until that clone's git-annex branch is pushed out to other
+repositories, they will think StorageBox still has the copy, and fail like
+you showed.
+
+git-annex fsck exists because of these kinds of situations, and gets things
+back to a correct state. But it makes sense to investigate what happened.
+"""]]

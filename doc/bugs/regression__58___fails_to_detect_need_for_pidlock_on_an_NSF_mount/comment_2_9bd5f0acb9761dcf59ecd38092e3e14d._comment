@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2019-08-31T13:00:57Z"
+ content="""
+I have ran git bisect, didn't double check but it points to
+
+[[!format sh \"\"\"
+...
+running /home/bids/git-annexes/datalad/tools/bisect-git-annex /home/bids/datalad-datalad-master-git-annex-dev.simg /home/bids/git-annexes/datalad/tools/bisect-git-annex.scripts/bisect-nfs-lock.sh
+I: cleaning /home/bids/git-annexes/git-annex
+I: building 7.20181211-248-gd5f246370
+I: running the script
+Initialized empty Git repository in /inbox/BIDS/.git/tmp/repo/.git/
+init
+git-annex: waitToSetLock: resource exhausted (No locks available)
+failed
+git-annex: init: 1 failed
+d5f2463702a7cd8e56ea000e21bfe5d4ba9cd386 is the first bad commit
+commit d5f2463702a7cd8e56ea000e21bfe5d4ba9cd386
+Author: Joey Hess <joeyh@joeyh.name>
+Date:   Thu Jan 17 15:40:44 2019 -0400
+    
+    misctmp cleanup
+    
+    * Switch to using .git/annex/othertmp for tmp files other than partial
+      downloads, and make stale files left in that directory when git-annex
+      is interrupted be cleaned up promptly by subsequent git-annex processes.
+    * The .git/annex/misctmp directory is no longer used and git-annex will
+      delete anything lingering in there after it's 1 week old.
+    
+    Also, in Annex.Ingest, made the filename it uses in the tmp dir be
+    prefixed with \"ingest-\" to avoid potentially using a filename used by
+    some other code.
+
+:040000 040000 3a3f3af1c5222bb96684c79b9bccc20b3ff266a2 24efba74a2b6e4a361e300f32325fafba76b8243 M      Annex
+:040000 040000 193fa3b2bc663031a0e387e921c720e022daabbc 6a0081f3e1df14a182416e734eedb0a2d8bdd46d M      Assistant
+:100644 100644 d313f9ee315a095e992b729f0d7001e14f413aee f5c5f511d85ffb52c303d1b718fc62e5179b66f9 M      CHANGELOG
+:040000 040000 432613892dd51d2ebb804f11c96d1d2c7956dab7 9bcbedc855d35faeeaf9b6d74cc2f48c48d8d764 M      Command
+:040000 040000 0d4841d00ee7ec5b59037ac2c37ab10482359671 0b12fe02a9028e3a7a083fd3dfdc01bf38a8626e M      Remote
+:100644 100644 555166e29905dca5984403500528d4594b4b7bb6 8f9c460306db4c9f3abed23d9181a10f20b42b77 M      Test.hs
+:040000 040000 2eb286c09f87da53c2377cc60b75c2c49fcd049a 33adb5b5e5b8a33b2012345b73f00eb094afd42c M      Types
+:040000 040000 0406fc6fff2205a48d6a215cf18dba2c682de99e a688ce72ede0bbb71b7e2f1f6a811602ee333a16 M      doc
+:100644 100644 839b469b5cea11a65f20652963fea316be367c93 ff2db6e39cee114d8bd386873b0dba6f89e4d4d1 M      git-annex.cabal
+bisect run success
+\"\"\"]]
+may be that gives ideas? (build env was the same, freshly regenerated buster singularity image available via `singularity pull shub://datalad/datalad:git-annex-dev`
+"""]]

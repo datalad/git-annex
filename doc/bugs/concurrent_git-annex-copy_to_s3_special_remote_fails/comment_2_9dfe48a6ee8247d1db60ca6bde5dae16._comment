@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="another trace of concurrent copy failure"
+ date="2019-09-05T06:09:13Z"
+ content="""
+Some more concurrent copy failures when non-concurrent works:
+
+[[!format sh \"\"\"
+(master_env_v156_py36) 23:35  [viral-ngs-benchmarks] $ git annex copy -J16 --to viral-ngs-benchmarks-s3 --not --in=viral-ngs-benchmark\
+s-s3 --and --not --in=mygs --and --not --in=dnanexus
+copy benchmarks/intermed/analysis-FBGGXX00YJ80114YGQ0yKzFG/benchmark_variants/v1.23.0_spades-3.13.0/files/calls/assemble_denovo/assemb\
+le/0/outputs/subsampBam/LASV_NGA_2016_0014.ll2.subsamp.bam (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...) ok
+copy benchmarks/intermed/analysis-FBGGXX00YJ80114YGQ0yKzFG/benchmark_variants/v1.23.0_spades-3.13.0/files/calls/assemble_denovo/refine\
+_2x_and_plot/0/outputs/aligned_bam_idx/LASV_NGA_2016_0014.ll2.all.bai (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s\
+3...) ok
+copy benchmarks/intermed/analysis-FBGGXX00YJ80114YGQ0yKzFG/benchmark_variants/v1.23.0_spades-3.13.0/files/calls/assemble_denovo/refine\
+_2x_and_plot/0/outputs/aligned_only_reads_bam/LASV_NGA_2016_0014.ll2.mapped.bam (checking viral-ngs-benchmarks-s3...) (to viral-ngs-be\
+nchmarks-s3...) ok
+...
+
+copy benchmarks/intermed/analysis-FBGGXX00YJ80114YGQ0yKzFG/benchmark_variants/v1.23.0_spades-3.13.0/cromwell_submit_output.txt (checki\
+ng viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...)
+  S3Error {s3StatusCode = Status {statusCode = 403, statusMessage = \"Forbidden\"}, s3ErrorCode = \"SignatureDoesNotMatch\", s3ErrorMessag\
+e = \"The request signature we calculated does not match the signature you provided. Check your key and signing method.\", s3ErrorResour\
+ce = Nothing, s3ErrorHostId = Just \"7uk2qBwWawhwYhROH7SzY+i3Y/49OQ9OiIT81eRkoEvZowo56xVkATE9qPU4Zs78x4C7gPsu744=\", s3ErrorAccessKeyId \
+= Just \"AKIAXXXXXXXXXXXXXXX\", s3ErrorStringToSign = Just \"PUT\n\nin\nThu, 05 Sep 2019 03:35:47 GMT\nx-amz-storage-class:STANDARD\n/vi\
+ral-ngs-benchmarks/MD5E-s628-S16777216-C1--065d8c01e5f7bd3b997c6d24109005c7.txt\", s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothin\
+g, s3ErrorEndpoint = Nothing}
+ok
+
+...
+copy benchmarks/intermed/analysis-FBGGXX00YJ80114YGQ0yKzFG/benchmark_variants/v1.23.0_spades/files/calls/assemble_denovo/refine_2x_and\
+_plot/0/outputs/aligned_only_reads_bam/LASV_NGA_2016_0014.ll2.mapped.bam (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmark\
+s-s3...) ok
+copy benchmarks/intermed/analysis-FBGGXX00YJ80114YGQ0yKzFG/benchmark_variants/v1.23.0_spades/files/calls/assemble_denovo/assemble/0/st\
+dout/stdout (checking viral-ngs-benchmarks-s3...) (to viral-ngs-benchmarks-s3...) ok
+double free or corruption (out)
+error: git-annex died of signal 6
+(master_env_v156_py36) 23:35  [viral-ngs-benchmarks] $ git annex copy  --to viral-ngs-benchmarks-s3 --not --in=viral-ngs-benchmarks-s3\
+ --and --not --in=mygs --and --not --in=dnanexus
+...
+(recording state in git...)
+(master_env_v156_py36) 01:17  [viral-ngs-benchmarks] $ echo $?
+0
+
+
+
+\"\"\"]]
+"""]]

@@ -23,11 +23,14 @@ git-annex (7.20190826) UNRELEASED; urgency=medium
   * info: When file matching options are specified when getting
     info of something other than a directory, they won't have any effect,
     so error out to avoid confusion.
+  * info: Display trust level when getting info on a uuid, same as on a remote.
   * When upgrading a direct mode repo to v7 with adjusted unlocked branches,
     fix a bug that prevented annex.thin from taking effect for the files
     in working tree.
   * Avoid making a commit when upgrading from direct mode to v7.
   * init: Catch more exceptions when testing locking.
+  * init: Fix a reversion that broke initialization on systems that
+    need to use pid locking.
 
  -- Joey Hess <id@joeyh.name>  Sat, 24 Aug 2019 12:54:35 -0400
 

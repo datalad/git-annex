@@ -1,0 +1,42 @@
+I'm running three repositories (laptop, usb connected to laptop, local server) that are connected via ssh access.
+Running the webapp on both laptop and server, I'm quite frequently seeing in both webapps:
+
+     warning
+    Pusher crashed: fd:56: hPutStr: illegal operation (handle is closed)
+
+Pushing the "Restart thread" button sometimes dismisses the warning, sometimes it immediatly comes back even when trying several times.
+A similar warning sometimes shows up for a Netwatcher thread.
+
+Not sure but when that crash occurs tranfers between the repos seem to get stalled.
+
+Server: git-annex 7.20190129-2~bpo9+1 on debian stretch
+Laptop: git-annex 7.20190129-3 on debian testing
+
+
+Log snippet:
+
+[[!format sh """
+[2019-09-07 14:10:30.330041206] Committer: Adding jmg_0578.jpg5895 jmg_0578.jpg
+add incoming/5d/jmg_0578.jpg [2019-09-07 14:10:30.358484399] Committer: Committing changes to git
+(recording state in git...)
+[2019-09-07 14:13:01.986780732] Pusher: Syncing with usbimg, cube_media_srv_img 
+Pusher crashed: fd:56: hPutStr: illegal operation (handle is closed)
+[2019-09-07 14:13:02.009823288] Pusher: warning Pusher crashed: fd:56: hPutStr: illegal operation (handle is closed)
+[2019-09-07 14:13:49.112731437] RemoteControl: Syncing with cube_media_srv_img 
+(merging synced/git-annex into git-annex...)
+fd:56: hPutStr: illegal operation (handle is closed)
+fd:56: hPutStr: illegal operation (handle is closed)
+From ssh://git-annex-cube-flixh_22_.2Fmedia.2Fsrv.2Fimg/media/srv/img
+   3c9104b770..cea5c2f058  annex/direct/master -> cube_media_srv_img/annex/direct/master
+   71006e08a7..536584bdfa  git-annex  -> cube_media_srv_img/git-annex
+fd:56: hPutStr: illegal operation (handle is closed)
+[2019-09-07 14:15:58.002820518] Committer: Adding jmg_0592...ftool_tmp
+[2019-09-07 14:15:59.526375687] Committer: Adding jmg_0592...ftool_tmp jmg_0592.cr2
+add incoming/5d/jmg_0592.cr2 [2019-09-07 14:15:59.599057025] Committer: Committing changes to git
+(recording state in git...)
+[2019-09-07 14:15:59.670107852] Pusher: Syncing with usbimg, cube_media_srv_img 
+Pusher crashed: fd:56: hPutStr: illegal operation (handle is closed)
+[2019-09-07 14:15:59.683904185] Pusher: warning Pusher crashed: fd:56: hPutStr: illegal operation (handle is closed)
+[2019-09-07 14:18:09.282924907] Committer: Adding CI1026+1375.JPG5895
+
+"""]]

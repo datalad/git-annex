@@ -271,7 +271,6 @@ file_stats f k =
 remote_fast_stats :: Remote -> [Stat]
 remote_fast_stats r = map (\s -> s r)
 	[ remote_name
-	, remote_trust
 	, remote_cost
 	, remote_type
 	]
@@ -280,6 +279,7 @@ uuid_fast_stats :: UUID -> [Stat]
 uuid_fast_stats u = map (\s -> s u)
 	[ repo_uuid
 	, repo_description
+	, repo_trust
 	]
 
 uuid_slow_stats :: UUID -> [Stat]
@@ -347,9 +347,8 @@ repo_description = simpleStat "description" . lift . Remote.prettyUUID
 repo_uuid :: UUID -> Stat
 repo_uuid = simpleStat "uuid" . pure . fromUUID
 
-remote_trust :: Remote -> Stat
-remote_trust r = simpleStat "trust" $ lift $
-	showTrustLevel <$> lookupTrust (Remote.uuid r)
+repo_trust :: UUID -> Stat
+repo_trust u = simpleStat "trust" $ lift $ showTrustLevel <$> lookupTrust u
 
 remote_cost :: Remote -> Stat
 remote_cost r = simpleStat "cost" $ pure $

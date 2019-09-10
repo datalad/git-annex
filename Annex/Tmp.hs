@@ -7,9 +7,8 @@
 
 module Annex.Tmp where
 
-import Common
-import Annex
-import Annex.Locations
+import Annex.Common
+import qualified Annex
 import Annex.LockFile
 import Annex.Perms
 import Types.CleanupActions
@@ -24,12 +23,29 @@ import Data.Time.Clock.POSIX
 -- any time.
 withOtherTmp :: (FilePath -> Annex a) -> Annex a
 withOtherTmp a = do
-	addCleanup OtherTmpCleanup cleanupOtherTmp
+	Annex.addCleanup OtherTmpCleanup cleanupOtherTmp
 	tmpdir <- fromRepo gitAnnexTmpOtherDir
 	tmplck <- fromRepo gitAnnexTmpOtherLock
 	withSharedLock (const tmplck) $ do
 		void $ createAnnexDirectory tmpdir
 		a tmpdir
+
+-- | This uses an alternate temp directory. The action should normally
+-- clean up whatever files it writes there, but if it leaves files
+-- there (perhaps due to being interrupted), the files will be eventually
+-- cleaned up by another git-annex process (after they're a week old).
+--
+-- Unlike withOtherTmp, this does not rely on locking working.
+-- Its main use is in situations where the state of lockfile is not
+-- determined yet, eg during initialization.
+withEventuallyCleanedOtherTmp :: (FilePath -> Annex a) -> Annex a
+withEventuallyCleanedOtherTmp = bracket setup cleanup
+  where
+	setup = do
+		tmpdir <- fromRepo gitAnnexTmpOtherDirOld
+		void $ createAnnexDirectory tmpdir
+		return tmpdir
+	cleanup = liftIO . void . tryIO . removeDirectory 
 
 -- | Cleans up any tmp files that were left by a previous
 -- git-annex process that got interrupted or failed to clean up after
@@ -42,8 +58,6 @@ cleanupOtherTmp = do
 	void $ tryIO $ tryExclusiveLock (const tmplck) $ do
 		tmpdir <- fromRepo gitAnnexTmpOtherDir
 		void $ liftIO $ tryIO $ removeDirectoryRecursive tmpdir
-		-- This is only to clean up cruft left by old versions of
-		-- git-annex; it can be removed eventually.
 		oldtmp <- fromRepo gitAnnexTmpOtherDirOld
 		liftIO $ mapM_ cleanold =<< dirContentsRecursive oldtmp
 		liftIO $ void $ tryIO $ removeDirectory oldtmp -- when empty

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="archaeological expedition summary"
+ date="2019-09-09T12:53:16Z"
+ content="""
+just notes on the mystery on why didn't trigger before:
+- example shown above was triggered by a `test_create_with_obscure_name` which was added only recently in 0.11.7~13^2~2
+- (here I was going to provide analysis for other tests, but ran out of time... ;))
+"""]]

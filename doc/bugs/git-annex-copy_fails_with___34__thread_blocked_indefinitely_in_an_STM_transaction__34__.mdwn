@@ -1,0 +1,56 @@
+### Please describe the problem.
+`git-annex-copy` fails after a short time with the message "thread blocked indefinitely in an STM transaction".  Re-running it brings the same problem.
+
+### What steps will reproduce the problem?
+
+See below
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+(master_env_v156_py36) 14:22  [viral-ngs-benchmarks] $ git annex version
+git-annex version: 7.20190819-ge4cecf8
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sql\
+ite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_2\
+24 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE\
+2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224\
+ BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+(master_env_v156_py36) 14:24  [viral-ngs-benchmarks] $ uname -a
+Linux ip-172-31-81-103.ec2.internal 4.14.138-114.102.amzn2.x86_64 #1 SMP Thu Aug 15 15:29:58 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+(master_env_v156_py36) 14:24  [viral-ngs-benchmarks] $
+
+"""]]
+
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+(master_env_v156_py36) 14:18  [viral-ngs-benchmarks] $ git annex --debug --verbose copy -J1 --not --in dnanexus --and --not --in mygs \
+--to viral-ngs-benchmarks-s3 --json --json-error-messages > tmp/copy.out.txt 2> tmp/copy.err.txt
+  C-c C-c
+(master_env_v156_py36) 14:22  [viral-ngs-benchmarks] $ git annex copy -J1 --not --in dnanexus --and --not --in mygs --to viral-ngs-ben\
+chmarks-s3 --json --json-error-messages > tmp/copy.out.txt 2> tmp/copy.err.txt
+(master_env_v156_py36) 14:22  [viral-ngs-benchmarks] $ echo $?
+1
+(master_env_v156_py36) 14:22  [viral-ngs-benchmarks] $ cat tmp/copy.err.txt
+git-annex: thread blocked indefinitely in an STM transaction
+git-annex: thread blocked indefinitely in an STM transaction
+(
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

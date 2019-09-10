@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="johnmario.itec19@69a7b742534851b36216e0f951f1a00dbb9067cd"
+ nickname="johnmario.itec19"
+ avatar="http://cdn.libravatar.org/avatar/2f07ffce1656bdcd6aa19aaab7517975"
+ subject="commenting on git-annex-add"
+ date="2019-09-02T06:21:27Z"
+ content="""
+Yes you can do that. Simplest way is to git add the files you want to directly be in the git repo (e.g. the source code) and git annex add the large files.
+
+You can then check in any changes to the source code files (or anything else you added with git add) to github as normal.
+
+You can manage the storage and versioning of the large files using git annex commands. Git annex supports using AWS S3 and/or glacier for backing up the files. It can also back them up to a server you control over ssh or to an external drive (or any combination of the above). http://git-annex.branchable.com/special_remotes/
+
+With the latest version of git annex, you can also set up automatically filters that decide which types/sizes of files to check in directly to git vs which ones to store as links in the annex. https://git-annex.branchable.com/tips/largefiles/
+For more tech related assistance or support <a href=\"https://uaedatarecovery.com/data-recovery-dubai/\">Data Recovery Dubai</a>
+"""]]

@@ -1,0 +1,1 @@
+Have others experienced frequent failures of parallel/concurrent git-annex operations, like ones described in [[bugs/concurrent_git-annex-copy_to_s3_special_remote_fails/]] and [[bugs/parallel_copy_fails/]]?  I'm trying to understand if there is something specific to my system that makes these failures more likely.  Thanks!

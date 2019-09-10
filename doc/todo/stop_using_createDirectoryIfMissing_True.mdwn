@@ -18,8 +18,9 @@ a new empty directory in its place and start putting files in there.
 
 * Odd behavior has been reported if the repository is deleted while
   git-annex is running it it. Including a git-annex seeming to hang or
-  spin. I have not reproduced that, but I did see git-annex re-create the
-  directories and get fairly confused. The sooner git-annex gives up in
+  spin. <https://github.com/datalad/datalad/issues/3613>
+  
+  The sooner git-annex gives up in
   such a situation, the less likely it is do get into an unusual state.
 
 What's needed is an action that creates directories only up to a given

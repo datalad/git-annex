@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="TroisSinges"
+ avatar="http://cdn.libravatar.org/avatar/f4c62f9ebe09016b8852b04f1dd6612f"
+ subject="comment 4"
+ date="2019-09-05T19:12:30Z"
+ content="""
+Thanks Joey for your answer. However, even if directories are indeed totally virtual in S3, file paths are split using \"/\" characters when using S3 web console, for example (it's the same for Wasabi, for example). It's quite convenient!
+
+Moreover, some S3-compatible services do create directories using \"/\" delimiters.
+"""]]

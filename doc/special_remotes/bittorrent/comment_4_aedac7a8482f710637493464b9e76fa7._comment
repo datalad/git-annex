@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-09-06T15:57:45Z"
+ content="""
+annex.security.allowed-url-schemes can be configured to allow using file:
+urls.
+
+However, adding a temp file as an url does not seem very useful. Seems
+that a much more typical bittorrent way to go would be to find or 
+generate a magnet: url for the torrent.
+"""]]
