@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2019-09-10T18:33:51Z"
- content="""
-What does this output? `git annex info StorageBox`
-"""]]
