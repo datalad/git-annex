@@ -458,8 +458,9 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 		| remoteAnnexReadOnly gc = return False
 		| not (remoteAnnexPush gc) = return False
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
-	-- Do updateInstead emulation for remotes on eg removable drives
-	-- formatted FAT, where the post-receive hook won't run.
+	-- Older remotes on crippled filesystems may not have a
+	-- post-receive hook set up, so when updateInstead emulation
+	-- is needed, run post-receive manually.
 	postpushupdate repo = case Git.repoWorkTree repo of
 		Nothing -> return True
 		Just wt -> ifM needemulation
