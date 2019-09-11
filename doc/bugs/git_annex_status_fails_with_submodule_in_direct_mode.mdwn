@@ -55,3 +55,5 @@ operating system: linux x86_64
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! I think it's a great piece of software!
+
+> direct mode has been removed from git-annex, so [[done]] --[[Joey]]

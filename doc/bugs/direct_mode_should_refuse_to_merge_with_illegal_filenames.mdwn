@@ -36,3 +36,5 @@ Alternatively, git-annex could learn/probe the full set of characters not allowe
 
 [[!tag confirmed]]
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed. [[done]] --[[Joey]]

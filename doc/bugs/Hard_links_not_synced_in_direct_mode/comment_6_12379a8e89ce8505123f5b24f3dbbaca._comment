@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2019-09-11T17:24:38Z"
+ content="""
+This bug is not specific to direct mode; in v7 adjusted unlocked branch
+the assistant behaves the same as it did in my last comment above.
+"""]]

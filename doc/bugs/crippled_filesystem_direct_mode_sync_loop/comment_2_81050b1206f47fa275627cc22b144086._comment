@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-11T17:30:11Z"
+ content="""
+I have also seen sync loops in direct mode repos not on NTFS.
+
+git-annex has not supported direct mode on NTFS since earlier this year,
+and now direct mode support has been removed entirely, replaced with v7
+adjusted unlocked branches. I tried replicating this bug on NTFS using
+those, and the syncs quieted down immediately after changes stopped being
+made.
+
+So, closing this bug.
+"""]]

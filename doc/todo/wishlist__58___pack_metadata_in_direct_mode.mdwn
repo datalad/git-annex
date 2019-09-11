@@ -3,3 +3,7 @@ The metadata storage for direct mode (V3) is this. In directory .git/annex/objec
 It would be great if these files are packed, maybe also in the git pack files format.
 
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed. Its replacement, v7 unlocked, does use a
+> sqlite database that packs all the metadata in one place. [[done]]
+> --[[Joey]]
