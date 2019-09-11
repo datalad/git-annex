@@ -65,3 +65,5 @@ LC_ALL=C
 </details>
 
 [[!meta author=yoh]]
+
+> fixed in the haskell process library. [[done]] --[[Joey]]

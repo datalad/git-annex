@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""fixed in process"""
+ date="2019-09-11T17:06:53Z"
+ content="""
+I've gotten the process library fixed, the version will probably be
+process-1.6.5.2.
+
+Doesn't seem to make sense to make git-annex require the fixed version,
+just use it when available. So closing this issue.
+"""]]
