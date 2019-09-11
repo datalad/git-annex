@@ -22,7 +22,6 @@ import Git
 import Git.Command
 import Git.Sha
 import Utility.Batch
-import qualified Git.Version
 
 import qualified Data.Set as S
 import Control.Concurrent.Async
@@ -73,9 +72,7 @@ instance Monoid FsckOutput where
  -}
 findBroken :: Bool -> Repo -> IO FsckResults
 findBroken batchmode r = do
-	supportsNoDangling <- (>= Git.Version.normalize "1.7.10")
-		<$> Git.Version.installed
-	let (command, params) = ("git", fsckParams supportsNoDangling r)
+	let (command, params) = ("git", fsckParams r)
 	(command', params') <- if batchmode
 		then toBatchCommand (command, params)
 		else return (command, params)
@@ -86,8 +83,8 @@ findBroken batchmode r = do
 			, std_err = CreatePipe
 			}
 	(o1, o2) <- concurrently
-		(parseFsckOutput maxobjs r supportsNoDangling (stdoutHandle p))
-		(parseFsckOutput maxobjs r supportsNoDangling (stderrHandle p))
+		(parseFsckOutput maxobjs r (stdoutHandle p))
+		(parseFsckOutput maxobjs r (stderrHandle p))
 	fsckok <- checkSuccessProcess pid
 	case mappend o1 o2 of
 		FsckOutput badobjs truncated
@@ -120,15 +117,15 @@ knownMissing (FsckFoundMissing s _) = s
 findMissing :: [Sha] -> Repo -> IO MissingObjects
 findMissing objs r = S.fromList <$> filterM (`isMissing` r) objs
 
-parseFsckOutput :: Int -> Repo -> Bool -> Handle -> IO FsckOutput
-parseFsckOutput maxobjs r supportsNoDangling h = do
+parseFsckOutput :: Int -> Repo -> Handle -> IO FsckOutput
+parseFsckOutput maxobjs r h = do
 	ls <- lines <$> hGetContents h
 	if null ls
 		then return NoFsckOutput
 		else if all ("duplicateEntries" `isInfixOf`) ls
 			then return AllDuplicateEntriesWarning
 			else do
-				let shas = findShas supportsNoDangling ls
+				let shas = findShas ls
 				let !truncated = length shas > maxobjs
 				missingobjs <- findMissing (take maxobjs shas) r
 				return $ FsckOutput missingobjs truncated
@@ -141,18 +138,14 @@ isMissing s r = either (const True) (const False) <$> tryIO dump
 		, Param (fromRef s)
 		] r
 
-findShas :: Bool -> [String] -> [Sha]
-findShas supportsNoDangling = catMaybes . map extractSha . concat . map words . filter wanted
+findShas :: [String] -> [Sha]
+findShas = catMaybes . map extractSha . concat . map words . filter wanted
   where
-	wanted l
-		| supportsNoDangling = True
-		| otherwise = not ("dangling " `isPrefixOf` l)
+	wanted l = not ("dangling " `isPrefixOf` l)
 
-fsckParams :: Bool -> Repo -> [CommandParam]
-fsckParams supportsNoDangling = gitCommandLine $ map Param $ catMaybes
-	[ Just "fsck"
-	, if supportsNoDangling
-		then Just "--no-dangling"
-		else Nothing
-	, Just "--no-reflogs"
+fsckParams :: Repo -> [CommandParam]
+fsckParams = gitCommandLine $ map Param
+	[ "fsck"
+	, "--no-dangling"
+	, "--no-reflogs"
 	]

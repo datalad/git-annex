@@ -12,7 +12,6 @@ import Git.Config
 import Types.GitConfig
 import Config.Files
 import qualified Git
-import qualified Git.BuildVersion
 import Utility.Path
 import Utility.SafeCommand
 import Utility.Directory
@@ -42,10 +41,8 @@ fixupRepo r c = do
 {- Disable git's built-in wildcard expansion, which is not wanted
  - when using it as plumbing by git-annex. -}
 disableWildcardExpansion :: Repo -> Repo
-disableWildcardExpansion r
-	| Git.BuildVersion.older "1.8.1" = r
-	| otherwise = r
-		{ gitGlobalOpts = gitGlobalOpts r ++ [Param "--literal-pathspecs"] }
+disableWildcardExpansion r = r
+	{ gitGlobalOpts = gitGlobalOpts r ++ [Param "--literal-pathspecs"] }
 
 {- Direct mode repos have core.bare=true, but are not really bare.
  - Fix up the Repo to be a non-bare repo, and arrange for git commands

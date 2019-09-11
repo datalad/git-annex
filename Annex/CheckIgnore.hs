@@ -19,23 +19,19 @@ import qualified Annex
 checkIgnored :: FilePath -> Annex Bool
 checkIgnored file = go =<< checkIgnoreHandle
   where
-	go Nothing = return False
-	go (Just h) = liftIO $ Git.checkIgnored h file
+	go h = liftIO $ Git.checkIgnored h file
 
-checkIgnoreHandle :: Annex (Maybe Git.CheckIgnoreHandle)
+checkIgnoreHandle :: Annex Git.CheckIgnoreHandle
 checkIgnoreHandle = maybe startup return =<< Annex.getState Annex.checkignorehandle
   where
 	startup = do
-		v <- inRepo Git.checkIgnoreStart
-		when (isNothing v) $
-			warning "The installed version of git is too old for .gitignores to be honored by git-annex."
-		Annex.changeState $ \s -> s { Annex.checkignorehandle = Just v }
-		return v
+		h <- inRepo Git.checkIgnoreStart
+		Annex.changeState $ \s -> s { Annex.checkignorehandle = Just h }
+		return h
 
 checkIgnoreStop :: Annex ()
 checkIgnoreStop = maybe noop stop =<< Annex.getState Annex.checkignorehandle
   where
-	stop (Just h) = do
+	stop h = do
 		liftIO $ Git.checkIgnoreStop h
 		Annex.changeState $ \s -> s { Annex.checkignorehandle = Nothing }
-	stop Nothing = noop
