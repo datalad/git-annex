@@ -1,4 +1,4 @@
-git-annex (7.20190826) UNRELEASED; urgency=medium
+git-annex (7.20190912) UNRELEASED; urgency=medium
 
   * Default to v7 for new repositories.
   * Automatically upgrade v5 repositories to v7.
@@ -8,6 +8,7 @@ git-annex (7.20190826) UNRELEASED; urgency=medium
     to prevent any automatic repository upgrades.
   * Refuse to upgrade direct mode repositories when git is older than 2.22,
     which fixed a memory leak that could cause an OOM during the upgrade.
+  * Removed support for git versions older than 2.1.
   * assistant: When creating a new repository, no longer use direct
     mode, instead use v7 adjusted branches with annex.thin.
   * init: When run on a crippled filesystem with --version=5,
@@ -23,7 +24,7 @@ git-annex (7.20190826) UNRELEASED; urgency=medium
   * info: When file matching options are specified when getting
     info of something other than a directory, they won't have any effect,
     so error out to avoid confusion.
-  * info: Display trust level when getting info on a uuid, same as on a remote.
+  * info: Display trust level when getting info on a uuid, same as a remote.
   * When upgrading a direct mode repo to v7 with adjusted unlocked branches,
     fix a bug that prevented annex.thin from taking effect for the files
     in working tree.
@@ -31,7 +32,6 @@ git-annex (7.20190826) UNRELEASED; urgency=medium
   * init: Catch more exceptions when testing locking.
   * init: Fix a reversion that broke initialization on systems that
     need to use pid locking.
-  * Removed support for git versions older than 2.1.
 
  -- Joey Hess <id@joeyh.name>  Sat, 24 Aug 2019 12:54:35 -0400
 
