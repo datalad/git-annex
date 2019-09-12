@@ -179,9 +179,9 @@ linuxstandalone:
 	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
 	cd tmp && tar c git-annex.linux | gzip -9 --rsyncable > git-annex-standalone-$(shell dpkg --print-architecture).tar.gz
 
-# Run this target to build git-annex-standalone*.deb
+# Run this target to build git-annex-standalone.deb
 debianstandalone: dpkg-buildpackage-F
-# Run this target to build git-annex-standalone*.dsc
+# Run this target to build git-annex-standalone.dsc
 debianstandalone-dsc: dpkg-buildpackage-S
 
 prep-standalone:

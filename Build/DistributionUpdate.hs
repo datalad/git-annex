@@ -5,6 +5,9 @@
  - Generates info files, containing the version (of the corresponding file
  - from the autobuild).
  -
+ - Builds standalone rpms from the standalone tarballs, and populates
+ - a rpm package repository with them using the createrepo program.
+ -
  - Also gpg signs the files.
  -}
 
@@ -44,15 +47,46 @@ autobuilds =
 		)
 	autobuild f = "https://downloads.kitenet.net/git-annex/autobuild/" ++ f
 
+-- Names of architectures in standalone tarballs and the corresponding
+-- rpm architecture.
+tarrpmarches :: [(String, String)]
+tarrpmarches =
+	[ ("i386", "i386")
+	, ("amd64", "x86_64")
+	, ("arm64", "aarch64")
+	]
+
+buildrpms :: FilePath -> [(FilePath, Version)] -> Annex ()
+buildrpms topdir l = do
+	liftIO $ createDirectoryIfMissing True rpmrepo
+	forM_ tarrpmarches $ \(tararch, rpmarch) ->
+		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) ->
+			void $ liftIO $ boolSystem script 
+				[ Param rpmarch
+				, File tarball
+				, Param v
+				, File rpmrepo
+				]
+	void $ liftIO $ boolSystem "createrepo" [File rpmrepo]
+	void $ inRepo $ runBool [Param "annex", Param "add", File rpmrepo]
+  where
+	isstandalonetarball tararch f =
+		("git-annex-standalone-" ++ tararch ++ ".tar.gz") `isSuffixOf` f
+	script = topdir </> "standalone" </> "rpm" </> "rpmbuild-from-standalone-tarball"
+	rpmrepo = "git-annex/linux/current/rpms"
+
 main :: IO ()
 main = do
 	useFileSystemEncoding
-	version <- liftIO getChangelogVersion
+	version <- getChangelogVersion
 	repodir <- getRepoDir
+	topdir <- getCurrentDirectory
 	changeWorkingDirectory repodir
 	updated <- catMaybes <$> mapM (getbuild repodir) autobuilds
 	state <- Annex.new =<< Git.Construct.fromPath "."
-	Annex.eval state (makeinfos updated version)
+	Annex.eval state $ do
+		buildrpms topdir updated
+		makeinfos updated version
 
 -- Download a build from the autobuilder, virus check it, and return its
 -- version.

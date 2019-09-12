@@ -1,0 +1,38 @@
+#!/bin/sh
+# Create a standalone rpm from a standalone tarball.
+# 
+# This can build a rpm for any architecture you have a standalone tarball
+# for, and does not need to be run on a machine of the same architecture.
+set -e
+rpmarch="$1"
+tarball="$2"
+version="$(echo "$3" | sed 's/-.*//')"
+release=1
+rpmrepo="$4"
+if [ -z "$rpmarch" ] || [ -z "$tarball" ] || [ -z "$version" ] || [ -z "$rpmrepo" ]; then
+	echo "usage: rpmbuild-from-standalone-tarball rpmarch file.tar.gz version rpmrepo"
+fi
+
+basedir="$(dirname "$0")"
+
+tmpdir=$(mktemp -d)
+trap cleanup exit
+cleanup () {
+	rm -rf "$tmpdir"
+}
+
+cat "$tarball" | (cd "$tmpdir" && tar zx)
+buildroot="$tmpdir/rpmbuild"
+mkdir -p "$buildroot"
+
+rpmbuild \
+	--buildroot="$buildroot" \
+	--define="_rpmdir `pwd`" \
+	--define="_rpmfilename git-annex-standalone.rpm" \
+	--define="version $version" \
+	--define="release $release" \
+	--target="$rpmarch" \
+	-bb "$basedir/git-annex-standalone.spec" \
+	--quiet
+package="git-annex-standalone-$version-$release.$rpmarch.rpm"
+mv git-annex-standalone.rpm "$rpmrepo/$package"
