@@ -48,10 +48,10 @@ import Annex.Perms
 import Utility.FileMode
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
+import Data.Either
 #endif
 
 import qualified Data.Map as M
-import Data.Either
 
 checkCanInitialize :: Annex a -> Annex a
 checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case

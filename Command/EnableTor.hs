@@ -41,7 +41,11 @@ seek = withWords (commandAction . start)
 -- This runs as root, so avoid making any commits or initializing
 -- git-annex, or doing other things that create root-owned files.
 start :: [String] -> CommandStart
+#ifndef mingw32_HOST_OS
 start os = do
+#else
+start _os = do
+#endif
 	uuid <- getUUID
 	when (uuid == NoUUID) $
 		giveup "This can only be run in a git-annex repository."

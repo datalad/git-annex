@@ -42,7 +42,6 @@ import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
 import Utility.Metered
 import Utility.CopyFile
-import Utility.FileMode
 import Utility.Env
 import Utility.Batch
 import Utility.SimpleProtocol
@@ -60,6 +59,10 @@ import Creds
 import Types.NumCopies
 import Annex.Action
 import Messages.Progress
+
+#ifndef mingw32_HOST_OS
+import Utility.FileMode
+#endif
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -719,13 +722,14 @@ newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 {- Copys a file. Uses copy-on-write if it is supported. Otherwise,
  - uses rsync, so that interrupted copies can be resumed. -}
 rsyncOrCopyFile :: State -> [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
-rsyncOrCopyFile st rsyncparams src dest p =
 #ifdef mingw32_HOST_OS
+rsyncOrCopyFile _st _rsyncparams src dest p =
 	-- rsync is only available on Windows in some installation methods,
 	-- and is not strictly needed here, so don't use it.
 	docopywith copyFileExternal
   where
 #else
+rsyncOrCopyFile st rsyncparams src dest p =
 	-- If multiple threads reach this at the same time, they
 	-- will both try CoW, which is acceptable.
 	ifM (liftIO $ isEmptyMVar copycowtried)

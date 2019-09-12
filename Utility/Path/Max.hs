@@ -10,8 +10,6 @@
 
 module Utility.Path.Max where
 
-import System.FilePath
-
 #ifndef mingw32_HOST_OS
 import Utility.Exception
 import System.Posix.Files

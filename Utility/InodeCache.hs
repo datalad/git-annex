@@ -170,7 +170,9 @@ genInodeCache f delta = catchDefaultIO Nothing $
 toInodeCache :: TSDelta -> FilePath -> FileStatus -> IO (Maybe InodeCache)
 toInodeCache (TSDelta getdelta) f s
 	| isRegularFile s = do
+#ifndef mingw32_HOST_OS
 		delta <- getdelta
+#endif
 		sz <- getFileSize' f s
 #ifdef mingw32_HOST_OS
 		mtime <- MTimeHighRes . utcTimeToPOSIXSeconds <$> getModificationTime f

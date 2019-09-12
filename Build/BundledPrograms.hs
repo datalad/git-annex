@@ -83,5 +83,7 @@ preferredBundledPrograms = catMaybes
 	-- its kernel, and avoid using them if not available.
 	]
   where
+#ifndef mingw32_HOST_OS
 	ifset True s = Just s
 	ifset False _ = Nothing
+#endif
