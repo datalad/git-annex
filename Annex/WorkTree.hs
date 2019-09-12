@@ -10,7 +10,6 @@ module Annex.WorkTree where
 import Annex.Common
 import Annex.Link
 import Annex.CatFile
-import Annex.Version
 import Annex.Content
 import Annex.ReplaceFile
 import Annex.CurrentBranch
@@ -54,10 +53,7 @@ lookupFileNotHidden = lookupFile' catkeyfile
 lookupFile' :: (FilePath -> Annex (Maybe Key)) -> FilePath -> Annex (Maybe Key)
 lookupFile' catkeyfile file = isAnnexLink file >>= \case
 	Just key -> return (Just key)
-	Nothing -> ifM versionSupportsUnlockedPointers
-		( catkeyfile file
-		, return Nothing 
-		)
+	Nothing -> catkeyfile file
 
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key on to it. -}

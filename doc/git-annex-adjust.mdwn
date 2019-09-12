@@ -34,8 +34,6 @@ while inside the adjusted branch will update the adjusted branch
 as necessary (eg for `--hide-missing`), and will also propagate commits
 back to the original branch.
 
-This command can only be used in a v7 git-annex repository.
-
 # OPTIONS
 
 * `--unlock`

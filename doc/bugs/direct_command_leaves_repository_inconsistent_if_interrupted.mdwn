@@ -45,3 +45,5 @@ Similar issues and discussions:
 [[!meta title="git annex lock --force deletes only copy of content after interrupted switch to direct mode"]
 
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed from git-annex, so [[done]] --[[Joey]]

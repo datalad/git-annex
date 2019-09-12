@@ -13,7 +13,7 @@ automatically creates a post-receive hook using this.
 
 When a repository is configured with receive.denyCurrentBranch=updateInstead,
 pushes to the repository update its work tree. However, that does not work
-for repositories that use have an adjusted branch checked
+for repositories that have an adjusted branch checked
 out. The hook updates the work tree when run in such a repository,
 the same as running `git-annex merge` would.
 

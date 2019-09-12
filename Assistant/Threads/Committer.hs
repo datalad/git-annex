@@ -20,7 +20,6 @@ import Assistant.Drop
 import Types.Transfer
 import Logs.Location
 import qualified Annex.Queue
-import qualified Git.LsFiles
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
@@ -32,7 +31,6 @@ import Annex.Link
 import Annex.Perms
 import Annex.CatFile
 import Annex.InodeSentinal
-import Annex.Version
 import Annex.CurrentBranch
 import qualified Annex
 import Utility.InodeCache
@@ -53,8 +51,7 @@ commitThread :: NamedThread
 commitThread = namedThread "Committer" $ do
 	havelsof <- liftIO $ inPath "lsof"
 	delayadd <- liftAnnex $
-		maybe delayaddDefault (return . Just . Seconds)
-			=<< annexDelayAdd <$> Annex.getGitConfig
+		fmap Seconds . annexDelayAdd <$> Annex.getGitConfig
 	msg <- liftAnnex Command.Sync.commitMsg
 	lockdowndir <- liftAnnex $ fromRepo gitAnnexTmpWatcherDir
 	liftAnnex $ do
@@ -239,19 +236,6 @@ commitStaged msg = do
 				Command.Sync.updateBranches =<< getCurrentBranch
 			return ok
 
-{- OSX needs a short delay after a file is added before locking it down,
- - as pasting a file seems to try to set file permissions or otherwise
- - access the file after closing it. -}
-delayaddDefault :: Annex (Maybe Seconds)
-#ifdef darwin_HOST_OS
-delayaddDefault = ifM versionSupportsUnlockedPointers
-	( return Nothing
-	, return $ Just $ Seconds 1
-	)
-#else
-delayaddDefault = return Nothing
-#endif
-
 {- If there are PendingAddChanges, or InProcessAddChanges, the files
  - have not yet actually been added to the annex, and that has to be done
  - now, before committing.
@@ -274,49 +258,22 @@ delayaddDefault = return Nothing
 handleAdds :: FilePath -> Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
 handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
-	unlocked <- liftAnnex versionSupportsUnlockedPointers
-	let lockingfiles = not unlocked
 	let lockdownconfig = LockDownConfig
-		{ lockingFile = lockingfiles
+		{ lockingFile = False
 		, hardlinkFileTmpDir = Just lockdowndir
 		}
-	(pending', cleanup) <- if unlocked
-		then return (pending, noop)
-		else findnew pending
 	(postponed, toadd) <- partitionEithers
-		<$> safeToAdd lockdowndir lockdownconfig havelsof delayadd pending' inprocess
-	cleanup
+		<$> safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess
 
 	unless (null postponed) $
 		refillChanges postponed
 
 	returnWhen (null toadd) $ do
 		added <- addaction toadd $
-			catMaybes <$>
-				if not lockingfiles
-					then addunlocked toadd
-					else forM toadd (add lockdownconfig)
-		if DirWatcher.eventsCoalesce || null added || unlocked
-			then return $ added ++ otherchanges
-			else do
-				r <- handleAdds lockdowndir havelsof delayadd =<< getChanges
-				return $ r ++ added ++ otherchanges
+			catMaybes <$> addunlocked toadd
+		return $ added ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
-	
-	-- Find files that are actually new, and not unlocked annexed
-	-- files. The ls-files is run on a batch of files.
-	findnew [] = return ([], noop)
-	findnew pending@(exemplar:_) = do
-		let segments = segmentXargsUnordered $ map changeFile pending
-		rs <- liftAnnex $ forM segments $ \fs ->
-			inRepo (Git.LsFiles.notInRepo False fs)
-		let (newfiles, cleanup) = foldl'
-			(\(l1, a1) (l2, a2) -> (l1 ++ l2, a1 >> a2))
-			([], return True) rs
-		-- note: timestamp info is lost here
-		let ts = changeTime exemplar
-		return (map (PendingAddChange ts) newfiles, void $ liftIO cleanup)
 
 	returnWhen c a
 		| c = return otherchanges
@@ -328,10 +285,10 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	  where
 	  	ks = keySource ld
 		doadd = sanitycheck ks $ do
-			(mkey, mcache) <- liftAnnex $ do
+			(mkey, _mcache) <- liftAnnex $ do
 				showStart "add" $ keyFilename ks
 				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
-			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
+			maybe (failedingest change) (done change $ keyFilename ks) mkey
 	add _ _ = return Nothing
 
 	{- Avoid overhead of re-injesting a renamed unlocked file, by
@@ -363,7 +320,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	fastadd change key = do
 		let source = keySource $ lockedDown change
 		liftAnnex $ finishIngestUnlocked key source
-		done change Nothing (keyFilename source) key
+		done change (keyFilename source) key
 
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
@@ -379,17 +336,10 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 		liftAnnex showEndFail
 		return Nothing
 
-	done change mcache file key = liftAnnex $ do
+	done change file key = liftAnnex $ do
 		logStatus key InfoPresent
-		ifM versionSupportsUnlockedPointers
-			( do
-				mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
-				stagePointerFile file mode =<< hashPointerFile key
-			, do
-				link <- makeLink file key mcache
-				when DirWatcher.eventsCoalesce $
-					stageSymlink file =<< hashSymlink link
-			)
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		stagePointerFile file mode =<< hashPointerFile key
 		showEndOk
 		return $ Just $ finishedChange change key
 

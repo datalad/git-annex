@@ -55,6 +55,8 @@ were added in v7. See below for details about what's new in v6/v7.
 
 ## v5 -> v6 (git-annex version 6.x)
 
+v5 repositories are automatically upgraded to v6.
+
 A v6 git-annex repository can have some files locked while other files are
 unlocked, and all git and git-annex commands can be used on both locked and
 unlocked files. It's a good idea to make sure that all users of the
@@ -88,11 +90,6 @@ same tradeoff.
 
 See [[tips/unlocked_files/]] for more details about locked files and thin
 mode.
-
-Normally you will need to run git-annex upgrade to perform this upgrade.
-But, when a new enough git-annex is used in a direct mode repository,
-it will be automatically upgraded and configured to use unlocked files
-instead of direct mode.
 
 ## v4 -> v5 (git-annex version 5.x)
 

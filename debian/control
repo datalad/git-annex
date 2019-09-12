@@ -81,7 +81,7 @@ Build-Depends:
 	lsof [linux-any],
 	ikiwiki,
 	libimage-magick-perl,
-	git (>= 1:1.8.1),
+	git (>= 1:2.1),
 	rsync,
 	curl,
 	openssh-client,

@@ -1,6 +1,6 @@
 # NAME
 
-git-annex upgrade - upgrade repository layout
+git-annex upgrade - upgrade repository
 
 # SYNOPSIS
 
@@ -8,13 +8,16 @@ git annex upgrade
 
 # DESCRIPTION
 
-Upgrades the repository to current layout.
+Upgrades the repository.
 
 Each git-annex repository has an annex.version in its git configuration,
-that indicates the repository version. If git-annex changes to a new
-layout, you must upgrade the repository before git-annex can be used in it.
+that indicates the repository version. When an old repository version
+becomes deprecated, git-annex will automatically upgrade it
+(unless annex.autoupgraderepository is set to false). To manually upgrade,
+you can use this command.
 
-To see version information, run `git annex version`. 
+Sometimes there's a newer repository version that is not the default yet,
+and then you can use this command to upgrade to it.
 
 Currently, git-annex supports upgrades all the way back to version 0, which
 was only used by its author. It's expected that git-annex will always

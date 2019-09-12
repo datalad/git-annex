@@ -101,3 +101,7 @@ add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._4-08 Tal
 
 [[!tag confirmed]]
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed from git-annex, and its replacement, v7
+> unlocked files, uses sqlite and should not suffer from a slowdown when
+> many work tree files have the same content. So [[done]] --[[Joey]]

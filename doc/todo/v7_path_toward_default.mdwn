@@ -2,11 +2,7 @@ Tracking v7 progress toward becoming the default.
 
 ## step 1: release
 
-done
-
 ## step 2: default for new repositories that used to use direct mode
-
-done
 
 ## step 3: auto-upgrade from direct mode
 
@@ -30,8 +26,6 @@ would be a problem.
 <http://git-annex.branchable.com/bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol/>
 But, regular v5 and v7 repos do work in WSL.
 
-done
-
 ## step 4: default for all new repositories
 
 Could probably happen fairly soon after switch of direct mode.
@@ -41,8 +35,6 @@ first time (no sibling git-annex branches). Limiting to new repos
 avoids the problems discussed in step 5.
 
 ## step 5: automatic v5 to v7 upgrades
-
-`v7-default` branch in git has this.
 
 Since v5 repos and v7 repos not using unlocked files are functionally
 almost identical, this is unlikely to break much. Unlocking files will of
@@ -87,3 +79,6 @@ and so is blocked on v5 auto-upgrading.
 This won't simplify much code, worth doing eventually. Once automatic v5 to
 v7 upgrades happen, the remaining v5 specific code is not needed any
 longer.
+
+> all now [[done]]
+

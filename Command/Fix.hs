@@ -12,7 +12,6 @@ module Command.Fix where
 import Command
 import Config
 import qualified Annex
-import Annex.Version
 import Annex.ReplaceFile
 import Annex.Content
 import Annex.Perms
@@ -32,12 +31,8 @@ cmd = noCommit $ withGlobalOptions [annexedMatchingOptions] $
 
 seek :: CmdParams -> CommandSeek
 seek ps = unlessM crippledFileSystem $ do 
-	fixwhat <- ifM versionSupportsUnlockedPointers
-		( return FixAll
-		, return FixSymlinks
-		)
 	withFilesInGit
-		(commandAction . (whenAnnexed $ start fixwhat))
+		(commandAction . (whenAnnexed $ start FixAll))
 		=<< workTreeItems ps
 
 data FixWhat = FixSymlinks | FixAll

@@ -150,7 +150,7 @@ indir dir a = do
 		Left e -> throwM e
 
 adjustedbranchsupported :: FilePath -> IO Bool
-adjustedbranchsupported repo = indir repo $ annexeval Annex.AdjustedBranch.isSupported
+adjustedbranchsupported repo = indir repo $ Annex.AdjustedBranch.isGitVersionSupported
 
 setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do

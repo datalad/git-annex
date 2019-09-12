@@ -54,3 +54,5 @@ merge. (I assume this is how `git merge` normally works.) --[[Joey]]
 > quickly.. --[[Joey]]
 
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed. [[done]] --[[Joey]]

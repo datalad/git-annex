@@ -36,3 +36,5 @@ I wonder if this would have side effects, or if there are other places in the co
 
 [[!tag confirmed]]
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed from git-annex, so [[done]] --[[Joey]]

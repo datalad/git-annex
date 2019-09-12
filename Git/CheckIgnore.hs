@@ -15,7 +15,6 @@ module Git.CheckIgnore (
 import Common
 import Git
 import Git.Command
-import qualified Git.Version
 import qualified Utility.CoProcess as CoProcess
 
 import System.IO.Error
@@ -29,17 +28,11 @@ type CheckIgnoreHandle = CoProcess.CoProcessHandle
  - GIT_FLUSH behavior flushing the output buffer when git check-ignore
  - is piping to us.
  -
- - The first version of git to support what we need is 1.8.4.
- - Nothing is returned if an older git is installed.
- -
  - check-ignore does not support --literal-pathspecs, so remove that
  - from the gitGlobalOpts if set.
  -}
-checkIgnoreStart :: Repo -> IO (Maybe CheckIgnoreHandle)
-checkIgnoreStart repo = ifM supportedGitVersion
-	( Just <$> gitCoProcessStart True params repo'
-	, return Nothing
-	)
+checkIgnoreStart :: Repo -> IO CheckIgnoreHandle
+checkIgnoreStart repo = gitCoProcessStart True params repo'
   where
 	params =
 		[ Param "check-ignore" 
@@ -51,11 +44,6 @@ checkIgnoreStart repo = ifM supportedGitVersion
 	repo' = repo { gitGlobalOpts = filter (not . pathspecs) (gitGlobalOpts repo) }
 	pathspecs (Param "--literal-pathspecs") = True
 	pathspecs _ = False
-
-supportedGitVersion :: IO Bool
-supportedGitVersion = do
-	v <- Git.Version.installed
-	return $ v >= Git.Version.normalize "1.8.4"
 
 {- For some reason, check-ignore --batch always exits nonzero, 
  - so ignore any error. -}

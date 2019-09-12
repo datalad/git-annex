@@ -10,12 +10,11 @@ module Git.CheckAttr where
 import Common
 import Git
 import Git.Command
-import qualified Git.Version
 import qualified Utility.CoProcess as CoProcess
 
 import System.IO.Error
 
-type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], Bool, String)
+type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
 
 type Attr = String
 
@@ -25,8 +24,7 @@ checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	currdir <- getCurrentDirectory
 	h <- gitCoProcessStart True params repo
-	oldgit <- Git.Version.older "1.7.7"
-	return (h, attrs, oldgit, currdir)
+	return (h, attrs, currdir)
   where
 	params =
 		[ Param "check-attr" 
@@ -36,12 +34,12 @@ checkAttrStart attrs repo = do
 		[ Param "--" ]
 
 checkAttrStop :: CheckAttrHandle -> IO ()
-checkAttrStop (h, _, _, _) = CoProcess.stop h
+checkAttrStop (h, _, _) = CoProcess.stop h
 
 {- Gets an attribute of a file. When the attribute is not specified,
  - returns "" -}
 checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
-checkAttr (h, attrs, oldgit, currdir) want file = do
+checkAttr (h, attrs, currdir) want file = do
 	pairs <- CoProcess.query h send (receive "")
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
@@ -78,16 +76,9 @@ checkAttr (h, attrs, oldgit, currdir) want file = do
 			else Nothing -- line incomplete
 	numattrs = length attrs
 
-	{- Before git 1.7.7, git check-attr worked best with
-	 - absolute filenames; using them worked around some bugs
-	 - with relative filenames.
-	 - 
-	 - With newer git, git check-attr chokes on some absolute
-	 - filenames, and the bugs that necessitated them were fixed,
-	 - so use relative filenames. -}
-	file'
-		| oldgit = absPathFrom currdir file
-		| otherwise = relPathDirToFileAbs currdir $ absPathFrom currdir file
+	{- git check-attr chokes on some absolute filenames,
+	 - so make sure the filename is relative. -}
+	file' = relPathDirToFileAbs currdir $ absPathFrom currdir file
 	oldattrvalue attr l = end bits !! 0
 	  where
 		bits = split sep l

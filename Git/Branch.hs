@@ -15,7 +15,6 @@ import Git.Sha
 import Git.Command
 import qualified Git.Config
 import qualified Git.Ref
-import qualified Git.BuildVersion
 
 {- The currently checked out branch.
  -
@@ -125,8 +124,7 @@ data CommitMode = ManualCommit | AutomaticCommit
 {- Prevent signing automatic commits. -}
 applyCommitMode :: CommitMode -> [CommandParam] -> [CommandParam]
 applyCommitMode commitmode ps
-	| commitmode == AutomaticCommit && not (Git.BuildVersion.older "2.0.0") =
-		Param "--no-gpg-sign" : ps
+	| commitmode == AutomaticCommit = Param "--no-gpg-sign" : ps
 	| otherwise = ps
 
 {- Some versions of git commit-tree honor commit.gpgsign themselves,

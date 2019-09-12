@@ -103,6 +103,7 @@ data GitConfig = GitConfig
 	, annexMaxExtensionLength :: Maybe Int
 	, annexJobs :: Concurrency
 	, annexCacheCreds :: Bool
+	, annexAutoUpgradeRepository :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -182,6 +183,7 @@ extractGitConfig r = GitConfig
 	, annexJobs = fromMaybe NonConcurrent $ 
 		parseConcurrency =<< getmaybe (annex "jobs")
 	, annexCacheCreds = getbool (annex "cachecreds") True
+	, annexAutoUpgradeRepository = getbool (annex "autoupgraderepository") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

@@ -118,7 +118,7 @@ data AnnexState = AnnexState
 	, catfilehandles :: M.Map FilePath CatFileHandle
 	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
-	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
+	, checkignorehandle :: Maybe CheckIgnoreHandle
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
 	, forcenumcopies :: Maybe NumCopies

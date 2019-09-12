@@ -13,9 +13,13 @@ import Annex.Version
 import Annex.Init
 
 cmd :: Command
-cmd = dontCheck repoExists $ -- because an old version may not seem to exist
-	noDaemonRunning $ -- avoid upgrading repo out from under daemon
-	command "upgrade" SectionMaintenance "upgrade repository layout"
+cmd = dontCheck repoExists $
+	-- ^ because an old version may not seem to exist
+	-- and also, this avoids automatic silent upgrades before
+	-- this command can start up.
+	noDaemonRunning $
+	-- ^ avoid upgrading repo out from under daemon
+	command "upgrade" SectionMaintenance "upgrade repository"
 		paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek

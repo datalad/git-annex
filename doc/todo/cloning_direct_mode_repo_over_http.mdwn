@@ -34,3 +34,5 @@ the direct mode database either way!
 
 --[[Joey]]
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed, so [[done]] --[[Joey]]

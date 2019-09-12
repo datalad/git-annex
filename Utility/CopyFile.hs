@@ -35,7 +35,8 @@ copyMetaDataParams meta = map snd $ filter fst
 	allmeta = meta == CopyAllMetaData
 
 {- The cp command is used, because I hate reinventing the wheel,
- - and because this allows easy access to features like cp --reflink. -}
+ - and because this allows easy access to features like cp --reflink
+ - and preserving metadata. -}
 copyFileExternal :: CopyMetaData -> FilePath -> FilePath -> IO Bool
 copyFileExternal meta src dest = do
 	-- Delete any existing dest file because an unwritable file

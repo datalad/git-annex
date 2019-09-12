@@ -26,7 +26,6 @@ module Annex.AdjustedBranch (
 	propigateAdjustedCommits,
 	AdjustedClone(..),
 	checkAdjustedClone,
-	isSupported,
 	checkVersionSupported,
 	isGitVersionSupported,
 ) where
@@ -50,7 +49,6 @@ import Git.Index
 import Git.FilePath
 import qualified Git.LockFile
 import qualified Git.Version
-import Annex.Version
 import Annex.CatFile
 import Annex.Link
 import Annex.AutoMerge
@@ -572,7 +570,7 @@ diffTreeToTreeItem dti = TreeItem
 	(Git.DiffTree.dstmode dti)
 	(Git.DiffTree.dstsha dti)
 
-data AdjustedClone = InAdjustedClone | NotInAdjustedClone | NeedUpgradeForAdjustedClone
+data AdjustedClone = InAdjustedClone | NotInAdjustedClone
 
 {- Cloning a repository that has an adjusted branch checked out will
  - result in the clone having the same adjusted branch checked out -- but
@@ -611,18 +609,10 @@ checkAdjustedClone = ifM isBareRepo
 				case aps of
 					Just [p] -> setBasisBranch basis p
 					_ -> giveup $ "Unable to clean up from clone of adjusted branch; perhaps you should check out " ++ Git.Ref.describe origbranch
-			ifM versionSupportsUnlockedPointers
-				( return InAdjustedClone
-				, return NeedUpgradeForAdjustedClone
-				)
-
-isSupported :: Annex Bool
-isSupported = versionSupportsAdjustedBranch <&&> liftIO isGitVersionSupported
+			return InAdjustedClone
 
 checkVersionSupported :: Annex ()
-checkVersionSupported = do
-	unlessM versionSupportsAdjustedBranch $
-		giveup "Adjusted branches are only supported in v6 or newer repositories."
+checkVersionSupported =
 	unlessM (liftIO isGitVersionSupported) $
 		giveup "Your version of git is too old; upgrade it to 2.2.0 or newer to use adjusted branches."
 

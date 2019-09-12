@@ -11,13 +11,8 @@ import Command
 import qualified Annex
 import Annex.Content
 import Annex.Perms
-import Annex.Version
 import qualified Git.Command
-import qualified Git.Branch
-import qualified Git.Ref
-import qualified Git.DiffTree as DiffTree
 import Utility.CopyFile
-import Command.PreCommit (lockPreCommitHook)
 import qualified Database.Keys
 import Git.FilePath
 
@@ -28,40 +23,7 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = wrapUnannex $ 
-	(withFilesInGit $ commandAction . whenAnnexed start) =<< workTreeItems ps
-
-wrapUnannex :: Annex a -> Annex a
-wrapUnannex a = ifM versionSupportsUnlockedPointers
-	( a
-	{- Run with the pre-commit hook disabled, to avoid confusing
-	 - behavior if an unannexed file is added back to git as
-	 - a normal, non-annexed file and then committed.
-	 - Otherwise, the pre-commit hook would think that the file
-	 - has been unlocked and needs to be re-annexed.
-	 -
-	 - At the end, make a commit removing the unannexed files.
-	 -}
-	, ifM cleanindex
-		( lockPreCommitHook $ commit `after` a
-		, giveup "Cannot proceed with uncommitted changes staged in the index. Recommend you: git commit"
-		)
-	)
-  where
-	commit = inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
-		[ Param "-q"
-		, Param "--allow-empty"
-		, Param "--no-verify"
-		, Param "-m", Param "content removed from git annex"
-		]
-	cleanindex = ifM (inRepo Git.Ref.headExists)
-		( do
-			(diff, reap) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
-			if null diff
-				then void (liftIO reap) >> return True
-				else void (liftIO reap) >> return False
-		, return False
-		)
+seek ps = (withFilesInGit $ commandAction . whenAnnexed start) =<< workTreeItems ps
 
 start :: FilePath -> Key -> CommandStart
 start file key = stopUnless (inAnnex key) $

@@ -17,7 +17,6 @@ module Git.Merge (
 import Common
 import Git
 import Git.Command
-import qualified Git.BuildVersion
 import qualified Git.Version
 import Git.Branch (CommitMode(..))
 
@@ -33,7 +32,7 @@ merge = merge' []
 
 merge' :: [CommandParam] -> Ref -> [MergeConfig] -> CommitMode -> Repo -> IO Bool
 merge' extraparams branch mergeconfig commitmode r
-	| MergeNonInteractive `notElem` mergeconfig || Git.BuildVersion.older "1.7.7.6" =
+	| MergeNonInteractive `notElem` mergeconfig =
 		go [Param $ fromRef branch]
 	| otherwise = go [Param "--no-edit", Param $ fromRef branch]
   where

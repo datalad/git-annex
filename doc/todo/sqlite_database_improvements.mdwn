@@ -52,13 +52,21 @@ process.
 > solve the encoding problem other than changing the encoding
 > SKey, IKey, and SFilePath in a non-backwards-compatible way.
 > 
-> (Unless the encoding problem is related to persistent's use of Text
-> internally, and could then perhaps be avoided by avoiding that?)
+> Probably the encoding problem is actually not in sqlite, but
+> in persistent's use of Text internally. I did some tests with sqlite3
+> command and it did not seem to vary query results based on the locale
+> when using VARCHAR values. I was able to successfully insert an 
+> invalid unicode `ff` byte into it, and get the same byte back out.
 > 
-> The simplest and best final result would be use a ByteString
-> for all of them, and store a blob in sqlite. Attached patch
-> shows how to do that, but old git-annex won't be able to read
-> the updated databases, and won't know that it can't read them!
+> Unfortunately, it's not possible to make persistent not use Text
+> for VARCHAR. While its PersistDbSpecific lets a non-Text value be stored
+> as VARCHAR, any VARCHAR value coming out of the database gets converted
+> to a PersistText.
+> 
+> So that seems to leave using a BLOB to store a ByteString for 
+> SKey, IKey, and SFilePath. Attached patch shows how to do that,
+> but old git-annex won't be able to read the updated databases,
+> and won't know that it can't read them!
 > 
 > This seems to call for a flag day, throwing out the old database
 > contents and regenerating them from other data:
@@ -90,15 +98,9 @@ process.
 > out of the way won't do; old git-annex will just recreate them and 
 > start with missing data!
 > 
-> And, what about users who really need to continue using an old git-annex
-> and get bitten by the flag day?
+> And, what about users who use a mix of old and new git-annex versions?
 > 
-> Should this instead be a annex.version bump from v7 to v8?
-> But v5 is also affected for ContentIdentifier and Export and Fsck.
-> Don't want v5.1.
->
-> > Waiting until v5 is no longer supported and including this in v8
-> > seems the only sure way to avoid backwards compatability issues.
+> Seems this needs an annex.version bump from v7 to v8.
 
 ----
 

@@ -10,7 +10,6 @@ module Command.Lock where
 import Command
 import qualified Annex.Queue
 import qualified Annex
-import Annex.Version
 import Annex.Content
 import Annex.Link
 import Annex.InodeSentinal
@@ -31,12 +30,7 @@ cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek ps = do
 	l <- workTreeItems ps
-	ifM versionSupportsUnlockedPointers
-		( withFilesInGit (commandAction . (whenAnnexed startNew)) l
-		, do
-			withFilesOldUnlocked (commandAction . startOld) l
-			withFilesOldUnlockedToBeCommitted (commandAction . startOld) l
-		)
+	withFilesInGit (commandAction . (whenAnnexed startNew)) l
 
 startNew :: FilePath -> Key -> CommandStart
 startNew file key = ifM (isJust <$> isAnnexLink file)

@@ -59,3 +59,6 @@ git-annex: direct: 1 failed
 
 [[!tag moreinfo]]
 [[!meta tag=deprecateddirectmode]]
+
+> direct mode has been removed from git-annex, so closing this old bug
+> [[done]] --[[Joey]]

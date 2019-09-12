@@ -126,3 +126,5 @@ Codename:	precise
 
 
 > [[!taglink confirmed]] (but may be out of scope for git-annex) --[[Joey]] 
+
+[[!meta title="assistant does not notice all changes to hard linked files"]]
