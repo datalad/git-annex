@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-13T16:31:27Z"
+ content="""
+I guess the CIFS must be the cause of the problem, 
+NTFS on linux works in my tests.
+
+Are you able to reliably reproduce this problem every time, or does
+it only fail that way some of the time?
+
+It would be good to know if this also happens with using sqlite3 at the
+command line on the CIFS mount point. Can you do this:
+
+	apt-get install sqlite3
+	sqlite3 /media/mydisk/tmp/db
+	create table foo (name varchar);
+	insert into foo "joey";
+	.exit
+
+And see if that also crashes.
+
+---
+
+According to <https://www.sqlite.org/c3ref/close.html>, a close can indeed
+fail with BUSY, and I guess the only thing to do then would be to keep
+retrying until sqlite hopefully gets around to finishing whatever it's
+doing.
+
+Or, it looks like using `sqlite3_close_v2` might be an option since
+that leaves the db running in the background until it's able to close.
+Although if git-annex is exiting at the time, that might be problimatic.
+`sqlite3_close_v2` is not currently available in the haskell bindings.
+
+Oddly, the docs say this should only happen when there are "unfinalized
+prepared statements or unfinished sqlite3_backup objects".
+I don't believe git-annex uses either. It seems likely something else
+in sqlite is failing that results in BUSY, and if that can be reproduced
+outside of git-annex it would be good to file a bug on sqlite about it.
+"""]]
