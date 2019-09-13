@@ -36,7 +36,7 @@ needs an upgrade, and either automatically upgrade it of
 refuse to do anything. To upgrade, use the "git annex upgrade" command.
 
 To prevent automatic upgrades in a repository, run:
-`git config annex.autoupgraderepository`
+`git config annex.autoupgraderepository false`
 
 The upgrade process is guaranteed to be conflict-free. Unless you
 already have git conflicts in your repository or between repositories.
