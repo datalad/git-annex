@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-13T22:15:03Z"
+ content="""
+The command that blocks until the remote is ready sounds like a pretty good
+idea.
+
+I wonder, what about downloads from the remote, those could also overload
+some remote.
+
+Is your KBFS remote an external special remote, or are you just using a
+directory special remote on that filesystem? If it were an external special
+remote, you could just make it delay until ready when it receives a
+TRANSFER request.
+
+(BTW, the solution to each git-annex copy creating a git-annex branch
+commit is annex.alwayscommit=false. Or perhaps usng --batch to drive a
+single copy command.)
+"""]]
