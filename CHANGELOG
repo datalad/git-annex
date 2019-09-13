@@ -32,6 +32,8 @@ git-annex (7.20190912) UNRELEASED; urgency=medium
   * init: Catch more exceptions when testing locking.
   * init: Fix a reversion that broke initialization on systems that
     need to use pid locking.
+  * A git-annex-standalone rpm is now distributed along with the standalone
+    tarball.
   * Added standalone/rpm/rpmbuild-from-standalone-tarball script.
 
  -- Joey Hess <id@joeyh.name>  Sat, 24 Aug 2019 12:54:35 -0400

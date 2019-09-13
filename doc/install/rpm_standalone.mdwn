@@ -1,0 +1,12 @@
+If the version of git-annex shipped in your rpm-based distribution is too
+old, there's a git-annex-standalone rpm that you can install instead. It's
+kept up-to-date with the latest git-annex release, and it works on a wide
+range of distribution versions.
+
+To install it, you first have to download a yum configuration file for the git-annex rpm repository:
+
+	curl https://downloads.kitenet.net/git-annex/linux/current/rpms/git-annex.repo > /etc/yum.repos.d/git-annex.repo
+
+Then:
+
+	yum install git-annex-standalone

@@ -16,6 +16,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[Guix]]              | `guix package -i git-annex`
 &nbsp;&nbsp;[[Void]]              | `xbps-install git-annex`
 &nbsp;&nbsp;[[ScientificLinux]]   |
+&nbsp;&nbsp;[[RHEL]]              |
 &nbsp;&nbsp;[[openSUSE]]          | `zypper in git-annex`
 &nbsp;&nbsp;[[Docker]]            | 
 &nbsp;&nbsp;[[conda]]             | `conda install -c conda-forge git-annex`
