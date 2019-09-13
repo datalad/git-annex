@@ -1,0 +1,17 @@
+With git-annex 7.20190912 released this fine Friday the 13th,
+I've finally made v7 the default!
+
+See [[upgrades]] for details about this major transitition if you have not
+been keeping up with v7 stuff.
+
+Based on some feedback that it would be good to have a way to avoid
+accidental upgrades of a repository in some circumstances, there's a new
+config option `git config annex.autoupgraderepository false` to prevent
+upgrades. Since the new git-annex doesn't support working in v5 repos,
+setting that will make every command except `git annex upgrade` fail.
+
+Users of rpm based linux distros can now install a 
+[[git-annex-standalone.rpm|install/rpm_standalone]] 
+package that will work on a broad range of systems. It's based on the
+standalone tarball, just packaged as a rpm similar to the
+git-annex-standalone.deb provided by NeuroDebian.
