@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="cscsordas@57324e38725d7f92862b3df34b6db7817456dea5"
+ nickname="cscsordas"
+ avatar="http://cdn.libravatar.org/avatar/5e54a8f6cd253a8bbb5faf02e3390a1e"
+ subject="7.20190129-2~bpo9+1"
+ date="2019-09-13T17:52:05Z"
+ content="""
+The Debian package should depend on xdg-utils:
+
+    Launching web browser on file:///tmp/webapp1804289383846930886.html
+    git-annex: xdg-open: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+    WebApp crashed: xdg-open: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+"""]]
