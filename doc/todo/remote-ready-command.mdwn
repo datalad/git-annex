@@ -1,0 +1,19 @@
+I did some searching and couldn't find documentation of anything like this, but let me know if I missed it.
+
+I have a remote for git-annex that can get overwhelmed if I try to upload too many files at once.  Specifically in this case, the remote is the Keybase Filesystem (KBFS).  When saving files to KBFS, the files are encrypted and saved to the local disk, and then uploaded in the background.  Currently, when I do `git annex sync --content`, git-annex tries to transfer all my files to the KBFS remote, which can quickly fill up the queue.  (I have run into bugs in Keybase that cause uploads to stop, but it'd still be useful to ensure I'm not filling up the queue, if for no other reason than to save disk space.)
+
+I've created a script that allows me to wait until the queue is empty [here](https://github.com/501st-alpha1/scott-script/blob/master/kbfs-status).
+
+I would like to be able to set a config option, e.g. `remote.kbfs.annex-remote-ready-command` that will check whether the remote is ready for more files.  git-annex could either query the command regularly until it returns 0, or it could call it once and I could handle the sleeping and retrying in the script.
+
+My current workaround is something like:
+
+```
+git annex find . --in here --and --not --in kbfs | while read filename
+  do
+    kbfs-status wait
+    git annex copy --to kbfs "$filename"
+  done
+```
+
+but this means that every `git annex copy` command creates a new commit per file transferred, rather than a single commit at the end of the transfer.  This may not seem like a big deal, but multiplying that over hundreds of files, it adds up to quite a bit of wasted disk space.  (I'll also be looking into ways to squash or prune such commits, but it'd be nice to not have to do that.)
