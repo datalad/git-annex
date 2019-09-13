@@ -56,25 +56,6 @@ tarrpmarches =
 	, ("arm64", "aarch64")
 	]
 
-buildrpms :: FilePath -> [(FilePath, Version)] -> Annex ()
-buildrpms topdir l = do
-	liftIO $ createDirectoryIfMissing True rpmrepo
-	forM_ tarrpmarches $ \(tararch, rpmarch) ->
-		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) ->
-			void $ liftIO $ boolSystem script 
-				[ Param rpmarch
-				, File tarball
-				, Param v
-				, File rpmrepo
-				]
-	void $ liftIO $ boolSystem "createrepo" [File rpmrepo]
-	void $ inRepo $ runBool [Param "annex", Param "add", File rpmrepo]
-  where
-	isstandalonetarball tararch f =
-		("git-annex-standalone-" ++ tararch ++ ".tar.gz") `isSuffixOf` f
-	script = topdir </> "standalone" </> "rpm" </> "rpmbuild-from-standalone-tarball"
-	rpmrepo = "git-annex/linux/current/rpms"
-
 main :: IO ()
 main = do
 	useFileSystemEncoding
@@ -235,3 +216,22 @@ virusFree f
 		clamscan tmpdir
 	unhfs dest f' = unlessM (boolSystem "7z" [ Param "x", Param ("-o" ++ dest), File f' ]) $
 		error $ "Failed extracting hfs " ++ f'
+
+buildrpms :: FilePath -> [(FilePath, Version)] -> Annex ()
+buildrpms topdir l = do
+	liftIO $ createDirectoryIfMissing True rpmrepo
+	forM_ tarrpmarches $ \(tararch, rpmarch) ->
+		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) ->
+			void $ liftIO $ boolSystem script 
+				[ Param rpmarch
+				, File tarball
+				, Param v
+				, File rpmrepo
+				]
+	void $ liftIO $ boolSystem "createrepo" [File rpmrepo]
+	void $ inRepo $ runBool [Param "annex", Param "add", File rpmrepo]
+  where
+	isstandalonetarball tararch f =
+		("git-annex-standalone-" ++ tararch ++ ".tar.gz") `isSuffixOf` f
+	script = topdir </> "standalone" </> "rpm" </> "rpmbuild-from-standalone-tarball"
+	rpmrepo = "git-annex/linux/current/rpms"
