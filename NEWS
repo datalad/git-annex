@@ -1,4 +1,4 @@
-git-annex (7.20190912) UNRELEASED; urgency=medium
+git-annex (7.20190912) upstream; urgency=medium
 
   This version of git-annex uses repository version 7 for all repositories.
 
