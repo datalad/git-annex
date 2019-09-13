@@ -32,8 +32,11 @@ past versions. After all, you may have offline drives from an earlier
 git-annex, and might want to use them with a newer git-annex.
 
 git-annex will notice if it is run in a repository that
-needs an upgrade, and refuse to do anything. To upgrade,
-use the "git annex upgrade" command.
+needs an upgrade, and either automatically upgrade it of
+refuse to do anything. To upgrade, use the "git annex upgrade" command.
+
+To prevent automatic upgrades in a repository, run:
+`git config annex.autoupgraderepository`
 
 The upgrade process is guaranteed to be conflict-free. Unless you
 already have git conflicts in your repository or between repositories.
