@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="grawity@2ea26be48562f66fcb9b66307da72b1e2e37453f"
+ nickname="grawity"
+ avatar="http://cdn.libravatar.org/avatar/7003e967f47003bae82966aa373de8ef"
+ subject="Direct mode"
+ date="2019-09-15T09:57:57Z"
+ content="""
+I've been trying to have something resembling direct mode using the recommended \"adjusted branch\" feature (with annex.thin), and the results aren't really satisfactory:
+
+- If I use `annex adjust --unlock --hide-missing`, the non-present files are of course missing entirely. No convenient way to `annex get` them on demand.
+
+- If I use just `annex adjust --unlock`, or even if I permanently `annex unlock` everything, the non-present files still appear *as regular files* (containing /annex/objects inside), which makes it much harder to distinguish whether the file is present or absent. (In v5 direct mode, absent files appeared as broken symlinks.) Additionally, the adjust command is very slow, unlocking maybe 2–3 files per second (they're video files, approx. ~300MB each).
+
+I don't mind regular (indirect) mode in general, but unfortunately some apps just... don't like symlinks, so I want to have plain unlocked files at least on this particular clone of this particular repo. So it would be great if there was an adjusted branch mode kinda like `--hide-missing` but which kept missing files as broken symlinks just like the regular mode does.
+
+But if that's not possible, I think I'll be able to use `bindfs --resolve-symlinks` to achieve a similar result...
+"""]]
