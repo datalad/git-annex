@@ -40,13 +40,14 @@ fuzzymatches input showchoice choices = fst $ unzip $
 	similarEnough (_, cst) = cst < similarityFloor
 
 {- Takes action based on git's autocorrect configuration, in preparation for
- - an autocorrected command being run. -}
+ - an autocorrected command being run.
+ -}
 prepare :: String -> (c -> String) -> [c] -> Maybe Repo -> IO ()
 prepare input showmatch matches r =
 	case readish . Git.Config.get "help.autocorrect" "0" =<< r of
 		Just n
 			| n == 0 -> list
-			| n < 0 -> warn
+			| n < 0 -> warn Nothing
 			| otherwise -> sleep n
 		Nothing -> list
   where
@@ -55,17 +56,16 @@ prepare input showmatch matches r =
 		, ""
 		, "Did you mean one of these?"
 		] ++ map (\m -> "\t" ++ showmatch m) matches
-	warn = 
-		hPutStr stderr $ unlines
-			[ "WARNING: You called a command named '" ++
-			  input ++ "', which does not exist."
-			, "Continuing under the assumption that you meant '" ++
-			  showmatch (Prelude.head matches) ++ "'"
-			]
+	warn :: Maybe Float -> IO ()
+	warn mdelaysec = hPutStr stderr $ unlines
+		[ "WARNING: You called a git-annex command named '" ++
+		  input ++ "', which does not exist."
+		, case mdelaysec of
+			Nothing -> "Continuing under the assumption that you meant " ++ match
+			Just sec -> "Continuing in " ++ show sec ++ " seconds, assuming that you meant " ++ match
+		]
+	  where
+		match = "'" ++ showmatch (Prelude.head matches) ++ "'."
 	sleep n = do
-		warn
-		hPutStrLn stderr $ unwords
-			[ "in"
-			, show (fromIntegral n / 10 :: Float)
-			, "seconds automatically..."]
+		warn (Just (fromIntegral n / 10 :: Float))
 		threadDelay (n * 100000) -- deciseconds to microseconds
