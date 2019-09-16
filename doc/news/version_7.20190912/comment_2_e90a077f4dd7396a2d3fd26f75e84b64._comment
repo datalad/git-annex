@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-16T16:02:32Z"
+ content="""
+@Micheal, drat. Opened a bug:
+[[bugs/i386ancient_tarball_git_too_old_error]]
+(And fixed it; the tarball for this release has been updated.)
+"""]]

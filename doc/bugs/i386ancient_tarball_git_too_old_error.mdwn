@@ -1,0 +1,15 @@
+Installing 7.20190912 from the \"ancient\" tarball at https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz on an x86 Synology NAS, I get
+
+$ git annex merge
+
+  Git is older than version 2.22 and so it has a memory leak that affects using unlocked files. Recommend you upgrade git before unlocking any files in your repository.
+merge git-annex ok
+git-annex: thread blocked indefinitely in an MVar operation
+
+> It seems I messed something up, that build is supposed to have an old git
+> that's patched to work, and with a special version number that git-annex
+> understands will work. --[[Joey]]
+
+> > I don't know what went wrong, other than it was surely several layers
+> > of human error. I've updated the tarball, and confirmed it's good now.
+> > [[done]] --[[Joey]]
