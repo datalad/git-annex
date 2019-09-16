@@ -1,0 +1,69 @@
+I'm working in v7 mode with `annex.largefiles` configured.  When I add a lot of files (1000 in the example below), it takes 2 mins for the `(recording state in git...)` phase to complete.  The same happens if I just add files directly using `git add`.  Running `git add -v` will slowly list the files, so it's apparent that the adding of the files to git is what's causing the delay.  Is this slow `add` performance normal when adding files to git through git-annex?
+
+I didn't want to report this as a *bug* since I don't know if this is the result of a known process that git-annex is performing.  However, I find it curious how adding the same files to git-annex directly (without `annex.largefiles` configured) is very fast.
+
+If this is not a bug, perhaps the `(recording state in git...)` output could show the files being added instead to avoid the suspicion that the `add` command is hanging.
+
+I'm using git-annex version 7.20190912-gab739242a3 (with git version 2.23.0).
+
+Here is an example I've been using to investigate the different conditions and the output from a run of the script:
+
+```
+#!/usr/bin/env bash
+
+set -eu
+
+dir=$(mktemp -d)
+cd ${dir}
+
+cleanup() {
+    chmod 777 -R ${dir}
+    rm -rf ${dir}
+}
+
+trap cleanup EXIT
+
+# create 1000 files
+for idx in {1..1000}; do
+    echo ${RANDOM} > file${idx}
+done
+
+git init
+set -x
+
+time git add . > /dev/null
+git rm --cached -r . > /dev/null
+
+git annex init
+
+time git annex add -c annex.largefiles="largerthan=1M" .
+git rm --cached -r . > /dev/null
+
+time git add .
+```
+
+
+```
+Initialized empty Git repository in /tmp/tmp.BdmH199gbk/.git/
++ git add .
+real    0m0.049s
+user    0m0.010s
+sys 0m0.039s
++ git rm --cached -r .
++ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
++ git annex add -c annex.largefiles=largerthan=1M .
+real    2m4.617s
+user    1m40.865s
+sys     0m18.335s
++ git rm --cached -r .
++ git add .
+real    2m13.367s
+user    1m48.507s
+sys     0m21.230s
++ cleanup
++ chmod 777 -R /tmp/tmp.BdmH199gbk
++ rm -rf /tmp/tmp.BdmH199gbk
+```
