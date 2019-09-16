@@ -1,1 +1,0 @@
-On the git-annex manpage, the docs for annex.addunlocked say "The default is to add files in locked form."
