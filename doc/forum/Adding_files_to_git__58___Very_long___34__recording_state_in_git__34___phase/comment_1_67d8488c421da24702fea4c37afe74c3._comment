@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-16T17:19:38Z"
+ content="""
+This is because `git add` has to run git-annex once
+per file to smudge it. 
+See [[todo/git_smudge_clean_interface_suboptiomal]].
+"""]]
