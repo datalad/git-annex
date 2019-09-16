@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="forums+git-annex@d2ec818a5e37440c45fa5f3cbd82fe5110b32020"
+ nickname="forums+git-annex"
+ avatar="http://cdn.libravatar.org/avatar/b6fde94dbf127b822f7b6109399d50c9"
+ subject="comment 2"
+ date="2019-09-13T23:17:37Z"
+ content="""
+> I wonder, what about downloads from the remote, those could also overload some remote.
+
+That is a good point, but it's not needed for my use case; KBFS hasn't had any trouble so far keeping up with reading data, only with writing.
+
+> Is your KBFS remote an external special remote, or are you just using a directory special remote on that filesystem? If it were an external special remote, you could just make it delay until ready when it receives a TRANSFER request.
+
+I originally had a directory special remote pointing to the FUSE-mounted KBFS, but I was having some issues with that, so I switched to an rsync special remote (also pointing to FUSE-mounted KBFS).
+
+> (BTW, the solution to each git-annex copy creating a git-annex branch commit is annex.alwayscommit=false. Or perhaps usng --batch to drive a single copy command.)
+
+Awesome, looks like either of those would be better workarounds than I have right now.  Thanks!
+"""]]

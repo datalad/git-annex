@@ -1,0 +1,22 @@
+[[!comment format=sh
+ username="Michael"
+ avatar="http://cdn.libravatar.org/avatar/86811fdafa094c610ec8ef8858a78dbf"
+ subject="&quot;Git is older than version 2.22&quot;"
+ date="2019-09-15T19:33:28Z"
+ content="""
+Installing 7.20190912 from the \"ancient\" tarball at https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386-ancient.tar.gz on an x86 Synology NAS, I get
+
+$ git annex merge
+
+  Git is older than version 2.22 and so it has a memory leak that affects using unlocked files. Recommend you upgrade git before unlocking any files in your repository.
+merge git-annex ok
+git-annex: thread blocked indefinitely in an MVar operation
+
+$ which git
+/var/services/homes/michael/git-annex.linux/git
+
+$ /var/services/homes/michael/git-annex.linux/git --version
+git version 2.1.4
+
+Seems like included git is too old then?
+"""]]
