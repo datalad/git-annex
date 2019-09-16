@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2019-09-16T21:12:21Z"
+ content="""
+\"But if the tree for the checked out branch has the object type of regular file, git diff-index would consider there to be a staged change.\" -- maybe, setting the assume-unchanged bit or the skip-worktree bit in the index would cause git to ignore the change in the worktree?
+"""]]
