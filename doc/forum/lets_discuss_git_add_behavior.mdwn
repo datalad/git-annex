@@ -1,0 +1,6 @@
+With v7, the default behavior of `git add` in a git-annex repo changed
+to adding it as an annexed, unlocked file.
+
+It may be a little late to talk about this since v7 has become the default
+already, but I was asked to explain my thoughts on it, and I'm also
+interested in hearing your thoughts. --[[Joey]]
