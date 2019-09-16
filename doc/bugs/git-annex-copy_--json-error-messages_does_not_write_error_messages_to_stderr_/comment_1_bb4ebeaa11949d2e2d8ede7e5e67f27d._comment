@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-16T17:27:12Z"
+ content="""
+The documentation seems to clearly document the current behavior:
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the json instead.
+
+And changing the behavior could break something that relies on the current
+behavior.
+
+This was considered when the interface was designed, and there were
+numerous good reasons to choose the current behavior. 
+[[See thread|todo/include_msg_with_possible_reason_why_command___40__e.g._add__41___failed_into_--json_output]].
+
+(Another reason not mentioned there is, it's simply not possible to trap
+every possible error message that git-annex could output in any circumstance.
+If there's a segfault or a memory error, or libc crashes, or the program fails
+to link. So any program parsing stderr for json would somehow have to deal
+with this non-json that could be mixed up with it, which seems very hard.)
+"""]]
