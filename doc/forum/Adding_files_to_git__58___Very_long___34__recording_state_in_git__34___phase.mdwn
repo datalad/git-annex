@@ -4,6 +4,8 @@ I didn't want to report this as a *bug* since I don't know if this is the result
 
 If this is not a bug, perhaps the `(recording state in git...)` output could show the files being added instead to avoid the suspicion that the `add` command is hanging.
 
+I'm using git-annex version 7.20190912-gab739242a3 (with git version 2.23.0).
+
 Here is an example I've been using to investigate the different conditions and the output from a run of the script:
 
 ```
