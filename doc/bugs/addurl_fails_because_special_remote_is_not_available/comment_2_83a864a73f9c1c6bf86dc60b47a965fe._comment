@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-16T17:38:35Z"
+ content="""
+If the special remote responds with CLAIMURL-FAILURE, then addurl will not
+use it.
+
+There might be some other way the special remote could fail that breaks
+addurl. The only one I can see currently is if the special remote sends
+something that's not a valid response in the protocol.
+
+So I second Ilya, we need a protocol dump or a better explanation about what
+behavior you are seeing.
+"""]]
