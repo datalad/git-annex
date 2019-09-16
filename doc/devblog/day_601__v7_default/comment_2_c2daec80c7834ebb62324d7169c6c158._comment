@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-16T15:58:22Z"
+ content="""
+The adjust command won't be slow if you set annex.thin as it won't need to
+copy the file content.
+
+There are a couple of ways that it might be possible to get symlinks for
+not-present unlocked files. I've opened
+[[todo/symlinks_for_not-present_unlocked_files]] discussing it.
+
+Improving behavior with --hide-missing is also possible
+[[todo/better_way_to_get_missing_files]], and I think much more likely to
+happen.
+"""]]

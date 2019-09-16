@@ -1,0 +1,40 @@
+Unlocked files with content not present appear as regular files containing
+an annex pointer. This is not ideal as the user has no way to know if the
+content is present other than file size. Broken symlinks are a better
+representation.
+
+# smudge approach
+
+It would be possible to make `git annex smudge --update` write symlinks
+for the missing content files. But then git will think they're modified, 
+and committing will lock them.
+
+Is it possible at all for the index to be in the state where a file that's
+been converted to a symlink is not treated as modified? The index contains
+an object type value, which will need to be set to symlink. But if 
+the tree for the checked out branch has the object type of regular file,
+git diff-index would consider there to be a staged change. So probably
+it's not possible. Still, it would be worth playing with the file format to
+see if perhaps it can be tricked.
+
+Or such staged (non-)changes could be filtered out by the pre-commit hook.
+This is probably possible, but git status, diff, etc would show the
+non-present files as modified still.
+
+# adjusted branch approach
+
+Use an adjusted branch, where files with missing content are locked.
+
+Often the users who are affected by this are already using git-annex adjust
+--unlock, so using a different adjustment would be a minor change for them.
+
+Such a branch is very conceptually similar to a --hide-missing branch.
+And so certianly seems doable. Like a --hide-missing branch, there's an
+open question of how to update the branch after get/drop of content.
+
+Needing to manually re-run git-annex adjust, as is done with --hide-missing,
+means the user is still going to get surprised when files they open
+turn out to have missing content. So for this to really be useful,
+the branch needs to automatically get updated.
+
+--[[Joey]]
