@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2019-09-16T17:45:26Z"
+ content="""
+@cscsordas, please don't post problems on random pages of this website,
+there is a bug tracker that you can use.
+
+I do not think that git-annex needs to depend on xdg-open, any more than
+it needs to depend on a web browser. Current behavior seems ok to me,
+the user can open the url that it displays themselves, or can work out
+how to install xdg-open.
+"""]]
