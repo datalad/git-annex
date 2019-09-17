@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-09-17T15:51:21Z"
+ content="""
+Note that direct mode used to behave this way, with broken symlinks to
+missing objects. But only on filesystems supporting symlinks, and direct
+mode was mostly for filesystems w/o that (as well as used by the assistant
+to let users edit arbitrary file contents w/o bothering with unlocking). 
+
+So, I don't consider v7 not having this yet to be a big regression from v5.
+"""]]
