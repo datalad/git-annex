@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-18T16:42:42Z"
+ content="""
+This does not generally happen, I have repositories synced by the assistant
+on many machines.
+
+I'd need to see .git/annex/daemon.log from a repository where this was
+happening to help with this.
+"""]]
