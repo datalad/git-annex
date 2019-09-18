@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 5"
+ date="2019-09-18T21:30:46Z"
+ content="""
+One more option is to add the paths for missing unlocked files to .git/info/exclude .
+"""]]
