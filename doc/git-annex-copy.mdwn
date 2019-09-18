@@ -69,7 +69,7 @@ Copies the content of files from or to another remote.
 
 * `--key=keyname`
 
-  Use this option to move a specified key.
+  Use this option to copy a specified key.
 
 * file matching options
 
