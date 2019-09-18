@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git-annex REST API"
+ date="2019-09-18T22:55:06Z"
+ content="""
+Even better would be if git-annex had a \"server\" mode where one git-annex process runs and exposes a REST API for invoking git-annex commands (cf. [[todo/universal_batch_mode]]; something like [this](https://cromwell.readthedocs.io/en/stable/api/RESTAPI/)).  Then the clean and smudge filters could be lightweight scripts that just call curl.
+"""]]
