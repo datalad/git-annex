@@ -65,3 +65,4 @@ exit_group(128)                         = ?
 
 Sure, I love it :)
 
+> This bug was fixed in git 2.23. [[done]] --[[Joey]]
