@@ -1,0 +1,1 @@
+`git-annex-version` prints "supported repository versions: 5 7" for git-annex 7.20190819 .  But, if I understand correctly, version 5 repos aren't really supported anymore, except to upgrade from?
