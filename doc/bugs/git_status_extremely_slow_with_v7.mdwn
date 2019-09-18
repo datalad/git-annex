@@ -1,6 +1,8 @@
 ### Please describe the problem.
 I just upgraded one of my repositories to v7. Now, git status takes ages. The "Refresh index" count increments every second, so it will take ~12 hours to complete. With such slow operations I really fear the moment when v7 becomes default.
 
+I've got ~1000 unlocked files.
+
 ### What steps will reproduce the problem?
 
 [[!format sh """
