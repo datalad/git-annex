@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2019-09-18T17:23:46Z"
+ content="""
+This should be fixed since git-annex 7.20190730. The ghc compiler started
+using more modern windows features for filenames, which avoid the length
+limits.
+"""]]

@@ -107,3 +107,5 @@ c:\temp\sbv>
 """]]
 
 [[!meta title="window's tiny mind is confused by some long paths used by git-annex"]]
+
+> [[fixed|done]] --[[Joey]]
