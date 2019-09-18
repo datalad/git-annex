@@ -29,14 +29,15 @@ These settings can be overridden on a per-repository basis using
 
 * `annex.autocommit`
 
-  Set to false to prevent the git-annex assistant and git-annex sync
+  Set to false to prevent the `git-annex assistant` and `git-annex sync`
   from automatically committing changes to files in the repository.
 
 * `annex.resolvemerge`
 
   Set to false to prevent merge conflicts in the checked out branch
-  being automatically resolved by the git-annex assitant,
-  git-annex sync, git-annex merge, and the git-annex post-receive hook.
+  being automatically resolved by the `git-annex assitant`,
+  `git-annex sync`, `git-annex merge`, and the `git-annex post-receive`
+  hook.
 
 * `annex.synccontent`
 
@@ -45,15 +46,15 @@ These settings can be overridden on a per-repository basis using
 * `annex.securehashesonly`
 
   Set to true to indicate that the repository should only use
-  cryptographically secure hashes 
-  (SHA2, SHA3) and not insecure hashes (MD5, SHA1) for content.
+  cryptographically secure hashes (SHA2, SHA3) and not insecure
+  hashes (MD5, SHA1) for content.
 
   When this is set, the contents of files using cryptographically
   insecure hashes will not be allowed to be added to the repository.
 
-  Also, git-annex fsck` will complain about any files present in
+  Also, `git-annex fsck` will complain about any files present in
   the repository that use insecure hashes.
-
+  
   Note that this is only read from the git-annex branch by
   `git annex init`, and is copied to the corresponding git config setting. 
   So, changes to the value in the git-annex branch won't affect a

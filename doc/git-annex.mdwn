@@ -868,7 +868,7 @@ Like other git commands, git-annex is configured via `.git/config`.
   the repository that use insecure hashes.
 
   To configure the behavior in new clones of the repository,
-  this can be set in [[git-annex-config]].
+  this can be set using [[git-annex-config]].
 
 * `annex.maxextensionlength`
 
@@ -1054,14 +1054,14 @@ Like other git commands, git-annex is configured via `.git/config`.
   and the git-annex post-receive hook.
 
   To configure the behavior in all clones of the repository,
-  this can be set in [[git-annex-config]].
+  this can be set in [[git-annex-config]](1).
 
 * `annex.synccontent`
 
   Set to true to make git-annex sync default to syncing content.
 
   To configure the behavior in all clones of the repository,
-  this can be set in [[git-annex-config]].
+  this can be set in [[git-annex-config]](1).
 
 * `annex.debug`
 
@@ -1633,7 +1633,7 @@ Remotes are configured using these settings in `.git/config`.
   from automatically committing changes to files in the repository.
 
   To configure the behavior in all clones of the repository,
-  this can be set in [[git-annex-config]].
+  this can be set in [[git-annex-config]](1).
 
 * `annex.startupscan`
 
