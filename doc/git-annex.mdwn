@@ -944,7 +944,7 @@ Like other git commands, git-annex is configured via `.git/config`.
   This controls which refs `git-annex unused` considers to be used.
   See REFSPEC FORMAT in [[git-annex-unused]](1) for details.
 
-* `annex.jobs
+* `annex.jobs`
 
   Configure the number of concurrent jobs to run. Default is 1.
 
