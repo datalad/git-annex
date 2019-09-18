@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-18T17:26:37Z"
+ content="""
+So, this bug is mistitled, it's not about locking, but about looking.
+
+Or more clearly, something about file paths that end up pointing to a home directory.
+
+	fatal: Not a git repository: '../../../home/bids/.git' git-annex-shell: Not a git-annex or gcrypt repository.
+
+	Unable to run git-annex-shell on remote .
+
+The second message used to be output by the code path warming up the ssh
+connection to handle concurrency. That code path has since changed, and no
+longer tries to run git-annex-shell there.
+
+And, notice the "remote ." -- that means that 
+`Git.repoDescribe (gitConfigRepo (remoteGitConfig gc))` produced "."
+
+And the git-annex shell command was similarly passed a directory
+of `Git.repoPath $ gitConfigRepo $ remoteGitConfig gc`
+
+So, it was running "git-annex-shell ." which got converted to an absolute path by git-annex-shell
+when CWD was $HOME, and then re-relevatized.
+
+Clearly that code was pretty broken, apparently more than I knew at the time
+I fixed it. I do think it's fixed though, by [[!commit 3dd43df9c2748df355314cd07b2bb8ebd30be69e]].
+"""]]
