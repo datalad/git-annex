@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-18T17:07:56Z"
+ content="""
+--key can't be reused for another meaning like this, it would make "--key
+foo" be ambiguous.
+
+It would need to be some other option, --batch-key or whatever.
+
+Adding this would seem to open the door to adding it to every command that
+supports --batch now. I'm unsure if the added complexity justifies it.
+
+I'd be more sanguine if there were a way to reuse the existing batch
+machinery and apply it to keys. But many commands' --batch honor file
+matching options (eg --copies or --include), and that cannot be done when
+using keys.
+"""]]
