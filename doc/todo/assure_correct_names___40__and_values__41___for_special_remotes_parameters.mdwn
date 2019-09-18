@@ -1,0 +1,16 @@
+Related is [todo/some way to get a list of options for a special remote of a given type](https://git-annex.branchable.com/todo/some_way_to_get_a_list_of_options_for_a_special_remote_of_a_given_type/) .
+
+At the moment there is no checks in place even for built-in special remotes on either provided special remote options/parameters are not mystyped, and either values of type `bool` are in correct form (`true`/`false` and not `on`/`off` etc)?  E.g.
+
+[[!format sh """
+(git-annex)hopa:~datalad/datalad/najafi-2018-nwb[git-annex]git
+$> git annex initremote datasets.datalad.org4 location=http://datasets.datalad.org/labs/churchland/najafi-2018-nwb/.git type=git mumbojumbo=crap autoenable=ofcause
+initremote datasets.datalad.org4 ok
+(recording state in git...)
+"""]]
+proceeds just fine although one of the options is not anything that special remote would care about, and a bool value for a known one is incorrectly specified (I often missed trailing `e` in `true`)
+
+At least for the built in special remotes (not external) this should be possible and would help to avoid issues such as [OpenNeuroOrg/datalad-service/issues/67](https://github.com/OpenNeuroOrg/datalad-service/issues/67) etc.  Ideally parameters verification should also be provisioned in external special remotes protocol.
+
+[[!meta author=yoh]]
+[[!meta project=dandi]]
