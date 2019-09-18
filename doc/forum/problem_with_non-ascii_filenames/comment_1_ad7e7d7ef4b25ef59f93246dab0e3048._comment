@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-18T16:48:06Z"
+ content="""
+It looks like you had a newline in your filename. Which is very unusual.
+
+git-annex actually got support for those in version 6.20180913.
+"""]]
