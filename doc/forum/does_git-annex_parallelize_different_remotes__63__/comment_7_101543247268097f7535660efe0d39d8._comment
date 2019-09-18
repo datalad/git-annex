@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2019-09-18T17:02:27Z"
+ content="""
+git-annex does separately parallelize checksums, since version 
+7.20190626.
+
+> cost doesn't apply to uploads? if so that would seem like a fair feature
+> to add... :)
+
+`git-annex sync --content` uploads to the lowest-cost remotes first,
+but it still generally still has to upload to the higher cost remotes too,
+unless preferred content has been set up to prevent it.
+"""]]
