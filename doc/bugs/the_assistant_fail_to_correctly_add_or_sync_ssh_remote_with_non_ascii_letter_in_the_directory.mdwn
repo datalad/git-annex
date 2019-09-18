@@ -38,3 +38,9 @@ ssh: Could not resolve hostname git-annex-toubib.lot-of-stuff.info-moi_22_biblio
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Adding remote that use only ascii letter work realy well with the webapp. 
+
+> I tried to reproduce this, but could now. (I made sure to try with LANG=C
+> as well as a unicode locale.
+>
+> So, I think this must have been fixed in the 4 years since the bug was
+> filed. [[done]] --[[Joey]]
