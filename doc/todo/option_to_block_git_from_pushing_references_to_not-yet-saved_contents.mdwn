@@ -1,0 +1,3 @@
+One way I've lost data is to git-annex-add it in an untrusted temp clone of a repo, then commit and push the git branch, but forget to git-annex-copy the annexed contents reference by that branch to a GloballyAvailable, (semi-)trusted remote.  Then, when the temp clone is gone, the branch pushed to the repo is referencing permanently dead files. Maybe, git-annex-init could install a pre-push hook to check for this, and abort the push if it happens?  Basically, to ensure that whatever data is referenced by pushed branches will actually be at least potentially get-table.
+
+Even if the current repo is not temp/untrusted, when sharing data with someone, you may want to ensure that any annexed files referenced by a pushed branch are actually potentially available.
