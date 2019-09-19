@@ -1,0 +1,1 @@
+I use git-annex to manage data for various bioinformatics projects.
