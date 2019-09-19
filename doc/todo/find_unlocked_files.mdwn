@@ -1,0 +1,1 @@
+As suggested at [[forum/Find_unlocked__47__locked_files]], can the file matching conditions be extended to be able to find unlocked files?

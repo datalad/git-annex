@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-09-18T20:33:04Z"
+ content="""
+\"The assistant handles copying files to other remotes, so use it instead of watch if you want that\" -- but the assistant is a GUI, right?  My use case has to run in batch mode.  I just run [[`git-annex-sync`|git-annex-sync]] periodically.  I assume it's ok to both do that and have [[`git-annex-watch`|git-annex-watch]] running in the background?
+"""]]
