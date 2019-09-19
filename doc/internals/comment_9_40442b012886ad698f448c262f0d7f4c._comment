@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="representing unlocked state of files"
+ date="2019-09-19T18:02:31Z"
+ content="""
+Is the locked/unlocked state of a file represented somewhere?  Or does git-annex just assume that any file whose contents starts with /annex/objects/ is a pointer file?
+"""]]
