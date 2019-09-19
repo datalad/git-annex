@@ -282,6 +282,16 @@ keyMatchingOptions' =
 		<> help "match files accessed within a time interval"
 		<> hidden
 		)
+	, globalSetter Limit.addMimeType $ strOption
+		( long "mimetype" <> metavar paramGlob
+		<> help "match files by mime type"
+		<> hidden
+		)
+	, globalSetter Limit.addMimeEncoding $ strOption
+		( long "mimeencoding" <> metavar paramGlob
+		<> help "match files by mime encoding"
+		<> hidden
+		)
 	]
 
 -- Options to match files which may not yet be annexed.

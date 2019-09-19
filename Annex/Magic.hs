@@ -17,6 +17,7 @@ module Annex.Magic (
 ) where
 
 import Types.Mime
+import Control.Monad.IO.Class
 #ifdef WITH_MAGICMIME
 import Magic
 import Utility.Env
@@ -52,8 +53,8 @@ getMagicMime m f = Just . parse <$> magicFile m f
 getMagicMime _ _ = return Nothing
 #endif
 
-getMagicMimeType :: Magic -> FilePath -> IO (Maybe MimeType)
-getMagicMimeType m f = fmap fst <$> getMagicMime m f
+getMagicMimeType :: MonadIO m => Magic -> FilePath -> m (Maybe MimeType)
+getMagicMimeType m f = liftIO $ fmap fst <$> getMagicMime m f
 
-getMagicMimeEncoding :: Magic -> FilePath -> IO (Maybe MimeEncoding)
-getMagicMimeEncoding m f = fmap snd <$> getMagicMime m f
+getMagicMimeEncoding :: MonadIO m => Magic -> FilePath -> m(Maybe MimeEncoding)
+getMagicMimeEncoding m f = liftIO $ fmap snd <$> getMagicMime m f

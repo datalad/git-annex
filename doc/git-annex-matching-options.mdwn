@@ -159,6 +159,35 @@ in either of two repositories.
   If the OS or filesystem does not support access times, this will not
   match any files.
 
+* `--mimetype=glob`
+
+  Looks up the MIME type of a file, and checks if the glob matches it.
+
+  For example, `--mimetype="text/*"` will match many varieties of text files,
+  including "text/plain", but also "text/x-shellscript", "text/x-makefile",
+  etc.
+
+  The MIME types are the same that are displayed by running `file --mime-type`
+
+  If the file's annexed content is not present, the file will not match.
+
+  This is only available to use when git-annex was built with the
+  MagicMime build flag.
+
+* `--mimeencoding=glob`
+
+  Looks up the MIME encoding of a file, and checks if the glob matches it.
+
+  For example, `--mimeencoding=binary` will match many kinds of binary
+  files.
+
+  The MIME encodings are the same that are displayed by running `file --mime-encoding`
+
+  If the file's annexed content is not present, the file will not match.
+
+  This is only available to use when git-annex was built with the
+  MagicMime build flag.
+
 * `--not`
 
   Inverts the next matching option. For example, to only act on

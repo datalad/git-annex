@@ -1,3 +1,9 @@
+git-annex (7.20190913) UNRELEASED; urgency=medium
+
+  * Added --mimetype and --mimeencoding file matching options.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 19 Sep 2019 11:11:19 -0400
+
 git-annex (7.20190912) upstream; urgency=medium
 
   * Default to v7 for new repositories.

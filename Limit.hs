@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import Annex.WorkTree
 import Annex.Action
 import Annex.UUID
 import Annex.Magic
+import Annex.Link
 import Logs.Trust
 import Annex.NumCopies
 import Types.Key
@@ -94,12 +95,33 @@ matchGlobFile glob = go
 	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
 	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob af
 
-matchMagic :: String -> (Magic -> FilePath -> IO (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> Maybe Magic -> MkLimit Annex
+addMimeType :: String -> Annex ()
+addMimeType = addMagicLimit "mimetype" getMagicMimeType providedMimeType
+
+addMimeEncoding :: String -> Annex ()
+addMimeEncoding = addMagicLimit "mimeencoding" getMagicMimeEncoding providedMimeEncoding
+
+addMagicLimit :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> String -> Annex ()
+addMagicLimit limitname querymagic selectprovidedinfo glob = do
+	magic <- liftIO initMagicMime
+	addLimit $ matchMagic limitname querymagic' selectprovidedinfo magic glob
+  where
+	querymagic' magic f = liftIO (isPointerFile f) >>= \case
+		-- Avoid getting magic of a pointer file, which would
+		-- wrongly be detected as text.
+		Just _ -> return Nothing
+		-- When the file is an annex symlink, get magic of the
+		-- object file.
+		Nothing -> isAnnexLink f >>= \case
+			Just k -> withObjectLoc k $ querymagic magic
+			Nothing -> querymagic magic f
+
+matchMagic :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> Maybe Magic -> MkLimit Annex
 matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = Right $ const go
   where
  	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingKey _ _) = pure False
-	go (MatchingFile fi) = liftIO $ catchBoolIO $
+	go (MatchingFile fi) = catchBoolIO $
 		maybe False (matchGlob cglob)
 			<$> querymagic magic (currFile fi)
 	go (MatchingInfo p) =
