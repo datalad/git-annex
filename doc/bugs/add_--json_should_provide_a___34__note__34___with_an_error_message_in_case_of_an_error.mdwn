@@ -1,0 +1,15 @@
+### Please describe the problem.
+
+[Originally blamed datalad](https://github.com/datalad/datalad/issues/3685#issuecomment-533075845) but apparently `git annex add --json` does not include error message in the json output.  In our case it was due to permission issues.
+
+
+[[!format sh """
+$ git annex add more --json
+  more: setFileMode: permission denied (Operation not permitted)
+{"command":"add","success":false,"file":"more"}
+git-annex: add: 1 failed
+"""]]
+
+
+[[!meta author=yoh]]
+[[!meta project=repronim]]
