@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-19T16:14:26Z"
+ content="""
+`git status` only finds unlocked files that have recently been unlocked but
+not committed. (In v5 there were no other kind, but it won't find them all
+in v7.)
+
+I've added a --unlocked option to find them.
+"""]]

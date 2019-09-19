@@ -159,6 +159,14 @@ in either of two repositories.
   If the OS or filesystem does not support access times, this will not
   match any files.
 
+* `--unlocked`
+
+  Matches annexed files that are unlocked.
+
+* `--locked`
+
+  Matches annexed files that are locked.
+
 * `--mimetype=glob`
 
   Looks up the MIME type of a file, and checks if the glob matches it.

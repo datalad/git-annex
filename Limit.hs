@@ -129,6 +129,22 @@ matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = Right $ 
 matchMagic limitname _ _ Nothing _ = 
 	Left $ "unable to load magic database; \""++limitname++"\" cannot be used"
 
+addUnlocked :: Annex ()
+addUnlocked = addLimit $ Right $ const $ matchLockStatus False
+
+addLocked :: Annex ()
+addLocked = addLimit $ Right $ const $ matchLockStatus True
+
+matchLockStatus :: Bool -> MatchInfo -> Annex Bool
+matchLockStatus _ (MatchingKey _ _) = pure False
+matchLockStatus _ (MatchingInfo _) = pure False
+matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
+	islocked <- isPointerFile (currFile fi) >>= \case
+		Just _key -> return False
+		Nothing -> isSymbolicLink
+			<$> getSymbolicLinkStatus (currFile fi)
+	return (islocked == wantlocked)
+
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
 addIn :: String -> Annex ()

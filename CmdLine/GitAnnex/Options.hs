@@ -292,6 +292,16 @@ keyMatchingOptions' =
 		<> help "match files by mime encoding"
 		<> hidden
 		)
+	, globalFlag Limit.addUnlocked
+		( long "unlocked"
+		<> help "match files that are unlocked"
+		<> hidden
+		)
+	, globalFlag Limit.addLocked
+		( long "locked"
+		<> help "match files that are locked"
+		<> hidden
+		)
 	]
 
 -- Options to match files which may not yet be annexed.
