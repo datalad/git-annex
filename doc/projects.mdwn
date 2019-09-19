@@ -1,0 +1,5 @@
+Projects that rely on git-annex can put pages here to do things like track
+bugs that affect them, etc. (See also: [[related_software]])
+
+[[!inline pages="projects/* and !projects/*/* and !*/Discussion" 
+feeds=no archive=yes sort=title rootpage="projects" postformtext="Add your project:"]]
