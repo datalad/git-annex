@@ -1,0 +1,7 @@
+Suppose two git-annex symlinks (locked files) point to the same key.  If you unlock one symlink, and `annex.thin` is `true`, editing the file will change the contents pointed to by the second, supposedly locked, symlink.  
+
+Maybe, with `annex.thin`, when one copy of a file is unlocked, all must be unlocked?
+
+Also, with `annex.thin`, the [[invariant|internals]] that `.git/annex/objects/aa/bb/*/*` contains content with given key gets broken if the file is edited.  Might that affect other things, like metadata lookup? [[`git-annex-fsck`|git-annex-fsck]] reports this as an error.
+
+[[`git-annex-drop`|git-annex-drop]] succeeds but does not actually drop the file.
