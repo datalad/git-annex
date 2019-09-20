@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2019-09-20T20:46:41Z"
+ content="""
+[git docs](https://git-scm.com/docs/gitattributes#_code_filter_code) say \"Depending on the version that is being filtered, the corresponding file on disk may not exist, or may have different contents. So, smudge and clean commands should not try to access the file on disk, but only act as filters on the content provided to them on standard input.\"  Are there cases where this could cause problems?
+"""]]
