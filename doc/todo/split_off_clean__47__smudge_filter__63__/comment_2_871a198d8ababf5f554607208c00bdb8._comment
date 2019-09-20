@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-09-20T15:58:08Z"
+ content="""
+In general, does `git-annex` (or packages it uses) keep global state, or is everything purely functional?  (Trying to understand if adding a \"git-annex server\" mode that spawns lightweight threads to run git-annex commands in response to requests is even theoretically possible).
+"""]]
