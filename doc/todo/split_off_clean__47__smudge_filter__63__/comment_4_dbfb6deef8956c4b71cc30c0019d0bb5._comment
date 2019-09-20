@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-09-20T16:50:24Z"
+ content="""
+git-annex isolates all runtime state in its Annex monad. This
+makes it easy to have multiple threads each with their own isolated state,
+which is how all its concurrency features work.
+"""]]
