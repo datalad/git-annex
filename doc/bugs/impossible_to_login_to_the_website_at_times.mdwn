@@ -5,3 +5,9 @@ As reported before in private communication, remains the case.  Yesterday happen
 
 [screenshot.png](http://www.onerussian.com/tmp/gkrellShoot_09-25-18_092905.png)
 [[!taglink  confirmed]]
+
+> I've made http redirect to https, which will avoid this problem.
+> 
+> [ikiwiki bug report](http://ikiwiki.info/bugs/http_login_after_https_login_leads_to_extremely_confusing_error/)
+> 
+> [[done]] --[[Joey]]
