@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 1"
+ date="2019-09-20T20:12:31Z"
+ content="""
+Yes! I've had issues with parallel operations on google remotes. I thought it might be a problem in git-annex-remote-googledrive and I didn't have time yet to investigate it further, so I didn't report it here.
+"""]]
