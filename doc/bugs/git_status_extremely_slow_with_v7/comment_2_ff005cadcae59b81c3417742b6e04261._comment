@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-20T16:25:25Z"
+ content="""
+Once git has learned that the unlocked files are unmodified, it won't check
+them again.
+
+When you clone a repository, git checks out all the unlocked files
+as pointer files, and so git's index contains their inodes, and so
+no, git status is not slow in that situation.
+
+I think you must have unlocked 1000 files, and then ran git status.
+Then it would run git-annex 1000 times to smudge them all.
+([[todo/git_smudge_clean_interface_suboptiomal]]).
+I benchmarked that scenario to take around 28 seconds on an SSD.
+
+Perhaps you have an old version of git before 2.5? It used to force
+the entire content of each large file through a pipe to git-annex.
+"""]]
