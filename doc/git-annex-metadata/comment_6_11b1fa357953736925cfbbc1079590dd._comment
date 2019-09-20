@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="meanwhile"
+ date="2019-09-20T18:53:03Z"
+ content="""
+I am [thinking about some abominations](https://github.com/datalad/datalad/issues/3696) to workaround inability to specify smth like
+
+```
+licenses/* annex.commit.metadata=(distribution-restrictions=sensitive)
+```
+in `.gitattributes`. IMHO by limiting to `.commit` the scope when annex should add metadata becomes clear.  Sure thing it could leak across files with the same content (0-length files are most prone) but it is unrelated IMHO since a direct call to `git annex metadata licenses/* -s ...` would have the same effect anyways.
+"""]]
