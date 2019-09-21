@@ -1,0 +1,5 @@
+I have a git-annex repository in a portable hard drive. Some times I plug it into one computer, others I plug it into another one. So that it is reachable in both situations, I have it also added as an ssh remote, using the same `annex-uuid`. This works well, but now I always get a fatal error `fatal: Could not read from remote repository.` when I have the same unit plugged in.
+
+May I suggest that this be downgraded to a "warning" or an "info"? After all, the same repository (annex-uuid) was discovered and processed, but at another location (url). It does not need to sound so cataclysmic. Perhaps it does not even need to try the ssh if it found the same repository at a "cheaper" location; and if it is not found here, only declare a failure if it was unavailable at another url.
+
+Thank you for your time (and your fine work).
