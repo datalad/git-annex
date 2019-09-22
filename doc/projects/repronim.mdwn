@@ -1,0 +1,22 @@
+ReproNim [https://repronim.org](https://repronim.org)
+=====================================================
+
+The center for Reproducible Neuroimaging computation develops standards and tools to improve reproducibility. `git-annex` is used via [DataLad](http://datalad.org) and in the core of efforts such as [YODA](https://github.com/myyoda), [repronim/containers](https://github.com/ReproNim/containers), and heavily used by [ReproMan](https://github.com/ReproNim/reproman/).
+
+## TODOs
+
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+
+### Done:
+
+[[!inline pages="todo/* and !todo/done and link(todo/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+
+
+
+## BUGs
+
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+
+### Done:
+
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
