@@ -1,0 +1,17 @@
+The other day, in the middle of one of my repositories I found a file. There was something strange about this file: it was a regular file, not a symlink like most of the files in my repository.
+Maybe it got lost. Maybe I copied it in and forgot to `add` it. So I tried to add it, but it failed. Or, better, it did not give an error but it also did not change a thing. Why?
+
+    $ git-annex add -d Cats.mkv                                                                             
+    [2019-09-21 12:12:15.243550924] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+    [2019-09-21 12:12:15.246431114] process done ExitSuccess
+    [2019-09-21 12:12:15.246610667] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","show-ref","refs/heads/master"]
+    [2019-09-21 12:12:15.249072467] process done ExitSuccess
+    [2019-09-21 12:12:15.249345571] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","ls-files","--others","--exclude-standard","-z","--","Cats & Dogs (2001).mkv"]
+    [2019-09-21 12:12:15.254996251] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","ls-files","--modified","-z","--","Cats.mkv"]
+    [2019-09-21 12:12:15.260730984] read: git ["--git-dir=../../.git","--work-tree=../..","--literal-pathspecs","diff","--name-only","--diff-filter=T","-z","--cached","--","Cats.mkv"]
+
+I also found this same file in all clones of this repository! What is going on?
+
+Is it something to do with locked/unlocked files? I never unlock anything. `git-annex lock Cats.mkv` changes nothing. `git-annex list` shows no files. `git-annex checkpresentkey $(git-annex calckey Cats.mkv)` returns error number 1. So, it seems safe to say that the file is not in the repository and it _wont't_ go into the repository (not like this). I find this very puzzling!
+
+Maybe I could use `reinject` the file into a repository, but I'm trying to diagnose this situation, trying to determine what is going on. However, I'm out of ideas. Any help?

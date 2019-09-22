@@ -1,0 +1,1 @@
+Of potential interest: [RepoFS: File system view of Git repositories](https://www.sciencedirect.com/science/article/pii/S2352711018300712)

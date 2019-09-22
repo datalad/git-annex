@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="found it"
+ date="2019-09-20T18:56:52Z"
+ content="""
+see [datalad/issues/139](https://github.com/datalad/datalad/issues/139#issuecomment-97948143). Quoting a part of it:
+
+*But I'd like to investigate adding --batch to individual commands first,
+since this seems more git-like, and also simpler. It would probably be
+helpful to talk about the specific commands you need to call a lot.*
+
+*Things like `git annex lookupkey --batch`, `git-annex readpresentkey --batch`
+etc should be able to be spun up and run as long-duration servers, which
+you could query as needed, not batched up all at once. This is how
+git-annex uses `git cat-file --batch` etc.*
+
+*There's some potential for such a long-running command to either
+buffer stale data so it doesn't answer with the current state of the
+repository, or for it to buffer changes and not commit them to disk
+immediately. For example, a `git annex add --batch` would have the
+latter problem.*
+
+*That is actually an argument for only adding --batch mode to specific
+commands though, since that would be an opportunity to check thier
+behavior. A single `git-annex shell` interface would expose any such
+problems in all commands.*
+"""]]

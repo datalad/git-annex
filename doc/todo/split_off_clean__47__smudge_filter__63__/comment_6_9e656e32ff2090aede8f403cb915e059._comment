@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 6"
+ date="2019-09-20T20:41:25Z"
+ content="""
+\" Improving the interface to let the clean filter read the content of the file itself, rather than it being piped through, would be the best way to improve git add performance\" -- right, but that sounds unlikely near-term?
+"""]]
