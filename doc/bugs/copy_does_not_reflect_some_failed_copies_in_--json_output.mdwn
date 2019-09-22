@@ -21,3 +21,4 @@ git-annex version: 6.20170220+gitg75a15e1ad-1~ndall+1
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

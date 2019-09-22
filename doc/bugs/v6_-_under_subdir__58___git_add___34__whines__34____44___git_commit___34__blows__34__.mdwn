@@ -47,5 +47,6 @@ git-annex version: 6.20180807+git230-gaa291acfe-1~ndall+1
 also happens with 6.20180807-1  but not with 6.20170101-1+deb9u2, so it is a regression
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

@@ -32,4 +32,5 @@ yoh      26790  0.0  0.3 1074180296 63604 pts/16 Tl 11:05   0:00  |           \_
 P.S.  It might be a related observation that git-annex metadata does exit with non-0 exit code whenever it is ran on a non-existing file, but it exits with 0 exit code (but without performing any action) when ran on the existing but not known to git file.  I wondered if there could be if not a change in behavior but a flag to make `annex metadata PATHs` exit with non-0 code if it didn't handle some path(s) from the provided.  Then we could use it within our "set metadata" to guarantee that we do not omit any file for which we thought we would get metadata operation performed.
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 

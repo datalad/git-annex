@@ -20,5 +20,6 @@ get docs/freesurfer.intro.mmclass.ppt (from origin...)
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

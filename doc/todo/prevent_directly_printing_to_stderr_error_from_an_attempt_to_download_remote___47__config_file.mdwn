@@ -35,6 +35,7 @@ IMHO that "download failed: " message output should be provided only in `--debug
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 ref: [https://github.com/datalad/datalad/pull/2881#issue-218977359](https://github.com/datalad/datalad/pull/2881#issue-218977359)
 

@@ -57,5 +57,6 @@ $> git lg --stat git-annex | head -n 30
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > Seems we're ok, so [[done]] --[[Joey]]

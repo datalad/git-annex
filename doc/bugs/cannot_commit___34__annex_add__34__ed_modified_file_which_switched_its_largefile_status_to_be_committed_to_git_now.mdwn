@@ -68,3 +68,4 @@ Expected behavior:
 - commit without a failure, committing to git (since .gitattributes instructs so and even `git annex add` reports that)
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

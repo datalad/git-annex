@@ -66,5 +66,6 @@ local repository version: 5
 Originally [reported in DataLad #3321](https://github.com/datalad/datalad/issues/3321) with workarounds to force `curl` downloads
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > [[fixed|done]] --[[Joey]]

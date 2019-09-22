@@ -3,3 +3,4 @@ As initially brought up in https://github.com/datalad/datalad/pull/2515#issuecom
 May be even more generally -- if there was a robust way to obtain errors for other commands as well, e.g. such as `fatal` messages such as `this operation must be run in a work tree`
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

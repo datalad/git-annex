@@ -53,3 +53,4 @@ git-annex: add: 1 failed
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

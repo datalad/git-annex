@@ -7,3 +7,4 @@ Initially generated an annex while having a restrictive umask 077.  Then cloned 
 6.20160208+gitg1ac9034-1~ndall+1
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

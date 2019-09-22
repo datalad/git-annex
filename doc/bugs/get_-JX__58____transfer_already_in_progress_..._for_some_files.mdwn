@@ -28,5 +28,6 @@ If needed, I could probably provide you a singularity image with the environment
 Tried with bleeding edge 6.20180308+gitg3962ca71b-1~ndall+1 although originally detected with 6.20180220+gitg811d0d313-1~ndall+1
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

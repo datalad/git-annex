@@ -2,6 +2,7 @@ As reported before in private communication, remains the case.  Yesterday happen
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 [screenshot.png](http://www.onerussian.com/tmp/gkrellShoot_09-25-18_092905.png)
 [[!taglink  confirmed]]

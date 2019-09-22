@@ -74,5 +74,6 @@ Changes to be committed:
 Ref: https://github.com/datalad/datalad/issues/1027
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 [[done]]; oh -- it is RTFM: --include-dotfiles  --[[yoh]]

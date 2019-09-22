@@ -29,5 +29,6 @@ SHA256E-s328--c2eb8088cdc71a0d4cbd660312bef5421a47ce7da3655efdb17712e7188be4a1.t
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

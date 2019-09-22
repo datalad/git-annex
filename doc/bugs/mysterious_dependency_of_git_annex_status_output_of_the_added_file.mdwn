@@ -79,5 +79,6 @@ A file5
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 [[done]]

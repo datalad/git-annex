@@ -42,4 +42,5 @@ $> git -C ~/proj/git-annex describe --contains 6.20180808-ga1327779a
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 

@@ -7,3 +7,4 @@ Due to the very unstable kernel on my laptop atm I need to reboot quite frequent
 5.20151116+gitg5416a1a-1~ndall+1
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

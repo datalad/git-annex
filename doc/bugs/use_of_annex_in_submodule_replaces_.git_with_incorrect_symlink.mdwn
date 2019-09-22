@@ -45,5 +45,6 @@ upgrade supported from repository versions: 0 1 2 4 5
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]]

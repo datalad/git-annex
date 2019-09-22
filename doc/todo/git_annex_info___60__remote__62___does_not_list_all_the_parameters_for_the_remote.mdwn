@@ -27,6 +27,7 @@ d7e13bf3-0c0e-44c9-a626-c7af6a628df7 chunk=50MiB encryption=none externaltype=rc
 needed to see what is the prefix -- which is stored in remote.log -- but not printed by 'git annex info' neither in --verbose nor --json mode
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > This got fixed already it turns out, GETINFO.
 > Of course this and other special remotes will need changes to use it,

@@ -12,4 +12,5 @@ git-annex: add: 1 failed
 
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 [[!meta project=repronim]]

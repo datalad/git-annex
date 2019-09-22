@@ -14,5 +14,6 @@ SYNOPSIS
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

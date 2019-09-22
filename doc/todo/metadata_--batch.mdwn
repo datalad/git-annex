@@ -1,3 +1,4 @@
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]] (using json input) --[[Joey]]

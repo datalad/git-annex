@@ -23,3 +23,4 @@ git-annex version: 6.20180913+git33-g2cd5a723f-1~ndall+1
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

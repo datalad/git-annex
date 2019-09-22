@@ -1,3 +1,4 @@
 `publicurl` configuration option was added to S3 special remote to facilitate public access to the files deposited to S3 via their HTTP "frontend".  For many remotes (e.g. `rsync`, `directory`, etc) it might happen that the remote location directory is also served by a regular HTTP server. So it sounds very reasonable to enable regular HTTP(/https) access to those files publicly by providing those special remotes with `publicurl` setting so annex could simply try to access those files via http.  In particular relevant for the special remotes with `exporttree=true`.
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]

@@ -3,5 +3,6 @@ ATM there is no `--json-progress` in `git annex add` (only `--json`), so no feed
 Cheers!
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > [[done]] --[[Joey]]

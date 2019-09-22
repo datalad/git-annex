@@ -46,6 +46,7 @@ git-annex: drop: 1 failed
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 
 > [[done]] --[[Joey]]

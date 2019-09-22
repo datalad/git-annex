@@ -5,6 +5,7 @@ Related:
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > --status-fd is one way, or the progress could be included as
 > part of the --batch protocol. In either case, it might make sense to

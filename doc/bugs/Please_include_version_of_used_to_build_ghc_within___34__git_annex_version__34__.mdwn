@@ -1,5 +1,6 @@
 Since git-annex version is not always sufficient to pin point the source of regression (e.g. see [the get -J issue](http://git-annex.branchable.com/bugs/multiple_ssh_prompts__44___and_thread_blocked_indefinitely_in_an___63____63____63___transaction/)), it would be really nice if the version of ghc (and thus all its libraries if I get it right) was included in the output of `git annex version`
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > Closing as I was blind -- there is `dependency versions` reported [[done]] --[[yarikoptic]]

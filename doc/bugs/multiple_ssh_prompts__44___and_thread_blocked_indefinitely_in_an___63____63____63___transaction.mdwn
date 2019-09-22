@@ -58,5 +58,6 @@ This is on an NFS mounted partition, but remains the same when run under `/tmp`
 Running a significantly more outdated version I found laying around (6.20170815+gitg22da64d0f-1~ndall+1) shows a single password prompt
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > [[fixed|done]] --[[Joey]]

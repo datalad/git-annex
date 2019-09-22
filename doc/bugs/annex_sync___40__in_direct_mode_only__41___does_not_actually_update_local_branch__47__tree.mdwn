@@ -112,5 +112,6 @@ index 0000000..d00491f
 6.20180206+gitg638032f3a-1~ndall+1
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

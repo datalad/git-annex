@@ -46,6 +46,7 @@ so at the end we get a run of git-annex which exits with error 1... and in json 
 I wondered if annex should first analyze passed paths to get actual keys to be fetched?
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]]; also fixed for several other commands, but the final 
 > fix needed each command that could have the problem to be modified, so 

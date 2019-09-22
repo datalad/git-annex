@@ -105,6 +105,7 @@ index 982793c..8fdffc0 100644
 yeap
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]]; clean filter defaults to preserving git/annex state of file.
 > --[[Joey]]

@@ -29,6 +29,7 @@ git-annex version: 6.20180416+gitg86b18966f-1~ndall+1
 copy of the repository will be provided via email
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 
 

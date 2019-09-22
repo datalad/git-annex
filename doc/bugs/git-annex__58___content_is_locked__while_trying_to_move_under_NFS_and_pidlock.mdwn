@@ -29,3 +29,4 @@ $> echo $?
 BTW running move in our old now somewhat screwed up annex, results in a differently expressed error: [http://www.onerussian.com/tmp/2016-02-29.png](http://www.onerussian.com/tmp/2016-02-29.png)
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

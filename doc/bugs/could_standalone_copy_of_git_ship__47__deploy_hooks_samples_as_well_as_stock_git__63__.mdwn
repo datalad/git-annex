@@ -57,5 +57,6 @@ $> find .git
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]] --[[Joey]]

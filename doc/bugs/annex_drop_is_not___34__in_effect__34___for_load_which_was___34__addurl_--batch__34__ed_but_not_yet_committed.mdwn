@@ -62,5 +62,6 @@ t sh
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]] per comments --[[Joey]]

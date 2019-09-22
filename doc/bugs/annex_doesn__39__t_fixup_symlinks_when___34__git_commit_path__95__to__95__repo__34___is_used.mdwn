@@ -77,3 +77,4 @@ nothing to commit, working tree clean
 note that there is no "(recording state in git...) ..." portion in the output!
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

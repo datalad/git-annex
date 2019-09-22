@@ -30,6 +30,7 @@ $> ./v6-push.sh 6 2>&1 | grep '>>>'
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > The data loss bugs are fixed in [[!commit ee309d694161d0f416420db6c4efb834c813351e]].
 > 

@@ -6,6 +6,7 @@ The problem came upon reboot when I got "Windows Script Host" error "Can not fin
 P.S. I really hope that someone eventually takes time to make git-annex become available for Windows from conda-forge.
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > Made the NSIS gitInstallDir probe which of PROGRAMFILES/Git
 > and PROGRAMFILES/Git exists, and use whichever. [[done]] --[[Joey]]

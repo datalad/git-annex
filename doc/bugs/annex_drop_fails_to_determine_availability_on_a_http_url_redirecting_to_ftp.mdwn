@@ -127,5 +127,6 @@ Logging in as anonymous ...
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

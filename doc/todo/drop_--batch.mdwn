@@ -1,6 +1,7 @@
 There is a dropkey --batch, so I guess I could workaround but probably would be nice for consistency to have --batch mode for drop itself as well
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]]; went ahead and added drop --batch to be symmetric with get
 > --batch. --[[Joey]]

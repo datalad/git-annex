@@ -48,6 +48,7 @@ get sub-01/label/lh.aparc.a2009s.annot (from web...)
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > git-annex no longer uses either curl or wget by default, and always uses
 > curl when configured to do so, so this kind of surprising behavior will

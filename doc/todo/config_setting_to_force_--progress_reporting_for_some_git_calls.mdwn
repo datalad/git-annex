@@ -5,3 +5,4 @@ The main point is -- `git annex init --version=6`, while running  on a crippled 
 Thanks in advance for considering
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

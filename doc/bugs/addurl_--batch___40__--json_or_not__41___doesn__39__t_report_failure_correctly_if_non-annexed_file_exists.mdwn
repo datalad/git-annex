@@ -17,5 +17,6 @@ $> echo "http://www.onerussian.com/tmp/banner.png 123" | git annex addurl --batc
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

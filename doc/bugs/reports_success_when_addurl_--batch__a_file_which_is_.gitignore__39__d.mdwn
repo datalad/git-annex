@@ -29,6 +29,7 @@ git-annex: user error (xargs ["-0","git","--git-dir=.git","--work-tree=.","--lit
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > And it leaves the unstaged symlink behind too.
 > 

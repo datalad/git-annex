@@ -38,5 +38,6 @@ Full log http://www.onerussian.com/tmp/git-annex_6.20181011+git109-gff9ba1f4d-1~
 (not sure if relevant - this is I think the first build without my custom no LOCPATH patch)
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > [[fixed|done]] --[[Joey]]

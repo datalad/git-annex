@@ -1,5 +1,6 @@
 I wondered if it would be sensible to ask to extend [externals special remote protocol](https://git-annex.branchable.com/design/external_special_remote_protocol/) with ability for custom remotes to pass back some INFO level message (not only DEBUG or ERROR).  The reason is:  in datalad-archives special remote we usually need to `git annex get` first the key containing the archive, which might be sizeable.  Since there is ATM no way to communicate back to git-annex, so it could communicate back to the datalad which runs it, it results in no output/message to the user that possibly a heavy download is happening in the background.  So, we would need to establish our own communication from datalad-archives special remote all the way to top level datalad process to report that, or I wondered if may be we could report back to git-annex, and it in turn report back to the original process (running e.g. `annex get --json --json-progress`) so it could spit out that message wrapped into a json record within the stream, so we could process and output that to the user.
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]] --[[Joey]]

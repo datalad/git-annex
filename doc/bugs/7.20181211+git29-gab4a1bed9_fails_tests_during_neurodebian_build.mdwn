@@ -24,5 +24,6 @@ FAIL
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > [[done]] I think.. --[[Joey]]

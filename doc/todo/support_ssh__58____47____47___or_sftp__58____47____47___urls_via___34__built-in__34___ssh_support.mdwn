@@ -36,3 +36,4 @@ curl: (51) SSL peer certificate or SSH remote key was not OK
 I wondered if it would be feasible for git annex natively support ssh (scp) and/or sftp urls?  All the machinery is there since it deals with copying files over ssh already.
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

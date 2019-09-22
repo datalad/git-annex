@@ -75,5 +75,6 @@ I am a little confused though since we do test for this scenario in datalad and 
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 [[!meta title="autoenable not done for implicit init"]]

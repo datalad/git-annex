@@ -17,3 +17,4 @@ git-annex: info: 1 failed
 unless there is really a need to have this operations performed within the same repository/the same filesystem, I do not understand why generic $TMPDIR could not be used for such operations so no write access has to be demanded
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

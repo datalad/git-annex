@@ -11,6 +11,7 @@ $> git annex addurl --file bigone --json --json-progress https://s3.amazonaws.co
 Thanks in advance
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > In general addurl doesn't know the filename until after it's downloaded
 > the url (due to running youtube-dl on html urls), but when --file

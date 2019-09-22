@@ -3,5 +3,6 @@ Since in datalad we are invoking git and git-annex quite frequently, and on debi
 just an idea
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]], but without prelinking. --[[Joey]]

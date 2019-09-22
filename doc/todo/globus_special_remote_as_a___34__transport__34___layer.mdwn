@@ -2,3 +2,4 @@ One of my collaborators needs to orchestrate data between local desktop and HPC 
 Decided to ask before jumping into trying to implement it (not that I have any globus access ATM - I think all life signs of it were gone from dartmouth sites awhile back).
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]

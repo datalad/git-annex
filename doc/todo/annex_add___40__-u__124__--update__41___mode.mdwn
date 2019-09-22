@@ -1,5 +1,6 @@
 to supplement 'git add -u' behavior -- to add only updated (tracked only, no untracked) files to be committed.  ATM all files would be added, including untracked.
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]]

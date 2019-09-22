@@ -27,5 +27,6 @@ This is a new behavior, this test was passing before, and I do not think we sugg
 Some tests also failed related to our datalad archives git annex special remote but I didn't look into them yet -- I guess though that it is related ;-)
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]

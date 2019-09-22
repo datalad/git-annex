@@ -43,3 +43,4 @@ value
 you can see in above taht 1 and 2 have different content/keys, but they both acquire the same tag=value.  If I commit 2 after it being renamed from 1, it is ok.
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

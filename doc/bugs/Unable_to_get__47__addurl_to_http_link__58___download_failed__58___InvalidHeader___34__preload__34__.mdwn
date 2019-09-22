@@ -73,6 +73,7 @@ local repository version: 5
 
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > closing as there are no code changes to git-annex that can fix this,
 > it has to be fixed in either http-client or the web server. [[done]]

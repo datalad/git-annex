@@ -27,4 +27,5 @@ FWIW my umask is 077 but originally discovered on a system with umask 0002
 I guess I need to annex fsck tons of repositories now :-/
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 

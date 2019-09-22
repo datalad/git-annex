@@ -65,5 +65,6 @@ LC_ALL=C
 </details>
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > fixed in the haskell process library. [[done]] --[[Joey]]

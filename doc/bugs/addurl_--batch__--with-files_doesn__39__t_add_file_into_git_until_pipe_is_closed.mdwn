@@ -94,5 +94,6 @@ git-annex version: 6.20160104+gitg0cf96be-1~ndall+1
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > closing as not a bug [[done]] --[[Joey]]

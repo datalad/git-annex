@@ -31,5 +31,6 @@ FAIL (0.34s)
 I have tried to rebuild (`debian/rules binary`) second time while in the same environment -- didn't succeed... but then I proceeded to build amd64 fine, and redid i386 build just fine
 
 [[!meta author=yoh]]
+[[!tag projects/repronim]]
 
 > [[fixed|done]] though w/o a true root cause analysis --[[Joey]]

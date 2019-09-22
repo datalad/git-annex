@@ -2,5 +2,6 @@ ATM git annex addurl ignores  annex.largefiles option so to automate annexificat
 
 N.B. I do understand that use-case might be somewhat vague, let me know if I should expand reasoning
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > [[done]] --[[Joey]]

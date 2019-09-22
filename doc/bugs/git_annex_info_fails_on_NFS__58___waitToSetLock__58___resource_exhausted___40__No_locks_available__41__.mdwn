@@ -43,4 +43,5 @@ git-annex version: 6.20170101+gitg93d69b1-1~ndall+1
 so this one was a run from within singularity neurodebian environment on a centos box. but the same behaviour is if ran using 6.20161231-gc8eeb17da  standalone build ran under CentOS natively.
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 

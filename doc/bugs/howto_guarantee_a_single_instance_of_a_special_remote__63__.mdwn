@@ -34,4 +34,5 @@ I wondered if there is an easy way to restrict a single instance for some specia
 6.20180220+gitg811d0d313-1~ndall+1
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 

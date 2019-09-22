@@ -29,3 +29,4 @@ yohtest@smaug's password:
 """]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

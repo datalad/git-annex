@@ -83,3 +83,4 @@ See also: [[parallel_possibilities]]
 >>> Wrote concurrent-output; [[done]] --[[Joey]]
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]

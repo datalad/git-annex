@@ -82,6 +82,7 @@ git annex get --debug --from=web sub-01.html
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
 
 > This does not involve redirects. It's hitting the url a
 > couple of times on failure, thus the multiple "from web".

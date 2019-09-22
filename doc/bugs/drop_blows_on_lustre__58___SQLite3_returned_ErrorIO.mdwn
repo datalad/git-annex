@@ -49,3 +49,4 @@ operating system: linux x86_64
 
 
 [[!meta author=yoh]]
+[[!tag projects/datalad]]
