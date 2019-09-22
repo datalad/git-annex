@@ -13,4 +13,4 @@ proceeds just fine although one of the options is not anything that special remo
 At least for the built in special remotes (not external) this should be possible and would help to avoid issues such as [OpenNeuroOrg/datalad-service/issues/67](https://github.com/OpenNeuroOrg/datalad-service/issues/67) etc.  Ideally parameters verification should also be provisioned in external special remotes protocol.
 
 [[!meta author=yoh]]
-[[!meta project=dandi]]
+[[!tag projects/dandi]]
