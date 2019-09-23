@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2019-09-23T14:12:55Z"
+ content="""
+See [[git-annex-matching-options]] for ways to query for metadata.
+
+For example:
+
+	git annex find --metadata tag=foo --or --metadata tag=bar
+"""]]
