@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tobiasBora"
+ avatar="http://cdn.libravatar.org/avatar/80a7d8c2a7b475b6b71198cce0faa6b0"
+ subject="Download either video and audio"
+ date="2019-09-23T09:14:28Z"
+ content="""
+First thanks a lot for this great software. I am also very interested by a way to use git-annex to download both audio and video from youtube in the same git repository. I don't really understand the security argument: why would youtube-dl be secure with global arguments and not per-file arguments? What does it mean for youtube-dl to be secure? And if it is indeed insecure for local arguments only, would it be possible to implement two differents global config, one for audio, one for video, and let the user specify in the command which config he wants? Or if it's not possible, maybe add a flag like  \"--insecure-youtubedl-arg\", to let the user take a risks if he thinks the risk is okay (either just one user on the machine, or safe arguments on youtube dl)… Thanks a lot!
+"""]]
