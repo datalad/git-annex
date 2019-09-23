@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="tobiasBora"
+ avatar="http://cdn.libravatar.org/avatar/80a7d8c2a7b475b6b71198cce0faa6b0"
+ subject="Get list of files with specific metadata"
+ date="2019-09-23T13:16:11Z"
+ content="""
+Hello,
+I would like to know, is it possible to get in one command all files with a particular tag, or a list of tags (like \"give all files that have tag foo or tag bar\"). Note that I don't want to change the current view. Also, are you aware of any music player that could use these tags to find some songs to play and add them to some playlist?
+"""]]
