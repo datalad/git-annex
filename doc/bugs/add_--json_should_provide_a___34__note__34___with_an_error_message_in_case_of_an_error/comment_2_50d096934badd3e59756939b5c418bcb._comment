@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-24T21:01:48Z"
+ content="""
+--json-error-messages does not go to stderr, so does not have that problem.
+"""]]
