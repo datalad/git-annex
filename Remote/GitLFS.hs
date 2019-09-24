@@ -42,6 +42,7 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
+import qualified Control.Concurrent.MSemN as MSemN
 
 remote :: RemoteType
 remote = RemoteType
@@ -64,7 +65,8 @@ gen r u c gc = do
 			g <- Annex.gitRepo
 			liftIO $ Git.GCrypt.encryptedRemote g r
 		else pure r
-	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing r' gc
+	sem <- liftIO $ MSemN.new 1
+	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing sem r' gc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store u h)
@@ -159,9 +161,18 @@ mySetup _ mu _ c gc = do
 data LFSHandle = LFSHandle
 	{ downloadEndpoint :: Maybe LFS.Endpoint
 	, uploadEndpoint :: Maybe LFS.Endpoint
+	, getEndPointLock :: MSemN.MSemN Int 
 	, remoteRepo :: Git.Repo
 	, remoteGitConfig :: RemoteGitConfig
 	}
+
+-- Only let one thread at a time do endpoint discovery.
+withEndPointLock :: LFSHandle -> Annex a -> Annex a
+withEndPointLock h = bracket_
+	(liftIO $ MSemN.wait l 1)
+	(liftIO $ MSemN.signal l 1)
+  where
+	l = getEndPointLock h
 
 discoverLFSEndpoint :: LFS.TransferRequestOperation -> LFSHandle -> Annex (Maybe LFS.Endpoint)
 discoverLFSEndpoint tro h
@@ -223,7 +234,7 @@ getLFSEndpoint tro hv = do
 	h <- liftIO $ atomically $ readTVar hv
 	case f h of
 		Just endpoint -> return (Just endpoint)
-		Nothing -> discoverLFSEndpoint tro h >>= \case
+		Nothing -> withEndPointLock h $ discoverLFSEndpoint tro h >>= \case
 			Just endpoint -> do
 				liftIO $ atomically $ writeTVar hv $
 					case tro of
