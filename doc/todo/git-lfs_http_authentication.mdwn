@@ -7,3 +7,6 @@ when accessing that repository over http.
 `git credential` provides a way to reuse git's authentication system,
 and would be more appropriate to use here than git-annex's own creds
 system for special remotes. --[[Joey]]
+
+> [[done]] --[[Joey]]
+

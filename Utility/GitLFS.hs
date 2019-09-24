@@ -31,7 +31,8 @@ module Utility.GitLFS (
 	downloadOperationRequest,
 	uploadOperationRequests,
 	-- * endpoint discovery
-	Endpoint,
+	Endpoint(..),
+	URIEndpoint(..),
 	guessEndpoint,
 	HostUser,
 	sshDiscoverEndpointCommand,
@@ -63,6 +64,7 @@ import Data.Aeson.Types
 import GHC.Generics
 import Network.HTTP.Client
 import Data.List
+import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
@@ -279,8 +281,12 @@ type SHA256 = T.Text
 
 -- | The endpoint of a git-lfs server.
 data Endpoint
-	= EndpointURI URI.URI
+	= EndpointURI URIEndpoint
 	| EndpointDiscovered SshDiscoveryResponse
+	deriving (Show)
+
+-- | An endpoint that uses a URI, typically http or https.
+data URIEndpoint = URIEndpoint URI.URI (M.Map HTTPHeader HTTPHeaderValue)
 	deriving (Show)
 
 -- | Command to run via ssh with to discover an endpoint. The FilePath is
@@ -305,13 +311,17 @@ parseSshDiscoverEndpointResponse resp = EndpointDiscovered <$> decode resp
 -- | Guesses the LFS endpoint from the http url of a git remote.
 --
 -- https://github.com/git-lfs/git-lfs/blob/master/docs/api/server-discovery.md
-guessEndpoint :: URI.URI -> Maybe Endpoint
+--
+-- Note that this will not include any authentication headers that may be
+-- needed to access the endpoint.
+guessEndpoint :: URI.URI -> Maybe URIEndpoint
 guessEndpoint uri = case URI.uriScheme uri of
 	"https:" -> Just endpoint
 	"http:" -> Just endpoint
 	_ -> Nothing
   where
-	endpoint = EndpointURI $ uri
+	endpoint = URIEndpoint uri' M.empty
+	uri' = uri
 		-- force https because the git-lfs protocol uses http
 		-- basic auth tokens, which should not be exposed
 		{ URI.uriScheme = "https:"
@@ -330,7 +340,7 @@ guessEndpoint uri = case URI.uriScheme uri of
 -- | Makes a Request that will start the process of making a transfer to or
 -- from the LFS endpoint.
 startTransferRequest :: Endpoint -> TransferRequest -> Maybe Request
-startTransferRequest (EndpointURI uri) tr = do
+startTransferRequest (EndpointURI (URIEndpoint uri headers)) tr = do
 	r <- requestFromURI uri
 	return $ addLfsJsonHeaders $ r
 		-- Since this uses the LFS batch API, it adds /objects/batch
@@ -338,14 +348,14 @@ startTransferRequest (EndpointURI uri) tr = do
 		{ path = path r <> "/objects/batch"
 		, method = "POST"
 		, requestBody = RequestBodyLBS (encode tr)
+		, requestHeaders = requestHeaders r ++ headers'
 		}
-startTransferRequest (EndpointDiscovered sr) tr = do
-	uri <- URI.parseURI (T.unpack (endpoint_href sr))
-	req <- startTransferRequest (EndpointURI uri) tr
-	let headers = map convheader $ maybe [] M.toList $ endpoint_header sr
-	return $ req { requestHeaders = requestHeaders req ++ headers }
   where
 	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
+	headers' = map convheader (M.toList headers)
+startTransferRequest (EndpointDiscovered sr) tr = do
+	uri <- URI.parseURI (T.unpack (endpoint_href sr))
+	startTransferRequest (EndpointURI (URIEndpoint uri (fromMaybe M.empty (endpoint_header sr)))) tr
 
 -- | "user@host" or just the hostname.
 type HostUser = String
