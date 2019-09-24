@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="about --json-error-messages"
+ date="2019-09-24T19:19:20Z"
+ content="""
+From \"any program parsing stderr for json would somehow have to deal with this non-json that could be mixed up with it, which seems very hard\" at 
+[another bug page](https://git-annex.branchable.com/bugs/git-annex-copy_--json-error-messages_does_not_write_error_messages_to_stderr_) , it sounds like parsing the output of `--json-error-messages` might not be reliable?
+"""]]
