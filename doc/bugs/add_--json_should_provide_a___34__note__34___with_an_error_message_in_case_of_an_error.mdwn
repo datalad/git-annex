@@ -14,3 +14,6 @@ git-annex: add: 1 failed
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
 [[!meta project=repronim]]
+
+> If you use --json-error-messages it does work, at least in this
+> permissions error case. So nothing more needs to be [[done]]. --[[Joey]]
