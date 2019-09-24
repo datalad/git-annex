@@ -1,0 +1,9 @@
+Currently the git-lfs special remote needs a ssh url to the server,
+because it only supports authentication over ssh. To support a http url,
+it needs to do http basic authentication (easy enough) using a username
+and password that it prompts the user for, ideally the same way git would
+when accessing that repository over http.
+
+`git credential` provides a way to reuse git's authentication system,
+and would be more appropriate to use here than git-annex's own creds
+system for special remotes. --[[Joey]]
