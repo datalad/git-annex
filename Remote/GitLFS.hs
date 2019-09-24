@@ -237,9 +237,7 @@ discoverLFSEndpoint tro h
 				resp <- makeSmallAPIRequest testreq
 				if needauth (responseStatus resp)
 					then do
-						cred <- prompt $ do
-							showOutput
-							inRepo $ Git.getUrlCredential (show lfsrepouri)
+						cred <- prompt $ inRepo $ Git.getUrlCredential (show lfsrepouri)
 						let endpoint' = addbasicauth cred endpoint
 						let testreq' = LFS.startTransferRequest endpoint' transfernothing
 						flip catchNonAsync (const (returnendpoint endpoint')) $ do
