@@ -47,7 +47,6 @@ module Utility.GitLFS (
 	Endpoint,
 	guessEndpoint,
 	modifyEndpointRequest,
-	HostUser,
 	sshDiscoverEndpointCommand,
 	parseSshDiscoverEndpointResponse,
 
@@ -368,9 +367,6 @@ startTransferRequest (Endpoint r) tr = r
 	{ method = "POST"
 	, requestBody = RequestBodyLBS (encode tr)
 	}
-
--- | "user@host" or just the hostname.
-type HostUser = String
 
 addLfsJsonHeaders :: Request -> Request
 addLfsJsonHeaders r = r
