@@ -1,0 +1,1 @@
+Right now, non-annexed files get passed through the `annex` clean/smudge filter (see [[forum/Adding_files_to_git__58___Very_long___34__recording_state_in_git__34___phase]]).  It would be better if `git-annex` configure the filter only for the annexed unlocked files, in the `.gitattributes` file at the root of the repository.
