@@ -31,9 +31,9 @@ module Utility.GitLFS (
 	downloadOperationRequest,
 	uploadOperationRequests,
 	-- * endpoint discovery
-	Endpoint(..),
-	URIEndpoint(..),
+	Endpoint,
 	guessEndpoint,
+	modifyEndpointRequest,
 	HostUser,
 	sshDiscoverEndpointCommand,
 	parseSshDiscoverEndpointResponse,
@@ -64,7 +64,6 @@ import Data.Aeson.Types
 import GHC.Generics
 import Network.HTTP.Client
 import Data.List
-import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
@@ -280,13 +279,7 @@ instance ToJSON GitRef
 type SHA256 = T.Text
 
 -- | The endpoint of a git-lfs server.
-data Endpoint
-	= EndpointURI URIEndpoint
-	| EndpointDiscovered SshDiscoveryResponse
-	deriving (Show)
-
--- | An endpoint that uses a URI, typically http or https.
-data URIEndpoint = URIEndpoint URI.URI (M.Map HTTPHeader HTTPHeaderValue)
+data Endpoint = Endpoint Request
 	deriving (Show)
 
 -- | Command to run via ssh with to discover an endpoint. The FilePath is
@@ -304,24 +297,41 @@ sshDiscoverEndpointCommand remotepath tro =
 		RequestUpload -> "upload"
 	]
 
+-- Internal smart constructor for an Endpoint.
+-- 
+-- Since this uses the LFS batch API, it adds /objects/batch
+-- to the endpoint url. It also adds the necessary headers to use JSON.
+mkEndpoint :: URI.URI -> Maybe Endpoint
+mkEndpoint uri = do
+	r <- requestFromURI uri
+	let r' = addLfsJsonHeaders $ r { path = path r <> "/objects/batch" }
+	return (Endpoint r')
+
 -- | Parse the json output when doing ssh endpoint discovery.
 parseSshDiscoverEndpointResponse :: L.ByteString -> Maybe Endpoint
-parseSshDiscoverEndpointResponse resp = EndpointDiscovered <$> decode resp
+parseSshDiscoverEndpointResponse resp = do
+	sr <- decode resp
+	uri <- URI.parseURI (T.unpack (endpoint_href sr))
+	endpoint <- mkEndpoint uri
+	return $ modifyEndpointRequest endpoint $ case endpoint_header sr of
+		Nothing -> id
+		Just headers ->
+			let headers' = map convheader (M.toList headers)
+			in \req -> req
+				{ requestHeaders = requestHeaders req ++ headers' }
+  where
+	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
 
 -- | Guesses the LFS endpoint from the http url of a git remote.
 --
 -- https://github.com/git-lfs/git-lfs/blob/master/docs/api/server-discovery.md
---
--- Note that this will not include any authentication headers that may be
--- needed to access the endpoint.
-guessEndpoint :: URI.URI -> Maybe URIEndpoint
+guessEndpoint :: URI.URI -> Maybe Endpoint
 guessEndpoint uri = case URI.uriScheme uri of
-	"https:" -> Just endpoint
-	"http:" -> Just endpoint
+	"https:" -> endpoint
+	"http:" -> endpoint
 	_ -> Nothing
   where
-	endpoint = URIEndpoint uri' M.empty
-	uri' = uri
+	endpoint = mkEndpoint $ uri
 		-- force https because the git-lfs protocol uses http
 		-- basic auth tokens, which should not be exposed
 		{ URI.uriScheme = "https:"
@@ -337,25 +347,22 @@ guessEndpoint uri = case URI.uriScheme uri of
 	
 	droptrailing c = reverse . dropWhile (== c) . reverse
 
+-- | When an Endpoint is used to generate a Request, this allows adjusting
+-- that Request.
+--
+-- This can be used to add http basic authentication to an Endpoint:
+--
+-- > modifyEndpointRequest (guessEndpoint u) (applyBasicAuth "user" "pass")
+modifyEndpointRequest :: Endpoint -> (Request -> Request) -> Endpoint
+modifyEndpointRequest (Endpoint r) f = Endpoint (f r)
+
 -- | Makes a Request that will start the process of making a transfer to or
 -- from the LFS endpoint.
-startTransferRequest :: Endpoint -> TransferRequest -> Maybe Request
-startTransferRequest (EndpointURI (URIEndpoint uri headers)) tr = do
-	r <- requestFromURI uri
-	return $ addLfsJsonHeaders $ r
-		-- Since this uses the LFS batch API, it adds /objects/batch
-		-- to the endpoint url.
-		{ path = path r <> "/objects/batch"
-		, method = "POST"
-		, requestBody = RequestBodyLBS (encode tr)
-		, requestHeaders = requestHeaders r ++ headers'
-		}
-  where
-	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
-	headers' = map convheader (M.toList headers)
-startTransferRequest (EndpointDiscovered sr) tr = do
-	uri <- URI.parseURI (T.unpack (endpoint_href sr))
-	startTransferRequest (EndpointURI (URIEndpoint uri (fromMaybe M.empty (endpoint_header sr)))) tr
+startTransferRequest :: Endpoint -> TransferRequest -> Request
+startTransferRequest (Endpoint r) tr = r
+	{ method = "POST"
+	, requestBody = RequestBodyLBS (encode tr)
+	}
 
 -- | "user@host" or just the hostname.
 type HostUser = String

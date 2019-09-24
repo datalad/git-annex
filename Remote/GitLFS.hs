@@ -30,7 +30,6 @@ import Annex.UUID
 import Crypto
 import Backend.Hash
 import Utility.Hash
-import Utility.Base64
 import Utility.SshHost
 import Logs.RemoteState
 import qualified Utility.GitLFS as LFS
@@ -232,26 +231,24 @@ discoverLFSEndpoint tro h
 	-- the server requests authentication.
 	gohttp = case LFS.guessEndpoint lfsrepouri of
 		Nothing -> unsupportedurischeme
-		Just endpoint@(LFS.URIEndpoint uri _) ->
-			case LFS.startTransferRequest (LFS.EndpointURI endpoint) transfernothing of
-				Nothing -> unsupportedurischeme
-				Just testreq -> flip catchNonAsync (const (returnendpoint endpoint)) $ do
-					resp <- makeSmallAPIRequest testreq
-					if needauth (responseStatus resp)
-						then do
-							cred <- prompt $ do
-								showOutput
-								inRepo $ Git.getUrlCredential (show uri)
-							let endpoint' = addbasicauth cred endpoint
-							case LFS.startTransferRequest (LFS.EndpointURI endpoint') transfernothing of
-								Nothing -> unsupportedurischeme
-								Just testreq' -> flip catchNonAsync (const (returnendpoint endpoint')) $ do
-									resp' <- makeSmallAPIRequest testreq'
-									inRepo $ if needauth (responseStatus resp')
-										then Git.rejectUrlCredential cred
-										else Git.approveUrlCredential cred
-									returnendpoint endpoint'
-						else returnendpoint endpoint
+		Just endpoint -> do
+			let testreq = LFS.startTransferRequest endpoint transfernothing
+			flip catchNonAsync (const (returnendpoint endpoint)) $ do
+				resp <- makeSmallAPIRequest testreq
+				if needauth (responseStatus resp)
+					then do
+						cred <- prompt $ do
+							showOutput
+							inRepo $ Git.getUrlCredential (show lfsrepouri)
+						let endpoint' = addbasicauth cred endpoint
+						let testreq' = LFS.startTransferRequest endpoint' transfernothing
+						flip catchNonAsync (const (returnendpoint endpoint')) $ do
+						resp' <- makeSmallAPIRequest testreq'
+						inRepo $ if needauth (responseStatus resp')
+							then Git.rejectUrlCredential cred
+							else Git.approveUrlCredential cred
+						returnendpoint endpoint'
+					else returnendpoint endpoint
 	  where
 	  	transfernothing = LFS.TransferRequest
 			{ LFS.req_operation = tro
@@ -259,17 +256,16 @@ discoverLFSEndpoint tro h
 			, LFS.req_ref = Nothing
 			, LFS.req_objects = []
 			}
-		returnendpoint = return . Just . LFS.EndpointURI
+		returnendpoint = return . Just
 
 		needauth status = status == unauthorized401
 
-		addbasicauth cred endpoint@(LFS.URIEndpoint uri httpheaders) =
+		addbasicauth cred endpoint =
 			case (Git.credentialUsername cred, Git.credentialPassword cred) of
-				(Just u, Just p) -> LFS.URIEndpoint uri $
-					M.insert (T.pack "Authorization") (T.pack (authheader u p)) httpheaders
+				(Just u, Just p) ->
+					LFS.modifyEndpointRequest endpoint $
+						applyBasicAuth (encodeBS u) (encodeBS p)
 				_ -> endpoint
-		  where
-			authheader u p = "Basic " ++ toB64 (u ++ ":" ++ p)
 
 -- The endpoint is cached for later use.
 getLFSEndpoint :: LFS.TransferRequestOperation -> TVar LFSHandle -> Annex (Maybe LFS.Endpoint)
@@ -310,16 +306,14 @@ sendTransferRequest
 	=> LFS.TransferRequest
 	-> LFS.Endpoint
 	-> Annex (Either String (LFS.TransferResponse op))
-sendTransferRequest req endpoint = 
-	case LFS.startTransferRequest endpoint req of
-		Just httpreq -> do
-			httpresp <- makeSmallAPIRequest $ setRequestCheckStatus httpreq
-			return $ case LFS.parseTransferResponse (responseBody httpresp) of
-				LFS.ParsedTransferResponse resp -> Right resp
-				LFS.ParsedTransferResponseError tro -> Left $
-					T.unpack $ LFS.resperr_message tro
-				LFS.ParseFailed err -> Left err
-		Nothing -> return $ Left "unable to parse git-lfs endpoint url"
+sendTransferRequest req endpoint = do
+	let httpreq = LFS.startTransferRequest endpoint req
+	httpresp <- makeSmallAPIRequest $ setRequestCheckStatus httpreq
+	return $ case LFS.parseTransferResponse (responseBody httpresp) of
+		LFS.ParsedTransferResponse resp -> Right resp
+		LFS.ParsedTransferResponseError tro -> Left $
+			T.unpack $ LFS.resperr_message tro
+		LFS.ParseFailed err -> Left err
 
 extractKeySha256 :: Key -> Maybe LFS.SHA256
 extractKeySha256 k = case keyVariety k of
@@ -463,9 +457,8 @@ checkKey u h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 		-- Unable to find enough information to request the key
 		-- from git-lfs, so it's not present there.
 		Nothing -> return False
-		Just (req, sha256, size) -> case LFS.startTransferRequest endpoint req of
-			Nothing -> giveup "unable to parse git-lfs endpoint url"
-			Just httpreq -> go sha256 size =<< makeSmallAPIRequest httpreq
+		Just (req, sha256, size) -> go sha256 size 
+			=<< makeSmallAPIRequest (LFS.startTransferRequest endpoint req)
   where
 	go sha256 size httpresp
 		| responseStatus httpresp == status200 = go' sha256 size $
