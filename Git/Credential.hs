@@ -30,7 +30,7 @@ getUrlCredential = runCredential "fill" . urlCredential
 -- | Call if the credential the user entered works, and can be cached for
 -- later use if git is configured to do so.
 approveUrlCredential :: Credential -> Repo -> IO ()
-approveUrlCredential c = void . runCredential "accept" c
+approveUrlCredential c = void . runCredential "approve" c
 
 -- | Call if the credential the user entered does not work.
 rejectUrlCredential :: Credential -> Repo -> IO ()
