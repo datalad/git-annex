@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Test.Framework where
 
 import Test.Tasty
@@ -223,26 +225,33 @@ isolateGitConfig a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
 	Utility.Env.Set.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
 	a
 
+removeDirectoryForCleanup :: FilePath -> IO ()
+#ifdef MIN_VERSION_directory(1,2,7)
+removeDirectoryForCleanup = removePathForcibly
+#else
+removeDirectoryForCleanup = removeDirectoryRecursive
+#endif
+
 cleanup :: FilePath -> IO ()
 cleanup dir = whenM (doesDirectoryExist dir) $ do
 	Command.Uninit.prepareRemoveAnnexDir' dir
 	-- This can fail if files in the directory are still open by a
 	-- subprocess.
-	void $ tryIO $ removeDirectoryRecursive dir
+	void $ tryIO $ removeDirectoryForCleanup dir
 
 finalCleanup :: IO ()
 finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
 	Annex.Action.reapZombies
 	Command.Uninit.prepareRemoveAnnexDir' tmpdir
-	catchIO (removeDirectoryRecursive tmpdir) $ \e -> do
+	catchIO (removeDirectoryForCleanup tmpdir) $ \e -> do
 		print e
 		putStrLn "sleeping 10 seconds and will retry directory cleanup"
 		Utility.ThreadScheduler.threadDelaySeconds $
 			Utility.ThreadScheduler.Seconds 10
 		whenM (doesDirectoryExist tmpdir) $ do
 			Annex.Action.reapZombies
-			removeDirectoryRecursive tmpdir
-	
+			removeDirectoryForCleanup tmpdir
+
 checklink :: FilePath -> Assertion
 checklink f = ifM (annexeval Config.crippledFileSystem)
 	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
