@@ -1,0 +1,25 @@
+NeuroHub [???](???)
+==========================================================
+
+???
+
+## TODOs
+
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/neurohub)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+
+### Done:
+
+[[!inline pages="todo/* and !todo/done and link(todo/done) and tagged(projects/neurohub)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+
+
+
+## BUGs
+
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and tagged(projects/heurohub)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+
+### Done:
+
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/neurohub)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+
+
+
