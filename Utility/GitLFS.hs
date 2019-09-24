@@ -12,13 +12,14 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Utility.GitLFS (
-	-- * transfer requests
+	-- * Transfer requests
 	TransferRequest(..),
 	TransferRequestOperation(..),
 	TransferAdapter(..),
 	TransferRequestObject(..),
 	startTransferRequest,
-	-- * responses to transfer requests
+
+	-- * Responses to transfer requests
 	TransferResponse(..),
 	TransferResponseOperation(..),
 	IsTransferResponseOperation,
@@ -27,20 +28,24 @@ module Utility.GitLFS (
 	OperationParams(..),
 	ParsedTransferResponse(..),
 	parseTransferResponse,
-	-- * making transfers
+
+	-- * Making transfers
 	downloadOperationRequest,
 	uploadOperationRequests,
-	-- * endpoint discovery
+
+	-- * Endpoint discovery
 	Endpoint,
 	guessEndpoint,
 	modifyEndpointRequest,
 	HostUser,
 	sshDiscoverEndpointCommand,
 	parseSshDiscoverEndpointResponse,
-	-- * errors
+
+	-- * Errors
 	TransferResponseError(..),
 	TransferResponseObjectError(..),
-	-- * additional data types
+
+	-- * Additional data types
 	Url,
 	SHA256,
 	GitRef(..),
