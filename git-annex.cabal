@@ -833,6 +833,7 @@ Executable git-annex
     Git.Config
     Git.ConfigTypes
     Git.Construct
+    Git.Credential
     Git.CurrentRepo
     Git.DiffTree
     Git.DiffTreeItem
