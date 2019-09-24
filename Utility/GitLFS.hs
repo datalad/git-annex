@@ -7,6 +7,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+-- | This implementation of the git-lfs API uses http Request and Response,
+-- but leaves actually connecting up the http client to the user.
+--
+-- You'll want to use a Manager that supports https, since the protocol
+-- uses http basic auth.
+--
+-- Some LFS servers, notably Github's, may require a User-Agent header
+-- in some of the requests, in order to allow eg, uploads. No such header
+-- is added by default, so be sure to add your own.
+
 {-# LANGUAGE DeriveGeneric, FlexibleInstances, FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
@@ -53,16 +63,6 @@ module Utility.GitLFS (
 	HTTPHeader,
 	HTTPHeaderValue,
 ) where
-
--- | This implementation of the git-lfs API uses http Request and Response,
--- but leaves actually connecting up the http client to the user.
---
--- You'll want to use a Manager that supports https, since the protocol
--- uses http basic auth.
---
--- Some LFS servers, notably Github's, may require a User-Agent header
--- in some of the requests, in order to allow eg, uploads. No such header
--- is added by dedault, so be sure to add your own.
 
 import Data.Aeson
 import Data.Aeson.Types
