@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="git docs on &quot;%f&quot;"
+ date="2019-09-24T18:10:16Z"
+ content="""
+Ilya, the patch that added the text you quote (52db4b0467, clarify %f documentation, 2016-07-11) was written by Joey, so I think it's safe to say that git-annex filters don't rely on \"%f\" being an actual file on disk.
+"""]]

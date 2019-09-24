@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="achilleas.k@14be77d42a1252fab5ec9dbf4e5ea03c5833e8c8"
+ nickname="achilleas.k"
+ avatar="http://cdn.libravatar.org/avatar/ed6c67c4d8e6c6850930e16eaf85a771"
+ subject="comment 5"
+ date="2019-09-24T17:29:28Z"
+ content="""
+> i.e. all files except dotfiles get passed through the clean/smudge filter defined in .git/config:
+
+Right, that's understandable.  Why is it faster to clean/smudge a file going into annex than it is going into git though?
+"""]]

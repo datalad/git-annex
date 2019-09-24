@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="non-annexed files still get passed through the clean/smudge filter"
+ date="2019-09-24T17:26:09Z"
+ content="""
+\"what exactly happens when a file is excluded from a largefiles filter that takes longer\" -- looking in `.git/info/attributes`:
+[[!format sh \"\"\"
+* filter=annex
+.* !filter
+
+\"\"\"]]
+
+i.e. _all_ files except dotfiles get passed through the clean/smudge filter defined in `.git/config`:
+[[!format sh \"\"\"
+[filter \"annex\"]
+        smudge = git-annex smudge -- %f
+        clean = git-annex smudge --clean -- %f
+\"\"\"]]
+
+It would be better if `git-annex` would only add unlocked files to .gitattributes (the one at the repo root), and remove them when they're locked.  This would also make it easier to find the unlocked files.
+"""]]

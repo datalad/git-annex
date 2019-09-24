@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="achilleas.k@14be77d42a1252fab5ec9dbf4e5ea03c5833e8c8"
+ nickname="achilleas.k"
+ avatar="http://cdn.libravatar.org/avatar/ed6c67c4d8e6c6850930e16eaf85a771"
+ subject="comment 3"
+ date="2019-09-24T15:04:49Z"
+ content="""
+Reading up more on the issue (the page you linked and some other pages regarding the way smudge/clean filters affect performance), I'm still not sure I understand the exact issue for this case.  When adding a lot of files to the annex directly, there's no issue.  Am I understanding the smudge/clean filter performance issues incorrectly?  When the `largefiles` option is used and files are added to git (instead of annex), what does the smudge filter do to the file or its contents that requires extra time?  I guess I'm not clear on what exactly happens when a file is excluded from a `largefiles` filter that takes longer than adding a file to git-annex.  I would have expected the opposite to be true.
+"""]]
