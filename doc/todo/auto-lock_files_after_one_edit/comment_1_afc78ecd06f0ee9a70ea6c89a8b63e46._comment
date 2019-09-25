@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2019-09-25T17:34:33Z"
+ content="""
+Maybe also, an option to auto-unlock the file right after commit?  E.g. based on `.gitattributes`.  Basically, unlocked files would look locally modified to `git`, but if their contents hasn't changed, the modification would just look like `typechange` from symlink to blob.  It can actually be useful to see all unlocked files this way.
+
+This of course negates the point of v7, but [[sometimes|forum/Preserving_the_v5_experience]] the v5 model is a better fit.
+"""]]
