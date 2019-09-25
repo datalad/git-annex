@@ -1,0 +1,14 @@
+The v5 version had a few advantages over the v7 version (at least when no direct mode was involved); in particular:
+
+1. Annexed and plain git files could be kept in parallel
+2. Files that are under annex control are immediately recognized as such (in file managers by displaying a symlink icon)
+3. Never is a file readable with its wrong content (an absent file reads as ENOTFOUND rather than "/annex/...")
+4. Never do changes resulting from users' workflows (who checks out what where, who locks something) show up in the actual git history.
+
+I'd like to configure my annex repositories to give those properties, but that may need some more options:
+
+* Setting `* annex.largefiles=nothing` in `.gitattributes` restores 1 (and can still be customized)
+* Customizing it or users locking files still leaves files in their v7locked state where they can be accidentally read or otherwise look like plain available files (2-4). Having a `annex.neverlock` option that plain-out rejects adding files in locked mode or locking them would keep history and file list clean. That should be a `git annex config` option.
+* There could still be an `git annex adjust --locked` that gives users the option to have a locked adjust branch (or lock files in their own adjusted branch) without those changes propagating into every user's history.
+
+When `neverlock` is active and `git add` is run on a largefile, it could reject adding the file, place the users in a `--lock` adjusted branch, or add the file in a locked state.
