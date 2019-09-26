@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-09-26T16:47:02Z"
+ content="""
+I've found several discussions about Sqlite on CIFS.
+
+https://stackoverflow.com/questions/42722855/sqlite-3-on-windows-share-cifs-access-from-ubuntu-nobrl-risk
+
+That also had all write actions fail with "locked".
+It suggests mounting the CIFS filesystem with the "nobrl" mount option.
+Another thread suggested instead the "nolock" mount option.
+
+Those may be worth trying, although I'd make sure that
+
+1. annex.pidlock is set to true in the repository's git config.
+As long as it is, disabling locking at the database level is not unsafe,
+since only one git-annex process will be able to use the database.
+
+2. You only ever use git-annex on one computer at a time in a given
+repository on this CIFS drive.
+"""]]
