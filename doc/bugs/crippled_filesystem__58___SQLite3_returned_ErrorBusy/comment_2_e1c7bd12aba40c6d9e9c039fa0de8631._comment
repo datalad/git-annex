@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-26T16:21:53Z"
+ content="""
+I've made git-annex catch the ErrorBusy at database close, and retry for up
+to 16 seconds. That's in [[!commit 9628ae2e6758d1ec6e10df7f3540cd78ce333f1f]]
+
+I don't know if that solves the problem. It would be good to try and find
+out.
+"""]]
