@@ -1,9 +1,11 @@
 {- Persistent sqlite database handles.
  -
- - Copyright 2015-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 
 module Database.Handle (
 	DbHandle,
@@ -23,6 +25,8 @@ import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
 import Control.Monad
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.IO.Unlift (MonadUnliftIO, withRunInIO)
+import Control.Monad.Logger (MonadLogger)
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Exception (throwIO, BlockedIndefinitelyOnMVar(..))
@@ -193,7 +197,7 @@ runSqliteRobustly tablename db a = do
 	
 	go conn retries = do
 		r <- try $ runResourceT $ runNoLoggingT $
-			withSqlConn (wrapConnection conn) $
+			withSqlConnRobustly (wrapConnection conn) $
 				runSqlConn a
 		case r of
 			Right v -> return v
@@ -237,3 +241,46 @@ runSqliteRobustly tablename db a = do
 	nullselect = T.pack $ "SELECT null from " ++ tablename ++ " limit 1"
 
 	briefdelay = threadDelay 1000 -- 1/1000th second
+
+-- Like withSqlConn, but more robust.
+withSqlConnRobustly
+	 :: (MonadUnliftIO m, MonadLogger m, IsPersistBackend backend, BaseBackend backend ~ SqlBackend)
+	 => (LogFunc -> IO backend)
+	 -> (backend -> m a)
+	 -> m a
+withSqlConnRobustly open f = do
+	logFunc <- askLogFunc
+	withRunInIO $ \run -> bracket
+		(open logFunc)
+		closeRobustly
+		(run . f)
+
+-- Sqlite can throw ErrorBusy while closing a database; this catches
+-- the exception and retries.
+closeRobustly
+	 :: (IsPersistBackend backend, BaseBackend backend ~ SqlBackend)
+	 => backend
+	-> IO ()
+closeRobustly conn = go maxretries briefdelay
+  where
+	briefdelay = 1000 -- 1/1000th second
+
+	-- Try up to 14 times; with the delay doubling each time,
+	-- the maximum delay before giving up is 16 seconds.
+	maxretries = 14 :: Int
+
+	go retries delay = do
+		r <- try $ close' conn
+		case r of
+			Right () -> return ()
+			Left ex@(Sqlite.SqliteException { Sqlite.seError = e })
+				| e == Sqlite.ErrorBusy -> do
+					threadDelay delay
+					let delay' = delay * 2
+					let retries' = retries - 1
+					if retries' < 1
+						then rethrow "while closing database connection" ex
+						else go retries' delay'
+				| otherwise -> rethrow "while closing database connection" ex
+	
+	rethrow msg e = throwIO $ userError $ show e ++ "(" ++ msg ++ ")"

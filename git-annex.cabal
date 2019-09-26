@@ -344,6 +344,7 @@ Executable git-annex
    persistent-sqlite (>= 2.8.1),
    persistent (>= 2.8.1),
    persistent-template,
+   unliftio-core,
    microlens,
    aeson,
    vector,

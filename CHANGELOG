@@ -5,6 +5,7 @@ git-annex (7.20190913) UNRELEASED; urgency=medium
   * git-lfs: Added support for http basic auth.
   * git-lfs: Only do endpoint discovery once when concurrency is enabled.
   * Test: Use more robust directory removal when built with directory-1.2.7.
+  * Close sqlite databases more robustly.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Sep 2019 11:11:19 -0400
 
