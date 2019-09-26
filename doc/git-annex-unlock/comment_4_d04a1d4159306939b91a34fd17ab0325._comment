@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="tobiasBora"
+ avatar="http://cdn.libravatar.org/avatar/80a7d8c2a7b475b6b71198cce0faa6b0"
+ subject="Move file from git annex to just git in one commit"
+ date="2019-09-26T22:52:35Z"
+ content="""
+Hello. I'd like to know, how could I move back a file managed by git annex to a normal file (for example, say I added by mistake a text file in it). For now, I do `git unlock MYFILE`, then I remove the file from git: `git rm --cached MYFILE`, and `git commit -am 'Remove file'`, and finally I add back the file, `git add MYFILE && git commit -am 'File added back in git'`. However, this creates two commits, which is a bit annoying and leave the feeling that the file has been removed while it was just a kind of modification. How could I do that in less commands, and with a single commit?
+Thanks! 
+"""]]
