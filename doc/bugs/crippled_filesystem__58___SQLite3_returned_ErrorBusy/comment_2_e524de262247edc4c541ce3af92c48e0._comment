@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 2"
+ date="2019-09-25T07:41:51Z"
+ content="""
+Sorry for the long answer delay.
+
+I tried the given commands, after fixing the \"insert\" one a little (syntax).
+
+    $ sqlite3 /media/mydisk/tmp/db
+    SQLite version 3.27.2 2019-02-25 16:06:06
+    Enter \".help\" for usage hints.
+    sqlite> create table foo (name varchar);
+    Error: database is locked
+    sqlite> .exit
+
+    $ sqlite3 /tmp/db
+    SQLite version 3.27.2 2019-02-25 16:06:06
+    Enter \".help\" for usage hints.
+    sqlite> create table foo (name varchar);
+    sqlite> insert into foo \"joey\";
+    Error: near \"\"joey\"\": syntax error
+    sqlite> insert into foo (name) values (\"joey\")
+    sqlite> .exit
+
+    $ ls -l /media/mydisk/tmp/db
+    -rw-rw---- 1 olivier users 0 sept. 25  2019 db
+
+    $ ls -l /tmp/db
+    -rw-r--r-- 1 olivier olivier 12288 sept. 25 09:29 /tmp/db
+
+    $ echo \"test\" > /media/mydisk/tmp/test
+    $ ls -l /media/mydisk/tmp/test
+    -rw-rw---- 1 olivier users 5 sept. 25 09:34 /media/wdtv/tmp/test
+
+    $ id olivier
+    uid=1000(olivier) gid=1000(olivier)
+    groupes=1000(olivier),4(adm),8(mail),20(dialout),24(cdrom),27(sudo),29(audio),44(video),46(plugdev),60(games),100(users),101(input),108(netdev),999(spi),998(i2c),997(gpio),114(lpadmin),1001(download)
+
+The diff between /tmp and /media/mydisk/tmp is the filesystem, /tmp being in RAM. It seems that sqlite does not like the user rights and owner of files mounted by CIFS, here \"olivier:users\", even though user \"olivier\" can read/write files there and belongs to group \"users\".
+
+"""]]

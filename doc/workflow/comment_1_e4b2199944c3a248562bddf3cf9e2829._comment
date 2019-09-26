@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="amindfv@6f75355c5dad3450ed73d1f01715be90dfdd6cd6"
+ nickname="amindfv"
+ avatar="http://cdn.libravatar.org/avatar/9cdda587f634ea9a85b34b25be421676"
+ subject="comment 1"
+ date="2019-09-26T15:19:12Z"
+ content="""
+For workflow 6 (\"Manual management of git history without the synchronizer\"), how can files be synchronized across repositories?
+
+Do you still need the workflow of adding remotes and using `git annex get --from=<remote-name>`?
+
+Is it possible to do some variant of `git annex get --from=</path/to/repo>`? How about `git annex get --from=<UUID>`? (And if so, side question: what's the best way to get a repo's UUID?)
+
+Is it possible to transfer files between repos without explicitly creating remotes? If so, how? Are there gotchas when moving files \"by hand\" like permissions to be set?
+
+Thanks!
+"""]]

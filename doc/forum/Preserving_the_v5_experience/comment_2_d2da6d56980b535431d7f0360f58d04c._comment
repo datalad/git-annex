@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-09-25T17:24:21Z"
+ content="""
+Related: [[forum/lets_discuss_git_add_behavior]]
+
+I agree that (1)-(4) were good properties.  (4) could be mitigated by using `git commit --amend` to merge the lock/unlock change with the previous commit.  But if the previous commit has been pushed to a shared repo, this could cause problems.  Something like [[todo/auto-lock_files_after_one_edit]] would restore (1)-(4), at the cost of requiring manual unlock to edit again as in v5.
+"""]]

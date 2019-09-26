@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2019-09-25T15:26:39Z"
+ content="""
+\"Having a annex.neverlock option that plain-out rejects adding files in locked mode\" -- did you mean unlocked mode?
+
+A related suggestion: [[todo/auto-lock_files_after_one_edit]]
+"""]]
