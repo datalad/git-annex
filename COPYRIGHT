@@ -10,6 +10,10 @@ Copyright: © 2012-2017 Joey Hess <id@joeyh.name>
            © 2014 Sören Brunk
 License: AGPL-3+
 
+Files: doc/special_remotes/external/*
+Copyright: © 2013 Joey Hess <id@joeyh.name>
+License: GPL-3+
+
 Files: Remote/Ddar.hs
 Copyright: © 2011 Joey Hess <id@joeyh.name>
            © 2014 Robie Basak <robie@justgohome.co.uk>
