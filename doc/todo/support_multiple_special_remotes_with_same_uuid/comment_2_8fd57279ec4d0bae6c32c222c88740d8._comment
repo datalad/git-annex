@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-27T15:53:25Z"
+ content="""
+Yet another problem with the sameas idea is that old git-annex won't know
+what the sameas= value means, and will ignore it. So they'd proceed to use
+the wrong uuid for the special remote. That could result in a big mess.
+
+Also, two remotes using the same underlying data need to be encrypted the
+same way. Including using the same cipher= value, which is not a value that
+the user provides. Basically, all the encryption parameters need to be
+shared between two such remotes. 
+
+Also the chunksize parameter needs to be shared, or at least be
+set on both if not to the same value.
+"""]]

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-09-27T15:59:28Z"
+ content="""
+Alternate idea:
+
+	git annex initremote foo type=directory directory=/foo encryption=shared
+	git annex initremote --sameas=foo foo-rsync type=rsync rsyncurl=server:/foo
+
+The second command would inherit the encryption etc fields from the foo remote,
+and set up the foo-rsync remote with the same uuid as it.
+And it would add additional fields to the remote.log:
+
+	-uuid name=foo type=directory encryption=shared cipher=...
+	+uuid name=foo type=directory encryption=shared cipher=... alt.foo-rsync.type=rsync alt.foo-rsync.rsyncurl=server:/foo
+
+When enableremote foo-rsync is later run and fails to find a name=foo-rsync,
+it can look for a remote with the "alt.foo-rsync.type" field, and generate a
+RemoteConfig with type=rsync rsyncurl=server:/foo encryption=shared cipher=...
+From there the enableremote would proceed as usual.
+"""]]
