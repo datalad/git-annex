@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-27T16:57:30Z"
+ content="""
+Old versions of git-annex didn't have a post-receive command,
+so initailizing with a new git-annex and then using an old one would be a
+problem without this check.
+"""]]
