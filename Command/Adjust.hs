@@ -26,6 +26,10 @@ linkAdjustmentParser =
 		( long "unlock"
 		<> help "unlock annexed files"
 		)
+	<|> flag' LockAdjustment
+		( long "lock"
+		<> help "lock annexed files"
+		)
 	<|> flag' FixAdjustment
 		( long "fix"
 		<> help "fix symlinks to annnexed files"

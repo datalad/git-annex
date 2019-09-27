@@ -39,7 +39,8 @@ instance ReversableAdjustment Adjustment where
 
 instance ReversableAdjustment LinkAdjustment where
 	reverseAdjustment UnlockAdjustment = LockAdjustment
-	reverseAdjustment LockAdjustment = UnlockAdjustment
+	-- Keep the file locked intentionally when reversing LockAdjustment.
+	reverseAdjustment LockAdjustment = LockAdjustment
 	reverseAdjustment FixAdjustment = UnFixAdjustment
 	reverseAdjustment UnFixAdjustment = FixAdjustment
 

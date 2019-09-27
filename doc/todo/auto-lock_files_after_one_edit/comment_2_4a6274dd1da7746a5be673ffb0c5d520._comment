@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-27T17:06:29Z"
+ content="""
+I think it should be possible for a pre-commit hook to do this.
+
+There are some subtleties to a pre-commit hook changing what's going to be
+committed, which I was happy to jettison when removing the v5 support. But
+it should be able to work at least as well as it did in v5.
+"""]]

@@ -4,7 +4,7 @@ git-annex adjust - enter an adjusted branch
 
 # SYNOPSIS
 
-git annex adjust `--unlock|--fix|--hide-missing [--unlock|--fix]`
+git annex adjust `--unlock|--lock|--fix|--hide-missing [--unlock|--lock|--fix]`
 
 # DESCRIPTION
 
@@ -49,6 +49,20 @@ back to the original branch.
   disk space, any modification made to a file will cause the old version of the
   file to be lost from the local repository. So, enable annex.thin with care.
 
+  When in an adjusted unlocked branch, `git annex add` will add files
+  unlocked instead of the default behavior of adding them locked.
+
+* `--lock`
+
+  Lock all annexed file in the adjusted branch. This may be preferred
+  by those who like seeing broken symlinks when the content of an
+  annexed file is not present.
+
+  When in an adjusted locked branch, `git annex add` will add files locked,
+  as usual. However, `git add` (and `git commit -a` etc) still add files
+  unlocked. This is because it's not possible for those git commands to
+  add files locked.
+
 * `--fix`
 
   Fix the symlinks to annexed files to point to the local git annex
@@ -74,7 +88,7 @@ back to the original branch.
   still operate on them, and can be used to download missing
   files from remotes.
 
-  This option can be combined with --unlock or --fix.
+  This option can be combined with --unlock, --lock, or --fix.
 
 # SEE ALSO
 
