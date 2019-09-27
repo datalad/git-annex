@@ -1,0 +1,32 @@
+ATM upon `get` of a file for which no remote in .git/config provides its content, git-annex spits out a message like
+
+[[!format sh """
+/tmp/najafi-2018-nwb > git annex get data/FN_dataSharing/nwb/mouse1_fni16_150817_001_ch2-PnevPanResults-170808-190057.nwb
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+get data/FN_dataSharing/nwb/mouse1_fni16_150817_001_ch2-PnevPanResults-170808-190057.nwb 
+  Remote origin not usable by git-annex; setting annex-ignore
+(not available) 
+  Try making some of these repositories available:
+  	2cca1320-6f51-4acf-a778-efdc79f87ab3 -- smaug:/mnt/btrfs/datasets/datalad/crawl/labs/churchland/najafi-2018-nwb
+   	e513795e-1311-431d-8106-917d9528cfbd -- datasets.datalad.org
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+(recording state in git...)
+git-annex: get: 1 failed
+"""]]
+
+although those remote descriptions/names give an idea for an informed user, they do not event differentiate between regular and special remotes.  Special remotes could just be "enabled", some of them might even have `autoenable` set.  May be it could separate them and provide a message like
+
+[[!format sh """
+...
+  Try making some of these repositories available:
+  	2cca1320-6f51-4acf-a778-efdc79f87ab3 -- smaug:/mnt/btrfs/datasets/datalad/crawl/labs/churchland/najafi-2018-nwb
+  or enable (using git annex enableremote <name>) one of:
+   	e513795e-1311-431d-8106-917d9528cfbd -- datasets.datalad.org
+"""]]
+
+[[!meta author=yoh]]
+[[!tag project/dandi]]
