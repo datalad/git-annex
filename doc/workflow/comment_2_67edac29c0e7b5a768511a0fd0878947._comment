@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="why not git-annex-sync"
+ date="2019-09-26T17:47:55Z"
+ content="""
+Just curious, what makes you want to avoid using [[`git-annex-sync`|git-annex-sync]]?  Without it you'd need to manually sync the [[git-annex branch|internals#The_git-annex_branch]], and merge it using [[`git-annex-merge`|git-annex-merge]].
+
+\"what's the best way to get a repo's UUID\" -- [[`git-annex-info --fast`|git-annex-info]] prints it.
+"""]]

@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 6"
+ date="2019-09-26T20:39:41Z"
+ content="""
+The lock issue seems confirmed here. And the \"nobrl\" mount option solves the issue.
+
+Maybe you should inform the user about \"nobrl\" & \"annex.pidlock\" during the \"git annex init\" filesystem check, refuse to go on and propose legacy direct mode instead if user cannot accept to have no filesystem locking ?
+
+Without changing my mount options:
+
+    SQLite version 3.27.2 2019-02-25 16:06:06
+    Enter \".help\" for usage hints.
+    sqlite> PRAGMA journal_mode=WAL;
+    Error: database is locked
+    sqlite> create table foo (name varchar);
+    Error: database is locked
+    sqlite> insert into foo (name) values (\"joey\");
+    Error: no such table: foo
+    sqlite> .exit
+
+After adding \"nobrl\" in the mount options:
+
+    SQLite version 3.27.2 2019-02-25 16:06:06
+    Enter \".help\" for usage hints.
+    sqlite> PRAGMA journal_mode=WAL;
+    wal
+    sqlite> create table foo (name varchar);
+    sqlite> insert into foo (name) values (\"joey\");
+    sqlite> .exit
+
+It seems \"nolock\" is an alias for \"nobrl\", results are the same; when I put \"nolock\" in the mount options, I end up with \"nobrl\" in the \"mount\" command output.
+
+Finally, with the \"nobrl\" mount option:
+
+    $ cd /media/mydisk/tmp/
+    $ date > file1
+    $ git init .
+    Dépôt Git vide initialisé dans /media/mydisk/tmp/.git/
+    $ git annex init test
+    init test 
+      Detected a filesystem without fifo support.
+
+      Disabling ssh connection caching.
+
+      Detected a crippled filesystem.
+
+      Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+    Basculement sur la branche 'adjusted/master(unlocked)'
+    ok
+    (recording state in git...)
+    $ git annex add file1 
+    add file1 ok
+    (recording state in git...)
+
+Hurray ! 
+
+
+"""]]
