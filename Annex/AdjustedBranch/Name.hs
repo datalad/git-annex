@@ -49,7 +49,7 @@ instance SerializeAdjustment LinkAdjustment where
 	serializeAdjustment FixAdjustment = "fixed"
 	serializeAdjustment UnFixAdjustment = "unfixed"
 	deserializeAdjustment "unlocked" = Just UnlockAdjustment
-	deserializeAdjustment "locked" = Just UnlockAdjustment
+	deserializeAdjustment "locked" = Just LockAdjustment
 	deserializeAdjustment "fixed" = Just FixAdjustment
 	deserializeAdjustment "unfixed" = Just UnFixAdjustment
 	deserializeAdjustment _ = Nothing
