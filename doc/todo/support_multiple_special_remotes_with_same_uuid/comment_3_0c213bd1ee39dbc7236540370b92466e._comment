@@ -13,10 +13,19 @@ and set up the foo-rsync remote with the same uuid as it.
 And it would add additional fields to the remote.log:
 
 	-uuid name=foo type=directory encryption=shared cipher=...
-	+uuid name=foo type=directory encryption=shared cipher=... alt.foo-rsync.type=rsync alt.foo-rsync.rsyncurl=server:/foo
+	+uuid name=foo type=directory encryption=shared cipher=... type+foo-rsync=rsync rsyncurl!foo-rsync=server:/foo
 
 When enableremote foo-rsync is later run and fails to find a name=foo-rsync,
-it can look for a remote with the "alt.foo-rsync.type" field, and generate a
+it can look for a remote with the "type+foo-rsync" field, and generate a
 RemoteConfig with type=rsync rsyncurl=server:/foo encryption=shared cipher=...
 From there the enableremote would proceed as usual.
+
+(And, if enableremote foo-rsync is passed new/changed parameters, they need to get
+stored under its namespace.)
+
+I picked + as the separator because it's not likely to be in a remote
+name (although it could be) and it seems fine to not support field names containing 
+it. (I had first used period, but there may well be special remotes with field names
+that contain a period.) There's no parsing ambiguity: 'x+y+z=bar' means the x
+field of a remote named  "y+z".
 """]]
