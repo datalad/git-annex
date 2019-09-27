@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2019-09-27T16:48:49Z"
+ content="""
+I notice that `git annex init` is not able to detect that posix locks are not
+working (I assume they are not), so it doesn't enable pid locking. You
+should run: `git config annex.pidlock true`
+
+That could be improved: The current probe only tries to set an
+exclusive lock, but does not verify that the exclusive lock has any effect.
+But I'm a bit wary about all the ways verifying the lock could go wrong
+given that the posix locks are violating posix. Trying to take the lock
+nonblocking might block forever or any other undefined behavior.
+
+It does seem that init ought to test if sqlite can be used, and
+fail early otherwise. Better to learn about the problem before you start
+using the repository.
+"""]]
