@@ -1,0 +1,11 @@
+If there's a git remote named "foo", and a special remote with the same
+name, `git annex enableremote foo` just prints "ok" and silently does
+nothing.
+
+Perhaps worse, passing enableremote the uuid of the special remote causes
+it to *modify* the same named git remote's config, adding/replacing
+annex-uuid and adding whatever other git configs the special remote uses.
+--[[Joey]]
+
+(initremote does check if there's already a remote with the same name, and
+refuses to overwrite it).
