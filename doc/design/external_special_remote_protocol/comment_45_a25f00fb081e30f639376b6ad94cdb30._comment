@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: should there be FSCK and/or CLEAN?"""
+ date="2019-09-28T16:38:14Z"
+ content="""
+You never need to worry about cleaning up the files git-annex asks content
+be downloaded to.
+
+git-annex also has a per-key temporary work directory that could perhaps
+be useful for this interface to expose; it manages cleanup of those
+temporary directories at the right times.
+
+You can detect when git-annex closes the external program's stdin, and perform
+whatever shutdown cleanup you want to then. But of course there could be other
+git-annex processes also running other instances of the same external
+program, so you'd have to find a way to avoid deleting any files those are
+using.
+"""]]
