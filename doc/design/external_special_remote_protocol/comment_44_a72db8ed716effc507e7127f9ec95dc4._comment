@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="should there be FSCK and/or CLEAN?"
+ date="2019-09-28T00:31:51Z"
+ content="""
+external remote could crash/get interrupted in the middle of its operation thus leaving some corrupt/temporary files behind.  How/when should it run some diagnostic and clean up after itself?
+"""]]
