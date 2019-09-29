@@ -13,9 +13,9 @@ This is not 100% reproducible.  I haven't figured out any pattern yet as to when
 1. Run `enable-tor`, `remotedaemon`, and `p2p --pair` on both
 1. Modify the text file
 1. Observe that the remote peer ends up with three new commits on `master` rather than one; from oldest to newest:
-    1. The commit received via tor from the source side
-    2. A local commit removing the text file
-    3. A local commit adding it back with identical contents
+    1. The commit received via tor from the source side (4bd9c99 in the below example)
+    2. A local commit removing the text file (1ef9061)
+    3. A local commit adding it back with identical contents (e662a33)
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -68,16 +68,6 @@ error: failed to push some refs to 'tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval
 [2019-09-29 23:44:23.623525612] Pusher: Syncing with peer1 
 To tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294
    1ef9061..e662a33  master -> synced/master
-[2019-09-29 23:45:45.259976537] RemoteControl: Syncing with peer1 
-From tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294
-   e662a33..e86c66a  master        -> peer1/master
-   e662a33..e86c66a  synced/master -> peer1/synced/master
-
-Updating e662a33..e86c66a
-Fast-forward
- TODO.org | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 # End of transcript or log.
 """]]
-
