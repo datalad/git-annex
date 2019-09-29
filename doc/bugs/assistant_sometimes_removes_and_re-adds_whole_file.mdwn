@@ -1,0 +1,83 @@
+### Please describe the problem.
+
+I have syncing set up between two peers via tor.  Sometimes when I change a (non-annexed) file in one peer, the other peer receives the change, but then within a second or two adds a commit which removes the entire file, and within another second another commit which adds it back.
+
+### What steps will reproduce the problem?
+
+This is not 100% reproducible.  I haven't figured out any pattern yet as to when it happens or doesn't happen.
+
+1. Set up a fresh repo
+1. `echo '* annex.largefiles=nothing' >.gitattributes` and commit
+1. Add another (text) file and commit
+1. `scp` the repo to another machine
+1. Run `enable-tor`, `remotedaemon`, and `p2p --pair` on both
+1. Modify the text file
+1. Observe that the remote peer ends up with three new commits on `master` rather than one; from oldest to newest:
+    1. The commit received via tor from the source side
+    2. A local commit removing the text file
+    3. A local commit adding it back with identical contents
+
+### What version of git-annex are you using? On what operating system?
+
+7.20190912-g05bc37910 on both openSUSE nodes (sender is Leap 15.0, receiver is Tumbleweed)
+
+### Please provide any additional information below.
+
+[[!format sh """
+# Relevant output from .git/annex/daemon.log on the sending side
+[2019-09-29 23:44:13.781640446] Committer: Committing changes to git
+(recording state in git...)
+[2019-09-29 23:44:15.105628185] Committer: Committing changes to git
+
+Updating 4bd9c99..1ef9061
+Fast-forward
+ TODO.org | 10919 --------------------------------------------------------------------------------------------------------------------------------------------
+ 1 file changed, 10919 deletions(-)
+ delete mode 100644 TODO.org
+[2019-09-29 23:44:17.668876311] Committer: Committing changes to git
+(recording state in git...)
+
+Updating 1ef9061..e662a33
+Fast-forward
+ TODO.org | 10919 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 10919 insertions(+)
+ create mode 100644 TODO.org
+
+
+# Relevant output from .git/annex/daemon.log on the receiving side
+[2019-09-29 23:44:14.293079441] RemoteControl: Syncing with peer1 
+From tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294
+   28aa4b9..4bd9c99  master        -> peer1/master
+   28aa4b9..4bd9c99  synced/master -> peer1/synced/master
+
+Updating 28aa4b9..4bd9c99
+Fast-forward
+ TODO.org | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[2019-09-29 23:44:16.054093704] Committer: Committing changes to git
+(recording state in git...)
+[2019-09-29 23:44:16.169742975] Pusher: Syncing with peer1 
+[2019-09-29 23:44:17.169984217] Committer: Committing changes to git
+(recording state in git...)
+To tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294
+   4bd9c99..1ef9061  master -> synced/master
+remote: error: refusing to update checked out branch: refs/heads/master        
+To tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294
+ ! [remote rejected] master -> master (branch is currently checked out)
+error: failed to push some refs to 'tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294'
+[2019-09-29 23:44:23.623525612] Pusher: Syncing with peer1 
+To tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294
+   1ef9061..e662a33  master -> synced/master
+[2019-09-29 23:45:45.259976537] RemoteControl: Syncing with peer1 
+From tor-annex::rpxkm55i6gxlirqohcjup4g4orlgzyval2n2yymah36ekipjcppmrvid.onion:42294
+   e662a33..e86c66a  master        -> peer1/master
+   e662a33..e86c66a  synced/master -> peer1/synced/master
+
+Updating e662a33..e86c66a
+Fast-forward
+ TODO.org | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+# End of transcript or log.
+"""]]
+
