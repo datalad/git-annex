@@ -10,12 +10,21 @@ To use this, you need to get Tor installed and running. See
 
 	sudo apt-get install tor
 
-You also need to install [Magic Wormhole](https://github.com/warner/magic-wormhole).
+You also need to install [Magic Wormhole](https://github.com/warner/magic-wormhole) -
+here are [the installation instructions](https://magic-wormhole.readthedocs.io/en/latest/welcome.html#installation).
 
-	sudo apt-get install magic-wormhole
+*Important:*
 
-Important: You need git-annex version 6.20180705. Older versions of git-annex
-unfortunately had a bug that prevents this process from working correctly.
+* At the time of writing, you need to install Magic Wormhole under Python 2,
+  because [Tor support is only available under python2.7](https://magic-wormhole.readthedocs.io/en/latest/tor.html).
+
+* The installation process must make a `wormhole` executable available
+  somewhere on your `$PATH`.  Some distributions may only install executables
+  which reference the Python version, e.g. `wormhole-2.7`, in which case you
+  will need to manually create a symlink (and maybe file a bug with your distribution).
+
+* You need git-annex version 6.20180705. Older versions of git-annex
+  unfortunately had a bug that prevents this process from working correctly.
 
 ## pairing two repositories
 
