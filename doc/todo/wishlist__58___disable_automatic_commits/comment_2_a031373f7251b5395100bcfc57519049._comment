@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-30T18:25:08Z"
+ content="""
+The assistant does not commit files that are open for write.
+
+So unless ffmpeg partially writes the file, then closes the file, then
+reopens it and writes some more, the assistant will only make a single
+commit.
+"""]]
