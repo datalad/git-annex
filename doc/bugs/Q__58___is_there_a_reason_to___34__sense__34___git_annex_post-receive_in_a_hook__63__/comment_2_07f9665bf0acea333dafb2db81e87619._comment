@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-09-30T17:36:40Z"
+ content="""
+Of course if you're sure you'll never use an old version of git-annex
+(or don't care if the hook breaks if you do), you can modify the hook
+script.
+
+I don't see any changes I should make here, can this bug report be closed?
+"""]]
