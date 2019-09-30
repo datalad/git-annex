@@ -36,3 +36,9 @@ BTW: What a nice idea to ask for something like this in a bug report.
 
 
 [[!meta author=mih]]
+
+> I've verified this is fixed on git's side. With git 2.23.0, my simple
+> reproduction script that uses only git does not fail as it used to.
+> And, yoh previously followed up that it was fixed in actual git-annex
+> use.
+> So, [[done]] --[[Joey]]
