@@ -15,7 +15,7 @@ cmd :: Command
 cmd = notBareRepo $
 	command "watch" SectionCommon 
 		"watch for changes and autocommit"
-		paramNothing (seek <$$> const parseDaemonOptions)
+		paramNothing (seek <$$> const (parseDaemonOptions True))
 
 seek :: DaemonOptions -> CommandSeek
 seek o = commandAction $ start False o Nothing

@@ -22,3 +22,5 @@ Just `kill`ing it seems to do the job, however :-)
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes for many years, just finally getting round to exploring the more advanced features :-)
+
+> [[fixed|done]] --[[Joey]]

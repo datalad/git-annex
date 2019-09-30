@@ -197,6 +197,12 @@ subdirectories).
 
   See [[git-annex-webapp]](1) for details.
 
+* `remotedaemon`
+
+  Persistant communication with remotes.
+
+  See [[git-annex-remotedaemon]](1) for details.
+
 # REPOSITORY SETUP COMMANDS
 
 * `init [description]`
@@ -686,12 +692,6 @@ subdirectories).
   of being symlinks.
 
   See [[git-annex-smudge]](1) for details.
-
-* `remotedaemon`
-
-  Detects when network remotes have received git pushes and fetches from them.
-
-  See [[git-annex-remotedaemon]](1) for details.
 
 * `findref [ref]`
 

@@ -34,7 +34,7 @@ data AssistantOptions = AssistantOptions
 
 optParser :: CmdParamsDesc -> Parser AssistantOptions
 optParser _ = AssistantOptions
-	<$> parseDaemonOptions
+	<$> parseDaemonOptions True
 	<*> switch
 		( long "autostart"
 		<> help "start in known repositories"

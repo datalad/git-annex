@@ -15,9 +15,9 @@ import Utility.Daemon
 
 cmd :: Command
 cmd = noCommit $
-	command "remotedaemon" SectionMaintenance
+	command "remotedaemon" SectionCommon
 		"persistent communication with remotes"
-		paramNothing (run <$$> const parseDaemonOptions)
+		paramNothing (run <$$> const (parseDaemonOptions False))
 
 run :: DaemonOptions -> CommandSeek
 run o

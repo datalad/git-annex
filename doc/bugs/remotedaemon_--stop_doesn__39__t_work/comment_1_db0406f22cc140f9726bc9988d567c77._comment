@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-30T18:31:55Z"
+ content="""
+It's fine to just kill it. It doesn't write a pid file and so --stop
+can't work, and my inclination is that there's no point in complicating it
+with that. I've removed the --stop option.
+"""]]

@@ -407,16 +407,20 @@ data DaemonOptions = DaemonOptions
 	, stopDaemonOption :: Bool
 	}
 
-parseDaemonOptions :: Parser DaemonOptions
-parseDaemonOptions = DaemonOptions
-	<$> switch
+parseDaemonOptions :: Bool -> Parser DaemonOptions
+parseDaemonOptions canstop
+	| canstop = DaemonOptions <$> foreground <*> stop
+	| otherwise = DaemonOptions <$> foreground <*> pure False
+  where
+	foreground = switch
 		( long "foreground"
 		<> help "do not daemonize"
 		)
-	<*> switch
+	stop = switch
 		( long "stop"
 		<> help "stop daemon"
 		)
+
 completeRemotes :: HasCompleter f => Mod f a
 completeRemotes = completer $ mkCompleter $ \input -> do
 	r <- maybe (pure Nothing) (Just <$$> Git.Config.read)
