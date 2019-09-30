@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-30T17:55:22Z"
+ content="""
+I'm not sure that the distinction between regular and special remotes is
+likely to matter in general?
+
+If I intuit correctly, in your use case, you may have special remotes that
+are extremely easy to enable. (Auto-enabling seems a red herring since it
+didn't get autoenabled). While conversely some random repository
+might be on a LAN/device the user doesn't have access to.
+
+But it seems just as likely that a user might have a special remote that
+needs installing extra software to access, or needs a password or other
+authentication method that's a pain, but it be easy enough to add a ssh 
+remote pointing at another repository on the LAN, or to mount a drive.
+
+Or in my personal setup, some repositories are on offline drives and a pain
+to access, others are on network attached storage and easy, and special
+remotes are a distant third choice. (I use repo descriptions to
+differentiate.)
+
+I also feel that this message is already really too verbose, and adding
+lots more instructions to it will overall hurt usability. Bear in mind
+there can be many such messages displayed by a single command.
+
+Also, the proposed output suggesting to run git-annex enableremote doesn't
+make sense if the special remote is actually already enabled, but was still
+not able to be accessed for whatever reason. The existing message is
+intentionally worded so it works in either case, disambiguated by
+displaying the names of the remotes that are enabled.
+
+It might be that more metadata about repositories would help, like it
+already separates out untrusted repositories into a separate list.
+But it would have to be metadata that applies to all users of a repository,
+or is somehow probed at runtime.
+"""]]
