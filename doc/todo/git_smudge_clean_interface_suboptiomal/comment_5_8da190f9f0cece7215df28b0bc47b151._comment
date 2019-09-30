@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-09-30T19:24:53Z"
+ content="""
+The way git-annex uses the '%f' file, the smudge filter does
+not actually write to it, so that's fine. The clean filter
+does directly access the file, but this would only be a problem if git ran
+the clean filter with stdin not matching the file. As far as I know git never
+does, because the clean filter is only used by `git add` (or `commit -a`).
+
+However, the lack of clarity regarding when it's safe to really access
+'%f' is indeed a problem with git's interface; git-annex has to very
+carefully work around git's current, not fully specified behavior.
+"""]]
