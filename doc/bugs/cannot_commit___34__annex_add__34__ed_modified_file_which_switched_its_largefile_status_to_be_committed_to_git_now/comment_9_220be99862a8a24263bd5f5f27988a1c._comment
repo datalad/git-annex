@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2019-09-30T19:43:43Z"
+ content="""
+IIRC this involved v5 repositories and the pre-commit
+hook's hacks to make v5 unlocked files work. Stuff that was one of the
+motivations for v7.
+
+I tried the script in a v7 repository, and the git commit 
+of the file succeeded, no "partial commit" complaint. So I think the
+original bug is fixed.
+"""]]

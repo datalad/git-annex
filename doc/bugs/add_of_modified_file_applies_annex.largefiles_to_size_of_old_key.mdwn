@@ -1,0 +1,41 @@
+`git annex add` of an modified file when annex.largefiles is set
+matches largerthan against the size of the old key, not the current
+file size
+	
+	mkdir /tmp/repo; 
+	cd /tmp/repo; 
+	git init; 
+	git annex init; 
+	git config annex.largefiles '(largerthan=5b)'
+	git add .gitattributes; 
+	git commit -m 'added .gitattri'; 
+	echo 123456 > file; 
+	git annex add file; 
+	git commit -m add1; 
+	#git config annex.largefiles '(largerthan=7b)'
+	git annex unlock file; 
+	echo 123 >| file
+	git annex add file
+
+This test case adds the file to the annex, even though it's smaller than
+5b, because the old key is 6b. If the line is uncommented, it gets added to
+git instead.
+
+While the test case unlocks the file, deleting the annex link and writing
+a new file and adding that has the same behavior.
+
+Using `git add` also has the same behavior.
+
+I'm pretty sure the user expects the file to be added to git in all
+these situation. They configured annex.largefiles that way for a reason.
+
+----
+
+The root cause is that Limit.limitSize uses lookupFileKey.
+
+It makes sense for that to look up the key and not look at the
+current file content when it's being used by a preferred content expression,
+or by --largerthan.
+
+But, for matching largefiles, it needs to look at the actual file on disk,
+not an old key.
