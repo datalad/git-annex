@@ -141,13 +141,8 @@ convert that to be stored in git, here's how to accomplish that:
 
 	git annex unlock file
 	git -c annex.largefiles=nothing add file
-	git commit -n file
+	git commit file
 
 You can modify the file after unlocking it and before adding it to
 git. And this is probably a good idea if it was really a big file,
 so that you can replace its content with something smaller.
-
-Notice the `-n` switch when committing the file. This bypasses the
-[[git-annex-precommit]] hook. In this situation, that hook sees an unlocked
-file and wants to add it back to the annex, so you have to bypass the hook
-to get the file committed to git.
