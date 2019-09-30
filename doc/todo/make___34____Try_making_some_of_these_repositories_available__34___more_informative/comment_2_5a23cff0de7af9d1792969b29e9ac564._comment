@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2019-09-30T20:35:59Z"
+ content="""
+> I'm not sure that the distinction between regular and special remotes is likely to matter in general?
+
+Those (regular git repositories, and special remotes) are technically completely different beasts, and \"made available\" using different mechanisms (`git remote add` vs `git annex enableremote`). Listing them in one list makes it hard-to-impossible  for a user to choose a correct command without background knowledge. Indeed some of them (regardless of the type) would be harder to \"make available\" than the others, but that is different type of information which annex unlikely to ever contain and thus to express in the message. `autoenabled` ones though are more likely to be the \"easy ones\".
+
+> (Auto-enabling seems a red herring since it didn't get autoenabled)
+
+`datalad install` autoenables by default since we call `git annex init` on a fresh clone (IIRC if we see `git-annex` branch on remote).  With pure `git annex`, I believe it is only if you run `git annex init` explicitly after cloning, you would get it autoenabled. So `git clone https://github.com/dandi/najafi-2018-nwb && cd najafi-2018-nwb && git annex get data/FN_dataSharing/nwb/mouse1_fni16_150817_001_ch2-PnevPanResults-170808-190057.nwb` wouldn't work, while the one with `git annex init` before `git annex get` would.  
+So I wouldn't say it is `red herring` per se - I (user) can end up in a situation where a special remote was not enabled since I did not explicitly `git annex init` locally.
+
+> ... Bear in mind there can be many such messages displayed by a single command.
+
+yeah, that is what I (as a user) dislike as well. I even thought that in `datalad` (e.g. [#3078](https://github.com/datalad/datalad/issues/3078)) we could parse those and provide a single summary statement...  I think that splitting here into two wouldn't be the straw to break the camel's back.  Some more generic (re)solution is needed.
+
+> Also, the proposed output suggesting to run git-annex enableremote doesn't make sense if the special remote is actually already enabled, but was still not able to be accessed for whatever reason.
+
+Indeed. But `git annex` \"knows\" either any given special remote was or was not available/tried, correct?  To a user (if we forget about the verbosity for a moment) most informative message then could be 
+
+1. a list of remotes which tried but failed (thus might need to be \"made available) - may be even with some reason for each (e.g. \"connection time out\", \"file is missing\", ...)
+2. a list of regular remotes (to be added via `git remote add`)
+3. a list of special remotes (to be enabled via `git annex enableremote`)
+
+from `1.` I would see if I should do something about what I had already connected to, from 2. and 3. I would immediately see what and how to enable (if I see that I potentially has access to it)
+
+> It might be that more metadata about repositories would help, like it already separates out untrusted repositories into a separate list.
+
+Besides considering untrusted repos last (could be placed last in any corresponding list) I personally do not see such separation as useful.
+
+"""]]
