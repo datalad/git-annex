@@ -13,3 +13,9 @@ Problem: Many urls could be used to clone. http and ssh are the obvious
 two. url=http:// url=ssh:// won't work, only one value will be used.
 url1= url2= is annoying for the user, especially if they later want to add
 another url with enableremote and have to work out the number.
+
+Problem: The user might go in and change the remote's url to point to some
+other server with a different git-lfs backend. In fact, they could already
+do so! Remembering the urls actually would let the special remote detect
+this; it can check if its remote's url is one that it knows about, and
+refuse to use it otherwise.
