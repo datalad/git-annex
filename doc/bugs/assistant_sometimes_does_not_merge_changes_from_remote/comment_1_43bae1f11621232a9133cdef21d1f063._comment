@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-09-30T17:41:23Z"
+ content="""
+It may be that git is not overwriting the file with its new content, but is
+unlinking it and then writing the new content. If so, that could explain
+the assistant's behavior, since it could notice the file has been deleted,
+and might commit that before it notices it's been added back.
+
+I tried stracing git checkout, and it indeed does unlink
+a modified file then it opens the file for write and writes out the new
+content. Kind of surprising it's not more atomic.
+
+The nature of the assistant is that it's never going to be guaranteed to
+always make commits that make logical sense in the same way that manually
+committing will. It might be possible to improve this by having it delay
+committing removals for some period of time.
+"""]]
