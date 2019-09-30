@@ -78,3 +78,6 @@ $ xxd /proc/21584/cmdline
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, lots and lots for many years :-)
+
+> turns out kdesu needs -c in order to treat the single parameter that is
+> passed to it as a command line. [[fixed|done]] --[[Joey]]
