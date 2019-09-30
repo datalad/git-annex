@@ -1,0 +1,15 @@
+It would be nice if a clone from eg, gitlab could autoenable the git-lfs
+special remote. Currently, autoenable doesn't work for git-lfs special
+remotes at all, because the url is not stored.
+
+What if, an url or urls passed to initremote were stored. Then when
+enableremote/autoenable runs, if it sees a git remote with a known url,
+it sets that remote up with annex-uuid and annex-git-lfs set, instead of
+adding a new remote.
+
+That might need changes to the Remote setup method, not sure.
+
+Problem: Many urls could be used to clone. http and ssh are the obvious
+two. url=http:// url=ssh:// won't work, only one value will be used.
+url1= url2= is annoying for the user, especially if they later want to add
+another url with enableremote and have to work out the number.
