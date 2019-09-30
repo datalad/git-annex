@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Move file from git annex to just git in one commit"""
+ date="2019-09-30T17:29:39Z"
+ content="""
+	git annex unlock MYFILE
+	git -c annex.largefiles=nothing add MYFILE
+	git commit -n MYFILE
+
+(The -n is only needed with git-annex older than 7.20190912 but will work
+with newer versions too.)
+"""]]
