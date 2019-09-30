@@ -38,6 +38,10 @@ import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
 
+{- Some limits can look at the current status of files on
+ - disk, or in the annex. This allows controlling which happens. -}
+data LimitBy = LimitDiskFiles | LimitAnnexFiles
+
 {- Checks if there are user-specified limits. -}
 limited :: Annex Bool
 limited = (not . Utility.Matcher.isEmpty) <$> getMatcher'
@@ -302,26 +306,28 @@ limitSecureHash _ = checkKey $ pure . cryptographicallySecure . keyVariety
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()
-addLargerThan = addLimit . limitSize (>)
+addLargerThan = addLimit . limitSize LimitAnnexFiles (>)
 
 addSmallerThan :: String -> Annex ()
-addSmallerThan = addLimit . limitSize (<)
+addSmallerThan = addLimit . limitSize LimitAnnexFiles (<)
 
-limitSize :: (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit Annex
-limitSize vs s = case readSize dataUnits s of
+limitSize :: LimitBy -> (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit Annex
+limitSize lb vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ go sz
   where
-	go sz _ (MatchingFile fi) = lookupFileKey fi >>= check fi sz
+	go sz _ (MatchingFile fi) = case lb of
+		LimitAnnexFiles -> lookupFileKey fi >>= \case
+			Just key -> checkkey sz key
+			Nothing -> return False
+		LimitDiskFiles -> do
+			filesize <- liftIO $ catchMaybeIO $ getFileSize (currFile fi)
+			return $ filesize `vs` Just sz
 	go sz _ (MatchingKey key _) = checkkey sz key
 	go sz _ (MatchingInfo p) =
 		getInfo (providedFileSize p) 
 			>>= \sz' -> return (Just sz' `vs` Just sz)
 	checkkey sz key = return $ keySize key `vs` Just sz
-	check _ sz (Just key) = checkkey sz key
-	check fi sz Nothing = do
-		filesize <- liftIO $ catchMaybeIO $ getFileSize (currFile fi)
-		return $ filesize `vs` Just sz
 
 addMetaData :: String -> Annex ()
 addMetaData = addLimit . limitMetaData

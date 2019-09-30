@@ -113,14 +113,14 @@ tokenizeMatcher = filter (not . null) . concatMap splitparens . words
   where
 	splitparens = segmentDelim (`elem` "()")
 
-commonKeylessTokens :: [ParseToken (MatchFiles Annex)]
-commonKeylessTokens =
+commonKeylessTokens :: LimitBy -> [ParseToken (MatchFiles Annex)]
+commonKeylessTokens lb =
 	[ SimpleToken "anything" (simply limitAnything)
 	, SimpleToken "nothing" (simply limitNothing)
 	, ValueToken "include" (usev limitInclude)
 	, ValueToken "exclude" (usev limitExclude)
-	, ValueToken "largerthan" (usev $ limitSize (>))
-	, ValueToken "smallerthan" (usev $ limitSize (<))
+	, ValueToken "largerthan" (usev $ limitSize lb (>))
+	, ValueToken "smallerthan" (usev $ limitSize lb (<))
 	]
 
 commonKeyedTokens :: [ParseToken (MatchFiles Annex)]
@@ -147,7 +147,7 @@ preferredContentKeylessTokens pcd =
 	[ SimpleToken "standard" (call $ matchStandard pcd)
 	, SimpleToken "groupwanted" (call $ matchGroupWanted pcd)
 	, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
-	] ++ commonKeylessTokens
+	] ++ commonKeylessTokens LimitAnnexFiles
   where
 	preferreddir = fromMaybe "public" $
 		M.lookup "preferreddir" =<< (`M.lookup` configMap pcd) =<< repoUUID pcd
@@ -182,7 +182,9 @@ mkLargeFilesParser = do
 	let mimer n = ValueToken n $ 
 		const $ Left $ "\""++n++"\" not supported; not built with MagicMime support"
 #endif
-	let parse = parseToken $ commonKeyedTokens ++ commonKeylessTokens ++
+	let parse = parseToken $
+		commonKeyedTokens ++
+		commonKeylessTokens LimitDiskFiles ++
 #ifdef WITH_MAGICMIME
 		[ mimer "mimetype" $
 			matchMagic "mimetype" getMagicMimeType providedMimeType

@@ -39,3 +39,5 @@ or by --largerthan.
 
 But, for matching largefiles, it needs to look at the actual file on disk,
 not an old key.
+
+> [[fixed|done]] --[[Joey]]
