@@ -77,6 +77,8 @@ mkSuCommand cmd ps = firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds
 			[Param shellcmd]
 		, SuCommand (MayPromptPassword SomePassword) "kdesu"
 			[Param "-c", Param shellcmd]
+		, SuCommand (MayPromptPassword SomePassword) "pkexec"
+			([Param cmd] ++ ps)
 		-- Available in Debian's menu package; knows about lots of
 		-- ways to gain root.
 		, SuCommand (MayPromptPassword SomePassword) "su-to-root"
