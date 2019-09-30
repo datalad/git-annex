@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="Issue on openSUSE with Tor's requirement for Python 2.7 "
+ date="2019-09-29T16:41:15Z"
+ content="""
+I have updated the instructions to note two extra dependencies, the combination of which break this setup process out of the box on openSUSE.  I've filed [a bug with openSUSE](https://bugzilla.opensuse.org/show_bug.cgi?id=1152403) to improve their python-magic-wormhole package.  Hopefully I can work with the package maintainers to make this a non-issue. 
+"""]]

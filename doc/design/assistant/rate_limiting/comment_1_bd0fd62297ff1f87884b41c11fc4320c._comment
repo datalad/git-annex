@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="Commits could be rate-limited too"
+ date="2019-09-29T23:03:47Z"
+ content="""
+See [todo/wishlist: disable_automatic_commits](/todo/wishlist__58___disable_automatic_commits) for another kind of rate limiting, which would also help reduce I/O between remotes in some cases simply by reducing \"churn\" within any given repo.
+"""]]

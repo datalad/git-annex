@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="Follow-up thought"
+ date="2019-09-29T22:08:29Z"
+ content="""
+Afterthought on the immediately preceding comment - if the intention of `unannex` is to reverse `add`, then IMHO `unadd` or `undo-add` seem like more logical choices.  Renaming to one of these would free up `unannex` for the conversion use case.  But I appreciate that this is potentially confusing for users already used to `unannex`'s current behaviour, so I expect the idea will be rejected.
+"""]]

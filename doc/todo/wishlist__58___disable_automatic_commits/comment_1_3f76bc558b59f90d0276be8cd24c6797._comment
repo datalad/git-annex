@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject=".gitattributes could solve this"
+ date="2019-09-29T22:59:48Z"
+ content="""
+Revisiting this topic 3.5 years later ...
+
+The assistant will still commit a change as soon as it notices it.  This obviously has the advantage of synchronising changes to peers quicker, but it also has downsides:
+
+- It pollutes the git history with every single (saved) edit.
+- Consequently it bloats the git object store.
+
+I find this undesirable even when editing my TODO list, but it could be particularly problematic with large files, e.g. using `ffmpeg` to transcode a video between formats would presumably capture lots of intermediate states of the unfinished transcoding process.  Similarly for rendering from a video editor.
+
+So it would be helpful if there was a configurable option to determine how often changes get committed.  Ideally this would be configurable via `.gitattributes`, e.g.
+
+```
+*      annex.autocommit=anything
+*.webm annex.autocommit=(mtimebefore=10mins)
+```
+
+would autocommit most stuff immediately, but would only autocommit webm files if they haven't changed within the last 10 minutes.
+"""]]

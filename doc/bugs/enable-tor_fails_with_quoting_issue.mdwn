@@ -1,0 +1,80 @@
+### Please describe the problem.
+
+git annex enable-tor fails with an error in the KDE su dialog window:
+
+    Cannot execute command ' ''\''/home/adam/software/scm/git-annex.static/git-annex'\'' '\''enable-tor'\'' '\''1000'\''''.
+
+The console shows the following:
+
+```
+enable-tor
+  You may be prompted for a password
+org.kde.kdesud: priority set to  50
+org.kde.kdesud: Scheduler set to  0
+
+git-annex: Failed to run as root: /home/adam/software/scm/git-annex.static/git-annex enable-tor 1000
+failed
+git-annex: enable-tor: 1 failed
+```
+
+Interestingly this happens on my openSUSE Tumbleweed system running XFCE4 (*not* KDE), but not on the peer I'm trying to pair with, which is an older openSUSE Leap 15.0 box.  On the latter, for some reason that uses `gksu`, even though both systems are running XFCE4:
+
+```
+enable-tor
+  You may be prompted for a password
+gksu-run: gksu/'|home|adam|software|scm|git-annex.static|git-annex' 'enable-tor' '1000'/9140-0-pacific_TIME0
+gksu-run: e680f4b50a49c297709613029db91b7a
+
+  Tor hidden service is configured. Checking connection to it. This may take a few minutes.
+
+  Tor hidden service is working.
+ok
+```
+
+### What steps will reproduce the problem?
+
+Simply run `git-annex enable-tor`
+
+### Workaround
+
+I found that a valid workaround is to `su` to `root`, `cd` to the same repo, and run `git annex enable-tor 1000`.
+
+### What version of git-annex are you using? On what operating system?
+
+The identical statically compiled 7.20190912-g05bc37910 is running on both the failing Tumbleweed system and the succeeding Leap 15.0 system.
+
+### Please provide any additional information below.
+
+Here is the relevant fragment of the process tree:
+
+```
+  |   |-zsh,9829
+  |   |   |-git,21554 annex enable-tor
+  |   |   |   `-git-annex,21555 --library-path /home/adam/software/scm/git-annex.static//usr/lib/x86_64-linux-gnu/gconv:/home/adam/software/scm/git-annex.static//usr/lib/x86_64-linux-gnu/audit>
+  |   |   |       |-kdesu,21584 '/home/adam/software/scm/git-annex.static/git-annex' 'enable-tor' '1000'
+  |   |   |       |   |-{kdesu},21585
+  |   |   |       |   |-{kdesu},21586
+  |   |   |       |   |-{kdesu},21588
+  |   |   |       |   |-{kdesu},21589
+  |   |   |       |   |-{kdesu},21591
+  |   |   |       |   `-{kdesu},21595
+  |   |   |       |-{git-annex},21579
+  |   |   |       |-{git-annex},21580
+  |   |   |       |-{git-annex},21581
+  |   |   |       `-{git-annex},21583
+```
+
+You can clearly see that the arguments to `kdesu` have extra quotes, which I'm guessing is part of the problem:
+
+```
+$ xxd /proc/21584/cmdline
+00000000: 6b64 6573 7500 272f 686f 6d65 2f61 6461  kdesu.'/home/ada
+00000010: 6d2f 736f 6674 7761 7265 2f73 636d 2f67  m/software/scm/g
+00000020: 6974 2d61 6e6e 6578 2e73 7461 7469 632f  it-annex.static/
+00000030: 6769 742d 616e 6e65 7827 2027 656e 6162  git-annex' 'enab
+00000040: 6c65 2d74 6f72 2720 2731 3030 3027 00    le-tor' '1000'.
+```
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, lots and lots for many years :-)

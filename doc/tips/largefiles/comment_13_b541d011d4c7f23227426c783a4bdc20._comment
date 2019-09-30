@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="Can conversion to/from annexed be made easier?"
+ date="2019-09-29T22:04:32Z"
+ content="""
+IMHO it's somewhat user-unfriendly and error-prone to have to remember a sequence of three commands to convert an unannexed file to annexed, or vice-versa.  So it would be nice if there were git-annex commands to do this in one go.
+
+In fact, I would expect `git annex add` to handle adding to the annex, and `git annex unannex` to do the opposite.  Are there good reasons why they should not be made to do that?  Even if there are, aren't those subcommands already doing very similar things?  In which case maybe the solution would be to add extra option to each to enable this behaviour?  For example `--force` or something like that in order to tell it to ignore `annex.largefiles` (although for `add` that is already used to allow adding ignored files, so we probably shouldn't conflate the two cases under one option).
+"""]]

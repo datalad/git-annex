@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+`git annex remotedaemon --help` claims that `--stop` is a valid option for stopping the remote daemon, but it results in:
+
+```
+git annex remotedaemon --stop
+git-annex: --stop not implemented for remotedaemon
+CallStack (from HasCallStack):
+  error, called at ./Command/RemoteDaemon.hs:24:32 in main:Command.RemoteDaemon
+```
+
+### What steps will reproduce the problem?
+
+`git annex remotedaemon --stop`
+
+Just `kill`ing it seems to do the job, however :-)
+
+### What version of git-annex are you using? On what operating system?
+
+7.20190912-g05bc37910 on openSUSE Tumbleweed and Leap 15.0.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes for many years, just finally getting round to exploring the more advanced features :-)
