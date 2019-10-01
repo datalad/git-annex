@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-10-01T19:52:22Z"
+ content="""
+Further problem with namespaces: If two people init new sameas remotes with
+the same uuid at the same time, on merge one of them will be lost.
+"""]]
