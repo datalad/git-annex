@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="There are still benefits to commit throttling"
+ date="2019-09-30T22:16:10Z"
+ content="""
+> The assistant does not commit files that are open for write.
+
+Interesting; I see it uses lsof for this.
+
+> So unless ffmpeg partially writes the file, then closes the file, then reopens it and writes some more, the assistant will only make a single commit.
+
+OK, so that probably wasn't a good example.  But that still doesn't negate my TODO list editing example, and it is not hard to think of other scenarios where partial results are written by one process and then rewritten in-place by another.
+
+It also doesn't negate the fact that throttling the commit speed would also help reduce I/O between remotes in some cases simply by reducing \"churn\" within any given repo, as noted in [my comment on design/assistant/rate_limiting](https://git-annex.branchable.com/design/assistant/rate_limiting/#comment-c88bc709792c79037a41292c1db70889).
+"""]]

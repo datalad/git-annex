@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="comment 2"
+ date="2019-09-30T22:25:11Z"
+ content="""
+Given that there is one remotedaemon process per repository, if a user has (say) 10 of them running and wants to stop a particular one, what is the expectation of how they would do this?  Presumably it would involve something like searching the process table for a remotedaemon process whose cwd is the repository in question.  I can't think of any trivial one-liner to do this, since the usual suspects like `pkill` / `ps` / `pidof` etc. do not support filtering by cwd. 
+
+So an advantage of implementing pidfiles and `--stop` would be that each user doesn't have to worry about such details.
+"""]]
