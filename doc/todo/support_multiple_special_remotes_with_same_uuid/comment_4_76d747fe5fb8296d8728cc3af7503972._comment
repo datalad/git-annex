@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-10-01T16:26:12Z"
+ content="""
+Started a `sameas` branch for this.
+
+Logs.Remote.configSet will need some changes because it currently works
+on the basis of UUID, and so can't know when it's supposed to change a
+sameas remote. It will need an added RemoteName parameter.
+
+The RemoteConfig is generated each run from the remote.log, and so the
+handling of sameas remotes needs to be done in Logs.Remote.readRemoteLog
+not by enableremote.
+
+readRemoteLog makes a `Map UUID RemoteConfig`, which will need to
+change to `Map (UUID, RemoteName) RemoteConfig`
+
+Digging into changing readRemoteLog, there are several problems. Here are
+some of the less tractable ones:
+
+Remote.List.remoteGen looks up RemoteConfig by UUID. While it does have a
+Git remote and could look up the name of the remote from that, if the user
+renames a remote in .git/config, that would confuse it. That is not an
+acceptable tradeoff. So, a sameas remote would need to have some additional
+git config be set, giving the namespace that's used for it in the
+remote.log. If that's missing, it un-namespaced. initremote/enableremote
+need to set that git config.
+
+Annex.SpecialRemote.autoEnable uses readRemoteLog. It would likewise need
+to look at the git config for namespace to tell which sameas remotes
+have been auto-enabled.
+
+Preferred content looks at the preferreddir= value from RemoteConfig,
+and only a uuid is available. So it would have to look at the preferreddir
+values from all RemoteConfigs for remotes with that uuid and somehow pick
+one consistently. Or, preferreddir could be inherited like encryption
+settings are, and not allowed to be set in a sameas remote's config.
+"""]]
