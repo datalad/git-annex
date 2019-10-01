@@ -1,6 +1,6 @@
 {- git-annex command-line option parsing
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -113,6 +113,10 @@ parseRemoteOption :: RemoteName -> DeferredParse Remote
 parseRemoteOption = DeferredParse 
 	. (fromJust <$$> Remote.byNameWithUUID)
 	. Just
+
+parseUUIDOption :: String -> DeferredParse UUID
+parseUUIDOption = DeferredParse
+	. (Remote.nameToUUID)
 
 -- | From or To a remote.
 data FromToOptions

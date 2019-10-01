@@ -14,6 +14,11 @@ two. url=http:// url=ssh:// won't work, only one value will be used.
 url1= url2= is annoying for the user, especially if they later want to add
 another url with enableremote and have to work out the number.
 
+> If each url is treated as a separate special remote (which makes a lot of sense
+> by analogy with how regular git remotes work), then
+> [[support_multiple_special_remotes_with_same_uuid]] could be used to
+> solve this.
+
 Problem: The user might go in and change the remote's url to point to some
 other server with a different git-lfs backend. In fact, they could already
 do so! Remembering the urls actually would let the special remote detect

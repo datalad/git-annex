@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011,2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,14 +21,32 @@ cmd :: Command
 cmd = command "initremote" SectionSetup
 	"creates a special (non-git) remote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
-	(withParams seek)
+	(seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withWords (commandAction . start)
+data InitRemoteOptions = InitRemoteOptions
+	{ cmdparams :: CmdParams
+	, sameas :: Maybe (DeferredParse UUID)
+	}
 
-start :: [String] -> CommandStart
-start [] = giveup "Specify a name for the remote."
-start (name:ws) = ifM (isJust <$> findExisting name)
+optParser :: CmdParamsDesc -> Parser InitRemoteOptions
+optParser desc = InitRemoteOptions
+	<$> cmdParams desc
+	<*> optional parseSameasOption
+
+parseSameasOption :: Parser (DeferredParse UUID)
+parseSameasOption = parseUUIDOption <$> strOption
+	( long "sameas"
+	<> metavar (paramRemote `paramOr` paramDesc `paramOr` paramUUID)
+	<> help "new remote that accesses the same data"
+	<> completeRemotes
+	)
+
+seek :: InitRemoteOptions -> CommandSeek
+seek o = withWords (commandAction . (start o)) (cmdparams o)
+
+start :: InitRemoteOptions -> [String] -> CommandStart
+start _ [] = giveup "Specify a name for the remote."
+start o (name:ws) = ifM (isJust <$> findExisting name)
 	( giveup $ "There is already a special remote named \"" ++ name ++
 		"\". (Use enableremote to enable an existing special remote.)"
 	, do

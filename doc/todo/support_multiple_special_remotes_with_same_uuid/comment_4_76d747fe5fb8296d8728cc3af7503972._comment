@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-10-01T16:26:12Z"
+ content="""
+The RemoteConfig is generated each run from the remote.log, and so the
+handling of sameas remotes needs to be done in Logs.Remote.readRemoteLog
+not by enableremote.
+
+Logs.Remote.configSet will need some changes because it currently works
+on the basis of UUID, and so can't know when it's supposed to change a
+sameas remote. It seems it should instead work on the basis of the "name"
+field of the RemoteConfig.
+"""]]
