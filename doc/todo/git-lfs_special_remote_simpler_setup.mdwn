@@ -12,7 +12,10 @@ That might need changes to the Remote setup method, not sure.
 Problem: Many urls could be used to clone. http and ssh are the obvious
 two. url=http:// url=ssh:// won't work, only one value will be used.
 url1= url2= is annoying for the user, especially if they later want to add
-another url with enableremote and have to work out the number.
+another url with enableremote and have to work out the number. Could
+make enableremote with a new url= add that as urlN=.
+[[support_multiple_special_remotes_with_same_uuid]] would solve it, perhaps
+in a cleaner way.
 
 Problem: The user might go in and change the remote's url to point to some
 other server with a different git-lfs backend. In fact, they could already
