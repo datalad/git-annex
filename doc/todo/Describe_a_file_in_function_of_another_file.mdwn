@@ -5,7 +5,9 @@ In order to save space/bandwith/... I would like to create a way to describe a f
 You may ask why it is useful? I have several usecases:
 
 1) my first usecase is that I would like to be able to generate thumbnails for my pictures in order to speed up display. A thumbnail can be easily created from a picture (with for example the convert command), but when you don't need the thumbnail, you may prefer to remove them locally to save space.
+
 2) similarly, I have some RAW photo files, and a script to turn them into .JPG file. Or even better, I could have several scripts to convert my initial RAW files into several .JPG files, with different parameters/look. Keeping both RAW and developed JPG can be heavy, so this kind of tool could allow me to remove the .JPG file(s) when I don't need them anymore, so I don't mind to drop the .JPG file as soon as the RAW does exist (but if the RAW does not exist anymore, I shouldn't be able to remove the .JPG of course).
+
 3) I also have on my desktop some compressed files (.iso for example, or old projects). Most of the time, I don't really need to keep the uncompressed .iso, but from time to time, I may need them. For now I manually uncompress them, use them, and delete them... But it could be cool to let git-annex deal with them automatically.
 
 Does git-annex provide such functionnality? If not, do you think it could be implementable?
