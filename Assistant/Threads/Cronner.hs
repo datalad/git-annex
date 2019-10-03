@@ -132,7 +132,7 @@ sleepingActivityThread urlrenderer activity lasttime = go lasttime =<< getnextti
 		tolate nowt tz = case mmaxt of
 			Just maxt -> nowt > maxt
 			-- allow the job to start 10 minutes late
-			Nothing ->diffUTCTime 
+			Nothing -> diffUTCTime 
 				(localTimeToUTC tz nowt)
 				(localTimeToUTC tz t) > 600
 	run nowt = do
