@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="different repos with same uuid"
+ date="2019-10-02T15:13:55Z"
+ content="""
+\"It is already possible of course for two git remotes to have the same uuid, and also for a special remote and git remotes to have the same uuid\" -- but, in general, that's a situation to be avoided, right?  Other than two protocols accessing the same datastore, are there times when you'd want that?
+
+(Related: [[`git-annex-reinit`|git-annex-reinit]], [[todo/reinit_current_repo_to_new_uuid]])
+"""]]
