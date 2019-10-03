@@ -57,7 +57,7 @@ queueDb a (WriteHandle h) = H.queueDb h checkcommit a
 		| sz > 1000 = return True
 		| otherwise = do
 			now <- getCurrentTime
-			return $ diffUTCTime lastcommittime now > 300
+			return $ diffUTCTime now lastcommittime > 300
 
 addAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
 addAssociatedFile ik f = queueDb $ do
