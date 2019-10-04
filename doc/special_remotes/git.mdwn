@@ -4,7 +4,7 @@ remote of the normal kind. Two exceptions to that are [[git-lfs]] and
 
 But it is possible to register a git repository as a special remote.
 git-annex will use it remote the same as any normal git remote, but its
-url will be recorded. One benefit of doing this is it allows [[git-annex-init]]
+url will be recorded. One benefit of doing this is it allows [[git-annex init|git-annex-init]]
 to autoenable the remote.
 
 First you need a regular git remote with the url that you want to use for
@@ -20,7 +20,7 @@ Now `git annex init` in each clone of the repository will autoenable myremote.
 
 Note that the name of the git remote (`tmpremote` above) has to be
 different than the name you later use for the special remote,
-since [[git-annex-initremote]] will refuse to use the name of an existing
+since [[git-annex initremote|git-annex-initremote]] will refuse to use the name of an existing
 remote. To work around that, you could finish by removing `tmpremote` and 
 enable the special remote:
 
