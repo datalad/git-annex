@@ -16,6 +16,8 @@ Then, to set up the special remote:
 
 	git annex initremote myremote type=git location=ssh://... autoenable=true
 
+The location must be the same url as the existing git remote.
+
 Now `git annex init` in each clone of the repository will autoenable myremote.
 
 Note that the name of the git remote (`tmpremote` above) has to be
