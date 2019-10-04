@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+`/usr/bin/git-annex-shell` is linked to `/usr/lib/git-annex.linux/git-annex`, not `/usr/lib/git-annex.linux/git-annex-shell` after installing from git annex standalone rpm using yum.
+
+As a result, commands passed through `git-annex-shell` don't work, but other functions I tried work properly (e.g. initializing repos, adding files). I found the bug after running `git annex get myawesomefile` and getting a confusing error message about `git-annex` usage.
+
+Running `/usr/lib/git-annex.linux/git-annex-shell configlist ~/path/to/my/repo` would produce correct output, but `/usr/bin/git-annex-shell configlist ~/path/to/my/repo` would raise errors. Relinking `/usr/bin/git-annex-shell` seems to have fixed the problem.
+
+
+### What steps will reproduce the problem?
+
+- Install git annex following these steps: https://git-annex.branchable.com/install/rpm_standalone/
+- Run any `git-annex-shell` command. In my case, `git-annex-shell configlist ~/path/to/my/repo`.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 7.20190912-g05bc37910
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+operating system: linux x86_64  (CentOS 7)
+
+### Please provide any additional information below.
+
+Here is output from one time I tried to run `git-annex-shell` over ssh. Note that the error message gives usage for `git-annex`, not `git-annex-shell`.
+
+[[!format sh """
+$ ssh username@my.remote.server 'git-annex-shell configlist ~/path/to/my/repo'
+Invalid argument `configlist'
+
+Usage: git-annex COMMAND
+  git-annex - manage files with git, without checking their contents in
+  
+  Commonly used commands:
+  
+  add             PATH ...                  add files to annex
+  addurl          URL ...                   add urls to annex
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Git annex does exactly what I want, without the complicated setup or fees of git lfs. Thanks for your work maintaining this project!
+
