@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="Dwk"
+ avatar="http://cdn.libravatar.org/avatar/65fade4f1582ef3f00e9ad6ae27dae56"
+ subject="Perhaps a good behaviour but only if largefiles is set"
+ date="2019-10-05T02:34:42Z"
+ content="""
+This is indeed a sane default for people who want to annex every file. It is also a nice behaviour as soon as largefiles is set (it simplifies one's workflows and avoids errors).
+
+However, it makes little sense as a default for people who use git-annex to manage some large files inside a normal git repo. They are basically forced to configure largefiles, since out-of-the-box git-annex now essentially breaks git: as Ilya points out, it breaks a very standard git workflow – you add a file, you push, you pull in another clone, and you then expect to have the contents of the file. (Worse, it does it in a silent way: since git-add adds the file unlocked, there is no straightforward way of noticing that the file has, in fact, been annexed and therefore that git won't be able to sync it.) 
+
+At bottom, the problem is to accommodate two very different groups of users.
+
+It would require more thought, but I would favor a solution like the following:
+
+1. modify git-add's behaviour *only if* largefiles is set; 
+2. explain carefully in the doc that largefiles will alter git-add's behaviour (I believe git-annex should modify the underlying git behaviour as little as possible and not without due warning);
+3. warn in the doc that without a largefile setting, some unfortunate errors (those you mention in your comments) become likely, so as to make the advantages of a largefile settings clear;
+4. perhaps, add a question when doing git-annex-init: are you planning to use git-annex to manage all your files? If yes, set `largefiles=anything` and warn that git-add will now add things to the annex; if no, do not set largefiles and thus keep the current default until the user decides otherwise.
+
+Disclaimer: my judgment may be clouded by the fact that I was unpleasantly taken by surprise by the change (and lost a few hours of work to this, until I got access to the internet and figured out the issue): upon upgrading, I felt like git-annex had done some kind of man-in-the-middle attack on my normal git…
+"""]]
