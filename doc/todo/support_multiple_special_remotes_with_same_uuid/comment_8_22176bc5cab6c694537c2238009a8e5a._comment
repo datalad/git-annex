@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2019-10-07T16:37:39Z"
+ content="""
+Looked into the extent of changes needed for the sameas parameter approach.
+
+The only thing that looks at the "name" parameter is Annex.SpecialRemote,
+so the new alternative name parameter for sameas remotes can be handled
+entirely there.
+
+That's good, but its specialRemoteMap will need to be changed since
+it assumes each uuid has a single associated name, which stops being the case.
+
+Either Annex.SpecialRemote or Logs.Remote.readRemoteLog will need to handle
+the sameas paramter. Both have their problems. Comment 4 discussed how
+changing readRemoteLog would cause difficulties for some callers. But if
+Annex.Special remote handles the sameas parameter, there will be times when
+a RemoteConfig contains sameas inherited encryption etc, and times when it
+does not. Would be worth making two different data types for those.
+
+Remote.List.remoteGen gets the cached UUID and looks it up in the
+readRemoteLog map, so if readRemoteLog does not handle the sameas
+parameter, that will need to change to use something that does.
+
+(There could be other readRemoteLog users that will similarly be problems.)
+
+Logs.Remote.configSet will need to be changed as discussed in comment 4.
+
+To avoid using remote.name.annex-uuid for sameas remotes,
+Remote.Helper.Special.gitConfigSpecialRemote will need to somehow know that
+it's a sameas remote. (It could look at the RemoteConfig for a sameas
+parameter.)
+
+There are a couple of other places that set remote.name.annex-uuid, 
+like Remote.GCrypt, so will need to factor out all setting of that into
+something that is sameas-aware.
+"""]]
