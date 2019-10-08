@@ -1,10 +1,10 @@
 {- git-annex git hooks
  -
- - Note that it's important that the scripts installed by git-annex
- - not change, otherwise removing old hooks using an old version of
- - the script would fail.
+ - Note that it's important that the content of scripts installed by
+ - git-annex not change, otherwise removing old hooks using an old
+ - version of the script would fail.
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,16 @@ import qualified Annex
 import Utility.Shell
 
 import qualified Data.Map as M
+
+-- Remove all hooks.
+unHook :: Annex ()
+unHook = do
+	hookUnWrite preCommitHook
+	hookUnWrite postReceiveHook
+	hookUnWrite postCheckoutHook
+	hookUnWrite postMergeHook
+	hookUnWrite preCommitAnnexHook
+	hookUnWrite postUpdateAnnexHook
 
 preCommitHook :: Git.Hook
 preCommitHook = Git.Hook "pre-commit" (mkHookScript "git annex pre-commit .") []

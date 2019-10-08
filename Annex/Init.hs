@@ -128,8 +128,8 @@ initialize' mversion = checkCanInitialize  $ do
 
 uninitialize :: Annex ()
 uninitialize = do
-	hookUnWrite preCommitHook
-	hookUnWrite postReceiveHook
+	unHook
+	deconfigureSmudgeFilter
 	removeRepoUUID
 	removeVersion
 

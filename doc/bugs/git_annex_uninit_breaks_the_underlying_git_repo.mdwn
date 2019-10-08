@@ -47,3 +47,5 @@ I accidentally discovered this after a system upgrade that included the latest v
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I love git-annex (a brilliantly designed piece of software in my view) and have been using it a lot for years!
+
+> Thanks for pointing out this oversight. [[fixed|done]] --[[Joey]]
