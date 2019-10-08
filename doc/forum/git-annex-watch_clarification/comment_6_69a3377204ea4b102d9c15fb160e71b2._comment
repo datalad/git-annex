@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="preventing git-annex-add of files open for writing"
+ date="2019-10-08T20:14:41Z"
+ content="""
+\"except for if something has it open for write beforehand\" -- maybe, `git-annex-add` could do a pre-pass where it finds all files to be added, chmods them to read-only to stop new open-for-write attempts, then runs lsof once to find any existing ones?  The files could be hardlinked into one temp dir then chmod and lsof run on that dir.
+
+"""]]
