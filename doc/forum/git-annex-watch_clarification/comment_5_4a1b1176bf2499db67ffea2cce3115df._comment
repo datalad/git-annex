@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-10-08T19:40:32Z"
+ content="""
+The assistant can display a gui, but it can also run headless.
+
+Anyway, it's fine to use `git annex sync` or other things that move content
+around while `git annex watch` is running.
+"""]]
