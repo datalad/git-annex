@@ -40,3 +40,5 @@ Usage: git-annex COMMAND
 
 Git annex does exactly what I want, without the complicated setup or fees of git lfs. Thanks for your work maintaining this project!
 
+> [[fixed|done]] in git; the rpm itself will only get generated at the next
+> release though. --[[Joey]]
