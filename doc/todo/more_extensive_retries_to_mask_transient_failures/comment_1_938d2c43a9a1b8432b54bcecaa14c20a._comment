@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="automatic retries if index is locked"
+ date="2019-10-08T16:01:52Z"
+ content="""
+As a concrete example, if the `index.lock` file exists and has relatively recent mtime and a git process is running, it would help if git-annex could be configured to retry, up to a given number of times with increasing delays between retries, the operation that failed because the index is locked.
+
+Also, from the log
+[[!format sh \"\"\"
+add metadata_orig.json ok
+(recording state in git...)
+fatal: Unable to create '/ssd/crogrun_191008_043145__8684__/viral-ngs-benchmarks/.git/index.lock': File exists.
+\"\"\"]]
+
+it looks like the index.lock conflict is due to writing the [[git-annex branch|internals/#The_git-annex_branch]]?  I thought git-annex used a separate index for that?
+
+"""]]

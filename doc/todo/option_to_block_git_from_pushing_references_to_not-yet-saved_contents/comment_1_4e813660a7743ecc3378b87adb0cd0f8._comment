@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="automaticallly sync content on git push/pull"
+ date="2019-10-08T06:43:33Z"
+ content="""
+Even better would be an option to automatically sync copy the content referenced by any pushed commits, to a specified remote; and/or, to automatically `git-annex-get` content referenced by any pulled commits.  Then can use git-annex like git without needing to remember to `git-annex-sync`.  [[todo/operate_on_files_affected_by_a_commit_range]] could be useful in implementing the hooks.
+"""]]
