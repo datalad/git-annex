@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-08T18:35:06Z"
+ content="""
+It is not possible for `git add` to add files in locked form. git's
+interface simply does not allow that.
+"""]]
