@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 6"
+ date="2019-10-08T20:23:06Z"
+ content="""
+One more approach might be to configure `core.fsmonitor` to a custom one that reports missing unlocked files as unchanged even though they've been changed to symlinks.
+"""]]
