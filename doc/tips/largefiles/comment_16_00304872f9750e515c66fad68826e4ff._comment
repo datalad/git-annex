@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: annexed -> normal git does not work if annexed file was unlocked"""
+ date="2019-10-08T18:14:45Z"
+ content="""
+Touching the file first avoids the problem, or git rm --cached to force
+git to re-add it. I've updated the example.
+"""]]
