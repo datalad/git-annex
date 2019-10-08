@@ -132,6 +132,10 @@ query hdl object newlinefallback receive
 	-- filename itself contains a newline, have to fall back to another
 	-- method of getting the information.
 	| '\n' `elem` s = newlinefallback
+	-- git strips carriage return from the end of a line, out of some
+	-- misplaced desire to support windows, so also use the newline
+	-- fallback for those.
+	| "\r" `isSuffixOf` s = newlinefallback
 	| otherwise = CoProcess.query hdl send receive
   where
 	send to = hPutStrLn to s

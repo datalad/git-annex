@@ -35,3 +35,5 @@ error, called at ./Git/CatFile.hs:119:28 in main:Git.CatFile
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes!  Been using it since the start.  Donated.  Will donate again if you run a funding run.
+
+> [[fixed|done]] --[[Joey]]
