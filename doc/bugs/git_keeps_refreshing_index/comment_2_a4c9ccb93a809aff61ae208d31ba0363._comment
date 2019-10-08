@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-08T16:37:49Z"
+ content="""
+I noticed that `git annex drop` of an unlocked file causes the next `git
+status` to re-smudge the file. That's surprising because git-annex
+internally updates the index using git update-index, so git should not see
+any need to revisit it.
+
+So my guess is you were getting or dropping a lot of unlocked files when
+you saw that.
+"""]]

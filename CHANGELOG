@@ -19,6 +19,8 @@ git-annex (7.20190913) UNRELEASED; urgency=medium
     it was only updated after 1000 files were checked, which may be more
     files that are possible to fsck in a given fsck time window.
     Thanks to Peter Simons for help with analysis of this bug.
+  * When dropping an unlocked file, preserve its mtime, which avoids
+    git status unncessarily running the clean filter on the file.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Sep 2019 11:11:19 -0400
 

@@ -9,15 +9,20 @@
 
 module Annex.Content.PointerFile where
 
+#if ! defined(mingw32_HOST_OS)
+import System.Posix.Files
+#else
 import System.PosixCompat.Files
+#endif
 
 import Annex.Common
 import Annex.Perms
 import Annex.Link
 import Annex.ReplaceFile
 import Annex.InodeSentinal
-import Utility.InodeCache
 import Annex.Content.LowLevel
+import Utility.InodeCache
+import Utility.Touch
 
 {- Populates a pointer file with the content of a key. 
  -
@@ -48,10 +53,18 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
  - Does not check if the pointer file is modified. -}
 depopulatePointerFile :: Key -> FilePath -> Annex ()
 depopulatePointerFile key file = do
-	mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+	st <- liftIO $ catchMaybeIO $ getFileStatus file
+	let mode = fmap fileMode st
 	secureErase file
 	liftIO $ nukeFile file
 	ic <- replaceFile file $ \tmp -> do
 		liftIO $ writePointerFile tmp key mode
+#if ! defined(mingw32_HOST_OS)
+		-- Don't advance mtime; this avoids unncessary re-smudging
+		-- by git in some cases.
+		liftIO $ maybe noop
+			(\t -> touch tmp t False)
+			(fmap modificationTimeHiRes st)
+#endif
 		withTSDelta (liftIO . genInodeCache tmp)
 	maybe noop (restagePointerFile (Restage True) file) ic
