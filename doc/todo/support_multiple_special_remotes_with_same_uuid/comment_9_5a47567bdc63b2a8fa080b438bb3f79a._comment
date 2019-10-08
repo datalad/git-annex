@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2019-10-08T15:17:06Z"
+ content="""
+Per-remote state is an added complication. A sameas remote should not
+use the same per-remote state, because what's stored in it is up to the
+remote backend and would conflict.
+
+So Logs.RemoteState would need to use something other than a UUID,
+which contains the underlying uuid of the sameas remote. (Logs.MetaData too for
+per-remote metadata.) That would have to be passed in when constructing the
+remote.
+
+And, `git-annex forget` would need to be made to remote the per-remote state of
+sameas remotes that point to a dead uuid.
+"""]]

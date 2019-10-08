@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2019-10-08T15:25:05Z"
+ content="""
+It might be possible to isolate the sameas changes only to things
+involving the location log. Use different uuids for sameas
+remotes. When updating the location log, substitute the sameas uuid.
+
+There would need to be a sameas-aware way to check if a uuid is in the
+location log. Currently, loggedLocations is used to both see what remotes
+to try to get a key from, and for numcopies checking and related stuff
+(like skipping dropping entirely when loggedLocations does not have enough
+items in it). So there would need to be two variants of it. That seems
+likely to be a source of mistakes.
+
+Another small problem with this idea is that a special remote may record
+its uuid somehow in the data store and check that it has the right uuid
+later (S3 does this with an "annex-uuid" in the bucket), and if two remotes
+with different uuids did that, there would be a conflict between them.
+
+Also, it couldn't only be the location log; sameas mapping would also need
+to be done when using the chunk log. And a bit of encryption config
+inheritance would still be needed.
+"""]]
