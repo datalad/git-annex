@@ -1,0 +1,12 @@
+Following up on [DataLad's git-objects special remote idea PR](https://github.com/datalad/datalad/pull/3727#issuecomment-540116323), I have thought to try establishing git-lfs powered (special) remote on github, within assistant (installed a few days back) ran within Termux, on an android phone.
+
+Within assistant web UI I did not find a good match for this scenario in "Add more repositories". What would it be (if any exists/defined already)?
+
+Having found none, I've decided to try the closest match -- "remote server using ssh".  But in that form, for some reason, after entering "github.com" for "Host name" results in "cannot resolve host name". 
+
+- I verified that github.com is reachable in chrome
+- I thought that may be Termux "session" doesn't have access to DNS, so I switched to termux (where I started `git annex webapp`), and ran `ping github.com`.
+  - it did resolve the IP (to 192.30.253.113)
+  - but no ping came back
+
+[[!meta author=yoh]]
