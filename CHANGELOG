@@ -1,34 +1,34 @@
-git-annex (7.20190913) UNRELEASED; urgency=medium
+git-annex (7.20191009) upstream; urgency=medium
 
-  * Added --mimetype and --mimeencoding file matching options.
-  * Added --unlocked and --locked file matching options.
-  * git-lfs: Added support for http basic auth.
-  * git-lfs: Only do endpoint discovery once when concurrency is enabled.
-  * Test: Use more robust directory removal when built with directory-1.2.7.
-  * Close sqlite databases more robustly.
-  * adjust --lock: This enters an adjusted branch where files are locked.
-  * remotedaemon: Don't list --stop in help since it's not supported.
-  * enable-tor: Run kdesu with -c option.
-  * enable-tor: Use pkexec to run command as root when gksu and kdesu are not
-    available.
   * Fix bug in handling of annex.largefiles that use largerthan/smallerthan.
     When adding a modified file, it incorrectly used the file size of the
     old version of the file, not the current size.
+  * Added --mimetype and --mimeencoding file matching options.
+  * Added --unlocked and --locked file matching options.
+  * Added adjust --lock, to enter an adjusted branch where files are locked.
+  * git-lfs: Added support for http basic auth.
+  * git-lfs: Only do endpoint discovery once when concurrency is enabled.
   * fsck --incremental/--more: Fix bug that prevented the incremental fsck
     information from being updated every 5 minutes as it was supposed to be;
     it was only updated after 1000 files were checked, which may be more
     files that are possible to fsck in a given fsck time window.
     Thanks to Peter Simons for help with analysis of this bug.
+  * Test: Use more robust directory removal when built with directory-1.2.7.
+  * Close sqlite databases more robustly.
+  * remotedaemon: Don't list --stop in help since it's not supported.
+  * enable-tor: Run kdesu with -c option.
+  * enable-tor: Use pkexec to run command as root when gksu and kdesu are not
+    available.
   * When dropping an unlocked file, preserve its mtime, which avoids
     git status unncessarily running the clean filter on the file.
   * uninit: Remove several git hooks that git-annex init sets up.
   * uninit: Remove the smudge and clean filters that git-annex init sets up.
-  * git-annex-standalone.rpm: Fix the git-annex-shell symlink.
   * Work around git cat-file --batch's odd stripping of carriage return
     from the end of the line (some windows infection), avoiding crashing
     when the repo contains a filename ending in a carriage return.
+  * git-annex-standalone.rpm: Fix the git-annex-shell symlink.
 
- -- Joey Hess <id@joeyh.name>  Thu, 19 Sep 2019 11:11:19 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 09 Oct 2019 12:31:31 -0400
 
 git-annex (7.20190912) upstream; urgency=medium
 
