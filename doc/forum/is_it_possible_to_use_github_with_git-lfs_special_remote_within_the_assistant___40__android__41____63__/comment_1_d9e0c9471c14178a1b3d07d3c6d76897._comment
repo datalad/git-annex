@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2019-10-09T18:10:05Z"
+ content="""
+FWIW -- seems to be a generic (not github.com specific) DNS issue, since fails to resolve other names as well.
+
+In the dashboard there is a Warning about `RemoteControl crashed: user error (nice [... remotedaemon... exited 1)` -- could be related?
+"""]]
