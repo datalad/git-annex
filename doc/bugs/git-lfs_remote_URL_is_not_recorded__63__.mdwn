@@ -1,0 +1,117 @@
+### Please describe the problem.
+
+I was trying to follow https://git-annex.branchable.com/special_remotes/git-lfs/ (only without any encryption), to store at least some data on github via LFS (e.g., for https://github.com/dandi-datasets/nwb_test_data). 
+
+Even though I do provide URL to the `annex initremote` call, it is not stored within `remote.log`:
+
+
+[[!format sh """
+$> sudo rm -rf /tmp/testds2 && ( mkdir /tmp/testds2 && cd /tmp/testds2 && git init && git annex init && git annex initremote gh-lfs autoenable=true type=git-lfs url=git@github.com:yarikoptic/testds2.git encryption=none && git show git-annex:remote.log; )                                                                                  
+Initialized empty Git repository in /tmp/testds2/.git/
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+initremote gh-lfs ok
+(recording state in git...)
+c9132e68-e9d8-40b5-ba34-5d60a8b9c844 autoenable=true encryption=none name=gh-lfs type=git-lfs timestamp=1570642576.06742667s
+
+"""]]
+
+git annex 7.20190912-1~ndall+1
+
+
+If I just proceed, populate and copy some data via lfs (example uses datalad's `create-sibling-github` to create a new repo): 
+
+[[!format sh """
+$> ( cd /tmp/testds2 && touch 123 && git annex add 123 && git commit -m 'add 123' && datalad create-sibling-github -s origin testds2 && git push -u origin master && git annex copy --to=gh-lfs 123; git push origin git-annex; )                                                                                       
+add 123                                                                                      
+ok
+(recording state in git...)
+[master (root-commit) d2b2f52] add 123
+ 1 file changed, 1 insertion(+)
+ create mode 120000 123
+[WARNING] Authentication failed using a token. 
+.: origin(-) [https://github.com/yarikoptic/testds2.git (git)]
+'https://github.com/yarikoptic/testds2.git' configured as sibling 'origin' for <Dataset path=/tmp/testds2>
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 307 bytes | 307.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0)
+To github.com:yarikoptic/testds2.git
+ * [new branch]      master -> master
+Branch 'master' set up to track remote branch 'master' from 'origin'.
+copy 123 (to gh-lfs...) 
+ok
+(recording state in git...)
+Enumerating objects: 19, done.
+Counting objects: 100% (19/19), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (15/15), done.
+Writing objects: 100% (19/19), 1.66 KiB | 567.00 KiB/s, done.
+Total 19 (delta 4), reused 0 (delta 0)
+remote: Resolving deltas: 100% (4/4), done.
+remote: 
+remote: Create a pull request for 'git-annex' on GitHub by visiting:
+remote:      https://github.com/yarikoptic/testds2/pull/new/git-annex
+remote: 
+To github.com:yarikoptic/testds2.git
+ * [new branch]      git-annex -> git-annex
+
+"""]]
+
+on a new clone I get a complaint that `url=` is missing, and no data is fetched
+
+[[!format sh """
+$> sudo rm -rf testds2-clone && git clone git@github.com:yarikoptic/testds2.git testds2-clone && ( cd testds2-clone && git annex init && git annex get 123; )    
+Cloning into 'testds2-clone'...
+remote: Enumerating objects: 22, done.
+remote: Counting objects: 100% (22/22), done.
+remote: Compressing objects: 100% (13/13), done.
+remote: Total 22 (delta 5), reused 21 (delta 4), pack-reused 0
+Receiving objects: 100% (22/22), done.
+Resolving deltas: 100% (5/5), done.
+123@
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+Invalid command: 'git-annex-shell 'configlist' '/~/yarikoptic/testds2.git''
+  You appear to be using ssh to clone a git:// URL.
+  Make sure your core.gitProxy config option and the
+  GIT_PROXY_COMMAND environment variable are NOT set.
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote origin
+(Auto enabling special remote gh-lfs...)
+
+  Specify url=
+ok
+(recording state in git...)
+get 123 (not available) 
+  Try making some of these repositories available:
+  	92ce3cfc-8c58-42db-8aa3-ea4d4b3a6011 -- yoh@hopa:/tmp/testds2
+   	c9132e68-e9d8-40b5-ba34-5d60a8b9c844 -- gh-lfs
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+git-annex: get: 1 failed
+"""]]
+
+so I had to enableremote it while providing URL I become able to `get` the file:
+
+[[!format sh """
+$> git annex enableremote gh-lfs autoenable=true type=git-lfs url=git@github.com:yarikoptic/testds2.git encryption=none && git annex get 123                                         
+enableremote gh-lfs ok      
+(recording state in git...)
+get 123 (from gh-lfs...) 
+(checksum...) ok
+(recording state in git...)
+"""]]
+
+
+Shouldn't that URL be recorded in remote.log? (similarly to `type=git` remotes)
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
