@@ -35,6 +35,7 @@ module Remote.Helper.Special (
 
 import Annex.Common
 import qualified Annex
+import Annex.SpecialRemote.Config
 import Types.StoreRetrieve
 import Types.Remote
 import Crypto
@@ -72,6 +73,9 @@ gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
 		setConfig (remoteConfig c k) v
 	storeUUIDIn (remoteConfig c "uuid") u
+	case M.lookup sameasUUIDKey c of
+		Nothing -> noop
+		Just sameasuuid -> setConfig (remoteConfig c "config-uuid") sameasuuid
 
 -- RetrievalVerifiableKeysSecure unless overridden by git config.
 --

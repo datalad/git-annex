@@ -653,6 +653,7 @@ Executable git-annex
     Annex.ReplaceFile
     Annex.RemoteTrackingBranch
     Annex.SpecialRemote
+    Annex.SpecialRemote.Config
     Annex.Ssh
     Annex.TaggedPush
     Annex.Tmp

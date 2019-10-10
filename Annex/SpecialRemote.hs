@@ -8,6 +8,7 @@
 module Annex.SpecialRemote where
 
 import Annex.Common
+import Annex.SpecialRemote.Config
 import Remote (remoteTypes, remoteMap)
 import Types.Remote (RemoteConfig, RemoteConfigKey, SetupStage(..), typename, setup)
 import Types.GitConfig
@@ -57,9 +58,6 @@ specialRemoteMap = do
 		Nothing -> Nothing
 		Just n -> Just (u, n)
 
-lookupName :: RemoteConfig -> Maybe RemoteName
-lookupName c = M.lookup nameKey c <|> M.lookup sameasNameKey c
-
 {- find the remote type -}
 findType :: RemoteConfig -> Either String RemoteType
 findType config = maybe unspecified specified $ M.lookup typeKey config
@@ -69,26 +67,6 @@ findType config = maybe unspecified specified $ M.lookup typeKey config
 		[] -> Left $ "Unknown remote type " ++ s
 		(t:_) -> Right t
 	findtype s i = typename i == s
-
-{- The name of a configured remote is stored in its config using this key. -}
-nameKey :: RemoteConfigKey
-nameKey = "name"
-
-{- The name of a sameas remote is stored using this key instead. 
- - This prevents old versions of git-annex getting confused. -}
-sameasNameKey :: RemoteConfigKey
-sameasNameKey = "sameas-name"
-
-{- The uuid that a sameas remote is the same as is stored in this key. -}
-sameasUUIDKey :: RemoteConfigKey
-sameasUUIDKey = "sameas-uuid"
-
-{- The type of a remote is stored in its config using this key. -}
-typeKey :: RemoteConfigKey
-typeKey = "type"
-
-autoEnableKey :: RemoteConfigKey
-autoEnableKey = "autoenable"
 
 autoEnable :: Annex ()
 autoEnable = do
