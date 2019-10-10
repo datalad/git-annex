@@ -55,7 +55,7 @@ chunksizeField :: RemoteConfigField
 chunksizeField = "chunksize"
 
 {- A remote with sameas-uuid set will inherit these values from the config
- - of that uuid. These values cannot be overridden. -}
+ - of that uuid. These values cannot be overridden in the remote's config. -}
 sameasInherits :: S.Set RemoteConfigField
 sameasInherits = S.fromList
 	-- encryption configuration is necessarily the same for two
