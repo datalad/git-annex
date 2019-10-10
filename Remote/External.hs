@@ -442,7 +442,7 @@ handleRequest' st external req mp responsehandler
 	credstorage setting = CredPairStorage
 		{ credPairFile = base
 		, credPairEnvironment = (base ++ "login", base ++ "password")
-		, credPairRemoteKey = setting
+		, credPairRemoteField = setting
 		}
 	  where
 		base = replace "/" "_" $ fromUUID (externalUUID external) ++ "-" ++ setting

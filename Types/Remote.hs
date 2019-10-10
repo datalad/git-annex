@@ -10,7 +10,7 @@
 {-# LANGUAGE RankNTypes #-}
 
 module Types.Remote
-	( RemoteConfigKey
+	( RemoteConfigField
 	, RemoteConfig
 	, RemoteTypeA(..)
 	, RemoteA(..)
@@ -47,9 +47,9 @@ import Utility.SafeCommand
 import Utility.Url
 import Utility.DataUnits
 
-type RemoteConfigKey = String
+type RemoteConfigField = String
 
-type RemoteConfig = M.Map RemoteConfigKey String
+type RemoteConfig = M.Map RemoteConfigField String
 
 data SetupStage = Init | Enable RemoteConfig
 

@@ -8,30 +8,30 @@
 module Annex.SpecialRemote.Config where
 
 import Common
-import Types.Remote (RemoteConfigKey, RemoteConfig)
+import Types.Remote (RemoteConfigField, RemoteConfig)
 
 import qualified Data.Map as M
 
 {- The name of a configured remote is stored in its config using this key. -}
-nameKey :: RemoteConfigKey
-nameKey = "name"
+nameField :: RemoteConfigField
+nameField = "name"
 
 {- The name of a sameas remote is stored using this key instead. 
  - This prevents old versions of git-annex getting confused. -}
-sameasNameKey :: RemoteConfigKey
-sameasNameKey = "sameas-name"
+sameasNameField :: RemoteConfigField
+sameasNameField = "sameas-name"
 
 lookupName :: RemoteConfig -> Maybe String
-lookupName c = M.lookup nameKey c <|> M.lookup sameasNameKey c
+lookupName c = M.lookup nameField c <|> M.lookup sameasNameField c
 
 {- The uuid that a sameas remote is the same as is stored in this key. -}
-sameasUUIDKey :: RemoteConfigKey
-sameasUUIDKey = "sameas-uuid"
+sameasUUIDField :: RemoteConfigField
+sameasUUIDField = "sameas-uuid"
 
 {- The type of a remote is stored in its config using this key. -}
-typeKey :: RemoteConfigKey
-typeKey = "type"
+typeField :: RemoteConfigField
+typeField = "type"
 
-autoEnableKey :: RemoteConfigKey
-autoEnableKey = "autoenable"
+autoEnableField :: RemoteConfigField
+autoEnableField = "autoenable"
 

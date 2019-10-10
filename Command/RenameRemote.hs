@@ -9,7 +9,7 @@ module Command.RenameRemote where
 
 import Command
 import qualified Annex.SpecialRemote
-import Annex.SpecialRemote.Config (nameKey, sameasNameKey)
+import Annex.SpecialRemote.Config (nameField, sameasNameField)
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Remote
@@ -47,9 +47,9 @@ start _ = giveup "Specify an old name (or uuid or description) and a new name."
 
 perform :: UUID -> R.RemoteConfig -> String -> CommandPerform
 perform u cfg newname = do
-	let namekey = case M.lookup sameasNameKey cfg of
-		Just _ -> sameasNameKey
-		Nothing -> nameKey
-	Logs.Remote.configSet u (M.insert namekey newname cfg)
+	let namefield = case M.lookup sameasNameField cfg of
+		Just _ -> sameasNameField
+		Nothing -> nameField
+	Logs.Remote.configSet u (M.insert namefield newname cfg)
 	
 	next $ return True

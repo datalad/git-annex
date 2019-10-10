@@ -10,7 +10,7 @@ module Annex.SpecialRemote where
 import Annex.Common
 import Annex.SpecialRemote.Config
 import Remote (remoteTypes, remoteMap)
-import Types.Remote (RemoteConfig, RemoteConfigKey, SetupStage(..), typename, setup)
+import Types.Remote (RemoteConfig, SetupStage(..), typename, setup)
 import Types.GitConfig
 import Logs.Remote
 import Logs.Trust
@@ -34,10 +34,10 @@ findExisting name = do
 		<$> Logs.Remote.readRemoteLog
 
 newConfig :: RemoteName -> Maybe (Sameas UUID) -> RemoteConfig
-newConfig name Nothing = M.singleton nameKey name
+newConfig name Nothing = M.singleton nameField name
 newConfig name (Just (Sameas u)) = M.fromList
-	[ (sameasNameKey, name)
-	, (sameasUUIDKey, fromUUID u)
+	[ (sameasNameField, name)
+	, (sameasUUIDField, fromUUID u)
 	]
 
 findByName :: RemoteName ->  M.Map UUID RemoteConfig -> [(UUID, RemoteConfig)]
@@ -60,7 +60,7 @@ specialRemoteMap = do
 
 {- find the remote type -}
 findType :: RemoteConfig -> Either String RemoteType
-findType config = maybe unspecified specified $ M.lookup typeKey config
+findType config = maybe unspecified specified $ M.lookup typeField config
   where
 	unspecified = Left "Specify the type of remote with type="
 	specified s = case filter (findtype s) remoteTypes of
@@ -83,5 +83,5 @@ autoEnable = do
 			_ -> return ()
   where
 	configured rc = fromMaybe False $
-		Git.Config.isTrue =<< M.lookup autoEnableKey rc
+		Git.Config.isTrue =<< M.lookup autoEnableField rc
 	canenable u = (/= DeadTrusted) <$> lookupTrust u

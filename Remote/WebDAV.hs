@@ -341,7 +341,7 @@ davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
 	{ credPairFile = fromUUID u
 	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
-	, credPairRemoteKey = "davcreds"
+	, credPairRemoteField = "davcreds"
 	}
 
 {- Content-Type to use for files uploaded to WebDAV. -}

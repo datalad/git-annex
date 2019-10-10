@@ -74,7 +74,7 @@ gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
 		setConfig (remoteConfig c k) v
 	storeUUIDIn (remoteConfig c "uuid") u
-	case M.lookup sameasUUIDKey c of
+	case M.lookup sameasUUIDField c of
 		Nothing -> noop
 		Just sameasuuid -> setConfig (remoteConfig c "config-uuid") sameasuuid
 

@@ -547,9 +547,9 @@ makeSshRepo rs sshdata
 		let c = fromMaybe M.empty (M.lookup (Remote.uuid r) m)
 		let c' = M.insert "location" (genSshUrl sshdata) $
 			M.insert "type" "git" $
-			case M.lookup nameKey c of
+			case M.lookup nameField c of
 				Just _ -> c
-				Nothing -> M.insert nameKey (Remote.name r) c
+				Nothing -> M.insert nameField (Remote.name r) c
 		configSet (Remote.uuid r) c'
 
 makeSshRepoConnection :: RepoStatus -> Annex RemoteName -> (Remote -> Annex ()) -> Handler Html

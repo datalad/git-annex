@@ -9,7 +9,7 @@ module Assistant.Gpg where
 
 import Utility.Gpg
 import Utility.UserInfo
-import Types.Remote (RemoteConfigKey)
+import Types.Remote (RemoteConfigField)
 
 import qualified Data.Map as M
 import Control.Applicative
@@ -30,7 +30,7 @@ data EnableEncryption = HybridEncryption | SharedEncryption | NoEncryption
 	deriving (Eq)
 
 {- Generates Remote configuration for encryption. -}
-configureEncryption :: EnableEncryption -> (RemoteConfigKey, String)
+configureEncryption :: EnableEncryption -> (RemoteConfigField, String)
 configureEncryption SharedEncryption = ("encryption", "shared")
 configureEncryption NoEncryption = ("encryption", "none")
 configureEncryption HybridEncryption = ("encryption", "hybrid")
