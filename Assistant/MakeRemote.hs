@@ -51,7 +51,7 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Annex.SpecialRemote.findExisting name
   where
 	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
-		(Nothing, R.Init, Annex.SpecialRemote.newConfig name)
+		(Nothing, R.Init, Annex.SpecialRemote.newConfig name Nothing)
 	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
 		(Just u, R.Enable c, c)
 	config = M.fromList
@@ -82,7 +82,7 @@ initSpecialRemote name remotetype mcreds config = go 0
 		let fullname = if n == 0  then name else name ++ show n
 		Annex.SpecialRemote.findExisting fullname >>= \case
 			Nothing -> setupSpecialRemote fullname remotetype config mcreds
-				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname)
+				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname Nothing)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}

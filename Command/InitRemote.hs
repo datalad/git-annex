@@ -53,7 +53,11 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 		ifM (isJust <$> Remote.byNameOnly name)
 			( giveup $ "There is already a remote named \"" ++ name ++ "\""
 			, do
-				let c = newConfig name
+				sameasuuid <- maybe
+					(pure Nothing)
+					(Just . Sameas <$$> getParsed)
+					(sameas o) 
+				let c = newConfig name sameasuuid
 				t <- either giveup return (findType config)
 				starting "initremote" (ActionItemOther (Just name)) $
 					perform t name $ M.union config c
