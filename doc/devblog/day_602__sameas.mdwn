@@ -1,0 +1,9 @@
+Plenty of stuff going in that has not made the blog. Now I'm working on a
+sort of major feature.
+[[todo/support_multiple_special_remotes_with_same_uuid]] will fill in a odd
+little hole in git-annex's capabilities. I think it will turn out to be
+more useful than it appears. But it's major not so much in what it will
+allow, but in how many assumptions in the git-annex code base have to be
+worked around to implement it. After pondering lots of approaches, I have
+finally gotten stuck in to implementing it, and I've made some good
+progress today (on the `sameas` branch). I might finish it tomorrow.
