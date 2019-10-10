@@ -32,6 +32,7 @@ import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
 import qualified Annex.Url as Url
+import qualified Annex.SpecialRemote.Config as SpecialRemote
 import Utility.Tmp
 import Config
 import Config.Cost
@@ -120,7 +121,7 @@ gitSetup (Enable _) (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
-		, Param $ fromMaybe (giveup "no name") (M.lookup "name" c)
+		, Param $ fromMaybe (giveup "no name") (SpecialRemote.lookupName c)
 		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
 		]
 	return (c, u)

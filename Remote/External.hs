@@ -155,7 +155,7 @@ externalSetup _ mu _ c gc = do
 
 	c'' <- case M.lookup "readonly" c of
 		Just v | isTrue v == Just True -> do
-			setConfig (remoteConfig (fromJust (M.lookup "name" c)) "readonly") (boolConfig True)
+			setConfig (remoteConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
 		_ -> do
 			external <- newExternal externaltype u c' gc

@@ -104,7 +104,7 @@ glacierSetup' ss u mcreds c gc = do
 	gitConfigSpecialRemote u fullconfig [("glacier", "true")]
 	return (fullconfig, u)
   where
-	remotename = fromJust (M.lookup "name" c)
+	remotename = fromJust (lookupName c)
 	defvault = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
 		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.Glacier)

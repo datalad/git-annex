@@ -183,7 +183,7 @@ unsupportedUrl = giveup "using non-ssh remote repo url with gcrypt is not suppor
 gCryptSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 gCryptSetup _ mu _ c gc = go $ M.lookup "gitrepo" c
   where
-	remotename = fromJust (M.lookup "name" c)
+	remotename = fromJust (lookupName c)
 	go Nothing = giveup "Specify gitrepo="
 	go (Just gitrepo) = do
 		(c', _encsetup) <- encryptionSetup c gc

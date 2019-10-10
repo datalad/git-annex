@@ -30,6 +30,7 @@ module Remote.Helper.Special (
 	specialRemoteCfg,
 	specialRemote,
 	specialRemote',
+	lookupName,
 	module X
 ) where
 

@@ -29,3 +29,20 @@ of the code will work as-is.
 That would add overhead of an additional git-annex branch read on every
 program start. That could be avoided by instead putting the equivilance in
 the remote.log. Eg, "B sameas=A foo=bar ..."
+
+---- 
+
+Implementation notes:
+
+annex-config-uuid is set for sameas remotes. 
+
+Next, need to make generating a Remote look at that.
+
+And need to make RemoteConfig inherit encryption
+settings from the sameas uuid.
+
+Need to get enableremote working for sameas.
+
+Deal with the per-remote state issue.
+
+Any other things mentioned in the comments..

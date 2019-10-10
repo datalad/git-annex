@@ -150,7 +150,7 @@ s3Setup' ss u mcreds c gc
 	| configIA c = archiveorg
 	| otherwise = defaulthost
   where
-	remotename = fromJust (M.lookup "name" c)
+	remotename = fromJust (lookupName c)
 	defbucket = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
 		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.S3)

@@ -157,7 +157,7 @@ mySetup _ mu _ c gc = do
 	return (c'', u)
   where
 	url = fromMaybe (giveup "Specify url=") (M.lookup "url" c)
-	remotename = fromJust (M.lookup "name" c)
+	remotename = fromJust (lookupName c)
 
 data LFSHandle = LFSHandle
 	{ downloadEndpoint :: Maybe LFS.Endpoint

@@ -10,7 +10,7 @@ git annex renameremote `name|uuid|desc newname`
 
 Changes the name that is used to enable a special remote.
 
-Normally the current name is used to identify the special remote, 
+Normally the current name is used to identify the special remote to rename, 
 but its uuid or description can also be used.
 
 This is especially useful when an old special remote used a name, and now you
