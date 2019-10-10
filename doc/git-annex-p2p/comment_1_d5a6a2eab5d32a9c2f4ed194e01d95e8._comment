@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="bugmenot"
+ avatar="http://cdn.libravatar.org/avatar/d3f7106e378e83d54c010c230ff074b9"
+ subject="--link accepts itself"
+ date="2019-10-10T05:28:53Z"
+ content="""
+Is there a good reason why `git annex p2p --link` will accept addresses that points to itself?
+
+I'm trying to script automatic addition of .onion peers, and it's a bit annoying to have to filter the .onion pointing to the current repo instead of just adding all of the .onion urls and having it ignore/warn/fail on the one that is currently in .git/annex/creds/p2paddrs
+"""]]
