@@ -39,10 +39,34 @@ autoEnableField = "autoenable"
 encryptionField :: RemoteConfigField
 encryptionField = "encryption"
 
+macField :: RemoteConfigField
+macField = "mac"
+
+cipherField :: RemoteConfigField
+cipherField = "cipher"
+
+cipherkeysField :: RemoteConfigField
+cipherkeysField = "cipher"
+
+pubkeysField :: RemoteConfigField
+pubkeysField = "pubkeys"
+
+chunksizeField :: RemoteConfigField
+chunksizeField = "chunksize"
+
 {- A remote with sameas-uuid set will inherit these values from the config
  - of that uuid. These values cannot be overridden. -}
 sameasInherits :: S.Set RemoteConfigField
 sameasInherits = S.fromList
+	-- encryption configuration is necessarily the same for two
+	-- remotes that access the same data store
 	[ encryptionField
-	-- TODO more encryption related fields
+	, macField
+	, cipherField
+	, cipherkeysField
+	, pubkeysField
+	-- legacy chunking was either enabled or not, so has to be the same
+	-- across configs for remotes that access the same data
+	-- (new-style chunking does not have that limitation)
+	, chunksizeField
 	]
