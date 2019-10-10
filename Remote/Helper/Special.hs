@@ -38,6 +38,7 @@ import qualified Annex
 import Types.StoreRetrieve
 import Types.Remote
 import Crypto
+import Annex.UUID
 import Config
 import Config.Cost
 import Utility.Metered
@@ -70,7 +71,7 @@ gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()
 gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
 		setConfig (remoteConfig c k) v
-	setConfig (remoteConfig c "uuid") (fromUUID u)
+	storeUUIDIn (remoteConfig c "uuid") u
 
 -- RetrievalVerifiableKeysSecure unless overridden by git config.
 --
