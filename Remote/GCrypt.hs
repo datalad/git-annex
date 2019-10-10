@@ -95,7 +95,7 @@ gen baser u c gc = do
 		case (Git.remoteName baser, v) of
 			(Just remotename, Just c') -> do
 				setGcryptEncryption c' remotename
-				setConfig (remoteConfig baser "uuid") (fromUUID u')
+				storeUUIDIn (remoteConfig baser "uuid") u'
 				setConfig (ConfigKey $ Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
 				gen' r u' c' gc
 			_ -> do
