@@ -1268,6 +1268,11 @@ Remotes are configured using these settings in `.git/config`.
 
   git-annex caches UUIDs of remote repositories here.
 
+* `remote.<name>.annex-config-uuid`
+
+  Used for some special remotes, points to a different special remote
+  configuration to use.
+
 * `remote.<name>.annex-retry`, `annex.retry`
 
   Configure retries of failed transfers on a per-remote and general
