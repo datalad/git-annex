@@ -44,6 +44,7 @@ import qualified Git
 import qualified Annex
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.Http
 import Remote.Helper.Messages
@@ -188,7 +189,7 @@ s3Setup' ss u mcreds c gc
 			-- IA acdepts x-amz-* as an alias for x-archive-*
 			M.mapKeys (replace "x-archive-" "x-amz-") $
 			-- encryption does not make sense here
-			M.insert "encryption" "none" $
+			M.insert encryptionField "none" $
 			M.insert "bucket" validbucket $
 			M.union c' $
 			-- special constraints on key names

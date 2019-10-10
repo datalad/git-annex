@@ -29,6 +29,7 @@ import Config
 import Crypto
 import Types.Crypto
 import qualified Annex
+import Annex.SpecialRemote.Config
 
 -- Used to ensure that encryption has been set up before trying to
 -- eg, store creds in the remote config that would need to use the
@@ -55,7 +56,7 @@ encryptionSetup c gc = do
 	maybe (genCipher cmd) (updateCipher cmd) (extractCipher c)
   where
 	-- The type of encryption
-	encryption = M.lookup "encryption" c
+	encryption = M.lookup encryptionField c
 	-- Generate a new cipher, depending on the chosen encryption scheme
 	genCipher cmd = case encryption of
 		_ | hasEncryptionConfig c -> cannotchange
@@ -68,7 +69,7 @@ encryptionSetup c gc = do
 		Just "pubkey" -> encsetup $ genEncryptedCipher cmd (c, gc) key PubKey
 		Just "sharedpubkey" -> encsetup $ genSharedPubKeyCipher cmd key
 		_ -> giveup $ "Specify " ++ intercalate " or "
-			(map ("encryption=" ++)
+			(map ((encryptionField ++ "=") ++)
 				["none","shared","hybrid","pubkey", "sharedpubkey"])
 			++ "."
 	key = fromMaybe (giveup "Specify keyid=...") $ M.lookup "keyid" c
@@ -153,7 +154,7 @@ storeCipher cip = case cip of
 extractCipher :: RemoteConfig -> Maybe StorableCipher
 extractCipher c = case (M.lookup "cipher" c,
 			M.lookup "cipherkeys" c <|> M.lookup "pubkeys" c,
-			M.lookup "encryption" c) of
+			M.lookup encryptionField c) of
 	(Just t, Just ks, encryption) | maybe True (== "hybrid") encryption ->
 		Just $ EncryptedCipher (fromB64bs t) Hybrid (readkeys ks)
 	(Just t, Just ks, Just "pubkey") ->
@@ -167,7 +168,7 @@ extractCipher c = case (M.lookup "cipher" c,
 	readkeys = KeyIds . splitc ','
 
 isEncrypted :: RemoteConfig -> Bool
-isEncrypted c = case M.lookup "encryption" c of
+isEncrypted c = case M.lookup encryptionField c of
 	Just "none" -> False
 	Just _ -> True
 	Nothing -> hasEncryptionConfig c

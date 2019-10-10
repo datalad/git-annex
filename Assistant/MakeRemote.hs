@@ -18,6 +18,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Annex
 import qualified Annex.SpecialRemote
+import Annex.SpecialRemote.Config
 import Logs.UUID
 import Logs.Remote
 import Git.Remote
@@ -55,7 +56,7 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
 		(Just u, R.Enable c, c)
 	config = M.fromList
-		[ ("encryption", "shared")
+		[ (encryptionField, "shared")
 		, ("rsyncurl", location)
 		, ("type", "rsync")
 		]

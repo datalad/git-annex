@@ -10,6 +10,7 @@ module Assistant.Gpg where
 import Utility.Gpg
 import Utility.UserInfo
 import Types.Remote (RemoteConfigField)
+import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
 import Control.Applicative
@@ -31,6 +32,6 @@ data EnableEncryption = HybridEncryption | SharedEncryption | NoEncryption
 
 {- Generates Remote configuration for encryption. -}
 configureEncryption :: EnableEncryption -> (RemoteConfigField, String)
-configureEncryption SharedEncryption = ("encryption", "shared")
-configureEncryption NoEncryption = ("encryption", "none")
-configureEncryption HybridEncryption = ("encryption", "hybrid")
+configureEncryption SharedEncryption = (encryptionField, "shared")
+configureEncryption NoEncryption = (encryptionField, "none")
+configureEncryption HybridEncryption = (encryptionField, "hybrid")

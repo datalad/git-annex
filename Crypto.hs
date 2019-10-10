@@ -45,6 +45,7 @@ import qualified Utility.Gpg as Gpg
 import Types.Crypto
 import Types.Remote
 import Types.Key
+import Annex.SpecialRemote.Config
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
  - as the GPG symmetric encryption passphrase when using the hybrid
@@ -236,7 +237,7 @@ instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
 	getGpgEncParams (c,gc) = getGpgEncParamsBase (c,gc) ++
  		{- When the remote is configured to use public-key encryption,
 		 - look up the recipient keys and add them to the option list. -}
-		case M.lookup "encryption" c of
+		case M.lookup encryptionField c of
 			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "cipherkeys" c
 			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup "pubkeys" c
 			_ -> []

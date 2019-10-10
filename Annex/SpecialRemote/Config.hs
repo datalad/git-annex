@@ -11,6 +11,7 @@ import Common
 import Types.Remote (RemoteConfigField, RemoteConfig)
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 {- The name of a configured remote is stored in its config using this key. -}
 nameField :: RemoteConfigField
@@ -35,3 +36,13 @@ typeField = "type"
 autoEnableField :: RemoteConfigField
 autoEnableField = "autoenable"
 
+encryptionField :: RemoteConfigField
+encryptionField = "encryption"
+
+{- A remote with sameas-uuid set will inherit these values from the config
+ - of that uuid. These values cannot be overridden. -}
+sameasInherits :: S.Set RemoteConfigField
+sameasInherits = S.fromList
+	[ encryptionField
+	-- TODO more encryption related fields
+	]

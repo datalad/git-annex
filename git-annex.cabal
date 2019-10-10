@@ -304,7 +304,7 @@ Executable git-annex
    base (>= 4.11.1.0 && < 5.0),
    network-uri (>= 2.6),
    optparse-applicative (>= 0.14.1),
-   containers (>= 0.5.7.1),
+   containers (>= 0.5.8),
    exceptions (>= 0.6),
    stm (>= 2.3),
    mtl (>= 2),
