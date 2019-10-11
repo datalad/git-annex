@@ -15,6 +15,7 @@ import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import Logs.UUID
+import Logs.Remote
 import Types.GitConfig
 
 cmd :: Command
@@ -57,14 +58,14 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 					(pure Nothing)
 					(Just . Sameas <$$> getParsed)
 					(sameas o) 
-				let c = newConfig name sameasuuid
-				t <- either giveup return (findType config)
+				c <- newConfig name sameasuuid
+					(Logs.Remote.keyValToConfig ws)
+					<$> readRemoteLog
+				t <- either giveup return (findType c)
 				starting "initremote" (ActionItemOther (Just name)) $
-					perform t name $ M.union config c
+					perform t name c
 			)
 	)
-  where
-	config = Logs.Remote.keyValToConfig ws
 
 perform :: RemoteType -> String -> R.RemoteConfig -> CommandPerform
 perform t name c = do

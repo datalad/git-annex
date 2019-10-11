@@ -9,6 +9,7 @@ module Annex.SpecialRemote.Config where
 
 import Common
 import Types.Remote (RemoteConfigField, RemoteConfig)
+import Types.UUID
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -70,3 +71,24 @@ sameasInherits = S.fromList
 	-- (new-style chunking does not have that limitation)
 	, chunksizeField
 	]
+
+{- Each RemoteConfig that has a sameas-uuid inherits some fields
+ - from it. Such fields can only be set by inheritance; the RemoteConfig
+ - cannot provide values from them. -}
+addSameasInherited :: M.Map UUID RemoteConfig -> RemoteConfig -> RemoteConfig
+addSameasInherited m c = case toUUID <$> M.lookup sameasUUIDField c of
+	Nothing -> c
+	Just sameasuuid -> case M.lookup sameasuuid m of
+		Nothing -> c
+		Just parentc -> 
+			M.withoutKeys c sameasInherits			
+				`M.union`
+			M.restrictKeys parentc sameasInherits
+
+{- Remove any fields inherited from a sameas-uuid. When storing a
+ - RemoteConfig, those fields don't get stored, since they were already
+ - inherited. -}
+removeSameasInherited :: RemoteConfig -> RemoteConfig
+removeSameasInherited c = case M.lookup sameasUUIDField c of
+	Nothing -> c
+	Just _ -> M.restrictKeys c sameasInherits

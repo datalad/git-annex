@@ -40,31 +40,10 @@ configSet u cfg = do
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)
-readRemoteLog = addSameasInherited 
+readRemoteLog = (\m -> M.map (addSameasInherited m) m)
 	. simpleMap
 	. parseLogOld remoteConfigParser
 	<$> Annex.Branch.get remoteLog
-
-{- Each RemoteConfig that has a sameas-uuid inherits some fields
- - from it. Such fields can only be set by inheritance; the RemoteConfig
- - cannot provide values from them. -}
-addSameasInherited :: M.Map UUID RemoteConfig -> M.Map UUID RemoteConfig
-addSameasInherited m = M.map go m
-  where
-	go c = case toUUID <$> M.lookup sameasUUIDField c of
-		Nothing -> c
-		Just sameasuuid -> case M.lookup sameasuuid m of
-			Nothing -> c
-			Just parentc -> 
-				M.withoutKeys c sameasInherits			
-					`M.union`
-				M.restrictKeys parentc sameasInherits
-
-{- Remove any fields inherited from a sameas-uuid. -}
-removeSameasInherited :: RemoteConfig -> RemoteConfig
-removeSameasInherited c = case M.lookup sameasUUIDField c of
-	Nothing -> c
-	Just _ -> M.restrictKeys c sameasInherits
 
 remoteConfigParser :: A.Parser RemoteConfig
 remoteConfigParser = keyValToConfig . words . decodeBS <$> A.takeByteString

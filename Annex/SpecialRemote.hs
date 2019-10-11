@@ -33,12 +33,21 @@ findExisting name = do
 		. findByName name
 		<$> Logs.Remote.readRemoteLog
 
-newConfig :: RemoteName -> Maybe (Sameas UUID) -> RemoteConfig
-newConfig name Nothing = M.singleton nameField name
-newConfig name (Just (Sameas u)) = M.fromList
-	[ (sameasNameField, name)
-	, (sameasUUIDField, fromUUID u)
-	]
+newConfig
+	:: RemoteName
+	-> Maybe (Sameas UUID)
+	-> RemoteConfig
+	-- ^ configuration provided by the user
+	-> M.Map UUID RemoteConfig
+	-- ^ configuration of other special remotes, to inherit from
+	-- when sameas is used
+	-> RemoteConfig
+newConfig name sameas fromuser m = case sameas of
+	Nothing -> M.insert nameField name fromuser
+	Just (Sameas u) -> addSameasInherited m $ M.fromList
+		[ (sameasNameField, name)
+		, (sameasUUIDField, fromUUID u)
+		] `M.union` fromuser
 
 findByName :: RemoteName ->  M.Map UUID RemoteConfig -> [(UUID, RemoteConfig)]
 findByName n = filter (matching . snd) . M.toList
