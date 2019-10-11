@@ -1,0 +1,58 @@
+A remote configures git-annex with a way to access a particular data
+store. Sometimes, there's more than one way for git-annex to access the
+same underlying data store. It then makes sense to have multiple remotes.
+
+The most common and easy case of this is when the data store is itself a
+git-annex repository. For example, using git-annex on your laptop, you
+might add a ssh remote which works from anywhere. But, when you're located
+on the same LAN as the server, it might be faster or simpler to use a
+different ssh url.
+
+	git remote add server someserver.example.com:/data
+	git remote add lanserver someserver.lan:/data
+
+git-annex is able to realize automatically that these two remotes both
+access the same repository (by contacting the repository and looking up its
+git-annex uuid). You can use git-annex to access which ever remote you
+want to at a given time.
+
+[[Special_remotes]] don't store data in a git-annex repository. It's
+possible to configure two special remotes that access the same underlying
+data store, at least in theory. Whether it will work depends on how the
+two special remotes store their data. If they don't use the same filename
+(or whatever), it might not work.
+
+The case almost guaranteed to work is two special remotes of the same type,
+and other configuration, but with different urls that point to the same
+data store. For example, a [[special_remotes/git-lfs]] repository can be
+accessed using http or ssh. So two git-lfs special remotes can be set up,
+and both access the same data.
+
+	git annex initremote lfs-ssh type=git-lfs encryption=shared url=git@example.com:repo
+	git annex initremote --sameas=lfs-ssh lfs-http type=git-lfs url=https://example.com/repo
+
+The `--sameas` parameter tells git-annex that the new special remote
+uses the same data store as an existing special remote. Note that
+the encryption= parameter, which is usually mandatory, is omitted.
+The two necessarily encrypt data in the same way, so it will
+inherit the encryption configuration. Other configuration is not inherited,
+so if you need some parameter to initremote to make a special remote behave
+a certian way, be sure to pass it to both.
+
+Finally, it's sometimes possible to access the same data stored in two
+special remotes with different types. One combination that works is
+a [[special_remotes/directory]] special remote 
+and a [[special_remotes/rsync]] special remote.
+
+	git annex initremote dir type=directory encryption=none directory=/foo
+	git annex initremote --sameas=dir rsync type=rsync rsyncurl=localhost:/foo
+
+If a combination does not work, git-annex will be unable to access files
+in one remote or the other, it could get into a scrambled mess. So it's
+best to test a a combination carefully before you start using it for real.
+If you find combinations that work, please edit this page to list them.
+
+## known working combinations
+
+* directory and rsync
+
