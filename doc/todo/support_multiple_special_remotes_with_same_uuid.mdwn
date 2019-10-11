@@ -34,8 +34,6 @@ the remote.log. Eg, "B sameas=A foo=bar ..."
 
 Implementation notes:
 
-Next, need to make generating a Remote look at annex-config-uuid.
-
 Need to get enableremote working for sameas.
 
 Deal with the per-remote state issue.

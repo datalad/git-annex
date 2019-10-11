@@ -105,7 +105,8 @@ remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe R
 remoteGen m t g = do
 	u <- getRepoUUID g
 	gc <- Annex.getRemoteGitConfig g
-	let c = fromMaybe M.empty $ M.lookup u m
+	let cu = fromMaybe u $ remoteAnnexConfigUUID gc
+	let c = fromMaybe M.empty $ M.lookup cu m
 	generate t g u c gc >>= \case
 		Nothing -> return Nothing
 		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r))
