@@ -1,0 +1,4 @@
+Gotten the sameas remote feature fully working today, except for the small
+problem that sameas remotes should use different per-remote state from
+one-another. I know how to approach that, but it's another big change, for
+another day.
