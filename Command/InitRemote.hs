@@ -11,12 +11,15 @@ import qualified Data.Map as M
 
 import Command
 import Annex.SpecialRemote
+import Annex.SpecialRemote.Config
 import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R
+import Annex.UUID
 import Logs.UUID
 import Logs.Remote
 import Types.GitConfig
+import Config
 
 cmd :: Command
 cmd = command "initremote" SectionSetup
@@ -63,24 +66,31 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 					<$> readRemoteLog
 				t <- either giveup return (findType c)
 				starting "initremote" (ActionItemOther (Just name)) $
-					perform t name c
+					perform t name c o
 			)
 	)
 
-perform :: RemoteType -> String -> R.RemoteConfig -> CommandPerform
-perform t name c = do
+perform :: RemoteType -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
+perform t name c o = do
 	dummycfg <- liftIO dummyRemoteGitConfig
-	(c', u) <- R.setup t R.Init cu Nothing c dummycfg
-	next $ cleanup u name c'
+	(c', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) Nothing c dummycfg
+	next $ cleanup u name c' o
   where
-	cu = case M.lookup "uuid" c of
+	uuidfromuser = case M.lookup "uuid" c of
 		Just s
 			| isUUID s -> Just (toUUID s)
 			| otherwise -> giveup "invalid uuid"
 		Nothing -> Nothing
+	sameasu = toUUID <$> M.lookup sameasUUIDField c
 
-cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup
-cleanup u name c = do
-	describeUUID u (toUUIDDesc name)
-	Logs.Remote.configSet u c
+cleanup :: UUID -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandCleanup
+cleanup u name c o = do
+	case sameas o of
+		Nothing -> do
+			describeUUID u (toUUIDDesc name)
+			Logs.Remote.configSet u c
+		Just _ -> do
+			cu <- liftIO genUUID
+			setConfig (remoteConfig c "config-uuid") (fromUUID cu)
+			Logs.Remote.configSet cu c
 	return True

@@ -34,9 +34,6 @@ the remote.log. Eg, "B sameas=A foo=bar ..."
 
 Implementation notes:
 
-initremote --sameas ends up with the annex-uuid and the annex-config-uuid
-configured backwards. Oops.
-
 Need to get enableremote working for sameas.
 
 Deal with the per-remote state issue.
