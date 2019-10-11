@@ -47,7 +47,7 @@ cipherField :: RemoteConfigField
 cipherField = "cipher"
 
 cipherkeysField :: RemoteConfigField
-cipherkeysField = "cipher"
+cipherkeysField = "cipherkeys"
 
 pubkeysField :: RemoteConfigField
 pubkeysField = "pubkeys"
