@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="preventing inadvertently adding annexed files in unlocked form"
+ date="2019-10-11T16:38:07Z"
+ content="""
+> It is not possible for git add to add files in locked form. git's interface simply does not allow that.
+
+Makes sense.  Then, [[separate annex.largefiles.git-add and annex.largefiles.git-annex-add settings]] seems like the way to prevent inadvertently adding files to annex in unlocked form.
+
+Related: [[todo/auto-lock_files_after_one_edit]]
+"""]]
