@@ -91,4 +91,4 @@ addSameasInherited m c = case toUUID <$> M.lookup sameasUUIDField c of
 removeSameasInherited :: RemoteConfig -> RemoteConfig
 removeSameasInherited c = case M.lookup sameasUUIDField c of
 	Nothing -> c
-	Just _ -> M.restrictKeys c sameasInherits
+	Just _ -> M.withoutKeys c sameasInherits

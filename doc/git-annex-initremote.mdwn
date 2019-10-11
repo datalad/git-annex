@@ -57,6 +57,11 @@ want to use `git annex renameremote`.
   of the existing remote, so you should not specify any encryption
   parameters. No other configuration is inherited from the existing remote.
 
+  This will only work if both remotes use the underlying storage in
+  compatible ways. See this page for information about known
+  compatabilities.
+  <http://git-annex.branchable.com/tips/multiple_remotes_accessing_the_same_data_store/>
+
 # COMMON CONFIGURATION PARAMETERS
 
 * `encryption`
