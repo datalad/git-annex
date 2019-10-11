@@ -83,7 +83,7 @@ addDb (FsckHandle h _) k = H.queueDb h checkcommit $
 		| sz > 1000 = return True
 		| otherwise = do
 			now <- getCurrentTime
-			return $ diffUTCTime lastcommittime now > 300
+			return $ diffUTCTime now lastcommittime > 300
 
 {- Doesn't know about keys that were just added with addDb. -}
 inDb :: FsckHandle -> Key -> IO Bool

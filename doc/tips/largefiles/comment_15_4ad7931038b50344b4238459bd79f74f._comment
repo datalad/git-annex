@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Dwk"
+ avatar="http://cdn.libravatar.org/avatar/65fade4f1582ef3f00e9ad6ae27dae56"
+ subject="annexed -> normal git does not work if annexed file was unlocked"
+ date="2019-10-05T01:45:14Z"
+ content="""
+The sequence of commands given to shift an unlocked annexed file to normal git (for instance a file annexed by mistake due to the new git-add behaviour), namely
+
+    git annex unlock file
+    git -c annex.largefiles=nothing add file
+    git commit file
+
+does not work if the file is unmodified, as git sees no change to commit. In this case, I believe one should replace the first command with
+
+    git annex unannex file
+
+"""]]

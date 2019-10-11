@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2019-10-10T15:49:20Z"
+ content="""
+Comment 6 talked about how to prevent old git-annex from getting confused
+when used in a repo with sameas remotes.
+
+If remote.name.annex-uuid contains the uuid that sameas pointed to, then
+old git-annex will load the RemoteConfig for that uuid. Which is kind of
+... ok? The other gitconfig settings for the remote may or may not work
+with that RemoteConfig. But if accessing that remote fails with old
+git-annex, no problem. The only concerning thing I think would be if
+checkpresent somehow reported all content as missing from the remote... But
+if a misconfiguration of the gitconfig can do that, the special remote
+implementation is arguably already buggy.
+
+So, I think it's ok to set remote.name.annex-uuid to the sameas
+uuid. There will need to be a new config key that indicates the uuid to
+get the RemoteConfig from.
+
+Old git-annex enableremote still needs to be prevented from initializing a
+sameas remote, as it would set annex-uuid to the wrong uuid.
+"""]]

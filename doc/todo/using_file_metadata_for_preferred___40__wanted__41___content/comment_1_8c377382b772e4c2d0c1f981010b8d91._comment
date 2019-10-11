@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="jason.dixon.email@aa0e536a2ec2877d6f666108dbbc6e39bbe87ac0"
+ nickname="jason.dixon.email"
+ avatar="http://cdn.libravatar.org/avatar/fbe9050fc83bbd536d307d87ea14d4bc"
+ subject="wanted content commands"
+ date="2019-10-10T08:16:59Z"
+ content="""
+I've often thought it would be handy to have a preferred content expression and a requested files list that work together. Which is, I think, similar to what you're saying?
+
+So you could do something like \"git annex wanted . --request <somefile>\" which would add it to a list of wanted files, that overrides the preferred content. Then you'd remove them also.
+
+Use case for this would be requesting a file. Syncing the request to, say, a usb. Plugging that usb in somewhere else later, and having those files be automatically transferred. Then when the file reaches the destination it's dropped.
+
+I guess this is possible already with the wanted expressions? What would that look like?
+
+
+"""]]

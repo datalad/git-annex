@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-08T16:12:24Z"
+ content="""
+Installing such a pre-push hook by default is certianly going to break
+existing workflows, so I don't see that happening. It would break my own
+workflows, unless perhaps the hook only does something when the repository
+is untrusted.
+
+But I don't see anything preventing you from writing such a hook yourself.
+It should be easy enough to use `git annex whereis` or something like that
+to determine when you want to blick the push. If you need some additional
+query facility in git-annex to write it, we can talk about that.
+"""]]

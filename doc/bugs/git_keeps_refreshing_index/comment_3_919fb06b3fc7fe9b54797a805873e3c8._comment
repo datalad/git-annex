@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-10-08T16:43:49Z"
+ content="""
+Dropping a single unlocked file and then running git
+status with `GIT_TRACE=1` replicates the additional smudge every time.
+
+The index before and after git status smudging have identical content, so
+git-annex seems to have updated it correctly already. It seems that the
+mtime of the index file is causing git to do that one additional smudge.
+
+Eg, the file git-annex dropped had a mtime of 13:02:43.716964483. The
+~/index file that git-annex generated has a mtime of 13:02:43.752964130
+which is newer, but only by a fraction of a second. So, git probably
+assumes the mtimes are sufficiently close that it can't trust that the
+index file really reflects the current content of the work tree file. And
+so it re-smudges the work tree file unncessarily.
+
+I have not been able to find a number of files to drop that replicates
+the bug report. When a lot of files are dropped, it starts taking
+sufficiently long to update the index file that it ends up with a newer
+timestamp, which avoids the unncessary additional smudging. The worse
+case I have found here is dropping 9 files causes all 9 to get re-smudged,
+but that's not enough to get git to use the progress display.
+"""]]

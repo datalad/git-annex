@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-10-08T19:33:39Z"
+ content="""
+It does not, mostly because it would need to run lsof once per file, which
+would be significantly expensive. The daemon is able to batch changes and
+so run lsof less often.
+
+However, git-annex add does detect if a file is modified while it's being
+hashed, and will avoid adding it then. And it prevents against most ways
+the file could be modified except for if something has it open for write
+beforehand. In the worst case, the object in the annex gets written to,
+which later gets detected by fsck.
+"""]]

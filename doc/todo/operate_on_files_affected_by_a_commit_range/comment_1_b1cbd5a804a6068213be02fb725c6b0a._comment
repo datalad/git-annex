@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-08T16:09:35Z"
+ content="""
+If you have a command that generates a list of files changed by a series of
+commits, you can simply pass that list into --batch which is supported by
+most commands.
+"""]]

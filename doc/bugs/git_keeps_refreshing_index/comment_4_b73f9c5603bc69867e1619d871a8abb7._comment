@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-10-08T17:32:52Z"
+ content="""
+Anyway, if git-annex could preserve the mtime of an unlocked file when
+writing its pointer file or when populating it with content, that would
+avoid the unncessary smudging. (Which seems better than adding a delay when
+updating the index file, or setting the index's mtime ahead of the current
+time..)
+
+That's easier done for pointer files than populated files, because
+with annex.thin the content is a hard link and it would probably not be
+good to change its mtime.
+
+For now, I didn't do it extensively, but only in depopulatePointerFile.
+That was enough to eliminate the unncessary smudging after drop that I was
+seeing.
+"""]]

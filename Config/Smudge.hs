@@ -1,6 +1,6 @@
 {- Git smudge filter configuration
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -32,10 +32,25 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 	gfs <- readattr gf
 	liftIO $ unless ("filter=annex" `isInfixOf` (lfs ++ gfs)) $ do
 		createDirectoryIfMissing True (takeDirectory lf)
-		writeFile lf (lfs ++ "\n" ++ stdattr)
+		writeFile lf (lfs ++ "\n" ++ unlines stdattr)
   where
 	readattr = liftIO . catchDefaultIO "" . readFileStrict
-	stdattr = unlines
-		[ "* filter=annex"
-		, ".* !filter"
-		]
+
+stdattr :: [String]
+stdattr =
+	[ "* filter=annex"
+	, ".* !filter"
+	]
+
+-- Note that this removes the local git attributes for filtering, 
+-- which is what git-annex installed, but it does not change anything
+-- that may have been committed to a .gitattributes in the repository.
+-- git-annex does not commit that.
+deconfigureSmudgeFilter :: Annex ()
+deconfigureSmudgeFilter = do
+	lf <- Annex.fromRepo Git.attributesLocal
+	ls <- liftIO $ catchDefaultIO [] $ lines <$> readFileStrict lf
+	liftIO $ writeFile lf $ unlines $
+		filter (\l -> l `notElem` stdattr && not (null l)) ls
+	unsetConfig (ConfigKey "filter.annex.smudge")
+	unsetConfig (ConfigKey "filter.annex.clean")

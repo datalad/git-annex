@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="separate annex.git-add.largefiles and annex.git-annex-add.largefiles settings"
+ date="2019-10-10T18:33:50Z"
+ content="""
+[[separate `annex.git-add.largefiles` and `annex.git-annex-add.largefiles` settings|todo/separate_annex.largefiles.git-add_and_annex.largefiles.git-annex-add_settings]] would let you configure `git add` to only add to git while still letting `git annex add` decide what gets annexed.
+"""]]

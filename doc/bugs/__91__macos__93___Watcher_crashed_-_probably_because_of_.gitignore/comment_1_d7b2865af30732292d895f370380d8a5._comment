@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-08T18:53:09Z"
+ content="""
+The error message shows that the problem is that git cat-file
+output something ending with a carriage return.
+
+I don't think that the carriage return in your .gitignore is directly
+related. git-annex uses `git check-ignore -z` which uses NUL for a
+delimited and not newline characters.
+
+It's interesting that carriage returns would cause a problem with git
+cat-file. Its interface is obviously problimatic for filenames containing
+newlines, and git-annex has worked around that for a while.
+
+Here's git cat-file --batch falling over on a carriage return, indeed:
+
+	joey@darkstar:/tmp/bad>git ls-tree HEAD
+	100644 blob 79e1eee83674b65519a4a9d632bb38dda357512b	.gitignore
+	100644 blob d8a7f641c2ded93c164528b87fa17a12e7e6a5b1	foo
+	100644 blob f8e47b9532ea17ac825c39bddc35dbd68f120a46	"foo\\r"
+	100644 blob 4ed2fceb3af4c9dc27097d9a3f7d88973ffa2884	x
+	100644 blob 4c2dbb3e16f26cdccc6da3aea3c5e69fe46098f5	y
+	joey@darkstar:/tmp/bad>printf 'HEAD:foo\r' | git cat-file --batch | hexdump -C
+	00000000  48 45 41 44 3a 66 6f 6f  0d 20 6d 69 73 73 69 6e  |HEAD:foo. missin|
+	00000010  67 0a                                             |g.|
+	00000012
+
+Here's the code from git that seems responsible:
+
+	int strbuf_getline(struct strbuf *sb, FILE *fp)
+	{
+	        if (strbuf_getwholeline(sb, fp, '\n'))
+	                return EOF;
+	        if (sb->buf[sb->len - 1] == '\n') {
+	                strbuf_setlen(sb, sb->len - 1);
+	                if (sb->len && sb->buf[sb->len - 1] == '\r')
+	                        strbuf_setlen(sb, sb->len - 1);
+	        }
+	        return 0;
+	}
+
+I've griped on the git mailing list, but also gonna fix git-annex to use
+the slow fallback for filenames with carriage returns.
+"""]]

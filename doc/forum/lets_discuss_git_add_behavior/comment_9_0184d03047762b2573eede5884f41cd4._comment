@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 9"
+ date="2019-10-09T07:53:43Z"
+ content="""
+I'm not sure which part of my post you are responding to..
+
+Using `git add` with symlinks makes sense because you are adding the symlink, not the file, to git.
+
+But we are talking about actual files (because unlocked or non-annexed), right? Where `git add` would add it to git instead of the annex.. which makes sense because the command for adding a *file* to git-annex is `git annex add`, not `git add`.
+"""]]

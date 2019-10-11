@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2019-10-01T19:53:06Z"
+ content="""
+Revisiting the idea of using different uuids with a sameas= parameter:
+
+If one remote is marked dead, it ought to be the one that sameas= points
+to, since that's the uuid in the location log. So that's ok.
+
+As long as enableremote does not allow changing the sameas= paramter,
+sameas loops could only occur maliciously, not in normal operation.
+So it's fine to break such a loop in an arbitrary way.
+
+There would need to be a way to prevent a remote with sameas= from being
+used by a version of git-annex that does not support it. One way would be
+to omit the name= parameter from remote.log, and use some other parameter
+for the name. Then old git-annex could not enableremote with the wrong uuid.
+
+Using remote.name.annex-uuid-sameas=uuid instead of remote.name.annex-uuid
+would prevent old git-annex from using initialized sameas remotes.
+(Need a better name, since the uuid stored there should be the remote's own
+uuid (needed to get its RemoteConfig), not the one that sameas= points to.)
+
+Seems that encryption parameter inheritance would happen the same way as
+has been discussed above. When constructing the RemoteConfig, copy over the
+encryption parameters from the parent remote.
+
+All in all, using separate uuids instead of name= seems perhaps better.
+"""]]

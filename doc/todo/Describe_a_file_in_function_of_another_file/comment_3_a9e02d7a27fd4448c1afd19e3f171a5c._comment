@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="special remote that restores contents by running a command"
+ date="2019-10-04T18:16:39Z"
+ content="""
+I still think it's doable and worth doing, don't have the bandwidth right now to implement it, but can help brainstorm.  If you're interested in working on it, post in the [github thread](https://github.com/datalad/datalad/issues/2850), and maybe we can refine the design.
+
+The key issues are: (1) you can't just [[`git-annex-copy`|git-annex-copy]] a file to this remote, you'll need to use [[`git-annex-setpresentkey`|git-annex-setpresentkey]] and [[`git-annex-registerurl`|git-annex-registerurl]] to record that contents with a given key can be obtained by running a given command, and (2) the result of running a command depends not just on the command line and the input file(s), but also on the environment in which the command is run, so to get bit-for-bit reconstruction of the contents you'd need to use Docker, or at least something like [conda](https://docs.conda.io/en/latest/).  But even then, sometimes the exact output file depends on the current time or the name of some intermediate tempfile.  So unless the command is 100% deterministic, re-running the command might produce contents that does not match the [[git-annex key|backends]].
+
+For local use, you could make a simple webserver that handles URLs like `http://localhost:3000/cgi-bin/make_thumbnail.sh?orig_file_key=MD5-xxxxxx` , and have the CGI script run [[`git-annex-get --key`|git-annex-get]] to get the file contents and then extract the thumbnail and return that.  Then you can use [[`git-annex-addurl`|git-annex-addurl]] to store the file in git-annex.
+"""]]

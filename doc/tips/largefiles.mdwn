@@ -140,6 +140,7 @@ When you have a file that is currently stored in the annex, and you want to
 convert that to be stored in git, here's how to accomplish that:
 
 	git annex unlock file
+	git rm --cached file
 	git -c annex.largefiles=nothing add file
 	git commit file
 

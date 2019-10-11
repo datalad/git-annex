@@ -1,0 +1,5 @@
+Can the `annex.addunlocked` be extended to have the same syntax as `annex.largefiles`?  Also, can there be separate settings affecting `git add` and `git annex add`, e.g. `annex.git-add.addunlocked` and `annex.git-annex-add.addunlocked`, with both defaulting to the value of `annex.addunlocked` if not set?
+
+Basically, I want a reliable way to prevent inadvertently adding files as annexed unlocked files.
+
+Related: [[forum/lets_discuss_git_add_behavior]]

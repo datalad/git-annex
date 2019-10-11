@@ -35,7 +35,7 @@ mkdir -p %{buildroot}/usr/lib/
 cp -a %{buildroot}/../git-annex.linux %{buildroot}/usr/lib
 mkdir -p %{buildroot}/usr/bin/
 ln -sf /usr/lib/git-annex.linux/git-annex %{buildroot}/usr/bin/git-annex
-ln -sf /usr/lib/git-annex.linux/git-annex %{buildroot}/usr/bin/git-annex-shell
+ln -sf /usr/lib/git-annex.linux/git-annex-shell %{buildroot}/usr/bin/git-annex-shell
 
 %files
 %attr(-, root, root)

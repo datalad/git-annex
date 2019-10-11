@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-08T16:22:16Z"
+ content="""
+When using v7 repositories, git will do this when there are unlocked files
+that have had their content changed.
+
+git only displays that message when it thinks its going to have to
+do a lot of work (re-smudging a lot of files), so you'd mostly see this
+happen in a larger repository that has had a lot of (unlocked) files change
+in some way.
+"""]]

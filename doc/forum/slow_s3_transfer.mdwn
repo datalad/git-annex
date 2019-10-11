@@ -1,0 +1,20 @@
+Hi,
+
+I am experiencing slow transfer (UL/DL) speed with an S3-compatible remote.
+Here is the configuration:
+
+-Minio server for S3 storage in docker.
+
+-Nginx for https in docker.
+
+-git-annex (and datalad) with the S3 set as a remote, without public URL to control access.
+
+I tried to get files directly from the server to remove all the network factors.
+
+When downloading from the Minio server through nginx with wget, I have transfer rates of about 50-60MB/s.
+
+When running `git annex get` on the same file, the transfer rate is about 6-7MB/s.
+
+Any idea why git-annex would slow the transfer?
+
+Thanks
