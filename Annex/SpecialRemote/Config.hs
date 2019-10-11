@@ -14,6 +14,12 @@ import Types.UUID
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+newtype Sameas t = Sameas t
+	deriving (Show)
+
+newtype ConfigFrom t = ConfigFrom t
+	deriving (Show)
+
 {- The name of a configured remote is stored in its config using this key. -}
 nameField :: RemoteConfigField
 nameField = "name"
@@ -76,14 +82,17 @@ sameasInherits = S.fromList
  - from it. Such fields can only be set by inheritance; the RemoteConfig
  - cannot provide values from them. -}
 addSameasInherited :: M.Map UUID RemoteConfig -> RemoteConfig -> RemoteConfig
-addSameasInherited m c = case toUUID <$> M.lookup sameasUUIDField c of
+addSameasInherited m c = case findSameasUUID c of
 	Nothing -> c
-	Just sameasuuid -> case M.lookup sameasuuid m of
+	Just (Sameas sameasuuid) -> case M.lookup sameasuuid m of
 		Nothing -> c
 		Just parentc -> 
 			M.withoutKeys c sameasInherits			
 				`M.union`
 			M.restrictKeys parentc sameasInherits
+
+findSameasUUID :: RemoteConfig -> Maybe (Sameas UUID)
+findSameasUUID c = Sameas . toUUID <$> M.lookup sameasUUIDField c
 
 {- Remove any fields inherited from a sameas-uuid. When storing a
  - RemoteConfig, those fields don't get stored, since they were already

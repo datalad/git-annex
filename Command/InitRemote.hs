@@ -11,7 +11,6 @@ import qualified Data.Map as M
 
 import Command
 import Annex.SpecialRemote
-import Annex.SpecialRemote.Config
 import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R

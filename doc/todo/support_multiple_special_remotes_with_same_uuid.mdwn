@@ -36,8 +36,4 @@ Implementation notes:
 
 Deal with the per-remote state issue.
 
-renameremote will probably not work
-
-Annex.InitRemote.autoEnable does not work right for sameas.
-
 Any other things mentioned in the comments..

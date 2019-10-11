@@ -5,26 +5,26 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.SpecialRemote where
+module Annex.SpecialRemote (
+	module Annex.SpecialRemote,
+	module Annex.SpecialRemote.Config
+) where
 
 import Annex.Common
 import Annex.SpecialRemote.Config
-import Remote (remoteTypes, remoteMap)
+import Remote (remoteTypes)
 import Types.Remote (RemoteConfig, SetupStage(..), typename, setup)
 import Types.GitConfig
+import Config
+import Remote.List
 import Logs.Remote
 import Logs.Trust
 import qualified Git.Config
+import qualified Types.Remote as Remote
 import Git.Types (RemoteName)
 
 import qualified Data.Map as M
 import Data.Ord
-
-newtype Sameas t = Sameas t
-	deriving (Show)
-
-newtype ConfigFrom t = ConfigFrom t
-	deriving (Show)
 
 {- See if there's an existing special remote with this name.
  -
@@ -87,17 +87,28 @@ findType config = maybe unspecified specified $ M.lookup typeField config
 autoEnable :: Annex ()
 autoEnable = do
 	remotemap <- M.filter configured <$> readRemoteLog
-	enabled <- remoteMap id
-	forM_ (M.toList remotemap) $ \(u, c) -> unless (u `M.member` enabled) $ do
+	enabled <- getenabledremotes
+	forM_ (M.toList remotemap) $ \(cu, c) -> unless (cu `M.member` enabled) $ do
+		let u = case findSameasUUID c of
+			Just (Sameas u') -> u'
+			Nothing -> cu
 		case (lookupName c, findType c) of
 			(Just name, Right t) -> whenM (canenable u) $ do
 				showSideAction $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
 				tryNonAsync (setup t (Enable c) (Just u) Nothing c dummycfg) >>= \case
 					Left e -> warning (show e)
-					Right _ -> return ()
+					Right (_c, _u) ->
+						when (cu /= u) $
+							setConfig (remoteConfig c "config-uuid") (fromUUID cu)
 			_ -> return ()
   where
 	configured rc = fromMaybe False $
 		Git.Config.isTrue =<< M.lookup autoEnableField rc
 	canenable u = (/= DeadTrusted) <$> lookupTrust u
+	getenabledremotes = M.fromList
+		. map (\r -> (getcu r, r))
+		<$> remoteList
+	getcu r = fromMaybe
+		(Remote.uuid r)
+		(remoteAnnexConfigUUID (Remote.gitconfig r))

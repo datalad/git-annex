@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
