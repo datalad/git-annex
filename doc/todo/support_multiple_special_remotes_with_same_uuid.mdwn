@@ -29,11 +29,3 @@ of the code will work as-is.
 That would add overhead of an additional git-annex branch read on every
 program start. That could be avoided by instead putting the equivilance in
 the remote.log. Eg, "B sameas=A foo=bar ..."
-
----- 
-
-Implementation notes:
-
-Deal with the per-remote state issue.
-
-Any other things mentioned in the comments..
