@@ -13,7 +13,7 @@ import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Git
 import qualified Git.Types as Git
-import qualified Annex.SpecialRemote
+import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.Git
@@ -40,7 +40,7 @@ start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
 	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig rest)
-		=<< Annex.SpecialRemote.findExisting name
+		=<< SpecialRemote.findExisting name
 	go (r:_) = do
 		-- This could be either a normal git remote or a special
 		-- remote that has an url (eg gcrypt).
@@ -62,32 +62,37 @@ startNormalRemote name restparams r
 	| otherwise = giveup $
 		"That is a normal git remote; passing these parameters does not make sense: " ++ unwords restparams
 
-startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig) -> CommandStart
+startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID)) -> CommandStart
 startSpecialRemote name config Nothing = do
-	m <- Annex.SpecialRemote.specialRemoteMap
+	m <- SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.readRemoteLog
 	Remote.nameToUUID' name >>= \case
 		Right u | u `M.member` m ->
 			startSpecialRemote name config $
-				Just (u, fromMaybe M.empty (M.lookup u confm))
+				Just (u, fromMaybe M.empty (M.lookup u confm), Nothing)
 		_ -> unknownNameError "Unknown remote name."
-startSpecialRemote name config (Just (u, c)) =
+startSpecialRemote name config (Just (u, c, mcu)) =
 	starting "enableremote" (ActionItemOther (Just name)) $ do
 		let fullconfig = config `M.union` c	
-		t <- either giveup return (Annex.SpecialRemote.findType fullconfig)
+		t <- either giveup return (SpecialRemote.findType fullconfig)
 		gc <- maybe (liftIO dummyRemoteGitConfig) 
 			(return . Remote.gitconfig)
 			=<< Remote.byUUID u
-		performSpecialRemote t u c fullconfig gc
+		performSpecialRemote t u c fullconfig gc mcu
 
-performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> CommandPerform
-performSpecialRemote t u oldc c gc = do
+performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
+performSpecialRemote t u oldc c gc mcu = do
 	(c', u') <- R.setup t (R.Enable oldc) (Just u) Nothing c gc
-	next $ cleanupSpecialRemote u' c'
+	next $ cleanupSpecialRemote u' c' mcu
 
-cleanupSpecialRemote :: UUID -> R.RemoteConfig -> CommandCleanup
-cleanupSpecialRemote u c = do
-	Logs.Remote.configSet u c
+cleanupSpecialRemote :: UUID -> R.RemoteConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandCleanup
+cleanupSpecialRemote u c mcu = do
+	case mcu of
+		Nothing -> 
+			Logs.Remote.configSet u c
+		Just (SpecialRemote.ConfigFrom cu) -> do
+			setConfig (remoteConfig c "config-uuid") (fromUUID cu)
+			Logs.Remote.configSet cu c
 	Remote.byUUID u >>= \case
 		Nothing -> noop
 		Just r -> do
@@ -97,7 +102,7 @@ cleanupSpecialRemote u c = do
 
 unknownNameError :: String -> Annex a
 unknownNameError prefix = do
-	m <- Annex.SpecialRemote.specialRemoteMap
+	m <- SpecialRemote.specialRemoteMap
 	descm <- M.unionWith Remote.addName
 		<$> uuidDescMap
 		<*> pure (M.map toUUIDDesc m)

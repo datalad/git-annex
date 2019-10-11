@@ -27,6 +27,7 @@ import Creds
 import Assistant.Gpg
 import Utility.Gpg (KeyId)
 import Types.GitConfig
+import Config
 
 import qualified Data.Map as M
 
@@ -52,9 +53,9 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Annex.SpecialRemote.findExisting name
   where
 	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
-		(Nothing, R.Init, Annex.SpecialRemote.newConfig name Nothing mempty mempty)
-	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
-		(Just u, R.Enable c, c)
+		(Nothing, R.Init, Annex.SpecialRemote.newConfig name Nothing mempty mempty) Nothing
+	go (Just (u, c, mcu)) = setupSpecialRemote name Rsync.remote config Nothing
+		(Just u, R.Enable c, c) mcu
 	config = M.fromList
 		[ (encryptionField, "shared")
 		, ("rsyncurl", location)
@@ -83,7 +84,7 @@ initSpecialRemote name remotetype mcreds config = go 0
 		let fullname = if n == 0  then name else name ++ show n
 		Annex.SpecialRemote.findExisting fullname >>= \case
 			Nothing -> setupSpecialRemote fullname remotetype config mcreds
-				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname Nothing mempty mempty)
+				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname Nothing mempty mempty) Nothing
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
@@ -91,13 +92,13 @@ enableSpecialRemote :: SpecialRemoteMaker
 enableSpecialRemote name remotetype mcreds config =
 	Annex.SpecialRemote.findExisting name >>= \case
 		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c)
+		Just (u, c, mcu) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c) mcu
 
-setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Maybe (Annex.SpecialRemote.ConfigFrom UUID) -> Annex RemoteName
 setupSpecialRemote = setupSpecialRemote' True
 
-setupSpecialRemote' :: Bool -> RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Annex RemoteName
-setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) = do
+setupSpecialRemote' :: Bool -> RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Maybe (Annex.SpecialRemote.ConfigFrom UUID) -> Annex RemoteName
+setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) mcu = do
 	{- Currently, only 'weak' ciphers can be generated from the
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
@@ -105,7 +106,12 @@ setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) = do
 	let weakc = M.insert "highRandomQuality" "false" $ M.union config c
 	dummycfg <- liftIO dummyRemoteGitConfig
 	(c', u) <- R.setup remotetype ss mu mcreds weakc dummycfg
-	configSet u c'
+	case mcu of
+		Nothing ->
+			configSet u c'
+		Just (Annex.SpecialRemote.ConfigFrom cu) -> do
+			setConfig (remoteConfig c' "config-uuid") (fromUUID cu)
+			configSet cu c'
 	when setdesc $
 		whenM (isNothing . M.lookup u <$> uuidDescMap) $
 			describeUUID u (toUUIDDesc name)

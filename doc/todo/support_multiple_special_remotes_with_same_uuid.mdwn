@@ -34,8 +34,10 @@ the remote.log. Eg, "B sameas=A foo=bar ..."
 
 Implementation notes:
 
-Need to get enableremote working for sameas.
-
 Deal with the per-remote state issue.
+
+renameremote will probably not work
+
+Annex.InitRemote.autoEnable does not work right for sameas.
 
 Any other things mentioned in the comments..

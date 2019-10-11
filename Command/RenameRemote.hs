@@ -27,7 +27,7 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
-	Just (u, cfg) -> Annex.SpecialRemote.findExisting newname >>= \case
+	Just (u, cfg, mcu) -> Annex.SpecialRemote.findExisting newname >>= \case
 		Just _ -> giveup $ "The name " ++ newname ++ " is already used by a special remote."
 		Nothing -> go u cfg
 	-- Support lookup by uuid or description as well as remote name,

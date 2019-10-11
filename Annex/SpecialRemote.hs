@@ -21,17 +21,33 @@ import qualified Data.Map as M
 import Data.Ord
 
 newtype Sameas t = Sameas t
+	deriving (Show)
+
+newtype ConfigFrom t = ConfigFrom t
+	deriving (Show)
 
 {- See if there's an existing special remote with this name.
  -
  - Prefer remotes that are not dead when a name appears multiple times. -}
-findExisting :: RemoteName -> Annex (Maybe (UUID, RemoteConfig))
+findExisting :: RemoteName -> Annex (Maybe (UUID, RemoteConfig, Maybe (ConfigFrom UUID)))
 findExisting name = do
 	t <- trustMap
 	headMaybe
-		. sortBy (comparing $ \(u, _c) -> Down $ M.lookup u t)
+		. sortBy (comparing $ \(u, _, _) -> Down $ M.lookup u t)
 		. findByName name
 		<$> Logs.Remote.readRemoteLog
+
+findByName :: RemoteName ->  M.Map UUID RemoteConfig -> [(UUID, RemoteConfig, Maybe (ConfigFrom UUID))]
+findByName n = map sameasuuid . filter (matching . snd) . M.toList
+  where
+	matching c = case lookupName c of
+		Nothing -> False
+		Just n'
+			| n' == n -> True
+			| otherwise -> False
+	sameasuuid (u, c) = case M.lookup sameasUUIDField c of
+		Nothing -> (u, c, Nothing)
+		Just u' -> (toUUID u', c, Just (ConfigFrom u))
 
 newConfig
 	:: RemoteName
@@ -48,15 +64,6 @@ newConfig name sameas fromuser m = case sameas of
 		[ (sameasNameField, name)
 		, (sameasUUIDField, fromUUID u)
 		] `M.union` fromuser
-
-findByName :: RemoteName ->  M.Map UUID RemoteConfig -> [(UUID, RemoteConfig)]
-findByName n = filter (matching . snd) . M.toList
-  where
-	matching c = case lookupName c of
-		Nothing -> False
-		Just n'
-			| n' == n -> True
-			| otherwise -> False
 
 specialRemoteMap :: Annex (M.Map UUID RemoteName)
 specialRemoteMap = do
