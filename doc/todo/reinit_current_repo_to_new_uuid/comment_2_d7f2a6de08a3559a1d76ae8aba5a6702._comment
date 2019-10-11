@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2019-10-11T16:23:08Z"
+ content="""
+>You would probably also want to run git annex fsck --fast so that any annexed content in the repo gets recorded as being present in the new uuid
+
+This takes very long on my repo, even with `--fast`.  Maybe, there's a way to make a fast dedicated command for this scenario?  Or, a version of [[sameas|todo/support_multiple_special_remotes_with_same_uuid/]] which represents the fact that all presence info in this repo *up to this timestamp* is same as in old repo, but from that point on this repo is separate?
+"""]]
