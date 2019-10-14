@@ -24,6 +24,7 @@ import Types.StandardGroups
 import Creds
 import Assistant.Gpg
 import Git.Types (RemoteName)
+import Annex.SpecialRemote.Config
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -195,7 +196,7 @@ enableAWSRemote remotetype uuid = do
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
-			let name = fromJust $ M.lookup "name" $
+			let name = fromJust $ lookupName $
 				fromJust $ M.lookup uuid m
 			makeAWSRemote enableSpecialRemote remotetype SmallArchiveGroup creds name M.empty
 		_ -> do

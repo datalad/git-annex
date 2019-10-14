@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2019-10-11T19:56:12Z"
+ content="""
+Looking over all my comments now that I have an implementatation..
+
+`git annex dead` on a sameas remote name marks the parent remote dead.
+I think this is ok; dead means the content is gone, so which remote is used
+to access it is immaterial; they're all dead.
+
+sameas loops are not a problem, it only looks up the sameas-uuid value
+once, will not loop.
+
+old git-annex are prevented from enabling a sameas remote, since it has no
+name=
+
+old git-annex with an enabled sameas remote will see the annex-uuid of the
+parent, and treat it as the parent. Some git config values needed to use
+the parent may not be set, or may potentially be set differently than for
+the parent. Unlikely to cause any bad behavior, other than the remote not
+working.
+
+encrypted data and legacy chunking is inherited, and cannot be overridden
+
+RemoteConfig always contains any inherited parameters of a sameas remote.
+Logs.Remote.configSet filters those out.
+
+Logs.Remote.configSet is a little bit less safe; if its caller passed the
+RemoteConfig from a sameas remote, it needs to make sure to not pass the
+uuid of the parent remote, or it will overwrite the wrong config. All calls
+to it handle that now.
+
+per-remote state still to be done.
+"""]]

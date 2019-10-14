@@ -43,6 +43,25 @@ want to use `git annex renameremote`.
   and re-run with `--fast`, which causes it to use a lower-quality source of
   randomness. (Ie, /dev/urandom instead of /dev/random)
 
+* `--sameas=remote`
+
+  Use this when the new special remote uses the same underlying storage
+  as some other remote. This will result in the new special remote having
+  the same uuid as the specified remote, and either can be used to access
+  the same content.
+
+  The `remote` can be the name of a git remote, or the description
+  or uuid of any git-annex repository.
+
+  When using this option, the new remote inherits the encryption settings
+  of the existing remote, so you should not specify any encryption
+  parameters. No other configuration is inherited from the existing remote.
+
+  This will only work if both remotes use the underlying storage in
+  compatible ways. See this page for information about known
+  compatabilities.
+  <http://git-annex.branchable.com/tips/multiple_remotes_accessing_the_same_data_store/>
+
 # COMMON CONFIGURATION PARAMETERS
 
 * `encryption`

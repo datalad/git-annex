@@ -40,8 +40,8 @@ list _autoinit = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" (pure Git.Construct.fromUnknown)
 	return [r]
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r _ c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r _ c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just Remote
 		{ uuid = webUUID
@@ -74,6 +74,7 @@ gen r _ c gc = do
 		, getInfo = return []
 		, claimUrl = Nothing -- implicitly claims all urls
 		, checkUrl = Nothing
+		, remoteStateHandle = rs
 		}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)

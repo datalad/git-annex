@@ -25,6 +25,7 @@ import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)
 import Backend (isStableKey)
+import Annex.SpecialRemote.Config
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -49,11 +50,11 @@ noChunks _ = False
 
 getChunkConfig :: RemoteConfig -> ChunkConfig
 getChunkConfig m =
-	case M.lookup "chunksize" m of
+	case M.lookup chunksizeField m of
 		Nothing -> case M.lookup "chunk" m of
 			Nothing -> NoChunks
 			Just v -> readsz UnpaddedChunks v "chunk"
-		Just v -> readsz LegacyChunks v "chunksize"
+		Just v -> readsz LegacyChunks v chunksizeField
   where
 	readsz c v f = case readSize dataUnits v of
 		Just size

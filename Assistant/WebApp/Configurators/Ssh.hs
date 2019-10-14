@@ -27,6 +27,7 @@ import qualified Git.Command
 import qualified Annex.Branch
 import Annex.UUID
 import Logs.UUID
+import Annex.SpecialRemote.Config
 import Assistant.RemoteControl
 import Types.Creds
 import Assistant.CredPairCache
@@ -208,7 +209,7 @@ postEnableSshGitRemoteR = enableSshRemote getsshinput enableRsyncNet enablesshgi
 enableSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
 enableSshRemote getsshdata rsyncnetsetup genericsetup u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
-	case (unmangle <$> getsshdata m, M.lookup "name" m) of
+	case (unmangle <$> getsshdata m, lookupName m) of
 		(Just sshdata, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
 				runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
@@ -546,7 +547,9 @@ makeSshRepo rs sshdata
 		let c = fromMaybe M.empty (M.lookup (Remote.uuid r) m)
 		let c' = M.insert "location" (genSshUrl sshdata) $
 			M.insert "type" "git" $
-			M.insert "name" (fromMaybe (Remote.name r) (M.lookup "name" c)) c
+			case M.lookup nameField c of
+				Just _ -> c
+				Nothing -> M.insert nameField (Remote.name r) c
 		configSet (Remote.uuid r) c'
 
 makeSshRepoConnection :: RepoStatus -> Annex RemoteName -> (Remote -> Annex ()) -> Handler Html

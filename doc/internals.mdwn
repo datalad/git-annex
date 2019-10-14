@@ -277,7 +277,7 @@ For example:
 These log files store per-remote content identifiers for keys.
 A given key may have any number of content identifiers.
 
-The format is a timestamp, followed by the uuid or the remote,
+The format is a timestamp, followed by the uuid of the remote,
 followed by the content identifiers which are separated by colons.
 If a content identifier contains a colon or \r or \n, it will be base64
 encoded. Base64 encoded values are indicated by prefixing them with "!".

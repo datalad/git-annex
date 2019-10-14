@@ -39,8 +39,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = new <$> remoteCost gc veryExpensiveRemoteCost
   where
 	new cst = Just $ specialRemote' specialcfg c
 		(prepareStore this)
@@ -83,6 +83,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 				[ ("glacier vault", getVault c) ]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.
@@ -104,7 +105,7 @@ glacierSetup' ss u mcreds c gc = do
 	gitConfigSpecialRemote u fullconfig [("glacier", "true")]
 	return (fullconfig, u)
   where
-	remotename = fromJust (M.lookup "name" c)
+	remotename = fromJust (lookupName c)
 	defvault = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
 		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.Glacier)

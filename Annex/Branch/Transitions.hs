@@ -20,54 +20,71 @@ import qualified Logs.MetaData.Pure as MetaData
 import Types.TrustLevel
 import Types.UUID
 import Types.MetaData
+import Types.Remote
+import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
-import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 data FileTransition
 	= ChangeFile Builder
-	| RemoveFile
 	| PreserveFile
 
-type TransitionCalculator = FilePath -> L.ByteString -> TrustMap -> FileTransition
+type TransitionCalculator = TrustMap -> M.Map UUID RemoteConfig -> FilePath -> L.ByteString -> FileTransition
 
 getTransitionCalculator :: Transition -> Maybe TransitionCalculator
 getTransitionCalculator ForgetGitHistory = Nothing
 getTransitionCalculator ForgetDeadRemotes = Just dropDead
 
-dropDead :: FilePath -> L.ByteString -> TrustMap -> FileTransition
-dropDead f content trustmap = case getLogVariety f of
+-- Removes data about all dead repos.
+--
+-- The trust log is not changed, because other, unmerged clones
+-- may contain other data about the dead repos. So we need to rememebr
+-- which are dead to later remove that.
+--
+-- When the remote log contains a sameas-uuid pointing to a dead uuid,
+-- the uuid of that remote configuration is also effectively dead,
+-- though not in the trust log. There may be per-remote state stored using
+-- the latter uuid, that also needs to be removed. That configuration
+-- is not removed from the remote log, for the same reason the trust log
+-- is not changed.
+dropDead :: TransitionCalculator
+dropDead trustmap remoteconfigmap f content = case getLogVariety f of
 	Just OldUUIDBasedLog
-		-- Don't remove the dead repo from the trust log,
-		-- because git remotes may still exist, and they need
-		-- to still know it's dead.
 		| f == trustLog -> PreserveFile
-		| otherwise -> ChangeFile $
-			UUIDBased.buildLogOld byteString $
-				dropDeadFromMapLog trustmap id $
-					UUIDBased.parseLogOld A.takeByteString content
+		| otherwise ->
+			let go tm = ChangeFile $
+				UUIDBased.buildLogOld byteString $
+					dropDeadFromMapLog tm id $
+						UUIDBased.parseLogOld A.takeByteString content
+			in if f == remoteLog
+				then go trustmap
+				else go trustmap'
 	Just NewUUIDBasedLog -> ChangeFile $
 		UUIDBased.buildLogNew byteString $
-			dropDeadFromMapLog trustmap id $
+			dropDeadFromMapLog trustmap' id $
 				UUIDBased.parseLogNew A.takeByteString content
 	Just (ChunkLog _) -> ChangeFile $
-		Chunk.buildLog $ dropDeadFromMapLog trustmap fst $ Chunk.parseLog content
-	Just (PresenceLog _) ->
-		let newlog = Presence.compactLog $
-			dropDeadFromPresenceLog trustmap $ Presence.parseLog content
-		in if null newlog
-			then RemoveFile
-			else ChangeFile $ Presence.buildLog newlog
-	Just RemoteMetaDataLog ->
-		let newlog = dropDeadFromRemoteMetaDataLog trustmap $ MetaData.simplifyLog $ MetaData.parseLog content
-		in if S.null newlog
-			then RemoveFile
-			else ChangeFile $ MetaData.buildLog newlog
+		Chunk.buildLog $ dropDeadFromMapLog trustmap' fst $
+			Chunk.parseLog content
+	Just (PresenceLog _) -> ChangeFile $ Presence.buildLog $
+		Presence.compactLog $
+			dropDeadFromPresenceLog trustmap' $
+				Presence.parseLog content
+	Just RemoteMetaDataLog -> ChangeFile $ MetaData.buildLog $
+		dropDeadFromRemoteMetaDataLog trustmap' $
+			MetaData.simplifyLog $ MetaData.parseLog content
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
+  where
+	trustmap' = trustmap `M.union`
+		M.map (const DeadTrusted) (M.filter sameasdead remoteconfigmap)
+	sameasdead cm =
+		case toUUID <$> M.lookup sameasUUIDField cm of
+			Nothing -> False
+			Just u' -> M.lookup u' trustmap == Just DeadTrusted
 
 dropDeadFromMapLog :: TrustMap -> (k -> UUID) -> M.Map k v -> M.Map k v
 dropDeadFromMapLog trustmap getuuid =

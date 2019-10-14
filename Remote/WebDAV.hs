@@ -50,8 +50,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
   where
 	new cst = Just $ specialRemote c
 		(prepareDAV this $ store chunkconfig)
@@ -95,11 +95,12 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc
+			, mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc rs
 			, getInfo = includeCredsInfo c (davCreds u) $
 				[("url", fromMaybe "unknown" (M.lookup "url" c))]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
 		chunkconfig = getChunkConfig c
 
@@ -341,7 +342,7 @@ davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
 	{ credPairFile = fromUUID u
 	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
-	, credPairRemoteKey = "davcreds"
+	, credPairRemoteField = "davcreds"
 	}
 
 {- Content-Type to use for files uploaded to WebDAV. -}

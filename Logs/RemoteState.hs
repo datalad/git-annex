@@ -11,6 +11,7 @@ module Logs.RemoteState (
 ) where
 
 import Annex.Common
+import Types.RemoteState
 import Logs
 import Logs.UUIDBased
 import qualified Annex.Branch
@@ -23,8 +24,8 @@ import Data.ByteString.Builder
 
 type RemoteState = String
 
-setRemoteState :: UUID -> Key -> RemoteState -> Annex ()
-setRemoteState u k s = do
+setRemoteState :: RemoteStateHandle -> Key -> RemoteState -> Annex ()
+setRemoteState (RemoteStateHandle u) k s = do
 	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (remoteStateLogFile config k) $
@@ -33,8 +34,8 @@ setRemoteState u k s = do
 buildRemoteState :: Log RemoteState -> Builder
 buildRemoteState = buildLogNew (byteString . encodeBS)
 
-getRemoteState :: UUID -> Key -> Annex (Maybe RemoteState)
-getRemoteState u k = do
+getRemoteState :: RemoteStateHandle -> Key -> Annex (Maybe RemoteState)
+getRemoteState (RemoteStateHandle u) k = do
 	config <- Annex.getGitConfig
 	extract . parseRemoteState
 		<$> Annex.Branch.get (remoteStateLogFile config k)

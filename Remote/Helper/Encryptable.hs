@@ -29,6 +29,7 @@ import Config
 import Crypto
 import Types.Crypto
 import qualified Annex
+import Annex.SpecialRemote.Config
 
 -- Used to ensure that encryption has been set up before trying to
 -- eg, store creds in the remote config that would need to use the
@@ -55,7 +56,7 @@ encryptionSetup c gc = do
 	maybe (genCipher cmd) (updateCipher cmd) (extractCipher c)
   where
 	-- The type of encryption
-	encryption = M.lookup "encryption" c
+	encryption = M.lookup encryptionField c
 	-- Generate a new cipher, depending on the chosen encryption scheme
 	genCipher cmd = case encryption of
 		_ | hasEncryptionConfig c -> cannotchange
@@ -68,7 +69,7 @@ encryptionSetup c gc = do
 		Just "pubkey" -> encsetup $ genEncryptedCipher cmd (c, gc) key PubKey
 		Just "sharedpubkey" -> encsetup $ genSharedPubKeyCipher cmd key
 		_ -> giveup $ "Specify " ++ intercalate " or "
-			(map ("encryption=" ++)
+			(map ((encryptionField ++ "=") ++)
 				["none","shared","hybrid","pubkey", "sharedpubkey"])
 			++ "."
 	key = fromMaybe (giveup "Specify keyid=...") $ M.lookup "keyid" c
@@ -130,30 +131,30 @@ remoteCipher' c gc = go $ extractCipher c
 embedCreds :: RemoteConfig -> Bool
 embedCreds c = case yesNo =<< M.lookup "embedcreds" c of
 	Just v -> v
-	Nothing -> isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c)
+	Nothing -> isJust (M.lookup cipherkeysField c) && isJust (M.lookup cipherField c)
 
 {- Gets encryption Cipher, and key encryptor. -}
 cipherKey :: RemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, EncKey))
 cipherKey c gc = fmap make <$> remoteCipher c gc
   where
 	make ciphertext = (ciphertext, encryptKey mac ciphertext)
-	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
+	mac = fromMaybe defaultMac $ M.lookup macField c >>= readMac
 
 {- Stores an StorableCipher in a remote's configuration. -}
 storeCipher :: StorableCipher -> RemoteConfig -> RemoteConfig
 storeCipher cip = case cip of
 	(SharedCipher t) -> addcipher t
-	(EncryptedCipher t _ ks) -> addcipher t . storekeys ks "cipherkeys"
-	(SharedPubKeyCipher t ks) -> addcipher t . storekeys ks "pubkeys"
+	(EncryptedCipher t _ ks) -> addcipher t . storekeys ks cipherkeysField
+	(SharedPubKeyCipher t ks) -> addcipher t . storekeys ks pubkeysField
   where
-	addcipher t = M.insert "cipher" (toB64bs t)
+	addcipher t = M.insert cipherField (toB64bs t)
 	storekeys (KeyIds l) n = M.insert n (intercalate "," l)
 
 {- Extracts an StorableCipher from a remote's configuration. -}
 extractCipher :: RemoteConfig -> Maybe StorableCipher
-extractCipher c = case (M.lookup "cipher" c,
-			M.lookup "cipherkeys" c <|> M.lookup "pubkeys" c,
-			M.lookup "encryption" c) of
+extractCipher c = case (M.lookup cipherField c,
+			M.lookup cipherkeysField c <|> M.lookup pubkeysField c,
+			M.lookup encryptionField c) of
 	(Just t, Just ks, encryption) | maybe True (== "hybrid") encryption ->
 		Just $ EncryptedCipher (fromB64bs t) Hybrid (readkeys ks)
 	(Just t, Just ks, Just "pubkey") ->
@@ -167,13 +168,15 @@ extractCipher c = case (M.lookup "cipher" c,
 	readkeys = KeyIds . splitc ','
 
 isEncrypted :: RemoteConfig -> Bool
-isEncrypted c = case M.lookup "encryption" c of
+isEncrypted c = case M.lookup encryptionField c of
 	Just "none" -> False
 	Just _ -> True
 	Nothing -> hasEncryptionConfig c
 
 hasEncryptionConfig :: RemoteConfig -> Bool
-hasEncryptionConfig c = M.member "cipher" c || M.member "cipherkeys" c || M.member "pubkeys" c
+hasEncryptionConfig c = M.member cipherField c
+	|| M.member cipherkeysField c
+	|| M.member pubkeysField c
 
 describeEncryption :: RemoteConfig -> String
 describeEncryption c = case extractCipher c of

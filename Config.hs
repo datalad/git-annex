@@ -19,6 +19,7 @@ import Config.DynamicConfig
 import Types.Availability
 import Git.Types
 import qualified Types.Remote as Remote
+import qualified Annex.SpecialRemote.Config as SpecialRemote
 
 import qualified Data.Map as M
 
@@ -62,7 +63,7 @@ instance RemoteNameable Remote where
 	getRemoteName = Remote.name
 
 instance RemoteNameable Remote.RemoteConfig where
-	getRemoteName c = fromMaybe "" (M.lookup "name" c)
+	getRemoteName c = fromMaybe "" (SpecialRemote.lookupName c)
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey

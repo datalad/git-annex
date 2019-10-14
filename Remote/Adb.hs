@@ -40,8 +40,8 @@ remote = RemoteType
 	, importSupported = importIsSupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	let this = Remote
 		{ uuid = u
 		-- adb operates over USB or wifi, so is not as cheap
@@ -90,6 +90,7 @@ gen r u c gc = do
 			]
 		, claimUrl = Nothing
 		, checkUrl = Nothing
+		, remoteStateHandle = rs
 		}
 	return $ Just $ specialRemote c
 		(simplyPrepare $ store serial adir)

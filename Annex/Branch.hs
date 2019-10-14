@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -63,6 +63,7 @@ import Logs
 import Logs.Transitions
 import Logs.File
 import Logs.Trust.Pure
+import Logs.Remote.Pure
 import Logs.Difference.Pure
 import qualified Annex.Queue
 import Annex.Branch.Transitions
@@ -574,27 +575,30 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	run [] = noop
 	run changers = do
 		trustmap <- calcTrustMap <$> getStaged trustLog
+		remoteconfigmap <- calcRemoteConfigMap <$> getStaged remoteLog
+		-- partially apply, improves performance
+		let changers' = map (\c -> c trustmap remoteconfigmap) changers
 		fs <- branchFiles
 		forM_ fs $ \f -> do
 			content <- getStaged f
-			apply changers f content trustmap
-	apply [] _ _ _ = return ()
-	apply (changer:rest) file content trustmap =
-		case changer file content trustmap of
-			RemoveFile -> do
-				Annex.Queue.addUpdateIndex
-					=<< inRepo (Git.UpdateIndex.unstageFile file)
-				-- File is deleted; can't run any other
-				-- transitions on it.
-				return ()
-			ChangeFile builder -> do
-				let content' = toLazyByteString builder
-				sha <- hashBlob content'
-				Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
-					Git.UpdateIndex.updateIndexLine sha TreeFile (asTopFilePath file)
-				apply rest file content' trustmap
-			PreserveFile ->
-				apply rest file content trustmap
+			apply changers' f content
+	apply [] _ _ = return ()
+	apply (changer:rest) file content = case changer file content of
+		PreserveFile -> apply rest file content
+		ChangeFile builder -> do
+			let content' = toLazyByteString builder
+			if L.null content'
+				then do
+					Annex.Queue.addUpdateIndex
+						=<< inRepo (Git.UpdateIndex.unstageFile file)
+					-- File is deleted; can't run any other
+					-- transitions on it.
+					return ()
+				else do
+					sha <- hashBlob content'
+					Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
+						Git.UpdateIndex.updateIndexLine sha TreeFile (asTopFilePath file)
+					apply rest file content'
 
 checkBranchDifferences :: Git.Ref -> Annex ()
 checkBranchDifferences ref = do
@@ -662,3 +666,4 @@ rememberTreeish treeish graftpoint = lockJournal $ \jl -> do
 	-- and the index was updated to that above, so it's safe to
 	-- say that the index contains c'.
 	setIndexSha c'
+

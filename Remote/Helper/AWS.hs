@@ -23,7 +23,7 @@ creds :: UUID -> CredPairStorage
 creds u = CredPairStorage
 	{ credPairFile = fromUUID u
 	, credPairEnvironment = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
-	, credPairRemoteKey = "s3creds"
+	, credPairRemoteField = "s3creds"
 	}
 
 data Service = S3 | Glacier

@@ -153,6 +153,7 @@ adjustRemoteConfig r adjustconfig = do
 		(Remote.uuid r)
 		(adjustconfig (Remote.config r))
 		(Remote.gitconfig r)
+		(Remote.remoteStateHandle r)
 
 test :: Annex.AnnexState -> Remote -> Key -> [TestTree]
 test st r k = catMaybes

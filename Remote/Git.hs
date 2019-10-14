@@ -32,6 +32,7 @@ import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
 import qualified Annex.Url as Url
+import qualified Annex.SpecialRemote.Config as SpecialRemote
 import Utility.Tmp
 import Config
 import Config.Cost
@@ -120,7 +121,7 @@ gitSetup (Enable _) (Just u) _ c _ = do
 	inRepo $ Git.Command.run
 		[ Param "remote"
 		, Param "add"
-		, Param $ fromMaybe (giveup "no name") (M.lookup "name" c)
+		, Param $ fromMaybe (giveup "no name") (SpecialRemote.lookupName c)
 		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
 		]
 	return (c, u)
@@ -145,17 +146,17 @@ configRead autoinit r = do
 		(False, _, NoUUID) -> tryGitConfigRead autoinit r
 		_ -> return r
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs
 	-- Remote.GitLFS may be used with a repo that is also encrypted
 	-- with gcrypt so is checked first.
-	| remoteAnnexGitLFS gc = Remote.GitLFS.gen r u c gc
-	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc
+	| remoteAnnexGitLFS gc = Remote.GitLFS.gen r u c gc rs
+	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc rs
 	| otherwise = case repoP2PAddress r of
 		Nothing -> do
 			st <- mkState r u gc
 			go st <$> remoteCost gc defcst
-		Just addr -> Remote.P2P.chainGen addr r u c gc
+		Just addr -> Remote.P2P.chainGen addr r u c gc rs
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
 	go st cst = Just new
@@ -189,14 +190,15 @@ gen r u c gc
 			, appendonly = False
 			, availability = availabilityCalc r
 			, remotetype = remote
-			, mkUnavailable = unavailable r u c gc
+			, mkUnavailable = unavailable r u c gc rs
 			, getInfo = gitRepoInfo new
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
 
-unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-unavailable r u c gc = gen r' u c gc
+unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+unavailable r = gen r'
   where
 	r' = case Git.location r of
 		Git.Local { Git.gitdir = d } ->

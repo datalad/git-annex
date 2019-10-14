@@ -304,7 +304,7 @@ Executable git-annex
    base (>= 4.11.1.0 && < 5.0),
    network-uri (>= 2.6),
    optparse-applicative (>= 0.14.1),
-   containers (>= 0.5.7.1),
+   containers (>= 0.5.8),
    exceptions (>= 0.6),
    stm (>= 2.3),
    mtl (>= 2),
@@ -653,6 +653,7 @@ Executable git-annex
     Annex.ReplaceFile
     Annex.RemoteTrackingBranch
     Annex.SpecialRemote
+    Annex.SpecialRemote.Config
     Annex.Ssh
     Annex.TaggedPush
     Annex.Tmp
@@ -896,6 +897,7 @@ Executable git-annex
     Logs.Presence
     Logs.Presence.Pure
     Logs.Remote
+    Logs.Remote.Pure
     Logs.RemoteState
     Logs.Schedule
     Logs.SingleValue
@@ -993,6 +995,7 @@ Executable git-annex
     Types.NumCopies
     Types.RefSpec
     Types.Remote
+    Types.RemoteState
     Types.RepoVersion
     Types.ScheduledActivity
     Types.StandardGroups

@@ -21,6 +21,7 @@ import qualified Git.GCrypt
 import qualified Remote.GCrypt as GCrypt
 import Git.Types (RemoteName)
 import Assistant.WebApp.MakeRemote
+import Annex.SpecialRemote.Config
 import Logs.Remote
 
 import qualified Data.Map as M
@@ -79,7 +80,7 @@ getGCryptRemoteName u repoloc = do
 	mname <- ifM (inRepo $ Git.Command.runBool [Param "fetch", Param tmpremote])
 		( do
 			void Annex.Branch.forceUpdate
-			(M.lookup "name" <=< M.lookup u) <$> readRemoteLog
+			(lookupName <=< M.lookup u) <$> readRemoteLog
 		, return Nothing
 		)
 	void $ inRepo $ Git.Remote.Remove.remove tmpremote

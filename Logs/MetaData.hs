@@ -19,6 +19,7 @@
  - after the other remote redundantly set foo +x, it was unset,
  - and so foo currently has no value.
  -
+ - Copyright 2014-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -35,6 +36,7 @@ module Logs.MetaData (
 
 import Annex.Common
 import Types.MetaData
+import Types.RemoteState
 import Annex.MetaData.StandardFields
 import Annex.VectorClock
 import qualified Annex.Branch
@@ -84,8 +86,8 @@ getCurrentMetaData' getlogfile k = do
 			Unknown -> 0
 	showts = formatPOSIXTime "%F@%H-%M-%S"
 
-getCurrentRemoteMetaData :: UUID -> Key -> Annex RemoteMetaData
-getCurrentRemoteMetaData u k = extractRemoteMetaData u <$>
+getCurrentRemoteMetaData :: RemoteStateHandle -> Key -> Annex RemoteMetaData
+getCurrentRemoteMetaData (RemoteStateHandle u) k = extractRemoteMetaData u <$>
 	getCurrentMetaData' remoteMetaDataLogFile k
 
 {- Adds in some metadata, which can override existing values, or unset
@@ -116,9 +118,10 @@ addMetaDataClocked' getlogfile k d@(MetaData m) c
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 
-addRemoteMetaData :: Key -> RemoteMetaData -> Annex ()
-addRemoteMetaData k m = do
-	addMetaData' remoteMetaDataLogFile k (fromRemoteMetaData m)
+addRemoteMetaData :: Key -> RemoteStateHandle -> MetaData -> Annex ()
+addRemoteMetaData k (RemoteStateHandle u) m = 
+	addMetaData' remoteMetaDataLogFile k $ fromRemoteMetaData $
+		RemoteMetaData u m
 
 getMetaDataLog :: Key -> Annex (Log MetaData)
 getMetaDataLog key = do

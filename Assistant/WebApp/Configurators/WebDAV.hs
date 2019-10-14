@@ -21,6 +21,7 @@ import Logs.Remote
 import Git.Types (RemoteName)
 import Assistant.Gpg
 import Types.GitConfig
+import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
 #endif
@@ -56,7 +57,7 @@ postEnableWebDAVR :: UUID -> Handler Html
 postEnableWebDAVR uuid = do
 	m <- liftAnnex readRemoteLog
 	let c = fromJust $ M.lookup uuid m
-	let name = fromJust $ M.lookup "name" c
+	let name = fromJust $ lookupName c
 	let url = fromJust $ M.lookup "url" c
 	mcreds <- liftAnnex $ do
 		dummycfg <- liftIO dummyRemoteGitConfig

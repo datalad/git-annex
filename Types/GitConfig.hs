@@ -246,6 +246,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
+	, remoteAnnexConfigUUID :: Maybe UUID
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -308,6 +309,7 @@ extractRemoteGitConfig r remotename = do
 			<$> getmayberead "retrydelay"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
+		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"
 		, remoteAnnexShell = getmaybe "shell"
 		, remoteAnnexSshOptions = getoptions "ssh-options"
 		, remoteAnnexRsyncOptions = getoptions "rsync-options"

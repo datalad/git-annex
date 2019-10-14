@@ -52,8 +52,8 @@ list _autoinit = do
 	r <- liftIO $ Git.Construct.remoteNamed "bittorrent" (pure Git.Construct.fromUnknown)
 	return [r]
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r _ c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r _ c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just Remote
 		{ uuid = bitTorrentUUID
@@ -85,6 +85,7 @@ gen r _ c gc = do
 		, getInfo = return []
 		, claimUrl = Just (pure . isSupportedUrl)
 		, checkUrl = Just checkTorrentUrl
+		, remoteStateHandle = rs
 		}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)

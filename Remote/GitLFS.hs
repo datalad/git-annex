@@ -57,8 +57,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	-- If the repo uses gcrypt, get the underlaying repo without the
 	-- gcrypt url, to do LFS endpoint discovery on.
 	r' <- if Git.GCrypt.isEncrypted r
@@ -70,10 +70,10 @@ gen r u c gc = do
 	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing sem r' gc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ store u h)
-		(simplyPrepare $ retrieve u h)
+		(simplyPrepare $ store rs h)
+		(simplyPrepare $ retrieve rs h)
 		(simplyPrepare $ remove h)
-		(simplyPrepare $ checkKey u h)
+		(simplyPrepare $ checkKey rs h)
 		(this cst)
   where
 	this cst = Remote
@@ -109,6 +109,7 @@ gen r u c gc = do
 		, getInfo = gitRepoInfo (this cst)
 		, claimUrl = Nothing
 		, checkUrl = Nothing
+		, remoteStateHandle = rs
 		}
 	specialcfg = (specialRemoteCfg c)
 		-- chunking would not improve git-lfs
@@ -157,7 +158,7 @@ mySetup _ mu _ c gc = do
 	return (c'', u)
   where
 	url = fromMaybe (giveup "Specify url=") (M.lookup "url" c)
-	remotename = fromJust (M.lookup "name" c)
+	remotename = fromJust (lookupName c)
 
 data LFSHandle = LFSHandle
 	{ downloadEndpoint :: Maybe LFS.Endpoint
@@ -327,8 +328,8 @@ extractKeySize k
 	| isEncKey k = Nothing
 	| otherwise = keySize k
 
-mkUploadRequest :: UUID -> Key -> FilePath -> Annex (LFS.TransferRequest, LFS.SHA256, Integer)
-mkUploadRequest u k content = case (extractKeySha256 k, extractKeySize k) of
+mkUploadRequest :: RemoteStateHandle -> Key -> FilePath -> Annex (LFS.TransferRequest, LFS.SHA256, Integer)
+mkUploadRequest rs k content = case (extractKeySha256 k, extractKeySize k) of
 	(Just sha256, Just size) ->
 		ret sha256 size
 	(_, Just size) -> do
@@ -355,12 +356,12 @@ mkUploadRequest u k content = case (extractKeySha256 k, extractKeySize k) of
 			}
 		return (req, sha256, size)
 	
-	remembersha256 sha256 = setRemoteState u k (T.unpack sha256)
-	rememberboth sha256 size = setRemoteState u k $
+	remembersha256 sha256 = setRemoteState rs k (T.unpack sha256)
+	rememberboth sha256 size = setRemoteState rs k $
 		show size ++ " " ++ T.unpack sha256
 
-mkDownloadRequest :: UUID -> Key -> Annex (Maybe (LFS.TransferRequest, LFS.SHA256, Integer))
-mkDownloadRequest u k = case (extractKeySha256 k, extractKeySize k) of
+mkDownloadRequest :: RemoteStateHandle -> Key -> Annex (Maybe (LFS.TransferRequest, LFS.SHA256, Integer))
+mkDownloadRequest rs k = case (extractKeySha256 k, extractKeySize k) of
 	(Just sha256, Just size) -> ret sha256 size
 	(_, Just size) ->
 		remembersha256 >>= \case
@@ -383,8 +384,8 @@ mkDownloadRequest u k = case (extractKeySha256 k, extractKeySize k) of
 			, LFS.req_objects = [obj]
 			}
 		return $ Just (req, sha256, size)
-	remembersha256 = fmap T.pack <$> getRemoteState u k
-	rememberboth = maybe Nothing parse <$> getRemoteState u k
+	remembersha256 = fmap T.pack <$> getRemoteState rs k
+	rememberboth = maybe Nothing parse <$> getRemoteState rs k
 	  where
 		parse s = case words s of
 			[ssize, ssha256] -> do
@@ -392,11 +393,11 @@ mkDownloadRequest u k = case (extractKeySha256 k, extractKeySize k) of
 				return (T.pack ssha256, size)
 			_ -> Nothing
 
-store :: UUID -> TVar LFSHandle -> Storer
-store u h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
+store :: RemoteStateHandle -> TVar LFSHandle -> Storer
+store rs h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
 	Nothing -> return False
 	Just endpoint -> flip catchNonAsync failederr $ do
-		(req, sha256, size) <- mkUploadRequest u k src
+		(req, sha256, size) <- mkUploadRequest rs k src
 		sendTransferRequest req endpoint >>= \case
 			Left err -> do
 				warning err
@@ -424,10 +425,10 @@ store u h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \cas
 		warning (show e)
 		return False
 
-retrieve :: UUID -> TVar LFSHandle -> Retriever
-retrieve u h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h >>= \case
+retrieve :: RemoteStateHandle -> TVar LFSHandle -> Retriever
+retrieve rs h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h >>= \case
 	Nothing -> giveup "unable to connect to git-lfs endpoint"
-	Just endpoint -> mkDownloadRequest u k >>= \case
+	Just endpoint -> mkDownloadRequest rs k >>= \case
 		Nothing -> giveup "unable to download this object from git-lfs"
 		Just (req, sha256, size) -> sendTransferRequest req endpoint >>= \case
 			Left err -> giveup (show err)
@@ -448,10 +449,10 @@ retrieve u h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h
 					uo <- getUrlOptions
 					liftIO $ downloadConduit p req dest uo
 
-checkKey :: UUID -> TVar LFSHandle -> CheckPresent
-checkKey u h key = getLFSEndpoint LFS.RequestDownload h >>= \case
+checkKey :: RemoteStateHandle -> TVar LFSHandle -> CheckPresent
+checkKey rs h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 	Nothing -> giveup "unable to connect to git-lfs endpoint"
-	Just endpoint -> mkDownloadRequest u key >>= \case
+	Just endpoint -> mkDownloadRequest rs key >>= \case
 		-- Unable to find enough information to request the key
 		-- from git-lfs, so it's not present there.
 		Nothing -> return False

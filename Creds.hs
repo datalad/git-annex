@@ -26,7 +26,7 @@ import Types.Creds
 import Annex.Perms
 import Utility.FileMode
 import Crypto
-import Types.Remote (RemoteConfig, RemoteConfigKey)
+import Types.Remote (RemoteConfig, RemoteConfigField)
 import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 
@@ -39,7 +39,7 @@ import Utility.Base64
 data CredPairStorage = CredPairStorage
 	{ credPairFile :: FilePath
 	, credPairEnvironment :: (String, String)
-	, credPairRemoteKey :: RemoteConfigKey
+	, credPairRemoteField :: RemoteConfigField
 	}
 
 {- Stores creds in a remote's configuration, if the remote allows
@@ -58,7 +58,7 @@ setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
 		=<< getRemoteCredPair c gc storage
 	Just creds
 		| embedCreds c ->
-			let key = credPairRemoteKey storage
+			let key = credPairRemoteField storage
 			in storeconfig creds key =<< flip remoteCipher gc =<< localcache creds
 		| otherwise -> localcache creds
   where
@@ -84,7 +84,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 	fromenv = liftIO $ getEnvCredPair storage
 	fromcache = maybe fromconfig (return . Just) =<< readCacheCredPair storage
 	fromconfig = do
-		let key = credPairRemoteKey storage
+		let key = credPairRemoteField storage
 		mcipher <- remoteCipher' c gc
 		case (M.lookup key c, mcipher) of
 			(Nothing, _) -> return Nothing
@@ -190,7 +190,7 @@ includeCredsInfo c storage info = do
 		Just _ -> do
 			let (uenv, penv) = credPairEnvironment storage
 			ret $ "from environment variables (" ++ unwords [uenv, penv] ++ ")"
-		Nothing -> case (`M.lookup` c) (credPairRemoteKey storage) of
+		Nothing -> case (`M.lookup` c) (credPairRemoteField storage) of
 			Nothing -> ifM (existsCacheCredPair storage)
 				( ret "stored locally"
 				, ret "not available"

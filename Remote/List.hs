@@ -1,11 +1,11 @@
-{-# LANGUAGE CPP #-}
-
 {- git-annex remote list
  -
- - Copyright 2011,2012 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Remote.List where
 
@@ -15,6 +15,7 @@ import Annex.Common
 import qualified Annex
 import Logs.Remote
 import Types.Remote
+import Types.RemoteState
 import Annex.UUID
 import Remote.Helper.Hooks
 import Remote.Helper.ReadOnly
@@ -105,10 +106,12 @@ remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe R
 remoteGen m t g = do
 	u <- getRepoUUID g
 	gc <- Annex.getRemoteGitConfig g
-	let c = fromMaybe M.empty $ M.lookup u m
-	generate t g u c gc >>= \case
+	let cu = fromMaybe u $ remoteAnnexConfigUUID gc
+	let rs = RemoteStateHandle cu
+	let c = fromMaybe M.empty $ M.lookup cu m
+	generate t g u c gc rs >>= \case
 		Nothing -> return Nothing
-		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r))
+		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r)) rs
 
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex (Maybe Remote)

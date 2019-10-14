@@ -382,7 +382,7 @@ downloadImport remote importtreeconfig importablecontents = do
 			getTopFilePath subdir </> fromImportLocation loc
 
 	getcidkey cidmap db cid = liftIO $
-		CIDDb.getContentIdentifierKeys db (Remote.uuid remote) cid >>= \case
+		CIDDb.getContentIdentifierKeys db rs cid >>= \case
 			[] -> atomically $
 				maybeToList . M.lookup cid <$> readTVar cidmap
 			l -> return l
@@ -390,8 +390,10 @@ downloadImport remote importtreeconfig importablecontents = do
 	recordcidkey cidmap db cid k = do
 		liftIO $ atomically $ modifyTVar' cidmap $
 			M.insert cid k
-		liftIO $ CIDDb.recordContentIdentifier db (Remote.uuid remote) cid k
-		CIDLog.recordContentIdentifier (Remote.uuid remote) cid k
+		liftIO $ CIDDb.recordContentIdentifier db rs cid k
+		CIDLog.recordContentIdentifier rs cid k
+
+	rs = Remote.remoteStateHandle remote
 
 {- Temporary key used for import of a ContentIdentifier while downloading
  - content, before generating its real key. -}

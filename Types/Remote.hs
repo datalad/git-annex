@@ -10,10 +10,11 @@
 {-# LANGUAGE RankNTypes #-}
 
 module Types.Remote
-	( RemoteConfigKey
+	( RemoteConfigField
 	, RemoteConfig
 	, RemoteTypeA(..)
 	, RemoteA(..)
+	, RemoteStateHandle
 	, SetupStage(..)
 	, Availability(..)
 	, Verification(..)
@@ -36,6 +37,7 @@ import Types.UUID
 import Types.GitConfig
 import Types.Availability
 import Types.Creds
+import Types.RemoteState
 import Types.UrlContents
 import Types.NumCopies
 import Types.Export
@@ -47,9 +49,9 @@ import Utility.SafeCommand
 import Utility.Url
 import Utility.DataUnits
 
-type RemoteConfigKey = String
+type RemoteConfigField = String
 
-type RemoteConfig = M.Map RemoteConfigKey String
+type RemoteConfig = M.Map RemoteConfigField String
 
 data SetupStage = Init | Enable RemoteConfig
 
@@ -61,7 +63,7 @@ data RemoteTypeA a = RemoteType
 	-- The Bool is True if automatic initialization of remotes is desired
 	, enumerate :: Bool -> a [Git.Repo]
 	-- generates a remote of this type
-	, generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a))
+	, generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> a (Maybe (RemoteA a))
 	-- initializes or enables a remote
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
 	-- check if a remote of this type is able to support export
@@ -151,6 +153,7 @@ data RemoteA a = Remote
 	-- its contents, without downloading the full content.
 	-- Throws an exception if the url is inaccessible.
 	, checkUrl :: Maybe (URLString -> a UrlContents)
+	, remoteStateHandle :: RemoteStateHandle
 	}
 
 instance Show (RemoteA a) where

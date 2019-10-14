@@ -54,8 +54,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
 		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
@@ -104,6 +104,7 @@ gen r u c gc = do
 			, getInfo = return [("url", url)]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
   where
 	specialcfg = (specialRemoteCfg c)

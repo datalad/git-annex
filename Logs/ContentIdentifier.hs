@@ -15,6 +15,7 @@ import Annex.Common
 import Logs
 import Logs.MapLog
 import Types.Import
+import Types.RemoteState
 import qualified Annex.Branch
 import Logs.ContentIdentifier.Pure as X
 import qualified Annex
@@ -27,8 +28,8 @@ import qualified Data.List.NonEmpty as NonEmpty
 --
 -- A remote may use multiple content identifiers for the same key over time,
 -- so ones that were recorded before are preserved.
-recordContentIdentifier :: UUID -> ContentIdentifier -> Key -> Annex ()
-recordContentIdentifier u cid k = do
+recordContentIdentifier :: RemoteStateHandle -> ContentIdentifier -> Key -> Annex ()
+recordContentIdentifier (RemoteStateHandle u) cid k = do
 	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (remoteContentIdentifierLogFile config k) $
@@ -39,9 +40,9 @@ recordContentIdentifier u cid k = do
 		m = simpleMap l
 
 -- | Get all known content identifiers for a key.
-getContentIdentifiers :: Key -> Annex [(UUID, [ContentIdentifier])]
+getContentIdentifiers :: Key -> Annex [(RemoteStateHandle, [ContentIdentifier])]
 getContentIdentifiers k = do
 	config <- Annex.getGitConfig
-	map (\(u, l) -> (u, NonEmpty.toList l) )
+	map (\(u, l) -> (RemoteStateHandle u, NonEmpty.toList l) )
 		. M.toList . simpleMap . parseLog
 		<$> Annex.Branch.get (remoteContentIdentifierLogFile config k)

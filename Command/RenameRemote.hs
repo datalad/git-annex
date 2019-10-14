@@ -9,6 +9,7 @@ module Command.RenameRemote where
 
 import Command
 import qualified Annex.SpecialRemote
+import Annex.SpecialRemote.Config (nameField, sameasNameField)
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Remote
@@ -26,9 +27,9 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
-	Just (u, cfg) -> Annex.SpecialRemote.findExisting newname >>= \case
+	Just (u, cfg, mcu) -> Annex.SpecialRemote.findExisting newname >>= \case
 		Just _ -> giveup $ "The name " ++ newname ++ " is already used by a special remote."
-		Nothing -> go u cfg
+		Nothing -> go u cfg mcu
 	-- Support lookup by uuid or description as well as remote name,
 	-- as a fallback when there is nothing with the name in the
 	-- special remote log.
@@ -38,13 +39,17 @@ start (oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
 			m <- Logs.Remote.readRemoteLog
 			case M.lookup u m of
 				Nothing -> giveup "That is not a special remote."
-				Just cfg -> go u cfg
+				Just cfg -> go u cfg Nothing
   where
-	go u cfg = starting "rename" (ActionItemOther Nothing) $
-		perform u cfg newname
+	go u cfg mcu = starting "rename" (ActionItemOther Nothing) $
+		perform u cfg mcu newname
 start _ = giveup "Specify an old name (or uuid or description) and a new name."
 
-perform :: UUID -> R.RemoteConfig -> String -> CommandPerform
-perform u cfg newname = do
-	Logs.Remote.configSet u (M.insert "name" newname cfg)
+perform :: UUID -> R.RemoteConfig -> Maybe (Annex.SpecialRemote.ConfigFrom UUID) -> String -> CommandPerform
+perform u cfg mcu newname = do
+	let (namefield, cu) = case mcu of
+		Nothing -> (nameField, u)
+		Just (Annex.SpecialRemote.ConfigFrom u') -> (sameasNameField, u')
+	Logs.Remote.configSet cu (M.insert namefield newname cfg)
+	
 	next $ return True

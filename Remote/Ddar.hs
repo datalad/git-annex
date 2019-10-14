@@ -39,8 +39,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	cst <- remoteCost gc $
 		if ddarLocal ddarrepo
 			then nearlyCheapRemoteCost
@@ -85,6 +85,7 @@ gen r u c gc = do
 		, getInfo = return [("repo", ddarRepoLocation ddarrepo)]
 		, claimUrl = Nothing
 		, checkUrl = Nothing
+		, remoteStateHandle = rs
 		}
 	ddarrepo = maybe (giveup "missing ddarrepo") (DdarRepo gc) (remoteAnnexDdarRepo gc)
 	specialcfg = (specialRemoteCfg c)

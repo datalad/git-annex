@@ -24,6 +24,7 @@ import Assistant.Gpg
 import Types.Remote (RemoteConfig)
 import qualified Annex.Url as Url
 import Creds
+import Annex.SpecialRemote.Config
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -169,7 +170,7 @@ enableIARemote uuid = do
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
-			let name = fromJust $ M.lookup "name" $
+			let name = fromJust $ lookupName $
 				fromJust $ M.lookup uuid m
 			AWS.makeAWSRemote enableSpecialRemote S3.remote PublicGroup creds name M.empty
 		_ -> do

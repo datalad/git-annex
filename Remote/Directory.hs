@@ -45,8 +45,8 @@ remote = RemoteType
 	, importSupported = importIsSupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
 	return $ Just $ specialRemote c
@@ -97,11 +97,12 @@ gen r u c gc = do
 			, appendonly = False
 			, availability = LocallyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u c $
-				gc { remoteAnnexDirectory = Just "/dev/null" }
+			, mkUnavailable = gen r u c
+				(gc { remoteAnnexDirectory = Just "/dev/null" }) rs
 			, getInfo = return [("directory", dir)]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
   where
 	dir = fromMaybe (giveup "missing directory") $ remoteAnnexDirectory gc
