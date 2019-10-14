@@ -2,4 +2,4 @@ Hi!
 
 A file is present in my local repository (v7), and in a special encrypted repository using S3. Numcopies is set to 1. Whenever I try to drop the file, git-annex says it's "Unable to lock down 1 copy of file that is required to safely drop it" after having been "checking repository-s3... (unsafe)".
 
-What "unsafe" means? When I fsck the file in repository-s3, everything's fine and the file is present.
+What does "unsafe" means? When I fsck the file in repository-s3, everything's fine and the file is present.
