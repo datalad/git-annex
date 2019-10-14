@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://tribut.de/"
+ nickname="Felix"
+ avatar="http://cdn.libravatar.org/avatar/d7508a030fd9902a76b02f7feff1327e80400a1317ee98e463c68ef4c9c40bb8"
+ subject="comment 3"
+ date="2019-10-14T09:33:34Z"
+ content="""
+`git annex sync` fails even when `commit.gpgSign` is `false` and I use a repository without signatures as submodule. So my hunch about signatures was probably not correct.
+"""]]

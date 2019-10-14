@@ -1,0 +1,47 @@
+### Please describe the problem.
+
+I am trying to import (and then reimport) a directory which I sync to from box.com shared with me folder.
+I have used `--duplicate` option to not delete original files upon `import`.  But then upon-rerunning `import` command git-annex would error out if file already exists.  `--reinject-duplicates` seems to be the option to use, but all those modes are "exclusive" so I cannot use `--duplicate --reinject-duplicates`, and using `--reinject-duplicates` alone would result in removing original files (as without `--duplicates`)
+
+### What version of git-annex are you using? On what operating system?
+
+7.20190819+git2-g908476a9b-1~ndall+1
+
+### Please provide any additional information below.
+
+my little demo snippet for import with using --duplicate and then both options at the same time:
+
+[[!format sh """
+$> mkdir /tmp/d-in /tmp/d-repo && touch /tmp/d-in/file && ( cd /tmp/d-repo && git init && git annex init && for r in 1 2; do echo "Run $r";  ls -l ../d-in && git annex import --duplicate ../d-in/.; done )  
+Initialized empty Git repository in /tmp/d-repo/.git/
+init  ok
+(recording state in git...)
+Run 1
+total 0
+-rw------- 1 yoh yoh 0 Oct 14 10:51 file
+import ./file ok
+(recording state in git...)
+Run 2
+total 0
+-rw------- 1 yoh yoh 0 Oct 14 10:51 file
+import ./file 
+  not overwriting existing ./file (is a symlink)
+failed
+git-annex: import: 1 failed
+
+
+$> cd d-repo 
+$> git annex import ../d-in/. --reinject-duplicates --duplicate 2>&1 | head -n 3                                                                                                                           
+Invalid option `--duplicate'                                                    
+
+Usage: git-annex COMMAND
+
+"""]]
+
+
+Or may be there is a better way to establish re-runnable import from a directory workflow?
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
+
+

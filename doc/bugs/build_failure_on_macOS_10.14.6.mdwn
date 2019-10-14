@@ -1,0 +1,73 @@
+### Please describe the problem.
+
+
+Working to update the macOS Homebrew Formula for git-annex 7.20191009 and I'm receiving a build error using the Homebrew build system to build via ghc 8.6.5 on macOS 10.14.6:
+
+[[!format sh """
+[ 70 of 624] Compiling Utility.Shell    ( Utility/Shell.hs, dist/dist-sandbox-11319d3/build/git-annex/git-annex-tmp/Utility/Shell.o )
+[ 71 of 624] Compiling Git.Types        ( Git/Types.hs, dist/dist-sandbox-11319d3/build/git-annex/git-annex-tmp/Git/Types.o )
+[ 72 of 624] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, dist/dist-sandbox-11319d3/build/git-annex/git-annex-tmp/Utility/FileSystemEncoding.o )
+[ 73 of 624] Compiling Utility.Base64   ( Utility/Base64.hs, dist/dist-sandbox-11319d3/build/git-annex/git-annex-tmp/Utility/Base64.o )
+[ 74 of 624] Compiling Utility.Aeson    ( Utility/Aeson.hs, dist/dist-sandbox-11319d3/build/git-annex/git-annex-tmp/Utility/Aeson.o )
+[ 75 of 624] Compiling Types.Messages   ( Types/Messages.hs, dist/dist-sandbox-11319d3/build/git-annex/git-annex-tmp/Types/Messages.o )
+[ 76 of 624] Compiling Database.Handle  ( Database/Handle.hs, dist/dist-sandbox-b74b6b12/build/git-annex/git-annex-tmp/Database/Handle.o )
+
+Database/Handle.hs:273:28: error:
+    • Could not deduce (BackendCompatible SqlBackend backend)
+        arising from a use of ‘close'’
+      from the context: (IsPersistBackend backend,
+                         BaseBackend backend ~ SqlBackend)
+        bound by the type signature for:
+                   closeRobustly :: forall backend.
+                                    (IsPersistBackend backend, BaseBackend backend ~ SqlBackend) =>
+                                    backend -> IO ()
+        at Database/Handle.hs:(260,1)-(263,16)
+    • In the second argument of ‘($)’, namely ‘close' conn’
+      In a stmt of a 'do' block: r <- try $ close' conn
+      In the expression:
+        do r <- try $ close' conn
+           case r of
+             Right () -> return ()
+             Left ex@(Sqlite.SqliteException {Sqlite.seError = e})
+               | e == Sqlite.ErrorBusy -> do ...
+               | otherwise -> rethrow "while closing database connection" ex
+    |
+273 |                 r <- try $ close' conn
+    |                            ^^^^^^^^^^^
+cabal: Leaving directory '.'
+cabal: Error: some packages failed to install:
+git-annex-7.20191009-KZnzbjdUc2rE3oBBwl75Ho failed during the building phase.
+The exception was:
+ExitFailure 1
+"""]]
+
+Is this an artifact of ghc 8.6.5 vs 8.8.1?
+
+### What steps will reproduce the problem?
+
+Updated the Homebrew Formula with the appropriate changes.
+
+[[!format sh """
+# brew install ghc@8.6
+# brew install --verbose --build-bottle git-annex`
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 7.20191009
+macOS 10.14.6
+The Glorious Glasgow Haskell Compilation System, version 8.6.5
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex has been awesome for managing a massive collection of raw images and video clips across several storage targets and editing systems.

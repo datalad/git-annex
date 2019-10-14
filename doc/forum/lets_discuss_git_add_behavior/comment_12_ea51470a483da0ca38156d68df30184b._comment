@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="experience with v7 semantics"
+ date="2019-10-12T21:39:03Z"
+ content="""
+To add to the anecdotal reports of user experience, I find myself periodically running `git annex lock` just to make sure nothing got inadvertently unlocked, or added as unlocked.  The main benefit of using `git-annex` to version data analysis results, besides avoiding git's choking on large files or breaking github size limits, is the certainty that the result files are exactly as originally output, and haven't been accidentally changed (e.g. by re-running the analysis with different parameters but same output file name).  With locked files, I have that guarantee -- once added and committed, the files won't change unless explicitly unlocked.  With unlocked files, there's a chance of changing the file and then not noticing the change and committing it.  The git log will of course reflect the change, but I might miss it, unless I inspect the log.  So it's important to have a foolproof way to prevent files from being added as unlocked, and that's hard to do with the current `git-annex` version.  I can set `annex.largefiles=nothing` at the repo root, but then `git annex add` won't annex anything, either.  One solution is [[todo/separate_annex.largefiles.git-add_and_annex.largefiles.git-annex-add_settings]]; there may be others.
+"""]]

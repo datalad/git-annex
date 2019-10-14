@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="v5 mode"
+ date="2019-10-12T21:48:56Z"
+ content="""
+Maybe something like \"git annex v5mode true\" is needed so we get v5 semantics in v7 mode.
+
+"""]]
