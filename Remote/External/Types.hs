@@ -37,7 +37,7 @@ import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
-import Types.Remote (RemoteConfig)
+import Types.Remote (RemoteConfig, RemoteStateHandle)
 import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
@@ -57,16 +57,18 @@ data External = External
 	, externalLastPid :: TVar PID
 	, externalDefaultConfig :: RemoteConfig
 	, externalGitConfig :: RemoteGitConfig
+	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	}
 
-newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex External
-newExternal externaltype u c gc = liftIO $ External
+newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
+newExternal externaltype u c gc rs = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
 	<*> atomically (newTVar [])
 	<*> atomically (newTVar 0)
 	<*> pure c
 	<*> pure gc
+	<*> pure rs
 
 type ExternalType = String
 

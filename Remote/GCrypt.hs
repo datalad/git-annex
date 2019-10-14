@@ -65,16 +65,16 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-chainGen gcryptr u c gc = do
+chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+chainGen gcryptr u c gc rs = do
 	g <- gitRepo
 	-- get underlying git repo with real path, not gcrypt path
 	r <- liftIO $ Git.GCrypt.encryptedRemote g gcryptr
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
-	gen r' u c gc
+	gen r' u c gc rs
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen baser u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen baser u c gc rs = do
 	-- doublecheck that cache matches underlying repo's gcrypt-id
 	-- (which might not be set), only for local repos
 	(mgcryptid, r) <- getGCryptId True baser gc
@@ -82,7 +82,7 @@ gen baser u c gc = do
 	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName baser)) of
 		(Just gcryptid, Just cachedgcryptid)
 			| gcryptid /= cachedgcryptid -> resetup gcryptid r
-		_ -> gen' r u c gc
+		_ -> gen' r u c gc rs
   where
 	-- A different drive may have been mounted, making a different
 	-- gcrypt remote available. So need to set the cached
@@ -97,13 +97,13 @@ gen baser u c gc = do
 				setGcryptEncryption c' remotename
 				storeUUIDIn (remoteConfig baser "uuid") u'
 				setConfig (ConfigKey $ Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
-				gen' r u' c' gc
+				gen' r u' c' gc rs
 			_ -> do
 				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
 				return Nothing
 
-gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen' r u c gc = do
+gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen' r u c gc rs = do
 	cst <- remoteCost gc $
 		if repoCheap r then nearlyCheapRemoteCost else expensiveRemoteCost
 	(rsynctransport, rsyncurl) <- rsyncTransportToObjects r gc
@@ -137,6 +137,7 @@ gen' r u c gc = do
 		, getInfo = gitRepoInfo this
 		, claimUrl = Nothing
 		, checkUrl = Nothing
+		, remoteStateHandle = rs
 	}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this rsyncopts)

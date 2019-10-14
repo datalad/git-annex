@@ -34,6 +34,7 @@ import Annex.Locations
 import Annex.Common hiding (delete)
 import qualified Annex.Branch
 import Types.Import
+import Types.RemoteState
 import Git.Types
 import Git.Sha
 import Git.FilePath
@@ -89,20 +90,21 @@ flushDbQueue :: ContentIdentifierHandle -> IO ()
 flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
 
 -- Be sure to also update the git-annex branch when using this.
-recordContentIdentifier :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> Key -> IO ()
-recordContentIdentifier h u cid k = queueDb h $ do
+recordContentIdentifier :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> Key -> IO ()
+recordContentIdentifier h (RemoteStateHandle u) cid k = queueDb h $ do
 	void $ insert_ $ ContentIdentifiers u cid (toIKey k)
 
-getContentIdentifiers :: ContentIdentifierHandle -> UUID -> Key -> IO [ContentIdentifier]
-getContentIdentifiers (ContentIdentifierHandle h) u k = H.queryDbQueue h $ do
-	l <- selectList
-		[ ContentIdentifiersKey ==. toIKey k
-		, ContentIdentifiersRemote ==. u
-		] []
-	return $ map (contentIdentifiersCid . entityVal) l
+getContentIdentifiers :: ContentIdentifierHandle -> RemoteStateHandle -> Key -> IO [ContentIdentifier]
+getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k = 
+	H.queryDbQueue h $ do
+		l <- selectList
+			[ ContentIdentifiersKey ==. toIKey k
+			, ContentIdentifiersRemote ==. u
+			] []
+		return $ map (contentIdentifiersCid . entityVal) l
 
-getContentIdentifierKeys :: ContentIdentifierHandle -> UUID -> ContentIdentifier -> IO [Key]
-getContentIdentifierKeys (ContentIdentifierHandle h) u cid = 
+getContentIdentifierKeys :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> IO [Key]
+getContentIdentifierKeys (ContentIdentifierHandle h) (RemoteStateHandle u) cid = 
 	H.queryDbQueue h $ do
 		l <- selectList
 			[ ContentIdentifiersCid ==. cid
@@ -147,6 +149,6 @@ updateFromLog db (oldtree, currtree) = do
 		Nothing -> return ()
 		Just k -> do
 			l <- Log.getContentIdentifiers k
-			liftIO $ forM_ l $ \(u, cids) ->
+			liftIO $ forM_ l $ \(rs, cids) ->
 				forM_ cids $ \cid ->
-					recordContentIdentifier db u cid k
+					recordContentIdentifier db rs cid k

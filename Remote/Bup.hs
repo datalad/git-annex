@@ -44,8 +44,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	bupr <- liftIO $ bup2GitRemote buprepo
 	cst <- remoteCost gc $
 		if bupLocal buprepo
@@ -86,6 +86,7 @@ gen r u c gc = do
 		, getInfo = return [("repo", buprepo)]
 		, claimUrl = Nothing
 		, checkUrl = Nothing
+		, remoteStateHandle = rs
 		}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)

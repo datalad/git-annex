@@ -78,8 +78,8 @@ remote = RemoteType
 	, importSupported = importIsSupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	info <- extractS3Info c
 	hdl <- mkS3HandleVar c gc u
@@ -88,9 +88,9 @@ gen r u c gc = do
   where
 	new cst info hdl magic = Just $ specialRemote c
 		(simplyPrepare $ store hdl this info magic)
-		(simplyPrepare $ retrieve hdl this c info)
+		(simplyPrepare $ retrieve hdl this rs c info)
 		(simplyPrepare $ remove hdl this info)
-		(simplyPrepare $ checkKey hdl this c info)
+		(simplyPrepare $ checkKey hdl this rs c info)
 		this
 	  where
 		this = Remote
@@ -108,23 +108,23 @@ gen r u c gc = do
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, exportActions = ExportActions
-				{ storeExport = storeExportS3 hdl this info magic
+				{ storeExport = storeExportS3 hdl this rs info magic
 				, retrieveExport = retrieveExportS3 hdl this info
-				, removeExport = removeExportS3 hdl this info
+				, removeExport = removeExportS3 hdl this rs info
 				, checkPresentExport = checkPresentExportS3 hdl this info
 				-- S3 does not have directories.
 				, removeExportDirectory = Nothing
-				, renameExport = renameExportS3 hdl this info
+				, renameExport = renameExportS3 hdl this rs info
 				}
 			, importActions = ImportActions
                                 { listImportableContents = listImportableContentsS3 hdl this info
-                                , retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierS3 hdl this info
-                                , storeExportWithContentIdentifier = storeExportWithContentIdentifierS3 hdl this info magic
-                                , removeExportWithContentIdentifier = removeExportWithContentIdentifierS3 hdl this info
+                                , retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierS3 hdl this rs info
+                                , storeExportWithContentIdentifier = storeExportWithContentIdentifierS3 hdl this rs info magic
+                                , removeExportWithContentIdentifier = removeExportWithContentIdentifierS3 hdl this rs info
                                 , removeExportDirectoryWhenEmpty = Nothing
                                 , checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierS3 hdl this info
                                 }
-			, whereisKey = Just (getPublicWebUrls u info c)
+			, whereisKey = Just (getPublicWebUrls u rs info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -135,10 +135,11 @@ gen r u c gc = do
 			, appendonly = versioning info
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc
+			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc rs
 			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c info)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
 
 s3Setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
@@ -293,16 +294,16 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
-retrieve :: S3HandleVar -> Remote -> RemoteConfig -> S3Info -> Retriever
-retrieve hv r c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
+retrieve :: S3HandleVar -> Remote -> RemoteStateHandle -> RemoteConfig -> S3Info -> Retriever
+retrieve hv r rs c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
 	(Just h) -> 
-		eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
+		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
 			Right loc -> retrieveHelper info h loc f p
 	Nothing ->
-		getPublicWebUrls' (uuid r) info c k >>= \case
+		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
@@ -330,17 +331,17 @@ remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> liftIO $ runResource
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 	return $ either (const False) (const True) res
 
-checkKey :: S3HandleVar -> Remote -> RemoteConfig -> S3Info -> CheckPresent
-checkKey hv r c info k = withS3Handle hv $ \case
+checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> RemoteConfig -> S3Info -> CheckPresent
+checkKey hv r rs c info k = withS3Handle hv $ \case
 	Just h -> do
 		showChecking r
-		eitherS3VersionID info (uuid r) c k (T.pack $ bucketObject info k) >>= \case
+		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot check content"
 			Right loc -> checkKeyHelper info h loc
 	Nothing ->
-		getPublicWebUrls' (uuid r) info c k >>= \case
+		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot check content"
@@ -366,12 +367,12 @@ checkKeyHelper' info h o limit = liftIO $ runResourceT $ do
   where
 	req = limit $ S3.headObject (bucket info) o
 
-storeExportS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportS3 hv r info magic f k loc p = fst
-	<$> storeExportS3' hv r info magic f k loc p
+storeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportS3 hv r rs info magic f k loc p = fst
+	<$> storeExportS3' hv r rs info magic f k loc p
 
-storeExportS3' :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Bool, (Maybe S3Etag, Maybe S3VersionID))
-storeExportS3' hv r info magic f k loc p = withS3Handle hv $ \case
+storeExportS3' :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Bool, (Maybe S3Etag, Maybe S3VersionID))
+storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 	Just h -> catchNonAsync (go h) (\e -> warning (show e) >> return (False, (Nothing, Nothing)))
 	Nothing -> do
 		warning $ needS3Creds (uuid r)
@@ -380,7 +381,7 @@ storeExportS3' hv r info magic f k loc p = withS3Handle hv $ \case
 	go h = do
 		let o = T.pack $ bucketExportLocation info loc
 		(metag, mvid) <- storeHelper info h magic f o p
-		setS3VersionID info (uuid r) k mvid
+		setS3VersionID info rs k mvid
 		return (True, (metag, mvid))
 
 retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
@@ -399,9 +400,9 @@ retrieveExportS3 hv r info _k loc f p =
 				liftIO . Url.download p (geturl exportloc) f
 	exportloc = bucketExportLocation info loc
 
-removeExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
-removeExportS3 hv r info k loc = withS3Handle hv $ \case
-	Just h -> checkVersioning info (uuid r) k $
+removeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> Annex Bool
+removeExportS3 hv r rs info k loc = withS3Handle hv $ \case
+	Just h -> checkVersioning info rs k $
 		catchNonAsync (go h) (\e -> warning (show e) >> return False)
 	Nothing -> do
 		warning $ needS3Creds (uuid r)
@@ -423,11 +424,11 @@ checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 			giveup "No S3 credentials configured"
 
 -- S3 has no move primitive; copy and delete.
-renameExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
-renameExportS3 hv r info k src dest = Just <$> go
+renameExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportS3 hv r rs info k src dest = Just <$> go
   where
 	go = withS3Handle hv $ \case
-		Just h -> checkVersioning info (uuid r) k $ 
+		Just h -> checkVersioning info rs k $ 
 			catchNonAsync (go' h) (\_ -> return False)
 		Nothing -> do 
 			warning $ needS3Creds (uuid r)
@@ -543,8 +544,8 @@ mkImportableContentsVersioned info = build . groupfiles
 		| otherwise =
 			i : removemostrecent mtime rest
 
-retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
-retrieveExportWithContentIdentifierS3 hv r info loc cid dest mkkey p = withS3Handle hv $ \case
+retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
+retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest mkkey p = withS3Handle hv $ \case
 	Nothing -> do
 		warning $ needS3Creds (uuid r)
 		return Nothing
@@ -555,7 +556,7 @@ retrieveExportWithContentIdentifierS3 hv r info loc cid dest mkkey p = withS3Han
 		mk <- mkkey
 		case (mk, extractContentIdentifier cid o) of
 			(Just k, Right vid) -> 
-				setS3VersionID info (uuid r) k vid
+				setS3VersionID info rs k vid
 			_ -> noop
 		return mk
   where
@@ -577,8 +578,8 @@ rewritePreconditionException a = catchJust (Url.matchStatusCodeException want) a
 --
 -- When the bucket is not versioned, data loss can result.
 -- This is why that configuration requires --force to enable.
-storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
-storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p
+storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
+storeExportWithContentIdentifierS3 hv r rs info magic src k loc _overwritablecids p
 	| versioning info = go
 	-- FIXME Actual aws version that supports getting Etag for a store
 	-- is not known; patch not merged yet.
@@ -590,7 +591,7 @@ storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p
 		Left "git-annex is built with too old a version of the aws library to support this operation"
 #endif
   where
-	go = storeExportS3' hv r info magic src k loc p >>= \case
+	go = storeExportS3' hv r rs info magic src k loc p >>= \case
 		(False, _) -> return $ Left "failed to store content in S3 bucket"
 		(True, (_, Just vid)) -> return $ Right $
 			mkS3VersionedContentIdentifier vid
@@ -605,9 +606,9 @@ storeExportWithContentIdentifierS3 hv r info magic src k loc _overwritablecids p
 -- 
 -- When the bucket is not versioned, data loss can result.
 -- This is why that configuration requires --force to enable.
-removeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
-removeExportWithContentIdentifierS3 hv r info k loc _removeablecids =
-	removeExportS3 hv r info k loc
+removeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+removeExportWithContentIdentifierS3 hv r rs info k loc _removeablecids =
+	removeExportS3 hv r rs info k loc
 
 checkPresentExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 checkPresentExportWithContentIdentifierS3 hv r info _k loc knowncids =
@@ -980,11 +981,11 @@ s3Info c info = catMaybes
 	showstorageclass (S3.OtherStorageClass t) = T.unpack t
 	showstorageclass sc = show sc
 
-getPublicWebUrls :: UUID -> S3Info -> RemoteConfig -> Key -> Annex [URLString]
-getPublicWebUrls u info c k = either (const []) id <$> getPublicWebUrls' u info c k
+getPublicWebUrls :: UUID -> RemoteStateHandle -> S3Info -> RemoteConfig -> Key -> Annex [URLString]
+getPublicWebUrls u rs info c k = either (const []) id <$> getPublicWebUrls' u rs info c k
 
-getPublicWebUrls' :: UUID -> S3Info -> RemoteConfig -> Key -> Annex (Either String [URLString])
-getPublicWebUrls' u info c k
+getPublicWebUrls' :: UUID -> RemoteStateHandle -> S3Info -> RemoteConfig -> Key -> Annex (Either String [URLString])
+getPublicWebUrls' u rs info c k
 	| not (public info) = return $ Left $ 
 		"S3 bucket does not allow public access; " ++ needS3Creds u
 	| exportTree c = if versioning info
@@ -1000,7 +1001,7 @@ getPublicWebUrls' u info c k
 		Nothing -> return nopublicurl
   where
 	nopublicurl = Left "No publicurl is configured for this remote"
-	getversionid url = getS3VersionIDPublicUrls url info u k >>= \case
+	getversionid url = getS3VersionIDPublicUrls url info rs k >>= \case
 		[] -> return (Left "Remote is configured to use versioning, but no S3 version ID is recorded for this key")
 		l -> return (Right l)
 
@@ -1101,20 +1102,20 @@ extractContentIdentifier (ContentIdentifier v) o =
 		"#" -> Left (T.drop 1 t)
 		_ -> Right (mkS3VersionID o (Just t))
 
-setS3VersionID :: S3Info -> UUID -> Key -> Maybe S3VersionID -> Annex ()
-setS3VersionID info u k vid
-	| versioning info = maybe noop (setS3VersionID' u k) vid
+setS3VersionID :: S3Info -> RemoteStateHandle -> Key -> Maybe S3VersionID -> Annex ()
+setS3VersionID info rs k vid
+	| versioning info = maybe noop (setS3VersionID' rs k) vid
 	| otherwise = noop
 
-setS3VersionID' :: UUID -> Key -> S3VersionID -> Annex ()
-setS3VersionID' u k vid = addRemoteMetaData k $
-	RemoteMetaData u (updateMetaData s3VersionField v emptyMetaData)
+setS3VersionID' :: RemoteStateHandle -> Key -> S3VersionID -> Annex ()
+setS3VersionID' rs k vid = addRemoteMetaData k rs $
+	updateMetaData s3VersionField v emptyMetaData
   where
 	v = mkMetaValue (CurrentlySet True) (formatS3VersionID vid)
 
-getS3VersionID :: UUID -> Key -> Annex [S3VersionID]
-getS3VersionID u k = do
-	(RemoteMetaData _ m) <- getCurrentRemoteMetaData u k
+getS3VersionID :: RemoteStateHandle -> Key -> Annex [S3VersionID]
+getS3VersionID rs k = do
+	(RemoteMetaData _ m) <- getCurrentRemoteMetaData rs k
 	return $ mapMaybe parseS3VersionID $ map unwrap $ S.toList $
 		metaDataValues s3VersionField m
   where
@@ -1123,9 +1124,9 @@ getS3VersionID u k = do
 s3VersionField :: MetaField
 s3VersionField = mkMetaFieldUnchecked "V"
 
-eitherS3VersionID :: S3Info -> UUID -> RemoteConfig -> Key -> S3.Object -> Annex (Either String (Either S3.Object S3VersionID))
-eitherS3VersionID info u c k fallback
-	| versioning info = getS3VersionID u k >>= return . \case
+eitherS3VersionID :: S3Info -> RemoteStateHandle -> RemoteConfig -> Key -> S3.Object -> Annex (Either String (Either S3.Object S3VersionID))
+eitherS3VersionID info rs c k fallback
+	| versioning info = getS3VersionID rs k >>= return . \case
 		[] -> if exportTree c
 			then Left "Remote is configured to use versioning, but no S3 version ID is recorded for this key"
 			else Right (Left fallback)
@@ -1141,9 +1142,9 @@ s3VersionIDPublicUrl mk info (S3VersionID obj vid) = concat
 	, T.unpack vid -- version ID is "url ready" so no escaping needed
 	]
 
-getS3VersionIDPublicUrls :: (S3Info -> BucketObject -> URLString) -> S3Info -> UUID -> Key -> Annex [URLString]
-getS3VersionIDPublicUrls mk info u k =
-	map (s3VersionIDPublicUrl mk info) <$> getS3VersionID u k
+getS3VersionIDPublicUrls :: (S3Info -> BucketObject -> URLString) -> S3Info -> RemoteStateHandle -> Key -> Annex [URLString]
+getS3VersionIDPublicUrls mk info rs k =
+	map (s3VersionIDPublicUrl mk info) <$> getS3VersionID rs k
 
 -- Enable versioning on the bucket can only be done at init time;
 -- setting versioning in a bucket that git-annex has already exported
@@ -1189,9 +1190,9 @@ enableBucketVersioning ss info _ _ _ = do
 -- were created without versioning, some unversioned files exported to
 -- them, and then versioning enabled, and this is to avoid data loss in
 -- those cases.
-checkVersioning :: S3Info -> UUID -> Key -> Annex Bool -> Annex Bool
-checkVersioning info u k a
-	| versioning info = getS3VersionID u k >>= \case
+checkVersioning :: S3Info -> RemoteStateHandle -> Key -> Annex Bool -> Annex Bool
+checkVersioning info rs k a
+	| versioning info = getS3VersionID rs k >>= \case
 		[] -> do
 			warning $ "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
 			return False

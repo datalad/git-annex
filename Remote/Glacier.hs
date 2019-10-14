@@ -39,8 +39,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = new <$> remoteCost gc veryExpensiveRemoteCost
   where
 	new cst = Just $ specialRemote' specialcfg c
 		(prepareStore this)
@@ -83,6 +83,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 				[ ("glacier vault", getVault c) ]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
 	specialcfg = (specialRemoteCfg c)
 		-- Disabled until jobList gets support for chunks.

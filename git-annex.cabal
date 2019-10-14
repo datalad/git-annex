@@ -994,6 +994,7 @@ Executable git-annex
     Types.NumCopies
     Types.RefSpec
     Types.Remote
+    Types.RemoteState
     Types.RepoVersion
     Types.ScheduledActivity
     Types.StandardGroups

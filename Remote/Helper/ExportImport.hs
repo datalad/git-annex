@@ -99,8 +99,8 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 -- | Adjust a remote to support exporttree=yes and importree=yes.
 --
 -- Note that all remotes with importree=yes also have exporttree=yes.
-adjustExportImport :: Remote -> Annex Remote
-adjustExportImport r = case M.lookup "exporttree" (config r) of
+adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote
+adjustExportImport r rs = case M.lookup "exporttree" (config r) of
 	Nothing -> return $ notexport r
 	Just c -> case yesNo c of
 		Just True -> ifM (isExportSupported r)
@@ -136,7 +136,7 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 
 		let keycids k = do
 			db <- getciddb ciddbv
-			liftIO $ ContentIdentifier.getContentIdentifiers db (uuid r') k
+			liftIO $ ContentIdentifier.getContentIdentifiers db rs k
 
 		let checkpresent k loc = 
 			checkPresentExportWithContentIdentifier
@@ -152,16 +152,16 @@ adjustExportImport r = case M.lookup "exporttree" (config r) of
 					updateexportdb exportdb exportdbv
 					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
 					oldcids <- liftIO $ concat
-						<$> mapM (ContentIdentifier.getContentIdentifiers db (uuid r')) oldks
+						<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
 					storeExportWithContentIdentifier (importActions r') f k loc oldcids p >>= \case
 						Left err -> do
 							warning err
 							return False
 						Right newcid -> do
 							withExclusiveLock gitAnnexContentIdentifierLock $ do
-								liftIO $ ContentIdentifier.recordContentIdentifier db (uuid r') newcid k
+								liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
 								liftIO $ ContentIdentifier.flushDbQueue db
-							recordContentIdentifier (uuid r') newcid k
+							recordContentIdentifier rs newcid k
 							return True
 				, removeExport = \k loc ->
 					removeExportWithContentIdentifier (importActions r') k loc

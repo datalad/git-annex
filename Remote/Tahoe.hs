@@ -61,8 +61,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	hdl <- liftIO $ TahoeHandle
 		<$> maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)
@@ -71,18 +71,18 @@ gen r u c gc = do
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
-		, storeKey = store u hdl
-		, retrieveKeyFile = retrieve u hdl
+		, storeKey = store rs hdl
+		, retrieveKeyFile = retrieve rs hdl
 		, retrieveKeyFileCheap = \_ _ _ -> return False
 		-- Tahoe cryptographically verifies content.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove
 		, lockContent = Nothing
-		, checkPresent = checkKey u hdl
+		, checkPresent = checkKey rs hdl
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
 		, importActions = importUnsupported
-		, whereisKey = Just (getWhereisKey u)
+		, whereisKey = Just (getWhereisKey rs)
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
 		, config = c
@@ -97,6 +97,7 @@ gen r u c gc = do
 		, getInfo = return []
 		, claimUrl = Nothing
 		, checkUrl = Nothing
+		, remoteStateHandle = rs
 		}
 
 tahoeSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
@@ -119,14 +120,14 @@ tahoeSetup _ mu _ c _ = do
 	furlk = "introducer-furl"
 	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
-store :: UUID -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store u hdl k _f _p = sendAnnex k noop $ \src ->
+store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store rs hdl k _f _p = sendAnnex k noop $ \src ->
 	parsePut <$> liftIO (readTahoe hdl "put" [File src]) >>= maybe
 		(return False)
-		(\cap -> storeCapability u k cap >> return True)
+		(\cap -> storeCapability rs k cap >> return True)
 
-retrieve :: UUID -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-retrieve u hdl k _f d _p = unVerified $ go =<< getCapability u k
+retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieve rs hdl k _f d _p = unVerified $ go =<< getCapability rs k
   where
 	go Nothing = return False
 	go (Just cap) = liftIO $ requestTahoe hdl "get" [Param cap, File d]
@@ -136,8 +137,8 @@ remove _k = do
 	warning "content cannot be removed from tahoe remote"
 	return False
 
-checkKey :: UUID -> TahoeHandle -> Key -> Annex Bool
-checkKey u hdl k = go =<< getCapability u k
+checkKey :: RemoteStateHandle -> TahoeHandle -> Key -> Annex Bool
+checkKey rs hdl k = go =<< getCapability rs k
   where
 	go Nothing = return False
 	go (Just cap) = liftIO $ do
@@ -233,14 +234,14 @@ tahoeParams :: TahoeConfigDir -> String -> [CommandParam] -> [CommandParam]
 tahoeParams configdir command params = 
 	Param "-d" : File configdir : Param command : params
 
-storeCapability :: UUID -> Key -> Capability -> Annex ()
-storeCapability u k cap = setRemoteState u k cap
+storeCapability :: RemoteStateHandle -> Key -> Capability -> Annex ()
+storeCapability rs k cap = setRemoteState rs k cap
 
-getCapability :: UUID -> Key -> Annex (Maybe Capability)
-getCapability u k = getRemoteState u k
+getCapability :: RemoteStateHandle -> Key -> Annex (Maybe Capability)
+getCapability rs k = getRemoteState rs k
 
-getWhereisKey :: UUID -> Key -> Annex [String]
-getWhereisKey u k = disp <$> getCapability u k
+getWhereisKey :: RemoteStateHandle -> Key -> Annex [String]
+getWhereisKey rs k = disp <$> getCapability rs k
   where
 	disp Nothing = []
 	disp (Just c) = [c]

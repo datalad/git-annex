@@ -50,8 +50,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs
 	-- readonly mode only downloads urls; does not use external program
 	| remoteAnnexReadOnly gc = do
 		cst <- remoteCost gc expensiveRemoteCost
@@ -67,7 +67,7 @@ gen r u c gc
 			exportUnsupported
 			exportUnsupported
 	| otherwise = do
-		external <- newExternal externaltype u c gc
+		external <- newExternal externaltype u c gc (Just rs)
 		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
 		avail <- getAvailability external r gc
@@ -132,11 +132,12 @@ gen r u c gc
 			, availability = avail
 			, remotetype = remote 
 				{ exportSupported = cheapexportsupported }
-			, mkUnavailable = gen r u c $
-				gc { remoteAnnexExternalType = Just "!dne!" }
+			, mkUnavailable = gen r u c
+				(gc { remoteAnnexExternalType = Just "!dne!" }) rs
 			, getInfo = togetinfo
 			, claimUrl = toclaimurl
 			, checkUrl = tocheckurl
+			, remoteStateHandle = rs
 			}
 		return $ Just $ specialRemote c
 			(simplyPrepare tostore)
@@ -158,7 +159,7 @@ externalSetup _ mu _ c gc = do
 			setConfig (remoteConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
 		_ -> do
-			external <- newExternal externaltype u c' gc
+			external <- newExternal externaltype u c' gc Nothing
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 				INITREMOTE_SUCCESS -> result ()
 				INITREMOTE_FAILURE errmsg -> Just $ giveup errmsg
@@ -174,7 +175,7 @@ checkExportSupported c gc = do
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
 		remoteAnnexExternalType gc <|> M.lookup "externaltype" c
 	checkExportSupported' 
-		=<< newExternal externaltype NoUUID c gc
+		=<< newExternal externaltype NoUUID c gc Nothing
 
 checkExportSupported' :: External -> Annex Bool
 checkExportSupported' external = go `catchNonAsync` (const (return False))
@@ -414,11 +415,16 @@ handleRequest' st external req mp responsehandler
 			<$> preferredContentMapRaw
 		send $ VALUE expr
 	handleRemoteRequest (SETSTATE key state) =
-		setRemoteState (externalUUID external) key state
-	handleRemoteRequest (GETSTATE key) = do
-		state <- fromMaybe ""
-			<$> getRemoteState (externalUUID external) key
-		send $ VALUE state
+		case externalRemoteStateHandle external of
+			Just h -> setRemoteState h key state
+			Nothing -> senderror "cannot send SETSTATE here"
+	handleRemoteRequest (GETSTATE key) =
+		case externalRemoteStateHandle external of
+			Just h -> do
+				state <- fromMaybe ""
+					<$> getRemoteState h key
+				send $ VALUE state
+			Nothing -> senderror "cannot send GETSTATE here"
 	handleRemoteRequest (SETURLPRESENT key url) =
 		setUrlPresent key url
 	handleRemoteRequest (SETURLMISSING key url) =
@@ -432,12 +438,12 @@ handleRequest' st external req mp responsehandler
 		send (VALUE "") -- end of list
 	handleRemoteRequest (DEBUG msg) = liftIO $ debugM "external" msg
 	handleRemoteRequest (INFO msg) = showInfo msg
-	handleRemoteRequest (VERSION _) =
-		sendMessage st external (ERROR "too late to send VERSION")
+	handleRemoteRequest (VERSION _) = senderror "too late to send VERSION"
 
 	handleAsyncMessage (ERROR err) = giveup $ "external special remote error: " ++ err
 
 	send = sendMessage st external
+	senderror = sendMessage st external . ERROR 
 
 	credstorage setting = CredPairStorage
 		{ credPairFile = base

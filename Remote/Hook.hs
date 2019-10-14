@@ -35,8 +35,8 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r u c gc = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote c
 		(simplyPrepare $ store hooktype)
@@ -70,11 +70,13 @@ gen r u c gc = do
 			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u c $
-				gc { remoteAnnexHookType = Just "!dne!" }
+			, mkUnavailable = gen r u c
+				(gc { remoteAnnexHookType = Just "!dne!" })
+				rs
 			, getInfo = return [("hooktype", hooktype)]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
+			, remoteStateHandle = rs
 			}
   where
 	hooktype = fromMaybe (giveup "missing hooktype") $ remoteAnnexHookType gc
