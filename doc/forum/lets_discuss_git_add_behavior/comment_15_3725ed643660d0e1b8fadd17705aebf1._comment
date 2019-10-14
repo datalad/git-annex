@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="getting v5 semantics"
+ date="2019-10-14T03:42:05Z"
+ content="""
+The best way to restore v5 semantics right now seems to be: (1) set `annex.largefiles=nothing` to prevent `git add` from annexing; (2) make an alias to use instead of `git annex add`, which temporarily sets `annex.largefiles` to whatever it normally would be and then calls `git-annex-add`.  But old scripts that call `git-annex-add` would need to be changed to call the alias.
+"""]]
