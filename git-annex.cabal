@@ -897,6 +897,7 @@ Executable git-annex
     Logs.Presence
     Logs.Presence.Pure
     Logs.Remote
+    Logs.Remote.Pure
     Logs.RemoteState
     Logs.Schedule
     Logs.SingleValue
