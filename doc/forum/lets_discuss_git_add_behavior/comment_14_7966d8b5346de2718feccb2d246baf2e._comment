@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="amindfv@6f75355c5dad3450ed73d1f01715be90dfdd6cd6"
+ nickname="amindfv"
+ avatar="http://cdn.libravatar.org/avatar/9cdda587f634ea9a85b34b25be421676"
+ subject="comment 14"
+ date="2019-10-14T00:20:25Z"
+ content="""
+I'm again trying to do my best at expressing what I perceive as the seriousness of this change without being too critical of the dev who made it all possible. Sincere apologies in advance if I haven't hit the right balance. Git Annex really is one of my favorite tools! :)
+
+
+I missed the fact that (if I understand correctly) regardless of what flags you set, \"git add\" really is just \"git annex add\" with the newest version. Setting e.g. 'largefile = nothing' just means you can't add anything to git annex at all!
+
+(Side note: if I after hours of research missed that, mow much confusion can we expect for the average user without that much time to spend?)
+
+After realizing this, I created a couple of aliases to - I thought - get back control by being super explicit. Aliases for
+
+    git annex add -c annex.largefiles=anything
+
+and
+
+    git annex add -c annex.largefiles=nothing
+
+But then, without thinking, I ran a couple of scripts, one of which calls \"git annex add\" and the other of which calls \"git add\" an an \"annex-init\"ed repo. Now I've got to fix another mess.
+
+I can't assume there's any part of my digital life involving git that this doesn't impact!
+
+So my only option, it seems, to wrest back control of my repos is to define extensive rules:
+
+    largerthan=100kb and not (include=*.c or include=*.h or include=*.hs or include=*.lhs or include=*.hsc or include=*.pl or include=*.py or include= ...etc etc etc)
+
+What happens when I forget a file extension? If I remember to include '*.hs' but forget '*.lhs'? And then I push code to a team repo?
+
+And even still: I've gone through my git annex repos and found that I have greater than 100 files each of the following categories:
+
+  * Files managed by \"vanilla\" git which are greater than 100kb in size, which have no file extension
+  * Files managed by git annex which are smaller than 100kb, which have no file extension
+
+(I stopped searching when I passed the 100 threshold on all these, but I could get more complete data if it's useful)
+
+Closer to what I want is the `\"mimeencoding=binary\"` criterion, but:
+
+  * It's just a more accurate rule, not a completely accurate rule, and I don't want to fight my tools (or not notice till it's too late) when it incorrectly guesses. I don't want it guessing at all!
+  * As the manual notes, \"This is only available to use when git-annex was built with the MagicMime build flag.\"
+
+I've decided the only safe thing to do is to downgrade to an earlier git-annex version until something's sorted out.
+
+It's not an exaggeration to say that this change redefines what git annex is. Previously if someone asked \"what's git annex?\" my answer has been:
+
+\"Oh yeah, it's super cool! It allows you to add large files to git without keeping their actual contents in git, which means [... etc]\"
+
+Now I'd have to phrase it differently:
+
+\"It redefines 'git add' to try to correctly guess which files should be tracked in git vs. a separate store, which has benefit A, B, and C. It's cool but it makes me nervous.\"
+
+I worry \"git add\" will suffer from the problem of the old Microsoft Word, where it's decided what you're writing is a resume and you have to fight the f***ing thing to convince it it's not a resume and to stop \"fixing\" your work.
+
+@Lukey writes:
+
+> Maybe something like \"git annex v5mode true\" is needed so we get v5 semantics in v7 mode. 
+
+I _really_ don't think this is good enough. \"git add\" has a meaning, and \"everyone knows\" what it means. This change unnecessarily breaks all users' understanding of what \"git add\" does. It may cause them to lose data, etc.
+I'd be fine with a flag to do the inverse (explicitly set \"git add\" to mean \"git annex add\").
+
+
+"""]]
