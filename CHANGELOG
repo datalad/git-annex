@@ -7,6 +7,8 @@ git-annex (7.20191011) UNRELEASED; urgency=medium
     or EXPORTSUPPORTED will now get back an ERROR. That would be a very
     hackish thing for an external special remote to do, needing some kind
     of hard-coded key value to be used, so probably nothing will be affected.
+  * forget --drop-dead: Remove several classes of git-annex log files
+    when they become empty, further reducing the size of the git-annex branch.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Sep 2019 11:11:19 -0400
 

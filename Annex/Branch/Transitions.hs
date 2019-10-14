@@ -24,14 +24,12 @@ import Types.Remote
 import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
-import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
 data FileTransition
 	= ChangeFile Builder
-	| RemoveFile
 	| PreserveFile
 
 type TransitionCalculator = TrustMap -> M.Map UUID RemoteConfig -> FilePath -> L.ByteString -> FileTransition
@@ -69,19 +67,15 @@ dropDead trustmap remoteconfigmap f content = case getLogVariety f of
 			dropDeadFromMapLog trustmap' id $
 				UUIDBased.parseLogNew A.takeByteString content
 	Just (ChunkLog _) -> ChangeFile $
-		Chunk.buildLog $ dropDeadFromMapLog trustmap' fst $ Chunk.parseLog content
-	Just (PresenceLog _) ->
-		let newlog = Presence.compactLog $
-			dropDeadFromPresenceLog trustmap' $ Presence.parseLog content
-		in if null newlog
-			then RemoveFile
-			else ChangeFile $ Presence.buildLog newlog
-	Just RemoteMetaDataLog ->
-		let newlog = dropDeadFromRemoteMetaDataLog trustmap' $
+		Chunk.buildLog $ dropDeadFromMapLog trustmap' fst $
+			Chunk.parseLog content
+	Just (PresenceLog _) -> ChangeFile $ Presence.buildLog $
+		Presence.compactLog $
+			dropDeadFromPresenceLog trustmap' $
+				Presence.parseLog content
+	Just RemoteMetaDataLog -> ChangeFile $ MetaData.buildLog $
+		dropDeadFromRemoteMetaDataLog trustmap' $
 			MetaData.simplifyLog $ MetaData.parseLog content
-		in if S.null newlog
-			then RemoveFile
-			else ChangeFile $ MetaData.buildLog newlog
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
   where

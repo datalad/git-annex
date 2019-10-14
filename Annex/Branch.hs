@@ -583,22 +583,22 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 			content <- getStaged f
 			apply changers' f content
 	apply [] _ _ = return ()
-	apply (changer:rest) file content =
-		case changer file content of
-			RemoveFile -> do
-				Annex.Queue.addUpdateIndex
-					=<< inRepo (Git.UpdateIndex.unstageFile file)
-				-- File is deleted; can't run any other
-				-- transitions on it.
-				return ()
-			ChangeFile builder -> do
-				let content' = toLazyByteString builder
-				sha <- hashBlob content'
-				Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
-					Git.UpdateIndex.updateIndexLine sha TreeFile (asTopFilePath file)
-				apply rest file content'
-			PreserveFile ->
-				apply rest file content
+	apply (changer:rest) file content = case changer file content of
+		PreserveFile -> apply rest file content
+		ChangeFile builder -> do
+			let content' = toLazyByteString builder
+			if L.null content'
+				then do
+					Annex.Queue.addUpdateIndex
+						=<< inRepo (Git.UpdateIndex.unstageFile file)
+					-- File is deleted; can't run any other
+					-- transitions on it.
+					return ()
+				else do
+					sha <- hashBlob content'
+					Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
+						Git.UpdateIndex.updateIndexLine sha TreeFile (asTopFilePath file)
+					apply rest file content'
 
 checkBranchDifferences :: Git.Ref -> Annex ()
 checkBranchDifferences ref = do
@@ -666,3 +666,4 @@ rememberTreeish treeish graftpoint = lockJournal $ \jl -> do
 	-- and the index was updated to that above, so it's safe to
 	-- say that the index contains c'.
 	setIndexSha c'
+
