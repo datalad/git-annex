@@ -17,6 +17,7 @@ import qualified Logs.UUIDBased as UUIDBased
 import qualified Logs.Presence.Pure as Presence
 import qualified Logs.Chunk.Pure as Chunk
 import qualified Logs.MetaData.Pure as MetaData
+import qualified Logs.Remote.Pure as Remote
 import Types.TrustLevel
 import Types.UUID
 import Types.MetaData
@@ -24,6 +25,7 @@ import Types.Remote
 import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
@@ -47,21 +49,22 @@ getTransitionCalculator ForgetDeadRemotes = Just dropDead
 -- When the remote log contains a sameas-uuid pointing to a dead uuid,
 -- the uuid of that remote configuration is also effectively dead,
 -- though not in the trust log. There may be per-remote state stored using
--- the latter uuid, that also needs to be removed. That configuration
+-- the latter uuid, that also needs to be removed. The sameas-uuid
 -- is not removed from the remote log, for the same reason the trust log
 -- is not changed.
 dropDead :: TransitionCalculator
 dropDead trustmap remoteconfigmap f content = case getLogVariety f of
 	Just OldUUIDBasedLog
 		| f == trustLog -> PreserveFile
-		| otherwise ->
-			let go tm = ChangeFile $
-				UUIDBased.buildLogOld byteString $
-					dropDeadFromMapLog tm id $
-						UUIDBased.parseLogOld A.takeByteString content
-			in if f == remoteLog
-				then go trustmap
-				else go trustmap'
+		| f == remoteLog -> ChangeFile $
+			Remote.buildRemoteConfigLog $
+				M.mapWithKey minimizesameasdead $
+					dropDeadFromMapLog trustmap id $
+						Remote.parseRemoteConfigLog content
+		| otherwise -> ChangeFile $
+			UUIDBased.buildLogOld byteString $
+				dropDeadFromMapLog trustmap' id $
+					UUIDBased.parseLogOld A.takeByteString content
 	Just NewUUIDBasedLog -> ChangeFile $
 		UUIDBased.buildLogNew byteString $
 			dropDeadFromMapLog trustmap' id $
@@ -85,6 +88,11 @@ dropDead trustmap remoteconfigmap f content = case getLogVariety f of
 		case toUUID <$> M.lookup sameasUUIDField cm of
 			Nothing -> False
 			Just u' -> M.lookup u' trustmap == Just DeadTrusted
+	minimizesameasdead u l
+		| M.lookup u trustmap' == Just DeadTrusted =
+			l { UUIDBased.value = minimizesameasdead' (UUIDBased.value l) }
+		| otherwise = l
+	minimizesameasdead' c = M.restrictKeys c (S.singleton sameasUUIDField)
 
 dropDeadFromMapLog :: TrustMap -> (k -> UUID) -> M.Map k v -> M.Map k v
 dropDeadFromMapLog trustmap getuuid =

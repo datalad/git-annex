@@ -26,16 +26,15 @@ import Logs.Remote.Pure
 import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
-import Data.ByteString.Builder
 
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
 configSet u cfg = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change remoteLog $
-		buildLogOld (byteString . encodeBS . showConfig)
+		buildRemoteConfigLog
 			. changeLog c u (removeSameasInherited cfg)
-			. parseLogOld remoteConfigParser
+			. parseRemoteConfigLog
 
 {- Map of remotes by uuid containing key/value config maps. -}
 readRemoteLog :: Annex (M.Map UUID RemoteConfig)

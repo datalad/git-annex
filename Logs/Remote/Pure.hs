@@ -7,10 +7,11 @@
 
 module Logs.Remote.Pure (
 	calcRemoteConfigMap,
+	parseRemoteConfigLog,
+	buildRemoteConfigLog,
         keyValToConfig,
         configToKeyVal,
         showConfig,
-	remoteConfigParser,
 
         prop_isomorphic_configEscape,
         prop_parse_show_Config,
@@ -25,11 +26,18 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import Data.Char
 import qualified Data.Attoparsec.ByteString.Lazy as A
+import Data.ByteString.Builder
 
 calcRemoteConfigMap :: L.ByteString -> M.Map UUID RemoteConfig
 calcRemoteConfigMap = (\m -> M.map (addSameasInherited m) m)
 	. simpleMap
-	. parseLogOld remoteConfigParser
+	. parseRemoteConfigLog
+
+parseRemoteConfigLog :: L.ByteString -> Log RemoteConfig
+parseRemoteConfigLog = parseLogOld remoteConfigParser
+
+buildRemoteConfigLog :: Log RemoteConfig -> Builder
+buildRemoteConfigLog = buildLogOld (byteString . encodeBS . showConfig)
 
 remoteConfigParser :: A.Parser RemoteConfig
 remoteConfigParser = keyValToConfig . words . decodeBS <$> A.takeByteString
