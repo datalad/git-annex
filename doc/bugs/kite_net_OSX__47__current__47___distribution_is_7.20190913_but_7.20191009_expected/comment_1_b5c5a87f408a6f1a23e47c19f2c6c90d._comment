@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="leej"
+ avatar="http://cdn.libravatar.org/avatar/eb1c6bd57680f694fb4658388e6de4ed"
+ subject="version error also reproduces on 7.20190912 from kitenet.net (downloaded 8/20/2019)"
+ date="2019-10-15T23:31:39Z"
+ content="""
+ `git-annex version` reports the same error on the kitenet.net OSX release 7.20190912 as 7.20190913's described above.  The last known good version we have is 7.20190731-gf845636e3.
+"""]]
