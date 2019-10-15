@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jason.dixon.email@aa0e536a2ec2877d6f666108dbbc6e39bbe87ac0"
+ nickname="jason.dixon.email"
+ avatar="http://cdn.libravatar.org/avatar/fbe9050fc83bbd536d307d87ea14d4bc"
+ subject="One other thing to add"
+ date="2019-10-15T10:44:14Z"
+ content="""
+I suppose one other thing I can add is that even within a command this is patchy. For instance in this commit of 16 files, 8 of them have this issue.
+
+I can only assume there is some race condition in windows causing the process problem (but I don't want to assume too much).
+
+I hope that helps, and I'm curious if anyone else has seen this.
+"""]]

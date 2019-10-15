@@ -1,0 +1,28 @@
+I am following the guide on [Fully encrypted git repositories with gcrypt](https://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt) to restore data to a new computer.
+
+On my old computer, I was using a removable hard drive with a bare repo as my remote. Before migrating, I moved all contents to this repository.
+
+I follow the relevant steps exactly:
+
+```
+git clone gcrypt::/media/me/path_to_repo clone
+cd clone
+git annex enableremote path_to_repo gitrepo=/media/me/path_to_repo
+```
+
+Now `git annex sync` reports success for both `origin` and `path_to_repo`. But `git annex sync --content` fails with:
+
+    Unable to access these remotes: path_to_repo
+  
+    Try making some of these repositories available: 
+  	  a3f8a46a-60fe-58e2-901b-2c093bcc22d3 -- [path_to_repo]
+
+The sync with `origin` works, but as soon as it starts trying to get the content it reports the above.
+
+`git annex get --from path_to_repo` reports no output.
+
+Why does it say this when the repo is clearly available, seeing as I can do git annex sync? (at least -- as far as I can understand it ...)
+
+I'm sorry I can't provide more detailed/to the point information. I am very befuddled by this behavior. Trying to understand how git annex works, I wonder if there is some information in my old 'checkout' repo which git annex needs to be able to recognize which repo is where? But my new clone has the correct repo uuid under the entry for `path_to_repo` in `.git/config`, so I don't understand why it doesn't know about it.
+
+thanks!

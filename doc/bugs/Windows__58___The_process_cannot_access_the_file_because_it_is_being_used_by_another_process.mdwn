@@ -1,0 +1,56 @@
+### Please describe the problem.
+I've had this problem intermittently through various versions of git-annex that use the filters. Just recently on the latest 7.20190912-g05bc37910, and only ever on windows.
+Messages look like this:
+
+```
+git-annex.exe: .\2018/18-06-14 playcenter fun/18-06-14 playcenter fun_001[archer].jpg: DeleteFile "\\\\?\\D:\\Pictures\\Photos_again\\2018\\18-06-14 playcenter fun\\18-06-14 playcenter fun_001[archer].jpg": permission denied (The process cannot access the file because it is being used by another process.)
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+git status will show some files to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh <file>
+```
+
+Essentially this will come up seemingly randomly when adding files, or when committing them. When it happens, git annex ends up in a strange state and often data is lost (the commit / additions continue despite errors and turn the affected files into the standin text files with paths to the content). It's scary enough, and unfortunately common enough, that I now make a copy of everything I add until I know for sure it has been successfully added and committed. My work around... is to delete failures, go to my copy, put it back and try adding it again (which may or may not work, due to the issue below).
+
+What I have at the moment is an issue in which the file was added correctly (I can only assume... as it exists in the annex with the correct hash, and I've added it multiple times always resulting in the same one). I found/confirmed its location by following the hardlink (annex.thin is active) `fsutils hardlink list <file>`, so that worked. Yet fsck / whereis tells me it's not there. `git annex add <file>` was successful and `git commit -m "stuff"` completed "successfully" with the fail message above.
+
+```
+$ git annex info 18-06-14\ playcenter\ fun_001\[archer\].jpg
+file: 18-06-14 playcenter fun_001[archer].jpg
+size: 1.18 megabytes
+key: SHA256E-s1177925--cf68e564a1505be3c609af97f80b77373264be399a5e5269ff20a43fe0f12e1d.jpg
+present: false
+```
+
+Yet the file exists at `D:\Pictures\Photos_again\.git\annex\objects\403\52d\SHA256E-s1177925--cf68e564a1505be3c609af97f80b77373264be399a5e5269ff20a43fe0f12e1d.jpg\SHA256E-s1177925--cf68e564a1505be3c609af97f80b77373264be399a5e5269ff20a43fe0f12e1d.jpg` which to my naive eyes looks ok. Viewing the files content as well confirms it's correct visually (and again, it's hardlinked)
+
+Yet...
+
+```
+$ git annex fsck 18-06-14\ playcenter\ fun_001\[archer\].jpg
+fsck 18-06-14 playcenter fun_001[archer].jpg (checksum...)
+  ** No known copies exist of 18-06-14 playcenter fun_001[archer].jpg
+failed
+(recording state in git...)
+git-annex: fsck: 1 failed
+```
+
+Is this something you've seen before? As I currently have a repo in this state, if there are any commands I could run that might help illuminate the status of things let me know. Also if there are any secret ways to tell git annex "hey I know this exists, look again" that would be neat to know. ;)
+
+Sorry I don't have more information at this stage. Please let me know how I can help out!
+
+
+
+### What steps will reproduce the problem?
+
+Unfortunately I have no way to reproduce. I've had it happen from time to time, so it is most definitely not a once off. I'm assuming it's some windows quirk as I've only ever seen it there.
+
+### What version of git-annex are you using? On what operating system?
+
+In this case "7.20190912-g05bc37910" but I seen it on earlier versions too. I think v6+. OS windows 8.1
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Seriously. Git annex is amazing. I've used it for a bunch of things for a few years now and continue to love it. Outside of the issue above I have nothing but good things to say about it. My only hope is it continues to receive the love it has for years to come.
+
+Thanks a lot everyone!
