@@ -4,9 +4,11 @@ On my old computer, I was using a removable hard drive with a bare repo as my re
 
 I follow the relevant steps exactly:
 
+```
 git clone gcrypt::/media/me/path_to_repo clone
 cd clone
 git annex enableremote path_to_repo gitrepo=/media/me/path_to_repo
+```
 
 Now `git annex sync` reports success for both `origin` and `path_to_repo`. But `git annex sync --content` fails with:
 
