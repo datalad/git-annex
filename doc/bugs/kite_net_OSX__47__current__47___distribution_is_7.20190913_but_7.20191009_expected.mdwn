@@ -1,0 +1,48 @@
+### Please describe the problem.
+ *As of filing:*
+
+* [downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg.info](https://downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg.info) contains: `distributionVersion = "7.20190913", distributionReleasedate = 2019-10-09 16:52:40.56036784 UTC`
+* when installed `git-annex version` fails with `** bundle directory /Applications/git-annex.app/Contents/MacOS/bundle does not contain git`
+
+*Expected behavior:*
+
+* `distributionVersion` and included `git-annex version` report the most recent announced version:
+  * [git-annex 7.20191009](https://git-annex.branchable.com/news/version_7.20191009/)
+* `git-annex/OSX/current` on downloads.kitenet.net points to a stable, release version
+
+### What steps will reproduce the problem?
+
+1. On macOS, download and deploy the current [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg)
+2. Open a terminal session and enter `git-annex version`
+
+### What version of git-annex are you using? On what operating system?
+
+    /Volumes/git-annex/git-annex.app/Contents/Info.plist
+ 
+    <key>CFBundleShortVersionString</key>
+    <string>7.20190913-gdf42fc998</string>
+    <key>CFBundleSignature</key>
+    <string>git-annex</string>
+    <key>CFBundleVersion</key>
+    <string>7.20190913-gdf42fc998</string>
+
+    sw_vers
+    ProductName:	Mac OS X
+    ProductVersion:	10.12.6
+    BuildVersion:	16G1917
+
+### Please provide any additional information below.
+
+*Note:*
+
+* Our download and deployment is automated using  [Autopkg](http://autopkg.github.io/autopkg) and [Munki](https://www.munki.org) and has been very stable.
+* `which git` reports `/opt/local/bin/git`   
+
+*See Also:*
+
+* [Currently, 7.20190730 is expected but 7.20190709-gee3885d15 present on OSX/current](https://git-annex.branchable.com/bugs/downloads.kitenet.net__47__git-annex__47__OSX__47__current__47___distribution_is_7.20190508_but_7.20190615_expected/)
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Fabulous technology, and we really depend upon it to version and move large files (software packages, OS images, multimedia files) and associated git versioned meta-data. Thank you!
