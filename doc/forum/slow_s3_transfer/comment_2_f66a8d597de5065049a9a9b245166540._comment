@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="comment 2"
+ date="2019-10-16T20:40:21Z"
+ content="""
+Sorry for the late reply.
+
+Yes git-annex is CPU bound when downloading for instance.
+
+Could this just be the fact of using https for transfer?
+
+Thanks, I wouldn't have thought this to be the limitation.
+"""]]
