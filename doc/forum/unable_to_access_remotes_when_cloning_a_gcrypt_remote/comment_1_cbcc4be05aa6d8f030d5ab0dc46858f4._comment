@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="fasthans@87884c78197fe1a25ac25ae7fa1d930c147e9592"
+ nickname="fasthans"
+ avatar="http://cdn.libravatar.org/avatar/6d89ddec3053d8df7e57cf2f28c8cdcd"
+ subject="how does git annex think about remote locations?"
+ date="2019-10-16T04:34:14Z"
+ content="""
+I'm really trying to understand how git annex is thinking about remote locations. If I add more remotes with the same repository URL, git annex does not pick up on them even though it seems to be syncing the branches from them. Whenever I try to get data, it complains that the original remote is unavailable. What is git-annex's logic about locating or identifying remotes? Does it have to do with the uuid?
+
+If I go into my backed up original checkout repo and try to get data, it also complains about not being able to find the original remote. They backup and the original bare repo both happen to be on the same hard drive, and they can talk to each other to sync branches. The url did change: first the drive was on 'Elements1' and now on 'Elements' but to my mind, if git can clone the repo, what is git-annex expecting differently?
+"""]]
