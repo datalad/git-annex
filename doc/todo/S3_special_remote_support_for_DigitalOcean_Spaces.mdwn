@@ -1,0 +1,29 @@
+I tried to use the S3 special remote to access DigitalOcean's Spaces API. [Their docs](https://developers.digitalocean.com/documentation/spaces/) suggest that this should be possible. However, it doesn't work.
+
+The command I ran, with key removed:
+
+    git annex --debug initremote xamsi-everything type=S3 protocol=https host=sfo2.digitaloceanspaces.com datacenter=sfo2 chunk=64MiB encryption=hybrid keyid=XXX
+
+The non-debug output, in full, with key removed:
+
+    initremote xamsi-everything (encryption setup) (to gpg keys: XXX) (checking bucket...) (creating bucket in sfo2...) 
+    git-annex: XmlException {xmlErrorMessage = "Missing error Message"}
+    failed
+    git-annex: initremote: 1 failed
+
+The debug output of the part that breaks, again with key material removed:
+
+    (creating bucket in sfo2...) [2019-10-15 08:40:41.119524792] String to sign: "PUT\n\n\nTue, 15 Oct 2019 15:40:41 GMT\n/xamsi-everything-a36e2044-07ac-4d85-8450-e5760c897a9b/"
+    [2019-10-15 08:40:41.119586065] Host: "xamsi-everything-a36e2044-07ac-4d85-8450-e5760c897a9b.sfo2.digitaloceanspaces.com"
+    [2019-10-15 08:40:41.119639648] Path: "/" 
+    [2019-10-15 08:40:41.119683721] Query string: ""
+    [2019-10-15 08:40:41.11972899] Header: [("Date","Tue, 15 Oct 2019 15:40:41 GMT"),("Authorization","AWS XXX")]
+    [2019-10-15 08:40:41.119846915] Body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><LocationConstraint>sfo2</LocationConstraint></CreateBucketConfiguration>"
+    [2019-10-15 08:40:41.174450718] Response status: Status {statusCode = 403, statusMessage = "Forbidden"}
+    [2019-10-15 08:40:41.174566002] Response header 'Content-Length': '190'
+    [2019-10-15 08:40:41.174627301] Response header 'x-amz-request-id': 'tx0000000000001c5b175eb-005da5e879-23e283-sfo2a'
+    [2019-10-15 08:40:41.174685597] Response header 'Accept-Ranges': 'bytes'
+    [2019-10-15 08:40:41.174730858] Response header 'Content-Type': 'application/xml'
+    [2019-10-15 08:40:41.174776256] Response header 'Date': 'Tue, 15 Oct 2019 15:40:41 GMT'
+    [2019-10-15 08:40:41.174821726] Response header 'Strict-Transport-Security': 'max-age=15552000; includeSubDomains; preload'
+    [2019-10-15 08:40:41.174984394] Response metadata: S3: request ID=tx0000000000001c5b175eb-005da5e879-23e283-sfo2a, x-amz-id-2=<none>
