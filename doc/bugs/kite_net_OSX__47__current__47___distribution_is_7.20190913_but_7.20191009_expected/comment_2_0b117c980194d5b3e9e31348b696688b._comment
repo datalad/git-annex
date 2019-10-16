@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-16T14:26:35Z"
+ content="""
+This is two unrelated bugs.
+
+The problem with git is apparently due to homebrew having changed,
+`ls -l /Users/joey/homebrew/Cellar/git/2.23.0/libexec/git-core`
+shows a bunch of symlinks to ../bin/git and a few other binaries; 
+Makefile copies the symlinks into the bundle but does not install the
+binaries they link to.
+
+The build version being a little behind is not uncommon when the
+autobuilder has not been keeping up for whatever reason. I generally don't
+block releases on autobuilds if it's the fault of the autobuilder and not
+a bug in git-annex's build process or test suite, and just ship the latest
+available build.
+
+The autobuilder has since caught up again, so the daily
+build is current but still suffers from the other problem.
+"""]]
