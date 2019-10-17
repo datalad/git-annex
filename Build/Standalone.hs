@@ -51,7 +51,7 @@ installGitLibs topdir = do
 		destf <- (gitcoredestdir </>)
 			<$> relPathDirToFile execpath f
 		createDirectoryIfMissing True (takeDirectory destf)
-		issymlink <- isSymbolicLink <$> getFileStatus f
+		issymlink <- isSymbolicLink <$> getSymbolicLinkStatus f
 		if issymlink
 			then do
 				-- many git-core files may symlink to eg
@@ -61,6 +61,7 @@ installGitLibs topdir = do
 				linktarget <- readSymbolicLink f
 				let linktarget' = gitcoredestdir </> "bin" </> takeFileName linktarget
 				createDirectoryIfMissing True (takeDirectory linktarget')
+				nukeFile destf
 				createSymbolicLink linktarget' destf
 			else cp f destf
 	
@@ -87,7 +88,8 @@ installGitLibs topdir = do
 			[] -> error $ "git " ++ opt ++ "did not output a location"
 			(p:_) -> return p
 	
-	cp src dest = 
+	cp src dest = do
+		nukeFile dest
 		unlessM (boolSystem "cp" [Param "-a", File src, File dest]) $
 			error "cp failed"
 
