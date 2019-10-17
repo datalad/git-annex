@@ -9,6 +9,8 @@ git-annex (7.20191011) UNRELEASED; urgency=medium
     of hard-coded key value to be used, so probably nothing will be affected.
   * forget --drop-dead: Remove several classes of git-annex log files
     when they become empty, further reducing the size of the git-annex branch.
+  * OSX: Deal with symbolic link problem that caused git to not be included in
+    the git-annex.dmg.
 
  -- Joey Hess <id@joeyh.name>  Thu, 19 Sep 2019 11:11:19 -0400
 
