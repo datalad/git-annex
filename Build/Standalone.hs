@@ -61,8 +61,10 @@ installGitLibs topdir = do
 				linktarget <- readSymbolicLink f
 				let linktarget' = gitcoredestdir </> "bin" </> takeFileName linktarget
 				createDirectoryIfMissing True (takeDirectory linktarget')
+				cp f linktarget'
 				nukeFile destf
-				createSymbolicLink linktarget' destf
+				rellinktarget <- relPathDirToFile (takeDirectory destf) linktarget'
+				createSymbolicLink rellinktarget destf
 			else cp f destf
 	
 	-- install git's template files
