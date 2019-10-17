@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nrg@bd619d1ebf16e6324c546adea8be8fe1cc2b4325"
+ nickname="nrg"
+ avatar="http://cdn.libravatar.org/avatar/428b6c95b52769cf9eecdd351018eacb"
+ subject="Issue is with persistent > 2.9.2"
+ date="2019-10-17T13:30:28Z"
+ content="""
+The build issue is with a change in persistent >= 2.10.0. 
+persistent >= 2.8.1 && <= 2.9.2 resolves the build issue.
+"""]]
