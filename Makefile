@@ -241,8 +241,19 @@ osxapp:
 	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
 	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/git-annex.MANIFEST
 	rm -f tmp/git-annex.dmg
-	hdiutil create -format UDBZ -size 640m -srcfolder tmp/build-dmg \
-		-volname git-annex -o tmp/git-annex.dmg
+	
+	# hdiutil sometimes fails with "resource busy", so try a few times
+	ok=0; for x in 1 2 3 4 5; do \
+		if [ $$ok = 0 ]; then \
+			if hdiutil create -format UDBZ -size 640m -srcfolder tmp/build-dmg \
+				-volname git-annex -o tmp/git-annex.dmg; \
+			then \
+				ok=1; \
+			else \
+				sleep 60; \
+			fi \
+		fi \
+	done
 
 # Bypass cabal, and only run the main ghc --make command for a
 # faster development build.
