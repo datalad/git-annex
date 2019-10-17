@@ -244,10 +244,15 @@ runSqliteRobustly tablename db a = do
 
 -- Like withSqlConn, but more robust.
 withSqlConnRobustly
-	 :: (MonadUnliftIO m, MonadLogger m, IsPersistBackend backend, BaseBackend backend ~ SqlBackend)
-	 => (LogFunc -> IO backend)
-	 -> (backend -> m a)
-	 -> m a
+	:: (MonadUnliftIO m
+		, MonadLogger m
+		, IsPersistBackend backend
+		, BaseBackend backend ~ SqlBackend
+		, BackendCompatible SqlBackend backend
+	    )
+	=> (LogFunc -> IO backend)
+	-> (backend -> m a)
+	-> m a
 withSqlConnRobustly open f = do
 	logFunc <- askLogFunc
 	withRunInIO $ \run -> bracket
@@ -258,8 +263,11 @@ withSqlConnRobustly open f = do
 -- Sqlite can throw ErrorBusy while closing a database; this catches
 -- the exception and retries.
 closeRobustly
-	 :: (IsPersistBackend backend, BaseBackend backend ~ SqlBackend)
-	 => backend
+	:: (IsPersistBackend backend
+		, BaseBackend backend ~ SqlBackend
+		, BackendCompatible SqlBackend backend
+	   )
+	=> backend
 	-> IO ()
 closeRobustly conn = go maxretries briefdelay
   where

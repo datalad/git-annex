@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-17T15:04:29Z"
+ content="""
+Thank you for maintaining the homebrew build, and for tracking down the
+persistent version.
+
+I've fixed this now, and will be making a new git-annex release today.
+
+FWIW, git-annex.cabal intentionally doesn't pin higher bounds of library
+versions. My thinking is that people who want a build pinned at known
+working versions should use stack to build, while people who are building
+with cabal tend to be the kind of people who are integrating git-annex with
+a larger system, and will probably want to build with whatever library
+versions shipped with their system (eg in a linux distribution), or
+with the latest and greatest.
+
+That does mean that everyone building with cabal is likely to run into this
+kind of breakage now and then, rather than me not noticing it until I update
+the pinned versions. Kind of offloading a bit of the work from me onto users,
+I have to admit.
+
+You can of course patch git-annex.cabal to use an older version if
+necessary.
+"""]]

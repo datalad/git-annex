@@ -71,3 +71,5 @@ The Glorious Glasgow Haskell Compilation System, version 8.6.5
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex has been awesome for managing a massive collection of raw images and video clips across several storage targets and editing systems.
+
+> [[fixed|done]] --[[Joey]]
