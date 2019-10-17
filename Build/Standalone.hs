@@ -15,6 +15,7 @@ import System.FilePath
 import System.Posix.Files
 import Control.Monad
 import Build.BundledPrograms
+import qualified Data.ByteString.Lazy as L
 
 import Utility.SafeCommand
 import Utility.Process
@@ -61,7 +62,7 @@ installGitLibs topdir = do
 				linktarget <- readSymbolicLink f
 				let linktarget' = gitcoredestdir </> "bin" </> takeFileName linktarget
 				createDirectoryIfMissing True (takeDirectory linktarget')
-				cp f linktarget'
+				L.readFile f >>= L.writeFile linktarget'
 				nukeFile destf
 				rellinktarget <- relPathDirToFile (takeDirectory destf) linktarget'
 				createSymbolicLink rellinktarget destf
