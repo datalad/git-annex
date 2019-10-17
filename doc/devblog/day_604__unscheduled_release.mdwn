@@ -1,0 +1,5 @@
+Dropped a release today, earlier than planned. There was a bug that broke
+the OSX git-annex.dmg, and another problem broke the Homebrew build, and
+it was worth moving up the release for those.
+
+Now I'm going on a mini vacation to recover from some stuff..
