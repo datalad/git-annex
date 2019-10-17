@@ -1,0 +1,12 @@
+Hello,
+
+at first I want to thank for the work on git annex. I started using git annex for managing my media files (digital photo and video data), which means loads of raw photographs and big video files that I have spread over some harddisks and need to keep track of locations and backups. Works quite well so far.
+
+A few years ago I build a small tool to offload camera memory cards with checksum/hash verification as it is common on film sets, copying all the content of the card and afterwards rereading and comparing all files to catch bitflips in transfer etc. All that while allowing copying to multiple target devices at the same time.
+
+I'd now like to include this workflow with git annex, allowing me to copy a memory card onto two or more annexed directories with this copy & verify workflow while using this hash directly for git annex and having both copies checked into annex at the end instead of like now copying and adding to annex afterwards. What would be an elegant solution?
+
+My naive thinking would be to move the file to the .git/annex/objects/ folder after hash creation and get it correctly registered in the annex management data somehow. Reason is to reduce the time consumed as I have the copy & verify anyway and would prefer to have it annex ready with as little overhead as possible.
+
+Cheers,
+Ingmar
