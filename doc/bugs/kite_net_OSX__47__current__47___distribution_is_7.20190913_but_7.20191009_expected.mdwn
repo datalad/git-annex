@@ -46,3 +46,5 @@
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Fabulous technology, and we really depend upon it to version and move large files (software packages, OS images, multimedia files) and associated git versioned meta-data. Thank you!
+
+> [[fixed|done]] (in the daily build) --[[Joey]]
