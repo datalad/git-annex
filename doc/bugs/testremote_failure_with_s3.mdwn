@@ -1,0 +1,79 @@
+### Please describe the problem.
+[[git-annex-testremote]] reports a failure with a newly created AWS S3 bucket
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+(master_env_v163_py36) 17:17  [diagnostic-guide-design-analysis] $ git annex testremote --fast s3-ilya-dgda
+...
+    remove export when not present:                    Remote is configured to use versioning, but no S3 version ID is recorded for th\
+is key, so it cannot safely be modified.
+FAIL
+      ./Command/TestRemote.hs:240:
+      failed
+
+
+(master_env_v163_py36) 17:17  [diagnostic-guide-design-analysis] $ git annex info --fast s3-ilya-dgda
+uuid: 6eb1eba8-1bd0-48f9-b407-50872099ae4f
+description: [s3-ilya-dgda]
+trust: semitrusted
+remote: s3-ilya-dgda
+cost: 250.0
+type: S3
+creds: embedded in git repository (gpg encrypted)
+bucket: ilya-dgda
+endpoint: s3.amazonaws.com
+port: 80
+protocol: http
+storage class: STANDARD
+partsize: unlimited
+public: no
+versioning: yes
+encryption: hybrid (to gpg keys: 1044376D260343BB)
+chunking: 33.55 megabyteschunks
+
+""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+(master_env_v163_py36) 17:14  [diagnostic-guide-design-analysis] $ git annex version
+git-annex version: 7.20191009-g02c955b
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sql\
+ite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_2\
+24 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE\
+2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224\
+ BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 7
+(master_env_v163_py36) 17:17  [diagnostic-guide-design-analysis] $ uname -a
+Linux ip-172-31-91-26.ec2.internal 4.14.146-119.123.amzn2.x86_64 #1 SMP Mon Sep 23 16:58:43 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+(master_env_v163_py36) 17:17  [diagnostic-guide-design-analysis] $
+
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+    remove export when not present:                    Remote is configured to use versioning, but no S3 version ID is recorded for th\
+is key, so it cannot safely be modified.
+FAIL
+      ./Command/TestRemote.hs:240:
+      failed
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
