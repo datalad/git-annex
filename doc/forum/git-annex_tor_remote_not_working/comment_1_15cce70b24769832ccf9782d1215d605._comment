@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-21T16:41:31Z"
+ content="""
+I've just tested it on Debian with tor version 0.4.1.6,
+and it worked for me.
+
+It seems to have gotten considerably further in the first error message
+you showed than in the second error message.
+
+It's easier to investigate the second problem. git-annex is expecting tor
+to have created a directory with a name starting
+with "/var/lib/tor/tor-annex_" and with the git-annex UUID of your
+repository in its name. Inside that directory, it expects to find a
+hostname file that contains a tor onion address.
+
+So tor is not creating that directory or that file, or the file
+contains something else. Which one it is will help narrow the problem.
+"""]]
