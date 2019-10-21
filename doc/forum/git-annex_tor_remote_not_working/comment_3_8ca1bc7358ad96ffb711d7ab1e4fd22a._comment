@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-10-21T19:58:19Z"
+ content="""
+If tor did create what git-annex enable-tor expects to find, then
+re-running the command should get past that error. If running the command
+again immediately fails with the same error message, then whatever tor is
+setting up is not what git-annex expects.
+"""]]
