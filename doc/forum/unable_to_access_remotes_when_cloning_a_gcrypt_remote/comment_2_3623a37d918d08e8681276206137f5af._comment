@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-21T18:36:16Z"
+ content="""
+I tried following the process given in that tip, and it works as it's
+supposed to.
+
+The easiest way to reproduce the error message you've reported is:
+
+Is "path_to_repo" a unix path, with slashes in it?
+It's hard for me to understand if you've obfuscated that,
+or if you literally used the string "path_to_repo" there.
+
+A complete un-edited transcript would clarify things a lot.
+
+A repository url tells git or git-annex *where* to access a repository.
+A repository's uuid tells git-annex *which* repository it is.
+"""]]
