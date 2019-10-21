@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-21T16:53:45Z"
+ content="""
+`git-annex add .foo` will add the file to the annex, unless your
+annex.largefiles is otherwise configured. There is no special handling
+of largefiles for dotfiles[1].
+
+But `git-annex add` skips dotfiles unless explicitly listed.
+It always has! There's a --include-dotfiles you can use to override that
+default.
+
+I don't see a bug here, except possibly the description on the man page
+could mention it skipping dotfiles. But the existance of the option
+does make the skipping be documented.
+
+[1] Although, the default .git/info/attributes does only apply
+the annex filter to non-dotfiles. So `git add .foo` adds it to git and
+not to git-annex. That's a little bit cheezy, but the alternative was to
+have a different annex.largefiles setting for `git add` than for `git-annex
+add`
+"""]]
