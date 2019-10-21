@@ -5,25 +5,19 @@ remotes at all, because the url is not stored.
 What if, an url or urls passed to initremote were stored. Then when
 enableremote/autoenable runs, if it sees a git remote with a known url,
 it sets that remote up with annex-uuid and annex-git-lfs set, instead of
-adding a new remote.
+adding a new remote. That might need changes to the Remote setup method,
+not sure.
 
-That might need changes to the Remote setup method, not sure.
+Or, Remote.Git could, when enumerating remotes, call into Remote.GitLFS
+to check if the url is one it knows about, and if so, autoenable
+the special remote. Although that would mean reading remote.log when
+enumerating remotes, which I think is currently avoided, and might be too
+much overhead to add to git-annex generally for the value of this feature.
 
-Problem: Many urls could be used to clone. http and ssh are the obvious
-two. url=http:// url=ssh:// won't work, only one value will be used.
-url1= url2= is annoying for the user, especially if they later want to add
-another url with enableremote and have to work out the number. Could
-make enableremote with a new url= add that as urlN=.
-[[support_multiple_special_remotes_with_same_uuid]] would solve it, perhaps
-in a cleaner way.
+Many urls could be used to clone the same LFS repo. http(s) and ssh are the
+obvious two or three. Now that `initremote --sameas` is available,
+special remotes can be initialized for all the urls. The user would need to
+do that themselves probably.
 
-> If each url is treated as a separate special remote (which makes a lot of sense
-> by analogy with how regular git remotes work), then
-> [[support_multiple_special_remotes_with_same_uuid]] could be used to
-> solve this.
+[[!tag projects/dandi]]
 
-Problem: The user might go in and change the remote's url to point to some
-other server with a different git-lfs backend. In fact, they could already
-do so! Remembering the urls actually would let the special remote detect
-this; it can check if its remote's url is one that it knows about, and
-refuse to use it otherwise.

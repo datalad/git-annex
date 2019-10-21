@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-21T19:07:42Z"
+ content="""
+That is intentional, because a git-lfs remote can have multiple urls that
+can access it, and different users of the remote might want to use
+different urls.
+
+It's also documented to work that way, the same as the directory
+special remote documents that you have to provide directory= each time it's
+enabled.
+
+But, now that git-annex supports sameas remotes, it would be possible to
+have one special remote for each different url to a given git-lfs remote,
+and have git-annex know they're the same repository. The user can then
+enableremote whichever one they want.
+
+See [[todo/git-lfs_special_remote_simpler_setup]] for where I hope this
+will lead.
+
+Closing this bug report as redundant with that todo item, and not actually a
+bug since it is documented to behave the way it currently behaves.
+"""]]
