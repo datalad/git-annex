@@ -11,3 +11,4 @@ P.S:I used this one liner to test if tor was working ` curl --socks5 localhost:9
 EDIT: I updated the git-annex version on both the host and server, as i only now noticed they were old (and also since i tried a lot of other things and that was the last thing that could work).
 Using 7.20190819+git2-g908476a9b-1~ndall+1 from neuron's repo.
 Still not working and now stuck at `git-annex: tor failed to create hidden service, perhaps the tor service is not running` when doing `sudo git-annex enable-tor $(id -u)`
+(and yes, the tor service is indeed running, which make that weird)
