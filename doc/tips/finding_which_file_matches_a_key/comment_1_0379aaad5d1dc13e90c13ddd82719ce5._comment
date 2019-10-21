@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2019-10-21T16:27:49Z"
+ content="""
+You can also use
+    git log --stat -S'SHA256E-...'
+"""]]
