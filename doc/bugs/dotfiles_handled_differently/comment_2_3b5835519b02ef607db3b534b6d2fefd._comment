@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="different annex.largefiles setting for git add than for git-annex add"
+ date="2019-10-21T20:29:06Z"
+ content="""
+\"the alternative was to have a different annex.largefiles setting for git add than for git-annex add\" -- [[that alternative|todo/separate_annex.largefiles.git-add_and_annex.largefiles.git-annex-add_settings]] would actually fix many of the [[issues I and others are having|forum/lets_discuss_git_add_behavior]] with v7 semantics.  What are the reasons you think it would be bad?
+"""]]
