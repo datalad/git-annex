@@ -12,3 +12,4 @@ EDIT: I updated the git-annex version on both the host and server, as i only now
 Using 7.20190819+git2-g908476a9b-1~ndall+1 from neuron's repo.
 Still not working and now stuck at `git-annex: tor failed to create hidden service, perhaps the tor service is not running` when doing `sudo git-annex enable-tor $(id -u)`
 (and yes, the tor service is indeed running, which make that weird)
+Obvious, but i also made sure to restart both tor and git-annex before and after upgrading in my consecutive attempts.
