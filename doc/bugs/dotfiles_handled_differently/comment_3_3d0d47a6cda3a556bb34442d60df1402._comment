@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="skipping dotfiles"
+ date="2019-10-21T20:39:09Z"
+ content="""
+\" git-annex add skips dotfiles unless explicitly listed. It always has!\" -- not sure why it hasn't crashed my use case before (thought I'm re-running on same data); but maybe, reconsider this default?  Since `git add .` adds everything, it's easy to assume (as I did) that `git annex add .` does too.  Why not add dotfiles to regular git, rather than skipping them outright?
+"""]]
