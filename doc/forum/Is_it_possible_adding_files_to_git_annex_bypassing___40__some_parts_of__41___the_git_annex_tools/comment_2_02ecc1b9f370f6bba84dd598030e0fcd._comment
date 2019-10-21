@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-21T18:52:22Z"
+ content="""
+Both git-annex setkey and git-annex reinject check 
+the hash of the file before moving it into the annex. But you can set
+annex.verify=false to prevent setkey from hashing.
+
+Eg, if you know you have a file `/mnt/foo` with size 11 and
+SHA1 hash x, you can use this shell code to add the file to
+the git-annex repository:
+
+	KEY=SHA1-s11--x
+	OBJECT=$(git annex examinekey $KEY --format='.git/annex/objects/${hashdirmixed}${key}/${key}')
+	ln -s $OBJECT foo
+	git add foo
+	git -c annex.verify=false annex setkey $KEY /mnt/foo
+
+To scale this to handle a lot of files, you can use the --batch option to
+examinekey to avoid starting a lot of processes. There is not currently
+a --batch option for setkey (maybe there should be), but setting
+annex.alwayscommit=false will speed up repeated runs of it some.
+"""]]
