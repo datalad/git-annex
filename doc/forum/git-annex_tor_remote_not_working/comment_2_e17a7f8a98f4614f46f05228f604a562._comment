@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nordmagnus999"
+ avatar="http://cdn.libravatar.org/avatar/d5d5b418451be64f8fa5f56909fcc4c3"
+ subject="Tor and the UUID folder"
+ date="2019-10-21T18:43:36Z"
+ content="""
+I think it did indeed created (on the host) the required folder structure, and that it does contain a hostname file with the onion address inside (just checked).
+Not sure what's wrong here, but i believe i didn't checked if i was using latest version of tor on both the host and server (locally, its 0.3.5.8).
+didn't yet checked on the server yet as i launched a health stress check on the system, will get back to you on that one :) 
+"""]]
