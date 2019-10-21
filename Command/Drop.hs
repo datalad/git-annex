@@ -120,10 +120,8 @@ performLocal key afile numcopies preverified = lockContentForRemoval key $ \cont
 
 performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> CommandPerform
 performRemote key afile numcopies remote = do
-	-- Filter the remote it's being dropped from out of the lists of
+	-- Filter the uuid it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
-	-- When the local repo has the key, that's one additional copy,
-	-- as long as the local repo is not untrusted.
 	(tocheck, verified) <- verifiableCopies key [uuid]
 	doDrop uuid Nothing key afile numcopies [uuid] verified tocheck
 		( \proof -> do 
