@@ -1,0 +1,14 @@
+I have a music file which makes my music player unhappy. unfortunately, it (the music player) only shows me the target of the symlink, the "key" of the file, e.g. `SHA256E-s16279847--ce02487cd9f78f5944cbc1acb6622d270f7c16172d0fa12ae1330a4d9c3144a0.mp3`. There's a way to find which remotes have that key:
+
+    $ git annex whereis --key=SHA256E-s16279847--ce02487cd9f78f5944cbc1acb6622d270f7c16172d0fa12ae1330a4d9c3144a0.mp3
+    whereis SHA256E-s16279847--ce02487cd9f78f5944cbc1acb6622d270f7c16172d0fa12ae1330a4d9c3144a0.mp3 (7 copies) 
+      	059b8bdb-2716-4ac9-b06e-9b1176af361d -- anarcat@curie:~/mp3 [here]
+    ok
+
+But that doesn't show me which file(s) actually point to it. [[git-annex-list]] and [[git-annex-find]] don't have the `--key` parameter and [[git-annex-matching-options]] doesn't have it either, so it makes it difficult to find which file points to that key.
+
+The only way I found to do this was to use the `find` command, like this:
+
+    find -lname '*SHA256E-s16279847--ce02487cd9f78f5944cbc1acb6622d270f7c16172d0fa12ae1330a4d9c3144a0.mp3'
+
+I would love to have a way to use `git-annex`'s knowledge of its own repo here instead... Could this be improved? --[[anarcat]]

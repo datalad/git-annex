@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jason.dixon.email@aa0e536a2ec2877d6f666108dbbc6e39bbe87ac0"
+ nickname="jason.dixon.email"
+ avatar="http://cdn.libravatar.org/avatar/fbe9050fc83bbd536d307d87ea14d4bc"
+ subject="a case for request routing"
+ date="2019-10-20T19:42:03Z"
+ content="""
+This could also be what you're after (just a design)? https://git-annex.branchable.com/design/requests_routing/
+
+This is something I would love to see implemented too. Especially as an addition to get / drop / fsck commands.
+"""]]
