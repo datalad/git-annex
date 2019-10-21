@@ -227,15 +227,28 @@ adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
 	warning "Entering an adjusted branch where files are unlocked as this filesystem does not support locked files."
 	checkVersionSupported
-	whenM (isNothing <$> originalBranch) $
+	whenM (isNothing <$> inRepo Git.Branch.current) $
 		void $ inRepo $ Git.Branch.commitCommand Git.Branch.AutomaticCommit
 			[ Param "--quiet"
 			, Param "--allow-empty"
 			, Param "-m"
 			, Param "commit before entering adjusted unlocked branch"
 			]
-	unlessM (enterAdjustedBranch (LinkAdjustment UnlockAdjustment)) $
-		warning "Failed to enter adjusted branch!"
+	inRepo Git.Branch.current >>= \case
+		Just currbranch -> case getAdjustment currbranch of
+			Just curradj | curradj == adj -> return ()
+			_ -> do
+				let adjbranch = originalToAdjusted currbranch adj
+				ifM (inRepo (Git.Ref.exists $ adjBranch adjbranch))
+					( unlessM (checkoutAdjustedBranch adjbranch []) $
+						failedenter
+					, unlessM (enterAdjustedBranch adj) $
+						failedenter
+					)
+		Nothing -> failedenter
+  where
+	adj = LinkAdjustment UnlockAdjustment
+	failedenter = warning "Failed to enter adjusted branch!"
 
 setBasisBranch :: BasisBranch -> Ref -> Annex ()
 setBasisBranch (BasisBranch basis) new = 
