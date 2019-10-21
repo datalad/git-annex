@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-21T17:23:30Z"
+ content="""
+Hmm, that's a surprising error message to see in this situation.
+
+It sort of looks like git-annex has been unable to lock the local copy of
+the content to indicate that it's in the process of dropping it. I can
+reproduce the error message if I purposefully make it not provide a content
+removal lock. But, I cannot find a code path where a content removal lock
+is not actually provided when dropping from the local repo. 
+(`Command.Drop.performLocal` always passes  `Just contentlock` to `doDrop`.)
+
+Can you paste a full transcript of this happening so I can be sure I
+understand what you're doing and seeing?
+"""]]
