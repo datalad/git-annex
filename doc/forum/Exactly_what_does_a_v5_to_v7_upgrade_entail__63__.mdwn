@@ -1,0 +1,3 @@
+I have some v5 indirect annexes with important data, one of which has hundreds of thousands of files, and I'm concerned about whether upgrading to v7 will result in data loss.
+
+What exactly does the upgrade to v7 do? What is the likelihood of errors or losing data in any way? Will upgrading my biggest annex take a long time?
