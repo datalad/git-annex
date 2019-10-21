@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-21T16:50:52Z"
+ content="""
+git log -1 --stat -S $key
+
+But that will often be slower than finding the file on disk using your
+method.
+
+git-annex does not have any knowledge that would let it do better than
+either of these commands, at least not reliably.
+"""]]
