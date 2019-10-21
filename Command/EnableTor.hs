@@ -49,16 +49,12 @@ start _os = do
 #ifndef mingw32_HOST_OS
 	curruserid <- liftIO getEffectiveUserID
 	if curruserid == 0
-		then case os of
-			(uid:[]) -> go uid
-			(uid:repodir:_) -> do
-				Annex.changeDirectory repodir
-				go uid
-			_ -> giveup "Need user-id parameter."
+		then case readish =<< headMaybe os of
+			Nothing -> giveup "Need user-id parameter."
+			Just userid -> go userid
 		else starting "enable-tor" (ActionItemOther Nothing) $ do
 			gitannex <- liftIO readProgramFile
-			cwd <- liftIO getCurrentDirectory
-			let ps = [Param (cmdname cmd), Param (show curruserid), Param cwd]
+			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps
 			maybe noop showLongNote
 				(describePasswordPrompt' sucommand)
@@ -68,19 +64,17 @@ start _os = do
 					[ "Failed to run as root:" , gitannex ] ++ toCommand ps
 				)
 #else
-	go "0"
+	go 0
 #endif
   where
-	go suserid = case readish suserid of
-		Nothing -> giveup "Unable to parse user-id parameter."
-		Just userid -> do
-			uuid <- getUUID
-			when (uuid == NoUUID) $
-				giveup "This can only be run in a git-annex repository."
-			(onionaddr, onionport) <- liftIO $
-				addHiddenService torAppName userid (fromUUID uuid)
-			storeP2PAddress $ TorAnnex onionaddr onionport
-			stop
+	go userid = do
+		uuid <- getUUID
+		when (uuid == NoUUID) $
+			giveup "This can only be run in a git-annex repository."
+		(onionaddr, onionport) <- liftIO $
+			addHiddenService torAppName userid (fromUUID uuid)
+		storeP2PAddress $ TorAnnex onionaddr onionport
+		stop
 
 checkHiddenService :: CommandCleanup
 checkHiddenService = bracket setup cleanup go
