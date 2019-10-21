@@ -7,3 +7,7 @@ I tried it on the assistant too with the same error in the logs.
 I'm using default setting on the torrc, I'm on ubuntu 19.04 x86_64 using 7.20190129 version of git-annex.
 
 P.S:I used this one liner to test if tor was working ` curl --socks5 localhost:9050 --socks5-hostname localhost:9050 -s https://check.torproject.org/ | cat | grep -m 1 Congratulations | xargs`, not sure if there better way/other to test it.
+
+EDIT: I updated the git-annex version on both the host and server, as i only now noticed they were old (and also since i tried a lot of other things and that was the last thing that could work).
+Using 7.20190819+git2-g908476a9b-1~ndall+1 from neuron's repo.
+Still not working and now stuck at `git-annex: tor failed to create hidden service, perhaps the tor service is not running` when doing `sudo git-annex enable-tor $(id -u)`
