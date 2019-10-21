@@ -1,0 +1,32 @@
+For most files, whether they get annexed is controlled by `annex.largefiles`.  But dotfiles are configured to *never* be annexed regardless of `annex.largefiles`.  This is unexpected and confusing.  More oddly, `git-annex-add` doesn't seem to add them to regular git, either.
+
+I'm guessing this flows from the new default of `git add` adding files to the annex, which [[I hope gets reversed|forum/lets_discuss_git_add_behavior]].  But separately, I'm not sure why `git-annex-add` does not add the dotfiles to regular git:
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+(master_env_v163_py36) 22:32  [newtree02] $ git status
+On branch newtree02
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        mydir/
+
+nothing added to commit but untracked files present (use "git add" to track)
+(master_env_v163_py36) 22:32  [newtree02] $ ls -al mydir
+total 12
+drwxrwxr-x 2 ilya ilya 4096 Oct 20 22:31 .
+drwxrwxr-x 3 ilya ilya 4096 Oct 20 22:31 ..
+-rw-rw-r-- 1 ilya ilya    9 Oct 20 22:31 .mynewdot
+(master_env_v163_py36) 22:32  [newtree02] $ git annex add mydir
+(master_env_v163_py36) 22:32  [newtree02] $ git status
+On branch newtree02
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        mydir/
+
+
+# End of transcript or log.
+"""]]
