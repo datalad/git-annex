@@ -61,24 +61,33 @@ runSuCommand Nothing = return False
 -- decide based on the system's configuration whether sudo should be used.
 mkSuCommand :: String -> [CommandParam] -> IO (Maybe SuCommand)
 #ifndef mingw32_HOST_OS
-mkSuCommand cmd ps = firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds
+mkSuCommand cmd ps = do
+	pwd <- getCurrentDirectory
+	firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds pwd
   where
-	selectcmds = ifM (inx <||> (not <$> atconsole))
-		( return (graphicalcmds ++ consolecmds)
-		, return consolecmds
+	selectcmds pwd = ifM (inx <||> (not <$> atconsole))
+		( return (graphicalcmds pwd ++ consolecmds pwd)
+		, return (consolecmds pwd)
 		)
 	
 	inx = isJust <$> getEnv "DISPLAY"
 	atconsole = queryTerminal stdInput
 
 	-- These will only work when the user is logged into a desktop.
-	graphicalcmds =
+	graphicalcmds pwd =
 		[ SuCommand (MayPromptPassword SomePassword) "gksu"
 			[Param shellcmd]
 		, SuCommand (MayPromptPassword SomePassword) "kdesu"
 			[Param "-c", Param shellcmd]
-		, SuCommand (MayPromptPassword SomePassword) "pkexec"
-			([Param cmd] ++ ps)
+		-- pkexec does not run the command in the current
+		-- working directory, but in root's HOME.
+		, SuCommand (MayPromptPassword SomePassword) "pkexec" $
+			[Param "sh", Param "-c", Param $ unwords
+				[ "cd", shellEscape pwd
+				, "&&"
+				, shellcmd
+				]
+			]
 		-- Available in Debian's menu package; knows about lots of
 		-- ways to gain root.
 		, SuCommand (MayPromptPassword SomePassword) "su-to-root"
@@ -89,7 +98,7 @@ mkSuCommand cmd ps = firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds
 		]
 	
 	-- These will only work when run in a console.
-	consolecmds = 
+	consolecmds _pwd = 
 		[ SuCommand (WillPromptPassword RootPassword) "su"
 			[Param "-c", Param shellcmd]
 		, SuCommand (MayPromptPassword UserPassword) "sudo"
