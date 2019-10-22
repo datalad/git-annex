@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="check the 'git add' changes before upgrading"
+ date="2019-10-22T00:27:50Z"
+ content="""
+I haven't had a data loss, but I wish I had waited to upgrade.  There are [[some issues|forum/lets_discuss_git_add_behavior]] with v7 semantics.  If you prefer v5 semantics, you can keep using an older git-annex version with your repos.  However, once you upgrade the repos (which recent git-annex versions do automatically without asking), there's no going back.
+"""]]
