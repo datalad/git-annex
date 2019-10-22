@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-10-22T17:23:54Z"
+ content="""
+I am not convinced that making this configurable does anything other than
+give users a new way to shoot themselves in their foot, and adding another
+config setting I have to tease out of them in the ensuring bug report.
+
+My comment on [[forum/lets_discuss_git_add_behavior]] describes scenarios
+where such a git add behavior would result in accidentially adding large
+files to the git object store.
+
+The only way that would seem to avoid that is a config setting that
+disables all support for populating annexed unlocked files, as well as
+making git-add not smudge them, so the repository is basically treated
+just like a v5 repository.
+"""]]
