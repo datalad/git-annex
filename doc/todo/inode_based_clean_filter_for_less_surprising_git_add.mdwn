@@ -1,0 +1,44 @@
+[[forum/lets_discuss_git_add_behavior]] shows that v7 git add
+behavior when annex.largefiles is not configured is surprising to many
+users.
+
+As described in comment 2 on that thread, a major driver of `git add`
+adding files to the annex by default is that it's just as surprising for
+annexed files to get added to git, and that surprise is much harder to
+recover from. Two main cases are:
+
+	git annex add bigfile; git annex unlock bigfile; mv bigfile newname; git add .
+
+	git annex add bigfile; git annex unlock bigfile; git commit; modify bigfile; git commit -a
+
+The modify case is already handled; git-annex checks if bigfile was annexed
+before, and if so, it knows it needs to be annexed again. (Although
+annex.largefiles overrides that check.)
+
+Ilya suggested an improvement that solves the rename case: 
+Since git-annex has a record of the inode of bigfile, it can check if the
+new file has the same inode. If so, the user renamed it, so add it to the
+annex not to git.
+
+That frees git-annex to let `git add` behave as usual and not annex files
+otherwise, unless the user has indicated they always want to annex files by
+configuring annex.largefiles or whatever.
+
+Cases where a file gets added to git accidentially seem to then be limited
+to a modify+rename:
+
+	git annex add bigfile; git annex unlock bigfile; git commit; modify bigfile; mv bigfile newname; git add .
+
+Pretty uncommon case, and easy to argue that the user shot their own
+foot there; there's no way for git-annex to know that the modified renamed
+file has its origin in an annexed file. So seems acceptable.
+
+The inodes of all unlocked files are known, via the InodeCache stored in
+the keys database. Unfortunately there is not an index to make queries for
+inodes be fast. One would need to be added, at least eventually.
+[[todo/sqlite_database_improvements]] discusses how to improve the
+databases.
+
+Some filesystems don't have stable inodes etc, but all that is already
+handled by the InodeCache machinery, so I think this could work pretty
+well. --[[Joey]]

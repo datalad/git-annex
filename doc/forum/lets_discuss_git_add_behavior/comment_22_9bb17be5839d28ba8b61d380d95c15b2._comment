@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: comment 4"""
+ date="2019-10-22T17:49:43Z"
+ content="""
+> maybe, git-annex could keep track of local unlocked files by inode, not just by path name?
+
+That's an interesting idea. If it could be made to work well, I think it
+would address my concerns from comment 2 while freeing `git add` to
+otherwise behave however it might be desired to behave by the user.
+
+I've expanded on the idea in 
+[todo/inode_based_clean_filter_for_less_surprising_git_add]]
+
+Thanks!
+"""]]

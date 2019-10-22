@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-10-22T18:29:44Z"
+ content="""
+[[todo/inode_based_clean_filter_for_less_surprising_git_add]]
+seems to open the door to adding such a config as this.
+
+Although, if that were implemented, I suspect that demand for such a config
+might dry up..
+"""]]

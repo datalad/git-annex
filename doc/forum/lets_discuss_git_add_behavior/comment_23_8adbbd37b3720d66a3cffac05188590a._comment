@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2019-10-22T18:16:15Z"
+ content="""
+Several commenters seem to be under the misapprehension that `git add` of a
+modified file that is stored in git before will annex the new version. It
+does not. That case is already handled, by git-annex noticing if the old
+file was annexed, and if not, letting git add it to git as usual
+(unless annex.largefiles is configured, in which case it uses that
+configuration).
+"""]]
