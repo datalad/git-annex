@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="locking files before reverting to v5"
+ date="2019-10-22T18:25:11Z"
+ content="""
+\"It is entirely reversable by undoing the git config changes\" -- just to note, before undoing the git config changes, you'd want to [[lock|git-annex-lock]] any unlocked files (after first committing any pending changes to them).
+"""]]

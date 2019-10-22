@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="temporary manual downgrade of repos to v5 is possible"
+ date="2019-10-22T16:40:32Z"
+ content="""
+Related: until the v7 issues are resolved, one option is to manually [downgrade](https://git-annex.branchable.com/forum/Exactly_what_does_a_v5_to_v7_upgrade_entail__63__/#comment-e1a252807a2200a7c737696abd08d38b) the repos to v5 (turns out it only involves changing a few git config and gitattributes settings) and use an [[pre-7.20190912|news/version_7.20190819]] git-annex version.
+
+Just to reiterate, I much appreciate @joeyh's work on v7 and [[think|forum/lets_discuss_git_add_behavior/#comment-ffd69d3a710beeac091ef4173b122cdc]] it's an important advance. The v5 downgrade is just a temp option to keep old workflows working, until they can be adapted to v7, which won't be hard to do once the issues discussed above get addressed.
+"""]]
