@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="irieger"
+ avatar="http://cdn.libravatar.org/avatar/83622f3c2fedea51e69f9a3986f95d73"
+ subject="comment 3"
+ date="2019-10-22T06:54:43Z"
+ content="""
+Hey, thank you for those comments.
+
+Tried your example joey and it seems to do exactly what I was thinking of. Now I have the roadmap I will adapt my tool to.
+
+Just a few more small questions:
+
+1.) How can I trigger the *(recording state in git...)* after throwing in files with *git -c annex.verify=false -c annex.alwayscommit=false annex setkey ...*?
+
+2.) Can setkey be used on multiple repositories for the same file and then have the file exists in multiple copies after this without an *annex copy*? (Of course only one symlink generation and *git add*)
+
+So thanks again for the fast replies.
+
+-- Ingmar
+"""]]
