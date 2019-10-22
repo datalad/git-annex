@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-10-22T17:10:01Z"
+ content="""
+There is not enough information in this bug report for me to know if the
+problem I fixed was the problem that was reported.
+
+I'm going to assume so, if there is no followup soon.
+"""]]
