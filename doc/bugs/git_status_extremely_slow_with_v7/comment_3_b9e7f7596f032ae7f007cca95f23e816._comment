@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-10-22T17:08:11Z"
+ content="""
+This bug needs to have instructions for how to reproduce a problem in order
+for me to do anything about it.  As it is, I can only guess.
+
+[[git_keeps_refreshing_index]] was another report likely the same problem.
+There I diagnosed and fixed a case that would cause this behavior. I do not
+know if it is the case that you are reporting here, or a different one.
+I guess probably the same one. So if there's no followup, I'll probably
+close this bug report..
+"""]]
