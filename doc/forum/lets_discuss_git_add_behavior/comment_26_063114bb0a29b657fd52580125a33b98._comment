@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="can git add only annex already-annexed files?"
+ date="2019-10-22T20:01:51Z"
+ content="""
+Both [[problem cases|forum/lets_discuss_git_add_behavior/#comment-cb55e3813bed92ceb6d84092841903e3]] involve `git add`'ing *already annexed* files.  So if the new `git add` behavior could be limited to already-annexed files, these problem cases would be addressed, without creating the problems discussed above.  Since already \"git-annex [[abuses|todo/git_smudge_clean_interface_suboptiomal]] the fact that git provides the clean filter with the work tree filename, and reads and cleans the file itself\", the work tree filename is known.  Question is how to know, when `git add` calls [[git-annex-clean]], which files are already-annexed.
+
+\"Suppose you have a mixture of unlocked files and files that are added directly to git, and you've modified several of them. Now, if you run git commit -a, you would surely hope that the annexed ones stay annexed and don't get committed directly to git. Well, git add . ; git commit is normally equivilant, so it should behave the same. It follows that git add does need to add some files to the annex.\" -- for the unlocked files, the version in the index would be the pointer file, so git-annex would know what they are.
+
+\"Suppose you have an unlocked file in your repo, and you rename it (not using git move), and then git add it.\" -- catching this requires keeping track of inodes of unlocked files.  But since already \"git-annex [[installs|todo/git_smudge_clean_interface_suboptiomal]] post-checkout, post-merge, and pre-commit hooks, which update the working tree files to make content from git-annex available\", the hooks could do this, maybe with a Bloom filter?  You'd only consult the Bloom filter if the git index entry isn't there _and_ file matches `annex.largefiles`.  Or maybe the inode info in the git index could be used.
+"""]]
