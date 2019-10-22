@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""oh, you also asked if it will take a long time.."""
+ date="2019-10-22T04:16:13Z"
+ content="""
+The only potentially expensive part is the scan for unlocked files.
+That involves running `git ls-tree -r HEAD`, so will scale with the
+number of files in the repository. But it would need to be a huge
+repository indeed for it to take a long time.
+"""]]
