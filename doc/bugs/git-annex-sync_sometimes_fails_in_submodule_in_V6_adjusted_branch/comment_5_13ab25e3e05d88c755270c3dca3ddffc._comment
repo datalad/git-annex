@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-10-22T19:43:21Z"
+ content="""
+Instrumenting, this is fed into git mktree:
+
+	160000 blob 6941fd9c7ad9640f75a02c993245b8de784105e1\tqux\NUL
+
+So the problem is it's got the mode for a submodule, but the wrong type, blob.
+
+Internally, git-annex has generated this, which seems wrong. It should be a TreeCommit.
+
+	TreeBlob (TopFilePath {getTopFilePath = "qux"}) 57344 (Ref "6941fd9c7ad9640f75a02c993245b8de784105e1")
+
+(57344 = 160000 oct)
+
+So need to debug the parsing of the input git tree next..
+"""]]
