@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""answering the question"""
+ date="2019-10-22T03:28:47Z"
+ content="""
+In detail, this is exactly what is entailed by the upgrade process
+of a repository that is not in direct mode:
+
+* git is configured to run git-annex as a smudge/clean filter by
+  adding a `[filter "annex"]` section to .git/config and installing a 
+  .git/info/attributes file to contain "filter=annex"
+  (or modifying it if the repo already has one).
+* git-annex scans the repository for files that are currently unlocked,
+  and updates bookkeeping about them (including the git index), 
+  since unlocked files are treated differently in v7. git will treat
+  those unlocked files as unstaged changes in the working tree,
+  that can be committed, if you choose to, since that's how unlocked
+  files work in v7.
+* Two git hooks are installed (post-checkout and post-merge)
+  to run `git annex smudge --update`. (If you happened to
+  already have installed something in those hooks, it will not modify them
+  and will display a warning instead.)
+* annex.version is set to 7
+
+Notice that this process does not touch the work tree at all, or the annex
+objects, so even if it somehow completely exploded, you cannot possibly
+lose data. It is entirely reversable by undoing the git config changes I
+listed.
+
+And it does not break interoperation with other clones of the repository
+that still use v5. So if you have qualms, my advice would be to make a
+clone and try it out for yourself and see. You can prevent accidential
+upgrade of any repos by
+`git config --global annex.autoupgraderepository false`
+"""]]

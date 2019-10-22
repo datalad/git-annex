@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""(and direct mode)"""
+ date="2019-10-22T04:02:12Z"
+ content="""
+Just for completeness, here's what upgrading a direct mode repository to v7
+entails:
+
+* everything listed above
+* annex.thin is set to true
+* .git/annex/objects gets populated, since direct mode didn't populate
+  it and in v7 annexed objects always get stored there.
+  This involves hard linking annexed files in the work tree
+  into the objects directory. If the filesystem doesn't support
+  hard links, it unfortunately has to copy the files, which will
+  double the disk space used by the repository.
+  (There's a todo item discussing maybe clawing that space back,
+  but it seems to need changes to git to do.)
+* An adjusted unlocked branch is created from the current branch,
+  and checked out.
+  Essentially the same as running `git annex adjust --unlock`
+"""]]
