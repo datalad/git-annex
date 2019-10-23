@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="comment 1"
+ date="2019-10-23T15:28:55Z"
+ content="""
+Indeed, as you say, it is not reasonable for the user to expect git-annex to do the right thing in the modify+rename case.  So this proposal seems like a great way to avoid the sort of mistakes you have brought up, without having `git add` add to the annex by default.
+"""]]
