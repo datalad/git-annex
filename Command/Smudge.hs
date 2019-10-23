@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2015-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,8 @@ import qualified Git
 import qualified Git.Ref
 import Backend
 import Utility.Metered
+import Annex.InodeSentinal
+import Utility.InodeCache
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -143,13 +145,18 @@ clean file = do
 		filepath <- liftIO $ absPath file
 		return $ not $ dirContains repopath filepath
 
--- New files are annexed as configured by annex.largefiles, with a default
--- of annexing them.
--- 
--- If annex.largefiles is not configured for a file, and a file with its
--- name is already in the index, preserve its annexed/not annexed state.
--- This prevents accidental conversions when annex.largefiles is being
--- set/unset on the fly rather than being set in gitattributes or .git/config.
+-- New files are annexed as configured by annex.largefiles.
+--
+-- If annex.largefiles is not configured for a file, some heuristics are
+-- used to avoid bad behavior:
+--
+-- When the file's inode is the same as one that was used for annexed
+-- content before, annex it. This handles cases such as renaming an
+-- unlocked annexed file followed by git add, which the user naturally
+-- expects to behave the same as git mv.
+--
+-- Otherwise, if the index already contains the file, preserve its
+-- annexed/not annexed state. This prevents accidental conversions.
 shouldAnnex :: FilePath -> Maybe Key -> Annex Bool
 shouldAnnex file moldkey = do
 	matcher <- largeFilesMatcher
@@ -157,7 +164,13 @@ shouldAnnex file moldkey = do
   where
 	whenempty = case moldkey of
 		Just _ -> return True
-		Nothing -> isNothing <$> catObjectMetaData (Git.Ref.fileRef file)
+		Nothing -> do
+			isknown <- withTSDelta (liftIO . genInodeCache file) >>= \case
+				Nothing -> pure False
+				Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
+			if isknown
+				then return True
+				else isNothing <$> catObjectMetaData (Git.Ref.fileRef file)
 
 emitPointer :: Key -> IO ()
 emitPointer = S.putStr . formatPointer
