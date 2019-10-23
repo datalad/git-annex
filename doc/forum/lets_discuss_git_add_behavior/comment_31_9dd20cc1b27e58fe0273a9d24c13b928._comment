@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 31"""
+ date="2019-10-23T19:20:25Z"
+ content="""
+This will get the behavior you seek, once you have upgraded to current
+master:
+
+	git config annex.gitaddtoannex false
+
+It could be made to default to false, TBD. If someone wants to make a patch
+to all the documentation that currently talks about using git add and git
+commit -a to annex files, to document the mooted new behavior, that would
+be helpful.
+"""]]

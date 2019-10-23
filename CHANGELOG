@@ -5,6 +5,12 @@ git-annex (7.20191018) UNRELEASED; urgency=medium
     when running a command.
   * sync: Fix crash when there are submodules and an adjusted branch is
     checked out.
+  * Made git add smarter about renamed annexed files. It can tell when an
+    annexed file was renamed, and will add it to the annex, and not to git,
+    unless annex.largefiles tells it to do otherwise.
+  * Added annex.gitaddtoannex configuration. Setting it to false prevents
+    git add from usually adding files to the annex. 
+    (Unless the file was annexed before, or a renamed annexed file is detected.)
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Oct 2019 11:01:06 -0400
 

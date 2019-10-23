@@ -20,6 +20,7 @@ import qualified Git.BuildVersion
 import Git.FilePath
 import qualified Git
 import qualified Git.Ref
+import qualified Annex
 import Backend
 import Utility.Metered
 import Annex.InodeSentinal
@@ -145,10 +146,12 @@ clean file = do
 		filepath <- liftIO $ absPath file
 		return $ not $ dirContains repopath filepath
 
--- New files are annexed as configured by annex.largefiles.
+-- New files are annexed as configured by annex.gitaddtoannex and 
+-- annex.largefiles.
 --
--- If annex.largefiles is not configured for a file, some heuristics are
--- used to avoid bad behavior:
+-- If annex.gitaddtoannex is false, or it's true and annex.largefiles
+-- is not configured for a file, some heuristics are used to avoid bad
+-- behavior:
 --
 -- When the file's inode is the same as one that was used for annexed
 -- content before, annex it. This handles cases such as renaming an
@@ -158,11 +161,16 @@ clean file = do
 -- Otherwise, if the index already contains the file, preserve its
 -- annexed/not annexed state. This prevents accidental conversions.
 shouldAnnex :: FilePath -> Maybe Key -> Annex Bool
-shouldAnnex file moldkey = do
-	matcher <- largeFilesMatcher
-	checkFileMatcher' matcher file whenempty
+shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
+	( checkmatcher (checkheuristics checkwasingit)
+	, checkheuristics (pure False)
+	)
   where
-	whenempty = case moldkey of
+	checkmatcher def = do
+		matcher <- largeFilesMatcher
+		checkFileMatcher' matcher file def
+	
+	checkheuristics def = case moldkey of
 		Just _ -> return True
 		Nothing -> do
 			isknown <- withTSDelta (liftIO . genInodeCache file) >>= \case
@@ -170,7 +178,11 @@ shouldAnnex file moldkey = do
 				Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
 			if isknown
 				then return True
-				else isNothing <$> catObjectMetaData (Git.Ref.fileRef file)
+				else def
+	
+	checkwasingit = case moldkey of
+		Just _ -> return False
+		Nothing -> isNothing <$> catObjectMetaData (Git.Ref.fileRef file)
 
 emitPointer :: Key -> IO ()
 emitPointer = S.putStr . formatPointer

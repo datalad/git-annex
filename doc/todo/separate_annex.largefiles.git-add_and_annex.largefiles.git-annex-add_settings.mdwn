@@ -3,3 +3,5 @@ Could there be separate `annex.git-add.largefiles` and `annex.git-annex-add.larg
 Reason: to prevent `git add` from inadvertently adding annexed files in unlocked form, I set `* annex.largefiles=nothing` at repo root; but then, `git annex add` won't annex anything either, unless specifically asked.   I want to use `git add` to add files to git only (since it can't add them to git-annex in locked form), and to use `git annex add` to add files to either git or annex based on `annex.git-annex-add.largefiles` setting.
 
 Related: [[forum/lets_discuss_git_add_behavior]]
+
+> [[wontfix|done]] --[[Joey]]

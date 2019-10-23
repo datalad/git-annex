@@ -897,6 +897,20 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   See <https://git-annex.branchable.com/tips/largefiles> for details.
 
+* `annex.gitaddtoannex`
+
+  This controls the behavior of `git add`. If you want `git add` to
+  add files to the annex (either all files, or the files matched
+  by your annex.largefiles configuration), set it to true.
+
+  To make `git add` add files to git but not to the annex, set it to false.
+  Note that `git add` will still add files to the annex in a couple of
+  situations. When an annexed file has been modified, it makes sense to add
+  the new version to the annex too. When an annexed file has been renamed
+  to a new name, it should remain annexed.
+
+  The default is currently true.
+
 * `annex.addsmallfiles`
 
   Controls whether small files (not matching annex.largefiles)

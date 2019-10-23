@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-10-23T19:25:21Z"
+ content="""
+I suspect that anyone who would have wanted this will instead be happy
+with setting the new annex.gitaddtoannex to false.
+
+If someone does have a good reason to want git add and git annex add to
+have different opinions about what constitutes a large file, please reopen
+the todo with a justification.
+"""]]

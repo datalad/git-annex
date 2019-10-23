@@ -78,6 +78,7 @@ data GitConfig = GitConfig
 	, annexAriaTorrentOptions :: [String]
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
+	, annexGitAddToAnnex :: Bool
 	, annexAddSmallFiles :: Bool
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
@@ -147,6 +148,7 @@ extractGitConfig r = GitConfig
 	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
+	, annexGitAddToAnnex = getbool (annex "gitaddtoannex") True
 	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
 	, annexFsckNudge = getbool (annex "fscknudge") True
 	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")

@@ -42,3 +42,7 @@ databases.
 Some filesystems don't have stable inodes etc, but all that is already
 handled by the InodeCache machinery, so I think this could work pretty
 well. --[[Joey]]
+
+> [[done]] although the sql database is used in a horrible way by the
+> current implementation, which is probably very slow in some situations,
+> so [[sqlite_database_improvements]] are now really needed. --[[Joey]]
