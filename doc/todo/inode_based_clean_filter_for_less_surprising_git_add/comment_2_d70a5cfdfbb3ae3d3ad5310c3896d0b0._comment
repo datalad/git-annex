@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="searching by inode"
+ date="2019-10-23T16:32:37Z"
+ content="""
+\"there is not an index to make queries for inodes be fast\" -- you'd only need to query for inodes in case of a rename, and only if the rename didn't use `git mv`.  So if adding a db index is non-trivial (requires v8?), maybe it's ok if this case is slow?  Also, the git index has the [inode](https://github.com/git/git/blob/master/Documentation/technical/index-format.txt#L60) info and other `stat(2)` info preserved by a rename, and you'd only need to check index entries where the working copy file has disappeared; or maybe a [wmemchr()](https://hackage.haskell.org/package/bindings-0.1/docs/src/Bindings-StandardC.html#line-722) through the index would be fast enough?
+"""]]

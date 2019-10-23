@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="configuring git add behavior"
+ date="2019-10-23T17:57:03Z"
+ content="""
+Or, could add a variable `annex.git-add-new-largefiles-action`, which determines what `git add` does with files that match `annex.largefiles` but were not already annexed.  The possible values would be
+
+ * `git` (default): add to git
+ * `git-warn`: add to git but print a warning
+ * `error`: exit with an error code
+ * `annex`: add to the annex
+ * `annex-warn`: add to the annex but print a warning
+ * `annex-autolock`: add to the annex but mark them to be [[auto-locked|todo/auto-lock_files_after_one_edit]] when committed.
+"""]]
