@@ -1,22 +1,27 @@
 News for git-annex 7.20190912:
 
-   This version of git-annex uses repository version 7 for all repositories.
-   Existing v5 repositories will be automatically upgraded by default.
-   You can prevent this, by runing: git config annex.autoupgraderepository false
-   A v7 repository can can have some files locked while other files are
-   unlocked, and all git and git-annex commands can be used on both locked and
-   unlocked files. It's a good idea to make sure that all users of the
-   repository have upgraded git-annex and upgraded their repositories
-   to the new version before starting to use that feature, since old
-   versions of git-annex will ignore the new unlocked files.
-   The behavior of some commands changes in an upgraded repository:
-   * `git add` will add files to the annex, rather than adding them directly
-      to the git repository. To cause some files to be added directly
-      to git, you can configure `annex.largefiles`. For example:
-      git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
-   * `git annex unlock` and `git annex lock` change how the pointer to
-     the annexed content is stored in git. If you commit the change,
-     that will impact all clones of the repository.
+This version of git-annex uses repository version 7 for all repositories.
+Existing v5 repositories will be automatically upgraded by default.
+
+You can prevent this, by runing: git config annex.autoupgraderepository false
+
+A v7 repository can can have some files locked while other files are
+unlocked, and all git and git-annex commands can be used on both locked and
+unlocked files. It's a good idea to make sure that all users of the
+repository have upgraded git-annex and upgraded their repositories
+to the new version before starting to use that feature, since old
+versions of git-annex will ignore the new unlocked files.
+
+The behavior of some commands changes in an upgraded repository:
+
+* `git add` will add files to the annex, rather than adding them directly
+  to the git repository. To cause some files to be added directly
+  to git, you can configure `annex.largefiles`. For example:
+  git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
+
+* `git annex unlock` and `git annex lock` change how the pointer to
+  the annexed content is stored in git. If you commit the change,
+  that will impact all clones of the repository.
 
 git-annex 7.20190912 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
