@@ -3,6 +3,8 @@ git-annex (7.20191018) UNRELEASED; urgency=medium
   * init: Fix a failure when used in a submodule on a crippled filesystem.
   * enable-tor: Deal with pkexec changing to root's home directory
     when running a command.
+  * sync: Fix crash when there are submodules and an adjusted branch is
+    checked out.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Oct 2019 11:01:06 -0400
 

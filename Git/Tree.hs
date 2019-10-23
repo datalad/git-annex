@@ -100,7 +100,7 @@ mkTree :: MkTreeHandle -> [TreeContent] -> IO Sha
 mkTree (MkTreeHandle cp) l = CoProcess.query cp send receive
   where
 	send h = do
-		forM_ l $ \i -> hPutStr h $ case i of
+		forM_ l $ \i ->	hPutStr h $ case i of
 			TreeBlob f fm s -> mkTreeOutput fm BlobObject s f
 			RecordedSubTree f s _ -> mkTreeOutput treeMode TreeObject s f
 			NewSubTree _ _ -> error "recordSubTree internal error; unexpected NewSubTree"
@@ -127,7 +127,9 @@ data TreeItem = TreeItem TopFilePath FileMode Sha
 	deriving (Show, Eq)
 
 treeItemToTreeContent :: TreeItem -> TreeContent
-treeItemToTreeContent (TreeItem f m s) = TreeBlob f m s
+treeItemToTreeContent (TreeItem f m s) = case toTreeItemType m of
+	Just TreeSubmodule -> TreeCommit f m s
+	_ -> TreeBlob f m s
 
 treeItemToLsTreeItem :: TreeItem -> LsTree.TreeItem
 treeItemToLsTreeItem (TreeItem f mode sha) = LsTree.TreeItem
@@ -235,7 +237,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 				let !modified' = modified || slmodified || wasmodified
 				go h modified' (subtree : c) depth intree is'
 			Just CommitObject -> do
-				let ti = TreeCommit (LsTree.file i) (LsTree.mode i)  (LsTree.sha i)
+				let ti = TreeCommit (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
 				go h wasmodified (ti:c) depth intree is
 			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
