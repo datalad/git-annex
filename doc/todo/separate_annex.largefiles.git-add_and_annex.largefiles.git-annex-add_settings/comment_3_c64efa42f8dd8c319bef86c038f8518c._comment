@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="preventing `git add` from annexing new files"
+ date="2019-10-23T17:05:41Z"
+ content="""
+\"if that were implemented, I suspect that demand for such a config might dry up\" -- not quite.  I'd still want to use `git add` for adding to git and `git annex add` for adding to the annex.  It's [[simple|forum/lets_discuss_git_add_behavior/#comment-065d2ab55fe0683a3c186df9211fd522]], so less error-prone; it's compatible with v5 and has worked well there; it lets me avoid accidentally annexing files as unlocked, where one can't see they're annexed by looking at the dir.  `git add` re-annexing already-annexed files doesn't involve these concerns: the file had to have been deliberately annexed *and* deliberately unlocked at some point prior, before `git add` will (re-)add it as annexed and unlocked.
+
+So, I may want to configure `annex.largefiles=anything` and *still* not have `git add` add new files to the annex.
+
+If you don't want to add a new config setting, maybe, extend the `annex.largefiles` [[syntax|tips/largefiles]] with something like `command=git-add`?
+"""]]
