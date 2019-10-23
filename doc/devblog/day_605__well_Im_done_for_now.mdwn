@@ -1,1 +1,2 @@
-Not working on git-annex for a while. Sorry.
+Not working on git-annex for a while, at least not under the direction of
+users on this website. Sorry.
