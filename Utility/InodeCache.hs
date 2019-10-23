@@ -23,6 +23,7 @@ module Utility.InodeCache (
 	showInodeCache,
 	genInodeCache,
 	toInodeCache,
+	likeInodeCacheWeak,
 
 	InodeCacheKey,
 	inodeCacheToKey,
@@ -148,6 +149,22 @@ showInodeCache (InodeCache (InodeCachePrim inode size (MTimeLowRes mtime))) =
 		, show size
 		, show mtime
 		]
+
+-- Generates patterns that can be used in a SQL LIKE query to match
+-- serialized inode caches that are weakly the same as the provided
+-- InodeCache.
+--
+-- Like compareWeak, the size has to match, while the mtime can differ
+-- by anything less than 2 seconds.
+likeInodeCacheWeak :: InodeCache -> [String]
+likeInodeCacheWeak (InodeCache (InodeCachePrim _ size mtime)) =
+	lowresl ++ highresl
+  where
+	lowresl = map mkpat [t, t+1, t-1]
+	highresl = map (++ " %") lowresl
+	t = lowResTime mtime
+	mkpat t' = "% " ++ ssz ++ " " ++ show t'
+ 	ssz = show size
 
 readInodeCache :: String -> Maybe InodeCache
 readInodeCache s = case words s of

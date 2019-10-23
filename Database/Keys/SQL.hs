@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,9 @@ import Database.Persist.Sql
 import Database.Persist.TH
 import Data.Time.Clock
 import Control.Monad
+import Data.Maybe
+import qualified Data.Text as T
+import qualified Data.Conduit.List as CL
 
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
@@ -116,3 +119,31 @@ getInodeCaches ik = readDb $ do
 removeInodeCaches :: IKey -> WriteHandle -> IO ()
 removeInodeCaches ik = queueDb $
 	deleteWhere [ContentKey ==. ik]
+
+{- Check if the inode is known to be used for an annexed file.
+ -
+ - This is currently slow due to the lack of indexes.
+ -}
+isInodeKnown :: InodeCache -> SentinalStatus -> ReadHandle -> IO Bool
+isInodeKnown i s = readDb query
+  where
+	query 
+		| sentinalInodesChanged s =
+			withRawQuery likesql [] $ isJust <$> CL.head
+		| otherwise =
+			isJust <$> selectFirst [ContentCache ==. si] []
+	
+	si = toSInodeCache i
+			
+	likesql = T.concat
+		[ "SELECT key FROM content WHERE "
+		, T.unwords (map mklike (likeInodeCacheWeak i))
+		, " LIMIT 1"
+		]
+
+	mklike p = T.concat
+		[ "cache LIKE "
+		, "'I \"" -- SInodeCache serializes as I "..."
+		, T.pack p
+		, "\"'"
+		]

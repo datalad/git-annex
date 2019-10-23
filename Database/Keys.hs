@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ module Database.Keys (
 	addInodeCaches,
 	getInodeCaches,
 	removeInodeCaches,
+	isInodeKnown,
 	runWriter,
 ) where
 
@@ -186,6 +187,9 @@ getInodeCaches = runReaderIO . SQL.getInodeCaches . toIKey
 
 removeInodeCaches :: Key -> Annex ()
 removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toIKey
+
+isInodeKnown :: InodeCache -> SentinalStatus -> Annex Bool
+isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
 
 {- Looks at staged changes to find when unlocked files are copied/moved,
  - and updates associated files in the keys database.
