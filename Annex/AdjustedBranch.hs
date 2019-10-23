@@ -136,9 +136,6 @@ getAdjustment = fmap fst . adjustedToOriginal
 fromAdjustedBranch :: Branch -> OrigBranch
 fromAdjustedBranch b = maybe b snd (adjustedToOriginal b)
 
-originalBranch :: Annex (Maybe OrigBranch)
-originalBranch = fmap fromAdjustedBranch <$> inRepo Git.Branch.current
-
 {- Enter an adjusted version of current branch (or, if already in an
  - adjusted version of a branch, changes the adjustment of the original
  - branch).
