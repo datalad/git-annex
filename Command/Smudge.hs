@@ -19,7 +19,6 @@ import qualified Database.Keys
 import qualified Git.BuildVersion
 import Git.FilePath
 import qualified Git
-import qualified Git.Ref
 import qualified Annex
 import Backend
 import Utility.Metered
@@ -146,43 +145,37 @@ clean file = do
 		filepath <- liftIO $ absPath file
 		return $ not $ dirContains repopath filepath
 
--- New files are annexed as configured by annex.gitaddtoannex and 
--- annex.largefiles.
+-- If annex.largefiles is configured, matching files are added to the
+-- annex. But annex.gitaddtoannex can be set to false to disable that.
 --
--- If annex.gitaddtoannex is false, or it's true and annex.largefiles
--- is not configured for a file, some heuristics are used to avoid bad
--- behavior:
+-- When annex.largefiles is not configured, files are normally not
+-- added to the annex, so will be added to git. But some heuristics
+-- are used to avoid bad behavior:
 --
--- When the file's inode is the same as one that was used for annexed
--- content before, annex it. This handles cases such as renaming an
+-- If the index already contains the file, preserve its annexed/not annexed
+-- state. This prevents accidental conversions.
+--
+-- Otherwise, when the file's inode is the same as one that was used for
+-- annexed content before, annex it. This handles cases such as renaming an
 -- unlocked annexed file followed by git add, which the user naturally
 -- expects to behave the same as git mv.
---
--- Otherwise, if the index already contains the file, preserve its
--- annexed/not annexed state. This prevents accidental conversions.
 shouldAnnex :: FilePath -> Maybe Key -> Annex Bool
 shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
-	( checkmatcher (checkheuristics checkwasingit)
-	, checkheuristics (pure False)
+	( checkmatcher checkheuristics
+	, checkheuristics
 	)
   where
 	checkmatcher d = do
 		matcher <- largeFilesMatcher
 		checkFileMatcher' matcher file d
 	
-	checkheuristics d = case moldkey of
+	checkheuristics = case moldkey of
 		Just _ -> return True
-		Nothing -> do
-			isknown <- withTSDelta (liftIO . genInodeCache file) >>= \case
-				Nothing -> pure False
-				Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
-			if isknown
-				then return True
-				else d
-	
-	checkwasingit = case moldkey of
-		Just _ -> return False
-		Nothing -> isNothing <$> catObjectMetaData (Git.Ref.fileRef file)
+		Nothing -> checkknowninode
+
+	checkknowninode = withTSDelta (liftIO . genInodeCache file) >>= \case
+		Nothing -> pure False
+		Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
 
 emitPointer :: Key -> IO ()
 emitPointer = S.putStr . formatPointer
