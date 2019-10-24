@@ -11,4 +11,8 @@ The only way I found to do this was to use the `find` command, like this:
 
     find -lname '*SHA256E-s16279847--ce02487cd9f78f5944cbc1acb6622d270f7c16172d0fa12ae1330a4d9c3144a0.mp3'
 
-I would love to have a way to use `git-annex`'s knowledge of its own repo here instead... Could this be improved? --[[anarcat]]
+You can also use:
+
+    git log --stat -1 -SKEY
+
+to find the commits (and therefore the files) that link to the given key. That said, `git-annex` does not have any knowledge that would let it do better than either of these commands, at least not reliably. -- [[anarcat]]
