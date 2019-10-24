@@ -1,0 +1,1 @@
+When git introduces a breaking change, it prints a warning describing the change and saying "to turn off this warning set advice.warnaboutthis=false".  This adds the hassle of setting the config (once, globally), but the reduced confusion might be worth it.
