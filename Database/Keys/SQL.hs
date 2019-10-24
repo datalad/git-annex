@@ -137,7 +137,7 @@ isInodeKnown i s = readDb query
 			
 	likesql = T.concat
 		[ "SELECT key FROM content WHERE "
-		, T.unwords (map mklike (likeInodeCacheWeak i))
+		, T.intercalate " OR " $ map mklike (likeInodeCacheWeak i)
 		, " LIMIT 1"
 		]
 
