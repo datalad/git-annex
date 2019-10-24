@@ -1,8 +1,7 @@
 [[!meta title="annex.largefiles: configuring mixed content repositories"]]
 
-Normally commands like `git annex add` always add files to the annex.
-And when using the v7 repository mode, even `git add` and `git commit -a`
-will add files to the annex.
+Normally commands like `git annex add` always add files to the annex,
+while `git add` adds files to git.
 
 Let's suppose you're developing a video game, written in C. You have
 source code, and some large game assets. You want to ensure the source
@@ -10,14 +9,17 @@ code is stored in git -- that's what git's for! And you want to store
 the game assets in the git annex -- to avod bloating your git repos with
 possibly enormous files, but still version control them.
 
-The annex.largefiles configuration is useful for such mixed content
-repositories. It's checked by `git annex add`, by `git add` and `git commit -a`
-(in v7 repositories), by `git annex import` and the assistant. It's
-also used by `git annex addurl` and `git annex importfeed` when downloading
-files. When a file does not match annex.largefiles, these commands will
-add its content to git instead of to the annex.
+You could take care to use `git annex add` after changes to the assets,
+but it would be easy to slip up and `git commit -a` (which runs `git add`),
+checking your large assets into git. Configuring annex.largefiles
+saves you the bother of keeping things straight when adding files.
+Once you've told git-annex what files are large, both `git annex add`
+and `git add`/`git commit -a` will add the large files to the annex and the
+small files to git.
 
-This saves you the bother of keeping things straight when adding files.
+Other commands that use the annex.largefiles configuration include
+`git annex import`, git annex addurl`, `git annex importfeed`, and
+the assistant.
 
 ## examples
 
@@ -34,11 +36,17 @@ Or, set the git configuration instead:
   
 	git config annex.largefiles 'largerthan=100kb and not (include=*.c or include=*.h)'
 
-Both of these settings do the same thing. Setting it in the `.gitattributes`
-file makes any checkout of the repository share that configuration, so is often
-a good choice. Setting the annex.largefiles git configuration lets different
-checkouts behave differently. The git configuration overrides the
-`.gitattributes` configuration.
+Both of these settings do the same thing. Setting it in the
+`.gitattributes` file makes any checkout of the repository share that
+configuration, so is often a good choice. Setting the annex.largefiles git
+configuration lets different checkouts behave differently. The git
+configuration overrides the `.gitattributes` configuration.
+
+Or, perhaps you just want all files to be added to the annex, no matter
+what. Just write "* annex.largefiles=anything" to the `.gitattributes`
+file, or run:
+
+	git config annex.largefiles anything
 
 ## syntax
 

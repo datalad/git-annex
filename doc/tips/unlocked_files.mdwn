@@ -14,41 +14,45 @@ They are stored in the git repository differently, and they appear as
 regular files in the working tree, instead of the symbolic links used for
 locked files.
 
-## adding unlocked files
+## using unlocked files
 
-Instead of using `git annex add`, use `git add`, and the file will be
-stored in git-annex, but left unlocked.
+You can unlock any annexed file:
 
-[[!template id=note text="""
-Want `git add` to add some file contents to the annex, but store the contents of
-smaller files in git itself? Configure annex.largefiles to match the former.
-See [[largefiles]].
-"""]]
+	# git annex unlock my_cool_big_file
 
-	# cp ~/my_cool_big_file .
-	# git add my_cool_big_file
-	# git commit -m "added my_cool_big_file to the annex"
-	[master (root-commit) 92f2725] added my_cool_big_file to the annex
-	 1 file changed, 1 insertion(+)
-	  create mode 100644 my_cool_big_file
-	# git annex find
-	my_cool_big_file
+That changes what's stored in git between a git-annex symlink
+(locked) and a git-annex pointer file (unlocked). You can commit
+the change, if you want that file to be unlocked in other clones of the
+repository. To lock the file again, use `git annex lock`.
 
-You can make whatever modifications you want to unlocked files, and commit
-your changes.
+The nice thing about an unlocked file is that you can modify it
+in place -- it's a regular file. And you can commit your changes.
 
 	# echo more stuff >> my_cool_big_file
-	# git mv my_cool_big_file my_cool_bigger_file
 	# git commit -a -m "some changes"
 	[master 196c0e2] some changes
-	 2 files changed, 1 insertion(+), 1 deletion(-)
-	 delete mode 100644 my_cool_big_file
-	 create mode 100644 my_cool_bigger_file
+	 1 files changed, 1 insertion(+), 1 deletion(-)
 
-Under the hood, this uses git's [[todo/smudge]] filter interface, and
-git-annex converts between the content of the big file and a pointer file,
-which is what gets committed to git. All the regular git-annex commands
-(get, drop, etc) can be used on unlocked files too.
+Notice that `git commit -a` added the new content of the file to the annex,
+and only committed a change to the pointer. That happened because git-annex
+knows this was an annexed file before. Git leaves the file unlocked, so
+you can continue to make modifications to it.
+
+By default, using git to add a file that has not been annexed before will
+still add its contents to git, not to the annex. If you tell git-annex what
+files are large, it will arrange for the large files to be added to the
+annex, and the small ones to be added to git. This is done by configuring
+annex.largefiles. See [[largefiles]] for full documentation of that.
+
+All the regular git-annex commands (find, get, drop, etc) can be used on
+unlocked files as well as locked files. When you drop the content of
+an unlocked file, it will be replaced by a pointer file, which
+looks like "/annex/objects/...". So if you open a file and see
+that, you'll need to use `git annex get`.
+
+Under the hood, unlocked files use git's [[todo/smudge]] filter interface,
+and git-annex converts between the content of the big file and a pointer
+file, which is what gets committed to git.
 
 [[!template id=note text="""
 By default, git-annex commands will add files in locked mode,
@@ -57,14 +61,7 @@ mode is used. To make them always use unlocked mode, run:
 `git config annex.addunlocked true`
 """]]
 
-## mixing locked and unlocked files
-
-A repository can contain both locked and unlocked files. You can switch 
-a file back and forth using the `git annex lock` and `git annex unlock`
-commands. This changes what's stored in git between a git-annex symlink
-(locked) and a git-annex pointer file (unlocked). To add a file to
-the repository in locked mode, use `git annex add`; to add a file in
-unlocked mode, use `git add`.
+## adjusted branches
 
 If you want to mostly keep files locked, but be able to locally switch
 to having them all unlocked, you can do so using `git annex adjust
@@ -72,6 +69,15 @@ to having them all unlocked, you can do so using `git annex adjust
 useful when using filesystems like FAT, and OS's like Windows that don't
 support symlinks. Indeed, `git-annex init` detects such filesystems and
 automatically sets up a repository to use all unlocked files.
+
+## finding unlocked files
+
+While it's easy to see when a file is a git-annex symlink, unlocked files
+look the same as files stored in git. To see what files are unlocked or
+locked, many git-annex commands support `--unlocked` and `--locked`
+options.
+
+	git annex find --unlocked
 
 ## imperfections
 

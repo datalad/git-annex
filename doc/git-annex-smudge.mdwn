@@ -17,6 +17,13 @@ of being symlinks, and lets `git add` store files in the annex.
 When adding a file with `git add`, the annex.largefiles config is
 consulted to decide if a given file should be added to git as-is,
 or if its content are large enough to need to use git-annex.
+The annex.gitaddtoannex setting overrides that; setting it to false
+prevents `git add` from adding files to the annex.
+
+However, if git-annex can tell that a file was annexed before,
+it will still be added to the annex even when those configs would normally
+prevent it. Two examples of this are adding a modified version of an
+annexed file, and moving an annexed file to a new filename and adding that.
 
 The git configuration to use this command as a filter driver is as follows.
 This is normally set up for you by git-annex init, so you should

@@ -891,25 +891,29 @@ Like other git commands, git-annex is configured via `.git/config`.
 * `annex.largefiles`
 
   Used to configure which files are large enough to be added to the annex.
-  Default: All files.
+  It is an expression that matches the large files, eg
+  "*.mp3 or largerthan(500kb)"
 
   Overrides any annex.largefiles attributes in `.gitattributes` files.
 
-  See <https://git-annex.branchable.com/tips/largefiles> for details.
+  This configures the behavior of both git-annex and git when adding
+  files to the repository. By default, `git-annex add` adds all files
+  to the annex, and `git add` adds files to git (unless they were added
+  to the annex previously). When annex.largefiles is configured, both
+  `git annex add` and `git add` will add matching large files to the
+  annex, and the other files to git.
+
+  Other git-annex commands also honor annex.largefiles, including
+  `git annex import`, `git annex addurl`, `git annex importfeed`
+  and the assistant.
+
+  See <https://git-annex.branchable.com/tips/largefiles> for syntax
+  documentation and more.
 
 * `annex.gitaddtoannex`
 
-  This controls the behavior of `git add`. If you want `git add` to
-  add files to the annex (either all files, or the files matched
-  by your annex.largefiles configuration), set it to true.
-
-  To make `git add` add files to git but not to the annex, set it to false.
-  Note that `git add` will still add files to the annex in a couple of
-  situations. When an annexed file has been modified, it makes sense to add
-  the new version to the annex too. When an annexed file has been renamed
-  to a new name, it should remain annexed.
-
-  The default is currently true.
+  Setting this to false will prevent `git add` from honoring the 
+  annex.largefiles configuration.
 
 * `annex.addsmallfiles`
 
@@ -1678,9 +1682,10 @@ but the SHA256E backend for ogg files:
 	* annex.backend=WORM
 	*.ogg annex.backend=SHA256E
 
-There is a annex.largefiles attribute; which is used to configure which
+There is a annex.largefiles attribute, which is used to configure which
 files are large enough to be added to the annex.
-See <https://git-annex.branchable.com/tips/largefiles> for details.
+See the documentation above of the annex.largefiles git config
+and <https://git-annex.branchable.com/tips/largefiles> for details.
 
 The numcopies setting can also be configured on a per-file-type basis via
 the `annex.numcopies` attribute in `.gitattributes` files. This overrides

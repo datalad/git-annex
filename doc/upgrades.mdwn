@@ -73,11 +73,9 @@ all locked files in the local repository.
 
 The behavior of some commands changes in an upgraded repository:
 
-* `git add` will add files to the annex, rather than adding them directly
-   to the git repository. To cause some files to be added directly
-   to git, you can configure `annex.largefiles`. For example:
-
-   	`git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"`
+* `When `annex.largefiles` is configured, git add` will add matching 
+   files to the annex, rather than adding them directly to the git
+   repository.
 
 * `git annex unlock` and `git annex lock` change how the pointer to 
   the annexed content is stored in git. If you commit the change,

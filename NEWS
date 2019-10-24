@@ -1,3 +1,12 @@
+git-annex (7.20191024) UNRELEASED; urgency=medium
+
+  When annex.largefiles is not configured, `git add` and `git commit -a`
+  add files to git, not to the annex. If you have gotten used to `git add`
+  adding all files to the annex, you can get that behavior back by running:
+  git config annex.largefiles anything
+
+ -- Joey Hess <id@joeyh.name>  Thu, 24 Oct 2019 13:46:52 -0400
+
 git-annex (7.20190912) upstream; urgency=medium
 
   This version of git-annex uses repository version 7 for all repositories.
