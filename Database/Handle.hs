@@ -99,7 +99,7 @@ queryDb (DbHandle _ _ jobs) a = do
 	putMVar jobs $ QueryJob $
 		liftIO . putMVar res =<< tryNonAsync a
 	(either throwIO return =<< takeMVar res)
-		`catchNonAsync` (const $ error "sqlite query crashed")
+		`catchNonAsync` (\e -> error $ "sqlite query crashed: " ++ show e)
 
 {- Writes a change to the database.
  -
