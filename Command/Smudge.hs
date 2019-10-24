@@ -166,11 +166,11 @@ shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 	, checkheuristics (pure False)
 	)
   where
-	checkmatcher def = do
+	checkmatcher d = do
 		matcher <- largeFilesMatcher
-		checkFileMatcher' matcher file def
+		checkFileMatcher' matcher file d
 	
-	checkheuristics def = case moldkey of
+	checkheuristics d = case moldkey of
 		Just _ -> return True
 		Nothing -> do
 			isknown <- withTSDelta (liftIO . genInodeCache file) >>= \case
@@ -178,7 +178,7 @@ shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 				Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
 			if isknown
 				then return True
-				else def
+				else d
 	
 	checkwasingit = case moldkey of
 		Just _ -> return False
