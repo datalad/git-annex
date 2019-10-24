@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="giuly.ippoliti@c1e2f0d5e40b128900f94f3d107d3719f87c3ff7"
+ nickname="giuly.ippoliti"
+ avatar="http://cdn.libravatar.org/avatar/4444ce1930af68fd817e9649d40e0359"
+ subject="Triggering which stage and when?"
+ date="2019-10-24T20:30:10Z"
+ content="""
+Hi,
+
+I would like to better understand how all stages interact together in a special remote. Once a special remote is initialized, how is the PREPARE stage triggered? I could not succeed int this for now. 
+
+Moreover, is the program continuously running after initialization? it seems to exit with an 'ok, recording state in git...'
+
+So, if I run the program 'by hand' and talk to my special remote via VERSION,INFO,PREPARE..the remote succeeds in what it is meant to. I am having troubles in making the same happen with annex under the cover.
+
+Thank you for your help,
+
+Best
+Giulia
+"""]]
