@@ -1,24 +1,24 @@
-git-annex (7.20191024) UNRELEASED; urgency=medium
+git-annex (7.20191024) upstream; urgency=medium
 
   * Changed git add/git commit -a default behavior back to what it was
     before v7; they add file contents to git, not to the annex. 
     (However, if a file was annexed before, they will still add it to
     the annex, to avoid footgun.)
-    Configuring annex.largefiles overrides this; once git-annex has
-    been told which files are large git add/git commit -a will honor that.
+  * Configuring annex.largefiles overrides that; once git-annex has
+    been told which files are large git add/git commit -a will annex them.
   * Added annex.gitaddtoannex configuration. Setting it to false prevents
     git add from adding files to the annex even when annex.largefiles
     is configured. (Unless the file was annexed before.)
-  * Made git add smarter about renamed annexed files. It can tell when an
-    annexed file was renamed, and will add it to the annex, and not to git,
-    unless annex.largefiles tells it to do otherwise.
+  * smudge: Made git add smarter about renamed annexed files. It can tell
+    when an annexed file was renamed, and will add it to the annex, 
+    and not to git, unless annex.largefiles tells it to do otherwise.
   * init: Fix a failure when used in a submodule on a crippled filesystem.
-  * enable-tor: Deal with pkexec changing to root's home directory
-    when running a command.
   * sync: Fix crash when there are submodules and an adjusted branch is
     checked out.
+  * enable-tor: Deal with pkexec changing to root's home directory
+    when running a command.
 
- -- Joey Hess <id@joeyh.name>  Mon, 21 Oct 2019 11:01:06 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 25 Oct 2019 13:04:59 -0400
 
 git-annex (7.20191017) upstream; urgency=medium
 
