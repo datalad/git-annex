@@ -1,0 +1,5 @@
+So i noticed the server provider i was using block tor traffic, and aren't really accepting tor to be installed/running on the host...
+That said, i know i could use ssh to share files between my local machine and the remote server, but i would have preferred something that wouldn't need ssh.
+
+My current isp also don't like tor so i only ever use it through vpn when i need to, so my question (as the post's title is) is there any working alternative to Tor/ssh for remote pairing with git-annex?
+I do have some accounts on some vpn provider, but i don't think/not sure how this could work.
