@@ -1,0 +1,5 @@
+As most of us know, the webapp/assistant already show option to specify the private key for ssh remote...except there the fact it has a little quirk:
+Basically it doesn't let you (at least on my end) specify folder starting with a dot (.ssh in this case) and i was obliged to move the private key out of it to be able to specify it.
+
+Now i would love to know if there a way to do this on the cli/command line too, since i only know how to do it on the webapp (for specifying the private key) as i think its only a viable quirk for the webapp and not the cli.
+
