@@ -3,3 +3,5 @@ Basically it doesn't let you (at least on my end) specify folder starting with a
 
 Now i would love to know if there a way to do this on the cli/command line too, since i only know how to do it on the webapp (for specifying the private key) as i think its only a viable quirk for the webapp and not the cli.
 
+EDIT: nvm, the assistant/webapp doesn't seem to have an option to specify the private key for the ssh remote either...
+
