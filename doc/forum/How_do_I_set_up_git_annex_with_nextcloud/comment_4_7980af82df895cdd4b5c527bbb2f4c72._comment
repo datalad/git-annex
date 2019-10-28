@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Simon"
+ subject="Should there have been a combine step?"
+ date="2019-10-28T16:06:22Z"
+ content="""
+From watching the introductory video it looks like there should be a different step for adding the second remote. Did I maybe screw up using `init` again?
+"""]]

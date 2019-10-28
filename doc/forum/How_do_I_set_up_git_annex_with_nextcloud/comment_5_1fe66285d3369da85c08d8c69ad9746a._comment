@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="Simon"
+ subject="Maybe this is the problem..."
+ date="2019-10-28T16:13:18Z"
+ content="""
+When I look at the .git/config on both machines the remotes have a different annex-uuid. I guess those should be the same, right?
+"""]]
