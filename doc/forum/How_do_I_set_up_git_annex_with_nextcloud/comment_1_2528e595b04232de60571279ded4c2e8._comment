@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nordmagnus999"
+ avatar="http://cdn.libravatar.org/avatar/d5d5b418451be64f8fa5f56909fcc4c3"
+ subject="A possible solution"
+ date="2019-10-28T15:49:12Z"
+ content="""
+You could use [git-annex-remote-rclone script](https://github.com/DanielDent/git-annex-remote-rclone) which support nextcloud/owncloud with its webdav remote iirc. (Also the rclone remote is officially supported by git-annex on the last version afaik + its bundled in some distro's repos).
+"""]]
