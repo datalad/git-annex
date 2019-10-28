@@ -1,0 +1,10 @@
+I am probably doing something fundamentally wrong. Here are the steps I've tried:
+
+1. Create a new repository using the webapp (on two virtual machines)
+2. Create a nextcloud account and folder and on the first VM ran: `WEBDAV_USERNAME=test WEBDAV_PASSWORD=whocaresforatest git annex initremote owncloud type=webdav url=https://SERVERNAME/remote.php/webdav/annex chunk=10mb encryption=hybrid keyid=randomkey@igenerated.forthis`. This seemed to lead to some synchronization.
+3. Did the same thing on the second virtual machine.
+4. On the first VM ran: `git annex enableremote owncloud keyid+=keyigenerated@forthesecond.vm`
+
+The problem is, both seem to sync something to the nextcloud installation but they don't seem to be syncing with each other.
+
+What did I do wrong?
