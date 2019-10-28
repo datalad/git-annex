@@ -1,0 +1,5 @@
+I posted in my [main blog](https://joeyh.name/blog/entry/how_I_maybe_didnt_burn_out/).
+
+Planning to start on [[todo/sqlite_database_improvements]] tomorrow, since the
+recent changes have raised the urgency of that significantly. I'll be head
+down working on that, and not reading anything here.
