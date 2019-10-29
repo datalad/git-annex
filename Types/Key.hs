@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
 
 module Types.Key where
 
@@ -13,6 +13,8 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import System.Posix.Types
 import Data.Monoid
+import GHC.Generics
+import Control.DeepSeq
 import Prelude
 
 {- A Key has a unique name, which is derived from a particular backend,
@@ -24,7 +26,9 @@ data Key = Key
 	, keyMtime :: Maybe EpochTime
 	, keyChunkSize :: Maybe Integer
 	, keyChunkNum :: Maybe Integer
-	} deriving (Eq, Ord, Read, Show)
+	} deriving (Eq, Ord, Read, Show, Generic)
+
+instance NFData Key
 
 {- A filename may be associated with a Key. -}
 newtype AssociatedFile = AssociatedFile (Maybe FilePath)
@@ -46,15 +50,21 @@ data KeyVariety
  	-- Some repositories may contain keys of other varieties,
 	-- which can still be processed to some extent.
 	| OtherKey S.ByteString
-	deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Read, Show, Generic)
+
+instance NFData KeyVariety
 
 {- Some varieties of keys may contain an extension at the end of the
  - keyName -}
 newtype HasExt = HasExt Bool
-	deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Read, Show, Generic)
+
+instance NFData HasExt
 
 newtype HashSize = HashSize Int
-	deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Read, Show, Generic)
+
+instance NFData HashSize
 
 hasExt :: KeyVariety -> Bool
 hasExt (SHA2Key _ (HasExt b)) = b

@@ -17,6 +17,7 @@ import Data.Maybe
 import Data.Char
 import qualified Data.ByteString as S
 import qualified Data.Text as T
+import Control.DeepSeq
 
 import Utility.PartialPrelude
 import Key
@@ -40,6 +41,9 @@ derivePersistField "SKey"
 -- A Key index. More efficient than SKey, but its Read instance does not
 -- work when it's used in any kind of complex data structure.
 newtype IKey = IKey String
+
+instance NFData IKey where
+	rnf (IKey s) = rnf s
 
 instance Read IKey where
 	readsPrec _ s = [(IKey s, "")]

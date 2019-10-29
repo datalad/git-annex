@@ -4,12 +4,13 @@ git-annex benchmark - benchmark git-annex commands
 
 # SYNOPSIS
 
-git annex benchmark [criterionopts] -- commmand [; command]
+git annex benchmark [criterionopts] ( -- commmand [; command] | --databases )
 
 # DESCRIPTION
 
 When git-annex is built with benchmarking support, this command can be used
-to benchmark any other git-annex command. For example "git annex benchmark -- get ."
+to benchmark any other git-annex command. For example
+"git annex benchmark -- get ."
 will benchmark "git annex get".
 
 The command being benchmarked is run in the current git-annex repository.
@@ -18,7 +19,7 @@ times to get a statistically meaningful result.
 
 When benchmarking an action like "git annex get", the first run will
 often do much more than subseqent runs. To make the benchmark repeat an
-action like getting a file each time, additional command can be listed,
+action like getting a file each time, additional commands can be listed,
 separated by ';'. (Note that ';' needs to be escaped from the shell.)
 The combined script will be run repeatedly by the benchmark. An example
 of using this:
@@ -37,6 +38,9 @@ used.
 
 Any options that git-annex usually accepts can be included after the
 command to benchmark.
+
+The --databases option benchmark's git-annex's use of sqlite databases,
+instead of a command.
 
 # OUTPUT
 

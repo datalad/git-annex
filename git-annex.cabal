@@ -813,6 +813,7 @@ Executable git-annex
     Config.Smudge
     Creds
     Crypto
+    Database.Benchmark
     Database.ContentIdentifier
     Database.Export
     Database.Fsck

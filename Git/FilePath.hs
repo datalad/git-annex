@@ -11,6 +11,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Git.FilePath (
 	TopFilePath,
@@ -30,10 +31,14 @@ import Common
 import Git
 
 import qualified System.FilePath.Posix
+import GHC.Generics
+import Control.DeepSeq
 
 {- A FilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
-	deriving (Show, Eq, Ord)
+	deriving (Show, Eq, Ord, Generic)
+
+instance NFData TopFilePath
 
 {- A file in a branch or other treeish. -}
 data BranchFilePath = BranchFilePath Ref TopFilePath
