@@ -140,7 +140,7 @@ deserializeKey :: String -> Maybe Key
 deserializeKey = deserializeKey' . encodeBS'
 
 deserializeKey' :: S.ByteString -> Maybe Key
-deserializeKey' b = eitherToMaybe $ A.parseOnly keyParser b
+deserializeKey' = eitherToMaybe . A.parseOnly keyParser
 
 {- This splits any extension out of the keyName, returning the 
  - keyName minus extension, and the extension (including leading dot).

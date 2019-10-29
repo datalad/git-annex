@@ -153,20 +153,20 @@ closeDb = Annex.getState Annex.keysdbhandle >>= \case
 	Just h -> liftIO (closeDbHandle h)
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
-addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile (toIKey k) f
+addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile k f
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [TopFilePath]
-getAssociatedFiles = runReaderIO . SQL.getAssociatedFiles . toIKey
+getAssociatedFiles = runReaderIO . SQL.getAssociatedFiles
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: TopFilePath -> Annex [Key]
-getAssociatedKey = map fromIKey <$$> runReaderIO . SQL.getAssociatedKey
+getAssociatedKey = runReaderIO . SQL.getAssociatedKey
 
 removeAssociatedFile :: Key -> TopFilePath -> Annex ()
-removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile (toIKey k)
+removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile k
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [FilePath] -> Annex ()
@@ -178,15 +178,15 @@ storeInodeCaches' k fs ics = withTSDelta $ \d ->
 		=<< liftIO (mapM (`genInodeCache` d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
-addInodeCaches k is = runWriterIO $ SQL.addInodeCaches (toIKey k) is
+addInodeCaches k is = runWriterIO $ SQL.addInodeCaches k is
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
 getInodeCaches :: Key -> Annex [InodeCache]
-getInodeCaches = runReaderIO . SQL.getInodeCaches . toIKey
+getInodeCaches = runReaderIO . SQL.getInodeCaches
 
 removeInodeCaches :: Key -> Annex ()
-removeInodeCaches = runWriterIO . SQL.removeInodeCaches . toIKey
+removeInodeCaches = runWriterIO . SQL.removeInodeCaches
 
 isInodeKnown :: InodeCache -> SentinalStatus -> Annex Bool
 isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
@@ -288,9 +288,8 @@ reconcileStaged qh = do
 	-- Note that database writes done in here will not necessarily 
 	-- be visible to database reads also done in here.
 	reconcile file key = do
-		let ikey = toIKey key
-		liftIO $ SQL.addAssociatedFileFast ikey file (SQL.WriteHandle qh)
-		caches <- liftIO $ SQL.getInodeCaches ikey (SQL.ReadHandle qh)
+		liftIO $ SQL.addAssociatedFileFast key file (SQL.WriteHandle qh)
+		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		keyloc <- calcRepo (gitAnnexLocation key)
 		keypopulated <- sameInodeCache keyloc caches
 		p <- fromRepo $ fromTopFilePath file
@@ -300,6 +299,6 @@ reconcileStaged qh = do
 				populatePointerFile (Restage True) key keyloc p >>= \case
 					Nothing -> return ()
 					Just ic -> liftIO $
-						SQL.addInodeCaches ikey [ic] (SQL.WriteHandle qh)
+						SQL.addInodeCaches key [ic] (SQL.WriteHandle qh)
 			(False, True) -> depopulatePointerFile key p
 			_ -> return ()

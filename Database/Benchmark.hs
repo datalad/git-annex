@@ -16,7 +16,6 @@ import Types.Benchmark
 import qualified Database.Keys.SQL as SQL
 import qualified Database.Queue as H
 import Database.Init
-import Database.Types
 import Utility.Tmp.Dir
 import Git.FilePath
 import Types.Key
@@ -55,11 +54,11 @@ benchmarkDbs _ = error "not built with criterion, cannot benchmark"
 getAssociatedFilesHitBench :: BenchDb -> Benchmark
 getAssociatedFilesHitBench (BenchDb h num) = bench ("getAssociatedFiles from " ++ show num ++ " (hit)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
-	SQL.getAssociatedFiles (toIKey (keyN n)) (SQL.ReadHandle h)
+	SQL.getAssociatedFiles (keyN n) (SQL.ReadHandle h)
 
 getAssociatedFilesMissBench :: BenchDb -> Benchmark
 getAssociatedFilesMissBench (BenchDb h num) = bench ("getAssociatedFiles from " ++ show num ++ " (miss)") $ nfIO $
-	SQL.getAssociatedFiles (toIKey keyMiss) (SQL.ReadHandle h)
+	SQL.getAssociatedFiles keyMiss (SQL.ReadHandle h)
 
 getAssociatedKeyHitBench :: BenchDb -> Benchmark
 getAssociatedKeyHitBench (BenchDb h num) = bench ("getAssociatedKey from " ++ show num ++ " (hit)") $ nfIO $ do
@@ -73,19 +72,19 @@ getAssociatedKeyMissBench (BenchDb h num) = bench ("getAssociatedKey from " ++ s
 addAssociatedFileOldBench :: BenchDb -> Benchmark
 addAssociatedFileOldBench (BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (old)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
-	SQL.addAssociatedFile (toIKey (keyN n)) (fileN n) (SQL.WriteHandle h)
+	SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
 addAssociatedFileNewBench :: BenchDb -> Benchmark
 addAssociatedFileNewBench (BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (new)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
-	SQL.addAssociatedFile (toIKey (keyN n)) (fileN (n+1)) (SQL.WriteHandle h)
+	SQL.addAssociatedFile (keyN n) (fileN (n+1)) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
 populateAssociatedFiles :: H.DbQueue -> Int -> IO ()
 populateAssociatedFiles h num = do
 	forM_ [1..num] $ \n ->
-		SQL.addAssociatedFile (toIKey (keyN n)) (fileN n) (SQL.WriteHandle h)
+		SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
 keyN :: Int -> Key

@@ -19,7 +19,7 @@ import qualified Database.Queue as H
 import Utility.InodeCache
 import Git.FilePath
 
-import Database.Persist.Sql
+import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
 import Data.Time.Clock
 import Control.Monad
@@ -29,13 +29,13 @@ import qualified Data.Conduit.List as CL
 
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
-  key IKey
+  key Key
   file SFilePath
   KeyFileIndex key file
   FileKeyIndex file key
 Content
-  key IKey
-  cache SInodeCache
+  key Key
+  cache InodeCache
   KeyCacheIndex key cache
 |]
 
@@ -62,20 +62,20 @@ queueDb a (WriteHandle h) = H.queueDb h checkcommit a
 			now <- getCurrentTime
 			return $ diffUTCTime now lastcommittime > 300
 
-addAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
-addAssociatedFile ik f = queueDb $ do
+addAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
+addAssociatedFile k f = queueDb $ do
 	-- If the same file was associated with a different key before,
 	-- remove that.
-	deleteWhere [AssociatedFile ==. af, AssociatedKey !=. ik]
-	void $ insertUnique $ Associated ik af
+	deleteWhere [AssociatedFile ==. af, AssociatedKey !=. k]
+	void $ insertUnique $ Associated k af
   where
 	af = toSFilePath (getTopFilePath f)
 
 -- Does not remove any old association for a file, but less expensive
 -- than addAssociatedFile. Calling dropAllAssociatedFiles first and then
 -- this is an efficient way to update all associated files.
-addAssociatedFileFast :: IKey -> TopFilePath -> WriteHandle -> IO ()
-addAssociatedFileFast ik f = queueDb $ void $ insertUnique $ Associated ik af
+addAssociatedFileFast :: Key -> TopFilePath -> WriteHandle -> IO ()
+addAssociatedFileFast k f = queueDb $ void $ insertUnique $ Associated k af
   where
 	af = toSFilePath (getTopFilePath f)
 
@@ -85,40 +85,40 @@ dropAllAssociatedFiles = queueDb $
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
-getAssociatedFiles :: IKey -> ReadHandle -> IO [TopFilePath]
-getAssociatedFiles ik = readDb $ do
-	l <- selectList [AssociatedKey ==. ik] []
+getAssociatedFiles :: Key -> ReadHandle -> IO [TopFilePath]
+getAssociatedFiles k = readDb $ do
+	l <- selectList [AssociatedKey ==. k] []
 	return $ map (asTopFilePath . fromSFilePath . associatedFile . entityVal) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
-getAssociatedKey :: TopFilePath -> ReadHandle -> IO [IKey]
+getAssociatedKey :: TopFilePath -> ReadHandle -> IO [Key]
 getAssociatedKey f = readDb $ do
 	l <- selectList [AssociatedFile ==. af] []
 	return $ map (associatedKey . entityVal) l
   where
 	af = toSFilePath (getTopFilePath f)
 
-removeAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
-removeAssociatedFile ik f = queueDb $
-	deleteWhere [AssociatedKey ==. ik, AssociatedFile ==. af]
+removeAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
+removeAssociatedFile k f = queueDb $
+	deleteWhere [AssociatedKey ==. k, AssociatedFile ==. af]
   where
 	af = toSFilePath (getTopFilePath f)
 
-addInodeCaches :: IKey -> [InodeCache] -> WriteHandle -> IO ()
-addInodeCaches ik is = queueDb $
-	forM_ is $ \i -> insertUnique $ Content ik (toSInodeCache i)
+addInodeCaches :: Key -> [InodeCache] -> WriteHandle -> IO ()
+addInodeCaches k is = queueDb $
+	forM_ is $ \i -> insertUnique $ Content k i
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
-getInodeCaches :: IKey -> ReadHandle -> IO [InodeCache]
-getInodeCaches ik = readDb $ do
-	l <- selectList [ContentKey ==. ik] []
-	return $ map (fromSInodeCache . contentCache . entityVal) l
+getInodeCaches :: Key -> ReadHandle -> IO [InodeCache]
+getInodeCaches k = readDb $ do
+	l <- selectList [ContentKey ==. k] []
+	return $ map (contentCache . entityVal) l
 
-removeInodeCaches :: IKey -> WriteHandle -> IO ()
-removeInodeCaches ik = queueDb $
-	deleteWhere [ContentKey ==. ik]
+removeInodeCaches :: Key -> WriteHandle -> IO ()
+removeInodeCaches k = queueDb $
+	deleteWhere [ContentKey ==. k]
 
 {- Check if the inode is known to be used for an annexed file.
  -
@@ -131,9 +131,7 @@ isInodeKnown i s = readDb query
 		| sentinalInodesChanged s =
 			withRawQuery likesql [] $ isJust <$> CL.head
 		| otherwise =
-			isJust <$> selectFirst [ContentCache ==. si] []
-	
-	si = toSInodeCache i
+			isJust <$> selectFirst [ContentCache ==. i] []
 			
 	likesql = T.concat
 		[ "SELECT key FROM content WHERE "
@@ -143,7 +141,7 @@ isInodeKnown i s = readDb query
 
 	mklike p = T.concat
 		[ "cache LIKE "
-		, "'I \"" -- SInodeCache serializes as I "..."
+		, "'" 
 		, T.pack p
-		, "\"'"
+		, "'"
 		]

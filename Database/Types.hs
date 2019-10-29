@@ -5,124 +5,50 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Database.Types where
+module Database.Types (
+	module Database.Types,
+	Key,
+) where
 
-import Database.Persist.TH
 import Database.Persist.Class hiding (Key)
 import Database.Persist.Sql hiding (Key)
-import Data.Maybe
-import Data.Char
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import Control.DeepSeq
+import qualified Data.Attoparsec.ByteString as A
 
-import Utility.PartialPrelude
 import Key
 import Utility.InodeCache
-import Git.Types (Ref(..))
+import Utility.FileSystemEncoding
+import Git.Types
 import Types.UUID
 import Types.Import
 
--- A serialized Key
-newtype SKey = SKey String
-	deriving (Show, Read)
+instance PersistField Key where
+	toPersistValue = toPersistValue . L.toStrict . serializeKey'
+	fromPersistValue b = fromPersistValue b >>= parse
+	  where
+		parse = either (Left . T.pack) Right . A.parseOnly keyParser
 
-toSKey :: Key -> SKey
-toSKey = SKey . serializeKey
+-- A key can contain arbitrarily encoded characters, so store in sqlite as a
+-- blob to avoid encoding problems.
+instance PersistFieldSql Key where
+	sqlType _ = SqlBlob
 
-fromSKey :: SKey -> Key
-fromSKey (SKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (deserializeKey s)
+instance PersistField InodeCache where
+	toPersistValue = toPersistValue . showInodeCache 
+	fromPersistValue b = fromPersistValue b >>= parse
+	  where
+		parse s = maybe
+			(Left $ T.pack $ "bad serialized InodeCache "++ s)
+			Right
+			(readInodeCache s)
 
-derivePersistField "SKey"
-
--- A Key index. More efficient than SKey, but its Read instance does not
--- work when it's used in any kind of complex data structure.
-newtype IKey = IKey String
-
-instance NFData IKey where
-	rnf (IKey s) = rnf s
-
-instance Read IKey where
-	readsPrec _ s = [(IKey s, "")]
-
-instance Show IKey where
-	show (IKey s) = s
-
-toIKey :: Key -> IKey
-toIKey = IKey . serializeKey
-
-fromIKey :: IKey -> Key
-fromIKey (IKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (deserializeKey s)
-
-derivePersistField "IKey"
-
--- A serialized InodeCache
-newtype SInodeCache = I String
-	deriving (Show, Read)
-
-toSInodeCache :: InodeCache -> SInodeCache
-toSInodeCache = I . showInodeCache
-
-fromSInodeCache :: SInodeCache -> InodeCache
-fromSInodeCache (I s) = fromMaybe (error $ "bad serialized InodeCache " ++ s) (readInodeCache s)
-
-derivePersistField "SInodeCache"
-
--- A serialized FilePath.
---
--- Not all unicode characters round-trip through sqlite. In particular,
--- surrigate code points do not. So, escape the FilePath. But, only when
--- it contains such characters.
-newtype SFilePath = SFilePath String
-
--- Note that Read instance does not work when used in any kind of complex
--- data structure.
-instance Read SFilePath where
-	readsPrec _ s = [(SFilePath s, "")]
-
-instance Show SFilePath where
-	show (SFilePath s) = s
-
-toSFilePath :: FilePath -> SFilePath
-toSFilePath s@('"':_) = SFilePath (show s)
-toSFilePath s
-	| any needsescape s = SFilePath (show s)
-	| otherwise = SFilePath s
-  where
-	needsescape c = case generalCategory c of
-		Surrogate -> True
-		PrivateUse -> True
-		NotAssigned -> True
-		_ -> False
-
-fromSFilePath :: SFilePath -> FilePath
-fromSFilePath (SFilePath s@('"':_)) =
-	fromMaybe (error "bad serialized SFilePath " ++ s) (readish s)
-fromSFilePath (SFilePath s) = s
-
-derivePersistField "SFilePath"
-
--- A serialized Ref
-newtype SRef = SRef Ref
-
--- Note that Read instance does not work when used in any kind of complex
--- data structure.
-instance Read SRef where
-	readsPrec _ s = [(SRef (Ref s), "")]
-
-instance Show SRef where
-	show (SRef (Ref s)) = s
-
-derivePersistField "SRef"
-
-toSRef :: Ref -> SRef
-toSRef = SRef
-
-fromSRef :: SRef -> Ref
-fromSRef (SRef r) = r
+instance PersistFieldSql InodeCache where
+	sqlType _ = SqlString
 
 instance PersistField UUID where
 	toPersistValue u = toPersistValue b
@@ -146,3 +72,37 @@ instance PersistField ContentIdentifier where
 
 instance PersistFieldSql ContentIdentifier where
 	sqlType _ = SqlBlob
+
+-- A serialized FilePath. Stored as a ByteString to avoid encoding problems.
+newtype SFilePath = SFilePath S.ByteString
+	deriving (Eq, Show)
+
+toSFilePath :: FilePath -> SFilePath
+toSFilePath = SFilePath . encodeBS
+
+fromSFilePath :: SFilePath -> FilePath
+fromSFilePath (SFilePath b) = decodeBS b
+
+instance PersistField  SFilePath where
+	toPersistValue (SFilePath b) = toPersistValue b
+	fromPersistValue v = SFilePath <$> fromPersistValue v
+
+instance PersistFieldSql SFilePath where
+	sqlType _ = SqlBlob
+
+-- A serialized git Sha
+newtype SSha = SSha String
+	deriving (Eq, Show)
+
+toSSha :: Sha -> SSha
+toSSha (Ref s) = SSha s
+
+fromSSha :: SSha -> Ref
+fromSSha (SSha s) = Ref s
+
+instance PersistField  SSha where
+	toPersistValue (SSha b) = toPersistValue b
+	fromPersistValue v = SSha <$> fromPersistValue v
+
+instance PersistFieldSql SSha where
+	sqlType _ = SqlString

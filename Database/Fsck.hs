@@ -1,6 +1,6 @@
 {- Sqlite database used for incremental fsck. 
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -39,7 +39,7 @@ data FsckHandle = FsckHandle H.DbQueue UUID
  - of the latest incremental fsck pass. -}
 share [mkPersist sqlSettings, mkMigrate "migrateFsck"] [persistLowerCase|
 Fscked
-  key SKey
+  key Key
   UniqueKey key
 |]
 
@@ -74,10 +74,8 @@ closeDb (FsckHandle h u) = do
 
 addDb :: FsckHandle -> Key -> IO ()
 addDb (FsckHandle h _) k = H.queueDb h checkcommit $
-	void $ insertUnique $ Fscked sk
+	void $ insertUnique $ Fscked k
   where
-	sk = toSKey k
-
 	-- commit queue after 1000 files or 5 minutes, whichever comes first
 	checkcommit sz lastcommittime
 		| sz > 1000 = return True
@@ -87,9 +85,9 @@ addDb (FsckHandle h _) k = H.queueDb h checkcommit $
 
 {- Doesn't know about keys that were just added with addDb. -}
 inDb :: FsckHandle -> Key -> IO Bool
-inDb (FsckHandle h _) = H.queryDbQueue h . inDb' . toSKey
+inDb (FsckHandle h _) = H.queryDbQueue h . inDb'
 
-inDb' :: SKey -> SqlPersistM Bool
-inDb' sk = do
-	r <- selectList [FsckedKey ==. sk] []
+inDb' :: Key -> SqlPersistM Bool
+inDb' k = do
+	r <- selectList [FsckedKey ==. k] []
 	return $ not $ null r

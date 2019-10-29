@@ -52,11 +52,11 @@ share [mkPersist sqlSettings, mkMigrate "migrateContentIdentifier"] [persistLowe
 ContentIdentifiers
   remote UUID
   cid ContentIdentifier
-  key IKey
+  key Key
 -- The last git-annex branch tree sha that was used to update
 -- ContentIdentifiers
 AnnexBranch
-  tree SRef
+  tree SSha
   UniqueTree tree
 |]
 
@@ -92,13 +92,13 @@ flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
 -- Be sure to also update the git-annex branch when using this.
 recordContentIdentifier :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> Key -> IO ()
 recordContentIdentifier h (RemoteStateHandle u) cid k = queueDb h $ do
-	void $ insert_ $ ContentIdentifiers u cid (toIKey k)
+	void $ insert_ $ ContentIdentifiers u cid k
 
 getContentIdentifiers :: ContentIdentifierHandle -> RemoteStateHandle -> Key -> IO [ContentIdentifier]
 getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k = 
 	H.queryDbQueue h $ do
 		l <- selectList
-			[ ContentIdentifiersKey ==. toIKey k
+			[ ContentIdentifiersKey ==. k
 			, ContentIdentifiersRemote ==. u
 			] []
 		return $ map (contentIdentifiersCid . entityVal) l
@@ -110,18 +110,18 @@ getContentIdentifierKeys (ContentIdentifierHandle h) (RemoteStateHandle u) cid =
 			[ ContentIdentifiersCid ==. cid
 			, ContentIdentifiersRemote ==. u
 			] []
-		return $ map (fromIKey . contentIdentifiersKey . entityVal) l
+		return $ map (contentIdentifiersKey . entityVal) l
 
 recordAnnexBranchTree :: ContentIdentifierHandle -> Sha -> IO ()
 recordAnnexBranchTree h s = queueDb h $ do
         deleteWhere ([] :: [Filter AnnexBranch])
-        void $ insertUnique $ AnnexBranch $ toSRef s
+        void $ insertUnique $ AnnexBranch $ toSSha s
 
 getAnnexBranchTree :: ContentIdentifierHandle -> IO Sha
 getAnnexBranchTree (ContentIdentifierHandle h) = H.queryDbQueue h $ do
         l <- selectList ([] :: [Filter AnnexBranch]) []
         case l of
-                (s:[]) -> return $ fromSRef $ annexBranchTree $ entityVal s
+                (s:[]) -> return $ fromSSha $ annexBranchTree $ entityVal s
                 _ -> return emptyTree
 
 {- Check if the git-annex branch has been updated and the database needs

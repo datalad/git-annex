@@ -19,7 +19,6 @@ import Git.FilePath
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.Types
-import Database.Types
 import qualified Database.Keys
 import qualified Database.Keys.SQL
 
@@ -91,7 +90,7 @@ scanUnlockedFiles replacefiles = whenM (inRepo Git.Ref.headExists) $ do
 	add i k = do
 		let tf = Git.LsTree.file i
 		Database.Keys.runWriter $
-			liftIO . Database.Keys.SQL.addAssociatedFileFast (toIKey k) tf
+			liftIO . Database.Keys.SQL.addAssociatedFileFast k tf
 		whenM (pure replacefiles <&&> inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f

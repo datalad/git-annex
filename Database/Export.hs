@@ -63,7 +63,7 @@ data ExportHandle = ExportHandle H.DbQueue UUID
 share [mkPersist sqlSettings, mkMigrate "migrateExport"] [persistLowerCase|
 -- Files that have been exported to the remote and are present on it.
 Exported
-  key IKey
+  key Key
   file SFilePath
   ExportedIndex key file
 -- Directories that exist on the remote, and the files that are in them.
@@ -74,12 +74,12 @@ ExportedDirectory
 -- The content of the tree that has been exported to the remote.
 -- Not all of these files are necessarily present on the remote yet.
 ExportTree
-  key IKey
+  key Key
   file SFilePath
   ExportTreeIndex key file
 -- The tree stored in ExportTree
 ExportTreeCurrent
-  tree SRef
+  tree SSha
   UniqueTree tree
 |]
 
@@ -115,43 +115,40 @@ flushDbQueue (ExportHandle h _) = H.flushDbQueue h
 recordExportTreeCurrent :: ExportHandle -> Sha -> IO ()
 recordExportTreeCurrent h s = queueDb h $ do
 	deleteWhere ([] :: [Filter ExportTreeCurrent])
-	void $ insertUnique $ ExportTreeCurrent $ toSRef s
+	void $ insertUnique $ ExportTreeCurrent $ toSSha s
 
 getExportTreeCurrent :: ExportHandle -> IO (Maybe Sha)
 getExportTreeCurrent (ExportHandle h _) = H.queryDbQueue h $ do
 	l <- selectList ([] :: [Filter ExportTreeCurrent]) []
 	case l of
-		(s:[]) -> return $ Just $ fromSRef $ exportTreeCurrentTree $ entityVal s
+		(s:[]) -> return $ Just $ fromSSha $
+			exportTreeCurrentTree $ entityVal s
 		_ -> return Nothing
 
 addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportedLocation h k el = queueDb h $ do
-	void $ insertUnique $ Exported ik ef
+	void $ insertUnique $ Exported k ef
 	let edirs = map
 		(\ed -> ExportedDirectory (toSFilePath (fromExportDirectory ed)) ef)
 		(exportDirectories el)
 	putMany edirs
   where
-	ik = toIKey k
 	ef = toSFilePath (fromExportLocation el)
 
 removeExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 removeExportedLocation h k el = queueDb h $ do
-	deleteWhere [ExportedKey ==. ik, ExportedFile ==. ef]
+	deleteWhere [ExportedKey ==. k, ExportedFile ==. ef]
 	let subdirs = map (toSFilePath . fromExportDirectory)
 		(exportDirectories el)
 	deleteWhere [ExportedDirectoryFile ==. ef, ExportedDirectorySubdir <-. subdirs]
   where
-	ik = toIKey k
 	ef = toSFilePath (fromExportLocation el)
 
 {- Note that this does not see recently queued changes. -}
 getExportedLocation :: ExportHandle -> Key -> IO [ExportLocation]
 getExportedLocation (ExportHandle h _) k = H.queryDbQueue h $ do
-	l <- selectList [ExportedKey ==. ik] []
+	l <- selectList [ExportedKey ==. k] []
 	return $ map (mkExportLocation . fromSFilePath . exportedFile . entityVal) l
-  where
-	ik = toIKey k
 
 {- Note that this does not see recently queued changes. -}
 isExportDirectoryEmpty :: ExportHandle -> ExportDirectory -> IO Bool
@@ -164,10 +161,8 @@ isExportDirectoryEmpty (ExportHandle h _) d = H.queryDbQueue h $ do
 {- Get locations in the export that might contain a key. -}
 getExportTree :: ExportHandle -> Key -> IO [ExportLocation]
 getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
-	l <- selectList [ExportTreeKey ==. ik] []
+	l <- selectList [ExportTreeKey ==. k] []
 	return $ map (mkExportLocation . fromSFilePath . exportTreeFile . entityVal) l
-  where
-	ik = toIKey k
 
 {- Get keys that might be currently exported to a location.
  -
@@ -178,23 +173,21 @@ getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
  -}
 getExportTreeKey :: ExportHandle -> ExportLocation -> IO [Key]
 getExportTreeKey (ExportHandle h _) el = H.queryDbQueue h $ do
-	map (fromIKey . exportTreeKey . entityVal) 
+	map (exportTreeKey . entityVal) 
 		<$> selectList [ExportTreeFile ==. ef] []
   where
 	ef = toSFilePath (fromExportLocation el)
 
 addExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportTree h k loc = queueDb h $
-	void $ insertUnique $ ExportTree ik ef
+	void $ insertUnique $ ExportTree k ef
   where
-	ik = toIKey k
 	ef = toSFilePath (fromExportLocation loc)
 
 removeExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 removeExportTree h k loc = queueDb h $
-	deleteWhere [ExportTreeKey ==. ik, ExportTreeFile ==. ef]
+	deleteWhere [ExportTreeKey ==. k, ExportTreeFile ==. ef]
   where
-	ik = toIKey k
 	ef = toSFilePath (fromExportLocation loc)
 
 -- An action that is passed the old and new values that were exported,
