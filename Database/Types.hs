@@ -99,7 +99,7 @@ toSSha (Ref s) = SSha s
 fromSSha :: SSha -> Ref
 fromSSha (SSha s) = Ref s
 
-instance PersistField  SSha where
+instance PersistField SSha where
 	toPersistValue (SSha b) = toPersistValue b
 	fromPersistValue v = SSha <$> fromPersistValue v
 
