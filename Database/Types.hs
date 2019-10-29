@@ -17,7 +17,6 @@ import Database.Persist.Sql hiding (Key)
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
-import Control.DeepSeq
 import qualified Data.Attoparsec.ByteString as A
 
 import Key
