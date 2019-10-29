@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="Simon"
- subject="What is a recent enough version?"
- date="2019-10-29T15:51:54Z"
- content="""
-It seems Ubuntu ships with git-annex version: 7.20190129 and that doesn't work.
-"""]]
