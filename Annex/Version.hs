@@ -17,13 +17,13 @@ import qualified Annex
 import qualified Data.Map as M
 
 defaultVersion :: RepoVersion
-defaultVersion = RepoVersion 7
+defaultVersion = RepoVersion 8
 
 latestVersion :: RepoVersion
-latestVersion = RepoVersion 7
+latestVersion = RepoVersion 8
 
 supportedVersions :: [RepoVersion]
-supportedVersions = map RepoVersion [7]
+supportedVersions = map RepoVersion [8]
 
 upgradableVersions :: [RepoVersion]
 #ifndef mingw32_HOST_OS
