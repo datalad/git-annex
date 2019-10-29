@@ -64,13 +64,11 @@ getAssociatedFilesMissBench (BenchDb h num) = bench ("getAssociatedFiles from " 
 getAssociatedKeyHitBench :: BenchDb -> Benchmark
 getAssociatedKeyHitBench (BenchDb h num) = bench ("getAssociatedKey from " ++ show num ++ " (hit)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
-	-- fromIKey because this ends up being used to get a Key
-	map fromIKey <$> SQL.getAssociatedKey (fileN n) (SQL.ReadHandle h)
+	SQL.getAssociatedKey (fileN n) (SQL.ReadHandle h)
 
 getAssociatedKeyMissBench :: BenchDb -> Benchmark
 getAssociatedKeyMissBench (BenchDb h num) = bench ("getAssociatedKey from " ++ show num ++ " (miss)") $ nfIO $
-	-- fromIKey because this ends up being used to get a Key
-	map fromIKey <$> SQL.getAssociatedKey fileMiss (SQL.ReadHandle h)
+	SQL.getAssociatedKey fileMiss (SQL.ReadHandle h)
 
 addAssociatedFileOldBench :: BenchDb -> Benchmark
 addAssociatedFileOldBench (BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (old)") $ nfIO $ do
