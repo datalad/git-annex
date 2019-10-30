@@ -32,3 +32,7 @@ TransferScanner crashed: fd:47: commitBuffer: invalid argument (invalid characte
 """]]
 
 [[!meta title="v6 repository problems with filename encoding when not in unicode locale"]]
+
+> This bug grew to encompass several problems. I believe all of them are
+> now [[fixed|done]]. Please reopen a new bug report if you see a problem like this
+> with current git-annex. --[[Joey]]

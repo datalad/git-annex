@@ -1,6 +1,10 @@
 git-annex (7.20191025) UNRELEASED; urgency=medium
 
   * benchmark: Add --databases to benchmark sqlite databases.
+  * Add some missing indexes to sqlite databases. This will speed up
+    some things involving export and import remotes, and git-annex smudge.
+  * Improved serialization of filenames and keys to the sqlite databases,
+    avoiding some encoding problems.
 
  -- Joey Hess <id@joeyh.name>  Tue, 29 Oct 2019 15:13:03 -0400
 
