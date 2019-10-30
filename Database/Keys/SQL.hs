@@ -27,6 +27,21 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Conduit.List as CL
 
+-- Note on indexes: KeyFileIndex etc are really uniqueness constraints,
+-- which cause sqlite to automatically add indexes. So when adding indexes,
+-- have to take care to only add ones that work as uniqueness constraints.
+-- (Unfortunatly persistent does not support indexes that are not
+-- uniqueness constraints; https://github.com/yesodweb/persistent/issues/109)
+--
+-- KeyFileIndex contains both the key and the file because the combined
+-- pair is unique, whereas the same key can appear in the table multiple
+-- times with different files.
+--
+-- The other benefit to including the file in the index is that it makes
+-- queries that include the file faster, since it's a covering index.
+--
+-- The KeyFileIndex only speeds up selects for a key, since it comes first.
+-- To also speed up selects for a file, there's a separate FileKeyIndex.
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
   key Key
