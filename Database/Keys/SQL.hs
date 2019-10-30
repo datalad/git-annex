@@ -24,8 +24,6 @@ import Database.Persist.TH
 import Data.Time.Clock
 import Control.Monad
 import Data.Maybe
-import qualified Data.Text as T
-import qualified Data.Conduit.List as CL
 
 -- Note on indexes: KeyFileIndex etc are really uniqueness constraints,
 -- which cause sqlite to automatically add indexes. So when adding indexes,
@@ -51,6 +49,8 @@ Associated
 Content
   key Key
   inodecache InodeCache
+  filesize FileSize
+  mtime EpochTime
   KeyInodeCacheIndex key inodecache
   InodeCacheKeyIndex inodecache key
 |]
@@ -123,7 +123,9 @@ removeAssociatedFile k f = queueDb $
 
 addInodeCaches :: Key -> [InodeCache] -> WriteHandle -> IO ()
 addInodeCaches k is = queueDb $
-	forM_ is $ \i -> insertUnique $ Content k i
+	forM_ is $ \i -> insertUnique $ Content k i 
+		(inodeCacheToFileSize i)
+		(inodeCacheToEpochTime i)
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it. -}
@@ -136,28 +138,19 @@ removeInodeCaches :: Key -> WriteHandle -> IO ()
 removeInodeCaches k = queueDb $
 	deleteWhere [ContentKey ==. k]
 
-{- Check if the inode is known to be used for an annexed file.
- -
- - This is currently slow due to the lack of indexes.
- -}
+{- Check if the inode is known to be used for an annexed file. -}
 isInodeKnown :: InodeCache -> SentinalStatus -> ReadHandle -> IO Bool
-isInodeKnown i s = readDb query
+isInodeKnown i s = readDb (isJust <$> selectFirst q [])
   where
-	query 
+	q 
 		| sentinalInodesChanged s =
-			withRawQuery likesql [] $ isJust <$> CL.head
-		| otherwise =
-			isJust <$> selectFirst [ContentInodecache ==. i] []
-			
-	likesql = T.concat
-		[ "SELECT key FROM content WHERE "
-		, T.intercalate " OR " $ map mklike (likeInodeCacheWeak i)
-		, " LIMIT 1"
-		]
-
-	mklike p = T.concat
-		[ "cache LIKE "
-		, "'" 
-		, T.pack p
-		, "'"
-		]
+			-- Note that this select is intentionally not
+			-- indexed. Normally, the inodes have not changed,
+			-- and it would be unncessary work to maintain
+			-- indexes for the unusual case.
+			[ ContentFilesize ==. inodeCacheToFileSize i
+			, ContentMtime >=. tmin
+			, ContentMtime <=. tmax
+			]
+		| otherwise = [ContentInodecache ==. i]
+	(tmin, tmax) = inodeCacheEpochTimeRange i

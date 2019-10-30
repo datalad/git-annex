@@ -10,6 +10,8 @@ process.
   Eg, store the size and allowable mtimes in a separate table that is
   queried when necessary.
 
+  Fixed.
+
 * Several selects were not able to use indexes, so would be slow.
 
   Fixed by adding indexes.

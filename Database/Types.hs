@@ -6,10 +6,13 @@
  -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module Database.Types (
 	module Database.Types,
 	Key,
+	EpochTime,
+	FileSize,
 ) where
 
 import Database.Persist.Class hiding (Key)
@@ -18,9 +21,14 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Attoparsec.ByteString as A
+import System.PosixCompat.Types
+import Data.Int
+import Data.Text.Read
+import Foreign.C.Types
 
 import Key
 import Utility.InodeCache
+import Utility.FileSize
 import Utility.FileSystemEncoding
 import Git.Types
 import Types.UUID
@@ -105,3 +113,26 @@ instance PersistField SSha where
 
 instance PersistFieldSql SSha where
 	sqlType _ = SqlString
+
+-- A FileSize could be stored as an Int64, but some systems could
+-- conceivably have a larger filesize, and no math is ever done with them
+-- in sqlite, so store a string instead.
+instance PersistField FileSize where
+	toPersistValue = toPersistValue . show
+	fromPersistValue v = fromPersistValue v >>= parse
+	  where
+		parse = either (Left . T.pack) (Right . fst) . decimal
+
+instance PersistFieldSql FileSize where
+	sqlType _ = SqlString
+
+-- Store EpochTime as an Int64, to allow selecting values in a range.
+instance PersistField EpochTime where
+	toPersistValue (CTime t) = toPersistValue (fromIntegral t :: Int64)
+	fromPersistValue v = CTime . fromIntegral <$> go
+	  where
+		go :: Either T.Text Int64
+		go = fromPersistValue v
+
+instance PersistFieldSql EpochTime where
+	sqlType _ = SqlInt64

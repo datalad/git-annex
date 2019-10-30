@@ -1,7 +1,7 @@
 {- Caching a file's inode, size, and modification time
  - to see when it's changed.
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -23,11 +23,13 @@ module Utility.InodeCache (
 	showInodeCache,
 	genInodeCache,
 	toInodeCache,
-	likeInodeCacheWeak,
 
 	InodeCacheKey,
 	inodeCacheToKey,
+	inodeCacheToFileSize,
 	inodeCacheToMtime,
+	inodeCacheToEpochTime,
+	inodeCacheEpochTimeRange,
 
 	SentinalFile(..),
 	SentinalStatus(..),
@@ -101,8 +103,20 @@ instance Eq InodeCacheKey where
 inodeCacheToKey :: InodeComparisonType -> InodeCache -> InodeCacheKey 
 inodeCacheToKey ct (InodeCache prim) = InodeCacheKey ct prim
 
+inodeCacheToFileSize :: InodeCache -> FileSize
+inodeCacheToFileSize (InodeCache (InodeCachePrim _ sz _)) = sz
+
 inodeCacheToMtime :: InodeCache -> POSIXTime
 inodeCacheToMtime (InodeCache (InodeCachePrim _ _ mtime)) = highResTime mtime
+
+inodeCacheToEpochTime :: InodeCache -> EpochTime
+inodeCacheToEpochTime (InodeCache (InodeCachePrim _ _ mtime)) = lowResTime mtime
+
+-- Returns min, max EpochTime that weakly match the time of the InodeCache.
+inodeCacheEpochTimeRange :: InodeCache -> (EpochTime, EpochTime)
+inodeCacheEpochTimeRange i =
+	let t = inodeCacheToEpochTime i
+	in (t-1, t+1)
 
 {- For backwards compatability, support low-res mtime with no
  - fractional seconds. -}
@@ -149,22 +163,6 @@ showInodeCache (InodeCache (InodeCachePrim inode size (MTimeLowRes mtime))) =
 		, show size
 		, show mtime
 		]
-
--- Generates patterns that can be used in a SQL LIKE query to match
--- serialized inode caches that are weakly the same as the provided
--- InodeCache.
---
--- Like compareWeak, the size has to match, while the mtime can differ
--- by anything less than 2 seconds.
-likeInodeCacheWeak :: InodeCache -> [String]
-likeInodeCacheWeak (InodeCache (InodeCachePrim _ size mtime)) =
-	lowresl ++ highresl
-  where
-	lowresl = map mkpat [t, t+1, t-1]
-	highresl = map (++ " %") lowresl
-	t = lowResTime mtime
-	mkpat t' = "% " ++ ssz ++ " " ++ show t'
- 	ssz = show size
 
 readInodeCache :: String -> Maybe InodeCache
 readInodeCache s = case words s of
