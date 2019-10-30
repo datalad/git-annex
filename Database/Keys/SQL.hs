@@ -35,8 +35,8 @@ Associated
   FileKeyIndex file key
 Content
   key Key
-  cache InodeCache
-  KeyCacheIndex key cache
+  inodecache InodeCache
+  KeyInodeCacheIndex key inodecache
 |]
 
 containedTable :: TableName
@@ -114,7 +114,7 @@ addInodeCaches k is = queueDb $
 getInodeCaches :: Key -> ReadHandle -> IO [InodeCache]
 getInodeCaches k = readDb $ do
 	l <- selectList [ContentKey ==. k] []
-	return $ map (contentCache . entityVal) l
+	return $ map (contentInodecache . entityVal) l
 
 removeInodeCaches :: Key -> WriteHandle -> IO ()
 removeInodeCaches k = queueDb $
@@ -131,7 +131,7 @@ isInodeKnown i s = readDb query
 		| sentinalInodesChanged s =
 			withRawQuery likesql [] $ isJust <$> CL.head
 		| otherwise =
-			isJust <$> selectFirst [ContentCache ==. i] []
+			isJust <$> selectFirst [ContentInodecache ==. i] []
 			
 	likesql = T.concat
 		[ "SELECT key FROM content WHERE "
