@@ -65,8 +65,6 @@ process.
 
 remaining todo:
 
-* test all changed types in Database.Types serialize and deserialize
-  correctly
 * migration
 
 > Investigated this in more detail, and I can't find a way to

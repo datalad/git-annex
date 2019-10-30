@@ -148,9 +148,9 @@ tests crippledfilesystem adjustedbranchok opts =
 		map (\(d, te) -> withTestMode te initTests (unitTests d)) testmodes
   where
 	testmodes = catMaybes
-		[ canadjust ("v7 adjusted unlocked branch", (testMode opts (RepoVersion 7)) { adjustedUnlockedBranch = True })
-		, unlesscrippled ("v7 unlocked", (testMode opts (RepoVersion 7)) { unlockedFiles = True })
-		, unlesscrippled ("v7 locked", testMode opts (RepoVersion 7))
+		[ canadjust ("v8 adjusted unlocked branch", (testMode opts (RepoVersion 8)) { adjustedUnlockedBranch = True })
+		, unlesscrippled ("v8 unlocked", (testMode opts (RepoVersion 8)) { unlockedFiles = True })
+		, unlesscrippled ("v8 locked", testMode opts (RepoVersion 8))
 		]
 	unlesscrippled v
 		| crippledfilesystem = Nothing

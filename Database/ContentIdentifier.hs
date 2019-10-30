@@ -94,7 +94,7 @@ flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
 -- Be sure to also update the git-annex branch when using this.
 recordContentIdentifier :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> Key -> IO ()
 recordContentIdentifier h (RemoteStateHandle u) cid k = queueDb h $ do
-	void $ insert_ $ ContentIdentifiers u cid k
+	void $ insertUnique $ ContentIdentifiers u cid k
 
 getContentIdentifiers :: ContentIdentifierHandle -> RemoteStateHandle -> Key -> IO [ContentIdentifier]
 getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k = 
