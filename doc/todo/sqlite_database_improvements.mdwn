@@ -63,7 +63,11 @@ process.
 
 ----
 
-migration
+remaining todo:
+
+* test all changed types in Database.Types serialize and deserialize
+  correctly
+* migration
 
 > Investigated this in more detail, and I can't find a way to
 > solve the encoding problem other than changing the encoding
