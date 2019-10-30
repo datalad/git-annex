@@ -40,7 +40,7 @@ data FsckHandle = FsckHandle H.DbQueue UUID
 share [mkPersist sqlSettings, mkMigrate "migrateFsck"] [persistLowerCase|
 Fscked
   key Key
-  UniqueKey key
+  FsckedKeyIndex key
 |]
 
 {- The database is removed when starting a new incremental fsck pass.

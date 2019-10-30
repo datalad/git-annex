@@ -53,6 +53,8 @@ ContentIdentifiers
   remote UUID
   cid ContentIdentifier
   key Key
+  ContentIndentifiersKeyRemoteCidIndex key remote cid
+  ContentIndentifiersCidRemoteIndex cid remote
 -- The last git-annex branch tree sha that was used to update
 -- ContentIdentifiers
 AnnexBranch

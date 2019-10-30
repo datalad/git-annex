@@ -2,23 +2,13 @@ Collection of non-ideal things about git-annex's use of sqlite databases.
 Would be good to improve these sometime, but it would need a migration
 process.
 
-* Database.Keys.SQL.isInodeKnown seems likely to get very slow
-  when there are a lot of unlocked annexed files. It needs
-  an index in the database, eg "InodeIndex cache"
-
-  It also has to do some really ugly SQL LIKE queries. Probably an index
-  would not speed them up. They're only needed when git-annex detects
-  inodes are not stable, eg on fat or probably windows. A better database
+* Database.Keys.SQL.isInodeKnown has some really ugly SQL LIKE queries. 
+  Probably an index would not speed them up. They're only needed when
+  git-annex detects inodes are not stable, eg on fat or probably windows.
+  A better database
   schema should be able to eliminate the need for those LIKE queries.
   Eg, store the size and allowable mtimes in a separate table that is
   queried when necessary.
-
-* Database.Export.getExportedKey would be faster if there was an index
-  in the database, eg "ExportedIndex file key". This only affects
-  the speed of `git annex export`, which is probably swamped by the actual
-  upload of the data to the remote.
-
-* There may be other selects elsewhere that are not indexed.
 
 * Database.Types has some suboptimal encodings for Key and InodeCache.
   They are both slow due to being implemented using String

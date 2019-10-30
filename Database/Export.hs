@@ -76,7 +76,8 @@ ExportedDirectory
 ExportTree
   key Key
   file SFilePath
-  ExportTreeIndex key file
+  ExportTreeKeyFileIndex key file
+  ExportTreeFileKeyIndex file key
 -- The tree stored in ExportTree
 ExportTreeCurrent
   tree SSha
@@ -165,9 +166,6 @@ getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
 	return $ map (mkExportLocation . fromSFilePath . exportTreeFile . entityVal) l
 
 {- Get keys that might be currently exported to a location.
- -
- - Note that the database does not currently have an index to make this
- - fast.
  -
  - Note that this does not see recently queued changes.
  -}

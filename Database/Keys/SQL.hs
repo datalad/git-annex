@@ -52,6 +52,7 @@ Content
   key Key
   inodecache InodeCache
   KeyInodeCacheIndex key inodecache
+  InodeCacheKeyIndex inodecache key
 |]
 
 containedTable :: TableName
