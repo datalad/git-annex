@@ -1,1 +1,7 @@
 When git introduces a breaking change, it prints a warning describing the change and saying "to turn off this warning set advice.warnaboutthis=false".  This adds the hassle of setting the config (once, globally), but the reduced confusion might be worth it.
+
+git also uses this mechanism to start warning of upcoming breaking changes in future versions, before these versions become current.
+
+Another way to signal breaking changes can be to use some form of [semantic versioning](https://semver.org/) for git-annex versions, bumping the major version number to indicate incompatible changes.  [[7.20190912|news/version_7.20190912]] would then be 8.20190912 .  This would help when specifying [package dependencies](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html#package-match-specifications).
+
+Of course, best is to avoid breaking changes, as @joeyh ultimately [[managed to do with v7|news/version_7.20191024]].  But they'll happen, and some people miss the [[current scheme for announcing them|forum/lets_discuss_git_add_behavior/#comment-727918fd9abda5445891f2022ac225c8]], so low-cost ways to extend the scheme might help.
