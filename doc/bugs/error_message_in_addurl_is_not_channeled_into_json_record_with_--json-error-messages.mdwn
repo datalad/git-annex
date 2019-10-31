@@ -19,4 +19,6 @@ the reason for the failure overall is that `datalad` external special remote is 
 
 If user convenience was something to strive for here, it should technically be possible for git annex to "sense" all available external special remotes and inquire them (without enabling) either they would support a given url, and then report to the user a more informative error message ("URL ... is not supported by git-annex.  You can initialize one of the available external special remotes which support that url: datalad, somebodies-s3, ...".  It could even check if the special remote is configured but not enabled and then replace "initialize" with "enable" in the message above).
 
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
 
