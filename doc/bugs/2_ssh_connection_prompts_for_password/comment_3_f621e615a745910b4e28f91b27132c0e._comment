@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="the issue persists"
+ date="2019-11-01T18:12:27Z"
+ content="""
+Ran into the same problem again, and it is not clear to me either connection caching is enabled or not (and why?):
+
+[[!format sh \"\"\"
+[d31548v@discovery7 bids]$ git -c annex.sshcaching=true annex --debug get -J2 --from=origin sub-sid000005
+[2019-11-01 14:10:56.178577] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2019-11-01 14:10:56.475956] process done ExitSuccess
+[2019-11-01 14:10:56.47622] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2019-11-01 14:10:56.836271] process done ExitSuccess
+[2019-11-01 14:10:56.865928] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..8a694d5c54eb81b1e5c5446fa63bdcd13daa34b3\",\"--pretty=%H\",\"-n1\"]
+[2019-11-01 14:10:57.229787] process done ExitSuccess
+[2019-11-01 14:10:57.234655] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2019-11-01 14:10:57.23592] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2019-11-01 14:10:57.546203] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2019-11-01 14:10:57.780246] process done ExitSuccess
+[2019-11-01 14:10:57.780454] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2019-11-01 14:10:58.097345] process done ExitSuccess
+[2019-11-01 14:10:58.09754] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"sub-sid000005\"]
+[2019-11-01 14:10:58.298181] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2019-11-01 14:10:58.29998] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2019-11-01 14:10:58.305022] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2019-11-01 14:10:58.306024] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2019-11-01 14:10:58.62005] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2019-11-01 14:10:58.621714] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2019-11-01 14:10:58.632596] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2019-11-01 14:10:58.6338] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+get sub-sid000005/ses-actions1/fmap/sub-sid000005_ses-actions1_acq-25mm_magnitude2.nii.gz get sub-sid000005/ses-actions1/fmap/sub-sid000005_ses-actions1_acq-25mm_magnitude1.nii.gz (from origin...) (from origin...) 
+[2019-11-01 14:10:59.489719] chat: ssh [\"yohtest@rolando.cns.dartmouth.edu\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/Haxby/Sam/1021_actions' '--debug' 'fd3f7af9-cf7d-4d7e-8efd-30e6bedf838d' --uuid d839134c-3afe-4456-920a-e280ce0fdf2a\"]
+
+[2019-11-01 14:10:59.553029] chat: ssh [\"yohtest@rolando.cns.dartmouth.edu\",\"-T\",\"git-annex-shell 'p2pstdio' '/inbox/BIDS/Haxby/Sam/1021_actions' '--debug' 'fd3f7af9-cf7d-4d7e-8efd-30e6bedf838d' --uuid d839134c-3afe-4456-920a-e280ce0fdf2a\"]
+yohtest@rolando.cns.dartmouth.edu's password: yohtest@rolando.cns.dartmouth.edu's password: 
+
+
+[d31548v@discovery7 bids]$ git annex version
+git-annex version: 7.20191024-g6dc2272
+\"\"\"]]
+Could you hint me on what/where to dig?
+"""]]
