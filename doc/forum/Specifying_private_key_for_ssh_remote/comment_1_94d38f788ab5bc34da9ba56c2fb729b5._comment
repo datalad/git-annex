@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="hobbes@b2cacef69071743c3a831e60511062f7e014e52f"
+ nickname="hobbes"
+ avatar="http://cdn.libravatar.org/avatar/44b70169c4d862b3619812c360aa8f1e"
+ subject="Ssh config"
+ date="2019-11-03T23:49:05Z"
+ content="""
+I would look into `man ssh_config. You can set up hosts and specific identities for those hosts.
+"""]]
