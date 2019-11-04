@@ -15,7 +15,8 @@ enumerating remotes, which I think is currently avoided, and might be too
 much overhead to add to git-annex generally for the value of this feature.
 
 Many urls could be used to clone the same LFS repo. http(s) and ssh are the
-obvious two or three. Now that `initremote --sameas` is available,
+obvious two or three. Now that `initremote --sameas`
+[[is available|support_multiple_special_remotes_with_same_uuid]],
 special remotes can be initialized for all the urls. The user would need to
 do that themselves probably.
 
