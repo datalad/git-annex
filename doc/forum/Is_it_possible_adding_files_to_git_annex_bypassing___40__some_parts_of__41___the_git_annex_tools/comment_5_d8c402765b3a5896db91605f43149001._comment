@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="irieger"
+ avatar="http://cdn.libravatar.org/avatar/83622f3c2fedea51e69f9a3986f95d73"
+ subject="comment 5"
+ date="2019-11-04T08:30:07Z"
+ content="""
+Ok, thanks.
+
+My second question was formulated not quite well. Of course I meant multiple checkouts of this one repository. That in the end is my use case that I have multiple checksum verified copies of all my images/movie clips in one go.
+
+Did quite a bit of testing over the past weeks and stuff seams working well so far.
+
+Here is a sample bash script I used to experiment that shows the workflow if anyone is interested. (Just an example, seems to do basically the same as git annex add $FILE as it is):
+
+    #!/bin/bash
+    
+    FILE=$1
+    echo \"Adding file '$FILE'\"
+    
+    HASH=$(sha256sum \"$FILE\" | sed 's/[^a-fA-F0-9].*//')
+    SIZE=$(stat --printf=\"%s\" \"$FILE\")
+    EXT=$(echo \"${FILE##*.}\" | tr '[:upper:]' '[:lower:]')
+    KEY=\"SHA256E-s${SIZE}--${HASH}.${EXT}\"
+    OBJECT=$(git annex examinekey $KEY --format='.git/annex/objects/${hashdirmixed}${key}/${key}')
+    
+    echo \"    ext:    $EXT\"
+    echo \"    sha256: $HASH\"
+    echo \"    size:   $SIZE\"
+    echo \"    KEY:    $KEY\"
+    echo \"    OBJECT: $OBJECT\"
+    
+    git -c annex.verify=false -c annex.alwayscommit=false annex setkey \"$KEY\" \"$FILE\"
+    ln -s \"$OBJECT\" \"$FILE\"
+    git add \"$FILE\"
+
+Kind regards,
+Ingmar
+"""]]
