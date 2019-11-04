@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-11-04T15:46:31Z"
+ content="""
+`initremote --sameas` can now be used to tell git-annex that two special
+remotes use the same underlying data.
+
+Is there anything else needing to be done in git-annex to let this globus
+special remote be implemented?
+"""]]
