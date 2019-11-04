@@ -116,4 +116,4 @@ Shouldn't that URL be recorded in remote.log? (similarly to `type=git` remotes)
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
 
-> [[done]; see my comment --[[Joey]]
+> [[done]]; see my comment --[[Joey]]
