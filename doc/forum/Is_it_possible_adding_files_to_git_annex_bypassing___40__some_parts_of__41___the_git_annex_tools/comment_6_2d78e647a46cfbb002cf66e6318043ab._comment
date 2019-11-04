@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 6"
+ date="2019-11-04T16:40:52Z"
+ content="""
+Great that it's working.
+
+Not sure if relevant to your case, but one other way to have multiple checkouts of one repo is [[tips/Using_git-worktree_with_annex]].  Each checkout must be of a different branch though.  On the plus side, they all share one annex, so there is only one copy of each annexed file (for locked files).
+"""]]
