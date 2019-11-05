@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="not annexing files already stored in git"
+ date="2019-10-31T16:03:41Z"
+ content="""
+\"a few files just a bit larger than that are commited to git\" -- if it's just a few, maybe set `annex.largefiles=nothing` explicitly for each of them in .gitattributes?  (Also then set `annex.largefiles=(largerthan=100kb)` in .gitattributes rather than in git config, since that overrides .gitattributes).  But in general it would be better if files already in git were not annexed even if they match `annex.largefiles`.
+"""]]

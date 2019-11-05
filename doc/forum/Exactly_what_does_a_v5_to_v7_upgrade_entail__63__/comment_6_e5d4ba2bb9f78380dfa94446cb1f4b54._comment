@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="bremner"
+ avatar="http://cdn.libravatar.org/avatar/22c2d800db6a7699139df604a67cb221"
+ subject="plz don't annex already committed files"
+ date="2019-10-31T13:50:09Z"
+ content="""
+I am suffering a bit at the moment from git-annex 7 annexing committed files and replacing them with pseudo symlinks. This breaks the file for v5 clients. What's the best way to disable this? I have annex.largefiles=100k, but a few files just a bit larger than that are commited to git.
+"""]]

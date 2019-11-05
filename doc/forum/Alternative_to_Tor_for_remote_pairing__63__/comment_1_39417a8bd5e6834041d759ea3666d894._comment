@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="plasmastrike@66c1cae4abae92d03faf344111c446a1908981ff"
+ nickname="plasmastrike"
+ avatar="http://cdn.libravatar.org/avatar/2859d0b6fe78b2252c6fbf46ce02e85b"
+ subject="Yggdrasill"
+ date="2019-11-01T13:34:36Z"
+ content="""
+You could use Yggdrasil and a Yggdrasil ipv6 address. It would allow you to ssh even if the ssh port is normally blocked. Think of Yggdrasil as dynamic reconfiguring vpn so all traffic goes through one port and encrypted.
+
+https://yggdrasil-network.github.io/
+https://yggdrasil-network.github.io/2018/07/15/remote-access.html
+
+You would still need ssh, rsync or an alternative to move the files but you will get past blocked ports
+"""]]

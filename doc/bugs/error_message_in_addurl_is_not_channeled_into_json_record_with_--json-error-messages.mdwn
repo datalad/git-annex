@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+Original report: https://github.com/datalad/datalad/issues/3825
+
+
+[[!format sh """
+$> git annex addurl --json --json-error-messages s3://hcp-openaccess/HCP_1200/100206/.xdlm/100206_3T_Diffusion_unproc.json                                       
+Configuration does not allow accessing s3://hcp-openaccess/HCP_1200/100206/.xdlm/100206_3T_Diffusion_unproc.json
+download failed: Configuration does not allow accessing s3://hcp-openaccess/HCP_1200/100206/.xdlm/100206_3T_Diffusion_unproc.json
+{"command":"addurl","success":false,"error-messages":[],"file":null}
+git-annex: addurl: 1 failed
+
+$> git annex version | head
+git-annex version: 7.20191009-1~ndall+1
+...
+"""]]
+
+the reason for the failure overall is that `datalad` external special remote is not enabled.  So the error message might also be considered misleading -- it is not about "allowing" but rather being "not supported" since AFAIK git-annex doesn't support s3:// urls (see [an existing issue](https://git-annex.branchable.com/todo/Natively_support_s3__58____47____47___urls___40__for_addurl__44___get__44___etc__41__/))
+
+If user convenience was something to strive for here, it should technically be possible for git annex to "sense" all available external special remotes and inquire them (without enabling) either they would support a given url, and then report to the user a more informative error message ("URL ... is not supported by git-annex.  You can initialize one of the available external special remotes which support that url: datalad, somebodies-s3, ...".  It could even check if the special remote is configured but not enabled and then replace "initialize" with "enable" in the message above).
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+

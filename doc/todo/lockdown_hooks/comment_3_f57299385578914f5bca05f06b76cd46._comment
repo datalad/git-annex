@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="ACLs keep fighting back"
+ date="2019-10-29T18:03:57Z"
+ content="""
+I am getting back to tackle a datalad/git-annex usecase on one of such (nfs4 ACL) usecases, so if hooks are still the way to go, I will be ready to test ;-)
+"""]]
