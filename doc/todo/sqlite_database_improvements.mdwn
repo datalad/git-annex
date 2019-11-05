@@ -2,29 +2,30 @@ Collection of non-ideal things about git-annex's use of sqlite databases.
 Would be good to improve these sometime, but it would need a migration
 process.
 
-* Database.Keys.SQL.isInodeKnown seems likely to get very slow
-  when there are a lot of unlocked annexed files. It needs
-  an index in the database, eg "InodeIndex cache"
+The `sqlite` branch changes the databases, updating annex.version to 8.
+This todo documents the state of that branch.
 
-  It also has to do some really ugly SQL LIKE queries. Probably an index
-  would not speed them up. They're only needed when git-annex detects
-  inodes are not stable, eg on fat or probably windows. A better database
+* Database.Keys.SQL.isInodeKnown has some really ugly SQL LIKE queries. 
+  Probably an index would not speed them up. They're only needed when
+  git-annex detects inodes are not stable, eg on fat or probably windows.
+  A better database
   schema should be able to eliminate the need for those LIKE queries.
   Eg, store the size and allowable mtimes in a separate table that is
   queried when necessary.
 
-* Database.Export.getExportedKey would be faster if there was an index
-  in the database, eg "ExportedIndex file key". This only affects
-  the speed of `git annex export`, which is probably swamped by the actual
-  upload of the data to the remote.
+  Fixed.
 
-* There may be other selects elsewhere that are not indexed.
+* Several selects were not able to use indexes, so would be slow.
+
+  Fixed by adding indexes.
 
 * Database.Types has some suboptimal encodings for Key and InodeCache.
   They are both slow due to being implemented using String
   (which may be fixable w/o changing the DB schema),
   and the VARCHARs they generate are longer than necessary
   since they look like eg `SKey "whatever"` and `I "whatever"`
+
+  Fixed.
 
 * SFilePath is stored efficiently, and has to be a String anyway,
   (until ByteStringFilePath is used)
@@ -45,6 +46,8 @@ process.
   And it seems likely that a query by filename would fail if the filename
   was in the database but with a different encoding.
 
+  Fixed by converting to blob.
+
 * IKey could fail to round-trip as well, when a Key contains something
   (eg, a filename extension) that is not valid in the current locale,
   for similar reasons to SFilePath. Using BLOB would be better.
@@ -58,6 +61,14 @@ process.
 
 	INSERT INTO associated VALUES(8,'SHA256E-s30--59594eea8d6f64156b3ce6530cc3a661739abf2a0b72443de8683c34b0b19344.ü','foo.ü');
 	INSERT INTO associated VALUES(9,'SHA256E-s30--59594eea8d6f64156b3ce6530cc3a661739abf2a0b72443de8683c34b0b19344.��','"foo.\56515\56508"');
+
+  Fixed by converting to blob.
+
+----
+
+remaining todo:
+
+* migration
 
 > Investigated this in more detail, and I can't find a way to
 > solve the encoding problem other than changing the encoding
@@ -99,116 +110,10 @@ process.
 >   situations, the next time an export is run, so should be ok.
 >   But it might result in already exported files being re-uploaded,
 >   or other unncessary work.
-> Keys (IKey, SFilePath)
->   rebuild with scanUnlockedFiles
+> Keys (IKey, SFilePath, SInodeCache)
+>   Use scanUnlockedFiles to repopulate the Associated table.
 > 
->   does that update the Content table with the InodeCache?
->
-> But after such a transition, how to communicate to the old git-annex
-> that it can't use the databases any longer? Moving the databases
-> out of the way won't do; old git-annex will just recreate them and 
-> start with missing data!
-> 
-> And, what about users who use a mix of old and new git-annex versions?
-> 
-> Seems this needs an annex.version bump from v7 to v8.
-
-----
-
-[[!format patch """
-diff --git a/Database/Types.hs b/Database/Types.hs
-index f08cf4e9d..3e9c9e267 100644
---- a/Database/Types.hs
-+++ b/Database/Types.hs
-@@ -14,11 +14,12 @@ import Database.Persist.TH
- import Database.Persist.Class hiding (Key)
- import Database.Persist.Sql hiding (Key)
- import Data.Maybe
--import Data.Char
- import qualified Data.ByteString as S
-+import qualified Data.ByteString.Lazy as L
- import qualified Data.Text as T
- 
- import Utility.PartialPrelude
-+import Utility.FileSystemEncoding
- import Key
- import Utility.InodeCache
- import Git.Types (Ref(..))
-@@ -37,23 +38,18 @@ fromSKey (SKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (deserializeK
- 
- derivePersistField "SKey"
- 
---- A Key index. More efficient than SKey, but its Read instance does not
---- work when it's used in any kind of complex data structure.
--newtype IKey = IKey String
--
--instance Read IKey where
--	readsPrec _ s = [(IKey s, "")]
--
--instance Show IKey where
--	show (IKey s) = s
-+-- A Key index. More efficient than SKey.
-+newtype IKey = IKey S.ByteString
-+	deriving (Eq, Show, PersistField, PersistFieldSql)
- 
-+-- FIXME: toStrict copies, not efficient
- toIKey :: Key -> IKey
--toIKey = IKey . serializeKey
-+toIKey = IKey . L.toStrict . serializeKey'
- 
- fromIKey :: IKey -> Key
--fromIKey (IKey s) = fromMaybe (error $ "bad serialized Key " ++ s) (deserializeKey s)
--
--derivePersistField "IKey"
-+fromIKey (IKey b) = fromMaybe
-+	(error $ "bad serialized Key " ++ show b) 
-+	(deserializeKey' b)
- 
- -- A serialized InodeCache
- newtype SInodeCache = I String
-@@ -67,39 +63,15 @@ fromSInodeCache (I s) = fromMaybe (error $ "bad serialized InodeCache " ++ s) (r
- 
- derivePersistField "SInodeCache"
- 
---- A serialized FilePath.
----
---- Not all unicode characters round-trip through sqlite. In particular,
---- surrigate code points do not. So, escape the FilePath. But, only when
---- it contains such characters.
--newtype SFilePath = SFilePath String
--
---- Note that Read instance does not work when used in any kind of complex
---- data structure.
--instance Read SFilePath where
--	readsPrec _ s = [(SFilePath s, "")]
--
--instance Show SFilePath where
--	show (SFilePath s) = s
-+-- A serialized FilePath. Stored as a ByteString to avoid encoding problems.
-+newtype SFilePath = SFilePath S.ByteString
-+	deriving (Eq, Show, PersistField, PersistFieldSql)
- 
- toSFilePath :: FilePath -> SFilePath
--toSFilePath s@('"':_) = SFilePath (show s)
--toSFilePath s
--	| any needsescape s = SFilePath (show s)
--	| otherwise = SFilePath s
--  where
--	needsescape c = case generalCategory c of
--		Surrogate -> True
--		PrivateUse -> True
--		NotAssigned -> True
--		_ -> False
-+toSFilePath = SFilePath . encodeBS
- 
- fromSFilePath :: SFilePath -> FilePath
--fromSFilePath (SFilePath s@('"':_)) =
--	fromMaybe (error "bad serialized SFilePath " ++ s) (readish s)
--fromSFilePath (SFilePath s) = s
--
--derivePersistField "SFilePath"
-+fromSFilePath (SFilePath b) = decodeBS b
- 
- -- A serialized Ref
- newtype SRef = SRef Ref
-"""]]
+>   But that does not repopulate the Content table. Doing so needs
+    to iterate over the unlocked files, filter out any that are modified,
+    and record the InodeCaches of the unmodified ones. Seems that it would
+    have to use git's index to know which files are modified.
