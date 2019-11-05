@@ -42,13 +42,10 @@ upgrade automatic = flip catchNonAsync (const $ return False) $ do
 		( do
 			checkGitVersionForDirectUpgrade
 			convertDirect
-			-- Worktree files are already populated, so don't
-			-- have this try to populate them again.
-			scanUnlockedFiles False
 		, do
 			checkGitVersionForIndirectUpgrade
-			scanUnlockedFiles True
 		)
+	scanUnlockedFiles
 	configureSmudgeFilter
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more
