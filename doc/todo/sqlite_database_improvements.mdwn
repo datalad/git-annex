@@ -2,6 +2,9 @@ Collection of non-ideal things about git-annex's use of sqlite databases.
 Would be good to improve these sometime, but it would need a migration
 process.
 
+The `sqlite` branch changes the databases, updating annex.version to 8.
+This todo documents the state of that branch.
+
 * Database.Keys.SQL.isInodeKnown has some really ugly SQL LIKE queries. 
   Probably an index would not speed them up. They're only needed when
   git-annex detects inodes are not stable, eg on fat or probably windows.
@@ -107,16 +110,10 @@ remaining todo:
 >   situations, the next time an export is run, so should be ok.
 >   But it might result in already exported files being re-uploaded,
 >   or other unncessary work.
-> Keys (IKey, SFilePath)
->   rebuild with scanUnlockedFiles
+> Keys (IKey, SFilePath, SInodeCache)
+>   Use scanUnlockedFiles to repopulate the Associated table.
 > 
->   does that update the Content table with the InodeCache?
->
-> But after such a transition, how to communicate to the old git-annex
-> that it can't use the databases any longer? Moving the databases
-> out of the way won't do; old git-annex will just recreate them and 
-> start with missing data!
-> 
-> And, what about users who use a mix of old and new git-annex versions?
-> 
-> Seems this needs an annex.version bump from v7 to v8.
+>   But that does not repopulate the Content table. Doing so needs
+    to iterate over the unlocked files, filter out any that are modified,
+    and record the InodeCaches of the unmodified ones. Seems that it would
+    have to use git's index to know which files are modified.

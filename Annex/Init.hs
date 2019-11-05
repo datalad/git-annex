@@ -109,7 +109,7 @@ initialize' mversion = checkCanInitialize  $ do
 		setVersion (fromMaybe defaultVersion mversion)
 	configureSmudgeFilter
 	showSideAction "scanning for unlocked files"
-	scanUnlockedFiles True
+	scanUnlockedFiles
 	unlessM isBareRepo $ do
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook

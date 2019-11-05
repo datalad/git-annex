@@ -1,5 +1,7 @@
 git-annex (7.20191025) UNRELEASED; urgency=medium
 
+  * init: Fix bug that lost modifications to unlocked files when init is
+    re-ran in an already initialized repo.
   * benchmark: Add --databases to benchmark sqlite databases.
   * Add some missing indexes to sqlite databases. This will speed up
     some things involving export and import remotes, and git-annex smudge.

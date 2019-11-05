@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="annexing previously non-annexed files, and compatibility with v5"
+ date="2019-10-31T16:19:39Z"
+ content="""
+\"it would be better if files already in git were not annexed even if they match annex.largefiles\" -- actually not sure: what if a file was in git but gets modified to something _much_ larger?  If you have \"a few files just a bit larger\" than your `annex.largefiles` setting, maybe just increase that setting?  You could also set `annex.gitaddtoannex=false` to prevent `git add` from annexing previously non-annexed files, and use `git annex add` to annex new files.
+
+Also, if goal is compatibility with v5, you can lock files after annexing.  If [[todo/auto-lock_files_after_one_edit]] gets implemented at some point, that could also help this case.
+"""]]

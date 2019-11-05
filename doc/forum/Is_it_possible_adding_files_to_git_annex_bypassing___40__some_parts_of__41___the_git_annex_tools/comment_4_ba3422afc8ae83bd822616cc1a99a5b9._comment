@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="re: setkey"
+ date="2019-10-28T22:12:51Z"
+ content="""
+\"How can I trigger the (recording state in git...) after throwing in files with git -c annex.verify=false -c annex.alwayscommit=false annex setkey ...\" -- [[manpage|git-annex]] says \"You can later commit the data by running git annex merge (or by automatic merges) or git annex sync.  You should beware running git gc when using this configuration, since it could garbage collect objects that are staged in git-annex's index but not yet committed.\"  I myself was wondering if there is a more lightweight way of doing this.
+
+\"Can setkey be used on multiple repositories for the same file and then have the file exists in multiple copies after this without an annex copy?\" -- I think setkey *moves* the file into annex?  [[git-annex-import]] has a `--duplicate` flag to preserve the original, but setkey doesn't.  Check out also [[tips/local_caching_of_annexed_files]] for how to use one annex as backing storage for several repos.
+"""]]

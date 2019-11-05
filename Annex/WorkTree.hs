@@ -69,11 +69,12 @@ ifAnnexed file yes no = maybe no yes =<< lookupFile file
  - when initializing/upgrading a v6+ mode repository.
  -
  - Also, the content for the unlocked file may already be present as
- - an annex object. If so, make the unlocked file use that content
- - when replacefiles is True.
+ - an annex object. If so, populate the pointer file with it.
+ - But if worktree file does not have a pointer file's content, it is left
+ - as-is.
  -}
-scanUnlockedFiles :: Bool -> Annex ()
-scanUnlockedFiles replacefiles = whenM (inRepo Git.Ref.headExists) $ do
+scanUnlockedFiles :: Annex ()
+scanUnlockedFiles = whenM (inRepo Git.Ref.headExists) $ do
 	Database.Keys.runWriter $
 		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive Git.Ref.headRef
@@ -91,15 +92,18 @@ scanUnlockedFiles replacefiles = whenM (inRepo Git.Ref.headExists) $ do
 		let tf = Git.LsTree.file i
 		Database.Keys.runWriter $
 			liftIO . Database.Keys.SQL.addAssociatedFileFast k tf
-		whenM (pure replacefiles <&&> inAnnex k) $ do
+		whenM (inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
-			destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
-			ic <- replaceFile f $ \tmp ->
-				linkFromAnnex k tmp destmode >>= \case
-					LinkAnnexOk -> 
-						withTSDelta (liftIO . genInodeCache tmp)
-					LinkAnnexNoop -> return Nothing
-					LinkAnnexFailed -> liftIO $ do
-						writePointerFile tmp k destmode
-						return Nothing
-			maybe noop (restagePointerFile (Restage True) f) ic
+			liftIO (isPointerFile f) >>= \case
+				Just k' | k' == k -> do
+					destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
+					ic <- replaceFile f $ \tmp ->
+						linkFromAnnex k tmp destmode >>= \case
+							LinkAnnexOk -> 
+								withTSDelta (liftIO . genInodeCache tmp)
+							LinkAnnexNoop -> return Nothing
+							LinkAnnexFailed -> liftIO $ do
+								writePointerFile tmp k destmode
+								return Nothing
+					maybe noop (restagePointerFile (Restage True) f) ic
+				_ -> noop
