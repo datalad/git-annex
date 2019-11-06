@@ -23,6 +23,10 @@ upgrade automatic = do
 		showAction "v7 to v8"
 	
 	populateKeysDb
+	-- The fsck databases are not transitioned here; any running
+	-- incremental fsck can continue to write to the old database.
+	-- The next time an incremental fsck is started, it will delete the
+	-- old database, and just re-fsck the files.
 
 	removeOldDb gitAnnexKeysDbOld
 	liftIO . nukeFile =<< fromRepo gitAnnexKeysDbIndexCacheOld

@@ -43,6 +43,7 @@ module Annex.Locations (
 	gitAnnexKeysDbIndexCache,
 	gitAnnexFsckState,
 	gitAnnexFsckDbDir,
+	gitAnnexFsckDbDirOld,
 	gitAnnexFsckDbLock,
 	gitAnnexFsckResultsLog,
 	gitAnnexSmudgeLog,

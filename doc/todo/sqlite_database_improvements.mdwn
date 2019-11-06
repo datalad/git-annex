@@ -94,9 +94,13 @@ remaining todo:
 > 
 > * Fsck (SKey)
 >   can't rebuild? Just drop and let incremental fscks re-do work
+>
+>   (done)
+
 > * ContentIdentifier (IKey)  
 >   rebuild with updateFromLog, would need to diff from empty tree to
 >   current git-annex branch, may be expensive to do!
+> 
 > * Export (IKey, SFilePath)  
 >   difficult to rebuild, what if in the middle of an interrupted
 >   export?
@@ -110,7 +114,8 @@ remaining todo:
 >   situations, the next time an export is run, so should be ok.
 >   But it might result in already exported files being re-uploaded,
 >   or other unncessary work.
-> Keys (IKey, SFilePath, SInodeCache)
+> 
+> * Keys (IKey, SFilePath, SInodeCache)
 >   Use scanUnlockedFiles to repopulate the Associated table.
 > 
 >   But that does not repopulate the Content table. Doing so needs
@@ -133,6 +138,8 @@ remaining todo:
 >   However, it has never actually changed since it was introduced in 2010
 >   (git v1.8.3.1), except for a fix for an unsigned int overflow bug that
 >   was fixed in April 2019.
+>
+>   (done)
 > 
 > Alternatively, can keep the old database code and use it to read the old
 > databases during the migration. But then bad data that got in due to the

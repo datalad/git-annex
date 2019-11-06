@@ -45,6 +45,8 @@ Fscked
 
 {- The database is removed when starting a new incremental fsck pass.
  -
+ - (The old fsck database used before v8 is also removed here.)
+ -
  - This may fail, if other fsck processes are currently running using the
  - database. Removing the database in that situation would lead to crashes
  - or unknown behavior.
@@ -52,8 +54,10 @@ Fscked
 newPass :: UUID -> Annex Bool
 newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go
   where
-	go = liftIO . void . tryIO . removeDirectoryRecursive
-		=<< fromRepo (gitAnnexFsckDbDir u)
+	go = do
+		removedb =<< fromRepo (gitAnnexFsckDbDir u)
+		removedb =<< fromRepo (gitAnnexFsckDbDirOld u)
+	removedb = liftIO . void . tryIO . removeDirectoryRecursive
 
 {- Opens the database, creating it if it doesn't exist yet. -}
 openDb :: UUID -> Annex FsckHandle
