@@ -23,6 +23,7 @@ import qualified Upgrade.V3
 import qualified Upgrade.V4
 import qualified Upgrade.V5
 import qualified Upgrade.V6
+import qualified Upgrade.V7
 
 import qualified Data.Map as M
 
@@ -84,5 +85,6 @@ upgrade automatic destversion = do
 	up (RepoVersion 4) = Upgrade.V4.upgrade automatic
 	up (RepoVersion 5) = Upgrade.V5.upgrade automatic
 	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
+	up (RepoVersion 7) = Upgrade.V7.upgrade automatic
 	up _ = return True
 

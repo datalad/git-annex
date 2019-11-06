@@ -24,6 +24,7 @@ module Git.LsFiles (
 	Unmerged(..),
 	unmerged,
 	StagedDetails,
+	inodeCaches,
 ) where
 
 import Common

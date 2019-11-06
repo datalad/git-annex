@@ -1,6 +1,6 @@
 {- git-annex repository versioning
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -27,9 +27,9 @@ supportedVersions = map RepoVersion [8]
 
 upgradableVersions :: [RepoVersion]
 #ifndef mingw32_HOST_OS
-upgradableVersions = map RepoVersion [0..6]
+upgradableVersions = map RepoVersion [0..7]
 #else
-upgradableVersions = map RepoVersion [2..6]
+upgradableVersions = map RepoVersion [2..7]
 #endif
 
 autoUpgradeableVersions :: M.Map RepoVersion RepoVersion
@@ -38,6 +38,7 @@ autoUpgradeableVersions = M.fromList
 	, (RepoVersion 4, RepoVersion 5)
 	, (RepoVersion 5, RepoVersion 6)
 	, (RepoVersion 6, RepoVersion 7)
+	-- , (RepoVersion 7, RepoVersion 8)
 	]
 
 versionField :: ConfigKey

@@ -304,16 +304,16 @@ gitAnnexBadLocation key r = gitAnnexBadDir r </> keyFile key
 gitAnnexUnusedLog :: FilePath -> Git.Repo -> FilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 
-{- .git/annex/keys/ contains a database of information about keys. -}
+{- .git/annex/keysdb/ contains a database of information about keys. -}
 gitAnnexKeysDb :: Git.Repo -> FilePath
-gitAnnexKeysDb r = gitAnnexDir r </> "keys"
+gitAnnexKeysDb r = gitAnnexDir r </> "keysdb"
 
 {- Lock file for the keys database. -}
 gitAnnexKeysDbLock :: Git.Repo -> FilePath
 gitAnnexKeysDbLock r = gitAnnexKeysDb r ++ ".lck"
 
 {- Contains the stat of the last index file that was
- - reconciled with rhe keys database. -}
+ - reconciled with the keys database. -}
 gitAnnexKeysDbIndexCache :: Git.Repo -> FilePath
 gitAnnexKeysDbIndexCache r = gitAnnexKeysDb r ++ ".cache"
 
