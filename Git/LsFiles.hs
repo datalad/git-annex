@@ -1,6 +1,6 @@
 {- git ls-files interface
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -31,9 +31,12 @@ import Git
 import Git.Command
 import Git.Types
 import Git.Sha
+import Utility.InodeCache
+import Utility.TimeStamp
 
 import Numeric
 import System.Posix.Types
+import qualified Data.Map as M
 
 {- Scans for files that are checked into git's index at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
@@ -275,3 +278,53 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
 		, itreeitemtype = Nothing
 		, isha = Nothing
 		}
+
+{- Gets the InodeCache equivilant information stored in the git index.
+ -
+ - Note that this uses a --debug option whose output could change at some
+ - point in the future. If the output is not as expected, will use Nothing.
+ -}
+inodeCaches :: [FilePath] -> Repo -> IO ([(FilePath, Maybe InodeCache)], IO Bool)
+inodeCaches locs repo = do
+	(ls, cleanup) <- pipeNullSplit params repo
+	return (parse Nothing ls, cleanup)
+  where
+	params = 
+		Param "ls-files" :
+		Param "--cached" :
+		Param "-z" :
+		Param "--debug" :
+		Param "--" :
+		map File locs
+	
+	parse Nothing (f:ls) = parse (Just f) ls
+	parse (Just f) (s:[]) = 
+		let i = parsedebug s
+		in (f, i) : []
+	parse (Just f) (s:ls) =
+		let (d, f') = splitdebug s
+		    i = parsedebug d
+		in (f, i) : parse (Just f') ls
+	parse _ _ = []
+
+	-- First 5 lines are --debug output, remainder is the next filename.
+	-- This assumes that --debug does not start outputting more lines.
+	splitdebug s = case splitc '\n' s of
+		(d1:d2:d3:d4:d5:rest) ->
+			( intercalate "\n" [d1, d2, d3, d4, d5]
+			, intercalate "\n" rest
+			)
+		_ -> ("", s)
+	
+	-- This parser allows for some changes to the --debug output,
+	-- including reordering, or adding more items.
+	parsedebug s = do
+		let l = words s
+		let iskey v = ":" `isSuffixOf` v
+		let m = M.fromList $ zip
+			(filter iskey l)
+			(filter (not . iskey) l)
+		mkInodeCache
+			<$> (readish =<< M.lookup "ino:" m)
+			<*> (readish =<< M.lookup "size:" m)
+			<*> (parsePOSIXTime =<< (replace ":" "." <$> M.lookup "mtime:" m))

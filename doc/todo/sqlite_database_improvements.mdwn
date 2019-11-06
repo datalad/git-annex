@@ -48,7 +48,7 @@ This todo documents the state of that branch.
 
   Fixed by converting to blob.
 
-* IKey could fail to round-trip as well, when a Key contains something
+* SKey and IKey could fail to round-trip as well, when a Key contains something
   (eg, a filename extension) that is not valid in the current locale,
   for similar reasons to SFilePath. Using BLOB would be better.
 
@@ -86,9 +86,8 @@ remaining todo:
 > to a PersistText.
 > 
 > So that seems to leave using a BLOB to store a ByteString for 
-> SKey, IKey, and SFilePath. Attached patch shows how to do that,
-> but old git-annex won't be able to read the updated databases,
-> and won't know that it can't read them!
+> SKey, IKey, and SFilePath. But old git-annex won't be able to
+> read the updated databases, and won't know that it can't read them!
 > 
 > This seems to call for a flag day, throwing out the old database
 > contents and regenerating them from other data:
@@ -102,7 +101,8 @@ remaining todo:
 >   difficult to rebuild, what if in the middle of an interrupted
 >   export?
 >   
->   updateExportTreeFromLog only updates two tables, not others
+>   updateExportTreeFromLog only updates two tables (ExportTree and
+>   ExportTreeCurrent), not others (Exported and ExportedDirectory).
 >   
 >   Conceptually, this is the same as the repo being lost and another
 >   clone being used to update the export. The clone can only learn
@@ -114,6 +114,26 @@ remaining todo:
 >   Use scanUnlockedFiles to repopulate the Associated table.
 > 
 >   But that does not repopulate the Content table. Doing so needs
-    to iterate over the unlocked files, filter out any that are modified,
-    and record the InodeCaches of the unmodified ones. Seems that it would
-    have to use git's index to know which files are modified.
+>   to iterate over the unlocked files, filter out any that are modified,
+>   and record the InodeCaches of the unmodified ones. Seems that it would
+>   have to use git's index to know which files are modified.
+>   
+>   There is a race; a file could be modified after getting the list of
+>   modified files. To completely avoid that race is tricky. To mostly
+>   eliminate it, just generate the InodeCache, then check
+>   if the file is still unmodified, then check if the InodeCache is still
+>   valid. That leaves some much less likely races where files are being
+>   repeatedly swapped and the InodeCache generations see one file while
+>   the git ls-files --modified see the other one.
+>
+>   To fully avoid the race, use git ls-files --cached --debug,
+>   and parse the debug output into a InodeCache! This way the info
+>   from git's index is simply copied over into the git-annex database.
+>   One little problem: The --debug format is not specified and may change.
+>   However, it has never actually changed since it was introduced in 2010
+>   (git v1.8.3.1), except for a fix for an unsigned int overflow bug that
+>   was fixed in April 2019.
+> 
+> Alternatively, can keep the old database code and use it to read the old
+> databases during the migration. But then bad data that got in due to the
+> encoding problems will persist.

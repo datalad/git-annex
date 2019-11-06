@@ -12,6 +12,7 @@
 
 module Utility.InodeCache (
 	InodeCache,
+	mkInodeCache,
 	InodeComparisonType(..),
 	inodeCacheFileSize,
 
@@ -60,6 +61,10 @@ data InodeCachePrim = InodeCachePrim FileID FileSize MTime
 
 newtype InodeCache = InodeCache InodeCachePrim
 	deriving (Show)
+
+mkInodeCache :: FileID -> FileSize -> POSIXTime -> InodeCache
+mkInodeCache inode sz mtime = InodeCache $
+	InodeCachePrim inode sz (MTimeHighRes mtime)
 
 inodeCacheFileSize :: InodeCache -> FileSize
 inodeCacheFileSize (InodeCache (InodeCachePrim _ sz _)) = sz
