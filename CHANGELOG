@@ -1,10 +1,10 @@
-git-annex (7.20191025) UNRELEASED; urgency=medium
+git-annex (7.20191106) upstream; urgency=medium
 
   * init: Fix bug that lost modifications to unlocked files when init is
     re-ran in an already initialized repo.
   * benchmark: Add --databases to benchmark sqlite databases.
 
- -- Joey Hess <id@joeyh.name>  Tue, 29 Oct 2019 15:13:03 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 06 Nov 2019 12:14:50 -0400
 
 git-annex (7.20191024) upstream; urgency=medium
 
