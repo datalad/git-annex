@@ -7,6 +7,8 @@ git-annex (7.20191025) UNRELEASED; urgency=medium
     some things involving export and import remotes, and git-annex smudge.
   * Improved serialization of filenames and keys to the sqlite databases,
     avoiding some encoding problems.
+  * Windows: Fix handling of changes to time zone. (Used to work but was
+    broken in version 7.20181031.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 29 Oct 2019 15:13:03 -0400
 

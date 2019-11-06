@@ -190,16 +190,14 @@ genInodeCache f delta = catchDefaultIO Nothing $
 toInodeCache :: TSDelta -> FilePath -> FileStatus -> IO (Maybe InodeCache)
 toInodeCache (TSDelta getdelta) f s
 	| isRegularFile s = do
-#ifndef mingw32_HOST_OS
 		delta <- getdelta
-#endif
 		sz <- getFileSize' f s
 #ifdef mingw32_HOST_OS
-		mtime <- MTimeHighRes . utcTimeToPOSIXSeconds <$> getModificationTime f
+		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime f
 #else
- 		let mtime = (MTimeHighRes (modificationTimeHiRes s + highResTime delta))
+		let mtime = modificationTimeHiRes s
 #endif
-		return $ Just $ InodeCache $ InodeCachePrim (fileID s) sz mtime
+		return $ Just $ InodeCache $ InodeCachePrim (fileID s) sz (MTimeHighRes (mtime + highResTime delta))
 	| otherwise = pure Nothing
 
 {- Some filesystem get new random inodes each time they are mounted.
