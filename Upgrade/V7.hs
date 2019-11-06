@@ -13,7 +13,6 @@ import Annex.Common
 import Annex.CatFile
 import qualified Database.Keys
 import qualified Database.Keys.SQL
-import qualified Database.ContentIdentifier
 import qualified Git.LsFiles as LsFiles
 import qualified Git
 import Git.FilePath
@@ -22,8 +21,6 @@ upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	unless automatic $
 		showAction "v7 to v8"
-	
-	populateKeysDb
 
 	-- The fsck databases are not transitioned here; any running
 	-- incremental fsck can continue to write to the old database.
@@ -36,6 +33,12 @@ upgrade automatic = do
 	removeOldDb gitAnnexContentIdentifierDbDirOld
 	liftIO . nukeFile =<< fromRepo gitAnnexContentIdentifierLockOld
 
+	-- The export databases are deleted here. The new databases
+	-- will be populated by the next thing that needs them, the same
+	-- way as they would be in a fresh clone.
+	removeOldDb gitAnnexExportDir
+
+	populateKeysDb
 	removeOldDb gitAnnexKeysDbOld
 	liftIO . nukeFile =<< fromRepo gitAnnexKeysDbIndexCacheOld
 	liftIO . nukeFile =<< fromRepo gitAnnexKeysDbLockOld

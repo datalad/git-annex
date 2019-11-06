@@ -115,8 +115,12 @@ remaining todo:
 >   clone being used to update the export. The clone can only learn
 >   export state from the log. It's supposed to recover from such
 >   situations, the next time an export is run, so should be ok.
->   But it might result in already exported files being re-uploaded,
->   or other unncessary work.
+>
+>   Testing this an exporting to a directory with both exporttree=yes and
+>   importtree=yes, it refused to let an interrupted export proceed after
+>   upgrade, with "unsafe to overwrite file". An import resolved the
+>   problem. Guess the problem is that the content idenfifier did not
+>   get recorded in the git-annex branch and the db value was lost on upgrade.
 > 
 > * Keys (IKey, SFilePath, SInodeCache)
 >   Use scanUnlockedFiles to repopulate the Associated table.

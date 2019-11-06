@@ -56,10 +56,6 @@ v7 repositories are automatically upgraded to v8.
 Some sqlite databases that git-annex uses were changed in v8 and have to be
 re-populated.
 
-Any exports that were started in v7 and then interruped won't resume where
-they left off after the v8 upgrade. Some unncessary file uploads can
-happen in this situation.
-
 Any incremental fscks that were started in v7 won't resume where they left
 off in v8, but will instead begin again from the first file.
 

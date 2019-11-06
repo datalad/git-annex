@@ -48,6 +48,7 @@ module Annex.Locations (
 	gitAnnexFsckResultsLog,
 	gitAnnexSmudgeLog,
 	gitAnnexSmudgeLock,
+	gitAnnexExportDir,
 	gitAnnexExportDbDir,
 	gitAnnexExportLock,
 	gitAnnexExportUpdateLock,
@@ -329,7 +330,11 @@ gitAnnexFsckState u r = gitAnnexFsckDir u r </> "state"
 
 {- Directory containing database used to record fsck info. -}
 gitAnnexFsckDbDir :: UUID -> Git.Repo -> FilePath
-gitAnnexFsckDbDir u r = gitAnnexFsckDir u r </> "db"
+gitAnnexFsckDbDir u r = gitAnnexFsckDir u r </> "fsckdb"
+
+{- Directory containing old database used to record fsck info. -}
+gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckDbDirOld u r = gitAnnexFsckDir u r </> "db"
 
 {- Lock file for the fsck database. -}
 gitAnnexFsckDbLock :: UUID -> Git.Repo -> FilePath
@@ -347,14 +352,14 @@ gitAnnexSmudgeLog r = gitAnnexDir r </> "smudge.log"
 gitAnnexSmudgeLock :: Git.Repo -> FilePath
 gitAnnexSmudgeLock r = gitAnnexDir r </> "smudge.lck"
 
-{- .git/annex/export/uuid/ is used to store information about
+{- .git/annex/export/ is used to store information about
  - exports to special remotes. -}
-gitAnnexExportDir :: UUID -> Git.Repo -> FilePath
-gitAnnexExportDir u r = gitAnnexDir r </> "export" </> fromUUID u
+gitAnnexExportDir :: Git.Repo -> FilePath
+gitAnnexExportDir r = gitAnnexDir r </> "export"
 
 {- Directory containing database used to record export info. -}
 gitAnnexExportDbDir :: UUID -> Git.Repo -> FilePath
-gitAnnexExportDbDir u r = gitAnnexExportDir u r </> "db"
+gitAnnexExportDbDir u r = gitAnnexExportDir r </> fromUUID u </> "exportdb"
 
 {- Lock file for export state for a special remote. -}
 gitAnnexExportLock :: UUID -> Git.Repo -> FilePath
