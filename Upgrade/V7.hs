@@ -13,6 +13,7 @@ import Annex.Common
 import Annex.CatFile
 import qualified Database.Keys
 import qualified Database.Keys.SQL
+import qualified Database.ContentIdentifier
 import qualified Git.LsFiles as LsFiles
 import qualified Git
 import Git.FilePath
@@ -23,10 +24,17 @@ upgrade automatic = do
 		showAction "v7 to v8"
 	
 	populateKeysDb
+
 	-- The fsck databases are not transitioned here; any running
 	-- incremental fsck can continue to write to the old database.
 	-- The next time an incremental fsck is started, it will delete the
 	-- old database, and just re-fsck the files.
+	
+	-- The old content identifier database is deleted here, but the
+	-- new database is not populated. It will be automatically
+	-- populated from the git-annex branch the next time it is used.
+	removeOldDb gitAnnexContentIdentifierDbDirOld
+	liftIO . nukeFile =<< fromRepo gitAnnexContentIdentifierLockOld
 
 	removeOldDb gitAnnexKeysDbOld
 	liftIO . nukeFile =<< fromRepo gitAnnexKeysDbIndexCacheOld
@@ -42,6 +50,12 @@ gitAnnexKeysDbLockOld r = gitAnnexKeysDbOld r ++ ".lck"
 
 gitAnnexKeysDbIndexCacheOld :: Git.Repo -> FilePath
 gitAnnexKeysDbIndexCacheOld r = gitAnnexKeysDbOld r ++ ".cache"
+
+gitAnnexContentIdentifierDbDirOld :: Git.Repo -> FilePath
+gitAnnexContentIdentifierDbDirOld r = gitAnnexDir r </> "cids"
+
+gitAnnexContentIdentifierLockOld :: Git.Repo -> FilePath
+gitAnnexContentIdentifierLockOld r = gitAnnexContentIdentifierDbDirOld r ++ ".lck"
 
 removeOldDb :: (Git.Repo -> FilePath) -> Annex ()
 removeOldDb getdb = do
@@ -91,3 +105,4 @@ populateKeysDb = do
 						Database.Keys.SQL.addInodeCaches k [ic] h
 	liftIO $ void cleanup
 	Database.Keys.closeDb
+

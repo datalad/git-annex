@@ -375,7 +375,7 @@ gitAnnexExportExcludeLog u r = gitAnnexDir r </> "export.ex" </> fromUUID u
  - need to be rebuilt with a new name.)
  -}
 gitAnnexContentIdentifierDbDir :: Git.Repo -> FilePath
-gitAnnexContentIdentifierDbDir r = gitAnnexDir r </> "cids"
+gitAnnexContentIdentifierDbDir r = gitAnnexDir r </> "cidsdb"
 
 {- Lock file for writing to the content id database. -}
 gitAnnexContentIdentifierLock :: Git.Repo -> FilePath

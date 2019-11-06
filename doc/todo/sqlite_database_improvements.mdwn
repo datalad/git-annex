@@ -98,8 +98,11 @@ remaining todo:
 >   (done)
 
 > * ContentIdentifier (IKey)  
->   rebuild with updateFromLog, would need to diff from empty tree to
+>   rebuild with updateFromLog, will need to diff from empty tree to
 >   current git-annex branch, may be expensive to do!
+
+    (done; will be done automatically by the first command that needs to
+    use the db)
 > 
 > * Export (IKey, SFilePath)  
 >   difficult to rebuild, what if in the middle of an interrupted
