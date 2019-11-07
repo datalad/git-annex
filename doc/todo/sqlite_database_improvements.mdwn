@@ -115,12 +115,26 @@ remaining todo:
 >   clone being used to update the export. The clone can only learn
 >   export state from the log. It's supposed to recover from such
 >   situations, the next time an export is run, so should be ok.
+>   
+>   An interrupted export won't resume where it left off, since the
+>   information about a partial export doesn't reach the git-annex branch.
+>   So it will re-send some files on resume. Documenting this should
+>   be good enough.
 >
 >   Testing this an exporting to a directory with both exporttree=yes and
 >   importtree=yes, it refused to let an interrupted export proceed after
 >   upgrade, with "unsafe to overwrite file". An import resolved the
 >   problem. Guess the problem is that the content idenfifier did not
 >   get recorded in the git-annex branch and the db value was lost on upgrade.
+> 
+>   If the export is not interrupted before upgrade, later exports are able
+>   to overwrite the exported files as they should.
+>
+>   Hmm, testing again, with a script, and interrupting the export, I am
+>   not able to reproduce the problem either. The cids of exported files
+>   get written to the journal, so make their way into the git-annex branch
+>   and so the cid db gets repopulated. Perhaps my earlier manual test
+>   was mistaken somehow.
 > 
 > * Keys (IKey, SFilePath, SInodeCache)
 >   Use scanUnlockedFiles to repopulate the Associated table.
