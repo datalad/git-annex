@@ -1,4 +1,4 @@
-git-annex (7.20191024) UNRELEASED; urgency=medium
+git-annex (7.20191024) upstream; urgency=medium
 
   When annex.largefiles is not configured, `git add` and `git commit -a`
   add files to git, not to the annex. If you have gotten used to `git add`
