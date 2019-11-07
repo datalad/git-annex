@@ -1,9 +1,14 @@
+The `sqlite` branch changes the databases, updating annex.version to 8.
+The branch is ready to merge, but it might be deferred until Q1 2020
+to avoid user upgrade fatigue. Discussion below is about the motivation for
+these changes.
+
+----
+
 Collection of non-ideal things about git-annex's use of sqlite databases.
 Would be good to improve these sometime, but it would need a migration
 process.
 
-The `sqlite` branch changes the databases, updating annex.version to 8.
-This todo documents the state of that branch.
 
 * Database.Keys.SQL.isInodeKnown has some really ugly SQL LIKE queries. 
   Probably an index would not speed them up. They're only needed when
