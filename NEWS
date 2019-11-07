@@ -1,3 +1,23 @@
+git-annex (8.20191107) upstream; urgency=medium
+  
+  This version of git-annex uses repository version 8 for all repositories.
+
+  Existing repositories will be automatically upgraded by default.
+  You can prevent this, by runing: git config annex.autoupgraderepository false
+ 
+  There is no user-visible change between v7 and v8. However, the upgrade
+  process involves regenerating some sqlite databases. There are a couple
+  consequences of the upgrade to keep in mind:
+
+  * Any incremental fscks that were started in v7 won't resume where
+    they left off in v8, but will instead begin again from the first file.
+  * An interrupted export that was started in v7 won't resume where it left
+    off after upgrade to v8; files will be re-uploaded to the export remote.
+  * After the upgrade, git-annex will in some situations have to do extra
+    work while it finishes populating its sqlite databases.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 07 Nov 2019 13:21:11 -0400
+
 git-annex (7.20191024) upstream; urgency=medium
 
   When annex.largefiles is not configured, `git add` and `git commit -a`

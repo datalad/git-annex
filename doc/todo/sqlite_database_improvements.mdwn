@@ -165,3 +165,5 @@ remaining todo:
 > Alternatively, can keep the old database code and use it to read the old
 > databases during the migration. But then bad data that got in due to the
 > encoding problems will persist.
+
+[[done]] --[[Joey]]

@@ -38,7 +38,7 @@ autoUpgradeableVersions = M.fromList
 	, (RepoVersion 4, RepoVersion 5)
 	, (RepoVersion 5, RepoVersion 6)
 	, (RepoVersion 6, RepoVersion 7)
-	-- , (RepoVersion 7, RepoVersion 8)
+	, (RepoVersion 7, RepoVersion 8)
 	]
 
 versionField :: ConfigKey
