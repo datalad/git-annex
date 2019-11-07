@@ -1,16 +1,30 @@
-git-annex (7.20191025) UNRELEASED; urgency=medium
+git-annex (8.20191107) UNRELEASED; urgency=medium
 
-  * init: Fix bug that lost modifications to unlocked files when init is
-    re-ran in an already initialized repo.
-  * benchmark: Add --databases to benchmark sqlite databases.
+  * New v8 repository version.
+  * v7 upgrades automatically to v8.
+  * Any incremental fscks that were started in v7 won't resume where
+    they left off in v8, but will instead begin again from the first file.
+  * An interrupted export that was started in v7 won't resume where it left
+    off after upgrade to v8; files will be re-uploaded to the export remote.
+  * After the upgrade, git-annex will in some situations have to do extra
+    work while it finishes populating its sqlite databases.
   * Add some missing indexes to sqlite databases. This will speed up
     some things involving export and import remotes, and git-annex smudge.
+    Microbenchmarks show around 10-25% speedup of sqlite database operations.
   * Improved serialization of filenames and keys to the sqlite databases,
-    avoiding some encoding problems.
+    avoiding encoding problems.
   * Windows: Fix handling of changes to time zone. (Used to work but was
     broken in version 7.20181031.)
 
  -- Joey Hess <id@joeyh.name>  Tue, 29 Oct 2019 15:13:03 -0400
+
+git-annex (7.20191106) upstream; urgency=medium
+
+  * init: Fix bug that lost modifications to unlocked files when init is
+    re-ran in an already initialized repo.
+  * benchmark: Add --databases to benchmark sqlite databases.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 06 Nov 2019 12:14:50 -0400
 
 git-annex (7.20191024) upstream; urgency=medium
 
