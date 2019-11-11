@@ -806,6 +806,7 @@ Executable git-annex
     Command.Whereis
     Common
     Config
+    Config.CommitMode
     Config.Cost
     Config.Files
     Config.DynamicConfig

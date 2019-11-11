@@ -30,6 +30,7 @@ import Logs.View
 import Utility.Glob
 import Types.Command
 import CmdLine.Action
+import Config.CommitMode
 
 import qualified Data.Text as T
 import qualified Data.ByteString as B
@@ -418,7 +419,8 @@ withViewIndex a = do
 genViewBranch :: View -> Annex Git.Branch
 genViewBranch view = withViewIndex $ do
 	let branch = branchView view
-	void $ inRepo $ Git.Branch.commit Git.Branch.AutomaticCommit True (fromRef branch) branch []
+	cmode <- implicitCommitMode
+	void $ inRepo $ Git.Branch.commit cmode True (fromRef branch) branch []
 	return branch
 
 withCurrentView :: (View -> Annex a) -> Annex a

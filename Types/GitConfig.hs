@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -105,6 +105,7 @@ data GitConfig = GitConfig
 	, annexJobs :: Concurrency
 	, annexCacheCreds :: Bool
 	, annexAutoUpgradeRepository :: Bool
+	, annexAllowSign :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -186,6 +187,7 @@ extractGitConfig r = GitConfig
 		parseConcurrency =<< getmaybe (annex "jobs")
 	, annexCacheCreds = getbool (annex "cachecreds") True
 	, annexAutoUpgradeRepository = getbool (annex "autoupgraderepository") True
+	, annexAllowSign = getbool (annex "allowsign") False
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

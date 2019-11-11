@@ -22,6 +22,7 @@ import Logs.PreferredContent
 import qualified Annex.Branch
 import Utility.Process.Transcript
 import Config
+import Config.CommitMode
 
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}
@@ -53,8 +54,9 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 	initRepo' desc mgroup
 	{- Initialize the master branch, so things that expect
 	 - to have it will work, before any files are added. -}
-	unlessM (Git.Config.isBare <$> gitRepo) $
-		void $ inRepo $ Git.Branch.commitCommand Git.Branch.AutomaticCommit
+	unlessM (Git.Config.isBare <$> gitRepo) $ do
+		cmode <- implicitCommitMode
+		void $ inRepo $ Git.Branch.commitCommand cmode
 			[ Param "--quiet"
 			, Param "--allow-empty"
 			, Param "-m"

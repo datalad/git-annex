@@ -30,9 +30,9 @@ import Utility.InodeCache
 import Logs.Location
 import Git.FilePath
 import Git.Types
-import Git.Branch
 import Types.Import
 import Utility.Metered
+import Config.CommitMode
 
 import Control.Concurrent.STM
 
@@ -266,7 +266,8 @@ seekRemote remote branch msubdir = do
 					Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
 	
 	trackingcommit <- fromtrackingbranch Git.Ref.sha
-	let importcommitconfig = ImportCommitConfig trackingcommit AutomaticCommit importmessage
+	cmode <- implicitCommitMode
+	let importcommitconfig = ImportCommitConfig trackingcommit cmode importmessage
 	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 
 	importabletvar <- liftIO $ newTVarIO Nothing

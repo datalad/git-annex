@@ -22,6 +22,7 @@ import qualified Git.Ref
 import qualified Git.Branch
 import Git.History
 import qualified Types.Remote as Remote
+import Config.CommitMode
 
 import qualified Data.Set as S
 
@@ -72,9 +73,10 @@ makeRemoteTrackingBranchMergeCommit tb commitsha =
 				_ -> return commitsha
 
 makeRemoteTrackingBranchMergeCommit' :: Sha -> Sha -> Sha -> Annex Sha
-makeRemoteTrackingBranchMergeCommit' commitsha importedhistory treesha =
+makeRemoteTrackingBranchMergeCommit' commitsha importedhistory treesha = do
+	cmode <- implicitCommitMode
 	inRepo $ Git.Branch.commitTree
-			Git.Branch.AutomaticCommit
+			cmode
 			"remote tracking branch"
 			[commitsha, importedhistory]
 			treesha
