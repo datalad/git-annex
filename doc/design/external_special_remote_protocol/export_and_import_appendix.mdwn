@@ -118,7 +118,7 @@ file. This is called a ContentIdentifier. A good ContentIdentifier needs to:
 
 It's up to the implementor of a external special remote program what
 to use for their ContentIdentifier, but not meeting those criteria
-will leas to unhappy users, and it's better not to implement this interface if
+will lead to unhappy users, and it's better not to implement this interface if
 you can't do it well.
 
 ### protocol messages
