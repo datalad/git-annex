@@ -17,12 +17,12 @@ module Annex.RemoteTrackingBranch
 
 import Annex.Common
 import Annex.CatFile
+import qualified Annex
 import Git.Types
 import qualified Git.Ref
 import qualified Git.Branch
 import Git.History
 import qualified Types.Remote as Remote
-import Config.CommitMode
 
 import qualified Data.Set as S
 
@@ -74,7 +74,7 @@ makeRemoteTrackingBranchMergeCommit tb commitsha =
 
 makeRemoteTrackingBranchMergeCommit' :: Sha -> Sha -> Sha -> Annex Sha
 makeRemoteTrackingBranchMergeCommit' commitsha importedhistory treesha = do
-	cmode <- implicitCommitMode
+	cmode <- annexCommitMode <$> Annex.getGitConfig
 	inRepo $ Git.Branch.commitTree
 			cmode
 			"remote tracking branch"

@@ -38,7 +38,6 @@ import qualified Database.Keys
 import qualified Command.Sync
 import Utility.Tuple
 import Utility.Metered
-import Config.CommitMode
 
 import Data.Time.Clock
 import qualified Data.Set as S
@@ -231,7 +230,7 @@ commitStaged msg = do
 	case v of
 		Left _ -> return False
 		Right _ -> do
-			cmode <- implicitCommitMode
+			cmode <- annexCommitMode <$> Annex.getGitConfig
 			ok <- Command.Sync.commitStaged cmode msg
 			when ok $
 				Command.Sync.updateBranches =<< getCurrentBranch

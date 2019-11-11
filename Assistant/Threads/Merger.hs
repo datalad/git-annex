@@ -14,12 +14,12 @@ import Assistant.Sync
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import Annex.CurrentBranch
+import qualified Annex
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Command.Sync
-import Config.CommitMode
 
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
@@ -82,7 +82,7 @@ onChange file
 					, "into", Git.fromRef b
 					]
 				void $ liftAnnex $ do
-					cmode <- implicitCommitMode
+					cmode <- annexCommitMode <$> Annex.getGitConfig
 					Command.Sync.merge
 						currbranch Command.Sync.mergeConfig
 						def

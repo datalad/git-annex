@@ -59,7 +59,6 @@ import Utility.Tmp.Dir
 import Utility.CopyFile
 import qualified Database.Keys
 import Config
-import Config.CommitMode
 
 import qualified Data.Map as M
 
@@ -226,7 +225,7 @@ adjustToCrippledFileSystem = do
 	warning "Entering an adjusted branch where files are unlocked as this filesystem does not support locked files."
 	checkVersionSupported
 	whenM (isNothing <$> inRepo Git.Branch.current) $ do
-		cmode <-  implicitCommitMode
+		cmode <- annexCommitMode <$> Annex.getGitConfig
 		void $ inRepo $ Git.Branch.commitCommand cmode
 			[ Param "--quiet"
 			, Param "--allow-empty"
@@ -313,10 +312,10 @@ commitAdjustedTree' treesha (BasisBranch basis) parents =
 	go =<< catCommit basis
   where
 	go Nothing = do
-		cmode <- implicitCommitMode
+		cmode <- annexCommitMode <$> Annex.getGitConfig
 		inRepo $ mkcommit cmode
 	go (Just basiscommit) = do
-		cmode <- implicitCommitMode
+		cmode <- annexCommitMode <$> Annex.getGitConfig
 		inRepo $ commitWithMetaData
 			(commitAuthorMetaData basiscommit)
 			(commitCommitterMetaData basiscommit)
@@ -450,7 +449,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	reparent adjtree adjmergecommit (Just currentcommit) = do
 		if (commitTree currentcommit /= adjtree)
 			then do
-				cmode <- implicitCommitMode
+				cmode <- annexCommitMode <$> Annex.getGitConfig
 				c <- inRepo $ Git.Branch.commitTree cmode
 					("Merged " ++ fromRef tomerge) [adjmergecommit]
 					(commitTree currentcommit)
@@ -541,7 +540,7 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 	| length (commitParent basiscommit) > 1 = return $
 		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
 	| otherwise = do
-		cmode <- implicitCommitMode
+		cmode <- annexCommitMode <$> Annex.getGitConfig
 		treesha <- reverseAdjustedTree commitparent adj csha
 		revadjcommit <- inRepo $ commitWithMetaData
 			(commitAuthorMetaData basiscommit)

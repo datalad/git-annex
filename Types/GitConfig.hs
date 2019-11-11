@@ -21,6 +21,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
 import Git.ConfigTypes
+import Git.Branch (CommitMode(..))
 import Utility.DataUnits
 import Config.Cost
 import Types.UUID
@@ -105,7 +106,7 @@ data GitConfig = GitConfig
 	, annexJobs :: Concurrency
 	, annexCacheCreds :: Bool
 	, annexAutoUpgradeRepository :: Bool
-	, annexAllowSign :: Bool
+	, annexCommitMode :: CommitMode
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -187,7 +188,9 @@ extractGitConfig r = GitConfig
 		parseConcurrency =<< getmaybe (annex "jobs")
 	, annexCacheCreds = getbool (annex "cachecreds") True
 	, annexAutoUpgradeRepository = getbool (annex "autoupgraderepository") True
-	, annexAllowSign = getbool (annex "allowsign") False
+	, annexCommitMode = if getbool (annex "allowsign") False
+		then ManualCommit
+		else AutomaticCommit
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

@@ -12,6 +12,7 @@ import Annex.View.ViewedFile
 import Types.View
 import Types.MetaData
 import Annex.MetaData
+import qualified Annex
 import qualified Git
 import qualified Git.DiffTree as DiffTree
 import qualified Git.Branch
@@ -30,7 +31,6 @@ import Logs.View
 import Utility.Glob
 import Types.Command
 import CmdLine.Action
-import Config.CommitMode
 
 import qualified Data.Text as T
 import qualified Data.ByteString as B
@@ -419,7 +419,7 @@ withViewIndex a = do
 genViewBranch :: View -> Annex Git.Branch
 genViewBranch view = withViewIndex $ do
 	let branch = branchView view
-	cmode <- implicitCommitMode
+	cmode <- annexCommitMode <$> Annex.getGitConfig
 	void $ inRepo $ Git.Branch.commit cmode True (fromRef branch) branch []
 	return branch
 

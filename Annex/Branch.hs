@@ -70,7 +70,6 @@ import Annex.Branch.Transitions
 import qualified Annex
 import Annex.Hook
 import Utility.Directory.Stream
-import Config.CommitMode
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -111,7 +110,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $ do
-		cmode <- implicitCommitMode
+		cmode <- annexCommitMode <$> Annex.getGitConfig
 		inRepo $ Git.Branch.commitAlways cmode "branch created" fullname []
 	use sha = do
 		setIndexSha sha
@@ -319,7 +318,7 @@ commitIndex jl branchref message parents = do
 commitIndex' :: JournalLocked -> Git.Ref -> String -> String -> Integer -> [Git.Ref] -> Annex ()
 commitIndex' jl branchref message basemessage retrynum parents = do
 	updateIndex jl branchref
-	cmode <- implicitCommitMode
+	cmode <- annexCommitMode <$> Annex.getGitConfig
 	committedref <- inRepo $ Git.Branch.commitAlways cmode message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
@@ -554,7 +553,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		Annex.Queue.flush
 		if neednewlocalbranch
 			then do
-				cmode <- implicitCommitMode
+				cmode <- annexCommitMode <$> Annex.getGitConfig
 				committedref <- inRepo $ Git.Branch.commitAlways cmode message fullname transitionedrefs
 				setIndexSha committedref
 			else do
@@ -661,7 +660,7 @@ rememberTreeish treeish graftpoint = lockJournal $ \jl -> do
 	origtree <- fromMaybe (giveup "unable to determine git-annex branch tree") <$>
 		inRepo (Git.Ref.tree branchref)
 	addedt <- inRepo $ Git.Tree.graftTree treeish graftpoint origtree
-	cmode <- implicitCommitMode
+	cmode <- annexCommitMode <$> Annex.getGitConfig
 	c <- inRepo $ Git.Branch.commitTree cmode
 		"graft" [branchref] addedt
 	c' <- inRepo $ Git.Branch.commitTree cmode
