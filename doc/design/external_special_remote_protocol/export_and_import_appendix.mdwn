@@ -179,7 +179,7 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   Retrieves the content of a file from the special remote
   to the File on local disk. Must take care to only retrieve
   content that has the ContentIdentifier specified by 
-  by `EXPECTED`.  
+  `EXPECTED`.  
   While the transfer is running, the remote can send any number of
   `PROGRESS` messages. Once the transfer is complete, it finishes by
   sending one of these replies:
