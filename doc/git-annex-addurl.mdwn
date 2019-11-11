@@ -16,8 +16,10 @@ embedded in  a web page at the url, and that is added to the annex instead.
 See the documentation of annex.security.allowed-ip-addresses
 in [[git-annex]](1) for details.)
 
-Urls to torrent files (including magnet links) will cause the content of
-the torrent to be downloaded, using `aria2c`.
+Special remotes can add other special handling of particular urls. For
+example, the bittorrent special remotes makes urls to torrent files
+(including magnet links) download the content of the torrent,
+using `aria2c`.
 
 Normally the filename is based on the full url, so will look like
 "www.example.com_dir_subdir_bigfile". In some cases, addurl is able to
