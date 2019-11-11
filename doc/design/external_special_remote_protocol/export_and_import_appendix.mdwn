@@ -148,7 +148,7 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   remote. A block of responses
   can be made to this, which must always end with `END`.
   * `CONTENT Size Name`  
-    An file stored in the special remote. The Size is its size
+    A file stored in the special remote. The Size is its size
     in bytes. The Name is the name of the file on the remote,
     in the form of a relative path, and may contain path separators,
     whitespace, and other special characters.  
