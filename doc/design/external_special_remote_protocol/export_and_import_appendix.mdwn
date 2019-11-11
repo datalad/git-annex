@@ -164,13 +164,15 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   * `END`  
     Indicates the end of a block of responses.
 * `LOCATION Name`  
-  Comes before each of the following requests, 
+  Comes before each of the following requests (except for
+  REMOVEEXPORTDIRECTORYWHENEMPTY), 
   specifying the name of the file on the remote. It will be in the
   form of a relative path, and may contain path separators,
   whitespace, and other special characters.  
   No response is made to this message.
 * `EXPECTED ContentIdentifier`  
-  Comes before each of the following requests, specifying the
+  Comes before each of the following requests (except
+  for REMOVEEXPORTDIRECTORYWHENEMPTY), specifying the
   ContentIdentifier that is expected to be present on the remote.
 * `NOTHINGEXPECTED`  
   If no ContentIdentifier is expected to be present, this is sent
@@ -224,7 +226,9 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
     Indicates the content has been removed from the remote. May be returned when
     the content was already not present.
   * `REMOVE-FAILURE Key ErrorMsg`  
-    Indicates that the content was unable to be removed from the remote.
+    Indicates that the content was unable to be removed from the remote,
+    either because of an access problem, or because it did not match
+    the ContentIdentifier.
 * `REMOVEEXPORTDIRECTORYWHENEMPTY Directory`  
   Requests the remote remove an exported directory, so long as it's empty.  
   If the remote does not use directories, or `REMOVEEXPORTEXPECTED`
@@ -294,11 +298,9 @@ of the older versions.)
 Next git-annex asks for the content of a file to be retrieved.
 
 	LOCATION foo
-	EXPECTED 100 48511528411921470	
+	EXPECTED 100 48511528411921470
 	RETRIEVEEXPORTEXPECTED tmpfile
 
-But, the file "foo" has been modified and so the
-ContentIdentifier no longer matches.
+If the requested version no longer exists, the response should be:
 
 	RETRIEVE-FAILURE content has changed
-
