@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="Another use case -- http_proxy"
+ date="2019-11-12T17:51:25Z"
+ content="""
+On some institutional servers they mandate for all http traffic to go through proxy.  In our case `http_proxy` looked like `http://ptn07-e0:3128`. 
+`datalad install` worked out but an attempt to `datalad get` a bunch of files resulted in massive list of errors, and `annex-ignore` being set for \"origin\" which is otherwise available.
+We managed to fish out that warning about security schemes and http_proxy being ignored for that reason in one of the subsequent attempts (after unsetting annex-ignore).
+Upon attempts to set that variable we realized that we had to provide IP  instead of `http_proxy` full value or just a name (`ptn07-e0`), netmasked address (e.g. 10.0.0.1/24) also didn't work.  That makes it really inflexible. Actual IP could change, without http_proxy being changed.  Even the value of http_proxy could change system wide.  It would be painful to require our users to adjust for that every time, and it is infeasible to demand sysadmins to somehow tune up their configuration across HPC (we have no direct connection to them).  If we could at least whitelist private network -- that would provide some remedy.  Regular expression, though indeed not a really security-friendly solution, could have also provided remedy.
+Have we missed some already existing way to make our lives easy on that system?
+"""]]
