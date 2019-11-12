@@ -170,5 +170,5 @@ updateTransportHandle :: TransportHandle -> IO TransportHandle
 updateTransportHandle h@(TransportHandle _g annexstate) = do
 	g' <- liftAnnex h $ do
 		reloadConfig
-		Annex.fromRepo id
+		Annex.gitRepo
 	return (TransportHandle (LocalRepo g') annexstate)
