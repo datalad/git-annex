@@ -138,22 +138,14 @@ curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams ++ schemeparams
 		]
 	schemelist = map fromScheme $ S.toList $ allowedSchemes uo
 
-checkPolicy :: UrlOptions -> URI -> a -> (String -> IO b) -> IO a -> IO a
-checkPolicy uo u onerr displayerror a
+checkPolicy :: UrlOptions -> URI -> IO (Either String a) -> IO (Either String a)
+checkPolicy uo u a
 	| allowedScheme uo u = a
-	| otherwise = do
-		void $ displayerror $
-			"Configuration does not allow accessing " ++ show u
-		return onerr
+	| otherwise = return $ Left $
+		"Configuration does not allow accessing " ++ show u
 
-unsupportedUrlScheme :: URI -> (String -> IO a) -> IO a
-unsupportedUrlScheme u displayerror =
-	displayerror $ "Unsupported url scheme " ++ show u
-
-warnError :: String -> IO ()
-warnError msg = do
-	hPutStrLn stderr msg
-	hFlush stderr
+unsupportedUrlScheme :: URI -> String
+unsupportedUrlScheme u = "Unsupported url scheme " ++ show u
 
 allowedScheme :: UrlOptions -> URI -> Bool
 allowedScheme uo u = uscheme `S.member` allowedSchemes uo
@@ -161,14 +153,18 @@ allowedScheme uo u = uscheme `S.member` allowedSchemes uo
 	uscheme = mkScheme $ takeWhile (/=':') (uriScheme u)
 
 {- Checks that an url exists and could be successfully downloaded,
- - also checking that its size, if available, matches a specified size. -}
-checkBoth :: URLString -> Maybe Integer -> UrlOptions -> IO Bool
-checkBoth url expected_size uo = do
-	v <- check url expected_size uo
-	return (fst v && snd v)
+ - also checking that its size, if available, matches a specified size.
+ -
+ - The Left error is returned if policy does not allow accessing the url
+ - or the url scheme is not supported.
+ -}
+checkBoth :: URLString -> Maybe Integer -> UrlOptions -> IO (Either String Bool)
+checkBoth url expected_size uo = fmap go <$> check url expected_size uo
+  where
+	go v = fst v && snd v
 
-check :: URLString -> Maybe Integer -> UrlOptions -> IO (Bool, Bool)
-check url expected_size uo = go <$> getUrlInfo url uo
+check :: URLString -> Maybe Integer -> UrlOptions -> IO (Either String (Bool, Bool))
+check url expected_size uo = fmap go <$> getUrlInfo url uo
   where
 	go (UrlInfo False _ _) = (False, False)
 	go (UrlInfo True Nothing _) = (True, True)
@@ -176,8 +172,8 @@ check url expected_size uo = go <$> getUrlInfo url uo
 		Just _ -> (True, expected_size == s)
 		Nothing -> (True, True)
 
-exists :: URLString -> UrlOptions -> IO Bool
-exists url uo = urlExists <$> getUrlInfo url uo
+exists :: URLString -> UrlOptions -> IO (Either String Bool)
+exists url uo = fmap urlExists <$> getUrlInfo url uo
 
 data UrlInfo = UrlInfo
 	{ urlExists :: Bool
@@ -190,32 +186,36 @@ assumeUrlExists :: UrlInfo
 assumeUrlExists = UrlInfo True Nothing Nothing
 
 {- Checks that an url exists and could be successfully downloaded,
- - also returning its size and suggested filename if available. -}
-getUrlInfo :: URLString -> UrlOptions -> IO UrlInfo
+ - also returning its size and suggested filename if available.
+ -
+ - The Left error is returned if policy does not allow accessing the url
+ - or the url scheme is not supported.
+ -}
+getUrlInfo :: URLString -> UrlOptions -> IO (Either String UrlInfo)
 getUrlInfo url uo = case parseURIRelaxed url of
-	Just u -> checkPolicy uo u dne warnError $
-		case (urlDownloader uo, parseUrlRequest (show u)) of
-			(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
-				-- When http redirects to a protocol which 
-				-- conduit does not support, it will throw
-				-- a StatusCodeException with found302
-				-- and a Response with the redir Location.
-				(matchStatusCodeException (== found302))
-				(existsconduit req)
-				(followredir r)
-					`catchNonAsync` (const $ return dne)
-			(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
-				| isfileurl u -> existsfile u
-				| isftpurl u -> existscurlrestricted r u url ftpport
-					`catchNonAsync` (const $ return dne)
-				| otherwise -> do
-					unsupportedUrlScheme u warnError
-					return dne
-			(DownloadWithCurl _, _) 
-				| isfileurl u -> existsfile u
-				| otherwise -> existscurl u (basecurlparams url)
-	Nothing -> return dne
-  where
+	Just u -> checkPolicy uo u (go u)
+	Nothing -> return (Right dne)
+   where
+	go :: URI -> IO (Either String UrlInfo)
+	go u = case (urlDownloader uo, parseUrlRequest (show u)) of
+		(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
+			-- When http redirects to a protocol which 
+			-- conduit does not support, it will throw
+			-- a StatusCodeException with found302
+			-- and a Response with the redir Location.
+			(matchStatusCodeException (== found302))
+			(Right <$> existsconduit req)
+			(followredir r)
+				`catchNonAsync` (const $ return $ Right dne)
+		(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
+			| isfileurl u -> Right <$> existsfile u
+			| isftpurl u -> (Right <$> existscurlrestricted r u url ftpport)
+				`catchNonAsync` (const $ return $ Right dne)
+			| otherwise -> return $ Left $ unsupportedUrlScheme u
+		(DownloadWithCurl _, _) 
+			| isfileurl u -> Right <$> existsfile u
+			| otherwise -> Right <$> existscurl u (basecurlparams url)
+	
 	dne = UrlInfo False Nothing Nothing
 	found sz f = return $ UrlInfo True sz f
 
@@ -291,11 +291,11 @@ getUrlInfo url uo = case parseURIRelaxed url of
 				-- http to file redirect would not be secure,
 				-- and http-conduit follows http to http.
 				Just u' | isftpurl u' ->
-					checkPolicy uo u' dne warnError $
+					checkPolicy uo u' $ Right <$> 
 						existscurlrestricted r u' url' ftpport
-				_ -> return dne
-			Nothing -> return dne
-	followredir _ _ = return dne
+				_ -> return (Right dne)
+			Nothing -> return (Right dne)
+	followredir _ _ = return (Right dne)
 
 -- Parse eg: attachment; filename="fname.ext"
 -- per RFC 2616
@@ -317,31 +317,32 @@ headRequest r = r
 
 {- Download a perhaps large file, with auto-resume of incomplete downloads.
  -
- - Displays error message on stderr when download failed.
+ - When the download fails, returns an error message.
  -}
-download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
+download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
 download = download' False
 
-{- Avoids displaying any error message. -}
+{- Avoids displaying any error message, including silencing curl errors. -}
 downloadQuiet :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
-downloadQuiet = download' True
+downloadQuiet meterupdate url file uo = isRight 
+	<$> download' True meterupdate url file uo
 
-download' :: Bool -> MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
-download' noerror meterupdate url file uo =
+download' :: Bool -> MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
+download' nocurlerror meterupdate url file uo =
 	catchJust matchHttpException go showhttpexception
 		`catchNonAsync` (dlfailed . show)
   where
 	go = case parseURIRelaxed url of
-		Just u -> checkPolicy uo u False dlfailed $
+		Just u -> checkPolicy uo u $
 			case (urlDownloader uo, parseUrlRequest (show u)) of
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
 					(matchStatusCodeException (== found302))
-					(downloadConduit meterupdate req file uo >> return True)
+					(downloadConduit meterupdate req file uo >> return (Right ()))
 					(followredir r)
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 					| isfileurl u -> downloadfile u
 					| isftpurl u -> downloadcurlrestricted r u url ftpport
-					| otherwise -> unsupportedUrlScheme u dlfailed
+					| otherwise -> dlfailed $ unsupportedUrlScheme u
 				(DownloadWithCurl _, _)
 					| isfileurl u -> downloadfile u
 					| otherwise -> downloadcurl url basecurlparams
@@ -354,27 +355,20 @@ download' noerror meterupdate url file uo =
 
 	ftpport = 21
 
-	showhttpexception he = do
-		let msg = case he of
-			HttpExceptionRequest _ (StatusCodeException r _) ->
-				B8.toString $ statusMessage $ responseStatus r
-			HttpExceptionRequest _ (InternalException ie) -> 
-				case fromException ie of
-					Nothing -> show ie
-					Just (ConnectionRestricted why) -> why
-			HttpExceptionRequest _ other -> show other
-			_ -> show he
-		dlfailed msg
+	showhttpexception he = dlfailed $ case he of
+		HttpExceptionRequest _ (StatusCodeException r _) ->
+			B8.toString $ statusMessage $ responseStatus r
+		HttpExceptionRequest _ (InternalException ie) -> 
+			case fromException ie of
+				Nothing -> show ie
+				Just (ConnectionRestricted why) -> why
+		HttpExceptionRequest _ other -> show other
+		_ -> show he
 	
-	dlfailed msg
-		| noerror = return False
-		| otherwise = do
-			hPutStrLn stderr $ "download failed: " ++ msg
-			hFlush stderr
-			return False
-	
+	dlfailed msg = return $ Left $ "download failed: " ++ msg
+
 	basecurlparams = curlParams uo
-		[ if noerror
+		[ if nocurlerror
 			then Param "-S"
 			else Param "-sS"
 		, Param "-f"
@@ -387,7 +381,10 @@ download' noerror meterupdate url file uo =
 		-- if the url happens to be empty, so pre-create.
 		unlessM (doesFileExist file) $
 			writeFile file ""
-		boolSystem "curl" (curlparams ++ [Param "-o", File file, File rawurl])
+		ifM (boolSystem "curl" (curlparams ++ [Param "-o", File file, File rawurl]))
+			( return $ Right ()
+			, return $ Left "download failed"
+			)
 
 	downloadcurlrestricted r u rawurl defport =
 		downloadcurl rawurl =<< curlRestrictedParams r u defport basecurlparams
@@ -396,7 +393,7 @@ download' noerror meterupdate url file uo =
 		let src = unEscapeString (uriPath u)
 		withMeteredFile src meterupdate $
 			L.writeFile file
-		return True
+		return $ Right ()
 
 	-- Conduit does not support ftp, so will throw an exception on a
 	-- redirect to a ftp url; fall back to curl.
@@ -404,7 +401,7 @@ download' noerror meterupdate url file uo =
 		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of
 			Just url' -> case parseURIRelaxed url' of
 				Just u' | isftpurl u' ->
-					checkPolicy uo u' False dlfailed $
+					checkPolicy uo u' $
 						downloadcurlrestricted r u' url' ftpport
 				_ -> throwIO ex
 			Nothing -> throwIO ex

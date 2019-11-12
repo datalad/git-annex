@@ -40,9 +40,10 @@ import Utility.Metered
 import qualified Utility.Lsof as Lsof
 import qualified BuildInfo
 import qualified Utility.Url as Url
-import qualified Annex.Url as Url
+import qualified Annex.Url as Url hiding (download)
 import Utility.Tuple
 
+import Data.Either
 import qualified Data.Map as M
 
 {- Upgrade without interaction in the webapp. -}
@@ -323,8 +324,8 @@ downloadDistributionInfo = do
 	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
 		let infof = tmpdir </> "info"
 		let sigf = infof ++ ".sig"
-		ifM (Url.download nullMeterUpdate distributionInfoUrl infof uo
-			<&&> Url.download nullMeterUpdate distributionInfoSigUrl sigf uo
+		ifM (isRight <$> Url.download nullMeterUpdate distributionInfoUrl infof uo
+			<&&> (isRight <$> Url.download nullMeterUpdate distributionInfoSigUrl sigf uo)
 			<&&> verifyDistributionSig gpgcmd sigf)
 			( parseInfoFile <$> readFileStrict infof
 			, return Nothing

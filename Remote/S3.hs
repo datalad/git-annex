@@ -58,11 +58,10 @@ import Logs.Web
 import Logs.MetaData
 import Types.MetaData
 import Utility.Metered
-import qualified Annex.Url as Url
 import Utility.DataUnits
 import Annex.Content
-import Annex.Url (getUrlOptions, withUrlOptions)
-import Utility.Url (checkBoth, UrlOptions(..))
+import qualified Annex.Url as Url
+import Annex.Url (getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
 
 type BucketName = String
@@ -348,7 +347,7 @@ checkKey hv r rs c info k = withS3Handle hv $ \case
 			Right us -> do
 				showChecking r
 				let check u = withUrlOptions $ 
-					liftIO . checkBoth u (keySize k)
+					Url.checkBoth u (keySize k)
 				anyM check us
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
@@ -397,7 +396,7 @@ retrieveExportS3 hv r info _k loc f p =
 				warning $ needS3Creds (uuid r)
 				return False
 			Just geturl -> Url.withUrlOptions $ 
-				liftIO . Url.download p (geturl exportloc) f
+				Url.download p (geturl exportloc) f
 	exportloc = bucketExportLocation info loc
 
 removeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> Annex Bool
@@ -417,8 +416,8 @@ checkPresentExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation
 checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 	Just h -> checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
 	Nothing -> case getPublicUrlMaker info of
-		Just geturl -> withUrlOptions $ liftIO . 
-			checkBoth (geturl $ bucketExportLocation info loc) (keySize k)
+		Just geturl -> withUrlOptions $
+			Url.checkBoth (geturl $ bucketExportLocation info loc) (keySize k)
 		Nothing -> do
 			warning $ needS3Creds (uuid r)
 			giveup "No S3 credentials configured"

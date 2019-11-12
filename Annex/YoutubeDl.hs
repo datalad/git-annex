@@ -18,7 +18,6 @@ import Annex.Common
 import qualified Annex
 import Annex.Content
 import Annex.Url
-import Utility.Url (URLString)
 import Utility.DiskFree
 import Utility.HtmlDetect
 import Utility.Process.Transcript
