@@ -286,7 +286,7 @@ setupRepo gcryptid r
 	{-  Ask git-annex-shell to configure the repository as a gcrypt
 	 -  repository. May fail if it is too old. -}
 	gitannexshellsetup = Ssh.onRemote NoConsumeStdin r
-		(boolSystem, return False)
+		(\f p -> liftIO (boolSystem f p), return False)
 		"gcryptsetup" [ Param gcryptid ] []
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
@@ -451,7 +451,7 @@ getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote NoConsumeStdin r (Git.Config.fromPipe r, return (Left $ error "configlist failed")) "configlist" [] []
+		[ Ssh.onRemote NoConsumeStdin r (\f p -> liftIO (Git.Config.fromPipe r f p), return (Left $ error "configlist failed")) "configlist" [] []
 		, getConfigViaRsync r gc
 		]
 	| otherwise = return (Nothing, r)

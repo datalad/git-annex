@@ -249,21 +249,21 @@ tryGitConfigRead autoinit r
 	haveconfig = not . M.null . Git.config
 
 	pipedconfig cmd params = do
-		v <- Git.Config.fromPipe r cmd params
+		v <- liftIO $ Git.Config.fromPipe r cmd params
 		case v of
 			Right (r', val) -> do
 				unless (isUUIDConfigured r' || null val) $ do
-					warningIO $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
-					warningIO $ "Instead, got: " ++ show val
-					warningIO $ "This is unexpected; please check the network transport!"
+					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
+					warning $ "Instead, got: " ++ show val
+					warning $ "This is unexpected; please check the network transport!"
 				return $ Right r'
 			Left l -> return $ Left l
 
 	geturlconfig = Url.withUrlOptions $ \uo -> do
-		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
-			hClose h
+		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
+			liftIO $ hClose h
 			let url = Git.repoLocation r ++ "/config"
-			ifM (Url.downloadQuiet nullMeterUpdate url tmpfile uo)
+			ifM (liftIO $ Url.downloadQuiet nullMeterUpdate url tmpfile uo)
 				( Just <$> pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return Nothing
 				)

@@ -69,7 +69,7 @@ server ichan th@(TransportHandle (LocalRepo r) _) = go
 				)
 			unless ok $ do
 				hClose conn
-				warningIO "dropped Tor connection, too busy"
+				liftAnnex th $ warning "dropped Tor connection, too busy"
 	
 	handlecontrol servicerunning = do
 		msg <- atomically $ readTChan ichan
