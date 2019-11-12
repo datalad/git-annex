@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-11-12T20:34:23Z"
+ content="""
+If the repository being accessed over globus uses .git/annex/objects/ 
+locations, it sounds to me like it's a git-annex repo, being accessed over
+a protocol other than ssh. A special remote that accesses remote annex
+objects could be created, and --sameas used to make the special remote have
+the same uuid as the (remote) git-annex repo.
+"""]]
