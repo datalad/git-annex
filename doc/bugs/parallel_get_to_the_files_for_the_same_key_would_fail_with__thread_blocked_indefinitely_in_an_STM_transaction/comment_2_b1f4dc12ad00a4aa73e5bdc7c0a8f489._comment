@@ -1,0 +1,83 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-11-13T17:07:29Z"
+ content="""
+Ok, I see the bug. ensureOnlyActionOn does a STM 
+retry if it finds in the activekeys map some other thread
+is operating on the same key.
+But, there is no running STM transaction what will update
+the map. So, STM detects that the retry would deadlock.
+
+It's not really a deadlock, because once the other thread finishes,
+it will update the map to remove itself. But STM can't know that.
+The solution will be to not use STM for waiting on the other thread.
+
+Hmm, I tried the obvious approach, using a MVar semaphore to wait for the
+thread, but that just resulted in more STM and MVar deadlocks. 
+
+I don't understand why after puzzling over it for two hours. I did
+instrument all calls to atomically, and it looks, unfortunately, like
+the one in finishCommandActions is deadlocking. If the problem extends
+beyond ensureOnlyActionOn it may be much more complicated.
+
+Patch that does not work and I don't know why.
+
+	diff --git a/CmdLine/Action.hs b/CmdLine/Action.hs
+	index 87298a95f..bf4bdd589 100644
+	--- a/CmdLine/Action.hs
+	+++ b/CmdLine/Action.hs
+	@@ -268,16 +268,30 @@ ensureOnlyActionOn k a = debugLocks $
+	 	go ConcurrentPerCpu = goconcurrent
+	 	goconcurrent = do
+	 		tv <- Annex.getState Annex.activekeys
+	-		bracket (setup tv) id (const a)
+	-	setup tv = liftIO $ do
+	+		bracketIO (setup tv) id (const a)
+	+	setup tv = do
+	+		mysem <- newEmptyMVar
+	 		mytid <- myThreadId
+	-		atomically $ do
+	+		finishsetup <- atomically $ do
+	 			m <- readTVar tv
+	 			case M.lookup k m of
+	-				Just tid
+	-					| tid /= mytid -> retry
+	-					| otherwise -> return $ return ()
+	+				Just (tid, theirsem)
+	+					| tid /= mytid -> return $ do
+	+						-- wait for the other
+	+						-- thread to finish, and
+	+						-- retry (STM retry would
+	+						-- deadlock)
+	+						readMVar theirsem
+	+						setup tv
+	+					| otherwise -> return $
+	+						-- same thread, so no
+	+						-- blocking
+	+						return $ return ()
+	 				Nothing -> do
+	-					writeTVar tv $! M.insert k mytid m
+	-					return $ liftIO $ atomically $
+	-						modifyTVar tv $ M.delete k
+	+					writeTVar tv $! M.insert k (mytid, mysem) m
+	+					return $ return $ do
+	+						atomically $ modifyTVar tv $
+	+							M.delete k
+	+						-- indicate finished
+	+						putMVar mysem ()
+	+		finishsetup
+	diff --git a/Annex.hs b/Annex.hs
+	index 9eb4c5f39..936399ae7 100644
+	--- a/Annex.hs
+	+++ b/Annex.hs
+	@@ -143,7 +143,7 @@ data AnnexState = AnnexState
+	 	, existinghooks :: M.Map Git.Hook.Hook Bool
+	 	, desktopnotify :: DesktopNotify
+	 	, workers :: Maybe (TMVar (WorkerPool AnnexState))
+	-	, activekeys :: TVar (M.Map Key ThreadId)
+	+	, activekeys :: TVar (M.Map Key (ThreadId, MVar ()))
+	 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
+	 	, keysdbhandle :: Maybe Keys.DbHandle
+	 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
+"""]]

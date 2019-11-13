@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-11-13T19:07:49Z"
+ content="""
+Tried going back to c04b2af3e1a8316e7cf640046ad0aa68826650ed,
+which is before the separation of perform and cleanup stages.
+The same code was in onlyActionOn back then. And the test case does not
+crash.
+
+So, that gives a good commit to start a bisection. Which will probably
+find the bug was introduced in the separation of perform and cleanup stages,
+because that added a lot of STM complexity.
+
+(Have to cherry-pick 018b5b81736a321f3eb9762a2afb7124e19dbdf9
+onto those old commits to make them build with current libraries.)
+"""]]
