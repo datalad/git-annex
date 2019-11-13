@@ -1,0 +1,83 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-11-13T21:22:07Z"
+ content="""
+Simplified version of patch above, that converts ensureOnlyActionOn to not use
+STM at all, and is significantly simpler.
+
+With this patch, the test case still STM deadlocks. So this seems to be
+proof that the actual problem is not in ensureOnlyActionOn.
+
+	diff --git a/Annex.hs b/Annex.hs
+	index 9eb4c5f39..9baf7755a 100644
+	--- a/Annex.hs
+	+++ b/Annex.hs
+	@@ -143,7 +143,7 @@ data AnnexState = AnnexState
+	 	, existinghooks :: M.Map Git.Hook.Hook Bool
+	 	, desktopnotify :: DesktopNotify
+	 	, workers :: Maybe (TMVar (WorkerPool AnnexState))
+	-	, activekeys :: TVar (M.Map Key ThreadId)
+	+	, activekeys :: MVar (M.Map Key (ThreadId, MVar ()))
+	 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
+	 	, keysdbhandle :: Maybe Keys.DbHandle
+	 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
+	@@ -154,7 +154,7 @@ data AnnexState = AnnexState
+	 newState :: GitConfig -> Git.Repo -> IO AnnexState
+	 newState c r = do
+	 	emptyactiveremotes <- newMVar M.empty
+	-	emptyactivekeys <- newTVarIO M.empty
+	+	emptyactivekeys <- newMVar M.empty
+	 	o <- newMessageState
+	 	sc <- newTMVarIO False
+	 	return $ AnnexState
+	diff --git a/CmdLine/Action.hs b/CmdLine/Action.hs
+	index 87298a95f..a8c2bd205 100644
+	--- a/CmdLine/Action.hs
+	+++ b/CmdLine/Action.hs
+	@@ -22,7 +22,7 @@ import Remote.List
+	 import Control.Concurrent
+	 import Control.Concurrent.Async
+	 import Control.Concurrent.STM
+	-import GHC.Conc
+	+import GHC.Conc (getNumProcessors)
+	 import qualified Data.Map.Strict as M
+	 import qualified System.Console.Regions as Regions
+	 
+	@@ -267,17 +267,22 @@ ensureOnlyActionOn k a = debugLocks $
+	 	go (Concurrent _) = goconcurrent
+	 	go ConcurrentPerCpu = goconcurrent
+	 	goconcurrent = do
+	-		tv <- Annex.getState Annex.activekeys
+	-		bracket (setup tv) id (const a)
+	-	setup tv = liftIO $ do
+	+		mv <- Annex.getState Annex.activekeys
+	+		bracketIO (setup mv) id (const a)
+	+	setup mv =  do
+	 		mytid <- myThreadId
+	-		atomically $ do
+	-			m <- readTVar tv
+	-			case M.lookup k m of
+	-				Just tid
+	-					| tid /= mytid -> retry
+	-					| otherwise -> return $ return ()
+	-				Nothing -> do
+	-					writeTVar tv $! M.insert k mytid m
+	-					return $ liftIO $ atomically $
+	-						modifyTVar tv $ M.delete k
+	+		m <- takeMVar mv
+	+		let ready sem = do
+	+			putMVar mv $! M.insert k (mytid, sem) m
+	+			return $ do
+	+				modifyMVar_ mv $ pure . M.delete k
+	+				putMVar sem ()
+	+		case M.lookup k m of
+	+			Nothing -> ready =<< newEmptyMVar
+	+			Just (tid, sem)
+	+				| tid /= mytid -> do
+	+					takeMVar sem
+	+					ready sem
+	+				| otherwise -> do
+	+					putMVar mv m
+	+					return noop
+"""]]
