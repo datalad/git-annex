@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="catch-all deadlock breaker"
+ date="2019-11-13T22:33:59Z"
+ content="""
+Not sure if feasible, but maybe a [[catch-all deadlock breaker|todo/more_extensive_retries_to_mask_transient_failures]] could be implemented to mask this and other deadlocks?
+
+The moon landings software [[had something|https://www.ibiblio.org/apollo/hrst/archive/1033.pdf]] [[like this|https://history.nasa.gov/computers/Ch2-6.html]], and it worked [[pretty well|https://www.wsj.com/articles/apollo-11-had-a-hidden-hero-software-11563153001]]...
+"""]]
