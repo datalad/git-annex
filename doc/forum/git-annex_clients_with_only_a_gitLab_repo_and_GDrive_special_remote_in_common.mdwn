@@ -18,26 +18,3 @@ Thx
 Christopher
 
 
-
-
-
-Greetings,
-
-I'm setting up git-annex as the store for a darktable environment.  I have to assume that all of the backup and client machines can not necessarily see each-other.  Let's call them:
-client1
-client2
-backup
-usb (incr. backup - in case a client can't reach the gdrive)
-gitlab (upstream - do I need to group this as well - if so, what)
-gdrive (again, labeled as a backup so it will take everything)
-
-They all can reach both a gitlab repo (I know they don't support annex anymore) and a special remote for the large files (gdrive via the rclone remote to allow me to use a team drive)
-
-So either client1 or client2 will create or update content.  git-annex assistant on the client will sync that to gitlab and gdrive (I assume).
-
-The question is, will git-annex assistant on backup and the other client check to see if there have been updates to the gitlab upstream?  If so, how often?  If not, should I git-annex schedule a git-annex-sync on each client and backup to force it?  
-
-Thx
-Christopher
-
-
