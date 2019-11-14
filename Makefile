@@ -166,6 +166,7 @@ linuxstandalone:
 	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/i18n -a "$(LINUXSTANDALONE_DEST)"
 	
+	read me
 	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
 	
 	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"

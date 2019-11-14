@@ -75,3 +75,5 @@ Unfortunately in datalad we had no test testing cloning over https, so I added s
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

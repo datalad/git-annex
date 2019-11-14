@@ -56,16 +56,24 @@ installGitLibs topdir = do
 		if issymlink
 			then do
 				-- many git-core files may symlink to eg
-				-- ../../git. The link targets are put
-				-- into a subdirectory so all links to 
-				-- .../git get the same binary.
+				-- ../../bin/git, which is located outside
+				-- the git-core directory. The target of
+				-- such links is installed into a bin
+				-- directory, and the links repointed to it.
+				--
+				-- Other git-core files symlink to a file
+				-- beside them in the directory. Those
+				-- links can be copied as-is.
 				linktarget <- readSymbolicLink f
-				let linktarget' = gitcoredestdir </> "bin" </> takeFileName linktarget
-				createDirectoryIfMissing True (takeDirectory linktarget')
-				L.readFile f >>= L.writeFile linktarget'
-				nukeFile destf
-				rellinktarget <- relPathDirToFile (takeDirectory destf) linktarget'
-				createSymbolicLink rellinktarget destf
+				if takeFileName linktarget == linktarget
+					then cp f destf
+					else do
+						let linktarget' = gitcoredestdir </> "bin" </> takeFileName linktarget
+						createDirectoryIfMissing True (takeDirectory linktarget')
+						L.readFile f >>= L.writeFile linktarget'
+						nukeFile destf
+						rellinktarget <- relPathDirToFile (takeDirectory destf) linktarget'
+						createSymbolicLink rellinktarget destf
 			else cp f destf
 	
 	-- install git's template files
