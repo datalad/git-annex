@@ -67,6 +67,8 @@ git-credential-cache@  git-http-fetch@                git-remote-tor-annex@  rsy
 
 """]]
 
+</details>
+
 so may be that is related.
 
 Unfortunately in datalad we had no test testing cloning over https, so I added such integration test in https://github.com/datalad/datalad/pull/3867 to at least detect such regressions in the future before hitting the userland
