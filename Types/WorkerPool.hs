@@ -20,7 +20,14 @@ data WorkerPool t = WorkerPool
 	-- but there can temporarily be fewer values, when a thread is
 	-- changing between stages.
 	} 
-	deriving (Show)
+
+instance Show (WorkerPool t) where
+	show p = unwords
+		[ "WorkerPool"
+		, show (usedStages p)
+		, show (workerList p)
+		, show (length (spareVals p))
+		]
 
 -- | A worker can either be idle or running an Async action.
 -- And it is used for some stage.
