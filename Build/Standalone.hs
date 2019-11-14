@@ -69,7 +69,7 @@ installGitLibs topdir = do
 				if takeFileName linktarget == linktarget
 					then cp f destf
 					else do
-						let linktarget' = progDir topdir
+						let linktarget' = progDir topdir </> takeFileName linktarget
 						unlessM (doesFileExist linktarget') $ do
 							createDirectoryIfMissing True (takeDirectory linktarget')
 							L.readFile f >>= L.writeFile linktarget'
