@@ -63,7 +63,7 @@ commandAction start = Annex.getState Annex.concurrency >>= \case
 	runconcurrent = Annex.getState Annex.workers >>= \case
 		Nothing -> runnonconcurrent
 		Just tv -> 
-			liftIO (atomically (waitInitialWorkerSlot tv)) >>=
+			liftIO (atomically (waitStartWorkerSlot tv)) >>=
 				maybe runnonconcurrent (runconcurrent' tv)
 	runconcurrent' tv (workerst, workerstage) = do
 		aid <- liftIO $ async $ snd <$> Annex.run workerst
@@ -99,12 +99,13 @@ commandAction start = Annex.getState Annex.concurrency >>= \case
 					case mkActionItem startmsg' of
 						OnlyActionOn k' _ | k' /= k ->
 							concurrentjob' workerst startmsg' perform'
-						_ -> mkjob workerst startmsg' perform'
+						_ -> beginjob workerst startmsg' perform'
 				Nothing -> noop
-		_ -> mkjob workerst startmsg perform
+		_ -> beginjob workerst startmsg perform
 	
-	mkjob workerst startmsg perform = 
-		inOwnConsoleRegion (Annex.output workerst) $
+	beginjob workerst startmsg perform =
+		inOwnConsoleRegion (Annex.output workerst) $ do
+			enteringInitialStage
 			void $ accountCommandAction startmsg $
 				performconcurrent startmsg perform
 

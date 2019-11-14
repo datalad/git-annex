@@ -40,7 +40,12 @@ instance Show (Worker t) where
 	show (ActiveWorker _ s) = "ActiveWorker " ++ show s
 
 data WorkerStage
-	= PerformStage
+	= StartStage
+	-- ^ All threads start in this stage, and then transition away from
+	-- it to the initialStage when they begin doing work. This should
+	-- never be included in UsedStages, because transition from some
+	-- other stage back to this one could result in a deadlock.
+	| PerformStage
 	-- ^ Running a CommandPerform action.
 	| CleanupStage
 	-- ^ Running a CommandCleanup action.
@@ -102,12 +107,13 @@ workerAsync (ActiveWorker aid _) = Just aid
 allocateWorkerPool :: t -> Int -> UsedStages -> WorkerPool t
 allocateWorkerPool t n u = WorkerPool
 	{ usedStages = u
-	, workerList = take totalthreads $ map IdleWorker stages
+	, workerList = map IdleWorker $
+		take totalthreads $ concat $ repeat stages
 	, spareVals = replicate totalthreads t
 	}
   where
-	stages = concat $ repeat $ S.toList $ stageSet u
-	totalthreads = n * S.size (stageSet u)
+	stages = StartStage : S.toList (stageSet u)
+	totalthreads = n * length stages
 
 addWorkerPool :: Worker t -> WorkerPool t -> WorkerPool t
 addWorkerPool w pool = pool { workerList = w : workerList pool }

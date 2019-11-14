@@ -69,3 +69,5 @@ I felt like it is an old issue but failed to find a trace of it upon a quick loo
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
