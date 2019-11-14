@@ -6,8 +6,8 @@ git-annex (7.20191107) UNRELEASED; urgency=medium
   * Fix a crash (STM deadlock) when -J is used with multiple files
     that point to the same key.
   * linuxstandalone: Fix a regression that broke git-remote-https.
-  * OSX git-annex.app: Fix a regression that broke git-remote-https,
-    git-remote-http, and git-shell.
+  * OSX git-annex.app: Fix a problem that prevented using the bundled
+    git-remote-https, git-remote-http, and git-shell.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2019 15:59:47 -0400
 

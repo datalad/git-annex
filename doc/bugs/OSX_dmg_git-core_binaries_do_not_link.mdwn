@@ -1,0 +1,12 @@
+The OSX .dmg contains a few binaries in git-core like git-remote-http.
+They have been adjusted by otool to link to libraries in the same directory
+as the binary. However, the libraries are not located in the git-core
+directory, but in its parent directory, and so the git-core binaries don't
+link.
+
+I don't think this is a new regression, but not entirely sure.
+
+Seems that OSXMkLibs could symlink ../lib into git-core.
+--[[Joey]] 
+
+> [[fixed|done]] --[[Joey]]

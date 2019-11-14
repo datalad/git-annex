@@ -50,8 +50,12 @@ installLibs appbase replacement_libs libmap = do
 		let symdest = appbase </> shortlib
 		-- This is a hack; libraries need to be in the same
 		-- directory as the program, so also link them into the
-		-- extra directory.
-		let symdestextra = appbase </> "extra" </> shortlib
+		-- extra and git-core directories so programs in those will
+		-- find them.
+		let symdestextra = 
+			[ appbase </> "extra" </> shortlib
+			, appbase </> "git-core" </> shortlib
+			]
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
@@ -59,9 +63,11 @@ installLibs appbase replacement_libs libmap = do
 				putStrLn $ "installing " ++ pathlib ++ " as " ++ shortlib
 				unlessM (boolSystem "cp" [File pathlib, File dest]
 					<&&> boolSystem "chmod" [Param "644", File dest]
-					<&&> boolSystem "ln" [Param "-s", File fulllib, File symdest]
-					<&&> boolSystem "ln" [Param "-s", File (".." </> fulllib), File symdestextra]) $
+					<&&> boolSystem "ln" [Param "-s", File fulllib, File symdest]) $
 					error "library install failed"
+				forM_ symdestextra $ \d ->
+					unlessM (boolSystem "ln" [Param "-s", File (".." </> fulllib), File d]) $
+						error "library linking failed"
 				return $ Just appbase
 			)
 	return (catMaybes libs, replacement_libs', libmap')
