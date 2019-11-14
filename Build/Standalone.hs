@@ -58,8 +58,9 @@ installGitLibs topdir = do
 				-- many git-core files may symlink to eg
 				-- ../../bin/git, which is located outside
 				-- the git-core directory. The target of
-				-- such links is installed into a bin
-				-- directory, and the links repointed to it.
+				-- such links is installed into the progDir
+				-- (if not already there), and the links
+				-- repointed to it.
 				--
 				-- Other git-core files symlink to a file
 				-- beside them in the directory. Those
@@ -68,9 +69,10 @@ installGitLibs topdir = do
 				if takeFileName linktarget == linktarget
 					then cp f destf
 					else do
-						let linktarget' = gitcoredestdir </> "bin" </> takeFileName linktarget
-						createDirectoryIfMissing True (takeDirectory linktarget')
-						L.readFile f >>= L.writeFile linktarget'
+						let linktarget' = progDir topdir
+						unlessM (doesFileExist linktarget') $ do
+							createDirectoryIfMissing True (takeDirectory linktarget')
+							L.readFile f >>= L.writeFile linktarget'
 						nukeFile destf
 						rellinktarget <- relPathDirToFile (takeDirectory destf) linktarget'
 						createSymbolicLink rellinktarget destf
