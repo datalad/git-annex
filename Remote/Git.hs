@@ -497,8 +497,9 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink st params
 					runTransfer (Transfer Download u key)
-						file stdRetry
-						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
+						file stdRetry $ \p ->
+							metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
+								copier object dest p' checksuccess
 	| Git.repoIsSsh repo = if forcersync
 		then fallback meterupdate
 		else P2PHelper.retrieve
@@ -631,15 +632,15 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		-- run copy from perspective of remote
 		onLocalFast repo r $ ifM (Annex.Content.inAnnex key)
 			( return True
-			, do
+			, runTransfer (Transfer Download u key) file stdRetry $ \p -> do
 				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure
-				runTransfer (Transfer Download u key) file stdRetry $ \p ->
-					let p' = combineMeterUpdate meterupdate p
-					in Annex.Content.saveState True `after`
-						Annex.Content.getViaTmp rsp verify key
-							(\dest -> copier object dest p' (liftIO checksuccessio))
+				res <- Annex.Content.getViaTmp rsp verify key $ \dest ->
+					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
+						copier object dest p' (liftIO checksuccessio)
+				Annex.Content.saveState True
+				return res
 			)
 	copyremotefallback p = Annex.Content.sendAnnex key noop $ \object -> do
 		-- This is too broad really, but recvkey normally
@@ -749,7 +750,7 @@ rsyncOrCopyFile st rsyncparams src dest p =
 	dorsync = do
 		-- dest may already exist, so make sure rsync can write to it
 		void $ liftIO $ tryIO $ allowWrite dest
-		oh <- mkOutputHandler
+		oh <- mkOutputHandlerQuiet
 		Ssh.rsyncHelper oh (Just p) $
 			rsyncparams ++ [File src, File dest]
 	docopycow = docopywith copyCoW

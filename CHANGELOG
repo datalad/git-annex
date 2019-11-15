@@ -1,3 +1,10 @@
+git-annex (7.20191115) UNRELEASED; urgency=medium
+
+  * Stop displaying rsync progress, and use git-annex's own progress display
+    for local-to-local repo transfers.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 15 Nov 2019 11:57:19 -0400
+
 git-annex (7.20191114) upstream; urgency=medium
 
   * Added annex.allowsign option.
