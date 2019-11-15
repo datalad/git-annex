@@ -1,4 +1,4 @@
-git-annex (7.20191107) UNRELEASED; urgency=medium
+git-annex (7.20191114) upstream; urgency=medium
 
   * Added annex.allowsign option.
   * Make --json-error-messages capture more errors,
@@ -9,7 +9,7 @@ git-annex (7.20191107) UNRELEASED; urgency=medium
   * OSX git-annex.app: Fix a problem that prevented using the bundled
     git-remote-https, git-remote-http, and git-shell.
 
- -- Joey Hess <id@joeyh.name>  Mon, 11 Nov 2019 15:59:47 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 14 Nov 2019 21:57:59 -0400
 
 git-annex (7.20191106) upstream; urgency=medium
 
