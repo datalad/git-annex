@@ -2,6 +2,11 @@ git-annex (7.20191115) UNRELEASED; urgency=medium
 
   * Stop displaying rsync progress, and use git-annex's own progress display
     for local-to-local repo transfers.
+  * git-lfs: The url provided to initremote/enableremote will now be
+    stored in the git-annex branch, allowing enableremote to be used without
+    an url. initremote --sameas can be used to add additional urls.
+  * git-lfs: When there's a git remote with an url that's known to be
+    used for git-lfs, automatically enable the special remote.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Nov 2019 11:57:19 -0400
 

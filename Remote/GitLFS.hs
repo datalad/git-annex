@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Remote.GitLFS (remote, gen) where
+module Remote.GitLFS (remote, gen, configKnownUrl) where
 
 import Annex.Common
 import Types.Remote
@@ -13,9 +13,11 @@ import Annex.Url
 import Types.Key
 import Types.Creds
 import qualified Annex
+import qualified Annex.SpecialRemote.Config
 import qualified Git
 import qualified Git.Types as Git
 import qualified Git.Url
+import qualified Git.Remote
 import qualified Git.GCrypt
 import qualified Git.Credential as Git
 import Config
@@ -31,8 +33,10 @@ import Crypto
 import Backend.Hash
 import Utility.Hash
 import Utility.SshHost
+import Logs.Remote
 import Logs.RemoteState
 import qualified Utility.GitLFS as LFS
+import qualified Git.Config
 
 import Control.Concurrent.STM
 import Data.String
@@ -145,20 +149,45 @@ mySetup _ mu _ c gc = do
 				, "likely insecure configuration.)"
 				]
 
-	-- The url is not stored in the remote log, because the same
-	-- git-lfs repo can be accessed using different urls by different
-	-- people (eg over ssh or http).
-	--
-	-- Instead, set up remote.name.url to point to the repo,
+	-- Set up remote.name.url to point to the repo,
 	-- (so it's also usable by git as a non-special remote),
-	-- and set remote.name.git-lfs = true
-	let c'' = M.delete "url" c'
-	gitConfigSpecialRemote u c'' [("git-lfs", "true")]
+	-- and set remote.name.annex-git-lfs = true
+	gitConfigSpecialRemote u c' [("git-lfs", "true")]
 	setConfig (ConfigKey ("remote." ++ getRemoteName c ++ ".url")) url
-	return (c'', u)
+	return (c', u)
   where
 	url = fromMaybe (giveup "Specify url=") (M.lookup "url" c)
 	remotename = fromJust (lookupName c)
+
+{- Check if a remote's url is one known to belong to a git-lfs repository.
+ - If so, set the necessary configuration to enable using the remote
+ - with git-lfs. -}
+configKnownUrl :: Git.Repo -> Annex (Maybe Git.Repo)
+configKnownUrl r
+	| Git.repoIsUrl r = do
+		l <- readRemoteLog
+		g <- Annex.gitRepo
+		case Annex.SpecialRemote.Config.findByRemoteConfig (match g) l of
+			((u, _, mcu):[]) -> Just <$> go u mcu
+			_ -> return Nothing
+	| otherwise = return Nothing
+  where
+	match g c = fromMaybe False $ do
+		t <- M.lookup Annex.SpecialRemote.Config.typeField c
+		u <- M.lookup "url" c
+		let u' = Git.Remote.parseRemoteLocation u g
+		return $ Git.Remote.RemoteUrl (Git.repoLocation r) == u' 
+			&& t == typename remote
+	go u mcu = do
+		r' <- set "uuid" (fromUUID u) =<< set "git-lfs" "true" r
+		case mcu of
+			Just (Annex.SpecialRemote.Config.ConfigFrom cu) ->
+				set "config-uuid" (fromUUID cu) r'
+			Nothing -> return r'
+	set k v r' = do
+		let ck@(ConfigKey k') = remoteConfig r' k
+		setConfig ck v
+		return $ Git.Config.store' k' v r'
 
 data LFSHandle = LFSHandle
 	{ downloadEndpoint :: Maybe LFS.Endpoint

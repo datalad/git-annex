@@ -143,7 +143,9 @@ configRead autoinit r = do
 		(True, _, _)
 			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r
 			| otherwise -> return r
-		(False, _, NoUUID) -> tryGitConfigRead autoinit r
+		(False, _, NoUUID) -> configSpecialGitRemotes r >>= \case
+			Nothing -> tryGitConfigRead autoinit r
+			Just r' -> return r'
 		_ -> return r
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
@@ -231,7 +233,7 @@ repoAvail r
 tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
 tryGitConfigRead autoinit r 
 	| haveconfig r = return r -- already read
-	| Git.repoIsSsh r = store $ do
+	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
 			(pipedconfig, return (Left $ giveup "configlist failed"))
 			"configlist" [] configlistfields
@@ -240,10 +242,10 @@ tryGitConfigRead autoinit r
 				| haveconfig r' -> return r'
 				| otherwise -> configlist_failed
 			Left _ -> configlist_failed
-	| Git.repoIsHttp r = store geturlconfig
+	| Git.repoIsHttp r = storeUpdatedRemote geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ liftIO $ 
+	| otherwise = storeUpdatedRemote $ liftIO $ 
 		readlocalannexconfig `catchNonAsync` (const $ return r)
   where
 	haveconfig = not . M.null . Git.config
@@ -278,18 +280,6 @@ tryGitConfigRead autoinit r
 				set_ignore "not usable by git-annex" False
 				return r
 
-	store = observe $ \r' -> do
-		l <- Annex.getGitRemotes
-		let rs = exchange l r'
-		Annex.changeState $ \s -> s { Annex.gitremotes = Just rs }
-
-	exchange [] _ = []
-	exchange (old:ls) new
-		| Git.remoteName old == Git.remoteName new =
-			new : exchange ls new
-		| otherwise =
-			old : exchange ls new
-
 	{- Is this remote just not available, or does
 	 - it not have git-annex-shell?
 	 - Find out by trying to fetch from the remote. -}
@@ -319,7 +309,7 @@ tryGitConfigRead autoinit r
 		g <- gitRepo
 		case Git.GCrypt.remoteRepoId g (Git.remoteName r) of
 			Nothing -> return r
-			Just v -> store $ liftIO $ setUUID r $
+			Just v -> storeUpdatedRemote $ liftIO $ setUUID r $
 				genUUIDInNameSpace gCryptNameSpace v
 
 	{- The local repo may not yet be initialized, so try to initialize
@@ -336,6 +326,31 @@ tryGitConfigRead autoinit r
 	configlistfields = if autoinit
 		then [(Fields.autoInit, "1")]
 		else []
+
+{- Handles special remotes that can be enabled by the presence of
+ - regular git remotes.
+ -
+ - When a remote repo is found to be such a special remote, its
+ - UUID is cached in the git config, and the repo returned with
+ - the UUID set.
+ -}
+configSpecialGitRemotes :: Git.Repo -> Annex (Maybe Git.Repo)
+configSpecialGitRemotes r = Remote.GitLFS.configKnownUrl r >>= \case
+	Nothing -> return Nothing
+	Just r' -> Just <$> storeUpdatedRemote (return r')
+
+storeUpdatedRemote :: Annex Git.Repo -> Annex Git.Repo
+storeUpdatedRemote = observe $ \r' -> do
+	l <- Annex.getGitRemotes
+	let rs = exchange l r'
+	Annex.changeState $ \s -> s { Annex.gitremotes = Just rs }
+  where
+	exchange [] _ = []
+	exchange (old:ls) new
+		| Git.remoteName old == Git.remoteName new =
+			new : exchange ls new
+		| otherwise =
+			old : exchange ls new
 
 {- Checks if a given remote has the content for a key in its annex. -}
 inAnnex :: Remote -> State -> Key -> Annex Bool

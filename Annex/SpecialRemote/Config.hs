@@ -101,3 +101,11 @@ removeSameasInherited :: RemoteConfig -> RemoteConfig
 removeSameasInherited c = case M.lookup sameasUUIDField c of
 	Nothing -> c
 	Just _ -> M.withoutKeys c sameasInherits
+
+{- Finds remote uuids with matching RemoteConfig. -}
+findByRemoteConfig :: (RemoteConfig -> Bool) -> M.Map UUID RemoteConfig -> [(UUID, RemoteConfig, Maybe (ConfigFrom UUID))]
+findByRemoteConfig matching = map sameasuuid . filter (matching . snd) . M.toList
+  where
+	sameasuuid (u, c) = case M.lookup sameasUUIDField c of
+		Nothing -> (u, c, Nothing)
+		Just u' -> (toUUID u', c, Just (ConfigFrom u))

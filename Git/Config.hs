@@ -94,6 +94,14 @@ store s repo = do
 		, fullconfig = M.unionWith (++) c (fullconfig repo)
 		}
 
+{- Stores a single config setting in a Repo, returning the new version of
+ - the Repo. Config settings can be updated incrementally. -}
+store' :: String -> String -> Repo -> Repo
+store' k v repo = repo
+	{ config = M.singleton k v `M.union` config repo
+	, fullconfig = M.unionWith (++) (M.singleton k [v]) (fullconfig repo)
+	}
+
 {- Updates the location of a repo, based on its configuration.
  -
  - Git.Construct makes LocalUknown repos, of which only a directory is

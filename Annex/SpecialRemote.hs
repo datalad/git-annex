@@ -34,20 +34,8 @@ findExisting name = do
 	t <- trustMap
 	headMaybe
 		. sortBy (comparing $ \(u, _, _) -> Down $ M.lookup u t)
-		. findByName name
+		. findByRemoteConfig (\c -> lookupName c == Just name)
 		<$> Logs.Remote.readRemoteLog
-
-findByName :: RemoteName ->  M.Map UUID RemoteConfig -> [(UUID, RemoteConfig, Maybe (ConfigFrom UUID))]
-findByName n = map sameasuuid . filter (matching . snd) . M.toList
-  where
-	matching c = case lookupName c of
-		Nothing -> False
-		Just n'
-			| n' == n -> True
-			| otherwise -> False
-	sameasuuid (u, c) = case M.lookup sameasUUIDField c of
-		Nothing -> (u, c, Nothing)
-		Just u' -> (toUUID u', c, Just (ConfigFrom u))
 
 newConfig
 	:: RemoteName
