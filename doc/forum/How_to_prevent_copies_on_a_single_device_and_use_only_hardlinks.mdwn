@@ -1,0 +1,13 @@
+Hi,
+
+Thank you very much for this software. I'm working in a research institute and we are very interested into using git-annex with DataLad to manage our datasets.
+
+We aim to provide a datasets repository accessible through the local network on a single file system. Some of our datasets are multi TB with a few millions of files. It will be managed by a few people but the primary users, the researchers, will only have read access. We would like to use hardlinks everywhere to avoid infrequent reading errors related to symlinks and save space when we want to propose different versions of the datasets with slight changes. The file system will be backed-up so we don't really need multi copies of the same files on a single file system.
+
+We seam to be able to achieve this using the `direct` mode in git-annex version 5 but it seams that the `unlock` mode in version 7 does copies instead of hardlinks. I'm wondering how we could achieve the same behaviour as in version 5. I believe I've read in the doc that there's a maximum of 2 hardlinks for a single file but I can't remember where or see if that is still the case. If that is still the case, I couldn't find if there is a setting to set or remove this maximum.
+
+We've tested with git-annex local version 5 / build 7.20190819, local version 7 / build 7.20190819 and local version 7 / build 7.20191106. [Here is a gist](https://gist.github.com/satyaog/b08a6e5d1eee75217ba823d38b84fb8b) containing test scripts for each setup. The `.annex-cache` part can be ignored for this topic. I've used Miniconda3-4.3.30 on Ubuntu 18.04.2 LTS to setup the environments.
+
+Thank you,
+
+Satya
