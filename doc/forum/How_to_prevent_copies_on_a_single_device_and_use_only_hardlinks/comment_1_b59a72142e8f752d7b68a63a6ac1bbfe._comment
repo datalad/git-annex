@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="using hardlinks"
+ date="2019-11-18T19:21:18Z"
+ content="""
+I don't have a full answer, but [[tips/local_caching_of_annexed_files]] might have relevant info.
+
+There is also the `annex.thin` setting; but check some [caveats](https://git-annex.branchable.com/bugs/annex.thin_can_cause_corrupt___40__not_just_missing__41___data/) related to it.
+"""]]
