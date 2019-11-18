@@ -1,0 +1,6 @@
+git annex sync with a git-lfs special remote does not pull or push.
+It should.
+
+(Does gcrypt have the same problem, also being a special remote that's a
+git repo?)
+--[[Joey]]
