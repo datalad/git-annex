@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="import/export"
+ date="2019-11-19T17:39:47Z"
+ content="""
+Makes sense.  It's certainly better if import/export did complementary things.  Maybe, move the old `git-annex-import` functionality to a new command called `git-annex-ingest`?
+
+\"everything not involving importing from a special remote should be deprecated\" -- i.e. to ingest a directory you'd first create a directory special remote for it, and then `git-annex-import` from that?
+"""]]
