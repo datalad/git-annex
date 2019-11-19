@@ -1,0 +1,47 @@
+The old `git annex import /dir` interface should be removed, in favor of
+the new import from special remote interface, which can be used with a
+directory special remote to do the same kind of operation.
+
+There have always been complaints about the old interface being surprising
+and/or not doing quite what some users want.
+Tried to find a principled way to address some of that with the "duplicate"
+options, but users just complain they're confusing (which they certianly
+are) and don't quite do what they want.
+
+The fundamental mistake that the old interface made is it conflated
+copying content into the repository, deleting content from the directory, 
+and updating the working tree. The new interface decouples all 3,
+only doing the first, and updating a tracking branch. The user is then free
+to merge the tracking branch as-is, or otherwise modify before merging.
+There are some options to manipulate the tracking branch in commonly
+wanted ways, which just boil down do git branch manipulation. Less common
+desires can be handled using all of git's facilities. As for deleting from
+the directory, that's an export of a branch, which can just be an empty
+branch if they want to delete everything, or again they can use all of git
+to construct the branch with the changes they desire.
+
+So while it's not been used as much as the old interface, I think the new
+interface will be much more flexible to the varied needs of users. What's
+less clear is if it can well support every way that the old interface can
+be used.
+
+Of course the first pain point is that the user has to set up a directory
+special remote. Which may be annoying if they are importing from a variety
+of different directories ad-hoc.
+
+Another likely pain point is ad-hoc importing of individual files or
+files matched by wildcard. The new interface is much more about importing
+whole trees, perhaps configured by preferred content settings
+
+One approach would be to make the old interface be implemented using the
+new interface, and paper over the cracks, by eg setting up a directory
+special remote automatically.
+
+Or, the old interface could warn when used, linking to some documentation
+about how to accomplish the same tasks with the new interface.
+
+Either could be done incrementally, eg start with the most common import
+cases, convert to the new interface, and keep others using the old
+interface.
+
+--[[Joey]]
