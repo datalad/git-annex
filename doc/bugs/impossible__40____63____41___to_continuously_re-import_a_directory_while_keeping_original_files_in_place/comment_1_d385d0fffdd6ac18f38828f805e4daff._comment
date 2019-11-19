@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-11-19T17:12:41Z"
+ content="""
+I think that you can accomplish what you want by making the directory
+you're importing from be a directory special remote with exporttree=yes
+importtree=yes and use the new `git annex import master --from remote`
+
+If that does not do what you want, I'd prefer to look at making it be able
+to do so. I hope to eventually remove the legacy git-annex import from
+directory, since we have this new more general interface.
+"""]]
