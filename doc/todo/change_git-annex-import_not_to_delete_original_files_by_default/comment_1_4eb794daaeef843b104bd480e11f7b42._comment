@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-11-19T17:09:00Z"
+ content="""
+My general feeling about git-annex import is that everything not involving
+importing from a special remote should be deprecated and eventually
+removed.
+
+The --duplicate option probably does what you want, but if the interface is
+going to be changed, such as making that the default, I'd rather the
+interface change move toward the goal of deprecating the old mode.
+
+The fundamental mistake that the legacy interface made is it conflated
+copying content into the repository, dropping content from the directory, 
+and updating the working tree. The new interface decouples all 3,
+only doing the first, and updating a tracking branch, which the user is then
+free to merge as-is, or otherwise modify before merging. Dropping requires
+an export of a new tree, which is the main pain point in emulating
+the old interface, but you happen to not want to drop the content from the
+directory, so that pain point shouldn't affect you.
+"""]]
