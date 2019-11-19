@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-11-19T16:52:00Z"
+ content="""
+`git annex export --from` would be basically the same as
+[[transitive_transfers]] and the comments there detail
+the problems with trying to support that.
+
+What you can do is download the files onto the computer that is connected
+to the phone, export them to the phone, and then drop the files from the
+computer.
+"""]]

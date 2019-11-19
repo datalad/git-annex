@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-11-19T16:58:06Z"
+ content="""
+Since git-annex does now support importtree from directory special remotes,
+you can almost get what you said you want by:
+
+	git annex initremote usb-drive type=directory directory=/mnt/usb-drive/myfiles \
+		exporttree=yes importtree=yes encryption=none
+
+Then `git annex import master --from usb-drive` will import the files
+into a usb-drive/master branch that you can merge. And you can run it
+repeatedly to import new and changed files from the directory.
+
+So then you have the files sitting in a special remote like you wanted.
+Namely the directory special remote on the USB drive. Only problem is that
+importing the files does also copy them into the git-annex repo. So you'd
+have to drop the files again, assuming you had disk space for them all
+to begin with.
+
+I wonder, if it were possible to import the files without add their content
+to the repo you ran the import from, leaving them on the special remote,
+would that meet your use case? That seems like something it would be
+possible to add.
+
+It would still probably have to copy the file into the local repo, in order
+to hash it, and then just delete the content from the local repo. Of course
+when the file is in a directory on the local system, that's not strictly
+necessary; it could do the hashing of the file in place. But that would
+need an extension to the special remote API to hash a file.
+
+But like I said in my other comment, I'd just clone my git-annex repo onto the
+drive and add the files to the repo there. Avoids all this complication.
+You'd need to provide a good justification for why you can't do that for
+me to pursue this any further.
+
+(As far as adding a --to switch to import, [[transitive_transfers]]
+discusses this kind of thing, and some issues with implementing that.)
+"""]]
