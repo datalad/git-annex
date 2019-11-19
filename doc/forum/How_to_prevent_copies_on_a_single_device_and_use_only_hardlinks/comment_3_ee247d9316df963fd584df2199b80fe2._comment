@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="using hardlinks"
+ date="2019-11-19T17:51:08Z"
+ content="""
+I again don't have a full answer, but maybe you could customize git's [post-checkout hook](https://git-scm.com/docs/githooks#_post_checkout)?  (You'd need to still call the hook that git-annex installs.)
+
+Also, I've thrown together a [[FUSE filesystem|https://github.com/broadinstitute/viral-ngs/blob/is-dx-benchmarks/tools/git-annex-remotes/git-annex-on-demand.py]] that fetches git-annexed files on demand, maybe that could be adapted.  It only works with locked files and symlinks though.
+
+What is the reason you don't want to use locked files?   You can have different [[worktrees|tips/Using_git-worktree_with_annex]] with symlinks of locked files pointing into the same annex.
+"""]]
