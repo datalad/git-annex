@@ -1,16 +1,16 @@
 # NAME
 
-git-annex import - add files from a non-versioned directory or a special remote
+git-annex import - add a tree of files to the repository
 
 # SYNOPSIS
 
-git annex import `[path ...]` | git annex import --from remote branch[:subdir]
+git annex import --from remote branch[:subdir] | `[path ...]`
 
 # DESCRIPTION
 
-This command is a way to import files from elsewhere into your git-annex
-repository. It can import files from a directory into your repository, 
-or it can import files from a git-annex special remote.
+This command is a way to import a tree of files from elsewhere into your
+git-annex repository. It can import files from a git-annex special remote,
+or from a directory.
 
 # IMPORTING FROM A SPECIAL REMOTE
 
@@ -30,7 +30,8 @@ remote.
 
 You can only import from special remotes that were configured with
 `importtree=yes` when set up with [[git-annex-initremote]](1). Only some
-kinds of special remotes will let you configure them this way.
+kinds of special remotes will let you configure them this way. A perhaps
+non-exhastive list is the directory, s3, and adb special remotes.
 
 To import from a special remote, you must specify the name of a branch.
 A corresponding remote tracking branch will be updated by `git annex
@@ -87,6 +88,10 @@ things that depend on the key. Preferred content expressions containing
 
 When run with a path, `git annex import` moves files from somewhere outside
 the git working copy, and adds them to the annex.
+
+This is a legacy interface. It is still supported, but please consider
+switching to importing from a directory special remote instead, using the
+interface documented above.
 
 Individual files to import can be specified. If a directory is specified,
 the entire directory is imported.

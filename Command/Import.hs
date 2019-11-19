@@ -39,7 +39,7 @@ cmd :: Command
 cmd = notBareRepo $
 	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
 		command "import" SectionCommon 
-			"import files from elsewhere into the repository"
+			"add a tree of files to the repository"
 			(paramPaths ++ "|BRANCH[:SUBDIR]")
 			(seek <$$> optParser)
 

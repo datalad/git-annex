@@ -146,10 +146,9 @@ subdirectories).
   
   See [[git-annex-rmurl]](1) for details.
 
-* `import [path ...]`
+* `import --from remote branch[:subdir] | [path ...]`
 
-  Add files from a non-version-controlled directory or a 
-  special remote into the annex.
+  Add a tree of files to the repository.
   
   See [[git-annex-import]](1) for details.
 
