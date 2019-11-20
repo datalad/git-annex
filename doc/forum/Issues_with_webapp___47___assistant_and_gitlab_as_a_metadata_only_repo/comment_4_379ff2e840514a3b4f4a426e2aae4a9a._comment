@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="git-annex@17927e6dc041ab425c14217a97a685adf3ecf44f"
+ nickname="git-annex"
+ avatar="http://cdn.libravatar.org/avatar/66e5c6e044d726597ce5a0ad68f86fe4"
+ subject="git add or git commit does not trigger assistant, but git rm does"
+ date="2019-11-20T01:37:41Z"
+ content="""
+More diagnostics on this one..
+
+I create a file that is below the size threshold for annex, but I do have a gitlab upstream.
+
+1) echo \"foo\" > foo  -  Assistant (or webapp) does not fire
+2) git add foo -  Assistant/webapp does not fire
+3) git commit -am \"random testing\"  - assistant does not fire
+4) git annex sync - foo ends up in gitlab
+
+I remove a file
+
+1) git rm foo  - Assistant fires and file is removed from gitlab
+
+Is this the expected behavior?  If so, why does a git rm trigger annex assistant/webapp, but a git add does not? 
+
+
+"""]]
