@@ -8,6 +8,8 @@ git-annex (7.20191115) UNRELEASED; urgency=medium
   * git-lfs: When there's a git remote with an url that's known to be
     used for git-lfs, automatically enable the special remote.
   * sync, assistant: Pull and push from git-lfs remotes.
+  * Fix bug that made bare repos be treated as non-bare when --git-dir
+    was used.
 
  -- Joey Hess <id@joeyh.name>  Fri, 15 Nov 2019 11:57:19 -0400
 

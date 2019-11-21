@@ -67,8 +67,12 @@ get = do
 	configure (Just d) _ = do
 		absd <- absPath d
 		curr <- getCurrentDirectory
-		Git.Config.read $ newFrom $
+		r <- Git.Config.read $ newFrom $
 			Local { gitdir = absd, worktree = Just curr }
+		return $ if Git.Config.isBare r
+			then r { location = (location r) { worktree = Nothing } }
+			else r
+
 	configure Nothing Nothing = giveup "Not in a git repository."
 
 	addworktree w r = changelocation r $
