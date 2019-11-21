@@ -22,6 +22,7 @@ import qualified Git.Types
 import Database.Types
 import qualified Database.Keys
 import qualified Database.Keys.SQL
+import Config
 
 {- Looks up the key corresponding to an annexed file in the work tree,
  - by examining what the file links to.
@@ -75,7 +76,7 @@ ifAnnexed file yes no = maybe no yes =<< lookupFile file
  - as-is.
  -}
 scanUnlockedFiles :: Annex ()
-scanUnlockedFiles = whenM (inRepo Git.Ref.headExists) $ do
+scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
 	Database.Keys.runWriter $
 		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive Git.Ref.headRef

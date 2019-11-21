@@ -108,9 +108,9 @@ initialize' mversion = checkCanInitialize  $ do
 	unlessM (isJust <$> getVersion) $
 		setVersion (fromMaybe defaultVersion mversion)
 	configureSmudgeFilter
-	showSideAction "scanning for unlocked files"
-	scanUnlockedFiles
 	unlessM isBareRepo $ do
+		showSideAction "scanning for unlocked files"
+		scanUnlockedFiles
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
 	AdjustedBranch.checkAdjustedClone >>= \case
