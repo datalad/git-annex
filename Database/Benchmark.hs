@@ -20,6 +20,7 @@ import Database.Types
 import Utility.Tmp.Dir
 import Git.FilePath
 import Types.Key
+import Utility.DataUnits
 
 import Criterion.Main
 import Control.Monad.IO.Class (liftIO)
@@ -27,17 +28,12 @@ import qualified Data.ByteString.Char8 as B8
 import System.Random
 #endif
 
-benchmarkDbs :: CriterionMode -> Annex ()
+benchmarkDbs :: CriterionMode -> Integer -> Annex ()
 #ifdef WITH_BENCHMARK
-benchmarkDbs mode = withTmpDirIn "." "benchmark" $ \tmpdir -> do
-	-- benchmark different sizes of databases
-	dbs <- mapM (benchDb tmpdir)
-		[ 1000
-		, 10000
-		-- , 100000
-		]
+benchmarkDbs mode n = withTmpDirIn "." "benchmark" $ \tmpdir -> do
+	db <- benchDb tmpdir n
 	liftIO $ runMode mode
-		[ bgroup "keys database" $ flip concatMap dbs $ \db ->
+		[ bgroup "keys database"
 			[ getAssociatedFilesHitBench db
 			, getAssociatedFilesMissBench db
 			, getAssociatedKeyHitBench db
@@ -81,22 +77,22 @@ addAssociatedFileOldBench (BenchDb h num) = bench ("addAssociatedFile to " ++ sh
 addAssociatedFileNewBench :: BenchDb -> Benchmark
 addAssociatedFileNewBench (BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (new)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
-	SQL.addAssociatedFile (toIKey (keyN n)) (fileN (n+1)) (SQL.WriteHandle h)
+	SQL.addAssociatedFile (toIKey (keyN n)) (fileN (num+n)) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
-populateAssociatedFiles :: H.DbQueue -> Int -> IO ()
+populateAssociatedFiles :: H.DbQueue -> Integer -> IO ()
 populateAssociatedFiles h num = do
 	forM_ [1..num] $ \n ->
 		SQL.addAssociatedFile (toIKey (keyN n)) (fileN n) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
-keyN :: Int -> Key
+keyN :: Integer -> Key
 keyN n = stubKey
 	{ keyName = B8.pack $ "key" ++ show n
 	, keyVariety = OtherKey "BENCH"
 	}
 
-fileN :: Int -> TopFilePath
+fileN :: Integer -> TopFilePath
 fileN n = asTopFilePath ("file" ++ show n)
 
 keyMiss :: Key
@@ -105,14 +101,17 @@ keyMiss = keyN 0 -- 0 is never stored
 fileMiss :: TopFilePath
 fileMiss = fileN 0 -- 0 is never stored
 
-data BenchDb = BenchDb H.DbQueue Int
+data BenchDb = BenchDb H.DbQueue Integer
 
-benchDb :: FilePath -> Int -> Annex BenchDb
+benchDb :: FilePath -> Integer -> Annex BenchDb
 benchDb tmpdir num = do
-	liftIO $ putStrLn $ "setting up database with " ++ show num
+	liftIO $ putStrLn $ "setting up database with " ++ show num ++ " items"
 	initDb db SQL.createTables
 	h <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
 	liftIO $ populateAssociatedFiles h num
+	sz <- liftIO $ getFileSize db
+	liftIO $ putStrLn $ "size of database on disk: " ++ 
+		roughSize storageUnits False sz
 	return (BenchDb h num)
   where
 	db = tmpdir </> show num </> "db"
