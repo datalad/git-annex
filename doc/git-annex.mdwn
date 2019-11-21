@@ -146,10 +146,9 @@ subdirectories).
   
   See [[git-annex-rmurl]](1) for details.
 
-* `import [path ...]`
+* `import --from remote branch[:subdir] | [path ...]`
 
-  Add files from a non-version-controlled directory or a 
-  special remote into the annex.
+  Add a tree of files to the repository.
   
   See [[git-annex-import]](1) for details.
 
@@ -1027,6 +1026,19 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   This works well in combination with annex.alwayscommit=false,
   to gather up a set of changes and commit them with a message you specify.
+
+* `annex.allowsign`
+
+  By default git-annex avoids gpg signing commits that it makes when
+  they're not the purpose of a command, but only a side effect.
+  That default avoids lots of gpg password prompts when
+  commit.gpgSign is set. A command like `git annex sync` or `git annex merge`
+  will gpg sign its commit, but a command like `git annex get`,
+  that updates the git-annex branch, will not. The assistant also avoids
+  signing commits.
+
+  Setting annex.allowsign to true lets all commits be signed, as
+  controlled by commit.gpgSign and other git configuration.
 
 * `annex.merge-annex-branches`
 

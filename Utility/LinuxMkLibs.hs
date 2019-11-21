@@ -5,7 +5,11 @@
  - License: BSD-2-clause
  -}
 
-module Utility.LinuxMkLibs where
+module Utility.LinuxMkLibs (
+	installLib,
+	parseLdd,
+	glibcLibs,
+) where
 
 import Utility.PartialPrelude
 import Utility.Directory

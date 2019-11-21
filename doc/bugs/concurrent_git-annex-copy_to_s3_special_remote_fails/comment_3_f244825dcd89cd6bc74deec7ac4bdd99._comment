@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-11-13T19:29:34Z"
+ content="""
+--debug might provide some clue in its http dump.
+
+The ParseError comes from attoparsec. Seems likely that aeson/aws is what's
+using it there, and that it is failing to parse something from S3.
+
+Of course, the malloc error suggests a low-level memory problem, probably
+from C code. I don't think git-annex contains anything like that, so it
+must be from a dependency.
+
+The S3 signature being wrong again points to the aws library, or something
+lower level. And then the following double free is another low-level memory
+problem.
+
+So there's a pattern, and it seems to extend across linux and OSX.
+
+Kind of wondering if something in the library stack is somehow failing to
+be concurrency safe. If two http requests end up using the same memory,
+it would kind of explain all of this.
+"""]]

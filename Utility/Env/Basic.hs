@@ -7,7 +7,10 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Env.Basic where
+module Utility.Env.Basic (
+	getEnv,
+	getEnvDefault,
+) where
 
 import Utility.Exception
 import Control.Applicative

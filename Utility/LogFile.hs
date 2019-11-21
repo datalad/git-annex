@@ -7,7 +7,15 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.LogFile where
+module Utility.LogFile (
+	openLog,
+	listLogs,
+	maxLogs,
+#ifndef mingw32_HOST_OS
+	redirLog,
+	redir,
+#endif
+) where
 
 import Common
 

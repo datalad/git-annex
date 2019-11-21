@@ -7,7 +7,40 @@
 
 {-# LANGUAGE TypeSynonymInstances, BangPatterns #-}
 
-module Utility.Metered where
+module Utility.Metered (
+	MeterUpdate,
+	nullMeterUpdate,
+	combineMeterUpdate,
+	BytesProcessed(..),
+	toBytesProcessed,
+	fromBytesProcessed,
+	addBytesProcessed,
+	zeroBytesProcessed,
+	withMeteredFile,
+	meteredWrite,
+	meteredWrite',
+	meteredWriteFile,
+	offsetMeterUpdate,
+	hGetContentsMetered,
+	hGetMetered,
+	defaultChunkSize,
+	watchFileSize,
+	OutputHandler(..),
+	ProgressParser,
+	commandMeter,
+	commandMeter',
+	demeterCommand,
+	demeterCommandEnv,
+	avoidProgress,
+	rateLimitMeterUpdate,
+	Meter,
+	mkMeter,
+	setMeterTotalSize,
+	updateMeter,
+	displayMeterHandle,
+	clearMeterHandle,
+	bandwidthMeter,
+) where
 
 import Common
 import Utility.Percentage
@@ -79,11 +112,6 @@ zeroBytesProcessed = BytesProcessed 0
 withMeteredFile :: FilePath -> MeterUpdate -> (L.ByteString -> IO a) -> IO a
 withMeteredFile f meterupdate a = withBinaryFile f ReadMode $ \h ->
 	hGetContentsMetered h meterupdate >>= a
-
-{- Sends the content of a file to a Handle, updating the meter as it's
- - written. -}
-streamMeteredFile :: FilePath -> MeterUpdate -> Handle -> IO ()
-streamMeteredFile f meterupdate h = withMeteredFile f meterupdate $ L.hPut h
 
 {- Writes a ByteString to a Handle, updating a meter as it's written. -}
 meteredWrite :: MeterUpdate -> Handle -> L.ByteString -> IO ()

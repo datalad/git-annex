@@ -7,7 +7,11 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.DottedVersion where
+module Utility.DottedVersion (
+	DottedVersion,
+	fromDottedVersion,
+	normalize,
+) where
 
 import Common
 

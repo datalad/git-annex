@@ -28,24 +28,24 @@ import qualified Git.UpdateIndex
 addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
 addCommand command params files = do
 	q <- get
-	store <=< flushWhenFull <=< inRepo $
-		Git.Queue.addCommand command params files q
+	store =<< flushWhenFull =<<
+		(Git.Queue.addCommand command params files q =<< gitRepo)
 
-addInternalAction :: Git.Queue.InternalActionRunner -> [(FilePath, IO Bool)] -> Annex ()
+addInternalAction :: Git.Queue.InternalActionRunner Annex -> [(FilePath, IO Bool)] -> Annex ()
 addInternalAction runner files = do
 	q <- get
-	store <=< flushWhenFull <=< inRepo $
-		Git.Queue.addInternalAction runner files q
+	store =<< flushWhenFull =<<
+		(Git.Queue.addInternalAction runner files q =<< gitRepo)
 
 {- Adds an update-index stream to the queue. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Annex ()
 addUpdateIndex streamer = do
 	q <- get
-	store <=< flushWhenFull <=< inRepo $
-		Git.Queue.addUpdateIndex streamer q
+	store =<< flushWhenFull =<<
+		(Git.Queue.addUpdateIndex streamer q =<< gitRepo)
 
 {- Runs the queue if it is full. -}
-flushWhenFull :: Git.Queue.Queue -> Annex Git.Queue.Queue
+flushWhenFull :: Git.Queue.Queue Annex -> Annex (Git.Queue.Queue Annex)
 flushWhenFull q
 	| Git.Queue.full q = flush' q
 	| otherwise = return q
@@ -64,25 +64,25 @@ flush = do
  - But, flushing two queues at the same time could lead to failures due to
  - git locking files. So, only one queue is allowed to flush at a time.
  -}
-flush' :: Git.Queue.Queue -> Annex Git.Queue.Queue
+flush' :: Git.Queue.Queue Annex -> Annex (Git.Queue.Queue Annex)
 flush' q = withExclusiveLock gitAnnexGitQueueLock $ do
 	showStoringStateAction
-	inRepo $ Git.Queue.flush q
+	Git.Queue.flush q =<< gitRepo
 
 {- Gets the size of the queue. -}
 size :: Annex Int
 size = Git.Queue.size <$> get
 
-get :: Annex Git.Queue.Queue
+get :: Annex (Git.Queue.Queue Annex)
 get = maybe new return =<< getState repoqueue
 
-new :: Annex Git.Queue.Queue
+new :: Annex (Git.Queue.Queue Annex)
 new = do
 	q <- Git.Queue.new . annexQueueSize <$> getGitConfig
 	store q
 	return q
 
-store :: Git.Queue.Queue -> Annex ()
+store :: Git.Queue.Queue Annex -> Annex ()
 store q = changeState $ \s -> s { repoqueue = Just q }
 
 mergeFrom :: AnnexState -> Annex ()

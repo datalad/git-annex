@@ -1,6 +1,6 @@
 {- git repository command queue
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -27,9 +27,10 @@ import Git.Command
 import qualified Git.UpdateIndex
 
 import qualified Data.Map.Strict as M
+import Control.Monad.IO.Class
 
 {- Queable actions that can be performed in a git repository. -}
-data Action
+data Action m
 	{- Updating the index file, using a list of streamers that can
 	 - be added to as the queue grows. -}
 	= UpdateIndexAction [Git.UpdateIndex.Streamer] -- in reverse order
@@ -43,21 +44,21 @@ data Action
 	{- An internal action to run, on a list of files that can be added
 	 - to as the queue grows. -}
 	| InternalAction
-		{ getRunner :: InternalActionRunner
+		{ getRunner :: InternalActionRunner m
 		, getInternalFiles :: [(FilePath, IO Bool)]
 		}
 
 {- The String must be unique for each internal action. -}
-data InternalActionRunner = InternalActionRunner String (Repo -> [(FilePath, IO Bool)] -> IO ())
+data InternalActionRunner m = InternalActionRunner String (Repo -> [(FilePath, IO Bool)] -> m ())
 
-instance Eq InternalActionRunner where
+instance Eq (InternalActionRunner m) where
 	InternalActionRunner s1 _ == InternalActionRunner s2 _ = s1 == s2
 
 {- A key that can uniquely represent an action in a Map. -}
 data ActionKey = UpdateIndexActionKey | CommandActionKey String | InternalActionKey String
 	deriving (Eq, Ord)
 
-actionKey :: Action -> ActionKey
+actionKey :: Action m -> ActionKey
 actionKey (UpdateIndexAction _) = UpdateIndexActionKey
 actionKey CommandAction { getSubcommand = s } = CommandActionKey s
 actionKey InternalAction { getRunner = InternalActionRunner s _ } = InternalActionKey s
@@ -65,10 +66,10 @@ actionKey InternalAction { getRunner = InternalActionRunner s _ } = InternalActi
 {- A queue of actions to perform (in any order) on a git repository,
  - with lists of files to perform them on. This allows coalescing 
  - similar git commands. -}
-data Queue = Queue
+data Queue m = Queue
 	{ size :: Int
 	, _limit :: Int
-	, items :: M.Map ActionKey Action
+	, items :: M.Map ActionKey (Action m)
 	}
 
 {- A recommended maximum size for the queue, after which it should be
@@ -84,7 +85,7 @@ defaultLimit :: Int
 defaultLimit = 10240
 
 {- Constructor for empty queue. -}
-new :: Maybe Int -> Queue
+new :: Maybe Int -> Queue m
 new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
 
 {- Adds an git command to the queue.
@@ -93,7 +94,7 @@ new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
  - assumed to be equivilant enough to perform in any order with the same
  - result.
  -}
-addCommand :: String -> [CommandParam] -> [FilePath] -> Queue -> Repo -> IO Queue
+addCommand :: MonadIO m => String -> [CommandParam] -> [FilePath] -> Queue m -> Repo -> m (Queue m)
 addCommand subcommand params files q repo =
 	updateQueue action different (length files) q repo
   where
@@ -107,7 +108,7 @@ addCommand subcommand params files q repo =
 	different _ = True
 
 {- Adds an internal action to the queue. -}
-addInternalAction :: InternalActionRunner -> [(FilePath, IO Bool)] -> Queue -> Repo -> IO Queue
+addInternalAction :: MonadIO m => InternalActionRunner m -> [(FilePath, IO Bool)] -> Queue m -> Repo -> m (Queue m)
 addInternalAction runner files q repo =
 	updateQueue action different (length files) q repo
   where
@@ -120,7 +121,7 @@ addInternalAction runner files q repo =
 	different _ = True
 
 {- Adds an update-index streamer to the queue. -}
-addUpdateIndex :: Git.UpdateIndex.Streamer -> Queue -> Repo -> IO Queue
+addUpdateIndex :: MonadIO m => Git.UpdateIndex.Streamer -> Queue m -> Repo -> m (Queue m)
 addUpdateIndex streamer q repo =
 	updateQueue action different 1 q repo
   where
@@ -133,7 +134,7 @@ addUpdateIndex streamer q repo =
 {- Updates or adds an action in the queue. If the queue already contains a
  - different action, it will be flushed; this is to ensure that conflicting
  - actions, like add and rm, are run in the right order.-}
-updateQueue :: Action -> (Action -> Bool) -> Int -> Queue -> Repo -> IO Queue
+updateQueue :: MonadIO m => Action m -> (Action m -> Bool) -> Int -> Queue m -> Repo -> m (Queue m)
 updateQueue !action different sizeincrease q repo
 	| null (filter different (M.elems (items q))) = return $ go q
 	| otherwise = go <$> flush q repo
@@ -150,7 +151,7 @@ updateQueue !action different sizeincrease q repo
 {- The new value comes first. It probably has a smaller list of files than
  - the old value. So, the list append of the new value first is more
  - efficient. -}
-combineNewOld :: Action -> Action -> Action
+combineNewOld :: Action m -> Action m -> Action m
 combineNewOld (CommandAction _sc1 _ps1 fs1) (CommandAction sc2 ps2 fs2) =
 	CommandAction sc2 ps2 (fs1++fs2)
 combineNewOld (UpdateIndexAction s1) (UpdateIndexAction s2) =
@@ -162,18 +163,18 @@ combineNewOld anew _aold = anew
 {- Merges the contents of the second queue into the first.
  - This should only be used when the two queues are known to contain
  - non-conflicting actions. -}
-merge :: Queue -> Queue -> Queue
+merge :: Queue m -> Queue m -> Queue m
 merge origq newq = origq
 	{ size = size origq + size newq
 	, items = M.unionWith combineNewOld (items newq) (items origq)
 	}
 
 {- Is a queue large enough that it should be flushed? -}
-full :: Queue -> Bool
+full :: Queue m -> Bool
 full (Queue cur lim  _) = cur >= lim
 
 {- Runs a queue on a git repository. -}
-flush :: Queue -> Repo -> IO Queue
+flush :: MonadIO m => Queue m -> Repo -> m (Queue m)
 flush (Queue _ lim m) repo = do
 	forM_ (M.elems m) $ runAction repo
 	return $ Queue 0 lim M.empty
@@ -184,11 +185,11 @@ flush (Queue _ lim m) repo = do
  -
  - Intentionally runs the command even if the list of files is empty;
  - this allows queueing commands that do not need a list of files. -}
-runAction :: Repo -> Action -> IO ()
+runAction :: MonadIO m => Repo -> Action m -> m ()
 runAction repo (UpdateIndexAction streamers) =
 	-- list is stored in reverse order
-	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
-runAction repo action@(CommandAction {}) = do
+	liftIO $ Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
+runAction repo action@(CommandAction {}) = liftIO $ do
 #ifndef mingw32_HOST_OS
 	let p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
 	withHandle StdinHandle createProcessSuccess p $ \h -> do

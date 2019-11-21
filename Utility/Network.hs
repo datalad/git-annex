@@ -7,7 +7,7 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Network where
+module Utility.Network (getHostname) where
 
 import Utility.Process
 import Utility.Exception

@@ -1,24 +1,39 @@
 {- Url downloading, with git-annex user agent and configured http
  - headers, security restrictions, etc.
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Annex.Url (
-	module U,
 	withUrlOptions,
 	getUrlOptions,
 	getUserAgent,
 	ipAddressesUnlimited,
+	checkBoth,
+	download,
+	exists,
+	getUrlInfo,
+	U.downloadQuiet,
+	U.URLString,
+	U.UrlOptions(..),
+	U.UrlInfo(..),
+	U.sinkResponseFile,
+	U.matchStatusCodeException,
+	U.downloadConduit,
+	U.downloadPartial,
+	U.parseURIRelaxed,
+	U.allowedScheme,
+	U.assumeUrlExists,
 ) where
 
 import Annex.Common
 import qualified Annex
-import Utility.Url as U
+import qualified Utility.Url as U
 import Utility.IPAddress
 import Utility.HttpManagerRestricted
+import Utility.Metered
 import qualified BuildInfo
 
 import Network.Socket
@@ -43,7 +58,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
   where
 	mk = do
 		(urldownloader, manager) <- checkallowedaddr
-		mkUrlOptions
+		U.mkUrlOptions
 			<$> (Just <$> getUserAgent)
 			<*> headers
 			<*> pure urldownloader
@@ -108,3 +123,27 @@ ipAddressesUnlimited =
 
 withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
 withUrlOptions a = a =<< getUrlOptions
+
+checkBoth :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex Bool
+checkBoth url expected_size uo =
+	liftIO (U.checkBoth url expected_size uo) >>= \case
+		Right r -> return r
+		Left err -> warning err >> return False
+
+download :: MeterUpdate -> U.URLString -> FilePath -> U.UrlOptions -> Annex Bool
+download meterupdate url file uo =
+	liftIO (U.download meterupdate url file uo) >>= \case
+		Right () -> return True
+		Left err -> warning err >> return False
+
+exists :: U.URLString -> U.UrlOptions -> Annex Bool
+exists url uo = liftIO (U.exists url uo) >>= \case
+	Right b -> return b
+	Left err -> warning err >> return False
+
+getUrlInfo :: U.URLString -> U.UrlOptions -> Annex U.UrlInfo
+getUrlInfo url uo = liftIO (U.getUrlInfo url uo) >>= \case
+	Right i -> return i
+	Left err -> do
+		warning err
+		return $ U.UrlInfo False Nothing Nothing

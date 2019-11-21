@@ -11,7 +11,15 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.DirWatcher where
+module Utility.DirWatcher (
+	canWatch,
+	eventsCoalesce,
+	closingTracked,
+	modifyTracked,
+	DirWatcherHandle,
+	watchDir,
+	stopWatchDir,
+) where
 
 import Utility.DirWatcher.Types
 

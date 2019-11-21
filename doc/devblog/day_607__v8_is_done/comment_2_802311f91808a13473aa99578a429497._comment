@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="gb@4a49bb1afcf3d183bba8f07297b0395808768c6c"
+ nickname="gb"
+ avatar="http://cdn.libravatar.org/avatar/51ed40932fbf8748c70b31fd7446d40e"
+ subject="Symlinks for not-present unlocked files in v8?"
+ date="2019-11-10T14:51:59Z"
+ content="""
+Hi Joey, do you think it would be possible to squeeze a solution for the missing symlinks for not-present unlocked files in v8?
+
+Symlinks for missing unlocked files are the last thing missing from V5 for those of us simulating direct mode with adjusted branches and `annex.thin`. For reference <https://git-annex.branchable.com/devblog/day_601__v7_default/> and <https://git-annex.branchable.com/todo/symlinks_for_not-present_unlocked_files/>
+
+"""]]

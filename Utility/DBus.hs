@@ -7,7 +7,13 @@
 
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
-module Utility.DBus where
+module Utility.DBus (
+	ServiceName,
+	listServiceNames,
+	callDBus,
+	runClient,
+	persistentClient,
+) where
 
 import Utility.PartialPrelude
 import Utility.Exception

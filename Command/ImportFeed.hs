@@ -146,13 +146,12 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 downloadFeed :: URLString -> Annex (Maybe String)
 downloadFeed url
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
-	| otherwise = Url.withUrlOptions $ \uo ->
-		liftIO $ withTmpFile "feed" $ \f h -> do
-			hClose h
-			ifM (Url.download nullMeterUpdate url f uo)
-				( Just <$> readFileStrict f
-				, return Nothing
-				)
+	| otherwise = withTmpFile "feed" $ \f h -> do
+		liftIO $ hClose h
+		ifM (Url.withUrlOptions $ Url.download nullMeterUpdate url f)
+			( Just <$> liftIO (readFileStrict f)
+			, return Nothing
+			)
 
 performDownload :: ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
 performDownload opts cache todownload = case location todownload of
@@ -164,7 +163,7 @@ performDownload opts cache todownload = case location todownload of
 					urlinfo <- if relaxedOption (downloadOptions opts)
 						then pure Url.assumeUrlExists
 						else Url.withUrlOptions $
-							liftIO . Url.getUrlInfo url
+							Url.getUrlInfo url
 					let dlopts = (downloadOptions opts)
 						-- force using the filename
 						-- chosen here

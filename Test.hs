@@ -84,6 +84,7 @@ import qualified Utility.Base64
 import qualified Utility.Tmp.Dir
 import qualified Utility.FileSystemEncoding
 import qualified Utility.Aeson
+import qualified Utility.CopyFile
 #ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
@@ -248,6 +249,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "info" test_info
 	, testCase "version" test_version
 	, testCase "sync" test_sync
+	, testCase "concurrent get of dup key regression" test_concurrent_get_of_dup_key_regression
 	, testCase "union merge regression" test_union_merge_regression
 	, testCase "adjusted branch merge regression" test_adjusted_branch_merge_regression
 	, testCase "adjusted branch subtree regression" test_adjusted_branch_subtree_regression
@@ -950,6 +952,31 @@ test_sync = intmpclonerepo $ do
 	git_annex_expectoutput "find" ["--in", "."] []
 	git_annex "sync" ["--content"] @? "sync failed"
 	git_annex_expectoutput "find" ["--in", "."] []
+
+{- Regression test for the concurrency bug fixed in
+ - 667d38a8f11c1ee8f256cdbd80e225c2bae06595 -}
+test_concurrent_get_of_dup_key_regression :: Assertion
+test_concurrent_get_of_dup_key_regression = intmpclonerepo $ do
+	makedup dupfile
+	-- This was sufficient currency to trigger the bug.
+	git_annex "get" ["-J1", annexedfile, dupfile]
+		@? "concurrent get -J1 with dup failed"
+	git_annex "drop" ["-J1"]
+		@? "drop with dup failed"
+	-- With -J2, one more dup file was needed to trigger the bug.
+	makedup dupfile2
+	git_annex "get" ["-J2", annexedfile, dupfile, dupfile2]
+		@? "concurrent get -J2 with dup failed"
+	git_annex "drop" ["-J2"]
+		@? "drop with dup failed"
+  where
+	dupfile = annexedfile ++ "2"
+	dupfile2 = annexedfile ++ "3"
+	makedup f = do
+		Utility.CopyFile.copyFileExternal Utility.CopyFile.CopyAllMetaData annexedfile f
+			@? "copying annexed file failed"
+		boolSystem "git" [Param "add", File f]
+			@? "git add failed"	
 
 {- Regression test for union merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}

@@ -128,4 +128,8 @@ updateRemote remote = do
 {- Checks if a remote is syncable using git. -}
 gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r = remotetype r `elem`
-	[ Remote.Git.remote, Remote.GCrypt.remote, Remote.P2P.remote ]
+	[ Remote.Git.remote
+	, Remote.GCrypt.remote
+	, Remote.P2P.remote
+	, Remote.GitLFS.remote
+	]

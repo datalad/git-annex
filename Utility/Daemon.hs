@@ -7,7 +7,12 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Daemon where
+module Utility.Daemon (
+	daemonize,
+	foreground,
+	checkDaemon,
+	stopDaemon,
+) where
 
 import Common
 import Utility.PID

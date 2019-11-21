@@ -7,7 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.PID where
+module Utility.PID (PID, getPID) where
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Types (ProcessID)

@@ -7,7 +7,19 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Monad where
+module Utility.Monad (
+	firstM,
+	getM,
+	anyM,
+	allM,
+	untilTrue,
+	ifM,
+	(<||>),
+	(<&&>),
+	observe,
+	after,
+	noop,
+) where
 
 import Data.Maybe
 import Control.Monad

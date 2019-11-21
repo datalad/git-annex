@@ -7,7 +7,10 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Data where
+module Utility.Data (
+	firstJust,
+	eitherToMaybe,
+) where
 
 {- First item in the list that is not Nothing. -}
 firstJust :: Eq a => [Maybe a] -> Maybe a

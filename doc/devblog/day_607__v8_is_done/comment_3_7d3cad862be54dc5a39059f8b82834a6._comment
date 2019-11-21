@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="Re: Symlinks for not-present unlocked files in v8"
+ date="2019-11-10T23:03:42Z"
+ content="""
+Adding symlinks for not-present unlocked files in v8 would be great, but if it would hold up the release with SQL db fixes, making that release first would be better.  Some query operations -- like finding all unlocked files, or all files present in one remote but not the other -- currently take a while on large repos; if the SQL refactor could solve that, that by itself would be a major step forward.
+"""]]

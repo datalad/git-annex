@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="limiting clean/smudge filter to unlocked files"
+ date="2019-11-08T19:48:11Z"
+ content="""
+\"Each new invokation of git-annex has to re-open databases, start up git cat-file to query from, link the executable, read git config, etc. That takes a few hundred milliseconds.\" -- this is somewhat more of an issue now that all `git add/checkout` operations call the clean/smudge filter, even when there are no unlocked files.  One option is to [[only configure the filters for unlocked files|todo/only_pass_unlocked_files_through_the_clean__47__smudge_filter]] when only a few files are unlocked.
+"""]]

@@ -36,7 +36,6 @@ import qualified Annex
 import Utility.InodeCache
 import qualified Database.Keys
 import qualified Command.Sync
-import qualified Git.Branch
 import Utility.Tuple
 import Utility.Metered
 
@@ -231,7 +230,8 @@ commitStaged msg = do
 	case v of
 		Left _ -> return False
 		Right _ -> do
-			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit msg
+			cmode <- annexCommitMode <$> Annex.getGitConfig
+			ok <- Command.Sync.commitStaged cmode msg
 			when ok $
 				Command.Sync.updateBranches =<< getCurrentBranch
 			return ok

@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.DirWatcher.FSEvents where
+module Utility.DirWatcher.FSEvents (watchDir) where
 
 import Common hiding (isDirectory)
 import Utility.DirWatcher.Types

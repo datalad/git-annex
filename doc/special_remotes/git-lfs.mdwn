@@ -10,13 +10,6 @@ the git-lfs special remote:
 
 * `url` - Required. The url to the git-lfs repository to use.
   Can be either a ssh url (scp-style is also accepted) or a http url.
-  But currently, a http url accesses the git-lfs repository without
-  authentication. To authenticate, you will need to use a ssh url.
-
-  This parameter needs to be specified in the initial `git annex
-  initremote` but also each time you `git annex enableremote`
-  an existing git-lfs special remote. It's fine to use different urls
-  at different times as long as they point to the same git-lfs repository.
 
 * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
   Required. See [[encryption]]. Also see the encryption notes below.

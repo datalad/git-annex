@@ -1,0 +1,79 @@
+### Please describe the problem.
+
+There were a few changes introduced since then to Makefile (I will not guess which one broke it) which resulted in git within git-annex-standalone of neurodebian to be unable to clone from https://:
+
+
+[[!format sh """
+$> /usr/lib/git-annex.linux/git clone https://github.com/afni/afni_ci_test_data.git                            
+Cloning into 'afni_ci_test_data'...
+fatal: unable to find remote helper for 'https'
+
+"""]]
+
+<details>
+<summary>diff between list of files in 7.20190819+git60-gcdb679818 and 7.20191017+git2-g7b13db551 package builds shows many git-* missing</summary>
+[[!format sh """
+lena:/tmp
+$> ls 7.2019*/usr/lib/git-annex.linux/exe/                                         
+7.20190819/usr/lib/git-annex.linux/exe/:
+cp@                            git-diff-index@          git-mktag@                git-sh-i18n--envsubst@
+curl@                          git-diff-tree@           git-mktree@               git-shell@
+git@                           git-difftool@            git-multi-pack-index@     git-shortlog@
+git-add@                       git-fast-export@         git-mv@                   git-show@
+git-am@                        git-fast-import@         git-name-rev@             git-show-branch@
+git-annex@                     git-fetch@               git-notes@                git-show-index@
+git-annex-shell@               git-fetch-pack@          git-pack-objects@         git-show-ref@
+git-annotate@                  git-fmt-merge-msg@       git-pack-redundant@       git-stage@
+git-apply@                     git-for-each-ref@        git-pack-refs@            git-status@
+git-archive@                   git-format-patch@        git-patch-id@             git-stripspace@
+git-bisect--helper@            git-fsck@                git-prune@                git-submodule--helper@
+git-blame@                     git-fsck-objects@        git-prune-packed@         git-symbolic-ref@
+git-branch@                    git-gc@                  git-pull@                 git-tag@
+git-bundle@                    git-get-tar-commit-id@   git-push@                 git-unpack-file@
+git-cat-file@                  git-grep@                git-range-diff@           git-unpack-objects@
+git-check-attr@                git-hash-object@         git-read-tree@            git-update-index@
+git-check-ignore@              git-help@                git-rebase@               git-update-ref@
+git-check-mailmap@             git-http-backend@        git-rebase--interactive@  git-update-server-info@
+git-check-ref-format@          git-http-fetch@          git-receive-pack@         git-upload-archive@
+git-checkout@                  git-http-push@           git-reflog@               git-upload-pack@
+git-checkout-index@            git-imap-send@           git-remote@               git-var@
+git-cherry@                    git-index-pack@          git-remote-ext@           git-verify-commit@
+git-cherry-pick@               git-init@                git-remote-fd@            git-verify-pack@
+git-clean@                     git-init-db@             git-remote-ftp@           git-verify-tag@
+git-clone@                     git-interpret-trailers@  git-remote-ftps@          git-whatchanged@
+git-column@                    git-log@                 git-remote-http@          git-worktree@
+git-commit@                    git-ls-files@            git-remote-https@         git-write-tree@
+git-commit-graph@              git-ls-remote@           git-remote-testsvn@       localedef@
+git-commit-tree@               git-ls-tree@             git-remote-tor-annex@     lsof@
+git-config@                    git-mailinfo@            git-repack@               rsync@
+git-count-objects@             git-mailsplit@           git-replace@              sh@
+git-credential@                git-merge@               git-rerere@               ssh@
+git-credential-cache@          git-merge-base@          git-reset@                ssh-keygen@
+git-credential-cache--daemon@  git-merge-file@          git-rev-list@             tar@
+git-credential-store@          git-merge-index@         git-rev-parse@            uname@
+git-daemon@                    git-merge-ours@          git-revert@               xargs@
+git-describe@                  git-merge-recursive@     git-rm@
+git-diff@                      git-merge-subtree@       git-send-pack@
+git-diff-files@                git-merge-tree@          git-serve@
+
+7.20191017/usr/lib/git-annex.linux/exe/:
+cp@                    git-credential-cache--daemon@  git-http-push@         git-sh-i18n--envsubst@  sh@
+curl@                  git-credential-store@          git-imap-send@         git-shell@              ssh@
+git@                   git-daemon@                    git-receive-pack@      git-upload-pack@        ssh-keygen@
+git-annex@             git-fast-import@               git-remote-http@       localedef@              tar@
+git-annex-shell@       git-http-backend@              git-remote-testsvn@    lsof@                   uname@
+git-credential-cache@  git-http-fetch@                git-remote-tor-annex@  rsync@                  xargs@
+
+
+"""]]
+
+</details>
+
+so may be that is related.
+
+Unfortunately in datalad we had no test testing cloning over https, so I added such integration test in https://github.com/datalad/datalad/pull/3867 to at least detect such regressions in the future before hitting the userland
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

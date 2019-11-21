@@ -8,7 +8,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Utility.DebugLocks where
+module Utility.DebugLocks (debugLocks) where
 
 import Control.Monad.Catch
 import Control.Monad.IO.Class

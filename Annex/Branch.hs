@@ -109,8 +109,9 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 			[Param "branch", Param $ fromRef name, Param $ fromRef originname]
 		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
-	go False = withIndex' True $
-		inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit "branch created" fullname []
+	go False = withIndex' True $ do
+		cmode <- annexCommitMode <$> Annex.getGitConfig
+		inRepo $ Git.Branch.commitAlways cmode "branch created" fullname []
 	use sha = do
 		setIndexSha sha
 		return sha
@@ -317,7 +318,8 @@ commitIndex jl branchref message parents = do
 commitIndex' :: JournalLocked -> Git.Ref -> String -> String -> Integer -> [Git.Ref] -> Annex ()
 commitIndex' jl branchref message basemessage retrynum parents = do
 	updateIndex jl branchref
-	committedref <- inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit message fullname parents
+	cmode <- annexCommitMode <$> Annex.getGitConfig
+	committedref <- inRepo $ Git.Branch.commitAlways cmode message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $
@@ -551,7 +553,8 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		Annex.Queue.flush
 		if neednewlocalbranch
 			then do
-				committedref <- inRepo $ Git.Branch.commitAlways Git.Branch.AutomaticCommit message fullname transitionedrefs
+				cmode <- annexCommitMode <$> Annex.getGitConfig
+				committedref <- inRepo $ Git.Branch.commitAlways cmode message fullname transitionedrefs
 				setIndexSha committedref
 			else do
 				ref <- getBranch
@@ -657,9 +660,10 @@ rememberTreeish treeish graftpoint = lockJournal $ \jl -> do
 	origtree <- fromMaybe (giveup "unable to determine git-annex branch tree") <$>
 		inRepo (Git.Ref.tree branchref)
 	addedt <- inRepo $ Git.Tree.graftTree treeish graftpoint origtree
-	c <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
+	cmode <- annexCommitMode <$> Annex.getGitConfig
+	c <- inRepo $ Git.Branch.commitTree cmode
 		"graft" [branchref] addedt
-	c' <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
+	c' <- inRepo $ Git.Branch.commitTree cmode
 		"graft cleanup" [c] origtree
 	inRepo $ Git.Branch.update' fullname c'
 	-- The tree in c' is the same as the tree in branchref,

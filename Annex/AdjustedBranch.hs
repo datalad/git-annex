@@ -224,8 +224,9 @@ adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
 	warning "Entering an adjusted branch where files are unlocked as this filesystem does not support locked files."
 	checkVersionSupported
-	whenM (isNothing <$> inRepo Git.Branch.current) $
-		void $ inRepo $ Git.Branch.commitCommand Git.Branch.AutomaticCommit
+	whenM (isNothing <$> inRepo Git.Branch.current) $ do
+		cmode <- annexCommitMode <$> Annex.getGitConfig
+		void $ inRepo $ Git.Branch.commitCommand cmode
 			[ Param "--quiet"
 			, Param "--allow-empty"
 			, Param "-m"
@@ -310,12 +311,16 @@ commitAdjustedTree' :: Sha -> BasisBranch -> [Ref] -> Annex Sha
 commitAdjustedTree' treesha (BasisBranch basis) parents =
 	go =<< catCommit basis
   where
-	go Nothing = inRepo mkcommit
-	go (Just basiscommit) = inRepo $ commitWithMetaData
-		(commitAuthorMetaData basiscommit)
-		(commitCommitterMetaData basiscommit)
-		mkcommit
-	mkcommit = Git.Branch.commitTree Git.Branch.AutomaticCommit
+	go Nothing = do
+		cmode <- annexCommitMode <$> Annex.getGitConfig
+		inRepo $ mkcommit cmode
+	go (Just basiscommit) = do
+		cmode <- annexCommitMode <$> Annex.getGitConfig
+		inRepo $ commitWithMetaData
+			(commitAuthorMetaData basiscommit)
+			(commitCommitterMetaData basiscommit)
+			(mkcommit cmode)
+	mkcommit cmode = Git.Branch.commitTree cmode
 		adjustedBranchCommitMessage parents treesha
 
 {- This message should never be changed. -}
@@ -444,7 +449,8 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	reparent adjtree adjmergecommit (Just currentcommit) = do
 		if (commitTree currentcommit /= adjtree)
 			then do
-				c <- inRepo $ Git.Branch.commitTree Git.Branch.AutomaticCommit
+				cmode <- annexCommitMode <$> Annex.getGitConfig
+				c <- inRepo $ Git.Branch.commitTree cmode
 					("Merged " ++ fromRef tomerge) [adjmergecommit]
 					(commitTree currentcommit)
 				inRepo $ Git.Branch.update "updating adjusted branch" currbranch c
@@ -534,12 +540,14 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 	| length (commitParent basiscommit) > 1 = return $
 		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
 	| otherwise = do
+		cmode <- annexCommitMode <$> Annex.getGitConfig
 		treesha <- reverseAdjustedTree commitparent adj csha
 		revadjcommit <- inRepo $ commitWithMetaData
 			(commitAuthorMetaData basiscommit)
 			(commitCommitterMetaData basiscommit) $
-				Git.Branch.commitTree Git.Branch.AutomaticCommit
-					(commitMessage basiscommit) [commitparent] treesha
+				Git.Branch.commitTree cmode
+					(commitMessage basiscommit)
+					[commitparent] treesha
 		return (Right revadjcommit)
 
 {- Adjusts the tree of the basis, changing only the files that the

@@ -22,3 +22,8 @@ If user convenience was something to strive for here, it should technically be p
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+> [[fixed|done]], and I also converted a number of other places
+> where an error could leak through to stderr, although there are still
+> some places where direct writes to stderr happen -- I'll probably never
+> be able to guarantee --json-error-messages catches every possible stderr
+> output. --[[Joey]]

@@ -8,7 +8,11 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Process.Transcript where
+module Utility.Process.Transcript (
+	processTranscript,
+	processTranscript',
+	processTranscript'',
+) where
 
 import Utility.Process
 import Utility.Misc

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-11-13T19:58:20Z"
+ content="""
+Recent versions of git-annex have a git-lfs special
+remote, and gitlab does support git-lfs, so git-annex
+can store data on it. That does not answer your question, just wanted to
+mention it.
+
+For the assistant to quickly notice changes, it needs to be able to talk to
+a git-annex-shell on the remote's server. As a fallback, it does poll
+remotes periodically that don't have git-annex on them.  That's done once
+per hour, and also when network connection changes are detected.
+
+If you need to poll more frequently, you can install a cron job that does a
+git pull.
+"""]]

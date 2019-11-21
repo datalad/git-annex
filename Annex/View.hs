@@ -12,6 +12,7 @@ import Annex.View.ViewedFile
 import Types.View
 import Types.MetaData
 import Annex.MetaData
+import qualified Annex
 import qualified Git
 import qualified Git.DiffTree as DiffTree
 import qualified Git.Branch
@@ -418,7 +419,8 @@ withViewIndex a = do
 genViewBranch :: View -> Annex Git.Branch
 genViewBranch view = withViewIndex $ do
 	let branch = branchView view
-	void $ inRepo $ Git.Branch.commit Git.Branch.AutomaticCommit True (fromRef branch) branch []
+	cmode <- annexCommitMode <$> Annex.getGitConfig
+	void $ inRepo $ Git.Branch.commit cmode True (fromRef branch) branch []
 	return branch
 
 withCurrentView :: (View -> Annex a) -> Annex a

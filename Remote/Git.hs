@@ -143,7 +143,9 @@ configRead autoinit r = do
 		(True, _, _)
 			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r
 			| otherwise -> return r
-		(False, _, NoUUID) -> tryGitConfigRead autoinit r
+		(False, _, NoUUID) -> configSpecialGitRemotes r >>= \case
+			Nothing -> tryGitConfigRead autoinit r
+			Just r' -> return r'
 		_ -> return r
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
@@ -231,7 +233,7 @@ repoAvail r
 tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
 tryGitConfigRead autoinit r 
 	| haveconfig r = return r -- already read
-	| Git.repoIsSsh r = store $ do
+	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
 			(pipedconfig, return (Left $ giveup "configlist failed"))
 			"configlist" [] configlistfields
@@ -240,30 +242,30 @@ tryGitConfigRead autoinit r
 				| haveconfig r' -> return r'
 				| otherwise -> configlist_failed
 			Left _ -> configlist_failed
-	| Git.repoIsHttp r = store geturlconfig
+	| Git.repoIsHttp r = storeUpdatedRemote geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ liftIO $ 
+	| otherwise = storeUpdatedRemote $ liftIO $ 
 		readlocalannexconfig `catchNonAsync` (const $ return r)
   where
 	haveconfig = not . M.null . Git.config
 
 	pipedconfig cmd params = do
-		v <- Git.Config.fromPipe r cmd params
+		v <- liftIO $ Git.Config.fromPipe r cmd params
 		case v of
 			Right (r', val) -> do
 				unless (isUUIDConfigured r' || null val) $ do
-					warningIO $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
-					warningIO $ "Instead, got: " ++ show val
-					warningIO $ "This is unexpected; please check the network transport!"
+					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
+					warning $ "Instead, got: " ++ show val
+					warning $ "This is unexpected; please check the network transport!"
 				return $ Right r'
 			Left l -> return $ Left l
 
 	geturlconfig = Url.withUrlOptions $ \uo -> do
-		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
-			hClose h
+		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
+			liftIO $ hClose h
 			let url = Git.repoLocation r ++ "/config"
-			ifM (Url.downloadQuiet nullMeterUpdate url tmpfile uo)
+			ifM (liftIO $ Url.downloadQuiet nullMeterUpdate url tmpfile uo)
 				( Just <$> pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return Nothing
 				)
@@ -277,18 +279,6 @@ tryGitConfigRead autoinit r
 			_ -> do
 				set_ignore "not usable by git-annex" False
 				return r
-
-	store = observe $ \r' -> do
-		l <- Annex.getGitRemotes
-		let rs = exchange l r'
-		Annex.changeState $ \s -> s { Annex.gitremotes = Just rs }
-
-	exchange [] _ = []
-	exchange (old:ls) new
-		| Git.remoteName old == Git.remoteName new =
-			new : exchange ls new
-		| otherwise =
-			old : exchange ls new
 
 	{- Is this remote just not available, or does
 	 - it not have git-annex-shell?
@@ -319,7 +309,7 @@ tryGitConfigRead autoinit r
 		g <- gitRepo
 		case Git.GCrypt.remoteRepoId g (Git.remoteName r) of
 			Nothing -> return r
-			Just v -> store $ liftIO $ setUUID r $
+			Just v -> storeUpdatedRemote $ liftIO $ setUUID r $
 				genUUIDInNameSpace gCryptNameSpace v
 
 	{- The local repo may not yet be initialized, so try to initialize
@@ -337,6 +327,31 @@ tryGitConfigRead autoinit r
 		then [(Fields.autoInit, "1")]
 		else []
 
+{- Handles special remotes that can be enabled by the presence of
+ - regular git remotes.
+ -
+ - When a remote repo is found to be such a special remote, its
+ - UUID is cached in the git config, and the repo returned with
+ - the UUID set.
+ -}
+configSpecialGitRemotes :: Git.Repo -> Annex (Maybe Git.Repo)
+configSpecialGitRemotes r = Remote.GitLFS.configKnownUrl r >>= \case
+	Nothing -> return Nothing
+	Just r' -> Just <$> storeUpdatedRemote (return r')
+
+storeUpdatedRemote :: Annex Git.Repo -> Annex Git.Repo
+storeUpdatedRemote = observe $ \r' -> do
+	l <- Annex.getGitRemotes
+	let rs = exchange l r'
+	Annex.changeState $ \s -> s { Annex.gitremotes = Just rs }
+  where
+	exchange [] _ = []
+	exchange (old:ls) new
+		| Git.remoteName old == Git.remoteName new =
+			new : exchange ls new
+		| otherwise =
+			old : exchange ls new
+
 {- Checks if a given remote has the content for a key in its annex. -}
 inAnnex :: Remote -> State -> Key -> Annex Bool
 inAnnex rmt st key = do
@@ -352,11 +367,10 @@ inAnnex' repo rmt (State connpool duc _ _) key
 	checkhttp = do
 		showChecking repo
 		gc <- Annex.getGitConfig
-		ifM (Url.withUrlOptions $ \uo -> liftIO $
-			anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls gc repo rmt key))
-				( return True
-				, giveup "not found"
-				)
+		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls gc repo rmt key))
+			( return True
+			, giveup "not found"
+			)
 	checkremote = 
 		let fallback = Ssh.inAnnex repo key
 		in P2PHelper.checkpresent (Ssh.runProto rmt connpool (cantCheck rmt) fallback) key
@@ -498,8 +512,9 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink st params
 					runTransfer (Transfer Download u key)
-						file stdRetry
-						(\p -> copier object dest (combineMeterUpdate p meterupdate) checksuccess)
+						file stdRetry $ \p ->
+							metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
+								copier object dest p' checksuccess
 	| Git.repoIsSsh repo = if forcersync
 		then fallback meterupdate
 		else P2PHelper.retrieve
@@ -632,15 +647,15 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		-- run copy from perspective of remote
 		onLocalFast repo r $ ifM (Annex.Content.inAnnex key)
 			( return True
-			, do
+			, runTransfer (Transfer Download u key) file stdRetry $ \p -> do
 				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure
-				runTransfer (Transfer Download u key) file stdRetry $ \p ->
-					let p' = combineMeterUpdate meterupdate p
-					in Annex.Content.saveState True `after`
-						Annex.Content.getViaTmp rsp verify key
-							(\dest -> copier object dest p' (liftIO checksuccessio))
+				res <- Annex.Content.getViaTmp rsp verify key $ \dest ->
+					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
+						copier object dest p' (liftIO checksuccessio)
+				Annex.Content.saveState True
+				return res
 			)
 	copyremotefallback p = Annex.Content.sendAnnex key noop $ \object -> do
 		-- This is too broad really, but recvkey normally
@@ -750,7 +765,7 @@ rsyncOrCopyFile st rsyncparams src dest p =
 	dorsync = do
 		-- dest may already exist, so make sure rsync can write to it
 		void $ liftIO $ tryIO $ allowWrite dest
-		oh <- mkOutputHandler
+		oh <- mkOutputHandlerQuiet
 		Ssh.rsyncHelper oh (Just p) $
 			rsyncparams ++ [File src, File dest]
 	docopycow = docopywith copyCoW

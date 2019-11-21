@@ -1,0 +1,63 @@
+Greetings,
+
+Two more issues have come up.  
+
+1) webapp (and assistant) don't always seem to inherit ssh-agent keys (I've setup a passwordless key for gitlab).  It usually takes multiple cycles of killing off ssh and annex-related daemons before a new instance will not fail auth with gitlab - is there a more solid way of doing this?
+
+2) When I do get auth, the assistant / webui will notice file changes (i.e moving a small file that doesn't match annex.largefiles, but the changes don't get committed to origin (gitlab - metadata only).  The log file is below - thougts?
+
+[2019-11-13 20:24:33.378362] main: starting assistant version 7.20191106
+[2019-11-13 20:24:33.439501] TransferScanner: Syncing with origin
+(scanning...) [2019-11-13 20:24:33.529954] Watcher: Performing startup scan
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+
+git cat-file EOF: user error
+
+fd:39: hFlush: resource vanished (Broken pipe)
+
+fd:39: hFlush: resource vanished (Broken pipe)
+(started...)
+[2019-11-13 20:24:34.481957] Committer: Committing changes to git
+(recording state in git...)
+> GitLab: Disallowed command
+ControlSocket .git/annex/ssh/git@gitlab.com already exists, disabling multiplexing
+[2019-11-13 20:24:35.42995] Pusher: Syncing with origin
+Everything up-to-date
+> GitLab: Disallowed command
+Everything up-to-date
+> GitLab: Disallowed command
+> GitLab: Disallowed command
+> GitLab: Disallowed command
+> GitLab: Disallowed command
+> GitLab: Disallowed command
+
+fd:39: hFlush: resource vanished (Broken pipe)
+
+fd:39: hFlush: resource vanished (Broken pipe)
+[2019-11-13 20:26:09.256217] main: Syncing with origin
+Everything up-to-date
+> GitLab: Disallowed command
+
+fd:39: hFlush: resource vanished (Broken pipe)
+[2019-11-13 20:27:31.922901] Committer: Committing changes to git
+(recording state in git...)
+[2019-11-13 20:27:31.956249] Pusher: Syncing with origin
+Everything up-to-date
+
+fd:39: hFlush: resource vanished (Broken pipe)
+[2019-11-13 20:28:35.846741] Committer: Committing changes to git
+(recording state in git...)
+[2019-11-13 20:28:35.87987] Pusher: Syncing with origin
+Everything up-to-date
+> GitLab: Disallowed command
+> GitLab: Disallowed command

@@ -4,9 +4,11 @@ repositories, using the [[git-lfs special remote|special_remotes/git-lfs]].
 You do not need the git-lfs program installed to use it, just a recent
 enough version of git-annex.
 
+## getting started
+
 Here's how to initialize a git-lfs special remote on Github.
 
-	git annex initremote lfs type=git-lfs encryption=none url=git@github.com:yourname/yourrepo.git
+	git annex initremote lfs type=git-lfs encryption=none url=https://github.com/yourname/yourrepo
 
 In this example, the remote will not be encrypted, so anyone who can access
 it can see its contents. It is possible to encrypt everything stored in a
@@ -24,8 +26,44 @@ because the protocol does not support deletion.
 A git-lfs special remote also functions as a regular git remote. You can
 use things like `git push` and `git pull` with it.
 
-To enable an existing git-lfs remote in another clone of the repository,
-you'll need to provide an url to it again. It's ok to provide a different
-url as long as it points to the same git-lfs repository.
+## enabling existing git-lfs special remotes
 
-	git annex enableremote lfs url=https://github.com/yourname/yourrepo.git
+There are two different ways to enable a git-lfs special 
+remote in another clone of the repository.
+
+Of course, you can use `git annex enableremote` to enable a git-lfs special
+remote, the same as you would enable any other special remote.
+Eg, for the "lfs" remote initialized above:
+
+	git annex enableremote lfs
+
+But perhaps more simply, if git-annex sees a git remote that matches
+the url that was provided to initremote earlier, it will *automatically*
+enable that git remote as a git-lfs special remote.
+
+So you can just git clone from the url, and the "origin" remote will be
+automatically used as a git-lfs special remote.
+
+	git clone https://github.com/yourname/yourrepo
+	cd yourrepo
+	git-annex get --from origin
+
+Nice and simple, and much the same as git-annex handles its regular
+remotes.
+
+(Note that git-annex versions 7.20191115 and older didn't remember the url
+privided to initremote, so you'll need to pass the url= parameter
+to enableremote in that case. Newer versions of git-annex will then
+remember the url.)
+
+## multiple urls
+
+Often there are multiple urls that can access the same git repository.
+You can set up git-lfs remotes for each url. For example,
+to add a remote accessing the github repository over ssh:
+
+	git annex initremote lfs-http --sameas=lfs url=git@github.com:yourname/yourrepo.git
+
+The `--sameas` parameter tells git-annex that this is the same as the "lfs"
+repository, so it will understand that anything it stores in one remote can
+be accessed also with the other remote.

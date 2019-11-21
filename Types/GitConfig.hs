@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
 import Git.ConfigTypes
+import Git.Branch (CommitMode(..))
 import Utility.DataUnits
 import Config.Cost
 import Types.UUID
@@ -105,6 +106,7 @@ data GitConfig = GitConfig
 	, annexJobs :: Concurrency
 	, annexCacheCreds :: Bool
 	, annexAutoUpgradeRepository :: Bool
+	, annexCommitMode :: CommitMode
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -186,6 +188,9 @@ extractGitConfig r = GitConfig
 		parseConcurrency =<< getmaybe (annex "jobs")
 	, annexCacheCreds = getbool (annex "cachecreds") True
 	, annexAutoUpgradeRepository = getbool (annex "autoupgraderepository") True
+	, annexCommitMode = if getbool (annex "allowsign") False
+		then ManualCommit
+		else AutomaticCommit
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

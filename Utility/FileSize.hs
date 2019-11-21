@@ -5,7 +5,11 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.FileSize where
+module Utility.FileSize (
+	FileSize,
+	getFileSize,
+	getFileSize',
+) where
 
 import System.PosixCompat.Files
 #ifdef mingw32_HOST_OS

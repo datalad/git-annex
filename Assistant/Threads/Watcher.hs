@@ -183,7 +183,7 @@ runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
 runHandler handler file filestatus = void $ do
 	r <- tryIO <~> handler (normalize file) filestatus
 	case r of
-		Left e -> liftIO $ warningIO $ show e
+		Left e -> liftAnnex $ warning $ show e
 		Right Nothing -> noop
 		Right (Just change) -> recordChange change
   where

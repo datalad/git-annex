@@ -30,7 +30,6 @@ import Utility.InodeCache
 import Logs.Location
 import Git.FilePath
 import Git.Types
-import Git.Branch
 import Types.Import
 import Utility.Metered
 
@@ -40,7 +39,7 @@ cmd :: Command
 cmd = notBareRepo $
 	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
 		command "import" SectionCommon 
-			"import files from elsewhere into the repository"
+			"add a tree of files to the repository"
 			(paramPaths ++ "|BRANCH[:SUBDIR]")
 			(seek <$$> optParser)
 
@@ -266,7 +265,8 @@ seekRemote remote branch msubdir = do
 					Nothing -> giveup $ "Unable to find base tree for branch " ++ fromRef branch
 	
 	trackingcommit <- fromtrackingbranch Git.Ref.sha
-	let importcommitconfig = ImportCommitConfig trackingcommit AutomaticCommit importmessage
+	cmode <- annexCommitMode <$> Annex.getGitConfig
+	let importcommitconfig = ImportCommitConfig trackingcommit cmode importmessage
 	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 
 	importabletvar <- liftIO $ newTVarIO Nothing

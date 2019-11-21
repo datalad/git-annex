@@ -14,6 +14,7 @@ import Assistant.Sync
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import Annex.CurrentBranch
+import qualified Annex
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
@@ -80,11 +81,13 @@ onChange file
 					[ "merging", Git.fromRef changedbranch
 					, "into", Git.fromRef b
 					]
-				void $ liftAnnex $ Command.Sync.merge
-					currbranch Command.Sync.mergeConfig
-					def
-					Git.Branch.AutomaticCommit
-					changedbranch
+				void $ liftAnnex $ do
+					cmode <- annexCommitMode <$> Annex.getGitConfig
+					Command.Sync.merge
+						currbranch Command.Sync.mergeConfig
+						def
+						cmode
+						changedbranch
 	mergecurrent' _ = noop
 
 {- Is the first branch a synced branch or remote tracking branch related

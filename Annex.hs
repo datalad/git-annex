@@ -114,7 +114,7 @@ data AnnexState = AnnexState
 	, fast :: Bool
 	, daemon :: Bool
 	, branchstate :: BranchState
-	, repoqueue :: Maybe Git.Queue.Queue
+	, repoqueue :: Maybe (Git.Queue.Queue Annex)
 	, catfilehandles :: M.Map FilePath CatFileHandle
 	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe CheckAttrHandle

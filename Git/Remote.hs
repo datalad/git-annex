@@ -51,6 +51,7 @@ makeLegalName s = case filter legal $ replace "/" "_" s of
 	legal c = isAlphaNum c
 	
 data RemoteLocation = RemoteUrl String | RemotePath FilePath
+	deriving (Eq)
 
 remoteLocationIsUrl :: RemoteLocation -> Bool
 remoteLocationIsUrl (RemoteUrl _) = True

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="satya.ortiz-gagne@a4c92de91eb4fd5ae8fc9893bb4fd674a19f2e59"
+ nickname="satya.ortiz-gagne"
+ avatar="http://cdn.libravatar.org/avatar/79c93025f174cd2aff98fbb952702c09"
+ subject="Re: using hardlinks"
+ date="2019-11-18T20:46:22Z"
+ content="""
+Thanks for your comment. I've looked into [local caching of annexed files](https://git-annex.branchable.com/tips/local_caching_of_annexed_files) and most of it can be found in the scenario [described in the test gist](https://gist.github.com/satyaog/b08a6e5d1eee75217ba823d38b84fb8b).
+
+The two settings `annex.thin` and `annex.hardlink` are also set in the two git-annex repositories of the test. Thanks for letting me know about the caveats. Based on the tests that I've executed, it would seam that [`git-annex unlock`](https://git-annex.branchable.com/git-annex-unlock/) now copies the file to avoid the mentioned issue as I noticed different inodes? I understand that this prevents unwanted lost of data while using git-annex but I would actually like to have a hardlink instead of a copy. I'm wondering if it's possible.
+"""]]

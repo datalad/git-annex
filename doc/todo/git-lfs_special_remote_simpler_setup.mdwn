@@ -20,5 +20,8 @@ obvious two or three. Now that `initremote --sameas`
 special remotes can be initialized for all the urls. The user would need to
 do that themselves probably.
 
-[[!tag projects/dandi]]
+> [[done]], the url is stored, and when there's a remote that has an url
+> that's known to be to a git-lfs repo, that remote is automatically
+> enabled to be used as a git-lfs special remote. --[[Joey]]
 
+[[!tag projects/dandi]]

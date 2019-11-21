@@ -8,7 +8,29 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Path where
+module Utility.Path (
+	simplifyPath,
+	absPathFrom,
+	parentDir,
+	upFrom,
+	dirContains,
+	absPath,
+	relPathCwdToFile,
+	relPathDirToFile,
+	relPathDirToFileAbs,
+	segmentPaths,
+	runSegmentPaths,
+	relHome,
+	inPath,
+	searchPath,
+	dotfile,
+	sanitizeFilePath,
+	splitShortExtensions,
+
+	prop_upFrom_basics,
+	prop_relPathDirToFile_basics,
+	prop_relPathDirToFile_regressionTest,
+) where
 
 import System.FilePath
 import Data.List

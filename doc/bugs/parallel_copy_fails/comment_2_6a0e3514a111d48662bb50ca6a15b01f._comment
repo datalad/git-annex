@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-11-13T19:37:16Z"
+ content="""
+The signal 11 is very significant. It points to a problem in a lower-level
+library (or ghc runtime), or perhaps a bad memory problem. git-annex does
+not itself contain any code that can segfault, afaik.
+
+Almost certianly the same as the other bug.
+"""]]

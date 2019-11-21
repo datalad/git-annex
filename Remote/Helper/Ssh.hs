@@ -83,7 +83,7 @@ git_annex_shell cs r command params fields
 onRemote 
 	:: ConsumeStdin
 	-> Git.Repo
-	-> (FilePath -> [CommandParam] -> IO a, Annex a)
+	-> (FilePath -> [CommandParam] -> Annex a, Annex a)
 	-> String
 	-> [CommandParam]
 	-> [(Field, String)]
@@ -91,7 +91,7 @@ onRemote
 onRemote cs r (with, errorval) command params fields = do
 	s <- git_annex_shell cs r command params fields
 	case s of
-		Just (c, ps) -> liftIO $ with c ps
+		Just (c, ps) -> with c ps
 		Nothing -> errorval
 
 {- Checks if a remote contains a key. -}
@@ -100,14 +100,14 @@ inAnnex r k = do
 	showChecking r
 	onRemote NoConsumeStdin r (runcheck, cantCheck r) "inannex" [Param $ serializeKey k] []
   where
-	runcheck c p = dispatch =<< safeSystem c p
+	runcheck c p = liftIO $ dispatch =<< safeSystem c p
 	dispatch ExitSuccess = return True
 	dispatch (ExitFailure 1) = return False
 	dispatch _ = cantCheck r
 
 {- Removes a key from a remote. -}
 dropKey :: Git.Repo -> Key -> Annex Bool
-dropKey r key = onRemote NoConsumeStdin r (boolSystem, return False) "dropkey"
+dropKey r key = onRemote NoConsumeStdin r (\f p -> liftIO (boolSystem f p), return False) "dropkey"
 	[ Param "--quiet", Param "--force"
 	, Param $ serializeKey key
 	]

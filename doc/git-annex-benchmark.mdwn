@@ -4,7 +4,7 @@ git-annex benchmark - benchmark git-annex commands
 
 # SYNOPSIS
 
-git annex benchmark [criterionopts] ( -- commmand [; command] | --databases )
+git annex benchmark [criterionopts] ( -- commmand [; command] | --databases=N )
 
 # DESCRIPTION
 
@@ -39,8 +39,8 @@ used.
 Any options that git-annex usually accepts can be included after the
 command to benchmark.
 
-The --databases option benchmark's git-annex's use of sqlite databases,
-instead of a command.
+The --databases=N option benchmark's git-annex's use of sqlite databases,
+instead of a command. N is the number of items to benchmark.
 
 # OUTPUT
 

@@ -5,7 +5,9 @@
  - License: BSD-2-clause
  -}
 
-module Utility.Applicative where
+module Utility.Applicative (
+	(<$$>),
+) where
 
 {- Like <$> , but supports one level of currying.
  - 

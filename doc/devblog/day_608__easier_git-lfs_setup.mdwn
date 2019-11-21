@@ -1,0 +1,25 @@
+The git-lfs support I added to git-annex had one small problem: People
+expect to be able to clone a git repo and get right to using it, but after
+cloning a git-annex repo that's on a server that uses git-lfs, there
+was an extra `git annex enableremote` step to be able to use it as a git-lfs
+special remote. And, you ended up with a "origin" git remote and a git-lfs
+special remote with some other name.
+
+Now, it's this simple to set up a git-lfs repo on eg, github:
+
+	git annex initremote github type=git-lfs encryption=none url=https://github.com/joeyh/lfstest
+	git annex sync github
+	git annex copy --to github ...
+
+And then for others to clone and use it is even simpler:
+
+	git clone https://github.com/joeyh/lfstest
+	cd lfstest
+	git annex get
+
+The only gotcha is that git-annex has to know the url that's used for
+the remote. Cloning any other url any other way (eg http instead of https)
+will result in git-annex not using it. This is a consequence of git-lfs
+not having any equivilant of a git-annex repository UUID, so git-annex
+can't probe for the UUID and has to compare urls. This can be worked
+around using `initremote --sameas` to tell git-annex about other urls.

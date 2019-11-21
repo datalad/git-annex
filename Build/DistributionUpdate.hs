@@ -26,6 +26,7 @@ import Git.Command
 
 import Data.Time.Clock
 import Data.Char
+import Data.Either
 import System.Posix.Directory
 
 -- git-annex distribution signing key (for Joey Hess)
@@ -86,7 +87,7 @@ getbuild repodir (url, f) = do
 		putStrLn $ "*** " ++ s
 		return Nothing
 	uo <- defUrlOptions
-	ifM (download nullMeterUpdate url tmp uo)
+	ifM (isRight <$> download nullMeterUpdate url tmp uo)
 		( ifM (liftIO $ virusFree tmp)
 			( do
 				bv2 <- getbv

@@ -192,12 +192,13 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 	-- on all still-unmodified files, using a copy of the index file,
 	-- to bypass the lock. Then replace the old index file with the new
 	-- updated index file.
+	runner :: Git.Queue.InternalActionRunner Annex
 	runner = Git.Queue.InternalActionRunner "restagePointerFile" $ \r l -> do
-		realindex <- Git.Index.currentIndexFile r
+		realindex <- liftIO $ Git.Index.currentIndexFile r
 		let lock = Git.Index.indexFileLock realindex
-		    lockindex = catchMaybeIO $ Git.LockFile.openLock' lock
-		    unlockindex = maybe noop Git.LockFile.closeLock
-		    showwarning = warningIO $ unableToRestage Nothing
+		    lockindex = liftIO $ catchMaybeIO $ Git.LockFile.openLock' lock
+		    unlockindex = liftIO . maybe noop Git.LockFile.closeLock
+		    showwarning = warning $ unableToRestage Nothing
 		    go Nothing = showwarning
 		    go (Just _) = withTmpDirIn (Git.localGitDir r) "annexindex" $ \tmpdir -> do
 			let tmpindex = tmpdir </> "index"
@@ -216,7 +217,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 			let replaceindex = catchBoolIO $ do
 				moveFile tmpindex realindex
 				return True
-			ok <- createLinkOrCopy realindex tmpindex
+			ok <- liftIO $ createLinkOrCopy realindex tmpindex
 				<&&> updatetmpindex
 				<&&> replaceindex
 			unless ok showwarning

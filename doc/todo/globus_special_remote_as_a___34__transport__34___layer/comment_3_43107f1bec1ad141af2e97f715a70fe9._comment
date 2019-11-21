@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="RFC: how would it work for regular git remote + special remote"
+ date="2019-11-08T19:19:18Z"
+ content="""
+Added recently `--sameas` functionality provides support at the \"UUID logistics\" level, and examples in the comments exercise it for two external remotes (rsync + directory) with the same layout of annex objects.
+The original use case I am pursuing is for a regular git repository (e.g. non-bare) with \"git repository\" layout of the store (i.e. under `.git/annex/objects/`) use a special remote primarily as a transport mechanism. In our case it will be `globus`.  I really doubt it would work \"out of the box\" since AFAIK any special remote has only two possible ideas about layout of objects: its regular \"special remote layout\" (e.g. a flat list of keys or with some hash directories) or exported (such as a file tree). Only in case of `git` special remote layout would be the same, but otherwise special remote layout would be different, and \"export\" wouldn't really be the one desired (especially for placing files to the remote).
+So it seems that the only way to accomplish my mission would be to implement in the `globus` custom special remote the support of additional layout by parametrizing special remote upon initremote with e.g. `layout=local`, which would lookup location for the key in the local repository (under `.git/annex/objects`), and use it as the path for the key on the remote.
+
+Is that a correct idea Joey?  or you see a better way?
+"""]]

@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-11-13T21:42:58Z"
+ content="""
+finishCommandActions is reaching the retry case, and STM deadlocks there.
+The WorkerPool is getting into a state where allIdle is False, and is not
+leaving it, perhaps due to an earlier STM deadlock. (There seem to be two
+different ones.)
+
+Also, I notice with --json-error-messages:
+
+	{"command":"get","note":"from origin...\nchecksum...","success":false,"key":"SHA256E-s524288--07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541","error-messages":["git-annex: thread blocked indefinitely in an STM transaction"],"file":"1"}
+
+So the thread that actually gets to run on the key is somehow reaching a
+STM deadlock.
+
+Which made me wonder if that thread deadlocks on enteringStage.
+And it seems so. If Command.Get is changed to use commandStages
+rather than transferStages, the test case succeeds.
+
+Like finishCommandActions, enteringStage has a STM retry if it needs to
+wait for something to happen to the WorkerPool. So again it looks like
+the WorkerPool is getting screwed up.
+"""]]

@@ -1,11 +1,23 @@
 {- a simple graphviz / dot(1) digraph description generator library
  -
+ - import qualified
+ -
  - Copyright 2010 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
-module Utility.Dot where -- import qualified
+module Utility.Dot (
+	graph,
+	graphNode,
+	graphEdge,
+	label,
+	attr,
+	fillColor,
+	subGraph,
+	indent,
+	quote,
+) where
 
 {- generates a graph description from a list of lines -}
 graph :: [String] -> String

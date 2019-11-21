@@ -53,8 +53,9 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 	initRepo' desc mgroup
 	{- Initialize the master branch, so things that expect
 	 - to have it will work, before any files are added. -}
-	unlessM (Git.Config.isBare <$> gitRepo) $
-		void $ inRepo $ Git.Branch.commitCommand Git.Branch.AutomaticCommit
+	unlessM (Git.Config.isBare <$> gitRepo) $ do
+		cmode <- annexCommitMode <$> Annex.getGitConfig
+		void $ inRepo $ Git.Branch.commitCommand cmode
 			[ Param "--quiet"
 			, Param "--allow-empty"
 			, Param "-m"

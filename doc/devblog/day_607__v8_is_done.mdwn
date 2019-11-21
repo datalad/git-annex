@@ -1,0 +1,40 @@
+Spent the past two weeks on the [[todo/sqlite_database_improvements]]
+which will be git-annex v8.
+
+That cleaned up a significant amount of technical debt. I had made some bad
+choices about encoding sqlite data early on, and the persistent library
+turns out to make a dubious choice about how String is stored, that
+prevents some unicode surrigate code points from roundtripping sometimes.
+On top of those problems, there were some missing indexes. And then to
+resolve the `git add` mess, I had to write a raw SQL query that used LIKE,
+which was super ugly, slow, and not indexed.
+
+Really good to get all that resolved. And I have microbenchmarks that are
+good too; 10-25% speedup across the board for database operations.
+
+The tricky thing was that, due to the encoding problem, both filenames and
+keys stored in the old sqlite databases can't be trusted to be valid. This
+ruled out a database migration because it could leave a repo with bad old
+data in it. Instead, the old databases have to be thrown away, and the
+upgrade has to somehow build new databases that contain all the necessary
+data. Seems a tall order, but luckily git-annex is a distributed system and
+so the databases are used as a local fast cache for information that can be
+looked up more slowly from git. Well, mostly. Sometimes the databases are
+used for data that has not yet been committed to git, or that is local to a
+single repo.
+
+So I had to find solutions to a lot of hairly problems. In a couple cases,
+the solutions involve git-annex doing more work after the upgrade for a
+while, until it is able to fully regenerate the data that was stored in the
+old databases.
+
+One nice thing about this approach is that, if I ever need to change the
+sqlite databases again, I can reuse the same code to delete the old and
+regnerate the new, rather than writing migration code specific to a
+given database change.
+
+Anyway, v8 is all ready to merge, but I'm inclined to sit on it for a month or
+two, to avoid upgrade fatigue. Also I find more ways to improve the
+database schema. Perhaps it would be worth it to do some normalization,
+and/or move everything into a single large database rather than the current
+smattering of unnormalized databases?

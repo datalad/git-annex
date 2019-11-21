@@ -9,11 +9,16 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Directory.Stream where
+module Utility.Directory.Stream (
+	DirectoryHandle,
+	openDirectory,
+	closeDirectory,
+	readDirectory,
+	isDirectoryEmpty,
+) where
 
 import Control.Monad
 import System.FilePath
-import System.IO.Unsafe (unsafeInterleaveIO)
 import Control.Concurrent
 import Data.Maybe
 import Prelude
@@ -99,22 +104,6 @@ readDirectory hdl@(DirectoryHandle _ h fdat mv) = do
 		filename <- Win32.getFindDataFileName fdat
 		return (Just filename)
 #endif
-
--- | Like getDirectoryContents, but rather than buffering the whole
--- directory content in memory, lazily streams.
---
--- This is like lazy readFile in that the handle to the directory remains
--- open until the whole list is consumed, or until the list is garbage
--- collected. So use with caution particularly when traversing directory
--- trees.
-streamDirectoryContents :: FilePath -> IO [FilePath]
-streamDirectoryContents d = openDirectory d >>= collect
-  where
-	collect hdl = readDirectory hdl >>= \case
-		Nothing -> return []
-		Just f -> do
-			rest <- unsafeInterleaveIO (collect hdl)
-			return (f:rest)
 
 -- | True only when directory exists and contains nothing.
 -- Throws exception if directory does not exist.

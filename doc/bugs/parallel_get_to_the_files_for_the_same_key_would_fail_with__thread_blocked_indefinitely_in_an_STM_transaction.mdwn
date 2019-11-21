@@ -1,0 +1,73 @@
+Originally was trying to reproduce [datalad/issues/3653](https://github.com/datalad/datalad/issues/3653) assuming that multiple files pointed to the same key.
+It was not the case, and my attempt revealed another bug - annex inability to "obtain" files in parallel when multiple of them point to the same key:
+
+<details>
+<summary>setup of original repo(click to expand)</summary>
+
+[[!format sh """
+/tmp > mkdir src; (cd src; git init; git annex init; dd if=/dev/zero of=1 count=1024 bs=1024; for f in {2..10}; do cp 1 $f; done ; git annex add *; git commit -m added; )
+Initialized empty Git repository in /tmp/src/.git/
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+1024+0 records in
+1024+0 records out
+1048576 bytes (1.0 MB, 1.0 MiB) copied, 0.00106651 s, 983 MB/s
+add 1 
+ok                                
+add 10 
+ok                                
+add 2 
+ok                                
+add 3 
+ok                                
+add 4 
+ok                                
+add 5 
+ok                                
+add 6 
+ok                                
+add 7 
+ok                                
+add 8 
+ok                                
+add 9 
+ok                                
+(recording state in git...)
+[master (root-commit) 63b1163] added
+ 10 files changed, 10 insertions(+)
+ create mode 120000 1
+ create mode 120000 10
+ create mode 120000 2
+ create mode 120000 3
+ create mode 120000 4
+ create mode 120000 5
+ create mode 120000 6
+ create mode 120000 7
+ create mode 120000 8
+ create mode 120000 9
+"""]]
+</details>
+
+And that is what happens then when we try to get the same key in parallel:
+[[!format sh """
+
+/tmp > git clone src dst; (cd dst; git annex get -J 5 *; )
+Cloning into 'dst'...
+done.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+get 2 (from origin...) (checksum...) 
+git-annex: thread blocked indefinitely in an STM transaction
+failed
+git-annex: thread blocked indefinitely in an MVar operation
+
+"""]]
+
+I felt like it is an old issue but failed to find a trace of it upon a quick lookup
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

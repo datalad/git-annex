@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2019-11-14T15:20:13Z"
+ content="""
+Added tracing of changes to the WorkerPool.
+
+	joey@darkstar:/tmp/dst>git annex get -J1 1 2 --json
+	("initial pool",WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [IdleWorker TransferStage,IdleWorker VerifyStage] 2)
+	("starting worker",WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [ActiveWorker TransferStage,IdleWorker VerifyStage] 1)
+
+Transfer starts for file 1
+
+	(("change stage from",TransferStage,"to",VerifyStage),WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [IdleWorker TransferStage,ActiveWorker VerifyStage] 1)
+
+Transfer complete, verifying starts.
+
+	("starting worker",WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [ActiveWorker TransferStage,ActiveWorker VerifyStage] 0)
+
+This second thread is being started to process file 2.
+It starts in TransferStage, but it will be blocked from doing anything
+by ensureOnlyActionOn.
+
+	("finishCommandActions starts with",WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [ActiveWorker TransferStage,ActiveWorker VerifyStage] 0)
+	("finishCommandActions observes",WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [ActiveWorker TransferStage,ActiveWorker VerifyStage] 0)
+
+All files have threads to process them started, so finishCommandActions starts up.
+It will retry since the threads are still running.
+
+	(("change stage from",VerifyStage,"to",TransferStage),WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [IdleWorker VerifyStage,ActiveWorker TransferStage] 0)
+
+The first thread is done with verification, and 
+the stage is being restored to transfer.
+
+The 0 means that there are 0 spareVals. Normally, the number of spareVals
+should be the same as the number of IdleWorkers, so it should be 1.
+It's 0 because the thread is in the process of changing between stages.
+
+The thread should at this point be waiting for an idle TransferStage
+slot to become available. The second thread still has that active.
+It seems that wait never completes, because a trace I had after that wait
+never got printed.
+
+	("finishCommandActions observes",WorkerPool UsedStages {initialStage = TransferStage, stageSet = fromList [TransferStage,VerifyStage]} [IdleWorker VerifyStage,ActiveWorker TransferStage] 0)
+
+It retries again, because of the active worker and also because spareVals
+is not the same as IdleWorkers.
+
+	git-annex: thread blocked indefinitely in an STM transaction
+
+Deadlock.
+
+Looks like that second thread that got into transfer stage
+never leaves it, and then the first thread, which wants to
+restore back to transfer stage, is left waiting forever for it. And so is
+finishCommandActions.
+
+Aha! The second thread is in fact still in ensureOnlyActionOn.
+So it's waiting on the first thread to finish. But the first thread can't
+transition back to TransferStage because the second thread has stolen it.
+
+Now it makes sense.
+
+So.. One way to fix this would be to add a new stage, which is used for
+threads that are just starting. Then the second thread would be in
+StartStage, and the first thread would not be prevented from transitioning
+back to TransferStage. Would need to make sure that, once a thread leaves
+StartStage, it does not ever transition back to it.
+"""]]

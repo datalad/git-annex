@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.HumanNumber where
+module Utility.HumanNumber (showImprecise) where
 
 {- Displays a fractional value as a string with a limited number
  - of decimal digits. -}

@@ -8,7 +8,14 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Env where
+module Utility.Env (
+	getEnv,
+	getEnvDefault,
+	getEnvironment,
+	addEntry,
+	addEntries,
+	delEntry,
+) where
 
 #ifdef mingw32_HOST_OS
 import Utility.Exception

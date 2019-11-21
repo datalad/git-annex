@@ -8,7 +8,7 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Path.Max where
+module Utility.Path.Max (fileNameLengthLimit) where
 
 #ifndef mingw32_HOST_OS
 import Utility.Exception

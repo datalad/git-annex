@@ -776,7 +776,7 @@ downloadUrl k p urls file =
 	-- download command is used.
 	meteredFile file (Just p) k $
 		Url.withUrlOptions $ \uo -> 
-			liftIO $ anyM (\u -> Url.download p u file uo) urls
+			anyM (\u -> Url.download p u file uo) urls
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

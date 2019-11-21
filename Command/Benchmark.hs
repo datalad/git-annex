@@ -26,7 +26,7 @@ cmd generator = command "benchmark" SectionTesting
 
 data BenchmarkOptions 
 	= BenchmarkOptions CmdParams CriterionMode
-	| BenchmarkDatabases CriterionMode
+	| BenchmarkDatabases CriterionMode Integer
 
 optParser :: CmdParamsDesc -> Parser BenchmarkOptions
 optParser desc = benchmarkoptions <|> benchmarkdatabases
@@ -36,10 +36,11 @@ optParser desc = benchmarkoptions <|> benchmarkdatabases
 		<*> criterionopts
 	benchmarkdatabases = BenchmarkDatabases
 		<$> criterionopts
-		<* flag' () 
-			( long "databases"
+		<*> option auto
+	                ( long "databases" 
+			<> metavar paramNumber
 			<> help "benchmark sqlite databases"
-			)
+                	)
 #ifdef WITH_BENCHMARK
 	criterionopts = parseWith defaultConfig
 #else
@@ -51,7 +52,7 @@ seek :: BenchmarkGenerator -> BenchmarkOptions -> CommandSeek
 seek generator (BenchmarkOptions ps mode) = do
 	runner <- generator ps
 	liftIO $ runMode mode [ bench (unwords ps) $ nfIO runner ]
-seek _ (BenchmarkDatabases mode) = benchmarkDbs mode
+seek _ (BenchmarkDatabases mode n) = benchmarkDbs mode n
 #else
 seek _ _ = giveup "git-annex is not built with benchmarking support"
 #endif

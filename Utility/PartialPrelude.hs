@@ -7,7 +7,18 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.PartialPrelude where
+module Utility.PartialPrelude (
+	Utility.PartialPrelude.read,
+	Utility.PartialPrelude.head,
+	Utility.PartialPrelude.tail,
+	Utility.PartialPrelude.init,
+	Utility.PartialPrelude.last,
+	Utility.PartialPrelude.readish,
+	Utility.PartialPrelude.headMaybe,
+	Utility.PartialPrelude.lastMaybe,
+	Utility.PartialPrelude.beginning,
+	Utility.PartialPrelude.end,
+) where
 
 import qualified Data.Maybe
 
