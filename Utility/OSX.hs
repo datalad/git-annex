@@ -7,7 +7,12 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.OSX where
+module Utility.OSX (
+	autoStartBase,
+	systemAutoStart,
+	userAutoStart,
+	genOSXAutoStartFile,
+) where
 
 import Utility.UserInfo
 

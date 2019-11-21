@@ -5,7 +5,11 @@
  - License: BSD-2-clause
  -}
 
-module Utility.DirWatcher.Types where
+module Utility.DirWatcher.Types (
+	Hook,
+	WatchHooks(..),
+	mkWatchHooks,
+) where
 
 import Common
 

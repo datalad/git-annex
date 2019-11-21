@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.DirWatcher.Win32Notify where
+module Utility.DirWatcher.Win32Notify (watchDir) where
 
 import Common hiding (isDirectory)
 import Utility.DirWatcher.Types

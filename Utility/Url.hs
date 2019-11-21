@@ -445,7 +445,7 @@ downloadConduit meterupdate req file uo =
 			liftIO $ debugM "url" (show req'')
 			resp <- http req'' (httpManager uo)
 			if responseStatus resp == partialContent206
-				then store (BytesProcessed sz) AppendMode resp
+				then store (toBytesProcessed sz) AppendMode resp
 				else if responseStatus resp == ok200
 					then store zeroBytesProcessed WriteMode resp
 					else respfailure resp

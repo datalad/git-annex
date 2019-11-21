@@ -7,7 +7,15 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Su where
+module Utility.Su (
+	WhosePassword(..),
+	PasswordPrompt(..),
+	describePasswordPrompt,
+	describePasswordPrompt',
+	SuCommand,
+	runSuCommand,
+	mkSuCommand,
+) where
 
 import Common
 

@@ -7,7 +7,14 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Batch where
+module Utility.Batch (
+	batch,
+	BatchCommandMaker,
+	getBatchCommandMaker,
+	toBatchCommand,
+	batchCommand,
+	batchCommandEnv,
+) where
 
 import Common
 

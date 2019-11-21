@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.LockFile.LockStatus where
+module Utility.LockFile.LockStatus (LockStatus(..)) where
 
 import System.Posix
 

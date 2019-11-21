@@ -7,7 +7,10 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Env.Set where
+module Utility.Env.Set (
+	setEnv,
+	unsetEnv,
+) where
 
 #ifdef mingw32_HOST_OS
 import qualified System.SetEnv

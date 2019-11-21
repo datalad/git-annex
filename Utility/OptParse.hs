@@ -5,7 +5,10 @@
  - License: BSD-2-clause
  -}
 
-module Utility.OptParse where
+module Utility.OptParse (
+	invertableSwitch,
+	invertableSwitch',
+) where
 
 import Options.Applicative
 import Data.Monoid

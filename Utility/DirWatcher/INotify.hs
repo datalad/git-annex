@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.DirWatcher.INotify where
+module Utility.DirWatcher.INotify (watchDir) where
 
 import Common hiding (isDirectory)
 import Utility.ThreadLock

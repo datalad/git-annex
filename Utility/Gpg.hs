@@ -7,7 +7,32 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Gpg where
+module Utility.Gpg (
+	KeyId,
+	KeyIds(..),
+	GpgCmd(..),
+	mkGpgCmd,
+	boolGpgCmd,
+	pkEncTo,
+	stdEncryptionParams,
+	pipeStrict,
+	feedRead,
+	pipeLazy,
+	findPubKeys,
+	UserId,
+	secretKeys,
+	KeyType(..),
+	maxRecommendedKeySize,
+	genSecretKey,
+	genRandom,
+	testKeyId,
+#ifndef mingw32_HOST_OS
+	testHarness,
+	testTestHarness,
+	checkEncryptionFile,
+	checkEncryptionStream,
+#endif
+) where
 
 import Common
 import qualified BuildInfo
@@ -279,6 +304,7 @@ genRandom cmd highQuality size = checksize <$> readStrict cmd params
  - It has an empty passphrase. -}
 testKeyId :: String
 testKeyId = "129D6E0AC537B9C7"
+
 testKey :: String
 testKey = keyBlock True
 	[ "mI0ETvFAZgEEAKnqwWgZqznMhi1RQExem2H8t3OyKDxaNN3rBN8T6LWGGqAYV4wT"
@@ -299,6 +325,7 @@ testKey = keyBlock True
 	, "+gQkDF9/"
 	, "=1k11"
 	]
+
 testSecretKey :: String
 testSecretKey = keyBlock False
 	[ "lQHYBE7xQGYBBACp6sFoGas5zIYtUUBMXpth/Ldzsig8WjTd6wTfE+i1hhqgGFeM"
@@ -332,6 +359,7 @@ testSecretKey = keyBlock False
 	, "IJf+/dFjxEmflWpbxw/36pEd/EReLX8b8qDIYadK6BpiWN9xgEiBv/oEJAxffw=="
 	, "=LDsg"
 	]
+
 keyBlock :: Bool -> [String] -> String
 keyBlock public ls = unlines
 	[ "-----BEGIN PGP "++t++" KEY BLOCK-----"
@@ -381,9 +409,7 @@ testTestHarness :: FilePath -> GpgCmd -> IO Bool
 testTestHarness tmpdir cmd = do
 	keys <- testHarness tmpdir cmd $ findPubKeys cmd testKeyId
 	return $ KeyIds [testKeyId] == keys
-#endif
 
-#ifndef mingw32_HOST_OS
 checkEncryptionFile :: GpgCmd -> FilePath -> Maybe KeyIds -> IO Bool
 checkEncryptionFile cmd filename keys =
 	checkGpgPackets cmd keys =<< readStrict cmd params

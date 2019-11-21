@@ -7,7 +7,19 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Misc where
+module Utility.Misc (
+	hGetContentsStrict,
+	readFileStrict,
+	separate,
+	firstLine,
+	segment,
+	segmentDelim,
+	massReplace,
+	hGetSomeString,
+	exitBool,
+
+	prop_segment_regressionTest,
+) where
 
 import System.IO
 import Control.Monad

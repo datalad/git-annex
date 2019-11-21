@@ -5,7 +5,11 @@
  - License: BSD-2-clause
  -}
 
-module Utility.HtmlDetect where
+module Utility.HtmlDetect (
+	isHtml,
+	isHtmlBs,
+	htmlPrefixLength,
+) where
 
 import Text.HTML.TagSoup
 import Data.Char

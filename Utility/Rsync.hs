@@ -7,7 +7,17 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Rsync where
+module Utility.Rsync (
+	rsyncShell,
+	rsyncServerSend,
+	rsyncServerReceive,
+	rsyncUseDestinationPermissions,
+	rsync,
+	rsyncUrlIsShell,
+	rsyncUrlIsPath,
+	rsyncProgress,
+	filterRsyncSafeOptions,
+) where
 
 import Common
 import Utility.Metered
@@ -161,10 +171,8 @@ filterRsyncSafeOptions = fst3 . getOpt Permute
  - The virtual filesystem contains:
  -  /c, /d, ...	mount points for Windows drives
  -}
+#ifdef mingw32_HOST_OS
 toMSYS2Path :: FilePath -> FilePath
-#ifndef mingw32_HOST_OS
-toMSYS2Path = id
-#else
 toMSYS2Path p
 	| null drive = recombine parts
 	| otherwise = recombine $ "/" : driveletter drive : parts

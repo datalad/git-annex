@@ -5,7 +5,12 @@
  - License: BSD-2-clause
  -}
 
-module Utility.Lsof where
+module Utility.Lsof (
+	LsofOpenMode(..),
+	setup,
+	queryDir,
+	query,
+) where
 
 import Common
 import BuildInfo

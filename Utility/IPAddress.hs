@@ -5,7 +5,12 @@
  - License: BSD-2-clause
  -}
 
-module Utility.IPAddress where
+module Utility.IPAddress (
+	extractIPAddress,
+	isLoopbackAddress,
+	isPrivateAddress,
+	makeAddressMatcher,
+) where
 
 import Utility.Exception
 

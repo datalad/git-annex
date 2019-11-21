@@ -7,7 +7,9 @@
  - License: BSD-2-clause
  -}
 
-module Utility.Android where
+module Utility.Android (
+	osAndroid
+) where
 
 #ifdef linux_HOST_OS
 import Common

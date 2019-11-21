@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-module Utility.Parallel where
+module Utility.Parallel (inParallel) where
 
 import Common
 
