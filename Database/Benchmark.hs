@@ -25,6 +25,7 @@ import Criterion.Main
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString.Char8 as B8
 import System.Random
+import Control.Concurrent
 #endif
 
 benchmarkDbs :: CriterionMode -> Integer -> Annex ()
@@ -48,32 +49,33 @@ benchmarkDbs _ = error "not built with criterion, cannot benchmark"
 #ifdef WITH_BENCHMARK
 
 getAssociatedFilesHitBench :: BenchDb -> Benchmark
-getAssociatedFilesHitBench (BenchDb h num) = bench ("getAssociatedFiles (hit)") $ nfIO $ do
+getAssociatedFilesHitBench (BenchDb h num _) = bench ("getAssociatedFiles (hit)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
 	SQL.getAssociatedFiles (keyN n) (SQL.ReadHandle h)
 
 getAssociatedFilesMissBench :: BenchDb -> Benchmark
-getAssociatedFilesMissBench (BenchDb h _num) = bench ("getAssociatedFiles (miss)") $ nfIO $
+getAssociatedFilesMissBench (BenchDb h _ _) = bench ("getAssociatedFiles (miss)") $ nfIO $
 	SQL.getAssociatedFiles keyMiss (SQL.ReadHandle h)
 
 getAssociatedKeyHitBench :: BenchDb -> Benchmark
-getAssociatedKeyHitBench (BenchDb h num) = bench ("getAssociatedKey (hit)") $ nfIO $ do
+getAssociatedKeyHitBench (BenchDb h num _) = bench ("getAssociatedKey (hit)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
 	SQL.getAssociatedKey (fileN n) (SQL.ReadHandle h)
 
 getAssociatedKeyMissBench :: BenchDb -> Benchmark
-getAssociatedKeyMissBench (BenchDb h num) = bench ("getAssociatedKey (miss)") $ nfIO $
+getAssociatedKeyMissBench (BenchDb h _ _) = bench ("getAssociatedKey (miss)") $ nfIO $
 	SQL.getAssociatedKey fileMiss (SQL.ReadHandle h)
 
 addAssociatedFileOldBench :: BenchDb -> Benchmark
-addAssociatedFileOldBench (BenchDb h num) = bench ("addAssociatedFile to (old)") $ nfIO $ do
+addAssociatedFileOldBench (BenchDb h num _) = bench ("addAssociatedFile to (old)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
 	SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
 addAssociatedFileNewBench :: BenchDb -> Benchmark
-addAssociatedFileNewBench (BenchDb h num) = bench ("addAssociatedFile to (new)") $ nfIO $ do
-	n <- getStdRandom (randomR (1,num))
+addAssociatedFileNewBench (BenchDb h num mv) = bench ("addAssociatedFile to (new)") $ nfIO $ do
+	n <- takeMVar mv
+	putMVar mv (n+1)
 	SQL.addAssociatedFile (keyN n) (fileN (num+n)) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
@@ -98,7 +100,7 @@ keyMiss = keyN 0 -- 0 is never stored
 fileMiss :: TopFilePath
 fileMiss = fileN 0 -- 0 is never stored
 
-data BenchDb = BenchDb H.DbQueue Integer
+data BenchDb = BenchDb H.DbQueue Integer (MVar Integer)
 
 benchDb :: FilePath -> Integer -> Annex BenchDb
 benchDb tmpdir num = do
@@ -109,7 +111,8 @@ benchDb tmpdir num = do
 	sz <- liftIO $ getFileSize db
 	liftIO $ putStrLn $ "size of database on disk: " ++ 
 		roughSize storageUnits False sz
-	return (BenchDb h num)
+	mv <- liftIO $ newMVar 1
+	return (BenchDb h num mv)
   where
 	db = tmpdir </> show num </> "db"
 
