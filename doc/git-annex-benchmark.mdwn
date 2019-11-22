@@ -45,13 +45,14 @@ instead of a command. N is the number of items to benchmark.
 # OUTPUT
 
 The output of the commands being benchmarked goes to standard output and
-standard error as usual. It's often a good idea to sink it to /dev/null to
-avoid the display of the output skewing the benchmark results. Of course
---quiet can also be used to avoid most git-annex output, as long as you
-don't want to benchmark the generation of that output.
+standard error as usual. It's often a good idea to use --quiet to avoid
+unncessary output, unless the generation of that output is part of what
+you want to benchmark.
 
 The benchmark report is output to standard output by default, although
-criterion options can be used to redirect it to a file.
+criterion options can be used to redirect it to a file. For example:
+
+	git annex benchmark -o bench -- find >/dev/null
 
 # SEE ALSO
 
