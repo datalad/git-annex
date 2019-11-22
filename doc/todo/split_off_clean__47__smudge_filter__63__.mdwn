@@ -1,1 +1,5 @@
 If running the clean/smudge filter once per file is a [[bottleneck|forum/Adding_files_to_git__58___Very_long___34__recording_state_in_git__34___phase]], might it speed things up to split them off into something more lightweight than the full git-annex binary?
+
+> This is a duplicate of stuff discussed at
+> [[todo/git_smudge_clean_interface_suboptiomal]], so closing. [[done]]
+> --[[Joey]]
