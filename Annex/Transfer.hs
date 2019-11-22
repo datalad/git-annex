@@ -40,15 +40,15 @@ import Data.Ord
 
 upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload u key f d a _witness = guardHaveUUID u $ 
-	runTransfer (Transfer Upload u key) f d a
+	runTransfer (Transfer Upload u (fromKey id key)) f d a
 
 alwaysUpload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 alwaysUpload u key f d a _witness = guardHaveUUID u $ 
-	alwaysRunTransfer (Transfer Upload u key) f d a
+	alwaysRunTransfer (Transfer Upload u (fromKey id key)) f d a
 
 download :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 download u key f d a _witness = guardHaveUUID u $
-	runTransfer (Transfer Download u key) f d a
+	runTransfer (Transfer Download u (fromKey id key)) f d a
 
 guardHaveUUID :: Observable v => UUID -> Annex v -> Annex v
 guardHaveUUID u a
@@ -185,7 +185,7 @@ checkSecureHashes t a
 		, a
 		)
   where
-	variety = keyVariety (transferKey t)
+	variety = fromKey keyVariety (transferKey t)
 
 type RetryDecider = Annex (TransferInfo -> TransferInfo -> Annex Bool)
 

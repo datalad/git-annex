@@ -398,7 +398,7 @@ downloadImport remote importtreeconfig importablecontents = do
 {- Temporary key used for import of a ContentIdentifier while downloading
  - content, before generating its real key. -}
 importKey :: ContentIdentifier -> Integer -> Key
-importKey (ContentIdentifier cid) size = stubKey
+importKey (ContentIdentifier cid) size = mkKey $ \k -> k
 	{ keyName = cid
 	, keyVariety = OtherKey "CID"
 	, keySize = Just size

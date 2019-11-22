@@ -24,6 +24,7 @@ module Utility.Hash (
 	blake2b_512,
 	blake2bp_512,
 	md5,
+	md5s,
 	prop_hashes_stable,
 	Mac(..),
 	calcMac,
@@ -105,6 +106,9 @@ blake2bp_512 = hashlazy
 
 md5 ::  L.ByteString -> Digest MD5
 md5 = hashlazy
+
+md5s ::  S.ByteString -> Digest MD5
+md5s = hash
 
 {- Check that all the hashes continue to hash the same. -}
 prop_hashes_stable :: Bool

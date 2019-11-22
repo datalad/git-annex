@@ -68,8 +68,10 @@ newtype ChunkKeyStream = ChunkKeyStream [Key]
 chunkKeyStream :: Key -> ChunkSize -> ChunkKeyStream
 chunkKeyStream basek chunksize = ChunkKeyStream $ map mk [1..]
   where
-	mk chunknum = sizedk { keyChunkNum = Just chunknum }
-	sizedk = basek { keyChunkSize = Just (toInteger chunksize) }
+	mk chunknum = alterKey sizedk $ \d -> d
+		{ keyChunkNum = Just chunknum }
+	sizedk = alterKey basek $ \d -> d
+		{ keyChunkSize = Just (toInteger chunksize) }
 
 nextChunkKeyStream :: ChunkKeyStream -> (Key, ChunkKeyStream)
 nextChunkKeyStream (ChunkKeyStream (k:l)) = (k, ChunkKeyStream l)
@@ -80,7 +82,7 @@ takeChunkKeyStream n (ChunkKeyStream l) = genericTake n l
 
 -- Number of chunks already consumed from the stream.
 numChunks :: ChunkKeyStream -> Integer
-numChunks = pred . fromJust . keyChunkNum . fst . nextChunkKeyStream
+numChunks = pred . fromJust . fromKey keyChunkNum . fst . nextChunkKeyStream
 
 {- Splits up the key's content into chunks, passing each chunk to
  - the storer action, along with a corresponding chunk key and a
@@ -173,7 +175,7 @@ seekResume
 	-> Annex (ChunkKeyStream, BytesProcessed)
 seekResume h encryptor chunkkeys checker = do
 	sz <- liftIO (hFileSize h)
-	if sz <= fromMaybe 0 (keyChunkSize $ fst $ nextChunkKeyStream chunkkeys)
+	if sz <= fromMaybe 0 (fromKey keyChunkSize $ fst $ nextChunkKeyStream chunkkeys)
 		then return (chunkkeys, zeroBytesProcessed)
 		else check 0 chunkkeys sz
   where
@@ -193,7 +195,7 @@ seekResume h encryptor chunkkeys checker = do
 					return (cks, toBytesProcessed pos)
 	  where
 		(k, cks') = nextChunkKeyStream cks
-		pos' = pos + fromMaybe 0 (keyChunkSize k)
+		pos' = pos + fromMaybe 0 (fromKey keyChunkSize k)
 
 {- Removes all chunks of a key from a remote, by calling a remover
  - action on each.
@@ -208,7 +210,7 @@ removeChunks remover u chunkconfig encryptor k = do
 	ls <- chunkKeys u chunkconfig k
 	ok <- allM (remover . encryptor) (concat ls)
 	when ok $ do
-		let chunksizes = catMaybes $ map (keyChunkSize <=< headMaybe) ls
+		let chunksizes = catMaybes $ map (fromKey keyChunkSize <=< headMaybe) ls
 		forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
 	return ok
 
@@ -272,7 +274,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 					bracketIO (maybe opennew openresume offset) hClose $ \h -> do
 						void $ tosink (Just h) p content
 						let sz = toBytesProcessed $
-							fromMaybe 0 $ keyChunkSize k
+							fromMaybe 0 $ fromKey keyChunkSize k
 						getrest p h sz sz ks
 							`catchNonAsync` unable
 			case v of
@@ -333,7 +335,7 @@ setupResume :: [[Key]] -> Integer -> [[Key]]
 setupResume ls currsize = map dropunneeded ls
   where
 	dropunneeded [] = []
-	dropunneeded l@(k:_) = case keyChunkSize k of
+	dropunneeded l@(k:_) = case fromKey keyChunkSize k of
 		Just chunksize | chunksize > 0 ->
 			genericDrop (currsize `div` chunksize) l
 		_ -> l

@@ -294,7 +294,7 @@ addInBackend = addLimit . limitInBackend
 limitInBackend :: MkLimit Annex
 limitInBackend name = Right $ const $ checkKey check
   where
-	check key = pure $ keyVariety key == variety
+	check key = pure $ fromKey keyVariety key == variety
 	variety = parseKeyVariety (encodeBS name)
 
 {- Adds a limit to skip files not using a secure hash. -}
@@ -302,7 +302,7 @@ addSecureHash :: Annex ()
 addSecureHash = addLimit $ Right limitSecureHash
 
 limitSecureHash :: MatchFiles Annex
-limitSecureHash _ = checkKey $ pure . cryptographicallySecure . keyVariety
+limitSecureHash _ = checkKey $ pure . cryptographicallySecure . fromKey keyVariety
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()
@@ -327,7 +327,7 @@ limitSize lb vs s = case readSize dataUnits s of
 	go sz _ (MatchingInfo p) =
 		getInfo (providedFileSize p) 
 			>>= \sz' -> return (Just sz' `vs` Just sz)
-	checkkey sz key = return $ keySize key `vs` Just sz
+	checkkey sz key = return $ fromKey keySize key `vs` Just sz
 
 addMetaData :: String -> Annex ()
 addMetaData = addLimit . limitMetaData

@@ -117,7 +117,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 	case downloader of
 		YoutubeDownloader -> youtubeDlCheck u'
 		_ -> catchMsgIO $
-			Url.withUrlOptions $ Url.checkBoth u' (keySize key)
+			Url.withUrlOptions $ Url.checkBoth u' (fromKey keySize key)
   where
 	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do

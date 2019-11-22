@@ -182,7 +182,7 @@ performRemote key afile backend numcopies remote =
 
 startKey :: Maybe Remote -> Incremental -> (Key, ActionItem) -> NumCopies -> CommandStart
 startKey from inc (key, ai) numcopies =
-	case Backend.maybeLookupBackendVariety (keyVariety key) of
+	case Backend.maybeLookupBackendVariety (fromKey keyVariety key) of
 		Nothing -> stop
 		Just backend -> runFsck inc ai key $
 			case from of
@@ -244,9 +244,9 @@ verifyLocationLog key keystatus ai = do
 	 - insecure hash is present. This should only be able to happen
 	 - if the repository already contained the content before the
 	 - config was set. -}
-	when (present && not (cryptographicallySecure (keyVariety key))) $
+	when (present && not (cryptographicallySecure (fromKey keyVariety key))) $
 		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
-			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ decodeBS (formatKeyVariety (keyVariety key)) ++ " key"
+			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"
 
 	verifyLocationLog' key ai present u (logChange key u)
 
@@ -362,7 +362,7 @@ checkKeySizeRemote key remote ai localcopy =
 	checkKeySizeOr (badContentRemote remote localcopy) key localcopy ai
 
 checkKeySizeOr :: (Key -> Annex String) -> Key -> FilePath -> ActionItem -> Annex Bool
-checkKeySizeOr bad key file ai = case keySize key of
+checkKeySizeOr bad key file ai = case fromKey keySize key of
 	Nothing -> return True
 	Just size -> do
 		size' <- liftIO $ getFileSize file
@@ -396,7 +396,7 @@ checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
 				[ actionItemDesc ai
 				, ": Can be upgraded to an improved key format. "
 				, "You can do so by running: git annex migrate --backend="
-				, decodeBS (formatKeyVariety (keyVariety key)) ++ " "
+				, decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " "
 				, file
 				]
 			return True

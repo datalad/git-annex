@@ -47,7 +47,7 @@ start (k:[]) = do
 			let t = Transfer
 				{ transferDirection = Upload
 				, transferUUID = u
-				, transferKey = key
+				, transferKeyData = fromKey id key
 				}
 			tinfo <- liftIO $ startTransferInfo afile
 			(update, tfile, createtfile, _) <- mkProgressUpdater t tinfo

@@ -161,7 +161,7 @@ type EncKey = Key -> Key
  - reversable, nor does it need to be the same type of encryption used
  - on content. It does need to be repeatable. -}
 encryptKey :: Mac -> Cipher -> EncKey
-encryptKey mac c k = stubKey
+encryptKey mac c k = mkKey $ \d -> d
 	{ keyName = encodeBS (macWithCipher mac c (serializeKey k))
 	, keyVariety = OtherKey $
 		encryptedBackendNamePrefix <> encodeBS (showMac mac)
@@ -171,7 +171,7 @@ encryptedBackendNamePrefix :: S.ByteString
 encryptedBackendNamePrefix = "GPG"
 
 isEncKey :: Key -> Bool
-isEncKey k = case keyVariety k of
+isEncKey k = case fromKey keyVariety k of
 	OtherKey s -> encryptedBackendNamePrefix `S.isPrefixOf` s
 	_ -> False
 

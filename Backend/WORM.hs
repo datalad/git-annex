@@ -39,7 +39,7 @@ keyValue source _ = do
 	stat <- liftIO $ getFileStatus f
 	sz <- liftIO $ getFileSize' f stat
 	relf <- getTopFilePath <$> inRepo (toTopFilePath $ keyFilename source)
-	return $ Just $ stubKey
+	return $ Just $ mkKey $ \k -> k
 		{ keyName = genKeyName relf
 		, keyVariety = WORMKey
 		, keySize = Just sz
@@ -48,14 +48,14 @@ keyValue source _ = do
 
 {- Old WORM keys could contain spaces, and can be upgraded to remove them. -}
 needsUpgrade :: Key -> Bool
-needsUpgrade key = ' ' `S8.elem` keyName key
+needsUpgrade key = ' ' `S8.elem` fromKey keyName key
 
 removeSpaces :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
 removeSpaces oldkey newbackend _
-	| migratable = return $ Just $ oldkey
-		{ keyName = encodeBS $ reSanitizeKeyName $ decodeBS $ keyName oldkey }
+	| migratable = return $ Just $ alterKey oldkey $ \d -> d
+		{ keyName = encodeBS $ reSanitizeKeyName $ decodeBS $ keyName d }
 	| otherwise = return Nothing
   where
 	migratable = oldvariety == newvariety
-	oldvariety = keyVariety oldkey
+	oldvariety = fromKey keyVariety oldkey
 	newvariety = backendVariety newbackend

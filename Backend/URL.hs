@@ -32,7 +32,7 @@ backend = Backend
 
 {- Every unique url has a corresponding key. -}
 fromUrl :: String -> Maybe Integer -> Key
-fromUrl url size = stubKey
+fromUrl url size = mkKey $ \k -> k
 	{ keyName = genKeyName url
 	, keyVariety = URLKey
 	, keySize = size

@@ -50,7 +50,7 @@ start file key = do
  -  - Something has changed in the backend, such as a bug fix.
  -}
 upgradableKey :: Backend -> Key -> Bool
-upgradableKey backend key = isNothing (keySize key) || backendupgradable
+upgradableKey backend key = isNothing (fromKey keySize key) || backendupgradable
   where
 	backendupgradable = maybe False (\a -> a key) (canUpgradeKey backend)
 

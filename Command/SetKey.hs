@@ -21,11 +21,11 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start (keyname:file:[]) = starting "setkey" (ActionItemOther (Just file)) $
-	perform file (mkKey keyname)
+	perform file (keyOpt keyname)
 start _ = giveup "specify a key and a content file"
 
-mkKey :: String -> Key
-mkKey = fromMaybe (giveup "bad key") . deserializeKey
+keyOpt :: String -> Key
+keyOpt = fromMaybe (giveup "bad key") . deserializeKey
 
 perform :: FilePath -> Key -> CommandPerform
 perform file key = do

@@ -11,6 +11,7 @@ module Types.Transfer where
 
 import Types
 import Types.Remote (Verification(..))
+import Types.Key
 import Utility.PID
 import Utility.QuickCheck
 import Utility.Url
@@ -24,9 +25,12 @@ import Prelude
 data Transfer = Transfer
 	{ transferDirection :: Direction
 	, transferUUID :: UUID
-	, transferKey :: Key
+	, transferKeyData :: KeyData
 	}
-	deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Show, Read)
+
+transferKey :: Transfer -> Key
+transferKey = mkKey . const . transferKeyData
 
 {- Information about a Transfer, stored in the transfer information file.
  -
