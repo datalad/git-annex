@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-11-22T16:01:26Z"
+ content="""
+It immediately occurs to me that the proposal would break this:
+
+	git annex add foo
+	git annex add bar
+	git annex unlock bar
+	git mv bar foo
+	git commit -m add
+
+Since foo was a locked file, gitattributes would prevent from being
+smudged, so the large content that was in bar gets committed directly to git.
+
+The right solution is to improve the smudge/clean filter interface to it's
+not so slow, which there is copious discussion of elsewhere.
+"""]]

@@ -31,7 +31,7 @@ git-annex (7.20191115) UNRELEASED; urgency=medium
   * benchmark: Changed --databases to take a parameter specifiying the size
     of the database to benchmark.
   * benchmark --databases: Display size of the populated database.
-  * benchmark --databases: Improve the "addAssociatedFile to (new)"
+  * benchmark --databases: Improve the "addAssociatedFile (new)"
     benchmark to really add new values, not overwriting old values.
   * Windows: Fix handling of changes to time zone. (Used to work but was
     broken in version 7.20181031.)

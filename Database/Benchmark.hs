@@ -48,31 +48,31 @@ benchmarkDbs _ = error "not built with criterion, cannot benchmark"
 #ifdef WITH_BENCHMARK
 
 getAssociatedFilesHitBench :: BenchDb -> Benchmark
-getAssociatedFilesHitBench (BenchDb h num) = bench ("getAssociatedFiles from " ++ show num ++ " (hit)") $ nfIO $ do
+getAssociatedFilesHitBench (BenchDb h num) = bench ("getAssociatedFiles (hit)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
 	SQL.getAssociatedFiles (keyN n) (SQL.ReadHandle h)
 
 getAssociatedFilesMissBench :: BenchDb -> Benchmark
-getAssociatedFilesMissBench (BenchDb h num) = bench ("getAssociatedFiles from " ++ show num ++ " (miss)") $ nfIO $
+getAssociatedFilesMissBench (BenchDb h _num) = bench ("getAssociatedFiles (miss)") $ nfIO $
 	SQL.getAssociatedFiles keyMiss (SQL.ReadHandle h)
 
 getAssociatedKeyHitBench :: BenchDb -> Benchmark
-getAssociatedKeyHitBench (BenchDb h num) = bench ("getAssociatedKey from " ++ show num ++ " (hit)") $ nfIO $ do
+getAssociatedKeyHitBench (BenchDb h num) = bench ("getAssociatedKey (hit)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
 	SQL.getAssociatedKey (fileN n) (SQL.ReadHandle h)
 
 getAssociatedKeyMissBench :: BenchDb -> Benchmark
-getAssociatedKeyMissBench (BenchDb h num) = bench ("getAssociatedKey from " ++ show num ++ " (miss)") $ nfIO $
+getAssociatedKeyMissBench (BenchDb h num) = bench ("getAssociatedKey (miss)") $ nfIO $
 	SQL.getAssociatedKey fileMiss (SQL.ReadHandle h)
 
 addAssociatedFileOldBench :: BenchDb -> Benchmark
-addAssociatedFileOldBench (BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (old)") $ nfIO $ do
+addAssociatedFileOldBench (BenchDb h num) = bench ("addAssociatedFile to (old)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
 	SQL.addAssociatedFile (keyN n) (fileN n) (SQL.WriteHandle h)
 	H.flushDbQueue h
 
 addAssociatedFileNewBench :: BenchDb -> Benchmark
-addAssociatedFileNewBench (BenchDb h num) = bench ("addAssociatedFile to " ++ show num ++ " (new)") $ nfIO $ do
+addAssociatedFileNewBench (BenchDb h num) = bench ("addAssociatedFile to (new)") $ nfIO $ do
 	n <- getStdRandom (randomR (1,num))
 	SQL.addAssociatedFile (keyN n) (fileN (num+n)) (SQL.WriteHandle h)
 	H.flushDbQueue h

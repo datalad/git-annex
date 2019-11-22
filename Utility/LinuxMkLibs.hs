@@ -9,6 +9,7 @@ module Utility.LinuxMkLibs (
 	installLib,
 	parseLdd,
 	glibcLibs,
+	inTop,
 ) where
 
 import Utility.PartialPrelude
