@@ -1,6 +1,6 @@
 git-annex (7.20191115) UNRELEASED; urgency=medium
 
-  * Sped up many git-annex commands that operare on many files, by 
+  * Sped up many git-annex commands that operate on many files, by 
     avoiding reserialization of keys.
     find is 7% faster; whereis is 3% faster; and git-annex get when
     all files are already present is 5% faster

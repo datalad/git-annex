@@ -1,0 +1,11 @@
+Today, sped up many git-annex commands by around 5%. Often git-annex
+traverses the work tree and deserializes keys to its Key data type, only to
+turn around and do something with a Key that needs it to be serialized
+again. So caching the original serialization of a key avoids that work. I
+had started on this in January but had to throw my first attempt away.
+
+The big bytestring conversion in January only yielded a 5-15% speedup,
+so an extra 5% is a nice bonus for so relativly little work today.
+It also feels like this optimisation approach is nearly paid out though;
+only converting all filepath operations to bytestrings seems likely to
+yield a similar widespread improvement.
