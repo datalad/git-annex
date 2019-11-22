@@ -81,7 +81,7 @@ Build-Depends:
 	lsof [linux-any],
 	ikiwiki,
 	libimage-magick-perl,
-	git (>= 1:2.1),
+	git (>= 1:2.22),
 	rsync,
 	curl,
 	openssh-client,
@@ -98,7 +98,7 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:1.8.1),
+	git (>= 1:2.22),
 	netbase,
 	rsync,
 	curl,

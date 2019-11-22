@@ -7,7 +7,7 @@ Last-Update: 2015-04-20
 --- a/debian/control
 +++ b/debian/control
 @@ -85,6 +85,7 @@ Build-Depends:
- 	git (>= 1:1.8.1),
+ 	git (>= 1:2.22),
  	rsync,
  	curl,
 +	locales,
@@ -23,7 +23,7 @@ Last-Update: 2015-04-20
  Architecture: any
  Section: utils
 -Depends: ${misc:Depends}, ${shlibs:Depends},
--	git (>= 1:1.8.1),
+-	git (>= 1:2.22),
 +Conflicts: git-annex
 +Provides: git-annex
 +Depends: ${misc:Depends},
