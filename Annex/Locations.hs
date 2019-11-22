@@ -563,7 +563,7 @@ keyFile = fromRawFilePath . keyFile'
 keyFile' :: Key -> RawFilePath
 keyFile' k = 
 	let b = serializeKey' k
-	in if any (`S8.elem` b) ['&', '%', ':', '/']
+	in if S8.any (`elem` ['&', '%', ':', '/']) b
 		then S8.concatMap esc b
 		else b
   where
@@ -572,6 +572,7 @@ keyFile' k =
 	esc ':' = "&c"
 	esc '/' = "%"
 	esc c = S8.singleton c
+
 
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
