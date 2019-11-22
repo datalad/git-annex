@@ -64,7 +64,7 @@ removableRemote urlrenderer uuid = do
   where
 	queueremaining r k = 
 		queueTransferWhenSmall "remaining object in unwanted remote"
-			(AssociatedFile Nothing) (Transfer Download uuid k) r
+			(AssociatedFile Nothing) (Transfer Download uuid (fromKey id k)) r
 	{- Scanning for keys can take a long time; do not tie up
 	 - the Annex monad while doing it, so other threads continue to
 	 - run. -}

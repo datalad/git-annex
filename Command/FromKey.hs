@@ -49,14 +49,14 @@ seekBatch fmt = batchInput fmt parse commandAction
 	parse s = 
 		let (keyname, file) = separate (== ' ') s
 		in if not (null keyname) && not (null file)
-			then Right $ go file (mkKey keyname)
+			then Right $ go file (keyOpt keyname)
 			else Left "Expected pairs of key and filename"
 	go file key = starting "fromkey" (mkActionItem (key, file)) $
 		perform key file
 
 start :: Bool -> (String, FilePath) -> CommandStart
 start force (keyname, file) = do
-	let key = mkKey keyname
+	let key = keyOpt keyname
 	unless force $ do
 		inbackend <- inAnnex key
 		unless inbackend $ giveup $
@@ -71,8 +71,8 @@ start force (keyname, file) = do
 -- For example, "WORM--a:a" parses as an uri. To disambiguate, check
 -- the uri scheme, to see if it looks like the prefix of a key. This relies
 -- on key backend names never containing a ':'.
-mkKey :: String -> Key
-mkKey s = case parseURI s of
+keyOpt :: String -> Key
+keyOpt s = case parseURI s of
 	Just u | not (isKeyPrefix (uriScheme u)) ->
 		Backend.URL.fromUrl s Nothing
 	_ -> case deserializeKey s of

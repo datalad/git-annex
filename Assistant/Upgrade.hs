@@ -25,7 +25,6 @@ import Annex.Content
 import Annex.UUID
 import qualified Backend
 import qualified Types.Backend
-import qualified Types.Key
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Remote (remoteFromUUID)
@@ -91,13 +90,13 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		maybe noop (queueTransfer "upgrade" Next (AssociatedFile (Just f)) t)
 			=<< liftAnnex (remoteFromUUID webUUID)
 		startTransfer t
-	k = distributionKey d
+	k = mkKey $ const $ distributionKey d
 	u = distributionUrl d
 	f = takeFileName u ++ " (for upgrade)"
 	t = Transfer
 		{ transferDirection = Download
 		, transferUUID = webUUID
-		, transferKey = k
+		, transferKeyData = fromKey id k
 		}
 	cleanup = liftAnnex $ do
 		lockContentForRemoval k removeAnnex
@@ -117,8 +116,8 @@ distributionDownloadComplete d dest cleanup t
 			=<< liftAnnex (withObjectLoc k fsckit)
 	| otherwise = cleanup
   where
-	k = distributionKey d
-	fsckit f = case Backend.maybeLookupBackendVariety (Types.Key.keyVariety k) of
+	k = mkKey $ const $ distributionKey d
+	fsckit f = case Backend.maybeLookupBackendVariety (fromKey keyVariety k) of
 		Nothing -> return $ Just f
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return $ Just f

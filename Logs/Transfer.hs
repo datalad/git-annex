@@ -1,6 +1,6 @@
 {- git-annex transfer information files and lock files
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -41,12 +41,14 @@ describeTransfer t info = unwords
 equivilantTransfer :: Transfer -> Transfer -> Bool
 equivilantTransfer t1 t2
 	| transferDirection t1 == Download && transferDirection t2 == Download &&
-	  transferKey t1 == transferKey t2 = True
+	  transferKeyData t1 == transferKeyData t2 = True
 	| otherwise = t1 == t2
 
 percentComplete :: Transfer -> TransferInfo -> Maybe Percentage
-percentComplete (Transfer { transferKey = key }) info =
-	percentage <$> keySize key <*> Just (fromMaybe 0 $ bytesComplete info)
+percentComplete t info =
+	percentage
+		<$> keySize (transferKeyData t)
+		<*> Just (fromMaybe 0 $ bytesComplete info)
 
 {- Generates a callback that can be called as transfer progresses to update
  - the transfer info file. Also returns the file it'll be updating, 
@@ -72,7 +74,7 @@ mkProgressUpdater t info = do
 	{- The minimum change in bytesComplete that is worth
 	 - updating a transfer info file for is 1% of the total
 	 - keySize, rounded down. -}
-	mindelta = case keySize (transferKey t) of
+	mindelta = case keySize (transferKeyData t) of
 		Just sz -> sz `div` 100
 		Nothing -> 100 * 1024 -- arbitrarily, 100 kb
 
@@ -155,7 +157,7 @@ sizeOfDownloadsInProgress wanted = sum . map remaining
 	<$> getTransfers' [Download] wanted
   where
 	remaining (t, info) =
-		case (keySize (transferKey t), bytesComplete info) of
+		case (fromKey keySize (transferKey t), bytesComplete info) of
 			(Just sz, Just done) -> sz - done
 			(Just sz, Nothing) -> sz
 			(Nothing, _) -> 0
@@ -191,14 +193,14 @@ recordFailedTransfer t info = do
 
 {- The transfer information file to use for a given Transfer. -}
 transferFile :: Transfer -> Git.Repo -> FilePath
-transferFile (Transfer direction u key) r = transferDir direction r
+transferFile (Transfer direction u kd) r = transferDir direction r
 	</> filter (/= '/') (fromUUID u)
-	</> keyFile key
+	</> keyFile (mkKey (const kd))
 
 {- The transfer information file to use to record a failed Transfer -}
 failedTransferFile :: Transfer -> Git.Repo -> FilePath
-failedTransferFile (Transfer direction u key) r = failedTransferDir u direction r
-	</> keyFile key
+failedTransferFile (Transfer direction u kd) r = failedTransferDir u direction r
+	</> keyFile (mkKey (const kd))
 
 {- The transfer lock file corresponding to a given transfer info file. -}
 transferLockFile :: FilePath -> FilePath
@@ -213,7 +215,7 @@ parseTransferFile file
 		[direction, u, key] -> Transfer
 			<$> parseDirection direction
 			<*> pure (toUUID u)
-			<*> fileKey key
+			<*> fmap (fromKey id) (fileKey key)
 		_ -> Nothing
   where
 	bits = splitDirectories file

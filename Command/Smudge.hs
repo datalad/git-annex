@@ -119,7 +119,7 @@ clean file = do
 		-- Look up the backend that was used for this file
 		-- before, so that when git re-cleans a file its
 		-- backend does not change.
-		let oldbackend = maybe Nothing (maybeLookupBackendVariety . keyVariety) oldkey
+		let oldbackend = maybe Nothing (maybeLookupBackendVariety . fromKey keyVariety) oldkey
 		-- Can't restage associated files because git add
 		-- runs this and has the index locked.
 		let norestage = Restage False

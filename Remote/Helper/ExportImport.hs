@@ -324,7 +324,7 @@ adjustExportImport r rs = case M.lookup "exporttree" (config r) of
 		liftIO $ Export.getExportTree db k
 
 	retrieveKeyFileFromExport dbv k _af dest p = unVerified $
-		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (keyVariety k))
+		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (fromKey keyVariety k))
 			then do
 				locs <- getexportlocs dbv k
 				case locs of
@@ -336,5 +336,5 @@ adjustExportImport r rs = case M.lookup "exporttree" (config r) of
 						return False
 					(l:_) -> retrieveExport (exportActions r) k l dest p
 			else do
-				warning $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (keyVariety k)) ++ " backend"
+				warning $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
 				return False

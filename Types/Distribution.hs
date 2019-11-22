@@ -21,7 +21,9 @@ type GitAnnexVersion = String
 
 data GitAnnexDistribution = GitAnnexDistribution
 	{ distributionUrl :: String
-	, distributionKey :: Key
+	, distributionKey :: KeyData
+	-- ^ This used to be a Key, but now KeyData serializes
+	-- to Key { ... }, so back-compat for Read and Show is preserved.
 	, distributionVersion :: GitAnnexVersion
 	, distributionReleasedate :: UTCTime
 	, distributionUrgentUpgrade :: Maybe GitAnnexVersion
@@ -46,7 +48,7 @@ parseInfoFile s = case lines s of
 formatGitAnnexDistribution :: GitAnnexDistribution -> String
 formatGitAnnexDistribution d = unlines
 	[ distributionUrl d
-	, serializeKey (distributionKey d)
+	, serializeKey $ mkKey $ const $ distributionKey d
 	, distributionVersion d
 	, show (distributionReleasedate d)
 	, maybe "" show (distributionUrgentUpgrade d)
@@ -56,7 +58,7 @@ parseGitAnnexDistribution :: String -> Maybe GitAnnexDistribution
 parseGitAnnexDistribution s = case lines s of
 	(u:k:v:d:uu:_) -> GitAnnexDistribution
 		<$> pure u
-		<*> deserializeKey k
+		<*> fmap (fromKey id) (deserializeKey k)
 		<*> pure v
 		<*> readish d
 		<*> pure (readish uu)

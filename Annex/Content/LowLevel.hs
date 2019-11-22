@@ -100,7 +100,7 @@ preserveGitMode _ _ = return True
  - when doing concurrent downloads.
  -}
 checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
-checkDiskSpace destdir key = checkDiskSpace' (fromMaybe 1 (keySize key)) destdir key
+checkDiskSpace destdir key = checkDiskSpace' (fromMaybe 1 (fromKey keySize key)) destdir key
 
 {- Allows specifying the size of the key, if it's known, which is useful
  - as not all keys know their size. -}

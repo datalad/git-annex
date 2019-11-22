@@ -329,7 +329,7 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 	checkallowed a = case rsp of
 		RetrievalAllKeysSecure -> a
 		RetrievalVerifiableKeysSecure
-			| isVerifiable (keyVariety key) -> a
+			| isVerifiable (fromKey keyVariety key) -> a
 			| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
 				( a
 				, warnUnverifiableInsecure key >> return False
@@ -353,7 +353,7 @@ verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> K
 verifyKeyContent rsp v verification k f = case (rsp, verification) of
 	(_, Verified) -> return True
 	(RetrievalVerifiableKeysSecure, _)
-		| isVerifiable (keyVariety k) -> verify
+		| isVerifiable (fromKey keyVariety k) -> verify
 		| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
 			( verify
 			, warnUnverifiableInsecure k >> return False
@@ -365,12 +365,12 @@ verifyKeyContent rsp v verification k f = case (rsp, verification) of
 	(_, MustVerify) -> verify
   where
 	verify = enteringStage VerifyStage $ verifysize <&&> verifycontent
-	verifysize = case keySize k of
+	verifysize = case fromKey keySize k of
 		Nothing -> return True
 		Just size -> do
 			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
 			return (size' == size)
-	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendVariety (keyVariety k) of
+	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendVariety (fromKey keyVariety k) of
 		Nothing -> return True
 		Just verifier -> verifier k f
 
@@ -382,7 +382,7 @@ warnUnverifiableInsecure k = warning $ unwords
 	, "this safety check.)"
 	]
   where
-	kv = decodeBS (formatKeyVariety (keyVariety k))
+	kv = decodeBS (formatKeyVariety (fromKey keyVariety k))
 
 data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
 
@@ -490,10 +490,10 @@ moveAnnex key src = ifM (checkSecureHashes key)
 
 checkSecureHashes :: Key -> Annex Bool
 checkSecureHashes key
-	| cryptographicallySecure (keyVariety key) = return True
+	| cryptographicallySecure (fromKey keyVariety key) = return True
 	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( do
-			warning $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (keyVariety key)) ++ " key to annex objects"
+			warning $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key to annex objects"
 			return False
 		, return True
 		)

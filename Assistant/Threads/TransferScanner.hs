@@ -186,7 +186,7 @@ genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote
 genTransfer direction want key slocs r
 	| direction == Upload && Remote.readonly r = Nothing
 	| S.member (Remote.uuid r) slocs == want = Just
-		(r, Transfer direction (Remote.uuid r) key)
+		(r, Transfer direction (Remote.uuid r) (fromKey id key))
 	| otherwise = Nothing
 
 remoteHas :: Remote -> Key -> Annex Bool

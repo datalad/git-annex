@@ -344,10 +344,10 @@ sendTransferRequest req endpoint = do
 		LFS.ParseFailed err -> Left err
 
 extractKeySha256 :: Key -> Maybe LFS.SHA256
-extractKeySha256 k = case keyVariety k of
+extractKeySha256 k = case fromKey keyVariety k of
 	SHA2Key (HashSize 256) (HasExt hasext)
 		| hasext -> eitherToMaybe $ E.decodeUtf8' (keyHash k)
-		| otherwise -> eitherToMaybe $ E.decodeUtf8' (keyName k)
+		| otherwise -> eitherToMaybe $ E.decodeUtf8' (fromKey keyName k)
 	_ -> Nothing
 
 -- The size of an encrypted key is the size of the input data, but we need
@@ -355,7 +355,7 @@ extractKeySha256 k = case keyVariety k of
 extractKeySize :: Key -> Maybe Integer
 extractKeySize k
 	| isEncKey k = Nothing
-	| otherwise = keySize k
+	| otherwise = fromKey keySize k
 
 mkUploadRequest :: RemoteStateHandle -> Key -> FilePath -> Annex (LFS.TransferRequest, LFS.SHA256, Integer)
 mkUploadRequest rs k content = case (extractKeySha256 k, extractKeySize k) of

@@ -162,7 +162,7 @@ performRemote r o uri file sz = ifAnnexed file adduri geturi
 	adduri = addUrlChecked o loguri file (Remote.uuid r) checkexistssize
 	checkexistssize key = return $ case sz of
 		Nothing -> (True, True, loguri)
-		Just n -> (True, n == fromMaybe n (keySize key), loguri)
+		Just n -> (True, n == fromMaybe n (fromKey keySize key), loguri)
 	geturi = next $ isJust <$> downloadRemoteFile r (downloadOptions o) uri file sz
 
 downloadRemoteFile :: Remote -> DownloadOptions -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
@@ -218,7 +218,7 @@ performWeb o url file urlinfo = ifAnnexed file addurl geturl
 	addurl = addUrlChecked o url file webUUID $ \k ->
 		ifM (pure (not (rawOption (downloadOptions o))) <&&> youtubeDlSupported url)
 			( return (True, True, setDownloader url YoutubeDownloader)
-			, return (Url.urlExists urlinfo, Url.urlSize urlinfo == keySize k, url)
+			, return (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url)
 			)
 
 {- Check that the url exists, and has the same size as the key,
@@ -379,7 +379,9 @@ finishDownloadWith tmp u url file = do
 
 {- Adds the url size to the Key. -}
 addSizeUrlKey :: Url.UrlInfo -> Key -> Key
-addSizeUrlKey urlinfo key = key { keySize = Url.urlSize urlinfo }
+addSizeUrlKey urlinfo key = alterKey key $ \d -> d
+	{ keySize = Url.urlSize urlinfo
+	}
 
 {- Adds worktree file to the repository. -}
 addWorkTree :: UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()

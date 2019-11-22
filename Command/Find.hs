@@ -87,14 +87,14 @@ showFormatted format unformatted vars =
 keyVars :: Key -> [(String, String)]
 keyVars key =
 	[ ("key", serializeKey key)
-	, ("backend", decodeBS $ formatKeyVariety $ keyVariety key)
+	, ("backend", decodeBS $ formatKeyVariety $ fromKey keyVariety key)
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
-	, ("keyname", decodeBS $ keyName key)
+	, ("keyname", decodeBS $ fromKey keyName key)
 	, ("hashdirlower", hashDirLower def key)
 	, ("hashdirmixed", hashDirMixed def key)
-	, ("mtime", whenavail show $ keyMtime key)
+	, ("mtime", whenavail show $ fromKey keyMtime key)
 	]
   where
-	size c = whenavail c $ keySize key
+	size c = whenavail c $ fromKey keySize key
 	whenavail = maybe "unknown"

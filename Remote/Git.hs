@@ -367,7 +367,7 @@ inAnnex' repo rmt (State connpool duc _ _) key
 	checkhttp = do
 		showChecking repo
 		gc <- Annex.getGitConfig
-		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls gc repo rmt key))
+		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
 			( return True
 			, giveup "not found"
 			)
@@ -511,7 +511,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 				Nothing -> return (False, UnVerified)
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink st params
-					runTransfer (Transfer Download u key)
+					runTransfer (Transfer Download u (fromKey id key))
 						file stdRetry $ \p ->
 							metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
 								copier object dest p' checksuccess
@@ -647,7 +647,7 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		-- run copy from perspective of remote
 		onLocalFast repo r $ ifM (Annex.Content.inAnnex key)
 			( return True
-			, runTransfer (Transfer Download u key) file stdRetry $ \p -> do
+			, runTransfer (Transfer Download u (fromKey id key)) file stdRetry $ \p -> do
 				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure

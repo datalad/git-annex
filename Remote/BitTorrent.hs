@@ -258,7 +258,7 @@ downloadTorrentContent k u dest filenum p = do
 			, return False
 			)
   where
-	download torrent tmpdir = ariaProgress (keySize k) p
+	download torrent tmpdir = ariaProgress (fromKey keySize k) p
 		[ Param $ "--select-file=" ++ show filenum
 		, File torrent
 		, Param "-d"

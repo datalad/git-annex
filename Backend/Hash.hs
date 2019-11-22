@@ -91,7 +91,7 @@ keyValue hash source meterupdate = do
 	let file = contentLocation source
 	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file meterupdate
-	return $ Just $ stubKey
+	return $ Just $ mkKey $ \k -> k
 		{ keyName = encodeBS s
 		, keyVariety = hashKeyVariety hash (HasExt False)
 		, keySize = Just filesize
@@ -105,8 +105,8 @@ keyValueE hash source meterupdate =
 	addE k = do
 		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
 		let ext = selectExtension maxlen (keyFilename source)
-		return $ Just $ k
-			{ keyName = keyName k <> encodeBS ext
+		return $ Just $ alterKey k $ \d -> d
+			{ keyName = keyName d <> encodeBS ext
 			, keyVariety = hashKeyVariety hash (HasExt True)
 			}
 
@@ -169,7 +169,7 @@ needsUpgrade :: Key -> Bool
 needsUpgrade key = or
 	[ "\\" `S8.isPrefixOf` keyHash key
 	, any (not . validInExtension) (decodeBS $ snd $ splitKeyNameExtension key)
-	, not (hasExt (keyVariety key)) && keyHash key /= keyName key
+	, not (hasExt (fromKey keyVariety key)) && keyHash key /= fromKey keyName key
 	]
 
 trivialMigrate :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
@@ -179,14 +179,14 @@ trivialMigrate oldkey newbackend afile = trivialMigrate' oldkey newbackend afile
 trivialMigrate' :: Key -> Backend -> AssociatedFile -> Maybe Int -> Maybe Key
 trivialMigrate' oldkey newbackend afile maxextlen
 	{- Fast migration from hashE to hash backend. -}
-	| migratable && hasExt oldvariety = Just $ oldkey
+	| migratable && hasExt oldvariety = Just $ alterKey oldkey $ \d -> d
 		{ keyName = keyHash oldkey
 		, keyVariety = newvariety
 		}
 	{- Fast migration from hash to hashE backend. -}
 	| migratable && hasExt newvariety = case afile of
 		AssociatedFile Nothing -> Nothing
-		AssociatedFile (Just file) -> Just $ oldkey
+		AssociatedFile (Just file) -> Just $ alterKey oldkey $ \d -> d
 			{ keyName = keyHash oldkey 
 				<> encodeBS (selectExtension maxextlen file)
 			, keyVariety = newvariety
@@ -195,14 +195,15 @@ trivialMigrate' oldkey newbackend afile maxextlen
 	 - non-extension preserving key, with an extension
 	 - in its keyName. -}
 	| newvariety == oldvariety && not (hasExt oldvariety) &&
-		keyHash oldkey /= keyName oldkey = Just $ oldkey
-			{ keyName = keyHash oldkey
-			}
+		keyHash oldkey /= fromKey keyName oldkey = 
+			Just $ alterKey oldkey $ \d -> d
+				{ keyName = keyHash oldkey
+				}
 	| otherwise = Nothing
   where
 	migratable = oldvariety /= newvariety 
 		&& sameExceptExt oldvariety newvariety
-	oldvariety = keyVariety oldkey
+	oldvariety = fromKey keyVariety oldkey
 	newvariety = backendVariety newbackend
 
 hashFile :: Hash -> FilePath -> MeterUpdate -> Annex String
@@ -294,5 +295,7 @@ testKeyBackend =
 	let b = genBackendE (SHA2Hash (HashSize 256))
 	in b { getKey = \ks p -> (fmap addE) <$> getKey b ks p } 
   where
-	addE k = k { keyName = keyName k <> longext }
+	addE k = alterKey k $ \d -> d
+		{ keyName = keyName d <> longext
+		}
 	longext = ".this-is-a-test-key"

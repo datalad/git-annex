@@ -134,7 +134,7 @@ oldlog2key l
   where
 	len = length l - 4
 	k = readKey1 (take len l)
-	sane = (not . S.null $ keyName k) && (not . S.null $ formatKeyVariety $ keyVariety k)
+	sane = (not . S.null $ fromKey keyName k) && (not . S.null $ formatKeyVariety $ fromKey keyVariety k)
 
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
@@ -145,7 +145,7 @@ oldlog2key l
 readKey1 :: String -> Key
 readKey1 v
 	| mixup = fromJust $ deserializeKey $ intercalate ":" $ Prelude.tail bits
-	| otherwise = stubKey
+	| otherwise = mkKey $ \d -> d
 		{ keyName = encodeBS n
 		, keyVariety = parseKeyVariety (encodeBS b)
 		, keySize = s
@@ -165,12 +165,16 @@ readKey1 v
 	mixup = wormy && isUpper (Prelude.head $ bits !! 1)
 
 showKey1 :: Key -> String
-showKey1 Key { keyName = n , keyVariety = v, keySize = s, keyMtime = t } =
-	intercalate ":" $ filter (not . null) [b, showifhere t, showifhere s, decodeBS n]
+showKey1 k = intercalate ":" $ filter (not . null)
+	[b, showifhere t, showifhere s, decodeBS n]
   where
 	showifhere Nothing = ""
 	showifhere (Just x) = show x
 	b = decodeBS $ formatKeyVariety v
+	n = fromKey keyName k
+	v = fromKey keyVariety k
+	s = fromKey keySize k
+	t = fromKey keyMtime k
 
 keyFile1 :: Key -> FilePath
 keyFile1 key = replace "/" "%" $ replace "%" "&s" $ replace "&" "&a"  $ showKey1 key
@@ -194,7 +198,7 @@ lookupFile1 file = do
 		Right l -> makekey l
   where
 	getsymlink = takeFileName <$> readSymbolicLink file
-	makekey l = case maybeLookupBackendVariety (keyVariety k) of
+	makekey l = case maybeLookupBackendVariety (fromKey keyVariety k) of
 		Nothing -> do
 			unless (null kname || null bname ||
 			        not (isLinkToAnnex (toRawFilePath l))) $
@@ -203,8 +207,8 @@ lookupFile1 file = do
 		Just backend -> return $ Just (k, backend)
 	  where
 		k = fileKey1 l
-		bname = decodeBS (formatKeyVariety (keyVariety k))
-		kname = decodeBS (keyName k)
+		bname = decodeBS (formatKeyVariety (fromKey keyVariety k))
+		kname = decodeBS (fromKey keyName k)
 		skip = "skipping " ++ file ++ 
 			" (unknown backend " ++ bname ++ ")"
 
