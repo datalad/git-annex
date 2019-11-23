@@ -8,7 +8,13 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Tmp where
+module Utility.Tmp (
+	Template,
+	viaTmp,
+	withTmpFile,
+	withTmpFileIn,
+	relatedTemplate,
+) where
 
 import System.IO
 import System.FilePath

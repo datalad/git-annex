@@ -7,7 +7,13 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Utility.Tense where
+module Utility.Tense (
+	Tense(..),
+	TenseChunk(..),
+	TenseText,
+	renderTense,
+	tenseWords,
+) where
 
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -52,6 +58,3 @@ tenseWords = TenseText . go []
 	go c ((Tensed w1 w2):ws) =
 		go (Tensed (addspace w1) (addspace w2) : c) ws
 	addspace w = T.append w " "
-
-unTensed :: Text -> TenseText
-unTensed t = TenseText [UnTensed t]

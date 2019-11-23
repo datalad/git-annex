@@ -7,7 +7,23 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.SafeCommand where
+module Utility.SafeCommand (
+	CommandParam(..),
+	toCommand,
+	boolSystem,
+	boolSystem',
+	boolSystemEnv,
+	safeSystem,
+	safeSystem',
+	safeSystemEnv,
+	shellWrap,
+	shellEscape,
+	shellUnEscape,
+	segmentXargsOrdered,
+	segmentXargsUnordered,
+	prop_isomorphic_shellEscape,
+	prop_isomorphic_shellEscape_multiword,
+) where
 
 import System.Exit
 import Utility.Process

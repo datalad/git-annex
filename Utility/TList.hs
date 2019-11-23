@@ -11,7 +11,17 @@
 
 {-# LANGUAGE BangPatterns #-}
 
-module Utility.TList where
+module Utility.TList (
+	TList,
+	newTList,
+	getTList,
+	setTList,
+	takeTList,
+	readTList,
+	consTList,
+	snocTList,
+	appendTList,
+) where
 
 import Common
 

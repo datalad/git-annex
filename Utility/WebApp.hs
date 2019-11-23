@@ -7,7 +7,14 @@
 
 {-# LANGUAGE OverloadedStrings, CPP, RankNTypes #-}
 
-module Utility.WebApp where
+module Utility.WebApp (
+	browserProc,
+	runWebApp,
+	webAppSessionBackend,
+	checkAuthToken,
+	insertAuthToken,
+	writeHtmlShim,
+) where
 
 import Common
 import Utility.Tmp
@@ -19,11 +26,9 @@ import qualified Network.Wai as Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Handler.WarpTLS
 import Network.HTTP.Types
-import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import "crypto-api" Crypto.Random
 import qualified Web.ClientSession as CS
-import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
@@ -119,9 +124,6 @@ getSocket h = do
 		listen sock maxListenQueue
 		return sock
 
-lookupRequestField :: CI.CI B.ByteString -> Wai.Request -> B.ByteString
-lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req
-
 {- Rather than storing a session key on disk, use a random key
  - that will only be valid for this run of the webapp. -}
 webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe Yesod.SessionBackend)
@@ -188,7 +190,6 @@ insertAuthToken extractAuthToken predicate webapp root pathbits params =
 writeHtmlShim :: String -> String -> FilePath -> IO ()
 writeHtmlShim title url file = viaTmp writeFileProtected file $ genHtmlShim title url
 
-{- TODO: generate this static file using Yesod. -}
 genHtmlShim :: String -> String -> String
 genHtmlShim title url = unlines
 	[ "<html>"

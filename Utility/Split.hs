@@ -7,7 +7,12 @@
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Split where
+module Utility.Split (
+	split,
+	splitc,
+	replace,
+	dropFromEnd,
+) where
 
 import Data.List (intercalate)
 import Data.List.Split (splitOn)
