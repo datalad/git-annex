@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="moving unlocked file onto locked file isn't possible"
+ date="2019-11-24T16:36:24Z"
+ content="""
+`git mv` won't move an unlocked file onto a locked file (trace below).
+
+\"The right solution is to improve the smudge/clean filter interface\" -- of course, but realistically, do you think git devs can be persuaded to do [[this|todo/git_smudge_clean_interface_suboptiomal]] sometime soon?  Even if yes, it still seems better to avoid adding a step to common git workflows, than to make the step fast.
+
+
+[[!format sh \"\"\"
+(master_env_v164_py36) 11:14  [t1] $ ls
+bar  foo
+(master_env_v164_py36) 11:14  [t1] $ git init
+Initialized empty Git repository in /tmp/t1/.git/
+(master_env_v164_py36) 11:14  [t1] $ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+(master_env_v164_py36) 11:14  [t1] $ git annex add foo
+add foo ok
+(recording state in git...)
+(master_env_v164_py36) 11:14  [t1] $ git annex add bar
+add bar ok
+(recording state in git...)
+(master_env_v164_py36) 11:14  [t1] $ ls -alt
+total 0
+drwxrwxr-x  8 ilya ilya 141 Nov 24 11:14 .git
+drwxrwxr-x  3 ilya ilya  40 Nov 24 11:14 .
+lrwxrwxrwx  1 ilya ilya 108 Nov 24 11:14 bar -> .git/annex/objects/jx/MV/MD5E-s4--c157a79031e1c40f85931829bc5fc552/MD5E-s4--c157a79031\
+e1c40f85931829bc5fc552
+lrwxrwxrwx  1 ilya ilya 108 Nov 24 11:14 foo -> .git/annex/objects/00/zZ/MD5E-s4--d3b07384d113edec49eaa6238ad5ff00/MD5E-s4--d3b07384d1\
+13edec49eaa6238ad5ff00
+drwxrwxrwt 12 root root 282 Nov 24 11:14 ..
+(master_env_v164_py36) 11:14  [t1] $ git annex unlock bar
+unlock bar ok
+(recording state in git...)
+(master_env_v164_py36) 11:16  [t1] $ git mv bar foo
+fatal: destination exists, source=bar, destination=foo
+(master_env_v164_py36) 11:17  [t1] $
+
+
+
+\"\"\"]]
+"""]]
