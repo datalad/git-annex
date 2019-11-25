@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="use named pipes?"
+ date="2019-11-25T16:45:26Z"
+ content="""
+For external remotes can pass to the `TRANSFER` request, as the `FILE` parameter, a named pipe, and use `tee` to create a separate stream for checksumming.
+
+An external remote could also do its own checksum checking and then set remote.<name>.annex-verify=false.
+Could also make a “wrapper” external remote that delegates all requests to a given external remote but does checksum-checking in parallel with downloading (by creating a named pipe and passing that to the wrapped remote).
+"""]]
