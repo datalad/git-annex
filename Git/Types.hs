@@ -5,12 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.Types where
 
 import Network.URI
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import System.Posix.Types
 import Utility.SafeCommand
+
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -64,32 +68,31 @@ newtype RefDate = RefDate String
 
 {- Types of objects that can be stored in git. -}
 data ObjectType = BlobObject | CommitObject | TreeObject
-	deriving (Eq)
 
-instance Show ObjectType where
-	show BlobObject = "blob"
-	show CommitObject = "commit"
-	show TreeObject = "tree"
-
-readObjectType :: String -> Maybe ObjectType
+readObjectType :: S.ByteString -> Maybe ObjectType
 readObjectType "blob" = Just BlobObject
 readObjectType "commit" = Just CommitObject
 readObjectType "tree" = Just TreeObject
 readObjectType _ = Nothing
+
+fmtObjectType :: ObjectType -> S.ByteString
+fmtObjectType BlobObject = "blob"
+fmtObjectType CommitObject = "commit"
+fmtObjectType TreeObject = "tree"
 
 {- Types of items in a tree. -}
 data TreeItemType = TreeFile | TreeExecutable | TreeSymlink | TreeSubmodule
 	deriving (Eq)
 
 {- Git uses magic numbers to denote the type of a tree item. -}
-readTreeItemType :: String -> Maybe TreeItemType
+readTreeItemType :: S.ByteString -> Maybe TreeItemType
 readTreeItemType "100644" = Just TreeFile
 readTreeItemType "100755" = Just TreeExecutable
 readTreeItemType "120000" = Just TreeSymlink
 readTreeItemType "160000" = Just TreeSubmodule
 readTreeItemType _ = Nothing
 
-fmtTreeItemType :: TreeItemType -> String
+fmtTreeItemType :: TreeItemType -> S.ByteString
 fmtTreeItemType TreeFile = "100644"
 fmtTreeItemType TreeExecutable = "100755"
 fmtTreeItemType TreeSymlink = "120000"

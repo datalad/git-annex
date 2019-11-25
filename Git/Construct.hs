@@ -58,7 +58,7 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| absoluteGitPath dir = hunt
+	| absoluteGitPath (encodeBS dir) = hunt
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where

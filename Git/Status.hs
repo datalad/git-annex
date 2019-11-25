@@ -69,7 +69,7 @@ parseStatusZ = go []
 getStatus :: [CommandParam] -> [FilePath] -> Repo -> IO ([StagedUnstaged Status], IO Bool)
 getStatus ps fs r = do
 	(ls, cleanup) <- pipeNullSplit ps' r
-	return (parseStatusZ ls, cleanup)
+	return (parseStatusZ (map decodeBL ls), cleanup)
   where
 	ps' = concat
 		[ [Param "status"]

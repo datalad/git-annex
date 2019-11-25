@@ -18,6 +18,7 @@ import Annex.Multicast
 import Types.Test
 import Types.Benchmark
 
+{-
 import qualified Command.Help
 import qualified Command.Add
 import qualified Command.Unannex
@@ -66,7 +67,9 @@ import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.PostReceive
+-}
 import qualified Command.Find
+{-
 import qualified Command.FindRef
 import qualified Command.Whereis
 import qualified Command.List
@@ -122,10 +125,11 @@ import qualified Command.Test
 import qualified Command.FuzzTest
 import qualified Command.TestRemote
 import qualified Command.Benchmark
+-}
 
 cmds :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [Command]
 cmds testoptparser testrunner mkbenchmarkgenerator = 
-	[ Command.Help.cmd
+{-	[ Command.Help.cmd
 	, Command.Add.cmd
 	, Command.Get.cmd
 	, Command.Drop.cmd
@@ -196,7 +200,9 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.Unused.cmd
 	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
-	, Command.Find.cmd
+-}
+	[ Command.Find.cmd
+{-
 	, Command.FindRef.cmd
 	, Command.Whereis.cmd
 	, Command.List.cmd
@@ -231,6 +237,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.TestRemote.cmd
 	, Command.Benchmark.cmd $
 		mkbenchmarkgenerator $ cmds testoptparser testrunner (\_ _ -> return noop)
+-}
 	]
 
 run :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [String] -> IO ()

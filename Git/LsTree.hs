@@ -26,12 +26,16 @@ import Git.FilePath
 import qualified Git.Filename
 
 import Numeric
-import Data.Char
+import Data.Either
 import System.Posix.Types
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 
 data TreeItem = TreeItem
 	{ mode :: FileMode
-	, typeobj :: String
+	, typeobj :: S.ByteString
 	, sha :: Ref
 	, file :: TopFilePath
 	} deriving Show
@@ -45,7 +49,7 @@ lsTree = lsTree' []
 lsTree' :: [CommandParam] -> LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Bool)
 lsTree' ps lsmode t repo = do
 	(l, cleanup) <- pipeNullSplit (lsTreeParams lsmode t ps) repo
-	return (map parseLsTree l, cleanup)
+	return (rights (map parseLsTree l), cleanup)
 
 lsTreeParams :: LsTreeMode -> Ref -> [CommandParam] -> [CommandParam]
 lsTreeParams lsmode r ps =
@@ -63,7 +67,8 @@ lsTreeParams lsmode r ps =
 
 {- Lists specified files in a tree. -}
 lsTreeFiles :: Ref -> [FilePath] -> Repo -> IO [TreeItem]
-lsTreeFiles t fs repo = map parseLsTree <$> pipeNullSplitStrict ps repo
+lsTreeFiles t fs repo = rights . map (parseLsTree . L.fromStrict)
+	<$> pipeNullSplitStrict ps repo
   where
 	ps =
 		[ Param "ls-tree"
@@ -73,30 +78,34 @@ lsTreeFiles t fs repo = map parseLsTree <$> pipeNullSplitStrict ps repo
 		, File $ fromRef t
 		] ++ map File fs
 
+parseLsTree :: L.ByteString -> Either String TreeItem
+parseLsTree b = case A.parse parserLsTree b of
+	A.Done _ r  -> Right r
+	A.Fail _ _ err -> Left err
+
 {- Parses a line of ls-tree output, in format:
  - mode SP type SP sha TAB file
  -
  - (The --long format is not currently supported.) -}
-parseLsTree :: String -> TreeItem
-parseLsTree l = TreeItem 
-	{ mode = smode
-	, typeobj = t
-	, sha = Ref s
-	, file = sfile
-	}
-  where
-	(m, past_m) = splitAt 7 l -- mode is 6 bytes
-	(!t, past_t) = separate isSpace past_m
-	(!s, past_s) = splitAt shaSize past_t
-	!f = drop 1 past_s
-	!smode = fst $ Prelude.head $ readOct m
-	!sfile = asTopFilePath $ Git.Filename.decode f
+parserLsTree :: A.Parser TreeItem
+parserLsTree = TreeItem
+	-- mode
+	<$> A8.decimal
+	<* A8.char ' '
+	-- type
+	<*> A.takeTill (== 32)
+	<* A8.char ' '
+	-- sha
+	<*> (Ref . decodeBS' <$> A.take shaSize)
+	<* A8.char '\t'
+	-- file
+	<*> (asTopFilePath . decodeBS' . Git.Filename.decode <$> A.takeByteString)
 
 {- Inverse of parseLsTree -}
 formatLsTree :: TreeItem -> String
 formatLsTree ti = unwords
 	[ showOct (mode ti) ""
-	, typeobj ti
+	, decodeBS (typeobj ti)
 	, fromRef (sha ti)
 	, getTopFilePath (file ti)
 	]

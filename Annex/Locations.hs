@@ -201,8 +201,10 @@ gitAnnexLink file key r config = do
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
 			absNormPathUnix currdir $ Git.repoPath r </> ".git"
 		| otherwise = Git.localGitDir r
-	absNormPathUnix d p = toInternalGitPath $
-		absPathFrom (toInternalGitPath d) (toInternalGitPath p)
+	absNormPathUnix d p = fromRawFilePath $ toInternalGitPath $ toRawFilePath $
+		absPathFrom
+			(fromRawFilePath $ toInternalGitPath $ toRawFilePath d)
+			(fromRawFilePath $ toInternalGitPath $ toRawFilePath p)
 
 {- Calculates a symlink target as would be used in a typical git
  - repository, with .git in the top of the work tree. -}

@@ -21,7 +21,7 @@ getMulti :: [Branch] -> Repo -> IO [Sha]
 getMulti bs = get' (map (Param . fromRef) bs)
 
 get' :: [CommandParam] -> Repo -> IO [Sha]
-get' ps = mapMaybe extractSha . lines <$$> pipeReadStrict ps'
+get' ps = mapMaybe extractSha . lines . decodeBS <$$> pipeReadStrict ps'
   where
 	ps' = catMaybes
 		[ Just $ Param "log"

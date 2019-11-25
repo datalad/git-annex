@@ -34,7 +34,7 @@ import qualified System.FilePath.Posix
 import GHC.Generics
 import Control.DeepSeq
 
-{- A FilePath, relative to the top of the git repository. -}
+{- A RawFilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
 	deriving (Show, Eq, Ord, Generic)
 
@@ -46,7 +46,7 @@ data BranchFilePath = BranchFilePath Ref TopFilePath
 
 {- Git uses the branch:file form to refer to a BranchFilePath -}
 descBranchFilePath :: BranchFilePath -> String
-descBranchFilePath (BranchFilePath b f) = fromRef b ++ ':' : getTopFilePath f
+descBranchFilePath (BranchFilePath b f) = fromRef b ++ ':' : (getTopFilePath f)
 
 {- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> FilePath
@@ -68,25 +68,25 @@ asTopFilePath file = TopFilePath file
  - despite Windows using '\'.
  -
  -}
-type InternalGitPath = String
+type InternalGitPath = RawFilePath
 
-toInternalGitPath :: FilePath -> InternalGitPath
+toInternalGitPath :: RawFilePath -> InternalGitPath
 #ifndef mingw32_HOST_OS
 toInternalGitPath = id
 #else
-toInternalGitPath = replace "\\" "/"
+toInternalGitPath = encodeBS . replace "\\" "/" . decodeBS
 #endif
 
-fromInternalGitPath :: InternalGitPath -> FilePath
+fromInternalGitPath :: InternalGitPath -> RawFilePath
 #ifndef mingw32_HOST_OS
 fromInternalGitPath = id
 #else
-fromInternalGitPath = replace "/" "\\"
+fromInternalGitPath = encodeBS . replace "/" "\\" . decodeBS
 #endif
 
 {- isAbsolute on Windows does not think "/foo" or "\foo" is absolute,
  - so try posix paths.
  -}
-absoluteGitPath :: FilePath -> Bool
-absoluteGitPath p = isAbsolute p ||
-	System.FilePath.Posix.isAbsolute (toInternalGitPath p)
+absoluteGitPath :: RawFilePath -> Bool
+absoluteGitPath p = isAbsolute (decodeBS p) ||
+	System.FilePath.Posix.isAbsolute (decodeBS (toInternalGitPath p))

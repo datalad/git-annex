@@ -14,6 +14,9 @@ import Git
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
 
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
+
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
 gitCommandLine params r@(Repo { location = l@(Local { } ) }) =
@@ -50,10 +53,10 @@ runQuiet params repo = withQuietOutput createProcessSuccess $
  - read, that will wait on the command, and
  - return True if it succeeded. Failure to wait will result in zombies.
  -}
-pipeReadLazy :: [CommandParam] -> Repo -> IO (String, IO Bool)
+pipeReadLazy :: [CommandParam] -> Repo -> IO (L.ByteString, IO Bool)
 pipeReadLazy params repo = assertLocal repo $ do
 	(_, Just h, _, pid) <- createProcess p { std_out = CreatePipe }
-	c <- hGetContents h
+	c <- L.hGetContents h
 	return (c, checkSuccessProcess pid)
   where
 	p  = gitCreateProcess params repo
@@ -62,8 +65,8 @@ pipeReadLazy params repo = assertLocal repo $ do
  -
  - Nonzero exit status is ignored.
  -}
-pipeReadStrict :: [CommandParam] -> Repo -> IO String
-pipeReadStrict = pipeReadStrict' hGetContentsStrict
+pipeReadStrict :: [CommandParam] -> Repo -> IO S.ByteString
+pipeReadStrict = pipeReadStrict' S.hGetContents
 
 {- The reader action must be strict. -}
 pipeReadStrict' :: (Handle -> IO a) -> [CommandParam] -> Repo -> IO a
@@ -93,21 +96,24 @@ pipeWrite params repo = assertLocal repo $
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}
-pipeNullSplit :: [CommandParam] -> Repo -> IO ([String], IO Bool)
+pipeNullSplit :: [CommandParam] -> Repo -> IO ([L.ByteString], IO Bool)
 pipeNullSplit params repo = do
 	(s, cleanup) <- pipeReadLazy params repo
-	return (filter (not . null) $ splitc sep s, cleanup)
-  where
-	sep = '\0'
+	return (filter (not . L.null) $ L.split 0 s, cleanup)
 
-pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [String]
+{- Reads lazily, but converts each part to a strict ByteString for
+ - convenience. -}
+pipeNullSplit' :: [CommandParam] -> Repo -> IO ([S.ByteString], IO Bool)
+pipeNullSplit' params repo = do
+	(s, cleanup) <- pipeNullSplit params repo
+	return (map L.toStrict s, cleanup)
+
+pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [S.ByteString]
 pipeNullSplitStrict params repo = do
 	s <- pipeReadStrict params repo
-	return $ filter (not . null) $ splitc sep s
-  where
-	sep = '\0'
+	return $ filter (not . S.null) $ S.split 0 s
 
-pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [String]
+pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [L.ByteString]
 pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo
 
 {- Doesn't run the cleanup action. A zombie results. -}

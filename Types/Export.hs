@@ -17,38 +17,39 @@ module Types.Export (
 
 import Git.FilePath
 import Utility.Split
+import Utility.FileSystemEncoding
 
 import qualified System.FilePath.Posix as Posix
 
 -- A location on a remote that a key can be exported to.
--- The FilePath will be relative to the top of the remote,
+-- The RawFilePath will be relative to the top of the remote,
 -- and uses unix-style path separators.
-newtype ExportLocation = ExportLocation FilePath
+newtype ExportLocation = ExportLocation RawFilePath
 	deriving (Show, Eq)
 
-mkExportLocation :: FilePath -> ExportLocation
+mkExportLocation :: RawFilePath -> ExportLocation
 mkExportLocation = ExportLocation . toInternalGitPath
 
-fromExportLocation :: ExportLocation -> FilePath
+fromExportLocation :: ExportLocation -> RawFilePath
 fromExportLocation (ExportLocation f) = f
 
-newtype ExportDirectory = ExportDirectory FilePath
+newtype ExportDirectory = ExportDirectory RawFilePath
 	deriving (Show, Eq)
 
-mkExportDirectory :: FilePath -> ExportDirectory
+mkExportDirectory :: RawFilePath -> ExportDirectory
 mkExportDirectory = ExportDirectory . toInternalGitPath
 
-fromExportDirectory :: ExportDirectory -> FilePath
+fromExportDirectory :: ExportDirectory -> RawFilePath
 fromExportDirectory (ExportDirectory f) = f
 
 -- | All subdirectories down to the ExportLocation, with the deepest ones
 -- last. Does not include the top of the export.
 exportDirectories :: ExportLocation -> [ExportDirectory]
 exportDirectories (ExportLocation f) =
-	map (ExportDirectory . Posix.joinPath . reverse) (subs [] dirs)
+	map (ExportDirectory . encodeBS . Posix.joinPath . reverse) (subs [] dirs)
   where
 	subs _ [] = []
 	subs ps (d:ds) = (d:ps) : subs (d:ps) ds
 
 	dirs = map Posix.dropTrailingPathSeparator $
-		dropFromEnd 1 $ Posix.splitPath f
+		dropFromEnd 1 $ Posix.splitPath $ decodeBS f

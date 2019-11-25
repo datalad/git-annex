@@ -284,7 +284,7 @@ findUncorruptedCommit missing goodcommits branch r = do
 				, Param "--format=%H"
 				, Param (fromRef branch)
 				] r
-			let branchshas = catMaybes $ map extractSha ls
+			let branchshas = catMaybes $ map (extractSha . decodeBS) ls
 			reflogshas <- RefLog.get branch r
 			-- XXX Could try a bit harder here, and look
 			-- for uncorrupted old commits in branches in the
@@ -313,7 +313,7 @@ verifyCommit missing goodcommits commit r
 			, Param "--format=%H %T"
 			, Param (fromRef commit)
 			] r
-		let committrees = map parse ls
+		let committrees = map (parse . decodeBS) ls
 		if any isNothing committrees || null committrees
 			then do
 				void cleanup

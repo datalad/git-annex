@@ -602,7 +602,7 @@ Executable git-annex
   if flag(DebugLocks)
     CPP-Options: -DDEBUGLOCKS
 
-  Other-Modules:
+  Other-Modules-Temp-Disabled:
     Annex
     Annex.Action
     Annex.AdjustedBranch
@@ -860,7 +860,6 @@ Executable git-annex
     Git.RefLog
     Git.Remote
     Git.Remote.Remove
-    Git.Repair
     Git.Sha
     Git.Ssh
     Git.Status

@@ -34,11 +34,11 @@ import Annex.Content
 import Annex.InodeSentinal
 import qualified Database.Keys
 
-withFilesInGit :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGit :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGit a l = seekActions $ prepFiltered a $
 	seekHelper LsFiles.inRepo l
 
-withFilesInGitNonRecursive :: String -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitNonRecursive :: String -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
 	( withFilesInGit a l
 	, if null l
@@ -58,7 +58,7 @@ withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
 				getfiles c ps
 			_ -> giveup needforce
 
-withFilesNotInGit :: Bool -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesNotInGit :: Bool -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesNotInGit skipdotfiles a l
 	| skipdotfiles = do
 		{- dotfiles are not acted on unless explicitly listed -}
@@ -78,7 +78,7 @@ withFilesNotInGit skipdotfiles a l
 	go fs = seekActions $ prepFiltered a $
 		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> f) l) fs
 
-withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
+withPathContents :: ((RawFilePath, RawFilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher
 	forM_ params $ \p -> do
@@ -110,30 +110,30 @@ withPairs a params = seekActions $ return $ map a $ pairs [] params
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = giveup "expected pairs"
 
-withFilesToBeCommitted :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesToBeCommitted :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesToBeCommitted a l = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted l
 
-isOldUnlocked :: FilePath -> Annex Bool
+isOldUnlocked :: RawFilePath -> Annex Bool
 isOldUnlocked f = liftIO (notSymlink f) <&&> 
 	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- unlocked pointer files that are staged, and whose content has not been
  - modified-}
-withUnmodifiedUnlockedPointers :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withUnmodifiedUnlockedPointers :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withUnmodifiedUnlockedPointers a l = seekActions $
 	prepFiltered a unlockedfiles
   where
 	unlockedfiles = filterM isUnmodifiedUnlocked 
 		=<< seekHelper LsFiles.typeChangedStaged l
 
-isUnmodifiedUnlocked :: FilePath -> Annex Bool
+isUnmodifiedUnlocked :: RawFilePath -> Annex Bool
 isUnmodifiedUnlocked f = catKeyFile f >>= \case
 	Nothing -> return False
 	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
-withFilesMaybeModified :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesMaybeModified :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesMaybeModified a params = seekActions $
 	prepFiltered a $ seekHelper LsFiles.modified params
 
@@ -225,7 +225,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		forM_ ts $ \(t, i) ->
 			keyaction (transferKey t, mkActionItem (t, i))
 
-prepFiltered :: (FilePath -> CommandSeek) -> Annex [FilePath] -> Annex [CommandSeek]
+prepFiltered :: (RawFilePath -> CommandSeek) -> Annex [RawFilePath] -> Annex [CommandSeek]
 prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
@@ -235,7 +235,7 @@ prepFiltered a fs = do
 seekActions :: Annex [CommandSeek] -> Annex ()
 seekActions gen = sequence_ =<< gen
 
-seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [WorkTreeItem] -> Annex [FilePath]
+seekHelper :: ([RawFilePath] -> Git.Repo -> IO ([RawFilePath], IO Bool)) -> [WorkTreeItem] -> Annex [RawFilePath]
 seekHelper a l = inRepo $ \g ->
 	concat . concat <$> forM (segmentXargsOrdered l')
 		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
@@ -243,7 +243,7 @@ seekHelper a l = inRepo $ \g ->
 	l' = map (\(WorkTreeItem f) -> f) l
 
 -- An item in the work tree, which may be a file or a directory.
-newtype WorkTreeItem = WorkTreeItem FilePath
+newtype WorkTreeItem = WorkTreeItem RawFilePath
 
 -- When in an adjusted branch that hides some files, it may not exist
 -- in the current work tree, but in the original branch. This allows
@@ -273,5 +273,5 @@ workTreeItems' (AllowHidden allowhidden) ps = do
 			isJust <$> catObjectMetaDataHidden f currbranch
 		| otherwise = return False
 
-notSymlink :: FilePath -> IO Bool
+notSymlink :: RawFilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f

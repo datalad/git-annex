@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.Ref where
 
 import Common
@@ -13,7 +15,8 @@ import Git.Command
 import Git.Sha
 import Git.Types
 
-import Data.Char (chr)
+import Data.Char (chr, ord)
+import qualified Data.ByteString as S
 
 headRef :: Ref
 headRef = Ref "HEAD"
@@ -88,8 +91,10 @@ file ref repo = localGitDir repo </> fromRef ref
  - that was just created. -}
 headExists :: Repo -> IO Bool
 headExists repo = do
-	ls <- lines <$> pipeReadStrict [Param "show-ref", Param "--head"] repo
-	return $ any (" HEAD" `isSuffixOf`) ls
+	ls <- S.split nl <$> pipeReadStrict [Param "show-ref", Param "--head"] repo
+	return $ any (" HEAD" `S.isSuffixOf`) ls
+  where
+	nl = fromIntegral (ord '\n')
 
 {- Get the sha of a fully qualified git ref, if it exists. -}
 sha :: Branch -> Repo -> IO (Maybe Sha)
@@ -100,8 +105,9 @@ sha branch repo = process <$> showref repo
 		, Param "--hash" -- get the hash
 		, Param $ fromRef branch
 		]
-	process [] = Nothing
-	process s = Just $ Ref $ firstLine s
+	process s
+		| S.null s = Nothing
+		| otherwise = Just $ Ref $ decodeBS' $ firstLine' s
 
 headSha :: Repo -> IO (Maybe Sha)
 headSha = sha headRef
@@ -116,7 +122,7 @@ matchingWithHEAD refs repo = matching' ("--head" : map fromRef refs) repo
 
 {- List of (shas, branches) matching a given ref spec. -}
 matching' :: [String] -> Repo -> IO [(Sha, Branch)]
-matching' ps repo = map gen . lines <$> 
+matching' ps repo = map gen . lines . decodeBS' <$> 
 	pipeReadStrict (Param "show-ref" : map Param ps) repo
   where
 	gen l = let (r, b) = separate (== ' ') l
@@ -148,7 +154,7 @@ delete oldvalue ref = run
  - The ref may be something like a branch name, and it could contain
  - ":subdir" if a subtree is wanted. -}
 tree :: Ref -> Repo -> IO (Maybe Sha)
-tree (Ref ref) = extractSha <$$> pipeReadStrict
+tree (Ref ref) = extractSha . decodeBS <$$> pipeReadStrict
 	[ Param "rev-parse", Param "--verify", Param "--quiet", Param ref' ]
   where
 	ref' = if ":" `isInfixOf` ref

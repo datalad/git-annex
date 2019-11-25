@@ -89,7 +89,7 @@ commitDiff ref = getdiff (Param "show")
 getdiff :: CommandParam -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 getdiff command params repo = do
 	(diff, cleanup) <- pipeNullSplit ps repo
-	return (parseDiffRaw diff, cleanup)
+	return (parseDiffRaw (map decodeBL diff), cleanup)
   where
 	ps = 
 		command :
@@ -113,7 +113,7 @@ parseDiffRaw l = go l
 		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
 		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
 		, status = s
-		, file = asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f
+		, file = asTopFilePath $ fromRawFilePath $ fromInternalGitPath $ Git.Filename.decode $ toRawFilePath f
 		}
 	  where
 		readmode = fst . Prelude.head . readOct
