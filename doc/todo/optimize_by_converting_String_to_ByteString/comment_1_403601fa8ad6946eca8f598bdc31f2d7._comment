@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""profiling"""
+ date="2019-11-26T20:05:28Z"
+ content="""
+Profiling the early version of the `bs` branch. 
+
+		Tue Nov 26 16:05 2019 Time and Allocation Profiling Report  (Final)
+	
+		   git-annex +RTS -p -RTS find
+	
+		total time  =        2.75 secs   (2749 ticks @ 1000 us, 1 processor)
+		total alloc = 1,642,607,120 bytes  (excludes profiling overheads)
+	
+	COST CENTRE                      MODULE                         SRC                                                 %time %alloc
+	
+	inAnnex'.\                       Annex.Content                  Annex/Content.hs:(103,61)-(118,31)                   31.2   46.8
+	keyFile'                         Annex.Locations                Annex/Locations.hs:(567,1)-(577,30)                   5.3    6.2
+	encodeW8                         Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:(189,1)-(191,70)        3.3    4.2
+	>>=.\                            Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:(146,9)-(147,44)    2.9    0.8
+	>>=.\.succ'                      Data.Attoparsec.Internal.Types Data/Attoparsec/Internal/Types.hs:146:13-76           2.6    0.3
+	keyFile'.esc                     Annex.Locations                Annex/Locations.hs:(573,9)-(577,30)                   2.5    5.5
+	parseLinkTarget                  Annex.Link                     Annex/Link.hs:(254,1)-(262,25)                        2.4    4.4
+	getAnnexLinkTarget'.probesymlink Annex.Link                     Annex/Link.hs:78:9-46                                 2.4    2.8
+	w82s                             Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:217:1-15                2.3    6.0
+	keyPath                          Annex.Locations                Annex/Locations.hs:(606,1)-(608,23)                   1.9    4.0
+	parseKeyVariety                  Types.Key                      Types/Key.hs:(323,1)-(371,42)                         1.8    0.0
+	getState                         Annex                          Annex.hs:(251,1)-(254,27)                             1.7    0.4
+	fileKey'.go                      Annex.Locations                Annex/Locations.hs:588:9-55                           1.4    0.8
+	fileKey'                         Annex.Locations                Annex/Locations.hs:(586,1)-(596,41)                   1.4    1.7
+	hashUpdates.\.\.\                Crypto.Hash                    Crypto/Hash.hs:85:48-99                               1.3    0.0
+	parseLinkTargetOrPointer         Annex.Link                     Annex/Link.hs:(239,1)-(243,25)                        1.2    0.1
+	withPtr                          Basement.Block.Base            Basement/Block/Base.hs:(395,1)-(404,31)               1.2    0.6
+	primitive                        Basement.Monad                 Basement/Monad.hs:72:5-18                             1.0    0.1
+	decodeBS'                        Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:151:1-31                1.0    2.8
+	mkKeySerialization               Types.Key                      Types/Key.hs:(115,1)-(117,22)                         0.7    1.1
+	w82c                             Utility.FileSystemEncoding     Utility/FileSystemEncoding.hs:211:1-28                0.6    1.1
+
+Comparing with [[/profiling]] results, the alloc is down significantly.
+And the main IO actions are getting a larger share of the runtime.
+
+There is still significantly conversion going on, encodeW8 and w82s and
+decodeBS' and w82c. Likely another 5% or so speedup if that's eliminated.
+"""]]
