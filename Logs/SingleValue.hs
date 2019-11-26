@@ -25,13 +25,13 @@ import Annex.VectorClock
 
 import qualified Data.Set as S
 
-readLog :: (Ord v, SingleValueSerializable v) => FilePath -> Annex (Log v)
+readLog :: (Ord v, SingleValueSerializable v) => RawFilePath -> Annex (Log v)
 readLog = parseLog <$$> Annex.Branch.get
 
-getLog :: (Ord v, SingleValueSerializable v) => FilePath -> Annex (Maybe v)
+getLog :: (Ord v, SingleValueSerializable v) => RawFilePath -> Annex (Maybe v)
 getLog = newestValue <$$> readLog
 
-setLog :: (SingleValueSerializable v) => FilePath -> v -> Annex ()
+setLog :: (SingleValueSerializable v) => RawFilePath -> v -> Annex ()
 setLog f v = do
 	c <- liftIO currentVectorClock
 	let ent = LogEntry c v

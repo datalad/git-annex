@@ -43,6 +43,8 @@ import qualified Data.ByteString.Lazy as L
  -}
 autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
 autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
+	error "STUBBED FIXME"
+{-
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
@@ -62,6 +64,7 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
 			( resolveMerge old branch False
 			, return False 
 			)
+-}
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since
@@ -104,6 +107,8 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Bool -> Annex Bool
 resolveMerge us them inoverlay = do
+	error "STUBBED FIXME"
+{-
 	top <- if inoverlay
 		then pure "."
 		else fromRepo Git.repoPath
@@ -132,10 +137,13 @@ resolveMerge us them inoverlay = do
 			cleanConflictCruft mergedks' mergedfs' unstagedmap
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
+-}
 
 resolveMerge' :: InodeMap -> Maybe Git.Ref -> Git.Ref -> Bool -> LsFiles.Unmerged -> Annex ([Key], Maybe FilePath)
 resolveMerge' _ Nothing _ _ _ = return ([], Nothing)
 resolveMerge' unstagedmap (Just us) them inoverlay u = do
+	error "STUBBED FIXME"
+{-
 	kus <- getkey LsFiles.valUs
 	kthem <- getkey LsFiles.valThem
 	case (kus, kthem) of
@@ -265,6 +273,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			[Param "--quiet", Param "-f", Param "--cached", Param "--"] [file]
 		void a
 		return (ks, Just file)
+-}
 
 {- git-merge moves conflicting files away to files
  - named something like f~HEAD or f~branch or just f, but the
@@ -278,6 +287,8 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
  -}
 cleanConflictCruft :: [Key] -> [FilePath] -> InodeMap -> Annex ()
 cleanConflictCruft resolvedks resolvedfs unstagedmap = do
+	error "STUBBED FIXME"
+{-
 	is <- S.fromList . map (inodeCacheToKey Strongly) . concat 
 		<$> mapM Database.Keys.getInodeCaches resolvedks
 	forM_ (M.toList unstagedmap) $ \(i, f) ->
@@ -294,6 +305,7 @@ cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 			, inks <$> liftIO (isPointerFile f)
 			]
 		| otherwise = return False
+-}
 
 conflictCruftBase :: FilePath -> FilePath
 conflictCruftBase f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f

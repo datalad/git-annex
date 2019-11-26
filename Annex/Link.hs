@@ -43,7 +43,7 @@ import qualified Data.ByteString.Lazy as L
 type LinkTarget = String
 
 {- Checks if a file is a link to a key. -}
-isAnnexLink :: FilePath -> Annex (Maybe Key)
+isAnnexLink :: RawFilePath -> Annex (Maybe Key)
 isAnnexLink file = maybe Nothing parseLinkTargetOrPointer <$> getAnnexLinkTarget file
 
 {- Gets the link target of a symlink.
@@ -54,13 +54,13 @@ isAnnexLink file = maybe Nothing parseLinkTargetOrPointer <$> getAnnexLinkTarget
  - Returns Nothing if the file is not a symlink, or not a link to annex
  - content.
  -}
-getAnnexLinkTarget :: FilePath -> Annex (Maybe S.ByteString)
+getAnnexLinkTarget :: RawFilePath -> Annex (Maybe S.ByteString)
 getAnnexLinkTarget f = getAnnexLinkTarget' f
 	=<< (coreSymlinks <$> Annex.getGitConfig)
 
 {- Pass False to force looking inside file, for when git checks out
  - symlinks as plain files. -}
-getAnnexLinkTarget' :: FilePath -> Bool -> Annex (Maybe S.ByteString)
+getAnnexLinkTarget' :: RawFilePath -> Bool -> Annex (Maybe S.ByteString)
 getAnnexLinkTarget' file coresymlinks = if coresymlinks
 	then check probesymlink $
 		return Nothing
@@ -75,9 +75,9 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 				| otherwise -> return Nothing
 			Nothing -> fallback
 
-	probesymlink = R.readSymbolicLink $ toRawFilePath file
+	probesymlink = R.readSymbolicLink file
 
-	probefilecontent = withFile file ReadMode $ \h -> do
+	probefilecontent = withFile (fromRawFilePath file) ReadMode $ \h -> do
 		s <- S.hGet h unpaddedMaxPointerSz
 		-- If we got the full amount, the file is too large
 		-- to be a symlink target.
@@ -92,7 +92,7 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 					then mempty
 					else s
 
-makeAnnexLink :: LinkTarget -> FilePath -> Annex ()
+makeAnnexLink :: LinkTarget -> RawFilePath -> Annex ()
 makeAnnexLink = makeGitLink
 
 {- Creates a link on disk.
@@ -102,48 +102,48 @@ makeAnnexLink = makeGitLink
  - it's staged as such, so use addAnnexLink when adding a new file or
  - modified link to git.
  -}
-makeGitLink :: LinkTarget -> FilePath -> Annex ()
+makeGitLink :: LinkTarget -> RawFilePath -> Annex ()
 makeGitLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ do
-		void $ tryIO $ removeFile file
-		createSymbolicLink linktarget file
-	, liftIO $ writeFile file linktarget
+		void $ tryIO $ removeFile (fromRawFilePath file)
+		createSymbolicLink linktarget (fromRawFilePath file)
+	, liftIO $ writeFile (fromRawFilePath file) linktarget
 	)
 
 {- Creates a link on disk, and additionally stages it in git. -}
-addAnnexLink :: LinkTarget -> FilePath -> Annex ()
+addAnnexLink :: LinkTarget -> RawFilePath -> Annex ()
 addAnnexLink linktarget file = do
 	makeAnnexLink linktarget file
 	stageSymlink file =<< hashSymlink linktarget
 
 {- Injects a symlink target into git, returning its Sha. -}
 hashSymlink :: LinkTarget -> Annex Sha
-hashSymlink linktarget = hashBlob $ toRawFilePath $ toInternalGitPath linktarget
+hashSymlink = hashBlob . toInternalGitPath . toRawFilePath
 
 {- Stages a symlink to an annexed object, using a Sha of its target. -}
-stageSymlink :: FilePath -> Sha -> Annex ()
+stageSymlink :: RawFilePath -> Sha -> Annex ()
 stageSymlink file sha =
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.stageSymlink file sha)
+		inRepo (Git.UpdateIndex.stageSymlink (fromRawFilePath file) sha)
 
 {- Injects a pointer file content into git, returning its Sha. -}
 hashPointerFile :: Key -> Annex Sha
 hashPointerFile key = hashBlob $ formatPointer key
 
 {- Stages a pointer file, using a Sha of its content -}
-stagePointerFile :: FilePath -> Maybe FileMode -> Sha -> Annex ()
+stagePointerFile :: RawFilePath -> Maybe FileMode -> Sha -> Annex ()
 stagePointerFile file mode sha =
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.stageFile sha treeitemtype file)
+		inRepo (Git.UpdateIndex.stageFile sha treeitemtype $ fromRawFilePath file)
   where
 	treeitemtype
 		| maybe False isExecutable mode = TreeExecutable
 		| otherwise = TreeFile
 
-writePointerFile :: FilePath -> Key -> Maybe FileMode -> IO ()
+writePointerFile :: RawFilePath -> Key -> Maybe FileMode -> IO ()
 writePointerFile file k mode = do
-	S.writeFile file (formatPointer k)
-	maybe noop (setFileMode file) mode
+	S.writeFile (fromRawFilePath file) (formatPointer k)
+	maybe noop (setFileMode $ fromRawFilePath file) mode
 
 newtype Restage = Restage Bool
 
@@ -172,17 +172,17 @@ newtype Restage = Restage Bool
  - the worktree file is changed by something else before git update-index
  - gets to look at it.
  -}
-restagePointerFile :: Restage -> FilePath -> InodeCache -> Annex ()
+restagePointerFile :: Restage -> RawFilePath -> InodeCache -> Annex ()
 restagePointerFile (Restage False) f _ =
-	toplevelWarning True $ unableToRestage (Just f)
+	toplevelWarning True $ unableToRestage $ Just $ fromRawFilePath f
 restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 	-- update-index is documented as picky about "./file" and it
 	-- fails on "../../repo/path/file" when cwd is not in the repo 
 	-- being acted on. Avoid these problems with an absolute path.
-	absf <- liftIO $ absPath f
+	absf <- liftIO $ absPath $ fromRawFilePath f
 	Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
   where
-	isunmodified tsd = genInodeCache f tsd >>= return . \case
+	isunmodified tsd = genInodeCache (fromRawFilePath f) tsd >>= return . \case
 		Nothing -> False
 		Just new -> compareStrong orig new
 
@@ -264,7 +264,7 @@ parseLinkTarget l
 formatPointer :: Key -> S.ByteString
 formatPointer k = prefix <> keyFile' k <> nl
   where
-	prefix = toRawFilePath $ toInternalGitPath (pathSeparator:objectDir)
+	prefix = toInternalGitPath $ toRawFilePath (pathSeparator:objectDir)
 	nl = S8.singleton '\n'
 
 {- Maximum size of a file that could be a pointer to a key.
@@ -283,8 +283,8 @@ unpaddedMaxPointerSz = 8192
 {- Checks if a worktree file is a pointer to a key.
  -
  - Unlocked files whose content is present are not detected by this. -}
-isPointerFile :: FilePath -> IO (Maybe Key)
-isPointerFile f = catchDefaultIO Nothing $ withFile f ReadMode $ \h ->
+isPointerFile :: RawFilePath -> IO (Maybe Key)
+isPointerFile f = catchDefaultIO Nothing $ withFile (fromRawFilePath f) ReadMode $ \h ->
 	parseLinkTargetOrPointer <$> S.hGet h unpaddedMaxPointerSz
 
 {- Checks a symlink target or pointer file first line to see if it

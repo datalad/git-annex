@@ -48,7 +48,7 @@ withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
   where
 	getfiles c [] = return (reverse c)
 	getfiles c ((WorkTreeItem p):ps) = do
-		(fs, cleanup) <- inRepo $ LsFiles.inRepo [p]
+		(fs, cleanup) <- inRepo $ LsFiles.inRepo [toRawFilePath p]
 		case fs of
 			[f] -> do
 				void $ liftIO $ cleanup
@@ -62,7 +62,7 @@ withFilesNotInGit :: Bool -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> C
 withFilesNotInGit skipdotfiles a l
 	| skipdotfiles = do
 		{- dotfiles are not acted on unless explicitly listed -}
-		files <- filter (not . dotfile) <$>
+		files <- filter (not . dotfile . fromRawFilePath) <$>
 			seekunless (null ps && not (null l)) ps
 		dotfiles <- seekunless (null dotps) dotps
 		go (files++dotfiles)
@@ -74,11 +74,11 @@ withFilesNotInGit skipdotfiles a l
 		force <- Annex.getState Annex.force
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie
-			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> f) l') g
+			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> toRawFilePath f) l') g
 	go fs = seekActions $ prepFiltered a $
-		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> f) l) fs
+		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> toRawFilePath f) l) fs
 
-withPathContents :: ((RawFilePath, RawFilePath) -> CommandSeek) -> CmdParams -> CommandSeek
+withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher
 	forM_ params $ \p -> do
@@ -130,7 +130,7 @@ withUnmodifiedUnlockedPointers a l = seekActions $
 isUnmodifiedUnlocked :: RawFilePath -> Annex Bool
 isUnmodifiedUnlocked f = catKeyFile f >>= \case
 	Nothing -> return False
-	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
+	Just k -> sameInodeCache (fromRawFilePath f) =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
@@ -169,7 +169,7 @@ withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
 		return $ \v@(k, ai) ->
 			let i = case ai of
 				ActionItemBranchFilePath (BranchFilePath _ topf) _ ->
-					MatchingKey k (AssociatedFile $ Just $ getTopFilePath topf)
+					MatchingKey k (AssociatedFile $ Just $ toRawFilePath $ getTopFilePath topf)
 				_ -> MatchingKey k (AssociatedFile Nothing)
 			in whenM (matcher i) $
 				keyaction v
@@ -230,7 +230,9 @@ prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
   where
-	process matcher f = whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
+	process matcher f =
+		let f' = fromRawFilePath f
+		in whenM (matcher $ MatchingFile $ FileInfo f' f') $ a f
 
 seekActions :: Annex [CommandSeek] -> Annex ()
 seekActions gen = sequence_ =<< gen
@@ -238,12 +240,12 @@ seekActions gen = sequence_ =<< gen
 seekHelper :: ([RawFilePath] -> Git.Repo -> IO ([RawFilePath], IO Bool)) -> [WorkTreeItem] -> Annex [RawFilePath]
 seekHelper a l = inRepo $ \g ->
 	concat . concat <$> forM (segmentXargsOrdered l')
-		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
+		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) . map toRawFilePath)
   where
 	l' = map (\(WorkTreeItem f) -> f) l
 
 -- An item in the work tree, which may be a file or a directory.
-newtype WorkTreeItem = WorkTreeItem RawFilePath
+newtype WorkTreeItem = WorkTreeItem FilePath
 
 -- When in an adjusted branch that hides some files, it may not exist
 -- in the current work tree, but in the original branch. This allows
@@ -264,14 +266,14 @@ workTreeItems' (AllowHidden allowhidden) ps = do
 		unlessM (exists p <||> hidden currbranch p) $ do
 			toplevelWarning False (p ++ " not found")
 			Annex.incError
-	return (map WorkTreeItem ps)
+	return (map (WorkTreeItem) ps)
   where
 	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
 	hidden currbranch p
 		| allowhidden = do
 			f <- liftIO $ relPathCwdToFile p
-			isJust <$> catObjectMetaDataHidden f currbranch
+			isJust <$> catObjectMetaDataHidden (toRawFilePath f) currbranch
 		| otherwise = return False
 
 notSymlink :: RawFilePath -> IO Bool
-notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
+notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus (fromRawFilePath f)

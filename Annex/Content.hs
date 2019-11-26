@@ -483,7 +483,7 @@ moveAnnex key src = ifM (checkSecureHashes key)
 			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			unless (null fs) $ do
-				ics <- mapM (populatePointerFile (Restage True) key dest) fs
+				ics <- mapM (populatePointerFile (Restage True) key (toRawFilePath dest) . toRawFilePath) fs
 				Database.Keys.storeInodeCaches' key [dest] (catMaybes ics)
 		)
 	alreadyhave = liftIO $ removeFile src
@@ -650,7 +650,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	-- Check associated pointer file for modifications, and reset if
 	-- it's unmodified.
 	resetpointer file = ifM (isUnmodified key file)
-		( depopulatePointerFile key file
+		( depopulatePointerFile key (toRawFilePath file)
 		-- Modified file, so leave it alone.
 		-- If it was a hard link to the annex object,
 		-- that object might have been frozen as part of the

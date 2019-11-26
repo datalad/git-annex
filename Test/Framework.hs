@@ -254,7 +254,7 @@ finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
 
 checklink :: FilePath -> Assertion
 checklink f = ifM (annexeval Config.crippledFileSystem)
-	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
+	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget (toRawFilePath f)))
 		@? f ++ " is not a (crippled) symlink"
 	, do
 		s <- getSymbolicLinkStatus f
@@ -312,7 +312,7 @@ checkdangling f = ifM (annexeval Config.crippledFileSystem)
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
 	thisuuid <- annexeval Annex.UUID.getUUID
-	r <- annexeval $ Annex.WorkTree.lookupFile f
+	r <- annexeval $ Annex.WorkTree.lookupFile (toRawFilePath f)
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
@@ -323,11 +323,11 @@ checklocationlog f expected = do
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
 	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
-		=<< Annex.WorkTree.lookupFile file
+		=<< Annex.WorkTree.lookupFile (toRawFilePath file)
 	assertEqual ("backend for " ++ file) (Just expected) b
 
 checkispointerfile :: FilePath -> Assertion
-checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile f) $
+checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile (toRawFilePath f)) $
 	assertFailure $ f ++ " is not a pointer file"
 
 inlocationlog :: FilePath -> Assertion

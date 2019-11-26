@@ -31,7 +31,7 @@ describeTransfer :: Transfer -> TransferInfo -> String
 describeTransfer t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t
-	, actionItemDesc $ ActionItemAssociatedFile
+	, decodeBS' $ actionItemDesc $ ActionItemAssociatedFile
 		(associatedFile info)
 		(transferKey t)
 	, show $ bytesComplete info
@@ -245,7 +245,7 @@ writeTransferInfo info = unlines
 #endif
 	-- comes last; arbitrary content
 	, let AssociatedFile afile = associatedFile info
-	  in fromMaybe "" afile
+	  in maybe "" fromRawFilePath afile
 	]
 
 readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
@@ -263,7 +263,7 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure Nothing
 	<*> pure Nothing
 	<*> bytes
-	<*> pure (AssociatedFile (if null filename then Nothing else Just filename))
+	<*> pure (AssociatedFile (if null filename then Nothing else Just (toRawFilePath filename)))
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS

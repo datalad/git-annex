@@ -12,7 +12,7 @@ import System.FilePath
 import Network.Socket (withSocketsDo)
 
 import qualified CmdLine.GitAnnex
-import qualified CmdLine.GitAnnexShell
+--import qualified CmdLine.GitAnnexShell
 import qualified CmdLine.GitRemoteTorAnnex
 import qualified Test
 import qualified Benchmark
@@ -33,7 +33,7 @@ main = withSocketsDo $ do
 	run ps =<< getProgName
   where
 	run ps n = case takeFileName n of
-		"git-annex-shell" -> CmdLine.GitAnnexShell.run ps
+		"git-annex-shell" -> error "STUBBED OUT FIXME" -- CmdLine.GitAnnexShell.run ps
 		"git-remote-tor-annex" -> CmdLine.GitRemoteTorAnnex.run ps
 		_  -> CmdLine.GitAnnex.run Test.optParser Test.runner Benchmark.mkGenerator ps
 

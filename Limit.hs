@@ -97,7 +97,7 @@ matchGlobFile glob = go
 	go (MatchingFile fi) = pure $ matchGlob cglob (matchFile fi)
 	go (MatchingInfo p) = matchGlob cglob <$> getInfo (providedFilePath p)
 	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
-	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob af
+	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob (fromRawFilePath af)
 
 addMimeType :: String -> Annex ()
 addMimeType = addMagicLimit "mimetype" getMagicMimeType providedMimeType
@@ -110,13 +110,13 @@ addMagicLimit limitname querymagic selectprovidedinfo glob = do
 	magic <- liftIO initMagicMime
 	addLimit $ matchMagic limitname querymagic' selectprovidedinfo magic glob
   where
-	querymagic' magic f = liftIO (isPointerFile f) >>= \case
+	querymagic' magic f = liftIO (isPointerFile (toRawFilePath f)) >>= \case
 		-- Avoid getting magic of a pointer file, which would
 		-- wrongly be detected as text.
 		Just _ -> return Nothing
 		-- When the file is an annex symlink, get magic of the
 		-- object file.
-		Nothing -> isAnnexLink f >>= \case
+		Nothing -> isAnnexLink (toRawFilePath f) >>= \case
 			Just k -> withObjectLoc k $ querymagic magic
 			Nothing -> querymagic magic f
 
@@ -143,7 +143,7 @@ matchLockStatus :: Bool -> MatchInfo -> Annex Bool
 matchLockStatus _ (MatchingKey _ _) = pure False
 matchLockStatus _ (MatchingInfo _) = pure False
 matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
-	islocked <- isPointerFile (currFile fi) >>= \case
+	islocked <- isPointerFile (toRawFilePath (currFile fi)) >>= \case
 		Just _key -> return False
 		Nothing -> isSymbolicLink
 			<$> getSymbolicLinkStatus (currFile fi)
@@ -192,7 +192,7 @@ limitInDir dir = const go
   where
 	go (MatchingFile fi) = checkf $ matchFile fi
 	go (MatchingKey _ (AssociatedFile Nothing)) = return False
-	go (MatchingKey _ (AssociatedFile (Just af))) = checkf af
+	go (MatchingKey _ (AssociatedFile (Just af))) = checkf (fromRawFilePath af)
 	go (MatchingInfo p) = checkf =<< getInfo (providedFilePath p)
 	checkf = return . elem dir . splitPath . takeDirectory
 
@@ -368,7 +368,7 @@ addAccessedWithin duration = do
 	secs = fromIntegral (durationSeconds duration)
 
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
-lookupFileKey = lookupFile . currFile
+lookupFileKey = lookupFile . toRawFilePath . currFile
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a

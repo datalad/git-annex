@@ -36,5 +36,5 @@ encode :: RawFilePath -> S.ByteString
 encode s = encodeBS $ "\"" ++ encode_c (decodeBS s) ++ "\""
 
 {- For quickcheck. -}
-prop_encode_decode_roundtrip :: RawFilePath -> Bool
-prop_encode_decode_roundtrip s = s == decode (encode s)
+prop_encode_decode_roundtrip :: FilePath -> Bool
+prop_encode_decode_roundtrip s = s == fromRawFilePath (decode (encode (toRawFilePath s)))

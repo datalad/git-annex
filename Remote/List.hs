@@ -24,6 +24,7 @@ import qualified Git
 import qualified Git.Config
 
 import qualified Remote.Git
+{-
 import qualified Remote.GCrypt
 import qualified Remote.P2P
 #ifdef WITH_S3
@@ -44,10 +45,12 @@ import qualified Remote.Ddar
 import qualified Remote.GitLFS
 import qualified Remote.Hook
 import qualified Remote.External
+-}
 
 remoteTypes :: [RemoteType]
 remoteTypes = map adjustExportImportRemoteType
 	[ Remote.Git.remote
+{-
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote
 #ifdef WITH_S3
@@ -68,6 +71,7 @@ remoteTypes = map adjustExportImportRemoteType
 	, Remote.GitLFS.remote
 	, Remote.Hook.remote
 	, Remote.External.remote
+-}
 	]
 
 {- Builds a list of all available Remotes.
@@ -129,7 +133,9 @@ updateRemote remote = do
 gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r = remotetype r `elem`
 	[ Remote.Git.remote
+{-
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote
 	, Remote.GitLFS.remote
+-}
 	]

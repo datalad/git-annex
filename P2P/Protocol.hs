@@ -22,6 +22,7 @@ import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
 import Utility.Metered
+import Utility.FileSystemEncoding
 import Git.FilePath
 import Annex.ChangedRefs (ChangedRefs)
 
@@ -166,17 +167,17 @@ instance Proto.Serializable Service where
 instance Proto.Serializable AssociatedFile where
 	serialize (AssociatedFile Nothing) = ""
 	serialize (AssociatedFile (Just af)) = 
-		toInternalGitPath $ concatMap esc af
+		decodeBS' $ toInternalGitPath $ encodeBS' $ concatMap esc $ fromRawFilePath af
 	  where
 		esc '%' = "%%"
 		esc c 
 			| isSpace c = "%"
 			| otherwise = [c]
 	
-	deserialize s = case fromInternalGitPath $ deesc [] s of
+	deserialize s = case fromRawFilePath $ fromInternalGitPath $ toRawFilePath $ deesc [] s of
 		[] -> Just (AssociatedFile Nothing)
 		f
-			| isRelative f -> Just (AssociatedFile (Just f))
+			| isRelative f -> Just $ AssociatedFile $ Just $ toRawFilePath f
 			| otherwise -> Nothing
 	  where
 	  	deesc b [] = reverse b

@@ -65,8 +65,8 @@ branchRef = underBase "refs/heads"
  - Prefixing the file with ./ makes this work even if in a subdirectory
  - of a repo.
  -}
-fileRef :: FilePath -> Ref
-fileRef f = Ref $ ":./" ++ f
+fileRef :: RawFilePath -> Ref
+fileRef f = Ref $ ":./" ++ fromRawFilePath f
 
 {- Converts a Ref to refer to the content of the Ref on a given date. -}
 dateRef :: Ref -> RefDate -> Ref
@@ -74,7 +74,7 @@ dateRef (Ref r) (RefDate d) = Ref $ r ++ "@" ++ d
 
 {- A Ref that can be used to refer to a file in the repository as it
  - appears in a given Ref. -}
-fileFromRef :: Ref -> FilePath -> Ref
+fileFromRef :: Ref -> RawFilePath -> Ref
 fileFromRef (Ref r) f = let (Ref fr) = fileRef f in Ref (r ++ fr)
 
 {- Checks if a ref exists. -}

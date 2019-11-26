@@ -34,7 +34,7 @@ data FileTransition
 	= ChangeFile Builder
 	| PreserveFile
 
-type TransitionCalculator = TrustMap -> M.Map UUID RemoteConfig -> FilePath -> L.ByteString -> FileTransition
+type TransitionCalculator = TrustMap -> M.Map UUID RemoteConfig -> RawFilePath -> L.ByteString -> FileTransition
 
 getTransitionCalculator :: Transition -> Maybe TransitionCalculator
 getTransitionCalculator ForgetGitHistory = Nothing

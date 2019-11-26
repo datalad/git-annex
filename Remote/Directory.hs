@@ -295,18 +295,18 @@ renameExportM d _k oldloc newloc = liftIO $ Just <$> go
 	dest = exportPath d newloc
 
 exportPath :: FilePath -> ExportLocation -> FilePath
-exportPath d loc = d </> fromExportLocation loc
+exportPath d loc = d </> fromRawFilePath (fromExportLocation loc)
 
 {- Removes the ExportLocation's parent directory and its parents, so long as
  - they're empty, up to but not including the topdir. -}
 removeExportLocation :: FilePath -> ExportLocation -> IO ()
 removeExportLocation topdir loc = 
-	go (Just $ takeDirectory $ fromExportLocation loc) (Right ())
+	go (Just $ takeDirectory $ fromRawFilePath $ fromExportLocation loc) (Right ())
   where
 	go _ (Left _e) = return ()
 	go Nothing _ = return ()
 	go (Just loc') _ = go (upFrom loc')
-		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation loc'))
+		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation (toRawFilePath loc')))
 
 listImportableContentsM :: FilePath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 listImportableContentsM dir = catchMaybeIO $ liftIO $ do
@@ -319,7 +319,7 @@ listImportableContentsM dir = catchMaybeIO $ liftIO $ do
 		mkContentIdentifier f st >>= \case
 			Nothing -> return Nothing
 			Just cid -> do
-				relf <- relPathDirToFile dir f
+				relf <- toRawFilePath <$> relPathDirToFile dir f
 				sz <- getFileSize' f st
 				return $ Just (mkImportLocation relf, (cid, sz))
 

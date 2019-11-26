@@ -15,6 +15,7 @@ import Types.Key
 import Utility.PID
 import Utility.QuickCheck
 import Utility.Url
+import Utility.FileSystemEncoding
 
 import Data.Time.Clock.POSIX
 import Control.Concurrent
@@ -71,8 +72,7 @@ instance Arbitrary TransferInfo where
 		<*> pure Nothing -- cannot generate a ThreadID
 		<*> pure Nothing -- remote not needed
 		<*> arbitrary
-		-- associated file cannot be empty (but can be Nothing)
-		<*> (AssociatedFile <$> arbitrary `suchThat` (/= Just ""))
+		<*> arbitrary
 		<*> arbitrary
 
 class Observable a where
@@ -101,7 +101,7 @@ class Transferrable t where
 	descTransfrerrable :: t -> Maybe String
 
 instance Transferrable AssociatedFile where
-	descTransfrerrable (AssociatedFile af) = af
+	descTransfrerrable (AssociatedFile af) = fromRawFilePath <$> af
 
 instance Transferrable URLString where
 	descTransfrerrable = Just

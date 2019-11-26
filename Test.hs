@@ -204,12 +204,17 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
  - of git-annex. They are always run before the unitTests. -}
 initTests :: TestTree
 initTests = testGroup "Init Tests"
+	[]
+{-
 	[ testCase "init" test_init
 	, testCase "add" test_add
 	]
+-}
 
 unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
+	[]
+{-
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
 	, testCase "export_import" test_export_import
@@ -1776,3 +1781,5 @@ test_export_import_subdir = intmpclonerepo $ do
 		-- Make sure that import did not import the file to the top
 		-- of the repo.
 		checkdoesnotexist annexedfile
+
+-}

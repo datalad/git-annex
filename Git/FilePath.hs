@@ -12,6 +12,7 @@
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Git.FilePath (
 	TopFilePath,
@@ -33,6 +34,7 @@ import Git
 import qualified System.FilePath.Posix
 import GHC.Generics
 import Control.DeepSeq
+import qualified Data.ByteString as S
 
 {- A RawFilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
@@ -45,8 +47,9 @@ data BranchFilePath = BranchFilePath Ref TopFilePath
 	deriving (Show, Eq, Ord)
 
 {- Git uses the branch:file form to refer to a BranchFilePath -}
-descBranchFilePath :: BranchFilePath -> String
-descBranchFilePath (BranchFilePath b f) = fromRef b ++ ':' : (getTopFilePath f)
+descBranchFilePath :: BranchFilePath -> S.ByteString
+descBranchFilePath (BranchFilePath b f) =
+	encodeBS' (fromRef b) <> ":" <> toRawFilePath (getTopFilePath f)
 
 {- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> FilePath

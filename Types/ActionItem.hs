@@ -12,15 +12,17 @@ module Types.ActionItem where
 import Key
 import Types.Transfer
 import Git.FilePath
+import Utility.FileSystemEncoding
 
 import Data.Maybe
+import qualified Data.ByteString as S
 
 data ActionItem 
 	= ActionItemAssociatedFile AssociatedFile Key
 	| ActionItemKey Key
 	| ActionItemBranchFilePath BranchFilePath Key
 	| ActionItemFailedTransfer Transfer TransferInfo
-	| ActionItemWorkTreeFile FilePath
+	| ActionItemWorkTreeFile RawFilePath
 	| ActionItemOther (Maybe String)
 	-- Use to avoid more than one thread concurrently processing the
 	-- same Key.
@@ -39,10 +41,10 @@ instance MkActionItem (AssociatedFile, Key) where
 instance MkActionItem (Key, AssociatedFile) where
 	mkActionItem = uncurry $ flip ActionItemAssociatedFile
 
-instance MkActionItem (Key, FilePath) where
+instance MkActionItem (Key, RawFilePath) where
 	mkActionItem (key, file) = ActionItemAssociatedFile (AssociatedFile (Just file)) key
 
-instance MkActionItem (FilePath, Key) where
+instance MkActionItem (RawFilePath, Key) where
 	mkActionItem (file, key) = mkActionItem (key, file)
 
 instance MkActionItem Key where
@@ -54,16 +56,16 @@ instance MkActionItem (BranchFilePath, Key) where
 instance MkActionItem (Transfer, TransferInfo) where
 	mkActionItem = uncurry ActionItemFailedTransfer
 
-actionItemDesc :: ActionItem -> String
+actionItemDesc :: ActionItem -> S.ByteString
 actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = f
 actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing) k) = 
-	serializeKey k
-actionItemDesc (ActionItemKey k) = serializeKey k
+	serializeKey' k
+actionItemDesc (ActionItemKey k) = serializeKey' k
 actionItemDesc (ActionItemBranchFilePath bfp _) = descBranchFilePath bfp
 actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
 actionItemDesc (ActionItemWorkTreeFile f) = f
-actionItemDesc (ActionItemOther s) = fromMaybe "" s
+actionItemDesc (ActionItemOther s) = encodeBS' (fromMaybe "" s)
 actionItemDesc (OnlyActionOn _ ai) = actionItemDesc ai
 
 actionItemKey :: ActionItem -> Maybe Key
@@ -75,7 +77,7 @@ actionItemKey (ActionItemWorkTreeFile _) = Nothing
 actionItemKey (ActionItemOther _) = Nothing
 actionItemKey (OnlyActionOn _ ai) = actionItemKey ai
 
-actionItemWorkTreeFile :: ActionItem -> Maybe FilePath
+actionItemWorkTreeFile :: ActionItem -> Maybe RawFilePath
 actionItemWorkTreeFile (ActionItemAssociatedFile (AssociatedFile af) _) = af
 actionItemWorkTreeFile (ActionItemWorkTreeFile f) = Just f
 actionItemWorkTreeFile (OnlyActionOn _ ai) = actionItemWorkTreeFile ai

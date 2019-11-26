@@ -33,35 +33,35 @@ import Config
  - When in an adjusted branch that may have hidden the file, looks for a
  - pointer to a key in the original branch.
  -}
-lookupFile :: FilePath -> Annex (Maybe Key)
+lookupFile :: RawFilePath -> Annex (Maybe Key)
 lookupFile = lookupFile' catkeyfile
   where
 	catkeyfile file =
-		ifM (liftIO $ doesFileExist file)
+		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
 			( catKeyFile file
 			, catKeyFileHidden file =<< getCurrentBranch
 			)
 
-lookupFileNotHidden :: FilePath -> Annex (Maybe Key)
+lookupFileNotHidden :: RawFilePath -> Annex (Maybe Key)
 lookupFileNotHidden = lookupFile' catkeyfile
   where
 	catkeyfile file =
-		ifM (liftIO $ doesFileExist file)
+		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
 			( catKeyFile file
 			, return Nothing
 			)
 
-lookupFile' :: (FilePath -> Annex (Maybe Key)) -> FilePath -> Annex (Maybe Key)
+lookupFile' :: (RawFilePath -> Annex (Maybe Key)) -> RawFilePath -> Annex (Maybe Key)
 lookupFile' catkeyfile file = isAnnexLink file >>= \case
 	Just key -> return (Just key)
 	Nothing -> catkeyfile file
 
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key on to it. -}
-whenAnnexed :: (FilePath -> Key -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
+whenAnnexed :: (RawFilePath -> Key -> Annex (Maybe a)) -> RawFilePath -> Annex (Maybe a)
 whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
-ifAnnexed :: FilePath -> (Key -> Annex a) -> Annex a -> Annex a
+ifAnnexed :: RawFilePath -> (Key -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< lookupFile file
 
 {- Find all unlocked files and update the keys database for them. 
@@ -96,7 +96,7 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 			liftIO . Database.Keys.SQL.addAssociatedFileFast (toIKey k) tf
 		whenM (inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
-			liftIO (isPointerFile f) >>= \case
+			liftIO (isPointerFile (toRawFilePath f)) >>= \case
 				Just k' | k' == k -> do
 					destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
 					ic <- replaceFile f $ \tmp ->
@@ -105,7 +105,7 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 								withTSDelta (liftIO . genInodeCache tmp)
 							LinkAnnexNoop -> return Nothing
 							LinkAnnexFailed -> liftIO $ do
-								writePointerFile tmp k destmode
+								writePointerFile (toRawFilePath tmp) k destmode
 								return Nothing
-					maybe noop (restagePointerFile (Restage True) f) ic
+					maybe noop (restagePointerFile (Restage True) (toRawFilePath f)) ic
 				_ -> noop

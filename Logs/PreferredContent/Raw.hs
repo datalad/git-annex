@@ -28,7 +28,7 @@ preferredContentSet = setLog preferredContentLog
 requiredContentSet :: UUID -> PreferredContentExpression -> Annex ()
 requiredContentSet = setLog requiredContentLog
 
-setLog :: FilePath -> UUID -> PreferredContentExpression -> Annex ()
+setLog :: RawFilePath -> UUID -> PreferredContentExpression -> Annex ()
 setLog logfile uuid@(UUID _) val = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change logfile $

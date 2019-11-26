@@ -43,6 +43,7 @@ import Key
 import Utility.Metered
 import Utility.Percentage
 import Utility.Aeson
+import Utility.FileSystemEncoding
 
 -- A global lock to avoid concurrent threads emitting json at the same time.
 {-# NOINLINE emitLock #-}
@@ -63,13 +64,13 @@ type JSONBuilder = Maybe (Object, Bool) -> Maybe (Object, Bool)
 none :: JSONBuilder
 none = id
 
-start :: String -> Maybe FilePath -> Maybe Key -> JSONBuilder
+start :: String -> Maybe RawFilePath -> Maybe Key -> JSONBuilder
 start command file key _ = Just (o, False)
   where
 	Object o = toJSON' $ JSONActionItem
 		{ itemCommand = Just command
 		, itemKey = key
-		, itemFile = file
+		, itemFile = fromRawFilePath <$> file
 		, itemAdded = Nothing
 		}
 

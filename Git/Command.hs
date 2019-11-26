@@ -102,7 +102,10 @@ pipeNullSplit params repo = do
 	return (filter (not . L.null) $ L.split 0 s, cleanup)
 
 {- Reads lazily, but converts each part to a strict ByteString for
- - convenience. -}
+ - convenience.
+ -
+ - FIXME the L.toStrict makes a copy, more expensive than ideal.
+ -}
 pipeNullSplit' :: [CommandParam] -> Repo -> IO ([S.ByteString], IO Bool)
 pipeNullSplit' params repo = do
 	(s, cleanup) <- pipeNullSplit params repo
@@ -115,6 +118,9 @@ pipeNullSplitStrict params repo = do
 
 pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [L.ByteString]
 pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo
+
+pipeNullSplitZombie' :: [CommandParam] -> Repo -> IO [S.ByteString]
+pipeNullSplitZombie' params repo = leaveZombie <$> pipeNullSplit' params repo
 
 {- Doesn't run the cleanup action. A zombie results. -}
 leaveZombie :: (a, IO Bool) -> a

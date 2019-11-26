@@ -12,6 +12,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Logs.Transitions where
 
 import Annex.Common
@@ -26,7 +28,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 
-transitionsLog :: FilePath
+transitionsLog :: RawFilePath
 transitionsLog = "transitions.log"
 
 data Transition
@@ -94,6 +96,6 @@ knownTransitionList = nub . rights . map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}
-recordTransitions :: (FilePath -> (L.ByteString -> Builder) -> Annex ()) -> Transitions -> Annex ()
+recordTransitions :: (RawFilePath -> (L.ByteString -> Builder) -> Annex ()) -> Transitions -> Annex ()
 recordTransitions changer t = changer transitionsLog $
 	buildTransitions . S.union t . parseTransitionsStrictly "local"

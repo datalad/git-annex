@@ -549,7 +549,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 		u <- getUUID
 		let AssociatedFile afile = file
 		let fields = (Fields.remoteUUID, fromUUID u)
-			: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
+			: maybe [] (\f -> [(Fields.associatedFile, fromRawFilePath f)]) afile
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			repo "transferinfo" 
 			[Param $ serializeKey key] fields

@@ -36,6 +36,7 @@ import Data.ByteString.Builder
 import Data.ByteString.Builder.Extra
 import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
+import Utility.FileSystemEncoding
 import Data.List
 import System.Posix.Types
 import Foreign.C.Types
@@ -200,7 +201,7 @@ splitKeyNameExtension' :: S.ByteString -> (S.ByteString, S.ByteString)
 splitKeyNameExtension' keyname = S8.span (/= '.') keyname
 
 {- A filename may be associated with a Key. -}
-newtype AssociatedFile = AssociatedFile (Maybe FilePath)
+newtype AssociatedFile = AssociatedFile (Maybe RawFilePath)
 	deriving (Show, Eq, Ord)
 
 {- There are several different varieties of keys. -}

@@ -71,7 +71,7 @@ loggedLocationsHistorical = getLoggedLocations . historicalLogInfo
 loggedLocationsRef :: Ref -> Annex [UUID]
 loggedLocationsRef ref = map (toUUID . fromLogInfo) . getLog <$> catObject ref
 
-getLoggedLocations :: (FilePath -> Annex [LogInfo]) -> Key -> Annex [UUID]
+getLoggedLocations :: (RawFilePath -> Annex [LogInfo]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do
 	config <- Annex.getGitConfig
 	map (toUUID . fromLogInfo) <$> getter (locationLogFile config key)

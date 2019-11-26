@@ -192,7 +192,8 @@ gitAnnexLink file key r config = do
 	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
 	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
-	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
+	fromRawFilePath . toInternalGitPath . toRawFilePath
+		<$> relPathDirToFile (parentDir absfile) loc
   where
 	getgitdir currdir
 		{- This special case is for git submodules on filesystems not

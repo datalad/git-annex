@@ -188,7 +188,7 @@ trivialMigrate' oldkey newbackend afile maxextlen
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ alterKey oldkey $ \d -> d
 			{ keyName = keyHash oldkey 
-				<> encodeBS (selectExtension maxextlen file)
+				<> encodeBS' (selectExtension maxextlen (fromRawFilePath file))
 			, keyVariety = newvariety
 			}
 	{- Upgrade to fix bad previous migration that created a
