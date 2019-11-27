@@ -7,6 +7,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Upgrade.V5.Direct (
 	switchHEADBack,
 	setIndirect,
@@ -49,7 +51,7 @@ setIndirect = do
 		Nothing -> noop
 		Just wt -> do
 			unsetConfig src
-			setConfig dest wt
+			setConfig dest (decodeBS' wt)
 			reloadConfig
 
 {- Converts a directBranch back to the original branch.

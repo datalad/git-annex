@@ -88,8 +88,8 @@ inmainrepo a = do
 
 with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
 with_ssh_origin cloner a = cloner $ do
-	origindir <- absPath
-		=<< annexeval (Config.getConfig (Config.ConfigKey config) "/dev/null")
+	origindir <- absPath . decodeBS'
+		=<< annexeval (Config.getConfig (Config.ConfigKey (encodeBS' config)) (toRawFilePath "/dev/null"))
 	let originurl = "localhost:" ++ origindir
 	boolSystem "git" [Param "config", Param config, Param originurl] @? "git config failed"
 	a

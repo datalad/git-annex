@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Types.Difference (
 	Difference(..),
 	Differences(..),
@@ -23,6 +25,7 @@ import qualified Git.Config
 
 import Data.Maybe
 import Data.Monoid
+import qualified Data.ByteString as B
 import qualified Data.Set as S
 import qualified Data.Semigroup as Sem
 import Prelude
@@ -92,11 +95,11 @@ getDifferences :: Git.Repo -> Differences
 getDifferences r = mkDifferences $ S.fromList $
 	mapMaybe getmaybe [minBound .. maxBound]
   where
-	getmaybe d = case Git.Config.isTrue =<< Git.Config.getMaybe (differenceConfigKey d) r of
+	getmaybe d = case Git.Config.isTrue' =<< Git.Config.getMaybe (differenceConfigKey d) r of
 		Just True -> Just d
 		_ -> Nothing
 
-differenceConfigKey :: Difference -> String
+differenceConfigKey :: Difference -> B.ByteString
 differenceConfigKey ObjectHashLower = tunable "objecthashlower"
 differenceConfigKey OneLevelObjectHash = tunable "objecthash1"
 differenceConfigKey OneLevelBranchHash = tunable "branchhash1"
@@ -104,8 +107,8 @@ differenceConfigKey OneLevelBranchHash = tunable "branchhash1"
 differenceConfigVal :: Difference -> String
 differenceConfigVal _ = Git.Config.boolConfig True
 
-tunable :: String -> String
-tunable k = "annex.tune." ++ k
+tunable :: B.ByteString -> B.ByteString
+tunable k = "annex.tune." <> k
 
 hasDifference :: Difference -> Differences -> Bool
 hasDifference _ UnknownDifferences = False

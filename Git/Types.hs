@@ -35,9 +35,9 @@ data RepoLocation
 
 data Repo = Repo
 	{ location :: RepoLocation
-	, config :: M.Map String String
+	, config :: M.Map S.ByteString S.ByteString
 	-- a given git config key can actually have multiple values
-	, fullconfig :: M.Map String [String]
+	, fullconfig :: M.Map S.ByteString [S.ByteString]
 	-- remoteName holds the name used for this repo in some other
 	-- repo's list of remotes, when this repo is such a remote
 	, remoteName :: Maybe RemoteName

@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.Git (
 	remote,
@@ -68,6 +69,7 @@ import Utility.FileMode
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import Network.URI
 
 remote :: RemoteType
@@ -86,14 +88,14 @@ list autoinit = do
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	mapM (configRead autoinit) rs
   where
-	annexurl n = "remote." ++ n ++ ".annexurl"
+	annexurl n = "remote." <> encodeBS' n <> ".annexurl"
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
 		case M.lookup (annexurl n) c of
 			Nothing -> return r
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation url g
+					Git.Construct.fromRemoteLocation (decodeBS' url) g
 
 {- Git remotes are normally set up using standard git command, not
  - git-annex initremote and enableremote.
@@ -254,7 +256,7 @@ tryGitConfigRead autoinit r
 		v <- liftIO $ Git.Config.fromPipe r cmd params
 		case v of
 			Right (r', val) -> do
-				unless (isUUIDConfigured r' || null val) $ do
+				unless (isUUIDConfigured r' || S.null val) $ do
 					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ "Instead, got: " ++ show val
 					warning $ "This is unexpected; please check the network transport!"

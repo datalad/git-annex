@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Remote.GCrypt (
 	remote,
 	chainGen,
@@ -16,6 +18,7 @@ module Remote.GCrypt (
 ) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Control.Exception
 import Data.Default
@@ -159,11 +162,12 @@ rsyncTransportToObjects r gc = do
 
 rsyncTransport :: Git.Repo -> RemoteGitConfig -> Annex (Annex [CommandParam], String, AccessMethod)
 rsyncTransport r gc
-	| "ssh://" `isPrefixOf` loc = sshtransport $ break (== '/') $ drop (length "ssh://") loc
+	| sshprefix `isPrefixOf` loc = sshtransport $ break (== '/') $ drop (length sshprefix) loc
 	| "//:" `isInfixOf` loc = othertransport
 	| ":" `isInfixOf` loc = sshtransport $ separate (== ':') loc
 	| otherwise = othertransport
   where
+	sshprefix = "ssh://" :: String
 	loc = Git.repoLocation r
 	sshtransport (host, path) = do
 		let rsyncpath = if "/~/" `isPrefixOf` path
@@ -252,7 +256,7 @@ setupRepo gcryptid r
 	| otherwise = localsetup r
   where
 	localsetup r' = do
-		let setconfig k v = liftIO $ Git.Command.run [Param "config", Param k, Param v] r'
+		let setconfig k v = liftIO $ Git.Command.run [Param "config", Param (decodeBS' k), Param v] r'
 		setconfig coreGCryptId gcryptid
 		setconfig denyNonFastForwards (Git.Config.boolConfig False)
 		return AccessDirect
@@ -272,8 +276,8 @@ setupRepo gcryptid r
 			, Param tmpconfig
 			]
 		liftIO $ do
-			void $ Git.Config.changeFile tmpconfig coreGCryptId gcryptid
-			void $ Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig False)
+			void $ Git.Config.changeFile tmpconfig coreGCryptId (encodeBS' gcryptid)
+			void $ Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig' False)
 		ok <- liftIO $ rsync $ opts ++
 			[ Param "--recursive"
 			, Param $ tmp ++ "/"
@@ -435,7 +439,7 @@ getGCryptUUID fast r = do
 	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
 		<$> getGCryptId fast r dummycfg
 
-coreGCryptId :: String
+coreGCryptId :: S.ByteString
 coreGCryptId = "core.gcrypt-id"
 
 {- gcrypt repos set up by git-annex as special remotes have a
@@ -457,9 +461,9 @@ getGCryptId fast r gc
 	| otherwise = return (Nothing, r)
   where
 	extract Nothing = (Nothing, r)
-	extract (Just r') = (Git.Config.getMaybe coreGCryptId r', r')
+	extract (Just r') = (decodeBS' <$> Git.Config.getMaybe coreGCryptId r', r')
 
-getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, String))
+getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString))
 getConfigViaRsync r gc = do
 	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
 	opts <- rsynctransport

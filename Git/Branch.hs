@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Git.Branch where
 
@@ -135,8 +136,8 @@ applyCommitMode commitmode ps
 applyCommitModeForCommitTree :: CommitMode -> [CommandParam] -> Repo -> [CommandParam]
 applyCommitModeForCommitTree commitmode ps r
 	| commitmode == ManualCommit =
-		case (Git.Config.getMaybe "commit.gpgsign" r) of
-			Just s | Git.Config.isTrue s == Just True ->
+		case Git.Config.getMaybe "commit.gpgsign" r of
+			Just s | Git.Config.isTrue' s == Just True ->
 				Param "-S":ps
 			_ -> ps'
 	| otherwise = ps'

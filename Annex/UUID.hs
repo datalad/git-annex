@@ -11,6 +11,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.UUID (
 	getUUID,
 	getRepoUUID,
@@ -112,7 +114,7 @@ storeUUIDIn configfield = setConfig configfield . fromUUID
 {- Only sets the configkey in the Repo; does not change .git/config -}
 setUUID :: Git.Repo -> UUID -> IO Git.Repo
 setUUID r u = do
-	let s = show configkey ++ "=" ++ fromUUID u
+	let s = encodeBS' $ show configkey ++ "=" ++ fromUUID u
 	Git.Config.store s r
 
 -- Dummy uuid for the whole web. Do not alter.

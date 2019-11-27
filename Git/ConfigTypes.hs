@@ -5,9 +5,12 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.ConfigTypes where
 
 import Data.Char
+import qualified Data.ByteString.Char8 as S8
 
 import Common
 import Git
@@ -18,7 +21,7 @@ data SharedRepository = UnShared | GroupShared | AllShared | UmaskShared Int
 
 getSharedRepository :: Repo -> SharedRepository
 getSharedRepository r =
-	case map toLower $ Git.Config.get "core.sharedrepository" "" r of
+	case S8.map toLower $ Git.Config.get "core.sharedrepository" "" r of
 		"1" -> GroupShared
 		"2" -> AllShared
 		"group" -> GroupShared
@@ -26,14 +29,14 @@ getSharedRepository r =
 		"all" -> AllShared
 		"world" -> AllShared
 		"everybody" -> AllShared
-		v -> maybe UnShared UmaskShared (readish v)
+		v -> maybe UnShared UmaskShared (readish (decodeBS' v))
 
 data DenyCurrentBranch = UpdateInstead | RefusePush | WarnPush | IgnorePush
 	deriving (Eq)
 
 getDenyCurrentBranch :: Repo -> DenyCurrentBranch
 getDenyCurrentBranch r =
-	case map toLower $ Git.Config.get "receive.denycurrentbranch" "" r of
+	case S8.map toLower $ Git.Config.get "receive.denycurrentbranch" "" r of
 		"updateinstead" -> UpdateInstead
 		"warn" -> WarnPush
 		"ignore" -> IgnorePush

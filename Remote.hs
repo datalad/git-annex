@@ -147,10 +147,12 @@ byName' n = go . filter matching <$> remoteList
 
 {- Finds the remote or remote group matching the name. -}
 byNameOrGroup :: RemoteName -> Annex [Remote]
-byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." ++ n))
+byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." <> encodeBS' n))
   where
-	go (Just l) = catMaybes <$> mapM (byName . Just) (splitc ' ' l)
-	go Nothing = maybeToList <$> byName (Just n)
+	go (Just l) = catMaybes
+		<$> mapM (byName . Just) (splitc ' ' (decodeBS' l))
+	go Nothing = maybeToList
+		<$> byName (Just n)
 
 {- Only matches remote name, not UUID -}
 byNameOnly :: RemoteName -> Annex (Maybe Remote)

@@ -28,6 +28,7 @@ import System.Posix.User
 #endif
 import qualified Data.Map as M
 import Network.URI
+import qualified Data.ByteString as S
 
 import Common
 import Git.Types
@@ -128,7 +129,7 @@ fromRemotes repo = mapM construct remotepairs
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
 	remotepairs = filterkeys isRemoteKey
-	construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
+	construct (k,v) = remoteNamedFromKey k (fromRemoteLocation (decodeBS' v) repo)
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
 remoteNamed :: String -> IO Repo -> IO Repo
@@ -138,7 +139,7 @@ remoteNamed n constructor = do
 
 {- Sets the name of a remote based on the git config key, such as
  - "remote.foo.url". -}
-remoteNamedFromKey :: String -> IO Repo -> IO Repo
+remoteNamedFromKey :: S.ByteString -> IO Repo -> IO Repo
 remoteNamedFromKey = remoteNamed . remoteKeyToRemoteName
 
 {- Constructs a new Repo for one of a Repo's remotes using a given

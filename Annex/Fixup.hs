@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Fixup where
 
 import Git.Types
@@ -17,6 +19,7 @@ import Utility.SafeCommand
 import Utility.Directory
 import Utility.Exception
 import Utility.Monad
+import Utility.FileSystemEncoding
 import Utility.PartialPrelude
 
 import System.IO
@@ -53,7 +56,7 @@ fixupDirect r@(Repo { location = l@(Local { gitdir = d, worktree = Nothing }) })
 		{ location = l { worktree = Just (parentDir d) }
 		, gitGlobalOpts = gitGlobalOpts r ++
 			[ Param "-c"
-			, Param $ coreBare ++ "=" ++ boolConfig False
+			, Param $ decodeBS' coreBare ++ "=" ++ boolConfig False
 			]
 		}
 fixupDirect r = r

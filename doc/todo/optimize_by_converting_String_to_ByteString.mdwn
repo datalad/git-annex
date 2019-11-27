@@ -29,5 +29,3 @@ the `bs` branch has quite a lot of things still needing work, including:
   avoiding a conversion. Note that these are only available on unix, not
   windows, so a compatability shim will be needed.
   (I can't seem to find any library that provides one.)
-
-* Use ByteString for parsing git config to speed up startup.
