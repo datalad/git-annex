@@ -101,10 +101,8 @@ pipeNullSplit params repo = do
 	(s, cleanup) <- pipeReadLazy params repo
 	return (filter (not . L.null) $ L.split 0 s, cleanup)
 
-{- Reads lazily, but converts each part to a strict ByteString for
+{- Reads lazily, but copies each part to a strict ByteString for
  - convenience.
- -
- - FIXME the L.toStrict makes a copy, more expensive than ideal.
  -}
 pipeNullSplit' :: [CommandParam] -> Repo -> IO ([S.ByteString], IO Bool)
 pipeNullSplit' params repo = do

@@ -14,8 +14,9 @@ the `bs` branch has quite a lot of things still needing work, including:
   decodeBS conversions. Or at least most of them. There are likely
   quite a few places where a value is converted back and forth several times.
 
-  It would be good to instrument them with Debug.Trace and find out which
-  are the hot ones that get called, and focus on those.
+  As a first step, profile and look for the hot spots. For example, keyFile
+  uses fromRawFilePath and that adds around 3% overhead in `git-annex find`. 
+  Converting it to a RawFilePath needs a version of `</>` for RawFilePaths.
 
 * System.FilePath is not available for RawFilePath, and many of the
   conversions are to get a FilePath in order to use that library.
@@ -28,7 +29,5 @@ the `bs` branch has quite a lot of things still needing work, including:
   avoiding a conversion. Note that these are only available on unix, not
   windows, so a compatability shim will be needed.
   (I can't seem to find any library that provides one.)
-
-* Eliminate some Data.ByteString.Lazy.toStrict, which is a slow copy.
 
 * Use ByteString for parsing git config to speed up startup.
