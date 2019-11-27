@@ -1,0 +1,34 @@
+git-annex uses FilePath (String) extensively. That's a slow data type.
+Converting to ByteString, and RawFilePath, should speed it up
+significantly, according to [[/profiling]].
+
+I've made a test branch, `bs`, to see what kind of performance improvement
+to expect. Most commands don't built yet in that branch, but `git annex
+find` does. Speedups range from 28-66%. The files fly by much more
+snappily.
+
+As well as adding back all the code that was disabled to get it to build,
+the `bs` branch has quite a lot of things still needing work, including:
+
+* Eliminate all the fromRawFilePath, toRawFilePath, encodeBS,
+  decodeBS conversions. Or at least most of them. There are likely
+  quite a few places where a value is converted back and forth several times.
+
+  It would be good to instrument them with Debug.Trace and find out which
+  are the hot ones that get called, and focus on those.
+
+* System.FilePath is not available for RawFilePath, and many of the
+  conversions are to get a FilePath in order to use that library.
+
+  It should be entirely straightforward to make a version of System.FilePath
+  that can operate on RawFilePath, except possibly there could be some
+  complications due to Windows.
+
+* Use versions of IO actions like getFileStatus that take a RawFilePath,
+  avoiding a conversion. Note that these are only available on unix, not
+  windows, so a compatability shim will be needed.
+  (I can't seem to find any library that provides one.)
+
+* Eliminate some Data.ByteString.Lazy.toStrict, which is a slow copy.
+
+* Use ByteString for parsing git config to speed up startup.

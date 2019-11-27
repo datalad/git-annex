@@ -1,0 +1,14 @@
+In neurophysiology we encounter HUGE files (HDF5 .nwb files).
+Sizes reach hundreds of GBs per file (thus exceeding any possible file system memory cache size).  While operating in the cloud or on a fast connection it is possible to fetch the files with speeds up to 100 MBps. 
+Upon successful download such files are then loaded back by git-annex for the checksum validation, and often at slower speeds (eg <60MBps on EC2 SSD drive).
+So, ironically, it does not just double, but rather nearly triples overall time to obtain a file.
+
+I think ideally, 
+
+- (at minimum) for built-in special remotes (such as web), it would be great if git-annex was check-summing incrementally as data comes in;
+- made it possible to for external special remotes to provide desired checksum on obtained content. First git-annex should of cause inform them on type (backend) of the checksum it is interested in, and may be have some information reported by external remotes on what checksums they support.
+
+If needed example, here is http://datasets.datalad.org/allen-brain-observatory/visual-coding-2p/.git with >50GB files such as ophys_movies/ophys_experiment_576261945.h5 .
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
