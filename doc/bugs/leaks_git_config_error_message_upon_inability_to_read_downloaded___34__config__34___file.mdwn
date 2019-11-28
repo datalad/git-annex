@@ -1,0 +1,146 @@
+It is not a ground shaking issue, but probably would be best to handle it more gracefully.
+
+Initially mentioned while doing install using datalad. Account/permission is required to access this particular repo, ask Canadians for access if you don't have it yet Joey.  credentials I guess got asked for and cached by git upon initial invocation, so upon subsequent calls didn't ask for any:
+
+[[!format sh """
+$> datalad install https://git.bic.mni.mcgill.ca/bic/Coffey-mri-bids
+[INFO   ] Cloning https://git.bic.mni.mcgill.ca/bic/Coffey-mri-bids [1 other candidates] into '/tmp/Coffey-mri-bids'
+[INFO   ] fatal: bad config line 1 in file /home/yoh/.tmp/git-annex96493-5.tmp
+[INFO   ]   Remote origin not usable by git-annex; setting annex-ignore
+install(ok): /tmp/Coffey-mri-bids (dataset)
+"""]]
+
+which boiled down to that message being spited out during `git annex init` which samples the remote, but fails to download the config and gets instead a redirected html page:
+
+[[!format sh """
+$> git clone https://git.bic.mni.mcgill.ca/bic/Coffey-mri-bids
+Cloning into 'Coffey-mri-bids'...
+warning: redirecting to https://git.bic.mni.mcgill.ca/bic/Coffey-mri-bids.git/
+remote: Enumerating objects: 398, done.
+remote: Counting objects: 100% (398/398), done.
+remote: Compressing objects: 100% (282/282), done.
+remote: Total 398 (delta 53), reused 393 (delta 48)
+Receiving objects: 100% (398/398), 34.97 KiB | 795.00 KiB/s, done.
+Resolving deltas: 100% (53/53), done.
+
+
+$> git -C Coffey-mri-bids annex init --debug
+...
+[2019-11-27 19:27:01.341315979] Request {
+  host                 = "git.bic.mni.mcgill.ca"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding","identity"),("User-Agent","git-annex/7.20190819+git2-g908476a9b-1~ndall+1")]
+  path                 = "/bic/Coffey-mri-bids/config"
+  queryString          = ""
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+[2019-11-27 19:27:01.90016181] read: git ["config","--null","--list","--file","/home/yoh/.tmp/git-annex228094-5.tmp"]
+fatal: bad config line 1 in file /home/yoh/.tmp/git-annex228094-5.tmp
+[2019-11-27 19:27:01.913302324] process done ExitFailure 128
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+$> wget -S https://git.bic.mni.mcgill.ca/bic/Coffey-mri-bids/config
+--2019-11-27 19:29:25--  https://git.bic.mni.mcgill.ca/bic/Coffey-mri-bids/config
+Resolving git.bic.mni.mcgill.ca (git.bic.mni.mcgill.ca)... 132.216.133.92
+Connecting to git.bic.mni.mcgill.ca (git.bic.mni.mcgill.ca)|132.216.133.92|:443... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 302 Found
+  Server: nginx
+  Date: Thu, 28 Nov 2019 00:29:26 GMT
+  Content-Type: text/html; charset=utf-8
+  Content-Length: 109
+  Connection: keep-alive
+  Cache-Control: no-cache
+  Location: https://git.bic.mni.mcgill.ca/users/sign_in
+  Set-Cookie: _gitlab_session=8a4f8d5569636004aaebfb73588a2d53; path=/; secure; HttpOnly
+  X-Request-Id: xTcSyu4H36
+  X-Runtime: 0.071681
+  Strict-Transport-Security: max-age=31536000
+  Referrer-Policy: strict-origin-when-cross-origin
+Location: https://git.bic.mni.mcgill.ca/users/sign_in [following]
+--2019-11-27 19:29:26--  https://git.bic.mni.mcgill.ca/users/sign_in
+Reusing existing connection to git.bic.mni.mcgill.ca:443.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 200 OK
+  Server: nginx
+  Date: Thu, 28 Nov 2019 00:29:26 GMT
+  Content-Type: text/html; charset=utf-8
+  Transfer-Encoding: chunked
+  Connection: keep-alive
+  Vary: Accept-Encoding
+  Cache-Control: max-age=0, private, must-revalidate
+  Etag: W/"305857ff0ba591a1e4ee7fec83b5687c"
+  Referrer-Policy: strict-origin-when-cross-origin
+  Set-Cookie: _gitlab_session=8a4f8d5569636004aaebfb73588a2d53; path=/; expires=Thu, 28 Nov 2019 02:29:26 -0000; secure; HttpOnly
+  X-Content-Type-Options: nosniff
+  X-Download-Options: noopen
+  X-Frame-Options: DENY
+  X-Permitted-Cross-Domain-Policies: none
+  X-Request-Id: MHFi7Yjxe82
+  X-Runtime: 0.063359
+  X-Ua-Compatible: IE=edge
+  X-Xss-Protection: 1; mode=block
+  Strict-Transport-Security: max-age=31536000
+  Referrer-Policy: strict-origin-when-cross-origin
+Length: unspecified [text/html]
+Saving to: ‘config’
+
+config                                                       [ <=>                                                                                                                              ]  13.19K  --.-KB/s    in 0s      
+
+2019-11-27 19:29:26 (89.1 MB/s) - ‘config’ saved [13505]
+
+$> cat config 
+<!DOCTYPE html>
+<html class="devise-layout-html">
+<head prefix="og: http://ogp.me/ns#">
+<meta charset="utf-8">
+<meta content="IE=edge" http-equiv="X-UA-Compatible">
+<meta content="object" property="og:type">
+<meta content="GitLab" property="og:site_name">
+<meta content="Sign in" property="og:title">
+...
+"""]]
+
+I guess the problem is multi-faceted:
+
+1. in case of authenticated http remote, `git` caches credentials, but then `git annex` tries to download file directly (instead of somehow via git), it could not "sense" that remote to be a valid annex and/or get files from it.
+
+You can try with this simple one -- user "demo", password "demo":
+
+[[!format sh """
+$> git clone http://www.onerussian.com/tmp/secret-repo/.git
+Cloning into 'secret-repo'...
+Username for 'http://www.onerussian.com': demo
+Password for 'http://demo@www.onerussian.com': 
+
+$> git -C secret-repo annex init
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+ok
+(recording state in git...)
+
+"""]]
+
+although remote is a proper annex, indeed `git annex` cannot use it since does not authenticate as git does.
+So even though the error message is not incorrect, I would say the situation is suboptimal
+ 
+2. if remote server instead of just returning 404 or 403 error code (as eg github seems to do in similar cases of non-authenticated access) instead redirects to some login page, annex feeds that page as a config to git, ignores the error message and just marks that remote as ignored for annex, while leaking that obscure "fatal" error message from git. 
+
+IMHO, ideally 1. should be addressed properly (authentication), and for 2. annex should spit out some more sensible message ("git failed to parse a config file fetched from the remote X.  Please inspect it at this /path/config"), so keep that file around for debugging.  As it is now I had to dig quite deep to figure out WTF is going on.
+
+git annex 7.20190819+git2-g908476a9b-1~ndall+1 and the same with bleeding edge 7.20191114+git43-ge29663773-1~ndall+1 (probably that commit is the one with my patch for stricter git versioning, so use the count of 42 ;))
+
+[[!meta author=yoh]]
+[[!tag projects/canada]]
+
+
