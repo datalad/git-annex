@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="related: shouldn't git annex try external remotes to download config?"
+ date="2019-11-28T01:22:53Z"
+ content="""
+I haven't tested, but I can see the situation where a specific repository URL could be handled by external special remote (such as datalad, downloaders of which do handle obscure setups such as this one without 403/404 but rather forwarding to login page) which would provide authenticated access to the URL.  Would annex even try that config URL via external special remotes?
+"""]]
