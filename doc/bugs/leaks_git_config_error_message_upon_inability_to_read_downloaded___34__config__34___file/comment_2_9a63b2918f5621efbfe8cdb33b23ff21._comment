@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2019-11-29T18:09:45Z"
+ content="""
+one of the use-cases (will be) https://gin.g-node.org/ -- an archive of (primarily) electrophys data.  The platform is based on gogs, but uses git-annex underneath.  It \"will be\" because currently access to git-annex is provided only via ssh, but as of today it is already possible to `git clone` (tried on public, didn't try private) datasets via https, and developers are looking into exposing git-annex also via http.  To access private datasets authentication will need to be handled
+"""]]
