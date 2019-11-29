@@ -141,6 +141,6 @@ IMHO, ideally 1. should be addressed properly (authentication), and for 2. annex
 git annex 7.20190819+git2-g908476a9b-1~ndall+1 and the same with bleeding edge 7.20191114+git43-ge29663773-1~ndall+1 (probably that commit is the one with my patch for stricter git versioning, so use the count of 42 ;))
 
 [[!meta author=yoh]]
-[[!tag projects/canada]]
+[[!tag projects/dandi]]
 
 
