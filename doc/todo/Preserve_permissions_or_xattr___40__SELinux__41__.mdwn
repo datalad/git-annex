@@ -1,0 +1,21 @@
+Using cp -a, I'm able to preserve the permissions and SELinux context to one repo like so:
+
+    drwx------.  2 user user unconfined_u:object_r:ssh_home_t:s0       4096 Nov 30 14:38 .ssh/
+
+But when syncing:
+
+    git annex add --include-dotfiles . || fail
+    git annex sync --content --message="$(date +%F)" || fail
+
+    for remote in $(git remote)
+    do
+        URL=$(git remote get-url "$remote")
+        cd "$URL" || fail
+        git annex sync --content --message="$(date +%F)" || fail
+    done
+
+Neither the permissions nor the SELinux context are preserved:
+
+    drwxrwxr-x. 2 user user unconfined_u:object_r:user_home_t:s0  4096 Nov 30 14:38 .ssh/
+
+Note that I'm unlocking all the files, so I'm not using any symlinks. It would be nice if these could be propagated with sync. 
