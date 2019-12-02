@@ -24,12 +24,13 @@ import Git.FilePath
 #endif
 
 {- Is a git config key one that specifies the location of a remote? -}
-isRemoteKey :: S.ByteString -> Bool
-isRemoteKey k = "remote." `S.isPrefixOf` k && ".url" `S.isSuffixOf` k
+isRemoteKey :: ConfigKey -> Bool
+isRemoteKey (ConfigKey k) = "remote." `S.isPrefixOf` k && ".url" `S.isSuffixOf` k
 
 {- Get a remote's name from the config key that specifies its location. -}
-remoteKeyToRemoteName :: S.ByteString -> RemoteName
-remoteKeyToRemoteName = decodeBS' . S.intercalate "." . dropFromEnd 1 . drop 1 . S8.split '.'
+remoteKeyToRemoteName :: ConfigKey -> RemoteName
+remoteKeyToRemoteName (ConfigKey k) = decodeBS' $
+	S.intercalate "." $ dropFromEnd 1 $ drop 1 $ S8.split '.' k
 
 {- Construct a legal git remote name out of an arbitrary input string.
  -
@@ -83,9 +84,9 @@ parseRemoteLocation s repo = ret $ calcloc s
 	  where
 		replacement = decodeBS' $ S.drop (S.length prefix) $
 			S.take (S.length bestkey - S.length suffix) bestkey
-		(bestkey, bestvalue) = maximumBy longestvalue insteadofs
+		(ConfigKey bestkey, bestvalue) = maximumBy longestvalue insteadofs
 		longestvalue (_, a) (_, b) = compare b a
-		insteadofs = filterconfig $ \(k, v) -> 
+		insteadofs = filterconfig $ \(ConfigKey k, v) -> 
 			prefix `S.isPrefixOf` k &&
 			suffix `S.isSuffixOf` k &&
 			v `S.isPrefixOf` encodeBS l

@@ -211,7 +211,7 @@ extractGitConfig r = GitConfig
 	configurable d Nothing = DefaultConfig d
 	configurable _ (Just v) = HasConfig v
 
-	annex k = "annex." <> k
+	annex k = ConfigKey $ "annex." <> k
 			
 	onemegabyte = 1000000
 
@@ -350,8 +350,9 @@ extractRemoteGitConfig r remotename = do
 		(Git.Config.getMaybe (remotekey k) r)
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
 
-	key k = "annex." <> k
-	remotekey k = "remote." <> encodeBS' remotename <> ".annex-" <> k
+	key k = ConfigKey $ "annex." <> k
+	remotekey k = ConfigKey $
+		"remote." <> encodeBS' remotename <> ".annex-" <> k
 
 notempty :: Maybe String -> Maybe String	
 notempty Nothing = Nothing

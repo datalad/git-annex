@@ -53,6 +53,7 @@ import Annex.Content
 import Messages.Progress
 import qualified Git
 import qualified Git.Construct
+import Git.Types
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -70,7 +71,9 @@ findSpecialRemotes s = do
 	remotepairs = M.toList . M.filterWithKey match
 	construct (k,_) = Git.Construct.remoteNamedFromKey k
 		(pure Git.Construct.fromUnknown)
-	match k _ = "remote." `S.isPrefixOf` k && (".annex-" <> encodeBS' s) `S.isSuffixOf` k
+	match (ConfigKey k) _ =
+		"remote." `S.isPrefixOf` k 
+		&& (".annex-" <> encodeBS' s) `S.isSuffixOf` k
 
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()

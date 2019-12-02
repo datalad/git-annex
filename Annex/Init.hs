@@ -205,7 +205,7 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	 - filesystem. -}
 	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
 		warning "Disabling core.symlinks."
-		setConfig (ConfigKey "core.symlinks")
+		setConfig "core.symlinks"
 			(Git.Config.boolConfig False)
 
 probeLockSupport :: Annex Bool
@@ -275,5 +275,5 @@ initSharedClone True = do
  - affect it. -}
 propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
-	maybe noop (setConfig (ConfigKey "annex.securehashesonly"))
+	maybe noop (setConfig "annex.securehashesonly")
 		=<< getGlobalConfig "annex.securehashesonly"

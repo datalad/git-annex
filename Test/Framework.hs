@@ -23,6 +23,7 @@ import qualified Types.RepoVersion
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Construct
+import qualified Git.Types
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types
@@ -89,7 +90,7 @@ inmainrepo a = do
 with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
 with_ssh_origin cloner a = cloner $ do
 	origindir <- absPath . decodeBS'
-		=<< annexeval (Config.getConfig (Config.ConfigKey (encodeBS' config)) (toRawFilePath "/dev/null"))
+		=<< annexeval (Config.getConfig (Git.Types.ConfigKey (encodeBS' config)) (toRawFilePath "/dev/null"))
 	let originurl = "localhost:" ++ origindir
 	boolSystem "git" [Param "config", Param config, Param originurl] @? "git config failed"
 	a

@@ -12,6 +12,7 @@ module Annex.Version where
 
 import Annex.Common
 import Config
+import Git.Types
 import Types.RepoVersion
 import qualified Annex
 

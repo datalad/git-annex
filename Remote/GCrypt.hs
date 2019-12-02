@@ -30,6 +30,7 @@ import Types.GitConfig
 import Types.Crypto
 import Types.Creds
 import Types.Transfer
+import Git.Types (ConfigKey(..), fromConfigKey)
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -99,7 +100,7 @@ gen baser u c gc rs = do
 			(Just remotename, Just c') -> do
 				setGcryptEncryption c' remotename
 				storeUUIDIn (remoteConfig baser "uuid") u'
-				setConfig (ConfigKey $ Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
+				setConfig (Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
 				gen' r u' c' gc rs
 			_ -> do
 				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
@@ -256,7 +257,7 @@ setupRepo gcryptid r
 	| otherwise = localsetup r
   where
 	localsetup r' = do
-		let setconfig k v = liftIO $ Git.Command.run [Param "config", Param (decodeBS' k), Param v] r'
+		let setconfig k v = liftIO $ Git.Command.run [Param "config", Param (fromConfigKey k), Param v] r'
 		setconfig coreGCryptId gcryptid
 		setconfig denyNonFastForwards (Git.Config.boolConfig False)
 		return AccessDirect
@@ -293,7 +294,7 @@ setupRepo gcryptid r
 		(\f p -> liftIO (boolSystem f p), return False)
 		"gcryptsetup" [ Param gcryptid ] []
 
-	denyNonFastForwards = "receive.denyNonFastForwards"
+	denyNonFastForwards = ConfigKey "receive.denyNonFastForwards"
 
 accessShell :: Remote -> Bool
 accessShell = accessShellConfig . gitconfig
@@ -330,7 +331,7 @@ setGcryptEncryption c remotename = do
 			Nothing -> noop
 			Just (KeyIds { keyIds = ks}) -> do
 				setConfig participants (unwords ks)
-				let signingkey = ConfigKey $ Git.GCrypt.remoteSigningKey remotename
+				let signingkey = Git.GCrypt.remoteSigningKey remotename
 				cmd <- gpgCmd <$> Annex.getGitConfig
 				skeys <- M.keys <$> liftIO (secretKeys cmd)
 				case filter (`elem` ks) skeys of
@@ -339,7 +340,7 @@ setGcryptEncryption c remotename = do
 	setConfig (remoteconfig Git.GCrypt.remotePublishParticipantConfigKey)
 		(Git.Config.boolConfig True)
   where
-	remoteconfig n = ConfigKey $ n remotename
+	remoteconfig n = n remotename
 
 store :: Remote -> Remote.Rsync.RsyncOpts -> Storer
 store r rsyncopts k s p = do
@@ -439,7 +440,7 @@ getGCryptUUID fast r = do
 	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
 		<$> getGCryptId fast r dummycfg
 
-coreGCryptId :: S.ByteString
+coreGCryptId :: ConfigKey
 coreGCryptId = "core.gcrypt-id"
 
 {- gcrypt repos set up by git-annex as special remotes have a

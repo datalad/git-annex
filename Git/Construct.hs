@@ -28,7 +28,6 @@ import System.Posix.User
 #endif
 import qualified Data.Map as M
 import Network.URI
-import qualified Data.ByteString as S
 
 import Common
 import Git.Types
@@ -139,7 +138,7 @@ remoteNamed n constructor = do
 
 {- Sets the name of a remote based on the git config key, such as
  - "remote.foo.url". -}
-remoteNamedFromKey :: S.ByteString -> IO Repo -> IO Repo
+remoteNamedFromKey :: ConfigKey -> IO Repo -> IO Repo
 remoteNamedFromKey = remoteNamed . remoteKeyToRemoteName
 
 {- Constructs a new Repo for one of a Repo's remotes using a given

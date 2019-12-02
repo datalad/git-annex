@@ -88,7 +88,7 @@ list autoinit = do
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	mapM (configRead autoinit) rs
   where
-	annexurl n = "remote." <> encodeBS' n <> ".annexurl"
+	annexurl n = Git.ConfigKey ("remote." <> encodeBS' n <> ".annexurl")
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
 		case M.lookup (annexurl n) c of

@@ -27,18 +27,13 @@ import qualified Data.ByteString as S
 
 type UnqualifiedConfigKey = S.ByteString
 
-newtype ConfigKey = ConfigKey S.ByteString
-
-instance Show ConfigKey where
-	show (ConfigKey s) = decodeBS' s
-
 {- Looks up a setting in git config. This is not as efficient as using the
  - GitConfig type. -}
 getConfig :: ConfigKey -> S.ByteString -> Annex S.ByteString
-getConfig (ConfigKey key) d = fromRepo $ Git.Config.get key d
+getConfig key d = fromRepo $ Git.Config.get key d
 
 getConfigMaybe :: ConfigKey -> Annex (Maybe S.ByteString)
-getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
+getConfigMaybe key = fromRepo $ Git.Config.getMaybe key
 
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
@@ -55,7 +50,7 @@ reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 
 {- Unsets a git config setting. (Leaves it in state.) -}
 unsetConfig :: ConfigKey -> Annex ()
-unsetConfig (ConfigKey key) = void $ inRepo $ Git.Config.unset key
+unsetConfig key = void $ inRepo $ Git.Config.unset key
 
 class RemoteNameable r where
 	getRemoteName :: r -> RemoteName

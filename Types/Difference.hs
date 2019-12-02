@@ -22,6 +22,7 @@ module Types.Difference (
 import Utility.PartialPrelude
 import qualified Git
 import qualified Git.Config
+import Git.Types
 
 import Data.Maybe
 import Data.Monoid
@@ -99,7 +100,7 @@ getDifferences r = mkDifferences $ S.fromList $
 		Just True -> Just d
 		_ -> Nothing
 
-differenceConfigKey :: Difference -> B.ByteString
+differenceConfigKey :: Difference -> ConfigKey
 differenceConfigKey ObjectHashLower = tunable "objecthashlower"
 differenceConfigKey OneLevelObjectHash = tunable "objecthash1"
 differenceConfigKey OneLevelBranchHash = tunable "branchhash1"
@@ -107,8 +108,8 @@ differenceConfigKey OneLevelBranchHash = tunable "branchhash1"
 differenceConfigVal :: Difference -> String
 differenceConfigVal _ = Git.Config.boolConfig True
 
-tunable :: B.ByteString -> B.ByteString
-tunable k = "annex.tune." <> k
+tunable :: B.ByteString -> ConfigKey
+tunable k = ConfigKey ("annex.tune." <> k)
 
 hasDifference :: Difference -> Differences -> Bool
 hasDifference _ UnknownDifferences = False

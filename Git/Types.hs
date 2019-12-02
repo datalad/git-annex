@@ -1,6 +1,6 @@
 {- git data types
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,11 +10,12 @@
 module Git.Types where
 
 import Network.URI
+import Data.String
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import System.Posix.Types
 import Utility.SafeCommand
-
+import Utility.FileSystemEncoding
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -35,9 +36,9 @@ data RepoLocation
 
 data Repo = Repo
 	{ location :: RepoLocation
-	, config :: M.Map S.ByteString S.ByteString
+	, config :: M.Map ConfigKey S.ByteString
 	-- a given git config key can actually have multiple values
-	, fullconfig :: M.Map S.ByteString [S.ByteString]
+	, fullconfig :: M.Map ConfigKey [S.ByteString]
 	-- remoteName holds the name used for this repo in some other
 	-- repo's list of remotes, when this repo is such a remote
 	, remoteName :: Maybe RemoteName
@@ -47,6 +48,18 @@ data Repo = Repo
 	-- global options to pass to git when running git commands
 	, gitGlobalOpts :: [CommandParam]
 	} deriving (Show, Eq, Ord)
+
+newtype ConfigKey = ConfigKey S.ByteString
+	deriving (Ord, Eq)
+
+fromConfigKey :: ConfigKey -> String
+fromConfigKey (ConfigKey s) = decodeBS' s
+
+instance Show ConfigKey where
+	show = fromConfigKey
+
+instance IsString ConfigKey where
+	fromString = ConfigKey . encodeBS'
 
 type RemoteName = String
 

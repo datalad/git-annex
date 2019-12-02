@@ -12,6 +12,7 @@ import Annex.UUID
 import Annex.Init
 import qualified Annex.Branch
 import qualified Git.Config
+import Git.Types
 import Remote.GCrypt (coreGCryptId)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import CmdLine.GitAnnexShell.Checks
@@ -28,11 +29,12 @@ seek = withNothing (commandAction start)
 start :: CommandStart
 start = do
 	u <- findOrGenUUID
-	showConfig "annex.uuid" $ fromUUID u
-	showConfig coreGCryptId =<< fromRepo (Git.Config.get coreGCryptId "")
+	showConfig configkeyUUID $ fromUUID u
+	showConfig coreGCryptId . decodeBS'
+		=<< fromRepo (Git.Config.get coreGCryptId mempty)
 	stop
   where
-	showConfig k v = liftIO $ putStrLn $ k ++ "=" ++ v
+	showConfig k v = liftIO $ putStrLn $ fromConfigKey k ++ "=" ++ v
 
 {- The repository may not yet have a UUID; automatically initialize it
  - when there's a git-annex branch available or if the autoinit field was

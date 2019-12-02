@@ -14,6 +14,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Annex.UUID (
+	configkeyUUID,
 	getUUID,
 	getRepoUUID,
 	getUncachedUUID,
@@ -34,6 +35,7 @@ import Annex.Common
 import qualified Annex
 import qualified Git
 import qualified Git.Config
+import Git.Types
 import Config
 
 import qualified Data.UUID as U
@@ -41,8 +43,8 @@ import qualified Data.UUID.V4 as U4
 import qualified Data.UUID.V5 as U5
 import Data.String
 
-configkey :: ConfigKey
-configkey = annexConfig "uuid"
+configkeyUUID :: ConfigKey
+configkeyUUID = annexConfig "uuid"
 
 {- Generates a random UUID, that does not include the MAC address. -}
 genUUID :: IO UUID
@@ -83,20 +85,16 @@ getRepoUUID r = do
 
 removeRepoUUID :: Annex ()
 removeRepoUUID = do
-	unsetConfig configkey
+	unsetConfig configkeyUUID
 	storeUUID NoUUID
 
 getUncachedUUID :: Git.Repo -> UUID
-getUncachedUUID = toUUID . Git.Config.get key ""
-  where
-	(ConfigKey key) = configkey
+getUncachedUUID = toUUID . Git.Config.get configkeyUUID ""
 
 -- Does the repo's config have a key for the UUID?
 -- True even when the key has no value.
 isUUIDConfigured :: Git.Repo -> Bool
-isUUIDConfigured = isJust . Git.Config.getMaybe key 
-  where
-	(ConfigKey key) = configkey
+isUUIDConfigured = isJust . Git.Config.getMaybe configkeyUUID
 
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
@@ -106,7 +104,7 @@ prepUUID = whenM ((==) NoUUID <$> getUUID) $
 storeUUID :: UUID -> Annex ()
 storeUUID u = do
 	Annex.changeGitConfig $ \c -> c { annexUUID = u }
-	storeUUIDIn configkey u
+	storeUUIDIn configkeyUUID u
 
 storeUUIDIn :: ConfigKey -> UUID -> Annex ()
 storeUUIDIn configfield = setConfig configfield . fromUUID
@@ -114,7 +112,7 @@ storeUUIDIn configfield = setConfig configfield . fromUUID
 {- Only sets the configkey in the Repo; does not change .git/config -}
 setUUID :: Git.Repo -> UUID -> IO Git.Repo
 setUUID r u = do
-	let s = encodeBS' $ show configkey ++ "=" ++ fromUUID u
+	let s = encodeBS' $ show configkeyUUID ++ "=" ++ fromUUID u
 	Git.Config.store s r
 
 -- Dummy uuid for the whole web. Do not alter.

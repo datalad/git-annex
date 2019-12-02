@@ -46,7 +46,7 @@ setIndirect = do
 		-- unset it when enabling direct mode, caching in
 		-- core.indirect-worktree
 		moveconfig indirectworktree coreworktree
-		setConfig (ConfigKey Git.Config.coreBare) val
+		setConfig Git.Config.coreBare val
 	moveconfig src dest = getConfigMaybe src >>= \case
 		Nothing -> noop
 		Just wt -> do

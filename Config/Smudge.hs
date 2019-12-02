@@ -13,6 +13,7 @@ import Annex.Common
 import qualified Annex
 import qualified Git
 import qualified Git.Command
+import Git.Types
 import Config
 
 configureSmudgeFilter :: Annex ()

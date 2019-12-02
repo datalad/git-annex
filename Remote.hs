@@ -74,7 +74,7 @@ import Logs.Web
 import Remote.List
 import Config
 import Config.DynamicConfig
-import Git.Types (RemoteName)
+import Git.Types (RemoteName, ConfigKey(..))
 import Utility.Aeson
 
 {- Map from UUIDs of Remotes to a calculated value. -}

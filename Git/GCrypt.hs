@@ -100,14 +100,15 @@ getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
 	parse (Just b) = words (decodeBS' b)
 	parse Nothing = []
 
-remoteParticipantConfigKey :: RemoteName -> S.ByteString
+remoteParticipantConfigKey :: RemoteName -> ConfigKey
 remoteParticipantConfigKey = remoteConfigKey "gcrypt-participants"
 
-remotePublishParticipantConfigKey :: RemoteName -> S.ByteString
+remotePublishParticipantConfigKey :: RemoteName -> ConfigKey
 remotePublishParticipantConfigKey = remoteConfigKey "gcrypt-publish-participants"
 
-remoteSigningKey :: RemoteName -> S.ByteString
+remoteSigningKey :: RemoteName -> ConfigKey
 remoteSigningKey = remoteConfigKey "gcrypt-signingkey"
 
-remoteConfigKey :: S.ByteString -> RemoteName -> S.ByteString
-remoteConfigKey key remotename = "remote." <> encodeBS' remotename <> "." <> key
+remoteConfigKey :: S.ByteString -> RemoteName -> ConfigKey
+remoteConfigKey key remotename = ConfigKey $
+	"remote." <> encodeBS' remotename <> "." <> key

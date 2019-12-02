@@ -41,7 +41,8 @@ start (k:[]) = do
 	case deserializeKey k of
 		Nothing -> error "bad key"
 		(Just key) -> whenM (inAnnex key) $ do
-			afile <- AssociatedFile <$> Fields.getField Fields.associatedFile
+			afile <- AssociatedFile . (fmap toRawFilePath)
+				<$> Fields.getField Fields.associatedFile
 			u <- maybe (error "missing remoteuuid") toUUID
 				<$> Fields.getField Fields.remoteUUID
 			let t = Transfer

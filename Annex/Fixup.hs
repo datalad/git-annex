@@ -19,7 +19,6 @@ import Utility.SafeCommand
 import Utility.Directory
 import Utility.Exception
 import Utility.Monad
-import Utility.FileSystemEncoding
 import Utility.PartialPrelude
 
 import System.IO
@@ -56,7 +55,7 @@ fixupDirect r@(Repo { location = l@(Local { gitdir = d, worktree = Nothing }) })
 		{ location = l { worktree = Just (parentDir d) }
 		, gitGlobalOpts = gitGlobalOpts r ++
 			[ Param "-c"
-			, Param $ decodeBS' coreBare ++ "=" ++ boolConfig False
+			, Param $ fromConfigKey coreBare ++ "=" ++ boolConfig False
 			]
 		}
 fixupDirect r = r

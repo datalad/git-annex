@@ -22,15 +22,15 @@ import qualified Git.Construct
 import Utility.UserInfo
 
 {- Returns a single git config setting, or a default value if not set. -}
-get :: S.ByteString -> S.ByteString -> Repo -> S.ByteString
+get :: ConfigKey -> S.ByteString -> Repo -> S.ByteString
 get key defaultValue repo = M.findWithDefault defaultValue key (config repo)
 
 {- Returns a list with each line of a multiline config setting. -}
-getList :: S.ByteString -> Repo -> [S.ByteString]
+getList :: ConfigKey -> Repo -> [S.ByteString]
 getList key repo = M.findWithDefault [] key (fullconfig repo)
 
 {- Returns a single git config setting, if set. -}
-getMaybe :: S.ByteString -> Repo -> Maybe S.ByteString
+getMaybe :: ConfigKey -> Repo -> Maybe S.ByteString
 getMaybe key repo = M.lookup key (config repo)
 
 {- Runs git config and populates a repo with its config.
@@ -100,7 +100,7 @@ store s repo = do
 
 {- Stores a single config setting in a Repo, returning the new version of
  - the Repo. Config settings can be updated incrementally. -}
-store' :: S.ByteString -> S.ByteString -> Repo -> Repo
+store' :: ConfigKey -> S.ByteString -> Repo -> Repo
 store' k v repo = repo
 	{ config = M.singleton k v `M.union` config repo
 	, fullconfig = M.unionWith (++) (M.singleton k [v]) (fullconfig repo)
@@ -137,7 +137,7 @@ updateLocation' r l = do
 
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
-parse :: S.ByteString -> M.Map S.ByteString [S.ByteString]
+parse :: S.ByteString -> M.Map ConfigKey [S.ByteString]
 parse s
 	| S.null s = M.empty
 	-- --list output will have a '=' in the first line
@@ -152,7 +152,7 @@ parse s
 	firstline = S.takeWhile (/= nl) s
 
 	sep c = M.fromListWith (++)
-		. map (\(k,v) -> (k, [S.drop 1 v])) 
+		. map (\(k,v) -> (ConfigKey k, [S.drop 1 v])) 
 		. map (S.break (== c))
 
 {- Checks if a string from git config is a true value. -}
@@ -178,7 +178,7 @@ boolConfig' False = "false"
 isBare :: Repo -> Bool
 isBare r = fromMaybe False $ isTrue' =<< getMaybe coreBare r
 
-coreBare :: S.ByteString
+coreBare :: ConfigKey
 coreBare = "core.bare"
 
 {- Runs a command to get the configuration of a repo,
@@ -205,8 +205,8 @@ fromFile r f = fromPipe r "git"
 
 {- Changes a git config setting in the specified config file.
  - (Creates the file if it does not already exist.) -}
-changeFile :: FilePath -> S.ByteString -> S.ByteString -> IO Bool
-changeFile f k v = boolSystem "git"
+changeFile :: FilePath -> ConfigKey -> S.ByteString -> IO Bool
+changeFile f (ConfigKey k) v = boolSystem "git"
 	[ Param "config"
 	, Param "--file"
 	, File f
@@ -220,9 +220,9 @@ changeFile f k v = boolSystem "git"
  - If unsetting the config fails, including in a read-only repo, or
  - when the config is not set, returns Nothing.
  -}
-unset :: S.ByteString -> Repo -> IO (Maybe Repo)
-unset k r = ifM (Git.Command.runBool ps r)
-	( return $ Just $ r { config = M.delete k (config r) }
+unset :: ConfigKey -> Repo -> IO (Maybe Repo)
+unset ck@(ConfigKey k) r = ifM (Git.Command.runBool ps r)
+	( return $ Just $ r { config = M.delete ck (config r) }
 	, return Nothing
 	)
   where
