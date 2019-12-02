@@ -1,12 +1,12 @@
 flags:
   git-annex:
     production: true
-    assistant: false
+    assistant: true
     pairing: true
     s3: true
-    webdav: false
+    webdav: true
     torrentparser: true
-    webapp: false
+    webapp: true
     magicmime: false
     dbus: false
     debuglocks: false
