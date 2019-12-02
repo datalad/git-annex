@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reference original bug report"
+ date="2019-11-29T17:58:28Z"
+ content="""
+original bug report was https://git-annex.branchable.com/bugs/git-lfs_remote_URL_is_not_recorded__63__/ for an attempt to share some NWB data on github's LFS
+"""]]

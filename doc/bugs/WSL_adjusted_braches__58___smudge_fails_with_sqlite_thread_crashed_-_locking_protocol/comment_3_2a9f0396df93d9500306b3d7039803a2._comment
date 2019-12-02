@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ply"
+ avatar="http://cdn.libravatar.org/avatar/1270501a59ed4a4042366b00295fe236"
+ subject="comment 3"
+ date="2019-11-28T11:18:50Z"
+ content="""
+Thanks Joey for investigating this! It looks like I need to wait for WSL 2 to become available in windows public release. In the meantime I've submitted a bug on [faulty behaviour of `git annex add` on DrvFs](https://git-annex.branchable.com/bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem/). I don't think you can fix it, as it is apparantly a WSL problem, but I think it's good to keep track of it and warn potential users
+"""]]

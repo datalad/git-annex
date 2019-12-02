@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 13"
+ date="2019-11-30T21:11:53Z"
+ content="""
+[[git-annex-migrate]] to a backend not ending in E (e.g. SHA256 not SHA256E), then [[git-annex-unused]] to drop the old keys.
+
+"""]]

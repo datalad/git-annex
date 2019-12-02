@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="parallelization"
+ date="2019-11-27T17:23:14Z"
+ content="""
+When operating on many files, maybe run N parallel commands where i'th command ignores paths for which `(hash(filename) module N) != i`.   Or, if git index has size I, i'th command ignores paths that are not legixographically between `index[(I/N)*i]` and `index[(I/N)*(i+1)]` (for index state at command start).  Extending [[git-annex-matching-options]] with `--block=i` would let this be done using `xargs`.
+"""]]

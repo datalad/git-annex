@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="same contents with different keys"
+ date="2019-11-30T16:51:58Z"
+ content="""
+@atrent -- some [[backends]] (like SHA256E) base the key not just on object contents, but also on part of its filename (the extension).   So the same content can exist with two different keys.  In your example, the same contents exists in one file ending with .jpg and in another ending with .56.jpeg .  (This is done to give the annexed contents the same extension as the original file had before annexing, to avoid confusing some programs).  There are also backends like WORM and URL, not based on checksums, that could lead to different keys with same contents.  There could also be same contents added under different backends (see also [[`git-annex-migrate`|git-annex-migrate]]).  Finally, there is the theoretical possibility of hash collisions.
+"""]]

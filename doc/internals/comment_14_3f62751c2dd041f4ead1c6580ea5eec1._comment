@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="hardlinking identical files in annex may break invariants"
+ date="2019-11-30T21:36:38Z"
+ content="""
+P.S. Re: hardlinking identical files -- git-annex [[keeps track of inodes|todo/inode_based_clean_filter_for_less_surprising_git_add]] where contents is stored, so deleting a file might make that info stale.  Also, dropping one key will drop another key's contents without updating [[location_tracking]] info.  And dropping then getting files would lead to two separate copies again.   So I wouldn't recommend that.
+
+See also [[tips/local_caching_of_annexed_files]].
+"""]]

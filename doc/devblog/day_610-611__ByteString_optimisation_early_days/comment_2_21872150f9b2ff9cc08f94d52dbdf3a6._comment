@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="parallelization"
+ date="2019-11-27T17:30:12Z"
+ content="""
+This is great.
+
+One other potential for speedup is fixing [[issues with parallel operations|forum/people's_experience_with_parallel_git-annex_operations]].  My current fix is to use `-J1`, giving up a potential 96X speedup.  There may also be additional [[todo/parallel_possibilities]].
+"""]]
