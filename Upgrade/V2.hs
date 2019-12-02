@@ -50,7 +50,7 @@ upgrade = do
 	e <- liftIO $ doesDirectoryExist old
 	when e $ do
 		config <- Annex.getGitConfig
-		mapM_ (\(k, f) -> inject f $ locationLogFile config k) =<< locationLogs
+		mapM_ (\(k, f) -> inject f $ fromRawFilePath $ locationLogFile config k) =<< locationLogs
 		mapM_ (\f -> inject f f) =<< logFiles old
 
 	saveState False
@@ -76,13 +76,13 @@ locationLogs = do
   where
 	tryDirContents d = catchDefaultIO [] $ dirContents d
 	islogfile f = maybe Nothing (\k -> Just (k, f)) $
-			locationLogFileKey f
+			locationLogFileKey (toRawFilePath f)
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do
 	old <- fromRepo olddir
 	new <- liftIO (readFile $ old </> source)
-	Annex.Branch.change dest $ \prev -> 
+	Annex.Branch.change (toRawFilePath dest) $ \prev -> 
 		encodeBL $ unlines $ nub $ lines (decodeBL prev) ++ lines new
 
 logFiles :: FilePath -> Annex [FilePath]

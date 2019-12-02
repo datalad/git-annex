@@ -15,7 +15,6 @@ import qualified Git
 import Annex.Version
 import Types.RepoVersion
 #ifndef mingw32_HOST_OS
-{-
 import qualified Upgrade.V0
 import qualified Upgrade.V1
 #endif
@@ -24,7 +23,6 @@ import qualified Upgrade.V3
 import qualified Upgrade.V4
 import qualified Upgrade.V5
 import qualified Upgrade.V6
--}
 
 import qualified Data.Map as M
 
@@ -74,7 +72,6 @@ upgrade automatic destversion = do
 			)
 	go _ = return True
 
-{-
 #ifndef mingw32_HOST_OS
 	up (RepoVersion 0) = Upgrade.V0.upgrade
 	up (RepoVersion 1) = Upgrade.V1.upgrade
@@ -87,6 +84,4 @@ upgrade automatic destversion = do
 	up (RepoVersion 4) = Upgrade.V4.upgrade automatic
 	up (RepoVersion 5) = Upgrade.V5.upgrade automatic
 	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
--}
 	up _ = return True
-
