@@ -269,7 +269,7 @@ listImportableContentsM serial adir = liftIO $
 		let (stat, fn) = separate (== '\t') l
 		    sz = fromMaybe 0 (readish (takeWhile (/= ' ') stat))
 		    cid = ContentIdentifier (encodeBS' stat)
-		    loc = mkImportLocation $ 
+		    loc = mkImportLocation $ toRawFilePath $ 
 		    	Posix.makeRelative (fromAndroidPath adir) fn
 		in Just (loc, (cid, sz))
 	mk _ = Nothing
@@ -331,7 +331,7 @@ checkPresentExportWithContentIdentifierM serial adir _k loc knowncids =
 
 androidExportLocation :: AndroidPath -> ExportLocation -> AndroidPath
 androidExportLocation adir loc = AndroidPath $
-	fromAndroidPath adir ++ "/" ++ fromExportLocation loc
+	fromAndroidPath adir ++ "/" ++ fromRawFilePath (fromExportLocation loc)
 
 -- | List all connected Android devices.
 enumerateAdbConnected :: IO [AndroidSerial]

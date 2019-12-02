@@ -17,6 +17,7 @@ import Utility.Url (URLString)
 #ifdef mingw32_HOST_OS
 import Utility.Split
 #endif
+import Utility.FileSystemEncoding
 
 import System.FilePath.Posix -- for manipulating url paths
 import Network.Protocol.HTTP.DAV (inDAVLocation, DAVT)
@@ -50,10 +51,12 @@ keyLocation k = keyDir k ++ keyFile k
  - those. -}
 exportLocation :: ExportLocation -> Either String DavLocation
 exportLocation l =
-	let p = fromExportLocation l
-	in if any (`elem` p) ['#', '?']
+	let p = fromRawFilePath $ fromExportLocation l
+	in if any (`elem` p) illegalinurl
 		then Left ("Cannot store file containing '#' or '?' on webdav: " ++ p)
 		else Right p
+  where
+	illegalinurl = ['#', '?'] :: [Char]
 
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation
