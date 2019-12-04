@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="dropping contents of old keys after migration"
+ date="2019-12-02T16:48:47Z"
+ content="""
+\"May I delete them\" -- `git-annex-drop --force` may be safer, as it also updates [[location_tracking]].  You might also want to [[git-annex-dead]] the dropped keys to prevent [[git-annex-fsck]] from complaining about lost contents.
+
+Re: why [[git-annex-unused]] isn't finding the unused contents, try running it with `--used-refspec=+HEAD`, and make sure `annex.used-refspec` git config is not set.  Note that this will mark as unused any annexed contents not referenced from the latest tree of the HEAD branch, e.g. annexed files that were removed in some older commit.
+"""]]
