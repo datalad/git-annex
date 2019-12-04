@@ -14,7 +14,6 @@ import Git
 import Git.Types
 import Git.Index
 import Git.Env
-import Utility.Env
 import qualified Annex
 import qualified Annex.Queue
 
@@ -23,28 +22,29 @@ withIndexFile :: FilePath -> Annex a -> Annex a
 withIndexFile f a = do
 	f' <- liftIO $ indexEnvVal f
 	withAltRepo
-		(usecachedgitenv $ \g -> liftIO $ addGitEnv g indexEnv f')
+		(usecachedgitenv f' $ \g -> addGitEnv g indexEnv f')
 		(\g g' -> g' { gitEnv = gitEnv g })
 		a
   where
 	-- This is an optimisation. Since withIndexFile is run repeatedly,
-	-- and addGitEnv uses the slow getEnvironment when gitEnv is Nothing, 
-	-- we cache the environment the first time, and reuse it in
-	-- subsequent calls.
+	-- typically with the same file, and addGitEnv uses the slow
+	-- getEnvironment when gitEnv is Nothing, and has to do a
+	-- nontrivial amount of work, we cache the modified environment
+	-- the first time, and reuse it in subsequent calls for the same
+	-- index file.
 	--
 	-- (This could be done at another level; eg when creating the
 	-- Git object in the first place, but it's more efficient to let
-	-- the enviroment be inherited in all calls to git where it
+	-- the environment be inherited in all calls to git where it
 	-- does not need to be modified.)
-	usecachedgitenv m g = case gitEnv g of
-		Just _ -> m g
-		Nothing -> do
-			e <- Annex.withState $ \s -> case Annex.cachedgitenv s of
-				Nothing -> do
-					e <- getEnvironment
-					return (s { Annex.cachedgitenv = Just e }, e)
-				Just e -> return (s, e)
-			m (g { gitEnv = Just e })
+	usecachedgitenv f' m g = case gitEnv g of
+		Just _ -> liftIO $ m g
+		Nothing -> Annex.withState $ \s -> case Annex.cachedgitenv s of
+			Just (cachedf, cachede) | f' == cachedf ->
+				return (s, g { gitEnv = Just cachede })
+			_ -> do
+				g' <- m g
+				return (s { Annex.cachedgitenv = (,) <$> Just f' <*> gitEnv g' }, g')
 
 {- Runs an action using a different git work tree.
  -
