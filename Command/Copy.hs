@@ -47,7 +47,7 @@ seek :: CopyOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
 	let go = whenAnnexed $ start o
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt go
+		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o)
 			(commandAction . Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
@@ -57,12 +57,12 @@ seek o = startConcurrency commandStages $ do
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
-start :: CopyOptions -> FilePath -> Key -> CommandStart
+start :: CopyOptions -> RawFilePath -> Key -> CommandStart
 start o file key = stopUnless shouldCopy $ 
 	Command.Move.start (fromToOptions o) Command.Move.RemoveNever file key
   where
 	shouldCopy
-		| autoMode o = want <||> numCopiesCheck file key (<)
+		| autoMode o = want <||> numCopiesCheck (fromRawFilePath file) key (<)
 		| otherwise = return True
 	want = case fromToOptions o of
 		Right (ToRemote dest) ->

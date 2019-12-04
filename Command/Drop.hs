@@ -54,7 +54,7 @@ parseDropFromOption = parseRemoteOption <$> strOption
 seek :: DropOptions -> CommandSeek
 seek o = startConcurrency transferStages $
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt go
+		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys o)
 			(withFilesInGit (commandAction . go))
@@ -62,7 +62,7 @@ seek o = startConcurrency transferStages $
   where
 	go = whenAnnexed $ start o
 
-start :: DropOptions -> FilePath -> Key -> CommandStart
+start :: DropOptions -> RawFilePath -> Key -> CommandStart
 start o file key = start' o key afile ai
   where
 	afile = AssociatedFile (Just file)

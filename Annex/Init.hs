@@ -275,5 +275,5 @@ initSharedClone True = do
  - affect it. -}
 propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
-	maybe noop (setConfig "annex.securehashesonly")
+	maybe noop (setConfig "annex.securehashesonly" . decodeBS')
 		=<< getGlobalConfig "annex.securehashesonly"

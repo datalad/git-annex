@@ -18,15 +18,17 @@ import Annex.Multicast
 import Types.Test
 import Types.Benchmark
 
-{-
 import qualified Command.Help
 import qualified Command.Add
+{-
 import qualified Command.Unannex
+-}
 import qualified Command.Drop
 import qualified Command.Move
 import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.Fsck
+{-
 import qualified Command.LookupKey
 import qualified Command.CalcKey
 import qualified Command.ContentLocation
@@ -49,7 +51,9 @@ import qualified Command.VAdd
 import qualified Command.VFilter
 import qualified Command.VPop
 import qualified Command.VCycle
+-}
 import qualified Command.Reinject
+{-
 import qualified Command.Fix
 import qualified Command.Init
 import qualified Command.Describe
@@ -71,7 +75,9 @@ import qualified Command.PostReceive
 import qualified Command.Find
 {-
 import qualified Command.FindRef
+-}
 import qualified Command.Whereis
+{-
 import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
@@ -95,13 +101,17 @@ import qualified Command.Schedule
 import qualified Command.Ungroup
 import qualified Command.Config
 import qualified Command.Vicfg
+-}
 import qualified Command.Sync
+{-
 import qualified Command.Mirror
 import qualified Command.AddUrl
 import qualified Command.ImportFeed
 import qualified Command.RmUrl
+-}
 import qualified Command.Import
 import qualified Command.Export
+{-
 import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
@@ -129,23 +139,28 @@ import qualified Command.Benchmark
 
 cmds :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [Command]
 cmds testoptparser testrunner mkbenchmarkgenerator = 
-{-	[ Command.Help.cmd
+	[ Command.Help.cmd
 	, Command.Add.cmd
 	, Command.Get.cmd
 	, Command.Drop.cmd
 	, Command.Move.cmd
 	, Command.Copy.cmd
 	, Command.Fsck.cmd
+{-
 	, Command.Unlock.cmd
 	, Command.Unlock.editcmd
 	, Command.Lock.cmd
+-}
 	, Command.Sync.cmd
+{-
 	, Command.Mirror.cmd
 	, Command.AddUrl.cmd
 	, Command.ImportFeed.cmd
 	, Command.RmUrl.cmd
+-}
 	, Command.Import.cmd
 	, Command.Export.cmd
+{-	
 	, Command.Init.cmd
 	, Command.Describe.cmd
 	, Command.InitRemote.cmd
@@ -153,7 +168,9 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.RenameRemote.cmd
 	, Command.EnableTor.cmd
 	, Command.Multicast.cmd
+-}
 	, Command.Reinject.cmd
+{-
 	, Command.Unannex.cmd
 	, Command.Uninit.cmd
 	, Command.Reinit.cmd
@@ -201,10 +218,12 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
 -}
-	[ Command.Find.cmd
+	, Command.Find.cmd
 {-
 	, Command.FindRef.cmd
+-}
 	, Command.Whereis.cmd
+{-
 	, Command.List.cmd
 	, Command.Log.cmd
 	, Command.Merge.cmd

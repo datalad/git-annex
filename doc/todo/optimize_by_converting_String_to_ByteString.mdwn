@@ -14,9 +14,12 @@ the `bs` branch has quite a lot of things still needing work, including:
   decodeBS conversions. Or at least most of them. There are likely
   quite a few places where a value is converted back and forth several times.
 
-  As a first step, profile and look for the hot spots. For example, keyFile
-  uses fromRawFilePath and that adds around 3% overhead in `git-annex find`. 
-  Converting it to a RawFilePath needs a version of `</>` for RawFilePaths.
+  As a first step, profile and look for the hot spots. Known hot spots:
+  
+  * keyFile uses fromRawFilePath and that adds around 3% overhead in `git-annex find`. 
+    Converting it to a RawFilePath needs a version of `</>` for RawFilePaths.
+  * getJournalFileStale uses fromRawFilePath, and adds 3-5% overhead in
+    `git-annex whereis`. Converting it to RawFilePath needs a version of `</>` for RawFilePaths.
 
 * System.FilePath is not available for RawFilePath, and many of the
   conversions are to get a FilePath in order to use that library.
