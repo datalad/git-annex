@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="jkrenzer"
+ avatar="http://cdn.libravatar.org/avatar/49eda64e3bd130a5dfaf48f09218cfb1"
+ subject="Great work! Thank you!"
+ date="2019-12-05T12:10:47Z"
+ content="""
+Hi Joe,
+
+I have been using git-annex since several years now and am really happy with it.
+
+But the addition of git-lfs support was, in my humble opinion, an extraordinary leap forward! After gitlab ceased support in favour of lfs and with the advent of lfs in github, annex-integration with widespread used collaborative git-platforms was not very straight-forward anymore. And so it became harder to justify or promote it's use in my institute or other organizations I work for. This has change now again for the better!
+
+So thank you very much for all the hard work and regarding the daunting speed with which new developments and features (version 8 already!) arrive here: Please take good care and do not overstrain yourself. 
+
+Kind regards,
+
+Jörn
+"""]]
