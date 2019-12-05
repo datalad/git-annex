@@ -192,10 +192,10 @@ withKeysReferencedM a = withKeysReferenced' Nothing () calla
 	calla k _ _ = a k
 
 {- Folds an action over keys and files referenced in a particular directory. -}
-withKeysFilesReferencedIn :: FilePath -> v -> (Key -> FilePath -> v -> Annex v) -> Annex v
+withKeysFilesReferencedIn :: FilePath -> v -> (Key -> RawFilePath -> v -> Annex v) -> Annex v
 withKeysFilesReferencedIn = withKeysReferenced' . Just
 
-withKeysReferenced' :: Maybe FilePath -> v -> (Key -> FilePath -> v -> Annex v) -> Annex v
+withKeysReferenced' :: Maybe FilePath -> v -> (Key -> RawFilePath -> v -> Annex v) -> Annex v
 withKeysReferenced' mdir initial a = do
 	(files, clean) <- getfiles
 	r <- go initial files
@@ -207,9 +207,9 @@ withKeysReferenced' mdir initial a = do
 			( return ([], return True)
 			, do
 				top <- fromRepo Git.repoPath
-				inRepo $ LsFiles.allFiles [top]
+				inRepo $ LsFiles.allFiles [toRawFilePath top]
 			)
-		Just dir -> inRepo $ LsFiles.inRepo [dir]
+		Just dir -> inRepo $ LsFiles.inRepo [toRawFilePath dir]
 	go v [] = return v
 	go v (f:fs) = do
 		mk <- lookupFile f
@@ -221,7 +221,8 @@ withKeysReferenced' mdir initial a = do
 
 withKeysReferencedDiffGitRefs :: RefSpec -> (Key -> Annex ()) -> Annex ()
 withKeysReferencedDiffGitRefs refspec a = do
-	rs <- relevantrefs <$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
+	rs <- relevantrefs . decodeBS'
+		<$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
 	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha)
 		=<< inRepo Git.Branch.currentUnsafe
 	let haveHead = any (\(shaRef, _) -> Just shaRef == shaHead) rs

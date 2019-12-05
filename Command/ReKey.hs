@@ -38,13 +38,13 @@ optParser desc = ReKeyOptions
 
 -- Split on the last space, since a FilePath can contain whitespace,
 -- but a Key very rarely does.
-batchParser :: String -> Either String (FilePath, Key)
+batchParser :: String -> Either String (RawFilePath, Key)
 batchParser s = case separate (== ' ') (reverse s) of
 	(rk, rf)
 		| null rk || null rf -> Left "Expected: \"file key\""
 		| otherwise -> case deserializeKey (reverse rk) of
 			Nothing -> Left "bad key"
-			Just k -> Right (reverse rf, k)
+			Just k -> Right (toRawFilePath (reverse rf), k)
 
 seek :: ReKeyOptions -> CommandSeek
 seek o = case batchOption o of
@@ -52,9 +52,9 @@ seek o = case batchOption o of
 	NoBatch -> withPairs (commandAction . start . parsekey) (reKeyThese o)
   where
 	parsekey (file, skey) =
-		(file, fromMaybe (giveup "bad key") (deserializeKey skey))
+		(toRawFilePath file, fromMaybe (giveup "bad key") (deserializeKey skey))
 
-start :: (FilePath, Key) -> CommandStart
+start :: (RawFilePath, Key) -> CommandStart
 start (file, newkey) = ifAnnexed file go stop
   where
 	go oldkey
@@ -62,19 +62,19 @@ start (file, newkey) = ifAnnexed file go stop
 		| otherwise = starting "rekey" (ActionItemWorkTreeFile file) $
 			perform file oldkey newkey
 
-perform :: FilePath -> Key -> Key -> CommandPerform
+perform :: RawFilePath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do
 	ifM (inAnnex oldkey) 
 		( unlessM (linkKey file oldkey newkey) $
 			giveup "failed creating link from old to new key"
 		, unlessM (Annex.getState Annex.force) $
-			giveup $ file ++ " is not available (use --force to override)"
+			giveup $ fromRawFilePath file ++ " is not available (use --force to override)"
 		)
 	next $ cleanup file oldkey newkey
 
 {- Make a hard link to the old key content (when supported),
  - to avoid wasting disk space. -}
-linkKey :: FilePath -> Key -> Key -> Annex Bool
+linkKey :: RawFilePath -> Key -> Key -> Annex Bool
 linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
  	{- If the object file is already hardlinked to elsewhere, a hard
 	 - link won't be made by getViaTmpFromDisk, but a copy instead.
@@ -89,40 +89,40 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 		 - it's hard linked to the old key, that link must be broken. -}
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		v <- tryNonAsync $ do
-			st <- liftIO $ getFileStatus file
+			st <- liftIO $ getFileStatus (fromRawFilePath file)
 			when (linkCount st > 1) $ do
 				freezeContent oldobj
-				replaceFile file $ \tmp -> do
+				replaceFile (fromRawFilePath file) $ \tmp -> do
 					unlessM (checkedCopyFile oldkey oldobj tmp Nothing) $
 						error "can't lock old key"
 					thawContent tmp
-		ic <- withTSDelta (liftIO . genInodeCache file)
+		ic <- withTSDelta (liftIO . genInodeCache (fromRawFilePath file))
 		case v of
 			Left e -> do
 				warning (show e)
 				return False
 			Right () -> do
-				r <- linkToAnnex newkey file ic
+				r <- linkToAnnex newkey (fromRawFilePath file) ic
 				return $ case r of
 					LinkAnnexFailed -> False
 					LinkAnnexOk -> True
 					LinkAnnexNoop -> True
 	)
 
-cleanup :: FilePath -> Key -> Key -> CommandCleanup
+cleanup :: RawFilePath -> Key -> Key -> CommandCleanup
 cleanup file oldkey newkey = do
 	ifM (isJust <$> isAnnexLink file)
 		( do
 			-- Update symlink to use the new key.
-			liftIO $ removeFile file
-			addLink file newkey Nothing
+			liftIO $ removeFile (fromRawFilePath file)
+			addLink (fromRawFilePath file) newkey Nothing
 		, do
-			mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+			mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (fromRawFilePath file)
 			liftIO $ whenM (isJust <$> isPointerFile file) $
 				writePointerFile file newkey mode
 			stagePointerFile file mode =<< hashPointerFile newkey
 			Database.Keys.removeAssociatedFile oldkey 
-				=<< inRepo (toTopFilePath file)
+				=<< inRepo (toTopFilePath (fromRawFilePath file))
 		)
 	whenM (inAnnex newkey) $
 		logStatus newkey InfoPresent

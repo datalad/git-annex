@@ -20,15 +20,12 @@ import Types.Benchmark
 
 import qualified Command.Help
 import qualified Command.Add
-{-
 import qualified Command.Unannex
--}
 import qualified Command.Drop
 import qualified Command.Move
 import qualified Command.Copy
 import qualified Command.Get
 import qualified Command.Fsck
-{-
 import qualified Command.LookupKey
 import qualified Command.CalcKey
 import qualified Command.ContentLocation
@@ -51,9 +48,7 @@ import qualified Command.VAdd
 import qualified Command.VFilter
 import qualified Command.VPop
 import qualified Command.VCycle
--}
 import qualified Command.Reinject
-{-
 import qualified Command.Fix
 import qualified Command.Init
 import qualified Command.Describe
@@ -70,6 +65,7 @@ import qualified Command.AddUnused
 import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
+{-
 import qualified Command.PostReceive
 -}
 import qualified Command.Find
@@ -120,7 +116,9 @@ import qualified Command.Forget
 import qualified Command.P2P
 import qualified Command.Proxy
 import qualified Command.DiffDriver
+-}
 import qualified Command.Smudge
+{-
 import qualified Command.Undo
 import qualified Command.Version
 import qualified Command.RemoteDaemon
@@ -146,11 +144,9 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.Move.cmd
 	, Command.Copy.cmd
 	, Command.Fsck.cmd
-{-
 	, Command.Unlock.cmd
 	, Command.Unlock.editcmd
 	, Command.Lock.cmd
--}
 	, Command.Sync.cmd
 {-
 	, Command.Mirror.cmd
@@ -160,7 +156,6 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 -}
 	, Command.Import.cmd
 	, Command.Export.cmd
-{-	
 	, Command.Init.cmd
 	, Command.Describe.cmd
 	, Command.InitRemote.cmd
@@ -168,13 +163,14 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.RenameRemote.cmd
 	, Command.EnableTor.cmd
 	, Command.Multicast.cmd
--}
 	, Command.Reinject.cmd
-{-
 	, Command.Unannex.cmd
+{-
 	, Command.Uninit.cmd
 	, Command.Reinit.cmd
+-}
 	, Command.PreCommit.cmd
+{-
 	, Command.PostReceive.cmd
 	, Command.NumCopies.cmd
 	, Command.Trust.cmd
@@ -189,6 +185,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.Ungroup.cmd
 	, Command.Config.cmd
 	, Command.Vicfg.cmd
+-}
 	, Command.LookupKey.cmd
 	, Command.CalcKey.cmd
 	, Command.ContentLocation.cmd
@@ -217,7 +214,6 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.Unused.cmd
 	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
--}
 	, Command.Find.cmd
 {-
 	, Command.FindRef.cmd
@@ -240,7 +236,9 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.P2P.cmd
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
+-}
 	, Command.Smudge.cmd
+{-
 	, Command.Undo.cmd
 	, Command.Version.cmd
 	, Command.RemoteDaemon.cmd

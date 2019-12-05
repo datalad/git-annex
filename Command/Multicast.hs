@@ -137,7 +137,7 @@ send ups fs = do
 				mk <- lookupFile f
 				case mk of
 					Nothing -> noop
-					Just k -> withObjectLoc k (addlist f)
+					Just k -> withObjectLoc k (addlist (fromRawFilePath f))
 			liftIO $ hClose h
 			
 			serverkey <- uftpKey

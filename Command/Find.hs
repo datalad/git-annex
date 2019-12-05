@@ -9,6 +9,7 @@ module Command.Find where
 
 import Data.Default
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 
 import Command
@@ -76,7 +77,7 @@ startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) =
 	start o (toRawFilePath (getTopFilePath topf)) key
 startKeys _ _ = stop
 
-showFormatted :: Maybe Utility.Format.Format -> RawFilePath -> [(String, String)] -> Annex ()
+showFormatted :: Maybe Utility.Format.Format -> S.ByteString -> [(String, String)] -> Annex ()
 showFormatted format unformatted vars =
 	unlessM (showFullJSON $ JSONChunk vars) $
 		case format of

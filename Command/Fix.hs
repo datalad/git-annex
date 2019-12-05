@@ -37,13 +37,14 @@ seek ps = unlessM crippledFileSystem $ do
 
 data FixWhat = FixSymlinks | FixAll
 
-start :: FixWhat -> FilePath -> Key -> CommandStart
+start :: FixWhat -> RawFilePath -> Key -> CommandStart
 start fixwhat file key = do
-	currlink <- liftIO $ catchMaybeIO $ readSymbolicLink file
-	wantlink <- calcRepo $ gitAnnexLink file key
+	currlink <- liftIO $ catchMaybeIO $ readSymbolicLink $ fromRawFilePath file
+	wantlink <- calcRepo $ gitAnnexLink (fromRawFilePath file) key
 	case currlink of
 		Just l
-			| l /= wantlink -> fixby $ fixSymlink file wantlink
+			| l /= wantlink -> fixby $
+				fixSymlink (fromRawFilePath file) wantlink
 			| otherwise -> stop
 		Nothing -> case fixwhat of
 			FixAll -> fixthin
@@ -52,15 +53,15 @@ start fixwhat file key = do
 	fixby = starting "fix" (mkActionItem (key, file))
 	fixthin = do
 		obj <- calcRepo $ gitAnnexLocation key
-		stopUnless (isUnmodified key file <&&> isUnmodified key obj) $ do
+		stopUnless (isUnmodified key (fromRawFilePath file) <&&> isUnmodified key obj) $ do
 			thin <- annexThin <$> Annex.getGitConfig
-			fs <- liftIO $ catchMaybeIO $ getFileStatus file
+			fs <- liftIO $ catchMaybeIO $ getFileStatus (fromRawFilePath file)
 			os <- liftIO $ catchMaybeIO $ getFileStatus obj
 			case (linkCount <$> fs, linkCount <$> os, thin) of
 				(Just 1, Just 1, True) ->
-					fixby $ makeHardLink file key
+					fixby $ makeHardLink (fromRawFilePath file) key
 				(Just n, Just n', False) | n > 1 && n == n' ->
-					fixby $ breakHardLink file key obj
+					fixby $ breakHardLink (fromRawFilePath file) key obj
 				_ -> stop
 
 breakHardLink :: FilePath -> Key -> FilePath -> CommandPerform

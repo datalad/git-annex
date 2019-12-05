@@ -51,7 +51,7 @@ seekBatch fmt = batchInput fmt parse commandAction
 		in if not (null keyname) && not (null file)
 			then Right $ go file (keyOpt keyname)
 			else Left "Expected pairs of key and filename"
-	go file key = starting "fromkey" (mkActionItem (key, file)) $
+	go file key = starting "fromkey" (mkActionItem (key, toRawFilePath file)) $
 		perform key file
 
 start :: Bool -> (String, FilePath) -> CommandStart
@@ -61,7 +61,7 @@ start force (keyname, file) = do
 		inbackend <- inAnnex key
 		unless inbackend $ giveup $
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
-	starting "fromkey" (mkActionItem (key, file)) $
+	starting "fromkey" (mkActionItem (key, toRawFilePath file)) $
 		perform key file
 
 -- From user input to a Key.
@@ -80,7 +80,7 @@ keyOpt s = case parseURI s of
 		Nothing -> giveup $ "bad key/url " ++ s
 
 perform :: Key -> FilePath -> CommandPerform
-perform key file = lookupFileNotHidden file >>= \case
+perform key file = lookupFileNotHidden (toRawFilePath file) >>= \case
 	Nothing -> ifM (liftIO $ doesFileExist file)
 		( hasothercontent
 		, do
