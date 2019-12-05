@@ -101,11 +101,12 @@ setRepoConfig uuid mremote oldc newc = do
 			 - there's not. Special remotes don't normally
 			 - have that, and don't use it. Temporarily add
 			 - it if it's missing. -}
-			let remotefetch = "remote." ++ T.unpack (repoName oldc) ++ ".fetch"
+			let remotefetch = Git.ConfigKey $ encodeBS' $
+				"remote." ++ T.unpack (repoName oldc) ++ ".fetch"
 			needfetch <- isNothing <$> fromRepo (Git.Config.getMaybe remotefetch)
 			when needfetch $
 				inRepo $ Git.Command.run
-					[Param "config", Param remotefetch, Param ""]
+					[Param "config", Param (Git.fromConfigKey remotefetch), Param ""]
 			inRepo $ Git.Command.run
 				[ Param "remote"
 				, Param "rename"

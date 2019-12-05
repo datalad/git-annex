@@ -45,7 +45,7 @@ transfersDisplay = do
 		transferPaused info || isNothing (startedTime info)
 	desc transfer info = case associatedFile info of
 		AssociatedFile Nothing -> serializeKey $ transferKey transfer
-		AssociatedFile (Just af) -> af
+		AssociatedFile (Just af) -> fromRawFilePath af
 
 {- Simplifies a list of transfers, avoiding display of redundant
  - equivilant transfers. -}

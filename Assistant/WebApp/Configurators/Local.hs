@@ -336,7 +336,7 @@ getFinishAddDriveR drive = go
 		isnew <- liftIO $ makeRepo dir True
 		{- Removable drives are not reliable media, so enable fsync. -}
 		liftIO $ inDir dir $
-			setConfig (ConfigKey "core.fsyncobjectfiles")
+			setConfig "core.fsyncobjectfiles"
 				(Git.Config.boolConfig True)
 		(u, r) <- a isnew
 		when isnew $
