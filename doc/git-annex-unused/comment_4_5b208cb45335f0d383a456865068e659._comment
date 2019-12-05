@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="atrent"
+ avatar="http://cdn.libravatar.org/avatar/6069dfebff03997460874771defa0fa4"
+ subject="can't find unused objects"
+ date="2019-12-02T07:26:41Z"
+ content="""
+I recently migrated an annex to SHA256 (without \"E\") and I'm now trying to clean the repo from unused data.
+I have a strange situation: there are 62G of unused objects:
+
+    $ du -ks .git/annex/objects/
+    64334024	.git/annex/objects/
+
+but 'git annex unused' gives me only:
+
+    $ git annex unused
+    unused ...
+    Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s27--32efec98dc9e05442fc2385bb85d855a8c7824c68abd4ab5bf55a4dfe412b334.pdf
+    (To see where data was previously used, try: git log --stat --no-textconv -S'KEY')
+    To remove unwanted data: git-annex dropunused NUMBER
+    ok
+
+I've checked (through a small shell script) that none of the object is in fact referenced by any symlink...
+
+May I delete them? Shall I do some other checking/fscking/repairing?
+
+Thank you
+"""]]

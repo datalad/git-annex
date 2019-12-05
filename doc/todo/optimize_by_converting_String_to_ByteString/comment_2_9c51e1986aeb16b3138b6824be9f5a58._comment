@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="representing paths"
+ date="2019-11-27T15:08:40Z"
+ content="""
+Thanks for working on this Joey.
+
+I don't know Haskell or git-annex architecture, so my thoughts might make no sense, but I'll post just in case.
+
+\"There are likely quite a few places where a value is converted back and forth several times\" -- as a quick/temp fix, could memoization speed this up? Or memoizing the results of some system calls?
+
+The many filenames flying around often share long prefixes.  Could that be used to speed things up?  E.g. if they could be represented as pointers into some compact storage, maybe cache performance would improve.
+
+\"git annex find... files fly by much more snappily\" -- does this mean `git-annex-find` is testing each file individually, as opposed to constructing a SQL query to an indexed db?  Maybe, simpler `git-annex-find` queries that are fully mappable to SQL queries could be special-cased?
+
+Sorry for naive comments, I'll eventually read up on Haskell and make more sense...
+
+"""]]

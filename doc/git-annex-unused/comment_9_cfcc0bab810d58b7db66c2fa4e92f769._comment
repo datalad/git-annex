@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 9"
+ date="2019-12-02T16:58:25Z"
+ content="""
+\"I synced to all remotes and dropped everything in 'here'\" -- [[git-annex-unused]] \"Checks the *annex*\" for the unused contents (unless `--from=repository` is used), so if you dropped everything in `here`, there's nothing to find.  But it seems from `du` results that contents wasn't actually dropped?  [[git-annex-whereis]] tells where git-annex thinks contents is.
+"""]]
