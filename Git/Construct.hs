@@ -128,7 +128,7 @@ fromRemotes repo = mapM construct remotepairs
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
 	remotepairs = filterkeys isRemoteKey
-	construct (k,v) = remoteNamedFromKey k (fromRemoteLocation (decodeBS' v) repo)
+	construct (k,v) = remoteNamedFromKey k (fromRemoteLocation (fromConfigValue v) repo)
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
 remoteNamed :: String -> IO Repo -> IO Repo

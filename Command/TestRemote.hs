@@ -236,7 +236,7 @@ testExportTree st (Just _) ea k1 k2 =
 	]
   where
 	testexportdirectory = "testremote-export"
-	testexportlocation = mkExportLocation (testexportdirectory </> "location")
+	testexportlocation = mkExportLocation (toRawFilePath (testexportdirectory </> "location"))
 	check desc a = testCase desc $
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	storeexport k = do
@@ -252,7 +252,7 @@ testExportTree st (Just _) ea k1 k2 =
 	removeexport k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory = case Remote.removeExportDirectory ea of
 		Nothing -> return True
-		Just a -> a (mkExportDirectory testexportdirectory)
+		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
 
 testUnavailable :: Annex.AnnexState -> Remote -> Key -> [TestTree]
 testUnavailable st r k =
@@ -326,7 +326,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 	return k
 
 getReadonlyKey :: Remote -> FilePath -> Annex Key
-getReadonlyKey r f = lookupFile f >>= \case
+getReadonlyKey r f = lookupFile (toRawFilePath f) >>= \case
 	Nothing -> giveup $ f ++ " is not an annexed file"
 	Just k -> do
 		unlessM (inAnnex k) $

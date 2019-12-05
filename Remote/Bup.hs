@@ -16,7 +16,7 @@ import Annex.Common
 import qualified Annex
 import Types.Remote
 import Types.Creds
-import Git.Types (fromConfigKey)
+import Git.Types (ConfigValue(..), fromConfigKey)
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -213,7 +213,7 @@ storeBupUUID u buprepo = do
 					giveup "ssh failed"
 		else liftIO $ do
 			r' <- Git.Config.read r
-			let olduuid = Git.Config.get configkeyUUID mempty r'
+			let ConfigValue olduuid = Git.Config.get configkeyUUID mempty r'
 			when (S.null olduuid) $
 				Git.Command.run
 					[ Param "config"

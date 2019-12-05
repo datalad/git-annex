@@ -67,7 +67,7 @@ seek o = do
 
 getFeed :: ImportFeedOptions -> Cache -> URLString -> CommandSeek
 getFeed opts cache url = do
-	showStart "importfeed" url
+	showStart' "importfeed" (Just url)
 	downloadFeed url >>= \case
 		Nothing -> showEndResult =<< feedProblem url
 			"downloading the feed failed"
@@ -222,7 +222,7 @@ performDownload opts cache todownload = case location todownload of
 		case dest of
 			Nothing -> return True
 			Just f -> do
-				showStart "addurl" url
+				showStart' "addurl" (Just url)
 				ks <- getter f
 				if null ks
 					then do
@@ -244,7 +244,7 @@ performDownload opts cache todownload = case location todownload of
 	 - to be re-downloaded. -}
 	makeunique url n file = ifM alreadyexists
 		( ifM forced
-			( ifAnnexed f checksameurl tryanother
+			( ifAnnexed (toRawFilePath f) checksameurl tryanother
 			, tryanother
 			)
 		, return $ Just f

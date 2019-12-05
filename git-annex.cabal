@@ -407,16 +407,16 @@ Executable git-annex
   if flag(S3)
     Build-Depends: aws (>= 0.20)
     CPP-Options: -DWITH_S3
-    Other-Modules-temp-disabled: Remote.S3
+    Other-Modules: Remote.S3
 
   if flag(WebDAV)
     Build-Depends: DAV (>= 1.0)
     CPP-Options: -DWITH_WEBDAV
-    Other-Modules-temp-disabled:
+    Other-Modules:
       Remote.WebDAV
       Remote.WebDAV.DavLocation
   if flag(S3) || flag(WebDAV)
-    Other-Modules-temp-disabled:
+    Other-Modules:
       Remote.Helper.Http
 
   if flag(Assistant) && ! os(solaris) && ! os(gnu)
@@ -602,7 +602,7 @@ Executable git-annex
   if flag(DebugLocks)
     CPP-Options: -DDEBUGLOCKS
 
-  Other-Modules-Temp-Disabled:
+  Other-Modules:
     Annex
     Annex.Action
     Annex.AdjustedBranch
@@ -860,6 +860,7 @@ Executable git-annex
     Git.RefLog
     Git.Remote
     Git.Remote.Remove
+    Git.Repair
     Git.Sha
     Git.Ssh
     Git.Status

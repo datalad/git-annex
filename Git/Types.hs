@@ -6,11 +6,13 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Git.Types where
 
 import Network.URI
 import Data.String
+import Data.Default
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import System.Posix.Types
@@ -36,9 +38,9 @@ data RepoLocation
 
 data Repo = Repo
 	{ location :: RepoLocation
-	, config :: M.Map ConfigKey S.ByteString
+	, config :: M.Map ConfigKey ConfigValue
 	-- a given git config key can actually have multiple values
-	, fullconfig :: M.Map ConfigKey [S.ByteString]
+	, fullconfig :: M.Map ConfigKey [ConfigValue]
 	-- remoteName holds the name used for this repo in some other
 	-- repo's list of remotes, when this repo is such a remote
 	, remoteName :: Maybe RemoteName
@@ -52,14 +54,29 @@ data Repo = Repo
 newtype ConfigKey = ConfigKey S.ByteString
 	deriving (Ord, Eq)
 
+newtype ConfigValue = ConfigValue S.ByteString
+	deriving (Ord, Eq, Semigroup, Monoid)
+
+instance Default ConfigValue where
+	def = ConfigValue mempty
+
 fromConfigKey :: ConfigKey -> String
 fromConfigKey (ConfigKey s) = decodeBS' s
 
 instance Show ConfigKey where
 	show = fromConfigKey
 
+fromConfigValue :: ConfigValue -> String
+fromConfigValue (ConfigValue s) = decodeBS' s
+
+instance Show ConfigValue where
+	show = fromConfigValue
+
 instance IsString ConfigKey where
 	fromString = ConfigKey . encodeBS'
+
+instance IsString ConfigValue where
+	fromString = ConfigValue . encodeBS'
 
 type RemoteName = String
 

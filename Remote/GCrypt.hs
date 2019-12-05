@@ -30,7 +30,7 @@ import Types.GitConfig
 import Types.Crypto
 import Types.Creds
 import Types.Transfer
-import Git.Types (ConfigKey(..), fromConfigKey)
+import Git.Types (ConfigKey(..), fromConfigKey, fromConfigValue)
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -462,7 +462,7 @@ getGCryptId fast r gc
 	| otherwise = return (Nothing, r)
   where
 	extract Nothing = (Nothing, r)
-	extract (Just r') = (decodeBS' <$> Git.Config.getMaybe coreGCryptId r', r')
+	extract (Just r') = (fromConfigValue <$> Git.Config.getMaybe coreGCryptId r', r')
 
 getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString))
 getConfigViaRsync r gc = do

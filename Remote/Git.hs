@@ -95,7 +95,7 @@ list autoinit = do
 			Nothing -> return r
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation (decodeBS' url) g
+					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) g
 
 {- Git remotes are normally set up using standard git command, not
  - git-annex initremote and enableremote.

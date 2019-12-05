@@ -27,9 +27,9 @@ seek :: CmdParams -> CommandSeek
 seek ps = do
 	-- Safety first; avoid any undo that would touch files that are not
 	-- in the index.
-	(fs, cleanup) <- inRepo $ LsFiles.notInRepo False ps
+	(fs, cleanup) <- inRepo $ LsFiles.notInRepo False (map toRawFilePath ps)
 	unless (null fs) $
-		giveup $ "Cannot undo changes to files that are not checked into git: " ++ unwords fs
+		giveup $ "Cannot undo changes to files that are not checked into git: " ++ unwords (map fromRawFilePath fs)
 	void $ liftIO $ cleanup
 
 	-- Committing staged changes before undo allows later

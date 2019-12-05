@@ -30,7 +30,7 @@ start :: CommandStart
 start = do
 	u <- findOrGenUUID
 	showConfig configkeyUUID $ fromUUID u
-	showConfig coreGCryptId . decodeBS'
+	showConfig coreGCryptId . fromConfigValue
 		=<< fromRepo (Git.Config.get coreGCryptId mempty)
 	stop
   where

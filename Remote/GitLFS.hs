@@ -189,7 +189,7 @@ configKnownUrl r
 	set k v r' = do
 		let k' = remoteConfig r' k
 		setConfig k' v
-		return $ Git.Config.store' k' (encodeBS' v) r'
+		return $ Git.Config.store' k' (Git.ConfigValue (encodeBS' v)) r'
 
 data LFSHandle = LFSHandle
 	{ downloadEndpoint :: Maybe LFS.Endpoint

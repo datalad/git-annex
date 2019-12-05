@@ -47,7 +47,7 @@ seek o = startConcurrency transferStages $
 		(withFilesInGit (commandAction . (whenAnnexed $ start o)))
 		=<< workTreeItems (mirrorFiles o)
 
-start :: MirrorOptions -> FilePath -> Key -> CommandStart
+start :: MirrorOptions -> RawFilePath -> Key -> CommandStart
 start o file k = startKey o afile (k, ai)
   where
 	afile = AssociatedFile (Just file)
@@ -75,4 +75,4 @@ startKey o afile (key, ai) = case fromToOptions o of
   where
 	getnumcopies = case afile of
 		AssociatedFile Nothing -> getNumCopies
-		AssociatedFile (Just af) -> getFileNumCopies af
+		AssociatedFile (Just af) -> getFileNumCopies (fromRawFilePath af)

@@ -156,7 +156,7 @@ startRemote r o file uri sz = do
 		performRemote r o uri file' sz
 
 performRemote :: Remote -> AddUrlOptions -> URLString -> FilePath -> Maybe Integer -> CommandPerform
-performRemote r o uri file sz = ifAnnexed file adduri geturi
+performRemote r o uri file sz = ifAnnexed (toRawFilePath file) adduri geturi
   where
 	loguri = setDownloader uri OtherDownloader
 	adduri = addUrlChecked o loguri file (Remote.uuid r) checkexistssize
@@ -180,7 +180,7 @@ downloadRemoteFile r o uri file sz = checkCanAdd file $ do
 			setTempUrl urlkey loguri
 			let downloader = \dest p -> fst 
 				<$> Remote.retrieveKeyFile r urlkey
-					(AssociatedFile (Just file)) dest p
+					(AssociatedFile (Just (toRawFilePath file))) dest p
 			ret <- downloadWith downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
 			return ret
@@ -212,7 +212,7 @@ startWeb o urlstring = go $ fromMaybe bad $ parseURI urlstring
 		performWeb o urlstring file urlinfo
 
 performWeb :: AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
-performWeb o url file urlinfo = ifAnnexed file addurl geturl
+performWeb o url file urlinfo = ifAnnexed (toRawFilePath file) addurl geturl
   where
 	geturl = next $ isJust <$> addUrlFile (downloadOptions o) url urlinfo file
 	addurl = addUrlChecked o url file webUUID $ \k ->
@@ -258,7 +258,7 @@ addUrlFile o url urlinfo file =
 
 downloadWeb :: DownloadOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
 downloadWeb o url urlinfo file =
-	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just file))
+	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just (toRawFilePath file)))
   where
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
 	downloader f p = downloadUrl urlkey p [url] f
@@ -278,7 +278,7 @@ downloadWeb o url urlinfo file =
 		-- first, and check if that is already an annexed file,
 		-- to avoid unnecessary work in that case.
 		| otherwise = youtubeDlFileNameHtmlOnly url >>= \case
-			Right dest -> ifAnnexed dest 
+			Right dest -> ifAnnexed (toRawFilePath dest)
 				(alreadyannexed dest)
 				(dl dest)
 			Left _ -> normalfinish tmp
@@ -345,7 +345,7 @@ downloadWith :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLStr
 downloadWith downloader dummykey u url file =
 	go =<< downloadWith' downloader dummykey u url afile
   where
-	afile = AssociatedFile (Just file)
+	afile = AssociatedFile (Just (toRawFilePath file))
 	go Nothing = return Nothing
 	go (Just tmp) = finishDownloadWith tmp u url file
 
@@ -401,7 +401,7 @@ addWorkTree u url file key mtmp = case mtmp of
 				-- than the work tree file.
 				liftIO $ renameFile file tmp
 				go
-			else void $ Command.Add.addSmall file
+			else void $ Command.Add.addSmall (toRawFilePath file)
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", serializeKey key)]

@@ -23,6 +23,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Objects
+import Git.Types (fromConfigValue)
 import qualified Annex.Branch
 import Logs.UUID
 import Logs.Trust.Basic
@@ -275,5 +276,5 @@ initSharedClone True = do
  - affect it. -}
 propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
-	maybe noop (setConfig "annex.securehashesonly" . decodeBS')
+	maybe noop (setConfig "annex.securehashesonly" . fromConfigValue)
 		=<< getGlobalConfig "annex.securehashesonly"

@@ -51,7 +51,7 @@ setIndirect = do
 		Nothing -> noop
 		Just wt -> do
 			unsetConfig src
-			setConfig dest (decodeBS' wt)
+			setConfig dest (fromConfigValue wt)
 			reloadConfig
 
 {- Converts a directBranch back to the original branch.

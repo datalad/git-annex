@@ -10,6 +10,9 @@ module Command.Config where
 import Command
 import Logs.Config
 import Config
+import Git.Types (ConfigKey(..), fromConfigValue)
+
+import qualified Data.ByteString as S
 
 cmd :: Command
 cmd = noMessages $ command "config" SectionSetup
@@ -17,9 +20,9 @@ cmd = noMessages $ command "config" SectionSetup
 	paramNothing (seek <$$> optParser)
 
 data Action
-	= SetConfig ConfigName ConfigValue
-	| GetConfig ConfigName
-	| UnsetConfig ConfigName
+	= SetConfig ConfigKey ConfigValue
+	| GetConfig ConfigKey
+	| UnsetConfig ConfigKey
 
 type Name = String
 type Value = String
@@ -48,19 +51,19 @@ optParser _ = setconfig <|> getconfig <|> unsetconfig
 		)
 
 seek :: Action -> CommandSeek
-seek (SetConfig name val) = commandAction $
-	startingUsualMessages name (ActionItemOther (Just val)) $ do
-		setGlobalConfig name val
-		setConfig (ConfigKey name) val
+seek (SetConfig ck@(ConfigKey name) val) = commandAction $
+	startingUsualMessages (decodeBS' name) (ActionItemOther (Just (fromConfigValue val))) $ do
+		setGlobalConfig ck val
+		setConfig ck (fromConfigValue val)
 		next $ return True
-seek (UnsetConfig name) = commandAction $
-	startingUsualMessages name (ActionItemOther (Just "unset")) $do
-		unsetGlobalConfig name
-		unsetConfig (ConfigKey name)
+seek (UnsetConfig ck@(ConfigKey name)) = commandAction $
+	startingUsualMessages (decodeBS' name) (ActionItemOther (Just "unset")) $do
+		unsetGlobalConfig ck
+		unsetConfig ck
 		next $ return True
-seek (GetConfig name) = commandAction $
+seek (GetConfig ck) = commandAction $
 	startingCustomOutput (ActionItemOther Nothing) $ do
-		getGlobalConfig name >>= \case
+		getGlobalConfig ck >>= \case
 			Nothing -> return ()
-			Just v -> liftIO $ putStrLn v
+			Just (ConfigValue v) -> liftIO $ S.putStrLn v
 		next $ return True

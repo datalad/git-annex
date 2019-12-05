@@ -79,9 +79,9 @@ type GCryptId = String
  - which is stored in the repository (in encrypted form)
  - and cached in a per-remote gcrypt-id configuration setting. -}
 remoteRepoId :: Repo -> Maybe RemoteName -> Maybe GCryptId
-remoteRepoId r n = decodeBS' <$> getRemoteConfig "gcrypt-id" r n
+remoteRepoId r n = fromConfigValue <$> getRemoteConfig "gcrypt-id" r n
 
-getRemoteConfig :: S.ByteString -> Repo -> Maybe RemoteName -> Maybe S.ByteString
+getRemoteConfig :: S.ByteString -> Repo -> Maybe RemoteName -> Maybe ConfigValue
 getRemoteConfig field repo remotename = do
 	n <- remotename
 	Config.getMaybe (remoteConfigKey field n) repo
@@ -96,8 +96,8 @@ getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
 	]
   where
 	defaultkey = "gcrypt.participants"
-	parse (Just "simple") = []
-	parse (Just b) = words (decodeBS' b)
+	parse (Just (ConfigValue "simple")) = []
+	parse (Just (ConfigValue b)) = words (decodeBS' b)
 	parse Nothing = []
 
 remoteParticipantConfigKey :: RemoteName -> ConfigKey

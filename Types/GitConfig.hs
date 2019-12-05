@@ -203,9 +203,9 @@ extractGitConfig r = GitConfig
 	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
-	getmaybe = fmap decodeBS' . getmaybe'
+	getmaybe = fmap fromConfigValue . getmaybe'
 	getmaybe' k = Git.Config.getMaybe k r
-	getlist k = map decodeBS' $ Git.Config.getList k r
+	getlist k = map fromConfigValue $ Git.Config.getList k r
 	getwords k = fromMaybe [] $ words <$> getmaybe k
 
 	configurable d Nothing = DefaultConfig d
@@ -345,7 +345,7 @@ extractRemoteGitConfig r remotename = do
 	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
-	getmaybe = fmap decodeBS' . getmaybe'
+	getmaybe = fmap fromConfigValue . getmaybe'
 	getmaybe' k = mplus (Git.Config.getMaybe (key k) r)
 		(Git.Config.getMaybe (remotekey k) r)
 	getoptions k = fromMaybe [] $ words <$> getmaybe k

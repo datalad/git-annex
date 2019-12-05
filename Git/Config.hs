@@ -21,16 +21,16 @@ import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
 
-{- Returns a single git config setting, or a default value if not set. -}
-get :: ConfigKey -> S.ByteString -> Repo -> S.ByteString
-get key defaultValue repo = M.findWithDefault defaultValue key (config repo)
+{- Returns a single git config setting, or a fallback value if not set. -}
+get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
+get key fallback repo = M.findWithDefault fallback key (config repo)
 
-{- Returns a list with each line of a multiline config setting. -}
-getList :: ConfigKey -> Repo -> [S.ByteString]
+{- Returns a list of values. -}
+getList :: ConfigKey -> Repo -> [ConfigValue]
 getList key repo = M.findWithDefault [] key (fullconfig repo)
 
 {- Returns a single git config setting, if set. -}
-getMaybe :: ConfigKey -> Repo -> Maybe S.ByteString
+getMaybe :: ConfigKey -> Repo -> Maybe ConfigValue
 getMaybe key repo = M.lookup key (config repo)
 
 {- Runs git config and populates a repo with its config.
@@ -100,7 +100,7 @@ store s repo = do
 
 {- Stores a single config setting in a Repo, returning the new version of
  - the Repo. Config settings can be updated incrementally. -}
-store' :: ConfigKey -> S.ByteString -> Repo -> Repo
+store' :: ConfigKey -> ConfigValue -> Repo -> Repo
 store' k v repo = repo
 	{ config = M.singleton k v `M.union` config repo
 	, fullconfig = M.unionWith (++) (M.singleton k [v]) (fullconfig repo)
@@ -128,7 +128,7 @@ updateLocation' :: Repo -> RepoLocation -> IO Repo
 updateLocation' r l = do
 	l' <- case getMaybe "core.worktree" r of
 		Nothing -> return l
-		Just d -> do
+		Just (ConfigValue d) -> do
 			{- core.worktree is relative to the gitdir -}
 			top <- absPath $ gitdir l
 			let p = absPathFrom top (fromRawFilePath d)
@@ -137,7 +137,7 @@ updateLocation' r l = do
 
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
-parse :: S.ByteString -> M.Map ConfigKey [S.ByteString]
+parse :: S.ByteString -> M.Map ConfigKey [ConfigValue]
 parse s
 	| S.null s = M.empty
 	-- --list output will have a '=' in the first line
@@ -152,15 +152,15 @@ parse s
 	firstline = S.takeWhile (/= nl) s
 
 	sep c = M.fromListWith (++)
-		. map (\(k,v) -> (ConfigKey k, [S.drop 1 v])) 
+		. map (\(k,v) -> (ConfigKey k, [ConfigValue (S.drop 1 v)])) 
 		. map (S.break (== c))
 
 {- Checks if a string from git config is a true value. -}
 isTrue :: String -> Maybe Bool
-isTrue = isTrue' . encodeBS'
+isTrue = isTrue' . ConfigValue . encodeBS'
 
-isTrue' :: S.ByteString -> Maybe Bool
-isTrue' s
+isTrue' :: ConfigValue -> Maybe Bool
+isTrue' (ConfigValue s)
 	| s' == "true" = Just True
 	| s' == "false" = Just False
 	| otherwise = Nothing

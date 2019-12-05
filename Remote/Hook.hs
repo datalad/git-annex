@@ -11,7 +11,7 @@ import Annex.Common
 import Types.Remote
 import Types.Creds
 import qualified Git
-import Git.Types (fromConfigKey)
+import Git.Types (fromConfigKey, fromConfigValue)
 import Config
 import Config.Cost
 import Annex.UUID
@@ -108,10 +108,10 @@ hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
 
 lookupHook :: HookName -> Action -> Annex (Maybe String)
 lookupHook hookname action = do
-	command <- decodeBS' <$> getConfig hook mempty
+	command <- fromConfigValue <$> getConfig hook mempty
 	if null command
 		then do
-			fallback <- decodeBS' <$> getConfig hookfallback mempty
+			fallback <- fromConfigValue <$> getConfig hookfallback mempty
 			if null fallback
 				then do
 					warning $ "missing configuration for " ++ fromConfigKey hook ++ " or " ++ fromConfigKey hookfallback

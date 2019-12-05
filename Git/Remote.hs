@@ -84,9 +84,9 @@ parseRemoteLocation s repo = ret $ calcloc s
 	  where
 		replacement = decodeBS' $ S.drop (S.length prefix) $
 			S.take (S.length bestkey - S.length suffix) bestkey
-		(ConfigKey bestkey, bestvalue) = maximumBy longestvalue insteadofs
+		(ConfigKey bestkey, ConfigValue bestvalue) = maximumBy longestvalue insteadofs
 		longestvalue (_, a) (_, b) = compare b a
-		insteadofs = filterconfig $ \(ConfigKey k, v) -> 
+		insteadofs = filterconfig $ \(ConfigKey k, ConfigValue v) -> 
 			prefix `S.isPrefixOf` k &&
 			suffix `S.isSuffixOf` k &&
 			v `S.isPrefixOf` encodeBS l

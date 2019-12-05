@@ -29,10 +29,10 @@ type UnqualifiedConfigKey = S.ByteString
 
 {- Looks up a setting in git config. This is not as efficient as using the
  - GitConfig type. -}
-getConfig :: ConfigKey -> S.ByteString -> Annex S.ByteString
+getConfig :: ConfigKey -> ConfigValue -> Annex ConfigValue
 getConfig key d = fromRepo $ Git.Config.get key d
 
-getConfigMaybe :: ConfigKey -> Annex (Maybe S.ByteString)
+getConfigMaybe :: ConfigKey -> Annex (Maybe ConfigValue)
 getConfigMaybe key = fromRepo $ Git.Config.getMaybe key
 
 {- Changes a git config setting in both internal state and .git/config -}
