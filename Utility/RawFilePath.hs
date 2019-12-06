@@ -18,6 +18,7 @@ module Utility.RawFilePath (
 	RawFilePath,
 	readSymbolicLink,
 	getFileStatus,
+	getSymbolicLinkStatus,
 ) where
 
 #ifndef mingw32_HOST_OS
@@ -33,4 +34,7 @@ readSymbolicLink f = toRawFilePath <$> P.readSymbolicLink (fromRawFilePath f)
 
 getFileStatus :: RawFilePath -> IO FileStatus
 getFileStatus = P.getFileStatus . fromRawFilePath
+
+getSymbolicLinkStatus :: RawFilePath -> IO FileStatus
+getSymbolicLinkStatus = P.getSymbolicLinkStatus . fromRawFilePath
 #endif

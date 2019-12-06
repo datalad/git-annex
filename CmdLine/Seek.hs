@@ -33,6 +33,7 @@ import Annex.CurrentBranch
 import Annex.Content
 import Annex.InodeSentinal
 import qualified Database.Keys
+import qualified Utility.RawFilePath as R
 
 withFilesInGit :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGit a l = seekActions $ prepFiltered a $
@@ -276,4 +277,4 @@ workTreeItems' (AllowHidden allowhidden) ps = do
 		| otherwise = return False
 
 notSymlink :: RawFilePath -> IO Bool
-notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus (fromRawFilePath f)
+notSymlink f = liftIO $ not . isSymbolicLink <$> R.getSymbolicLinkStatus f
