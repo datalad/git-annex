@@ -24,6 +24,7 @@ import Git.Command
 import Git.Sha
 import Git.FilePath
 import qualified Git.Filename
+import Utility.Attoparsec
 
 import Numeric
 import Data.Either
@@ -90,7 +91,7 @@ parseLsTree b = case A.parse parserLsTree b of
 parserLsTree :: A.Parser TreeItem
 parserLsTree = TreeItem
 	-- mode
-	<$> A8.decimal
+	<$> octal
 	<* A8.char ' '
 	-- type
 	<*> A.takeTill (== 32)

@@ -112,7 +112,7 @@ fmtObjectType TreeObject = "tree"
 
 {- Types of items in a tree. -}
 data TreeItemType = TreeFile | TreeExecutable | TreeSymlink | TreeSubmodule
-	deriving (Eq)
+	deriving (Eq, Show)
 
 {- Git uses magic numbers to denote the type of a tree item. -}
 readTreeItemType :: S.ByteString -> Maybe TreeItemType
