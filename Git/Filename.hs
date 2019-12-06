@@ -35,6 +35,13 @@ decode b = case S.uncons b of
 encode :: RawFilePath -> S.ByteString
 encode s = encodeBS $ "\"" ++ encode_c (decodeBS s) ++ "\""
 
-{- For quickcheck. -}
+{- For quickcheck.
+ -
+ - See comment on Utility.Format.prop_encode_c_decode_c
+ -_roundtrip for
+ - why this only tests chars < 256
+ -}
 prop_encode_decode_roundtrip :: FilePath -> Bool
-prop_encode_decode_roundtrip s = s == fromRawFilePath (decode (encode (toRawFilePath s)))
+prop_encode_decode_roundtrip s = s' == fromRawFilePath (decode (encode (toRawFilePath s')))
+  where
+	s' = filter (\c -> ord c < 256) s
