@@ -1,13 +1,17 @@
 {- git repository configuration handling
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.Config where
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 import Data.Char
 
 import Common
@@ -17,16 +21,16 @@ import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
 
-{- Returns a single git config setting, or a default value if not set. -}
-get :: String -> String -> Repo -> String
-get key defaultValue repo = M.findWithDefault defaultValue key (config repo)
+{- Returns a single git config setting, or a fallback value if not set. -}
+get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
+get key fallback repo = M.findWithDefault fallback key (config repo)
 
-{- Returns a list with each line of a multiline config setting. -}
-getList :: String -> Repo -> [String]
+{- Returns a list of values. -}
+getList :: ConfigKey -> Repo -> [ConfigValue]
 getList key repo = M.findWithDefault [] key (fullconfig repo)
 
 {- Returns a single git config setting, if set. -}
-getMaybe :: String -> Repo -> Maybe String
+getMaybe :: ConfigKey -> Repo -> Maybe ConfigValue
 getMaybe key repo = M.lookup key (config repo)
 
 {- Runs git config and populates a repo with its config.
@@ -79,14 +83,14 @@ global = do
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> Handle -> IO Repo
 hRead repo h = do
-	val <- hGetContentsStrict h
+	val <- S.hGetContents h
 	store val repo
 
 {- Stores a git config into a Repo, returning the new version of the Repo.
  - The git config may be multiple lines, or a single line.
  - Config settings can be updated incrementally.
  -}
-store :: String -> Repo -> IO Repo
+store :: S.ByteString -> Repo -> IO Repo
 store s repo = do
 	let c = parse s
 	updateLocation $ repo
@@ -96,7 +100,7 @@ store s repo = do
 
 {- Stores a single config setting in a Repo, returning the new version of
  - the Repo. Config settings can be updated incrementally. -}
-store' :: String -> String -> Repo -> Repo
+store' :: ConfigKey -> ConfigValue -> Repo -> Repo
 store' k v repo = repo
 	{ config = M.singleton k v `M.union` config repo
 	, fullconfig = M.unionWith (++) (M.singleton k [v]) (fullconfig repo)
@@ -124,52 +128,66 @@ updateLocation' :: Repo -> RepoLocation -> IO Repo
 updateLocation' r l = do
 	l' <- case getMaybe "core.worktree" r of
 		Nothing -> return l
-		Just d -> do
+		Just (ConfigValue d) -> do
 			{- core.worktree is relative to the gitdir -}
 			top <- absPath $ gitdir l
-			return $ l { worktree = Just $ absPathFrom top d }
+			let p = absPathFrom top (fromRawFilePath d)
+			return $ l { worktree = Just p }
 	return $ r { location = l' }
 
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
-parse :: String -> M.Map String [String]
-parse [] = M.empty
+parse :: S.ByteString -> M.Map ConfigKey [ConfigValue]
 parse s
-	-- --list output will have an = in the first line
-	| all ('=' `elem`) (take 1 ls) = sep '=' ls
+	| S.null s = M.empty
+	-- --list output will have a '=' in the first line
+	-- (The first line of --null --list output is the name of a key,
+	-- which is assumed to never contain '='.)
+	| S.elem eq firstline = sep eq $ S.split nl s
 	-- --null --list output separates keys from values with newlines
-	| otherwise = sep '\n' $ splitc '\0' s
+	| otherwise = sep nl $ S.split 0 s
   where
-	ls = lines s
-	sep c = M.fromListWith (++) . map (\(k,v) -> (k, [v])) .
-		map (separate (== c))
+	nl = fromIntegral (ord '\n')
+	eq = fromIntegral (ord '=')
+	firstline = S.takeWhile (/= nl) s
+
+	sep c = M.fromListWith (++)
+		. map (\(k,v) -> (ConfigKey k, [ConfigValue (S.drop 1 v)])) 
+		. map (S.break (== c))
 
 {- Checks if a string from git config is a true value. -}
 isTrue :: String -> Maybe Bool
-isTrue s
+isTrue = isTrue' . ConfigValue . encodeBS'
+
+isTrue' :: ConfigValue -> Maybe Bool
+isTrue' (ConfigValue s)
 	| s' == "true" = Just True
 	| s' == "false" = Just False
 	| otherwise = Nothing
   where
-	s' = map toLower s
+	s' = S8.map toLower s
 
 boolConfig :: Bool -> String
 boolConfig True = "true"
 boolConfig False = "false"
 
-isBare :: Repo -> Bool
-isBare r = fromMaybe False $ isTrue =<< getMaybe coreBare r
+boolConfig' :: Bool -> S.ByteString
+boolConfig' True = "true"
+boolConfig' False = "false"
 
-coreBare :: String
+isBare :: Repo -> Bool
+isBare r = fromMaybe False $ isTrue' =<< getMaybe coreBare r
+
+coreBare :: ConfigKey
 coreBare = "core.bare"
 
 {- Runs a command to get the configuration of a repo,
  - and returns a repo populated with the configuration, as well as the raw
  - output of the command. -}
-fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, String))
+fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, S.ByteString))
 fromPipe r cmd params = try $
 	withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		val <- hGetContentsStrict h
+		val <- S.hGetContents h
 		r' <- store val r
 		return (r', val)
   where
@@ -177,7 +195,7 @@ fromPipe r cmd params = try $
 
 {- Reads git config from a specified file and returns the repo populated
  - with the configuration. -}
-fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, String))
+fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, S.ByteString))
 fromFile r f = fromPipe r "git"
 	[ Param "config"
 	, Param "--file"
@@ -187,13 +205,13 @@ fromFile r f = fromPipe r "git"
 
 {- Changes a git config setting in the specified config file.
  - (Creates the file if it does not already exist.) -}
-changeFile :: FilePath -> String -> String -> IO Bool
-changeFile f k v = boolSystem "git"
+changeFile :: FilePath -> ConfigKey -> S.ByteString -> IO Bool
+changeFile f (ConfigKey k) v = boolSystem "git"
 	[ Param "config"
 	, Param "--file"
 	, File f
-	, Param k
-	, Param v
+	, Param (decodeBS' k)
+	, Param (decodeBS' v)
 	]
 
 {- Unsets a git config setting, in both the git repo,
@@ -202,10 +220,10 @@ changeFile f k v = boolSystem "git"
  - If unsetting the config fails, including in a read-only repo, or
  - when the config is not set, returns Nothing.
  -}
-unset :: String -> Repo -> IO (Maybe Repo)
-unset k r = ifM (Git.Command.runBool ps r)
-	( return $ Just $ r { config = M.delete k (config r) }
+unset :: ConfigKey -> Repo -> IO (Maybe Repo)
+unset ck@(ConfigKey k) r = ifM (Git.Command.runBool ps r)
+	( return $ Just $ r { config = M.delete ck (config r) }
 	, return Nothing
 	)
   where
-	ps = [Param "config", Param "--unset-all", Param k]
+	ps = [Param "config", Param "--unset-all", Param (decodeBS' k)]

@@ -32,7 +32,7 @@ seek ps = do
 	l <- workTreeItems ps
 	withFilesInGit (commandAction . (whenAnnexed startNew)) l
 
-startNew :: FilePath -> Key -> CommandStart
+startNew :: RawFilePath -> Key -> CommandStart
 startNew file key = ifM (isJust <$> isAnnexLink file)
 	( stop
 	, starting "lock" (mkActionItem (key, file)) $
@@ -43,7 +43,7 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 		| key' == key = cont
 		| otherwise = errorModified
 	go Nothing = 
-		ifM (isUnmodified key file) 
+		ifM (isUnmodified key (fromRawFilePath file))
 			( cont
 			, ifM (Annex.getState Annex.force)
 				( cont
@@ -52,11 +52,11 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 			)
 	cont = performNew file key
 
-performNew :: FilePath -> Key -> CommandPerform
+performNew :: RawFilePath -> Key -> CommandPerform
 performNew file key = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
-	addLink file key
-		=<< withTSDelta (liftIO . genInodeCache file)
+	addLink (fromRawFilePath file) key
+		=<< withTSDelta (liftIO . genInodeCache' file)
 	next $ cleanupNew file key
   where
 	lockdown obj = do
@@ -70,7 +70,7 @@ performNew file key = do
 	-- It's ok if the file is hard linked to obj, but if some other
 	-- associated file is, we need to break that link to lock down obj.
 	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (getFileStatus obj)) $ do
-		mfc <- withTSDelta (liftIO . genInodeCache file)
+		mfc <- withTSDelta (liftIO . genInodeCache' file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			modifyContent obj $ replaceFile obj $ \tmp -> do
 				unlessM (checkedCopyFile key obj tmp Nothing) $
@@ -92,21 +92,21 @@ performNew file key = do
 
 	lostcontent = logStatus key InfoMissing
 
-cleanupNew :: FilePath -> Key -> CommandCleanup
+cleanupNew :: RawFilePath -> Key -> CommandCleanup
 cleanupNew file key = do
-	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
+	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath (fromRawFilePath file))
 	return True
 
-startOld :: FilePath -> CommandStart
+startOld :: RawFilePath -> CommandStart
 startOld file = do
 	unlessM (Annex.getState Annex.force)
 		errorModified
 	starting "lock" (ActionItemWorkTreeFile file) $
 		performOld file
 
-performOld :: FilePath -> CommandPerform
+performOld :: RawFilePath -> CommandPerform
 performOld file = do
-	Annex.Queue.addCommand "checkout" [Param "--"] [file]
+	Annex.Queue.addCommand "checkout" [Param "--"] [fromRawFilePath file]
 	next $ return True
 
 errorModified :: a

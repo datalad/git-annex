@@ -7,6 +7,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Upgrade.V5.Direct (
 	switchHEADBack,
 	setIndirect,
@@ -44,12 +46,12 @@ setIndirect = do
 		-- unset it when enabling direct mode, caching in
 		-- core.indirect-worktree
 		moveconfig indirectworktree coreworktree
-		setConfig (ConfigKey Git.Config.coreBare) val
+		setConfig Git.Config.coreBare val
 	moveconfig src dest = getConfigMaybe src >>= \case
 		Nothing -> noop
 		Just wt -> do
 			unsetConfig src
-			setConfig dest wt
+			setConfig dest (fromConfigValue wt)
 			reloadConfig
 
 {- Converts a directBranch back to the original branch.

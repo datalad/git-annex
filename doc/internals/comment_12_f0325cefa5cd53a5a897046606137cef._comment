@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="atrent"
+ avatar="http://cdn.libravatar.org/avatar/6069dfebff03997460874771defa0fa4"
+ subject="no collisions"
+ date="2019-11-30T20:37:00Z"
+ content="""
+I can confirm that these are not collisions: these identical files are the same photos with different names, shame on Dropbox syncing from my smartphone. I was actually hoping to dedupe through git-annex ;-)
+
+Some more questions/suggestions/conversation-starters:
+
+* I suppose I can dedup them with rdfind (i.e., hardlinking identical files), do you foresee any side effects?
+
+* may I change the hash function of git-annex to something not depending on filenames? (I suppose so, I'll have a look at the docs)
+
+* if I can change the hash function can I regenerate the whole annex without re-creating it? (again I'll have a look at docs)
+
+Thanks
+"""]]

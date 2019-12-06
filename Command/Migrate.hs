@@ -28,16 +28,16 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek = withFilesInGit (commandAction . (whenAnnexed start)) <=< workTreeItems
 
-start :: FilePath -> Key -> CommandStart
+start :: RawFilePath -> Key -> CommandStart
 start file key = do
 	forced <- Annex.getState Annex.force
-	v <- Backend.getBackend file key
+	v <- Backend.getBackend (fromRawFilePath file) key
 	case v of
 		Nothing -> stop
 		Just oldbackend -> do
 			exists <- inAnnex key
 			newbackend <- maybe defaultBackend return 
-				=<< chooseBackend file
+				=<< chooseBackend (fromRawFilePath file)
 			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
 				then starting "migrate" (mkActionItem (key, file)) $
 					perform file key oldbackend newbackend
@@ -50,7 +50,7 @@ start file key = do
  -  - Something has changed in the backend, such as a bug fix.
  -}
 upgradableKey :: Backend -> Key -> Bool
-upgradableKey backend key = isNothing (keySize key) || backendupgradable
+upgradableKey backend key = isNothing (fromKey keySize key) || backendupgradable
   where
 	backendupgradable = maybe False (\a -> a key) (canUpgradeKey backend)
 
@@ -63,7 +63,7 @@ upgradableKey backend key = isNothing (keySize key) || backendupgradable
  - data cannot get corrupted after the fsck but before the new key is
  - generated.
  -}
-perform :: FilePath -> Key -> Backend -> Backend -> CommandPerform
+perform :: RawFilePath -> Key -> Backend -> Backend -> CommandPerform
 perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
   where
 	go Nothing = stop
@@ -85,7 +85,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 	genkey Nothing = do
 		content <- calcRepo $ gitAnnexLocation oldkey
 		let source = KeySource
-			{ keyFilename = file
+			{ keyFilename = fromRawFilePath file
 			, contentLocation = content
 			, inodeCache = Nothing
 			}

@@ -284,7 +284,7 @@ findUncorruptedCommit missing goodcommits branch r = do
 				, Param "--format=%H"
 				, Param (fromRef branch)
 				] r
-			let branchshas = catMaybes $ map extractSha ls
+			let branchshas = catMaybes $ map (extractSha . decodeBL) ls
 			reflogshas <- RefLog.get branch r
 			-- XXX Could try a bit harder here, and look
 			-- for uncorrupted old commits in branches in the
@@ -313,7 +313,7 @@ verifyCommit missing goodcommits commit r
 			, Param "--format=%H %T"
 			, Param (fromRef commit)
 			] r
-		let committrees = map parse ls
+		let committrees = map (parse . decodeBL) ls
 		if any isNothing committrees || null committrees
 			then do
 				void cleanup
@@ -342,7 +342,7 @@ verifyTree missing treesha r
 	| S.member treesha missing = return False
 	| otherwise = do
 		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams LsTree.LsTreeRecursive treesha []) r
-		let objshas = map (LsTree.sha . LsTree.parseLsTree) ls
+		let objshas = mapMaybe (LsTree.sha <$$> eitherToMaybe . LsTree.parseLsTree) ls
 		if any (`S.member` missing) objshas
 			then do
 				void cleanup
@@ -366,7 +366,7 @@ checkIndex r = do
  - itself is not corrupt. -}
 checkIndexFast :: Repo -> IO Bool
 checkIndexFast r = do
-	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
+	(indexcontents, cleanup) <- LsFiles.stagedDetails [toRawFilePath (repoPath r)] r
 	length indexcontents `seq` cleanup
 
 missingIndex :: Repo -> IO Bool
@@ -375,7 +375,7 @@ missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
 {- Finds missing and ok files staged in the index. -}
 partitionIndex :: Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
 partitionIndex r = do
-	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
+	(indexcontents, cleanup) <- LsFiles.stagedDetails [toRawFilePath (repoPath r)] r
 	l <- forM indexcontents $ \i -> case i of
 		(_file, Just sha, Just _mode) -> (,) <$> isMissing sha r <*> pure i
 		_ -> pure (False, i)
@@ -394,12 +394,12 @@ rewriteIndex r
 			UpdateIndex.streamUpdateIndex r
 				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
-		return $ map fst3 bad
+		return $ map (fromRawFilePath . fst3) bad
   where
 	reinject (file, Just sha, Just mode) = case toTreeItemType mode of
 		Nothing -> return Nothing
 		Just treeitemtype -> Just <$>
-			UpdateIndex.stageFile sha treeitemtype file r
+			UpdateIndex.stageFile sha treeitemtype (fromRawFilePath file) r
 	reinject _ = return Nothing
 
 newtype GoodCommits = GoodCommits (S.Set Sha)

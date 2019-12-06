@@ -37,6 +37,8 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
+import Data.Either
+import Data.Char
 
 -- This constuctor is not itself exported to other modules, to enforce
 -- consistent use of exportedTreeishes.
@@ -176,8 +178,9 @@ logExportExcluded u a = do
 getExportExcluded :: UUID -> Annex [Git.Tree.TreeItem]
 getExportExcluded u = do
 	logf <- fromRepo $ gitAnnexExportExcludeLog u
-	liftIO $ catchDefaultIO [] $ 
-		(map parser . lines)
-			<$> readFile logf
+	liftIO $ catchDefaultIO [] $ parser <$> L.readFile logf
   where
-	parser = Git.Tree.lsTreeItemToTreeItem . Git.LsTree.parseLsTree
+	parser = map Git.Tree.lsTreeItemToTreeItem
+		. rights
+		. map Git.LsTree.parseLsTree
+		. L.split (fromIntegral $ ord '\n')

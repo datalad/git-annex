@@ -85,9 +85,9 @@ fixupReq req@(Req {}) =
 	check rOldFile rOldMode (\r f -> r { rOldFile = f }) req
 		>>= check rNewFile rNewMode (\r f -> r { rNewFile = f })
   where
-	check getfile getmode setfile r = case readTreeItemType (getmode r) of
+	check getfile getmode setfile r = case readTreeItemType (encodeBS' (getmode r)) of
 		Just TreeSymlink -> do
-			v <- getAnnexLinkTarget' (getfile r) False
+			v <- getAnnexLinkTarget' (toRawFilePath (getfile r)) False
 			case parseLinkTargetOrPointer =<< v of
 				Nothing -> return r
 				Just k -> withObjectLoc k (pure . setfile r)

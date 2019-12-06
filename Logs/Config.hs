@@ -6,8 +6,8 @@
  -}
 
 module Logs.Config (
-	ConfigName,
-	ConfigValue,
+	ConfigKey(..),
+	ConfigValue(..),
 	setGlobalConfig,
 	unsetGlobalConfig,
 	getGlobalConfig,
@@ -18,48 +18,51 @@ import Annex.Common
 import Logs
 import Logs.MapLog
 import qualified Annex.Branch
+import Git.Types (ConfigKey(..), ConfigValue(..))
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
-type ConfigName = String
-type ConfigValue = String
-
-setGlobalConfig :: ConfigName -> ConfigValue -> Annex ()
+setGlobalConfig :: ConfigKey -> ConfigValue -> Annex ()
 setGlobalConfig name new = do
 	curr <- getGlobalConfig name
 	when (curr /= Just new) $
 		setGlobalConfig' name new
 
-setGlobalConfig' :: ConfigName -> ConfigValue -> Annex ()
+setGlobalConfig' :: ConfigKey -> ConfigValue -> Annex ()
 setGlobalConfig' name new = do
 	c <- liftIO currentVectorClock
 	Annex.Branch.change configLog $ 
 		buildGlobalConfig . changeMapLog c name new . parseGlobalConfig
 
-unsetGlobalConfig :: ConfigName -> Annex ()
+unsetGlobalConfig :: ConfigKey -> Annex ()
 unsetGlobalConfig name = do
 	curr <- getGlobalConfig name
 	when (curr /= Nothing) $
-		setGlobalConfig' name "" -- set to empty string to unset
+		-- set to empty string to unset
+		setGlobalConfig' name (ConfigValue mempty)
 
 -- Reads the global config log every time.
-getGlobalConfig :: ConfigName -> Annex (Maybe ConfigValue)
+getGlobalConfig :: ConfigKey -> Annex (Maybe ConfigValue)
 getGlobalConfig name = M.lookup name <$> loadGlobalConfig
 
-buildGlobalConfig :: MapLog ConfigName ConfigValue -> Builder
-buildGlobalConfig = buildMapLog fieldbuilder valuebuilder
+buildGlobalConfig :: MapLog ConfigKey ConfigValue -> Builder
+buildGlobalConfig = buildMapLog configkeybuilder valuebuilder
   where
-	fieldbuilder = byteString . encodeBS
-	valuebuilder = byteString . encodeBS
+	configkeybuilder (ConfigKey k) = byteString k
+	valuebuilder (ConfigValue v) = byteString v
 
-parseGlobalConfig :: L.ByteString -> MapLog ConfigName ConfigValue
-parseGlobalConfig = parseMapLog string string
+parseGlobalConfig :: L.ByteString -> MapLog ConfigKey ConfigValue
+parseGlobalConfig = parseMapLog configkeyparser valueparser
   where
-	string = decodeBS <$> A.takeByteString
+	configkeyparser = ConfigKey <$> A.takeByteString
+	valueparser = ConfigValue <$> A.takeByteString
 
-loadGlobalConfig :: Annex (M.Map ConfigName ConfigValue)
-loadGlobalConfig = M.filter (not . null) . simpleMap . parseGlobalConfig
+loadGlobalConfig :: Annex (M.Map ConfigKey ConfigValue)
+loadGlobalConfig = M.filter (\(ConfigValue v) -> not (S.null v)) 
+	. simpleMap
+	. parseGlobalConfig
 	<$> Annex.Branch.get configLog

@@ -104,7 +104,7 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Bool -> Annex Bool
 resolveMerge us them inoverlay = do
-	top <- if inoverlay
+	top <- toRawFilePath <$> if inoverlay
 		then pure "."
 		else fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
@@ -122,7 +122,7 @@ resolveMerge us them inoverlay = do
 		unless (null deleted) $
 			Annex.Queue.addCommand "rm"
 				[Param "--quiet", Param "-f", Param "--"]
-				deleted
+				(map fromRawFilePath deleted)
 		void $ liftIO cleanup2
 
 	when merged $ do
@@ -169,7 +169,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		-- Neither side is annexed file; cannot resolve.
 		(Nothing, Nothing) -> return ([], Nothing)
   where
-	file = LsFiles.unmergedFile u
+	file = fromRawFilePath $ LsFiles.unmergedFile u
 
 	getkey select = 
 		case select (LsFiles.unmergedSha u) of
@@ -202,20 +202,20 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	makesymlink key dest = do
 		l <- calcRepo $ gitAnnexLink dest key
 		unless inoverlay $ replacewithsymlink dest l
-		dest' <- stagefile dest
+		dest' <- toRawFilePath <$> stagefile dest
 		stageSymlink dest' =<< hashSymlink l
 
 	replacewithsymlink dest link = withworktree dest $ \f ->
-		replaceFile f $ makeGitLink link
+		replaceFile f $ makeGitLink link . toRawFilePath
 
 	makepointer key dest destmode = do
 		unless inoverlay $ 
 			unlessM (reuseOldFile unstagedmap key file dest) $
 				linkFromAnnex key dest destmode >>= \case
 					LinkAnnexFailed -> liftIO $
-						writePointerFile dest key destmode
+						writePointerFile (toRawFilePath dest) key destmode
 					_ -> noop
-		dest' <- stagefile dest
+		dest' <- toRawFilePath <$> stagefile dest
 		stagePointerFile dest' destmode =<< hashPointerFile key
 		unless inoverlay $
 			Database.Keys.addAssociatedFile key
@@ -239,7 +239,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 					Nothing -> noop
 					Just sha -> do
 						link <- catSymLinkTarget sha
-						replacewithsymlink item link
+						replacewithsymlink item (fromRawFilePath link)
 			-- And when grafting in anything else vs a symlink,
 			-- the work tree already contains what we want.
 			(_, Just TreeSymlink) -> noop
@@ -290,8 +290,8 @@ cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 	matchesresolved is i f
 		| S.member f fs || S.member (conflictCruftBase f) fs = anyM id
 			[ pure (S.member i is)
-			, inks <$> isAnnexLink f
-			, inks <$> liftIO (isPointerFile f)
+			, inks <$> isAnnexLink (toRawFilePath f)
+			, inks <$> liftIO (isPointerFile (toRawFilePath f))
 			]
 		| otherwise = return False
 
@@ -328,13 +328,14 @@ commitResolvedMerge commitmode = inRepo $ Git.Branch.commitCommand commitmode
 
 type InodeMap = M.Map InodeCacheKey FilePath
 
-inodeMap :: Annex ([FilePath], IO Bool) -> Annex InodeMap
+inodeMap :: Annex ([RawFilePath], IO Bool) -> Annex InodeMap
 inodeMap getfiles = do
 	(fs, cleanup) <- getfiles
 	fsis <- forM fs $ \f -> do
-		mi <- withTSDelta (liftIO . genInodeCache f)
+		let f' = fromRawFilePath f
+		mi <- withTSDelta (liftIO . genInodeCache f')
 		return $ case mi of
 			Nothing -> Nothing
-			Just i -> Just (inodeCacheToKey Strongly i, f)
+			Just i -> Just (inodeCacheToKey Strongly i, f')
 	void $ liftIO cleanup
 	return $ M.fromList $ catMaybes fsis

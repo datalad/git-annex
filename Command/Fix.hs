@@ -17,6 +17,7 @@ import Annex.Content
 import Annex.Perms
 import qualified Annex.Queue
 import qualified Database.Keys
+import qualified Utility.RawFilePath as R
 
 #if ! defined(mingw32_HOST_OS)
 import Utility.Touch
@@ -37,13 +38,14 @@ seek ps = unlessM crippledFileSystem $ do
 
 data FixWhat = FixSymlinks | FixAll
 
-start :: FixWhat -> FilePath -> Key -> CommandStart
+start :: FixWhat -> RawFilePath -> Key -> CommandStart
 start fixwhat file key = do
-	currlink <- liftIO $ catchMaybeIO $ readSymbolicLink file
-	wantlink <- calcRepo $ gitAnnexLink file key
+	currlink <- liftIO $ catchMaybeIO $ R.readSymbolicLink file
+	wantlink <- calcRepo $ gitAnnexLink (fromRawFilePath file) key
 	case currlink of
 		Just l
-			| l /= wantlink -> fixby $ fixSymlink file wantlink
+			| l /= toRawFilePath wantlink -> fixby $
+				fixSymlink (fromRawFilePath file) wantlink
 			| otherwise -> stop
 		Nothing -> case fixwhat of
 			FixAll -> fixthin
@@ -52,9 +54,9 @@ start fixwhat file key = do
 	fixby = starting "fix" (mkActionItem (key, file))
 	fixthin = do
 		obj <- calcRepo $ gitAnnexLocation key
-		stopUnless (isUnmodified key file <&&> isUnmodified key obj) $ do
+		stopUnless (isUnmodified key (fromRawFilePath file) <&&> isUnmodified key obj) $ do
 			thin <- annexThin <$> Annex.getGitConfig
-			fs <- liftIO $ catchMaybeIO $ getFileStatus file
+			fs <- liftIO $ catchMaybeIO $ R.getFileStatus file
 			os <- liftIO $ catchMaybeIO $ getFileStatus obj
 			case (linkCount <$> fs, linkCount <$> os, thin) of
 				(Just 1, Just 1, True) ->
@@ -63,21 +65,21 @@ start fixwhat file key = do
 					fixby $ breakHardLink file key obj
 				_ -> stop
 
-breakHardLink :: FilePath -> Key -> FilePath -> CommandPerform
+breakHardLink :: RawFilePath -> Key -> FilePath -> CommandPerform
 breakHardLink file key obj = do
-	replaceFile file $ \tmp -> do
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+	replaceFile (fromRawFilePath file) $ \tmp -> do
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		unlessM (checkedCopyFile key obj tmp mode) $
 			error "unable to break hard link"
 		thawContent tmp
 		modifyContent obj $ freezeContent obj
-	Database.Keys.storeInodeCaches key [file]
+	Database.Keys.storeInodeCaches key [fromRawFilePath file]
 	next $ return True
 
-makeHardLink :: FilePath -> Key -> CommandPerform
+makeHardLink :: RawFilePath -> Key -> CommandPerform
 makeHardLink file key = do
-	replaceFile file $ \tmp -> do
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+	replaceFile (fromRawFilePath file) $ \tmp -> do
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		linkFromAnnex key tmp mode >>= \case
 			LinkAnnexFailed -> error "unable to make hard link"
 			_ -> noop

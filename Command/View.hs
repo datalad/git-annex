@@ -101,7 +101,8 @@ checkoutViewBranch view mkbranch = do
 		 - removed.) -}
 		top <- liftIO . absPath =<< fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $
-			LsFiles.notInRepoIncludingEmptyDirectories False [top]
+			LsFiles.notInRepoIncludingEmptyDirectories False
+				[toRawFilePath top]
 		forM_ l (removeemptydir top)
 		liftIO $ void cleanup
 		unlessM (liftIO $ doesDirectoryExist here) $ do
@@ -109,7 +110,7 @@ checkoutViewBranch view mkbranch = do
 	return ok
   where
 	removeemptydir top d = do
-		p <- inRepo $ toTopFilePath d
+		p <- inRepo $ toTopFilePath $ fromRawFilePath d
 		liftIO $ tryIO $ removeDirectory (top </> getTopFilePath p)
 	cwdmissing top = unlines
 		[ "This view does not include the subdirectory you are currently in."

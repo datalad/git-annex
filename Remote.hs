@@ -74,7 +74,7 @@ import Logs.Web
 import Remote.List
 import Config
 import Config.DynamicConfig
-import Git.Types (RemoteName)
+import Git.Types (RemoteName, ConfigKey(..), fromConfigValue)
 import Utility.Aeson
 
 {- Map from UUIDs of Remotes to a calculated value. -}
@@ -147,10 +147,12 @@ byName' n = go . filter matching <$> remoteList
 
 {- Finds the remote or remote group matching the name. -}
 byNameOrGroup :: RemoteName -> Annex [Remote]
-byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." ++ n))
+byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." <> encodeBS' n))
   where
-	go (Just l) = catMaybes <$> mapM (byName . Just) (splitc ' ' l)
-	go Nothing = maybeToList <$> byName (Just n)
+	go (Just l) = catMaybes
+		<$> mapM (byName . Just) (splitc ' ' (fromConfigValue l))
+	go Nothing = maybeToList
+		<$> byName (Just n)
 
 {- Only matches remote name, not UUID -}
 byNameOnly :: RemoteName -> Annex (Maybe Remote)

@@ -5,7 +5,11 @@
  - License: BSD-2-clause
  -}
 
-module Utility.Tuple where
+module Utility.Tuple (
+	fst3,
+	snd3,
+	thd3,
+) where
 
 fst3 :: (a,b,c) -> a
 fst3 (a,_,_) = a

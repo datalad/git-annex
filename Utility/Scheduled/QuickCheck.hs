@@ -7,7 +7,7 @@
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Utility.Scheduled.QuickCheck where
+module Utility.Scheduled.QuickCheck (prop_schedule_roundtrips) where
 
 import Utility.Scheduled
 import Utility.QuickCheck

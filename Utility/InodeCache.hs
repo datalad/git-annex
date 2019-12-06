@@ -23,6 +23,7 @@ module Utility.InodeCache (
 	readInodeCache,
 	showInodeCache,
 	genInodeCache,
+	genInodeCache',
 	toInodeCache,
 
 	InodeCacheKey,
@@ -46,6 +47,7 @@ module Utility.InodeCache (
 import Common
 import Utility.TimeStamp
 import Utility.QuickCheck
+import qualified Utility.RawFilePath as R
 
 import System.PosixCompat.Types
 import Data.Time.Clock.POSIX
@@ -186,6 +188,10 @@ readInodeCache s = case words s of
 genInodeCache :: FilePath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
 	toInodeCache delta f =<< getFileStatus f
+
+genInodeCache' :: RawFilePath -> TSDelta -> IO (Maybe InodeCache)
+genInodeCache' f delta = catchDefaultIO Nothing $
+	toInodeCache delta (fromRawFilePath f) =<< R.getFileStatus f
 
 toInodeCache :: TSDelta -> FilePath -> FileStatus -> IO (Maybe InodeCache)
 toInodeCache (TSDelta getdelta) f s

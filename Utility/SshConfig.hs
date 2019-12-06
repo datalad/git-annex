@@ -5,7 +5,24 @@
  - License: BSD-2-clause
  -}
 
-module Utility.SshConfig where
+module Utility.SshConfig (
+	SshConfig(..),
+	Comment(..),
+	SshSetting(..),
+	Indent,
+	Host,
+	Key,
+	Value,
+	parseSshConfig,
+	genSshConfig,
+	findHostConfigKey,
+	addToHostConfig,
+	modifyUserSshConfig,
+	changeUserSshConfig,
+	writeSshConfig,
+	setSshConfigMode,
+	sshDir,
+) where
 
 import Common
 import Utility.UserInfo

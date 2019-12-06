@@ -73,4 +73,4 @@ hashObject' objtype writer repo = getSha subcmd $
 	pipeWriteRead (map Param params) (Just writer) repo
   where
 	subcmd = "hash-object"
-	params = [subcmd, "-t", show objtype, "-w", "--stdin", "--no-filters"]
+	params = [subcmd, "-t", decodeBS (fmtObjectType objtype), "-w", "--stdin", "--no-filters"]

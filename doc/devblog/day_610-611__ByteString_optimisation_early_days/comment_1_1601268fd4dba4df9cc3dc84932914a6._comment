@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="amazing!"
+ date="2019-11-26T21:07:32Z"
+ content="""
+66% performance improvements is an amazing number! i take it this will be especially good for repositories with a large number of files? if so this could make my life MUCH better! :)
+
+i wonder if this connects with the [problems gorzen identified in python 3 about POSIX paths](https://changelog.complete.org/archives/10063-the-fundamental-problem-in-python-3)... does Haskell have similar problems with non-unicode filenames?
+
+in any case, I thank you for this awesome work...
+"""]]

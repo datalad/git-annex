@@ -14,17 +14,19 @@ import Messages.Concurrent
 import qualified Messages.JSON as JSON
 import Messages.JSON (JSONBuilder)
 
+import qualified Data.ByteString as S
+
 withMessageState :: (MessageState -> Annex a) -> Annex a
 withMessageState a = Annex.getState Annex.output >>= a
 
-outputMessage :: JSONBuilder -> String -> Annex ()
+outputMessage :: JSONBuilder -> S.ByteString -> Annex ()
 outputMessage = outputMessage' bufferJSON
 
-outputMessage' :: (JSONBuilder -> MessageState -> Annex Bool) -> JSONBuilder -> String -> Annex ()
+outputMessage' :: (JSONBuilder -> MessageState -> Annex Bool) -> JSONBuilder -> S.ByteString -> Annex ()
 outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case outputType s of
 	NormalOutput
-		| concurrentOutputEnabled s -> concurrentMessage s False msg q
-		| otherwise -> liftIO $ flushed $ putStr msg
+		| concurrentOutputEnabled s -> concurrentMessage s False (decodeBS msg) q
+		| otherwise -> liftIO $ flushed $ S.putStr msg
 	JSONOutput _ -> void $ jsonoutputter jsonbuilder s
 	QuietOutput -> q
 

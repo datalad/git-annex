@@ -57,7 +57,7 @@ import qualified Data.Map as M
 getCurrentMetaData :: Key -> Annex MetaData
 getCurrentMetaData = getCurrentMetaData' metaDataLogFile
 
-getCurrentMetaData' :: (GitConfig -> Key -> FilePath) -> Key -> Annex MetaData
+getCurrentMetaData' :: (GitConfig -> Key -> RawFilePath) -> Key -> Annex MetaData
 getCurrentMetaData' getlogfile k = do
 	config <- Annex.getGitConfig
 	ls <- S.toAscList <$> readLog (getlogfile config k)
@@ -95,7 +95,7 @@ getCurrentRemoteMetaData (RemoteStateHandle u) k = extractRemoteMetaData u <$>
 addMetaData :: Key -> MetaData -> Annex ()
 addMetaData = addMetaData' metaDataLogFile
 
-addMetaData' :: (GitConfig -> Key -> FilePath) -> Key -> MetaData -> Annex ()
+addMetaData' :: (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> Annex ()
 addMetaData' getlogfile k metadata = 
 	addMetaDataClocked' getlogfile k metadata =<< liftIO currentVectorClock
 
@@ -106,7 +106,7 @@ addMetaData' getlogfile k metadata =
 addMetaDataClocked :: Key -> MetaData -> VectorClock -> Annex ()
 addMetaDataClocked = addMetaDataClocked' metaDataLogFile
 
-addMetaDataClocked' :: (GitConfig -> Key -> FilePath) -> Key -> MetaData -> VectorClock -> Annex ()
+addMetaDataClocked' :: (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> VectorClock -> Annex ()
 addMetaDataClocked' getlogfile k d@(MetaData m) c
 	| d == emptyMetaData = noop
 	| otherwise = do
@@ -151,5 +151,5 @@ copyMetaData oldkey newkey
 					const $ buildLog l
 				return True
 
-readLog :: FilePath -> Annex (Log MetaData)
+readLog :: RawFilePath -> Annex (Log MetaData)
 readLog = parseLog <$$> Annex.Branch.get

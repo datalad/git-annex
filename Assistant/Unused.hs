@@ -62,7 +62,7 @@ describeUnused' whenbig = liftAnnex $ go =<< readUnusedLog ""
 	tenthused Nothing _ = False
 	tenthused (Just disksize) used = used >= disksize `div` 10
 
-	sumkeysize s k = s + fromMaybe 0 (keySize k)
+	sumkeysize s k = s + fromMaybe 0 (fromKey keySize k)
 
 	forpath a = inRepo $ liftIO . a . Git.repoPath
 

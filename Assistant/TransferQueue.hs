@@ -96,7 +96,7 @@ queueTransfersMatching matching reason schedule k f direction
 		inset s r = S.member (Remote.uuid r) s
 	gentransfer r = Transfer
 		{ transferDirection = direction
-		, transferKey = k
+		, transferKeyData = fromKey id k
 		, transferUUID = Remote.uuid r
 		}
 	defer
@@ -129,7 +129,7 @@ queueDeferredDownloads reason schedule = do
 	  where
 		gentransfer r = Transfer
 			{ transferDirection = Download
-			, transferKey = k
+			, transferKeyData = fromKey id k
 			, transferUUID = Remote.uuid r
 			}
 

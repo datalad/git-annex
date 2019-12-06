@@ -347,7 +347,7 @@ checkKey hv r rs c info k = withS3Handle hv $ \case
 			Right us -> do
 				showChecking r
 				let check u = withUrlOptions $ 
-					Url.checkBoth u (keySize k)
+					Url.checkBoth u (fromKey keySize k)
 				anyM check us
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
@@ -417,7 +417,7 @@ checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 	Just h -> checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
 	Nothing -> case getPublicUrlMaker info of
 		Just geturl -> withUrlOptions $
-			Url.checkBoth (geturl $ bucketExportLocation info loc) (keySize k)
+			Url.checkBoth (geturl $ bucketExportLocation info loc) (fromKey keySize k)
 		Nothing -> do
 			warning $ needS3Creds (uuid r)
 			giveup "No S3 credentials configured"
@@ -881,7 +881,8 @@ getBucketObject c = munge . serializeKey
 		_ -> getFilePrefix c ++ s
 
 getBucketExportLocation :: RemoteConfig -> ExportLocation -> BucketObject
-getBucketExportLocation c loc = getFilePrefix c ++ fromExportLocation loc
+getBucketExportLocation c loc =
+	getFilePrefix c ++ fromRawFilePath (fromExportLocation loc)
 
 getBucketImportLocation :: RemoteConfig -> BucketObject -> Maybe ImportLocation
 getBucketImportLocation c obj
@@ -889,7 +890,8 @@ getBucketImportLocation c obj
 	| obj == uuidfile = Nothing
 	-- Only import files that are under the fileprefix, when
 	-- one is configured.
-	| prefix `isPrefixOf` obj = Just $ mkImportLocation $ drop prefixlen obj
+	| prefix `isPrefixOf` obj = Just $ mkImportLocation $
+		toRawFilePath $ drop prefixlen obj
 	| otherwise = Nothing
   where
 	prefix = getFilePrefix c

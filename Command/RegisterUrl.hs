@@ -11,7 +11,7 @@ module Command.RegisterUrl where
 
 import Command
 import Logs.Web
-import Command.FromKey (mkKey)
+import Command.FromKey (keyOpt)
 import qualified Remote
 
 cmd :: Command
@@ -41,7 +41,7 @@ seek o = case (batchOption o, keyUrlPairs o) of
 start :: [String] -> CommandStart
 start (keyname:url:[]) = 
 	starting "registerurl" (ActionItemOther (Just url)) $ do
-		let key = mkKey keyname
+		let key = keyOpt keyname
 		perform key url
 start _ = giveup "specify a key and an url"
 
@@ -55,7 +55,7 @@ massAdd fmt = go True =<< map (separate (== ' ')) <$> batchLines fmt
   where
 	go status [] = next $ return status
 	go status ((keyname,u):rest) | not (null keyname) && not (null u) = do
-		let key = mkKey keyname
+		let key = keyOpt keyname
 		ok <- perform' key u
 		let !status' = status && ok
 		go status' rest

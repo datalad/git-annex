@@ -33,7 +33,7 @@ exportKey :: Git.Sha -> Annex ExportKey
 exportKey sha = mk <$> catKey sha
   where
 	mk (Just k) = AnnexKey k
-	mk Nothing = GitKey $ Key
+	mk Nothing = GitKey $ mkKey $ \k -> k
 		{ keyName = encodeBS $ Git.fromRef sha
 		, keyVariety = SHA1Key (HasExt False)
 		, keySize = Nothing

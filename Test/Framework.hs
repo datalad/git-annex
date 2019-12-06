@@ -23,6 +23,7 @@ import qualified Types.RepoVersion
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Construct
+import qualified Git.Types
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types
@@ -88,8 +89,9 @@ inmainrepo a = do
 
 with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
 with_ssh_origin cloner a = cloner $ do
-	origindir <- absPath
-		=<< annexeval (Config.getConfig (Config.ConfigKey config) "/dev/null")
+	let k = Git.Types.ConfigKey (encodeBS' config)
+	let v = Git.Types.ConfigValue (toRawFilePath "/dev/null")
+	origindir <- absPath . Git.Types.fromConfigValue =<< annexeval (Config.getConfig k v)
 	let originurl = "localhost:" ++ origindir
 	boolSystem "git" [Param "config", Param config, Param originurl] @? "git config failed"
 	a
@@ -254,7 +256,7 @@ finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
 
 checklink :: FilePath -> Assertion
 checklink f = ifM (annexeval Config.crippledFileSystem)
-	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget f))
+	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget (toRawFilePath f)))
 		@? f ++ " is not a (crippled) symlink"
 	, do
 		s <- getSymbolicLinkStatus f
@@ -312,7 +314,7 @@ checkdangling f = ifM (annexeval Config.crippledFileSystem)
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
 	thisuuid <- annexeval Annex.UUID.getUUID
-	r <- annexeval $ Annex.WorkTree.lookupFile f
+	r <- annexeval $ Annex.WorkTree.lookupFile (toRawFilePath f)
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
@@ -323,11 +325,11 @@ checklocationlog f expected = do
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
 	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
-		=<< Annex.WorkTree.lookupFile file
+		=<< Annex.WorkTree.lookupFile (toRawFilePath file)
 	assertEqual ("backend for " ++ file) (Just expected) b
 
 checkispointerfile :: FilePath -> Assertion
-checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile f) $
+checkispointerfile f = unlessM (isJust <$> Annex.Link.isPointerFile (toRawFilePath f)) $
 	assertFailure $ f ++ " is not a pointer file"
 
 inlocationlog :: FilePath -> Assertion

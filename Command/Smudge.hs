@@ -86,9 +86,9 @@ clean file = do
 		( liftIO $ L.hPut stdout b
 		, case parseLinkTargetOrPointerLazy b of
 			Just k -> do
-				getMoveRaceRecovery k file
+				getMoveRaceRecovery k (toRawFilePath file)
 				liftIO $ L.hPut stdout b
-			Nothing -> go b =<< catKeyFile file
+			Nothing -> go b =<< catKeyFile (toRawFilePath file)
 		)
 	stop
   where
@@ -119,7 +119,7 @@ clean file = do
 		-- Look up the backend that was used for this file
 		-- before, so that when git re-cleans a file its
 		-- backend does not change.
-		let oldbackend = maybe Nothing (maybeLookupBackendVariety . keyVariety) oldkey
+		let oldbackend = maybe Nothing (maybeLookupBackendVariety . fromKey keyVariety) oldkey
 		-- Can't restage associated files because git add
 		-- runs this and has the index locked.
 		let norestage = Restage False
@@ -187,10 +187,10 @@ emitPointer = S.putStr . formatPointer
 -- This also handles the case where a copy of a pointer file is made,
 -- then git-annex gets the content, and later git add is run on
 -- the pointer copy. It will then be populated with the content.
-getMoveRaceRecovery :: Key -> FilePath -> Annex ()
+getMoveRaceRecovery :: Key -> RawFilePath -> Annex ()
 getMoveRaceRecovery k file = void $ tryNonAsync $
 	whenM (inAnnex k) $ do
-		obj <- calcRepo (gitAnnexLocation k)
+		obj <- toRawFilePath <$> calcRepo (gitAnnexLocation k)
 		-- Cannot restage because git add is running and has
 		-- the index locked.
 		populatePointerFile (Restage False) k obj file >>= \case
@@ -204,11 +204,11 @@ update = do
 
 updateSmudged :: Restage -> Annex ()
 updateSmudged restage = streamSmudged $ \k topf -> do
-	f <- fromRepo $ fromTopFilePath topf
+	f <- toRawFilePath <$> fromRepo (fromTopFilePath topf)
 	whenM (inAnnex k) $ do
-		obj <- calcRepo (gitAnnexLocation k)
+		obj <- toRawFilePath <$> calcRepo (gitAnnexLocation k)
 		unlessM (isJust <$> populatePointerFile restage k obj f) $
 			liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> toplevelWarning False $
-					"unable to populate worktree file " ++ f
+					"unable to populate worktree file " ++ fromRawFilePath f
 				_ -> noop

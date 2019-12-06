@@ -343,11 +343,11 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
 applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
+	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [toRawFilePath top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
 	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
 	forM_ l $ \(f, sha, mode) -> do
-		topf <- inRepo (toTopFilePath f)
+		topf <- inRepo (toTopFilePath $ fromRawFilePath f)
 		go uh topf sha (toTreeItemType =<< mode) =<< lookupFile f
 	liftIO $ do
 		void $ stopUpdateIndex uh

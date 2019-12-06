@@ -5,7 +5,11 @@
  - License: BSD-2-clause
  -}
 
-module Utility.TimeStamp where
+module Utility.TimeStamp (
+	parserPOSIXTime,
+	parsePOSIXTime,
+	formatPOSIXTime,
+) where
 
 import Utility.Data
 

@@ -67,7 +67,7 @@ optParser desc = MatchExpressionOptions
 	missingdata datadesc = bail $ "cannot match this expression without " ++ datadesc ++ " data"
 	-- When a key is provided, make its size also be provided.
 	addkeysize p = case providedKey p of
-		Right k -> case keySize k of
+		Right k -> case fromKey keySize k of
 			Just sz -> p { providedFileSize = Right sz }
 			Nothing -> p
 		Left _ -> p

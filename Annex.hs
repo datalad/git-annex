@@ -147,7 +147,7 @@ data AnnexState = AnnexState
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
-	, cachedgitenv :: Maybe [(String, String)]
+	, cachedgitenv :: Maybe (FilePath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	}
 

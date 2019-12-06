@@ -8,7 +8,14 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.ThreadScheduler where
+module Utility.ThreadScheduler (
+	Seconds(..),
+	Microseconds,
+	runEvery,
+	threadDelaySeconds,
+	waitForTermination,
+	oneSecond,
+) where
 
 import Control.Monad
 import Control.Concurrent

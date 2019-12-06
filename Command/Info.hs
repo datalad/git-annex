@@ -50,23 +50,23 @@ import qualified Command.Unused
 type Stat = StatState (Maybe (String, StatState String))
 
 -- data about a set of keys
-data KeyData = KeyData
+data KeyInfo = KeyInfo
 	{ countKeys :: Integer
 	, sizeKeys :: Integer
 	, unknownSizeKeys :: Integer
 	, backendsKeys :: M.Map KeyVariety Integer
 	}
 	
-instance Sem.Semigroup KeyData where
-	a <> b = KeyData
+instance Sem.Semigroup KeyInfo where
+	a <> b = KeyInfo
 		{ countKeys = countKeys a + countKeys b
 		, sizeKeys = sizeKeys a + sizeKeys b
 		, unknownSizeKeys = unknownSizeKeys a + unknownSizeKeys b
 		, backendsKeys = backendsKeys a <> backendsKeys b
 		}
 
-instance Monoid KeyData where
-	mempty = KeyData 0 0 0 M.empty
+instance Monoid KeyInfo where
+	mempty = KeyInfo 0 0 0 M.empty
 
 data NumCopiesStats = NumCopiesStats
 	{ numCopiesVarianceMap :: M.Map Variance Integer
@@ -82,9 +82,9 @@ instance Show Variance where
 
 -- cached info that multiple Stats use
 data StatInfo = StatInfo
-	{ presentData :: Maybe KeyData
-	, referencedData :: Maybe KeyData
-	, repoData :: M.Map UUID KeyData
+	{ presentData :: Maybe KeyInfo
+	, referencedData :: Maybe KeyInfo
+	, repoData :: M.Map UUID KeyInfo
 	, numCopiesStats :: Maybe NumCopiesStats
 	, infoOptions :: InfoOptions
 	}
@@ -152,7 +152,7 @@ itemInfo o p = ifM (isdir p)
 				v' <- Remote.nameToUUID' p
 				case v' of
 					Right u -> uuidInfo o u
-					Left _ -> ifAnnexed p 
+					Left _ -> ifAnnexed (toRawFilePath p)
 						(fileInfo o p)
 						(treeishInfo o p)
 	)
@@ -161,7 +161,7 @@ itemInfo o p = ifM (isdir p)
 
 noInfo :: String -> Annex ()
 noInfo s = do
-	showStart "info" s
+	showStart "info" (encodeBS' s)
 	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
 	showEndFail
 
@@ -311,8 +311,8 @@ showStat :: Stat -> StatState ()
 showStat s = maybe noop calc =<< s
   where
 	calc (desc, a) = do
-		(lift . showHeader) desc
-		lift . showRaw =<< a
+		(lift . showHeader . encodeBS') desc
+		lift . showRaw . encodeBS' =<< a
 
 repo_list :: TrustLevel -> Stat
 repo_list level = stat n $ nojson $ lift $ do
@@ -435,7 +435,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 	desc = "transfers in progress"
 	line uuidmap t i = unwords
 		[ formatDirection (transferDirection t) ++ "ing"
-		, actionItemDesc $ mkActionItem
+		, fromRawFilePath $ actionItemDesc $ mkActionItem
 			(transferKey t, associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $
@@ -444,7 +444,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 	jsonify t i = object $ map (\(k, v) -> (packString k, v)) $
 		[ ("transfer", toJSON' (formatDirection (transferDirection t)))
 		, ("key", toJSON' (transferKey t))
-		, ("file", toJSON' afile)
+		, ("file", toJSON' (fromRawFilePath <$> afile))
 		, ("remote", toJSON' (fromUUID (transferUUID t) :: String))
 		]
 	  where
@@ -512,7 +512,7 @@ reposizes_total :: Stat
 reposizes_total = simpleStat "combined size of repositories containing these files" $
 	showSizeKeys . mconcat . M.elems =<< cachedRepoData
 
-cachedPresentData :: StatState KeyData
+cachedPresentData :: StatState KeyInfo
 cachedPresentData = do
 	s <- get
 	case presentData s of
@@ -522,7 +522,7 @@ cachedPresentData = do
 			put s { presentData = Just v }
 			return v
 
-cachedRemoteData :: UUID -> StatState KeyData
+cachedRemoteData :: UUID -> StatState KeyInfo
 cachedRemoteData u = do
 	s <- get
 	case M.lookup u (repoData s) of
@@ -531,19 +531,19 @@ cachedRemoteData u = do
 			let combinedata d uk = finishCheck uk >>= \case
 				Nothing -> return d
 				Just k -> return $ addKey k d
-			v <- lift $ foldM combinedata emptyKeyData
+			v <- lift $ foldM combinedata emptyKeyInfo
 				=<< loggedKeysFor' u
 			put s { repoData = M.insert u v (repoData s) }
 			return v
 
-cachedReferencedData :: StatState KeyData
+cachedReferencedData :: StatState KeyInfo
 cachedReferencedData = do
 	s <- get
 	case referencedData s of
 		Just v -> return v
 		Nothing -> do
 			!v <- lift $ Command.Unused.withKeysReferenced
-				emptyKeyData addKey
+				emptyKeyInfo addKey
 			put s { referencedData = Just v }
 			return v
 
@@ -552,7 +552,7 @@ cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
 cachedNumCopiesStats = numCopiesStats <$> get
 
 -- currently only available for directory info
-cachedRepoData :: StatState (M.Map UUID KeyData)
+cachedRepoData :: StatState (M.Map UUID KeyInfo)
 cachedRepoData = repoData <$> get
 
 getDirStatInfo :: InfoOptions -> FilePath -> Annex StatInfo
@@ -564,9 +564,9 @@ getDirStatInfo o dir = do
 			(update matcher fast)
 	return $ StatInfo (Just presentdata) (Just referenceddata) repodata (Just numcopiesstats) o
   where
-	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats, M.empty)
+	initial = (emptyKeyInfo, emptyKeyInfo, emptyNumCopiesStats, M.empty)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats, repodata) =
-		ifM (matcher $ MatchingFile $ FileInfo file file)
+		ifM (matcher $ MatchingFile $ FileInfo file' file')
 			( do
 				!presentdata' <- ifM (inAnnex key)
 					( return $ addKey key presentdata
@@ -577,11 +577,13 @@ getDirStatInfo o dir = do
 					then return (numcopiesstats, repodata)
 					else do
 						locs <- Remote.keyLocations key
-						nc <- updateNumCopiesStats file numcopiesstats locs
+						nc <- updateNumCopiesStats file' numcopiesstats locs
 						return (nc, updateRepoData key locs repodata)
 				return $! (presentdata', referenceddata', numcopiesstats', repodata')
 			, return vs
 			)
+	  where
+		file' = fromRawFilePath file
 
 getTreeStatInfo :: InfoOptions -> Git.Ref -> Annex (Maybe StatInfo)
 getTreeStatInfo o r = do
@@ -594,7 +596,7 @@ getTreeStatInfo o r = do
 		, return Nothing
 		)
   where
-	initial = (emptyKeyData, emptyKeyData, M.empty)
+	initial = (emptyKeyInfo, emptyKeyInfo, M.empty)
 	go _ [] vs = return vs
 	go fast (l:ls) vs@(presentdata, referenceddata, repodata) = do
 		mk <- catKey (LsTree.sha l)
@@ -613,33 +615,33 @@ getTreeStatInfo o r = do
 						return (updateRepoData key locs repodata)
 				go fast ls $! (presentdata', referenceddata', repodata')
 
-emptyKeyData :: KeyData
-emptyKeyData = KeyData 0 0 0 M.empty
+emptyKeyInfo :: KeyInfo
+emptyKeyInfo = KeyInfo 0 0 0 M.empty
 
 emptyNumCopiesStats :: NumCopiesStats
 emptyNumCopiesStats = NumCopiesStats M.empty
 
-foldKeys :: [Key] -> KeyData
-foldKeys = foldl' (flip addKey) emptyKeyData
+foldKeys :: [Key] -> KeyInfo
+foldKeys = foldl' (flip addKey) emptyKeyInfo
 
-addKey :: Key -> KeyData -> KeyData
-addKey key (KeyData count size unknownsize backends) =
-	KeyData count' size' unknownsize' backends'
+addKey :: Key -> KeyInfo -> KeyInfo
+addKey key (KeyInfo count size unknownsize backends) =
+	KeyInfo count' size' unknownsize' backends'
   where
 	{- All calculations strict to avoid thunks when repeatedly
 	 - applied to many keys. -}
 	!count' = count + 1
-	!backends' = M.insertWith (+) (keyVariety key) 1 backends
+	!backends' = M.insertWith (+) (fromKey keyVariety key) 1 backends
 	!size' = maybe size (+ size) ks
 	!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
-	ks = keySize key
+	ks = fromKey keySize key
 
-updateRepoData :: Key -> [UUID] -> M.Map UUID KeyData -> M.Map UUID KeyData
+updateRepoData :: Key -> [UUID] -> M.Map UUID KeyInfo -> M.Map UUID KeyInfo
 updateRepoData key locs m = m'
   where
 	!m' = M.unionWith (\_old new -> new) m $
 		M.fromList $ zip locs (map update locs)
-	update loc = addKey key (fromMaybe emptyKeyData $ M.lookup loc m)
+	update loc = addKey key (fromMaybe emptyKeyInfo $ M.lookup loc m)
 
 updateNumCopiesStats :: FilePath -> NumCopiesStats -> [UUID] -> Annex NumCopiesStats
 updateNumCopiesStats file (NumCopiesStats m) locs = do
@@ -649,7 +651,7 @@ updateNumCopiesStats file (NumCopiesStats m) locs = do
 	let !ret = NumCopiesStats m'
 	return ret
 
-showSizeKeys :: KeyData -> StatState String
+showSizeKeys :: KeyInfo -> StatState String
 showSizeKeys d = do
 	sizer <- mkSizer
 	return $ total sizer ++ missingnote

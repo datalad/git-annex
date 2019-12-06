@@ -130,26 +130,26 @@ addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportedLocation h k el = queueDb h $ do
 	void $ insertUnique $ Exported k ef
 	let edirs = map
-		(\ed -> ExportedDirectory (toSFilePath (fromExportDirectory ed)) ef)
+		(\ed -> ExportedDirectory (toSFilePath (fromRawFilePath (fromExportDirectory ed))) ef)
 		(exportDirectories el)
 	putMany edirs
   where
-	ef = toSFilePath (fromExportLocation el)
+	ef = SFilePath (fromExportLocation el)
 
 removeExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 removeExportedLocation h k el = queueDb h $ do
 	deleteWhere [ExportedKey ==. k, ExportedFile ==. ef]
-	let subdirs = map (toSFilePath . fromExportDirectory)
+	let subdirs = map (SFilePath . fromExportDirectory)
 		(exportDirectories el)
 	deleteWhere [ExportedDirectoryFile ==. ef, ExportedDirectorySubdir <-. subdirs]
   where
-	ef = toSFilePath (fromExportLocation el)
+	ef = SFilePath (fromExportLocation el)
 
 {- Note that this does not see recently queued changes. -}
 getExportedLocation :: ExportHandle -> Key -> IO [ExportLocation]
 getExportedLocation (ExportHandle h _) k = H.queryDbQueue h $ do
 	l <- selectList [ExportedKey ==. k] []
-	return $ map (mkExportLocation . fromSFilePath . exportedFile . entityVal) l
+	return $ map (mkExportLocation . (\(SFilePath f) -> f) . exportedFile . entityVal) l
 
 {- Note that this does not see recently queued changes. -}
 isExportDirectoryEmpty :: ExportHandle -> ExportDirectory -> IO Bool
@@ -157,13 +157,13 @@ isExportDirectoryEmpty (ExportHandle h _) d = H.queryDbQueue h $ do
 	l <- selectList [ExportedDirectorySubdir ==. ed] []
 	return $ null l
   where
-	ed = toSFilePath $ fromExportDirectory d
+	ed = SFilePath $ fromExportDirectory d
 
 {- Get locations in the export that might contain a key. -}
 getExportTree :: ExportHandle -> Key -> IO [ExportLocation]
 getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
 	l <- selectList [ExportTreeKey ==. k] []
-	return $ map (mkExportLocation . fromSFilePath . exportTreeFile . entityVal) l
+	return $ map (mkExportLocation . (\(SFilePath f) -> f) . exportTreeFile . entityVal) l
 
 {- Get keys that might be currently exported to a location.
  -
@@ -174,19 +174,19 @@ getExportTreeKey (ExportHandle h _) el = H.queryDbQueue h $ do
 	map (exportTreeKey . entityVal) 
 		<$> selectList [ExportTreeFile ==. ef] []
   where
-	ef = toSFilePath (fromExportLocation el)
+	ef = SFilePath (fromExportLocation el)
 
 addExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportTree h k loc = queueDb h $
 	void $ insertUnique $ ExportTree k ef
   where
-	ef = toSFilePath (fromExportLocation loc)
+	ef = SFilePath (fromExportLocation loc)
 
 removeExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 removeExportTree h k loc = queueDb h $
 	deleteWhere [ExportTreeKey ==. k, ExportTreeFile ==. ef]
   where
-	ef = toSFilePath (fromExportLocation loc)
+	ef = SFilePath (fromExportLocation loc)
 
 -- An action that is passed the old and new values that were exported,
 -- and updates state.
@@ -211,7 +211,7 @@ mkExportDiffUpdater removeold addnew h srcek dstek i = do
 		Nothing -> return ()
 		Just k -> liftIO $ addnew h (asKey k) loc
   where
-	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
+	loc = mkExportLocation $ toRawFilePath $ getTopFilePath $ Git.DiffTree.file i
 
 runExportDiffUpdater :: ExportDiffUpdater -> ExportHandle -> Sha -> Sha -> Annex ()
 runExportDiffUpdater updater h old new = do

@@ -14,6 +14,7 @@ import Annex.Link
 import Annex.ReplaceFile
 import Git.FilePath
 import qualified Database.Keys
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = mkcmd "unlock" "unlock files for modification"
@@ -31,17 +32,17 @@ seek ps = withFilesInGit (commandAction . whenAnnexed start) =<< workTreeItems p
 {- Before v6, the unlock subcommand replaces the symlink with a copy of
  - the file's content. In v6 and above, it converts the file from a symlink
  - to a pointer. -}
-start :: FilePath -> Key -> CommandStart
+start :: RawFilePath -> Key -> CommandStart
 start file key = ifM (isJust <$> isAnnexLink file)
 	( starting "unlock" (mkActionItem (key, AssociatedFile (Just file))) $
 		perform file key
 	, stop
 	)
 
-perform :: FilePath -> Key -> CommandPerform
+perform :: RawFilePath -> Key -> CommandPerform
 perform dest key = do
-	destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus dest
-	replaceFile dest $ \tmp ->
+	destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus dest
+	replaceFile (fromRawFilePath dest) $ \tmp ->
 		ifM (inAnnex key)
 			( do
 				r <- linkFromAnnex key tmp destmode
@@ -49,12 +50,12 @@ perform dest key = do
 					LinkAnnexOk -> return ()
 					LinkAnnexNoop -> return ()
 					LinkAnnexFailed -> error "unlock failed"
-			, liftIO $ writePointerFile tmp key destmode
+			, liftIO $ writePointerFile (toRawFilePath tmp) key destmode
 			)
 	next $ cleanup dest key destmode
 
-cleanup ::  FilePath -> Key -> Maybe FileMode -> CommandCleanup
+cleanup ::  RawFilePath -> Key -> Maybe FileMode -> CommandCleanup
 cleanup dest key destmode = do
 	stagePointerFile dest destmode =<< hashPointerFile key
-	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
+	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (fromRawFilePath dest))
 	return True

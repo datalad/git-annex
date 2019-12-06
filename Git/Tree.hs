@@ -115,7 +115,7 @@ mkTreeOutput :: FileMode -> ObjectType -> Sha -> TopFilePath -> String
 mkTreeOutput fm ot s f = concat
 	[ showOct fm ""
 	, " "
-	, show ot
+	, decodeBS (fmtObjectType ot)
 	, " "
 	, fromRef s
 	, "\t"
@@ -134,7 +134,7 @@ treeItemToTreeContent (TreeItem f m s) = case toTreeItemType m of
 treeItemToLsTreeItem :: TreeItem -> LsTree.TreeItem
 treeItemToLsTreeItem (TreeItem f mode sha) = LsTree.TreeItem
 	{ LsTree.mode = mode
-	, LsTree.typeobj = show BlobObject
+	, LsTree.typeobj = fmtObjectType BlobObject
 	, LsTree.sha = sha
 	, LsTree.file = f
 	}
@@ -239,7 +239,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 			Just CommitObject -> do
 				let ti = TreeCommit (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
 				go h wasmodified (ti:c) depth intree is
-			_ -> error ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
+			_ -> error ("unexpected object type \"" ++ decodeBS (LsTree.typeobj i) ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
 	adjustlist h depth ishere underhere l = do
@@ -328,7 +328,7 @@ graftTree' subtree graftloc basetree repo hdl = go basetree graftdirs
 	
 	-- For a graftloc of "foo/bar/baz", this generates
 	-- ["foo", "foo/bar", "foo/bar/baz"]
-	graftdirs = map (asTopFilePath . toInternalGitPath) $
+	graftdirs = map (asTopFilePath . decodeBS . toInternalGitPath . encodeBS) $
 		mkpaths [] $ splitDirectories $ gitPath graftloc
 	mkpaths _ [] = []
 	mkpaths base (d:rest) = (joinPath base </> d) : mkpaths (base ++ [d]) rest
@@ -355,7 +355,7 @@ extractTree l = case go [] inTopTree l of
 			Just CommitObject ->
 				let c = TreeCommit (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
 				in go (c:t) intree is
-			_ -> parseerr ("unexpected object type \"" ++ LsTree.typeobj i ++ "\"")
+			_ -> parseerr ("unexpected object type \"" ++ decodeBS (LsTree.typeobj i) ++ "\"")
 		| otherwise = Right (t, i:is)
 	parseerr = Left
 

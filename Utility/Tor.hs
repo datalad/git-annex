@@ -7,7 +7,17 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Tor where
+module Utility.Tor (
+	OnionPort,
+	OnionAddress(..),
+	OnionSocket,
+	UniqueIdent,
+	AppName,
+	connectHiddenService,
+	addHiddenService,
+	getHiddenServiceSocketFile,
+	torIsInstalled,
+) where
 
 import Common
 import Utility.ThreadScheduler

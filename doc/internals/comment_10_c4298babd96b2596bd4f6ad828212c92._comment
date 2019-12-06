@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="atrent"
+ avatar="http://cdn.libravatar.org/avatar/6069dfebff03997460874771defa0fa4"
+ subject="duplicate objects?"
+ date="2019-11-30T14:04:17Z"
+ content="""
+Do I understand correctly that in .git/annex/objects dir there should be no duplicates?
+Here follows a run of 'rdfind' done in the objects dir:
+
+    $ rdfind .
+    Now scanning \".\", found 12874 files.
+    Now have 12874 files in total.
+    Removed 0 files due to nonunique device and inode.
+    Total size is 75579281486 bytes or 70 GiB
+    Removed 8376 files due to unique sizes from list.4498 files left.
+    Now eliminating candidates based on first bytes:removed 68 files from list.4430 files left.
+    Now eliminating candidates based on last bytes:removed 66 files from list.4364 files left.
+    Now eliminating candidates based on sha1 checksum:removed 0 files from list.4364 files left.
+    It seems like you have 4364 files that are not unique
+    Totally, 10 GiB can be reduced.
+    Now making results file results.txt
+
+And here is an example pair of dupes (excerpt from the abovementioned 'results.txt'):
+
+    DUPTYPE_FIRST_OCCURRENCE 2073 3 86558 26 21057567 1 ./53/zv/SHA256E-s86558--e79a0891bb94fc9212ce2f28178fe84591c5fb24c07b5239d367099118e12ede.jpg/SHA256E-s86558--e79a0891bb94fc9212ce2f28178fe84591c5fb24c07b5239d367099118e12ede.jpg
+    DUPTYPE_WITHIN_SAME_TREE -2073 3 86558 26 1080608 1 ./7w/w2/SHA256E-s86558--e79a0891bb94fc9212ce2f28178fe84591c5fb24c07b5239d367099118e12ede.56.jpeg/SHA256E-s86558--e79a0891bb94fc9212ce2f28178fe84591c5fb24c07b5239d367099118e12ede.56.jpeg
+
+Any clues?
+
+Thank you
+"""]]

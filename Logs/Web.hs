@@ -93,7 +93,7 @@ knownUrls = do
 	Annex.Branch.update
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	Annex.Branch.withIndex $ do
-		top <- fromRepo Git.repoPath
+		top <- toRawFilePath <$> fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $ Git.LsFiles.stagedDetails [top]
 		r <- mapM getkeyurls l
 		void $ liftIO cleanup

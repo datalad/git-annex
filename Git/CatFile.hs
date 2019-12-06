@@ -66,13 +66,13 @@ catFileStop h = do
 	CoProcess.stop (checkFileProcess h)
 
 {- Reads a file from a specified branch. -}
-catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
+catFile :: CatFileHandle -> Branch -> RawFilePath -> IO L.ByteString
 catFile h branch file = catObject h $ Ref $
-	fromRef branch ++ ":" ++ toInternalGitPath file
+	fromRef branch ++ ":" ++ fromRawFilePath (toInternalGitPath file)
 
-catFileDetails :: CatFileHandle -> Branch -> FilePath -> IO (Maybe (L.ByteString, Sha, ObjectType))
+catFileDetails :: CatFileHandle -> Branch -> RawFilePath -> IO (Maybe (L.ByteString, Sha, ObjectType))
 catFileDetails h branch file = catObjectDetails h $ Ref $
-	fromRef branch ++ ":" ++ toInternalGitPath file
+	fromRef branch ++ ":" ++ fromRawFilePath (toInternalGitPath file)
 
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
@@ -148,7 +148,7 @@ parseResp object l
 	| otherwise = case words l of
 		[sha, objtype, size]
 			| length sha == shaSize ->
-				case (readObjectType objtype, reads size) of
+				case (readObjectType (encodeBS objtype), reads size) of
 					(Just t, [(bytes, "")]) -> 
 						Just $ ParsedResp (Ref sha) bytes t
 					_ -> Nothing
@@ -185,7 +185,7 @@ querySize r repo = maybe Nothing (readMaybe . takeWhile (/= '\n'))
 	<$> querySingle (Param "-s") r repo hGetContentsStrict
 
 queryObjectType :: Ref -> Repo -> IO (Maybe ObjectType)
-queryObjectType r repo = maybe Nothing (readObjectType . takeWhile (/= '\n'))
+queryObjectType r repo = maybe Nothing (readObjectType . encodeBS . takeWhile (/= '\n'))
 	<$> querySingle (Param "-t") r repo hGetContentsStrict
 
 queryContent :: Ref -> Repo -> IO (Maybe L.ByteString)

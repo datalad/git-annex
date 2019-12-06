@@ -8,7 +8,10 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.Tmp.Dir where
+module Utility.Tmp.Dir (
+	withTmpDir,
+	withTmpDirIn,
+) where
 
 import Control.Monad.IfElse
 import System.FilePath

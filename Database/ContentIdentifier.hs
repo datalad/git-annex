@@ -147,7 +147,7 @@ updateFromLog db (oldtree, currtree) = do
 		recordAnnexBranchTree db currtree
 		flushDbQueue db
   where
-	go ti = case extLogFileKey remoteContentIdentifierExt (getTopFilePath (DiffTree.file ti)) of
+	go ti = case extLogFileKey remoteContentIdentifierExt (toRawFilePath (getTopFilePath (DiffTree.file ti))) of
 		Nothing -> return ()
 		Just k -> do
 			l <- Log.getContentIdentifiers k

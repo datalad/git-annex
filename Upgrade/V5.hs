@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Upgrade.V5 where
 
 import Annex.Common
@@ -106,7 +108,7 @@ convertDirect = do
 upgradeDirectWorkTree :: Annex ()
 upgradeDirectWorkTree = do
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
+	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [toRawFilePath top]
 	forM_ l go
 	void $ liftIO clean
   where
@@ -119,11 +121,11 @@ upgradeDirectWorkTree = do
 			Just k -> do
 				stagePointerFile f Nothing =<< hashPointerFile k
 				ifM (isJust <$> getAnnexLinkTarget f)
-					( writepointer f k
-					, fromdirect f k
+					( writepointer (fromRawFilePath f) k
+					, fromdirect (fromRawFilePath f) k
 					)
 				Database.Keys.addAssociatedFile k
-					=<< inRepo (toTopFilePath f)
+					=<< inRepo (toTopFilePath (fromRawFilePath f))
 	go _ = noop
 
 	fromdirect f k = ifM (Direct.goodContent k f)

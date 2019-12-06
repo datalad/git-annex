@@ -117,7 +117,7 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 startLocal largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
-		( starting "import" (ActionItemWorkTreeFile destfile)
+		( starting "import" (ActionItemWorkTreeFile (toRawFilePath destfile))
 			pickaction
 		, stop
 		)
@@ -202,7 +202,7 @@ startLocal largematcher mode (srcfile, destfile) =
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)
-			, next $ Command.Add.addSmall destfile 
+			, next $ Command.Add.addSmall $ toRawFilePath destfile 
 			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ destfile ++ " " ++ why

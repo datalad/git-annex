@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Git.Branch where
 
@@ -15,6 +16,8 @@ import Git.Sha
 import Git.Command
 import qualified Git.Config
 import qualified Git.Ref
+
+import qualified Data.ByteString as B
 
 {- The currently checked out branch.
  -
@@ -29,19 +32,19 @@ current r = do
 	case v of
 		Nothing -> return Nothing
 		Just branch -> 
-			ifM (null <$> pipeReadStrict [Param "show-ref", Param $ fromRef branch] r)
+			ifM (B.null <$> pipeReadStrict [Param "show-ref", Param $ fromRef branch] r)
 				( return Nothing
 				, return v
 				)
 
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Branch)
-currentUnsafe r = parse . firstLine
+currentUnsafe r = parse . firstLine'
 	<$> pipeReadStrict [Param "symbolic-ref", Param "-q", Param $ fromRef Git.Ref.headRef] r
   where
-	parse l
-		| null l = Nothing
-		| otherwise = Just $ Git.Ref l
+	parse b
+		| B.null b = Nothing
+		| otherwise = Just $ Git.Ref $ decodeBS b
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
@@ -53,7 +56,8 @@ changed origbranch newbranch repo
   where
 
 changed' :: Branch -> Branch -> [CommandParam] -> Repo -> IO String
-changed' origbranch newbranch extraps repo = pipeReadStrict ps repo
+changed' origbranch newbranch extraps repo =
+	decodeBS <$> pipeReadStrict ps repo
   where
 	ps =
 		[ Param "log"
@@ -72,7 +76,7 @@ changedCommits origbranch newbranch extraps repo =
  -
  - This requires there to be a path from the old to the new. -}
 fastForwardable :: Ref -> Ref -> Repo -> IO Bool
-fastForwardable old new repo = not . null <$>
+fastForwardable old new repo = not . B.null <$>
 	pipeReadStrict
 		[ Param "log"
 		, Param $ fromRef old ++ ".." ++ fromRef new
@@ -132,8 +136,8 @@ applyCommitMode commitmode ps
 applyCommitModeForCommitTree :: CommitMode -> [CommandParam] -> Repo -> [CommandParam]
 applyCommitModeForCommitTree commitmode ps r
 	| commitmode == ManualCommit =
-		case (Git.Config.getMaybe "commit.gpgsign" r) of
-			Just s | Git.Config.isTrue s == Just True ->
+		case Git.Config.getMaybe "commit.gpgsign" r of
+			Just s | Git.Config.isTrue' s == Just True ->
 				Param "-S":ps
 			_ -> ps'
 	| otherwise = ps'
@@ -160,7 +164,7 @@ commitCommand' runner commitmode ps = runner $
 commit :: CommitMode -> Bool -> String -> Branch -> [Ref] -> Repo -> IO (Maybe Sha)
 commit commitmode allowempty message branch parentrefs repo = do
 	tree <- getSha "write-tree" $
-		pipeReadStrict [Param "write-tree"] repo
+		decodeBS' <$> pipeReadStrict [Param "write-tree"] repo
 	ifM (cancommit tree)
 		( do
 			sha <- commitTree commitmode message parentrefs tree repo

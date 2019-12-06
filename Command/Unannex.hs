@@ -25,10 +25,10 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek ps = (withFilesInGit $ commandAction . whenAnnexed start) =<< workTreeItems ps
 
-start :: FilePath -> Key -> CommandStart
+start :: RawFilePath -> Key -> CommandStart
 start file key = stopUnless (inAnnex key) $
 	starting "unannex" (mkActionItem (key, file)) $
-		perform file key
+		perform (fromRawFilePath file) key
 
 perform :: FilePath -> Key -> CommandPerform
 perform file key = do

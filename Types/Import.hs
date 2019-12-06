@@ -19,10 +19,10 @@ import Utility.FileSystemEncoding
  - location on the remote. -}
 type ImportLocation = ExportLocation
 
-mkImportLocation :: FilePath -> ImportLocation
+mkImportLocation :: RawFilePath -> ImportLocation
 mkImportLocation = mkExportLocation
 
-fromImportLocation :: ImportLocation -> FilePath
+fromImportLocation :: ImportLocation -> RawFilePath
 fromImportLocation = fromExportLocation
 
 {- An identifier for content stored on a remote that has been imported into

@@ -42,19 +42,19 @@ seek o = startConcurrency transferStages $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
 	let go = whenAnnexed $ start o from
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt go
+		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys from)
 			(withFilesInGit (commandAction . go))
 			=<< workTreeItems (getFiles o)
 
-start :: GetOptions -> Maybe Remote -> FilePath -> Key -> CommandStart
+start :: GetOptions -> Maybe Remote -> RawFilePath -> Key -> CommandStart
 start o from file key = start' expensivecheck from key afile ai
   where
 	afile = AssociatedFile (Just file)
 	ai = mkActionItem (key, afile)
 	expensivecheck
-		| autoMode o = numCopiesCheck file key (<)
+		| autoMode o = numCopiesCheck (fromRawFilePath file) key (<)
 			<||> wantGet False (Just key) afile
 		| otherwise = return True
 

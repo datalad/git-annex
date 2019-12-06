@@ -229,7 +229,7 @@ removeExportDav r _k loc = case exportLocation loc of
 
 removeExportDirectoryDav :: Remote -> ExportDirectory -> Annex Bool
 removeExportDirectoryDav r dir = withDAVHandle r $ \mh -> runExport mh $ \_dav -> do
-	let d = fromExportDirectory dir
+	let d = fromRawFilePath $ fromExportDirectory dir
 	debugDav $ "delContent " ++ d
 	safely (inLocation d delContentM)
 		>>= maybe (return False) (const $ return True)

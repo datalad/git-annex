@@ -161,7 +161,7 @@ genTransfer t info = case transferRemote info of
 				AssociatedFile Nothing -> noop
 				AssociatedFile (Just af) -> void $ 
 					addAlert $ makeAlertFiller True $
-						transferFileAlert direction True af
+						transferFileAlert direction True (fromRawFilePath af)
 			unless isdownload $
 				handleDrops
 					("object uploaded to " ++ show remote)

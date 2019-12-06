@@ -268,22 +268,22 @@ storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate ->
 storeExportM o src _k loc meterupdate =
 	storeGeneric o meterupdate basedest populatedest
   where
-	basedest = fromExportLocation loc
+	basedest = fromRawFilePath (fromExportLocation loc)
 	populatedest = liftIO . createLinkOrCopy src
 
 retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
 retrieveExportM o _k loc dest p = rsyncRetrieve o [rsyncurl] dest (Just p)
   where
-	rsyncurl = mkRsyncUrl o (fromExportLocation loc)
+	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
 
 checkPresentExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
 checkPresentExportM o _k loc = checkPresentGeneric o [rsyncurl]
   where
-	rsyncurl = mkRsyncUrl o (fromExportLocation loc)
+	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
 
 removeExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
 removeExportM o _k loc =
-	removeGeneric o (includes (fromExportLocation loc))
+	removeGeneric o $ includes $ fromRawFilePath $ fromExportLocation loc
   where
 	includes f = f : case upFrom f of
 		Nothing -> []
@@ -292,7 +292,7 @@ removeExportM o _k loc =
 removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex Bool
 removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
   where
-	d = fromExportDirectory ed
+	d = fromRawFilePath $ fromExportDirectory ed
 	allbelow f = f </> "***"
 	includes f = f : case upFrom f of
 		Nothing -> []

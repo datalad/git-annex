@@ -95,7 +95,6 @@ module Annex.Locations (
 import Data.Char
 import Data.Default
 import qualified Data.ByteString.Char8 as S8
-import qualified Data.ByteString.Lazy as L
 
 import Common
 import Key
@@ -195,7 +194,8 @@ gitAnnexLink file key r config = do
 	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
 	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
-	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
+	fromRawFilePath . toInternalGitPath . toRawFilePath
+		<$> relPathDirToFile (parentDir absfile) loc
   where
 	getgitdir currdir
 		{- This special case is for git submodules on filesystems not
@@ -204,8 +204,10 @@ gitAnnexLink file key r config = do
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
 			absNormPathUnix currdir $ Git.repoPath r </> ".git"
 		| otherwise = Git.localGitDir r
-	absNormPathUnix d p = toInternalGitPath $
-		absPathFrom (toInternalGitPath d) (toInternalGitPath p)
+	absNormPathUnix d p = fromRawFilePath $ toInternalGitPath $ toRawFilePath $
+		absPathFrom
+			(fromRawFilePath $ toInternalGitPath $ toRawFilePath d)
+			(fromRawFilePath $ toInternalGitPath $ toRawFilePath p)
 
 {- Calculates a symlink target as would be used in a typical git
  - repository, with .git in the top of the work tree. -}
@@ -569,8 +571,8 @@ keyFile = fromRawFilePath . keyFile'
 
 keyFile' :: Key -> RawFilePath
 keyFile' k = 
-	let b = L.toStrict (serializeKey' k)
-	in if any (`S8.elem` b) ['&', '%', ':', '/']
+	let b = serializeKey' k
+	in if S8.any (`elem` ['&', '%', ':', '/']) b
 		then S8.concatMap esc b
 		else b
   where
@@ -579,6 +581,7 @@ keyFile' k =
 	esc ':' = "&c"
 	esc '/' = "%"
 	esc c = S8.singleton c
+
 
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}

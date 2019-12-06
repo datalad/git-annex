@@ -44,18 +44,18 @@ instance Journalable Builder where
  - getJournalFileStale to always return a consistent journal file
  - content, although possibly not the most current one.
  -}
-setJournalFile :: Journalable content => JournalLocked -> FilePath -> content -> Annex ()
+setJournalFile :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex ()
 setJournalFile _jl file content = withOtherTmp $ \tmp -> do
 	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
 	-- journal file is written atomically
-	jfile <- fromRepo $ journalFile file
+	jfile <- fromRepo $ journalFile $ fromRawFilePath file
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
 		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
 		moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
-getJournalFile :: JournalLocked -> FilePath -> Annex (Maybe L.ByteString)
+getJournalFile :: JournalLocked -> RawFilePath -> Annex (Maybe L.ByteString)
 getJournalFile _jl = getJournalFileStale
 
 {- Without locking, this is not guaranteed to be the most recent
@@ -69,9 +69,9 @@ getJournalFile _jl = getJournalFileStale
  - concurrency or other issues with a lazy read, and the minor loss of
  - laziness doesn't matter much, as the files are not very large.
  -}
-getJournalFileStale :: FilePath -> Annex (Maybe L.ByteString)
+getJournalFileStale :: RawFilePath -> Annex (Maybe L.ByteString)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	L.fromStrict <$> S.readFile (journalFile file g)
+	L.fromStrict <$> S.readFile (journalFile (fromRawFilePath file) g)
 
 {- List of existing journal files, but without locking, may miss new ones
  - just being added, or may have false positives if the journal is staged

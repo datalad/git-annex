@@ -58,7 +58,7 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| absoluteGitPath dir = hunt
+	| absoluteGitPath (encodeBS dir) = hunt
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where
@@ -128,7 +128,7 @@ fromRemotes repo = mapM construct remotepairs
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
 	remotepairs = filterkeys isRemoteKey
-	construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
+	construct (k,v) = remoteNamedFromKey k (fromRemoteLocation (fromConfigValue v) repo)
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
 remoteNamed :: String -> IO Repo -> IO Repo
@@ -138,7 +138,7 @@ remoteNamed n constructor = do
 
 {- Sets the name of a remote based on the git config key, such as
  - "remote.foo.url". -}
-remoteNamedFromKey :: String -> IO Repo -> IO Repo
+remoteNamedFromKey :: ConfigKey -> IO Repo -> IO Repo
 remoteNamedFromKey = remoteNamed . remoteKeyToRemoteName
 
 {- Constructs a new Repo for one of a Repo's remotes using a given

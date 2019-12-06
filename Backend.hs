@@ -59,16 +59,18 @@ genKey source meterupdate preferredbackend = do
 		Just k -> Just (makesane k, b)
   where
 	-- keyNames should not contain newline characters.
-	makesane k = k { keyName = S8.map fixbadchar (keyName k) }
+	makesane k = alterKey k $ \d -> d
+		{ keyName = S8.map fixbadchar (fromKey keyName k)
+		}
 	fixbadchar c
 		| c == '\n' = '_'
 		| otherwise = c
 
 getBackend :: FilePath -> Key -> Annex (Maybe Backend)
-getBackend file k = case maybeLookupBackendVariety (keyVariety k) of
+getBackend file k = case maybeLookupBackendVariety (fromKey keyVariety k) of
 	Just backend -> return $ Just backend
 	Nothing -> do
-		warning $ "skipping " ++ file ++ " (unknown backend " ++ decodeBS (formatKeyVariety (keyVariety k)) ++ ")"
+		warning $ "skipping " ++ file ++ " (unknown backend " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ ")"
 		return Nothing
 
 {- Looks up the backend that should be used for a file.
@@ -95,4 +97,4 @@ varietyMap = M.fromList $ zip (map B.backendVariety list) list
 
 isStableKey :: Key -> Bool
 isStableKey k = maybe False (`B.isStableKey` k) 
-	(maybeLookupBackendVariety (keyVariety k))
+	(maybeLookupBackendVariety (fromKey keyVariety k))

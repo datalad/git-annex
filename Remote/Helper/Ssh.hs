@@ -137,7 +137,7 @@ rsyncParamsRemote unlocked r direction key file (AssociatedFile afile) = do
 		-- Send direct field for unlocked content, for backwards
 		-- compatability.
 		: (Fields.direct, if unlocked then "1" else "")
-		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
+		: maybe [] (\f -> [(Fields.associatedFile, fromRawFilePath f)]) afile
 	repo <- getRepo r
 	Just (shellcmd, shellparams) <- git_annex_shell ConsumeStdin repo
 		(if direction == Download then "sendkey" else "recvkey")

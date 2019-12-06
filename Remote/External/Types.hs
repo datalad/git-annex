@@ -101,10 +101,10 @@ newtype SafeKey = SafeKey Key
 
 mkSafeKey :: Key -> Either String SafeKey
 mkSafeKey k 
-	| any isSpace (decodeBS $ keyName k) = Left $ concat
+	| any isSpace (decodeBS $ fromKey keyName k) = Left $ concat
 		[ "Sorry, this file cannot be stored on an external special remote because its key's name contains a space. "
 		, "To avoid this problem, you can run: git-annex migrate --backend="
-		, decodeBS (formatKeyVariety (keyVariety k))
+		, decodeBS (formatKeyVariety (fromKey keyVariety k))
 		, " and pass it the name of the file"
 		]
 	| otherwise = Right (SafeKey k)
@@ -384,12 +384,12 @@ instance Proto.Serializable URI where
 	deserialize = parseURI
 
 instance Proto.Serializable ExportLocation where
-	serialize = fromExportLocation
-	deserialize = Just . mkExportLocation
+	serialize = fromRawFilePath . fromExportLocation
+	deserialize = Just . mkExportLocation . toRawFilePath
 
 instance Proto.Serializable ExportDirectory where
-	serialize = fromExportDirectory
-	deserialize = Just . mkExportDirectory
+	serialize = fromRawFilePath . fromExportDirectory
+	deserialize = Just . mkExportDirectory . toRawFilePath
 
 instance Proto.Serializable ExtensionList where
 	serialize (ExtensionList l) = unwords l

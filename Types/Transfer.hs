@@ -11,9 +11,11 @@ module Types.Transfer where
 
 import Types
 import Types.Remote (Verification(..))
+import Types.Key
 import Utility.PID
 import Utility.QuickCheck
 import Utility.Url
+import Utility.FileSystemEncoding
 
 import Data.Time.Clock.POSIX
 import Control.Concurrent
@@ -24,9 +26,12 @@ import Prelude
 data Transfer = Transfer
 	{ transferDirection :: Direction
 	, transferUUID :: UUID
-	, transferKey :: Key
+	, transferKeyData :: KeyData
 	}
-	deriving (Eq, Ord, Read, Show)
+	deriving (Eq, Ord, Show, Read)
+
+transferKey :: Transfer -> Key
+transferKey = mkKey . const . transferKeyData
 
 {- Information about a Transfer, stored in the transfer information file.
  -
@@ -67,8 +72,7 @@ instance Arbitrary TransferInfo where
 		<*> pure Nothing -- cannot generate a ThreadID
 		<*> pure Nothing -- remote not needed
 		<*> arbitrary
-		-- associated file cannot be empty (but can be Nothing)
-		<*> (AssociatedFile <$> arbitrary `suchThat` (/= Just ""))
+		<*> arbitrary
 		<*> arbitrary
 
 class Observable a where
@@ -97,7 +101,7 @@ class Transferrable t where
 	descTransfrerrable :: t -> Maybe String
 
 instance Transferrable AssociatedFile where
-	descTransfrerrable (AssociatedFile af) = af
+	descTransfrerrable (AssociatedFile af) = fromRawFilePath <$> af
 
 instance Transferrable URLString where
 	descTransfrerrable = Just

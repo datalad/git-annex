@@ -42,7 +42,7 @@ seek o = do
 				(commandAction . (whenAnnexed (start s)))
 				=<< workTreeItems (inprogressFiles o)
 
-start :: S.Set Key -> FilePath -> Key -> CommandStart
+start :: S.Set Key -> RawFilePath -> Key -> CommandStart
 start s _file k
 	| S.member k s = start' k
 	| otherwise = stop

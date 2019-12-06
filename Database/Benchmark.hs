@@ -86,7 +86,7 @@ populateAssociatedFiles h num = do
 	H.flushDbQueue h
 
 keyN :: Integer -> Key
-keyN n = stubKey
+keyN n = mkKey $ \k -> k
 	{ keyName = B8.pack $ "key" ++ show n
 	, keyVariety = OtherKey "BENCH"
 	}

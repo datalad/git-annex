@@ -41,13 +41,14 @@ start (k:[]) = do
 	case deserializeKey k of
 		Nothing -> error "bad key"
 		(Just key) -> whenM (inAnnex key) $ do
-			afile <- AssociatedFile <$> Fields.getField Fields.associatedFile
+			afile <- AssociatedFile . (fmap toRawFilePath)
+				<$> Fields.getField Fields.associatedFile
 			u <- maybe (error "missing remoteuuid") toUUID
 				<$> Fields.getField Fields.remoteUUID
 			let t = Transfer
 				{ transferDirection = Upload
 				, transferUUID = u
-				, transferKey = key
+				, transferKeyData = fromKey id key
 				}
 			tinfo <- liftIO $ startTransferInfo afile
 			(update, tfile, createtfile, _) <- mkProgressUpdater t tinfo

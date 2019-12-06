@@ -7,7 +7,11 @@
 
 {-# LANGUAGE CPP #-}
 
-module Utility.Shell where
+module Utility.Shell (
+	shellPath,
+	shebang,
+	findShellCommand,
+) where
 
 import Utility.SafeCommand
 #ifdef mingw32_HOST_OS

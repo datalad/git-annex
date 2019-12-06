@@ -1021,6 +1021,7 @@ Executable git-annex
     Utility.Aeson
     Utility.Android
     Utility.Applicative
+    Utility.Attoparsec
     Utility.AuthToken
     Utility.Base64
     Utility.Batch

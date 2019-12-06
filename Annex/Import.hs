@@ -264,7 +264,7 @@ buildImportTrees basetree msubdir importable = History
 				graftTree' importtree subdir basetree repo hdl
 	
 	mktreeitem (loc, k) = do
-		let lf = fromImportLocation loc
+		let lf = fromRawFilePath (fromImportLocation loc)
 		let treepath = asTopFilePath lf
 		let topf = asTopFilePath $
 			maybe lf (\sd -> getTopFilePath sd </> lf) msubdir
@@ -327,7 +327,7 @@ downloadImport remote importtreeconfig importablecontents = do
 		(k:_) -> return $ Left $ Just (loc, k)
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
-			let ai = ActionItemOther (Just (fromImportLocation loc))
+			let ai = ActionItemOther (Just (fromRawFilePath (fromImportLocation loc)))
 			let downloadaction = starting ("import " ++ Remote.name remote) ai $ do
 				when oldversion $
 					showNote "old version"
@@ -377,9 +377,9 @@ downloadImport remote importtreeconfig importablecontents = do
 		fmap fst <$> genKey ks nullMeterUpdate backend
 
 	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
-		ImportTree -> fromImportLocation loc
+		ImportTree -> fromRawFilePath (fromImportLocation loc)
 		ImportSubTree subdir _ ->
-			getTopFilePath subdir </> fromImportLocation loc
+			getTopFilePath subdir </> fromRawFilePath (fromImportLocation loc)
 
 	getcidkey cidmap db cid = liftIO $
 		CIDDb.getContentIdentifierKeys db rs cid >>= \case
@@ -398,7 +398,7 @@ downloadImport remote importtreeconfig importablecontents = do
 {- Temporary key used for import of a ContentIdentifier while downloading
  - content, before generating its real key. -}
 importKey :: ContentIdentifier -> Integer -> Key
-importKey (ContentIdentifier cid) size = stubKey
+importKey (ContentIdentifier cid) size = mkKey $ \k -> k
 	{ keyName = cid
 	, keyVariety = OtherKey "CID"
 	, keySize = Just size
@@ -450,7 +450,7 @@ wantImport :: FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
 wantImport matcher loc sz = checkMatcher' matcher mi mempty
   where
 	mi = MatchingInfo $ ProvidedInfo
-		{ providedFilePath = Right $ fromImportLocation loc
+		{ providedFilePath = Right $ fromRawFilePath $ fromImportLocation loc
 		, providedKey = unavail "key"
 		, providedFileSize = Right sz
 		, providedMimeType = unavail "mime"
@@ -503,4 +503,4 @@ listImportableContents r = fmap removegitspecial
 		, importableHistory =
 			map removegitspecial (importableHistory ic)
 		}
-	gitspecial l = ".git" `elem` Posix.splitDirectories (fromImportLocation l)
+	gitspecial l = ".git" `elem` Posix.splitDirectories (fromRawFilePath (fromImportLocation l))

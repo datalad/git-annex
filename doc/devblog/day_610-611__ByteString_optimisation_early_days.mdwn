@@ -1,0 +1,12 @@
+Two entire days spent making a branch where git-annex uses ByteString
+instead of String, especially for filepaths. I commented out all the
+commands except for find, but it still took thousands of lines of patches
+to get it to compile.
+
+The result: git-annex find is between 28% and 66% faster when using
+ByteString. The files just fly by!
+
+It's going to be a long, long road to finish this, but it's good to have a
+start, and know it will be worth it.
+[[todo/optimize_by_converting_String_to_ByteString]] is the tracking page
+for this going forward.

@@ -87,4 +87,3 @@ upgrade automatic destversion = do
 	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
 	up (RepoVersion 7) = Upgrade.V7.upgrade automatic
 	up _ = return True
-

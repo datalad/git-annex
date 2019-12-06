@@ -235,7 +235,7 @@ reconcileStaged qh = do
   where
 	go cur indexcache = do
 		(l, cleanup) <- inRepo $ pipeNullSplit diff
-		changed <- procdiff l False
+		changed <- procdiff (map decodeBL' l) False
 		void $ liftIO cleanup
 		-- Flush database changes immediately
 		-- so other processes can see them.
@@ -262,7 +262,8 @@ reconcileStaged qh = do
 		-- perfect. A file could start with this and not be a
 		-- pointer file. And a pointer file that is replaced with
 		-- a non-pointer file will match this.
-		, Param $ "-G^" ++ toInternalGitPath (pathSeparator:objectDir)
+		, Param $ "-G^" ++ fromRawFilePath (toInternalGitPath $
+			toRawFilePath (pathSeparator:objectDir))
 		-- Don't include files that were deleted, because this only
 		-- wants to update information for files that are present
 		-- in the index.
@@ -277,7 +278,7 @@ reconcileStaged qh = do
 	procdiff (info:file:rest) changed = case words info of
 		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
 			-- Only want files, not symlinks
-			| dstmode /= fmtTreeItemType TreeSymlink -> do
+			| dstmode /= decodeBS' (fmtTreeItemType TreeSymlink) -> do
 				maybe noop (reconcile (asTopFilePath file)) 
 					=<< catKey (Ref dstsha)
 				procdiff rest True
@@ -292,11 +293,11 @@ reconcileStaged qh = do
 		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		keyloc <- calcRepo (gitAnnexLocation key)
 		keypopulated <- sameInodeCache keyloc caches
-		p <- fromRepo $ fromTopFilePath file
-		filepopulated <- sameInodeCache p caches
+		p <- fromRepo $ toRawFilePath . fromTopFilePath file
+		filepopulated <- sameInodeCache (fromRawFilePath p) caches
 		case (keypopulated, filepopulated) of
 			(True, False) ->
-				populatePointerFile (Restage True) key keyloc p >>= \case
+				populatePointerFile (Restage True) key (toRawFilePath keyloc) p >>= \case
 					Nothing -> return ()
 					Just ic -> liftIO $
 						SQL.addInodeCaches key [ic] (SQL.WriteHandle qh)

@@ -5,7 +5,11 @@
  - License: BSD-2-clause
  -}
 
-module Utility.ThreadLock where
+module Utility.ThreadLock (
+	Lock,
+	newLock,
+	withLock,
+) where
 
 import Control.Concurrent.MVar
 

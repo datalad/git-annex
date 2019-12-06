@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Messages.Progress where
 
@@ -36,7 +37,7 @@ instance MeterSize FileSize where
 	getMeterSize = pure . Just
 
 instance MeterSize Key where
-	getMeterSize = pure . keySize
+	getMeterSize = pure . fromKey keySize
 
 instance MeterSize InodeCache where
 	getMeterSize = pure . Just . inodeCacheFileSize
@@ -51,7 +52,7 @@ instance MeterSize KeySource where
 data KeySizer = KeySizer Key (Annex (Maybe FilePath))
 
 instance MeterSize KeySizer where
-	getMeterSize (KeySizer k getsrcfile) = case keySize k of
+	getMeterSize (KeySizer k getsrcfile) = case fromKey keySize k of
 		Just sz -> return (Just sz)
 		Nothing -> do
 			srcfile <- getsrcfile

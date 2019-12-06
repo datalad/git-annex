@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Messages (
 	showStart,
 	showStart',
@@ -53,6 +55,7 @@ import System.Log.Formatter
 import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple
 import Control.Concurrent
+import qualified Data.ByteString as S
 
 import Common
 import Types
@@ -66,21 +69,21 @@ import Messages.Concurrent
 import qualified Messages.JSON as JSON
 import qualified Annex
 
-showStart :: String -> FilePath -> Annex ()
+showStart :: String -> RawFilePath -> Annex ()
 showStart command file = outputMessage json $
-	command ++ " " ++ file ++ " "
+	encodeBS' command <> " " <> file <> " "
   where
 	json = JSON.start command (Just file) Nothing
 
 showStart' :: String -> Maybe String -> Annex ()
-showStart' command mdesc = outputMessage json $
+showStart' command mdesc = outputMessage json $ encodeBS' $
 	command ++ (maybe "" (" " ++) mdesc) ++ " "
   where
 	json = JSON.start command Nothing Nothing
 
 showStartKey :: String -> Key -> ActionItem -> Annex ()
 showStartKey command key i = outputMessage json $
-	command ++ " " ++ actionItemDesc i ++ " "
+	encodeBS' command <> " " <> actionItemDesc i <> " "
   where
 	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
 
@@ -112,7 +115,7 @@ showEndMessage (StartNoMessage _) = const noop
 showEndMessage (CustomOutput _) = const noop
 
 showNote :: String -> Annex ()
-showNote s = outputMessage (JSON.note s) $ "(" ++ s ++ ") "
+showNote s = outputMessage (JSON.note s) $ encodeBS' $ "(" ++ s ++ ") "
 
 showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
@@ -127,7 +130,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = p
-	p = outputMessage JSON.none $ "(" ++ m ++ "...)\n"
+	p = outputMessage JSON.none $ encodeBS' $ "(" ++ m ++ "...)\n"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
@@ -171,7 +174,7 @@ showOutput = unlessM commandProgressDisabled $
 	outputMessage JSON.none "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = outputMessage (JSON.note s) (formatLongNote s)
+showLongNote s = outputMessage (JSON.note s) (encodeBS' (formatLongNote s))
 
 formatLongNote :: String -> String
 formatLongNote s = '\n' : indent s ++ "\n"
@@ -179,7 +182,8 @@ formatLongNote s = '\n' : indent s ++ "\n"
 -- Used by external special remote, displayed same as showLongNote
 -- to console, but json object containing the info is emitted immediately.
 showInfo :: String -> Annex ()
-showInfo s = outputMessage' outputJSON (JSON.info s) (formatLongNote s)
+showInfo s = outputMessage' outputJSON (JSON.info s) $
+	encodeBS' (formatLongNote s)
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
@@ -188,9 +192,9 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = outputMessage (JSON.end ok) $ endResult ok ++ "\n"
+showEndResult ok = outputMessage (JSON.end ok) $ endResult ok <> "\n"
 
-endResult :: Bool -> String
+endResult :: Bool -> S.ByteString
 endResult True = "ok"
 endResult False = "failed"
 
@@ -238,11 +242,11 @@ showCustom command a = do
 	r <- a
 	outputMessage (JSON.end r) ""
 
-showHeader :: String -> Annex ()
-showHeader h = outputMessage JSON.none $ (h ++ ": ")
+showHeader :: S.ByteString -> Annex ()
+showHeader h = outputMessage JSON.none (h <> ": ")
 
-showRaw :: String -> Annex ()
-showRaw s = outputMessage JSON.none (s ++ "\n")
+showRaw :: S.ByteString -> Annex ()
+showRaw s = outputMessage JSON.none (s <> "\n")
 
 setupConsole :: IO ()
 setupConsole = do

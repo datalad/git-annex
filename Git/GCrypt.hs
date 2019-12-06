@@ -7,6 +7,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.GCrypt where
 
 import Common
@@ -15,6 +17,8 @@ import Git.Construct
 import qualified Git.Config as Config
 import qualified Git.Command as Command
 import Utility.Gpg
+
+import qualified Data.ByteString as S
 
 urlScheme :: String
 urlScheme = "gcrypt:"
@@ -75,9 +79,9 @@ type GCryptId = String
  - which is stored in the repository (in encrypted form)
  - and cached in a per-remote gcrypt-id configuration setting. -}
 remoteRepoId :: Repo -> Maybe RemoteName -> Maybe GCryptId
-remoteRepoId = getRemoteConfig "gcrypt-id"
+remoteRepoId r n = fromConfigValue <$> getRemoteConfig "gcrypt-id" r n
 
-getRemoteConfig :: String -> Repo -> Maybe RemoteName -> Maybe String
+getRemoteConfig :: S.ByteString -> Repo -> Maybe RemoteName -> Maybe ConfigValue
 getRemoteConfig field repo remotename = do
 	n <- remotename
 	Config.getMaybe (remoteConfigKey field n) repo
@@ -92,18 +96,19 @@ getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
 	]
   where
 	defaultkey = "gcrypt.participants"
-	parse (Just "simple") = []
-	parse (Just l) = words l
+	parse (Just (ConfigValue "simple")) = []
+	parse (Just (ConfigValue b)) = words (decodeBS' b)
 	parse Nothing = []
 
-remoteParticipantConfigKey :: RemoteName -> String
+remoteParticipantConfigKey :: RemoteName -> ConfigKey
 remoteParticipantConfigKey = remoteConfigKey "gcrypt-participants"
 
-remotePublishParticipantConfigKey :: RemoteName -> String
+remotePublishParticipantConfigKey :: RemoteName -> ConfigKey
 remotePublishParticipantConfigKey = remoteConfigKey "gcrypt-publish-participants"
 
-remoteSigningKey :: RemoteName -> String
+remoteSigningKey :: RemoteName -> ConfigKey
 remoteSigningKey = remoteConfigKey "gcrypt-signingkey"
 
-remoteConfigKey :: String -> RemoteName -> String
-remoteConfigKey key remotename = "remote." ++ remotename ++ "." ++ key
+remoteConfigKey :: S.ByteString -> RemoteName -> ConfigKey
+remoteConfigKey key remotename = ConfigKey $
+	"remote." <> encodeBS' remotename <> "." <> key

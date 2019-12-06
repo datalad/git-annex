@@ -107,14 +107,14 @@ perform rs unavailrs exportr ks = do
 	next $ cleanup rs ks ok
   where
 	desc r' k = intercalate "; " $ map unwords
-		[ [ "key size", show (keySize k) ]
+		[ [ "key size", show (fromKey keySize k) ]
 		, [ show (getChunkConfig (Remote.config r')) ]
 		, ["encryption", fromMaybe "none" (M.lookup "encryption" (Remote.config r'))]
 		]
 	descexport k1 k2 = intercalate "; " $ map unwords
 		[ [ "exporttree=yes" ]
-		, [ "key1 size", show (keySize k1) ]
-		, [ "key2 size", show (keySize k2) ]
+		, [ "key1 size", show (fromKey keySize k1) ]
+		, [ "key2 size", show (fromKey keySize k2) ]
 		]
 
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
@@ -199,7 +199,7 @@ test st r k = catMaybes
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	present b = check ("present " ++ show b) $
 		(== Right b) <$> Remote.hasKey r k
-	fsck = case maybeLookupBackendVariety (keyVariety k) of
+	fsck = case maybeLookupBackendVariety (fromKey keyVariety k) of
 		Nothing -> return True
 		Just b -> case Backend.verifyKeyContent b of
 			Nothing -> return True
@@ -236,7 +236,7 @@ testExportTree st (Just _) ea k1 k2 =
 	]
   where
 	testexportdirectory = "testremote-export"
-	testexportlocation = mkExportLocation (testexportdirectory </> "location")
+	testexportlocation = mkExportLocation (toRawFilePath (testexportdirectory </> "location"))
 	check desc a = testCase desc $
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	storeexport k = do
@@ -252,7 +252,7 @@ testExportTree st (Just _) ea k1 k2 =
 	removeexport k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory = case Remote.removeExportDirectory ea of
 		Nothing -> return True
-		Just a -> a (mkExportDirectory testexportdirectory)
+		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
 
 testUnavailable :: Annex.AnnexState -> Remote -> Key -> [TestTree]
 testUnavailable st r k =
@@ -326,7 +326,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 	return k
 
 getReadonlyKey :: Remote -> FilePath -> Annex Key
-getReadonlyKey r f = lookupFile f >>= \case
+getReadonlyKey r f = lookupFile (toRawFilePath f) >>= \case
 	Nothing -> giveup $ f ++ " is not an annexed file"
 	Just k -> do
 		unlessM (inAnnex k) $

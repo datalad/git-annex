@@ -18,6 +18,14 @@ git-annex (8.20191107) UNRELEASED; urgency=medium
 
 git-annex (7.20191115) UNRELEASED; urgency=medium
 
+  * Sped up many git-annex commands that operate on many files, by
+    using ByteStrings. Some commands like find got up to 60% faster.
+  * Sped up many git-annex commands that operate on many files, by 
+    avoiding reserialization of keys.
+    find got 7% faster; whereis 3% faster; and git-annex get when
+    all files are already present got 5% faster
+  * Sped up many git-annex commands that query the git-annex branch.
+    In particular whereis got 1.5% faster.
   * Stop displaying rsync progress, and use git-annex's own progress display
     for local-to-local repo transfers.
   * git-lfs: The url provided to initremote/enableremote will now be

@@ -5,7 +5,14 @@
  - License: BSD-2-clause
  -}
 
-module Utility.Verifiable where
+module Utility.Verifiable (
+	Secret,
+	HMACDigest,
+	Verifiable(..),
+	mkVerifiable,
+	verify,
+	prop_verifiable_sane,
+) where
 
 import Data.ByteString.UTF8 (fromString)
 import qualified Data.ByteString as S

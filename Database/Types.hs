@@ -18,7 +18,6 @@ module Database.Types (
 import Database.Persist.Class hiding (Key)
 import Database.Persist.Sql hiding (Key)
 import qualified Data.ByteString as S
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Attoparsec.ByteString as A
 import System.PosixCompat.Types
@@ -35,7 +34,7 @@ import Types.UUID
 import Types.Import
 
 instance PersistField Key where
-	toPersistValue = toPersistValue . L.toStrict . serializeKey'
+	toPersistValue = toPersistValue . serializeKey'
 	fromPersistValue b = fromPersistValue b >>= parse
 	  where
 		parse = either (Left . T.pack) Right . A.parseOnly keyParser

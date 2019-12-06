@@ -20,7 +20,7 @@ import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
-import Git.Types (RemoteName, fromRef)
+import Git.Types (RemoteName, fromRef, fromConfigKey)
 import qualified Remote.GCrypt as GCrypt
 import qualified Annex
 import qualified Git.Command
@@ -317,7 +317,8 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 				else T.pack $ "Failed to ssh to the server. Transcript: " ++ s
 		finduuid (k, v)
 			| k == "annex.uuid" = Just $ toUUID v
-			| k == GCrypt.coreGCryptId = Just $ genUUIDInNameSpace gCryptNameSpace v
+			| k == fromConfigKey GCrypt.coreGCryptId =
+				Just $ genUUIDInNameSpace gCryptNameSpace v
 			| otherwise = Nothing
 	
 	checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"

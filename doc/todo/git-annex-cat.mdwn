@@ -1,0 +1,5 @@
+It would be useful to have a [[`git-annex-cat`|forum/Is_there_a___34__git_annex_cat-file__34___type_command__63__/]] command that outputs the contents of an annexed file without storing it in the annex.  This [[can be faster|OPT: "bundle" get + check (of checksum) in a single operation]] than `git-annex-get` followed by `cat`, even if file is already present.  It avoids some failure modes of `git-annex-get` (like running out of local space, or contending for locks).  It supports a common use case of just needing a file for some operation, without needing to remember to drop it later.  It could be used to implement a web server or FUSE filesystem that serves git-annex repo files on demand.
+
+If file is not present, or `remote.here.cost` is higher than `remote.someremote.cost` where file is present, `someremote` would get a `TRANSFER` request where the `FILE` argument is a named pipe, and a `cat` of that named pipe would be started.
+
+If file is not annexed, for uniformity `git-annex-cat file` would just call `cat file`.

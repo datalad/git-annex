@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.Git (
 	remote,
@@ -68,6 +69,7 @@ import Utility.FileMode
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import Network.URI
 
 remote :: RemoteType
@@ -86,14 +88,14 @@ list autoinit = do
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	mapM (configRead autoinit) rs
   where
-	annexurl n = "remote." ++ n ++ ".annexurl"
+	annexurl n = Git.ConfigKey ("remote." <> encodeBS' n <> ".annexurl")
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
 		case M.lookup (annexurl n) c of
 			Nothing -> return r
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation url g
+					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) g
 
 {- Git remotes are normally set up using standard git command, not
  - git-annex initremote and enableremote.
@@ -254,7 +256,7 @@ tryGitConfigRead autoinit r
 		v <- liftIO $ Git.Config.fromPipe r cmd params
 		case v of
 			Right (r', val) -> do
-				unless (isUUIDConfigured r' || null val) $ do
+				unless (isUUIDConfigured r' || S.null val) $ do
 					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ "Instead, got: " ++ show val
 					warning $ "This is unexpected; please check the network transport!"
@@ -367,7 +369,7 @@ inAnnex' repo rmt (State connpool duc _ _) key
 	checkhttp = do
 		showChecking repo
 		gc <- Annex.getGitConfig
-		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls gc repo rmt key))
+		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
 			( return True
 			, giveup "not found"
 			)
@@ -511,7 +513,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 				Nothing -> return (False, UnVerified)
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink st params
-					runTransfer (Transfer Download u key)
+					runTransfer (Transfer Download u (fromKey id key))
 						file stdRetry $ \p ->
 							metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
 								copier object dest p' checksuccess
@@ -549,7 +551,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 		u <- getUUID
 		let AssociatedFile afile = file
 		let fields = (Fields.remoteUUID, fromUUID u)
-			: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
+			: maybe [] (\f -> [(Fields.associatedFile, fromRawFilePath f)]) afile
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			repo "transferinfo" 
 			[Param $ serializeKey key] fields
@@ -647,7 +649,7 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		-- run copy from perspective of remote
 		onLocalFast repo r $ ifM (Annex.Content.inAnnex key)
 			( return True
-			, runTransfer (Transfer Download u key) file stdRetry $ \p -> do
+			, runTransfer (Transfer Download u (fromKey id key)) file stdRetry $ \p -> do
 				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure

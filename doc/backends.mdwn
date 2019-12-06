@@ -1,4 +1,4 @@
-When a file is annexed, a key is generated from its content and/or filesystem
+When a file is annexed, a [[key|internals/key_format]] is generated from its content and/or filesystem
 metadata. The file checked into git symlinks to the key. This key can later
 be used to retrieve the file's content (its value).
 

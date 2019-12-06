@@ -1,0 +1,11 @@
+After unlocking a file, `git status` runs the smudge filter. That is
+unnecessary, and when many files were unlocked, it can take a long time
+because [[git_smudge_clean_interface_suboptiomal]] means it runs git-annex
+once per file.
+
+It should be possible to avoid that, as was done with git drop in [[!commit
+1113caa53efedbe7ab1d98b74010160f20473e8d]]. I tried making Command.Unlock
+use restagePointerFile, but that did not help; git update-index does then
+smudge it during the `git annex unlock`, which is no faster (but at least
+doing it then would avoid the surprise of a slow `git status` or `git
+commit -a`). Afterwards, `git status` then smudged it again, unsure why!

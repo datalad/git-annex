@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Command.Sync (
 	cmd,

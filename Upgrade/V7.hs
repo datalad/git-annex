@@ -95,11 +95,11 @@ removeOldDb getdb = do
 populateKeysDb :: Annex ()
 populateKeysDb = do
 	top <- fromRepo Git.repoPath
-	(l, cleanup) <- inRepo $ LsFiles.inodeCaches [top]
+	(l, cleanup) <- inRepo $ LsFiles.inodeCaches [toRawFilePath top]
 	forM_ l $ \case
 		(_f, Nothing) -> giveup "Unable to parse git ls-files --debug output while upgrading git-annex sqlite databases."
 		(f, Just ic) -> unlessM (liftIO $ isSymbolicLink <$> getSymbolicLinkStatus f) $ do
-			catKeyFile f >>= \case
+			catKeyFile (toRawFilePath f) >>= \case
 				Nothing -> noop
 				Just k -> do
 					topf <- inRepo $ toTopFilePath f

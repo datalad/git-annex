@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Types.GitConfig ( 
 	Configurable(..),
 	GitConfig(..),
@@ -199,16 +201,17 @@ extractGitConfig r = GitConfig
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
-	getmaybebool k = Git.Config.isTrue =<< getmaybe k
+	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
-	getmaybe k = Git.Config.getMaybe k r
-	getlist k = Git.Config.getList k r
+	getmaybe = fmap fromConfigValue . getmaybe'
+	getmaybe' k = Git.Config.getMaybe k r
+	getlist k = map fromConfigValue $ Git.Config.getList k r
 	getwords k = fromMaybe [] $ words <$> getmaybe k
 
 	configurable d Nothing = DefaultConfig d
 	configurable _ (Just v) = HasConfig v
 
-	annex k = "annex." ++ k
+	annex k = ConfigKey $ "annex." <> k
 			
 	onemegabyte = 1000000
 
@@ -340,14 +343,16 @@ extractRemoteGitConfig r remotename = do
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
-	getmaybebool k = Git.Config.isTrue =<< getmaybe k
+	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
-	getmaybe k = mplus (Git.Config.getMaybe (key k) r)
+	getmaybe = fmap fromConfigValue . getmaybe'
+	getmaybe' k = mplus (Git.Config.getMaybe (key k) r)
 		(Git.Config.getMaybe (remotekey k) r)
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
 
-	key k = "annex." ++ k
-	remotekey k = "remote." ++ remotename ++ ".annex-" ++ k
+	key k = ConfigKey $ "annex." <> k
+	remotekey k = ConfigKey $
+		"remote." <> encodeBS' remotename <> ".annex-" <> k
 
 notempty :: Maybe String -> Maybe String	
 notempty Nothing = Nothing

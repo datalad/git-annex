@@ -117,7 +117,7 @@ prepareStore r = checkPrepare nonEmpty (byteStorer $ store r)
 
 nonEmpty :: Key -> Annex Bool
 nonEmpty k
-	| keySize k == Just 0 = do
+	| fromKey keySize k == Just 0 = do
 		warning "Cannot store empty files in Glacier."
 		return False
 	| otherwise = return True
