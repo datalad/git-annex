@@ -19,6 +19,7 @@ import Git.FilePath
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = command "rekey" SectionPlumbing
@@ -89,14 +90,14 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 		 - it's hard linked to the old key, that link must be broken. -}
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		v <- tryNonAsync $ do
-			st <- liftIO $ getFileStatus (fromRawFilePath file)
+			st <- liftIO $ R.getFileStatus file
 			when (linkCount st > 1) $ do
 				freezeContent oldobj
 				replaceFile (fromRawFilePath file) $ \tmp -> do
 					unlessM (checkedCopyFile oldkey oldobj tmp Nothing) $
 						error "can't lock old key"
 					thawContent tmp
-		ic <- withTSDelta (liftIO . genInodeCache (fromRawFilePath file))
+		ic <- withTSDelta (liftIO . genInodeCache' file)
 		case v of
 			Left e -> do
 				warning (show e)
@@ -117,7 +118,7 @@ cleanup file oldkey newkey = do
 			liftIO $ removeFile (fromRawFilePath file)
 			addLink (fromRawFilePath file) newkey Nothing
 		, do
-			mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (fromRawFilePath file)
+			mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 			liftIO $ whenM (isJust <$> isPointerFile file) $
 				writePointerFile file newkey mode
 			stagePointerFile file mode =<< hashPointerFile newkey

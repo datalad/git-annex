@@ -35,6 +35,7 @@ import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
 import Types.Key
 import Types.ActionItem
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -327,7 +328,7 @@ verifyWorkTree key file = do
 		Just k | k == key -> whenM (inAnnex key) $ do
 			showNote "fixing worktree content"
 			replaceFile (fromRawFilePath file) $ \tmp -> do
-				mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (fromRawFilePath file)
+				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 				ifM (annexThin <$> Annex.getGitConfig)
 					( void $ linkFromAnnex key tmp mode
 					, do

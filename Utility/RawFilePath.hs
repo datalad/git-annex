@@ -17,11 +17,12 @@
 module Utility.RawFilePath (
 	RawFilePath,
 	readSymbolicLink,
+	getFileStatus,
 ) where
 
 #ifndef mingw32_HOST_OS
+import Utility.FileSystemEncoding (RawFilePath)
 import System.Posix.Files.ByteString
-import System.Posix.ByteString.FilePath
 #else
 import qualified Data.ByteString as B
 import qualified System.PosixCompat as P
@@ -29,4 +30,7 @@ import Utility.FileSystemEncoding
 
 readSymbolicLink :: RawFilePath -> IO RawFilePath
 readSymbolicLink f = toRawFilePath <$> P.readSymbolicLink (fromRawFilePath f)
+
+getFileStatus :: RawFilePath -> IO FileStatus
+getFileStatus = P.getFileStatus . fromRawFilePath
 #endif

@@ -33,7 +33,10 @@ getFileSize f = fmap (fromIntegral . fileSize) (getFileStatus f)
 getFileSize f = bracket (openFile f ReadMode) hClose hFileSize
 #endif
 
-{- Gets the size of the file, when its FileStatus is already known. -}
+{- Gets the size of the file, when its FileStatus is already known.
+ -
+ - On windows, uses getFileSize. Otherwise, the FileStatus contains the
+ - size, so this does not do any work. -}
 getFileSize' :: FilePath -> FileStatus -> IO FileSize
 #ifndef mingw32_HOST_OS
 getFileSize' _ s = return $ fromIntegral $ fileSize s

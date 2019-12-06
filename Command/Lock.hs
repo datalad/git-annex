@@ -56,7 +56,7 @@ performNew :: RawFilePath -> Key -> CommandPerform
 performNew file key = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
 	addLink (fromRawFilePath file) key
-		=<< withTSDelta (liftIO . genInodeCache (fromRawFilePath file))
+		=<< withTSDelta (liftIO . genInodeCache' file)
 	next $ cleanupNew file key
   where
 	lockdown obj = do
@@ -70,7 +70,7 @@ performNew file key = do
 	-- It's ok if the file is hard linked to obj, but if some other
 	-- associated file is, we need to break that link to lock down obj.
 	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (getFileStatus obj)) $ do
-		mfc <- withTSDelta (liftIO . genInodeCache (fromRawFilePath file))
+		mfc <- withTSDelta (liftIO . genInodeCache' file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			modifyContent obj $ replaceFile obj $ \tmp -> do
 				unlessM (checkedCopyFile key obj tmp Nothing) $

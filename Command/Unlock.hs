@@ -14,6 +14,7 @@ import Annex.Link
 import Annex.ReplaceFile
 import Git.FilePath
 import qualified Database.Keys
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = mkcmd "unlock" "unlock files for modification"
@@ -40,8 +41,7 @@ start file key = ifM (isJust <$> isAnnexLink file)
 
 perform :: RawFilePath -> Key -> CommandPerform
 perform dest key = do
-	destmode <- liftIO $ catchMaybeIO $ fileMode
-		<$> getFileStatus (fromRawFilePath dest)
+	destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus dest
 	replaceFile (fromRawFilePath dest) $ \tmp ->
 		ifM (inAnnex key)
 			( do

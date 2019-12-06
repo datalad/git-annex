@@ -182,7 +182,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 	absf <- liftIO $ absPath $ fromRawFilePath f
 	Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
   where
-	isunmodified tsd = genInodeCache (fromRawFilePath f) tsd >>= return . \case
+	isunmodified tsd = genInodeCache' f tsd >>= return . \case
 		Nothing -> False
 		Just new -> compareStrong orig new
 
