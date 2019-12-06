@@ -1,0 +1,11 @@
+I've gotten the `bs` branch to build everything again. Was not trivial,
+the diff is over 7000 lines.
+
+Had hoped this was a mechanical enough conversion it would not introduce
+many bugs, but the test suite quickly found a lot of problems. So that
+branch is not ready for merging yet.
+
+I'm considering making a library that's like
+[filepath](http://hackage.haskell.org/package/filepath) but for
+RawFilePath. That would probably speed git-annex up by another 5% or so,
+in places where it currently has to convert back to FilePath.
