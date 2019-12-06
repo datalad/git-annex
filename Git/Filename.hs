@@ -35,13 +35,21 @@ decode b = case S.uncons b of
 encode :: RawFilePath -> S.ByteString
 encode s = encodeBS $ "\"" ++ encode_c (decodeBS s) ++ "\""
 
-{- For quickcheck.
- -
- - See comment on Utility.Format.prop_encode_c_decode_c
- -_roundtrip for
- - why this only tests chars < 256
- -}
 prop_encode_decode_roundtrip :: FilePath -> Bool
-prop_encode_decode_roundtrip s = s' == fromRawFilePath (decode (encode (toRawFilePath s')))
+prop_encode_decode_roundtrip s = s' ==
+	fromRawFilePath (decode (encode (toRawFilePath s')))
   where
-	s' = filter (\c -> ord c < 256) s
+	s' = nonul (nohigh s)
+	-- Encoding and then decoding roundtrips only when
+	-- the string does not contain high unicode, because eg, 
+	-- both "\12345" and "\227\128\185" are encoded to
+	-- "\343\200\271".
+	--
+	-- This property papers over the problem, by only
+	-- testing chars < 256.
+	nohigh = filter (\c -> ord c < 256)
+	-- A String can contain a NUL, but toRawFilePath
+	-- truncates on the NUL, which is generally fine
+	-- because unix filenames cannot contain NUL.
+	-- So the encoding only roundtrips when there is no nul.
+	nonul = filter (/= '\NUL')
