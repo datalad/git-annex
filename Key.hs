@@ -78,10 +78,13 @@ instance Arbitrary KeyData where
 		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
--- AssociatedFile cannot be empty (but can be Nothing)
+-- AssociatedFile cannot be empty, and cannot contain a NUL
+-- (but can be Nothing)
 instance Arbitrary AssociatedFile where
-	arbitrary = AssociatedFile . fmap toRawFilePath
-		<$> arbitrary `suchThat` (/= Just "")
+	arbitrary = (AssociatedFile . fmap mk <$> arbitrary)
+		`suchThat` (/= AssociatedFile (Just S.empty))
+	  where
+		mk = toRawFilePath . filter (/= '\NUL')
 
 instance Arbitrary Key where
 	arbitrary = mkKey . const <$> arbitrary
