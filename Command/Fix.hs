@@ -17,6 +17,7 @@ import Annex.Content
 import Annex.Perms
 import qualified Annex.Queue
 import qualified Database.Keys
+import qualified Utility.RawFilePath as R
 
 #if ! defined(mingw32_HOST_OS)
 import Utility.Touch
@@ -39,11 +40,11 @@ data FixWhat = FixSymlinks | FixAll
 
 start :: FixWhat -> RawFilePath -> Key -> CommandStart
 start fixwhat file key = do
-	currlink <- liftIO $ catchMaybeIO $ readSymbolicLink $ fromRawFilePath file
+	currlink <- liftIO $ catchMaybeIO $ R.readSymbolicLink file
 	wantlink <- calcRepo $ gitAnnexLink (fromRawFilePath file) key
 	case currlink of
 		Just l
-			| l /= wantlink -> fixby $
+			| l /= toRawFilePath wantlink -> fixby $
 				fixSymlink (fromRawFilePath file) wantlink
 			| otherwise -> stop
 		Nothing -> case fixwhat of
