@@ -57,13 +57,13 @@ parseStatusZ = go []
 					in go (v : c) xs'
 		_ -> go c xs
 
-	cparse 'M' f _ = (Just (Modified (asTopFilePath f)), Nothing)
-	cparse 'A' f _ = (Just (Added (asTopFilePath f)), Nothing)
-	cparse 'D' f _ = (Just (Deleted (asTopFilePath f)), Nothing)
-	cparse 'T' f _ = (Just (TypeChanged (asTopFilePath f)), Nothing)
-	cparse '?' f _ = (Just (Untracked (asTopFilePath f)), Nothing)
+	cparse 'M' f _ = (Just (Modified (asTopFilePath (toRawFilePath f))), Nothing)
+	cparse 'A' f _ = (Just (Added (asTopFilePath (toRawFilePath f))), Nothing)
+	cparse 'D' f _ = (Just (Deleted (asTopFilePath (toRawFilePath f))), Nothing)
+	cparse 'T' f _ = (Just (TypeChanged (asTopFilePath (toRawFilePath f))), Nothing)
+	cparse '?' f _ = (Just (Untracked (asTopFilePath (toRawFilePath f))), Nothing)
 	cparse 'R' f (oldf:xs) =
-		(Just (Renamed (asTopFilePath oldf) (asTopFilePath f)), Just xs)
+		(Just (Renamed (asTopFilePath (toRawFilePath oldf)) (asTopFilePath (toRawFilePath f))), Just xs)
 	cparse _ _ _ = (Nothing, Nothing)
 
 getStatus :: [CommandParam] -> [FilePath] -> Repo -> IO ([StagedUnstaged Status], IO Bool)

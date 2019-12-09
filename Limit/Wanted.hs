@@ -21,6 +21,6 @@ addWantDrop = addLimit $ Right $ const $ checkWant $
 	wantDrop False Nothing Nothing
 
 checkWant :: (AssociatedFile -> Annex Bool) -> MatchInfo -> Annex Bool
-checkWant a (MatchingFile fi) = a (AssociatedFile (Just $ toRawFilePath $ matchFile fi))
+checkWant a (MatchingFile fi) = a (AssociatedFile (Just $ matchFile fi))
 checkWant a (MatchingKey _ af) = a af
 checkWant _ (MatchingInfo {}) = return False

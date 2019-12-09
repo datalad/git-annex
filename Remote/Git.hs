@@ -680,8 +680,8 @@ fsckOnRemote r params
 		r' <- Git.Config.read r
 		environ <- getEnvironment
 		let environ' = addEntries 
-			[ ("GIT_WORK_TREE", Git.repoPath r')
-			, ("GIT_DIR", Git.localGitDir r')
+			[ ("GIT_WORK_TREE", fromRawFilePath $ Git.repoPath r')
+			, ("GIT_DIR", fromRawFilePath $ Git.localGitDir r')
 			] environ
 		batchCommandEnv program (Param "fsck" : params) (Just environ')
 

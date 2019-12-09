@@ -80,7 +80,7 @@ performNew file key = do
 	-- Try to repopulate obj from an unmodified associated file.
 	repopulate obj = modifyContent obj $ do
 		g <- Annex.gitRepo
-		fs <- map (`fromTopFilePath` g)
+		fs <- map fromRawFilePath . map (`fromTopFilePath` g)
 			<$> Database.Keys.getAssociatedFiles key
 		mfile <- firstM (isUnmodified key) fs
 		liftIO $ nukeFile obj
@@ -94,7 +94,7 @@ performNew file key = do
 
 cleanupNew :: RawFilePath -> Key -> CommandCleanup
 cleanupNew file key = do
-	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath (fromRawFilePath file))
+	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
 	return True
 
 startOld :: RawFilePath -> CommandStart

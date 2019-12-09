@@ -320,6 +320,7 @@ Executable git-annex
    directory (>= 1.2),
    disk-free-space,
    filepath,
+   filepath-bytestring,
    IfElse,
    hslogger,
    monad-logger,

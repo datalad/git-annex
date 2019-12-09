@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Logs.Smudge where
 
 import Annex.Common
@@ -15,8 +17,8 @@ import Logs.File
 smudgeLog :: Key -> TopFilePath -> Annex ()
 smudgeLog k f = do
 	logf <- fromRepo gitAnnexSmudgeLog
-	appendLogFile logf gitAnnexSmudgeLock $ 
-		serializeKey k ++ " " ++ getTopFilePath f
+	appendLogFile logf gitAnnexSmudgeLock $ fromRawFilePath $
+		serializeKey' k <> " " <> getTopFilePath f
 
 -- | Streams all smudged files, and then empties the log at the end.
 --
@@ -37,4 +39,4 @@ streamSmudged a = do
 		let (ks, f) = separate (== ' ') l
 		in do
 			k <- deserializeKey ks
-			return (k, asTopFilePath f)
+			return (k, asTopFilePath (toRawFilePath f))

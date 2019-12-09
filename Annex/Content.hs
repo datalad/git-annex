@@ -483,7 +483,7 @@ moveAnnex key src = ifM (checkSecureHashes key)
 			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			unless (null fs) $ do
-				ics <- mapM (populatePointerFile (Restage True) key (toRawFilePath dest) . toRawFilePath) fs
+				ics <- mapM (populatePointerFile (Restage True) key (toRawFilePath dest)) fs
 				Database.Keys.storeInodeCaches' key [dest] (catMaybes ics)
 		)
 	alreadyhave = liftIO $ removeFile src
@@ -643,7 +643,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 		secureErase file
 		liftIO $ nukeFile file
 		g <- Annex.gitRepo 
-		mapM_ (\f -> void $ tryIO $ resetpointer $ fromTopFilePath f g)
+		mapM_ (\f -> void $ tryIO $ resetpointer $ fromRawFilePath $ fromTopFilePath f g)
 			=<< Database.Keys.getAssociatedFiles key
 		Database.Keys.removeInodeCaches key
   where

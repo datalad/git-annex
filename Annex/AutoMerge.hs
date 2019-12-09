@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.AutoMerge
 	( autoMergeFrom
 	, resolveMerge
@@ -104,7 +106,7 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Bool -> Annex Bool
 resolveMerge us them inoverlay = do
-	top <- toRawFilePath <$> if inoverlay
+	top <- if inoverlay
 		then pure "."
 		else fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
@@ -196,7 +198,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 
 	stagefile :: FilePath -> Annex FilePath
 	stagefile f
-		| inoverlay = (</> f) <$> fromRepo Git.repoPath
+		| inoverlay = (</> f) . fromRawFilePath <$> fromRepo Git.repoPath
 		| otherwise = pure f
 
 	makesymlink key dest = do
@@ -219,7 +221,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		stagePointerFile dest' destmode =<< hashPointerFile key
 		unless inoverlay $
 			Database.Keys.addAssociatedFile key
-				=<< inRepo (toTopFilePath dest)
+				=<< inRepo (toTopFilePath (toRawFilePath dest))
 
 	withworktree f a = a f
 

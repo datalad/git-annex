@@ -100,7 +100,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 	getreldir
 		| noannex = return Nothing
 		| otherwise = Just <$>
-			(relHome =<< absPath
+			(relHome =<< absPath . fromRawFilePath
 				=<< getAnnex' (fromRepo repoPath))
 	go tlssettings addr webapp htmlshim urlfile = do
 		let url = myUrl tlssettings webapp addr

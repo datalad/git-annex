@@ -94,7 +94,7 @@ storePrefs p = do
 	unsetConfig (annexConfig "numcopies") -- deprecated
 	setConfig (annexConfig "autoupgrade") (fromAutoUpgrade $ autoUpgrade p)
 	unlessM ((==) <$> pure (autoStart p) <*> inAutoStartFile) $ do
-		here <- fromRepo Git.repoPath
+		here <- fromRawFilePath <$> fromRepo Git.repoPath
 		liftIO $ if autoStart p
 			then addAutoStartFile here
 			else removeAutoStartFile here
@@ -118,5 +118,5 @@ postPreferencesR = page "Preferences" (Just Configuration) $ do
 
 inAutoStartFile :: Annex Bool
 inAutoStartFile = do
-	here <- liftIO . absPath =<< fromRepo Git.repoPath
+	here <- liftIO . absPath . fromRawFilePath =<< fromRepo Git.repoPath
 	any (`equalFilePath` here) <$> liftIO readAutoStartFile

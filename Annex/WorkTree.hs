@@ -23,6 +23,7 @@ import Database.Types
 import qualified Database.Keys
 import qualified Database.Keys.SQL
 import Config
+import qualified Utility.RawFilePath as R
 
 {- Looks up the key corresponding to an annexed file in the work tree,
  - by examining what the file links to.
@@ -96,10 +97,11 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 			liftIO . Database.Keys.SQL.addAssociatedFileFast (toIKey k) tf
 		whenM (inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
-			liftIO (isPointerFile (toRawFilePath f)) >>= \case
+			liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> do
-					destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
-					ic <- replaceFile f $ \tmp ->
+					destmode <- liftIO $ catchMaybeIO $
+						fileMode <$> R.getFileStatus f
+					ic <- replaceFile (fromRawFilePath f) $ \tmp ->
 						linkFromAnnex k tmp destmode >>= \case
 							LinkAnnexOk -> 
 								withTSDelta (liftIO . genInodeCache tmp)
@@ -107,5 +109,5 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 							LinkAnnexFailed -> liftIO $ do
 								writePointerFile (toRawFilePath tmp) k destmode
 								return Nothing
-					maybe noop (restagePointerFile (Restage True) (toRawFilePath f)) ic
+					maybe noop (restagePointerFile (Restage True) f) ic
 				_ -> noop

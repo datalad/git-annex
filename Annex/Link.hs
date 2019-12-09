@@ -200,7 +200,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 		    unlockindex = liftIO . maybe noop Git.LockFile.closeLock
 		    showwarning = warning $ unableToRestage Nothing
 		    go Nothing = showwarning
-		    go (Just _) = withTmpDirIn (Git.localGitDir r) "annexindex" $ \tmpdir -> do
+		    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
 			let tmpindex = tmpdir </> "index"
 			let updatetmpindex = do
 				r' <- Git.Env.addGitEnv r Git.Index.indexEnv 

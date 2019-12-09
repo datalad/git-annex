@@ -202,7 +202,8 @@ finishIngestUnlocked key source = do
 
 finishIngestUnlocked' :: Key -> KeySource -> Restage -> Annex ()
 finishIngestUnlocked' key source restage = do
-	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (keyFilename source))
+	Database.Keys.addAssociatedFile key
+		=<< inRepo (toTopFilePath (toRawFilePath (keyFilename source)))
 	populateAssociatedFiles key source restage
 
 {- Copy to any other locations using the same key. -}
@@ -211,10 +212,10 @@ populateAssociatedFiles key source restage = do
 	obj <- toRawFilePath <$> calcRepo (gitAnnexLocation key)
 	g <- Annex.gitRepo
 	ingestedf <- flip fromTopFilePath g
-		<$> inRepo (toTopFilePath (keyFilename source))
+		<$> inRepo (toTopFilePath (toRawFilePath (keyFilename source)))
 	afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
 	forM_ (filter (/= ingestedf) afs) $
-		populatePointerFile restage key obj . toRawFilePath
+		populatePointerFile restage key obj
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $
@@ -226,15 +227,16 @@ cleanCruft source = when (contentLocation source /= keyFilename source) $
 cleanOldKeys :: FilePath -> Key -> Annex ()
 cleanOldKeys file newkey = do
 	g <- Annex.gitRepo
-	ingestedf <- flip fromTopFilePath g <$> inRepo (toTopFilePath file)
-	topf <- inRepo (toTopFilePath file)
+	topf <- inRepo (toTopFilePath (toRawFilePath file))
+	ingestedf <- fromRepo $ fromTopFilePath topf
 	oldkeys <- filter (/= newkey)
 		<$> Database.Keys.getAssociatedKey topf
 	forM_ oldkeys $ \key ->
 		unlessM (isUnmodified key =<< calcRepo (gitAnnexLocation key)) $ do
 			caches <- Database.Keys.getInodeCaches key
 			unlinkAnnex key
-			fs <- filter (/= ingestedf)
+			fs <- map fromRawFilePath
+				. filter (/= ingestedf)
 				. map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			filterM (`sameInodeCache` caches) fs >>= \case
@@ -330,7 +332,7 @@ addAnnexedFile file key mtmp = ifM addUnlocked
 			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> getFileStatus tmp)
 			mtmp
 		stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
-		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (toRawFilePath file))
 		case mtmp of
 			Just tmp -> ifM (moveAnnex key tmp)
 				( linkunlocked mode >> return True

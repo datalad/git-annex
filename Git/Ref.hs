@@ -22,7 +22,7 @@ headRef :: Ref
 headRef = Ref "HEAD"
 
 headFile :: Repo -> FilePath
-headFile r = localGitDir r </> "HEAD"
+headFile r = fromRawFilePath (localGitDir r) </> "HEAD"
 
 setHeadRef :: Ref -> Repo -> IO ()
 setHeadRef ref r = writeFile (headFile r) ("ref: " ++ fromRef ref)
@@ -85,7 +85,7 @@ exists ref = runBool
 {- The file used to record a ref. (Git also stores some refs in a
  - packed-refs file.) -}
 file :: Ref -> Repo -> FilePath
-file ref repo = localGitDir repo </> fromRef ref
+file ref repo = fromRawFilePath (localGitDir repo) </> fromRef ref
 
 {- Checks if HEAD exists. It generally will, except for in a repository
  - that was just created. -}

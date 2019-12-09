@@ -108,7 +108,7 @@ convertDirect = do
 upgradeDirectWorkTree :: Annex ()
 upgradeDirectWorkTree = do
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [toRawFilePath top]
+	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
 	forM_ l go
 	void $ liftIO clean
   where
@@ -125,7 +125,7 @@ upgradeDirectWorkTree = do
 					, fromdirect (fromRawFilePath f) k
 					)
 				Database.Keys.addAssociatedFile k
-					=<< inRepo (toTopFilePath (fromRawFilePath f))
+					=<< inRepo (toTopFilePath f)
 	go _ = noop
 
 	fromdirect f k = ifM (Direct.goodContent k f)

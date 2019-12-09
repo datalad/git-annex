@@ -17,6 +17,7 @@ import Database.Types
 import Database.Handle
 import qualified Database.Queue as H
 import Utility.InodeCache
+import Utility.FileSystemEncoding
 import Git.FilePath
 
 import Database.Persist.Sql
@@ -69,7 +70,7 @@ addAssociatedFile ik f = queueDb $ do
 	deleteWhere [AssociatedFile ==. af, AssociatedKey !=. ik]
 	void $ insertUnique $ Associated ik af
   where
-	af = toSFilePath (getTopFilePath f)
+	af = toSFilePath (fromRawFilePath (getTopFilePath f))
 
 -- Does not remove any old association for a file, but less expensive
 -- than addAssociatedFile. Calling dropAllAssociatedFiles first and then
@@ -77,7 +78,7 @@ addAssociatedFile ik f = queueDb $ do
 addAssociatedFileFast :: IKey -> TopFilePath -> WriteHandle -> IO ()
 addAssociatedFileFast ik f = queueDb $ void $ insertUnique $ Associated ik af
   where
-	af = toSFilePath (getTopFilePath f)
+	af = toSFilePath (fromRawFilePath (getTopFilePath f))
 
 dropAllAssociatedFiles :: WriteHandle -> IO ()
 dropAllAssociatedFiles = queueDb $
@@ -88,7 +89,7 @@ dropAllAssociatedFiles = queueDb $
 getAssociatedFiles :: IKey -> ReadHandle -> IO [TopFilePath]
 getAssociatedFiles ik = readDb $ do
 	l <- selectList [AssociatedKey ==. ik] []
-	return $ map (asTopFilePath . fromSFilePath . associatedFile . entityVal) l
+	return $ map (asTopFilePath . toRawFilePath . fromSFilePath . associatedFile . entityVal) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
@@ -97,13 +98,13 @@ getAssociatedKey f = readDb $ do
 	l <- selectList [AssociatedFile ==. af] []
 	return $ map (associatedKey . entityVal) l
   where
-	af = toSFilePath (getTopFilePath f)
+	af = toSFilePath (fromRawFilePath (getTopFilePath f))
 
 removeAssociatedFile :: IKey -> TopFilePath -> WriteHandle -> IO ()
 removeAssociatedFile ik f = queueDb $
 	deleteWhere [AssociatedKey ==. ik, AssociatedFile ==. af]
   where
-	af = toSFilePath (getTopFilePath f)
+	af = toSFilePath (fromRawFilePath (getTopFilePath f))
 
 addInodeCaches :: IKey -> [InodeCache] -> WriteHandle -> IO ()
 addInodeCaches ik is = queueDb $

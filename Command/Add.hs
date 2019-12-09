@@ -114,7 +114,7 @@ start file = do
 			cleanup key =<< inAnnex key
 	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) $ do
 		-- the pointer file is present, but not yet added to git
-		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (fromRawFilePath file))
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		next $ addFile file
 
 perform :: RawFilePath -> CommandPerform

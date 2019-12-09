@@ -173,7 +173,7 @@ getFinishLocalPairR = postFinishLocalPairR
 postFinishLocalPairR :: PairMsg -> Handler Html
 #ifdef WITH_PAIRING
 postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
-	repodir <- liftH $ repoPath <$> liftAnnex gitRepo
+	repodir <- liftH $ fromRawFilePath . repoPath <$> liftAnnex gitRepo
 	liftIO $ setup repodir
 	startLocalPairing PairAck (cleanup repodir) alert uuid "" secret
   where

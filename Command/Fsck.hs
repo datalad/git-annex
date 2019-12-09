@@ -313,7 +313,7 @@ verifyRequiredContent _ _ = return True
 verifyAssociatedFiles :: Key -> KeyStatus -> RawFilePath -> Annex Bool
 verifyAssociatedFiles key keystatus file = do
 	when (isKeyUnlockedThin keystatus) $ do
-		f <- inRepo $ toTopFilePath $ fromRawFilePath file
+		f <- inRepo $ toTopFilePath file
 		afs <- Database.Keys.getAssociatedFiles key
 		unless (getTopFilePath f `elem` map getTopFilePath afs) $
 			Database.Keys.addAssociatedFile key f

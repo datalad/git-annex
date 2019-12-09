@@ -94,7 +94,7 @@ matchGlobFile :: String -> MatchInfo -> Annex Bool
 matchGlobFile glob = go
   where
 	cglob = compileGlob glob CaseSensative -- memoized
-	go (MatchingFile fi) = pure $ matchGlob cglob (matchFile fi)
+	go (MatchingFile fi) = pure $ matchGlob cglob (fromRawFilePath (matchFile fi))
 	go (MatchingInfo p) = matchGlob cglob <$> getInfo (providedFilePath p)
 	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
 	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob (fromRawFilePath af)
@@ -127,7 +127,7 @@ matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = Right $ 
 	go (MatchingKey _ _) = pure False
 	go (MatchingFile fi) = catchBoolIO $
 		maybe False (matchGlob cglob)
-			<$> querymagic magic (currFile fi)
+			<$> querymagic magic (fromRawFilePath (currFile fi))
 	go (MatchingInfo p) =
 		matchGlob cglob <$> getInfo (selectprovidedinfo p)
 matchMagic limitname _ _ Nothing _ = 
@@ -143,10 +143,10 @@ matchLockStatus :: Bool -> MatchInfo -> Annex Bool
 matchLockStatus _ (MatchingKey _ _) = pure False
 matchLockStatus _ (MatchingInfo _) = pure False
 matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
-	islocked <- isPointerFile (toRawFilePath (currFile fi)) >>= \case
+	islocked <- isPointerFile (currFile fi) >>= \case
 		Just _key -> return False
 		Nothing -> isSymbolicLink
-			<$> getSymbolicLinkStatus (currFile fi)
+			<$> getSymbolicLinkStatus (fromRawFilePath (currFile fi))
 	return (islocked == wantlocked)
 
 {- Adds a limit to skip files not believed to be present
@@ -190,7 +190,7 @@ limitPresent u _ = checkKey $ \key -> do
 limitInDir :: FilePath -> MatchFiles Annex
 limitInDir dir = const go
   where
-	go (MatchingFile fi) = checkf $ matchFile fi
+	go (MatchingFile fi) = checkf $ fromRawFilePath $ matchFile fi
 	go (MatchingKey _ (AssociatedFile Nothing)) = return False
 	go (MatchingKey _ (AssociatedFile (Just af))) = checkf (fromRawFilePath af)
 	go (MatchingInfo p) = checkf =<< getInfo (providedFilePath p)
@@ -239,7 +239,8 @@ limitLackingCopies approx want = case readish want of
 		NumCopies numcopies <- if approx
 			then approxNumCopies
 			else case mi of
-				MatchingFile fi -> getGlobalFileNumCopies $ matchFile fi
+				MatchingFile fi -> getGlobalFileNumCopies $
+					fromRawFilePath $ matchFile fi
 				MatchingKey _ _ -> approxNumCopies
 				MatchingInfo {} -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
@@ -321,7 +322,8 @@ limitSize lb vs s = case readSize dataUnits s of
 			Just key -> checkkey sz key
 			Nothing -> return False
 		LimitDiskFiles -> do
-			filesize <- liftIO $ catchMaybeIO $ getFileSize (currFile fi)
+			filesize <- liftIO $ catchMaybeIO $
+				getFileSize (fromRawFilePath (currFile fi))
 			return $ filesize `vs` Just sz
 	go sz _ (MatchingKey key _) = checkkey sz key
 	go sz _ (MatchingInfo p) =
@@ -368,7 +370,7 @@ addAccessedWithin duration = do
 	secs = fromIntegral (durationSeconds duration)
 
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
-lookupFileKey = lookupFile . toRawFilePath . currFile
+lookupFileKey = lookupFile . currFile
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a

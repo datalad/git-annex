@@ -84,7 +84,7 @@ updateSymlinks :: Annex ()
 updateSymlinks = do
 	showAction "updating symlinks"
 	top <- fromRepo Git.repoPath
-	(files, cleanup) <- inRepo $ LsFiles.inRepo [toRawFilePath top]
+	(files, cleanup) <- inRepo $ LsFiles.inRepo [top]
 	forM_ files (fixlink . fromRawFilePath)
 	void $ liftIO cleanup
   where
@@ -244,4 +244,5 @@ stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"
 
 gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $ Git.repoPath repo </> stateDir
+gitStateDir repo = addTrailingPathSeparator $
+	fromRawFilePath (Git.repoPath repo) </> stateDir

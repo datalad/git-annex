@@ -238,7 +238,7 @@ checkAssociatedDirectory cfg (Just r) = do
 		RepoGroupStandard gr -> case associatedDirectory repoconfig gr of
 			Just d -> inRepo $ \g ->
 				createDirectoryIfMissing True $
-					Git.repoPath g </> d
+					fromRawFilePath (Git.repoPath g) </> d
 			Nothing -> noop
 		_ -> noop
 

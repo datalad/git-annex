@@ -24,7 +24,7 @@ seek = withNothing (commandAction start)
 start :: CommandStart
 start = starting "resolvemerge" (ActionItemOther Nothing) $ do
 	us <- fromMaybe nobranch <$> inRepo Git.Branch.current
-	d <- fromRepo Git.localGitDir
+	d <- fromRawFilePath <$> fromRepo Git.localGitDir
 	let merge_head = d </> "MERGE_HEAD"
 	them <- fromMaybe (error nomergehead) . extractSha
 		<$> liftIO (readFile merge_head)

@@ -207,7 +207,7 @@ withKeysReferenced' mdir initial a = do
 			( return ([], return True)
 			, do
 				top <- fromRepo Git.repoPath
-				inRepo $ LsFiles.allFiles [toRawFilePath top]
+				inRepo $ LsFiles.allFiles [top]
 			)
 		Just dir -> inRepo $ LsFiles.inRepo [toRawFilePath dir]
 	go v [] = return v
@@ -283,7 +283,7 @@ associatedFilesFilter = filterM go
 	checkunmodified _ [] = return True
 	checkunmodified cs (f:fs) = do
 		relf <- fromRepo $ fromTopFilePath f
-		ifM (sameInodeCache relf cs)
+		ifM (sameInodeCache (fromRawFilePath relf) cs)
 			( return False
 			, checkunmodified cs fs
 			)

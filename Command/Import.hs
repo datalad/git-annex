@@ -97,7 +97,7 @@ duplicateModeParser =
 
 seek :: ImportOptions -> CommandSeek
 seek o@(LocalImportOptions {}) = startConcurrency commandStages $ do
-	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+	repopath <- liftIO . absPath . fromRawFilePath =<< fromRepo Git.repoPath
 	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
 	unless (null inrepops) $ do
 		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
@@ -110,7 +110,7 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		giveup "That remote does not support imports."
 	subdir <- maybe
 		(pure Nothing)
-		(Just <$$> inRepo . toTopFilePath)
+		(Just <$$> inRepo . toTopFilePath . toRawFilePath)
 		(importToSubDir o)
 	seekRemote r (importToBranch o) subdir
 

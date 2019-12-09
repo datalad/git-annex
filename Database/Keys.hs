@@ -279,7 +279,7 @@ reconcileStaged qh = do
 		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
 			-- Only want files, not symlinks
 			| dstmode /= decodeBS' (fmtTreeItemType TreeSymlink) -> do
-				maybe noop (reconcile (asTopFilePath file)) 
+				maybe noop (reconcile (asTopFilePath (toRawFilePath file)))
 					=<< catKey (Ref dstsha)
 				procdiff rest True
 			| otherwise -> procdiff rest changed
@@ -294,7 +294,7 @@ reconcileStaged qh = do
 		caches <- liftIO $ SQL.getInodeCaches ikey (SQL.ReadHandle qh)
 		keyloc <- calcRepo (gitAnnexLocation key)
 		keypopulated <- sameInodeCache keyloc caches
-		p <- fromRepo $ toRawFilePath . fromTopFilePath file
+		p <- fromRepo $ fromTopFilePath file
 		filepopulated <- sameInodeCache (fromRawFilePath p) caches
 		case (keypopulated, filepopulated) of
 			(True, False) ->

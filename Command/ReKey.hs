@@ -123,7 +123,7 @@ cleanup file oldkey newkey = do
 				writePointerFile file newkey mode
 			stagePointerFile file mode =<< hashPointerFile newkey
 			Database.Keys.removeAssociatedFile oldkey 
-				=<< inRepo (toTopFilePath (fromRawFilePath file))
+				=<< inRepo (toTopFilePath file)
 		)
 	whenM (inAnnex newkey) $
 		logStatus newkey InfoPresent

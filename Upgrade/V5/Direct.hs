@@ -81,7 +81,7 @@ switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
 associatedFiles :: Key -> Annex [FilePath]
 associatedFiles key = do
 	files <- associatedFilesRelative key
-	top <- fromRepo Git.repoPath
+	top <- fromRawFilePath <$> fromRepo Git.repoPath
 	return $ map (top </>) files
 
 {- List of files in the tree that are associated with a key, relative to

@@ -94,8 +94,8 @@ withPathContents a params = do
 		, return [(p, takeFileName p)]
 		)
 	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
-		{ currFile = f
-		, matchFile = relf
+		{ currFile = toRawFilePath f
+		, matchFile = toRawFilePath relf
 		}
 
 withWords :: ([String] -> CommandSeek) -> CmdParams -> CommandSeek
@@ -170,7 +170,7 @@ withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
 		return $ \v@(k, ai) ->
 			let i = case ai of
 				ActionItemBranchFilePath (BranchFilePath _ topf) _ ->
-					MatchingKey k (AssociatedFile $ Just $ toRawFilePath $ getTopFilePath topf)
+					MatchingKey k (AssociatedFile $ Just $ getTopFilePath topf)
 				_ -> MatchingKey k (AssociatedFile Nothing)
 			in whenM (matcher i) $
 				keyaction v
@@ -232,8 +232,7 @@ prepFiltered a fs = do
 	map (process matcher) <$> fs
   where
 	process matcher f =
-		let f' = fromRawFilePath f
-		in whenM (matcher $ MatchingFile $ FileInfo f' f') $ a f
+		whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
 
 seekActions :: Annex [CommandSeek] -> Annex ()
 seekActions gen = sequence_ =<< gen

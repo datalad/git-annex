@@ -76,7 +76,7 @@ watchChangedRefs = do
 	chan <- liftIO $ newTBMChanIO 100
 	
 	g <- gitRepo
-	let refdir = Git.localGitDir g </> "refs"
+	let refdir = fromRawFilePath (Git.localGitDir g) </> "refs"
 	liftIO $ createDirectoryIfMissing True refdir
 
 	let notifyhook = Just $ notifyHook chan

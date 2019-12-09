@@ -29,7 +29,7 @@ check = do
 	b <- current_branch
 	when (b == Annex.Branch.name) $ giveup $
 		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
-	top <- fromRepo Git.repoPath
+	top <- fromRawFilePath <$> fromRepo Git.repoPath
 	currdir <- liftIO getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 		giveup "can only run uninit from the top of the git repository"

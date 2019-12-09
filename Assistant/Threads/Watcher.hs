@@ -136,8 +136,7 @@ startupScan scanner = do
 		-- Notice any files that were deleted before
 		-- watching was started.
 		top <- liftAnnex $ fromRepo Git.repoPath
-		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted
-			[toRawFilePath top]
+		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted [top]
 		forM_ fs $ \f -> do
 			let f' = fromRawFilePath f
 			liftAnnex $ onDel' f'
@@ -215,7 +214,7 @@ onAddUnlocked symlinkssupported matcher f fs = do
   where
 	addassociatedfile key file = 
 		Database.Keys.addAssociatedFile key
-			=<< inRepo (toTopFilePath file)
+			=<< inRepo (toTopFilePath (toRawFilePath file))
 	samefilestatus key file status = do
 		cache <- Database.Keys.getInodeCaches key
 		curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta file status
@@ -225,7 +224,7 @@ onAddUnlocked symlinkssupported matcher f fs = do
 			_ -> return False
 	contentchanged oldkey file = do
 		Database.Keys.removeAssociatedFile oldkey
-			=<< inRepo (toTopFilePath file)
+			=<< inRepo (toTopFilePath (toRawFilePath file))
 		unlessM (inAnnex oldkey) $
 			logStatus oldkey InfoMissing
 	addlink file key = do
@@ -347,7 +346,7 @@ onDel file _ = do
 
 onDel' :: FilePath -> Annex ()
 onDel' file = do
-	topfile <- inRepo (toTopFilePath file)
+	topfile <- inRepo (toTopFilePath (toRawFilePath file))
 	withkey $ flip Database.Keys.removeAssociatedFile topfile
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)

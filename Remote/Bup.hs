@@ -230,7 +230,7 @@ onBupRemote r runner command params = do
 	(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r c remotecmd
 	liftIO $ runner sshcmd sshparams
   where
-	path = Git.repoPath r
+	path = fromRawFilePath $ Git.repoPath r
 	base = fromMaybe path (stripPrefix "/~/" path)
 	dir = shellEscape base
 

@@ -74,7 +74,7 @@ start o file key =
 
 startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
 startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 
-	start o (toRawFilePath (getTopFilePath topf)) key
+	start o (getTopFilePath topf) key
 startKeys _ _ = stop
 
 showFormatted :: Maybe Utility.Format.Format -> S.ByteString -> [(String, String)] -> Annex ()

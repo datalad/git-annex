@@ -566,7 +566,7 @@ getDirStatInfo o dir = do
   where
 	initial = (emptyKeyInfo, emptyKeyInfo, emptyNumCopiesStats, M.empty)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats, repodata) =
-		ifM (matcher $ MatchingFile $ FileInfo file' file')
+		ifM (matcher $ MatchingFile $ FileInfo file file)
 			( do
 				!presentdata' <- ifM (inAnnex key)
 					( return $ addKey key presentdata
@@ -577,13 +577,11 @@ getDirStatInfo o dir = do
 					then return (numcopiesstats, repodata)
 					else do
 						locs <- Remote.keyLocations key
-						nc <- updateNumCopiesStats file' numcopiesstats locs
+						nc <- updateNumCopiesStats (fromRawFilePath file) numcopiesstats locs
 						return (nc, updateRepoData key locs repodata)
 				return $! (presentdata', referenceddata', numcopiesstats', repodata')
 			, return vs
 			)
-	  where
-		file' = fromRawFilePath file
 
 getTreeStatInfo :: InfoOptions -> Git.Ref -> Annex (Maybe StatInfo)
 getTreeStatInfo o r = do

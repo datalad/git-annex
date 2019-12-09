@@ -57,5 +57,5 @@ perform dest key = do
 cleanup ::  RawFilePath -> Key -> Maybe FileMode -> CommandCleanup
 cleanup dest key destmode = do
 	stagePointerFile dest destmode =<< hashPointerFile key
-	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (fromRawFilePath dest))
+	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 	return True

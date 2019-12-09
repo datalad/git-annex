@@ -70,7 +70,7 @@ smudge file = do
 	case parseLinkTargetOrPointerLazy b of
 		Nothing -> noop
 		Just k -> do
-			topfile <- inRepo (toTopFilePath file)
+			topfile <- inRepo (toTopFilePath (toRawFilePath file))
 			Database.Keys.addAssociatedFile k topfile
 			void $ smudgeLog k topfile
 	liftIO $ L.putStr b
@@ -141,7 +141,8 @@ clean file = do
 	-- git diff can run the clean filter on files outside the
 	-- repository; can't annex those
 	fileoutsiderepo = do
-	        repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+	        repopath <- liftIO . absPath . fromRawFilePath
+			=<< fromRepo Git.repoPath
 		filepath <- liftIO $ absPath file
 		return $ not $ dirContains repopath filepath
 
@@ -204,7 +205,7 @@ update = do
 
 updateSmudged :: Restage -> Annex ()
 updateSmudged restage = streamSmudged $ \k topf -> do
-	f <- toRawFilePath <$> fromRepo (fromTopFilePath topf)
+	f <- fromRepo (fromTopFilePath topf)
 	whenM (inAnnex k) $ do
 		obj <- toRawFilePath <$> calcRepo (gitAnnexLocation k)
 		unlessM (isJust <$> populatePointerFile restage k obj f) $

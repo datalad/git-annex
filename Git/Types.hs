@@ -30,8 +30,8 @@ import Utility.FileSystemEncoding
  - else known about it.
  -}
 data RepoLocation
-	= Local { gitdir :: FilePath, worktree :: Maybe FilePath }
-	| LocalUnknown FilePath
+	= Local { gitdir :: RawFilePath, worktree :: Maybe RawFilePath }
+	| LocalUnknown RawFilePath
 	| Url URI
 	| Unknown
 	deriving (Show, Eq, Ord)

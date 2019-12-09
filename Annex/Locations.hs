@@ -93,6 +93,7 @@ module Annex.Locations (
 import Data.Char
 import Data.Default
 import qualified Data.ByteString.Char8 as S8
+import qualified System.FilePath.ByteString as P
 
 import Common
 import Key
@@ -158,7 +159,12 @@ gitAnnexLocationDepth config = hashlevels + 1
  - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config) (coreSymlinks config) doesFileExist (Git.localGitDir r)
+gitAnnexLocation key r config = gitAnnexLocation' key r config
+	(annexCrippledFileSystem config)
+	(coreSymlinks config)
+	doesFileExist
+	(fromRawFilePath (Git.localGitDir r))
+
 gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (FilePath -> IO Bool) -> FilePath -> IO FilePath
 gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
@@ -200,8 +206,9 @@ gitAnnexLink file key r config = do
 		 - supporting symlinks; generate link target that will
 		 - work portably. -}
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
-			absNormPathUnix currdir $ Git.repoPath r </> ".git"
-		| otherwise = Git.localGitDir r
+			absNormPathUnix currdir $ fromRawFilePath $
+				Git.repoPath r P.</> ".git"
+		| otherwise = fromRawFilePath $ Git.localGitDir r
 	absNormPathUnix d p = fromRawFilePath $ toInternalGitPath $ toRawFilePath $
 		absPathFrom
 			(fromRawFilePath $ toInternalGitPath $ toRawFilePath d)
@@ -214,7 +221,7 @@ gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
   where
 	r' = case r of
 		Git.Repo { Git.location = l@Git.Local { Git.worktree = Just wt } } ->
-			r { Git.location = l { Git.gitdir = wt </> ".git" } }
+			r { Git.location = l { Git.gitdir = wt P.</> ".git" } }
 		_ -> r
 	config' = config
 		{ annexCrippledFileSystem = False
@@ -250,11 +257,11 @@ gitAnnexInodeSentinalCache r = gitAnnexInodeSentinal r ++ ".cache"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
-gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
+gitAnnexDir r = addTrailingPathSeparator $ fromRawFilePath (Git.localGitDir r) </> annexDir
 
 {- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> FilePath
-gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
+gitAnnexObjectDir r = addTrailingPathSeparator $ fromRawFilePath (Git.localGitDir r) </> objectDir
 
 {- .git/annex/tmp/ is used for temp files for key's contents -}
 gitAnnexTmpObjectDir :: Git.Repo -> FilePath

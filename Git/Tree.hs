@@ -119,7 +119,7 @@ mkTreeOutput fm ot s f = concat
 	, " "
 	, fromRef s
 	, "\t"
-	, takeFileName (getTopFilePath f)
+	, takeFileName (fromRawFilePath (getTopFilePath f))
 	, "\NUL"
 	]
 
@@ -156,7 +156,7 @@ treeItemsToTree = go M.empty
 			Just (NewSubTree d l) ->
 				go (addsubtree idir m (NewSubTree d (c:l))) is
 			_ ->
-				go (addsubtree idir m (NewSubTree (asTopFilePath idir) [c])) is
+				go (addsubtree idir m (NewSubTree (asTopFilePath (toRawFilePath idir)) [c])) is
 	  where
 		p = gitPath i
 		idir = takeDirectory p
@@ -169,7 +169,7 @@ treeItemsToTree = go M.empty
 				Just (NewSubTree d' l) ->
 					let l' = filter (\ti -> gitPath ti /= d) l
 					in addsubtree parent m' (NewSubTree d' (t:l'))
-				_ -> addsubtree parent m' (NewSubTree (asTopFilePath parent) [t])
+				_ -> addsubtree parent m' (NewSubTree (asTopFilePath (toRawFilePath parent)) [t])
 		| otherwise = M.insert d t m
 	  where
 		parent = takeDirectory d
@@ -328,7 +328,7 @@ graftTree' subtree graftloc basetree repo hdl = go basetree graftdirs
 	
 	-- For a graftloc of "foo/bar/baz", this generates
 	-- ["foo", "foo/bar", "foo/bar/baz"]
-	graftdirs = map (asTopFilePath . decodeBS . toInternalGitPath . encodeBS) $
+	graftdirs = map (asTopFilePath . toInternalGitPath . encodeBS) $
 		mkpaths [] $ splitDirectories $ gitPath graftloc
 	mkpaths _ [] = []
 	mkpaths base (d:rest) = (joinPath base </> d) : mkpaths (base ++ [d]) rest
@@ -366,7 +366,7 @@ instance GitPath FilePath where
 	gitPath = id
 
 instance GitPath TopFilePath where
-	gitPath = getTopFilePath
+	gitPath = fromRawFilePath . getTopFilePath
 
 instance GitPath TreeItem where
 	gitPath (TreeItem f _ _) = gitPath f

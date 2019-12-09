@@ -20,7 +20,7 @@ repoCheap = not . Git.repoIsUrl
 localpathCalc :: Git.Repo -> Maybe FilePath
 localpathCalc r
 	| availabilityCalc r == GloballyAvailable = Nothing
-	| otherwise = Just $ Git.repoPath r
+	| otherwise = Just $ fromRawFilePath $ Git.repoPath r
 
 availabilityCalc :: Git.Repo -> Availability
 availabilityCalc r
@@ -36,7 +36,7 @@ guardUsable r fallback a
 
 gitRepoInfo :: Remote -> Annex [(String, String)]
 gitRepoInfo r = do
-	d <- fromRepo Git.localGitDir
+	d <- fromRawFilePath <$> fromRepo Git.localGitDir
 	mtimes <- liftIO $ mapM (modificationTime <$$> getFileStatus)
 		=<< dirContentsRecursive (d </> "refs" </> "remotes" </> Remote.name r)
 	let lastsynctime = case mtimes of

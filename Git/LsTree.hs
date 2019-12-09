@@ -100,7 +100,7 @@ parserLsTree = TreeItem
 	<*> (Ref . decodeBS' <$> A.take shaSize)
 	<* A8.char '\t'
 	-- file
-	<*> (asTopFilePath . decodeBS' . Git.Filename.decode <$> A.takeByteString)
+	<*> (asTopFilePath . Git.Filename.decode <$> A.takeByteString)
 
 {- Inverse of parseLsTree -}
 formatLsTree :: TreeItem -> String
@@ -108,5 +108,5 @@ formatLsTree ti = unwords
 	[ showOct (mode ti) ""
 	, decodeBS (typeobj ti)
 	, fromRef (sha ti)
-	, getTopFilePath (file ti)
+	, fromRawFilePath (getTopFilePath (file ti))
 	]

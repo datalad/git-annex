@@ -185,7 +185,7 @@ typeChanged' ps l repo = do
 	(fs, cleanup) <- pipeNullSplit (prefix ++ ps ++ suffix) repo
 	-- git diff returns filenames relative to the top of the git repo;
 	-- convert to filenames relative to the cwd, like git ls-files.
-	top <- absPath (repoPath repo)
+	top <- absPath (fromRawFilePath (repoPath repo))
 	currdir <- getCurrentDirectory
 	return (map (\f -> toRawFilePath (relPathDirToFileAbs currdir $ top </> decodeBL' f)) fs, cleanup)
   where
