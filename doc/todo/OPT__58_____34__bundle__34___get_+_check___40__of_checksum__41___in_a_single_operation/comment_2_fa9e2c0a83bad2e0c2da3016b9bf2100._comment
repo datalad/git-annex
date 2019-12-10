@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2019-12-10T22:01:12Z"
+ content="""
+> An external remote could also do its own checksum checking and then set `remote..annex-verify=false`
+
+that is an interesting idea, thanks!  Not sure if that makes it easy for mass consumption though since it is a feature of a external remote, not sure why it should be in the config.  Ideally it should be a property of a remote.
+
+Joey, what do you think in regard of built-in remotes?
+"""]]
