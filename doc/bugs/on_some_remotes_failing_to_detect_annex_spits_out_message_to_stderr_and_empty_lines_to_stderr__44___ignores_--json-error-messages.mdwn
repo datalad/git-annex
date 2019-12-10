@@ -1,0 +1,56 @@
+### Please describe the problem.
+
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+lena:/tmp
+$> git clone http://kumo.ovgu.de/~mih/myHP/bd2/4e4aa-7aea-11e6-9d5d-002590f97d84/
+Cloning into '4e4aa-7aea-11e6-9d5d-002590f97d84'...
+
+$> cd 4e4aa-7aea-11e6-9d5d-002590f97d84 
+
+$> git annex init                                                                
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+
+  Failed to get annex.uuid configuration of repository origin
+
+  Instead, got: "core.repositoryformatversion\n0\NULcore.filemode\ntrue\NULcore.bare\ntrue\NUL"
+
+  This is unexpected; please check the network transport!
+(Auto enabling special remote datalad-archives...)
+(Auto enabling special remote inm7-storage...)
+
+  Cannot run git-annex-remote-ria -- It is not installed in PATH (/usr/lib/git-annex.linux/bin:/usr/lib/git-core:/home/yoh/picts/mris/heudiconv-master/venvs/dev3/bin:/home/yoh/gocode/bin:/home/yoh/gocode/bin:/home/yoh/bin:/home/yoh/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/sbin:/usr/sbin:/usr/local/sbin:/usr/lib/git-annex.linux/extra)
+ok
+(recording state in git...)
+
+"""]]
+
+so two issues in above:
+- not clear why it dumps git config if fetched instead of just announcing that remote has no git-annex and set to ignore
+- empty lines between all the messages go to stdout:
+
+[[!format sh """
+$> git annex init 2>/dev/null
+init  (scanning for unlocked files...)
+
+
+
+(Auto enabling special remote inm7-storage...)
+
+ok
+"""]]
+
+PS ignore "ignores --json-error-messages" part of the subject -- was detected in 7.20190819+git2-g908476a9b-1~ndall+1 during `get` but upgrade to 7.20191114+git43-ge29663773-1~ndall+1 resolved it
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
