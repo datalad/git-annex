@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="MichaelC"
+ avatar="http://cdn.libravatar.org/avatar/248593885d551a3912e488c4bc9d311c"
+ subject="Does android adb special remote support MTP?"
+ date="2019-12-10T21:23:31Z"
+ content="""
+I'm attempting to init this special remote with my Pixel 3a android phone (which connect via MTP) but keep hitting the following error.
+
+In Debian, this will mount to /run , specifically in my case
+
+/run/user/1000/gvfs/mtp\\:host\=Google_Pixel_3a_94MBY/Internal\ shared\ storage/DCIM
+
+git annex initremote android type=adb androiddirectory=/run/user/1000/gvfs/mtp\\:host\=Google_Pixel_3a_94MBY/Internal\ shared\ storage/DCIM  encryption=none exporttree=yes importtree=yes
+initremote android 
+git-annex: adb: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+failed
+git-annex: initremote: 1 failed
+
+I've tried enclosing the androiddirectory in single/double quotes (based on the hope that the colon before host was the issue)
+I've also attempted to substitute a symbolic link to the directory instead - but no luck.
+
+(*) I can cd  into this directroy via xterm and browse etc.
+
+Thanks,
+M
+
+"""]]
