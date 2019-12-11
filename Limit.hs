@@ -33,6 +33,7 @@ import Git.Types (RefDate(..))
 import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
@@ -117,7 +118,8 @@ addMagicLimit limitname querymagic selectprovidedinfo glob = do
 		-- When the file is an annex symlink, get magic of the
 		-- object file.
 		Nothing -> isAnnexLink (toRawFilePath f) >>= \case
-			Just k -> withObjectLoc k $ querymagic magic
+			Just k -> withObjectLoc k $
+				querymagic magic . fromRawFilePath
 			Nothing -> querymagic magic f
 
 matchMagic :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> Maybe Magic -> MkLimit Annex
@@ -363,7 +365,7 @@ addAccessedWithin duration = do
   where
 	check now k = inAnnexCheck k $ \f ->
 		liftIO $ catchDefaultIO False $ do
-			s <- getFileStatus f
+			s <- R.getFileStatus f
 			let accessed = realToFrac (accessTime s)
 			let delta = now - accessed
 			return $ delta <= secs

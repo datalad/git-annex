@@ -283,7 +283,7 @@ associatedFilesFilter = filterM go
 	checkunmodified _ [] = return True
 	checkunmodified cs (f:fs) = do
 		relf <- fromRepo $ fromTopFilePath f
-		ifM (sameInodeCache (fromRawFilePath relf) cs)
+		ifM (sameInodeCache relf cs)
 			( return False
 			, checkunmodified cs fs
 			)

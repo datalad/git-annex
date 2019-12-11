@@ -181,7 +181,7 @@ startLocal largematcher mode (srcfile, destfile) =
 		-- weakly the same as the origianlly locked down file's
 		-- inode cache. (Since the file may have been copied,
 		-- its inodes may not be the same.)
-		newcache <- withTSDelta $ liftIO . genInodeCache destfile
+		newcache <- withTSDelta $ liftIO . genInodeCache (toRawFilePath destfile)
 		let unchanged = case (newcache, inodeCache (keySource ld)) of
 			(_, Nothing) -> True
 			(Just newc, Just c) | compareWeak c newc -> True

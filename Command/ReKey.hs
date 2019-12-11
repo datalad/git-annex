@@ -83,12 +83,12 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 	 - unlocked file, which would leave the new key unlocked
 	 - and vulnerable to corruption. -}
 	( getViaTmpFromDisk RetrievalAllKeysSecure DefaultVerify newkey $ \tmp -> unVerified $ do
-		oldobj <- calcRepo (gitAnnexLocation oldkey)
+		oldobj <- fromRawFilePath <$> calcRepo (gitAnnexLocation oldkey)
 		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 	, do
 	 	{- The file being rekeyed is itself an unlocked file; if
 		 - it's hard linked to the old key, that link must be broken. -}
-		oldobj <- calcRepo (gitAnnexLocation oldkey)
+		oldobj <- fromRawFilePath <$> calcRepo (gitAnnexLocation oldkey)
 		v <- tryNonAsync $ do
 			st <- liftIO $ R.getFileStatus file
 			when (linkCount st > 1) $ do
@@ -97,7 +97,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 					unlessM (checkedCopyFile oldkey oldobj tmp Nothing) $
 						error "can't lock old key"
 					thawContent tmp
-		ic <- withTSDelta (liftIO . genInodeCache' file)
+		ic <- withTSDelta (liftIO . genInodeCache file)
 		case v of
 			Left e -> do
 				warning (show e)

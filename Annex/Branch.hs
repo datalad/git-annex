@@ -482,7 +482,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 				sha <- Git.HashObject.hashFile h path
 				hPutStrLn jlogh file
 				streamer $ Git.UpdateIndex.updateIndexLine
-					sha TreeFile (asTopFilePath $ toRawFilePath $ fileJournal file)
+					sha TreeFile (asTopFilePath $ fileJournal $ toRawFilePath file)
 			genstream dir h jh jlogh streamer
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the

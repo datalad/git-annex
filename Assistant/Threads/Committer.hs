@@ -308,7 +308,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 		if M.null m
 			then forM toadd (add cfg)
 			else forM toadd $ \c -> do
-				mcache <- liftIO $ genInodeCache (changeFile c) delta
+				mcache <- liftIO $ genInodeCache (toRawFilePath (changeFile c)) delta
 				case mcache of
 					Nothing -> add cfg c
 					Just cache ->

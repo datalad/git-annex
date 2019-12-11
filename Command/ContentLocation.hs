@@ -9,6 +9,9 @@ module Command.ContentLocation where
 
 import Command
 import Annex.Content
+import qualified Utility.RawFilePath as R
+
+import qualified Data.ByteString.Char8 as B8
 
 cmd :: Command
 cmd = noCommit $ noMessages $
@@ -20,10 +23,10 @@ cmd = noCommit $ noMessages $
 run :: () -> String -> Annex Bool
 run _ p = do
 	let k = fromMaybe (giveup "bad key") $ deserializeKey p
-	maybe (return False) (\f -> liftIO (putStrLn f) >> return True)
+	maybe (return False) (\f -> liftIO (B8.putStrLn f) >> return True)
 		=<< inAnnex' (pure True) Nothing check k
   where
-	check f = ifM (liftIO (doesFileExist f))
+	check f = ifM (liftIO (R.doesPathExist f))
 		( return (Just f)
 		, return Nothing
 		)

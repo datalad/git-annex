@@ -39,9 +39,9 @@ keyDir :: Key -> DavLocation
 keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
   where
 #ifndef mingw32_HOST_OS
-	hashdir = hashDirLower def k
+	hashdir = fromRawFilePath $ hashDirLower def k
 #else
-	hashdir = replace "\\" "/" (hashDirLower def k)
+	hashdir = replace "\\" "/" (fromRawFilePath $ hashDirLower def k)
 #endif
 
 keyLocation :: Key -> DavLocation

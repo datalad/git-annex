@@ -422,7 +422,8 @@ checkKey' repo r rsyncopts k
 {- Annexed objects are hashed using lower-case directories for max
  - portability. -}
 gCryptLocation :: Git.Repo -> Key -> FilePath
-gCryptLocation repo key = Git.repoLocation repo </> objectDir </> keyPath key (hashDirLower def)
+gCryptLocation repo key = Git.repoLocation repo </> objectDir
+	</> fromRawFilePath (keyPath key (hashDirLower def))
 
 data AccessMethod = AccessDirect | AccessShell
 

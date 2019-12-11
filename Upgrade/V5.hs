@@ -135,7 +135,7 @@ upgradeDirectWorkTree = do
 			-- is just not populated with it. Since the work tree
 			-- file is recorded as an associated file, things will
 			-- still work that way, it's just not ideal.
-			ic <- withTSDelta (liftIO . genInodeCache f)
+			ic <- withTSDelta (liftIO . genInodeCache (toRawFilePath f))
 			void $ Content.linkToAnnex k f ic
 		, unlessM (Content.inAnnex k) $ do
 			-- Worktree file was deleted or modified;

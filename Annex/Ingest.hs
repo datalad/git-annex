@@ -92,7 +92,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 	nohardlink = withTSDelta $ liftIO . nohardlink'
 
 	nohardlink' delta = do
-		cache <- genInodeCache file delta
+		cache <- genInodeCache (toRawFilePath file) delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file
 			, contentLocation = file
@@ -112,7 +112,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 
 	withhardlink' delta tmpfile = do
 		createLink file tmpfile
-		cache <- genInodeCache tmpfile delta
+		cache <- genInodeCache (toRawFilePath tmpfile) delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file
 			, contentLocation = tmpfile
@@ -209,7 +209,7 @@ finishIngestUnlocked' key source restage = do
 {- Copy to any other locations using the same key. -}
 populateAssociatedFiles :: Key -> KeySource -> Restage -> Annex ()
 populateAssociatedFiles key source restage = do
-	obj <- toRawFilePath <$> calcRepo (gitAnnexLocation key)
+	obj <- calcRepo (gitAnnexLocation key)
 	g <- Annex.gitRepo
 	ingestedf <- flip fromTopFilePath g
 		<$> inRepo (toTopFilePath (toRawFilePath (keyFilename source)))
@@ -235,8 +235,7 @@ cleanOldKeys file newkey = do
 		unlessM (isUnmodified key =<< calcRepo (gitAnnexLocation key)) $ do
 			caches <- Database.Keys.getInodeCaches key
 			unlinkAnnex key
-			fs <- map fromRawFilePath
-				. filter (/= ingestedf)
+			fs <- filter (/= ingestedf)
 				. map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			filterM (`sameInodeCache` caches) fs >>= \case
@@ -245,7 +244,7 @@ cleanOldKeys file newkey = do
 				-- so no need for any recovery.
 				(f:_) -> do
 					ic <- withTSDelta (liftIO . genInodeCache f)
-					void $ linkToAnnex key f ic
+					void $ linkToAnnex key (fromRawFilePath f) ic
 				_ -> logStatus key InfoMissing
 
 {- On error, put the file back so it doesn't seem to have vanished.
@@ -256,7 +255,7 @@ restoreFile file key e = do
 		liftIO $ nukeFile file
 		-- The key could be used by other files too, so leave the
 		-- content in the annex, and make a copy back to the file.
-		obj <- calcRepo $ gitAnnexLocation key
+		obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj file) $
 			warning $ "Unable to restore content of " ++ file ++ "; it should be located in " ++ obj
 		thawContent file

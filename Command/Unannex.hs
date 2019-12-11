@@ -46,7 +46,7 @@ perform file key = do
 cleanup :: RawFilePath -> Key -> CommandCleanup
 cleanup file key = do
 	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
-	src <- calcRepo $ gitAnnexLocation key
+	src <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 	ifM (Annex.getState Annex.fast)
 		( do
 			-- Only make a hard link if the annexed file does not

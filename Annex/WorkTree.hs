@@ -101,13 +101,14 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 				Just k' | k' == k -> do
 					destmode <- liftIO $ catchMaybeIO $
 						fileMode <$> R.getFileStatus f
-					ic <- replaceFile (fromRawFilePath f) $ \tmp ->
+					ic <- replaceFile (fromRawFilePath f) $ \tmp -> do
+						let tmp' = toRawFilePath tmp
 						linkFromAnnex k tmp destmode >>= \case
 							LinkAnnexOk -> 
-								withTSDelta (liftIO . genInodeCache tmp)
+								withTSDelta (liftIO . genInodeCache tmp')
 							LinkAnnexNoop -> return Nothing
 							LinkAnnexFailed -> liftIO $ do
-								writePointerFile (toRawFilePath tmp) k destmode
+								writePointerFile tmp' k destmode
 								return Nothing
 					maybe noop (restagePointerFile (Restage True) f) ic
 				_ -> noop

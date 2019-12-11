@@ -107,7 +107,9 @@ removeAssociatedFiles key = do
  - expected mtime and inode.
  -}
 goodContent :: Key -> FilePath -> Annex Bool
-goodContent key file = sameInodeCache file =<< recordedInodeCache key
+goodContent key file =
+	sameInodeCache (toRawFilePath file)
+		=<< recordedInodeCache key
 
 {- Gets the recorded inode cache for a key. 
  -

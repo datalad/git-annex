@@ -334,10 +334,9 @@ inodeMap :: Annex ([RawFilePath], IO Bool) -> Annex InodeMap
 inodeMap getfiles = do
 	(fs, cleanup) <- getfiles
 	fsis <- forM fs $ \f -> do
-		let f' = fromRawFilePath f
-		mi <- withTSDelta (liftIO . genInodeCache f')
+		mi <- withTSDelta (liftIO . genInodeCache f)
 		return $ case mi of
 			Nothing -> Nothing
-			Just i -> Just (inodeCacheToKey Strongly i, f')
+			Just i -> Just (inodeCacheToKey Strongly i, fromRawFilePath f)
 	void $ liftIO cleanup
 	return $ M.fromList $ catMaybes fsis

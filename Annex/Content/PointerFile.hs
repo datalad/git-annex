@@ -38,10 +38,11 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f'
 		liftIO $ nukeFile f'
 		(ic, populated) <- replaceFile f' $ \tmp -> do
+			let tmp' = toRawFilePath tmp
 			ok <- linkOrCopy k (fromRawFilePath obj) tmp destmode >>= \case
 				Just _ -> thawContent tmp >> return True
-				Nothing -> liftIO (writePointerFile (toRawFilePath tmp) k destmode) >> return False
-			ic <- withTSDelta (liftIO . genInodeCache tmp)
+				Nothing -> liftIO (writePointerFile tmp' k destmode) >> return False
+			ic <- withTSDelta (liftIO . genInodeCache tmp')
 			return (ic, ok)
 		maybe noop (restagePointerFile restage f) ic
 		if populated
@@ -68,5 +69,5 @@ depopulatePointerFile key file = do
 			(\t -> touch tmp t False)
 			(fmap modificationTimeHiRes st)
 #endif
-		withTSDelta (liftIO . genInodeCache tmp)
+		withTSDelta (liftIO . genInodeCache (toRawFilePath tmp))
 	maybe noop (restagePointerFile (Restage True) file) ic

@@ -61,6 +61,7 @@ import Creds
 import Types.NumCopies
 import Annex.Action
 import Messages.Progress
+import qualified Utility.RawFilePath as R
 
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
@@ -393,9 +394,9 @@ keyUrls gc repo r key = map tourl locs'
 		| remoteAnnexBare remoteconfig == Just False = reverse (annexLocations gc key)
 		| otherwise = annexLocations gc key
 #ifndef mingw32_HOST_OS
-	locs' = locs
+	locs' = map fromRawFilePath locs
 #else
-	locs' = map (replace "\\" "/") locs
+	locs' = map (replace "\\" "/" . fromRawFilePath) locs
 #endif
 	remoteconfig = gitconfig r
 
@@ -599,9 +600,9 @@ copyFromRemoteCheap' repo r st key af file
 	| not $ Git.repoIsUrl repo = guardUsable repo (return False) $ do
 		gc <- getGitConfigFromState st
 		loc <- liftIO $ gitAnnexLocation key repo gc
-		liftIO $ ifM (doesFileExist loc)
+		liftIO $ ifM (R.doesPathExist loc)
 			( do
-				absloc <- absPath loc
+				absloc <- absPath (fromRawFilePath loc)
 				catchBoolIO $ do
 					createSymbolicLink absloc file
 					return True

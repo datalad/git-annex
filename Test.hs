@@ -1638,7 +1638,8 @@ test_crypto = do
 		checkFile mvariant filename =
 			Utility.Gpg.checkEncryptionFile gpgcmd filename $
 				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
-		serializeKeys cipher = Annex.Locations.keyPaths .
+		serializeKeys cipher = map fromRawFilePath . 
+			Annex.Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
 test_crypto = putStrLn "gpg testing not implemented on Windows"

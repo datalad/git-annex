@@ -131,7 +131,7 @@ withUnmodifiedUnlockedPointers a l = seekActions $
 isUnmodifiedUnlocked :: RawFilePath -> Annex Bool
 isUnmodifiedUnlocked f = catKeyFile f >>= \case
 	Nothing -> return False
-	Just k -> sameInodeCache (fromRawFilePath f) =<< Database.Keys.getInodeCaches k
+	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek

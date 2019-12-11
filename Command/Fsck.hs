@@ -223,7 +223,7 @@ fixLink key file = do
  - in this repository only. -}
 verifyLocationLog :: Key -> KeyStatus -> ActionItem -> Annex Bool
 verifyLocationLog key keystatus ai = do
-	obj <- calcRepo $ gitAnnexLocation key
+	obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 	present <- if isKeyUnlockedThin keystatus
 		then liftIO (doesFileExist obj)
 		else inAnnex key
@@ -332,11 +332,11 @@ verifyWorkTree key file = do
 				ifM (annexThin <$> Annex.getGitConfig)
 					( void $ linkFromAnnex key tmp mode
 					, do
-						obj <- calcRepo $ gitAnnexLocation key
+						obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 						void $ checkedCopyFile key obj tmp mode
 						thawContent tmp
 					)
-			Database.Keys.storeInodeCaches key [fromRawFilePath file]
+			Database.Keys.storeInodeCaches key [file]
 		_ -> return ()
 	return True
 
@@ -349,8 +349,8 @@ checkKeySize :: Key -> KeyStatus -> ActionItem -> Annex Bool
 checkKeySize _ KeyUnlockedThin _ = return True
 checkKeySize key _ ai = do
 	file <- calcRepo $ gitAnnexLocation key
-	ifM (liftIO $ doesFileExist file)
-		( checkKeySizeOr badContent key file ai
+	ifM (liftIO $ R.doesPathExist file)
+		( checkKeySizeOr badContent key (fromRawFilePath file) ai
 		, return True
 		)
 
@@ -417,10 +417,10 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
  -}
 checkBackend :: Backend -> Key -> KeyStatus -> AssociatedFile -> Annex Bool
 checkBackend backend key keystatus afile = do
-	content <- calcRepo $ gitAnnexLocation key
+	content <- calcRepo (gitAnnexLocation key)
 	ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 		( nocheck
-		, checkBackendOr badContent backend key content ai
+		, checkBackendOr badContent backend key (fromRawFilePath content) ai
 		)
   where
 	nocheck = return True
@@ -670,8 +670,8 @@ isKeyUnlockedThin KeyMissing = False
 getKeyStatus :: Key -> Annex KeyStatus
 getKeyStatus key = catchDefaultIO KeyMissing $ do
 	afs <- not . null <$> Database.Keys.getAssociatedFiles key
-	obj <- calcRepo $ gitAnnexLocation key
-	multilink <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
+	obj <- calcRepo (gitAnnexLocation key)
+	multilink <- ((> 1) . linkCount <$> liftIO (R.getFileStatus obj))
 	return $ if multilink && afs
 		then KeyUnlockedThin
 		else KeyPresent

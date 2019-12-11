@@ -93,8 +93,8 @@ keyVars key =
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
 	, ("keyname", decodeBS $ fromKey keyName key)
-	, ("hashdirlower", hashDirLower def key)
-	, ("hashdirmixed", hashDirMixed def key)
+	, ("hashdirlower", fromRawFilePath $ hashDirLower def key)
+	, ("hashdirmixed", fromRawFilePath $ hashDirMixed def key)
 	, ("mtime", whenavail show $ fromKey keyMtime key)
 	]
   where

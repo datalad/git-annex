@@ -53,11 +53,11 @@ start fixwhat file key = do
   where
 	fixby = starting "fix" (mkActionItem (key, file))
 	fixthin = do
-		obj <- calcRepo $ gitAnnexLocation key
-		stopUnless (isUnmodified key (fromRawFilePath file) <&&> isUnmodified key obj) $ do
+		obj <- calcRepo (gitAnnexLocation key)
+		stopUnless (isUnmodified key file <&&> isUnmodified key obj) $ do
 			thin <- annexThin <$> Annex.getGitConfig
 			fs <- liftIO $ catchMaybeIO $ R.getFileStatus file
-			os <- liftIO $ catchMaybeIO $ getFileStatus obj
+			os <- liftIO $ catchMaybeIO $ R.getFileStatus obj
 			case (linkCount <$> fs, linkCount <$> os, thin) of
 				(Just 1, Just 1, True) ->
 					fixby $ makeHardLink file key
@@ -65,15 +65,16 @@ start fixwhat file key = do
 					fixby $ breakHardLink file key obj
 				_ -> stop
 
-breakHardLink :: RawFilePath -> Key -> FilePath -> CommandPerform
+breakHardLink :: RawFilePath -> Key -> RawFilePath -> CommandPerform
 breakHardLink file key obj = do
 	replaceFile (fromRawFilePath file) $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
-		unlessM (checkedCopyFile key obj tmp mode) $
+		let obj' = fromRawFilePath obj
+		unlessM (checkedCopyFile key obj' tmp mode) $
 			error "unable to break hard link"
 		thawContent tmp
-		modifyContent obj $ freezeContent obj
-	Database.Keys.storeInodeCaches key [fromRawFilePath file]
+		modifyContent obj' $ freezeContent obj'
+	Database.Keys.storeInodeCaches key [file]
 	next $ return True
 
 makeHardLink :: RawFilePath -> Key -> CommandPerform

@@ -20,6 +20,7 @@ import qualified Database.Keys
 import Annex.Ingest
 import Logs.Location
 import Git.FilePath
+import qualified Utility.RawFilePath as R
 	
 cmd :: Command
 cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
@@ -43,7 +44,7 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 		| key' == key = cont
 		| otherwise = errorModified
 	go Nothing = 
-		ifM (isUnmodified key (fromRawFilePath file))
+		ifM (isUnmodified key file)
 			( cont
 			, ifM (Annex.getState Annex.force)
 				( cont
@@ -56,37 +57,38 @@ performNew :: RawFilePath -> Key -> CommandPerform
 performNew file key = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
 	addLink (fromRawFilePath file) key
-		=<< withTSDelta (liftIO . genInodeCache' file)
+		=<< withTSDelta (liftIO . genInodeCache file)
 	next $ cleanupNew file key
   where
 	lockdown obj = do
 		ifM (isUnmodified key obj)
 			( breakhardlink obj
-			, repopulate obj
+			, repopulate (fromRawFilePath obj)
 			)
-		whenM (liftIO $ doesFileExist obj) $
-			freezeContent obj
+		whenM (liftIO $ R.doesPathExist obj) $
+			freezeContent $ fromRawFilePath obj
 
 	-- It's ok if the file is hard linked to obj, but if some other
 	-- associated file is, we need to break that link to lock down obj.
-	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (getFileStatus obj)) $ do
-		mfc <- withTSDelta (liftIO . genInodeCache' file)
+	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (R.getFileStatus obj)) $ do
+		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
-			modifyContent obj $ replaceFile obj $ \tmp -> do
-				unlessM (checkedCopyFile key obj tmp Nothing) $
+			let obj' = fromRawFilePath obj
+			modifyContent obj' $ replaceFile obj' $ \tmp -> do
+				unlessM (checkedCopyFile key obj' tmp Nothing) $
 					giveup "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
 
 	-- Try to repopulate obj from an unmodified associated file.
 	repopulate obj = modifyContent obj $ do
 		g <- Annex.gitRepo
-		fs <- map fromRawFilePath . map (`fromTopFilePath` g)
+		fs <- map (`fromTopFilePath` g)
 			<$> Database.Keys.getAssociatedFiles key
 		mfile <- firstM (isUnmodified key) fs
 		liftIO $ nukeFile obj
 		case mfile of
 			Just unmodified ->
-				unlessM (checkedCopyFile key unmodified obj Nothing)
+				unlessM (checkedCopyFile key (fromRawFilePath unmodified) obj Nothing)
 					lostcontent
 			Nothing -> lostcontent
 

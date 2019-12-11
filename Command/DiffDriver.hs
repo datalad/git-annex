@@ -90,7 +90,8 @@ fixupReq req@(Req {}) =
 			v <- getAnnexLinkTarget' (toRawFilePath (getfile r)) False
 			case parseLinkTargetOrPointer =<< v of
 				Nothing -> return r
-				Just k -> withObjectLoc k (pure . setfile r)
+				Just k -> withObjectLoc k $
+					pure . setfile r . fromRawFilePath
 		_ -> return r
 
 externalDiffer :: String -> [String] -> Differ

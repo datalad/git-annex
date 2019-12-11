@@ -29,7 +29,7 @@ compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 
 {- Checks if one of the provided old InodeCache matches the current
  - version of a file. -}
-sameInodeCache :: FilePath -> [InodeCache] -> Annex Bool
+sameInodeCache :: RawFilePath -> [InodeCache] -> Annex Bool
 sameInodeCache _ [] = return False
 sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
   where
@@ -78,7 +78,7 @@ createInodeSentinalFile :: Bool -> Annex ()
 createInodeSentinalFile evenwithobjects = 
 	unlessM (alreadyexists <||> hasobjects) $ do
 		s <- annexSentinalFile
-		createAnnexDirectory (parentDir (sentinalFile s))
+		createAnnexDirectory (parentDir (fromRawFilePath (sentinalFile s)))
 		liftIO $ writeSentinalFile s
   where
 	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile

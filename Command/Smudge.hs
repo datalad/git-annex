@@ -108,7 +108,7 @@ clean file = do
 			-- annexed and is unmodified.
 			case oldkey of
 				Nothing -> doingest oldkey
-				Just ko -> ifM (isUnmodifiedCheap ko file)
+				Just ko -> ifM (isUnmodifiedCheap ko (toRawFilePath file))
 					( liftIO $ emitPointer ko
 					, doingest oldkey
 					)
@@ -174,7 +174,7 @@ shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 		Just _ -> return True
 		Nothing -> checkknowninode
 
-	checkknowninode = withTSDelta (liftIO . genInodeCache file) >>= \case
+	checkknowninode = withTSDelta (liftIO . genInodeCache (toRawFilePath file)) >>= \case
 		Nothing -> pure False
 		Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
 
@@ -191,7 +191,7 @@ emitPointer = S.putStr . formatPointer
 getMoveRaceRecovery :: Key -> RawFilePath -> Annex ()
 getMoveRaceRecovery k file = void $ tryNonAsync $
 	whenM (inAnnex k) $ do
-		obj <- toRawFilePath <$> calcRepo (gitAnnexLocation k)
+		obj <- calcRepo (gitAnnexLocation k)
 		-- Cannot restage because git add is running and has
 		-- the index locked.
 		populatePointerFile (Restage False) k obj file >>= \case
@@ -207,7 +207,7 @@ updateSmudged :: Restage -> Annex ()
 updateSmudged restage = streamSmudged $ \k topf -> do
 	f <- fromRepo (fromTopFilePath topf)
 	whenM (inAnnex k) $ do
-		obj <- toRawFilePath <$> calcRepo (gitAnnexLocation k)
+		obj <- calcRepo (gitAnnexLocation k)
 		unlessM (isJust <$> populatePointerFile restage k obj f) $
 			liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> toplevelWarning False $

@@ -17,6 +17,7 @@ import qualified Database.Keys
 import Annex.Content
 import Annex.Init
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = addCheck check $ 
@@ -117,5 +118,5 @@ removeUnannexed = go []
 		, go (k:c) ks
 		)
 	enoughlinks f = catchBoolIO $ do
-		s <- getFileStatus f
+		s <- R.getFileStatus f
 		return $ linkCount s > 1

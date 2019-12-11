@@ -20,7 +20,9 @@ import Utility.Directory.Stream
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 import Data.ByteString.Builder
+import Data.Char
 
 class Journalable t where
 	writeJournalHandle :: Handle -> t -> IO ()
@@ -48,7 +50,7 @@ setJournalFile :: Journalable content => JournalLocked -> RawFilePath -> content
 setJournalFile _jl file content = withOtherTmp $ \tmp -> do
 	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
 	-- journal file is written atomically
-	jfile <- fromRepo $ journalFile $ fromRawFilePath file
+	jfile <- fromRawFilePath <$> fromRepo (journalFile file)
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
 		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
@@ -71,7 +73,7 @@ getJournalFile _jl = getJournalFileStale
  -}
 getJournalFileStale :: RawFilePath -> Annex (Maybe L.ByteString)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	L.fromStrict <$> S.readFile (journalFile (fromRawFilePath file) g)
+	L.fromStrict <$> S.readFile (fromRawFilePath $ journalFile file g)
 
 {- List of existing journal files, but without locking, may miss new ones
  - just being added, or may have false positives if the journal is staged
@@ -81,7 +83,8 @@ getJournalledFilesStale = do
 	g <- gitRepo
 	fs <- liftIO $ catchDefaultIO [] $
 		getDirectoryContents $ gitAnnexJournalDir g
-	return $ filter (`notElem` [".", ".."]) $ map fileJournal fs
+	return $ filter (`notElem` [".", ".."]) $
+		map (fromRawFilePath . fileJournal . toRawFilePath) fs
 
 withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle a = do
@@ -98,23 +101,28 @@ journalDirty = do
 
 {- Produces a filename to use in the journal for a file on the branch.
  -
+ - The input filename is assumed to not contain any '_' character,
+ - since path separators are replaced with that.
+ -
  - The journal typically won't have a lot of files in it, so the hashing
  - used in the branch is not necessary, and all the files are put directly
  - in the journal directory.
  -}
-journalFile :: FilePath -> Git.Repo -> FilePath
-journalFile file repo = gitAnnexJournalDir repo </> concatMap mangle file
+journalFile :: RawFilePath -> Git.Repo -> RawFilePath
+journalFile file repo = gitAnnexJournalDir' repo P.</> S.map mangle file
   where
 	mangle c
-		| c == pathSeparator = "_"
-		| c == '_' = "__"
-		| otherwise = [c]
+		| c == P.pathSeparator = fromIntegral (ord '_')
+		| otherwise = c
 
 {- Converts a journal file (relative to the journal dir) back to the
  - filename on the branch. -}
-fileJournal :: FilePath -> FilePath
-fileJournal = replace [pathSeparator, pathSeparator] "_" .
-	replace "_" [pathSeparator]
+fileJournal :: RawFilePath -> RawFilePath
+fileJournal = S.map unmangle
+  where
+	unmangle c
+		| c == fromIntegral (ord '_') = P.pathSeparator
+		| otherwise = c
 
 {- Sentinal value, only produced by lockJournal; required
  - as a parameter by things that need to ensure the journal is

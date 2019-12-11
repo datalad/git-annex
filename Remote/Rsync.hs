@@ -183,7 +183,7 @@ rsyncSetup _ mu _ c gc = do
 store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
 store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
   where
-	basedest = Prelude.head (keyPaths k)
+	basedest = fromRawFilePath $ Prelude.head (keyPaths k)
 	populatedest dest = liftIO $ if canrename
 		then do
 			rename src dest
@@ -222,7 +222,7 @@ remove :: RsyncOpts -> Remover
 remove o k = removeGeneric o includes
   where
 	includes = concatMap use dirHashes
-	use h = let dir = h def k in
+	use h = let dir = fromRawFilePath (h def k) in
 		[ parentDir dir
 		, dir
 		-- match content directory and anything in it
