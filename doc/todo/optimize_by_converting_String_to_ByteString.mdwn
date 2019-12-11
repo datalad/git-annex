@@ -16,6 +16,11 @@ The `bs` branch is in a mergeable state now, but still needs work:
   to `_`, but on the bs branch that does not happen. git also outputs
   a message about "Ignoring" the file.
 
+  Test case:
+
+  git config annex.backend WORM
+  git annex addurl http://localhost/~joey/index.html
+
 * Profile various commands and look for hot spots.
 
 * Eliminate all the fromRawFilePath, toRawFilePath, encodeBS,
