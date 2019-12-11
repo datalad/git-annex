@@ -112,7 +112,7 @@ journalFile :: RawFilePath -> Git.Repo -> RawFilePath
 journalFile file repo = gitAnnexJournalDir' repo P.</> S.map mangle file
   where
 	mangle c
-		| c == P.pathSeparator = fromIntegral (ord '_')
+		| P.isPathSeparator c = fromIntegral (ord '_')
 		| otherwise = c
 
 {- Converts a journal file (relative to the journal dir) back to the
