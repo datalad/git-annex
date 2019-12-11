@@ -21,6 +21,12 @@ The `bs` branch is in a mergeable state now, but still needs work:
   git config annex.backend WORM
   git annex addurl http://localhost/~joey/index.html
 
+  Hmm, that prints out the Ignoring message, and the file does not get
+  written to the git-annex branch. But in my big repo, I saw the message
+  and saw a file in the branch, with `/` in its keyname. Earlier in the
+  branch, the same key used `_`. (Look for "36bfe385607b32c4d5150404c0" to
+  find it again.)
+
 * Profile various commands and look for hot spots.
 
 * Eliminate all the fromRawFilePath, toRawFilePath, encodeBS,
