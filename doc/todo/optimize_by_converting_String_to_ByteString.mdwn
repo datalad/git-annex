@@ -11,6 +11,11 @@ than find so the improvement is not as large.
 
 The `bs` branch is in a mergeable state now, but still needs work:
 
+* There's a bug impacting WORM keys with / in the keyname.
+  The files stored in the git-annex branch used to have the `/` changed
+  to `_`, but on the bs branch that does not happen. git also outputs
+  a message about "Ignoring" the file.
+
 * Profile various commands and look for hot spots.
 
 * Eliminate all the fromRawFilePath, toRawFilePath, encodeBS,
