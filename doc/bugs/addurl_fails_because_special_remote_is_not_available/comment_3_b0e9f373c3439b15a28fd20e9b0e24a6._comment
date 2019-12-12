@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 3"
+ date="2019-12-12T21:11:58Z"
+ content="""
+Apparently it happens when the remote returns PREPARE-FAILURE (in this case due to insufficient internet connection). So we get back to 
+[PREPARE-LOCAL](http://git-annex.branchable.com/design/external_special_remote_protocol/#comment-2eec51c9f774f577b8634e9cdc86cde3) and  [external_remote_querying_transition](https://git-annex.branchable.com/todo/external_remote_querying_transition).
+
+I'm going to change git-annex-remote-googledrive to defer network connection to when when it's needed. But as external remotes are encouraged to establish network connections in PREPARE, something should be done on git-annex's side, too. 
+
+
+    % git annex addurl --batch --with-files --debug
+    [url] [filename]
+    [2019-12-12 21:41:14.540686936] read: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2019-12-12 21:41:14.546632041] process done ExitSuccess
+    [2019-12-12 21:41:14.546795605] read: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2019-12-12 21:41:14.551391222] process done ExitSuccess
+    [2019-12-12 21:41:14.551593051] read: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..802429a871b754d61047457aa9936bde404e3172\",\"--pretty=%H\",\"-n1\"]
+    [2019-12-12 21:41:14.553261192] process done ExitSuccess
+    [2019-12-12 21:41:14.553318623] read: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..0e8f6eb6cc45d9bb11f42fcf8590b3473e6f2623\",\"--pretty=%H\",\"-n1\"]
+    [2019-12-12 21:41:14.555647103] process done ExitSuccess
+    [2019-12-12 21:41:14.555710805] read: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..7271aaaa110b0f84b5e730673c66b176789ddcaf\",\"--pretty=%H\",\"-n1\"]
+    [2019-12-12 21:41:14.557235619] process done ExitSuccess
+    [2019-12-12 21:41:14.557298991] read: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..b9112bcb862041cf96f00e12c6dd33dc31fda5fa\",\"--pretty=%H\",\"-n1\"]
+    [2019-12-12 21:41:14.560071044] process done ExitSuccess
+    [2019-12-12 21:41:14.560126818] read: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..1598b00a78067edc438652f401498a25635cd5a9\",\"--pretty=%H\",\"-n1\"]
+    [2019-12-12 21:41:14.562966332] process done ExitSuccess
+    [2019-12-12 21:41:14.563218447] chat: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+    [2019-12-12 21:41:14.563535554] chat: git [\"--git-dir=../../../.git\",\"--work-tree=../../..\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+    [2019-12-12 21:41:14.56562967] read: git [\"config\",\"--null\",\"--list\"]
+    [2019-12-12 21:41:14.566788099] process done ExitSuccess
+    [2019-12-12 21:41:14.567203332] read: git [\"config\",\"--null\",\"--list\"]
+    [2019-12-12 21:41:14.568286923] read: git [\"config\",\"--null\",\"--list\"]
+    [2019-12-12 21:41:14.569077497] chat: /home/silvio/.local/bin/git-annex-remote-googledrive []
+    [2019-12-12 21:41:14.944193013] git-annex-remote-googledrive[1] --> VERSION 1
+    [2019-12-12 21:41:14.944312387] git-annex-remote-googledrive[1] <-- EXTENSIONS INFO
+    [2019-12-12 21:41:14.944486597] git-annex-remote-googledrive[1] --> EXTENSIONS
+    [2019-12-12 21:41:14.944557495] git-annex-remote-googledrive[1] <-- EXPORTSUPPORTED
+    [2019-12-12 21:41:14.94467435] git-annex-remote-googledrive[1] --> EXPORTSUPPORTED-SUCCESS
+    [2019-12-12 21:41:14.944906493] chat: /home/silvio/.local/bin/git-annex-remote-googledrive []
+    [2019-12-12 21:41:15.333971094] git-annex-remote-googledrive[1] --> VERSION 1
+    [2019-12-12 21:41:15.334086558] git-annex-remote-googledrive[1] <-- EXTENSIONS INFO
+    [2019-12-12 21:41:15.334273359] git-annex-remote-googledrive[1] --> EXTENSIONS
+    [2019-12-12 21:41:15.334334558] git-annex-remote-googledrive[1] <-- PREPARE
+    [...]
+    [2019-12-12 21:41:43.372727829] git-annex-remote-googledrive[1] --> PREPARE-FAILURE ('Failed to connect with Google. Please check your internet connection.', ServerNotFoundError('Unable to find the server at www.googleapis.com'))
+    git-annex: ('Failed to connect with Google. Please check your internet connection.', ServerNotFoundError('Unable to find the server at www.googleapis.com'))
+
+"""]]
