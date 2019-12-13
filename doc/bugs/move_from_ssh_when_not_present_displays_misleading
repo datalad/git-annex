@@ -1,0 +1,18 @@
+When a file is not present on a ssh remote, a move of that file fails
+like this:
+
+	move foo (from r...) 
+	  verification of content failed
+	  failed
+	move bar (from r...) 
+	  Lost connection (fd:24: hGetChar: illegal operation (handle is closed))
+	  failed
+
+Both files were not present, so two different failures, and neither message
+bears on the real reason why the move failed.
+
+(Despite the connection having closed, it then was able to move a third file
+that was still present.)
+
+IIRC there was a clear message displayed before git-annex-shell p2pstdio 
+got implemented. --[[Joey]]
