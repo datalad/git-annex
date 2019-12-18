@@ -1,0 +1,76 @@
+In datalad test builds with git-annex 7.20191114+git43-ge29663773, one
+of the new test failures is due to an unexpectedly dirty repository
+([related datalad issue][0]).  The dirty status comes from a file that
+was tracked in Git switching over to an annex pointer file.  Here's a
+script that distills enough of the test to trigger the failure on my
+end.
+
+[[!format sh """
+#!/bin/sh
+
+set -eu
+
+assert_clean () {
+    if test -n "$(git status --porcelain)"
+    then
+        printf "\n\nUnexpectedly dirty:\n" >&2
+        git status >&2
+        git diff >&2
+        exit 1
+    fi
+}
+
+cd "$(mktemp -d --tmpdir gx-pointer-dirty-XXXXXXX)"
+git init && git annex init
+
+printf content-git >file-git
+git -c annex.largefiles=nothing annex add -- file-git
+git commit -m'file-git added'
+assert_clean
+
+printf content-annex >file-annex
+git -c annex.largefiles=anything annex add -- file-annex
+git commit -m'file-annex annexed'
+assert_clean
+"""]]
+
+On Travis as well as my local machine, the failure is intermittent,
+but seems to happen much more often than not.  In the failing case,
+the last assert_clean call shows:
+
+```
+Unexpectedly dirty:
+On branch master
+Changes not staged for commit:
+        modified:   file-git
+
+no changes added to commit
+diff --git a/file-git b/file-git
+index d1c416a..b41ca32 100644
+--- a/file-git
++++ b/file-git
+@@ -1 +1 @@
+-content-git
+\ No newline at end of file
++/annex/objects/SHA256E-s11--726732d25826965592478fcc7c145d5a10fa1aa70c49fe3a4f847174b6d8889c
+```
+
+I see the failure with git-annex built from the latest master
+b962471c2 (2019-12-12).  Bisecting against the git-annex repo (with a
+commit being marked "bad" if there was a failure within ten runs of the
+above script), points to ec08b66bd (shouldAnnex: check isInodeKnown,
+2019-10-23) as the first bad commit.  Just looking at the topic of 
+the commit, that result seems plausible to me.
+
+### Other details
+
+My git version 2.24.1 and locally I'm building git-annex through guix.
+On the failing Travis run, git-annex 7.20191114+git43-ge29663773 came
+from neurodebian, and the git version was 2.24.0.
+
+Hopefully the script above is sufficient to trigger the issue on your end.
+Thanks for having a look.
+
+[0]: https://github.com/datalad/datalad/issues/3890
+
+[[!meta author=kyle]]
