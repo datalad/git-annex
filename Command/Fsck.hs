@@ -164,7 +164,7 @@ performRemote key afile backend numcopies remote =
 		pid <- liftIO getPID
 		t <- fromRepo gitAnnexTmpObjectDir
 		createAnnexDirectory t
-		let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
+		let tmp = t </> "fsck" ++ show pid ++ "." ++ fromRawFilePath (keyFile key)
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
@@ -516,7 +516,7 @@ badContent key = do
 badContentRemote :: Remote -> FilePath -> Key -> Annex String
 badContentRemote remote localcopy key = do
 	bad <- fromRepo gitAnnexBadDir
-	let destbad = bad </> keyFile key
+	let destbad = bad </> fromRawFilePath (keyFile key)
 	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
 		( return False
 		, do

@@ -119,18 +119,18 @@ exportLog = "export.log"
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: GitConfig -> Key -> RawFilePath
 locationLogFile config key =
-	branchHashDir config key P.</> keyFile' key <> ".log"
+	branchHashDir config key P.</> keyFile key <> ".log"
 
 {- The filename of the url log for a given key. -}
 urlLogFile :: GitConfig -> Key -> RawFilePath
 urlLogFile config key = 
-	branchHashDir config key P.</> keyFile' key <> urlLogExt
+	branchHashDir config key P.</> keyFile key <> urlLogExt
 
 {- Old versions stored the urls elsewhere. -}
 oldurlLogs :: GitConfig -> Key -> [RawFilePath]
 oldurlLogs config key =
 	[ "remote/web" P.</> hdir P.</> serializeKey' key <> ".log"
-	, "remote/web" P.</> hdir P.</> keyFile' key <> ".log"
+	, "remote/web" P.</> hdir P.</> keyFile key <> ".log"
 	]
   where
 	hdir = branchHashDir config key
@@ -145,7 +145,7 @@ isUrlLog file = urlLogExt `S.isSuffixOf` file
 {- The filename of the remote state log for a given key. -}
 remoteStateLogFile :: GitConfig -> Key -> RawFilePath
 remoteStateLogFile config key = 
-	(branchHashDir config key P.</> keyFile' key)
+	(branchHashDir config key P.</> keyFile key)
 		<> remoteStateLogExt
 
 remoteStateLogExt :: S.ByteString
@@ -157,7 +157,7 @@ isRemoteStateLog path = remoteStateLogExt `S.isSuffixOf` path
 {- The filename of the chunk log for a given key. -}
 chunkLogFile :: GitConfig -> Key -> RawFilePath
 chunkLogFile config key = 
-	(branchHashDir config key P.</> keyFile' key)
+	(branchHashDir config key P.</> keyFile key)
 		<> chunkLogExt
 
 chunkLogExt :: S.ByteString
@@ -169,7 +169,7 @@ isChunkLog path = chunkLogExt `S.isSuffixOf` path
 {- The filename of the metadata log for a given key. -}
 metaDataLogFile :: GitConfig -> Key -> RawFilePath
 metaDataLogFile config key =
-	(branchHashDir config key P.</> keyFile' key)
+	(branchHashDir config key P.</> keyFile key)
 		<> metaDataLogExt
 
 metaDataLogExt :: S.ByteString
@@ -181,7 +181,7 @@ isMetaDataLog path = metaDataLogExt `S.isSuffixOf` path
 {- The filename of the remote metadata log for a given key. -}
 remoteMetaDataLogFile :: GitConfig -> Key -> RawFilePath
 remoteMetaDataLogFile config key = 
-	(branchHashDir config key P.</> keyFile' key)
+	(branchHashDir config key P.</> keyFile key)
 		<> remoteMetaDataLogExt
 
 remoteMetaDataLogExt :: S.ByteString
@@ -193,7 +193,7 @@ isRemoteMetaDataLog path = remoteMetaDataLogExt `S.isSuffixOf` path
 {- The filename of the remote content identifier log for a given key. -}
 remoteContentIdentifierLogFile :: GitConfig -> Key -> RawFilePath
 remoteContentIdentifierLogFile config key =
-	(branchHashDir config key P.</> keyFile' key)
+	(branchHashDir config key P.</> keyFile key)
 		<> remoteContentIdentifierExt
 
 remoteContentIdentifierExt :: S.ByteString
@@ -205,7 +205,7 @@ isRemoteContentIdentifierLog path = remoteContentIdentifierExt `S.isSuffixOf` pa
 {- From an extension and a log filename, get the key that it's a log for. -}
 extLogFileKey :: S.ByteString -> RawFilePath -> Maybe Key
 extLogFileKey expectedext path
-	| encodeBS' ext == expectedext = fileKey base
+	| encodeBS' ext == expectedext = fileKey (toRawFilePath base)
 	| otherwise = Nothing
   where
 	file = takeFileName (fromRawFilePath path)

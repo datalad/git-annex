@@ -46,7 +46,9 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 	umap <- uuidDescMap
 	trustmap <- trustMapLoad
 		
-	file <- (</>) <$> fromRepo gitAnnexDir <*> pure "map.dot"
+	file <- (</>)
+		<$> fromRepo (fromRawFilePath . gitAnnexDir)
+		<*> pure "map.dot"
 
 	liftIO $ writeFile file (drawMap rs trustmap umap)
 	next $

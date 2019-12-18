@@ -195,7 +195,7 @@ downloadTorrentFile u = do
 			createAnnexDirectory (parentDir torrent)
 			if isTorrentMagnetUrl u
 				then withOtherTmp $ \othertmp -> do
-					kf <- keyFile <$> torrentUrlKey u
+					kf <- fromRawFilePath . keyFile <$> torrentUrlKey u
 					let metadir = othertmp </> "torrentmeta" </> kf
 					createAnnexDirectory metadir
 					showOutput
@@ -239,7 +239,7 @@ downloadTorrentContent :: Key -> URLString -> FilePath -> Int -> MeterUpdate -> 
 downloadTorrentContent k u dest filenum p = do
 	torrent <- tmpTorrentFile u
 	withOtherTmp $ \othertmp -> do
-		kf <- keyFile <$> torrentUrlKey u
+		kf <- fromRawFilePath . keyFile <$> torrentUrlKey u
 		let downloaddir = othertmp </> "torrent" </> kf
 		createAnnexDirectory downloaddir
 		f <- wantedfile torrent

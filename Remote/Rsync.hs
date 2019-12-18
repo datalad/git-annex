@@ -226,7 +226,7 @@ remove o k = removeGeneric o includes
 		[ parentDir dir
 		, dir
 		-- match content directory and anything in it
-		, dir </> keyFile k </> "***"
+		, dir </> fromRawFilePath (keyFile k) </> "***"
 		]
 
 {- An empty directory is rsynced to make it delete. Everything is excluded,

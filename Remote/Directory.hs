@@ -140,7 +140,7 @@ getLocation d k = do
 {- Directory where the file(s) for a key are stored. -}
 storeDir :: FilePath -> Key -> FilePath
 storeDir d k = addTrailingPathSeparator $
-	d </> fromRawFilePath (hashDirLower def k) </> keyFile k
+	d </> fromRawFilePath (hashDirLower def k) </> fromRawFilePath (keyFile k)
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
@@ -164,12 +164,13 @@ store d chunkconfig k b p = liftIO $ do
 	case chunkconfig of
 		LegacyChunks chunksize -> Legacy.store chunksize finalizeStoreGeneric k b p tmpdir destdir
 		_ -> do
-			let tmpf = tmpdir </> keyFile k
+			let tmpf = tmpdir </> kf
 			meteredWriteFile p tmpf b
 			finalizeStoreGeneric tmpdir destdir
 			return True
   where
-	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
+	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> kf
+	kf = fromRawFilePath (keyFile k)
 	destdir = storeDir d k
 
 {- Passed a temp directory that contains the files that should be placed

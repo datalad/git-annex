@@ -128,7 +128,7 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getSta
 			_ -> return True
 	)
   where
-	dir = maybe (fromRepo gitAnnexDir) return destdir
+	dir = maybe (fromRawFilePath <$> fromRepo gitAnnexDir) return destdir
 
 needMoreDiskSpace :: Integer -> String
 needMoreDiskSpace n = "not enough free space, need " ++ 

@@ -91,7 +91,7 @@ store chunksize finalizer k b p = storeHelper finalizer k $ \dests ->
 retrieve :: (FilePath -> Key -> [FilePath]) -> FilePath -> Preparer Retriever
 retrieve locations d basek a = withOtherTmp $ \tmpdir -> do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
-	let tmp = tmpdir </> keyFile basek ++ ".directorylegacy.tmp"
+	let tmp = tmpdir </> fromRawFilePath (keyFile basek) ++ ".directorylegacy.tmp"
 	a $ Just $ byteRetriever $ \k sink -> do
 		liftIO $ void $ withStoredFiles d locations k $ \fs -> do
 			forM_ fs $

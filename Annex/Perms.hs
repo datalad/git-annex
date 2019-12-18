@@ -70,7 +70,7 @@ annexFileMode = withShared $ return . go
 createAnnexDirectory :: FilePath -> Annex ()
 createAnnexDirectory dir = walk dir [] =<< top
   where
-	top = parentDir <$> fromRepo gitAnnexDir
+	top = parentDir . fromRawFilePath <$> fromRepo gitAnnexDir
 	walk d below stop
 		| d `equalFilePath` stop = done
 		| otherwise = ifM (liftIO $ doesDirectoryExist d)

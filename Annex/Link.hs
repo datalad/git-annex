@@ -253,7 +253,7 @@ parseLinkTargetOrPointerLazy b =
 {- Parses a symlink target to a Key. -}
 parseLinkTarget :: S.ByteString -> Maybe Key
 parseLinkTarget l
-	| isLinkToAnnex l = fileKey' $ snd $ S8.breakEnd pathsep l
+	| isLinkToAnnex l = fileKey $ snd $ S8.breakEnd pathsep l
 	| otherwise = Nothing
   where
 	pathsep '/' = True
@@ -263,9 +263,9 @@ parseLinkTarget l
 	pathsep _ = False
 
 formatPointer :: Key -> S.ByteString
-formatPointer k = prefix <> keyFile' k <> nl
+formatPointer k = prefix <> keyFile k <> nl
   where
-	prefix = toInternalGitPath $ toRawFilePath (pathSeparator:objectDir)
+	prefix = toInternalGitPath $ P.pathSeparator `S.cons` objectDir'
 	nl = S8.singleton '\n'
 
 {- Maximum size of a file that could be a pointer to a key.

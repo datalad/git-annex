@@ -351,9 +351,9 @@ store' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Storer
 store' repo r rsyncopts
 	| not $ Git.repoIsUrl repo = 
 		byteStorer $ \k b p -> guardUsable repo (return False) $ liftIO $ do
-			let tmpdir = Git.repoLocation repo </> "tmp" </> keyFile k
+			let tmpdir = Git.repoLocation repo </> "tmp" </> fromRawFilePath (keyFile k)
 			void $ tryIO $ createDirectoryIfMissing True tmpdir
-			let tmpf = tmpdir </> keyFile k
+			let tmpf = tmpdir </> fromRawFilePath (keyFile k)
 			meteredWriteFile p tmpf b
 			let destdir = parentDir $ gCryptLocation repo k
 			Remote.Directory.finalizeStoreGeneric tmpdir destdir
