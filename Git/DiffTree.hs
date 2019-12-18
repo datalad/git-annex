@@ -31,9 +31,9 @@ import qualified Git.Ref
 {- Checks if the DiffTreeItem modifies a file with a given name
  - or under a directory by that name. -}
 isDiffOf :: DiffTreeItem -> TopFilePath -> Bool
-isDiffOf diff f = case getTopFilePath f of
+isDiffOf diff f = case fromRawFilePath (getTopFilePath f) of
 	"" -> True -- top of repo contains all
-	d -> d `dirContains` getTopFilePath (file diff)
+	d -> d `dirContains` fromRawFilePath (getTopFilePath (file diff))
 
 {- Diffs two tree Refs. -}
 diffTree :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
@@ -113,7 +113,7 @@ parseDiffRaw l = go l
 		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
 		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
 		, status = s
-		, file = asTopFilePath $ fromRawFilePath $ fromInternalGitPath $ Git.Filename.decode $ toRawFilePath f
+		, file = asTopFilePath $ fromInternalGitPath $ Git.Filename.decode $ toRawFilePath f
 		}
 	  where
 		readmode = fst . Prelude.head . readOct

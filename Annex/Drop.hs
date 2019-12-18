@@ -49,7 +49,7 @@ type Reason = String
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
 handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 	g <- Annex.gitRepo
-	l <- map toRawFilePath . map (`fromTopFilePath` g)
+	l <- map (`fromTopFilePath` g)
 		<$> Database.Keys.getAssociatedFiles key
 	let fs = case afile of
 		AssociatedFile (Just f) -> nub (f : l)

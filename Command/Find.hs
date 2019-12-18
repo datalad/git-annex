@@ -74,7 +74,7 @@ start o file key =
 
 startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
 startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 
-	start o (toRawFilePath (getTopFilePath topf)) key
+	start o (getTopFilePath topf) key
 startKeys _ _ = stop
 
 showFormatted :: Maybe Utility.Format.Format -> S.ByteString -> [(String, String)] -> Annex ()
@@ -93,8 +93,8 @@ keyVars key =
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
 	, ("keyname", decodeBS $ fromKey keyName key)
-	, ("hashdirlower", hashDirLower def key)
-	, ("hashdirmixed", hashDirMixed def key)
+	, ("hashdirlower", fromRawFilePath $ hashDirLower def key)
+	, ("hashdirmixed", fromRawFilePath $ hashDirMixed def key)
 	, ("mtime", whenavail show $ fromKey keyMtime key)
 	]
   where

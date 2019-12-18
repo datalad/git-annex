@@ -108,7 +108,7 @@ convertDirect = do
 upgradeDirectWorkTree :: Annex ()
 upgradeDirectWorkTree = do
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [toRawFilePath top]
+	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
 	forM_ l go
 	void $ liftIO clean
   where
@@ -125,7 +125,7 @@ upgradeDirectWorkTree = do
 					, fromdirect (fromRawFilePath f) k
 					)
 				Database.Keys.addAssociatedFile k
-					=<< inRepo (toTopFilePath (fromRawFilePath f))
+					=<< inRepo (toTopFilePath f)
 	go _ = noop
 
 	fromdirect f k = ifM (Direct.goodContent k f)
@@ -135,7 +135,7 @@ upgradeDirectWorkTree = do
 			-- is just not populated with it. Since the work tree
 			-- file is recorded as an associated file, things will
 			-- still work that way, it's just not ideal.
-			ic <- withTSDelta (liftIO . genInodeCache f)
+			ic <- withTSDelta (liftIO . genInodeCache (toRawFilePath f))
 			void $ Content.linkToAnnex k f ic
 		, unlessM (Content.inAnnex k) $ do
 			-- Worktree file was deleted or modified;

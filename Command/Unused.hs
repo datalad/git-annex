@@ -207,7 +207,7 @@ withKeysReferenced' mdir initial a = do
 			( return ([], return True)
 			, do
 				top <- fromRepo Git.repoPath
-				inRepo $ LsFiles.allFiles [toRawFilePath top]
+				inRepo $ LsFiles.allFiles [top]
 			)
 		Just dir -> inRepo $ LsFiles.inRepo [toRawFilePath dir]
 	go v [] = return v

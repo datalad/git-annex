@@ -199,7 +199,7 @@ compareChanges format changes = concatMap diff changes
 getKeyLog :: Key -> [CommandParam] -> Annex ([RefChange], IO Bool)
 getKeyLog key os = do
 	top <- fromRepo Git.repoPath
-	p <- liftIO $ relPathCwdToFile top
+	p <- liftIO $ relPathCwdToFile $ fromRawFilePath top
 	config <- Annex.getGitConfig
 	let logfile = p </> fromRawFilePath (locationLogFile config key)
 	getGitLog [logfile] (Param "--remove-empty" : os)

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Key character set"
+ date="2019-12-10T10:27:58Z"
+ content="""
+Are there limitations on the character set git-annex guarantees?
+
+It appears from experiments that git-annex only uses ASCII characters in there, given both a file 'test.extü' (in UTF-8 encoding) 'test.ext\xff' produced extension-free key names in the SHA256E hash – but it'd be good to have that confirmed.
+"""]]

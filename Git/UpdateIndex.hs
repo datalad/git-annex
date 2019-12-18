@@ -96,13 +96,13 @@ updateIndexLine sha treeitemtype file = L.fromStrict $
 
 stageFile :: Sha -> TreeItemType -> FilePath -> Repo -> IO Streamer
 stageFile sha treeitemtype file repo = do
-	p <- toTopFilePath file repo
+	p <- toTopFilePath (toRawFilePath file) repo
 	return $ pureStreamer $ updateIndexLine sha treeitemtype p
 
 {- A streamer that removes a file from the index. -}
 unstageFile :: FilePath -> Repo -> IO Streamer
 unstageFile file repo = do
-	p <- toTopFilePath file repo
+	p <- toTopFilePath (toRawFilePath file) repo
 	return $ unstageFile' p
 
 unstageFile' :: TopFilePath -> Streamer
@@ -118,7 +118,7 @@ stageSymlink file sha repo = do
 	!line <- updateIndexLine
 		<$> pure sha
 		<*> pure TreeSymlink
-		<*> toTopFilePath file repo
+		<*> toTopFilePath (toRawFilePath file) repo
 	return $ pureStreamer line
 
 {- A streamer that applies a DiffTreeItem to the index. -}
@@ -128,7 +128,7 @@ stageDiffTreeItem d = case toTreeItemType (Diff.dstmode d) of
 	Just t -> pureStreamer $ updateIndexLine (Diff.dstsha d) t (Diff.file d)
 
 indexPath :: TopFilePath -> InternalGitPath
-indexPath = toInternalGitPath . toRawFilePath . getTopFilePath
+indexPath = toInternalGitPath . getTopFilePath
 
 {- Refreshes the index, by checking file stat information.  -}
 refreshIndex :: Repo -> ((FilePath -> IO ()) -> IO ()) -> IO Bool

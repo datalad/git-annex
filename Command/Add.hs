@@ -19,6 +19,7 @@ import Annex.Link
 import Annex.Tmp
 import Messages.Progress
 import Git.FilePath
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = notBareRepo $ 
@@ -92,7 +93,7 @@ start file = do
 	maybe go fixuppointer mk
   where
 	go = ifAnnexed file addpresent add
-	add = liftIO (catchMaybeIO $ getSymbolicLinkStatus (fromRawFilePath file)) >>= \case
+	add = liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 		Nothing -> stop
 		Just s 
 			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
@@ -102,7 +103,7 @@ start file = do
 						then next $ addFile file
 						else perform file
 	addpresent key = 
-		liftIO (catchMaybeIO $ getSymbolicLinkStatus $ fromRawFilePath file) >>= \case
+		liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
 			_ -> add
 	fixuplink key = starting "add" (ActionItemWorkTreeFile file) $ do
@@ -113,7 +114,7 @@ start file = do
 			cleanup key =<< inAnnex key
 	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) $ do
 		-- the pointer file is present, but not yet added to git
-		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (fromRawFilePath file))
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		next $ addFile file
 
 perform :: RawFilePath -> CommandPerform

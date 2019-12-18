@@ -211,7 +211,7 @@ mkExportDiffUpdater removeold addnew h srcek dstek i = do
 		Nothing -> return ()
 		Just k -> liftIO $ addnew h (asKey k) loc
   where
-	loc = mkExportLocation $ toRawFilePath $ getTopFilePath $ Git.DiffTree.file i
+	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
 
 runExportDiffUpdater :: ExportDiffUpdater -> ExportHandle -> Sha -> Sha -> Annex ()
 runExportDiffUpdater updater h old new = do

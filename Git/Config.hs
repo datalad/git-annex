@@ -13,6 +13,7 @@ import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import Data.Char
+import qualified System.FilePath.ByteString as P
 
 import Common
 import Git
@@ -61,7 +62,7 @@ read' repo = go repo
 	  where
 		params = ["config", "--null", "--list"]
 		p = (proc "git" params)
-			{ cwd = Just d
+			{ cwd = Just (fromRawFilePath d)
 			, env = gitEnv repo
 			}
 
@@ -114,13 +115,13 @@ store' k v repo = repo
  -}
 updateLocation :: Repo -> IO Repo
 updateLocation r@(Repo { location = LocalUnknown d })
-	| isBare r = ifM (doesDirectoryExist dotgit)
+	| isBare r = ifM (doesDirectoryExist (fromRawFilePath dotgit))
 			( updateLocation' r $ Local dotgit Nothing
 			, updateLocation' r $ Local d Nothing
 			)
 	| otherwise = updateLocation' r $ Local dotgit (Just d)
   where
-	dotgit = (d </> ".git")
+	dotgit = d P.</> ".git"
 updateLocation r@(Repo { location = l@(Local {}) }) = updateLocation' r l
 updateLocation r = return r
 
@@ -130,9 +131,9 @@ updateLocation' r l = do
 		Nothing -> return l
 		Just (ConfigValue d) -> do
 			{- core.worktree is relative to the gitdir -}
-			top <- absPath $ gitdir l
+			top <- absPath $ fromRawFilePath (gitdir l)
 			let p = absPathFrom top (fromRawFilePath d)
-			return $ l { worktree = Just p }
+			return $ l { worktree = Just (toRawFilePath p) }
 	return $ r { location = l' }
 
 {- Parses git config --list or git config --null --list output into a

@@ -51,7 +51,7 @@ perform p = do
 	-- Get the reversed diff that needs to be applied to undo.
 	(diff, cleanup) <- inRepo $
 		diffLog [Param "-R", Param "--", Param p]
-	top <- inRepo $ toTopFilePath p
+	top <- inRepo $ toTopFilePath $ toRawFilePath p
 	let diff' = filter (`isDiffOf` top) diff
 	liftIO $ streamUpdateIndex g (map stageDiffTreeItem diff')
 
@@ -59,7 +59,8 @@ perform p = do
 	-- and then any adds. This order is necessary to handle eg, removing
 	-- a directory and replacing it with a file.
 	let (removals, adds) = partition (\di -> dstsha di == nullSha) diff'
-	let mkrel di = liftIO $ relPathCwdToFile $ fromTopFilePath (file di) g
+	let mkrel di = liftIO $ relPathCwdToFile $ fromRawFilePath $
+		fromTopFilePath (file di) g
 
 	forM_ removals $ \di -> do
 		f <- mkrel di

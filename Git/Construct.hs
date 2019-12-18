@@ -62,7 +62,7 @@ fromAbsPath dir
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where
-	ret = pure . newFrom . LocalUnknown
+	ret = pure . newFrom . LocalUnknown . toRawFilePath
 	canondir = dropTrailingPathSeparator dir
 	{- When dir == "foo/.git", git looks for "foo/.git/.git",
 	 - and failing that, uses "foo" as the repository. -}
@@ -117,7 +117,7 @@ localToUrl reference r
 				[ Url.scheme reference
 				, "//"
 				, auth
-				, repoPath r
+				, fromRawFilePath (repoPath r)
 				]
 			in r { location = Url $ fromJust $ parseURI absurl }
 
@@ -154,7 +154,7 @@ fromRemoteLocation s repo = gen $ parseRemoteLocation s repo
 fromRemotePath :: FilePath -> Repo -> IO Repo
 fromRemotePath dir repo = do
 	dir' <- expandTilde dir
-	fromPath $ repoPath repo </> dir'
+	fromPath $ fromRawFilePath (repoPath repo) </> dir'
 
 {- Git remotes can have a directory that is specified relative
  - to the user's home directory, or that contains tilde expansions.
@@ -204,7 +204,7 @@ checkForRepo dir =
   where
 	check test cont = maybe cont (return . Just) =<< test
 	checkdir c = ifM c
-		( return $ Just $ LocalUnknown dir
+		( return $ Just $ LocalUnknown $ toRawFilePath dir
 		, return Nothing
 		)
 	isRepo = checkdir $ 
@@ -224,9 +224,9 @@ checkForRepo dir =
 			catchDefaultIO "" (readFile $ dir </> ".git")
 		return $ if gitdirprefix `isPrefixOf` c
 			then Just $ Local 
-				{ gitdir = absPathFrom dir $
+				{ gitdir = toRawFilePath $ absPathFrom dir $
 					drop (length gitdirprefix) c
-				, worktree = Just dir
+				, worktree = Just (toRawFilePath dir)
 				}
 			else Nothing
 	  where

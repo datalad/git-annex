@@ -16,6 +16,7 @@ module Annex.Locations (
 	keyPath,
 	annexDir,
 	objectDir,
+	objectDir',
 	gitAnnexLocation,
 	gitAnnexLocationDepth,
 	gitAnnexLink,
@@ -64,6 +65,7 @@ module Annex.Locations (
 	gitAnnexFeedState,
 	gitAnnexMergeDir,
 	gitAnnexJournalDir,
+	gitAnnexJournalDir',
 	gitAnnexJournalLock,
 	gitAnnexGitQueueLock,
 	gitAnnexPreCommitLock,
@@ -95,6 +97,7 @@ module Annex.Locations (
 import Data.Char
 import Data.Default
 import qualified Data.ByteString.Char8 as S8
+import qualified System.FilePath.ByteString as P
 
 import Common
 import Key
@@ -106,6 +109,7 @@ import qualified Git.Types as Git
 import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
+import qualified Utility.RawFilePath as R
 
 {- Conventions:
  -
@@ -125,21 +129,27 @@ import Annex.Fixup
 annexDir :: FilePath
 annexDir = addTrailingPathSeparator "annex"
 
+annexDir' :: RawFilePath
+annexDir' = P.addTrailingPathSeparator "annex"
+
 {- The directory git annex uses for locally available object content,
  - relative to the .git directory -}
 objectDir :: FilePath
 objectDir = addTrailingPathSeparator $ annexDir </> "objects"
+
+objectDir' :: RawFilePath
+objectDir' = P.addTrailingPathSeparator $ annexDir' P.</> "objects"
 
 {- Annexed file's possible locations relative to the .git directory.
  - There are two different possibilities, using different hashes.
  -
  - Also, some repositories have a Difference in hash directory depth.
  -}
-annexLocations :: GitConfig -> Key -> [FilePath]
+annexLocations :: GitConfig -> Key -> [RawFilePath]
 annexLocations config key = map (annexLocation config key) dirHashes
 
-annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> FilePath
-annexLocation config key hasher = objectDir </> keyPath key (hasher $ objectHashLevels config)
+annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> RawFilePath
+annexLocation config key hasher = objectDir' P.</> keyPath key (hasher $ objectHashLevels config)
 
 {- Number of subdirectories from the gitAnnexObjectDir
  - to the gitAnnexLocation. -}
@@ -159,9 +169,14 @@ gitAnnexLocationDepth config = hashlevels + 1
  - This does not take direct mode into account, so in direct mode it is not
  - the actual location of the file's content.
  -}
-gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r config (annexCrippledFileSystem config) (coreSymlinks config) doesFileExist (Git.localGitDir r)
-gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (FilePath -> IO Bool) -> FilePath -> IO FilePath
+gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexLocation key r config = gitAnnexLocation' key r config
+	(annexCrippledFileSystem config)
+	(coreSymlinks config)
+	R.doesPathExist
+	(Git.localGitDir r)
+
+gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (RawFilePath -> IO Bool) -> RawFilePath -> IO RawFilePath
 gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable. But check all locations. -}
@@ -183,7 +198,7 @@ gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	only = return . inrepo . annexLocation config key
 	checkall = check $ map inrepo $ annexLocations config key
 
-	inrepo d = gitdir </> d
+	inrepo d = gitdir P.</> d
 	check locs@(l:_) = fromMaybe l <$> firstM checker locs
 	check [] = error "internal"
 
@@ -195,14 +210,16 @@ gitAnnexLink file key r config = do
 	let gitdir = getgitdir currdir
 	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
 	fromRawFilePath . toInternalGitPath . toRawFilePath
-		<$> relPathDirToFile (parentDir absfile) loc
+		<$> relPathDirToFile (parentDir absfile) (fromRawFilePath loc)
   where
 	getgitdir currdir
 		{- This special case is for git submodules on filesystems not
 		 - supporting symlinks; generate link target that will
 		 - work portably. -}
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
-			absNormPathUnix currdir $ Git.repoPath r </> ".git"
+			toRawFilePath $
+				absNormPathUnix currdir $ fromRawFilePath $
+					Git.repoPath r P.</> ".git"
 		| otherwise = Git.localGitDir r
 	absNormPathUnix d p = fromRawFilePath $ toInternalGitPath $ toRawFilePath $
 		absPathFrom
@@ -216,7 +233,7 @@ gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
   where
 	r' = case r of
 		Git.Repo { Git.location = l@Git.Local { Git.worktree = Just wt } } ->
-			r { Git.location = l { Git.gitdir = wt </> ".git" } }
+			r { Git.location = l { Git.gitdir = wt P.</> ".git" } }
 		_ -> r
 	config' = config
 		{ annexCrippledFileSystem = False
@@ -227,36 +244,39 @@ gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
 gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
 gitAnnexContentLock key r config = do
 	loc <- gitAnnexLocation key r config
-	return $ loc ++ ".lck"
+	return $ fromRawFilePath loc ++ ".lck"
 
 {- File that maps from a key to the file(s) in the git repository.
  - Used in direct mode. -}
 gitAnnexMapping :: Key -> Git.Repo -> GitConfig -> IO FilePath
 gitAnnexMapping key r config = do
 	loc <- gitAnnexLocation key r config
-	return $ loc ++ ".map"
+	return $ fromRawFilePath loc ++ ".map"
 
 {- File that caches information about a key's content, used to determine
  - if a file has changed.
  - Used in direct mode. -}
 gitAnnexInodeCache :: Key -> Git.Repo -> GitConfig -> IO FilePath
-gitAnnexInodeCache key r config  = do
+gitAnnexInodeCache key r config = do
 	loc <- gitAnnexLocation key r config
-	return $ loc ++ ".cache"
+	return $ fromRawFilePath loc ++ ".cache"
 
-gitAnnexInodeSentinal :: Git.Repo -> FilePath
-gitAnnexInodeSentinal r = gitAnnexDir r </> "sentinal"
+gitAnnexInodeSentinal :: Git.Repo -> RawFilePath
+gitAnnexInodeSentinal r = gitAnnexDir' r P.</> "sentinal"
 
-gitAnnexInodeSentinalCache :: Git.Repo -> FilePath
-gitAnnexInodeSentinalCache r = gitAnnexInodeSentinal r ++ ".cache"
+gitAnnexInodeSentinalCache :: Git.Repo -> RawFilePath
+gitAnnexInodeSentinalCache r = gitAnnexInodeSentinal r <> ".cache"
 
 {- The annex directory of a repository. -}
 gitAnnexDir :: Git.Repo -> FilePath
-gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
+gitAnnexDir r = addTrailingPathSeparator $ fromRawFilePath (Git.localGitDir r) </> annexDir
+
+gitAnnexDir' :: Git.Repo -> RawFilePath
+gitAnnexDir' r = P.addTrailingPathSeparator $ Git.localGitDir r P.</> annexDir'
 
 {- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> FilePath
-gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
+gitAnnexObjectDir r = addTrailingPathSeparator $ fromRawFilePath (Git.localGitDir r) </> objectDir
 
 {- .git/annex/tmp/ is used for temp files for key's contents -}
 gitAnnexTmpObjectDir :: Git.Repo -> FilePath
@@ -426,6 +446,9 @@ gitAnnexTransferDir r = addTrailingPathSeparator $ gitAnnexDir r </> "transfer"
  - branch -}
 gitAnnexJournalDir :: Git.Repo -> FilePath
 gitAnnexJournalDir r = addTrailingPathSeparator $ gitAnnexDir r </> "journal"
+
+gitAnnexJournalDir' :: Git.Repo -> RawFilePath
+gitAnnexJournalDir' r = P.addTrailingPathSeparator $ gitAnnexDir' r P.</> "journal"
 
 {- Lock file for the journal. -}
 gitAnnexJournalLock :: Git.Repo -> FilePath
@@ -608,10 +631,10 @@ fileKey' = deserializeKey' . S8.intercalate "/" . map go . S8.split '%'
  - The file is put in a directory with the same name, this allows
  - write-protecting the directory to avoid accidental deletion of the file.
  -}
-keyPath :: Key -> Hasher -> FilePath
-keyPath key hasher = hasher key </> f </> f
+keyPath :: Key -> Hasher -> RawFilePath
+keyPath key hasher = hasher key P.</> f P.</> f
   where
-	f = keyFile key
+	f = keyFile' key
 
 {- All possibile locations to store a key in a special remote
  - using different directory hashes.
@@ -619,5 +642,5 @@ keyPath key hasher = hasher key </> f </> f
  - This is compatible with the annexLocations, for interoperability between
  - special remotes and git-annex repos.
  -}
-keyPaths :: Key -> [FilePath]
+keyPaths :: Key -> [RawFilePath]
 keyPaths key = map (\h -> keyPath key (h def)) dirHashes

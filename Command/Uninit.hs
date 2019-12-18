@@ -17,6 +17,7 @@ import qualified Database.Keys
 import Annex.Content
 import Annex.Init
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = addCheck check $ 
@@ -29,7 +30,7 @@ check = do
 	b <- current_branch
 	when (b == Annex.Branch.name) $ giveup $
 		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
-	top <- fromRepo Git.repoPath
+	top <- fromRawFilePath <$> fromRepo Git.repoPath
 	currdir <- liftIO getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 		giveup "can only run uninit from the top of the git repository"
@@ -117,5 +118,5 @@ removeUnannexed = go []
 		, go (k:c) ks
 		)
 	enoughlinks f = catchBoolIO $ do
-		s <- getFileStatus f
+		s <- R.getFileStatus f
 		return $ linkCount s > 1

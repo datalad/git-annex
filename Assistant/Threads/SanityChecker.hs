@@ -269,5 +269,5 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
 checkRepoExists :: Assistant ()
 checkRepoExists = do
 	g <- liftAnnex gitRepo
-	liftIO $ unlessM (doesDirectoryExist $ Git.repoPath g) $
+	liftIO $ unlessM (doesDirectoryExist $ fromRawFilePath $ Git.repoPath g) $
 		terminateSelf

@@ -39,6 +39,7 @@ import qualified Utility.RawFilePath as R
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
+import qualified System.FilePath.ByteString as P
 
 type LinkTarget = String
 
@@ -182,7 +183,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 	absf <- liftIO $ absPath $ fromRawFilePath f
 	Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
   where
-	isunmodified tsd = genInodeCache' f tsd >>= return . \case
+	isunmodified tsd = genInodeCache f tsd >>= return . \case
 		Nothing -> False
 		Just new -> compareStrong orig new
 
@@ -200,7 +201,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 		    unlockindex = liftIO . maybe noop Git.LockFile.closeLock
 		    showwarning = warning $ unableToRestage Nothing
 		    go Nothing = showwarning
-		    go (Just _) = withTmpDirIn (Git.localGitDir r) "annexindex" $ \tmpdir -> do
+		    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
 			let tmpindex = tmpdir </> "index"
 			let updatetmpindex = do
 				r' <- Git.Env.addGitEnv r Git.Index.indexEnv 
@@ -301,8 +302,7 @@ isLinkToAnnex s = p `S.isInfixOf` s
 	|| p' `S.isInfixOf` s
 #endif
   where
-	sp = (pathSeparator:objectDir)
-	p = toRawFilePath sp
+	p = P.pathSeparator `S.cons` objectDir'
 #ifdef mingw32_HOST_OS
-	p' = toRawFilePath (toInternalGitPath sp)
+	p' = toInternalGitPath p
 #endif

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.View where
 
 import Annex.Common
@@ -80,7 +82,7 @@ parseViewParam s = case separate (== '=') s of
 			)
   where
 	mkFilterValues v
-		| any (`elem` v) "*?" = FilterGlob v
+		| any (`elem` v) ['*', '?'] = FilterGlob v
 		| otherwise = FilterValues $ S.singleton $ toMetaValue $ encodeBS v
 	mkExcludeValues = ExcludeValues . S.singleton . toMetaValue . encodeBS
 
@@ -343,11 +345,11 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
 applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [toRawFilePath top]
+	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
 	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
 	forM_ l $ \(f, sha, mode) -> do
-		topf <- inRepo (toTopFilePath $ fromRawFilePath f)
+		topf <- inRepo (toTopFilePath f)
 		go uh topf sha (toTreeItemType =<< mode) =<< lookupFile f
 	liftIO $ do
 		void $ stopUpdateIndex uh
@@ -358,13 +360,14 @@ applyView' mkviewedfile getfilemetadata view = do
 
 	go uh topf _sha _mode (Just k) = do
 		metadata <- getCurrentMetaData k
-		let f = getTopFilePath topf
+		let f = fromRawFilePath $ getTopFilePath topf
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
-			f' <- fromRepo $ fromTopFilePath $ asTopFilePath fv
+			f' <- fromRawFilePath <$> 
+				fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
 			stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
 	go uh topf (Just sha) (Just treeitemtype) Nothing
-		| "." `isPrefixOf` getTopFilePath topf =
+		| "." `B.isPrefixOf` getTopFilePath topf =
 			liftIO $ Git.UpdateIndex.streamUpdateIndex' uh $
 				pureStreamer $ updateIndexLine sha treeitemtype topf
 	go _ _ _ _  _ = noop
@@ -403,7 +406,7 @@ withViewChanges addmeta removemeta = do
 				=<< catKey (DiffTree.dstsha item)
 		| otherwise = noop
 	handlechange item a = maybe noop
-		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
+		(void . commandAction . a (fromRawFilePath $ getTopFilePath $ DiffTree.file item))
 
 {- Runs an action using the view index file.
  - Note that the file does not necessarily exist, or can contain

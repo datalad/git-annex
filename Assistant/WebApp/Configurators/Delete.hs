@@ -78,7 +78,7 @@ deleteCurrentRepository = dangerPage $ do
 			sanityVerifierAForm $ SanityVerifier magicphrase
 	case result of
 		FormSuccess _ -> liftH $ do
-			dir <- liftAnnex $ fromRepo Git.repoPath
+			dir <- liftAnnex $ fromRawFilePath <$> fromRepo Git.repoPath
 			liftIO $ removeAutoStartFile dir
 
 			{- Disable syncing to this repository, and all

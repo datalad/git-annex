@@ -127,7 +127,7 @@ directorySetup _ mu _ c gc = do
  - We try more than one since we used to write to different hash
  - directories. -}
 locations :: FilePath -> Key -> [FilePath]
-locations d k = map (d </>) (keyPaths k)
+locations d k = map (\f -> d </> fromRawFilePath f) (keyPaths k)
 
 {- Returns the location off a Key in the directory. If the key is
  - present, returns the location that is actually used, otherwise
@@ -139,7 +139,8 @@ getLocation d k = do
 
 {- Directory where the file(s) for a key are stored. -}
 storeDir :: FilePath -> Key -> FilePath
-storeDir d k = addTrailingPathSeparator $ d </> hashDirLower def k </> keyFile k
+storeDir d k = addTrailingPathSeparator $
+	d </> fromRawFilePath (hashDirLower def k) </> keyFile k
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}

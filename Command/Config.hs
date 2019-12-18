@@ -12,7 +12,7 @@ import Logs.Config
 import Config
 import Git.Types (ConfigKey(..), fromConfigValue)
 
-import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 
 cmd :: Command
 cmd = noMessages $ command "config" SectionSetup
@@ -65,5 +65,5 @@ seek (GetConfig ck) = commandAction $
 	startingCustomOutput (ActionItemOther Nothing) $ do
 		getGlobalConfig ck >>= \case
 			Nothing -> return ()
-			Just (ConfigValue v) -> liftIO $ S.putStrLn v
+			Just (ConfigValue v) -> liftIO $ S8.putStrLn v
 		next $ return True

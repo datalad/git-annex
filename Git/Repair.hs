@@ -227,7 +227,7 @@ badBranches missing r = filterM isbad =<< getAllRefs r
  - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = getAllRefs' (localGitDir r </> "refs")
+getAllRefs r = getAllRefs' (fromRawFilePath (localGitDir r) </> "refs")
 
 getAllRefs' :: FilePath -> IO [Ref]
 getAllRefs' refdir = do
@@ -245,13 +245,13 @@ explodePackedRefsFile r = do
 		nukeFile f
   where
 	makeref (sha, ref) = do
-		let dest = localGitDir r </> fromRef ref
+		let dest = fromRawFilePath (localGitDir r) </> fromRef ref
 		createDirectoryIfMissing True (parentDir dest)
 		unlessM (doesFileExist dest) $
 			writeFile dest (fromRef sha)
 
 packedRefsFile :: Repo -> FilePath
-packedRefsFile r = localGitDir r </> "packed-refs"
+packedRefsFile r = fromRawFilePath (localGitDir r) </> "packed-refs"
 
 parsePacked :: String -> Maybe (Sha, Ref)
 parsePacked l = case words l of
@@ -263,7 +263,7 @@ parsePacked l = case words l of
 {- git-branch -d cannot be used to remove a branch that is directly
  - pointing to a corrupt commit. -}
 nukeBranchRef :: Branch -> Repo -> IO ()
-nukeBranchRef b r = nukeFile $ localGitDir r </> fromRef b
+nukeBranchRef b r = nukeFile $ fromRawFilePath (localGitDir r) </> fromRef b
 
 {- Finds the most recent commit to a branch that does not need any
  - of the missing objects. If the input branch is good as-is, returns it.
@@ -366,16 +366,16 @@ checkIndex r = do
  - itself is not corrupt. -}
 checkIndexFast :: Repo -> IO Bool
 checkIndexFast r = do
-	(indexcontents, cleanup) <- LsFiles.stagedDetails [toRawFilePath (repoPath r)] r
+	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
 	length indexcontents `seq` cleanup
 
 missingIndex :: Repo -> IO Bool
-missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
+missingIndex r = not <$> doesFileExist (fromRawFilePath (localGitDir r) </> "index")
 
 {- Finds missing and ok files staged in the index. -}
 partitionIndex :: Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
 partitionIndex r = do
-	(indexcontents, cleanup) <- LsFiles.stagedDetails [toRawFilePath (repoPath r)] r
+	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
 	l <- forM indexcontents $ \i -> case i of
 		(_file, Just sha, Just _mode) -> (,) <$> isMissing sha r <*> pure i
 		_ -> pure (False, i)
@@ -446,7 +446,7 @@ preRepair g = do
 		let f = indexFile g
 		void $ tryIO $ allowWrite f
   where
-	headfile = localGitDir g </> "HEAD"
+	headfile = fromRawFilePath (localGitDir g) </> "HEAD"
 	validhead s = "ref: refs/" `isPrefixOf` s || isJust (extractSha s)
 
 {- Put it all together. -}

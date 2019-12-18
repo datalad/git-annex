@@ -251,7 +251,7 @@ startExport :: Remote -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> 
 startExport r db cvar allfilledvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (notrecordedpresent ek) $
-		starting ("export " ++ name r) (ActionItemOther (Just f)) $
+		starting ("export " ++ name r) (ActionItemOther (Just (fromRawFilePath f))) $
 			ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) (asKey ek) loc))
 				( next $ cleanupExport r db ek loc False
 				, do
@@ -259,9 +259,9 @@ startExport r db cvar allfilledvar ti = do
 					performExport r db ek af (Git.LsTree.sha ti) loc allfilledvar
 				)
   where
-	loc = mkExportLocation (toRawFilePath f)
+	loc = mkExportLocation f
 	f = getTopFilePath (Git.LsTree.file ti)
-	af = AssociatedFile (Just (toRawFilePath f))
+	af = AssociatedFile (Just f)
 	notrecordedpresent ek = (||)
 		<$> liftIO (notElem loc <$> getExportedLocation db (asKey ek))
 		-- If content was removed from the remote, the export db
@@ -314,17 +314,17 @@ startUnexport r db f shas = do
 	eks <- forM (filter (/= nullSha) shas) exportKey
 	if null eks
 		then stop
-		else starting ("unexport " ++ name r) (ActionItemOther (Just f')) $
+		else starting ("unexport " ++ name r) (ActionItemOther (Just (fromRawFilePath f'))) $
 			performUnexport r db eks loc
   where
-	loc = mkExportLocation (toRawFilePath f')
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 startUnexport' :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startUnexport' r db f ek = starting ("unexport " ++ name r) (ActionItemOther (Just f')) $
+startUnexport' r db f ek = starting ("unexport " ++ name r) (ActionItemOther (Just (fromRawFilePath f'))) $
 	performUnexport r db [ek] loc
   where
-	loc = mkExportLocation (toRawFilePath f')
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 -- Unlike a usual drop from a repository, this does not check that
@@ -368,15 +368,14 @@ startRecoverIncomplete r db sha oldf
 			liftIO $ removeExportedLocation db (asKey ek) oldloc
 			performUnexport r db [ek] loc
   where
-	oldloc = mkExportLocation (toRawFilePath oldf')
-	oldf' = getTopFilePath oldf
+	oldloc = mkExportLocation $ getTopFilePath oldf
 
 startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
 startMoveToTempName r db f ek = starting ("rename " ++ name r) 
-	(ActionItemOther $ Just $ f' ++ " -> " ++ fromRawFilePath (fromExportLocation tmploc))
+	(ActionItemOther $ Just $ fromRawFilePath f' ++ " -> " ++ fromRawFilePath (fromExportLocation tmploc))
 	(performRename r db ek loc tmploc)
   where
-	loc = mkExportLocation (toRawFilePath f')
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
 	tmploc = exportTempName ek
 
@@ -384,10 +383,10 @@ startMoveFromTempName :: Remote -> ExportHandle -> ExportKey -> TopFilePath -> C
 startMoveFromTempName r db ek f = do
 	let tmploc = exportTempName ek
 	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $
-		starting ("rename " ++ name r) (ActionItemOther (Just (fromRawFilePath (fromExportLocation tmploc) ++ " -> " ++ f'))) $
+		starting ("rename " ++ name r) (ActionItemOther (Just (fromRawFilePath (fromExportLocation tmploc) ++ " -> " ++ fromRawFilePath f'))) $
 			performRename r db ek tmploc loc
   where
-	loc = mkExportLocation (toRawFilePath f')
+	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 performRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
@@ -469,7 +468,7 @@ filterPreferredContent r tree = logExportExcluded (uuid r) $ \logwriter -> do
 				-- Match filename relative to the
 				-- top of the tree.
 				let af = AssociatedFile $ Just $
-					toRawFilePath $ getTopFilePath topf
+					getTopFilePath topf
 				let mi = MatchingKey k af
 				ifM (checkMatcher' matcher mi mempty)
 					( return (Just ti)

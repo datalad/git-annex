@@ -65,7 +65,7 @@ git_annex_shell cs r command params fields
 		let params' = if debug
 			then Param "--debug" : params
 			else params
-		return (Param command : File dir : params')
+		return (Param command : File (fromRawFilePath dir) : params')
 	uuidcheck NoUUID = []
 	uuidcheck u@(UUID _) = ["--uuid", fromUUID u]
 	fieldopts

@@ -104,7 +104,8 @@ hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
 		]
 	fileenv Nothing = []
 	fileenv (Just file) =  [envvar "FILE" file]
-	hashbits = map takeDirectory $ splitPath $ hashDirMixed def k
+	hashbits = map takeDirectory $ splitPath $
+		fromRawFilePath $ hashDirMixed def k
 
 lookupHook :: HookName -> Action -> Annex (Maybe String)
 lookupHook hookname action = do

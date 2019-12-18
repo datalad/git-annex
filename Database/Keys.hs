@@ -169,13 +169,13 @@ removeAssociatedFile :: Key -> TopFilePath -> Annex ()
 removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile k
 
 {- Stats the files, and stores their InodeCaches. -}
-storeInodeCaches :: Key -> [FilePath] -> Annex ()
+storeInodeCaches :: Key -> [RawFilePath] -> Annex ()
 storeInodeCaches k fs = storeInodeCaches' k fs []
 
-storeInodeCaches' :: Key -> [FilePath] -> [InodeCache] -> Annex ()
+storeInodeCaches' :: Key -> [RawFilePath] -> [InodeCache] -> Annex ()
 storeInodeCaches' k fs ics = withTSDelta $ \d ->
 	addInodeCaches k . (++ ics) . catMaybes
-		=<< liftIO (mapM (`genInodeCache` d) fs)
+		=<< liftIO (mapM (\f -> genInodeCache f d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
 addInodeCaches k is = runWriterIO $ SQL.addInodeCaches k is
@@ -223,7 +223,7 @@ reconcileStaged :: H.DbQueue -> Annex ()
 reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRepo gitAnnexKeysDbIndexCache
-	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
+	withTSDelta (liftIO . genInodeCache (toRawFilePath gitindex)) >>= \case
 		Just cur -> 
 			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case
 				Nothing -> go cur indexcache
@@ -279,7 +279,7 @@ reconcileStaged qh = do
 		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
 			-- Only want files, not symlinks
 			| dstmode /= decodeBS' (fmtTreeItemType TreeSymlink) -> do
-				maybe noop (reconcile (asTopFilePath file)) 
+				maybe noop (reconcile (asTopFilePath (toRawFilePath file)))
 					=<< catKey (Ref dstsha)
 				procdiff rest True
 			| otherwise -> procdiff rest changed
@@ -293,11 +293,11 @@ reconcileStaged qh = do
 		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		keyloc <- calcRepo (gitAnnexLocation key)
 		keypopulated <- sameInodeCache keyloc caches
-		p <- fromRepo $ toRawFilePath . fromTopFilePath file
-		filepopulated <- sameInodeCache (fromRawFilePath p) caches
+		p <- fromRepo $ fromTopFilePath file
+		filepopulated <- sameInodeCache p caches
 		case (keypopulated, filepopulated) of
 			(True, False) ->
-				populatePointerFile (Restage True) key (toRawFilePath keyloc) p >>= \case
+				populatePointerFile (Restage True) key keyloc p >>= \case
 					Nothing -> return ()
 					Just ic -> liftIO $
 						SQL.addInodeCaches key [ic] (SQL.WriteHandle qh)

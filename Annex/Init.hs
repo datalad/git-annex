@@ -56,7 +56,7 @@ import Data.Either
 import qualified Data.Map as M
 
 checkCanInitialize :: Annex a -> Annex a
-checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case
+checkCanInitialize a = inRepo (noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree) >>= \case
 	Nothing -> a
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
@@ -67,7 +67,9 @@ checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case
 genDescription :: Maybe String -> Annex UUIDDesc
 genDescription (Just d) = return $ UUIDDesc $ encodeBS d
 genDescription Nothing = do
-	reldir <- liftIO . relHome =<< liftIO . absPath =<< fromRepo Git.repoPath
+	reldir <- liftIO . relHome
+		=<< liftIO . absPath . fromRawFilePath
+		=<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
 	let at = if null hostname then "" else "@"
 	v <- liftIO myUserName

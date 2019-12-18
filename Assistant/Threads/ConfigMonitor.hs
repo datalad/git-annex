@@ -91,4 +91,4 @@ getConfigs = S.fromList . map extract
 	<$> liftAnnex (inRepo $ LsTree.lsTreeFiles Annex.Branch.fullname files)
   where
 	files = map (fromRawFilePath . fst) configFilesActions
-	extract treeitem = (toRawFilePath $ getTopFilePath $ LsTree.file treeitem, LsTree.sha treeitem)
+	extract treeitem = (getTopFilePath $ LsTree.file treeitem, LsTree.sha treeitem)

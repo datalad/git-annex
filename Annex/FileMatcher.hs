@@ -62,7 +62,7 @@ checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPre
 checkMatcher matcher mkey afile notpresent notconfigured d
 	| isEmpty matcher = notconfigured
 	| otherwise = case (mkey, afile) of
-		(_, AssociatedFile (Just file)) -> go =<< fileMatchInfo (fromRawFilePath file)
+		(_, AssociatedFile (Just file)) -> go =<< fileMatchInfo file
 		(Just key, _) -> go (MatchingKey key afile)
 		_ -> d
   where
@@ -72,7 +72,7 @@ checkMatcher' :: FileMatcher Annex -> MatchInfo -> AssumeNotPresent -> Annex Boo
 checkMatcher' matcher mi notpresent =
 	matchMrun matcher $ \a -> a notpresent mi
 
-fileMatchInfo :: FilePath -> Annex MatchInfo
+fileMatchInfo :: RawFilePath -> Annex MatchInfo
 fileMatchInfo file = do
 	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
 	return $ MatchingFile FileInfo

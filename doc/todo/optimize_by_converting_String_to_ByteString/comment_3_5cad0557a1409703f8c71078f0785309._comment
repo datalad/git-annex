@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-12-11T18:16:13Z"
+ content="""
+Updated profiling. git-annex find is now ByteString end-to-end!
+Note the massive reduction in alloc, and improved runtime.
+
+	        Wed Dec 11 14:41 2019 Time and Allocation Profiling Report  (Final)
+	
+	           git-annex +RTS -p -RTS find
+	
+	        total time  =        1.51 secs   (1515 ticks @ 1000 us, 1 processor)
+	        total alloc = 608,475,328 bytes  (excludes profiling overheads)
+	
+	COST CENTRE                      MODULE                           SRC                                                    %time %alloc
+	
+	keyFile'                         Annex.Locations                  Annex/Locations.hs:(590,1)-(600,30)                      8.2   16.6
+	>>=.\.succ'                      Data.Attoparsec.Internal.Types   Data/Attoparsec/Internal/Types.hs:146:13-76              4.7    0.7
+	getAnnexLinkTarget'.probesymlink Annex.Link                       Annex/Link.hs:79:9-46                                    4.2    7.6
+	>>=.\                            Data.Attoparsec.Internal.Types   Data/Attoparsec/Internal/Types.hs:(146,9)-(147,44)       3.9    2.3
+	parseLinkTarget                  Annex.Link                       Annex/Link.hs:(255,1)-(263,25)                           3.9   11.8
+	doesPathExist                    Utility.RawFilePath              Utility/RawFilePath.hs:30:1-25                           3.4    0.6
+	keyFile'.esc                     Annex.Locations                  Annex/Locations.hs:(596,9)-(600,30)                      3.2   14.7
+	fileKey'                         Annex.Locations                  Annex/Locations.hs:(609,1)-(619,41)                      3.0    4.7
+	parseLinkTargetOrPointer         Annex.Link                       Annex/Link.hs:(240,1)-(244,25)                           2.8    0.2
+	hashUpdates.\.\.\                Crypto.Hash                      Crypto/Hash.hs:85:48-99                                  2.5    0.1
+	combineAlways                    System.FilePath.Posix.ByteString System/FilePath/Posix/../Internal.hs:(698,1)-(704,67)    2.0    3.3
+	getState                         Annex                            Annex.hs:(251,1)-(254,27)                                2.0    1.1
+	withPtr.makeTrampoline           Basement.Block.Base              Basement/Block/Base.hs:(401,5)-(404,31)                  1.9    1.7
+	withMutablePtrHint               Basement.Block.Base              Basement/Block/Base.hs:(468,1)-(482,50)                  1.8    1.2
+	parseKeyVariety                  Types.Key                        Types/Key.hs:(323,1)-(371,42)                            1.8    0.0
+	fileKey'.go                      Annex.Locations                  Annex/Locations.hs:611:9-55                              1.7    2.2
+	isLinkToAnnex                    Annex.Link                       Annex/Link.hs:(299,1)-(305,47)                           1.7    1.0
+	hashDirMixed                     Annex.DirHashes                  Annex/DirHashes.hs:(82,1)-(90,27)                        1.7    1.3
+	primitive                        Basement.Monad                   Basement/Monad.hs:72:5-18                                1.6    0.1
+	withPtr                          Basement.Block.Base              Basement/Block/Base.hs:(395,1)-(404,31)                  1.5    1.6
+	mkKeySerialization               Types.Key                        Types/Key.hs:(115,1)-(117,22)                            1.1    2.8
+	decimal.step                     Data.Attoparsec.ByteString.Char8 Data/Attoparsec/ByteString/Char8.hs:448:9-49             0.8    1.2
+"""]]

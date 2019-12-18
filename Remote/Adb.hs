@@ -212,7 +212,7 @@ androidHashDir :: AndroidPath -> Key -> AndroidPath
 androidHashDir adir k = AndroidPath $ 
 	fromAndroidPath adir ++ "/" ++ hdir
   where
-	hdir = replace [pathSeparator] "/" (hashDirLower def k)
+	hdir = replace [pathSeparator] "/" (fromRawFilePath (hashDirLower def k))
 
 storeExportM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool 
 storeExportM serial adir src _k loc _p = store' serial dest src

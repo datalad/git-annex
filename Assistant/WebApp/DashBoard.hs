@@ -118,7 +118,8 @@ getFileBrowserR = whenM openFileBrowser redirectBack
  - blocking the response to the browser on it. -}
 openFileBrowser :: Handler Bool
 openFileBrowser = do
-	path <- liftIO . absPath =<< liftAnnex (fromRepo Git.repoPath)
+	path <- liftIO . absPath . fromRawFilePath
+		=<< liftAnnex (fromRepo Git.repoPath)
 #ifdef darwin_HOST_OS
 	let cmd = "open"
 	let p = proc cmd [path]

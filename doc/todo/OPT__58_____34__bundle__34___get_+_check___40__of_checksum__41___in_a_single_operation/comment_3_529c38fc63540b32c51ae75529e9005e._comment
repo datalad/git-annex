@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="annex-verify"
+ date="2019-12-11T18:13:48Z"
+ content="""
+\"it is a feature of a external remote, not sure why it should be in the config\" -- because the user might not trust an external remote's implementation of this feature.  Besides bugs, there might be [[security exploits|security/CVE-2018-10857_and_CVE-2018-10859]] if external remotes could single-handedly disable verification.
+"""]]

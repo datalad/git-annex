@@ -38,7 +38,8 @@ keyValue source _ = do
 	let f = contentLocation source
 	stat <- liftIO $ getFileStatus f
 	sz <- liftIO $ getFileSize' f stat
-	relf <- getTopFilePath <$> inRepo (toTopFilePath $ keyFilename source)
+	relf <- fromRawFilePath . getTopFilePath
+		<$> inRepo (toTopFilePath $ toRawFilePath $ keyFilename source)
 	return $ Just $ mkKey $ \k -> k
 		{ keyName = genKeyName relf
 		, keyVariety = WORMKey
