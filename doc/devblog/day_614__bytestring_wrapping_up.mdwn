@@ -1,0 +1,15 @@
+Cut the last release before the switch over to end-to-end ByteString.
+(Including fixing the rpm repo's index which had not been getting updated.)
+
+I had left the `bs` branch last week with a known bug, so got that fixed.
+Also there were some encoding problems on windows with the ByteString
+filepaths, which needed a new release of filepath-bytestring to clean up.
+Now I think the `bs` branch is really in a mergeable state.
+(It's still not tested on Windows at all though.)
+
+Took the last little while to do some more profiling. Mostly the remaining
+ByteString conversions barely seem worth doing (1% improvement at most),
+but [[todo/optimise_journal_access]] seems like it could pay off well.
+
+Also found time in there somewhere to implement `git annex inprogress
+--key`
