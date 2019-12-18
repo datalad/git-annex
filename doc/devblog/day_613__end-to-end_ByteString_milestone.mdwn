@@ -1,0 +1,17 @@
+The `bs` branch has reached a milestone: `git-annex find` and `git-annex
+get` (when all files are present) process ByteStrings end-to-end with 
+no String conversion. That sped it up by around 30% on top of the previous
+optimisations. 
+
+To get here, I spent a couple of days creating the
+[filepath-bytestring](https://joeyh.name/blog/entry/announcing_the_filepath-bytestring_haskell_library/)
+library, which git-annex will depend on. Lots more git-annex internals
+were switched to ByteString, especially everything having to do with
+statting files.
+
+Other commands, like `git-annex whereis`, still do some String
+conversions. Optimisation never ends.
+
+But the bs branch is ready to merge as-is, and the diff is 10 thousand lines,
+so not a branch I want to maintain for long. Planning to merge it after
+the next release.
