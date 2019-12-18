@@ -86,7 +86,7 @@ addAssociatedFile k f = queueDb $ do
 	deleteWhere [AssociatedFile ==. af, AssociatedKey !=. k]
 	void $ insertUnique $ Associated k af
   where
-	af = toSFilePath (fromRawFilePath (getTopFilePath f))
+	af = SFilePath (getTopFilePath f)
 
 -- Does not remove any old association for a file, but less expensive
 -- than addAssociatedFile. Calling dropAllAssociatedFiles first and then
@@ -94,7 +94,7 @@ addAssociatedFile k f = queueDb $ do
 addAssociatedFileFast :: Key -> TopFilePath -> WriteHandle -> IO ()
 addAssociatedFileFast k f = queueDb $ void $ insertUnique $ Associated k af
   where
-	af = toSFilePath (fromRawFilePath (getTopFilePath f))
+	af = SFilePath (getTopFilePath f)
 
 dropAllAssociatedFiles :: WriteHandle -> IO ()
 dropAllAssociatedFiles = queueDb $
@@ -105,7 +105,7 @@ dropAllAssociatedFiles = queueDb $
 getAssociatedFiles :: Key -> ReadHandle -> IO [TopFilePath]
 getAssociatedFiles k = readDb $ do
 	l <- selectList [AssociatedKey ==. k] []
-	return $ map (asTopFilePath . toRawFilePath . associatedFile . entityVal) l
+	return $ map (asTopFilePath . (\(SFilePath f) -> f) . associatedFile . entityVal) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
@@ -114,13 +114,13 @@ getAssociatedKey f = readDb $ do
 	l <- selectList [AssociatedFile ==. af] []
 	return $ map (associatedKey . entityVal) l
   where
-	af = toSFilePath (fromRawFilePath (getTopFilePath f))
+	af = SFilePath (getTopFilePath f)
 
 removeAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
 removeAssociatedFile k f = queueDb $
 	deleteWhere [AssociatedKey ==. k, AssociatedFile ==. af]
   where
-	af = toSFilePath (fromRawFilePath (getTopFilePath f))
+	af = SFilePath (getTopFilePath f)
 
 addInodeCaches :: Key -> [InodeCache] -> WriteHandle -> IO ()
 addInodeCaches k is = queueDb $

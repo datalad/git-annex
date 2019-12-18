@@ -28,7 +28,6 @@ import Foreign.C.Types
 import Key
 import Utility.InodeCache
 import Utility.FileSize
-import Utility.FileSystemEncoding
 import Git.Types
 import Types.UUID
 import Types.Import
@@ -79,15 +78,9 @@ instance PersistField ContentIdentifier where
 instance PersistFieldSql ContentIdentifier where
 	sqlType _ = SqlBlob
 
--- A serialized FilePath. Stored as a ByteString to avoid encoding problems.
+-- A serialized RawFilePath.
 newtype SFilePath = SFilePath S.ByteString
 	deriving (Eq, Show)
-
-toSFilePath :: FilePath -> SFilePath
-toSFilePath = SFilePath . encodeBS
-
-fromSFilePath :: SFilePath -> FilePath
-fromSFilePath (SFilePath b) = decodeBS b
 
 instance PersistField  SFilePath where
 	toPersistValue (SFilePath b) = toPersistValue b

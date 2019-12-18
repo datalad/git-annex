@@ -130,7 +130,7 @@ addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportedLocation h k el = queueDb h $ do
 	void $ insertUnique $ Exported k ef
 	let edirs = map
-		(\ed -> ExportedDirectory (toSFilePath (fromRawFilePath (fromExportDirectory ed))) ef)
+		(\ed -> ExportedDirectory (SFilePath (fromExportDirectory ed)) ef)
 		(exportDirectories el)
 	putMany edirs
   where
