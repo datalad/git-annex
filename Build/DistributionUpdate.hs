@@ -220,13 +220,12 @@ virusFree f
 
 buildrpms :: FilePath -> [(FilePath, Version)] -> Annex ()
 buildrpms topdir l = do
-	liftIO $ do
-		createDirectoryIfMissing True rpmrepo
-		oldrpms <- filter (".rpm" `isSuffixOf`)
-			<$> getDirectoryContents rpmrepo
-		mapM_ nukeFile oldrpms
+	liftIO $ createDirectoryIfMissing True rpmrepo
+	oldrpms <- map (rpmrepo </>) . filter (".rpm" `isSuffixOf`)
+		<$> getDirectoryContents rpmrepo
 	forM_ tarrpmarches $ \(tararch, rpmarch) ->
-		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) ->
+		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) -> do
+			mapM_ nukeFile (filter ((tararch ++ ".rpm") `isSuffixOf`) oldrpms)
 			void $ liftIO $ boolSystem script 
 				[ Param rpmarch
 				, File tarball
