@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="mike@4e7a118bd37129091199ae0fb28184999c5f4725"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/9751260f8a13fc27ad837eaf66fac5d7"
+ subject="repodata is outdated"
+ date="2019-12-18T10:06:08Z"
+ content="""
+The repodata under https://downloads.kitenet.net/git-annex/linux/current/rpms/repodata/ is outdated (from September), latest RPM in https://downloads.kitenet.net/git-annex/linux/current/rpms/ is from November. I (think) I had an issue using git-annex-shell using the 201909 version, so this is somewhat relevant.
+"""]]

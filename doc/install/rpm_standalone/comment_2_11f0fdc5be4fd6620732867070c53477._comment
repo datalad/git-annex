@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-12-18T18:28:51Z"
+ content="""
+I've fixed it, should include the latest release now.
+
+Please do file a bug report if you find problems with the rpms.
+"""]]
