@@ -101,28 +101,37 @@ journalDirty = do
 
 {- Produces a filename to use in the journal for a file on the branch.
  -
- - The input filename is assumed to not contain any '_' character,
- - since path separators are replaced with that.
- -
  - The journal typically won't have a lot of files in it, so the hashing
  - used in the branch is not necessary, and all the files are put directly
  - in the journal directory.
  -}
 journalFile :: RawFilePath -> Git.Repo -> RawFilePath
-journalFile file repo = gitAnnexJournalDir' repo P.</> S.map mangle file
+journalFile file repo = gitAnnexJournalDir' repo P.</> S.concatMap mangle file
   where
 	mangle c
-		| P.isPathSeparator c = fromIntegral (ord '_')
-		| otherwise = c
+		| P.isPathSeparator c = S.singleton underscore
+		| c == underscore = S.pack [underscore, underscore]
+		| otherwise = S.singleton c
+	underscore = fromIntegral (ord '_')
 
 {- Converts a journal file (relative to the journal dir) back to the
  - filename on the branch. -}
 fileJournal :: RawFilePath -> RawFilePath
-fileJournal = S.map unmangle
+fileJournal = go
   where
-	unmangle c
-		| c == fromIntegral (ord '_') = P.pathSeparator
-		| otherwise = c
+	go b = 
+		let (h, t) = S.break (== underscore) b
+		in h <> case S.uncons t of
+			Nothing -> t
+			Just (_u, t') -> case S.uncons t' of
+				Nothing -> t'			
+				Just (w, t'')
+					| w == underscore ->
+						S.cons underscore (go t'')
+					| otherwise -> 
+						S.cons P.pathSeparator (go t')
+	
+	underscore = fromIntegral (ord '_')
 
 {- Sentinal value, only produced by lockJournal; required
  - as a parameter by things that need to ensure the journal is
