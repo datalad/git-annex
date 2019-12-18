@@ -23,10 +23,6 @@ module Utility.FileSystemEncoding (
 	encodeBL',
 	decodeBS',
 	encodeBS',
-	decodeW8,
-	encodeW8,
-	encodeW8NUL,
-	decodeW8NUL,
 	truncateFilePath,
 	s2w8,
 	w82s,
@@ -148,16 +144,32 @@ encodeBS = S8.fromString
 {- Faster version that assumes the string does not contain NUL;
  - if it does it will be truncated before the NUL. -}
 decodeBS' :: S.ByteString -> FilePath
+#ifndef mingw32_HOST_OS
 decodeBS' = encodeW8 . S.unpack
+#else
+decodeBS' = S8.toString
+#endif
 
 encodeBS' :: FilePath -> S.ByteString
+#ifndef mingw32_HOST_OS
 encodeBS' = S.pack . decodeW8
+#else
+encodeBS' = S8.fromString
+#endif
 
 decodeBL' :: L.ByteString -> FilePath
+#ifndef mingw32_HOST_OS
 decodeBL' = encodeW8 . L.unpack
+#else
+decodeBL' = L8.toString
+#endif
 
 encodeBL' :: FilePath -> L.ByteString
+#ifndef mingw32_HOST_OS
 encodeBL' = L.pack . decodeW8
+#else
+encodeBL' = L8.fromString
+#endif
 
 {- Recent versions of the unix package have this alias; defined here
  - for backwards compatibility. -}
