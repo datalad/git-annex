@@ -6,3 +6,5 @@ Please consider adding a `--key` option there, which would display the single in
 My use case is serving git-annexed files to the web from a bare repository (<https://gitlab.com/chrysn/annex-to-web>, see also [[todo/git-annex-cat]]), which would be especially useful with gitolite repositories as they are by design bare, and on devices where checkouts are cumbersome (cf. [[forum/Dealing_with_crippled_Android_file_system]]).
 
 A workaround is running `git annex inprogress --all | grep $KEY`, but that's probably relying on an implementation detail that could be changed at any time (though it probably won't as to avoid race conditions as in `tail -f $(git annex inprogress file-thats-almost.done)`).
+
+> [[done]] --[[Joey]]
