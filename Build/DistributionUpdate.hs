@@ -232,6 +232,7 @@ buildrpms topdir l = do
 				, Param v
 				, File rpmrepo
 				]
+	void $ inRepo $ runBool [Param "annex", Param "get", File rpmrepo]
 	void $ liftIO $ boolSystem "createrepo" [File rpmrepo]
 	void $ inRepo $ runBool [Param "annex", Param "add", File rpmrepo]
   where
