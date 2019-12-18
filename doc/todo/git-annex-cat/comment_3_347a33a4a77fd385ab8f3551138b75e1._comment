@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="named pipes as destination files"
+ date="2019-12-18T18:41:57Z"
+ content="""
+\"getting object content from remotes involve a destination file that is written to\" -- what happens if git-annex makes a named pipe, and passes that as the destination file name to the remote?
+"""]]
