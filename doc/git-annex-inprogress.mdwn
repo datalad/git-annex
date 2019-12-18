@@ -40,6 +40,10 @@ some file formats can be usefully streamed in this way.
   Rather than specifying a filename or path, this option can be
   used to access all files that are currently being downloaded.
 
+* `--key=keyname`
+
+  Access the file that is currently being downloaded for the specified key.
+
 * file matching options
  
   The [[git-annex-matching-options]](1)
@@ -47,7 +51,7 @@ some file formats can be usefully streamed in this way.
 
 # EXIT STATUS
 
-If any of the requested files are not currently being downloaded,
+If any of the requested items are not currently being downloaded,
 the exit status will be 1.
 
 # SEE ALSO

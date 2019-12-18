@@ -133,7 +133,7 @@ makeinfos updated version = do
 				let infofile = f ++ ".info"
 				let d = GitAnnexDistribution
 					{ distributionUrl = mkUrl f
-					, distributionKey = k
+					, distributionKey = fromKey id k
 					, distributionVersion = bv
 					, distributionReleasedate = now
 					, distributionUrgentUpgrade = Just "6.20180626"
@@ -221,14 +221,18 @@ virusFree f
 buildrpms :: FilePath -> [(FilePath, Version)] -> Annex ()
 buildrpms topdir l = do
 	liftIO $ createDirectoryIfMissing True rpmrepo
+	oldrpms <- map (rpmrepo </>) . filter (".rpm" `isSuffixOf`)
+		<$> liftIO (getDirectoryContents rpmrepo)
 	forM_ tarrpmarches $ \(tararch, rpmarch) ->
-		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) ->
+		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) -> do
+			liftIO $ mapM_ nukeFile (filter ((tararch ++ ".rpm") `isSuffixOf`) oldrpms)
 			void $ liftIO $ boolSystem script 
 				[ Param rpmarch
 				, File tarball
 				, Param v
 				, File rpmrepo
 				]
+	void $ inRepo $ runBool [Param "annex", Param "get", File rpmrepo]
 	void $ liftIO $ boolSystem "createrepo" [File rpmrepo]
 	void $ inRepo $ runBool [Param "annex", Param "add", File rpmrepo]
   where

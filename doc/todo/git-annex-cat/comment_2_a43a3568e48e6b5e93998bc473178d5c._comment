@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-12-18T17:49:47Z"
+ content="""
+git-annex's API for getting object content from remotes involve a
+destination file that is written to. That limits the efficiency of such a
+command. There would need to be a separate API for streaming, which some
+remotes will not have any hope of supporting.
+"""]]

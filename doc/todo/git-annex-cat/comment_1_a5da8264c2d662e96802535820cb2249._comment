@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Would be useful"
+ date="2019-12-17T09:08:08Z"
+ content="""
+A `git annex cat` would be useful for the very web server purpose you describe (WIP at https://gitlab.com/chrysn/annex-to-web, though I'm not sure it's going anywhere).
+
+Unlike `git annex inprogress` that I (will) use for a workaround, this could take a `--skip` argument that usually just seeks into the file.
+If the data is served from a remote that allows seeking access (eg. IPFS),
+then that access could be priorized and that part downloaded first.
+(Implementing this would require another tmp pool for sparse files as they couldn't go with the `git annex inprogress` files for there is the expectation that those would grow to completion,
+but anyway this would be an entry point for such a feature if it is ever added).
+"""]]
