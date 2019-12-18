@@ -1,0 +1,5 @@
+I want to add some dotfiles in the root of my repository to git-annex as unlocked annexed files.  So I edited `.git/info/attributes` to remove the line `.* !filter`, such that it only contains the line `* filter=annex`.  This seems to be working fine.
+
+I was thinking that it might make sense to have a `git annex config` option to tell git-annex not to add the `.* !filter` line to `.git/info/attributes` when initialising other clones of this repo.  In the meantime, I've worked around it using a `post_checkout` hook in my `~/.mrconfig` which edits `.git/info/attributes`.
+
+--spwhitton
