@@ -9,17 +9,12 @@ Benchmarking `git-annex find`, speedups range from 28-66%. The files fly by
 much more snappily. Other commands likely also speed up, but do more work
 than find so the improvement is not as large.
 
-The `bs` branch is in a mergeable state now, but still needs work:
+The `bs` branch is in a mergeable state now, except for:
 
-* Profile various commands and look for hot spots.
+* filepath-bytestring probably has issues with utf16 filenames
+  on Windows. See its TODO.
 
-* ByteString.Char8.putStrLn may truncate?
+Stuff not entirely finished:
 
-* Eliminate all the fromRawFilePath, toRawFilePath, encodeBS,
-  decodeBS conversions. Or at least most of them. There are likely
-  some places where a value is converted back and forth several times.
-  
-* Use versions of IO actions like getFileStatus that take a RawFilePath,
-  avoiding a conversion. Note that these are only available on unix, not
-  windows, so a compatability shim will be needed.
-  (I can't seem to find any library that provides one.)
+* Profile various commands and look for hot spots involving conversion
+  between RawFilePath and FilePath.
