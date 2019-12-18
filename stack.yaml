@@ -24,7 +24,7 @@ extra-deps:
 - sandi-0.5
 - http-client-0.5.14
 - silently-1.2.5.1
-- filepath-bytestring-1.4.2.1.0
+- filepath-bytestring-1.4.2.1.1
 explicit-setup-deps:
   git-annex: true
 resolver: lts-13.29

@@ -43,6 +43,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as S8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 #endif
+import System.FilePath.ByteString (RawFilePath, encodeFilePath, decodeFilePath)
 
 import Utility.Exception
 import Utility.Split
@@ -171,21 +172,11 @@ encodeBL' = L.pack . decodeW8
 encodeBL' = L8.fromString
 #endif
 
-{- Recent versions of the unix package have this alias; defined here
- - for backwards compatibility. -}
-type RawFilePath = S.ByteString
-
-{- Note that the RawFilePath is assumed to never contain NUL,
- - since filename's don't. This should only be used with actual
- - RawFilePaths not arbitrary ByteString that may contain NUL. -}
 fromRawFilePath :: RawFilePath -> FilePath
-fromRawFilePath = decodeBS'
+fromRawFilePath = decodeFilePath
 
-{- Note that the FilePath is assumed to never contain NUL,
- - since filename's don't. This should only be used with actual FilePaths
- - not arbitrary String that may contain NUL. -}
 toRawFilePath :: FilePath -> RawFilePath
-toRawFilePath = encodeBS'
+toRawFilePath = encodeFilePath
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
