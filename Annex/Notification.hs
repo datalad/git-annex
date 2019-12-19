@@ -60,7 +60,7 @@ notifyDrop (AssociatedFile (Just f)) ok = do
 	wanted <- Annex.getState Annex.desktopnotify
 	when (notifyFinish wanted) $ liftIO $ do
 		client <- DBus.Client.connectSession
-		void $ Notify.notify client (droppedNote ok f)
+		void $ Notify.notify client (droppedNote ok (fromRawFilePath f))
 #else
 notifyDrop (AssociatedFile (Just _)) _ = noop
 #endif

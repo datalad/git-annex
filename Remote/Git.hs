@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.Git (
 	remote,
@@ -60,6 +61,7 @@ import Creds
 import Types.NumCopies
 import Annex.Action
 import Messages.Progress
+import qualified Utility.RawFilePath as R
 
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
@@ -68,6 +70,7 @@ import Utility.FileMode
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import Network.URI
 
 remote :: RemoteType
@@ -86,14 +89,14 @@ list autoinit = do
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	mapM (configRead autoinit) rs
   where
-	annexurl n = "remote." ++ n ++ ".annexurl"
+	annexurl n = Git.ConfigKey ("remote." <> encodeBS' n <> ".annexurl")
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
 		case M.lookup (annexurl n) c of
 			Nothing -> return r
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation url g
+					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) g
 
 {- Git remotes are normally set up using standard git command, not
  - git-annex initremote and enableremote.
@@ -254,7 +257,7 @@ tryGitConfigRead autoinit r
 		v <- liftIO $ Git.Config.fromPipe r cmd params
 		case v of
 			Right (r', val) -> do
-				unless (isUUIDConfigured r' || null val) $ do
+				unless (isUUIDConfigured r' || S.null val) $ do
 					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ "Instead, got: " ++ show val
 					warning $ "This is unexpected; please check the network transport!"
@@ -391,9 +394,9 @@ keyUrls gc repo r key = map tourl locs'
 		| remoteAnnexBare remoteconfig == Just False = reverse (annexLocations gc key)
 		| otherwise = annexLocations gc key
 #ifndef mingw32_HOST_OS
-	locs' = locs
+	locs' = map fromRawFilePath locs
 #else
-	locs' = map (replace "\\" "/") locs
+	locs' = map (replace "\\" "/" . fromRawFilePath) locs
 #endif
 	remoteconfig = gitconfig r
 
@@ -549,7 +552,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 		u <- getUUID
 		let AssociatedFile afile = file
 		let fields = (Fields.remoteUUID, fromUUID u)
-			: maybe [] (\f -> [(Fields.associatedFile, f)]) afile
+			: maybe [] (\f -> [(Fields.associatedFile, fromRawFilePath f)]) afile
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			repo "transferinfo" 
 			[Param $ serializeKey key] fields
@@ -597,9 +600,9 @@ copyFromRemoteCheap' repo r st key af file
 	| not $ Git.repoIsUrl repo = guardUsable repo (return False) $ do
 		gc <- getGitConfigFromState st
 		loc <- liftIO $ gitAnnexLocation key repo gc
-		liftIO $ ifM (doesFileExist loc)
+		liftIO $ ifM (R.doesPathExist loc)
 			( do
-				absloc <- absPath loc
+				absloc <- absPath (fromRawFilePath loc)
 				catchBoolIO $ do
 					createSymbolicLink absloc file
 					return True
@@ -678,8 +681,8 @@ fsckOnRemote r params
 		r' <- Git.Config.read r
 		environ <- getEnvironment
 		let environ' = addEntries 
-			[ ("GIT_WORK_TREE", Git.repoPath r')
-			, ("GIT_DIR", Git.localGitDir r')
+			[ ("GIT_WORK_TREE", fromRawFilePath $ Git.repoPath r')
+			, ("GIT_DIR", fromRawFilePath $ Git.localGitDir r')
 			] environ
 		batchCommandEnv program (Param "fsck" : params) (Just environ')
 

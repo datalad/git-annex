@@ -1,3 +1,13 @@
+git-annex (7.20191219) UNRELEASED; urgency=medium
+
+  * Optimised processing of many files, especially by commands like find
+    and whereis that only report on the state of the repository. Commands
+    like get also sped up in cases where they have to check a lot of
+    files but only transfer a few files. Speedups range from 30-100%.
+  * Added build dependency on the filepath-bytestring library.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 18 Dec 2019 15:12:40 -0400
+
 git-annex (7.20191218) upstream; urgency=medium
 
   * git-lfs: The url provided to initremote/enableremote will now be

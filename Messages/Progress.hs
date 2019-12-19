@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Messages.Progress where
 

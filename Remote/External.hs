@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Remote.External (remote) where
 
 import Remote.External.Types
@@ -381,9 +383,9 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (PROGRESS bytesprocessed) =
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
-		send $ VALUE $ hashDirMixed def k
+		send $ VALUE $ fromRawFilePath $ hashDirMixed def k
 	handleRemoteRequest (DIRHASH_LOWER k) = 
-		send $ VALUE $ hashDirLower def k
+		send $ VALUE $ fromRawFilePath $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ modifyTVar' (externalConfig st) $
 			M.insert setting value
@@ -407,7 +409,8 @@ handleRequest' st external req mp responsehandler
 		send $ CREDS (fst creds) (snd creds)
 	handleRemoteRequest GETUUID = send $
 		VALUE $ fromUUID $ externalUUID external
-	handleRemoteRequest GETGITDIR = send . VALUE =<< fromRepo Git.localGitDir
+	handleRemoteRequest GETGITDIR = 
+		send . VALUE . fromRawFilePath =<< fromRepo Git.localGitDir
 	handleRemoteRequest (SETWANTED expr) =
 		preferredContentSet (externalUUID external) expr
 	handleRemoteRequest GETWANTED = do

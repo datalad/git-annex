@@ -70,7 +70,7 @@ smudge file = do
 	case parseLinkTargetOrPointerLazy b of
 		Nothing -> noop
 		Just k -> do
-			topfile <- inRepo (toTopFilePath file)
+			topfile <- inRepo (toTopFilePath (toRawFilePath file))
 			Database.Keys.addAssociatedFile k topfile
 			void $ smudgeLog k topfile
 	liftIO $ L.putStr b
@@ -86,9 +86,9 @@ clean file = do
 		( liftIO $ L.hPut stdout b
 		, case parseLinkTargetOrPointerLazy b of
 			Just k -> do
-				getMoveRaceRecovery k file
+				getMoveRaceRecovery k (toRawFilePath file)
 				liftIO $ L.hPut stdout b
-			Nothing -> go b =<< catKeyFile file
+			Nothing -> go b =<< catKeyFile (toRawFilePath file)
 		)
 	stop
   where
@@ -108,7 +108,7 @@ clean file = do
 			-- annexed and is unmodified.
 			case oldkey of
 				Nothing -> doingest oldkey
-				Just ko -> ifM (isUnmodifiedCheap ko file)
+				Just ko -> ifM (isUnmodifiedCheap ko (toRawFilePath file))
 					( liftIO $ emitPointer ko
 					, doingest oldkey
 					)
@@ -141,7 +141,8 @@ clean file = do
 	-- git diff can run the clean filter on files outside the
 	-- repository; can't annex those
 	fileoutsiderepo = do
-	        repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+	        repopath <- liftIO . absPath . fromRawFilePath
+			=<< fromRepo Git.repoPath
 		filepath <- liftIO $ absPath file
 		return $ not $ dirContains repopath filepath
 
@@ -173,7 +174,7 @@ shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 		Just _ -> return True
 		Nothing -> checkknowninode
 
-	checkknowninode = withTSDelta (liftIO . genInodeCache file) >>= \case
+	checkknowninode = withTSDelta (liftIO . genInodeCache (toRawFilePath file)) >>= \case
 		Nothing -> pure False
 		Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
 
@@ -187,7 +188,7 @@ emitPointer = S.putStr . formatPointer
 -- This also handles the case where a copy of a pointer file is made,
 -- then git-annex gets the content, and later git add is run on
 -- the pointer copy. It will then be populated with the content.
-getMoveRaceRecovery :: Key -> FilePath -> Annex ()
+getMoveRaceRecovery :: Key -> RawFilePath -> Annex ()
 getMoveRaceRecovery k file = void $ tryNonAsync $
 	whenM (inAnnex k) $ do
 		obj <- calcRepo (gitAnnexLocation k)
@@ -204,11 +205,11 @@ update = do
 
 updateSmudged :: Restage -> Annex ()
 updateSmudged restage = streamSmudged $ \k topf -> do
-	f <- fromRepo $ fromTopFilePath topf
+	f <- fromRepo (fromTopFilePath topf)
 	whenM (inAnnex k) $ do
 		obj <- calcRepo (gitAnnexLocation k)
 		unlessM (isJust <$> populatePointerFile restage k obj f) $
 			liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> toplevelWarning False $
-					"unable to populate worktree file " ++ f
+					"unable to populate worktree file " ++ fromRawFilePath f
 				_ -> noop

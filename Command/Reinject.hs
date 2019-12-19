@@ -42,7 +42,7 @@ seek os
 startSrcDest :: [FilePath] -> CommandStart
 startSrcDest (src:dest:[])
 	| src == dest = stop
-	| otherwise = notAnnexed src $ ifAnnexed dest go stop
+	| otherwise = notAnnexed src $ ifAnnexed (toRawFilePath dest) go stop
   where
 	go key = starting "reinject" (ActionItemOther (Just src)) $
 		ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src)
@@ -65,7 +65,7 @@ startKnown src = notAnnexed src $
 				)
 
 notAnnexed :: FilePath -> CommandStart -> CommandStart
-notAnnexed src = ifAnnexed src $
+notAnnexed src = ifAnnexed (toRawFilePath src) $
 	giveup $ "cannot used annexed file as src: " ++ src
 
 perform :: FilePath -> Key -> CommandPerform

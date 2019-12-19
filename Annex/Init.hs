@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Init (
 	ensureInitialized,
@@ -22,6 +23,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Objects
+import Git.Types (fromConfigValue)
 import qualified Annex.Branch
 import Logs.UUID
 import Logs.Trust.Basic
@@ -54,7 +56,7 @@ import Data.Either
 import qualified Data.Map as M
 
 checkCanInitialize :: Annex a -> Annex a
-checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case
+checkCanInitialize a = inRepo (noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree) >>= \case
 	Nothing -> a
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
@@ -65,7 +67,9 @@ checkCanInitialize a = inRepo (noAnnexFileContent . Git.repoWorkTree) >>= \case
 genDescription :: Maybe String -> Annex UUIDDesc
 genDescription (Just d) = return $ UUIDDesc $ encodeBS d
 genDescription Nothing = do
-	reldir <- liftIO . relHome =<< liftIO . absPath =<< fromRepo Git.repoPath
+	reldir <- liftIO . relHome
+		=<< liftIO . absPath . fromRawFilePath
+		=<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
 	let at = if null hostname then "" else "@"
 	v <- liftIO myUserName
@@ -204,7 +208,7 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	 - filesystem. -}
 	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
 		warning "Disabling core.symlinks."
-		setConfig (ConfigKey "core.symlinks")
+		setConfig "core.symlinks"
 			(Git.Config.boolConfig False)
 
 probeLockSupport :: Annex Bool
@@ -274,5 +278,5 @@ initSharedClone True = do
  - affect it. -}
 propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
-	maybe noop (setConfig (ConfigKey "annex.securehashesonly"))
+	maybe noop (setConfig "annex.securehashesonly" . fromConfigValue)
 		=<< getGlobalConfig "annex.securehashesonly"

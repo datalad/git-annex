@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Command.WebApp where
 
@@ -22,6 +23,7 @@ import Utility.Daemon (checkDaemon)
 import Utility.UserInfo
 import Annex.Init
 import qualified Git
+import Git.Types (fromConfigValue)
 import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Annex
@@ -229,7 +231,7 @@ openBrowser' mcmd htmlshim realurl outh errh =
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath
-webBrowser = Git.Config.getMaybe "web.browser"
+webBrowser = fmap fromConfigValue <$> Git.Config.getMaybe "web.browser"
 
 fileUrl :: FilePath -> String
 fileUrl file = "file://" ++ file

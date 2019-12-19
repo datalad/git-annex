@@ -30,7 +30,7 @@ remoteUUID = Field "remoteuuid" $
 associatedFile :: Field
 associatedFile = Field "associatedfile" $ \f ->
 	-- is the file a safe relative filename?
-	not (absoluteGitPath f) && not ("../" `isPrefixOf` f)
+	not (absoluteGitPath (toRawFilePath f)) && not ("../" `isPrefixOf` f)
 
 direct :: Field
 direct = Field "direct" $ \f -> f == "1"

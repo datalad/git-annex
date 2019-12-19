@@ -183,7 +183,7 @@ rsyncSetup _ mu _ c gc = do
 store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
 store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
   where
-	basedest = Prelude.head (keyPaths k)
+	basedest = fromRawFilePath $ Prelude.head (keyPaths k)
 	populatedest dest = liftIO $ if canrename
 		then do
 			rename src dest
@@ -222,11 +222,11 @@ remove :: RsyncOpts -> Remover
 remove o k = removeGeneric o includes
   where
 	includes = concatMap use dirHashes
-	use h = let dir = h def k in
+	use h = let dir = fromRawFilePath (h def k) in
 		[ parentDir dir
 		, dir
 		-- match content directory and anything in it
-		, dir </> keyFile k </> "***"
+		, dir </> fromRawFilePath (keyFile k) </> "***"
 		]
 
 {- An empty directory is rsynced to make it delete. Everything is excluded,
@@ -268,22 +268,22 @@ storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate ->
 storeExportM o src _k loc meterupdate =
 	storeGeneric o meterupdate basedest populatedest
   where
-	basedest = fromExportLocation loc
+	basedest = fromRawFilePath (fromExportLocation loc)
 	populatedest = liftIO . createLinkOrCopy src
 
 retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
 retrieveExportM o _k loc dest p = rsyncRetrieve o [rsyncurl] dest (Just p)
   where
-	rsyncurl = mkRsyncUrl o (fromExportLocation loc)
+	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
 
 checkPresentExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
 checkPresentExportM o _k loc = checkPresentGeneric o [rsyncurl]
   where
-	rsyncurl = mkRsyncUrl o (fromExportLocation loc)
+	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
 
 removeExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
 removeExportM o _k loc =
-	removeGeneric o (includes (fromExportLocation loc))
+	removeGeneric o $ includes $ fromRawFilePath $ fromExportLocation loc
   where
 	includes f = f : case upFrom f of
 		Nothing -> []
@@ -292,7 +292,7 @@ removeExportM o _k loc =
 removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex Bool
 removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
   where
-	d = fromExportDirectory ed
+	d = fromRawFilePath $ fromExportDirectory ed
 	allbelow f = f </> "***"
 	includes f = f : case upFrom f of
 		Nothing -> []

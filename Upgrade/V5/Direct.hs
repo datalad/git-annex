@@ -7,6 +7,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Upgrade.V5.Direct (
 	switchHEADBack,
 	setIndirect,
@@ -44,12 +46,12 @@ setIndirect = do
 		-- unset it when enabling direct mode, caching in
 		-- core.indirect-worktree
 		moveconfig indirectworktree coreworktree
-		setConfig (ConfigKey Git.Config.coreBare) val
+		setConfig Git.Config.coreBare val
 	moveconfig src dest = getConfigMaybe src >>= \case
 		Nothing -> noop
 		Just wt -> do
 			unsetConfig src
-			setConfig dest wt
+			setConfig dest (fromConfigValue wt)
 			reloadConfig
 
 {- Converts a directBranch back to the original branch.
@@ -79,7 +81,7 @@ switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
 associatedFiles :: Key -> Annex [FilePath]
 associatedFiles key = do
 	files <- associatedFilesRelative key
-	top <- fromRepo Git.repoPath
+	top <- fromRawFilePath <$> fromRepo Git.repoPath
 	return $ map (top </>) files
 
 {- List of files in the tree that are associated with a key, relative to
@@ -105,7 +107,9 @@ removeAssociatedFiles key = do
  - expected mtime and inode.
  -}
 goodContent :: Key -> FilePath -> Annex Bool
-goodContent key file = sameInodeCache file =<< recordedInodeCache key
+goodContent key file =
+	sameInodeCache (toRawFilePath file)
+		=<< recordedInodeCache key
 
 {- Gets the recorded inode cache for a key. 
  -

@@ -127,7 +127,7 @@ directorySetup _ mu _ c gc = do
  - We try more than one since we used to write to different hash
  - directories. -}
 locations :: FilePath -> Key -> [FilePath]
-locations d k = map (d </>) (keyPaths k)
+locations d k = map (\f -> d </> fromRawFilePath f) (keyPaths k)
 
 {- Returns the location off a Key in the directory. If the key is
  - present, returns the location that is actually used, otherwise
@@ -139,7 +139,8 @@ getLocation d k = do
 
 {- Directory where the file(s) for a key are stored. -}
 storeDir :: FilePath -> Key -> FilePath
-storeDir d k = addTrailingPathSeparator $ d </> hashDirLower def k </> keyFile k
+storeDir d k = addTrailingPathSeparator $
+	d </> fromRawFilePath (hashDirLower def k) </> fromRawFilePath (keyFile k)
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
@@ -163,12 +164,13 @@ store d chunkconfig k b p = liftIO $ do
 	case chunkconfig of
 		LegacyChunks chunksize -> Legacy.store chunksize finalizeStoreGeneric k b p tmpdir destdir
 		_ -> do
-			let tmpf = tmpdir </> keyFile k
+			let tmpf = tmpdir </> kf
 			meteredWriteFile p tmpf b
 			finalizeStoreGeneric tmpdir destdir
 			return True
   where
-	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> keyFile k
+	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> kf
+	kf = fromRawFilePath (keyFile k)
 	destdir = storeDir d k
 
 {- Passed a temp directory that contains the files that should be placed
@@ -295,18 +297,18 @@ renameExportM d _k oldloc newloc = liftIO $ Just <$> go
 	dest = exportPath d newloc
 
 exportPath :: FilePath -> ExportLocation -> FilePath
-exportPath d loc = d </> fromExportLocation loc
+exportPath d loc = d </> fromRawFilePath (fromExportLocation loc)
 
 {- Removes the ExportLocation's parent directory and its parents, so long as
  - they're empty, up to but not including the topdir. -}
 removeExportLocation :: FilePath -> ExportLocation -> IO ()
 removeExportLocation topdir loc = 
-	go (Just $ takeDirectory $ fromExportLocation loc) (Right ())
+	go (Just $ takeDirectory $ fromRawFilePath $ fromExportLocation loc) (Right ())
   where
 	go _ (Left _e) = return ()
 	go Nothing _ = return ()
 	go (Just loc') _ = go (upFrom loc')
-		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation loc'))
+		=<< tryIO (removeDirectory $ exportPath topdir (mkExportLocation (toRawFilePath loc')))
 
 listImportableContentsM :: FilePath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 listImportableContentsM dir = catchMaybeIO $ liftIO $ do
@@ -319,7 +321,7 @@ listImportableContentsM dir = catchMaybeIO $ liftIO $ do
 		mkContentIdentifier f st >>= \case
 			Nothing -> return Nothing
 			Just cid -> do
-				relf <- relPathDirToFile dir f
+				relf <- toRawFilePath <$> relPathDirToFile dir f
 				sz <- getFileSize' f st
 				return $ Just (mkImportLocation relf, (cid, sz))
 

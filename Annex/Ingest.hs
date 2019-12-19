@@ -92,7 +92,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 	nohardlink = withTSDelta $ liftIO . nohardlink'
 
 	nohardlink' delta = do
-		cache <- genInodeCache file delta
+		cache <- genInodeCache (toRawFilePath file) delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file
 			, contentLocation = file
@@ -112,7 +112,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 
 	withhardlink' delta tmpfile = do
 		createLink file tmpfile
-		cache <- genInodeCache tmpfile delta
+		cache <- genInodeCache (toRawFilePath tmpfile) delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file
 			, contentLocation = tmpfile
@@ -136,7 +136,7 @@ ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
 				then addLink f k mic
 				else do
 					mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (contentLocation source)
-					stagePointerFile f mode =<< hashPointerFile k
+					stagePointerFile (toRawFilePath f) mode =<< hashPointerFile k
 			return (Just k)
 
 {- Ingests a locked down file into the annex. Does not update the working
@@ -187,7 +187,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	gounlocked _ _ _ = failure "failed statting file"
 
 	success k mcache s = do
-		genMetaData k (keyFilename source) s
+		genMetaData k (toRawFilePath (keyFilename source)) s
 		return (Just k, mcache)
 
 	failure msg = do
@@ -202,7 +202,8 @@ finishIngestUnlocked key source = do
 
 finishIngestUnlocked' :: Key -> KeySource -> Restage -> Annex ()
 finishIngestUnlocked' key source restage = do
-	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (keyFilename source))
+	Database.Keys.addAssociatedFile key
+		=<< inRepo (toTopFilePath (toRawFilePath (keyFilename source)))
 	populateAssociatedFiles key source restage
 
 {- Copy to any other locations using the same key. -}
@@ -211,7 +212,7 @@ populateAssociatedFiles key source restage = do
 	obj <- calcRepo (gitAnnexLocation key)
 	g <- Annex.gitRepo
 	ingestedf <- flip fromTopFilePath g
-		<$> inRepo (toTopFilePath (keyFilename source))
+		<$> inRepo (toTopFilePath (toRawFilePath (keyFilename source)))
 	afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
 	forM_ (filter (/= ingestedf) afs) $
 		populatePointerFile restage key obj
@@ -226,8 +227,8 @@ cleanCruft source = when (contentLocation source /= keyFilename source) $
 cleanOldKeys :: FilePath -> Key -> Annex ()
 cleanOldKeys file newkey = do
 	g <- Annex.gitRepo
-	ingestedf <- flip fromTopFilePath g <$> inRepo (toTopFilePath file)
-	topf <- inRepo (toTopFilePath file)
+	topf <- inRepo (toTopFilePath (toRawFilePath file))
+	ingestedf <- fromRepo $ fromTopFilePath topf
 	oldkeys <- filter (/= newkey)
 		<$> Database.Keys.getAssociatedKey topf
 	forM_ oldkeys $ \key ->
@@ -243,7 +244,7 @@ cleanOldKeys file newkey = do
 				-- so no need for any recovery.
 				(f:_) -> do
 					ic <- withTSDelta (liftIO . genInodeCache f)
-					void $ linkToAnnex key f ic
+					void $ linkToAnnex key (fromRawFilePath f) ic
 				_ -> logStatus key InfoMissing
 
 {- On error, put the file back so it doesn't seem to have vanished.
@@ -254,7 +255,7 @@ restoreFile file key e = do
 		liftIO $ nukeFile file
 		-- The key could be used by other files too, so leave the
 		-- content in the annex, and make a copy back to the file.
-		obj <- calcRepo $ gitAnnexLocation key
+		obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj file) $
 			warning $ "Unable to restore content of " ++ file ++ "; it should be located in " ++ obj
 		thawContent file
@@ -264,7 +265,7 @@ restoreFile file key e = do
 makeLink :: FilePath -> Key -> Maybe InodeCache -> Annex String
 makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	l <- calcRepo $ gitAnnexLink file key
-	replaceFile file $ makeAnnexLink l
+	replaceFile file $ makeAnnexLink l . toRawFilePath
 
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
@@ -291,7 +292,7 @@ addLink file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 		Annex.Queue.addCommand "add" (ps++[Param "--"]) [file]
 	, do
 		l <- makeLink file key mcache
-		addAnnexLink l file
+		addAnnexLink l (toRawFilePath file)
 	)
 
 {- Parameters to pass to git add, forcing addition of ignored files. -}
@@ -329,8 +330,8 @@ addAnnexedFile file key mtmp = ifM addUnlocked
 			(pure Nothing)
 			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> getFileStatus tmp)
 			mtmp
-		stagePointerFile file mode =<< hashPointerFile key
-		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
+		stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (toRawFilePath file))
 		case mtmp of
 			Just tmp -> ifM (moveAnnex key tmp)
 				( linkunlocked mode >> return True
@@ -349,6 +350,6 @@ addAnnexedFile file key mtmp = ifM addUnlocked
   where
 	linkunlocked mode = linkFromAnnex key file mode >>= \case
 		LinkAnnexFailed -> liftIO $
-			writePointerFile file key mode
+			writePointerFile (toRawFilePath file) key mode
 		_ -> return ()
-	writepointer mode = liftIO $ writePointerFile file key mode
+	writepointer mode = liftIO $ writePointerFile (toRawFilePath file) key mode

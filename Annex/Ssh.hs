@@ -43,6 +43,7 @@ import Annex.LockPool
 #endif
 
 import Control.Concurrent.STM
+import qualified Data.ByteString as S
 
 {- Some ssh commands are fed stdin on a pipe and so should be allowed to
  - consume it. But ssh commands that are not piped stdin should generally
@@ -325,7 +326,7 @@ sizeof_sockaddr_un_sun_path = 100
 {- Note that this looks at the true length of the path in bytes, as it will
  - appear on disk. -}
 valid_unix_socket_path :: FilePath -> Bool
-valid_unix_socket_path f = length (decodeW8 f) < sizeof_sockaddr_un_sun_path
+valid_unix_socket_path f = S.length (encodeBS f) < sizeof_sockaddr_un_sun_path
 
 {- Parses the SSH port, and returns the other OpenSSH options. If
  - several ports are found, the last one takes precedence. -}

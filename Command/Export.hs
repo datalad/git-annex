@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE TupleSections, BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Command.Export where
 
@@ -70,7 +71,7 @@ optParser _ = ExportOptions
 -- To handle renames which swap files, the exported file is first renamed
 -- to a stable temporary name based on the key.
 exportTempName :: ExportKey -> ExportLocation
-exportTempName ek = mkExportLocation $ 
+exportTempName ek = mkExportLocation $ toRawFilePath $
 	".git-annex-tmp-content-" ++ serializeKey (asKey (ek))
 
 seek :: ExportOptions -> CommandSeek
@@ -250,7 +251,7 @@ startExport :: Remote -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> 
 startExport r db cvar allfilledvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (notrecordedpresent ek) $
-		starting ("export " ++ name r) (ActionItemOther (Just f)) $
+		starting ("export " ++ name r) (ActionItemOther (Just (fromRawFilePath f))) $
 			ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) (asKey ek) loc))
 				( next $ cleanupExport r db ek loc False
 				, do
@@ -313,14 +314,14 @@ startUnexport r db f shas = do
 	eks <- forM (filter (/= nullSha) shas) exportKey
 	if null eks
 		then stop
-		else starting ("unexport " ++ name r) (ActionItemOther (Just f')) $
+		else starting ("unexport " ++ name r) (ActionItemOther (Just (fromRawFilePath f'))) $
 			performUnexport r db eks loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 
 startUnexport' :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
-startUnexport' r db f ek = starting ("unexport " ++ name r) (ActionItemOther (Just f')) $
+startUnexport' r db f ek = starting ("unexport " ++ name r) (ActionItemOther (Just (fromRawFilePath f'))) $
 	performUnexport r db [ek] loc
   where
 	loc = mkExportLocation f'
@@ -363,16 +364,15 @@ startRecoverIncomplete r db sha oldf
 	| otherwise = do
 		ek <- exportKey sha
 		let loc = exportTempName ek
-		starting ("unexport " ++ name r) (ActionItemOther (Just (fromExportLocation loc))) $ do
+		starting ("unexport " ++ name r) (ActionItemOther (Just (fromRawFilePath (fromExportLocation loc)))) $ do
 			liftIO $ removeExportedLocation db (asKey ek) oldloc
 			performUnexport r db [ek] loc
   where
-	oldloc = mkExportLocation oldf'
-	oldf' = getTopFilePath oldf
+	oldloc = mkExportLocation $ getTopFilePath oldf
 
 startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
 startMoveToTempName r db f ek = starting ("rename " ++ name r) 
-	(ActionItemOther $ Just $ f' ++ " -> " ++ fromExportLocation tmploc)
+	(ActionItemOther $ Just $ fromRawFilePath f' ++ " -> " ++ fromRawFilePath (fromExportLocation tmploc))
 	(performRename r db ek loc tmploc)
   where
 	loc = mkExportLocation f'
@@ -383,7 +383,7 @@ startMoveFromTempName :: Remote -> ExportHandle -> ExportKey -> TopFilePath -> C
 startMoveFromTempName r db ek f = do
 	let tmploc = exportTempName ek
 	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $
-		starting ("rename " ++ name r) (ActionItemOther (Just (fromExportLocation tmploc ++ " -> " ++ f'))) $
+		starting ("rename " ++ name r) (ActionItemOther (Just (fromRawFilePath (fromExportLocation tmploc) ++ " -> " ++ fromRawFilePath f'))) $
 			performRename r db ek tmploc loc
   where
 	loc = mkExportLocation f'

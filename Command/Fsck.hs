@@ -35,6 +35,7 @@ import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
 import Types.Key
 import Types.ActionItem
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
@@ -102,11 +103,11 @@ checkDeadRepo u =
 	whenM ((==) DeadTrusted <$> lookupTrust u) $
 		earlyWarning "Warning: Fscking a repository that is currently marked as dead."
 
-start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
-start from inc file key = Backend.getBackend file key >>= \case
+start :: Maybe Remote -> Incremental -> RawFilePath -> Key -> CommandStart
+start from inc file key = Backend.getBackend (fromRawFilePath file) key >>= \case
 	Nothing -> stop
 	Just backend -> do
-		numcopies <- getFileNumCopies file
+		numcopies <- getFileNumCopies (fromRawFilePath file)
 		case from of
 			Nothing -> go $ perform key file backend numcopies
 			Just r -> go $ performRemote key afile backend numcopies r
@@ -114,9 +115,9 @@ start from inc file key = Backend.getBackend file key >>= \case
 	go = runFsck inc (mkActionItem (key, afile)) key
 	afile = AssociatedFile (Just file)
 
-perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
+perform :: Key -> RawFilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = do
-	keystatus <- getKeyFileStatus key file
+	keystatus <- getKeyFileStatus key (fromRawFilePath file)
 	check
 		-- order matters
 		[ fixLink key file
@@ -163,7 +164,7 @@ performRemote key afile backend numcopies remote =
 		pid <- liftIO getPID
 		t <- fromRepo gitAnnexTmpObjectDir
 		createAnnexDirectory t
-		let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
+		let tmp = t </> "fsck" ++ show pid ++ "." ++ fromRawFilePath (keyFile key)
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
@@ -203,18 +204,18 @@ check :: [Annex Bool] -> Annex Bool
 check cs = and <$> sequence cs
 
 {- Checks that symlinks points correctly to the annexed content. -}
-fixLink :: Key -> FilePath -> Annex Bool
+fixLink :: Key -> RawFilePath -> Annex Bool
 fixLink key file = do
-	want <- calcRepo $ gitAnnexLink file key
+	want <- calcRepo $ gitAnnexLink (fromRawFilePath file) key
 	have <- getAnnexLinkTarget file
 	maybe noop (go want) have
 	return True
   where
 	go want have
-		| want /= fromInternalGitPath (fromRawFilePath have) = do
+		| want /= fromRawFilePath (fromInternalGitPath have) = do
 			showNote "fixing link"
-			liftIO $ createDirectoryIfMissing True (parentDir file)
-			liftIO $ removeFile file
+			liftIO $ createDirectoryIfMissing True (parentDir (fromRawFilePath file))
+			liftIO $ removeFile (fromRawFilePath file)
 			addAnnexLink want file
 		| otherwise = noop
 
@@ -222,7 +223,7 @@ fixLink key file = do
  - in this repository only. -}
 verifyLocationLog :: Key -> KeyStatus -> ActionItem -> Annex Bool
 verifyLocationLog key keystatus ai = do
-	obj <- calcRepo $ gitAnnexLocation key
+	obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 	present <- if isKeyUnlockedThin keystatus
 		then liftIO (doesFileExist obj)
 		else inAnnex key
@@ -267,7 +268,7 @@ verifyLocationLog' key ai present u updatestatus = do
 			fix InfoMissing
 			warning $
 				"** Based on the location log, " ++
-				actionItemDesc ai ++
+				decodeBS' (actionItemDesc ai) ++
 				"\n** was expected to be present, " ++
 				"but its content is missing."
 			return False
@@ -302,14 +303,14 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = do
 					missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
 					warning $
 						"** Required content " ++
-						actionItemDesc ai ++
+						decodeBS' (actionItemDesc ai) ++
 						" is missing from these repositories:\n" ++
 						missingrequired
 					return False
 verifyRequiredContent _ _ = return True
 
 {- Verifies the associated file records. -}
-verifyAssociatedFiles :: Key -> KeyStatus -> FilePath -> Annex Bool
+verifyAssociatedFiles :: Key -> KeyStatus -> RawFilePath -> Annex Bool
 verifyAssociatedFiles key keystatus file = do
 	when (isKeyUnlockedThin keystatus) $ do
 		f <- inRepo $ toTopFilePath file
@@ -318,7 +319,7 @@ verifyAssociatedFiles key keystatus file = do
 			Database.Keys.addAssociatedFile key f
 	return True
 
-verifyWorkTree :: Key -> FilePath -> Annex Bool
+verifyWorkTree :: Key -> RawFilePath -> Annex Bool
 verifyWorkTree key file = do
 	{- Make sure that a pointer file is replaced with its content,
 	 - when the content is available. -}
@@ -326,12 +327,12 @@ verifyWorkTree key file = do
 	case mk of
 		Just k | k == key -> whenM (inAnnex key) $ do
 			showNote "fixing worktree content"
-			replaceFile file $ \tmp -> do
-				mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+			replaceFile (fromRawFilePath file) $ \tmp -> do
+				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 				ifM (annexThin <$> Annex.getGitConfig)
 					( void $ linkFromAnnex key tmp mode
 					, do
-						obj <- calcRepo $ gitAnnexLocation key
+						obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 						void $ checkedCopyFile key obj tmp mode
 						thawContent tmp
 					)
@@ -348,8 +349,8 @@ checkKeySize :: Key -> KeyStatus -> ActionItem -> Annex Bool
 checkKeySize _ KeyUnlockedThin _ = return True
 checkKeySize key _ ai = do
 	file <- calcRepo $ gitAnnexLocation key
-	ifM (liftIO $ doesFileExist file)
-		( checkKeySizeOr badContent key file ai
+	ifM (liftIO $ R.doesPathExist file)
+		( checkKeySizeOr badContent key (fromRawFilePath file) ai
 		, return True
 		)
 
@@ -375,7 +376,7 @@ checkKeySizeOr bad key file ai = case fromKey keySize key of
 	badsize a b = do
 		msg <- bad key
 		warning $ concat
-			[ actionItemDesc ai
+			[ decodeBS' (actionItemDesc ai)
 			, ": Bad file size ("
 			, compareSizes storageUnits True a b
 			, "); "
@@ -393,11 +394,11 @@ checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
 	case Types.Backend.canUpgradeKey backend of
 		Just a | a key -> do
 			warning $ concat
-				[ actionItemDesc ai
+				[ decodeBS' (actionItemDesc ai)
 				, ": Can be upgraded to an improved key format. "
 				, "You can do so by running: git annex migrate --backend="
 				, decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " "
-				, file
+				, decodeBS' file
 				]
 			return True
 		_ -> return True
@@ -416,10 +417,10 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
  -}
 checkBackend :: Backend -> Key -> KeyStatus -> AssociatedFile -> Annex Bool
 checkBackend backend key keystatus afile = do
-	content <- calcRepo $ gitAnnexLocation key
+	content <- calcRepo (gitAnnexLocation key)
 	ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 		( nocheck
-		, checkBackendOr badContent backend key content ai
+		, checkBackendOr badContent backend key (fromRawFilePath content) ai
 		)
   where
 	nocheck = return True
@@ -448,7 +449,7 @@ checkBackendOr' bad backend key file ai postcheck =
 					unless ok $ do
 						msg <- bad key
 						warning $ concat
-							[ actionItemDesc ai
+							[ decodeBS' (actionItemDesc ai)
 							, ": Bad file content; "
 							, msg
 							]
@@ -460,7 +461,7 @@ checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
 	let (desc, hasafile) = case afile of
 		AssociatedFile Nothing -> (serializeKey key, False)
-		AssociatedFile (Just af) -> (af, True)
+		AssociatedFile (Just af) -> (fromRawFilePath af, True)
 	locs <- loggedLocations key
 	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
 	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
@@ -515,7 +516,7 @@ badContent key = do
 badContentRemote :: Remote -> FilePath -> Key -> Annex String
 badContentRemote remote localcopy key = do
 	bad <- fromRepo gitAnnexBadDir
-	let destbad = bad </> keyFile key
+	let destbad = bad </> fromRawFilePath (keyFile key)
 	movedbad <- ifM (inAnnex key <||> liftIO (doesFileExist destbad))
 		( return False
 		, do
@@ -669,8 +670,8 @@ isKeyUnlockedThin KeyMissing = False
 getKeyStatus :: Key -> Annex KeyStatus
 getKeyStatus key = catchDefaultIO KeyMissing $ do
 	afs <- not . null <$> Database.Keys.getAssociatedFiles key
-	obj <- calcRepo $ gitAnnexLocation key
-	multilink <- ((> 1) . linkCount <$> liftIO (getFileStatus obj))
+	obj <- calcRepo (gitAnnexLocation key)
+	multilink <- ((> 1) . linkCount <$> liftIO (R.getFileStatus obj))
 	return $ if multilink && afs
 		then KeyUnlockedThin
 		else KeyPresent
@@ -680,7 +681,7 @@ getKeyFileStatus key file = do
 	s <- getKeyStatus key
 	case s of
 		KeyUnlockedThin -> catchDefaultIO KeyUnlockedThin $
-			ifM (isJust <$> isAnnexLink file)
+			ifM (isJust <$> isAnnexLink (toRawFilePath file))
 				( return KeyLockedThin
 				, return KeyUnlockedThin
 				)

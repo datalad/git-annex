@@ -119,7 +119,7 @@ pairReqReceived False urlrenderer msg = do
 pairAckReceived :: Bool -> Maybe PairingInProgress -> PairMsg -> [PairingInProgress] -> Assistant [PairingInProgress]
 pairAckReceived True (Just pip) msg cache = do
 	stopSending pip
-	repodir <- repoPath <$> liftAnnex gitRepo
+	repodir <- fromRawFilePath . repoPath <$> liftAnnex gitRepo
 	liftIO $ setupAuthorizedKeys msg repodir
 	finishedLocalPairing msg (inProgressSshKeyPair pip)
 	startSending pip PairDone $ multicastPairMsg

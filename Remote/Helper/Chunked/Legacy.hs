@@ -77,7 +77,7 @@ storeChunks key tmp dest storer recorder finalizer = either onerr return
 		warningIO (show e)
 		return False
 
-	basef = tmp ++ keyFile key
+	basef = tmp ++ fromRawFilePath (keyFile key)
 	tmpdests = map (basef ++ ) chunkStream
 
 {- Given a list of destinations to use, chunks the data according to the

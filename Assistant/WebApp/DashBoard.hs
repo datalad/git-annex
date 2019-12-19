@@ -45,7 +45,7 @@ transfersDisplay = do
 		transferPaused info || isNothing (startedTime info)
 	desc transfer info = case associatedFile info of
 		AssociatedFile Nothing -> serializeKey $ transferKey transfer
-		AssociatedFile (Just af) -> af
+		AssociatedFile (Just af) -> fromRawFilePath af
 
 {- Simplifies a list of transfers, avoiding display of redundant
  - equivilant transfers. -}
@@ -118,7 +118,8 @@ getFileBrowserR = whenM openFileBrowser redirectBack
  - blocking the response to the browser on it. -}
 openFileBrowser :: Handler Bool
 openFileBrowser = do
-	path <- liftIO . absPath =<< liftAnnex (fromRepo Git.repoPath)
+	path <- liftIO . absPath . fromRawFilePath
+		=<< liftAnnex (fromRepo Git.repoPath)
 #ifdef darwin_HOST_OS
 	let cmd = "open"
 	let p = proc cmd [path]

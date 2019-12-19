@@ -54,7 +54,7 @@ withWorkTree d = withAltRepo
 	(\g -> return $ g { location = modlocation (location g), gitGlobalOpts = gitGlobalOpts g ++ disableSmudgeConfig })
 	(\g g' -> g' { location = location g, gitGlobalOpts = gitGlobalOpts g })
   where
-	modlocation l@(Local {}) = l { worktree = Just d }
+	modlocation l@(Local {}) = l { worktree = Just (toRawFilePath d) }
 	modlocation _ = error "withWorkTree of non-local git repo"
 	disableSmudgeConfig = map Param
 		[ "-c", "filter.annex.smudge="
@@ -73,7 +73,8 @@ withWorkTreeRelated :: FilePath -> Annex a -> Annex a
 withWorkTreeRelated d = withAltRepo modrepo unmodrepo
   where
 	modrepo g = liftIO $ do
-		g' <- addGitEnv g "GIT_COMMON_DIR" =<< absPath (localGitDir g)
+		g' <- addGitEnv g "GIT_COMMON_DIR"
+			=<< absPath (fromRawFilePath (localGitDir g))
 		g'' <- addGitEnv g' "GIT_DIR" d
 		return (g'' { gitEnvOverridesGitDir = True })
 	unmodrepo g g' = g'

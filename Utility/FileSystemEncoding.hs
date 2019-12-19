@@ -23,10 +23,6 @@ module Utility.FileSystemEncoding (
 	encodeBL',
 	decodeBS',
 	encodeBS',
-	decodeW8,
-	encodeW8,
-	encodeW8NUL,
-	decodeW8NUL,
 	truncateFilePath,
 	s2w8,
 	w82s,
@@ -47,6 +43,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.UTF8 as S8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 #endif
+import System.FilePath.ByteString (RawFilePath, encodeFilePath, decodeFilePath)
 
 import Utility.Exception
 import Utility.Split
@@ -148,32 +145,38 @@ encodeBS = S8.fromString
 {- Faster version that assumes the string does not contain NUL;
  - if it does it will be truncated before the NUL. -}
 decodeBS' :: S.ByteString -> FilePath
+#ifndef mingw32_HOST_OS
 decodeBS' = encodeW8 . S.unpack
+#else
+decodeBS' = S8.toString
+#endif
 
 encodeBS' :: FilePath -> S.ByteString
+#ifndef mingw32_HOST_OS
 encodeBS' = S.pack . decodeW8
+#else
+encodeBS' = S8.fromString
+#endif
 
 decodeBL' :: L.ByteString -> FilePath
+#ifndef mingw32_HOST_OS
 decodeBL' = encodeW8 . L.unpack
+#else
+decodeBL' = L8.toString
+#endif
 
 encodeBL' :: FilePath -> L.ByteString
+#ifndef mingw32_HOST_OS
 encodeBL' = L.pack . decodeW8
+#else
+encodeBL' = L8.fromString
+#endif
 
-{- Recent versions of the unix package have this alias; defined here
- - for backwards compatibility. -}
-type RawFilePath = S.ByteString
-
-{- Note that the RawFilePath is assumed to never contain NUL,
- - since filename's don't. This should only be used with actual
- - RawFilePaths not arbitrary ByteString that may contain NUL. -}
 fromRawFilePath :: RawFilePath -> FilePath
-fromRawFilePath = decodeBS'
+fromRawFilePath = decodeFilePath
 
-{- Note that the FilePath is assumed to never contain NUL,
- - since filename's don't. This should only be used with actual FilePaths
- - not arbitrary String that may contain NUL. -}
 toRawFilePath :: FilePath -> RawFilePath
-toRawFilePath = encodeBS'
+toRawFilePath = encodeFilePath
 
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -

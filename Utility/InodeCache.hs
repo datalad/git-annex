@@ -43,6 +43,7 @@ module Utility.InodeCache (
 import Common
 import Utility.TimeStamp
 import Utility.QuickCheck
+import qualified Utility.RawFilePath as R
 
 import System.PosixCompat.Types
 import Data.Time.Clock.POSIX
@@ -180,9 +181,9 @@ readInodeCache s = case words s of
 		return $ InodeCache $ InodeCachePrim i sz (MTimeHighRes t)
 	_ -> Nothing
 
-genInodeCache :: FilePath -> TSDelta -> IO (Maybe InodeCache)
+genInodeCache :: RawFilePath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
-	toInodeCache delta f =<< getFileStatus f
+	toInodeCache delta (fromRawFilePath f) =<< R.getFileStatus f
 
 toInodeCache :: TSDelta -> FilePath -> FileStatus -> IO (Maybe InodeCache)
 toInodeCache (TSDelta getdelta) f s
@@ -202,8 +203,8 @@ toInodeCache (TSDelta getdelta) f s
  - Its InodeCache at the time of its creation is written to the cache file,
  - so changes can later be detected. -}
 data SentinalFile = SentinalFile
-	{ sentinalFile :: FilePath
-	, sentinalCacheFile :: FilePath
+	{ sentinalFile :: RawFilePath
+	, sentinalCacheFile :: RawFilePath
 	}
 	deriving (Show)
 
@@ -220,8 +221,8 @@ noTSDelta = TSDelta (pure 0)
 
 writeSentinalFile :: SentinalFile -> IO ()
 writeSentinalFile s = do
-	writeFile (sentinalFile s) ""
-	maybe noop (writeFile (sentinalCacheFile s) . showInodeCache)
+	writeFile (fromRawFilePath (sentinalFile s)) ""
+	maybe noop (writeFile (fromRawFilePath (sentinalCacheFile s)) . showInodeCache)
 		=<< genInodeCache (sentinalFile s) noTSDelta
 
 data SentinalStatus = SentinalStatus
@@ -250,7 +251,7 @@ checkSentinalFile s = do
 				Just new -> return $ calc old new
   where
 	loadoldcache = catchDefaultIO Nothing $
-		readInodeCache <$> readFile (sentinalCacheFile s)
+		readInodeCache <$> readFile (fromRawFilePath (sentinalCacheFile s))
 	gennewcache = genInodeCache (sentinalFile s) noTSDelta
 	calc (InodeCache (InodeCachePrim oldinode oldsize oldmtime)) (InodeCache (InodeCachePrim newinode newsize newmtime)) =
 		SentinalStatus (not unchanged) tsdelta
@@ -275,7 +276,7 @@ checkSentinalFile s = do
 	dummy = SentinalStatus True noTSDelta
 
 sentinalFileExists :: SentinalFile -> IO Bool
-sentinalFileExists s = allM doesFileExist [sentinalCacheFile s, sentinalFile s]
+sentinalFileExists s = allM R.doesPathExist [sentinalCacheFile s, sentinalFile s]
 
 instance Arbitrary InodeCache where
 	arbitrary =

@@ -168,7 +168,7 @@ test st r k = catMaybes
 		get
 	, Just $ check "fsck downloaded object" fsck
 	, Just $ check "retrieveKeyFile resume from 33%" $ do
-		loc <- Annex.calcRepo (gitAnnexLocation k)
+		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
 			sz <- hFileSize h
@@ -184,7 +184,7 @@ test st r k = catMaybes
 		get
 	, Just $ check "fsck downloaded object" fsck
 	, Just $ check "retrieveKeyFile resume from end" $ do
-		loc <- Annex.calcRepo (gitAnnexLocation k)
+		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
 		lockContentForRemoval k removeAnnex
@@ -236,11 +236,11 @@ testExportTree st (Just _) ea k1 k2 =
 	]
   where
 	testexportdirectory = "testremote-export"
-	testexportlocation = mkExportLocation (testexportdirectory </> "location")
+	testexportlocation = mkExportLocation (toRawFilePath (testexportdirectory </> "location"))
 	check desc a = testCase desc $
 		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
 	storeexport k = do
-		loc <- Annex.calcRepo (gitAnnexLocation k)
+		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
 	retrieveexport k = withTmpFile "exported" $ \tmp h -> do
 		liftIO $ hClose h
@@ -252,7 +252,7 @@ testExportTree st (Just _) ea k1 k2 =
 	removeexport k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory = case Remote.removeExportDirectory ea of
 		Nothing -> return True
-		Just a -> a (mkExportDirectory testexportdirectory)
+		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
 
 testUnavailable :: Annex.AnnexState -> Remote -> Key -> [TestTree]
 testUnavailable st r k =
@@ -326,7 +326,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 	return k
 
 getReadonlyKey :: Remote -> FilePath -> Annex Key
-getReadonlyKey r f = lookupFile f >>= \case
+getReadonlyKey r f = lookupFile (toRawFilePath f) >>= \case
 	Nothing -> giveup $ f ++ " is not an annexed file"
 	Just k -> do
 		unlessM (inAnnex k) $

@@ -16,7 +16,7 @@ upgrade = do
 	showAction "v0 to v1"
 
 	-- do the reorganisation of the key files
-	olddir <- fromRepo gitAnnexDir
+	olddir <- fromRawFilePath <$> fromRepo gitAnnexDir
 	keys <- getKeysPresent0 olddir
 	forM_ keys $ \k -> moveAnnex k $ olddir </> keyFile0 k
 

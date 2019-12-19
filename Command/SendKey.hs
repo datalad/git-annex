@@ -46,7 +46,8 @@ start key = do
 fieldTransfer :: Direction -> Key -> (MeterUpdate -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do
 	liftIO $ debugM "fieldTransfer" "transfer start"
-	afile <- AssociatedFile <$> Fields.getField Fields.associatedFile
+	afile <- AssociatedFile . (fmap toRawFilePath)
+		<$> Fields.getField Fields.associatedFile
 	ok <- maybe (a $ const noop)
 		-- Using noRetry here because we're the sender.
 		(\u -> runner (Transfer direction (toUUID u) (fromKey id key)) afile noRetry a)

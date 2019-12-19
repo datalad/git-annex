@@ -227,7 +227,7 @@ badBranches missing r = filterM isbad =<< getAllRefs r
  - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = getAllRefs' (localGitDir r </> "refs")
+getAllRefs r = getAllRefs' (fromRawFilePath (localGitDir r) </> "refs")
 
 getAllRefs' :: FilePath -> IO [Ref]
 getAllRefs' refdir = do
@@ -245,13 +245,13 @@ explodePackedRefsFile r = do
 		nukeFile f
   where
 	makeref (sha, ref) = do
-		let dest = localGitDir r </> fromRef ref
+		let dest = fromRawFilePath (localGitDir r) </> fromRef ref
 		createDirectoryIfMissing True (parentDir dest)
 		unlessM (doesFileExist dest) $
 			writeFile dest (fromRef sha)
 
 packedRefsFile :: Repo -> FilePath
-packedRefsFile r = localGitDir r </> "packed-refs"
+packedRefsFile r = fromRawFilePath (localGitDir r) </> "packed-refs"
 
 parsePacked :: String -> Maybe (Sha, Ref)
 parsePacked l = case words l of
@@ -263,7 +263,7 @@ parsePacked l = case words l of
 {- git-branch -d cannot be used to remove a branch that is directly
  - pointing to a corrupt commit. -}
 nukeBranchRef :: Branch -> Repo -> IO ()
-nukeBranchRef b r = nukeFile $ localGitDir r </> fromRef b
+nukeBranchRef b r = nukeFile $ fromRawFilePath (localGitDir r) </> fromRef b
 
 {- Finds the most recent commit to a branch that does not need any
  - of the missing objects. If the input branch is good as-is, returns it.
@@ -284,7 +284,7 @@ findUncorruptedCommit missing goodcommits branch r = do
 				, Param "--format=%H"
 				, Param (fromRef branch)
 				] r
-			let branchshas = catMaybes $ map extractSha ls
+			let branchshas = catMaybes $ map (extractSha . decodeBL) ls
 			reflogshas <- RefLog.get branch r
 			-- XXX Could try a bit harder here, and look
 			-- for uncorrupted old commits in branches in the
@@ -313,7 +313,7 @@ verifyCommit missing goodcommits commit r
 			, Param "--format=%H %T"
 			, Param (fromRef commit)
 			] r
-		let committrees = map parse ls
+		let committrees = map (parse . decodeBL) ls
 		if any isNothing committrees || null committrees
 			then do
 				void cleanup
@@ -342,7 +342,7 @@ verifyTree missing treesha r
 	| S.member treesha missing = return False
 	| otherwise = do
 		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams LsTree.LsTreeRecursive treesha []) r
-		let objshas = map (LsTree.sha . LsTree.parseLsTree) ls
+		let objshas = mapMaybe (LsTree.sha <$$> eitherToMaybe . LsTree.parseLsTree) ls
 		if any (`S.member` missing) objshas
 			then do
 				void cleanup
@@ -370,7 +370,7 @@ checkIndexFast r = do
 	length indexcontents `seq` cleanup
 
 missingIndex :: Repo -> IO Bool
-missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
+missingIndex r = not <$> doesFileExist (fromRawFilePath (localGitDir r) </> "index")
 
 {- Finds missing and ok files staged in the index. -}
 partitionIndex :: Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
@@ -394,12 +394,12 @@ rewriteIndex r
 			UpdateIndex.streamUpdateIndex r
 				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
-		return $ map fst3 bad
+		return $ map (fromRawFilePath . fst3) bad
   where
 	reinject (file, Just sha, Just mode) = case toTreeItemType mode of
 		Nothing -> return Nothing
 		Just treeitemtype -> Just <$>
-			UpdateIndex.stageFile sha treeitemtype file r
+			UpdateIndex.stageFile sha treeitemtype (fromRawFilePath file) r
 	reinject _ = return Nothing
 
 newtype GoodCommits = GoodCommits (S.Set Sha)
@@ -446,7 +446,7 @@ preRepair g = do
 		let f = indexFile g
 		void $ tryIO $ allowWrite f
   where
-	headfile = localGitDir g </> "HEAD"
+	headfile = fromRawFilePath (localGitDir g) </> "HEAD"
 	validhead s = "ref: refs/" `isPrefixOf` s || isJust (extractSha s)
 
 {- Put it all together. -}

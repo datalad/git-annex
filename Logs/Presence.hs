@@ -30,7 +30,7 @@ import Git.Types (RefDate)
 
 {- Adds a LogLine to the log, removing any LogLines that are obsoleted by
  - adding it. -}
-addLog :: FilePath -> LogLine -> Annex ()
+addLog :: RawFilePath -> LogLine -> Annex ()
 addLog file line = Annex.Branch.change file $ \b ->
 	buildLog $ compactLog (line : parseLog b)
 
@@ -38,14 +38,14 @@ addLog file line = Annex.Branch.change file $ \b ->
  - older timestamp, that LogLine is preserved, rather than updating the log
  - with a newer timestamp.
  -}
-maybeAddLog :: FilePath -> LogLine -> Annex ()
+maybeAddLog :: RawFilePath -> LogLine -> Annex ()
 maybeAddLog file line = Annex.Branch.maybeChange file $ \s -> do
 	m <- insertNewStatus line $ logMap $ parseLog s
 	return $ buildLog $ mapLog m
 
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
-readLog :: FilePath -> Annex [LogLine]
+readLog :: RawFilePath -> Annex [LogLine]
 readLog = parseLog <$$> Annex.Branch.get
 
 {- Generates a new LogLine with the current time. -}
@@ -55,10 +55,10 @@ logNow s i = do
 	return $ LogLine c s i
 
 {- Reads a log and returns only the info that is still in effect. -}
-currentLogInfo :: FilePath -> Annex [LogInfo]
+currentLogInfo :: RawFilePath -> Annex [LogInfo]
 currentLogInfo file = map info <$> currentLog file
 
-currentLog :: FilePath -> Annex [LogLine]
+currentLog :: RawFilePath -> Annex [LogLine]
 currentLog file = filterPresent <$> readLog file
 
 {- Reads a historical version of a log and returns the info that was in
@@ -66,6 +66,6 @@ currentLog file = filterPresent <$> readLog file
  -
  - The date is formatted as shown in gitrevisions man page.
  -}
-historicalLogInfo :: RefDate -> FilePath -> Annex [LogInfo]
+historicalLogInfo :: RefDate -> RawFilePath -> Annex [LogInfo]
 historicalLogInfo refdate file = map info . filterPresent . parseLog
 	<$> Annex.Branch.getHistorical refdate file

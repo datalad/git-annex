@@ -46,7 +46,9 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 	umap <- uuidDescMap
 	trustmap <- trustMapLoad
 		
-	file <- (</>) <$> fromRepo gitAnnexDir <*> pure "map.dot"
+	file <- (</>)
+		<$> fromRepo (fromRawFilePath . gitAnnexDir)
+		<*> pure "map.dot"
 
 	liftIO $ writeFile file (drawMap rs trustmap umap)
 	next $
@@ -176,7 +178,8 @@ absRepo reference r
 	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
 	| Git.repoIsUrl r = return r
 	| otherwise = liftIO $ do
-		r' <- Git.Construct.fromAbsPath =<< absPath (Git.repoPath r)
+		r' <- Git.Construct.fromAbsPath
+			=<< absPath (fromRawFilePath (Git.repoPath r))
 		r'' <- safely $ flip Annex.eval Annex.gitRepo =<< Annex.new r'
 		return (fromMaybe r' r'')
 
@@ -234,7 +237,7 @@ tryScan r
 	  where
 		remotecmd = "sh -c " ++ shellEscape
 			(cddir ++ " && " ++ "git config --null --list")
-		dir = Git.repoPath r
+		dir = fromRawFilePath $ Git.repoPath r
 		cddir
 			| "/~" `isPrefixOf` dir =
 				let (userhome, reldir) = span (/= '/') (drop 1 dir)

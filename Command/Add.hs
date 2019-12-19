@@ -19,6 +19,7 @@ import Annex.Link
 import Annex.Tmp
 import Messages.Progress
 import Git.FilePath
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = notBareRepo $ 
@@ -50,7 +51,7 @@ optParser desc = AddOptions
 seek :: AddOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
 	matcher <- largeFilesMatcher
-	let gofile file = ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
+	let gofile file = ifM (checkFileMatcher matcher (fromRawFilePath file) <||> Annex.getState Annex.force)
 		( start file
 		, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
 			( startSmall file
@@ -61,7 +62,7 @@ seek o = startConcurrency commandStages $ do
 		Batch fmt
 			| updateOnly o ->
 				giveup "--update --batch is not supported"
-			| otherwise -> batchFilesMatching fmt gofile
+			| otherwise -> batchFilesMatching fmt (gofile . toRawFilePath)
 		NoBatch -> do
 			l <- workTreeItems (addThese o)
 			let go a = a (commandAction . gofile) l
@@ -71,28 +72,28 @@ seek o = startConcurrency commandStages $ do
 			go withUnmodifiedUnlockedPointers
 
 {- Pass file off to git-add. -}
-startSmall :: FilePath -> CommandStart
+startSmall :: RawFilePath -> CommandStart
 startSmall file = starting "add" (ActionItemWorkTreeFile file) $
 	next $ addSmall file
 
-addSmall :: FilePath -> Annex Bool
+addSmall :: RawFilePath -> Annex Bool
 addSmall file = do
 	showNote "non-large file; adding content to git repository"
 	addFile file
 
-addFile :: FilePath -> Annex Bool
+addFile :: RawFilePath -> Annex Bool
 addFile file = do
 	ps <- forceParams
-	Annex.Queue.addCommand "add" (ps++[Param "--"]) [file]
+	Annex.Queue.addCommand "add" (ps++[Param "--"]) [fromRawFilePath file]
 	return True
 
-start :: FilePath -> CommandStart
+start :: RawFilePath -> CommandStart
 start file = do
 	mk <- liftIO $ isPointerFile file
 	maybe go fixuppointer mk
   where
 	go = ifAnnexed file addpresent add
-	add = liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
+	add = liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 		Nothing -> stop
 		Just s 
 			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
@@ -102,13 +103,13 @@ start file = do
 						then next $ addFile file
 						else perform file
 	addpresent key = 
-		liftIO (catchMaybeIO $ getSymbolicLinkStatus file) >>= \case
+		liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
 			_ -> add
 	fixuplink key = starting "add" (ActionItemWorkTreeFile file) $ do
 		-- the annexed symlink is present but not yet added to git
-		liftIO $ removeFile file
-		addLink file key Nothing
+		liftIO $ removeFile (fromRawFilePath file)
+		addLink (fromRawFilePath file) key Nothing
 		next $
 			cleanup key =<< inAnnex key
 	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) $ do
@@ -116,14 +117,14 @@ start file = do
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		next $ addFile file
 
-perform :: FilePath -> CommandPerform
+perform :: RawFilePath -> CommandPerform
 perform file = withOtherTmp $ \tmpdir -> do
 	lockingfile <- not <$> addUnlocked
 	let cfg = LockDownConfig
 		{ lockingFile = lockingfile
 		, hardlinkFileTmpDir = Just tmpdir
 		}
-	ld <- lockDown cfg file
+	ld <- lockDown cfg (fromRawFilePath file)
 	let sizer = keySource <$> ld
 	v <- metered Nothing sizer $ \_meter meterupdate ->
 		ingestAdd meterupdate ld

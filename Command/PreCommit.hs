@@ -53,11 +53,11 @@ seek ps = lockPreCommitHook $ do
 			(removeViewMetaData v)
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
-addViewMetaData v f k = starting "metadata" (mkActionItem (k, f)) $
+addViewMetaData v f k = starting "metadata" (mkActionItem (k, toRawFilePath f)) $
 	next $ changeMetaData k $ fromView v f
 
 removeViewMetaData :: View -> ViewedFile -> Key -> CommandStart
-removeViewMetaData v f k = starting "metadata" (mkActionItem (k, f)) $
+removeViewMetaData v f k = starting "metadata" (mkActionItem (k, toRawFilePath f)) $
 	next $ changeMetaData k $ unsetMetaData $ fromView v f
 
 changeMetaData :: Key -> MetaData -> CommandCleanup

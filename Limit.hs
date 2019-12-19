@@ -33,6 +33,7 @@ import Git.Types (RefDate(..))
 import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
@@ -94,10 +95,10 @@ matchGlobFile :: String -> MatchInfo -> Annex Bool
 matchGlobFile glob = go
   where
 	cglob = compileGlob glob CaseSensative -- memoized
-	go (MatchingFile fi) = pure $ matchGlob cglob (matchFile fi)
+	go (MatchingFile fi) = pure $ matchGlob cglob (fromRawFilePath (matchFile fi))
 	go (MatchingInfo p) = matchGlob cglob <$> getInfo (providedFilePath p)
 	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
-	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob af
+	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob (fromRawFilePath af)
 
 addMimeType :: String -> Annex ()
 addMimeType = addMagicLimit "mimetype" getMagicMimeType providedMimeType
@@ -110,14 +111,15 @@ addMagicLimit limitname querymagic selectprovidedinfo glob = do
 	magic <- liftIO initMagicMime
 	addLimit $ matchMagic limitname querymagic' selectprovidedinfo magic glob
   where
-	querymagic' magic f = liftIO (isPointerFile f) >>= \case
+	querymagic' magic f = liftIO (isPointerFile (toRawFilePath f)) >>= \case
 		-- Avoid getting magic of a pointer file, which would
 		-- wrongly be detected as text.
 		Just _ -> return Nothing
 		-- When the file is an annex symlink, get magic of the
 		-- object file.
-		Nothing -> isAnnexLink f >>= \case
-			Just k -> withObjectLoc k $ querymagic magic
+		Nothing -> isAnnexLink (toRawFilePath f) >>= \case
+			Just k -> withObjectLoc k $
+				querymagic magic . fromRawFilePath
 			Nothing -> querymagic magic f
 
 matchMagic :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> Maybe Magic -> MkLimit Annex
@@ -127,7 +129,7 @@ matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = Right $ 
 	go (MatchingKey _ _) = pure False
 	go (MatchingFile fi) = catchBoolIO $
 		maybe False (matchGlob cglob)
-			<$> querymagic magic (currFile fi)
+			<$> querymagic magic (fromRawFilePath (currFile fi))
 	go (MatchingInfo p) =
 		matchGlob cglob <$> getInfo (selectprovidedinfo p)
 matchMagic limitname _ _ Nothing _ = 
@@ -146,7 +148,7 @@ matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
 	islocked <- isPointerFile (currFile fi) >>= \case
 		Just _key -> return False
 		Nothing -> isSymbolicLink
-			<$> getSymbolicLinkStatus (currFile fi)
+			<$> getSymbolicLinkStatus (fromRawFilePath (currFile fi))
 	return (islocked == wantlocked)
 
 {- Adds a limit to skip files not believed to be present
@@ -190,9 +192,9 @@ limitPresent u _ = checkKey $ \key -> do
 limitInDir :: FilePath -> MatchFiles Annex
 limitInDir dir = const go
   where
-	go (MatchingFile fi) = checkf $ matchFile fi
+	go (MatchingFile fi) = checkf $ fromRawFilePath $ matchFile fi
 	go (MatchingKey _ (AssociatedFile Nothing)) = return False
-	go (MatchingKey _ (AssociatedFile (Just af))) = checkf af
+	go (MatchingKey _ (AssociatedFile (Just af))) = checkf (fromRawFilePath af)
 	go (MatchingInfo p) = checkf =<< getInfo (providedFilePath p)
 	checkf = return . elem dir . splitPath . takeDirectory
 
@@ -239,7 +241,8 @@ limitLackingCopies approx want = case readish want of
 		NumCopies numcopies <- if approx
 			then approxNumCopies
 			else case mi of
-				MatchingFile fi -> getGlobalFileNumCopies $ matchFile fi
+				MatchingFile fi -> getGlobalFileNumCopies $
+					fromRawFilePath $ matchFile fi
 				MatchingKey _ _ -> approxNumCopies
 				MatchingInfo {} -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
@@ -321,7 +324,8 @@ limitSize lb vs s = case readSize dataUnits s of
 			Just key -> checkkey sz key
 			Nothing -> return False
 		LimitDiskFiles -> do
-			filesize <- liftIO $ catchMaybeIO $ getFileSize (currFile fi)
+			filesize <- liftIO $ catchMaybeIO $
+				getFileSize (fromRawFilePath (currFile fi))
 			return $ filesize `vs` Just sz
 	go sz _ (MatchingKey key _) = checkkey sz key
 	go sz _ (MatchingInfo p) =
@@ -361,7 +365,7 @@ addAccessedWithin duration = do
   where
 	check now k = inAnnexCheck k $ \f ->
 		liftIO $ catchDefaultIO False $ do
-			s <- getFileStatus f
+			s <- R.getFileStatus f
 			let accessed = realToFrac (accessTime s)
 			let delta = now - accessed
 			return $ delta <= secs

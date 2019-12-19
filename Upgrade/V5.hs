@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Upgrade.V5 where
 
 import Annex.Common
@@ -119,8 +121,8 @@ upgradeDirectWorkTree = do
 			Just k -> do
 				stagePointerFile f Nothing =<< hashPointerFile k
 				ifM (isJust <$> getAnnexLinkTarget f)
-					( writepointer f k
-					, fromdirect f k
+					( writepointer (fromRawFilePath f) k
+					, fromdirect (fromRawFilePath f) k
 					)
 				Database.Keys.addAssociatedFile k
 					=<< inRepo (toTopFilePath f)
@@ -133,7 +135,7 @@ upgradeDirectWorkTree = do
 			-- is just not populated with it. Since the work tree
 			-- file is recorded as an associated file, things will
 			-- still work that way, it's just not ideal.
-			ic <- withTSDelta (liftIO . genInodeCache f)
+			ic <- withTSDelta (liftIO . genInodeCache (toRawFilePath f))
 			void $ Content.linkToAnnex k f ic
 		, unlessM (Content.inAnnex k) $ do
 			-- Worktree file was deleted or modified;

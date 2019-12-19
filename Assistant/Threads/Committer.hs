@@ -286,7 +286,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	  	ks = keySource ld
 		doadd = sanitycheck ks $ do
 			(mkey, _mcache) <- liftAnnex $ do
-				showStart "add" $ keyFilename ks
+				showStart "add" $ toRawFilePath $ keyFilename ks
 				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
 			maybe (failedingest change) (done change $ keyFilename ks) mkey
 	add _ _ = return Nothing
@@ -308,7 +308,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 		if M.null m
 			then forM toadd (add cfg)
 			else forM toadd $ \c -> do
-				mcache <- liftIO $ genInodeCache (changeFile c) delta
+				mcache <- liftIO $ genInodeCache (toRawFilePath (changeFile c)) delta
 				case mcache of
 					Nothing -> add cfg c
 					Just cache ->
@@ -325,7 +325,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
 		mks <- forM (filter isRmChange l) $ \c ->
-			catKeyFile $ changeFile c
+			catKeyFile $ toRawFilePath $ changeFile c
 		M.fromList . concat <$> mapM mkpairs (catMaybes mks)
 	  where
 		mkpairs k = map (\c -> (inodeCacheToKey ct c, k)) <$>
@@ -339,7 +339,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	done change file key = liftAnnex $ do
 		logStatus key InfoPresent
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
-		stagePointerFile file mode =<< hashPointerFile key
+		stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
 		showEndOk
 		return $ Just $ finishedChange change key
 
@@ -457,5 +457,5 @@ checkChangeContent change@(Change { changeInfo = i }) =
 			handleDrops "file renamed" present k af []
   where
 	f = changeFile change
-	af = AssociatedFile (Just f)
+	af = AssociatedFile (Just (toRawFilePath f))
 checkChangeContent _ = noop

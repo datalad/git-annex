@@ -57,13 +57,13 @@ seek :: MoveOptions -> CommandSeek
 seek o = startConcurrency transferStages $ do
 	let go = whenAnnexed $ start (fromToOptions o) (removeWhen o)
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt go
+		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) False
 			(commandAction . startKey (fromToOptions o) (removeWhen o))
 			(withFilesInGit (commandAction . go))
 			=<< workTreeItems (moveFiles o)
 
-start :: FromToHereOptions -> RemoveWhen -> FilePath -> Key -> CommandStart
+start :: FromToHereOptions -> RemoveWhen -> RawFilePath -> Key -> CommandStart
 start fromto removewhen f k = start' fromto removewhen afile k ai
   where
 	afile = AssociatedFile (Just f)

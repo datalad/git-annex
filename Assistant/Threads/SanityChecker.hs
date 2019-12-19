@@ -155,10 +155,11 @@ dailyCheck urlrenderer = do
 	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo False ["."] g
 	now <- liftIO getPOSIXTime
 	forM_ unstaged $ \file -> do
-		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
+		let file' = fromRawFilePath file
+		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file'
 		case ms of
 			Just s	| toonew (statusChangeTime s) now -> noop
-				| isSymbolicLink s -> addsymlink file ms
+				| isSymbolicLink s -> addsymlink file' ms
 			_ -> noop
 	liftIO $ void cleanup
 
@@ -268,5 +269,5 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
 checkRepoExists :: Assistant ()
 checkRepoExists = do
 	g <- liftAnnex gitRepo
-	liftIO $ unlessM (doesDirectoryExist $ Git.repoPath g) $
+	liftIO $ unlessM (doesDirectoryExist $ fromRawFilePath $ Git.repoPath g) $
 		terminateSelf

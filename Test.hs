@@ -624,7 +624,7 @@ test_lock_force = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	git_annex "unlock" [annexedfile] @? "unlock failed"
 	annexeval $ do
-		Just k <- Annex.WorkTree.lookupFile annexedfile
+		Just k <- Annex.WorkTree.lookupFile (toRawFilePath annexedfile)
 		Database.Keys.removeInodeCaches k
 		Database.Keys.closeDb
 		liftIO . nukeFile =<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
@@ -1146,7 +1146,7 @@ test_mixed_conflict_resolution = do
 			@? (what ++ " too many variant files in: " ++ show v)
 		indir d $ do
 			git_annex "get" (conflictor:v) @? ("get failed in " ++ what)
-			git_annex_expectoutput "find" [conflictor] [Git.FilePath.toInternalGitPath subfile]
+			git_annex_expectoutput "find" [conflictor] [fromRawFilePath (Git.FilePath.toInternalGitPath (toRawFilePath subfile))]
 			git_annex_expectoutput "find" v v
 
 {- Check merge conflict resolution when both repos start with an annexed
@@ -1343,7 +1343,7 @@ test_conflict_resolution_symlink_bit = unlessM (hasUnlockedFiles <$> getTestMode
   where
 	conflictor = "conflictor"
 	check_is_link f what = do
-		git_annex_expectoutput "find" ["--include=*", f] [Git.FilePath.toInternalGitPath f]
+		git_annex_expectoutput "find" ["--include=*", f] [fromRawFilePath (Git.FilePath.toInternalGitPath (toRawFilePath f))]
 		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
 		all (\i -> Git.Types.toTreeItemType (Git.LsTree.mode i) == Just Git.Types.TreeSymlink) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
@@ -1598,7 +1598,7 @@ test_crypto = do
 			(c,k) <- annexeval $ do
 				uuid <- Remote.nameToUUID "foo"
 				rs <- Logs.Remote.readRemoteLog
-				Just k <- Annex.WorkTree.lookupFile annexedfile
+				Just k <- Annex.WorkTree.lookupFile (toRawFilePath annexedfile)
 				return (fromJust $ M.lookup uuid rs, k)
 			let key = if scheme `elem` ["hybrid","pubkey"]
 					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
@@ -1638,7 +1638,8 @@ test_crypto = do
 		checkFile mvariant filename =
 			Utility.Gpg.checkEncryptionFile gpgcmd filename $
 				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
-		serializeKeys cipher = Annex.Locations.keyPaths .
+		serializeKeys cipher = map fromRawFilePath . 
+			Annex.Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
 test_crypto = putStrLn "gpg testing not implemented on Windows"

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.AutoCorrect where
 
 import Common
@@ -44,7 +46,7 @@ fuzzymatches input showchoice choices = fst $ unzip $
  -}
 prepare :: String -> (c -> String) -> [c] -> Maybe Repo -> IO ()
 prepare input showmatch matches r =
-	case readish . Git.Config.get "help.autocorrect" "0" =<< r of
+	case readish . fromConfigValue . Git.Config.get "help.autocorrect" "0" =<< r of
 		Just n
 			| n == 0 -> list
 			| n < 0 -> warn Nothing

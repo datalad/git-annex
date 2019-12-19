@@ -54,7 +54,7 @@ checkFileMatcher' getmatcher file notconfigured = do
 	matcher <- getmatcher file
 	checkMatcher matcher Nothing afile S.empty notconfigured d
   where
-	afile = AssociatedFile (Just file)
+	afile = AssociatedFile (Just (toRawFilePath file))
 	-- checkMatcher will never use this, because afile is provided.
 	d = return True
 
@@ -72,7 +72,7 @@ checkMatcher' :: FileMatcher Annex -> MatchInfo -> AssumeNotPresent -> Annex Boo
 checkMatcher' matcher mi notpresent =
 	matchMrun matcher $ \a -> a notpresent mi
 
-fileMatchInfo :: FilePath -> Annex MatchInfo
+fileMatchInfo :: RawFilePath -> Annex MatchInfo
 fileMatchInfo file = do
 	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
 	return $ MatchingFile FileInfo

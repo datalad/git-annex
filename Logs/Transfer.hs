@@ -31,7 +31,7 @@ describeTransfer :: Transfer -> TransferInfo -> String
 describeTransfer t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t
-	, actionItemDesc $ ActionItemAssociatedFile
+	, decodeBS' $ actionItemDesc $ ActionItemAssociatedFile
 		(associatedFile info)
 		(transferKey t)
 	, show $ bytesComplete info
@@ -195,12 +195,12 @@ recordFailedTransfer t info = do
 transferFile :: Transfer -> Git.Repo -> FilePath
 transferFile (Transfer direction u kd) r = transferDir direction r
 	</> filter (/= '/') (fromUUID u)
-	</> keyFile (mkKey (const kd))
+	</> fromRawFilePath (keyFile (mkKey (const kd)))
 
 {- The transfer information file to use to record a failed Transfer -}
 failedTransferFile :: Transfer -> Git.Repo -> FilePath
 failedTransferFile (Transfer direction u kd) r = failedTransferDir u direction r
-	</> keyFile (mkKey (const kd))
+	</> fromRawFilePath (keyFile (mkKey (const kd)))
 
 {- The transfer lock file corresponding to a given transfer info file. -}
 transferLockFile :: FilePath -> FilePath
@@ -215,7 +215,7 @@ parseTransferFile file
 		[direction, u, key] -> Transfer
 			<$> parseDirection direction
 			<*> pure (toUUID u)
-			<*> fmap (fromKey id) (fileKey key)
+			<*> fmap (fromKey id) (fileKey (toRawFilePath key))
 		_ -> Nothing
   where
 	bits = splitDirectories file
@@ -245,7 +245,7 @@ writeTransferInfo info = unlines
 #endif
 	-- comes last; arbitrary content
 	, let AssociatedFile afile = associatedFile info
-	  in fromMaybe "" afile
+	  in maybe "" fromRawFilePath afile
 	]
 
 readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
@@ -263,7 +263,7 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure Nothing
 	<*> pure Nothing
 	<*> bytes
-	<*> pure (AssociatedFile (if null filename then Nothing else Just filename))
+	<*> pure (AssociatedFile (if null filename then Nothing else Just (toRawFilePath filename)))
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS

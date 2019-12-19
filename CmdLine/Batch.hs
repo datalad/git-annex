@@ -102,7 +102,8 @@ batchFilesMatching :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
 batchFilesMatching fmt a = do
 	matcher <- getMatcher
 	batchStart fmt $ \f ->
-		ifM (matcher $ MatchingFile $ FileInfo f f)
+		let f' = toRawFilePath f
+		in ifM (matcher $ MatchingFile $ FileInfo f' f')
 			( a f
 			, return Nothing
 			)

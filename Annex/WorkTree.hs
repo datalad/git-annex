@@ -23,6 +23,7 @@ import Database.Types
 import qualified Database.Keys
 import qualified Database.Keys.SQL
 import Config
+import qualified Utility.RawFilePath as R
 
 {- Looks up the key corresponding to an annexed file in the work tree,
  - by examining what the file links to.
@@ -33,35 +34,35 @@ import Config
  - When in an adjusted branch that may have hidden the file, looks for a
  - pointer to a key in the original branch.
  -}
-lookupFile :: FilePath -> Annex (Maybe Key)
+lookupFile :: RawFilePath -> Annex (Maybe Key)
 lookupFile = lookupFile' catkeyfile
   where
 	catkeyfile file =
-		ifM (liftIO $ doesFileExist file)
+		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
 			( catKeyFile file
 			, catKeyFileHidden file =<< getCurrentBranch
 			)
 
-lookupFileNotHidden :: FilePath -> Annex (Maybe Key)
+lookupFileNotHidden :: RawFilePath -> Annex (Maybe Key)
 lookupFileNotHidden = lookupFile' catkeyfile
   where
 	catkeyfile file =
-		ifM (liftIO $ doesFileExist file)
+		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
 			( catKeyFile file
 			, return Nothing
 			)
 
-lookupFile' :: (FilePath -> Annex (Maybe Key)) -> FilePath -> Annex (Maybe Key)
+lookupFile' :: (RawFilePath -> Annex (Maybe Key)) -> RawFilePath -> Annex (Maybe Key)
 lookupFile' catkeyfile file = isAnnexLink file >>= \case
 	Just key -> return (Just key)
 	Nothing -> catkeyfile file
 
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key on to it. -}
-whenAnnexed :: (FilePath -> Key -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
+whenAnnexed :: (RawFilePath -> Key -> Annex (Maybe a)) -> RawFilePath -> Annex (Maybe a)
 whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
-ifAnnexed :: FilePath -> (Key -> Annex a) -> Annex a -> Annex a
+ifAnnexed :: RawFilePath -> (Key -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< lookupFile file
 
 {- Find all unlocked files and update the keys database for them. 
@@ -98,14 +99,16 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 			f <- fromRepo $ fromTopFilePath tf
 			liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> do
-					destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f
-					ic <- replaceFile f $ \tmp ->
+					destmode <- liftIO $ catchMaybeIO $
+						fileMode <$> R.getFileStatus f
+					ic <- replaceFile (fromRawFilePath f) $ \tmp -> do
+						let tmp' = toRawFilePath tmp
 						linkFromAnnex k tmp destmode >>= \case
 							LinkAnnexOk -> 
-								withTSDelta (liftIO . genInodeCache tmp)
+								withTSDelta (liftIO . genInodeCache tmp')
 							LinkAnnexNoop -> return Nothing
 							LinkAnnexFailed -> liftIO $ do
-								writePointerFile tmp k destmode
+								writePointerFile tmp' k destmode
 								return Nothing
 					maybe noop (restagePointerFile (Restage True) f) ic
 				_ -> noop

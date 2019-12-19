@@ -12,6 +12,7 @@ module Utility.Misc (
 	readFileStrict,
 	separate,
 	firstLine,
+	firstLine',
 	segment,
 	segmentDelim,
 	massReplace,
@@ -28,6 +29,7 @@ import Data.Char
 import Data.List
 import System.Exit
 import Control.Applicative
+import qualified Data.ByteString as S
 import Prelude
 
 {- A version of hgetContents that is not lazy. Ensures file is 
@@ -55,6 +57,11 @@ separate c l = unbreak $ break c l
 {- Breaks out the first line. -}
 firstLine :: String -> String
 firstLine = takeWhile (/= '\n')
+
+firstLine' :: S.ByteString -> S.ByteString
+firstLine' = S.takeWhile (/= nl)
+  where
+	nl = fromIntegral (ord '\n')
 
 {- Splits a list into segments that are delimited by items matching
  - a predicate. (The delimiters are not included in the segments.)

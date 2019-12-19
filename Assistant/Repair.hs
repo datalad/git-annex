@@ -91,7 +91,7 @@ runRepair u mrmt destructiverepair = do
 	remoterepair fsckresults = case Remote.repairRepo =<< mrmt of
 		Nothing -> return False
 		Just mkrepair -> do
-			thisrepopath <- liftIO . absPath
+			thisrepopath <- liftIO . absPath . fromRawFilePath
 				=<< liftAnnex (fromRepo Git.repoPath)
 			a <- liftAnnex $ mkrepair $
 				repair fsckresults (Just thisrepopath)
@@ -130,7 +130,7 @@ repairStaleGitLocks r = do
 	repairStaleLocks lockfiles
 	return $ not $ null lockfiles
   where
-	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir) True . Git.localGitDir
+	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator (fromRawFilePath annexDir)) True . fromRawFilePath . Git.localGitDir
 	islock f
 		| "gc.pid" `isInfixOf` f = False
 		| ".lock" `isSuffixOf` f = True

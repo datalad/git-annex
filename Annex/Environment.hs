@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Environment where
 
 import Annex.Common
@@ -45,6 +47,6 @@ ensureCommit a = either retry return =<< tryNonAsync a
   where
 	retry _ = do
 		name <- liftIO $ either (const "unknown") id <$> myUserName
-		setConfig (ConfigKey "user.name") name
-		setConfig (ConfigKey "user.email") name
+		setConfig "user.name" name
+		setConfig "user.email" name
 		a

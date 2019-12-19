@@ -881,7 +881,8 @@ getBucketObject c = munge . serializeKey
 		_ -> getFilePrefix c ++ s
 
 getBucketExportLocation :: RemoteConfig -> ExportLocation -> BucketObject
-getBucketExportLocation c loc = getFilePrefix c ++ fromExportLocation loc
+getBucketExportLocation c loc =
+	getFilePrefix c ++ fromRawFilePath (fromExportLocation loc)
 
 getBucketImportLocation :: RemoteConfig -> BucketObject -> Maybe ImportLocation
 getBucketImportLocation c obj
@@ -889,7 +890,8 @@ getBucketImportLocation c obj
 	| obj == uuidfile = Nothing
 	-- Only import files that are under the fileprefix, when
 	-- one is configured.
-	| prefix `isPrefixOf` obj = Just $ mkImportLocation $ drop prefixlen obj
+	| prefix `isPrefixOf` obj = Just $ mkImportLocation $
+		toRawFilePath $ drop prefixlen obj
 	| otherwise = Nothing
   where
 	prefix = getFilePrefix c

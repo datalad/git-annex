@@ -92,10 +92,10 @@ seek o = do
 		([], True) -> commandAction (startAll o outputter)
 		(_, True) -> giveup "Cannot specify both files and --all"
 
-start :: LogOptions -> (FilePath -> Outputter) -> FilePath -> Key -> CommandStart
+start :: LogOptions -> (FilePath -> Outputter) -> RawFilePath -> Key -> CommandStart
 start o outputter file key = do
 	(changes, cleanup) <- getKeyLog key (passthruOptions o)
-	showLogIncremental (outputter file) changes
+	showLogIncremental (outputter (fromRawFilePath file)) changes
 	void $ liftIO cleanup
 	stop
 
@@ -199,9 +199,9 @@ compareChanges format changes = concatMap diff changes
 getKeyLog :: Key -> [CommandParam] -> Annex ([RefChange], IO Bool)
 getKeyLog key os = do
 	top <- fromRepo Git.repoPath
-	p <- liftIO $ relPathCwdToFile top
+	p <- liftIO $ relPathCwdToFile $ fromRawFilePath top
 	config <- Annex.getGitConfig
-	let logfile = p </> locationLogFile config key
+	let logfile = p </> fromRawFilePath (locationLogFile config key)
 	getGitLog [logfile] (Param "--remove-empty" : os)
 
 {- Streams the git log for all git-annex branch changes. -}
@@ -220,7 +220,7 @@ getGitLog fs os = do
 		[ Param $ Git.fromRef Annex.Branch.fullname
 		, Param "--"
 		] ++ map Param fs
-	return (parseGitRawLog ls, cleanup)
+	return (parseGitRawLog (map decodeBL' ls), cleanup)
 
 -- Parses chunked git log --raw output, which looks something like:
 --
@@ -250,7 +250,7 @@ parseGitRawLog = parse epoch
 			(tss, cl') -> (parseTimeStamp tss, cl')
 	  	mrc = do
 			(old, new) <- parseRawChangeLine cl
-			key <- locationLogFileKey c2
+			key <- locationLogFileKey (toRawFilePath c2)
 			return $ RefChange
 				{ changetime = ts
 				, oldref = old

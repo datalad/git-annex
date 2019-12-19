@@ -11,6 +11,7 @@ import Annex.Common
 import Utility.Hash
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as L
 
 {- Generates a keyName from an input string. Takes care of sanitizing it.
  - If it's not too long, the full string is used as the keyName.
@@ -21,11 +22,12 @@ genKeyName s
 	-- Avoid making keys longer than the length of a SHA256 checksum.
 	| bytelen > sha256len = encodeBS' $
 		truncateFilePath (sha256len - md5len - 1) s' ++ "-" ++ 
-			show (md5 (encodeBL s))
+			show (md5 bl)
 	| otherwise = encodeBS' s'
   where
 	s' = preSanitizeKeyName s
-	bytelen = length (decodeW8 s')
+	bl = encodeBL s
+	bytelen = fromIntegral $ L.length bl
 
 	sha256len = 64
 	md5len = 32

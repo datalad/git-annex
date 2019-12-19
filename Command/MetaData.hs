@@ -92,7 +92,7 @@ seek o = case batchOption o of
 			)
 		_ -> giveup "--batch is currently only supported in --json mode"
 
-start :: VectorClock -> MetaDataOptions -> FilePath -> Key -> CommandStart
+start :: VectorClock -> MetaDataOptions -> RawFilePath -> Key -> CommandStart
 start c o file k = startKeys c o (k, mkActionItem (k, afile))
   where
 	afile = AssociatedFile (Just file)
@@ -147,7 +147,7 @@ instance FromJSON MetaDataFields where
 fieldsField :: T.Text
 fieldsField = T.pack "fields"
 
-parseJSONInput :: String -> Either String (Either FilePath Key, MetaData)
+parseJSONInput :: String -> Either String (Either RawFilePath Key, MetaData)
 parseJSONInput i = do
 	v <- eitherDecode (BU.fromString i)
 	let m = case itemAdded v of
@@ -155,16 +155,16 @@ parseJSONInput i = do
 		Just (MetaDataFields m') -> m'
 	case (itemKey v, itemFile v) of
 		(Just k, _) -> Right (Right k, m)
-		(Nothing, Just f) -> Right (Left f, m)
+		(Nothing, Just f) -> Right (Left (toRawFilePath f), m)
 		(Nothing, Nothing) -> Left "JSON input is missing either file or key"
 
-startBatch :: (Either FilePath Key, MetaData) -> CommandStart
+startBatch :: (Either RawFilePath Key, MetaData) -> CommandStart
 startBatch (i, (MetaData m)) = case i of
 	Left f -> do
 		mk <- lookupFile f
 		case mk of
 			Just k -> go k (mkActionItem (k, AssociatedFile (Just f)))
-			Nothing -> giveup $ "not an annexed file: " ++ f
+			Nothing -> giveup $ "not an annexed file: " ++ fromRawFilePath f
 	Right k -> go k (mkActionItem k)
   where
 	go k ai = starting "metadata" ai $ do

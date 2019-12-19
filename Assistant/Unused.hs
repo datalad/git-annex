@@ -64,7 +64,7 @@ describeUnused' whenbig = liftAnnex $ go =<< readUnusedLog ""
 
 	sumkeysize s k = s + fromMaybe 0 (fromKey keySize k)
 
-	forpath a = inRepo $ liftIO . a . Git.repoPath
+	forpath a = inRepo $ liftIO . a . fromRawFilePath . Git.repoPath
 
 {- With a duration, expires all unused files that are older.
  - With Nothing, expires *all* unused files. -}

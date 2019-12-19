@@ -12,6 +12,7 @@ import Types.Key (Key, AssociatedFile)
 import Types.Mime
 import Utility.Matcher (Matcher, Token)
 import Utility.FileSize
+import Utility.FileSystemEncoding
 
 import Control.Monad.IO.Class
 import qualified Data.Map as M
@@ -24,9 +25,9 @@ data MatchInfo
 	| MatchingInfo ProvidedInfo
 
 data FileInfo = FileInfo
-	{ currFile :: FilePath
+	{ currFile :: RawFilePath
 	-- ^ current path to the file, for operations that examine it
-	, matchFile :: FilePath
+	, matchFile :: RawFilePath
 	-- ^ filepath to match on; may be relative to top of repo or cwd
 	}
 

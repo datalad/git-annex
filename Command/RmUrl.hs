@@ -42,9 +42,11 @@ batchParser s = case separate (== ' ') (reverse s) of
 		| otherwise -> Right (reverse rf, reverse ru)
 
 start :: (FilePath, URLString) -> CommandStart
-start (file, url) = flip whenAnnexed file $ \_ key ->
-	starting "rmurl" (mkActionItem (key, AssociatedFile (Just file))) $
+start (file, url) = flip whenAnnexed file' $ \_ key ->
+	starting "rmurl" (mkActionItem (key, AssociatedFile (Just file'))) $
 		next $ cleanup url key
+  where
+	file' = toRawFilePath file
 
 cleanup :: String -> Key -> CommandCleanup
 cleanup url key = do

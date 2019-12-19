@@ -31,6 +31,7 @@ import Types.StandardGroups
 import Types.ScheduledActivity
 import Types.NumCopies
 import Remote
+import Git.Types (ConfigKey(..), fromConfigKey, fromConfigValue)
 
 cmd :: Command
 cmd = command "vicfg" SectionSetup "edit configuration in git-annex branch"
@@ -70,7 +71,7 @@ data Cfg = Cfg
 	, cfgRequiredContentMap :: M.Map UUID PreferredContentExpression
 	, cfgGroupPreferredContentMap :: M.Map Group PreferredContentExpression
 	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
-	, cfgGlobalConfigs :: M.Map ConfigName ConfigValue
+	, cfgGlobalConfigs :: M.Map ConfigKey ConfigValue
 	, cfgNumCopies :: Maybe NumCopies
 	}
 
@@ -218,9 +219,9 @@ genCfg cfg descs = unlines $ intercalate [""]
 		[ com "Other global configuration"
 		]
 		(\(s, g) -> gline g s)
-		(\g -> gline g "")
+		(\g -> gline g mempty)
 	  where
-		gline g val = [ unwords ["config", g, "=", val] ]
+		gline k v = [ unwords ["config", fromConfigKey k, "=", fromConfigValue v] ]
 
 	line setting u val =
 		[ com $ "(for " ++ fromUUIDDesc (fromMaybe mempty (M.lookup u descs)) ++ ")"
@@ -308,7 +309,7 @@ parseCfg defcfg = go [] defcfg . lines
 				let m = M.insert u l (cfgScheduleMap cfg)
 				in Right $ cfg { cfgScheduleMap = m }
 		| setting == "config" =
-			let m = M.insert f val (cfgGlobalConfigs cfg)
+			let m = M.insert (ConfigKey (encodeBS' f)) (ConfigValue (encodeBS' val)) (cfgGlobalConfigs cfg)
 			in Right $ cfg { cfgGlobalConfigs = m }
 		| setting == "numcopies" = case readish val of
 			Nothing -> Left "parse error (expected an integer)"

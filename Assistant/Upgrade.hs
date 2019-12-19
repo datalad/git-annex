@@ -87,7 +87,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		hook <- asIO1 $ distributionDownloadComplete d dest cleanup
 		modifyDaemonStatus_ $ \s -> s
 			{ transferHook = M.insert k hook (transferHook s) }
-		maybe noop (queueTransfer "upgrade" Next (AssociatedFile (Just f)) t)
+		maybe noop (queueTransfer "upgrade" Next (AssociatedFile (Just (toRawFilePath f))) t)
 			=<< liftAnnex (remoteFromUUID webUUID)
 		startTransfer t
 	k = mkKey $ const $ distributionKey d
@@ -113,7 +113,7 @@ distributionDownloadComplete d dest cleanup t
 	| transferDirection t == Download = do
 		debug ["finished downloading git-annex distribution"]
 		maybe (failedupgrade "bad download") go
-			=<< liftAnnex (withObjectLoc k fsckit)
+			=<< liftAnnex (withObjectLoc k (fsckit . fromRawFilePath))
 	| otherwise = cleanup
   where
 	k = mkKey $ const $ distributionKey d

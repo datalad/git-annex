@@ -1,6 +1,6 @@
 {- Using bup as a remote.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Remote.Bup (remote) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 
@@ -15,6 +16,7 @@ import Annex.Common
 import qualified Annex
 import Types.Remote
 import Types.Creds
+import Git.Types (ConfigValue(..), fromConfigKey)
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -207,12 +209,12 @@ storeBupUUID u buprepo = do
 		then do
 			showAction "storing uuid"
 			unlessM (onBupRemote r boolSystem "git"
-				[Param "config", Param "annex.uuid", Param v]) $
+				[Param "config", Param (fromConfigKey configkeyUUID), Param v]) $
 					giveup "ssh failed"
 		else liftIO $ do
 			r' <- Git.Config.read r
-			let olduuid = Git.Config.get "annex.uuid" "" r'
-			when (olduuid == "") $
+			let ConfigValue olduuid = Git.Config.get configkeyUUID mempty r'
+			when (S.null olduuid) $
 				Git.Command.run
 					[ Param "config"
 					, Param "annex.uuid"
@@ -228,7 +230,7 @@ onBupRemote r runner command params = do
 	(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r c remotecmd
 	liftIO $ runner sshcmd sshparams
   where
-	path = Git.repoPath r
+	path = fromRawFilePath $ Git.repoPath r
 	base = fromMaybe path (stripPrefix "/~/" path)
 	dir = shellEscape base
 
@@ -248,7 +250,7 @@ getBupUUID r u
 	| otherwise = liftIO $ do
 		ret <- tryIO $ Git.Config.read r
 		case ret of
-			Right r' -> return (toUUID $ Git.Config.get "annex.uuid" "" r', r')
+			Right r' -> return (toUUID $ Git.Config.get configkeyUUID mempty r', r')
 			Left _ -> return (NoUUID, r)
 
 {- Converts a bup remote path spec into a Git.Repo. There are some

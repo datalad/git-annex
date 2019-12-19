@@ -17,6 +17,7 @@ import Data.String
 import Data.ByteString.Builder
 import qualified Data.Semigroup as Sem
 
+import Git.Types (ConfigValue(..))
 import Utility.FileSystemEncoding
 import Utility.QuickCheck
 import qualified Utility.SimpleProtocol as Proto
@@ -51,6 +52,12 @@ instance FromUUID String where
 
 instance ToUUID String where
 	toUUID s = toUUID (encodeBS' s)
+
+instance FromUUID ConfigValue where
+	fromUUID s = (ConfigValue (fromUUID s))
+
+instance ToUUID ConfigValue where
+	toUUID (ConfigValue v) = toUUID v
 
 -- There is no matching FromUUID U.UUID because a git-annex UUID may
 -- be NoUUID or perhaps contain something not allowed in a canonical UUID.

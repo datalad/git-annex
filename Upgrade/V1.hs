@@ -85,7 +85,7 @@ updateSymlinks = do
 	showAction "updating symlinks"
 	top <- fromRepo Git.repoPath
 	(files, cleanup) <- inRepo $ LsFiles.inRepo [top]
-	forM_ files fixlink
+	forM_ files (fixlink . fromRawFilePath)
 	void $ liftIO cleanup
   where
 	fixlink f = do
@@ -236,12 +236,13 @@ logFile1 repo key = Upgrade.V2.gitStateDir repo ++ keyFile1 key ++ ".log"
 logFile2 :: Key -> Git.Repo -> String
 logFile2 = logFile' (hashDirLower def)
 
-logFile' :: (Key -> FilePath) -> Key -> Git.Repo -> String
+logFile' :: (Key -> RawFilePath) -> Key -> Git.Repo -> String
 logFile' hasher key repo =
-	gitStateDir repo ++ hasher key ++ keyFile key ++ ".log"
+	gitStateDir repo ++ fromRawFilePath (hasher key) ++ fromRawFilePath (keyFile key) ++ ".log"
 
 stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"
 
 gitStateDir :: Git.Repo -> FilePath
-gitStateDir repo = addTrailingPathSeparator $ Git.repoPath repo </> stateDir
+gitStateDir repo = addTrailingPathSeparator $
+	fromRawFilePath (Git.repoPath repo) </> stateDir

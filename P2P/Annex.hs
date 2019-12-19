@@ -47,7 +47,7 @@ runLocal runst runner a = case a of
 		size <- liftIO $ catchDefaultIO 0 $ getFileSize f
 		runner (next (Len size))
 	ContentSize k next -> do
-		let getsize = liftIO . catchMaybeIO . getFileSize
+		let getsize = liftIO . catchMaybeIO . getFileSize . fromRawFilePath
 		size <- inAnnex' isJust Nothing getsize k
 		runner (next (Len <$> size))
 	ReadContent k af o sender next -> do

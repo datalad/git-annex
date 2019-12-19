@@ -112,8 +112,8 @@ adjustToSymlink = adjustToSymlink' gitAnnexLink
 adjustToSymlink' :: (FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath) -> TreeItem -> Annex (Maybe TreeItem)
 adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
 	Just k -> do
-		absf <- inRepo $ \r -> absPath $
-			fromTopFilePath f r
+		absf <- inRepo $ \r -> absPath $ 
+			fromRawFilePath $ fromTopFilePath f r
 		linktarget <- calcRepo $ gitannexlink absf k
 		Just . TreeItem f (fromTreeItemType TreeSymlink)
 			<$> hashSymlink linktarget
@@ -376,7 +376,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	 -}
 	changestomerge (Just updatedorig) = withOtherTmp $ \othertmpdir -> do
 		tmpwt <- fromRepo gitAnnexMergeDir
-		git_dir <- fromRepo Git.localGitDir
+		git_dir <- fromRawFilePath <$> fromRepo Git.localGitDir
 		withTmpDirIn othertmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
@@ -580,7 +580,7 @@ reverseAdjustedTree basis adj csha = do
 	  where
 		m = M.fromList $ map (\i@(TreeItem f' _ _) -> (norm f', i)) $
 			map diffTreeToTreeItem changes
-		norm = normalise . getTopFilePath
+		norm = normalise . fromRawFilePath . getTopFilePath
 
 diffTreeToTreeItem :: Git.DiffTree.DiffTreeItem -> TreeItem
 diffTreeToTreeItem dti = TreeItem

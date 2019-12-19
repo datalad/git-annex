@@ -17,6 +17,7 @@ import qualified Database.Keys
 import Annex.Content
 import Annex.Init
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = addCheck check $ 
@@ -29,19 +30,19 @@ check = do
 	b <- current_branch
 	when (b == Annex.Branch.name) $ giveup $
 		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
-	top <- fromRepo Git.repoPath
+	top <- fromRawFilePath <$> fromRepo Git.repoPath
 	currdir <- liftIO getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 		giveup "can only run uninit from the top of the git repository"
   where
-	current_branch = Git.Ref . Prelude.head . lines <$> revhead
+	current_branch = Git.Ref . Prelude.head . lines . decodeBS' <$> revhead
 	revhead = inRepo $ Git.Command.pipeReadStrict
 		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 
 seek :: CmdParams -> CommandSeek
 seek ps = do
 	l <- workTreeItems ps
-	withFilesNotInGit False (commandAction . whenAnnexed startCheckIncomplete) l
+	withFilesNotInGit False (commandAction . whenAnnexed (startCheckIncomplete . fromRawFilePath)) l
 	Annex.changeState $ \s -> s { Annex.fast = True }
 	withFilesInGit (commandAction . whenAnnexed Command.Unannex.start) l
 	finish
@@ -57,7 +58,7 @@ startCheckIncomplete file _ = giveup $ unlines
 
 finish :: Annex ()
 finish = do
-	annexdir <- fromRepo gitAnnexDir
+	annexdir <- fromRawFilePath <$> fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< listKeys InAnnex
 	prepareRemoveAnnexDir annexdir
@@ -117,5 +118,5 @@ removeUnannexed = go []
 		, go (k:c) ks
 		)
 	enoughlinks f = catchBoolIO $ do
-		s <- getFileStatus f
+		s <- R.getFileStatus f
 		return $ linkCount s > 1

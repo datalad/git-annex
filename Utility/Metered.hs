@@ -258,7 +258,7 @@ commandMeter' progressparser oh meterupdate cmd params =
 				unless (quietMode oh) $ do
 					S.hPut stdout b
 					hFlush stdout
-				let s = encodeW8 (S.unpack b)
+				let s = decodeBS b
 				let (mbytes, buf') = progressparser (buf++s)
 				case mbytes of
 					Nothing -> feedprogress prev buf' h

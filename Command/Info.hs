@@ -152,7 +152,7 @@ itemInfo o p = ifM (isdir p)
 				v' <- Remote.nameToUUID' p
 				case v' of
 					Right u -> uuidInfo o u
-					Left _ -> ifAnnexed p 
+					Left _ -> ifAnnexed (toRawFilePath p)
 						(fileInfo o p)
 						(treeishInfo o p)
 	)
@@ -161,7 +161,7 @@ itemInfo o p = ifM (isdir p)
 
 noInfo :: String -> Annex ()
 noInfo s = do
-	showStart "info" s
+	showStart "info" (encodeBS' s)
 	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
 	showEndFail
 
@@ -311,8 +311,8 @@ showStat :: Stat -> StatState ()
 showStat s = maybe noop calc =<< s
   where
 	calc (desc, a) = do
-		(lift . showHeader) desc
-		lift . showRaw =<< a
+		(lift . showHeader . encodeBS') desc
+		lift . showRaw . encodeBS' =<< a
 
 repo_list :: TrustLevel -> Stat
 repo_list level = stat n $ nojson $ lift $ do
@@ -435,7 +435,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 	desc = "transfers in progress"
 	line uuidmap t i = unwords
 		[ formatDirection (transferDirection t) ++ "ing"
-		, actionItemDesc $ mkActionItem
+		, fromRawFilePath $ actionItemDesc $ mkActionItem
 			(transferKey t, associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $
@@ -444,7 +444,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 	jsonify t i = object $ map (\(k, v) -> (packString k, v)) $
 		[ ("transfer", toJSON' (formatDirection (transferDirection t)))
 		, ("key", toJSON' (transferKey t))
-		, ("file", toJSON' afile)
+		, ("file", toJSON' (fromRawFilePath <$> afile))
 		, ("remote", toJSON' (fromUUID (transferUUID t) :: String))
 		]
 	  where
@@ -454,7 +454,7 @@ disk_size :: Stat
 disk_size = simpleStat "available local disk space" $
 	calcfree
 		<$> (lift $ annexDiskReserve <$> Annex.getGitConfig)
-		<*> (lift $ inRepo $ getDiskFree . gitAnnexDir)
+		<*> (lift $ inRepo $ getDiskFree . fromRawFilePath . gitAnnexDir)
 		<*> mkSizer
   where
 	calcfree reserve (Just have) sizer = unwords
@@ -577,7 +577,7 @@ getDirStatInfo o dir = do
 					then return (numcopiesstats, repodata)
 					else do
 						locs <- Remote.keyLocations key
-						nc <- updateNumCopiesStats file numcopiesstats locs
+						nc <- updateNumCopiesStats (fromRawFilePath file) numcopiesstats locs
 						return (nc, updateRepoData key locs repodata)
 				return $! (presentdata', referenceddata', numcopiesstats', repodata')
 			, return vs
@@ -674,7 +674,7 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
 		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
-			getFileSize (dir </> keyFile k)
+			getFileSize (dir </> fromRawFilePath (keyFile k))
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.FuzzTest where
 
 import Command
@@ -13,6 +15,7 @@ import qualified Git.Config
 import Config
 import Utility.ThreadScheduler
 import Utility.DiskFree
+import Git.Types (fromConfigKey)
 
 import Data.Time.Clock
 import System.Random (getStdRandom, random, randomR)
@@ -32,25 +35,23 @@ start :: CommandStart
 start = do
 	guardTest
 	logf <- fromRepo gitAnnexFuzzTestLogFile
-	showStart "fuzztest" logf
+	showStart "fuzztest" (toRawFilePath logf)
 	logh <- liftIO $ openFile logf WriteMode
 	void $ forever $ fuzz logh
 	stop
 
 guardTest :: Annex ()
-guardTest = unlessM (fromMaybe False . Git.Config.isTrue <$> getConfig key "") $
+guardTest = unlessM (fromMaybe False . Git.Config.isTrue' <$> getConfig key mempty) $
 	giveup $ unlines
 		[ "Running fuzz tests *writes* to and *deletes* files in"
 		, "this repository, and pushes those changes to other"
 		, "repositories! This is a developer tool, not something"
 		, "to play with."
 		, ""
-		, "Refusing to run fuzz tests, since " ++ keyname ++ " is not set!"
+		, "Refusing to run fuzz tests, since " ++ fromConfigKey key ++ " is not set!"
 		]
   where
 	key = annexConfig "eat-my-repository"
-	(ConfigKey keyname) = key
-
 
 fuzz :: Handle -> Annex ()
 fuzz logh = do

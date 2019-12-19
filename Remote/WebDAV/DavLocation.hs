@@ -17,6 +17,7 @@ import Utility.Url (URLString)
 #ifdef mingw32_HOST_OS
 import Utility.Split
 #endif
+import Utility.FileSystemEncoding
 
 import System.FilePath.Posix -- for manipulating url paths
 import Network.Protocol.HTTP.DAV (inDAVLocation, DAVT)
@@ -35,29 +36,31 @@ inLocation d = inDAVLocation (</> d')
 
 {- The directory where files(s) for a key are stored. -}
 keyDir :: Key -> DavLocation
-keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
+keyDir k = addTrailingPathSeparator $ hashdir </> fromRawFilePath (keyFile k)
   where
 #ifndef mingw32_HOST_OS
-	hashdir = hashDirLower def k
+	hashdir = fromRawFilePath $ hashDirLower def k
 #else
-	hashdir = replace "\\" "/" (hashDirLower def k)
+	hashdir = replace "\\" "/" (fromRawFilePath $ hashDirLower def k)
 #endif
 
 keyLocation :: Key -> DavLocation
-keyLocation k = keyDir k ++ keyFile k
+keyLocation k = keyDir k ++ fromRawFilePath (keyFile k)
 
 {- Paths containing # or ? cannot be represented in an url, so fails on
  - those. -}
 exportLocation :: ExportLocation -> Either String DavLocation
 exportLocation l =
-	let p = fromExportLocation l
-	in if any (`elem` p) ['#', '?']
+	let p = fromRawFilePath $ fromExportLocation l
+	in if any (`elem` p) illegalinurl
 		then Left ("Cannot store file containing '#' or '?' on webdav: " ++ p)
 		else Right p
+  where
+	illegalinurl = ['#', '?'] :: [Char]
 
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation
-keyTmpLocation = tmpLocation . keyFile
+keyTmpLocation = tmpLocation . fromRawFilePath . keyFile
 
 tmpLocation :: FilePath -> DavLocation
 tmpLocation f = "git-annex-webdav-tmp-" ++ f

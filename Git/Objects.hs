@@ -12,7 +12,7 @@ import Git
 import Git.Sha
 
 objectsDir :: Repo -> FilePath
-objectsDir r = localGitDir r </> "objects"
+objectsDir r = fromRawFilePath (localGitDir r) </> "objects"
 
 packDir :: Repo -> FilePath
 packDir r = objectsDir r </> "pack"

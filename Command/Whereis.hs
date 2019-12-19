@@ -40,14 +40,14 @@ seek o = do
 	m <- remoteMap id
 	let go = whenAnnexed $ start m
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt go
+		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> 
 			withKeyOptions (keyOptions o) False
 				(commandAction . startKeys m)
 				(withFilesInGit (commandAction . go))
 				=<< workTreeItems (whereisFiles o)
 
-start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
+start :: M.Map UUID Remote -> RawFilePath -> Key -> CommandStart
 start remotemap file key = startKeys remotemap (key, mkActionItem (key, afile))
   where
 	afile = AssociatedFile (Just file)

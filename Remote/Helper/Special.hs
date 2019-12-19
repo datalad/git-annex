@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Remote.Helper.Special (
 	findSpecialRemotes,
 	gitConfigSpecialRemote,
@@ -51,7 +53,9 @@ import Annex.Content
 import Messages.Progress
 import qualified Git
 import qualified Git.Construct
+import Git.Types
 
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 
@@ -65,14 +69,17 @@ findSpecialRemotes s = do
 	liftIO $ mapM construct $ remotepairs m
   where
 	remotepairs = M.toList . M.filterWithKey match
-	construct (k,_) = Git.Construct.remoteNamedFromKey k (pure Git.Construct.fromUnknown)
-	match k _ = "remote." `isPrefixOf` k && (".annex-"++s) `isSuffixOf` k
+	construct (k,_) = Git.Construct.remoteNamedFromKey k
+		(pure Git.Construct.fromUnknown)
+	match (ConfigKey k) _ =
+		"remote." `S.isPrefixOf` k 
+		&& (".annex-" <> encodeBS' s) `S.isSuffixOf` k
 
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()
 gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
-		setConfig (remoteConfig c k) v
+		setConfig (remoteConfig c (encodeBS' k)) v
 	storeUUIDIn (remoteConfig c "uuid") u
 
 -- RetrievalVerifiableKeysSecure unless overridden by git config.

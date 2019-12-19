@@ -33,12 +33,13 @@ import Annex.CurrentBranch
 import Annex.Content
 import Annex.InodeSentinal
 import qualified Database.Keys
+import qualified Utility.RawFilePath as R
 
-withFilesInGit :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGit :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGit a l = seekActions $ prepFiltered a $
 	seekHelper LsFiles.inRepo l
 
-withFilesInGitNonRecursive :: String -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitNonRecursive :: String -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
 	( withFilesInGit a l
 	, if null l
@@ -48,7 +49,7 @@ withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
   where
 	getfiles c [] = return (reverse c)
 	getfiles c ((WorkTreeItem p):ps) = do
-		(fs, cleanup) <- inRepo $ LsFiles.inRepo [p]
+		(fs, cleanup) <- inRepo $ LsFiles.inRepo [toRawFilePath p]
 		case fs of
 			[f] -> do
 				void $ liftIO $ cleanup
@@ -58,11 +59,11 @@ withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
 				getfiles c ps
 			_ -> giveup needforce
 
-withFilesNotInGit :: Bool -> (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesNotInGit :: Bool -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesNotInGit skipdotfiles a l
 	| skipdotfiles = do
 		{- dotfiles are not acted on unless explicitly listed -}
-		files <- filter (not . dotfile) <$>
+		files <- filter (not . dotfile . fromRawFilePath) <$>
 			seekunless (null ps && not (null l)) ps
 		dotfiles <- seekunless (null dotps) dotps
 		go (files++dotfiles)
@@ -74,9 +75,9 @@ withFilesNotInGit skipdotfiles a l
 		force <- Annex.getState Annex.force
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie
-			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> f) l') g
+			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> toRawFilePath f) l') g
 	go fs = seekActions $ prepFiltered a $
-		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> f) l) fs
+		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> toRawFilePath f) l) fs
 
 withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
@@ -93,8 +94,8 @@ withPathContents a params = do
 		, return [(p, takeFileName p)]
 		)
 	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
-		{ currFile = f
-		, matchFile = relf
+		{ currFile = toRawFilePath f
+		, matchFile = toRawFilePath relf
 		}
 
 withWords :: ([String] -> CommandSeek) -> CmdParams -> CommandSeek
@@ -110,30 +111,30 @@ withPairs a params = seekActions $ return $ map a $ pairs [] params
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = giveup "expected pairs"
 
-withFilesToBeCommitted :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesToBeCommitted :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesToBeCommitted a l = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted l
 
-isOldUnlocked :: FilePath -> Annex Bool
+isOldUnlocked :: RawFilePath -> Annex Bool
 isOldUnlocked f = liftIO (notSymlink f) <&&> 
 	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- unlocked pointer files that are staged, and whose content has not been
  - modified-}
-withUnmodifiedUnlockedPointers :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withUnmodifiedUnlockedPointers :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withUnmodifiedUnlockedPointers a l = seekActions $
 	prepFiltered a unlockedfiles
   where
 	unlockedfiles = filterM isUnmodifiedUnlocked 
 		=<< seekHelper LsFiles.typeChangedStaged l
 
-isUnmodifiedUnlocked :: FilePath -> Annex Bool
+isUnmodifiedUnlocked :: RawFilePath -> Annex Bool
 isUnmodifiedUnlocked f = catKeyFile f >>= \case
 	Nothing -> return False
 	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
-withFilesMaybeModified :: (FilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesMaybeModified :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesMaybeModified a params = seekActions $
 	prepFiltered a $ seekHelper LsFiles.modified params
 
@@ -225,20 +226,21 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		forM_ ts $ \(t, i) ->
 			keyaction (transferKey t, mkActionItem (t, i))
 
-prepFiltered :: (FilePath -> CommandSeek) -> Annex [FilePath] -> Annex [CommandSeek]
+prepFiltered :: (RawFilePath -> CommandSeek) -> Annex [RawFilePath] -> Annex [CommandSeek]
 prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
   where
-	process matcher f = whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
+	process matcher f =
+		whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
 
 seekActions :: Annex [CommandSeek] -> Annex ()
 seekActions gen = sequence_ =<< gen
 
-seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [WorkTreeItem] -> Annex [FilePath]
+seekHelper :: ([RawFilePath] -> Git.Repo -> IO ([RawFilePath], IO Bool)) -> [WorkTreeItem] -> Annex [RawFilePath]
 seekHelper a l = inRepo $ \g ->
 	concat . concat <$> forM (segmentXargsOrdered l')
-		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g))
+		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) . map toRawFilePath)
   where
 	l' = map (\(WorkTreeItem f) -> f) l
 
@@ -264,14 +266,14 @@ workTreeItems' (AllowHidden allowhidden) ps = do
 		unlessM (exists p <||> hidden currbranch p) $ do
 			toplevelWarning False (p ++ " not found")
 			Annex.incError
-	return (map WorkTreeItem ps)
+	return (map (WorkTreeItem) ps)
   where
 	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
 	hidden currbranch p
 		| allowhidden = do
 			f <- liftIO $ relPathCwdToFile p
-			isJust <$> catObjectMetaDataHidden f currbranch
+			isJust <$> catObjectMetaDataHidden (toRawFilePath f) currbranch
 		| otherwise = return False
 
-notSymlink :: FilePath -> IO Bool
-notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
+notSymlink :: RawFilePath -> IO Bool
+notSymlink f = liftIO $ not . isSymbolicLink <$> R.getSymbolicLinkStatus f

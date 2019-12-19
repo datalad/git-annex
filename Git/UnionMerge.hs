@@ -10,6 +10,7 @@ module Git.UnionMerge (
 	mergeIndex
 ) where
 
+import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Set as S
 
@@ -73,14 +74,14 @@ doMerge hashhandle ch differ repo streamer = do
 	void $ cleanup
   where
 	go [] = noop
-	go (info:file:rest) = mergeFile info file hashhandle ch >>=
+	go (info:file:rest) = mergeFile (decodeBL' info) (L.toStrict file) hashhandle ch >>=
 		maybe (go rest) (\l -> streamer l >> go rest)
 	go (_:[]) = error $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the
  - diff. -}
-mergeFile :: String -> FilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe String)
+mergeFile :: String -> RawFilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
 mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha

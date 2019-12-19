@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Command.Sync (
 	cmd,
@@ -225,7 +226,7 @@ seek' o = do
  - of the repo. This also means that sync always acts on all files in the
  - repository, not just on a subdirectory. -}
 prepMerge :: Annex ()
-prepMerge = Annex.changeDirectory =<< fromRepo Git.repoPath
+prepMerge = Annex.changeDirectory . fromRawFilePath =<< fromRepo Git.repoPath
 
 mergeConfig :: [Git.Merge.MergeConfig]	
 mergeConfig = 
@@ -408,7 +409,7 @@ importRemote o mergeconfig remote currbranch
 			let branch = Git.Ref b
 			let subdir = if null s
 				then Nothing
-				else Just (asTopFilePath s)
+				else Just (asTopFilePath (toRawFilePath s))
 			Command.Import.seekRemote remote branch subdir
 			void $ mergeRemote remote currbranch mergeconfig
 				(resolveMergeOverride o)
@@ -467,7 +468,7 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
 			( liftIO $ do
 				p <- readProgramFile
 				boolSystem' p [Param "post-receive"]
-					(\cp -> cp { cwd = Just wt })
+					(\cp -> cp { cwd = Just (fromRawFilePath wt) })
 			, return True
 			)
 	  where

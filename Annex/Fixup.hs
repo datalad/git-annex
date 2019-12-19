@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Fixup where
 
 import Git.Types
@@ -17,6 +19,7 @@ import Utility.SafeCommand
 import Utility.Directory
 import Utility.Exception
 import Utility.Monad
+import Utility.FileSystemEncoding
 import Utility.PartialPrelude
 
 import System.IO
@@ -27,6 +30,8 @@ import Data.Maybe
 import Control.Monad
 import Control.Monad.IfElse
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString as S
 import Control.Applicative
 import Prelude
 
@@ -50,10 +55,10 @@ disableWildcardExpansion r = r
 fixupDirect :: Repo -> Repo
 fixupDirect r@(Repo { location = l@(Local { gitdir = d, worktree = Nothing }) }) = do
 	r
-		{ location = l { worktree = Just (parentDir d) }
+		{ location = l { worktree = Just (toRawFilePath (parentDir (fromRawFilePath d))) }
 		, gitGlobalOpts = gitGlobalOpts r ++
 			[ Param "-c"
-			, Param $ coreBare ++ "=" ++ boolConfig False
+			, Param $ fromConfigKey coreBare ++ "=" ++ boolConfig False
 			]
 		}
 fixupDirect r = r
@@ -108,12 +113,13 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		, return r
 		)
   where
-	dotgit = w </> ".git"
+	dotgit = w P.</> ".git"
+	dotgit' = fromRawFilePath dotgit
 
-	replacedotgit = whenM (doesFileExist dotgit) $ do
-		linktarget <- relPathDirToFile w d
-		nukeFile dotgit
-		createSymbolicLink linktarget dotgit
+	replacedotgit = whenM (doesFileExist dotgit') $ do
+		linktarget <- relPathDirToFile (fromRawFilePath w) (fromRawFilePath d)
+		nukeFile dotgit'
+		createSymbolicLink linktarget dotgit'
 	
 	unsetcoreworktree =
 		maybe (error "unset core.worktree failed") (\_ -> return ())
@@ -123,13 +129,13 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		-- git-worktree sets up a "commondir" file that contains
 		-- the path to the main git directory.
 		-- Using --separate-git-dir does not.
-		catchDefaultIO Nothing (headMaybe . lines <$> readFile (d </> "commondir")) >>= \case
+		catchDefaultIO Nothing (headMaybe . lines <$> readFile (fromRawFilePath (d P.</> "commondir"))) >>= \case
 			Just gd -> do
 				-- Make the worktree's git directory
 				-- contain an annex symlink to the main
 				-- repository's annex directory.
 				let linktarget = gd </> "annex"
-				createSymbolicLink linktarget (dotgit </> "annex")
+				createSymbolicLink linktarget (dotgit' </> "annex")
 			Nothing -> return ()
 
 	-- Repo adjusted, so that symlinks to objects that get checked
@@ -139,12 +145,12 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		| coreSymlinks c = r { location = l { gitdir = dotgit } }
 		| otherwise = r
 
-	notnoannex = isNothing <$> noAnnexFileContent (Git.repoWorkTree r)
+	notnoannex = isNothing <$> noAnnexFileContent (fmap fromRawFilePath (Git.repoWorkTree r))
 fixupUnusualRepos r _ = return r
 
 needsSubmoduleFixup :: Repo -> Bool
 needsSubmoduleFixup (Repo { location = (Local { worktree = Just _, gitdir = d }) }) =
-	(".git" </> "modules") `isInfixOf` d
+	(".git" P.</> "modules") `S.isInfixOf` d
 needsSubmoduleFixup _ = False
 
 needsGitLinkFixup :: Repo -> IO Bool
@@ -152,6 +158,6 @@ needsGitLinkFixup (Repo { location = (Local { worktree = Just wt, gitdir = d }) 
 	-- Optimization: Avoid statting .git in the common case; only
 	-- when the gitdir is not in the usual place inside the worktree
 	-- might .git be a file.
-	| wt </> ".git" == d = return False
-	| otherwise = doesFileExist (wt </> ".git")
+	| wt P.</> ".git" == d = return False
+	| otherwise = doesFileExist (fromRawFilePath (wt P.</> ".git"))
 needsGitLinkFixup _ = return False

@@ -54,5 +54,5 @@ setDifferences = do
 					else return ds
 			)
 		forM_ (listDifferences ds') $ \d ->
-			setConfig (ConfigKey $ differenceConfigKey d) (differenceConfigVal d)
+			setConfig (differenceConfigKey d) (differenceConfigVal d)
 		recordDifferences ds' u

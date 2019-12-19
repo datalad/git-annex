@@ -20,7 +20,9 @@ import Utility.Directory.Stream
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 import Data.ByteString.Builder
+import Data.Char
 
 class Journalable t where
 	writeJournalHandle :: Handle -> t -> IO ()
@@ -44,18 +46,18 @@ instance Journalable Builder where
  - getJournalFileStale to always return a consistent journal file
  - content, although possibly not the most current one.
  -}
-setJournalFile :: Journalable content => JournalLocked -> FilePath -> content -> Annex ()
+setJournalFile :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex ()
 setJournalFile _jl file content = withOtherTmp $ \tmp -> do
 	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
 	-- journal file is written atomically
-	jfile <- fromRepo $ journalFile file
+	jfile <- fromRawFilePath <$> fromRepo (journalFile file)
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
 		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
 		moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
-getJournalFile :: JournalLocked -> FilePath -> Annex (Maybe L.ByteString)
+getJournalFile :: JournalLocked -> RawFilePath -> Annex (Maybe L.ByteString)
 getJournalFile _jl = getJournalFileStale
 
 {- Without locking, this is not guaranteed to be the most recent
@@ -69,9 +71,9 @@ getJournalFile _jl = getJournalFileStale
  - concurrency or other issues with a lazy read, and the minor loss of
  - laziness doesn't matter much, as the files are not very large.
  -}
-getJournalFileStale :: FilePath -> Annex (Maybe L.ByteString)
+getJournalFileStale :: RawFilePath -> Annex (Maybe L.ByteString)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	L.fromStrict <$> S.readFile (journalFile file g)
+	L.fromStrict <$> S.readFile (fromRawFilePath $ journalFile file g)
 
 {- List of existing journal files, but without locking, may miss new ones
  - just being added, or may have false positives if the journal is staged
@@ -81,7 +83,8 @@ getJournalledFilesStale = do
 	g <- gitRepo
 	fs <- liftIO $ catchDefaultIO [] $
 		getDirectoryContents $ gitAnnexJournalDir g
-	return $ filter (`notElem` [".", ".."]) $ map fileJournal fs
+	return $ filter (`notElem` [".", ".."]) $
+		map (fromRawFilePath . fileJournal . toRawFilePath) fs
 
 withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle a = do
@@ -102,19 +105,33 @@ journalDirty = do
  - used in the branch is not necessary, and all the files are put directly
  - in the journal directory.
  -}
-journalFile :: FilePath -> Git.Repo -> FilePath
-journalFile file repo = gitAnnexJournalDir repo </> concatMap mangle file
+journalFile :: RawFilePath -> Git.Repo -> RawFilePath
+journalFile file repo = gitAnnexJournalDir' repo P.</> S.concatMap mangle file
   where
 	mangle c
-		| c == pathSeparator = "_"
-		| c == '_' = "__"
-		| otherwise = [c]
+		| P.isPathSeparator c = S.singleton underscore
+		| c == underscore = S.pack [underscore, underscore]
+		| otherwise = S.singleton c
+	underscore = fromIntegral (ord '_')
 
 {- Converts a journal file (relative to the journal dir) back to the
  - filename on the branch. -}
-fileJournal :: FilePath -> FilePath
-fileJournal = replace [pathSeparator, pathSeparator] "_" .
-	replace "_" [pathSeparator]
+fileJournal :: RawFilePath -> RawFilePath
+fileJournal = go
+  where
+	go b = 
+		let (h, t) = S.break (== underscore) b
+		in h <> case S.uncons t of
+			Nothing -> t
+			Just (_u, t') -> case S.uncons t' of
+				Nothing -> t'			
+				Just (w, t'')
+					| w == underscore ->
+						S.cons underscore (go t'')
+					| otherwise -> 
+						S.cons P.pathSeparator (go t')
+	
+	underscore = fromIntegral (ord '_')
 
 {- Sentinal value, only produced by lockJournal; required
  - as a parameter by things that need to ensure the journal is

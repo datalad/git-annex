@@ -138,8 +138,9 @@ startupScan scanner = do
 		top <- liftAnnex $ fromRepo Git.repoPath
 		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted [top]
 		forM_ fs $ \f -> do
-			liftAnnex $ onDel' f
-			maybe noop recordChange =<< madeChange f RmChange
+			let f' = fromRawFilePath f
+			liftAnnex $ onDel' f'
+			maybe noop recordChange =<< madeChange f' RmChange
 		void $ liftIO cleanup
 		
 		liftAnnex $ showAction "started"
@@ -206,14 +207,14 @@ shouldRestage ds = scanComplete ds || forceRestage ds
 
 onAddUnlocked :: Bool -> GetFileMatcher -> Handler
 onAddUnlocked symlinkssupported matcher f fs = do
-	mk <- liftIO $ isPointerFile f
+	mk <- liftIO $ isPointerFile $ toRawFilePath f
 	case mk of
 		Nothing -> onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher f fs
 		Just k -> addlink f k
   where
 	addassociatedfile key file = 
 		Database.Keys.addAssociatedFile key
-			=<< inRepo (toTopFilePath file)
+			=<< inRepo (toTopFilePath (toRawFilePath file))
 	samefilestatus key file status = do
 		cache <- Database.Keys.getInodeCaches key
 		curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta file status
@@ -223,12 +224,12 @@ onAddUnlocked symlinkssupported matcher f fs = do
 			_ -> return False
 	contentchanged oldkey file = do
 		Database.Keys.removeAssociatedFile oldkey
-			=<< inRepo (toTopFilePath file)
+			=<< inRepo (toTopFilePath (toRawFilePath file))
 		unlessM (inAnnex oldkey) $
 			logStatus oldkey InfoMissing
 	addlink file key = do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
-		liftAnnex $ stagePointerFile file mode =<< hashPointerFile key
+		liftAnnex $ stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
 		madeChange file $ LinkChange (Just key)
 
 onAddUnlocked'
@@ -240,7 +241,7 @@ onAddUnlocked'
 	-> GetFileMatcher
 	-> Handler
 onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher file fs = do
-	v <- liftAnnex $ catKeyFile file
+	v <- liftAnnex $ catKeyFile (toRawFilePath file)
 	case (v, fs) of
 		(Just key, Just filestatus) ->
 			ifM (liftAnnex $ samefilestatus key file filestatus)
@@ -270,7 +271,8 @@ onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkss
 	guardSymlinkStandin mk a
 		| symlinkssupported = a
 		| otherwise = do
-			linktarget <- liftAnnex $ getAnnexLinkTarget file
+			linktarget <- liftAnnex $ getAnnexLinkTarget $
+				toRawFilePath file
 			case linktarget of
 				Nothing -> a
 				Just lt -> do
@@ -287,7 +289,7 @@ onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkss
 onAddSymlink :: Handler
 onAddSymlink file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
-	kv <- liftAnnex (lookupFile file)
+	kv <- liftAnnex (lookupFile (toRawFilePath file))
 	onAddSymlink' linktarget kv file filestatus
 
 onAddSymlink' :: Maybe String -> Maybe Key -> Handler
@@ -299,7 +301,7 @@ onAddSymlink' linktarget mk file filestatus = go mk
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do
 				liftAnnex $ replaceFile file $
-					makeAnnexLink link
+					makeAnnexLink link . toRawFilePath
 				addLink file link (Just key)
 	-- other symlink, not git-annex
 	go Nothing = ensurestaged linktarget =<< getDaemonStatus
@@ -332,8 +334,8 @@ addLink file link mk = do
 		case v of
 			Just (currlink, sha, _type)
 				| s2w8 link == L.unpack currlink ->
-					stageSymlink file sha
-			_ -> stageSymlink file =<< hashSymlink link
+					stageSymlink (toRawFilePath file) sha
+			_ -> stageSymlink (toRawFilePath file) =<< hashSymlink link
 	madeChange file $ LinkChange mk
 
 onDel :: Handler
@@ -344,12 +346,12 @@ onDel file _ = do
 
 onDel' :: FilePath -> Annex ()
 onDel' file = do
-	topfile <- inRepo (toTopFilePath file)
+	topfile <- inRepo (toTopFilePath (toRawFilePath file))
 	withkey $ flip Database.Keys.removeAssociatedFile topfile
 	Annex.Queue.addUpdateIndex =<<
 		inRepo (Git.UpdateIndex.unstageFile file)
   where
-	withkey a = maybe noop a =<< catKeyFile file
+	withkey a = maybe noop a =<< catKeyFile (toRawFilePath file)
 
 {- A directory has been deleted, or moved, so tell git to remove anything
  - that was inside it from its cache. Since it could reappear at any time,
@@ -360,14 +362,15 @@ onDel' file = do
 onDelDir :: Handler
 onDelDir dir _ = do
 	debug ["directory deleted", dir]
-	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [dir]
+	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [toRawFilePath dir]
+	let fs' = map fromRawFilePath fs
 
-	liftAnnex $ mapM_ onDel' fs
+	liftAnnex $ mapM_ onDel' fs'
 
 	-- Get the events queued up as fast as possible, so the
 	-- committer sees them all in one block.
 	now <- liftIO getCurrentTime
-	recordChanges $ map (\f -> Change now f RmChange) fs
+	recordChanges $ map (\f -> Change now f RmChange) fs'
 
 	void $ liftIO clean
 	noChange

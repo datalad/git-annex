@@ -11,6 +11,7 @@ import Annex.Common
 import Types.Remote
 import Types.Creds
 import qualified Git
+import Git.Types (fromConfigKey, fromConfigValue)
 import Config
 import Config.Cost
 import Annex.UUID
@@ -103,23 +104,24 @@ hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
 		]
 	fileenv Nothing = []
 	fileenv (Just file) =  [envvar "FILE" file]
-	hashbits = map takeDirectory $ splitPath $ hashDirMixed def k
+	hashbits = map takeDirectory $ splitPath $
+		fromRawFilePath $ hashDirMixed def k
 
 lookupHook :: HookName -> Action -> Annex (Maybe String)
 lookupHook hookname action = do
-	command <- getConfig (annexConfig hook) ""
+	command <- fromConfigValue <$> getConfig hook mempty
 	if null command
 		then do
-			fallback <- getConfig (annexConfig hookfallback) ""
+			fallback <- fromConfigValue <$> getConfig hookfallback mempty
 			if null fallback
 				then do
-					warning $ "missing configuration for " ++ hook ++ " or " ++ hookfallback
+					warning $ "missing configuration for " ++ fromConfigKey hook ++ " or " ++ fromConfigKey hookfallback
 					return Nothing
 				else return $ Just fallback
 		else return $ Just command
   where
-	hook = hookname ++ "-" ++ action ++ "-hook"
-	hookfallback = hookname ++ "-hook"
+	hook = annexConfig $ encodeBS' $ hookname ++ "-" ++ action ++ "-hook"
+	hookfallback = annexConfig $ encodeBS' $ hookname ++ "-hook"
 
 runHook :: HookName -> Action -> Key -> Maybe FilePath -> Annex Bool -> Annex Bool
 runHook hook action k f a = maybe (return False) run =<< lookupHook hook action

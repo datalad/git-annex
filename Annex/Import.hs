@@ -57,6 +57,7 @@ import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import qualified System.FilePath.Posix as Posix
+import qualified System.FilePath.ByteString as P
 
 {- Configures how to build an import tree. -}
 data ImportTreeConfig
@@ -123,7 +124,7 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Nothing -> pure committedtree
 			Just dir -> 
 				let subtreeref = Ref $
-					fromRef committedtree ++ ":" ++ getTopFilePath dir
+					fromRef committedtree ++ ":" ++ fromRawFilePath (getTopFilePath dir)
 				in fromMaybe emptyTree
 					<$> inRepo (Git.Ref.tree subtreeref)
 		updateexportdb importedtree
@@ -267,9 +268,9 @@ buildImportTrees basetree msubdir importable = History
 		let lf = fromImportLocation loc
 		let treepath = asTopFilePath lf
 		let topf = asTopFilePath $
-			maybe lf (\sd -> getTopFilePath sd </> lf) msubdir
+			maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
 		relf <- fromRepo $ fromTopFilePath topf
-		symlink <- calcRepo $ gitAnnexLink relf k
+		symlink <- calcRepo $ gitAnnexLink (fromRawFilePath relf) k
 		linksha <- hashSymlink symlink
 		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
 
@@ -327,7 +328,7 @@ downloadImport remote importtreeconfig importablecontents = do
 		(k:_) -> return $ Left $ Just (loc, k)
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
-			let ai = ActionItemOther (Just (fromImportLocation loc))
+			let ai = ActionItemOther (Just (fromRawFilePath (fromImportLocation loc)))
 			let downloadaction = starting ("import " ++ Remote.name remote) ai $ do
 				when oldversion $
 					showNote "old version"
@@ -368,9 +369,9 @@ downloadImport remote importtreeconfig importablecontents = do
 	
 	mkkey loc tmpfile = do
 		f <- fromRepo $ fromTopFilePath $ locworktreefilename loc
-		backend <- chooseBackend f
+		backend <- chooseBackend (fromRawFilePath f)
 		let ks = KeySource
-			{ keyFilename = f
+			{ keyFilename = (fromRawFilePath f)
 			, contentLocation = tmpfile
 			, inodeCache = Nothing
 			}
@@ -379,7 +380,7 @@ downloadImport remote importtreeconfig importablecontents = do
 	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
 		ImportTree -> fromImportLocation loc
 		ImportSubTree subdir _ ->
-			getTopFilePath subdir </> fromImportLocation loc
+			getTopFilePath subdir P.</> fromImportLocation loc
 
 	getcidkey cidmap db cid = liftIO $
 		CIDDb.getContentIdentifierKeys db rs cid >>= \case
@@ -450,7 +451,7 @@ wantImport :: FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
 wantImport matcher loc sz = checkMatcher' matcher mi mempty
   where
 	mi = MatchingInfo $ ProvidedInfo
-		{ providedFilePath = Right $ fromImportLocation loc
+		{ providedFilePath = Right $ fromRawFilePath $ fromImportLocation loc
 		, providedKey = unavail "key"
 		, providedFileSize = Right sz
 		, providedMimeType = unavail "mime"
@@ -503,4 +504,4 @@ listImportableContents r = fmap removegitspecial
 		, importableHistory =
 			map removegitspecial (importableHistory ic)
 		}
-	gitspecial l = ".git" `elem` Posix.splitDirectories (fromImportLocation l)
+	gitspecial l = ".git" `elem` Posix.splitDirectories (fromRawFilePath (fromImportLocation l))

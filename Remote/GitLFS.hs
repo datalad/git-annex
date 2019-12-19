@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Remote.GitLFS (remote, gen, configKnownUrl) where
 
 import Annex.Common
@@ -153,7 +155,7 @@ mySetup _ mu _ c gc = do
 	-- (so it's also usable by git as a non-special remote),
 	-- and set remote.name.annex-git-lfs = true
 	gitConfigSpecialRemote u c' [("git-lfs", "true")]
-	setConfig (ConfigKey ("remote." ++ getRemoteName c ++ ".url")) url
+	setConfig (Git.ConfigKey ("remote." <> encodeBS' (getRemoteName c) <> ".url")) url
 	return (c', u)
   where
 	url = fromMaybe (giveup "Specify url=") (M.lookup "url" c)
@@ -185,9 +187,9 @@ configKnownUrl r
 				set "config-uuid" (fromUUID cu) r'
 			Nothing -> return r'
 	set k v r' = do
-		let ck@(ConfigKey k') = remoteConfig r' k
-		setConfig ck v
-		return $ Git.Config.store' k' v r'
+		let k' = remoteConfig r' k
+		setConfig k' v
+		return $ Git.Config.store' k' (Git.ConfigValue (encodeBS' v)) r'
 
 data LFSHandle = LFSHandle
 	{ downloadEndpoint :: Maybe LFS.Endpoint

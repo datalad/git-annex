@@ -49,7 +49,7 @@ override index _r = do
 
 {- The normal index file. Does not check GIT_INDEX_FILE. -}
 indexFile :: Repo -> FilePath
-indexFile r = localGitDir r </> "index"
+indexFile r = fromRawFilePath (localGitDir r) </> "index"
 
 {- The index file git will currently use, checking GIT_INDEX_FILE. -}
 currentIndexFile :: Repo -> IO FilePath

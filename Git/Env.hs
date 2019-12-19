@@ -30,8 +30,10 @@ addGitEnv g var val = adjustGitEnv g (addEntry var val)
  - and a copy of the rest of the system environment. -}
 propGitEnv :: Repo -> IO [(String, String)]
 propGitEnv g = do
-	g' <- addGitEnv g "GIT_DIR" (localGitDir g)
-	g'' <- maybe (pure g') (addGitEnv g' "GIT_WORK_TREE") (repoWorkTree g)
+	g' <- addGitEnv g "GIT_DIR" (fromRawFilePath (localGitDir g))
+	g'' <- maybe (pure g')
+		(addGitEnv g' "GIT_WORK_TREE" . fromRawFilePath)
+		(repoWorkTree g)
 	return $ fromMaybe [] (gitEnv g'')
 
 {- Use with any action that makes a commit to set metadata. -}

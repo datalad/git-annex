@@ -37,7 +37,7 @@ get = do
 	gd <- getpathenv "GIT_DIR"
 	r <- configure gd =<< fromCwd
 	prefix <- getpathenv "GIT_PREFIX"
-	wt <- maybe (worktree $ location r) Just
+	wt <- maybe (fromRawFilePath <$> worktree (location r)) Just
 		<$> getpathenvprefix "GIT_WORK_TREE" prefix
 	case wt of
 		Nothing -> return r
@@ -68,13 +68,18 @@ get = do
 		absd <- absPath d
 		curr <- getCurrentDirectory
 		r <- Git.Config.read $ newFrom $
-			Local { gitdir = absd, worktree = Just curr }
+			Local
+				{ gitdir = toRawFilePath absd
+				, worktree = Just (toRawFilePath curr)
+				}
 		return $ if Git.Config.isBare r
 			then r { location = (location r) { worktree = Nothing } }
 			else r
 
 	configure Nothing Nothing = giveup "Not in a git repository."
 
-	addworktree w r = changelocation r $
-		Local { gitdir = gitdir (location r), worktree = w }
+	addworktree w r = changelocation r $ Local
+		{ gitdir = gitdir (location r)
+		, worktree = fmap toRawFilePath w
+		}
 	changelocation r l = r { location = l }

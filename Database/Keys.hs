@@ -43,6 +43,9 @@ import Git.Command
 import Git.Types
 import Git.Index
 
+import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
+
 {- Runs an action that reads from the database.
  -
  - If the database doesn't already exist, it's not created; mempty is
@@ -169,13 +172,13 @@ removeAssociatedFile :: Key -> TopFilePath -> Annex ()
 removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile (toIKey k)
 
 {- Stats the files, and stores their InodeCaches. -}
-storeInodeCaches :: Key -> [FilePath] -> Annex ()
+storeInodeCaches :: Key -> [RawFilePath] -> Annex ()
 storeInodeCaches k fs = storeInodeCaches' k fs []
 
-storeInodeCaches' :: Key -> [FilePath] -> [InodeCache] -> Annex ()
+storeInodeCaches' :: Key -> [RawFilePath] -> [InodeCache] -> Annex ()
 storeInodeCaches' k fs ics = withTSDelta $ \d ->
 	addInodeCaches k . (++ ics) . catMaybes
-		=<< liftIO (mapM (`genInodeCache` d) fs)
+		=<< liftIO (mapM (\f -> genInodeCache f d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
 addInodeCaches k is = runWriterIO $ SQL.addInodeCaches (toIKey k) is
@@ -223,7 +226,7 @@ reconcileStaged :: H.DbQueue -> Annex ()
 reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRepo gitAnnexKeysDbIndexCache
-	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
+	withTSDelta (liftIO . genInodeCache (toRawFilePath gitindex)) >>= \case
 		Just cur -> 
 			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case
 				Nothing -> go cur indexcache
@@ -235,7 +238,7 @@ reconcileStaged qh = do
   where
 	go cur indexcache = do
 		(l, cleanup) <- inRepo $ pipeNullSplit diff
-		changed <- procdiff l False
+		changed <- procdiff (map decodeBL' l) False
 		void $ liftIO cleanup
 		-- Flush database changes immediately
 		-- so other processes can see them.
@@ -262,7 +265,8 @@ reconcileStaged qh = do
 		-- perfect. A file could start with this and not be a
 		-- pointer file. And a pointer file that is replaced with
 		-- a non-pointer file will match this.
-		, Param $ "-G^" ++ toInternalGitPath (pathSeparator:objectDir)
+		, Param $ "-G^" ++ fromRawFilePath (toInternalGitPath $
+			P.pathSeparator `S.cons` objectDir')
 		-- Don't include files that were deleted, because this only
 		-- wants to update information for files that are present
 		-- in the index.
@@ -277,8 +281,8 @@ reconcileStaged qh = do
 	procdiff (info:file:rest) changed = case words info of
 		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
 			-- Only want files, not symlinks
-			| dstmode /= fmtTreeItemType TreeSymlink -> do
-				maybe noop (reconcile (asTopFilePath file)) 
+			| dstmode /= decodeBS' (fmtTreeItemType TreeSymlink) -> do
+				maybe noop (reconcile (asTopFilePath (toRawFilePath file)))
 					=<< catKey (Ref dstsha)
 				procdiff rest True
 			| otherwise -> procdiff rest changed

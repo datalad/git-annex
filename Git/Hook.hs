@@ -28,7 +28,7 @@ instance Eq Hook where
 	a == b = hookName a == hookName b
 
 hookFile :: Hook -> Repo -> FilePath
-hookFile h r = localGitDir r </> "hooks" </> hookName h
+hookFile h r = fromRawFilePath (localGitDir r) </> "hooks" </> hookName h
 
 {- Writes a hook. Returns False if the hook already exists with a different
  - content. Upgrades old scripts.

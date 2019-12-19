@@ -58,11 +58,11 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| absoluteGitPath dir = hunt
+	| absoluteGitPath (encodeBS dir) = hunt
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where
-	ret = pure . newFrom . LocalUnknown
+	ret = pure . newFrom . LocalUnknown . toRawFilePath
 	canondir = dropTrailingPathSeparator dir
 	{- When dir == "foo/.git", git looks for "foo/.git/.git",
 	 - and failing that, uses "foo" as the repository. -}
@@ -117,7 +117,7 @@ localToUrl reference r
 				[ Url.scheme reference
 				, "//"
 				, auth
-				, repoPath r
+				, fromRawFilePath (repoPath r)
 				]
 			in r { location = Url $ fromJust $ parseURI absurl }
 
@@ -128,7 +128,7 @@ fromRemotes repo = mapM construct remotepairs
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
 	remotepairs = filterkeys isRemoteKey
-	construct (k,v) = remoteNamedFromKey k $ fromRemoteLocation v repo
+	construct (k,v) = remoteNamedFromKey k (fromRemoteLocation (fromConfigValue v) repo)
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
 remoteNamed :: String -> IO Repo -> IO Repo
@@ -138,7 +138,7 @@ remoteNamed n constructor = do
 
 {- Sets the name of a remote based on the git config key, such as
  - "remote.foo.url". -}
-remoteNamedFromKey :: String -> IO Repo -> IO Repo
+remoteNamedFromKey :: ConfigKey -> IO Repo -> IO Repo
 remoteNamedFromKey = remoteNamed . remoteKeyToRemoteName
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
@@ -154,7 +154,7 @@ fromRemoteLocation s repo = gen $ parseRemoteLocation s repo
 fromRemotePath :: FilePath -> Repo -> IO Repo
 fromRemotePath dir repo = do
 	dir' <- expandTilde dir
-	fromPath $ repoPath repo </> dir'
+	fromPath $ fromRawFilePath (repoPath repo) </> dir'
 
 {- Git remotes can have a directory that is specified relative
  - to the user's home directory, or that contains tilde expansions.
@@ -204,7 +204,7 @@ checkForRepo dir =
   where
 	check test cont = maybe cont (return . Just) =<< test
 	checkdir c = ifM c
-		( return $ Just $ LocalUnknown dir
+		( return $ Just $ LocalUnknown $ toRawFilePath dir
 		, return Nothing
 		)
 	isRepo = checkdir $ 
@@ -224,9 +224,9 @@ checkForRepo dir =
 			catchDefaultIO "" (readFile $ dir </> ".git")
 		return $ if gitdirprefix `isPrefixOf` c
 			then Just $ Local 
-				{ gitdir = absPathFrom dir $
+				{ gitdir = toRawFilePath $ absPathFrom dir $
 					drop (length gitdirprefix) c
-				, worktree = Just dir
+				, worktree = Just (toRawFilePath dir)
 				}
 			else Nothing
 	  where

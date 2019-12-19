@@ -25,28 +25,28 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek ps = (withFilesInGit $ commandAction . whenAnnexed start) =<< workTreeItems ps
 
-start :: FilePath -> Key -> CommandStart
+start :: RawFilePath -> Key -> CommandStart
 start file key = stopUnless (inAnnex key) $
 	starting "unannex" (mkActionItem (key, file)) $
 		perform file key
 
-perform :: FilePath -> Key -> CommandPerform
+perform :: RawFilePath -> Key -> CommandPerform
 perform file key = do
-	liftIO $ removeFile file
+	liftIO $ removeFile (fromRawFilePath file)
 	inRepo $ Git.Command.run
 		[ Param "rm"
 		, Param "--cached"
 		, Param "--force"
 		, Param "--quiet"
 		, Param "--"
-		, File file
+		, File (fromRawFilePath file)
 		]
 	next $ cleanup file key
 
-cleanup :: FilePath -> Key -> CommandCleanup
+cleanup :: RawFilePath -> Key -> CommandCleanup
 cleanup file key = do
 	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
-	src <- calcRepo $ gitAnnexLocation key
+	src <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 	ifM (Annex.getState Annex.fast)
 		( do
 			-- Only make a hard link if the annexed file does not
@@ -61,11 +61,12 @@ cleanup file key = do
 		, copyfrom src
 		)
   where
+	file' = fromRawFilePath file
 	copyfrom src = 
-		thawContent file `after` liftIO (copyFileExternal CopyAllMetaData src file)
+		thawContent file' `after` liftIO (copyFileExternal CopyAllMetaData src file')
 	hardlinkfrom src =
 		-- creating a hard link could fall; fall back to copying
-		ifM (liftIO $ catchBoolIO $ createLink src file >> return True)
+		ifM (liftIO $ catchBoolIO $ createLink src file' >> return True)
 			( return True
 			, copyfrom src
 			)

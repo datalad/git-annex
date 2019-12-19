@@ -99,9 +99,10 @@ checkoutViewBranch view mkbranch = do
 		 - and this pollutes the view, so remove them.
 		 - (However, emptry directories used by submodules are not
 		 - removed.) -}
-		top <- liftIO . absPath =<< fromRepo Git.repoPath
+		top <- liftIO . absPath . fromRawFilePath =<< fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $
-			LsFiles.notInRepoIncludingEmptyDirectories False [top]
+			LsFiles.notInRepoIncludingEmptyDirectories False
+				[toRawFilePath top]
 		forM_ l (removeemptydir top)
 		liftIO $ void cleanup
 		unlessM (liftIO $ doesDirectoryExist here) $ do
@@ -110,7 +111,7 @@ checkoutViewBranch view mkbranch = do
   where
 	removeemptydir top d = do
 		p <- inRepo $ toTopFilePath d
-		liftIO $ tryIO $ removeDirectory (top </> getTopFilePath p)
+		liftIO $ tryIO $ removeDirectory (top </> fromRawFilePath (getTopFilePath p))
 	cwdmissing top = unlines
 		[ "This view does not include the subdirectory you are currently in."
 		, "Perhaps you should:  cd " ++ top

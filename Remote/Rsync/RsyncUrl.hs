@@ -13,13 +13,14 @@ import Types
 import Annex.Locations
 import Utility.Rsync
 import Utility.SafeCommand
-
-import Data.Default
-import System.FilePath.Posix
+import Utility.FileSystemEncoding
+import Annex.DirHashes
 #ifdef mingw32_HOST_OS
 import Utility.Split
 #endif
-import Annex.DirHashes
+
+import Data.Default
+import System.FilePath.Posix
 
 type RsyncUrl = String
 
@@ -42,8 +43,8 @@ mkRsyncUrl o f = rsyncUrl o </> rsyncEscape o f
 rsyncUrls :: RsyncOpts -> Key -> [RsyncUrl]
 rsyncUrls o k = map use dirHashes
   where
-	use h = rsyncUrl o </> hash h </> rsyncEscape o (f </> f)
-	f = keyFile k
+	use h = rsyncUrl o </> fromRawFilePath (hash h) </> rsyncEscape o (f </> f)
+	f = fromRawFilePath (keyFile k)
 #ifndef mingw32_HOST_OS
 	hash h = h def k
 #else

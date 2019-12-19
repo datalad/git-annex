@@ -293,7 +293,7 @@ runRelayService conn runner service =
 	
 	serviceproc = gitCreateProcess
 		[ Param cmd
-		, File (repoPath (connRepo conn))
+		, File (fromRawFilePath (repoPath (connRepo conn)))
 		] (connRepo conn)
 
 	setup = do

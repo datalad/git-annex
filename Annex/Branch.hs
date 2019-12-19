@@ -215,7 +215,7 @@ updateTo' pairs = do
  - content is returned.
  -
  - Returns an empty string if the file doesn't exist yet. -}
-get :: FilePath -> Annex L.ByteString
+get :: RawFilePath -> Annex L.ByteString
 get file = do
 	update
 	getLocal file
@@ -224,21 +224,21 @@ get file = do
  - reflect changes in remotes.
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
-getLocal :: FilePath -> Annex L.ByteString
+getLocal :: RawFilePath -> Annex L.ByteString
 getLocal file = go =<< getJournalFileStale file
   where
 	go (Just journalcontent) = return journalcontent
 	go Nothing = getRef fullname file
 
 {- Gets the content of a file as staged in the branch's index. -}
-getStaged :: FilePath -> Annex L.ByteString
+getStaged :: RawFilePath -> Annex L.ByteString
 getStaged = getRef indexref
   where
 	-- This makes git cat-file be run with ":file",
 	-- so it looks at the index.
 	indexref = Ref ""
 
-getHistorical :: RefDate -> FilePath -> Annex L.ByteString
+getHistorical :: RefDate -> RawFilePath -> Annex L.ByteString
 getHistorical date file =
 	-- This check avoids some ugly error messages when the reflog
 	-- is empty.
@@ -247,7 +247,7 @@ getHistorical date file =
 		, getRef (Git.Ref.dateRef fullname date) file
 		)
 
-getRef :: Ref -> FilePath -> Annex L.ByteString
+getRef :: Ref -> RawFilePath -> Annex L.ByteString
 getRef ref file = withIndex $ catFile ref file
 
 {- Applies a function to modify the content of a file.
@@ -255,11 +255,11 @@ getRef ref file = withIndex $ catFile ref file
  - Note that this does not cause the branch to be merged, it only
  - modifes the current content of the file on the branch.
  -}
-change :: Journalable content => FilePath -> (L.ByteString -> content) -> Annex ()
+change :: Journalable content => RawFilePath -> (L.ByteString -> content) -> Annex ()
 change file f = lockJournal $ \jl -> f <$> getLocal file >>= set jl file
 
 {- Applies a function which can modify the content of a file, or not. -}
-maybeChange :: Journalable content => FilePath -> (L.ByteString -> Maybe content) -> Annex ()
+maybeChange :: Journalable content => RawFilePath -> (L.ByteString -> Maybe content) -> Annex ()
 maybeChange file f = lockJournal $ \jl -> do
 	v <- getLocal file
 	case f v of
@@ -269,7 +269,7 @@ maybeChange file f = lockJournal $ \jl -> do
 		_ -> noop
 
 {- Records new content of a file into the journal -}
-set :: Journalable content => JournalLocked -> FilePath -> content -> Annex ()
+set :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex ()
 set = setJournalFile
 
 {- Commit message used when making a commit of whatever data has changed
@@ -353,23 +353,23 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 
 {- Lists all files on the branch. including ones in the journal
  - that have not been committed yet. There may be duplicates in the list. -}
-files :: Annex [FilePath]
+files :: Annex [RawFilePath]
 files = do
 	update
 	-- ++ forces the content of the first list to be buffered in memory,
 	-- so use getJournalledFilesStale which should be much smaller most
 	-- of the time. branchFiles will stream as the list is consumed.
 	(++)
-		<$> getJournalledFilesStale
+		<$> (map toRawFilePath <$> getJournalledFilesStale)
 		<*> branchFiles
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
-branchFiles :: Annex [FilePath]
+branchFiles :: Annex [RawFilePath]
 branchFiles = withIndex $ inRepo branchFiles'
 
-branchFiles' :: Git.Repo -> IO [FilePath]
-branchFiles' = Git.Command.pipeNullSplitZombie
+branchFiles' :: Git.Repo -> IO [RawFilePath]
+branchFiles' = Git.Command.pipeNullSplitZombie'
 	(lsTreeParams Git.LsTree.LsTreeRecursive fullname [Param "--name-only"])
 
 {- Populates the branch's index file with the current branch contents.
@@ -482,7 +482,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 				sha <- Git.HashObject.hashFile h path
 				hPutStrLn jlogh file
 				streamer $ Git.UpdateIndex.updateIndexLine
-					sha TreeFile (asTopFilePath $ fileJournal file)
+					sha TreeFile (asTopFilePath $ fileJournal $ toRawFilePath file)
 			genstream dir h jh jlogh streamer
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the
@@ -593,7 +593,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 			if L.null content'
 				then do
 					Annex.Queue.addUpdateIndex
-						=<< inRepo (Git.UpdateIndex.unstageFile file)
+						=<< inRepo (Git.UpdateIndex.unstageFile (fromRawFilePath file))
 					-- File is deleted; can't run any other
 					-- transitions on it.
 					return ()

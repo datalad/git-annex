@@ -9,6 +9,8 @@ module Command.Find where
 
 import Data.Default
 import qualified Data.Map as M
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 
 import Command
 import Annex.Content
@@ -57,17 +59,17 @@ seek o = case batchOption o of
 		(commandAction . startKeys o)
 		(withFilesInGit (commandAction . go))
 		=<< workTreeItems (findThese o)
-	Batch fmt -> batchFilesMatching fmt go
+	Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
   where
 	go = whenAnnexed $ start o
 
 -- only files inAnnex are shown, unless the user has requested
 -- others via a limit
-start :: FindOptions -> FilePath -> Key -> CommandStart
+start :: FindOptions -> RawFilePath -> Key -> CommandStart
 start o file key =
 	stopUnless (limited <||> inAnnex key) $
 		startingCustomOutput key $ do
-			showFormatted (formatOption o) file $ ("file", file) : keyVars key
+			showFormatted (formatOption o) file $ ("file", fromRawFilePath file) : keyVars key
 			next $ return True
 
 startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
@@ -75,11 +77,11 @@ startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) =
 	start o (getTopFilePath topf) key
 startKeys _ _ = stop
 
-showFormatted :: Maybe Utility.Format.Format -> String -> [(String, String)] -> Annex ()
+showFormatted :: Maybe Utility.Format.Format -> S.ByteString -> [(String, String)] -> Annex ()
 showFormatted format unformatted vars =
 	unlessM (showFullJSON $ JSONChunk vars) $
 		case format of
-			Nothing -> liftIO $ putStrLn unformatted
+			Nothing -> liftIO $ S8.putStrLn unformatted
 			Just formatter -> liftIO $ putStr $
 				Utility.Format.format formatter $
 					M.fromList vars
@@ -91,8 +93,8 @@ keyVars key =
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
 	, ("keyname", decodeBS $ fromKey keyName key)
-	, ("hashdirlower", hashDirLower def key)
-	, ("hashdirmixed", hashDirMixed def key)
+	, ("hashdirlower", fromRawFilePath $ hashDirLower def key)
+	, ("hashdirmixed", fromRawFilePath $ hashDirMixed def key)
 	, ("mtime", whenavail show $ fromKey keyMtime key)
 	]
   where

@@ -1,16 +1,23 @@
 {- git data types
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Git.Types where
 
 import Network.URI
+import Data.String
+import Data.Default
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import System.Posix.Types
 import Utility.SafeCommand
+import Utility.FileSystemEncoding
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -23,17 +30,17 @@ import Utility.SafeCommand
  - else known about it.
  -}
 data RepoLocation
-	= Local { gitdir :: FilePath, worktree :: Maybe FilePath }
-	| LocalUnknown FilePath
+	= Local { gitdir :: RawFilePath, worktree :: Maybe RawFilePath }
+	| LocalUnknown RawFilePath
 	| Url URI
 	| Unknown
 	deriving (Show, Eq, Ord)
 
 data Repo = Repo
 	{ location :: RepoLocation
-	, config :: M.Map String String
+	, config :: M.Map ConfigKey ConfigValue
 	-- a given git config key can actually have multiple values
-	, fullconfig :: M.Map String [String]
+	, fullconfig :: M.Map ConfigKey [ConfigValue]
 	-- remoteName holds the name used for this repo in some other
 	-- repo's list of remotes, when this repo is such a remote
 	, remoteName :: Maybe RemoteName
@@ -43,6 +50,33 @@ data Repo = Repo
 	-- global options to pass to git when running git commands
 	, gitGlobalOpts :: [CommandParam]
 	} deriving (Show, Eq, Ord)
+
+newtype ConfigKey = ConfigKey S.ByteString
+	deriving (Ord, Eq)
+
+newtype ConfigValue = ConfigValue S.ByteString
+	deriving (Ord, Eq, Semigroup, Monoid)
+
+instance Default ConfigValue where
+	def = ConfigValue mempty
+
+fromConfigKey :: ConfigKey -> String
+fromConfigKey (ConfigKey s) = decodeBS' s
+
+instance Show ConfigKey where
+	show = fromConfigKey
+
+fromConfigValue :: ConfigValue -> String
+fromConfigValue (ConfigValue s) = decodeBS' s
+
+instance Show ConfigValue where
+	show = fromConfigValue
+
+instance IsString ConfigKey where
+	fromString = ConfigKey . encodeBS'
+
+instance IsString ConfigValue where
+	fromString = ConfigValue . encodeBS'
 
 type RemoteName = String
 
@@ -64,32 +98,31 @@ newtype RefDate = RefDate String
 
 {- Types of objects that can be stored in git. -}
 data ObjectType = BlobObject | CommitObject | TreeObject
-	deriving (Eq)
 
-instance Show ObjectType where
-	show BlobObject = "blob"
-	show CommitObject = "commit"
-	show TreeObject = "tree"
-
-readObjectType :: String -> Maybe ObjectType
+readObjectType :: S.ByteString -> Maybe ObjectType
 readObjectType "blob" = Just BlobObject
 readObjectType "commit" = Just CommitObject
 readObjectType "tree" = Just TreeObject
 readObjectType _ = Nothing
 
+fmtObjectType :: ObjectType -> S.ByteString
+fmtObjectType BlobObject = "blob"
+fmtObjectType CommitObject = "commit"
+fmtObjectType TreeObject = "tree"
+
 {- Types of items in a tree. -}
 data TreeItemType = TreeFile | TreeExecutable | TreeSymlink | TreeSubmodule
-	deriving (Eq)
+	deriving (Eq, Show)
 
 {- Git uses magic numbers to denote the type of a tree item. -}
-readTreeItemType :: String -> Maybe TreeItemType
+readTreeItemType :: S.ByteString -> Maybe TreeItemType
 readTreeItemType "100644" = Just TreeFile
 readTreeItemType "100755" = Just TreeExecutable
 readTreeItemType "120000" = Just TreeSymlink
 readTreeItemType "160000" = Just TreeSubmodule
 readTreeItemType _ = Nothing
 
-fmtTreeItemType :: TreeItemType -> String
+fmtTreeItemType :: TreeItemType -> S.ByteString
 fmtTreeItemType TreeFile = "100644"
 fmtTreeItemType TreeExecutable = "100755"
 fmtTreeItemType TreeSymlink = "120000"

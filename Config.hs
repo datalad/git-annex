@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Config where
 
@@ -22,25 +23,26 @@ import qualified Types.Remote as Remote
 import qualified Annex.SpecialRemote.Config as SpecialRemote
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 
-type UnqualifiedConfigKey = String
-data ConfigKey = ConfigKey String
-
-instance Show ConfigKey where
-	show (ConfigKey s) = s
+type UnqualifiedConfigKey = S.ByteString
 
 {- Looks up a setting in git config. This is not as efficient as using the
  - GitConfig type. -}
-getConfig :: ConfigKey -> String -> Annex String
-getConfig (ConfigKey key) d = fromRepo $ Git.Config.get key d
+getConfig :: ConfigKey -> ConfigValue -> Annex ConfigValue
+getConfig key d = fromRepo $ Git.Config.get key d
 
-getConfigMaybe :: ConfigKey -> Annex (Maybe String)
-getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
+getConfigMaybe :: ConfigKey -> Annex (Maybe ConfigValue)
+getConfigMaybe key = fromRepo $ Git.Config.getMaybe key
 
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
-	inRepo $ Git.Command.run [Param "config", Param key, Param value]
+	inRepo $ Git.Command.run
+		[ Param "config"
+		, Param (decodeBS' key)
+		, Param value
+		]
 	reloadConfig
 
 reloadConfig :: Annex ()
@@ -48,7 +50,7 @@ reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 
 {- Unsets a git config setting. (Leaves it in state.) -}
 unsetConfig :: ConfigKey -> Annex ()
-unsetConfig (ConfigKey key) = void $ inRepo $ Git.Config.unset key
+unsetConfig key = void $ inRepo $ Git.Config.unset key
 
 class RemoteNameable r where
 	getRemoteName :: r -> RemoteName
@@ -68,11 +70,11 @@ instance RemoteNameable Remote.RemoteConfig where
 {- A per-remote config setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
 remoteConfig r key = ConfigKey $
-	"remote." ++ getRemoteName r ++ ".annex-" ++ key
+	"remote." <> encodeBS' (getRemoteName r) <> ".annex-" <> key
 
 {- A global annex setting in git config. -}
 annexConfig :: UnqualifiedConfigKey -> ConfigKey
-annexConfig key = ConfigKey $ "annex." ++ key
+annexConfig key = ConfigKey ("annex." <> key)
 
 {- Calculates cost for a remote. Either the specific default, or as configured 
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
