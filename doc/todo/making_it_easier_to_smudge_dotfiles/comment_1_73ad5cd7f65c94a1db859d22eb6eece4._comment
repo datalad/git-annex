@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-12-19T16:08:09Z"
+ content="""
+Hmm, it used to be that `git add .` would smudge all dotfiles without that
+line, but now annex.largefiles has to be configured for it to smudge
+anything.
+
+So, this could be dealt with in annex.largefiles. Both "anything" and
+"include=*" currently match dotfiles. It's kind of weird really that "*"
+matches dotfiles; it does not in the shell. If "*" did not match dotfiles
+(and "anything" is just an alias for "include=*"), it would be fairly safe
+to remove the ".* !filter" line by default. (If annex.largefiles has a
+content-based setting, and a dotfile is large enough or the right mime type
+or whatever, it's reasonable to default to smudging it.)
+
+Then, you could set annex.largfiles to match the dotfiles you want,
+eg "include=* or include=.mydotfile". You could put the config in
+.gitattributes if you want to configure it globally.
+
+This change to annex.largefiles would also let `git-annex add`
+stop skipping dotfiles by default; instead annex.largefiles would not match
+dotfiles unless the user explicitly configured it to, and so the dotfiles
+would be added as small files, directly to git.
+
+I like this because it unifies the behaviors of the two ways of adding,
+and it reduces the complexity, rather than adding more.
+
+Removing the ".* !filter" line would need to be done as part of the v8
+upgrade, or a later upgrade.
+"""]]
