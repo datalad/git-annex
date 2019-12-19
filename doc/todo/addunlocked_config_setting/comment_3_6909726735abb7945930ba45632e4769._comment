@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-12-19T15:29:40Z"
+ content="""
+Retargeting this todo at something useful post-git-add-kerfluffle,
+annex.addunlocked could usefully be a pagespec to allow adding some files
+unlocked and others locked (by git-annex add only, not git add).
+"true" would be the same as "anything" and false as "nothing".
+
+---
+
+It may also then make sense to let it be configured in .gitattributes.
+Although, the ugliness of setting a pagespec in .gitattributes,
+as was done for annex.largefiles, coupled with the overhead of needing to
+query that from git-check-attr for every file, makes me wary.
+
+(Surprising amount of `git-annex add` time is in querying the
+annex.largefiles and annex.backend attributes. Setting the former in
+gitconfig avoids the attribute query and speeds up add of smaller files by
+2%. Granted I've sped up add (except hashing) by probably 20% this month,
+and with large files the hashing dominates.)
+
+The query overhead could maybe be finessed: Since adding a file
+already queries gitattributes for two other things, a single query could be
+done for a file and the result cached.
+
+Letting it be globally configured via `git-annex config` is an alternative
+that I'm leaning toward.
+(That would also need some caching, easier to implement and faster
+since it is not a per-file value as the gitattribute would be.)
+"""]]
