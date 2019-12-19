@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-12-19T20:37:18Z"
+ content="""
+How about annex.dotfiles=true enables annexing dotfiles, but only
+if annex.largefiles is set to something. Leave it up
+to the user to configure annex.largefiles according to their use case.
+And if the user neglects to annex.largefiles, this avoids blowing their foot
+off by default.
+
+annex.dotfiles could certainly go in the global `git-annex config`;
+annex.largefiles would then make sense to be set in .gitattributes,
+or also add support for storing in in `git-annex config` (which avoids
+the syntatic hacks needed to shoehorn it into .gitattributes, and makes it
+be repo-global the same as the annex.dotfiles config).
+"""]]
