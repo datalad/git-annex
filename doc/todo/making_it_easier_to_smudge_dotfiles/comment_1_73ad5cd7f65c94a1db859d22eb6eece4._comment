@@ -9,7 +9,7 @@ anything.
 
 So, this could be dealt with in annex.largefiles. Both `anything` and
 `include=*` currently match dotfiles. It's kind of weird really that `*`
-matches dotfiles; it does not in the shell. If *` did not match dotfiles
+matches dotfiles; it does not in the shell. If `*` did not match dotfiles
 (and `anything` is just an alias for `include=*`), it would be fairly safe
 to remove the `.* !filter` line by default. (If annex.largefiles has a
 content-based setting, and a dotfile is large enough or the right mime type
