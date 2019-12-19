@@ -195,12 +195,12 @@ recordFailedTransfer t info = do
 transferFile :: Transfer -> Git.Repo -> FilePath
 transferFile (Transfer direction u kd) r = transferDir direction r
 	</> filter (/= '/') (fromUUID u)
-	</> keyFile (mkKey (const kd))
+	</> fromRawFilePath (keyFile (mkKey (const kd)))
 
 {- The transfer information file to use to record a failed Transfer -}
 failedTransferFile :: Transfer -> Git.Repo -> FilePath
 failedTransferFile (Transfer direction u kd) r = failedTransferDir u direction r
-	</> keyFile (mkKey (const kd))
+	</> fromRawFilePath (keyFile (mkKey (const kd)))
 
 {- The transfer lock file corresponding to a given transfer info file. -}
 transferLockFile :: FilePath -> FilePath
@@ -215,7 +215,7 @@ parseTransferFile file
 		[direction, u, key] -> Transfer
 			<$> parseDirection direction
 			<*> pure (toUUID u)
-			<*> fmap (fromKey id) (fileKey key)
+			<*> fmap (fromKey id) (fileKey (toRawFilePath key))
 		_ -> Nothing
   where
 	bits = splitDirectories file

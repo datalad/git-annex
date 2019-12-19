@@ -9,7 +9,7 @@ Benchmarking `git-annex find`, speedups range from 28-66%. The files fly by
 much more snappily. Other commands likely also speed up, but do more work
 than find so the improvement is not as large.
 
-The `bs` branch is in a mergeable state now.
+The `bs` branch is in a mergeable state now. [[done]]
 
 Stuff not entirely finished:
 

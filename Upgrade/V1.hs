@@ -238,7 +238,7 @@ logFile2 = logFile' (hashDirLower def)
 
 logFile' :: (Key -> RawFilePath) -> Key -> Git.Repo -> String
 logFile' hasher key repo =
-	gitStateDir repo ++ fromRawFilePath (hasher key) ++ keyFile key ++ ".log"
+	gitStateDir repo ++ fromRawFilePath (hasher key) ++ fromRawFilePath (keyFile key) ++ ".log"
 
 stateDir :: FilePath
 stateDir = addTrailingPathSeparator ".git-annex"

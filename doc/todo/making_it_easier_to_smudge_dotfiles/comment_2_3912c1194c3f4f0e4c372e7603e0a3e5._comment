@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-12-19T17:17:31Z"
+ content="""
+`*` is not only used in annex.largefiles, but other pagespecs too.
+Like preferred content:
+
+	exclude=archive/*
+
+So changing `*` to not match dotfiles would have wide reaching effects,
+and it's really not good for different versions of git-annex to parse
+preferred content expressions differently. And it seems too confusing to
+have `*` match differently in annex.largefiles than in other pagespecs.
+
+Having a single config that controls both kinds of adds still seems like a
+good idea, but I don't know what that config should be.
+annex.largedotfiles?
+"""]]

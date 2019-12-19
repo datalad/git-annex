@@ -43,6 +43,9 @@ import Git.Command
 import Git.Types
 import Git.Index
 
+import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
+
 {- Runs an action that reads from the database.
  -
  - If the database doesn't already exist, it's not created; mempty is
@@ -263,7 +266,7 @@ reconcileStaged qh = do
 		-- pointer file. And a pointer file that is replaced with
 		-- a non-pointer file will match this.
 		, Param $ "-G^" ++ fromRawFilePath (toInternalGitPath $
-			toRawFilePath (pathSeparator:objectDir))
+			P.pathSeparator `S.cons` objectDir')
 		-- Don't include files that were deleted, because this only
 		-- wants to update information for files that are present
 		-- in the index.

@@ -44,7 +44,7 @@ rsyncUrls :: RsyncOpts -> Key -> [RsyncUrl]
 rsyncUrls o k = map use dirHashes
   where
 	use h = rsyncUrl o </> fromRawFilePath (hash h) </> rsyncEscape o (f </> f)
-	f = keyFile k
+	f = fromRawFilePath (keyFile k)
 #ifndef mingw32_HOST_OS
 	hash h = h def k
 #else

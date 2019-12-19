@@ -36,7 +36,7 @@ inLocation d = inDAVLocation (</> d')
 
 {- The directory where files(s) for a key are stored. -}
 keyDir :: Key -> DavLocation
-keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
+keyDir k = addTrailingPathSeparator $ hashdir </> fromRawFilePath (keyFile k)
   where
 #ifndef mingw32_HOST_OS
 	hashdir = fromRawFilePath $ hashDirLower def k
@@ -45,7 +45,7 @@ keyDir k = addTrailingPathSeparator $ hashdir </> keyFile k
 #endif
 
 keyLocation :: Key -> DavLocation
-keyLocation k = keyDir k ++ keyFile k
+keyLocation k = keyDir k ++ fromRawFilePath (keyFile k)
 
 {- Paths containing # or ? cannot be represented in an url, so fails on
  - those. -}
@@ -60,7 +60,7 @@ exportLocation l =
 
 {- Where we store temporary data for a key as it's being uploaded. -}
 keyTmpLocation :: Key -> DavLocation
-keyTmpLocation = tmpLocation . keyFile
+keyTmpLocation = tmpLocation . fromRawFilePath . keyFile
 
 tmpLocation :: FilePath -> DavLocation
 tmpLocation f = "git-annex-webdav-tmp-" ++ f

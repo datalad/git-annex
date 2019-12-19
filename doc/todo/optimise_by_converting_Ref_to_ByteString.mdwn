@@ -1,0 +1,3 @@
+Profiling of `git annex find --not --in web` suggests that converting Ref
+to contain a ByteString, rather than a String, would eliminate a
+fromRawFilePath that uses about 1% of runtime.

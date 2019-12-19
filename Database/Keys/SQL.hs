@@ -17,7 +17,6 @@ import Database.Types
 import Database.Handle
 import qualified Database.Queue as H
 import Utility.InodeCache
-import Utility.FileSystemEncoding
 import Git.FilePath
 
 import Database.Persist.Sql hiding (Key)

@@ -58,7 +58,7 @@ startCheckIncomplete file _ = giveup $ unlines
 
 finish :: Annex ()
 finish = do
-	annexdir <- fromRepo gitAnnexDir
+	annexdir <- fromRawFilePath <$> fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< listKeys InAnnex
 	prepareRemoveAnnexDir annexdir

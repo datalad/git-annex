@@ -46,7 +46,7 @@ upgrade automatic = do
 	return True
 
 gitAnnexKeysDbOld :: Git.Repo -> FilePath
-gitAnnexKeysDbOld r = gitAnnexDir r </> "keys"
+gitAnnexKeysDbOld r = fromRawFilePath (gitAnnexDir r) </> "keys"
 
 gitAnnexKeysDbLockOld :: Git.Repo -> FilePath
 gitAnnexKeysDbLockOld r = gitAnnexKeysDbOld r ++ ".lck"
@@ -55,7 +55,7 @@ gitAnnexKeysDbIndexCacheOld :: Git.Repo -> FilePath
 gitAnnexKeysDbIndexCacheOld r = gitAnnexKeysDbOld r ++ ".cache"
 
 gitAnnexContentIdentifierDbDirOld :: Git.Repo -> FilePath
-gitAnnexContentIdentifierDbDirOld r = gitAnnexDir r </> "cids"
+gitAnnexContentIdentifierDbDirOld r = fromRawFilePath (gitAnnexDir r) </> "cids"
 
 gitAnnexContentIdentifierLockOld :: Git.Repo -> FilePath
 gitAnnexContentIdentifierLockOld r = gitAnnexContentIdentifierDbDirOld r ++ ".lck"

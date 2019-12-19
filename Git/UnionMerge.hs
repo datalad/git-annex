@@ -70,18 +70,18 @@ diffOpts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
 doMerge :: HashObjectHandle -> CatFileHandle -> [String] -> Repo -> Streamer
 doMerge hashhandle ch differ repo streamer = do
 	(diff, cleanup) <- pipeNullSplit (map Param differ) repo
-	go (map decodeBL' diff)
+	go diff
 	void $ cleanup
   where
 	go [] = noop
-	go (info:file:rest) = mergeFile info file hashhandle ch >>=
+	go (info:file:rest) = mergeFile (decodeBL' info) (L.toStrict file) hashhandle ch >>=
 		maybe (go rest) (\l -> streamer l >> go rest)
 	go (_:[]) = error $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the
  - diff. -}
-mergeFile :: String -> FilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
+mergeFile :: String -> RawFilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
 mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
@@ -91,7 +91,7 @@ mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha]
   where
 	[_colonmode, _bmode, asha, bsha, _status] = words info
 	use sha = return $ Just $
-		updateIndexLine sha TreeFile $ asTopFilePath $ toRawFilePath file
+		updateIndexLine sha TreeFile $ asTopFilePath file
 	-- Get file and split into lines to union merge.
 	-- The encoding of the file is assumed to be either ASCII or utf-8;
 	-- in either case it's safe to split on \n

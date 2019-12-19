@@ -91,6 +91,8 @@ import Annex.Concurrent
 import Types.WorkerPool
 import qualified Utility.RawFilePath as R
 
+import qualified System.FilePath.ByteString as P
+
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
 inAnnex key = inAnnexCheck key $ liftIO . R.doesPathExist
@@ -742,7 +744,7 @@ listKeys keyloc = do
 		if depth < 2
 			then do
 				contents' <- filterM (present s) contents
-				let keys = mapMaybe (fileKey . takeFileName) contents'
+				let keys = mapMaybe (fileKey . P.takeFileName . toRawFilePath) contents'
 				continue keys []
 			else do
 				let deeper = walk s (depth - 1)
@@ -816,7 +818,7 @@ dirKeys dirspec = do
 			contents <- liftIO $ getDirectoryContents dir
 			files <- liftIO $ filterM doesFileExist $
 				map (dir </>) contents
-			return $ mapMaybe (fileKey . takeFileName) files
+			return $ mapMaybe (fileKey . P.takeFileName . toRawFilePath) files
 		, return []
 		)
 
@@ -835,7 +837,8 @@ staleKeysPrune dirspec nottransferred = do
 
 	dir <- fromRepo dirspec
 	forM_ dups $ \k ->
-		pruneTmpWorkDirBefore (dir </> keyFile k) (liftIO . removeFile)
+		pruneTmpWorkDirBefore (dir </> fromRawFilePath (keyFile k))
+			(liftIO . removeFile)
 
 	if nottransferred
 		then do

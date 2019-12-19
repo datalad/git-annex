@@ -454,7 +454,7 @@ disk_size :: Stat
 disk_size = simpleStat "available local disk space" $
 	calcfree
 		<$> (lift $ annexDiskReserve <$> Annex.getGitConfig)
-		<*> (lift $ inRepo $ getDiskFree . gitAnnexDir)
+		<*> (lift $ inRepo $ getDiskFree . fromRawFilePath . gitAnnexDir)
 		<*> mkSizer
   where
 	calcfree reserve (Just have) sizer = unwords
@@ -674,7 +674,7 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
 		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
-			getFileSize (dir </> keyFile k)
+			getFileSize (dir </> fromRawFilePath (keyFile k))
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"
