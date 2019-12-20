@@ -911,8 +911,8 @@ Like other git commands, git-annex is configured via `.git/config`.
 
 * `annex.gitaddtoannex`
 
-  Setting this to false will prevent `git add` from honoring the 
-  annex.largefiles configuration.
+  Setting this to false will prevent `git add` from adding
+  files to the annex, despite the annex.largefiles configuration.
 
 * `annex.addsmallfiles`
 
