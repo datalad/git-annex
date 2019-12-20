@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="oh hoh, there is mimeencoding now"
+ date="2019-12-20T19:54:04Z"
+ content="""
+OH!! \"Much ado about nothing\". As [Joey reported in datalad issues](https://github.com/datalad/datalad/issues/3361#issuecomment-488018126) there is now handling of `mimeencoding=binary` as the ultimate decision maker.  So we are probably doomed (unless Joey sees reason in the reasoning above and implements that as well) to do go through all datasets and autoadjust them to use `mimeencoding` instead of `mimetype`.
+"""]]
