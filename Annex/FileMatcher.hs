@@ -210,21 +210,21 @@ largeFilesMatcher :: Annex GetFileMatcher
 largeFilesMatcher = go =<< getGitConfigVal' annexLargeFiles
   where
 	go (HasGitConfig (Just expr)) = do
-		matcher <- mkmatcher expr
+		matcher <- mkmatcher expr "git config"
 		return $ const $ return matcher
 	go v = return $ \file -> do
 		expr <- checkAttr "annex.largefiles" file
 		if null expr || expr == unspecifiedAttr
 			then case v of
 				HasGlobalConfig (Just expr') ->
-					mkmatcher expr'
+					mkmatcher expr' "git-annex config"
 				_ -> return matchAll
-			else mkmatcher expr
+			else mkmatcher expr "gitattributes"
 
-	mkmatcher expr = do
+	mkmatcher expr cfgfrom = do
 		parser <- mkLargeFilesParser
-		either badexpr return $ parsedToMatcher $ parser expr
-	badexpr e = giveup $ "bad annex.largefiles configuration: " ++ e
+		either (badexpr cfgfrom) return $ parsedToMatcher $ parser expr
+	badexpr cfgfrom e = giveup $ "bad annex.largefiles configuration in " ++ cfgfrom ++ ": " ++ e
 
 simply :: MatchFiles Annex -> ParseResult (MatchFiles Annex)
 simply = Right . Operation
