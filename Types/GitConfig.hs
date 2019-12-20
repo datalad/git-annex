@@ -221,6 +221,7 @@ mergeGitConfig :: GitConfig -> GitConfig -> GitConfig
 mergeGitConfig gitconfig repoglobals = gitconfig
 	{ annexAutoCommit = merge annexAutoCommit
 	, annexSyncContent = merge annexSyncContent
+	, annexResolveMerge = merge annexResolveMerge
 	}
   where
 	merge f = case f gitconfig of

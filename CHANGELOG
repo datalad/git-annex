@@ -5,6 +5,8 @@ git-annex (7.20191219) UNRELEASED; urgency=medium
     like get also sped up in cases where they have to check a lot of
     files but only transfer a few files. Speedups range from 30-100%.
   * Added build dependency on the filepath-bytestring library.
+  * Fixed an oversight that had always prevented annex.resolvemerge
+    from being honored, when it was configured by git-annex config.
 
  -- Joey Hess <id@joeyh.name>  Wed, 18 Dec 2019 15:12:40 -0400
 

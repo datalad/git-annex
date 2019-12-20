@@ -15,7 +15,10 @@ import Logs.Config
 
 {- Gets a specific setting from GitConfig. If necessary, loads the
  - repository-global defaults when the GitConfig does not yet 
- - have a value. -}
+ - have a value.
+ -
+ - Note: Be sure to add the config value to mergeGitConfig.
+ -}
 getGitConfigVal :: (GitConfig -> Configurable a) -> Annex a
 getGitConfigVal f = do
 	v <- f <$> Annex.getGitConfig
