@@ -927,13 +927,14 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   Set to true to make commands like `git-annex add` that add files to the
   repository add them in unlocked form. The default is for these commands
-  to add files in locked form. 
+  to add files in locked form.
   
   (Using `git add` always adds files in unlocked form and it is not
   affected by this setting.)
 
-  When a repository has core.symlinks set to false, it implicitly
-  sets annex.addunlocked to true.
+  When a repository has core.symlinks set to false, or has an adjusted 
+  unlocked branch checked out, this setting is ignored, and files are 
+  always added to the repository in unlocked form.
 
 * `annex.numcopies`
 
