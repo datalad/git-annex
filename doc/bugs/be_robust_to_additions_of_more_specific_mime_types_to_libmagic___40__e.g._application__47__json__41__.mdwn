@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+[Original report](https://git-annex.branchable.com/bugs/manages_to_incorrectly_add_to_annex_instead_of_git_based_on___34__mimetype__34___-_we_cannot_figure_it_out_why/)  was about the change in behavior of git-annex (as a whole installed bundle) that .json files started to be added to git-annex instead of git, whenever .json files remained text files and .gitattributes was configured to add all files with mimetype of text to go into git.
+It happened due to the fact that libmagic added handling for detecting .json files and reporting that they are `application/json` instead of `text/plain` as before.
+
+Note that [initial demand/idea behind adding treatment of mime types](https://git-annex.branchable.com/devblog/day_360__annex.largefiles_mimetype/) was actually to provide automation for the most reasonable decision making on what goes into git and what annex, based on either a file a text file or binary.
+
+The bug report referenced above was just marked "done" with a comment that "the magic database changing behavior is not a bug in git-annex" without actually addressing the underlying issue.  I even somehow got a wrong impression that "we had it fixed" and was surprised to stumble into it again.  I think that the issue should be properly addressed, ideally without requiring users to adjust their `.gitattribute` files (and introducing newer git annex version dependency), so that the desired behavior of having text files going into git, not git-annex, was maintained *even across changes in libmagic DB*.
+
+One, IMHO the easiest way, now that `-k` (keep going) [issue was fixed in libmagic](https://bugs.astron.com/view.php?id=77), would be for git-annex to treat "mimetype" specification as "if any mimetype matches" and ask libmagic about all mimetypes of a file, e.g.:
+
+[[!format sh """
+$> file --mime-type -Lk 1.json
+1.json: application/json\012- text/plain
+"""]]
+
+so that if any structured text file would soon acquire additional, more specific mimetype (e.g., `.md` could be reported as `application/markdown`, just not yet), previous specifications in .gitattributes would still work -- after all those files remain `text/plain` files!
+
+If strict matching (not sure yet about a use case where it would really be needed) by the most specialized mime type is needed, additional "mimetypefirstguess" or alike could be added.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
