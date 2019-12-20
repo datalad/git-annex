@@ -857,13 +857,13 @@ mkState r u gc = do
   where
 	go
 		| remoteAnnexCheckUUID gc = return
-			(return True, return (r, extractGitConfig r))
+			(return True, return (r, extractGitConfig FromGitConfig r))
 		| otherwise = do
 			rv <- liftIO newEmptyMVar
 			let getrepo = ifM (liftIO $ isEmptyMVar rv)
 				( do
 					r' <- tryGitConfigRead False r
-					let t = (r', extractGitConfig r')
+					let t = (r', extractGitConfig FromGitConfig r')
 					void $ liftIO $ tryPutMVar rv t
 					return t
 				, liftIO $ readMVar rv

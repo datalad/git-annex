@@ -30,8 +30,9 @@ import Annex.Common
 import Limit
 import Utility.Matcher
 import Types.Group
-import qualified Annex
 import Types.FileMatcher
+import Types.GitConfig
+import Config.GitConfig
 import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Annex.CheckAttr
@@ -200,17 +201,24 @@ mkLargeFilesParser = do
   where
 
 {- Generates a matcher for files large enough (or meeting other criteria)
- - to be added to the annex, rather than directly to git. -}
+ - to be added to the annex, rather than directly to git.
+ -
+ - annex.largefiles is configured in git config, or git attributes,
+ - or global git-annex config, in that order.
+ -}
 largeFilesMatcher :: Annex GetFileMatcher
-largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
+largeFilesMatcher = go =<< getGitConfigVal' annexLargeFiles
   where
-	go (Just expr) = do
+	go (HasGitConfig (Just expr)) = do
 		matcher <- mkmatcher expr
 		return $ const $ return matcher
-	go Nothing = return $ \file -> do
+	go v = return $ \file -> do
 		expr <- checkAttr "annex.largefiles" file
 		if null expr || expr == unspecifiedAttr
-			then return matchAll
+			then case v of
+				HasGlobalConfig (Just expr') ->
+					mkmatcher expr'
+				_ -> return matchAll
 			else mkmatcher expr
 
 	mkmatcher expr = do

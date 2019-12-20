@@ -894,6 +894,9 @@ Like other git commands, git-annex is configured via `.git/config`.
   "*.mp3 or largerthan(500kb)"
 
   Overrides any annex.largefiles attributes in `.gitattributes` files.
+  
+  To configure a default annex.largefiles for all clones of the repository,
+  this can be set in [[git-annex-config]](1).
 
   This configures the behavior of both git-annex and git when adding
   files to the repository. By default, `git-annex add` adds all files
@@ -1695,9 +1698,12 @@ but the SHA256E backend for ogg files:
 	*.ogg annex.backend=SHA256E
 
 There is a annex.largefiles attribute, which is used to configure which
-files are large enough to be added to the annex.
-See the documentation above of the annex.largefiles git config
-and <https://git-annex.branchable.com/tips/largefiles> for details.
+files are large enough to be added to the annex. Since attributes cannot
+contain spaces, it is difficult to use for more complex annex.largefiles
+settings. Setting annex.largefiles in [[git-annex-config]](1) is an easier
+way to configure it across all clones of the repository. See 
+<https://git-annex.branchable.com/tips/largefiles> for examples and more
+documentation.
 
 The numcopies setting can also be configured on a per-file-type basis via
 the `annex.numcopies` attribute in `.gitattributes` files. This overrides
