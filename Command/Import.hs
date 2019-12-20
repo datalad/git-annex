@@ -102,7 +102,8 @@ seek o@(LocalImportOptions {}) = startConcurrency commandStages $ do
 	unless (null inrepops) $ do
 		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	largematcher <- largeFilesMatcher
-	(commandAction . startLocal largematcher (duplicateMode o))
+	addunlockedmatcher <- addUnlockedMatcher
+	(commandAction . startLocal addunlockedmatcher largematcher (duplicateMode o))
 		`withPathContents` importFiles o
 seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 	r <- getParsed (importFromRemote o)
@@ -114,8 +115,8 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		(importToSubDir o)
 	seekRemote r (importToBranch o) subdir
 
-startLocal :: GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
-startLocal largematcher mode (srcfile, destfile) =
+startLocal :: AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
+startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( starting "import" (ActionItemWorkTreeFile (toRawFilePath destfile))
 			pickaction
@@ -208,7 +209,11 @@ startLocal largematcher mode (srcfile, destfile) =
 		warning $ "not overwriting existing " ++ destfile ++ " " ++ why
 		stop
 	lockdown a = do
-		lockingfile <- not <$> addUnlocked
+		let mi = MatchingFile $ FileInfo
+			{ currFile = toRawFilePath srcfile
+			, matchFile = toRawFilePath destfile
+			}
+		lockingfile <- not <$> addUnlocked addunlockedmatcher mi
 		-- Minimal lock down with no hard linking so nothing
 		-- has to be done to clean up from it.
 		let cfg = LockDownConfig

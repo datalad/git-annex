@@ -20,8 +20,12 @@ module Annex.FileMatcher (
 	preferredContentParser,
 	ParseToken,
 	parsedToMatcher,
-	mkLargeFilesParser,
+	mkMatchExpressionParser,
 	largeFilesMatcher,
+	AddUnlockedMatcher,
+	addUnlockedMatcher,
+	checkAddUnlockedMatcher,
+	module Types.FileMatcher
 ) where
 
 import qualified Data.Map as M
@@ -37,6 +41,7 @@ import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Annex.CheckAttr
 import Git.CheckAttr (unspecifiedAttr)
+import qualified Git.Config
 #ifdef WITH_MAGICMIME
 import Annex.Magic
 #endif
@@ -174,8 +179,8 @@ preferredContentTokens pcd = concat
 preferredContentParser :: [ParseToken (MatchFiles Annex)] -> String -> [ParseResult (MatchFiles Annex)]
 preferredContentParser tokens = map (parseToken tokens) . tokenizeMatcher
 
-mkLargeFilesParser :: Annex (String -> [ParseResult (MatchFiles Annex)])
-mkLargeFilesParser = do
+mkMatchExpressionParser :: Annex (String -> [ParseResult (MatchFiles Annex)])
+mkMatchExpressionParser = do
 #ifdef WITH_MAGICMIME
 	magicmime <- liftIO initMagicMime
 	let mimer n f = ValueToken n (usev $ f magicmime)
@@ -198,7 +203,6 @@ mkLargeFilesParser = do
 		]
 #endif
 	return $ map parse . tokenizeMatcher
-  where
 
 {- Generates a matcher for files large enough (or meeting other criteria)
  - to be added to the annex, rather than directly to git.
@@ -222,9 +226,34 @@ largeFilesMatcher = go =<< getGitConfigVal' annexLargeFiles
 			else mkmatcher expr "gitattributes"
 
 	mkmatcher expr cfgfrom = do
-		parser <- mkLargeFilesParser
+		parser <- mkMatchExpressionParser
 		either (badexpr cfgfrom) return $ parsedToMatcher $ parser expr
 	badexpr cfgfrom e = giveup $ "bad annex.largefiles configuration in " ++ cfgfrom ++ ": " ++ e
+
+newtype AddUnlockedMatcher = AddUnlockedMatcher (FileMatcher Annex)
+
+addUnlockedMatcher :: Annex AddUnlockedMatcher
+addUnlockedMatcher = AddUnlockedMatcher <$> 
+	(go =<< getGitConfigVal' annexAddUnlocked)
+  where
+	go (HasGitConfig (Just expr)) = mkmatcher expr "git config"
+	go (HasGlobalConfig (Just expr)) = mkmatcher expr "git annex config"
+	go _ = matchalways False
+
+	mkmatcher :: String -> String -> Annex (FileMatcher Annex)
+	mkmatcher expr cfgfrom = case Git.Config.isTrueFalse expr of
+		Just b -> matchalways b
+		Nothing -> do
+			parser <- mkMatchExpressionParser
+			either (badexpr cfgfrom) return $ parsedToMatcher $ parser expr
+	badexpr cfgfrom e = giveup $ "bad annex.addunlocked configuration in " ++ cfgfrom ++ ": " ++ e
+
+	matchalways True = return $ MOp limitAnything
+	matchalways False = return $ MOp limitNothing
+
+checkAddUnlockedMatcher :: AddUnlockedMatcher -> MatchInfo -> Annex Bool
+checkAddUnlockedMatcher (AddUnlockedMatcher matcher) mi = 
+	checkMatcher' matcher mi S.empty
 
 simply :: MatchFiles Annex -> ParseResult (MatchFiles Annex)
 simply = Right . Operation

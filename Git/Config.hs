@@ -156,12 +156,12 @@ parse s
 		. map (\(k,v) -> (ConfigKey k, [ConfigValue (S.drop 1 v)])) 
 		. map (S.break (== c))
 
-{- Checks if a string from git config is a true value. -}
-isTrue :: String -> Maybe Bool
-isTrue = isTrue' . ConfigValue . encodeBS'
+{- Checks if a string from git config is a true/false value. -}
+isTrueFalse :: String -> Maybe Bool
+isTrueFalse = isTrueFalse' . ConfigValue . encodeBS'
 
-isTrue' :: ConfigValue -> Maybe Bool
-isTrue' (ConfigValue s)
+isTrueFalse' :: ConfigValue -> Maybe Bool
+isTrueFalse' (ConfigValue s)
 	| s' == "true" = Just True
 	| s' == "false" = Just False
 	| otherwise = Nothing
@@ -177,7 +177,7 @@ boolConfig' True = "true"
 boolConfig' False = "false"
 
 isBare :: Repo -> Bool
-isBare r = fromMaybe False $ isTrue' =<< getMaybe coreBare r
+isBare r = fromMaybe False $ isTrueFalse' =<< getMaybe coreBare r
 
 coreBare :: ConfigKey
 coreBare = "core.bare"

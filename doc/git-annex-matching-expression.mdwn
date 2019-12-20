@@ -1,0 +1,87 @@
+# NAME
+
+git-annex-matching-expression - specifying a set of files
+
+# DESCRIPTION
+
+The annex.largefiles and annex.addunlocked configurations both use
+expressions that match some files in the working tree.
+
+# SYNTAX
+
+The format of these expressions is similar to
+[[git-annex-preferred-content]](1) expressions.
+
+For example:
+
+	largerthan=100kb and not (include=*.c or include=*.h)
+
+This matches large files, but excludes C source files.
+
+The following terms can be used:
+
+* `include=glob` / `exclude=glob`
+
+  Specify files to include or exclude.
+
+  The glob can contain `*` and `?` to match arbitrary characters.
+
+* `smallerthan=size` / `largerthan=size`
+
+  Matches only files smaller than, or larger than the specified size.
+
+  The size can be specified with any commonly used units, for example,
+  "0.5 gb" or "100 KiloBytes"
+
+* `mimetype=glob`
+
+  Looks up the MIME type of a file, and checks if the glob matches it.
+
+  For example, `"mimetype=text/*"` will match many varieties of text files,
+  including "text/plain", but also "text/x-shellscript", "text/x-makefile",
+  etc.
+
+  The MIME types are the same that are displayed by running `file --mime-type`
+
+  This is only available to use when git-annex was built with the
+  MagicMime build flag.
+
+* `mimeencoding=glob`
+
+  Looks up the MIME encoding of a file, and checks if the glob matches it.
+
+  For example, `"mimeencoding=binary"` will match many kinds of binary
+  files.
+
+  The MIME encodings are the same that are displayed by running `file --mime-encoding`
+
+  This is only available to use when git-annex was built with the
+  MagicMime build flag.
+
+* `anything`
+
+  Matches any file.
+
+* `nothing`
+
+  Matches no files. (Same as "not anything")
+
+* `not expression`
+
+  Inverts what the expression matches.
+
+* `and` / `or` / `( expression )`
+
+  These can be used to build up more complicated expressions.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+<http://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

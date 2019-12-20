@@ -102,7 +102,7 @@ data GitConfig = GitConfig
 	, annexVerify :: Bool
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
-	, annexAddUnlocked :: Bool
+	, annexAddUnlocked :: Configurable (Maybe String)
 	, annexSecureHashesOnly :: Bool
 	, annexRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
@@ -177,7 +177,8 @@ extractGitConfig configsource r = GitConfig
 	, annexPidLock = getbool (annex "pidlock") False
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annex "pidlocktimeout")
-	, annexAddUnlocked = getbool (annex "addunlocked") False
+	, annexAddUnlocked = configurable Nothing $
+		fmap Just $ getmaybe (annex "addunlocked")
 	, annexSecureHashesOnly = getbool (annex "securehashesonly") False
 	, annexRetry = getmayberead (annex "retry")
 	, annexRetryDelay = Seconds
@@ -207,7 +208,7 @@ extractGitConfig configsource r = GitConfig
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
-	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
+	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
 	getmaybe' k = Git.Config.getMaybe k r
@@ -231,6 +232,7 @@ mergeGitConfig gitconfig repoglobals = gitconfig
 	, annexSyncContent = merge annexSyncContent
 	, annexResolveMerge = merge annexResolveMerge
 	, annexLargeFiles = merge annexLargeFiles
+	, annexAddUnlocked = merge annexAddUnlocked
 	}
   where
 	merge f = case f gitconfig of
@@ -354,7 +356,7 @@ extractRemoteGitConfig r remotename = do
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
-	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
+	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
 	getmaybe' k = mplus (Git.Config.getMaybe (key k) r)

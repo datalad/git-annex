@@ -12,7 +12,7 @@ import Utility.Split
 import Types.Key
 import Key
 import Data.Time.Clock
-import Git.Config (isTrue, boolConfig)
+import Git.Config (isTrueFalse, boolConfig)
 
 import Control.Applicative
 import Prelude
@@ -71,7 +71,7 @@ toAutoUpgrade :: Maybe String -> AutoUpgrade
 toAutoUpgrade Nothing = AskUpgrade
 toAutoUpgrade (Just s)
 	| s == "ask" = AskUpgrade
-	| isTrue s == Just True = AutoUpgrade
+	| isTrueFalse s == Just True = AutoUpgrade
 	| otherwise = NoAutoUpgrade
 
 fromAutoUpgrade :: AutoUpgrade -> String

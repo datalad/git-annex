@@ -50,9 +50,10 @@ optParser desc = AddOptions
 
 seek :: AddOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
-	matcher <- largeFilesMatcher
-	let gofile file = ifM (checkFileMatcher matcher (fromRawFilePath file) <||> Annex.getState Annex.force)
-		( start file
+	largematcher <- largeFilesMatcher
+	addunlockedmatcher <- addUnlockedMatcher
+	let gofile file = ifM (checkFileMatcher largematcher (fromRawFilePath file) <||> Annex.getState Annex.force)
+		( start file addunlockedmatcher
 		, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
 			( startSmall file
 			, stop
@@ -87,8 +88,8 @@ addFile file = do
 	Annex.Queue.addCommand "add" (ps++[Param "--"]) [fromRawFilePath file]
 	return True
 
-start :: RawFilePath -> CommandStart
-start file = do
+start :: RawFilePath -> AddUnlockedMatcher -> CommandStart
+start file addunlockedmatcher = do
 	mk <- liftIO $ isPointerFile file
 	maybe go fixuppointer mk
   where
@@ -101,7 +102,7 @@ start file = do
 				starting "add" (ActionItemWorkTreeFile file) $
 					if isSymbolicLink s
 						then next $ addFile file
-						else perform file
+						else perform file addunlockedmatcher
 	addpresent key = 
 		liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
@@ -117,9 +118,10 @@ start file = do
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		next $ addFile file
 
-perform :: RawFilePath -> CommandPerform
-perform file = withOtherTmp $ \tmpdir -> do
-	lockingfile <- not <$> addUnlocked
+perform :: RawFilePath -> AddUnlockedMatcher -> CommandPerform
+perform file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
+	lockingfile <- not <$> addUnlocked addunlockedmatcher
+		(MatchingFile (FileInfo file file))
 	let cfg = LockDownConfig
 		{ lockingFile = lockingfile
 		, hardlinkFileTmpDir = Just tmpdir

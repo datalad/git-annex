@@ -9,7 +9,6 @@ module Command.MatchExpression where
 
 import Command
 import Annex.FileMatcher
-import Types.FileMatcher
 import Utility.DataUnits
 import Utility.Matcher
 import Annex.UUID
@@ -75,7 +74,7 @@ optParser desc = MatchExpressionOptions
 seek :: MatchExpressionOptions -> CommandSeek
 seek o = do
 	parser <- if largeFilesExpression o
-		then mkLargeFilesParser
+		then mkMatchExpressionParser
 		else do
 			u <- getUUID
 			pure $ preferredContentParser $ preferredContentTokens $ PCD

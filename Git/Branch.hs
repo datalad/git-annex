@@ -137,7 +137,7 @@ applyCommitModeForCommitTree :: CommitMode -> [CommandParam] -> Repo -> [Command
 applyCommitModeForCommitTree commitmode ps r
 	| commitmode == ManualCommit =
 		case Git.Config.getMaybe "commit.gpgsign" r of
-			Just s | Git.Config.isTrue' s == Just True ->
+			Just s | Git.Config.isTrueFalse' s == Just True ->
 				Param "-S":ps
 			_ -> ps'
 	| otherwise = ps'

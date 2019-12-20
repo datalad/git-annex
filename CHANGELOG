@@ -11,6 +11,10 @@ git-annex (7.20191219) UNRELEASED; urgency=medium
     to more easily set a default that will also be used by clones,
     without needing to shoehorn the expression into the gitattributes file.
     The git config and gitattributes override that.
+  * annex.addunlocked can be set to an expression with the same format used by
+    annex.largefiles, when you want to default to unlocking some files but
+    not others.
+  * annex.addunlocked can be configured by git-annex config.
   * git-annex-config --set/--unset: No longer change the local git config
     setting, except for in the special case of annex.securehashesonly.
 
