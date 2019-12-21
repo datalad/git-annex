@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="comment 4"
+ date="2019-12-21T23:03:46Z"
+ content="""
+Hmm, what would the default value of `annex.dotfiles` be?  If the default is false (so that there is no behavioural change unless the user explicitly requests it), then why not have it take effect even if annex.largefiles has not been set?
+"""]]
