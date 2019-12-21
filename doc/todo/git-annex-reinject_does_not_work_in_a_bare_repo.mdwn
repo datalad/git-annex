@@ -9,7 +9,7 @@
     init  (scanning for unlocked files...)
     ok
     (recording state in git...)
-    1 spwhitton@iris:~/tmp/baz>git annex reinject --known ../bar
+    spwhitton@iris:~/tmp/baz>git annex reinject --known ../bar
     fatal: relative path syntax can't be used outside working tree.
     fatal: relative path syntax can't be used outside working tree.
     fatal: relative path syntax can't be used outside working tree.
