@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Workaround"
+ date="2019-12-22T10:50:32Z"
+ content="""
+As a workaround to keep both git submodule workdir discovery and git annex functional, the original git submodule core.worktree parameter can be restored, and overridden for git-annex calls using
+
+[[!format sh \"\"\"
+GIT_WORK_TREE=\"$PWD\" git annex whereis
+\"\"\"]]
+
+and similar.
+"""]]
