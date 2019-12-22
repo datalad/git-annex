@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-When using submodules, a `git annex init` in the submodule drops the `core.workdir` configuration from the git config around the time it replaces the plain `.git` file with a symlink.
+When using [[submodules]], a `git annex init` in the submodule drops the `core.workdir` configuration from the git config around the time it replaces the plain `.git` file with a symlink.
 
 The lack of that option rarely affects anything (the command-line git or -annex operations I've tried from inside the workdir went OK), but when libgit2 is used to load the submodule and discover its workdir, the missing option becomes apparent, and libgit2 reports an incorrect working directory.
 
