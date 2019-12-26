@@ -74,3 +74,4 @@ Thanks for having a look.
 [0]: https://github.com/datalad/datalad/issues/3890
 
 [[!meta author=kyle]]
+[[!tag projects/datalad]]

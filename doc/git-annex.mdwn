@@ -891,9 +891,13 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   Used to configure which files are large enough to be added to the annex.
   It is an expression that matches the large files, eg
-  "*.mp3 or largerthan(500kb)"
+  "include=*.mp3 or largerthan(500kb)"
+  See [[git-annex-matching-expression]](1) for details on the syntax.
 
   Overrides any annex.largefiles attributes in `.gitattributes` files.
+  
+  To configure a default annex.largefiles for all clones of the repository,
+  this can be set in [[git-annex-config]](1).
 
   This configures the behavior of both git-annex and git when adding
   files to the repository. By default, `git-annex add` adds all files
@@ -906,13 +910,10 @@ Like other git commands, git-annex is configured via `.git/config`.
   `git annex import`, `git annex addurl`, `git annex importfeed`
   and the assistant.
 
-  See <https://git-annex.branchable.com/tips/largefiles> for syntax
-  documentation and more.
-
 * `annex.gitaddtoannex`
 
-  Setting this to false will prevent `git add` from honoring the 
-  annex.largefiles configuration.
+  Setting this to false will prevent `git add` from adding
+  files to the annex, despite the annex.largefiles configuration.
 
 * `annex.addsmallfiles`
 
@@ -922,15 +923,23 @@ Like other git commands, git-annex is configured via `.git/config`.
 
 * `annex.addunlocked`
 
-  Set to true to make commands like `git-annex add` that add files to the
-  repository add them in unlocked form. The default is for these commands
-  to add files in locked form. 
+  Commands like `git-annex add` default to adding files to the repository
+  in locked form. This can make them add the files in unlocked form,
+  the same as if [[git-annex-unlock]](1) were run on the files.
+
+  This can be set to "true" to add everything unlocked, or it can be a more
+  complicated expression that matches files by name, size, or content. See
+  [[git-annex-matching-expression]](1) for details.
+  
+  To configure a default annex.addunlocked for all clones of the repository,
+  this can be set in [[git-annex-config]](1).
   
   (Using `git add` always adds files in unlocked form and it is not
   affected by this setting.)
-
-  When a repository has core.symlinks set to false, it implicitly
-  sets annex.addunlocked to true.
+  
+  When a repository has core.symlinks set to false, or has an adjusted 
+  unlocked branch checked out, this setting is ignored, and files are 
+  always added to the repository in unlocked form.
 
 * `annex.numcopies`
 
@@ -1695,9 +1704,11 @@ but the SHA256E backend for ogg files:
 	*.ogg annex.backend=SHA256E
 
 There is a annex.largefiles attribute, which is used to configure which
-files are large enough to be added to the annex.
-See the documentation above of the annex.largefiles git config
-and <https://git-annex.branchable.com/tips/largefiles> for details.
+files are large enough to be added to the annex. Since attributes cannot
+contain spaces, it is difficult to use for more complex annex.largefiles
+settings. Setting annex.largefiles in [[git-annex-config]](1) is an easier
+way to configure it across all clones of the repository.
+See [[git-annex-matching-expression]](1) for details on the syntax.
 
 The numcopies setting can also be configured on a per-file-type basis via
 the `annex.numcopies` attribute in `.gitattributes` files. This overrides

@@ -38,6 +38,7 @@ import Annex.YoutubeDl
 import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
+import Annex.FileMatcher
 import Command.AddUrl (addWorkTree)
 
 cmd :: Command
@@ -62,11 +63,12 @@ optParser desc = ImportFeedOptions
 
 seek :: ImportFeedOptions -> CommandSeek
 seek o = do
+	addunlockedmatcher <- addUnlockedMatcher
 	cache <- getCache (templateOption o)
-	forM_ (feedUrls o) (getFeed o cache)
+	forM_ (feedUrls o) (getFeed addunlockedmatcher o cache)
 
-getFeed :: ImportFeedOptions -> Cache -> URLString -> CommandSeek
-getFeed opts cache url = do
+getFeed :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> URLString -> CommandSeek
+getFeed addunlockedmatcher opts cache url = do
 	showStart' "importfeed" (Just url)
 	downloadFeed url >>= \case
 		Nothing -> showEndResult =<< feedProblem url
@@ -77,7 +79,7 @@ getFeed opts cache url = do
 				[] -> debugfeedcontent feedcontent "bad feed content; no enclosures to download"
 				l -> do
 					showEndOk
-					ifM (and <$> mapM (performDownload opts cache) l)
+					ifM (and <$> mapM (performDownload addunlockedmatcher opts cache) l)
 						( clearFeedProblem url
 						, void $ feedProblem url 
 							"problem downloading some item(s) from feed"
@@ -153,8 +155,8 @@ downloadFeed url
 			, return Nothing
 			)
 
-performDownload :: ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
-performDownload opts cache todownload = case location todownload of
+performDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
+performDownload addunlockedmatcher opts cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
 		rundownload url (takeWhile (/= '?') $ takeExtension url) $ \f -> do
 			r <- Remote.claimingUrl url
@@ -171,7 +173,7 @@ performDownload opts cache todownload = case location todownload of
 						-- don't use youtube-dl
 						, rawOption = True
 						}
-					maybeToList <$> addUrlFile dlopts url urlinfo f
+					maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)
@@ -181,10 +183,10 @@ performDownload opts cache todownload = case location todownload of
 						Left _ -> return []
 						Right (UrlContents sz _) ->
 							maybeToList <$>
-								downloadRemoteFile r (downloadOptions opts) url f sz
+								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
-								downloadRemoteFile r (downloadOptions opts) url' (f </> fromSafeFilePath subf) sz
+								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' (f </> fromSafeFilePath subf) sz
 							return $ if all isJust kl
 								then catMaybes kl
 								else []
@@ -273,7 +275,7 @@ performDownload opts cache todownload = case location todownload of
 							[] -> ".m"
 							s -> s
 						ok <- rundownload linkurl ext $ \f -> do
-							addWorkTree webUUID mediaurl f mediakey (Just mediafile)
+							addWorkTree addunlockedmatcher webUUID mediaurl f mediakey (Just mediafile)
 							return [mediakey]
 						return (Just ok)
 					-- youtude-dl didn't support it, so
@@ -285,16 +287,16 @@ performDownload opts cache todownload = case location todownload of
 						return Nothing
 			return (fromMaybe False r)
 	  where
-		downloadlink = performDownload opts cache todownload
+		downloadlink = performDownload addunlockedmatcher opts cache todownload
 			{ location = Enclosure linkurl }
 
 	addmediafast linkurl mediaurl mediakey =
 		ifM (pure (not (rawOption (downloadOptions opts)))
 		     <&&> youtubeDlSupported linkurl)
 			( rundownload linkurl ".m" $ \f -> do
-				addWorkTree webUUID mediaurl f mediakey Nothing
+				addWorkTree addunlockedmatcher webUUID mediaurl f mediakey Nothing
 				return [mediakey]
-			, performDownload opts cache todownload
+			, performDownload addunlockedmatcher opts cache todownload
 				{ location = Enclosure linkurl }
 			)
 

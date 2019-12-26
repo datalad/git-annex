@@ -26,100 +26,62 @@ the assistant.
 For example, let's make only files larger than 100 kb be added to the annex,
 and never `*.c` and `*.h` source code files.
 
-Write this to the `.gitattributes` file:
+	git config annex.largefiles 'largerthan=100kb and not (include=*.c or include=*.h)'
 
-	* annex.largefiles=(largerthan=100kb)
+That is a local configuration, so will only apply to your clone of the
+repository. To set a default that will apply to all clones, unless
+overridden, do this instead:
+
+	git annex config --set annex.largefiles 'largerthan=100kb and not (include=*.c or include=*.h)'
+
+There's one other way to configure the same thing, you can put this in
+the `.gitattributes` file:
+
+	* annex.largefiles=largerthan=100kb
 	*.c annex.largefiles=nothing
 	*.h annex.largefiles=nothing
 
-Or, set the git configuration instead:
-  
-	git config annex.largefiles 'largerthan=100kb and not (include=*.c or include=*.h)'
+The syntax in .gitattributes is a bit different, because the .gitattributes
+matches files itself, and the values of attributes cannot contain spaces.
+So using .gitattributes for this is not recommended (but it does work for
+older versions of git-annex, where the `git annex config` setting does
+not). Any .gitattributes setting overrides the `git annex config` setting,
+but will be overridden by the `git config` setting.
 
-Both of these settings do the same thing. Setting it in the
-`.gitattributes` file makes any checkout of the repository share that
-configuration, so is often a good choice. Setting the annex.largefiles git
-configuration lets different checkouts behave differently. The git
-configuration overrides the `.gitattributes` configuration.
-
-Or, perhaps you just want all files to be added to the annex, no matter
-what. Just write "* annex.largefiles=anything" to the `.gitattributes`
-file, or run:
+Another example. If you wanted `git add` to put all files the annex
+in your local repository:
 
 	git config annex.largefiles anything
 
+Or in all clones:
+
+	git annex config --set annex.largefiles anything
+
 ## syntax
 
-The value of annex.largefiles is similar to a
-[[preferred content expression|git-annex-preferred-content]].
-The following terms can be used in annex.largefiles:
+See [[git-annex-matching-expression]] for details about the syntax.
 
-* `include=glob` / `exclude=glob`
+## gitattributes format
 
-  Specify files to include or exclude.
+Here's that example `.gitattributes` again:
 
-  The glob can contain `*` and `?` to match arbitrary characters.
+	* annex.largefiles=largerthan=100kb
+	*.c annex.largefiles=nothing
+	*.h annex.largefiles=nothing
 
-* `smallerthan=size` / `largerthan=size`
+The way that works is, `*.c` and `*.h` files have the annex.largefiles
+attribute set to "nothing", and so those files are never treated as large
+files. All other files use the other value, which checks the file size.
 
-  Matches only files smaller than, or larger than the specified size.
-
-  The size can be specified with any commonly used units, for example,
-  "0.5 gb" or "100 KiloBytes"
-
-* `mimetype=glob`
-
-  Looks up the MIME type of a file, and checks if the glob matches it.
-
-  For example, `"mimetype=text/*"` will match many varieties of text files,
-  including "text/plain", but also "text/x-shellscript", "text/x-makefile",
-  etc.
-
-  The MIME types are the same that are displayed by running `file --mime-type`
-
-  This is only available to use when git-annex was built with the
-  MagicMime build flag.
-
-* `mimeencoding=glob`
-
-  Looks up the MIME encoding of a file, and checks if the glob matches it.
-
-  For example, `"mimeencoding=binary"` will match many kinds of binary
-  files.
-
-  The MIME encodings are the same that are displayed by running `file --mime-encoding`
-
-  This is only available to use when git-annex was built with the
-  MagicMime build flag.
-
-* `anything`
-
-  Matches any file.
-
-* `nothing`
-
-  Matches no files. (Same as "not anything")
-
-* `not expression`
-
-  Inverts what the expression matches.
-
-* `and` / `or` / `( expression )`
-
-  These can be used to build up more complicated expressions.
-
-The way the `.gitattributes` example above works is, `*.c` and `*.h` files
-have the annex.largefiles attribute set to "nothing",
-and so those files are never treated as large files. All other files use
-the other value, which checks the file size.
-
-Note that, since git attribute values cannot contain whitespace,
-it's useful to instead parenthesize the terms of the annex.largefiles
-attribute. This trick allows for more complicated expressions.
+Since git attribute values cannot contain whitespace, when you need
+a more complicated annex.largefiles expression, you can instead
+parenthesize the terms of the annex.largefiles attribute.
 For example, this is the same as the git config shown earlier, shoehorned
-into a git attribute:
+into a single git attribute:
 
 	* annex.largefiles=(largerthan=100kb)and(not((include=*.c)or(include=*.h)))
+
+It's generally a better idea to use `git annex config` instead.
 
 ## temporarily override
 

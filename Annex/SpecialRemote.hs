@@ -94,7 +94,7 @@ autoEnable = do
 			_ -> return ()
   where
 	configured rc = fromMaybe False $
-		Git.Config.isTrue =<< M.lookup autoEnableField rc
+		Git.Config.isTrueFalse =<< M.lookup autoEnableField rc
 	canenable u = (/= DeadTrusted) <$> lookupTrust u
 	getenabledremotes = M.fromList
 		. map (\r -> (getcu r, r))

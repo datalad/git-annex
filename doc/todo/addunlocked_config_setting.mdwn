@@ -3,3 +3,5 @@ Can the `annex.addunlocked` be extended to have the same syntax as `annex.largef
 Basically, I want a reliable way to prevent inadvertently adding files as annexed unlocked files.
 
 Related: [[forum/lets_discuss_git_add_behavior]]
+
+> [[done]] --[[Joey]]

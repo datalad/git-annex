@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-12-20T19:45:21Z"
+ content="""
+Made annex.addunlocked support expressions like annex.largefiles.
+
+And both of them can be set globally with `git annex config`. I did not
+make annex.addunlocked be settable by git attribute, because my sense is
+that `git annex config` covers that use case, or mostly so.
+"""]]

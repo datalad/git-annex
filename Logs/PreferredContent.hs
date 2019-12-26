@@ -42,7 +42,6 @@ import Types.Group
 import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
-import Types.FileMatcher
 import Types.StandardGroups
 import Limit
 

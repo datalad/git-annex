@@ -23,6 +23,20 @@ git-annex (7.20191219) UNRELEASED; urgency=medium
     like get also sped up in cases where they have to check a lot of
     files but only transfer a few files. Speedups range from 30-100%.
   * Added build dependency on the filepath-bytestring library.
+  * Fixed an oversight that had always prevented annex.resolvemerge
+    from being honored, when it was configured by git-annex config.
+  * annex.largefiles can be configured by git-annex config,
+    to more easily set a default that will also be used by clones,
+    without needing to shoehorn the expression into the gitattributes file.
+    The git config and gitattributes override that.
+  * annex.addunlocked can be set to an expression with the same format used by
+    annex.largefiles, when you want to default to unlocking some files but
+    not others.
+  * annex.addunlocked can be configured by git-annex config.
+  * git-annex-config --set/--unset: No longer change the local git config
+    setting, except for in the special case of annex.securehashesonly.
+  * Improve file ordering behavior when one parameter is "." and other
+    parameters are other directories.
 
  -- Joey Hess <id@joeyh.name>  Wed, 18 Dec 2019 15:12:40 -0400
 

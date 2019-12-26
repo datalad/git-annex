@@ -46,6 +46,7 @@ unsetGlobalConfig name = do
 		setGlobalConfig' name (ConfigValue mempty)
 
 -- Reads the global config log every time.
+-- It's more efficient to use Config.GitConfig.
 getGlobalConfig :: ConfigKey -> Annex (Maybe ConfigValue)
 getGlobalConfig name = M.lookup name <$> loadGlobalConfig
 

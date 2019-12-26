@@ -1,0 +1,28 @@
+`git annex reinject --known` doesn't work in a bare repo.
+
+    spwhitton@iris:~/tmp>echo foo >bar
+    spwhitton@iris:~/tmp>mkdir baz
+    spwhitton@iris:~/tmp>cd baz
+    spwhitton@iris:~/tmp/baz>git init --bare
+    Initialized empty Git repository in /home/spwhitton/tmp/baz/
+    spwhitton@iris:~/tmp/baz>git annex init
+    init  (scanning for unlocked files...)
+    ok
+    (recording state in git...)
+    spwhitton@iris:~/tmp/baz>git annex reinject --known ../bar
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    fatal: relative path syntax can't be used outside working tree.
+    git-annex: fd:15: hGetLine: end of file
+
+Obviously this wasn't actually a file known to git-annex.  But I get the same error in a non-dummy bare repo I am trying to reinject.
+
+A workaround is to use `git worktree add` and run `git annex reinject` from there.

@@ -18,7 +18,7 @@ import Types.CleanupActions
 import Types.UrlContents
 import qualified Git
 import Config
-import Git.Config (isTrue, boolConfig)
+import Git.Config (isTrueFalse, boolConfig)
 import Git.Env
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
@@ -157,7 +157,7 @@ externalSetup _ mu _ c gc = do
 	(c', _encsetup) <- encryptionSetup c gc
 
 	c'' <- case M.lookup "readonly" c of
-		Just v | isTrue v == Just True -> do
+		Just v | isTrueFalse v == Just True -> do
 			setConfig (remoteConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
 		_ -> do

@@ -27,7 +27,6 @@ import Annex.Content
 import Annex.Transfer
 import Annex.CatFile
 import Annex.FileMatcher
-import Types.FileMatcher
 import Annex.RemoteTrackingBranch
 import Logs.Location
 import Logs.Export

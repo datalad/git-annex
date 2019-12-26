@@ -9,6 +9,7 @@
 
 module Types.GitConfig ( 
 	Configurable(..),
+	ConfigSource(..),
 	GitConfig(..),
 	extractGitConfig,
 	mergeGitConfig,
@@ -46,12 +47,16 @@ import qualified Data.Set as S
 -- | A configurable value, that may not be fully determined yet because
 -- the global git config has not yet been loaded.
 data Configurable a
-	= HasConfig a
-	-- ^ Value is fully determined.
+	= HasGitConfig a
+	-- ^ The git config has a value.
+	| HasGlobalConfig a
+	-- ^ The global config has a value (and the git config does not).
 	| DefaultConfig a
 	-- ^ A default value is known, but not all config sources
 	-- have been read yet.
 	deriving (Show)
+
+data ConfigSource = FromGitConfig | FromGlobalConfig
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -80,7 +85,7 @@ data GitConfig = GitConfig
 	, annexYoutubeDlOptions :: [String]
 	, annexAriaTorrentOptions :: [String]
 	, annexCrippledFileSystem :: Bool
-	, annexLargeFiles :: Maybe String
+	, annexLargeFiles :: Configurable (Maybe String)
 	, annexGitAddToAnnex :: Bool
 	, annexAddSmallFiles :: Bool
 	, annexFsckNudge :: Bool
@@ -97,7 +102,7 @@ data GitConfig = GitConfig
 	, annexVerify :: Bool
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
-	, annexAddUnlocked :: Bool
+	, annexAddUnlocked :: Configurable (Maybe String)
 	, annexSecureHashesOnly :: Bool
 	, annexRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
@@ -116,8 +121,8 @@ data GitConfig = GitConfig
 	, gpgCmd :: GpgCmd
 	}
 
-extractGitConfig :: Git.Repo -> GitConfig
-extractGitConfig r = GitConfig
+extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
+extractGitConfig configsource r = GitConfig
 	{ annexVersion = RepoVersion <$> getmayberead (annex "version")
 	, annexUUID = maybe NoUUID toUUID $ getmaybe (annex "uuid")
 	, annexNumCopies = NumCopies <$> getmayberead (annex "numcopies")
@@ -151,7 +156,8 @@ extractGitConfig r = GitConfig
 	, annexYoutubeDlOptions = getwords (annex "youtube-dl-options")
 	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
-	, annexLargeFiles = getmaybe (annex "largefiles")
+	, annexLargeFiles = configurable Nothing $
+		fmap Just $ getmaybe (annex "largefiles")
 	, annexGitAddToAnnex = getbool (annex "gitaddtoannex") True
 	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
 	, annexFsckNudge = getbool (annex "fscknudge") True
@@ -171,7 +177,8 @@ extractGitConfig r = GitConfig
 	, annexPidLock = getbool (annex "pidlock") False
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annex "pidlocktimeout")
-	, annexAddUnlocked = getbool (annex "addunlocked") False
+	, annexAddUnlocked = configurable Nothing $
+		fmap Just $ getmaybe (annex "addunlocked")
 	, annexSecureHashesOnly = getbool (annex "securehashesonly") False
 	, annexRetry = getmayberead (annex "retry")
 	, annexRetryDelay = Seconds
@@ -201,7 +208,7 @@ extractGitConfig r = GitConfig
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
-	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
+	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
 	getmaybe' k = Git.Config.getMaybe k r
@@ -209,7 +216,9 @@ extractGitConfig r = GitConfig
 	getwords k = fromMaybe [] $ words <$> getmaybe k
 
 	configurable d Nothing = DefaultConfig d
-	configurable _ (Just v) = HasConfig v
+	configurable _ (Just v) = case configsource of
+		FromGitConfig -> HasGitConfig v
+		FromGlobalConfig -> HasGlobalConfig v
 
 	annex k = ConfigKey $ "annex." <> k
 			
@@ -221,13 +230,17 @@ mergeGitConfig :: GitConfig -> GitConfig -> GitConfig
 mergeGitConfig gitconfig repoglobals = gitconfig
 	{ annexAutoCommit = merge annexAutoCommit
 	, annexSyncContent = merge annexSyncContent
+	, annexResolveMerge = merge annexResolveMerge
+	, annexLargeFiles = merge annexLargeFiles
+	, annexAddUnlocked = merge annexAddUnlocked
 	}
   where
 	merge f = case f gitconfig of
-		HasConfig v -> HasConfig v
+		HasGitConfig v -> HasGitConfig v
 		DefaultConfig d -> case f repoglobals of
-			HasConfig v -> HasConfig v
-			DefaultConfig _ -> HasConfig d
+			HasGlobalConfig v -> HasGlobalConfig v
+			_ -> HasGitConfig d
+		HasGlobalConfig v -> HasGlobalConfig v
 
 {- Per-remote git-annex settings. Each setting corresponds to a git-config
  - key such as <remote>.annex-foo, or if that is not set, a default from
@@ -343,7 +356,7 @@ extractRemoteGitConfig r remotename = do
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
-	getmaybebool k = Git.Config.isTrue' =<< getmaybe' k
+	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
 	getmaybe' k = mplus (Git.Config.getMaybe (key k) r)

@@ -96,7 +96,7 @@ getDifferences :: Git.Repo -> Differences
 getDifferences r = mkDifferences $ S.fromList $
 	mapMaybe getmaybe [minBound .. maxBound]
   where
-	getmaybe d = case Git.Config.isTrue' =<< Git.Config.getMaybe (differenceConfigKey d) r of
+	getmaybe d = case Git.Config.isTrueFalse' =<< Git.Config.getMaybe (differenceConfigKey d) r of
 		Just True -> Just d
 		_ -> Nothing
 

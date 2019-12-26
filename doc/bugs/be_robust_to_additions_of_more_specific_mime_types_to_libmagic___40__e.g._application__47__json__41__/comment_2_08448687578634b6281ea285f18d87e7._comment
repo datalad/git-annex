@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-12-20T20:00:14Z"
+ content="""
+Yes, mimeencoding=binary is intended for those cases where you just want a
+robust (presumably) text/binary division.
+
+The "any mimetype matches" approach seems like it could break things too.
+Consider:
+
+	(not mimetype=text/plain and (mimetype=text/* or mimetype=application/json)) or mimetype=AI/buggy
+
+Currently a shell script is found to be only text/x-shellscript,
+so it would match the above. If git-annex were changed to consider
+all reported mime types, the shell script, being also text/plain
+would not match.
+
+And then, once the mime database solves the halting problem and helpfully
+starts flagging shell scripts as AI/buggy (all shell scripts are presumably
+buggy so maybe that AI has an easy job), the behavior on the above example
+would change for a third time, back to matching.
+"""]]

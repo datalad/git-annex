@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+When using [[submodules]], a `git annex init` in the submodule drops the `core.workdir` configuration from the git config around the time it replaces the plain `.git` file with a symlink.
+
+The lack of that option rarely affects anything (the command-line git or -annex operations I've tried from inside the workdir went OK), but when libgit2 is used to load the submodule and discover its workdir, the missing option becomes apparent, and libgit2 reports an incorrect working directory.
+
+### What steps will reproduce the problem?
+
+As this is about a comparatively comprehensive setup, I've phrased it as a shell script:
+
+[[!format sh """
+git init inner-original
+cd inner-original
+touch inner-file
+git add inner-file
+git commit -m "initial inner check-in"
+cd ..
+
+git init outer
+cd outer
+git submodule add ../inner-original inner
+cd ..
+
+cp -a outer outer-with-annex
+cp -a outer outer-with-ln
+
+cd outer-with-annex/inner
+git annex init
+cd ../..
+cd outer-with-ln/inner
+ln -sf ../.git/modules/inner .git
+cd ../..
+"""]]
+
+Now apparently, all those inner directories still work (eg. `git diff inner-file`).
+However, `git config core.worktree` only reports on those that `git annex` did not touch.
+
+The practical problem arising with this can most easily seen when executing the following Python snippet in any of the outer directories:
+
+[[!format python """
+import pygit2
+r = pygit2.Repository(".")
+r2 = r.lookup_submodule("inner").open()
+print (r.workdir, r2.workdir)
+"""]]
+
+which reports the workdir of the outer correctly, but reports `$PATH/outer-with-annex/.git/modules/` (which is definitely not a workdir) for the annex.
+
+When the option is restored, libgit2's discovery works, but git-annex stops working with "git-annex: /tmp/inner: changeWorkingDirectory: does not exist (No such file or directory)" -- apparently, git-annex does use the workdir if it is set, but uses different resolution rules than git.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 7.20191114 as packaged in Debian as 7.20191114-1.
+
+
+### Have you had any luck using git-annex before?
+
+Luck had nothing to do with it -- it's by its design that it usually works :-)

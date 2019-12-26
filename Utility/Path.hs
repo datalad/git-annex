@@ -113,7 +113,10 @@ prop_upFrom_basics dir
  - are all equivilant.
  -}
 dirContains :: FilePath -> FilePath -> Bool
-dirContains a b = a == b || a' == b' || (addTrailingPathSeparator a') `isPrefixOf` b'
+dirContains a b = a == b
+	|| a' == b'
+	|| (addTrailingPathSeparator a') `isPrefixOf` b'
+	|| a' == "." && normalise ("." </> b') == b'
   where
 	a' = norm a
 	b' = norm b

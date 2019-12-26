@@ -25,6 +25,7 @@ module Annex.Ingest (
 
 import Annex.Common
 import Types.KeySource
+import Types.FileMatcher
 import Backend
 import Annex.Content
 import Annex.Perms
@@ -45,6 +46,7 @@ import Utility.Metered
 import Git.FilePath
 import Annex.InodeSentinal
 import Annex.AdjustedBranch
+import Annex.FileMatcher
 
 import Control.Exception (IOException)
 
@@ -306,10 +308,10 @@ forceParams = ifM (Annex.getState Annex.force)
  - unless symlinks are not supported. annex.addunlocked can override that.
  - Also, when in an adjusted unlocked branch, always add files unlocked.
  -}
-addUnlocked :: Annex Bool
-addUnlocked =
+addUnlocked :: AddUnlockedMatcher -> MatchInfo -> Annex Bool
+addUnlocked matcher mi =
 	((not . coreSymlinks <$> Annex.getGitConfig) <||>
-	 (annexAddUnlocked <$> Annex.getGitConfig) <||>
+	 (checkAddUnlockedMatcher matcher mi) <||>
 	 (maybe False isadjustedunlocked . snd <$> getCurrentBranch)
 	)
   where
@@ -319,12 +321,13 @@ addUnlocked =
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be
- - moved into place.
+ - moved into place. If no content is provided, adds an annex link but does
+ - not ingest the content.
  -
  - When the content of the key is not accepted into the annex, returns False.
  -}
-addAnnexedFile :: FilePath -> Key -> Maybe FilePath -> Annex Bool
-addAnnexedFile file key mtmp = ifM addUnlocked
+addAnnexedFile :: AddUnlockedMatcher -> FilePath -> Key -> Maybe FilePath -> Annex Bool
+addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi)
 	( do
 		mode <- maybe
 			(pure Nothing)
@@ -348,6 +351,24 @@ addAnnexedFile file key mtmp = ifM addUnlocked
 			Nothing -> return True
 	)
   where
+	mi = case mtmp of
+		Just tmp -> MatchingFile $ FileInfo
+			{ currFile = toRawFilePath tmp
+			, matchFile = toRawFilePath file
+			}
+		-- Provide as much info as we can without access to the
+		-- file's content. It's better to provide wrong info
+		-- than for an operation to fail just because it can't
+		-- tell if a file should be unlocked or locked.
+		Nothing -> MatchingInfo $ ProvidedInfo
+			{ providedFilePath = Right file
+			, providedKey = Right key
+			, providedFileSize = Right $ fromMaybe 0 $
+				keySize `fromKey` key
+			, providedMimeType = Right "application/octet-stream"
+			, providedMimeEncoding = Right "binary"
+			}
+	
 	linkunlocked mode = linkFromAnnex key file mode >>= \case
 		LinkAnnexFailed -> liftIO $
 			writePointerFile (toRawFilePath file) key mode

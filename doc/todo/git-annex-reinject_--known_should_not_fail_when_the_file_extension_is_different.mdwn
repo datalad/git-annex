@@ -1,0 +1,7 @@
+I noticed that with the default SHA256E backend, `git annex reinject --known FILE` will fail if FILE has a different extension than it has in the annex.  Presumably this is because `git annex calckey FILE` does not generate the same key, even though the file has the same checksum.
+
+I think it would be better if `git annex reinject --known` would ignore the file extension when deciding whether a file is known.  A case where that would be much better is caused by the fact that git-annex has changed how it determines a file's extension over time.  E.g. if foo.bar.baz was added to the annex a long time ago, it might have a key like `SHA256E-s12--37833383383.baz`.  Modern git-annex would calculate a key like `SHA256E-s12--37833383383.bar.baz` and so the reinject of the file using modern git-annex would fail.
+
+This problem does not affect `git annex reinject` without `--known`.
+
+--spwhitton

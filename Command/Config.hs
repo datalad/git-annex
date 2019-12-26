@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Config where
 
 import Command
@@ -54,12 +56,14 @@ seek :: Action -> CommandSeek
 seek (SetConfig ck@(ConfigKey name) val) = commandAction $
 	startingUsualMessages (decodeBS' name) (ActionItemOther (Just (fromConfigValue val))) $ do
 		setGlobalConfig ck val
-		setConfig ck (fromConfigValue val)
+		when (needLocalUpdate ck) $
+			setConfig ck (fromConfigValue val)
 		next $ return True
 seek (UnsetConfig ck@(ConfigKey name)) = commandAction $
 	startingUsualMessages (decodeBS' name) (ActionItemOther (Just "unset")) $do
 		unsetGlobalConfig ck
-		unsetConfig ck
+		when (needLocalUpdate ck) $
+			unsetConfig ck
 		next $ return True
 seek (GetConfig ck) = commandAction $
 	startingCustomOutput (ActionItemOther Nothing) $ do
@@ -67,3 +71,7 @@ seek (GetConfig ck) = commandAction $
 			Nothing -> return ()
 			Just (ConfigValue v) -> liftIO $ S8.putStrLn v
 		next $ return True
+
+needLocalUpdate :: ConfigKey -> Bool
+needLocalUpdate (ConfigKey "annex.securehashesonly") = True
+needLocalUpdate _ = False
