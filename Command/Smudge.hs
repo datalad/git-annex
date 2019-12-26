@@ -24,12 +24,9 @@ import Backend
 import Utility.Metered
 import Annex.InodeSentinal
 import Utility.InodeCache
-import Utility.ThreadScheduler
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import Data.Time.Clock
-import Data.Time.Clock.POSIX
 
 cmd :: Command
 cmd = noCommit $ noMessages $
@@ -91,14 +88,11 @@ clean file = do
 			Just k -> do
 				getMoveRaceRecovery k (toRawFilePath file)
 				liftIO $ L.hPut stdout b
-			Nothing -> do
-				ic <- withTSDelta (liftIO . genInodeCache (toRawFilePath file))
-				go ic b =<< catKeyFile (toRawFilePath file)
-				gitMtimeWorkaround ic
+			Nothing -> go b =<< catKeyFile (toRawFilePath file)
 		)
 	stop
   where
-	go ic b oldkey = ifM (shouldAnnex file ic oldkey)
+	go b oldkey = ifM (shouldAnnex file oldkey)
 		( do
 			-- Before git 2.5, failing to consume all stdin here
 			-- would cause a SIGPIPE and crash it.
@@ -166,8 +160,8 @@ clean file = do
 -- annexed content before, annex it. This handles cases such as renaming an
 -- unlocked annexed file followed by git add, which the user naturally
 -- expects to behave the same as git mv.
-shouldAnnex :: FilePath -> Maybe InodeCache -> Maybe Key -> Annex Bool
-shouldAnnex file mic moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
+shouldAnnex :: FilePath -> Maybe Key -> Annex Bool
+shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 	( checkmatcher checkheuristics
 	, checkheuristics
 	)
@@ -180,7 +174,7 @@ shouldAnnex file mic moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 		Just _ -> return True
 		Nothing -> checkknowninode
 
-	checkknowninode = case mic of
+	checkknowninode = withTSDelta (liftIO . genInodeCache (toRawFilePath file)) >>= \case
 		Nothing -> pure False
 		Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
 
@@ -219,14 +213,3 @@ updateSmudged restage = streamSmudged $ \k topf -> do
 				Just k' | k' == k -> toplevelWarning False $
 					"unable to populate worktree file " ++ fromRawFilePath f
 				_ -> noop
-
--- If the mtime of a worktree file is too close to the mtime of the index
--- file, git will distrust the index. Which results in it running
--- the clean filter again later. While that's not normally a problem,
---
-gitMtimeWorkaround :: Maybe InodeCache -> Annex ()
-gitMtimeWorkaround Nothing = noop
-gitMtimeWorkaround (Just ic) = liftIO $ do
-	now <- getCurrentTime
-	when (abs (diffUTCTime (posixSecondsToUTCTime (inodeCacheToMtime ic)) now) < 1) $ do
-		threadDelaySeconds (Seconds 1)
