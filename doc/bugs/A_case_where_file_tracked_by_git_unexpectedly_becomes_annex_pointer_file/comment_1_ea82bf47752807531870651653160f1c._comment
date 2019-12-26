@@ -1,0 +1,97 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2019-12-26T16:56:38Z"
+ content="""
+The title makes it sound like a work tree file gets replaced with a
+dangling pointer file, which is not the case. A worktree file that was
+not annexed is is being added to the annex, if you choose to commit that
+state.
+
+For whatever reason, git becomes confused about whether this file is
+modified. I seem to recall that git distrusts information it recorded in
+its own index if the mtime of the index file is too close to the
+mtime recorded inside it, or something like that. (Likely as a
+workaround for mtime granularity issues with various filesystems.) Whatever
+the reason, git-annex is not involved in it; it will happen sometimes even
+when git-annex has not initialized the repo and is not being used.
+
+It's not normally a problem that git gets confused or distrusts its
+index or whatever, since all it does is stat the file, or
+feed it through the clean filter again, and if the file is not
+modified, nothing changes.
+
+Why does the clean filter decide to add the file to annex in this case?
+
+Well, because this is all happening inside this:
+	
+	git -c annex.largefiles=anything annex add -- file-annex
+
+And there you've told it to add all files to the annex with
+annex.largefiles=anything. So it does.
+
+To complete the description of what happens:
+`git-annex add` runs `git add` on the `file-annex` symlink it's adding. 
+`git add file-annex`, for whatever reason, decides to run the clean filter on
+file-git.
+The annex.largefiles=anything gets inherited through this chain of calls.
+
+While the resulting "change" does not get staged by `git add`
+(it was never asked to operate on that file), the clean filter
+duly ingests the content into the annex, and remembers its inode.
+So when the clean filter later gets run by `git status`, it sees an inode
+it knows it saw before, and assumes it should remain annexed.
+(This is why the commit that checks for known inodes was fingered by the
+bisection.)
+
+---
+
+Note that, you can accomplish the same thing without setting
+annex.largefiles, assuming a current version of git-annex:
+
+	git add file-git
+	git annex add file-annex
+
+I think the only reason for setting annex.largefiles in either of the two
+places you did is if there's a default value that you want to
+temporarily override?
+
+----
+
+Also, just touching file-git before the annex.largefiles=anything
+operation causes the same problem, again git-annex add runs git add
+file-annex, which runs the clean filter on file-git, which this time
+is legitimately modified.
+
+---
+
+Possible ways to improve this short of improving git's behavior:
+
+`git annex` could set annex.gitaddtoannex=false when it runs `git add`.
+Since git-annex never relies on `git add` adding files to the annex,
+that seems entirely safe to always do (perhaps even when running all git
+commands aside from git-annex commands of course). But, that would
+not help with a variant where rather than `git-annex add`,
+this is run:
+
+	git -c annex.largefiles=anything add file-annex
+
+The clean filter could delay long enough that git stops distrusting
+its index based on timestamps. A 1 second sleep if the file's mtime
+is too close to the current time works; I prototyped a patch doing that.
+But, that does not deal with the case
+mentioned above where file-git gets touched or legitimately modified.
+
+The clean filter could check if the file is already
+in the index but is not annexed, and avoid converting it to annexed.
+But that would prevent legitimate conversions from git to annexed
+as well, which rely on the same kind of use of annex.largefiles.
+
+Temporary overrides of annex.largefiles could be ignored by the clean
+filter. Same problem as previous.
+
+So, I think that fixing this will involve adding a new interface for
+converting between git and annexed files that does not involve
+-c annex.largefiles. That plus having the clean filter check for
+non-annexed files seems like the best approach.
+"""]]
