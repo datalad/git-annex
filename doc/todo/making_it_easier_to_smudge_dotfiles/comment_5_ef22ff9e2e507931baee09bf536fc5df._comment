@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2019-12-26T20:34:02Z"
+ content="""
+I've implemented annex.dotfiles in the `v8` branch.
+
+I did not tie it to annex.largefiles in the end, spwhitton is right.
+
+`git-annex add` behavior around dotfiles did change in a potentially
+surprising way, since dotfiles are assumed to be non-large, they get added
+to git. Users who have dotfiles that are large (or dotdirs containing large
+files) will need to configure annex.largefiles and annex.dotfiles to avoid
+those files being added to git. But, I don't think that will affect many
+users, and it avoided a lot of complexity. At least such users can use this
+and other semi-recent git-annex configs to avoid `git add` adding their
+large dotfiles directly to git.
+"""]]
