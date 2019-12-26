@@ -86,6 +86,7 @@ data GitConfig = GitConfig
 	, annexAriaTorrentOptions :: [String]
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Configurable (Maybe String)
+	, annexDotFiles :: Configurable Bool
 	, annexGitAddToAnnex :: Bool
 	, annexAddSmallFiles :: Bool
 	, annexFsckNudge :: Bool
@@ -158,6 +159,7 @@ extractGitConfig configsource r = GitConfig
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = configurable Nothing $
 		fmap Just $ getmaybe (annex "largefiles")
+	, annexDotFiles = configurable False $ getmaybebool (annex "dotfiles")
 	, annexGitAddToAnnex = getbool (annex "gitaddtoannex") True
 	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
 	, annexFsckNudge = getbool (annex "fscknudge") True
@@ -232,6 +234,7 @@ mergeGitConfig gitconfig repoglobals = gitconfig
 	, annexSyncContent = merge annexSyncContent
 	, annexResolveMerge = merge annexResolveMerge
 	, annexLargeFiles = merge annexLargeFiles
+	, annexDotFiles = merge annexDotFiles
 	, annexAddUnlocked = merge annexAddUnlocked
 	}
   where

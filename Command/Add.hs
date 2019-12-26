@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import Annex.Link
 import Annex.Tmp
 import Messages.Progress
 import Git.FilePath
+import Config.GitConfig
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
@@ -29,7 +30,6 @@ cmd = notBareRepo $
 
 data AddOptions = AddOptions
 	{ addThese :: CmdParams
-	, includeDotFiles :: Bool
 	, batchOption :: BatchMode
 	, updateOnly :: Bool
 	}
@@ -37,10 +37,6 @@ data AddOptions = AddOptions
 optParser :: CmdParamsDesc -> Parser AddOptions
 optParser desc = AddOptions
 	<$> cmdParams desc
-	<*> switch
-		( long "include-dotfiles"
-		<> help "don't skip dotfiles"
-		)
 	<*> parseBatchOption
 	<*> switch
 		( long "update"
@@ -52,13 +48,16 @@ seek :: AddOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
-	let gofile file = ifM (checkFileMatcher largematcher (fromRawFilePath file) <||> Annex.getState Annex.force)
-		( start file addunlockedmatcher
-		, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-			( startSmall file
-			, stop
+	annexdotfiles <- getGitConfigVal annexDotFiles 
+	let gofile file =
+		let file' = fromRawFilePath file
+		in ifM (pure (annexdotfiles || not (dotfile file')) <&&> (checkFileMatcher largematcher file' <||> Annex.getState Annex.force))
+			( start file addunlockedmatcher
+			, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
+				( startSmall file
+				, stop
+				)
 			)
-		)
 	case batchOption o of
 		Batch fmt
 			| updateOnly o ->
@@ -68,7 +67,7 @@ seek o = startConcurrency commandStages $ do
 			l <- workTreeItems (addThese o)
 			let go a = a (commandAction . gofile) l
 			unless (updateOnly o) $
-				go (withFilesNotInGit (not $ includeDotFiles o))
+				go withFilesNotInGit
 			go withFilesMaybeModified
 			go withUnmodifiedUnlockedPointers
 

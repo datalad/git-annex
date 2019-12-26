@@ -9,6 +9,7 @@
 
 module Upgrade.V7 where
 
+import qualified Annex
 import Annex.Common
 import Annex.CatFile
 import qualified Database.Keys
@@ -43,6 +44,8 @@ upgrade automatic = do
 	liftIO . nukeFile =<< fromRepo gitAnnexKeysDbIndexCacheOld
 	liftIO . nukeFile =<< fromRepo gitAnnexKeysDbLockOld
 	
+	updateSmudgeFilter
+
 	return True
 
 gitAnnexKeysDbOld :: Git.Repo -> FilePath
@@ -109,3 +112,21 @@ populateKeysDb = do
 	liftIO $ void cleanup
 	Database.Keys.closeDb
 
+-- The gitatrributes used to have a line that prevented filtering dotfiles,
+-- but now they are filtered and annex.dotfiles controls whether they get
+-- added to the annex.
+--
+-- Only done on local gitattributes, not any gitatrributes that might be
+-- checked into the repository.
+updateSmudgeFilter :: Annex ()
+updateSmudgeFilter = do
+	lf <- Annex.fromRepo Git.attributesLocal
+	ls <- liftIO $ lines <$> catchDefaultIO "" (readFileStrict lf)
+	let ls' = removedotfilter ls
+	when (ls /= ls') $
+		liftIO $ writeFile lf (unlines ls')
+  where
+	removedotfilter ("* filter=annex":".* !filter":rest) =
+		"* filter=annex" : removedotfilter rest
+	removedotfilter (l:ls) = l : removedotfilter ls
+	removedotfilter [] = []

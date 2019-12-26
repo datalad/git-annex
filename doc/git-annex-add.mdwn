@@ -18,6 +18,8 @@ git has been configured to ignore will be silently skipped.
 If annex.largefiles is configured, and does not match a file, 
 `git annex add` will behave the same as `git add` and add the
 non-large file directly to the git repository, instead of to the annex.
+(By default dotfiles are assumed to not be large, and are added directly
+to git, but annex.dotfiles can be configured to annex those too.)
 
 Large files are added to the annex in locked form, which prevents further
 modification of their content unless unlocked by [[git-annex-unlock]](1).
@@ -29,11 +31,6 @@ This command can also be used to add symbolic links, both symlinks to
 annexed content, and other symlinks.
 
 # OPTIONS
-
-* `--include-dotfiles`
-
-  Dotfiles are skipped unless explicitly listed, or unless this option is
-  used.
 
 * `--force`
 

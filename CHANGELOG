@@ -13,6 +13,15 @@ git-annex (8.20191107) UNRELEASED; urgency=medium
     Microbenchmarks show around 10-25% speedup of sqlite database operations.
   * Improved serialization of filenames and keys to the sqlite databases,
     avoiding encoding problems.
+  * annex.dotfiles configuration setting can be used to let dotfiles
+    be added to the annex the same as other files. When it's set,
+    annex.largefiles can be used to match whatever dotfiles should be added.
+  * add: Explicitly passing dotfiles no longer adds them to the annex,
+    unless you set annex.dotfiles=true.
+  * add: When adding a whole directory, any dotfiles found in it will
+    not be skipped, but will be added to git by default. This behavior
+    can be configured with annex.dotfiles.
+  * add: Removed the --include-dotfiles option.
 
  -- Joey Hess <id@joeyh.name>  Tue, 29 Oct 2019 15:13:03 -0400
 

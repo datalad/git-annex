@@ -901,14 +901,32 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   This configures the behavior of both git-annex and git when adding
   files to the repository. By default, `git-annex add` adds all files
-  to the annex, and `git add` adds files to git (unless they were added
-  to the annex previously). When annex.largefiles is configured, both
+  to the annex (except dotfiles), and `git add` adds files to git
+  (unless they were added to the annex previously).
+  When annex.largefiles is configured, both
   `git annex add` and `git add` will add matching large files to the
   annex, and the other files to git.
 
   Other git-annex commands also honor annex.largefiles, including
   `git annex import`, `git annex addurl`, `git annex importfeed`
   and the assistant.
+
+* `annex.dotfiles`
+
+  Normally, dotfiles are assumed to be files like .gitignore,
+  whose content should always be part of the git repository, so 
+  they will not be added to the annex. Setting annex.dotfiles to true
+  makes dotfiles be added to the annex the same as any other file. 
+
+  To annex only some dotfiles, set this and configure annex.largefiles
+  to match the ones you want. For example, to match only dotfiles ending 
+  in ".big"
+
+	git config annex.largefiles "(include=.*.big or include=*/.*.big) or (exclude=.* and exclude=*/.*)"
+  	git config annex.dotfiles true
+  
+  To configure a default annex.dotfiles for all clones of the repository,
+  this can be set in [[git-annex-config]](1).
 
 * `annex.gitaddtoannex`
 

@@ -24,6 +24,7 @@ import Backend
 import Utility.Metered
 import Annex.InodeSentinal
 import Utility.InodeCache
+import Config.GitConfig
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -166,9 +167,16 @@ shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 	, checkheuristics
 	)
   where
-	checkmatcher d = do
-		matcher <- largeFilesMatcher
-		checkFileMatcher' matcher file d
+	checkmatcher d
+		| dotfile file = ifM (getGitConfigVal annexDotFiles)
+			( go
+			, return False
+			)
+		| otherwise = go
+	  where
+		go = do
+			matcher <- largeFilesMatcher
+			checkFileMatcher' matcher file d
 	
 	checkheuristics = case moldkey of
 		Just _ -> return True

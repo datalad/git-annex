@@ -42,7 +42,6 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 stdattr :: [String]
 stdattr =
 	[ "* filter=annex"
-	, ".* !filter"
 	]
 
 -- Note that this removes the local git attributes for filtering, 

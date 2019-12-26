@@ -59,23 +59,14 @@ withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
 				getfiles c ps
 			_ -> giveup needforce
 
-withFilesNotInGit :: Bool -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesNotInGit skipdotfiles a l
-	| skipdotfiles = do
-		{- dotfiles are not acted on unless explicitly listed -}
-		files <- filter (not . dotfile . fromRawFilePath) <$>
-			seekunless (null ps && not (null l)) ps
-		dotfiles <- seekunless (null dotps) dotps
-		go (files++dotfiles)
-	| otherwise = go =<< seekunless False l
+withFilesNotInGit :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesNotInGit  a l = go =<< seek
   where
-	(dotps, ps) = partition (\(WorkTreeItem f) -> dotfile f) l
-	seekunless True _ = return []
-	seekunless _ l' = do
+	seek = do
 		force <- Annex.getState Annex.force
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie
-			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> toRawFilePath f) l') g
+			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> toRawFilePath f) l) g
 	go fs = seekActions $ prepFiltered a $
 		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> toRawFilePath f) l) fs
 

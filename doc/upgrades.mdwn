@@ -66,6 +66,11 @@ After the upgrade, git-annex will in some situations have to do extra
 work while it finishes populating the new databases. After this one-time
 speed cost, git-annex's speed will improve when using the new and improved
 databases.
+  
+Also, there are some behavior changes around adding dotfiles. While before
+git-annex add skipped adding dotfiles when operating on whole directories,
+and added dotfiles that were explicitly listed to the annex, it now adds
+dotfiles to git by default, unless annex.dotfiles is set to true.
 
 ## v6 -> v7 (git-annex version 7.x)
 

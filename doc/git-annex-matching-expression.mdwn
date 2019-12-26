@@ -26,6 +26,11 @@ The following terms can be used:
 
   The glob can contain `*` and `?` to match arbitrary characters.
 
+  Note that this matches on the whole filename, relative to the top 
+  of the git directory. So, `include=foo` will include a file `foo`
+  in the top, but not `subdir/foo`. To include both, use 
+  `include=foo or include=*/foo`
+
 * `smallerthan=size` / `largerthan=size`
 
   Matches only files smaller than, or larger than the specified size.
