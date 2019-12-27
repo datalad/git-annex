@@ -20,3 +20,5 @@ If strict matching (not sure yet about a use case where it would really be neede
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> Looks like we're agreed this is not necessary, so [[done]] --[[Joey]]
