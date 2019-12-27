@@ -19,6 +19,10 @@ git-annex (7.20191219) UNRELEASED; urgency=medium
     setting, except for in the special case of annex.securehashesonly.
   * Improve file ordering behavior when one parameter is "." and other
     parameters are other directories.
+  * smudge: When annex.largefiles=anything, files that were already
+    stored in git, and have not been modified could sometimes be converted
+    to being stored in the annex. Changes in 7.20191024 made this more
+    of a problem. This case is now detected and prevented.
 
  -- Joey Hess <id@joeyh.name>  Wed, 18 Dec 2019 15:12:40 -0400
 

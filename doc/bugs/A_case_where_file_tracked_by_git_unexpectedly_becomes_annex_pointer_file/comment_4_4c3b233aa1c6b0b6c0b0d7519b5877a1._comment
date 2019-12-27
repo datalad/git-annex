@@ -41,4 +41,5 @@ add a specific file to annex or git, bypassing annex.largefiles and all
 other configuration and state. This could also be used to easily switch
 a file from one storage to the other. I'd hope the existence of that
 would prevent one-off setting of annex.largefiles=anything/nothing.
+[[todo/git_annex_add_option_to_control_to_where]]
 """]]

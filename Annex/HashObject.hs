@@ -21,7 +21,7 @@ hashObjectHandle :: Annex Git.HashObject.HashObjectHandle
 hashObjectHandle = maybe startup return =<< Annex.getState Annex.hashobjecthandle
   where
 	startup = do
-		h <- inRepo $ Git.HashObject.hashObjectStart
+		h <- inRepo $ Git.HashObject.hashObjectStart True
 		Annex.changeState $ \s -> s { Annex.hashobjecthandle = Just h }
 		return h
 

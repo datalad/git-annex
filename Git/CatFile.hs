@@ -1,6 +1,6 @@
 {- git cat-file interface
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,6 +33,7 @@ import Text.Read
 import Common
 import Git
 import Git.Sha
+import qualified Git.Ref
 import Git.Command
 import Git.Types
 import Git.FilePath
@@ -109,22 +110,23 @@ catObjectDetails h object = query (catFileProcess h) object newlinefallback $ \f
 				return (Just (content, sha, objtype))
 
 {- Gets the size and type of an object, without reading its content. -}
-catObjectMetaData :: CatFileHandle -> Ref -> IO (Maybe (Integer, ObjectType))
+catObjectMetaData :: CatFileHandle -> Ref -> IO (Maybe (Sha, FileSize, ObjectType))
 catObjectMetaData h object = query (checkFileProcess h) object newlinefallback $ \from -> do
 	resp <- hGetLine from
 	case parseResp object resp of
-		Just (ParsedResp _ size objtype) ->
-			return $ Just (size, objtype)
+		Just (ParsedResp sha size objtype) ->
+			return $ Just (sha, size, objtype)
 		Just DNE -> return Nothing
 		Nothing -> error $ "unknown response from git cat-file " ++ show (resp, object)
   where
 	-- Slow fallback path for filenames containing newlines.
 	newlinefallback = do
+		sha <- Git.Ref.sha object (gitRepo h)
 		sz <- querySize object (gitRepo h)
 		objtype <- queryObjectType object (gitRepo h)
-		return $ (,) <$> sz <*> objtype
+		return $ (,,) <$> sha <*> sz <*> objtype
 
-data ParsedResp = ParsedResp Sha Integer ObjectType | DNE
+data ParsedResp = ParsedResp Sha FileSize ObjectType | DNE
 
 query :: CoProcess.CoProcessHandle -> Ref -> IO a -> (Handle -> IO a) -> IO a
 query hdl object newlinefallback receive
@@ -180,7 +182,7 @@ querySingle o r repo reader = assertLocal repo $
 			, return Nothing
 			)
 
-querySize :: Ref -> Repo -> IO (Maybe Integer)
+querySize :: Ref -> Repo -> IO (Maybe FileSize)
 querySize r repo = maybe Nothing (readMaybe . takeWhile (/= '\n'))
 	<$> querySingle (Param "-s") r repo hGetContentsStrict
 

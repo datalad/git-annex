@@ -18,7 +18,10 @@ import Logs.Location
 import qualified Database.Keys
 import qualified Git.BuildVersion
 import Git.FilePath
+import Git.Types
+import Git.HashObject
 import qualified Git
+import qualified Git.Ref
 import qualified Annex
 import Backend
 import Utility.Metered
@@ -88,11 +91,14 @@ clean file = do
 			Just k -> do
 				getMoveRaceRecovery k (toRawFilePath file)
 				liftIO $ L.hPut stdout b
-			Nothing -> go b =<< catKeyFile (toRawFilePath file)
+			Nothing -> do
+				let fileref = Git.Ref.fileRef (toRawFilePath file)
+				indexmeta <- catObjectMetaData fileref
+				go b indexmeta =<< catKey' fileref indexmeta
 		)
 	stop
   where
-	go b oldkey = ifM (shouldAnnex file oldkey)
+	go b indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
 		( do
 			-- Before git 2.5, failing to consume all stdin here
 			-- would cause a SIGPIPE and crash it.
@@ -153,17 +159,17 @@ clean file = do
 -- added to the annex, so will be added to git. But some heuristics
 -- are used to avoid bad behavior:
 --
--- If the index already contains the file, preserve its annexed/not annexed
--- state. This prevents accidental conversions.
+-- If the file is annexed in the index, keep it annexed.
+-- This prevents accidental conversions.
 --
 -- Otherwise, when the file's inode is the same as one that was used for
 -- annexed content before, annex it. This handles cases such as renaming an
 -- unlocked annexed file followed by git add, which the user naturally
 -- expects to behave the same as git mv.
-shouldAnnex :: FilePath -> Maybe Key -> Annex Bool
-shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
-	( checkmatcher checkheuristics
-	, checkheuristics
+shouldAnnex :: FilePath -> Maybe (Sha, FileSize, ObjectType) -> Maybe Key -> Annex Bool
+shouldAnnex file indexmeta moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
+	( checkunchangedgitfile $ checkmatcher checkheuristics
+	, checkunchangedgitfile checkheuristics
 	)
   where
 	checkmatcher d = do
@@ -177,6 +183,31 @@ shouldAnnex file moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 	checkknowninode = withTSDelta (liftIO . genInodeCache (toRawFilePath file)) >>= \case
 		Nothing -> pure False
 		Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
+
+	-- This checks for a case where the file had been added to git
+	-- previously, not to the annex before, and its content is not
+	-- changed, but git is running the clean filter again on it
+	-- (eg because its mtime or inode changed, or just because git feels
+	-- like it). Such a file should not be added to the annex, even if
+	-- annex.largefiles now matches it, because the content is not
+	-- changed.
+	checkunchangedgitfile cont = case (moldkey, indexmeta) of
+		(Nothing, Just (sha, sz, _)) -> liftIO (catchMaybeIO (getFileSize file)) >>= \case
+			Just sz' | sz' == sz -> do
+				-- The size is the same, so the file
+				-- is not much larger than what was stored
+				-- in git before, so it won't be out of
+				-- line to hash it. However, the content
+				-- is prevented from being stored in git
+				-- when hashing.
+				h <- inRepo $ hashObjectStart False
+				sha' <- liftIO $ hashFile h file
+				liftIO $ hashObjectStop h
+				if sha' == sha
+					then return False
+					else cont
+			_ -> cont
+		_ -> cont
 
 emitPointer :: Key -> IO ()
 emitPointer = S.putStr . formatPointer

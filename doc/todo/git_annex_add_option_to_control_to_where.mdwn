@@ -1,0 +1,13 @@
+Make `git-annex add --annex` and `git-annex add --git` add a specific file to
+annex or git, bypassing annex.largefiles and all other configuration and state.
+
+One reason to want this is that it avoids users doing stuff like this:
+
+	git -c annex.largefiles=anything annex add foo.c
+
+Such a temporary setting of annex.largefiles can be problimatic, as explored in 
+<https://git-annex.branchable.com/bugs/A_case_where_file_tracked_by_git_unexpectedly_becomes_annex_pointer_file/>
+
+Also, this could also be used to easily switch a file from one storage to
+the other. I suppose the file would have to be touched first to make git-annex
+add process it?
