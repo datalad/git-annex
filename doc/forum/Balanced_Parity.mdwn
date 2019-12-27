@@ -5,7 +5,7 @@ For example, suppose I wish to store N = 1000 GB on k = 10 servers, each with 15
 
 We'll set the goal of being able to lose r = 3 servers without losing any data (which would reduce our total storage capacity to 7 * 150 GB = 1050 GB).
 
-This can be done by thinking of our files in groups of seven (k - r) and using parchive2 or similar to create 3 (k) parity files for each set:
+This can be done by thinking of our files in groups of seven (k - r) and using parchive2 or similar to create 3 (r) parity files for each set:
 
 ```
 Parity group 000: D000 D001 D002 D003 D004 D005 D006  P000.0 P000.1 P000.2
