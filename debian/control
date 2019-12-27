@@ -78,6 +78,7 @@ Build-Depends:
 	libghc-magic-dev,
 	libghc-socks-dev,
 	libghc-vector-dev,
+	libghc-filepath-bytestring-dev,
 	lsof [linux-any],
 	ikiwiki,
 	libimage-magick-perl,
