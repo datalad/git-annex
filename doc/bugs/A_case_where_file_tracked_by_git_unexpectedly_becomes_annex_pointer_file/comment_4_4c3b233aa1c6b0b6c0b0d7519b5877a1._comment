@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-12-27T18:41:12Z"
+ content="""
+It's almost possible to get the same unwanted conversion without any git
+races:
+
+	echo content-git > file-git
+	sleep 2
+	git add file-git
+	git commit -m add
+
+	echo foo > file-git
+	echo content-annex > file-annex
+	git -c annex.largefiles=anything annex add file-annex
+
+In this case, git currently does not run the modified file-git through the
+clean filter in the last line, so the annex.largefiles=anything doesn't
+affect it.
+
+But, as far as I can see, there's nothing preventing a future version
+of git from deciding it does want to run file-git through the clean filter
+in this case.
+
+I am not going to try to prevent against such a thing happening.
+As far as I can see, anything that the clean filter can possibly do to
+avoid such a situation will cripple existing uses cases of
+annex.largefiles, like largerthan() as mentioned above.
+The user has told git-annex to annex "anything", and if git
+decides to run the clean filter while that is in effect, caveat emptor.
+
+Which is not to say I'm not going to fix the specific case this bug was
+filed about. I actually have a fix developed now. But just to say that
+setting annex.largefiles=anything/nothing temporarily is a blunt instrument,
+and you risk accidental conversion when using it, and so it would be a good
+idea to not do that.
+
+One idea: Make `git-annex add --annex` and `git-annex add --git`
+add a specific file to annex or git, bypassing annex.largefiles and all
+other configuration and state. This could also be used to easily switch
+a file from one storage to the other. I'd hope the existence of that
+would prevent one-off setting of annex.largefiles=anything/nothing.
+"""]]
