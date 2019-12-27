@@ -1,0 +1,41 @@
+I am interested in using or extending git-annex to manage storage redundancy more efficiently than [[git-annex-numcopies]] allows.  In particular, I wish to be able to tolerate the loss of a repository when I don't have enough disk space for `numcopies 2` -- when my disk capacity is less than double the data size.
+
+
+For example, suppose I wish to store N = 1000 GB on k = 10 servers, each with 150 GB storage (so total storage is 1500 GB, which is less than the 2000 GB that would be required for `numcopies 2`).  For simplicity here, we'll presume that our data is in 1000 1GB files.
+
+We'll set the goal of being able to lose r = 3 servers without losing any data (which would reduce our total storage capacity to 7 * 150 GB = 1050 GB).
+
+This can be done by thinking of our files in groups of seven (k - r) and using parchive2 or similar to create 3 (k) parity files for each set:
+
+```
+Parity group 000: D000 D001 D002 D003 D004 D005 D006  P000.0 P000.1 P000.2
+Parity group 001: D007 D008 D009 D010 D011 D012 D013  P001.0 P001.1 P001.2
+...
+Parity group 141: D987 D988 D989 D990 D991 D992 D993  P141.0 P141.1 P141.2
+Parity group 142: D994 D995 D996 D997 D998 D999       P142.0 P142.1 P142.2
+```
+
+All files are still 1G -- we have used 1429 GB of storage, far less than the 4000 GB that would be required to achieve the same durability with `numcopies 4`.
+
+The trouble is that we now need to ensure that each parity group's files are scattered across all the repositories.  D001 must go in a different repository than D000.  D0002 must go in a different repository than the first two, etc.  git-annex's [[required_content]] mechanism allows allocating files to repositories based on properties of that file, not the presence or absence of other files.
+
+
+Generalizing to differently-sized files, differently-sized repositories, parity group sizes other than k, k changing over time, per-file r values, and trying to minimize churn, it seems to me that the simplest way to do this would be to run a solver that finds a 'best' allocation plan and then writes a metadata tag on every file with its intended home.  Each repository can then have a simple [[required_content]] rule with its own name and [[--auto|walkthrough/automatically_managing_content]] or the assistant can move the files around as necessary.  I'm imagining running the solver periodically, from a cron job or in the assistant.  The other moving part is launching `par2` to create parity files do recovery, which happens after the solver has commanded that all the relevant inputs be brought together on one machine and after `get --auto` invocations or the assistant have done the transfers.
+
+User interface points:
+
+1. User specifies how much disk space the solver should use in each repository.
+2. User specifies the desired durability of each file.  Probably with match expressions?
+3. User declares a repository lost with [[git-annex-dead]].  The solver will notice many degraded parity groups on the next run & emit a plan to start bringing together parity groups' files for `par2 r` runs.  Ideally, running `git-anenx-dead` would would stop any existing solver run & start a fresh solver run immediately.
+4. Report to user parity placement health (are all the files where they should be?  Is recovery finished?  About how much I/O needs to be done to finish?)
+5. Report to user the available storage space for additional content at each durability level (this is non-trivial given differently-sized repositories)
+6. Report to user the storage efficiency of the current arrangement, how much storage efficiency could be improved at various I/O costs, and allowing the user to select a (eg: re-grouping old and recently-written files into new parity groups would allow closer file-size matching, allowing smaller parity files for the smaller file set.)
+7. User specifies parity group size??  This is a trade-off between storage efficiency (larger groups → more efficient) and high-durability storage capacity when repository sizes differ (smaller groups AND repository size diversity → more high-durability storage capacity).  It's possible that there's some principled way to save the user the trouble of having to understand the mechanics of parity groups & choose a parity group size, but I'm unclear on how that would work, so my initial plan is to have the user specify this by the same mechanism that they specify desired durability.  A good UI could support this choice by showing what the effect of each option would be on storage capacity at each durability level. 
+
+
+See also
+
+* [[todo/Wishlist__58___Parity_files_on_all_files]]
+* [[todo/wishlist__58___Parity_files_for_encrypted_remotes]]
+* [[design/assistant/partial_content]]
+* [[forum/sparse_git_checkouts_with_annex]]
