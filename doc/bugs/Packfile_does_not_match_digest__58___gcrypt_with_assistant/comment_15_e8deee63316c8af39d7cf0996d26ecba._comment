@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="sirio@84e81889437b3f6208201a26e428197c6045c337"
+ nickname="sirio"
+ avatar="http://cdn.libravatar.org/avatar/9f3a0cfaf4825081710b652cc0b438a4"
+ subject="Duplicate 'gcrypt-id' may be the issue?"
+ date="2019-12-29T22:10:26Z"
+ content="""
+Had a repo exhibit this behavior just now:
+
+- commit graph `XX -> YY`
+- host `A` @ commit `YY`
+- host `B` @ commit `XX` (1 behind)
+- remotes `hub` and `lab` both @ commit `XX`
+- `B` pushes and pulls from both `hub` and `lab`: OK
+- `A` pushes to `hub` (updates to commit `YY`): OK
+- `B` pulls from `hub`: FAIL with *Packfile does not match digest*
+- `B` pulls from `lab`: OK
+- `B` pushes to `hub`: FAIL with *Packfile does not match digest*
+- `A` pulls from `hub`: OK
+- `A` pulls from `lab`: OK
+
+When looking in `.git/config` I noticed that `remote.hub.gcrypt-id` and `remote.lab.gcrypt-id` were identical.
+
+To fix, I:
+
+- removed `remote.hub.gcrypt-id` from `.git/config` on both `A` and `B`
+- deleted and re-created a blank repo on `hub`
+- `git push hub` on `B`
+- `git pull hub master` on `A`
+
+This resulted in a new and unique value for `remote.hub.gcrypt-id`, which is the same on both `A` and `B`.
+
+Have not had time to dig into why but this is the only thread I can find about this problem so I figured I would log this somewhere for posterity.
+"""]]
