@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+enable-tor on an OSX box (with magic-wormhole and tor installed via brew) fails miserably.
+
+### What steps will reproduce the problem?
+
+run git-annex enable-tor - multiple fails, see details.
+
+
+### What version of git-annex are you using? On what operating system?
+
+7.20191106
+
+OSX 10.14.5
+
+### Please provide any additional information below.
+
+The first failure is that enable-tor can't run as root.  Instead, I call it with sudo git-annex enable-tor <UID>
+
+The second failure is that you try and write into /etc/tor/torrc - which is not where torrc is located on a brew installed tor - it's in /usr/local/etc/tor/torrc.  I made a symlink to get around that problem.
+
+The third failure is a complaint about systemctl not being present.  I looked in Utilities/Tor.hc and saw you were trying to call for a reload of tor.  To hack around that, I wrote a script called systemctl that simply called 'brew services' with the args passed in ( brew services $1 $2 ).  
+
+After that, I still get the error: git-annex: tor failed to create hidden service, perhaps the tor service is not running
+
+I have restarted tor manually, and it is indeed running.  It looks like something is failing in setting up the Onion socket, but I can't see what
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I love it - using it to protect my photo archive now using a central special repo (rclone) for the data, and a gitlab repo for the base.  
