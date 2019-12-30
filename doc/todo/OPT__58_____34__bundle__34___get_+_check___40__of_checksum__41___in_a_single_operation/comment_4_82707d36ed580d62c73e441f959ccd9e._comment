@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2019-12-30T18:15:40Z"
+ content="""
+When -J is used, recent versions use a separate pool of worker threads for
+the checksumming than the downloading. So even with -J1 checksum of the
+previous download will not block the next download.
+
+I've thought about making this the default without -J.. It relies on
+concurrent-output working well, which it sometimes may not, eg when
+filenames are not valid unicode, or perhaps on a non-ANSI terminal, and so
+far it's been worth not defaulting to -J1 to avoid breaking in such edge
+cases.
+
+Anyway, it seems to me using -J should avoid most of the overhead, except
+of course for the remaining checksumming after all downloads finish.
+
+Incremental checksumming could be done for some of the built-in remotes,
+but not others like bittorrent which write out of order. Some transfers
+can resume, and the checksumming would have to somehow catch
+up to resume point, which adds significant complexity.
+
+External remotes would need to send the content over a pipe for incremental
+checksumming, so it would need a protocol extension.
+
+git-annex's remote API does have the concept that a remote can sufficiently
+verify the content of a file during transfer that additional checksumming
+is not necessary. Currently only used for git remotes when hard linking an
+object from a sibling remote. I don't think it actually matters what
+checksum a remote uses to do such verification, as long as it's
+cryptographically secure and runs on the local machine.
+
+A protocol extension that let an external remote communicate to git-annex
+that it had done such verification at the end of transfer is worth thinking
+about.
+
+Re Ilya's security concerns, as long as the external remote runs the
+verification on the local machine, it seems there is no added security
+impact.
+"""]]
