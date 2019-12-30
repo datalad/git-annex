@@ -296,7 +296,7 @@ source-repository head
 custom-setup
   Setup-Depends: base (>= 4.11.1.0), hslogger, split, unix-compat, process,
     filepath, exceptions, bytestring, directory, IfElse, data-default,
-    filepath-bytestring (>= 1.4.2.1.1),
+    filepath-bytestring (>= 1.4.2.1.0),
     utf8-string, transformers, Cabal
 
 Executable git-annex
@@ -321,7 +321,7 @@ Executable git-annex
    directory (>= 1.2),
    disk-free-space,
    filepath,
-   filepath-bytestring,
+   filepath-bytestring (>= 1.4.2.1.0),
    IfElse,
    hslogger,
    monad-logger,
