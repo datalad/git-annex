@@ -1,0 +1,8 @@
+Suppose there are three repo: A, B and transfer, transfer is a webdav remote.
+
+1. I add file-1 to A, do a sync content, file-1 is sent to transfer.
+2. I add file-2 to A, do a sync content, I expect only file-2 to be sent to transfer, but file-1 is sent another time. 
+
+How can I avoid that?
+
+Does other special remote like the rsync special remote has this issue?
