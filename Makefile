@@ -253,7 +253,7 @@ osxapp:
 				sleep 60; \
 			fi \
 		fi \
-	done
+	done; if [ $$ok = 0 ]; then exit 1; fi
 
 # Bypass cabal, and only run the main ghc --make command for a
 # faster development build.
