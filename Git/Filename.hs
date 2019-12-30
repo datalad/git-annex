@@ -46,8 +46,8 @@ prop_encode_decode_roundtrip s = s' ==
 	-- "\343\200\271".
 	--
 	-- This property papers over the problem, by only
-	-- testing chars < 256.
-	nohigh = filter (\c -> ord c < 256)
+	-- testing ascii
+	nohigh = filter isAscii
 	-- A String can contain a NUL, but toRawFilePath
 	-- truncates on the NUL, which is generally fine
 	-- because unix filenames cannot contain NUL.
