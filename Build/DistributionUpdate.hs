@@ -153,6 +153,7 @@ makeinfos updated version = do
 		, Param "move"
 		, Param "--to"
 		, Param "website"
+		, Param "--force"
 		]
 	void $ inRepo $ runBool
 		[ Param "annex"
