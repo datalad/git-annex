@@ -125,7 +125,7 @@ makeinfos updated version = do
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files"
 	forM_ updated $ \(f, bv) -> do
-		v <- lookupFile f
+		v <- lookupFile (toRawFilePath f)
 		case v of
 			Nothing -> noop
 			Just k -> whenM (inAnnex k) $ do
