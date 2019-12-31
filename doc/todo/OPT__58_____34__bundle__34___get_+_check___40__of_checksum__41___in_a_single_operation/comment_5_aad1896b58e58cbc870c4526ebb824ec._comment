@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="named pipes and external remotes"
+ date="2019-12-31T01:38:03Z"
+ content="""
+\"External remotes would need to send the content over a pipe for incremental checksumming, so it would need a protocol extension\" -- in the current protocol, if you pass to the TRANSFER request, as the FILE parameter, a named pipe, would something break?
+"""]]
