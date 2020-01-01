@@ -39,6 +39,16 @@ annexed content, and other symlinks.
 
   Add gitignored files.
 
+* `--force-large`
+
+  Treat all files as large files, ignoring annex.largefiles configuration,
+  and add to the annex.
+
+* `--force-small`
+
+  Treat all files as small files, ignoring annex.largefiles configuration,
+  and add to git, also ignoring annex.addsmallfiles configuration.
+
 * `--backend`
 
   Specifies which key-value backend to use.

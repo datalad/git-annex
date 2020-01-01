@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="timeless-ventricle"
- avatar="http://cdn.libravatar.org/avatar/0b220fa4c0b59e883f360979ee745d63"
- subject="comment 4"
- date="2019-01-06T12:24:49Z"
- content="""
-@joey I'm obviously missing something here, why would a shorter way to write that only be useful for direct mode?  I don't understand what the connection is between direct mode and wanting to specify whether this is a \"regular git\" file or an annexed file (except that direct mode is not supported in v7)?  I thought it was considered supported to have a mix of both large binary files and text files?  Even if some text files are large, I think I want to add them as files whose content is tracked by git, so I think I want to choose 'by hand' -- is that not really supported / considered a bad idea for some reason?
-"""]]

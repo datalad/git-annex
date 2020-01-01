@@ -1,5 +1,6 @@
-Make `git-annex add --annex` and `git-annex add --git` add a specific file to
-annex or git, bypassing annex.largefiles and all other configuration and state.
+Make `git-annex add --force-large` and `git-annex add --force-small` 
+add a specific file to annex or git, bypassing annex.largefiles
+and all other configuration and state.
 
 One reason to want this is that it avoids users doing stuff like this:
 
@@ -11,3 +12,5 @@ Such a temporary setting of annex.largefiles can be problimatic, as explored in
 Also, this could also be used to easily switch a file from one storage to
 the other. I suppose the file would have to be touched first to make git-annex
 add process it?
+
+> [[done]] --[[Joey]]

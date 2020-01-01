@@ -1,3 +1,11 @@
+git-annex (7.20191231) UNRELEASED; urgency=medium
+
+  * add: --force-annex/--force-git options make it easier to override
+    annex.largefiles configuration (and potentially safer as it avoids
+    bugs like the smudge bug fixed in the last release).
+
+ -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2020 12:51:40 -0400
+
 git-annex (7.20191230) upstream; urgency=medium
 
   * Optimised processing of many files, especially by commands like find
