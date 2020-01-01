@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-01-01T19:04:08Z"
+ content="""
+@michael.fsp autobuilder was down. There's a build now for the most recent
+release.
+"""]]
