@@ -117,5 +117,5 @@ parseRemoteLocation s repo = ret $ calcloc s
 	-- git on Windows will write a path to .git/config with "drive:",
 	-- which is not to be confused with a "host:"
 	dosstyle = hasDrive
-	dospath = fromRawFilePath . fromInternalGitPath
+	dospath = fromRawFilePath . fromInternalGitPath . toRawFilePath
 #endif
