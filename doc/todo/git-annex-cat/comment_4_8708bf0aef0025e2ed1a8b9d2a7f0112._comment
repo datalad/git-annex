@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-01T18:44:37Z"
+ content="""
+@Ilya_Shlyakhter, I'd assume:
+
+* some remotes would write to the named pipe
+* some remotes would overwrite it with a file
+* some remotes would open it, try to seek around as they do non-sequential
+  recieves, and hang or something
+* some remotes would maybe open and write to it, but would no longer be
+  able to resume interrupted transfers, since they would I guess see its
+  size as 0
+"""]]
