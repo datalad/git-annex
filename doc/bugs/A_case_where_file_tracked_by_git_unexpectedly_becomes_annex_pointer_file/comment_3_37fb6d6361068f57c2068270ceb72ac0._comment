@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2019-12-27T17:11:42Z"
+ content="""
+A variant of this where an annexed unlocked file is added first,
+then the file is touched, and then some other file is added
+with -c annex.largefiles=nothing does result in the clean filter sending
+the whole annexed file content back to git, rather than keeping it annexed.
+For whatever reason, git does not store that content in .git/objects or
+update the index for that file though, so it doesn't show up as a change.
+
+So *apparently* that variant is only potentially an expensive cat of a
+large annexed file, and does not need to be dealt with. Unless git
+sometimes behaves otherwise.
+"""]]

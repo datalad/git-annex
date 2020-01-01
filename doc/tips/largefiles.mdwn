@@ -89,7 +89,7 @@ If you've set up an annex.largefiles configuration but want to force a file to
 be stored in the annex, you can temporarily override the configuration like
 this:
 
-	git annex add -c annex.largefiles=anything smallfile
+	git annex add --force-large smallfile
 
 ## converting git to annexed
 
@@ -97,7 +97,7 @@ When you have a file that is currently stored in git, and you want to
 convert that to be stored in the annex, here's how to accomplish that:
 
 	git rm --cached file
-	git annex add -c annex.largefiles=anything file
+	git annex add --force-large file
 	git commit file
 
 This first removes the file from git's index cache, and then adds it back
@@ -111,7 +111,7 @@ convert that to be stored in git, here's how to accomplish that:
 
 	git annex unlock file
 	git rm --cached file
-	git -c annex.largefiles=nothing add file
+	git annex add --force-small file
 	git commit file
 
 You can modify the file after unlocking it and before adding it to

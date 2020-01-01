@@ -81,10 +81,9 @@ instance Arbitrary KeyData where
 -- AssociatedFile cannot be empty, and cannot contain a NUL
 -- (but can be Nothing)
 instance Arbitrary AssociatedFile where
-	arbitrary = (AssociatedFile . fmap mk <$> arbitrary)
+	arbitrary = (AssociatedFile . fmap toRawFilePath <$> arbitrary)
 		`suchThat` (/= AssociatedFile (Just S.empty))
-	  where
-		mk = toRawFilePath . filter (/= '\NUL')
+		`suchThat` (\(AssociatedFile f) -> maybe True (S.notElem 0) f)
 
 instance Arbitrary Key where
 	arbitrary = mkKey . const <$> arbitrary

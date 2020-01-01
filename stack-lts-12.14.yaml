@@ -23,6 +23,7 @@ extra-deps:
 - torrent-10000.1.1
 - sandi-0.5
 - http-client-0.5.14
+- filepath-bytestring-1.4.2.1.1
 explicit-setup-deps:
   git-annex: true
 resolver: lts-12.14

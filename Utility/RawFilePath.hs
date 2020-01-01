@@ -31,6 +31,7 @@ doesPathExist = fileExist
 
 #else
 import qualified Data.ByteString as B
+import System.PosixCompat (FileStatus)
 import qualified System.PosixCompat as P
 import qualified System.Directory as D
 import Utility.FileSystemEncoding

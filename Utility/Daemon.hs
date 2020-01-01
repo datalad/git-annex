@@ -8,7 +8,9 @@
 {-# LANGUAGE CPP #-}
 
 module Utility.Daemon (
+#ifndef mingw32_HOST_OS
 	daemonize,
+#endif
 	foreground,
 	checkDaemon,
 	stopDaemon,

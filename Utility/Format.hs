@@ -15,7 +15,7 @@ module Utility.Format (
 ) where
 
 import Text.Printf (printf)
-import Data.Char (isAlphaNum, isOctDigit, isHexDigit, isSpace, chr, ord)
+import Data.Char (isAlphaNum, isOctDigit, isHexDigit, isSpace, chr, ord, isAscii)
 import Data.Maybe (fromMaybe)
 import Data.Word (Word8)
 import Data.List (isPrefixOf)
@@ -176,12 +176,12 @@ encode_c' p = concatMap echar
 {- For quickcheck. 
  -
  - Encoding and then decoding roundtrips only when
- - the string does not contain high unicode, because eg, 
- - both "\12345" and "\227\128\185" are encoded to "\343\200\271".
+ - the string is ascii because eg, both "\12345" and
+ - "\227\128\185" are encoded to "\343\200\271".
  -
- - This property papers over the problem, by only testing chars < 256.
+ - This property papers over the problem, by only testing ascii.
  -}
 prop_encode_c_decode_c_roundtrip :: String -> Bool
 prop_encode_c_decode_c_roundtrip s = s' == decode_c (encode_c s')
   where
-	s' = filter (\c -> ord c < 256) s
+	s' = filter isAscii s

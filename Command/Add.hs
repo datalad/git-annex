@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,9 +17,13 @@ import qualified Database.Keys
 import Annex.FileMatcher
 import Annex.Link
 import Annex.Tmp
+import Annex.HashObject
 import Messages.Progress
+import Git.Types
 import Git.FilePath
 import Config.GitConfig
+import qualified Git.UpdateIndex
+import Utility.FileMode
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
@@ -32,6 +36,7 @@ data AddOptions = AddOptions
 	{ addThese :: CmdParams
 	, batchOption :: BatchMode
 	, updateOnly :: Bool
+	, largeFilesOverride :: Maybe Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser AddOptions
@@ -43,21 +48,34 @@ optParser desc = AddOptions
 		<> short 'u'
 		<> help "only update tracked files"
 		)
+	<*> (parseforcelarge <|> parseforcesmall)
+  where
+	parseforcelarge = flag Nothing (Just True)
+		( long "force-large"
+		<> help "add all files to annex, ignoring other configuration"
+		)
+	parseforcesmall = flag Nothing (Just False)
+		( long "force-small"
+		<> help "add all files to git, ignoring other configuration"
+		)
 
 seek :: AddOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
 	annexdotfiles <- getGitConfigVal annexDotFiles 
-	let gofile file =
-		let file' = fromRawFilePath file
-		in ifM (pure (annexdotfiles || not (dotfile file')) <&&> (checkFileMatcher largematcher file' <||> Annex.getState Annex.force))
-			( start file addunlockedmatcher
-			, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-				( startSmall file
-				, stop
+	let gofile file = case largeFilesOverride o of
+		Nothing -> 
+			let file' = fromRawFilePath file
+			in ifM (pure (annexdotfiles || not (dotfile file')) <&&> (checkFileMatcher largematcher file' <||> Annex.getState Annex.force))
+				( start file addunlockedmatcher
+				, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
+					( startSmall file
+					, stop
+					)
 				)
-			)
+		Just True -> start file addunlockedmatcher
+		Just False -> startSmallOverridden file
 	case batchOption o of
 		Batch fmt
 			| updateOnly o ->
@@ -80,6 +98,29 @@ addSmall :: RawFilePath -> Annex Bool
 addSmall file = do
 	showNote "non-large file; adding content to git repository"
 	addFile file
+
+startSmallOverridden :: RawFilePath -> CommandStart
+startSmallOverridden file = starting "add" (ActionItemWorkTreeFile file) $
+	next $ addSmallOverridden file
+
+addSmallOverridden :: RawFilePath -> Annex Bool
+addSmallOverridden file = do
+	showNote "adding content to git repository"
+	let file' = fromRawFilePath file
+	s <- liftIO $ getFileStatus file'
+	if isSymbolicLink s
+		then addFile file 
+		else do
+			-- Can't use addFile because the clean filter will
+			-- honor annex.largefiles and it has been overridden.
+			-- Instead, hash the file and add to the index.
+			sha <- hashFile file'
+			let ty = if isExecutable (fileMode s)
+				then TreeExecutable
+				else TreeFile
+			Annex.Queue.addUpdateIndex =<<
+				inRepo (Git.UpdateIndex.stageFile sha ty file')
+			return True
 
 addFile :: RawFilePath -> Annex Bool
 addFile file = do

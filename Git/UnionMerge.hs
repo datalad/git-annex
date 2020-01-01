@@ -31,7 +31,7 @@ import Git.FilePath
  -}
 merge :: Ref -> Ref -> Repo -> IO ()
 merge x y repo = do
-	hashhandle <- hashObjectStart repo
+	hashhandle <- hashObjectStart True repo
 	ch <- catFileStart repo
 	streamUpdateIndex repo
 		[ lsTree x repo

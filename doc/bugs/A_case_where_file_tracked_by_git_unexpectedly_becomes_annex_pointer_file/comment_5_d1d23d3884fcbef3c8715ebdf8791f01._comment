@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 5"
+ date="2019-12-28T21:06:46Z"
+ content="""
+Thanks for the explanation and the fix.
+
+> For whatever reason, git becomes confused about whether this file is
+> modified. I seem to recall that git distrusts information it recorded in
+> its own index if the mtime of the index file is too close to the
+> mtime recorded inside it, or something like that.
+
+I see.  I think the problem and associated workaround you're referring
+to is described in git's Documentation/technical/racy-git.txt.
+
+> Note that, you can accomplish the same thing without setting
+> annex.largefiles, assuming a current version of git-annex:
+>
+> 	git add file-git
+> 	git annex add file-annex
+>
+> I think the only reason for setting annex.largefiles in either of the two
+> places you did is if there's a default value that you want to
+> temporarily override?
+
+Right.  DataLad's methods that are responsible for calling out to `git
+annex add` have a `git={None,False,True}` parameter.  By default
+(`None`), DataLad just calls `git annex add ...` and let's any
+configuration in the repo control whether the file goes to git or is
+annexed.  But with `git=True` or `git=False`, the `annex add` call
+includes a `-c annex.largefiles=` argument with a value of `nothing`
+or `anything`, respectively.
+
+> But just to say that setting annex.largefiles=anything/nothing
+> temporarily is a blunt instrument, and you risk accidental
+> conversion when using it, and so it would be a good idea to not do
+> that.
+
+Noted.  As mentioned above, DataLad's default behavior is to honor the
+repo's `annex.largefiles` configuration.  And the documentation for
+`datalad save`, DataLad's main user-facing entry point for `annex
+add`, recommends that the user configure .gitattributes rather than
+using the option that leads calling `annex add` with `-c
+annex.largefiles=nothing`.
+
+> One idea: Make `git-annex add --annex` and `git-annex add --git`
+> add a specific file to annex or git, bypassing annex.largefiles and all
+> other configuration and state. This could also be used to easily switch
+> a file from one storage to the other. I'd hope the existence of that
+> would prevent one-off setting of annex.largefiles=anything/nothing.
+
+As far as I can see, those flags would completely cover DataLad's
+one-off setting of `annex.largefiles=anything/nothing`.  They map
+directly to DataLad's `git=False/True` option described above.  So,
+from DataLad's perspective, they'd be very useful and welcome.
+
+"""]]

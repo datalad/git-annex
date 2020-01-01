@@ -1,6 +1,6 @@
 {- git cat-file interface, with handle automatically stored in the Annex monad
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ module Annex.CatFile (
 	catObjectMetaData,
 	catFileStop,
 	catKey,
+	catKey',
 	catSymLinkTarget,
 	catKeyFile,
 	catKeyFileHEAD,
@@ -54,7 +55,7 @@ catObject ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catObject h ref
 
-catObjectMetaData :: Git.Ref -> Annex (Maybe (Integer, ObjectType))
+catObjectMetaData :: Git.Ref -> Annex (Maybe (Sha, Integer, ObjectType))
 catObjectMetaData ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catObjectMetaData h ref
@@ -99,14 +100,16 @@ catFileStop = do
 
 {- From ref to a symlink or a pointer file, get the key. -}
 catKey :: Ref -> Annex (Maybe Key)
-catKey ref = go =<< catObjectMetaData ref
-  where
-	go (Just (sz, _))
-		-- Avoid catting large files, that cannot be symlinks or
-		-- pointer files, which would require buffering their
-		-- content in memory, as well as a lot of IO.
-		| sz <= maxPointerSz = parseLinkTargetOrPointer . L.toStrict <$> catObject ref
-	go _ = return Nothing
+catKey ref = catKey' ref =<< catObjectMetaData ref
+
+catKey' :: Ref -> Maybe (Sha, Integer, ObjectType) -> Annex (Maybe Key)
+catKey' ref (Just (_, sz, _))
+	-- Avoid catting large files, that cannot be symlinks or
+	-- pointer files, which would require buffering their
+	-- content in memory, as well as a lot of IO.
+	| sz <= maxPointerSz =
+		parseLinkTargetOrPointer . L.toStrict <$> catObject ref
+catKey' _ _ = return Nothing
 
 {- Gets a symlink target. -}
 catSymLinkTarget :: Sha -> Annex RawFilePath
@@ -151,7 +154,7 @@ catKeyFileHEAD f = catKey $ Git.Ref.fileFromRef Git.Ref.headRef f
 catKeyFileHidden :: RawFilePath -> CurrBranch -> Annex (Maybe Key) 
 catKeyFileHidden = hiddenCat catKey
 
-catObjectMetaDataHidden :: RawFilePath -> CurrBranch -> Annex (Maybe (Integer, ObjectType))
+catObjectMetaDataHidden :: RawFilePath -> CurrBranch -> Annex (Maybe (Sha, Integer, ObjectType))
 catObjectMetaDataHidden = hiddenCat catObjectMetaData
 
 hiddenCat :: (Ref -> Annex (Maybe a)) -> RawFilePath -> CurrBranch -> Annex (Maybe a)

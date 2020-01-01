@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2019-12-27T06:22:23Z"
+ content="""
+On second thought, making the clean filter check for non-annexed files
+would prevent use cases like annex.largefiles=largerthan(100kb)
+from working as the user intended and letting a small file start out
+non-annexed and get annexed once it gets too large. Users certianly rely on
+that and this bug that only affects an edge case does not justify breaking
+that.
+
+What would work to make the clean filter detect when a file's content
+has not changed, though its mtime (or inode) has changed. In that case,
+it's reasonable for the clean filter to ignore annex.largefiles and keep
+the content represented in git however it already was (non-annexed or
+annexed).
+
+To detect that, in the case where the file in the index is not annexed:
+First check if the file size is the same as the
+size in the index. If it is, run git hash-object on the file, and see if
+the sha1 is the same as in the index. This avoids hashing any unusually
+large files, so the clean filter only gets a bit slower.
+
+And when the file in the index is annexed, check if the file size is the
+same as the size of the annexed key. If it is, verify if the file content
+matches the key. (typically be hashing). Cases where keys lack size or
+don't use a checksum could lead to false positives or negatives though.
+Although, I've not managed to find a version of this bug that makes an
+annexed file get converted to git unintentionally, so maybe this part does
+not need to be done?
+
+----
+
+Or.. Since the root of the problem is temporarily overriding annex.largefiles,
+it could just be documented that it's not a good idea to use 
+-c annex.largefiles=anything/nothing, because such broad overrides
+can affect other files than the ones you intended.
+(And since the documented methods of converting files from annexed to git and
+git to annexed use such overrides, that documentation would need to be
+changed.)
+"""]]

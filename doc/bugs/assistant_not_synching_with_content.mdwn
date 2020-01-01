@@ -1,0 +1,97 @@
+### Please describe the problem.
+
+I have the following repos
+
+a - group manual - all content currently originates on this repo (OS X 10.14.4)
+b - group backup - this is a rclone special backed by google drive
+c - this is the underlying git repo on gitlab.com
+d - group backup - a server that is supposed to backup everything (OS X 10.14.4)
+
+Assistant is running on a and d
+
+It is not guaranteed that a and d will be able to directly connect, however, they both have very good connectivity to b and c
+
+When I add a set of files into a (using git-annex add) the non-annex files get checked into the git repo and pushed to c.  Similarly, the content (annex files) get pushed to b.  This is confirmed by git-anenx list --allrepos
+
+Within an hour or so, d will know about the files that were added (git-annex list) and the git log shows that it is on the same commit as a and c.
+
+However, the assistant on d never does the git-annex sync --content
+
+If I manually run git-annex sync --content on d, all is updated as expected.
+
+I've made no changes to the groupwants, group, etc. settings
+
+### What steps will reproduce the problem?
+
+create a repo with a central git upstream and a special via rclone on gdrive.  Clone that repo in another machine that can also see the upstream and special, but isn't directly connected to the originator of the repo
+
+Add annex-handled files to the original repo.
+
+Check the status of the git upstream, special, and the clone.
+
+After failure is acknowledged, run git annex sync --content to confirm that the mechanics still work
+
+### What version of git-annex are you using? On what operating system?
+
+Both hosts are OSX 10.14.4 and are running 7.20191218
+
+### Please provide any additional information below.
+
+This is from the assistant on the clone.  It is running in debug mode.
+
+[[!format sh """
+
+[2019-12-30 17:44:09.362492] main: starting assistant version 7.20191114
+[2019-12-30 17:44:14.532638] TransferScanner: Syncing with origin
+(scanning...) [2019-12-30 17:44:14.590159] Watcher: Performing startup scan
+ControlSocket .git/annex/ssh/git@gitlab already exists, disabling multiplexing
+Disallowed command
+Everything up-to-date
+Disallowed command
+Disallowed command
+Disallowed command
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+fatal: Pathspec 'workflow/cc-archive-exif/LICENSE' is in submodule 'workflow/cc-archive-exif'
+
+  git cat-file EOF: user error
+
+  fd:38: hFlush: resource vanished (Broken pipe)
+
+  fd:38: hFlush: resource vanished (Broken pipe)
+Disallowed command
+(started...)
+[2019-12-30 17:44:33.097035] Committer: Committing changes to git
+(recording state in git...)
+[2019-12-30 17:44:33.176213] Pusher: Syncing with origin
+
+
+
+
+
+Everything up-to-date
+Disallowed command
+
+<<A bunch of white space lines removed for brevity>>
+
+Disallowed command
+Disallowed command
+Disallowed command
+Disallowed command
+Disallowed command
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes - I can run this manually, and overall this is great - I would just love to get this automated....
+
+

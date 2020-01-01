@@ -23,12 +23,12 @@ import Data.ByteString.Builder
 
 type HashObjectHandle = CoProcess.CoProcessHandle
 
-hashObjectStart :: Repo -> IO HashObjectHandle
-hashObjectStart = gitCoProcessStart True
-	[ Param "hash-object"
-	, Param "-w"
-	, Param "--stdin-paths"
-	, Param "--no-filters"
+hashObjectStart :: Bool -> Repo -> IO HashObjectHandle
+hashObjectStart writeobject = gitCoProcessStart True $ catMaybes
+	[ Just (Param "hash-object")
+	, if writeobject then Just (Param "-w") else Nothing
+	, Just (Param "--stdin-paths")
+	, Just (Param "--no-filters")
 	]
 
 hashObjectStop :: HashObjectHandle -> IO ()
