@@ -61,9 +61,9 @@ import Creds
 import Types.NumCopies
 import Annex.Action
 import Messages.Progress
-import qualified Utility.RawFilePath as R
 
 #ifndef mingw32_HOST_OS
+import qualified Utility.RawFilePath as R
 import Utility.FileMode
 #endif
 

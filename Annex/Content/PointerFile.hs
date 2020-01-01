@@ -22,7 +22,9 @@ import Annex.ReplaceFile
 import Annex.InodeSentinal
 import Annex.Content.LowLevel
 import Utility.InodeCache
+#if ! defined(mingw32_HOST_OS)
 import Utility.Touch
+#endif
 
 {- Populates a pointer file with the content of a key. 
  -
