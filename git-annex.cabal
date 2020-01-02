@@ -315,7 +315,7 @@ Executable git-annex
    case-insensitive,
    random,
    dlist,
-   unix-compat,
+   unix-compat (>= 0.5),
    SafeSemaphore,
    async,
    directory (>= 1.2),
@@ -394,7 +394,6 @@ Executable git-annex
   if (os(windows))
     Build-Depends:
       Win32 (>= 2.6.1.0),
-      unix-compat (>= 0.5),
       setenv,
       process (>= 1.6.2.0),
       silently (>= 1.2.5.1)
