@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-06T18:39:27Z"
+ content="""
+Normally annexed files are huge binary files. Line-by-line diff of such
+files is unlikely to be useful.
+
+So you would need some domain-specific diff for the kind of binary files
+you are storing in git-annex. If you have one, you can use
+[[git-annex-diffdriver]] to make git use it when diffing annexed files.
+
+Not seeing anything more I can do here, so I'm going to close this todo.
+"""]]

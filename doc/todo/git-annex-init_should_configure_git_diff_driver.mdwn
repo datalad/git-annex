@@ -1,1 +1,3 @@
 `git diff` for annexed files, especially unlocked annexed files, is currently uninformative.  It would help if [[`git-annex-init`|git-annex-init]] configured a [git diff driver](https://git-scm.com/docs/gitattributes#_generating_diff_text) to diff the contents of the annexed files, rather than the pointer files.
+
+> [[wontfix|done]], see comment 
