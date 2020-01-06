@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-06T19:30:43Z"
+ content="""
+I looked at xxHash recently. I can't seem to find benchmarks of it compared
+with other fast hashes like Blake2.
+"""]]
