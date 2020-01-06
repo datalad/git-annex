@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-06T18:16:13Z"
+ content="""
+It's easy enough to dump the database and see its schema.
+
+	joey@darkstar:~/lib/big>sqlite3 .git/annex/keys/db
+	sqlite> .dump
+	CREATE TABLE IF NOT EXISTS "associated"("id" INTEGER PRIMARY KEY,"key" VARCHAR NOT NULL,"file" VARCHAR NOT NULL,CONSTRAINT "key_file_index" UNIQUE ("key","file"),CONSTRAINT "file_key_index" UNIQUE ("file","key"));
+	CREATE TABLE IF NOT EXISTS "content"("id" INTEGER PRIMARY KEY,"key" VARCHAR NOT NULL,"cache" VARCHAR NOT NULL,CONSTRAINT "key_cache_index" UNIQUE ("key","cache"));
+
+Or the fully typed schema can be looked up in the haskell code
+(Database/Keys/Sql.hs)
+
+I think that how the information in the databases relates to the state of the
+repository, and how it's updated from the git-annex branch etc is just as
+important as the schema. For example, if you wanted to use this database to
+query files using a key, you'd need to know this database only gets
+populated for unlocked files not locked files. And that the database may not
+reflect recent changes to the working tree, and there's a complicated process
+that can be used to update it to reflect any recent changes.
+
+That's rather deep into the implementation details to be documenting
+outside the code.
+"""]]
