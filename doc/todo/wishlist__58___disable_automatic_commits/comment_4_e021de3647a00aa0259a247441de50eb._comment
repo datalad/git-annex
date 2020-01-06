@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="AdamSpiers"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="Would you accept a patch implementing an annex.autocommit gitattribute?"
+ date="2020-01-06T16:12:54Z"
+ content="""
+In a semi-mythical future where I find the time to learn Haskell, in principle would you consider accepting a patch implementing my above suggestion of a new `annex.autocommit` gitattribute which offers finer control of autocommit than the current binary toggle?  It would be very useful to me, and maybe I'm not the only one.
+"""]]

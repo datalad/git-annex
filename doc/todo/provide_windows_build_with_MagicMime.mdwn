@@ -1,0 +1,7 @@
+I forgot already why windows build is without having MagicMime support added, and failed to find a reason in the archives.
+But [there is demand](https://github.com/datalad/datalad/pull/3956#pullrequestreview-335604805) from Windows users! ;)
+
+Without such functionality we cannot consistently (cross-platform) use git-annex for many DataLad datasets, where text files (well -- soon "non-binary files") are configured to be committed directly to git.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
