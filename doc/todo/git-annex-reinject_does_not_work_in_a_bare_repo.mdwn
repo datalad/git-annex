@@ -26,3 +26,5 @@
 Obviously this wasn't actually a file known to git-annex.  But I get the same error in a non-dummy bare repo I am trying to reinject.
 
 A workaround is to use `git worktree add` and run `git annex reinject` from there.
+
+> [[fixed|done]] --[[Joey]]

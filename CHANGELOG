@@ -3,6 +3,7 @@ git-annex (7.20191231) UNRELEASED; urgency=medium
   * add: --force-annex/--force-git options make it easier to override
     annex.largefiles configuration (and potentially safer as it avoids
     bugs like the smudge bug fixed in the last release).
+  * reinject --known: Fix bug that prevented it from working in a bare repo.
 
  -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2020 12:51:40 -0400
 
