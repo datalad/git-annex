@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-06T19:36:32Z"
+ content="""
+xxhash seems to fill a similar niche and is getting a lot more use from
+what I can see.
+
+Meow seems to claim a faster gb/s rate than xxhash does, but
+it's hard to tell if the benchmarks are really equivilant.
+"""]]
