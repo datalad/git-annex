@@ -8,7 +8,7 @@ When an external special remote tells git-annex a fuller URL for a given file, g
 
 It would be better if, in the above log, the URL key was based on dx://file-FJZjVx001pB2BQPVKY4zX8kk/A4.assembly1-trinity.fasta , which would preserve the .fasta extension in the key and therefore in the symlink target.
 
-> [fixed|done]] --[[Joey]]
+> [[fixed|done]] --[[Joey]]
 
 Also, it would be good if the external special remote could return an etag
 for the URL, which would be a value guaranteed to change if the URL's
