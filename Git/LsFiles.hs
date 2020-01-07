@@ -158,17 +158,20 @@ stagedDetails = stagedDetails' []
 stagedDetails' :: [CommandParam] -> [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails' ps l repo = do
 	(ls, cleanup) <- pipeNullSplit params repo
-	return (map parse ls, cleanup)
+	return (map parseStagedDetails ls, cleanup)
   where
 	params = Param "ls-files" : Param "--stage" : Param "-z" : ps ++ 
 		Param "--" : map (File . fromRawFilePath) l
-	parse s
-		| null file = (L.toStrict s, Nothing, Nothing)
-		| otherwise = (toRawFilePath file, extractSha $ take shaSize rest, readmode mode)
-	  where
-		(metadata, file) = separate (== '\t') (decodeBL' s)
-		(mode, rest) = separate (== ' ') metadata
-		readmode = fst <$$> headMaybe . readOct
+
+parseStagedDetails :: L.ByteString -> StagedDetails
+parseStagedDetails s
+	| null file = (L.toStrict s, Nothing, Nothing)
+	| otherwise = (toRawFilePath file, extractSha sha, readmode mode)
+  where
+	(metadata, file) = separate (== '\t') (decodeBL' s)
+	(mode, metadata') = separate (== ' ') metadata
+	(sha, _) = separate (== ' ') metadata'
+	readmode = fst <$$> headMaybe . readOct
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}

@@ -119,10 +119,7 @@ parseDiffRaw l = go l
 		readmode = fst . Prelude.head . readOct
 
 		-- info = :<srcmode> SP <dstmode> SP <srcsha> SP <dstsha> SP <status>
-		-- All fields are fixed, so we can pull them out of
-		-- specific positions in the line.
 		(srcm, past_srcm) = splitAt 7 $ drop 1 info
 		(dstm, past_dstm) = splitAt 7 past_srcm
-		(ssha, past_ssha) = splitAt shaSize past_dstm
-		(dsha, past_dsha) = splitAt shaSize $ drop 1 past_ssha
-		s = drop 1 past_dsha
+		(ssha, past_ssha) = separate (== ' ') past_dstm
+		(dsha, s) = separate (== ' ') past_ssha

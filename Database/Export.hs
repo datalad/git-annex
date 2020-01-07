@@ -233,7 +233,7 @@ runExportDiffUpdater updater h old new = do
 	void $ liftIO cleanup
   where
 	getek sha
-		| sha == nullSha = return Nothing
+		| sha `elem` nullShas = return Nothing
 		| otherwise = Just <$> exportKey sha
 
 {- Diff from the old to the new tree and update the ExportTree table. -}

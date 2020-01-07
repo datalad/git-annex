@@ -94,10 +94,10 @@ parserLsTree = TreeItem
 	<$> octal
 	<* A8.char ' '
 	-- type
-	<*> A.takeTill (== 32)
+	<*> A8.takeTill (== ' ')
 	<* A8.char ' '
 	-- sha
-	<*> (Ref . decodeBS' <$> A.take shaSize)
+	<*> (Ref . decodeBS' <$> A8.takeTill (== '\t'))
 	<* A8.char '\t'
 	-- file
 	<*> (asTopFilePath . Git.Filename.decode <$> A.takeByteString)

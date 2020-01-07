@@ -148,13 +148,12 @@ parseResp object l
 	| " missing" `isSuffixOf` l -- less expensive than full check
 		&& l == fromRef object ++ " missing" = Just DNE
 	| otherwise = case words l of
-		[sha, objtype, size]
-			| length sha == shaSize ->
-				case (readObjectType (encodeBS objtype), reads size) of
-					(Just t, [(bytes, "")]) -> 
-						Just $ ParsedResp (Ref sha) bytes t
-					_ -> Nothing
-			| otherwise -> Nothing
+		[sha, objtype, size] -> case extractSha sha of
+			Just sha' -> case (readObjectType (encodeBS objtype), reads size) of
+				(Just t, [(bytes, "")]) -> 
+					Just $ ParsedResp sha' bytes t
+				_ -> Nothing
+			Nothing -> Nothing
 		_ -> Nothing
 
 querySingle :: CommandParam -> Ref -> Repo -> (Handle -> IO a) -> IO (Maybe a)
