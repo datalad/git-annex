@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="comment 2"
+ date="2020-01-07T12:29:47Z"
+ content="""
+Thank you for your reply.  Makes sense.  If that's the only way to do it then it might as well be a helper script rather than part of git-annex.
+
+Leaving this bug open because it would be good to have the limitation documented in git-annex-reinject(1).
+"""]]
