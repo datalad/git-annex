@@ -180,13 +180,13 @@ Tracks what trees have been exported to special remotes by
 Each line starts with a timestamp, then the uuid of the repository
 that exported to the special remote, followed by a colon (`:`) and
 the uuid of the special remote. Then, separated by a spaces,
-the sha1 of the tree that was exported, and optionally any number of
-subsequent sha1s, of trees that have started to be exported but whose
+the SHA of the tree that was exported, and optionally any number of
+subsequent SHAs, of trees that have started to be exported but whose
 export is not yet complete. 
 
 In order to record the beginning of the first export, where nothing
-has been exported yet, the sha1 of the exported tree can be
-the empty tree (4b825dc642cb6eb9a060e54bf8d69288fbee4904).
+has been exported yet, the SHA of the exported tree can be
+the empty tree (eg 4b825dc642cb6eb9a060e54bf8d69288fbee4904).
 
 For example:
 
