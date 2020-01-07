@@ -260,7 +260,7 @@ reconcileStaged qh = do
 		, Param "--cached"
 		, Param "--raw"
 		, Param "-z"
-		, Param "--abbrev=40"
+		, Param "--no-abbrev"
 		-- Optimization: Only find pointer files. This is not
 		-- perfect. A file could start with this and not be a
 		-- pointer file. And a pointer file that is replaced with

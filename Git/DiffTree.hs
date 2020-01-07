@@ -77,14 +77,14 @@ diffFiles = getdiff (Param "diff-files")
  - is adjusted to be the same as diff-tree --raw._-}
 diffLog :: [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffLog params = getdiff (Param "log")
-	(Param "-n1" : Param "--abbrev=40" : Param "--pretty=format:" : params)
+	(Param "-n1" : Param "--no-abbrev" : Param "--pretty=format:" : params)
 
 {- Uses git show to get the changes made by a commit.
  -
  - Does not support merge commits, and will fail on them. -}
 commitDiff :: Sha -> Repo -> IO ([DiffTreeItem], IO Bool)
 commitDiff ref = getdiff (Param "show")
-	[ Param "--abbrev=40", Param "--pretty=", Param "--raw", Param (fromRef ref) ]
+	[ Param "--no-abbrev", Param "--pretty=", Param "--raw", Param (fromRef ref) ]
 
 getdiff :: CommandParam -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 getdiff command params repo = do

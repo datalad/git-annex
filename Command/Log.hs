@@ -215,7 +215,7 @@ getGitLog fs os = do
 		, Param "-z"
 		, Param "--pretty=format:%ct"
 		, Param "--raw"
-		, Param "--abbrev=40"
+		, Param "--no-abbrev"
 		] ++ os ++
 		[ Param $ Git.fromRef Annex.Branch.fullname
 		, Param "--"
