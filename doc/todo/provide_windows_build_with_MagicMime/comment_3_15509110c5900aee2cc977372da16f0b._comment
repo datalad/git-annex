@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="michael.hanke@c60e12358aa3fc6060531bdead1f530ac4d582ec"
+ nickname="michael.hanke"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="WSL 1/2 experience"
+ date="2020-01-08T15:20:04Z"
+ content="""
+I looked into WSL 1 and 2 in the context (and with the hope) of trying to avoid having windows-specific code and documentation in and for datalad. My conclusion was that neither of them is practical (maybe: yet), because with a unix-like default setup of a repository (lock, symlinks) no repository content was accessible from outside the WSL environment. I think the main motivation for running on Windows is using Windows apps. And that specifically is not possible/easily achievable for any random app.
+"""]]

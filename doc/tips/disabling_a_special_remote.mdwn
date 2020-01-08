@@ -9,7 +9,7 @@ simply to use the `remote.name.annex-ignore` configuration documented
 in the main [[git-annex]] manpage. For example, to disable the web
 remote, you would use:
 
-    git config remote.web.annex-ignore false
+    git config remote.web.annex-ignore true
 
 The result would be:
 

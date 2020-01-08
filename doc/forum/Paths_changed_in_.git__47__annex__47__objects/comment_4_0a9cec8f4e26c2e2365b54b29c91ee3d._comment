@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="fasthans@87884c78197fe1a25ac25ae7fa1d930c147e9592"
+ avatar="http://cdn.libravatar.org/avatar/6d89ddec3053d8df7e57cf2f28c8cdcd"
+ subject="comment 4"
+ date="2020-01-08T12:08:23Z"
+ content="""
+Thanks for your attention, Joey.
+
+Hmm. `git annex fsck` reports 'ok' for all files. After that, running get/whereis I get:
+
+````
+git annex get demo_beheer.gpkg
+get demo_beheer.gpkg (not available) 
+  Try making some of these repositories available:
+        a3f8a46a-60fe-58e2-901b-2c093bcc22d3 -- smdata_encrypted_remote_wd_elements_small
+failed
+git-annex: get: 1 failed
+````
+
+this is the remote in question, which is accessible (it's on the same drive as the current repo)
+
+````
+git remote -v
+smdata_encrypted_remote_wd_elements_small       gcrypt::/media/hans/Elements/smdata_encrypted_remote_wd_elements_small/ (fetch)
+smdata_encrypted_remote_wd_elements_small       gcrypt::/media/hans/Elements/smdata_encrypted_remote_wd_elements_small/ (push)
+````
+
+However, I can run `git annex sync smdata_remote_wd_elements_small`, which does complete successfully, so why is it not accessible with `get` or `copy`?
+
+If I `lock` demo_beheer.gpkg, it turns into this symlink:
+
+````
+lrwxrwxrwx 1 hans hans 198 sep  2 07:32 demo_beheer.gpkg -> .git/annex/objects/px/Mg/SHA256E-s204800--a518c074bc22f673f0c73191a01426fef0a7d8b262a17d2729a4a3ac51da40ce.gpkg/SHA256E-s204800--a518c074bc22f673f0c73191a01426fef0a7d8b262a17d2729a4a3ac51da40ce.gpkg
+````
+
+of which the target indeed does not exist (the directory exists, not the file). However, git annex get still fails after locking (and a subsequent sync) and I am at a loss to know why.
+
+This wouldn't be due to the nature of the remote, or my URL for it, or something? Decryption works fine when syncing.
+
+
+"""]]
