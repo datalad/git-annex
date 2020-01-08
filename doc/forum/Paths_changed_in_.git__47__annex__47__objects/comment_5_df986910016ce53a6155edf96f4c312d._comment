@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-01-08T18:24:43Z"
+ content="""
+`git-annex sync` does not, by default, download the content of annexed
+files. Use `git annex get`
+"""]]
