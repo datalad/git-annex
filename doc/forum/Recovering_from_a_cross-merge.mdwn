@@ -1,0 +1,80 @@
+Intro
+=====
+
+This experience report
+describes steps I've taken for recovering from a situation where
+an *unrelated* git-annex's remote was accidentally merged into a repository.
+
+It is posted to the forum for use by anyone who finds themselves in the same situation
+(especially myself…).
+
+The root cause of the issue was a copy-pasted `git remote add` gone wrong,
+and a subsequent `git annex sync`, that "contaminated" the rest of my remotes.
+That led to `git annex info` showing the union of all the repositories available to the two repositories,
+and `fsck --all` runs looking for files from any repository.
+
+It should go without saying, but here it is anyway:
+
+**Following these steps can eventualy lead to data loss**.
+
+The precautions I've taken are
+
+* knowing that two complete copies of the data sets exist,
+* having a filesystem level snapshot of a least one of those copies, and
+* not starting any file dropping until all remotes have completed fscks at the end.
+
+Identifying the last good state
+===============================
+
+By looking for the first occurrence of the UUID of one of the bad new remotes
+in `git log --patch git-annex`,
+I've identified the last good git-annex state before the merge.
+
+Tagging that as `git tag before-accidental-merging-with-other-server 83c1b945c2428cefa968aec587229f6a87649de6`.
+
+
+Removing potentially mergable information
+=========================================
+
+git-annex is eager to pull in updates lying around --
+while this is usually a good thing,
+here it incurs the danger of resurrecting the accident.
+
+On all remotes that were accessed since the accident,
+I've executed this to remove both the local synced/git-annex branch
+and any memory of cached remote branches:
+
+    $ git branch -D synced/git-annex
+    $ git branch -r | sed 's@remotes/@@' | xargs git branch -d -r
+
+and restore the git-annex branch:
+
+    $ git branch -f git-annex 83c1b945c2428cefa968aec587229f6a87649de6
+
+That proved to be insufficient --
+after I had first only done this,
+things looked good for a while and then after the first `git annex fsck --fast`,
+the remotes were back again.
+
+The only file large enough to contain the offending data in .git/annex was .git/annex/index,
+so I've removed that backed by [[internals]]' statement of it being safe to remove:
+
+    $ rm .git/annex/index
+
+(did that on all remotes; on bare ones it's `annex/index`, obviously).
+
+Verification
+============
+
+To ensure everyone is on the same page,
+I've run `git annex sync`;
+its speed already showed that now there's no information about a second repository being transferred.
+
+Subsequently, I've run `git annex fsck --all` in all locations.
+(That *did* show that I should previously have marked some keys as dead when they were migrated from SHA256E to SHA256,
+but that's beside the point here).
+
+Even after a sync following the above,
+no traces of the bad merge (be it in the form of a repository or of a file from there) have shown up any more.
+
+-- [[chrysn]]
