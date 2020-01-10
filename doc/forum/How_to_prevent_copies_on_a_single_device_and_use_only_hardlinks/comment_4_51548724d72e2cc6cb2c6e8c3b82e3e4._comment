@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="satya.ortiz-gagne@a4c92de91eb4fd5ae8fc9893bb4fd674a19f2e59"
+ nickname="satya.ortiz-gagne"
+ avatar="http://cdn.libravatar.org/avatar/79c93025f174cd2aff98fbb952702c09"
+ subject="using hardlinks"
+ date="2020-01-10T16:11:47Z"
+ content="""
+Thanks for your help. Yes I believe that post-checkout hook could do the trick but I really like your idea of using a FUSE filesystem. Thanks a lot for sharing. I also believe this could be the base to progressively get the content of an indexed archive (like .zip) as it's getting needed.
+
+The worktree is a very interesting feature but I'm also using [DataLad 0.11.8](https://www.datalad.org/) which is unfortunately incompatible with it for the moment.
+
+As for my objective to not use locked files, I initially though that the script of a library I was using to preprocess some data was failing because of the fact the files were symlinks but I couldn't reproduce. Unfortunately, too many factor changed so I'm just going to assume I was doing something wrong. Still, it would sometimes be useful to work with unlocked files in the case I'm doing a multi-phases (with multi-commits) preprocessing of a big file. In that case, a phase would modify the file, trigger a copy by unlocking it and annex the modified file. I would be interested into skipping the copy to save a significant amount of time and space since the intermediate states of the file are only temporary. The checksums are still interesting to make sure the phase correctly executed. But that is very specific and will not happen too often so I'm fine with workarounds.
+"""]]
