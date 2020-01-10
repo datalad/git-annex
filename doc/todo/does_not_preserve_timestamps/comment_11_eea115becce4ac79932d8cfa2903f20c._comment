@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Summary; Application: shared thumbnails"
+ date="2020-01-10T08:41:18Z"
+ content="""
+There are two conflicting approaches to mtimes:
+
+* Treat them as local artifacts
+
+  This works great with Make, and generally with any software that works on \"is newer than\" properties.
+
+* Treat them as preservation-worthy file attributes
+
+  This is generally required by tools that compare time stamps by identity.
+
+Both approaches break tools that expect the other, and no single out-of-the-box choice will make all users happy. Tools like metastore, a bespoke solution like etckeeper's generated mkdir/chmod file or a git-annex solution like [[storing the full mtime at genmetadata time|bugs/file_modification_time_should_be_stored_in_exactly_one_metadata_field/]] with a (local or repository-wide) option to set the mtime at annex-get time would be convenient.
+
+One more application where this would be relevant is sharing generated thumbnails among clones of repositories (to eventually maybe even have them available when the full files are not present) following the [XDG specification on shared thumnail repositories](https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html#SHARED). Not only does that design rely on the mtimes of the thumbnail and the file to match, it even encodes the mtime again inside the thumbnail, practically requiring all checkouts to not only have consistent mtimes between thumbnails and files, but identical ones.
+"""]]
