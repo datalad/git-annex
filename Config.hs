@@ -21,6 +21,7 @@ import Types.Availability
 import Git.Types
 import qualified Types.Remote as Remote
 import qualified Annex.SpecialRemote.Config as SpecialRemote
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 import qualified Data.ByteString as S
@@ -97,12 +98,6 @@ setRemoteIgnore r b = setConfig (remoteConfig r "ignore") (Git.Config.boolConfig
 setRemoteBare :: Git.Repo -> Bool -> Annex ()
 setRemoteBare r b = setConfig (remoteConfig r "bare") (Git.Config.boolConfig b)
 
-exportTree :: Remote.RemoteConfig -> Bool
-exportTree c = fromMaybe False $ yesNo =<< M.lookup "exporttree" c
-
-importTree :: Remote.RemoteConfig -> Bool
-importTree c = fromMaybe False $ yesNo =<< M.lookup "importtree" c
-
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare
 
@@ -116,6 +111,14 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b = do
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexCrippledFileSystem = b }
+
+exportTree :: Remote.RemoteConfig -> Bool
+exportTree c = fromMaybe False $ yesNo . fromProposedAccepted
+	=<< M.lookup SpecialRemote.exportTreeField c
+
+importTree :: Remote.RemoteConfig -> Bool
+importTree c = fromMaybe False $ yesNo . fromProposedAccepted
+	=<< M.lookup SpecialRemote.importTreeField c
 
 yesNo :: String -> Maybe Bool
 yesNo "yes" = Just True

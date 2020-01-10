@@ -6,18 +6,21 @@
 I was thinking about implementing this today, but the shattered attack got
 in the way. Anyway, it seems like most of a plan:
 
-* Make RemoteConfig contain Old or New values. enableremote and initremote
-  set New values; Old values are anything read from git-annex:remote.log
+* Make RemoteConfig contain Accepted or Proposed values. enableremote and initremote
+  set Proposed values; Accepted values are anything read from git-annex:remote.log
+  (update: done)
 * When a RemoteConfig value fails to parse, it may make sense to use a
-  default instead when it's Old, and error out when it's New. This could
+  default instead when it's Accepted, and error out when it's Proposed. This could
   be used when parsing foo=yes/no to avoid treating foo=true the same as
   foo=no, which some things do currently do 
   (eg importtree, exporttree, embedcreds).
+  (update: Done for most yes/no and true/false parsers, surely missed a
+  few though, (including autoenable).)
 * Add a Remote method that returns a list of all RemoteConfig fields it
   uses. This is the one part I'm not sure about, because that violates DRY.
   It would be nicer to have a parser that can also generate a list of the
   fields it parses.
-* Before calling Remote setup, see if there is any New value in 
+* Before calling Remote setup, see if there is any Proposed value in 
   RemoteConfig whose field is not in the list. If so, error out.
 * For external special remotes, add a LISTCONFIG message. The program
   reponds with a list of all the fields it may want to later GETCONFIG.

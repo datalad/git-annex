@@ -14,6 +14,7 @@ import Types.Remote
 import Annex.Url
 import Types.Key
 import Types.Creds
+import Types.ProposedAccepted
 import qualified Annex
 import qualified Annex.SpecialRemote.Config
 import qualified Git
@@ -158,7 +159,8 @@ mySetup _ mu _ c gc = do
 	setConfig (Git.ConfigKey ("remote." <> encodeBS' (getRemoteName c) <> ".url")) url
 	return (c', u)
   where
-	url = fromMaybe (giveup "Specify url=") (M.lookup "url" c)
+	url = maybe (giveup "Specify url=") fromProposedAccepted 
+		(M.lookup (Accepted "url") c)
 	remotename = fromJust (lookupName c)
 
 {- Check if a remote's url is one known to belong to a git-lfs repository.
@@ -175,8 +177,10 @@ configKnownUrl r
 	| otherwise = return Nothing
   where
 	match g c = fromMaybe False $ do
-		t <- M.lookup Annex.SpecialRemote.Config.typeField c
-		u <- M.lookup "url" c
+		t <- fromProposedAccepted
+			<$> M.lookup Annex.SpecialRemote.Config.typeField c
+		u <- fromProposedAccepted
+			<$> M.lookup (Accepted "url") c
 		let u' = Git.Remote.parseRemoteLocation u g
 		return $ Git.Remote.RemoteUrl (Git.repoLocation r) == u' 
 			&& t == typename remote

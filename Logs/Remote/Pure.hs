@@ -19,6 +19,7 @@ module Logs.Remote.Pure (
 
 import Annex.Common
 import Types.Remote
+import Types.ProposedAccepted
 import Logs.UUIDBased
 import Annex.SpecialRemote.Config
 
@@ -40,24 +41,24 @@ buildRemoteConfigLog :: Log RemoteConfig -> Builder
 buildRemoteConfigLog = buildLogOld (byteString . encodeBS . showConfig)
 
 remoteConfigParser :: A.Parser RemoteConfig
-remoteConfigParser = keyValToConfig . words . decodeBS <$> A.takeByteString
+remoteConfigParser = keyValToConfig Accepted . words . decodeBS <$> A.takeByteString
 
 showConfig :: RemoteConfig -> String
 showConfig = unwords . configToKeyVal
 
 {- Given Strings like "key=value", generates a RemoteConfig. -}
-keyValToConfig :: [String] -> RemoteConfig
-keyValToConfig ws = M.fromList $ map (/=/) ws
+keyValToConfig :: (String -> ProposedAccepted String) -> [String] -> RemoteConfig
+keyValToConfig mk ws = M.fromList $ map (/=/) ws
   where
-	(/=/) s = (k, v)
+	(/=/) s = (mk k, mk v)
 	  where
 		k = takeWhile (/= '=') s
 		v = configUnEscape $ drop (1 + length k) s
 
-configToKeyVal :: M.Map String String -> [String]
+configToKeyVal :: RemoteConfig -> [String]
 configToKeyVal m = map toword $ sort $ M.toList m
   where
-	toword (k, v) = k ++ "=" ++ configEscape v
+	toword (k, v) = fromProposedAccepted k ++ "=" ++ configEscape (fromProposedAccepted v)
 
 configEscape :: String -> String
 configEscape = concatMap escape
@@ -90,9 +91,9 @@ prop_isomorphic_configEscape s = s == (configUnEscape . configEscape) s
 prop_parse_show_Config :: RemoteConfig -> Bool
 prop_parse_show_Config c
 	-- whitespace and '=' are not supported in config keys
-	| any (\k -> any isSpace k || elem '=' k) (M.keys c) = True
-	| any (any excluded) (M.keys c) = True
-	| any (any excluded) (M.elems c) = True
+	| any (\k -> any isSpace k || elem '=' k) (map fromProposedAccepted $ M.keys c) = True
+	| any (any excluded) (map fromProposedAccepted $ M.keys c) = True
+	| any (any excluded) (map fromProposedAccepted $ M.elems c) = True
 	| otherwise = A.parseOnly remoteConfigParser (encodeBS $ showConfig c) ~~ Right c
   where
 	normalize v = sort . M.toList <$> v

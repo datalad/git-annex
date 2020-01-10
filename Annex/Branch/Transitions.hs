@@ -22,6 +22,7 @@ import Types.TrustLevel
 import Types.UUID
 import Types.MetaData
 import Types.Remote
+import Types.ProposedAccepted
 import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
@@ -85,7 +86,7 @@ dropDead trustmap remoteconfigmap f content = case getLogVariety f of
 	trustmap' = trustmap `M.union`
 		M.map (const DeadTrusted) (M.filter sameasdead remoteconfigmap)
 	sameasdead cm =
-		case toUUID <$> M.lookup sameasUUIDField cm of
+		case toUUID . fromProposedAccepted <$> M.lookup sameasUUIDField cm of
 			Nothing -> False
 			Just u' -> M.lookup u' trustmap == Just DeadTrusted
 	minimizesameasdead u l

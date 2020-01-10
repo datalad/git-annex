@@ -39,6 +39,7 @@ import Utility.Metered
 import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionContent)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
+import Types.ProposedAccepted
 
 remote :: RemoteType
 remote = RemoteType
@@ -95,9 +96,9 @@ gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
 			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc rs
+			, mkUnavailable = gen r u (M.insert (Accepted "url") (Accepted "http://!dne!/") c) gc rs
 			, getInfo = includeCredsInfo c (davCreds u) $
-				[("url", fromMaybe "unknown" (M.lookup "url" c))]
+				[("url", maybe "unknown" fromProposedAccepted (M.lookup (Accepted "url") c))]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
 			, remoteStateHandle = rs
@@ -107,9 +108,9 @@ gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
 webdavSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 webdavSetup _ mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	url <- case M.lookup "url" c of
-		Nothing -> giveup "Specify url="
-		Just url -> return url
+	url <- maybe (giveup "Specify url=")
+		(return . fromProposedAccepted)
+		(M.lookup (Accepted "url") c)
 	(c', encsetup) <- encryptionSetup c gc
 	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
 	testDav url creds
@@ -255,7 +256,8 @@ runExport Nothing _ = return False
 runExport (Just h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
 
 configUrl :: Remote -> Maybe URLString
-configUrl r = fixup <$> M.lookup "url" (config r)
+configUrl r = fixup . fromProposedAccepted 
+	<$> M.lookup (Accepted "url") (config r)
   where
 	-- box.com DAV url changed
 	fixup = replace "https://www.box.com/dav/" boxComUrl
@@ -342,7 +344,7 @@ davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
 	{ credPairFile = fromUUID u
 	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
-	, credPairRemoteField = "davcreds"
+	, credPairRemoteField = Accepted "davcreds"
 	}
 
 {- Content-Type to use for files uploaded to WebDAV. -}

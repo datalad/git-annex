@@ -11,9 +11,9 @@ module Types.StandardGroups where
 
 import Types.Remote (RemoteConfig)
 import Types.Group
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
-import Data.Maybe
 
 type PreferredContentExpression = String
 
@@ -71,7 +71,8 @@ associatedDirectory :: Maybe RemoteConfig -> StandardGroup -> Maybe FilePath
 associatedDirectory _ SmallArchiveGroup = Just "archive"
 associatedDirectory _ FullArchiveGroup = Just "archive"
 associatedDirectory (Just c) PublicGroup = Just $
-	fromMaybe "public" $ M.lookup "preferreddir" c
+	maybe "public" fromProposedAccepted $
+		M.lookup (Accepted "preferreddir") c
 associatedDirectory Nothing PublicGroup = Just "public"
 associatedDirectory _ _ = Nothing
 

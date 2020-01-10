@@ -22,6 +22,7 @@ import Git.Types (RemoteName)
 import Assistant.Gpg
 import Types.GitConfig
 import Annex.SpecialRemote.Config
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 #endif
@@ -58,7 +59,7 @@ postEnableWebDAVR uuid = do
 	m <- liftAnnex readRemoteLog
 	let c = fromJust $ M.lookup uuid m
 	let name = fromJust $ lookupName c
-	let url = fromJust $ M.lookup "url" c
+	let url = fromProposedAccepted $ fromJust $ M.lookup (Accepted "url") c
 	mcreds <- liftAnnex $ do
 		dummycfg <- liftIO dummyRemoteGitConfig
 		getRemoteCredPairFor "webdav" c dummycfg (WebDAV.davCreds uuid)

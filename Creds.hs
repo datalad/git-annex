@@ -27,6 +27,7 @@ import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigField)
+import Types.ProposedAccepted
 import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 
@@ -71,9 +72,9 @@ setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
 		s <- liftIO $ encrypt cmd (c, gc) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
-		return $ M.insert key (toB64 s) c
+		return $ M.insert key (Accepted (toB64 s)) c
 	storeconfig creds key Nothing =
-		return $ M.insert key (toB64 $ encodeCredPair creds) c
+		return $ M.insert key (Accepted (toB64 $ encodeCredPair creds)) c
 
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the
@@ -86,7 +87,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 	fromconfig = do
 		let key = credPairRemoteField storage
 		mcipher <- remoteCipher' c gc
-		case (M.lookup key c, mcipher) of
+		case (fromProposedAccepted <$> M.lookup key c, mcipher) of
 			(Nothing, _) -> return Nothing
 			(Just enccreds, Just (cipher, storablecipher)) ->
 				fromenccreds enccreds cipher storablecipher

@@ -59,6 +59,7 @@ import P2P.Address
 import Annex.Path
 import Creds
 import Types.NumCopies
+import Types.ProposedAccepted
 import Annex.Action
 import Messages.Progress
 
@@ -111,7 +112,8 @@ list autoinit = do
 gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 gitSetup Init mu _ c _ = do
 	let location = fromMaybe (giveup "Specify location=url") $
-		Url.parseURIRelaxed =<< M.lookup "location" c
+		Url.parseURIRelaxed . fromProposedAccepted
+			=<< M.lookup (Accepted "location") c
 	rs <- Annex.getGitRemotes
 	u <- case filter (\r -> Git.location r == Git.Url location) rs of
 		[r] -> getRepoUUID r
@@ -125,7 +127,7 @@ gitSetup (Enable _) (Just u) _ c _ = do
 		[ Param "remote"
 		, Param "add"
 		, Param $ fromMaybe (giveup "no name") (SpecialRemote.lookupName c)
-		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
+		, Param $ maybe (giveup "no location") fromProposedAccepted (M.lookup (Accepted "location") c)
 		]
 	return (c, u)
 gitSetup (Enable _) Nothing _ _ _ = error "unable to enable git remote with no specified uuid"

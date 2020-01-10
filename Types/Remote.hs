@@ -42,6 +42,7 @@ import Types.UrlContents
 import Types.NumCopies
 import Types.Export
 import Types.Import
+import Types.ProposedAccepted
 import Config.Cost
 import Utility.Metered
 import Git.Types (RemoteName)
@@ -49,9 +50,9 @@ import Utility.SafeCommand
 import Utility.Url
 import Utility.DataUnits
 
-type RemoteConfigField = String
+type RemoteConfigField = ProposedAccepted String
 
-type RemoteConfig = M.Map RemoteConfigField String
+type RemoteConfig = M.Map RemoteConfigField (ProposedAccepted String)
 
 data SetupStage = Init | Enable RemoteConfig
 

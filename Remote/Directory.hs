@@ -34,6 +34,7 @@ import Annex.UUID
 import Utility.Metered
 import Utility.Tmp
 import Utility.InodeCache
+import Types.ProposedAccepted
 
 remote :: RemoteType
 remote = RemoteType
@@ -111,8 +112,8 @@ directorySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> 
 directorySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let dir = fromMaybe (giveup "Specify directory=") $
-		M.lookup "directory" c
+	let dir = maybe (giveup "Specify directory=") fromProposedAccepted $
+		M.lookup (Accepted "directory") c
 	absdir <- liftIO $ absPath dir
 	liftIO $ unlessM (doesDirectoryExist absdir) $
 		giveup $ "Directory does not exist: " ++ absdir
@@ -121,7 +122,7 @@ directorySetup _ mu _ c gc = do
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' [("directory", absdir)]
-	return (M.delete "directory" c', u)
+	return (M.delete (Accepted "directory") c', u)
 
 {- Locations to try to access a given Key in the directory.
  - We try more than one since we used to write to different hash

@@ -20,6 +20,7 @@ import Annex.UUID
 import Logs.UUID
 import Logs.Remote
 import Types.GitConfig
+import Types.ProposedAccepted
 import Config
 
 cmd :: Command
@@ -63,7 +64,7 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 					(Just . Sameas <$$> getParsed)
 					(sameas o) 
 				c <- newConfig name sameasuuid
-					(Logs.Remote.keyValToConfig ws)
+					(Logs.Remote.keyValToConfig Proposed ws)
 					<$> readRemoteLog
 				t <- either giveup return (findType c)
 				starting "initremote" (ActionItemOther (Just name)) $
@@ -77,12 +78,12 @@ perform t name c o = do
 	(c', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) Nothing c dummycfg
 	next $ cleanup u name c' o
   where
-	uuidfromuser = case M.lookup "uuid" c of
+	uuidfromuser = case fromProposedAccepted <$> M.lookup (Accepted "uuid") c of
 		Just s
 			| isUUID s -> Just (toUUID s)
 			| otherwise -> giveup "invalid uuid"
 		Nothing -> Nothing
-	sameasu = toUUID <$> M.lookup sameasUUIDField c
+	sameasu = toUUID . fromProposedAccepted <$> M.lookup sameasUUIDField c
 
 cleanup :: UUID -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandCleanup
 cleanup u name c o = do

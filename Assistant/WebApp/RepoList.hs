@@ -26,6 +26,7 @@ import Assistant.Sync
 import Config.Cost
 import Utility.NotificationBroadcaster
 import qualified Git
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -175,7 +176,7 @@ repoList reposelector
 	selectedremote (Just (iscloud, _))
 		| onlyCloud reposelector = iscloud
 		| otherwise = True
-	findinfo m g u = case getconfig "type" of
+	findinfo m g u = case fromProposedAccepted <$> getconfig (Accepted "type") of
 		Just "rsync" -> val True EnableRsyncR
 		Just "directory" -> val False EnableDirectoryR
 #ifdef WITH_S3
@@ -188,12 +189,12 @@ repoList reposelector
 		Just "gcrypt" ->
 			-- Skip gcrypt repos on removable drives;
 			-- handled separately.
-			case getconfig "gitrepo" of
+			case fromProposedAccepted <$> getconfig (Accepted "gitrepo") of
 				Just rr	| remoteLocationIsUrl (parseRemoteLocation rr g) ->
 					val True EnableSshGCryptR
 				_ -> Nothing
 		Just "git" -> 
-			case getconfig "location" of
+			case fromProposedAccepted <$> getconfig (Accepted "location") of
 				Just loc | remoteLocationIsSshUrl (parseRemoteLocation loc g) ->
 					val True EnableSshGitRemoteR
 				_ -> Nothing

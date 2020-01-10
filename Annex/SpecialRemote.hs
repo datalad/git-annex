@@ -17,6 +17,7 @@ import Annex.SpecialRemote.Config
 import Remote (remoteTypes)
 import Types.Remote (RemoteConfig, SetupStage(..), typename, setup)
 import Types.GitConfig
+import Types.ProposedAccepted
 import Config
 import Remote.List
 import Logs.Remote
@@ -49,10 +50,10 @@ newConfig
 	-- when sameas is used
 	-> RemoteConfig
 newConfig name sameas fromuser m = case sameas of
-	Nothing -> M.insert nameField name fromuser
+	Nothing -> M.insert nameField (Proposed name) fromuser
 	Just (Sameas u) -> addSameasInherited m $ M.fromList
-		[ (sameasNameField, name)
-		, (sameasUUIDField, fromUUID u)
+		[ (sameasNameField, Proposed name)
+		, (sameasUUIDField, Proposed (fromUUID u))
 		] `M.union` fromuser
 
 specialRemoteMap :: Annex (M.Map UUID RemoteName)
@@ -66,7 +67,8 @@ specialRemoteMap = do
 
 {- find the remote type -}
 findType :: RemoteConfig -> Either String RemoteType
-findType config = maybe unspecified specified $ M.lookup typeField config
+findType config = maybe unspecified (specified . fromProposedAccepted) $
+	M.lookup typeField config
   where
 	unspecified = Left "Specify the type of remote with type="
 	specified s = case filter (findtype s) remoteTypes of
@@ -94,7 +96,8 @@ autoEnable = do
 			_ -> return ()
   where
 	configured rc = fromMaybe False $
-		Git.Config.isTrueFalse =<< M.lookup autoEnableField rc
+		Git.Config.isTrueFalse . fromProposedAccepted
+			=<< M.lookup autoEnableField rc
 	canenable u = (/= DeadTrusted) <$> lookupTrust u
 	getenabledremotes = M.fromList
 		. map (\r -> (getcu r, r))

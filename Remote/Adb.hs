@@ -19,6 +19,7 @@ import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Annex.UUID
 import Utility.Metered
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 import qualified System.FilePath.Posix as Posix
@@ -109,10 +110,12 @@ adbSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration
-	adir <- maybe (giveup "Specify androiddirectory=") (pure . AndroidPath)
-		(M.lookup "androiddirectory" c)
+	adir <- maybe
+		(giveup "Specify androiddirectory=")
+		(pure . AndroidPath . fromProposedAccepted)
+		(M.lookup (Accepted "androiddirectory") c)
 	serial <- getserial =<< liftIO enumerateAdbConnected
-	let c' = M.insert "androidserial" (fromAndroidSerial serial) c
+	let c' = M.insert (Proposed "androidserial") (Proposed (fromAndroidSerial serial)) c
 
 	(c'', _encsetup) <- encryptionSetup c' gc
 
@@ -130,7 +133,7 @@ adbSetup _ mu _ c gc = do
 	return (c'', u)
   where
 	getserial [] = giveup "adb does not list any connected android devices. Plug in an Android device, or configure adb, and try again.."
-	getserial l = case M.lookup "androidserial" c of
+	getserial l = case fromProposedAccepted <$> M.lookup (Accepted "androidserial") c of
 		Nothing -> case l of
 			(s:[]) -> return s
 			_ -> giveup $ unlines $

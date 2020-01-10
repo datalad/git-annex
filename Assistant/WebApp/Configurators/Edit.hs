@@ -46,6 +46,8 @@ import Config
 import Config.GitConfig
 import Config.DynamicConfig
 import Types.Group
+import Types.ProposedAccepted
+import Annex.SpecialRemote.Config
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -125,7 +127,7 @@ setRepoConfig uuid mremote oldc newc = do
 				case M.lookup uuid m of
 					Nothing -> noop
 					Just remoteconfig -> configSet uuid $
-						M.insert "preferreddir" dir remoteconfig
+						M.insert (Proposed "preferreddir") (Proposed dir) remoteconfig
 	when groupChanged $ do
 		liftAnnex $ case repoGroup newc of
 			RepoGroupStandard g -> setStandardGroup uuid g
@@ -243,7 +245,7 @@ checkAssociatedDirectory cfg (Just r) = do
 		_ -> noop
 
 getRepoInfo :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
-getRepoInfo (Just r) (Just c) = case M.lookup "type" c of
+getRepoInfo (Just r) (Just c) = case fromProposedAccepted <$> M.lookup typeField c of
 	Just "S3"
 #ifdef WITH_S3
 		| S3.configIA c -> IA.getRepoInfo c

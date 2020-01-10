@@ -24,6 +24,7 @@ import Annex.UUID
 import Config
 import Config.DynamicConfig
 import Types.GitConfig
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 
@@ -41,7 +42,7 @@ start [] = unknownNameError "Specify the remote to enable."
 start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
-	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig rest)
+	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig Proposed rest)
 		=<< SpecialRemote.findExisting name
 	go (r:_) = do
 		-- This could be either a normal git remote or a special

@@ -10,6 +10,7 @@ module Annex.SpecialRemote.Config where
 import Common
 import Types.Remote (RemoteConfigField, RemoteConfig)
 import Types.UUID
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -22,44 +23,54 @@ newtype ConfigFrom t = ConfigFrom t
 
 {- The name of a configured remote is stored in its config using this key. -}
 nameField :: RemoteConfigField
-nameField = "name"
+nameField = Accepted "name"
 
 {- The name of a sameas remote is stored using this key instead. 
  - This prevents old versions of git-annex getting confused. -}
 sameasNameField :: RemoteConfigField
-sameasNameField = "sameas-name"
+sameasNameField = Accepted "sameas-name"
 
 lookupName :: RemoteConfig -> Maybe String
-lookupName c = M.lookup nameField c <|> M.lookup sameasNameField c
+lookupName c = fmap fromProposedAccepted $
+	M.lookup nameField c <|> M.lookup sameasNameField c
 
 {- The uuid that a sameas remote is the same as is stored in this key. -}
 sameasUUIDField :: RemoteConfigField
-sameasUUIDField = "sameas-uuid"
+sameasUUIDField = Accepted "sameas-uuid"
 
 {- The type of a remote is stored in its config using this key. -}
 typeField :: RemoteConfigField
-typeField = "type"
+typeField = Accepted "type"
 
 autoEnableField :: RemoteConfigField
-autoEnableField = "autoenable"
+autoEnableField = Accepted "autoenable"
 
 encryptionField :: RemoteConfigField
-encryptionField = "encryption"
+encryptionField = Accepted "encryption"
 
 macField :: RemoteConfigField
-macField = "mac"
+macField = Accepted "mac"
 
 cipherField :: RemoteConfigField
-cipherField = "cipher"
+cipherField = Accepted "cipher"
 
 cipherkeysField :: RemoteConfigField
-cipherkeysField = "cipherkeys"
+cipherkeysField = Accepted "cipherkeys"
 
 pubkeysField :: RemoteConfigField
-pubkeysField = "pubkeys"
+pubkeysField = Accepted "pubkeys"
 
 chunksizeField :: RemoteConfigField
-chunksizeField = "chunksize"
+chunksizeField = Accepted "chunksize"
+
+embedCredsField :: RemoteConfigField
+embedCredsField = Accepted "embedcreds"
+
+exportTreeField :: RemoteConfigField
+exportTreeField = Accepted "exporttree"
+
+importTreeField :: RemoteConfigField
+importTreeField = Accepted "importtree"
 
 {- A remote with sameas-uuid set will inherit these values from the config
  - of that uuid. These values cannot be overridden in the remote's config. -}
@@ -92,7 +103,8 @@ addSameasInherited m c = case findSameasUUID c of
 			M.restrictKeys parentc sameasInherits
 
 findSameasUUID :: RemoteConfig -> Maybe (Sameas UUID)
-findSameasUUID c = Sameas . toUUID <$> M.lookup sameasUUIDField c
+findSameasUUID c = Sameas . toUUID . fromProposedAccepted
+	<$> M.lookup sameasUUIDField c
 
 {- Remove any fields inherited from a sameas-uuid. When storing a
  - RemoteConfig, those fields don't get stored, since they were already
@@ -108,4 +120,4 @@ findByRemoteConfig matching = map sameasuuid . filter (matching . snd) . M.toLis
   where
 	sameasuuid (u, c) = case M.lookup sameasUUIDField c of
 		Nothing -> (u, c, Nothing)
-		Just u' -> (toUUID u', c, Just (ConfigFrom u))
+		Just u' -> (toUUID (fromProposedAccepted u'), c, Just (ConfigFrom u))

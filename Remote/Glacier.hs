@@ -25,6 +25,7 @@ import Utility.Metered
 import qualified Annex
 import Annex.UUID
 import Utility.Env
+import Types.ProposedAccepted
 
 type Vault = String
 type Archive = FilePath
@@ -108,8 +109,8 @@ glacierSetup' ss u mcreds c gc = do
 	remotename = fromJust (lookupName c)
 	defvault = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
-		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.Glacier)
-		, ("vault", defvault)
+		[ (Proposed "datacenter", Proposed $ T.unpack $ AWS.defaultRegion AWS.Glacier)
+		, (Proposed "vault", Proposed defvault)
 		]
 
 prepareStore :: Remote -> Preparer Storer
@@ -235,8 +236,8 @@ glacierParams :: RemoteConfig -> [CommandParam] -> [CommandParam]
 glacierParams c params = datacenter:params
   where
 	datacenter = Param $ "--region=" ++
-		fromMaybe (giveup "Missing datacenter configuration")
-			(M.lookup "datacenter" c)
+		maybe (giveup "Missing datacenter configuration") fromProposedAccepted
+			(M.lookup (Accepted "datacenter") c)
 
 glacierEnv :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe [(String, String)])
 glacierEnv c gc u = do
@@ -252,13 +253,14 @@ glacierEnv c gc u = do
 	(uk, pk) = credPairEnvironment creds
 
 getVault :: RemoteConfig -> Vault
-getVault = fromMaybe (giveup "Missing vault configuration") 
-	. M.lookup "vault"
+getVault = maybe (giveup "Missing vault configuration") fromProposedAccepted
+	. M.lookup (Accepted "vault")
 
 archive :: Remote -> Key -> Archive
 archive r k = fileprefix ++ serializeKey k
   where
-	fileprefix = M.findWithDefault "" "fileprefix" $ config r
+	fileprefix = maybe "" fromProposedAccepted $
+		M.lookup (Accepted "fileprefix") $ config r
 
 genVault :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genVault c gc u = unlessM (runGlacier c gc u params) $

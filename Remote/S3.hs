@@ -57,6 +57,7 @@ import Annex.Magic
 import Logs.Web
 import Logs.MetaData
 import Types.MetaData
+import Types.ProposedAccepted
 import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
@@ -134,7 +135,7 @@ gen r u c gc rs = do
 			, appendonly = versioning info
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc rs
+			, mkUnavailable = gen r u (M.insert (Accepted "host") (Accepted "!dne!") c) gc rs
 			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c info)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
@@ -154,19 +155,27 @@ s3Setup' ss u mcreds c gc
 	remotename = fromJust (lookupName c)
 	defbucket = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
-		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.S3)
-		, ("storageclass", "STANDARD")
-		, ("host", AWS.s3DefaultHost)
-		, ("port", "80")
-		, ("bucket", defbucket)
+		[ (Proposed "datacenter", Proposed $ T.unpack $ AWS.defaultRegion AWS.S3)
+		, (Proposed "storageclass", Proposed "STANDARD")
+		, (Proposed "host", Proposed  AWS.s3DefaultHost)
+		, (Proposed "port", Proposed "80")
+		, (Proposed "bucket", Proposed defbucket)
 		]
-		
+
+	checkconfigsane = do
+		checkyesno "versioning"
+		checkyesno "public"
+	checkyesno k = case parseProposedAccepted (Accepted k) c yesNo False "yes or no" of
+		Left err -> giveup err
+		Right _ -> noop
+
 	use fullconfig info = do
 		enableBucketVersioning ss info fullconfig gc u
 		gitConfigSpecialRemote u fullconfig [("s3", "true")]
 		return (fullconfig, u)
 
 	defaulthost = do
+		checkconfigsane
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
@@ -179,21 +188,22 @@ s3Setup' ss u mcreds c gc
 
 	archiveorg = do
 		showNote "Internet Archive mode"
+		checkconfigsane
 		c' <- setRemoteCredPair noEncryptionUsed c gc (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let validbucket = replace " " "-" $
-			fromMaybe (giveup "specify bucket=") $
-				getBucketName c'
+			fromMaybe (giveup "specify bucket=")
+				(getBucketName c')
 		let archiveconfig = 
 			-- IA acdepts x-amz-* as an alias for x-archive-*
-			M.mapKeys (replace "x-archive-" "x-amz-") $
+			M.mapKeys (Proposed  . replace "x-archive-" "x-amz-" . fromProposedAccepted) $
 			-- encryption does not make sense here
-			M.insert encryptionField "none" $
-			M.insert "bucket" validbucket $
+			M.insert encryptionField (Proposed "none") $
+			M.insert (Accepted "bucket") (Proposed validbucket) $
 			M.union c' $
 			-- special constraints on key names
-			M.insert "mungekeys" "ia" defaults
+			M.insert (Proposed "mungekeys") (Proposed "ia") defaults
 		info <- extractS3Info archiveconfig
 		checkexportimportsafe archiveconfig info
 		hdl <- mkS3HandleVar archiveconfig gc u
@@ -652,7 +662,8 @@ genBucket c gc u = do
 		writeUUIDFile c u info h
 	
 	locconstraint = mkLocationConstraint $ T.pack datacenter
-	datacenter = fromJust $ M.lookup "datacenter" c
+	datacenter = fromProposedAccepted $ fromJust $
+		M.lookup (Accepted "datacenter") c
 	-- "NEARLINE" as a storage class when creating a bucket is a
 	-- nonstandard extension of Google Cloud Storage.
 	storageclass = case getStorageClass c of
@@ -758,21 +769,23 @@ needS3Creds u = missingCredPairFor "S3" (AWS.creds u)
 s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = cfg
 	{ S3.s3Port = port
-	, S3.s3RequestStyle = case M.lookup "requeststyle" c of
+	, S3.s3RequestStyle = case fromProposedAccepted <$> M.lookup (Accepted "requeststyle") c of
 		Just "path" -> S3.PathStyle
 		Just s -> giveup $ "bad S3 requeststyle value: " ++ s
 		Nothing -> S3.s3RequestStyle cfg
 	}
   where
-	h = fromJust $ M.lookup "host" c
-	datacenter = fromJust $ M.lookup "datacenter" c
+	h = fromProposedAccepted $ fromJust $
+		M.lookup (Accepted "host") c
+	datacenter = fromProposedAccepted $ fromJust $
+		M.lookup (Accepted "datacenter") c
 	-- When the default S3 host is configured, connect directly to
 	-- the S3 endpoint for the configured datacenter.
 	-- When another host is configured, it's used as-is.
 	endpoint
 		| h == AWS.s3DefaultHost = AWS.s3HostName $ T.pack datacenter
 		| otherwise = T.encodeUtf8 $ T.pack h
-	port = case M.lookup "port" c of
+	port = case fromProposedAccepted <$> M.lookup (Accepted "port") c of
 		Just s -> 
 			case reads s of
 				[(p, _)]
@@ -787,7 +800,7 @@ s3Configuration c = cfg
 			Just AWS.HTTPS -> 443
 			Just AWS.HTTP -> 80
 			Nothing -> 80
-	cfgproto = case M.lookup "protocol" c of
+	cfgproto = case fromProposedAccepted <$> M.lookup (Accepted "protocol") c of
 		Just "https" -> Just AWS.HTTPS
 		Just "http" -> Just AWS.HTTP
 		Just s -> giveup $ "bad S3 protocol value: " ++ s
@@ -831,11 +844,12 @@ extractS3Info c = do
 		, isIA = configIA c
 		, versioning = boolcfg "versioning"
 		, public = boolcfg "public"
-		, publicurl = M.lookup "publicurl" c
-		, host = M.lookup "host" c
+		, publicurl = fromProposedAccepted <$> M.lookup (Accepted "publicurl") c
+		, host = fromProposedAccepted <$> M.lookup (Accepted "host") c
 		}
   where
-	boolcfg k = fromMaybe False $ yesNo =<< M.lookup k c
+	boolcfg k = fromMaybe False $
+		yesNo . fromProposedAccepted =<< M.lookup (Accepted k) c
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
 putObject info file rbody = (S3.putObject (bucket info) file rbody)
@@ -851,32 +865,36 @@ acl info
 	| otherwise = Nothing
 
 getBucketName :: RemoteConfig -> Maybe BucketName
-getBucketName = map toLower <$$> M.lookup "bucket"
+getBucketName = map toLower . fromProposedAccepted
+	<$$> M.lookup (Accepted "bucket")
 
 getStorageClass :: RemoteConfig -> S3.StorageClass
-getStorageClass c = case M.lookup "storageclass" c of
+getStorageClass c = case fromProposedAccepted <$> M.lookup (Accepted "storageclass") c of
 	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
 	Just s -> S3.OtherStorageClass (T.pack s)
 	_ -> S3.Standard
 
 getPartSize :: RemoteConfig -> Maybe Integer
-getPartSize c = readSize dataUnits =<< M.lookup "partsize" c
+getPartSize c = readSize dataUnits . fromProposedAccepted
+	=<< M.lookup (Accepted "partsize") c
 
 getMetaHeaders :: RemoteConfig -> [(T.Text, T.Text)]
-getMetaHeaders = map munge . filter ismetaheader . M.assocs
+getMetaHeaders = map munge . filter ismetaheader . map unwrap . M.assocs
   where
+	unwrap (k, v) = (fromProposedAccepted k, fromProposedAccepted v)
 	ismetaheader (h, _) = metaprefix `isPrefixOf` h
 	metaprefix = "x-amz-meta-"
 	metaprefixlen = length metaprefix
 	munge (k, v) = (T.pack $ drop metaprefixlen k, T.pack v)
 
 getFilePrefix :: RemoteConfig -> String
-getFilePrefix = M.findWithDefault "" "fileprefix"
+getFilePrefix = maybe "" fromProposedAccepted
+	<$> M.lookup (Accepted "fileprefix")
 
 getBucketObject :: RemoteConfig -> Key -> BucketObject
 getBucketObject c = munge . serializeKey
   where
-	munge s = case M.lookup "mungekeys" c of
+	munge s = case fromProposedAccepted <$> M.lookup (Accepted "mungekeys") c of
 		Just "ia" -> iaMunge $ getFilePrefix c ++ s
 		_ -> getFilePrefix c ++ s
 
@@ -911,7 +929,8 @@ iaMunge = (>>= munge)
 		| otherwise = "&" ++ show (ord c) ++ ";"
 
 configIA :: RemoteConfig -> Bool
-configIA = maybe False isIAHost . M.lookup "host"
+configIA = maybe False (isIAHost . fromProposedAccepted) 
+	. M.lookup (Accepted "host")
 
 {- Hostname to use for archive.org S3. -}
 iaHost :: HostName

@@ -30,9 +30,11 @@ import Control.Concurrent.STM
 import Annex.Common
 import Types.Remote
 import Types.Creds
+import Types.ProposedAccepted
 import qualified Git
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Annex.UUID
@@ -102,22 +104,26 @@ gen r u c gc rs = do
 
 tahoeSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 tahoeSetup _ mu _ c _ = do
-	furl <- fromMaybe (fromMaybe missingfurl $ M.lookup furlk c)
+	furl <- maybe (fromMaybe missingfurl $ M.lookup furlk c) Proposed
 		<$> liftIO (getEnv "TAHOE_FURL")
 	u <- maybe (liftIO genUUID) return mu
 	configdir <- liftIO $ defaultTahoeConfigDir u
-	scs <- liftIO $ tahoeConfigure configdir furl (M.lookup scsk c)
-	let c' = if (yesNo =<< M.lookup "embedcreds" c) == Just True
-		then flip M.union c $ M.fromList
-			[ (furlk, furl)
-			, (scsk, scs)
-			]
-		else c
+	scs <- liftIO $ tahoeConfigure configdir
+		(fromProposedAccepted furl)
+		(fromProposedAccepted <$> (M.lookup scsk c))
+	let c' = case parseProposedAccepted embedCredsField c yesNo False "yes or no" of
+		Right (Just True) -> 
+			flip M.union c $ M.fromList
+				[ (furlk, furl)
+				, (scsk, Proposed scs)
+				]
+		Right _ -> c
+		Left err -> giveup err
 	gitConfigSpecialRemote u c' [("tahoe", configdir)]
 	return (c', u)
   where
-	scsk = "shared-convergence-secret"
-	furlk = "introducer-furl"
+	scsk = Accepted "shared-convergence-secret"
+	furlk = Accepted "introducer-furl"
 	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
 store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool

@@ -995,6 +995,7 @@ Executable git-annex
     Types.MetaData
     Types.Mime
     Types.NumCopies
+    Types.ProposedAccepted
     Types.RefSpec
     Types.Remote
     Types.RemoteState

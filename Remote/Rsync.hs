@@ -30,6 +30,7 @@ import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Types.Export
+import Types.ProposedAccepted
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
@@ -119,7 +120,7 @@ genRsyncOpts c gc transport url = RsyncOpts
 		opts (remoteAnnexRsyncUploadOptions gc)
 	, rsyncDownloadOptions = appendtransport $
 		opts (remoteAnnexRsyncDownloadOptions gc)
-	, rsyncShellEscape = (yesNo =<< M.lookup "shellescape" c) /= Just False
+	, rsyncShellEscape = (yesNo . fromProposedAccepted =<< M.lookup (Accepted "shellescape") c) /= Just False
 	}
   where
 	appendtransport l = (++ l) <$> transport
@@ -161,8 +162,11 @@ rsyncSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> Remo
 rsyncSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let url = fromMaybe (giveup "Specify rsyncurl=") $
-		M.lookup "rsyncurl" c
+	let url = maybe (giveup "Specify rsyncurl=") fromProposedAccepted $
+		M.lookup (Accepted "rsyncurl") c
+	case parseProposedAccepted (Accepted "shellescape") c yesNo False "yes or no" of
+		Left err -> giveup err
+		_ -> noop
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The rsyncurl is stored in git config, not only in this remote's

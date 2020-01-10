@@ -16,6 +16,7 @@ import Types.Remote
 import Types.Export
 import Types.CleanupActions
 import Types.UrlContents
+import Types.ProposedAccepted
 import qualified Git
 import Config
 import Git.Config (isTrueFalse, boolConfig)
@@ -152,12 +153,13 @@ gen r u c gc rs
 externalSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 externalSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	let externaltype = fromMaybe (giveup "Specify externaltype=") $
-		M.lookup "externaltype" c
+	let externaltype = maybe (giveup "Specify externaltype=") fromProposedAccepted $
+		M.lookup (Accepted "externaltype") c
 	(c', _encsetup) <- encryptionSetup c gc
 
-	c'' <- case M.lookup "readonly" c of
-		Just v | isTrueFalse v == Just True -> do
+	c'' <- case parseProposedAccepted (Accepted "readonly") c isTrueFalse False "true or false" of
+		Left err -> giveup err
+		Right (Just True) -> do
 			setConfig (remoteConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
 		_ -> do
@@ -175,7 +177,7 @@ externalSetup _ mu _ c gc = do
 checkExportSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
 checkExportSupported c gc = do
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
-		remoteAnnexExternalType gc <|> M.lookup "externaltype" c
+		remoteAnnexExternalType gc <|> (fromProposedAccepted <$> M.lookup (Accepted "externaltype") c)
 	checkExportSupported' 
 		=<< newExternal externaltype NoUUID c gc Nothing
 
@@ -388,9 +390,9 @@ handleRequest' st external req mp responsehandler
 		send $ VALUE $ fromRawFilePath $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ modifyTVar' (externalConfig st) $
-			M.insert setting value
+			M.insert (Accepted setting) (Accepted value)
 	handleRemoteRequest (GETCONFIG setting) = do
-		value <- fromMaybe "" . M.lookup setting
+		value <- maybe "" fromProposedAccepted . M.lookup (Accepted setting)
 			<$> liftIO (atomically $ readTVar $ externalConfig st)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
@@ -451,7 +453,7 @@ handleRequest' st external req mp responsehandler
 	credstorage setting = CredPairStorage
 		{ credPairFile = base
 		, credPairEnvironment = (base ++ "login", base ++ "password")
-		, credPairRemoteField = setting
+		, credPairRemoteField = Accepted setting
 		}
 	  where
 		base = replace "/" "_" $ fromUUID (externalUUID external) ++ "-" ++ setting

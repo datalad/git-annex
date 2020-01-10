@@ -21,6 +21,7 @@ import Annex.Common
 import Utility.DataUnits
 import Types.StoreRetrieve
 import Types.Remote
+import Types.ProposedAccepted
 import Logs.Chunk
 import Utility.Metered
 import Crypto (EncKey)
@@ -51,16 +52,16 @@ noChunks _ = False
 getChunkConfig :: RemoteConfig -> ChunkConfig
 getChunkConfig m =
 	case M.lookup chunksizeField m of
-		Nothing -> case M.lookup "chunk" m of
+		Nothing -> case M.lookup (Accepted "chunk") m of
 			Nothing -> NoChunks
-			Just v -> readsz UnpaddedChunks v "chunk"
-		Just v -> readsz LegacyChunks v chunksizeField
+			Just v -> readsz UnpaddedChunks (fromProposedAccepted v) (Accepted "chunk")
+		Just v -> readsz LegacyChunks (fromProposedAccepted v) chunksizeField
   where
 	readsz c v f = case readSize dataUnits v of
 		Just size
 			| size == 0 -> NoChunks
 			| size > 0 -> c (fromInteger size)
-		_ -> giveup $ "bad configuration " ++ f ++ "=" ++ v
+		_ -> giveup $ "bad configuration " ++ fromProposedAccepted f ++ "=" ++ v
 
 -- An infinite stream of chunk keys, starting from chunk 1.
 newtype ChunkKeyStream = ChunkKeyStream [Key]

@@ -20,6 +20,7 @@ import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Utility.Env
 import Messages.Progress
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 
@@ -85,8 +86,8 @@ gen r u c gc rs = do
 hookSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 hookSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	let hooktype = fromMaybe (giveup "Specify hooktype=") $
-		M.lookup "hooktype" c
+	let hooktype = maybe (giveup "Specify hooktype=") fromProposedAccepted $
+		M.lookup (Accepted "hooktype") c
 	(c', _encsetup) <- encryptionSetup c gc
 	gitConfigSpecialRemote u c' [("hooktype", hooktype)]
 	return (c', u)

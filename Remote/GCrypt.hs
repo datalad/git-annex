@@ -56,6 +56,7 @@ import Logs.Remote
 import Utility.Gpg
 import Utility.SshHost
 import Messages.Progress
+import Types.ProposedAccepted
 
 remote :: RemoteType
 remote = RemoteType
@@ -187,7 +188,7 @@ unsupportedUrl :: a
 unsupportedUrl = giveup "using non-ssh remote repo url with gcrypt is not supported"
 
 gCryptSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gCryptSetup _ mu _ c gc = go $ M.lookup "gitrepo" c
+gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup (Accepted "gitrepo") c
   where
 	remotename = fromJust (lookupName c)
 	go Nothing = giveup "Specify gitrepo="

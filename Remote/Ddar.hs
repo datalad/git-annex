@@ -23,6 +23,7 @@ import Remote.Helper.ExportImport
 import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
+import Types.ProposedAccepted
 
 data DdarRepo = DdarRepo
 	{ ddarRepoConfig :: RemoteGitConfig
@@ -98,8 +99,8 @@ ddarSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
-	let ddarrepo = fromMaybe (giveup "Specify ddarrepo=") $
-		M.lookup "ddarrepo" c
+	let ddarrepo = maybe (giveup "Specify ddarrepo=") fromProposedAccepted $
+		M.lookup (Accepted "ddarrepo") c
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The ddarrepo is stored in git config, as well as this repo's

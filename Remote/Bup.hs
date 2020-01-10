@@ -33,6 +33,7 @@ import Utility.UserInfo
 import Annex.UUID
 import Annex.Ssh
 import Utility.Metered
+import Types.ProposedAccepted
 
 type BupRepo = String
 
@@ -108,8 +109,8 @@ bupSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
-	let buprepo = fromMaybe (giveup "Specify buprepo=") $
-		M.lookup "buprepo" c
+	let buprepo = maybe (giveup "Specify buprepo=") fromProposedAccepted $
+		M.lookup (Accepted "buprepo") c
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- bup init will create the repository.

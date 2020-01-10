@@ -28,6 +28,7 @@ import Types.Remote
 import Config
 import Crypto
 import Types.Crypto
+import Types.ProposedAccepted
 import qualified Annex
 import Annex.SpecialRemote.Config
 
@@ -56,7 +57,7 @@ encryptionSetup c gc = do
 	maybe (genCipher cmd) (updateCipher cmd) (extractCipher c)
   where
 	-- The type of encryption
-	encryption = M.lookup encryptionField c
+	encryption = fromProposedAccepted <$> M.lookup encryptionField c
 	-- Generate a new cipher, depending on the chosen encryption scheme
 	genCipher cmd = case encryption of
 		_ | hasEncryptionConfig c -> cannotchange
@@ -64,17 +65,18 @@ encryptionSetup c gc = do
 		Just "shared" -> encsetup $ genSharedCipher cmd
 		-- hybrid encryption is the default when a keyid is
 		-- specified but no encryption
-		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
+		_ | maybe (M.member (Accepted "keyid") c) (== "hybrid") encryption ->
 			encsetup $ genEncryptedCipher cmd (c, gc) key Hybrid
 		Just "pubkey" -> encsetup $ genEncryptedCipher cmd (c, gc) key PubKey
 		Just "sharedpubkey" -> encsetup $ genSharedPubKeyCipher cmd key
 		_ -> giveup $ "Specify " ++ intercalate " or "
-			(map ((encryptionField ++ "=") ++)
+			(map ((fromProposedAccepted encryptionField ++ "=") ++)
 				["none","shared","hybrid","pubkey", "sharedpubkey"])
 			++ "."
-	key = fromMaybe (giveup "Specify keyid=...") $ M.lookup "keyid" c
-	newkeys = maybe [] (\k -> [(True,k)]) (M.lookup "keyid+" c) ++
-		maybe [] (\k -> [(False,k)]) (M.lookup "keyid-" c)
+	key = maybe (giveup "Specify keyid=...") fromProposedAccepted $
+		M.lookup (Accepted "keyid") c
+	newkeys = maybe [] (\k -> [(True,fromProposedAccepted k)]) (M.lookup (Accepted "keyid+") c) ++
+		maybe [] (\k -> [(False,fromProposedAccepted k)]) (M.lookup (Accepted "keyid-") c)
 	cannotchange = giveup "Cannot set encryption type of existing remotes."
 	-- Update an existing cipher if possible.
 	updateCipher cmd v = case v of
@@ -92,14 +94,14 @@ encryptionSetup c gc = do
 		showNote (describeCipher cipher)
 		return (storeCipher cipher c', EncryptionIsSetup)
 	highRandomQuality = 
-		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
+		(&&) (maybe True (\v -> fromProposedAccepted v /= "false") $ M.lookup (Accepted "highRandomQuality") c)
 			<$> fmap not (Annex.getState Annex.fast)
 	c' = foldr M.delete c
 		-- git-annex used to remove 'encryption' as well, since
 		-- it was redundant; we now need to keep it for
 		-- public-key encryption, hence we leave it on newer
 		-- remotes (while being backward-compatible).
-		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
+		(map Accepted [ "keyid", "keyid+", "keyid-", "highRandomQuality" ])
 
 remoteCipher :: RemoteConfig -> RemoteGitConfig -> Annex (Maybe Cipher)
 remoteCipher c gc = fmap fst <$> remoteCipher' c gc
@@ -129,7 +131,7 @@ remoteCipher' c gc = go $ extractCipher c
  - Not when a shared cipher is used.
  -}
 embedCreds :: RemoteConfig -> Bool
-embedCreds c = case yesNo =<< M.lookup "embedcreds" c of
+embedCreds c = case yesNo . fromProposedAccepted =<< M.lookup embedCredsField c of
 	Just v -> v
 	Nothing -> isJust (M.lookup cipherkeysField c) && isJust (M.lookup cipherField c)
 
@@ -138,7 +140,8 @@ cipherKey :: RemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, EncKey))
 cipherKey c gc = fmap make <$> remoteCipher c gc
   where
 	make ciphertext = (ciphertext, encryptKey mac ciphertext)
-	mac = fromMaybe defaultMac $ M.lookup macField c >>= readMac
+	mac = fromMaybe defaultMac $
+		M.lookup macField c >>= readMac . fromProposedAccepted
 
 {- Stores an StorableCipher in a remote's configuration. -}
 storeCipher :: StorableCipher -> RemoteConfig -> RemoteConfig
@@ -147,14 +150,14 @@ storeCipher cip = case cip of
 	(EncryptedCipher t _ ks) -> addcipher t . storekeys ks cipherkeysField
 	(SharedPubKeyCipher t ks) -> addcipher t . storekeys ks pubkeysField
   where
-	addcipher t = M.insert cipherField (toB64bs t)
-	storekeys (KeyIds l) n = M.insert n (intercalate "," l)
+	addcipher t = M.insert cipherField (Accepted (toB64bs t))
+	storekeys (KeyIds l) n = M.insert n (Accepted (intercalate "," l))
 
 {- Extracts an StorableCipher from a remote's configuration. -}
 extractCipher :: RemoteConfig -> Maybe StorableCipher
-extractCipher c = case (M.lookup cipherField c,
-			M.lookup cipherkeysField c <|> M.lookup pubkeysField c,
-			M.lookup encryptionField c) of
+extractCipher c = case (fromProposedAccepted <$> M.lookup cipherField c,
+			fromProposedAccepted <$> (M.lookup cipherkeysField c <|> M.lookup pubkeysField c),
+			fromProposedAccepted <$> M.lookup encryptionField c) of
 	(Just t, Just ks, encryption) | maybe True (== "hybrid") encryption ->
 		Just $ EncryptedCipher (fromB64bs t) Hybrid (readkeys ks)
 	(Just t, Just ks, Just "pubkey") ->
@@ -168,7 +171,7 @@ extractCipher c = case (M.lookup cipherField c,
 	readkeys = KeyIds . splitc ','
 
 isEncrypted :: RemoteConfig -> Bool
-isEncrypted c = case M.lookup encryptionField c of
+isEncrypted c = case fromProposedAccepted <$> M.lookup encryptionField c of
 	Just "none" -> False
 	Just _ -> True
 	Nothing -> hasEncryptionConfig c
