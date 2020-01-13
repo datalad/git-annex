@@ -811,6 +811,7 @@ Executable git-annex
     Config.Files
     Config.DynamicConfig
     Config.GitConfig
+    Config.RemoteConfig
     Config.Smudge
     Creds
     Crypto
@@ -998,6 +999,7 @@ Executable git-annex
     Types.ProposedAccepted
     Types.RefSpec
     Types.Remote
+    Types.RemoteConfig
     Types.RemoteState
     Types.RepoVersion
     Types.ScheduledActivity

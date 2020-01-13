@@ -60,6 +60,9 @@ cipherkeysField = Accepted "cipherkeys"
 pubkeysField :: RemoteConfigField
 pubkeysField = Accepted "pubkeys"
 
+chunkField :: RemoteConfigField
+chunkField = Accepted "chunk"
+
 chunksizeField :: RemoteConfigField
 chunksizeField = Accepted "chunksize"
 

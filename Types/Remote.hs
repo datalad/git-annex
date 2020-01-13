@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,8 +10,7 @@
 {-# LANGUAGE RankNTypes #-}
 
 module Types.Remote
-	( RemoteConfigField
-	, RemoteConfig
+	( module Types.RemoteConfig
 	, RemoteTypeA(..)
 	, RemoteA(..)
 	, RemoteStateHandle
@@ -28,7 +27,6 @@ module Types.Remote
 	)
 	where
 
-import qualified Data.Map as M
 import Data.Ord
 
 import qualified Git
@@ -42,17 +40,13 @@ import Types.UrlContents
 import Types.NumCopies
 import Types.Export
 import Types.Import
-import Types.ProposedAccepted
+import Types.RemoteConfig
 import Config.Cost
 import Utility.Metered
 import Git.Types (RemoteName)
 import Utility.SafeCommand
 import Utility.Url
 import Utility.DataUnits
-
-type RemoteConfigField = ProposedAccepted String
-
-type RemoteConfig = M.Map RemoteConfigField (ProposedAccepted String)
 
 data SetupStage = Init | Enable RemoteConfig
 
@@ -63,14 +57,16 @@ data RemoteTypeA a = RemoteType
 	-- enumerates remotes of this type
 	-- The Bool is True if automatic initialization of remotes is desired
 	, enumerate :: Bool -> a [Git.Repo]
+	-- parse configs of remotes of this type
+	, configParser :: [RemoteConfigParser]
 	-- generates a remote of this type
 	, generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> a (Maybe (RemoteA a))
 	-- initializes or enables a remote
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
 	-- check if a remote of this type is able to support export
-	, exportSupported :: RemoteConfig -> RemoteGitConfig -> a Bool
+	, exportSupported :: ParsedRemoteConfig -> RemoteGitConfig -> a Bool
 	-- check if a remote of this type is able to support import
-	, importSupported :: RemoteConfig -> RemoteGitConfig -> a Bool
+	, importSupported :: ParsedRemoteConfig -> RemoteGitConfig -> a Bool
 	}
 
 instance Eq (RemoteTypeA a) where
@@ -125,7 +121,7 @@ data RemoteA a = Remote
 	-- Runs an action to repair the remote's git repository.
 	, repairRepo :: Maybe (a Bool -> a (IO Bool))
 	-- a Remote has a persistent configuration store
-	, config :: RemoteConfig
+	, config :: ParsedRemoteConfig
 	-- Get the git repo for the Remote.
 	, getRepo :: a Git.Repo
 	-- a Remote's configuration from git

@@ -1,6 +1,6 @@
 {- git-annex chunked remotes
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Remote.Helper.Chunked (
 	ChunkConfig(..),
 	noChunks,
 	describeChunkConfig,
+	chunkConfigParser,
 	getChunkConfig,
 	storeChunks,
 	removeChunks,
@@ -27,9 +28,9 @@ import Utility.Metered
 import Crypto (EncKey)
 import Backend (isStableKey)
 import Annex.SpecialRemote.Config
+import Config.RemoteConfig
 
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Map as M
 
 data ChunkConfig
 	= NoChunks
@@ -49,18 +50,24 @@ noChunks :: ChunkConfig -> Bool
 noChunks NoChunks = True
 noChunks _ = False
 
-getChunkConfig :: RemoteConfig -> ChunkConfig
-getChunkConfig m =
-	case M.lookup chunksizeField m of
-		Nothing -> case M.lookup (Accepted "chunk") m of
+chunkConfigParser :: [RemoteConfigParser]
+chunkConfigParser =
+	[ optStringParser chunksizeField
+	, optStringParser chunkField
+	]
+
+getChunkConfig :: ParsedRemoteConfig -> ChunkConfig
+getChunkConfig c =
+	case getRemoteConfigValue chunksizeField c of
+		Nothing -> case getRemoteConfigValue chunkField c of
 			Nothing -> NoChunks
-			Just v -> readsz UnpaddedChunks (fromProposedAccepted v) (Accepted "chunk")
+			Just v -> readsz UnpaddedChunks (fromProposedAccepted v) chunkField
 		Just v -> readsz LegacyChunks (fromProposedAccepted v) chunksizeField
   where
-	readsz c v f = case readSize dataUnits v of
+	readsz mk v f = case readSize dataUnits v of
 		Just size
 			| size == 0 -> NoChunks
-			| size > 0 -> c (fromInteger size)
+			| size > 0 -> mk (fromInteger size)
 		_ -> giveup $ "bad configuration " ++ fromProposedAccepted f ++ "=" ++ v
 
 -- An infinite stream of chunk keys, starting from chunk 1.

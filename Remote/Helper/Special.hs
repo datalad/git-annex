@@ -1,6 +1,6 @@
 {- helpers for special remotes
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ module Remote.Helper.Special (
 	retreiveKeyFileDummy,
 	removeKeyDummy,
 	checkPresentDummy,
+	specialRemoteConfigParser,
 	SpecialRemoteCfg(..),
 	specialRemoteCfg,
 	specialRemote,
@@ -149,7 +150,7 @@ checkPresentDummy :: Key -> Annex Bool
 checkPresentDummy _ = error "missing checkPresent implementation"
 
 type RemoteModifier
-	= RemoteConfig
+	= ParsedRemoteConfig
 	-> Preparer Storer
 	-> Preparer Retriever
 	-> Preparer Remover
@@ -157,12 +158,15 @@ type RemoteModifier
 	-> Remote
 	-> Remote
 
+specialRemoteConfigParser :: [RemoteConfigParser]
+specialRemoteConfigParser = chunkConfigParser ++ encryptionConfigParser
+
 data SpecialRemoteCfg = SpecialRemoteCfg
 	{ chunkConfig :: ChunkConfig
 	, displayProgress :: Bool
 	}
 
-specialRemoteCfg :: RemoteConfig -> SpecialRemoteCfg
+specialRemoteCfg :: ParsedRemoteConfig -> SpecialRemoteCfg
 specialRemoteCfg c = SpecialRemoteCfg (getChunkConfig c) True
 
 -- Modifies a base Remote to support both chunking and encryption,
@@ -212,7 +216,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			}
 		}
 	cip = cipherKey c (gitconfig baser)
-	isencrypted = isJust (extractCipher c)
+	isencrypted = isEncrypted c
 
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 
