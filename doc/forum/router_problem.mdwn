@@ -1,1 +1,0 @@
-As my router stopped working for some days I bought a new google router and wanted to set up. I got the procedure from https://routerguide.org/google-wifi-setup/ but couldn't apply that. Can anyone how to access google wifi login page and set up the router?
