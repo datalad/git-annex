@@ -28,7 +28,6 @@ module Remote.Helper.Special (
 	retreiveKeyFileDummy,
 	removeKeyDummy,
 	checkPresentDummy,
-	specialRemoteConfigParser,
 	SpecialRemoteCfg(..),
 	specialRemoteCfg,
 	specialRemoteType,
@@ -170,11 +169,12 @@ specialRemoteCfg c = SpecialRemoteCfg (getChunkConfig c) True
 -- Modifies a base RemoteType to support chunking and encryption configs.
 specialRemoteType :: RemoteType -> RemoteType
 specialRemoteType r = r 
-	{ configParser = configParser r ++ specialRemoteConfigParser
+	{ configParser = addRemoteConfigParser specialRemoteConfigParsers
+		<$> configParser r
 	}
 
-specialRemoteConfigParser :: [RemoteConfigParser]
-specialRemoteConfigParser = chunkConfigParser ++ encryptionConfigParser
+specialRemoteConfigParsers :: [RemoteConfigFieldParser]
+specialRemoteConfigParsers = chunkConfigParsers ++ encryptionConfigParsers
 
 -- Modifies a base Remote to support both chunking and encryption,
 -- which special remotes typically should support.

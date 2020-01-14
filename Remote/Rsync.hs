@@ -51,7 +51,7 @@ remote = specialRemoteType $ RemoteType
 	{ typename = "rsync"
 	, enumerate = const (findSpecialRemotes "rsyncurl")
 	, generate = gen
-	, configParser =
+	, configParser = mkRemoteConfigParser
 		[ yesNoParser shellEscapeField True
 		, optionalStringParser rsyncUrlField
 		]

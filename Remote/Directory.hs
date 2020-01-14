@@ -42,7 +42,8 @@ remote = specialRemoteType $ RemoteType
 	{ typename = "directory"
 	, enumerate = const (findSpecialRemotes "directory")
 	, generate = gen
-	, configParser = [optionalStringParser directoryField]
+	, configParser = mkRemoteConfigParser
+		[optionalStringParser directoryField]
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported

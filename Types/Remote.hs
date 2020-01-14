@@ -60,7 +60,7 @@ data RemoteTypeA a = RemoteType
 	-- generates a remote of this type
 	, generate :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> a (Maybe (RemoteA a))
 	-- parse configs of remotes of this type
-	, configParser :: [RemoteConfigParser]
+	, configParser :: a RemoteConfigParser
 	-- initializes or enables a remote
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
 	-- check if a remote of this type is able to support export

@@ -12,7 +12,7 @@ module Remote.Helper.Encryptable (
 	encryptionSetup,
 	noEncryptionUsed,
 	encryptionAlreadySetup,
-	encryptionConfigParser,
+	encryptionConfigParsers,
 	parseEncryptionConfig,
 	remoteCipher,
 	remoteCipher',
@@ -51,8 +51,8 @@ noEncryptionUsed = NoEncryption
 encryptionAlreadySetup :: EncryptionIsSetup
 encryptionAlreadySetup = EncryptionIsSetup
 
-encryptionConfigParser :: [RemoteConfigParser]
-encryptionConfigParser =
+encryptionConfigParsers :: [RemoteConfigFieldParser]
+encryptionConfigParsers =
 	[ (encryptionField, \v c -> Just  . RemoteConfigValue <$> parseEncryptionMethod (fmap fromProposedAccepted v) c)
 	, optionalStringParser cipherField
 	, optionalStringParser cipherkeysField
@@ -66,11 +66,13 @@ encryptionConfigParser =
 	]
 
 encryptionConfigs :: S.Set RemoteConfigField
-encryptionConfigs = S.fromList (map fst encryptionConfigParser)
+encryptionConfigs = S.fromList (map fst encryptionConfigParsers)
 
 -- Parse only encryption fields, ignoring all others.
 parseEncryptionConfig :: RemoteConfig -> Either String ParsedRemoteConfig
-parseEncryptionConfig c = parseRemoteConfig (M.restrictKeys c encryptionConfigs) encryptionConfigParser
+parseEncryptionConfig c = parseRemoteConfig
+	(M.restrictKeys c encryptionConfigs)
+	(RemoteConfigParser encryptionConfigParsers False)
 
 parseEncryptionMethod :: Maybe String -> RemoteConfig -> Either String EncryptionMethod
 parseEncryptionMethod (Just "none") _ = Right NoneEncryption

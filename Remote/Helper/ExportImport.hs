@@ -77,9 +77,10 @@ adjustExportImportRemoteType rt = rt
 	, configParser = configparser
 	}
   where
-	configparser = configParser rt ++ exportImportConfigParser
+	configparser = addRemoteConfigParser exportImportConfigParsers 
+		<$> configParser rt
 	setup' st mu cp c gc = do
-		pc <- either giveup return $ parseRemoteConfig c configparser
+		pc <- either giveup return . parseRemoteConfig c =<< configparser
 		let checkconfig supported configured configfield cont =
 			ifM (supported rt pc gc)
 				( case st of
@@ -87,9 +88,9 @@ adjustExportImportRemoteType rt = rt
 						| configured pc && isEncrypted pc ->
 							giveup $ "cannot enable both encryption and " ++ fromProposedAccepted configfield
 						| otherwise -> cont
-					Enable oldc ->
-						let oldpc = either mempty id $ parseRemoteConfig oldc configparser
-						in if configured pc /= configured oldpc
+					Enable oldc -> do
+						oldpc <- either mempty id . parseRemoteConfig oldc <$> configparser
+						if configured pc /= configured oldpc
 							then giveup $ "cannot change " ++ fromProposedAccepted configfield ++ " of existing special remote"
 							else cont
 				, if configured pc
@@ -102,8 +103,8 @@ adjustExportImportRemoteType rt = rt
 					then giveup "cannot enable importtree=yes without also enabling exporttree=yes"
 					else setup rt st mu cp c gc
 
-exportImportConfigParser :: [RemoteConfigParser]
-exportImportConfigParser =
+exportImportConfigParsers :: [RemoteConfigFieldParser]
+exportImportConfigParsers =
 	[ yesNoParser exportTreeField False
 	, yesNoParser importTreeField False
 	]

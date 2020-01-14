@@ -10,7 +10,7 @@ module Remote.Helper.Chunked (
 	ChunkConfig(..),
 	noChunks,
 	describeChunkConfig,
-	chunkConfigParser,
+	chunkConfigParsers,
 	getChunkConfig,
 	storeChunks,
 	removeChunks,
@@ -49,8 +49,8 @@ noChunks :: ChunkConfig -> Bool
 noChunks NoChunks = True
 noChunks _ = False
 
-chunkConfigParser :: [RemoteConfigParser]
-chunkConfigParser =
+chunkConfigParsers :: [RemoteConfigFieldParser]
+chunkConfigParsers =
 	[ optionalStringParser chunksizeField
 	, optionalStringParser chunkField
 	]

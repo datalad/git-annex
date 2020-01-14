@@ -1,6 +1,6 @@
 {- Credentials storage
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -30,7 +30,7 @@ import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigField)
 import Types.ProposedAccepted
-import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher, encryptionConfigParser)
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher, parseEncryptionConfig)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -79,8 +79,7 @@ setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
 	storeconfig creds key Nothing =
 		return $ M.insert key (Accepted (toB64 $ encodeCredPair creds)) c
 	
-	pc = either (const mempty) id
-		(parseRemoteConfig c encryptionConfigParser)
+	pc = either (const mempty) id (parseEncryptionConfig c)
 
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the

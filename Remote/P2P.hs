@@ -36,7 +36,7 @@ remote = RemoteType
 	-- and will call chainGen on them.
 	, enumerate = const (return [])
 	, generate = \_ _ _ _ _ -> return Nothing
-	, configParser = []
+	, configParser = mkRemoteConfigParser []
 	, setup = error "P2P remotes are set up using git-annex p2p"
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

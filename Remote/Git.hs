@@ -80,7 +80,8 @@ remote = RemoteType
 	{ typename = "git"
 	, enumerate = list
 	, generate = gen
-	, configParser = [optionalStringParser locationField]
+	, configParser = mkRemoteConfigParser
+		[optionalStringParser locationField]
 	, setup = gitSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

@@ -66,7 +66,8 @@ remote = specialRemoteType $ RemoteType
 	-- and will call our gen on them.
 	, enumerate = const (return [])
 	, generate = gen
-	, configParser = [optionalStringParser gitRepoField]
+	, configParser = mkRemoteConfigParser
+		[optionalStringParser gitRepoField]
 	, setup = gCryptSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
@@ -104,8 +105,9 @@ gen baser u c gc rs = do
 		v <- M.lookup u' <$> readRemoteLog
 		case (Git.remoteName baser, v) of
 			(Just remotename, Just c') -> do
-				pc <- either giveup return $
-					parseRemoteConfig c' (configParser remote)
+				pc <- either giveup return
+					. parseRemoteConfig c'
+					=<< configParser remote
 				setGcryptEncryption pc remotename
 				storeUUIDIn (remoteConfig baser "uuid") u'
 				setConfig (Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
@@ -214,8 +216,8 @@ gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
 				| Git.repoLocation r == url -> noop
 				| otherwise -> error "Another remote with the same name already exists."		
 
-		pc <- either giveup return $
-			parseRemoteConfig c' (configParser remote)
+		pc <- either giveup return . parseRemoteConfig c'
+			=<< configParser remote
 		setGcryptEncryption pc remotename
 
 		{- Run a git fetch and a push to the git repo in order to get

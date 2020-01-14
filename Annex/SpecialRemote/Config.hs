@@ -93,8 +93,8 @@ importTree :: ParsedRemoteConfig -> Bool
 importTree = fromMaybe False . getRemoteConfigValue importTreeField
 
 {- Parsers for fields that are common to all special remotes. -}
-commonFieldsParser :: [RemoteConfigParser]
-commonFieldsParser =
+commonFieldParsers :: [RemoteConfigFieldParser]
+commonFieldParsers =
 	[ optionalStringParser nameField
 	, optionalStringParser sameasNameField
 	, optionalStringParser sameasUUIDField
@@ -166,11 +166,13 @@ getRemoteConfigValue f m = case M.lookup f m of
 			]
 	Nothing -> Nothing
 
-parseRemoteConfig :: RemoteConfig -> [RemoteConfigParser] -> Either String ParsedRemoteConfig
-parseRemoteConfig c ps =
-	go [] (M.filterWithKey notaccepted c) (ps ++ commonFieldsParser)
+parseRemoteConfig :: RemoteConfig -> RemoteConfigParser -> Either String ParsedRemoteConfig
+parseRemoteConfig c rpc =
+	go [] (M.filterWithKey notaccepted c) (remoteConfigFieldParsers rpc ++ commonFieldParsers)
   where
 	go l c' []
+		| remoteConfigRestPassthrough rpc = Right $ M.fromList $
+			l ++ map (uncurry passthrough) (M.toList c')
 		| M.null c' = Right (M.fromList l)
 		| otherwise = Left $ "Unexpected fields: " ++
 			unwords (map fromProposedAccepted (M.keys c'))
@@ -179,19 +181,22 @@ parseRemoteConfig c ps =
 		case v of
 			Just v' -> go ((f,v'):l) (M.delete f c') rest
 			Nothing -> go l (M.delete f c') rest
+	
+	passthrough f v = (f, RemoteConfigValue (fromProposedAccepted v))
+
 	notaccepted (Proposed _) _ = True
 	notaccepted (Accepted _) _ = False
 
-optionalStringParser :: RemoteConfigField -> RemoteConfigParser
+optionalStringParser :: RemoteConfigField -> RemoteConfigFieldParser
 optionalStringParser f = (f, p)
   where
 	p (Just v) _c = Right (Just (RemoteConfigValue (fromProposedAccepted v)))
 	p Nothing _c = Right Nothing
 
-yesNoParser :: RemoteConfigField -> Bool -> RemoteConfigParser
+yesNoParser :: RemoteConfigField -> Bool -> RemoteConfigFieldParser
 yesNoParser = genParser yesNo "yes or no"
 
-trueFalseParser :: RemoteConfigField -> Bool -> RemoteConfigParser
+trueFalseParser :: RemoteConfigField -> Bool -> RemoteConfigFieldParser
 trueFalseParser = genParser Git.Config.isTrueFalse "true or false"
 
 genParser
@@ -200,7 +205,7 @@ genParser
 	-> String -- ^ description of the value
 	-> RemoteConfigField
 	-> t -- ^ fallback value
-	-> RemoteConfigParser
+	-> RemoteConfigFieldParser
 genParser parse desc f fallback = (f, p)
   where
 	p Nothing _c = Right (Just (RemoteConfigValue fallback))

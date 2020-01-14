@@ -60,7 +60,8 @@ remote = specialRemoteType $ RemoteType
 	-- and will call our gen on them.
 	, enumerate = const (return [])
 	, generate = gen
-	, configParser = [optionalStringParser urlField]
+	, configParser = mkRemoteConfigParser
+		[optionalStringParser urlField]
 	, setup = mySetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
@@ -133,7 +134,7 @@ mySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	(c', _encsetup) <- encryptionSetup c gc
-	pc <- either giveup return $ parseRemoteConfig c' (configParser remote)
+	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote
 	case (isEncrypted pc, Git.GCrypt.urlPrefix `isPrefixOf` url) of
 		(False, False) -> noop
 		(True, True) -> Remote.GCrypt.setGcryptEncryption pc remotename

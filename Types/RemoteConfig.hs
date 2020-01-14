@@ -37,4 +37,15 @@ data RemoteConfigValue where
  - Presence of fields that are not included in this list will cause
  - a parse failure.
  -}
-type RemoteConfigParser = (RemoteConfigField, Maybe (ProposedAccepted String) -> RemoteConfig -> Either String (Maybe RemoteConfigValue))
+type RemoteConfigFieldParser = (RemoteConfigField, Maybe (ProposedAccepted String) -> RemoteConfig -> Either String (Maybe RemoteConfigValue))
+
+data RemoteConfigParser = RemoteConfigParser
+	{ remoteConfigFieldParsers :: [RemoteConfigFieldParser]
+	, remoteConfigRestPassthrough :: Bool
+	}
+
+mkRemoteConfigParser :: Monad m => [RemoteConfigFieldParser] -> m RemoteConfigParser
+mkRemoteConfigParser l = pure (RemoteConfigParser l False)
+
+addRemoteConfigParser :: [RemoteConfigFieldParser] -> RemoteConfigParser -> RemoteConfigParser
+addRemoteConfigParser l rpc = rpc { remoteConfigFieldParsers = remoteConfigFieldParsers rpc ++ l }
