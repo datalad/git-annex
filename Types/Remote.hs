@@ -57,10 +57,10 @@ data RemoteTypeA a = RemoteType
 	-- enumerates remotes of this type
 	-- The Bool is True if automatic initialization of remotes is desired
 	, enumerate :: Bool -> a [Git.Repo]
+	-- generates a remote of this type
+	, generate :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> a (Maybe (RemoteA a))
 	-- parse configs of remotes of this type
 	, configParser :: [RemoteConfigParser]
-	-- generates a remote of this type
-	, generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> a (Maybe (RemoteA a))
 	-- initializes or enables a remote
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
 	-- check if a remote of this type is able to support export

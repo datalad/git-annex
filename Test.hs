@@ -1614,7 +1614,7 @@ test_crypto = do
 			annexed_present annexedfile
 	{- Ensure the configuration complies with the encryption scheme, and
 	 - that all keys are encrypted properly for the given directory remote. -}
-	testEncryptedRemote scheme ks c keys = case Remote.Helper.Encryptable.extractCipher c of
+	testEncryptedRemote scheme ks c keys = case Remote.Helper.Encryptable.extractCipher pc of
 		Just cip@Crypto.SharedCipher{} | scheme == "shared" && isNothing ks ->
 			checkKeys cip Nothing
 		Just cip@(Crypto.EncryptedCipher encipher v ks')
@@ -1622,6 +1622,8 @@ test_crypto = do
 				checkKeys cip (Just v) <&&> checkCipher encipher ks'
 		_ -> return False
 	  where
+		pc =either mempty id $
+			Remote.Helper.Encryptable.parseEncryptionConfig c
 		keysMatch (Utility.Gpg.KeyIds ks') =
 			maybe False (\(Utility.Gpg.KeyIds ks2) ->
 					sort (nub ks2) == sort (nub ks')) ks
@@ -1630,7 +1632,7 @@ test_crypto = do
 		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
 			dummycfg <- Types.GitConfig.dummyRemoteGitConfig
-			let encparams = (mempty :: Types.Remote.RemoteConfig, dummycfg)
+			let encparams = (mempty :: Types.Remote.ParsedRemoteConfig, dummycfg)
 			cipher <- Crypto.decryptCipher gpgcmd encparams cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (serializeKeys cipher) keys

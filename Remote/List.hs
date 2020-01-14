@@ -1,6 +1,6 @@
 {- git-annex remote list
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,17 +20,21 @@ import Annex.UUID
 import Remote.Helper.Hooks
 import Remote.Helper.ReadOnly
 import Remote.Helper.ExportImport
+import Annex.SpecialRemote.Config
 import qualified Git
 import qualified Git.Config
 
 import qualified Remote.Git
 import qualified Remote.GCrypt
 import qualified Remote.P2P
+{-
 #ifdef WITH_S3
 import qualified Remote.S3
 #endif
 import qualified Remote.Bup
+-}
 import qualified Remote.Directory
+{-
 import qualified Remote.Rsync
 import qualified Remote.Web
 import qualified Remote.BitTorrent
@@ -41,20 +45,26 @@ import qualified Remote.Adb
 import qualified Remote.Tahoe
 import qualified Remote.Glacier
 import qualified Remote.Ddar
+-}
 import qualified Remote.GitLFS
+{-
 import qualified Remote.Hook
 import qualified Remote.External
+-}
 
 remoteTypes :: [RemoteType]
 remoteTypes = map adjustExportImportRemoteType
 	[ Remote.Git.remote
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote
+{-
 #ifdef WITH_S3
 	, Remote.S3.remote
 #endif
 	, Remote.Bup.remote
+-}
 	, Remote.Directory.remote
+{-
 	, Remote.Rsync.remote
 	, Remote.Web.remote
 	, Remote.BitTorrent.remote
@@ -65,9 +75,12 @@ remoteTypes = map adjustExportImportRemoteType
 	, Remote.Tahoe.remote
 	, Remote.Glacier.remote
 	, Remote.Ddar.remote
+-}
 	, Remote.GitLFS.remote
+{-
 	, Remote.Hook.remote
 	, Remote.External.remote
+-}
 	]
 
 {- Builds a list of all available Remotes.
@@ -109,7 +122,8 @@ remoteGen m t g = do
 	let cu = fromMaybe u $ remoteAnnexConfigUUID gc
 	let rs = RemoteStateHandle cu
 	let c = fromMaybe M.empty $ M.lookup cu m
-	generate t g u c gc rs >>= \case
+	let pc = either mempty id (parseRemoteConfig c (configParser t))
+	generate t g u pc gc rs >>= \case
 		Nothing -> return Nothing
 		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r)) rs
 

@@ -16,7 +16,7 @@ import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
-import Config
+import Annex.SpecialRemote.Config
 import qualified Database.Keys
 import Git.FilePath
 

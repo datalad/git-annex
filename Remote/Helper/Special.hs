@@ -31,6 +31,7 @@ module Remote.Helper.Special (
 	specialRemoteConfigParser,
 	SpecialRemoteCfg(..),
 	specialRemoteCfg,
+	specialRemoteType,
 	specialRemote,
 	specialRemote',
 	lookupName,
@@ -158,9 +159,6 @@ type RemoteModifier
 	-> Remote
 	-> Remote
 
-specialRemoteConfigParser :: [RemoteConfigParser]
-specialRemoteConfigParser = chunkConfigParser ++ encryptionConfigParser
-
 data SpecialRemoteCfg = SpecialRemoteCfg
 	{ chunkConfig :: ChunkConfig
 	, displayProgress :: Bool
@@ -168,6 +166,15 @@ data SpecialRemoteCfg = SpecialRemoteCfg
 
 specialRemoteCfg :: ParsedRemoteConfig -> SpecialRemoteCfg
 specialRemoteCfg c = SpecialRemoteCfg (getChunkConfig c) True
+
+-- Modifies a base RemoteType to support chunking and encryption configs.
+specialRemoteType :: RemoteType -> RemoteType
+specialRemoteType r = r 
+	{ configParser = configParser r ++ specialRemoteConfigParser
+	}
+
+specialRemoteConfigParser :: [RemoteConfigParser]
+specialRemoteConfigParser = chunkConfigParser ++ encryptionConfigParser
 
 -- Modifies a base Remote to support both chunking and encryption,
 -- which special remotes typically should support.

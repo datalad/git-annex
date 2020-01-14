@@ -7,7 +7,6 @@
 
 module Types.ProposedAccepted where
 
-import qualified Data.Map as M
 import Test.QuickCheck
 
 -- | A value that may be proposed, or accepted.
@@ -37,28 +36,3 @@ instance Arbitrary t => Arbitrary (ProposedAccepted t) where
 		[ Proposed <$> arbitrary
 		, Accepted <$> arbitrary
 		]
-
--- | Looks up a config in the map, and parses its value if found.
---
--- Accepted values will always result in a Right, using a fallback value
--- if unable to parse.
---
--- Proposed values that cannot be parsed will result in a Left message.
-parseProposedAccepted
-	:: ProposedAccepted String
-	-> M.Map (ProposedAccepted String) (ProposedAccepted v) -- config map
-	-> (v -> Maybe a) -- ^ parse the value
-	-> a -- ^ fallback used when accepted value cannot be parsed
-	-> String -- ^ short description of expected value
-	-> Either String (Maybe a)
-parseProposedAccepted k m parser fallback desc =
-	case M.lookup k m of
-		Nothing -> Right Nothing
-		Just (Proposed v) -> case parser v of
-			Nothing -> Left $
-				"bad " ++ fromProposedAccepted k ++
-				" value (expected " ++ desc ++ ")"
-			Just a -> Right (Just a)
-		Just (Accepted v) -> case parser v of
-			Nothing -> Right (Just fallback)
-			Just a -> Right (Just a)

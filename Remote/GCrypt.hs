@@ -39,6 +39,7 @@ import qualified Git.Construct
 import qualified Annex.Branch
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Git
 import Remote.Helper.Encryptable
 import Remote.Helper.Special
@@ -59,18 +60,22 @@ import Messages.Progress
 import Types.ProposedAccepted
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "gcrypt"
 	-- Remote.Git takes care of enumerating gcrypt remotes too,
 	-- and will call our gen on them.
 	, enumerate = const (return [])
 	, generate = gen
+	, configParser = [optionalStringParser gitRepoField]
 	, setup = gCryptSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gitRepoField :: RemoteConfigField
+gitRepoField = Accepted "gitrepo"
+
+chainGen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 chainGen gcryptr u c gc rs = do
 	g <- gitRepo
 	-- get underlying git repo with real path, not gcrypt path
@@ -78,7 +83,7 @@ chainGen gcryptr u c gc rs = do
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
 	gen r' u c gc rs
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen baser u c gc rs = do
 	-- doublecheck that cache matches underlying repo's gcrypt-id
 	-- (which might not be set), only for local repos
@@ -99,15 +104,17 @@ gen baser u c gc rs = do
 		v <- M.lookup u' <$> readRemoteLog
 		case (Git.remoteName baser, v) of
 			(Just remotename, Just c') -> do
-				setGcryptEncryption c' remotename
+				pc <- either giveup return $
+					parseRemoteConfig c' (configParser remote)
+				setGcryptEncryption pc remotename
 				storeUUIDIn (remoteConfig baser "uuid") u'
 				setConfig (Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
-				gen' r u' c' gc rs
+				gen' r u' pc gc rs
 			_ -> do
 				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
 				return Nothing
 
-gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen' :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen' r u c gc rs = do
 	cst <- remoteCost gc $
 		if repoCheap r then nearlyCheapRemoteCost else expensiveRemoteCost
@@ -188,7 +195,7 @@ unsupportedUrl :: a
 unsupportedUrl = giveup "using non-ssh remote repo url with gcrypt is not supported"
 
 gCryptSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup (Accepted "gitrepo") c
+gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
   where
 	remotename = fromJust (lookupName c)
 	go Nothing = giveup "Specify gitrepo="
@@ -207,7 +214,9 @@ gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup (Accepted "gitr
 				| Git.repoLocation r == url -> noop
 				| otherwise -> error "Another remote with the same name already exists."		
 
-		setGcryptEncryption c' remotename
+		pc <- either giveup return $
+			parseRemoteConfig c' (configParser remote)
+		setGcryptEncryption pc remotename
 
 		{- Run a git fetch and a push to the git repo in order to get
 		 - its gcrypt-id set up, so that later git annex commands
@@ -323,7 +332,7 @@ shellOrRsync r ashell arsync
  - Also, sets gcrypt-publish-participants to avoid unncessary gpg
  - passphrase prompts.
  -}
-setGcryptEncryption :: RemoteConfig -> String -> Annex ()
+setGcryptEncryption :: ParsedRemoteConfig -> String -> Annex ()
 setGcryptEncryption c remotename = do
 	let participants = remoteconfig Git.GCrypt.remoteParticipantConfigKey
 	case extractCipher c of

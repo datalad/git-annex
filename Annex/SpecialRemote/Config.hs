@@ -1,9 +1,12 @@
 {- git-annex special remote configuration
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Annex.SpecialRemote.Config where
 
@@ -11,9 +14,14 @@ import Common
 import Types.Remote (RemoteConfigField, RemoteConfig)
 import Types.UUID
 import Types.ProposedAccepted
+import Types.RemoteConfig
+import Config
+import qualified Git.Config
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Data.Typeable
+import GHC.Stack
 
 newtype Sameas t = Sameas t
 	deriving (Show)
@@ -33,6 +41,9 @@ sameasNameField = Accepted "sameas-name"
 lookupName :: RemoteConfig -> Maybe String
 lookupName c = fmap fromProposedAccepted $
 	M.lookup nameField c <|> M.lookup sameasNameField c
+
+instance RemoteNameable RemoteConfig where
+	getRemoteName c = fromMaybe "" (lookupName c)
 
 {- The uuid that a sameas remote is the same as is stored in this key. -}
 sameasUUIDField :: RemoteConfigField
@@ -74,6 +85,22 @@ exportTreeField = Accepted "exporttree"
 
 importTreeField :: RemoteConfigField
 importTreeField = Accepted "importtree"
+
+exportTree :: ParsedRemoteConfig -> Bool
+exportTree = fromMaybe False . getRemoteConfigValue exportTreeField
+
+importTree :: ParsedRemoteConfig -> Bool
+importTree = fromMaybe False . getRemoteConfigValue importTreeField
+
+{- Parsers for fields that are common to all special remotes. -}
+commonFieldsParser :: [RemoteConfigParser]
+commonFieldsParser =
+	[ optionalStringParser nameField
+	, optionalStringParser sameasNameField
+	, optionalStringParser sameasUUIDField
+	, optionalStringParser typeField
+	, trueFalseParser autoEnableField False
+	]
 
 {- A remote with sameas-uuid set will inherit these values from the config
  - of that uuid. These values cannot be overridden in the remote's config. -}
@@ -124,3 +151,63 @@ findByRemoteConfig matching = map sameasuuid . filter (matching . snd) . M.toLis
 	sameasuuid (u, c) = case M.lookup sameasUUIDField c of
 		Nothing -> (u, c, Nothing)
 		Just u' -> (toUUID (fromProposedAccepted u'), c, Just (ConfigFrom u))
+
+{- Extracts a value from ParsedRemoteConfig. -}
+getRemoteConfigValue :: HasCallStack => Typeable v => RemoteConfigField -> ParsedRemoteConfig -> Maybe v
+getRemoteConfigValue f m = case M.lookup f m of
+	Just (RemoteConfigValue v) -> case cast v of
+		Just v' -> Just v'
+		Nothing -> error $ unwords
+			[ "getRemoteConfigValue"
+			, fromProposedAccepted f
+			, "found value of unexpected type"
+			, show (typeOf v) ++ "."
+			, "This is a bug in git-annex!"
+			]
+	Nothing -> Nothing
+
+parseRemoteConfig :: RemoteConfig -> [RemoteConfigParser] -> Either String ParsedRemoteConfig
+parseRemoteConfig c ps =
+	go [] (M.filterWithKey notaccepted c) (ps ++ commonFieldsParser)
+  where
+	go l c' []
+		| M.null c' = Right (M.fromList l)
+		| otherwise = Left $ "Unexpected fields: " ++
+			unwords (map fromProposedAccepted (M.keys c'))
+	go l c' ((f, p):rest) = do
+		v <- p (M.lookup f c) c
+		case v of
+			Just v' -> go ((f,v'):l) (M.delete f c') rest
+			Nothing -> go l (M.delete f c') rest
+	notaccepted (Proposed _) _ = True
+	notaccepted (Accepted _) _ = False
+
+optionalStringParser :: RemoteConfigField -> RemoteConfigParser
+optionalStringParser f = (f, p)
+  where
+	p (Just v) _c = Right (Just (RemoteConfigValue (fromProposedAccepted v)))
+	p Nothing _c = Right Nothing
+
+yesNoParser :: RemoteConfigField -> Bool -> RemoteConfigParser
+yesNoParser = genParser yesNo "yes or no"
+
+trueFalseParser :: RemoteConfigField -> Bool -> RemoteConfigParser
+trueFalseParser = genParser Git.Config.isTrueFalse "true or false"
+
+genParser
+	:: Typeable t
+	=> (String -> Maybe t)
+	-> String -- ^ description of the value
+	-> RemoteConfigField
+	-> t -- ^ fallback value
+	-> RemoteConfigParser
+genParser parse desc f fallback = (f, p)
+  where
+	p Nothing _c = Right (Just (RemoteConfigValue fallback))
+	p (Just v) _c = case parse (fromProposedAccepted v) of
+		Just b -> Right (Just (RemoteConfigValue b))
+		Nothing -> case v of
+			Accepted _ -> Right (Just (RemoteConfigValue fallback))
+			Proposed _ -> Left $
+				"Bad value for " ++ fromProposedAccepted f ++
+				" (expected " ++ desc ++ ")"

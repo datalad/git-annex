@@ -28,12 +28,6 @@ type ParsedRemoteConfig = M.Map RemoteConfigField RemoteConfigValue
 data RemoteConfigValue where
 	RemoteConfigValue :: Typeable v => v -> RemoteConfigValue
 
-{- Extracts the value, if the field was parsed to the requested type. -}
-getRemoteConfigValue :: Typeable v => RemoteConfigField -> ParsedRemoteConfig -> Maybe v
-getRemoteConfigValue f m = case M.lookup f m of
-	Just (RemoteConfigValue v) -> cast v
-	Nothing -> Nothing
-
 {- Parse a field's value provided by the user into a RemoteConfigValue.
  -
  - The RemoteConfig is provided to the parser function for cases
@@ -43,4 +37,4 @@ getRemoteConfigValue f m = case M.lookup f m of
  - Presence of fields that are not included in this list will cause
  - a parse failure.
  -}
-type RemoteConfigParser = (RemoteConfigField, Maybe (ProposedAccepted String) -> RemoteConfig -> Either String RemoteConfigValue)
+type RemoteConfigParser = (RemoteConfigField, Maybe (ProposedAccepted String) -> RemoteConfig -> Either String (Maybe RemoteConfigValue))

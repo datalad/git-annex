@@ -28,7 +28,6 @@ import Utility.Metered
 import Crypto (EncKey)
 import Backend (isStableKey)
 import Annex.SpecialRemote.Config
-import Config.RemoteConfig
 
 import qualified Data.ByteString.Lazy as L
 
@@ -52,8 +51,8 @@ noChunks _ = False
 
 chunkConfigParser :: [RemoteConfigParser]
 chunkConfigParser =
-	[ optStringParser chunksizeField
-	, optStringParser chunkField
+	[ optionalStringParser chunksizeField
+	, optionalStringParser chunkField
 	]
 
 getChunkConfig :: ParsedRemoteConfig -> ChunkConfig

@@ -39,7 +39,6 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.UTF8 (fromString)
 import Control.Monad.IO.Class
-import Data.Typeable
 
 import Annex.Common
 import qualified Utility.Gpg as Gpg
@@ -47,14 +46,6 @@ import Types.Crypto
 import Types.Remote
 import Types.Key
 import Annex.SpecialRemote.Config
-
-data EncryptionMethod
-	= NoneEncryption
-	| SharedEncryption
-	| PubKeyEncryption
-	| SharedPubKeyEncryption
-	| HybridEncryption
-	deriving (Typeable, Eq)
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
  - as the GPG symmetric encryption passphrase when using the hybrid

@@ -37,6 +37,7 @@ import qualified Annex.SpecialRemote.Config as SpecialRemote
 import Utility.Tmp
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Config.DynamicConfig
 import Annex.Init
 import Types.CleanupActions
@@ -79,10 +80,14 @@ remote = RemoteType
 	{ typename = "git"
 	, enumerate = list
 	, generate = gen
+	, configParser = [optionalStringParser locationField]
 	, setup = gitSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
+
+locationField :: RemoteConfigField
+locationField = Accepted "location"
 
 list :: Bool -> Annex [Git.Repo]
 list autoinit = do
@@ -113,7 +118,7 @@ gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> Remote
 gitSetup Init mu _ c _ = do
 	let location = fromMaybe (giveup "Specify location=url") $
 		Url.parseURIRelaxed . fromProposedAccepted
-			=<< M.lookup (Accepted "location") c
+			=<< M.lookup locationField c
 	rs <- Annex.getGitRemotes
 	u <- case filter (\r -> Git.location r == Git.Url location) rs of
 		[r] -> getRepoUUID r
@@ -127,7 +132,7 @@ gitSetup (Enable _) (Just u) _ c _ = do
 		[ Param "remote"
 		, Param "add"
 		, Param $ fromMaybe (giveup "no name") (SpecialRemote.lookupName c)
-		, Param $ maybe (giveup "no location") fromProposedAccepted (M.lookup (Accepted "location") c)
+		, Param $ maybe (giveup "no location") fromProposedAccepted (M.lookup locationField c)
 		]
 	return (c, u)
 gitSetup (Enable _) Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
@@ -153,7 +158,7 @@ configRead autoinit r = do
 			Just r' -> return r'
 		_ -> return r
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs
 	-- Remote.GitLFS may be used with a repo that is also encrypted
 	-- with gcrypt so is checked first.
@@ -204,7 +209,7 @@ gen r u c gc rs
 			, remoteStateHandle = rs
 			}
 
-unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+unavailable :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 unavailable r = gen r'
   where
 	r' = case Git.location r of

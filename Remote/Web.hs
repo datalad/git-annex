@@ -27,6 +27,7 @@ remote = RemoteType
 	{ typename = "web"
 	, enumerate = list
 	, generate = gen
+	, configParser = []
 	, setup = error "not supported"
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
@@ -40,7 +41,7 @@ list _autoinit = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" (pure Git.Construct.fromUnknown)
 	return [r]
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r _ c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just Remote

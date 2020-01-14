@@ -36,12 +36,13 @@ remote = RemoteType
 	-- and will call chainGen on them.
 	, enumerate = const (return [])
 	, generate = \_ _ _ _ _ -> return Nothing
+	, configParser = []
 	, setup = error "P2P remotes are set up using git-annex p2p"
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+chainGen :: P2PAddress -> Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 chainGen addr r u c gc rs = do
 	connpool <- mkConnectionPool
 	cst <- remoteCost gc veryExpensiveRemoteCost

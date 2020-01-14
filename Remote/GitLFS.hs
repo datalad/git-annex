@@ -1,6 +1,6 @@
 {- Using git-lfs as a remote.
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,6 +25,7 @@ import qualified Git.GCrypt
 import qualified Git.Credential as Git
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.Git
@@ -53,18 +54,22 @@ import qualified Data.Text.Encoding as E
 import qualified Control.Concurrent.MSemN as MSemN
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "git-lfs"
 	-- Remote.Git takes care of enumerating git-lfs remotes too,
 	-- and will call our gen on them.
 	, enumerate = const (return [])
 	, generate = gen
+	, configParser = [optionalStringParser urlField]
 	, setup = mySetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+urlField :: RemoteConfigField
+urlField = Accepted "url"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	-- If the repo uses gcrypt, get the underlaying repo without the
 	-- gcrypt url, to do LFS endpoint discovery on.
@@ -128,9 +133,10 @@ mySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	(c', _encsetup) <- encryptionSetup c gc
-	case (isEncrypted c', Git.GCrypt.urlPrefix `isPrefixOf` url) of
+	pc <- either giveup return $ parseRemoteConfig c' (configParser remote)
+	case (isEncrypted pc, Git.GCrypt.urlPrefix `isPrefixOf` url) of
 		(False, False) -> noop
-		(True, True) -> Remote.GCrypt.setGcryptEncryption c' remotename
+		(True, True) -> Remote.GCrypt.setGcryptEncryption pc remotename
 		(True, False) -> unlessM (Annex.getState Annex.force) $
 			giveup $ unwords $
 				[ "Encryption is enabled for this remote,"
@@ -160,7 +166,7 @@ mySetup _ mu _ c gc = do
 	return (c', u)
   where
 	url = maybe (giveup "Specify url=") fromProposedAccepted 
-		(M.lookup (Accepted "url") c)
+		(M.lookup urlField c)
 	remotename = fromJust (lookupName c)
 
 {- Check if a remote's url is one known to belong to a git-lfs repository.
@@ -180,7 +186,7 @@ configKnownUrl r
 		t <- fromProposedAccepted
 			<$> M.lookup Annex.SpecialRemote.Config.typeField c
 		u <- fromProposedAccepted
-			<$> M.lookup (Accepted "url") c
+			<$> M.lookup urlField c
 		let u' = Git.Remote.parseRemoteLocation u g
 		return $ Git.Remote.RemoteUrl (Git.repoLocation r) == u' 
 			&& t == typename remote

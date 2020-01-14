@@ -13,6 +13,7 @@ module Remote.Helper.Encryptable (
 	noEncryptionUsed,
 	encryptionAlreadySetup,
 	encryptionConfigParser,
+	parseEncryptionConfig,
 	remoteCipher,
 	remoteCipher',
 	embedCreds,
@@ -23,12 +24,12 @@ module Remote.Helper.Encryptable (
 ) where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified "sandi" Codec.Binary.Base64 as B64
 import qualified Data.ByteString as B
 
 import Annex.Common
 import Types.Remote
-import Config.RemoteConfig
 import Crypto
 import Types.Crypto
 import Types.ProposedAccepted
@@ -52,17 +53,24 @@ encryptionAlreadySetup = EncryptionIsSetup
 
 encryptionConfigParser :: [RemoteConfigParser]
 encryptionConfigParser =
-	[ (encryptionField, \v c -> RemoteConfigValue <$> parseEncryptionMethod (fmap fromProposedAccepted v) c)
-	, optStringParser cipherField
-	, optStringParser cipherkeysField
-	, optStringParser pubkeysField
+	[ (encryptionField, \v c -> Just  . RemoteConfigValue <$> parseEncryptionMethod (fmap fromProposedAccepted v) c)
+	, optionalStringParser cipherField
+	, optionalStringParser cipherkeysField
+	, optionalStringParser pubkeysField
 	, yesNoParser embedCredsField False
-	, (macField, \v _c -> RemoteConfigValue <$> parseMac v)
-	, optStringParser (Accepted "keyid")
-	, optStringParser (Accepted "keyid+")
-	, optStringParser (Accepted "keyid-")
-	, (Accepted "highRandomQuality", \v _c -> RemoteConfigValue <$> parseHighRandomQuality (fmap fromProposedAccepted v))
+	, (macField, \v _c -> Just . RemoteConfigValue <$> parseMac v)
+	, optionalStringParser (Accepted "keyid")
+	, optionalStringParser (Accepted "keyid+")
+	, optionalStringParser (Accepted "keyid-")
+	, (Accepted "highRandomQuality", \v _c -> Just . RemoteConfigValue <$> parseHighRandomQuality (fmap fromProposedAccepted v))
 	]
+
+encryptionConfigs :: S.Set RemoteConfigField
+encryptionConfigs = S.fromList (map fst encryptionConfigParser)
+
+-- Parse only encryption fields, ignoring all others.
+parseEncryptionConfig :: RemoteConfig -> Either String ParsedRemoteConfig
+parseEncryptionConfig c = parseRemoteConfig (M.restrictKeys c encryptionConfigs) encryptionConfigParser
 
 parseEncryptionMethod :: Maybe String -> RemoteConfig -> Either String EncryptionMethod
 parseEncryptionMethod (Just "none") _ = Right NoneEncryption
@@ -100,7 +108,7 @@ parseMac (Just (Proposed s)) = case readMac s of
  - could opt to use a shared cipher, which is stored unencrypted. -}
 encryptionSetup :: RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, EncryptionIsSetup)
 encryptionSetup c gc = do
-	pc <- either giveup return $ parseRemoteConfig c encryptionConfigParser
+	pc <- either giveup return $ parseEncryptionConfig c
 	cmd <- gpgCmd <$> Annex.getGitConfig
 	maybe (genCipher pc cmd) (updateCipher pc cmd) (extractCipher pc)
   where
@@ -228,7 +236,7 @@ isEncrypted = isJust . extractCipher
 
 describeEncryption :: ParsedRemoteConfig -> String
 describeEncryption c = case extractCipher c of
-	Nothing -> "none"
+	Nothing -> "none" ++ show (getRemoteConfigValue cipherField c :: Maybe String) ++ show (M.keys c)
 	Just cip -> nameCipher cip ++ " (" ++ describeCipher cip ++ ")"
 
 nameCipher :: StorableCipher -> String

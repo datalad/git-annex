@@ -20,10 +20,7 @@ import Config.DynamicConfig
 import Types.Availability
 import Git.Types
 import qualified Types.Remote as Remote
-import qualified Annex.SpecialRemote.Config as SpecialRemote
-import Types.ProposedAccepted
 
-import qualified Data.Map as M
 import qualified Data.ByteString as S
 
 type UnqualifiedConfigKey = S.ByteString
@@ -64,9 +61,6 @@ instance RemoteNameable RemoteName where
 
 instance RemoteNameable Remote where
 	getRemoteName = Remote.name
-
-instance RemoteNameable Remote.RemoteConfig where
-	getRemoteName c = fromMaybe "" (SpecialRemote.lookupName c)
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
@@ -111,14 +105,6 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b = do
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexCrippledFileSystem = b }
-
-exportTree :: Remote.RemoteConfig -> Bool
-exportTree c = fromMaybe False $ yesNo . fromProposedAccepted
-	=<< M.lookup SpecialRemote.exportTreeField c
-
-importTree :: Remote.RemoteConfig -> Bool
-importTree c = fromMaybe False $ yesNo . fromProposedAccepted
-	=<< M.lookup SpecialRemote.importTreeField c
 
 yesNo :: String -> Maybe Bool
 yesNo "yes" = Just True

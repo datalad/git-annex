@@ -20,20 +20,18 @@ import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier
 import Annex.Export
 import Annex.LockFile
-import Config
-import Annex.SpecialRemote.Config (exportTreeField, importTreeField)
+import Annex.SpecialRemote.Config
 import Git.Types (fromRef)
 import Logs.Export
 import Logs.ContentIdentifier (recordContentIdentifier)
 
-import qualified Data.Map as M
 import Control.Concurrent.STM
 
 -- | Use for remotes that do not support exports.
 class HasExportUnsupported a where
 	exportUnsupported :: a
 
-instance HasExportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) where
+instance HasExportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool) where
 	exportUnsupported = \_ _ -> return False
 
 instance HasExportUnsupported (ExportActions Annex) where
@@ -52,7 +50,7 @@ instance HasExportUnsupported (ExportActions Annex) where
 class HasImportUnsupported a where
 	importUnsupported :: a
 
-instance HasImportUnsupported (RemoteConfig -> RemoteGitConfig -> Annex Bool) where
+instance HasImportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool) where
 	importUnsupported = \_ _ -> return False
 
 instance HasImportUnsupported (ImportActions Annex) where
@@ -65,62 +63,67 @@ instance HasImportUnsupported (ImportActions Annex) where
 		, checkPresentExportWithContentIdentifier = \_ _ _ -> return False
 		}
 
-exportIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
+exportIsSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
 exportIsSupported = \_ _ -> return True
 
-importIsSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
+importIsSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
 importIsSupported = \_ _ -> return True
 
 -- | Prevent or allow exporttree=yes and importtree=yes when
 -- setting up a new remote, depending on exportSupported and importSupported.
 adjustExportImportRemoteType :: RemoteType -> RemoteType
-adjustExportImportRemoteType rt = rt { setup = setup' }
+adjustExportImportRemoteType rt = rt
+	{ setup = setup'
+	, configParser = configparser
+	}
   where
-	setup' st mu cp c gc =
-		let checkconfig supported configured configfield cont = do
-			case parseProposedAccepted configfield c yesNo False "yes or no" of
-				Right _ -> noop
-				Left err -> giveup err
-			ifM (supported rt c gc)
+	configparser = configParser rt ++ exportImportConfigParser
+	setup' st mu cp c gc = do
+		pc <- either giveup return $ parseRemoteConfig c configparser
+		let checkconfig supported configured configfield cont =
+			ifM (supported rt pc gc)
 				( case st of
 					Init
-						| configured c && isEncrypted c ->
+						| configured pc && isEncrypted pc ->
 							giveup $ "cannot enable both encryption and " ++ fromProposedAccepted configfield
 						| otherwise -> cont
-					Enable oldc
-						| configured c /= configured oldc ->
-							giveup $ "cannot change " ++ fromProposedAccepted configfield ++ " of existing special remote"
-						| otherwise -> cont
-				, if configured c
+					Enable oldc ->
+						let oldpc = either mempty id $ parseRemoteConfig oldc configparser
+						in if configured pc /= configured oldpc
+							then giveup $ "cannot change " ++ fromProposedAccepted configfield ++ " of existing special remote"
+							else cont
+				, if configured pc
 					then giveup $ fromProposedAccepted configfield ++ " is not supported by this special remote"
 					else cont
 				)
-		in checkconfig exportSupported exportTree exportTreeField $
+		checkconfig exportSupported exportTree exportTreeField $
 			checkconfig importSupported importTree importTreeField $
-				if importTree c && not (exportTree c)
+				if importTree pc && not (exportTree pc)
 					then giveup "cannot enable importtree=yes without also enabling exporttree=yes"
 					else setup rt st mu cp c gc
+
+exportImportConfigParser :: [RemoteConfigParser]
+exportImportConfigParser =
+	[ yesNoParser exportTreeField False
+	, yesNoParser importTreeField False
+	]
 
 -- | Adjust a remote to support exporttree=yes and importree=yes.
 --
 -- Note that all remotes with importree=yes also have exporttree=yes.
 adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote
-adjustExportImport r rs = case M.lookup exportTreeField (config r) of
+adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) of
 	Nothing -> return $ notexport r
-	Just c -> case yesNo (fromProposedAccepted c) of
-		Just True -> ifM (isExportSupported r)
-			( do
-				exportdbv <- prepexportdb
-				r' <- isexport exportdbv
-				if importTree (config r)
-					then isimport r' exportdbv
-					else return r'
-			, return $ notexport r
-			)
-		Just False -> return $ notexport r
-		Nothing -> do
-			warning $ "bad exporttree value for " ++ name r ++ ", assuming not an export"
-			return $ notexport r
+	Just True -> ifM (isExportSupported r)
+		( do
+			exportdbv <- prepexportdb
+			r' <- isexport exportdbv
+			if importTree (config r)
+				then isimport r' exportdbv
+				else return r'
+		, return $ notexport r
+		)
+	Just False -> return $ notexport r
   where
 	notexport r' = notimport r'
 		{ exportActions = exportUnsupported

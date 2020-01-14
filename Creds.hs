@@ -24,7 +24,7 @@ import Annex.Common
 import qualified Annex
 import Types.Creds
 import Types.RemoteConfig
-import Config.RemoteConfig
+import Annex.SpecialRemote.Config
 import Annex.Perms
 import Utility.FileMode
 import Crypto

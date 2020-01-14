@@ -1,11 +1,12 @@
 {- git-annex crypto types
  -
- - Copyright 2011-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Types.Crypto (
+	EncryptionMethod(..),
 	Cipher(..),
 	StorableCipher(..),
 	EncryptedCipherVariant(..),
@@ -20,6 +21,16 @@ module Types.Crypto (
 
 import Utility.Hash
 import Utility.Gpg (KeyIds(..))
+
+import Data.Typeable
+
+data EncryptionMethod
+	= NoneEncryption
+	| SharedEncryption
+	| PubKeyEncryption
+	| SharedPubKeyEncryption
+	| HybridEncryption
+	deriving (Typeable, Eq)
 
 -- XXX ideally, this would be a locked memory region
 data Cipher = Cipher String | MacOnlyCipher String

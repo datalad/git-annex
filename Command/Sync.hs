@@ -43,6 +43,7 @@ import Git.FilePath
 import qualified Remote.Git
 import Config
 import Config.GitConfig
+import Annex.SpecialRemote.Config
 import Config.DynamicConfig
 import Config.Files
 import Annex.Wanted
