@@ -166,23 +166,35 @@ getRemoteConfigValue f m = case M.lookup f m of
 			]
 	Nothing -> Nothing
 
+{- Gets all fields that remoteConfigRestPassthrough matched. -}
+getRemoteConfigPassedThrough :: ParsedRemoteConfig -> M.Map RemoteConfigField String
+getRemoteConfigPassedThrough = M.mapMaybe $ \v ->
+	case cast v of
+		Just (PassedThrough s) -> Just s
+		Nothing -> Nothing
+
+newtype PassedThrough = PassedThrough String
+
 parseRemoteConfig :: RemoteConfig -> RemoteConfigParser -> Either String ParsedRemoteConfig
 parseRemoteConfig c rpc =
 	go [] (M.filterWithKey notaccepted c) (remoteConfigFieldParsers rpc ++ commonFieldParsers)
   where
-	go l c' []
-		| remoteConfigRestPassthrough rpc = Right $ M.fromList $
-			l ++ map (uncurry passthrough) (M.toList c')
-		| M.null c' = Right (M.fromList l)
-		| otherwise = Left $ "Unexpected fields: " ++
-			unwords (map fromProposedAccepted (M.keys c'))
+	go l c' [] =
+		let (passover, leftovers) = partition
+			(remoteConfigRestPassthrough rpc . fst)
+			(M.toList c')
+		in if not (null leftovers)
+			then Left $ "Unexpected fields: " ++
+				unwords (map (fromProposedAccepted . fst) leftovers)
+			else Right $ M.fromList $
+				l ++ map (uncurry passthrough) passover
 	go l c' ((f, p):rest) = do
 		v <- p (M.lookup f c) c
 		case v of
 			Just v' -> go ((f,v'):l) (M.delete f c') rest
 			Nothing -> go l (M.delete f c') rest
 	
-	passthrough f v = (f, RemoteConfigValue (fromProposedAccepted v))
+	passthrough f v = (f, RemoteConfigValue (PassedThrough (fromProposedAccepted v)))
 
 	notaccepted (Proposed _) _ = True
 	notaccepted (Accepted _) _ = False

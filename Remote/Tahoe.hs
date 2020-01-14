@@ -13,7 +13,7 @@
  -
  - Tahoe has its own encryption, so git-annex's encryption is not used.
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -54,16 +54,26 @@ type IntroducerFurl = String
 type Capability = String
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "tahoe"
 	, enumerate = const (findSpecialRemotes "tahoe")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser scsField
+		, optionalStringParser furlField
+		]
 	, setup = tahoeSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+scsField :: RemoteConfigField
+scsField = Accepted "shared-convergence-secret"
+
+furlField :: RemoteConfigField
+furlField = Accepted "introducer-furl"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	hdl <- liftIO $ TahoeHandle
@@ -104,26 +114,23 @@ gen r u c gc rs = do
 
 tahoeSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 tahoeSetup _ mu _ c _ = do
-	furl <- maybe (fromMaybe missingfurl $ M.lookup furlk c) Proposed
+	furl <- maybe (fromMaybe missingfurl $ M.lookup furlField c) Proposed
 		<$> liftIO (getEnv "TAHOE_FURL")
 	u <- maybe (liftIO genUUID) return mu
 	configdir <- liftIO $ defaultTahoeConfigDir u
 	scs <- liftIO $ tahoeConfigure configdir
 		(fromProposedAccepted furl)
-		(fromProposedAccepted <$> (M.lookup scsk c))
-	let c' = case parseProposedAccepted embedCredsField c yesNo False "yes or no" of
-		Right (Just True) -> 
-			flip M.union c $ M.fromList
-				[ (furlk, furl)
-				, (scsk, Proposed scs)
-				]
-		Right _ -> c
-		Left err -> giveup err
+		(fromProposedAccepted <$> (M.lookup scsField c))
+	pc <- either giveup return . parseRemoteConfig c =<< configParser remote
+	let c' = if embedCreds pc
+		then flip M.union c $ M.fromList
+			[ (furlField, furl)
+			, (scsField, Proposed scs)
+			]
+		else c
 	gitConfigSpecialRemote u c' [("tahoe", configdir)]
 	return (c', u)
   where
-	scsk = Accepted "shared-convergence-secret"
-	furlk = Accepted "introducer-furl"
 	missingfurl = giveup "Set TAHOE_FURL to the introducer furl to use."
 
 store :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool

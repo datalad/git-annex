@@ -41,11 +41,11 @@ type RemoteConfigFieldParser = (RemoteConfigField, Maybe (ProposedAccepted Strin
 
 data RemoteConfigParser = RemoteConfigParser
 	{ remoteConfigFieldParsers :: [RemoteConfigFieldParser]
-	, remoteConfigRestPassthrough :: Bool
+	, remoteConfigRestPassthrough :: RemoteConfigField -> Bool
 	}
 
 mkRemoteConfigParser :: Monad m => [RemoteConfigFieldParser] -> m RemoteConfigParser
-mkRemoteConfigParser l = pure (RemoteConfigParser l False)
+mkRemoteConfigParser l = pure (RemoteConfigParser l (const False))
 
 addRemoteConfigParser :: [RemoteConfigFieldParser] -> RemoteConfigParser -> RemoteConfigParser
 addRemoteConfigParser l rpc = rpc { remoteConfigFieldParsers = remoteConfigFieldParsers rpc ++ l }

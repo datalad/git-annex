@@ -1,6 +1,6 @@
 {- Remote on Android device accessed using adb.
  -
- - Copyright 2018-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2018-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import Remote.Helper.ExportImport
 import Annex.UUID
 import Utility.Metered
 import Types.ProposedAccepted
+import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
 import qualified System.FilePath.Posix as Posix
@@ -32,16 +33,26 @@ newtype AndroidSerial = AndroidSerial { fromAndroidSerial :: String }
 newtype AndroidPath = AndroidPath { fromAndroidPath :: FilePath }
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "adb"
 	, enumerate = const (findSpecialRemotes "adb")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser androiddirectoryField
+		, optionalStringParser androidserialField
+		]
 	, setup = adbSetup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+androiddirectoryField :: RemoteConfigField
+androiddirectoryField = Accepted "androiddirectory"
+
+androidserialField :: RemoteConfigField
+androidserialField = Accepted "androidserial"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	let this = Remote
 		{ uuid = u
@@ -113,9 +124,9 @@ adbSetup _ mu _ c gc = do
 	adir <- maybe
 		(giveup "Specify androiddirectory=")
 		(pure . AndroidPath . fromProposedAccepted)
-		(M.lookup (Accepted "androiddirectory") c)
+		(M.lookup androiddirectoryField c)
 	serial <- getserial =<< liftIO enumerateAdbConnected
-	let c' = M.insert (Proposed "androidserial") (Proposed (fromAndroidSerial serial)) c
+	let c' = M.insert androidserialField (Proposed (fromAndroidSerial serial)) c
 
 	(c'', _encsetup) <- encryptionSetup c' gc
 
@@ -133,7 +144,7 @@ adbSetup _ mu _ c gc = do
 	return (c'', u)
   where
 	getserial [] = giveup "adb does not list any connected android devices. Plug in an Android device, or configure adb, and try again.."
-	getserial l = case fromProposedAccepted <$> M.lookup (Accepted "androidserial") c of
+	getserial l = case fromProposedAccepted <$> M.lookup androidserialField c of
 		Nothing -> case l of
 			(s:[]) -> return s
 			_ -> giveup $ unlines $

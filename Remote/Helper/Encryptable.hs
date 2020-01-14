@@ -72,7 +72,7 @@ encryptionConfigs = S.fromList (map fst encryptionConfigParsers)
 parseEncryptionConfig :: RemoteConfig -> Either String ParsedRemoteConfig
 parseEncryptionConfig c = parseRemoteConfig
 	(M.restrictKeys c encryptionConfigs)
-	(RemoteConfigParser encryptionConfigParsers False)
+	(RemoteConfigParser encryptionConfigParsers (const False))
 
 parseEncryptionMethod :: Maybe String -> RemoteConfig -> Either String EncryptionMethod
 parseEncryptionMethod (Just "none") _ = Right NoneEncryption

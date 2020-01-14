@@ -1,6 +1,6 @@
 {- Amazon Glacier remotes.
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import Types.Remote
 import qualified Git
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
@@ -31,16 +32,30 @@ type Vault = String
 type Archive = FilePath
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "glacier"
 	, enumerate = const (findSpecialRemotes "glacier")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser datacenterField
+		, optionalStringParser vaultField
+		, optionalStringParser fileprefixField
+		]
 	, setup = glacierSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+datacenterField :: RemoteConfigField
+datacenterField = Accepted "datacenter"
+	
+vaultField :: RemoteConfigField
+vaultField = Accepted "vault"
+
+fileprefixField :: RemoteConfigField
+fileprefixField = Accepted "fileprefix"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = new <$> remoteCost gc veryExpensiveRemoteCost
   where
 	new cst = Just $ specialRemote' specialcfg c
@@ -100,8 +115,9 @@ glacierSetup' ss u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
+	pc <- either giveup return . parseRemoteConfig fullconfig =<< configParser remote
 	case ss of
-		Init -> genVault fullconfig gc u
+		Init -> genVault pc gc u
 		_ -> return ()
 	gitConfigSpecialRemote u fullconfig [("glacier", "true")]
 	return (fullconfig, u)
@@ -225,21 +241,21 @@ checkKey r k = do
 glacierAction :: Remote -> [CommandParam] -> Annex Bool
 glacierAction r = runGlacier (config r) (gitconfig r) (uuid r)
 
-runGlacier :: RemoteConfig -> RemoteGitConfig -> UUID -> [CommandParam] -> Annex Bool
+runGlacier :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> [CommandParam] -> Annex Bool
 runGlacier c gc u params = go =<< glacierEnv c gc u
   where
 	go Nothing = return False
 	go (Just e) = liftIO $
 		boolSystemEnv "glacier" (glacierParams c params) (Just e)
 
-glacierParams :: RemoteConfig -> [CommandParam] -> [CommandParam]
+glacierParams :: ParsedRemoteConfig -> [CommandParam] -> [CommandParam]
 glacierParams c params = datacenter:params
   where
 	datacenter = Param $ "--region=" ++
-		maybe (giveup "Missing datacenter configuration") fromProposedAccepted
-			(M.lookup (Accepted "datacenter") c)
+		fromMaybe (giveup "Missing datacenter configuration")
+			(getRemoteConfigValue datacenterField c)
 
-glacierEnv :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe [(String, String)])
+glacierEnv :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe [(String, String)])
 glacierEnv c gc u = do
 	liftIO checkSaneGlacierCommand
 	go =<< getRemoteCredPairFor "glacier" c gc creds
@@ -252,17 +268,17 @@ glacierEnv c gc u = do
 	creds = AWS.creds u
 	(uk, pk) = credPairEnvironment creds
 
-getVault :: RemoteConfig -> Vault
-getVault = maybe (giveup "Missing vault configuration") fromProposedAccepted
-	. M.lookup (Accepted "vault")
+getVault :: ParsedRemoteConfig -> Vault
+getVault = fromMaybe (giveup "Missing vault configuration") 
+	. getRemoteConfigValue vaultField
 
 archive :: Remote -> Key -> Archive
 archive r k = fileprefix ++ serializeKey k
   where
-	fileprefix = maybe "" fromProposedAccepted $
-		M.lookup (Accepted "fileprefix") $ config r
+	fileprefix = fromMaybe "" $
+		getRemoteConfigValue fileprefixField $ config r
 
-genVault :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+genVault :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genVault c gc u = unlessM (runGlacier c gc u params) $
 	giveup "Failed creating glacier vault."
   where

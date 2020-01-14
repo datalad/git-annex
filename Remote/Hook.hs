@@ -1,6 +1,6 @@
 {- A remote that provides hooks to run shell commands.
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ import Git.Types (fromConfigKey, fromConfigValue)
 import Config
 import Config.Cost
 import Annex.UUID
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
@@ -28,16 +29,21 @@ type Action = String
 type HookName = String
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "hook"
 	, enumerate = const (findSpecialRemotes "hooktype")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[optionalStringParser hooktypeField]
 	, setup = hookSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+hooktypeField :: RemoteConfigField
+hooktypeField = Accepted "hooktype"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote c
@@ -87,7 +93,7 @@ hookSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> Remot
 hookSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	let hooktype = maybe (giveup "Specify hooktype=") fromProposedAccepted $
-		M.lookup (Accepted "hooktype") c
+		M.lookup hooktypeField c
 	(c', _encsetup) <- encryptionSetup c gc
 	gitConfigSpecialRemote u c' [("hooktype", hooktype)]
 	return (c', u)

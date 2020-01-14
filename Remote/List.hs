@@ -27,14 +27,11 @@ import qualified Git.Config
 import qualified Remote.Git
 import qualified Remote.GCrypt
 import qualified Remote.P2P
-{-
 #ifdef WITH_S3
 import qualified Remote.S3
 #endif
 import qualified Remote.Bup
--}
 import qualified Remote.Directory
-{-
 import qualified Remote.Rsync
 import qualified Remote.Web
 import qualified Remote.BitTorrent
@@ -45,10 +42,9 @@ import qualified Remote.Adb
 import qualified Remote.Tahoe
 import qualified Remote.Glacier
 import qualified Remote.Ddar
--}
 import qualified Remote.GitLFS
-{-
 import qualified Remote.Hook
+{-
 import qualified Remote.External
 -}
 
@@ -57,14 +53,11 @@ remoteTypes = map adjustExportImportRemoteType
 	[ Remote.Git.remote
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote
-{-
 #ifdef WITH_S3
 	, Remote.S3.remote
 #endif
 	, Remote.Bup.remote
--}
 	, Remote.Directory.remote
-{-
 	, Remote.Rsync.remote
 	, Remote.Web.remote
 	, Remote.BitTorrent.remote
@@ -75,10 +68,9 @@ remoteTypes = map adjustExportImportRemoteType
 	, Remote.Tahoe.remote
 	, Remote.Glacier.remote
 	, Remote.Ddar.remote
--}
 	, Remote.GitLFS.remote
-{-
 	, Remote.Hook.remote
+{-
 	, Remote.External.remote
 -}
 	]
