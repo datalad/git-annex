@@ -60,8 +60,8 @@ getChunkConfig c =
 	case getRemoteConfigValue chunksizeField c of
 		Nothing -> case getRemoteConfigValue chunkField c of
 			Nothing -> NoChunks
-			Just v -> readsz UnpaddedChunks (fromProposedAccepted v) chunkField
-		Just v -> readsz LegacyChunks (fromProposedAccepted v) chunksizeField
+			Just v -> readsz UnpaddedChunks v chunkField
+		Just v -> readsz LegacyChunks v chunksizeField
   where
 	readsz mk v f = case readSize dataUnits v of
 		Just size
