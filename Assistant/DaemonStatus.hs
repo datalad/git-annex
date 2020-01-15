@@ -21,6 +21,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Config
 import Config.DynamicConfig
+import Annex.SpecialRemote.Config
 
 import Control.Concurrent.STM
 import System.Posix.Types
