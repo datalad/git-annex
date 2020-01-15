@@ -811,7 +811,6 @@ Executable git-annex
     Config.Files
     Config.DynamicConfig
     Config.GitConfig
-    Config.RemoteConfig
     Config.Smudge
     Creds
     Crypto
