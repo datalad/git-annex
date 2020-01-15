@@ -73,22 +73,24 @@ remote = specialRemoteType $ RemoteType
 	{ typename = "S3"
 	, enumerate = const (findSpecialRemotes "s3")
 	, generate = gen
-	, configParser = mkRemoteConfigParser
-		[ optionalStringParser bucketField
-		, optionalStringParser hostField
-		, optionalStringParser datacenterField
-		, optionalStringParser partsizeField
-		, optionalStringParser storageclassField
-		, optionalStringParser fileprefixField
-		, yesNoParser versioningField False
-		, yesNoParser publicField False
-		, optionalStringParser publicurlField
-		, optionalStringParser protocolField
-		, optionalStringParser portField
-		, optionalStringParser requeststyleField
-		, optionalStringParser mungekeysField
-		]
-		{ remoteConfigRestPassthrough = \f -> isMetaHeader f || isArchiveMetaHeader f
+	, configParser = pure $ RemoteConfigParser
+		{ remoteConfigFieldParsers = 
+			[ optionalStringParser bucketField
+			, optionalStringParser hostField
+			, optionalStringParser datacenterField
+			, optionalStringParser partsizeField
+			, optionalStringParser storageclassField
+			, optionalStringParser fileprefixField
+			, yesNoParser versioningField False
+			, yesNoParser publicField False
+			, optionalStringParser publicurlField
+			, optionalStringParser protocolField
+			, optionalStringParser portField
+			, optionalStringParser requeststyleField
+			, optionalStringParser mungekeysField
+			]
+		, remoteConfigRestPassthrough = \f ->
+			isMetaHeader f || isArchiveMetaHeader f
 		}
 	, setup = s3Setup
 	, exportSupported = exportIsSupported
@@ -191,7 +193,7 @@ gen r u c gc rs = do
 			, appendonly = versioning info
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert hostField (RemoteConfigValue "!dne!") c) gc rs
+			, mkUnavailable = gen r u (M.insert hostField (RemoteConfigValue ("!dne!" :: String)) c) gc rs
 			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c info)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
@@ -205,7 +207,7 @@ s3Setup ss mu mcreds c gc = do
 
 s3Setup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 s3Setup' ss u mcreds c gc
-	| configIA c = archiveorg
+	| maybe False (isIAHost . fromProposedAccepted) (M.lookup hostField c) = archiveorg
 	| otherwise = defaulthost
   where
 	remotename = fromJust (lookupName c)
@@ -218,8 +220,8 @@ s3Setup' ss u mcreds c gc
 		, (Proposed "bucket", Proposed defbucket)
 		]
 
-	use fullconfig info = do
-		enableBucketVersioning ss info fullconfig gc u
+	use fullconfig pc info = do
+		enableBucketVersioning ss info pc gc u
 		gitConfigSpecialRemote u fullconfig [("s3", "true")]
 		return (fullconfig, u)
 
@@ -227,21 +229,22 @@ s3Setup' ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		info <- extractS3Info fullconfig
-		checkexportimportsafe fullconfig info
+		pc <- either giveup return . parseRemoteConfig fullconfig =<< configParser remote
+		info <- extractS3Info pc
+		checkexportimportsafe pc info
 		case ss of
-			Init -> genBucket fullconfig gc u
+			Init -> genBucket pc gc u
 			_ -> return ()
-		use fullconfig info
+		use fullconfig pc info
 
 	archiveorg = do
 		showNote "Internet Archive mode"
 		c' <- setRemoteCredPair noEncryptionUsed c gc (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
-		let validbucket = replace " " "-" $
-			fromMaybe (giveup "specify bucket=")
-				(getBucketName c')
+		let validbucket = replace " " "-" $ map toLower $
+			maybe (giveup "specify bucket=") fromProposedAccepted
+				(M.lookup bucketField c')
 		let archiveconfig = 
 			-- IA acdepts x-amz-* as an alias for x-archive-*
 			M.mapKeys (Proposed . replace "x-archive-" "x-amz-" . fromProposedAccepted) $
@@ -251,12 +254,13 @@ s3Setup' ss u mcreds c gc
 			M.union c' $
 			-- special constraints on key names
 			M.insert (Proposed "mungekeys") (Proposed "ia") defaults
-		info <- extractS3Info archiveconfig
-		checkexportimportsafe archiveconfig info
-		hdl <- mkS3HandleVar archiveconfig gc u
+		pc <- either giveup return . parseRemoteConfig archiveconfig =<< configParser remote
+		info <- extractS3Info pc
+		checkexportimportsafe pc info
+		hdl <- mkS3HandleVar pc gc u
 		withS3HandleOrFail u hdl $
-			writeUUIDFile archiveconfig u info
-		use archiveconfig info
+			writeUUIDFile pc u info
+		use archiveconfig pc info
 	
 	checkexportimportsafe c' info =
 		unlessM (Annex.getState Annex.force) $
@@ -931,8 +935,8 @@ getMetaHeaders = map munge
 isMetaHeader :: RemoteConfigField -> Bool
 isMetaHeader h = metaPrefix `isPrefixOf` fromProposedAccepted h
 
-isArchiveMetaheader :: RemoteConfigField -> Bool
-isArchiveMetaheader h = "x-archive-" `isPrefixOf` fromProposedAccepted h
+isArchiveMetaHeader :: RemoteConfigField -> Bool
+isArchiveMetaHeader h = "x-archive-" `isPrefixOf` fromProposedAccepted h
 
 metaPrefix :: String
 metaPrefix = "x-amz-meta-"
@@ -943,7 +947,7 @@ getFilePrefix = fromMaybe "" . getRemoteConfigValue fileprefixField
 getBucketObject :: ParsedRemoteConfig -> Key -> BucketObject
 getBucketObject c = munge . serializeKey
   where
-	munge s = case getRemoteConfigValue mungekeysField c of
+	munge s = case getRemoteConfigValue mungekeysField c :: Maybe String of
 		Just "ia" -> iaMunge $ getFilePrefix c ++ s
 		_ -> getFilePrefix c ++ s
 
