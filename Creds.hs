@@ -9,6 +9,7 @@ module Creds (
 	module Types.Creds,
 	CredPairStorage(..),
 	setRemoteCredPair,
+	setRemoteCredPair',
 	getRemoteCredPair,
 	getRemoteCredPairFor,
 	missingCredPairFor,
@@ -56,8 +57,20 @@ data CredPairStorage = CredPairStorage
  - cipher. The EncryptionIsSetup is witness to that being the case.
  -}
 setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
-	Nothing -> maybe (return c) (setRemoteCredPair encsetup c gc storage . Just)
+setRemoteCredPair = setRemoteCredPair' id
+	(either (const mempty) id . parseEncryptionConfig)
+
+setRemoteCredPair'
+	:: (ProposedAccepted String -> a)
+	-> (M.Map RemoteConfigField a -> ParsedRemoteConfig)
+	-> EncryptionIsSetup
+	-> M.Map RemoteConfigField a
+	-> RemoteGitConfig
+	-> CredPairStorage
+	-> Maybe CredPair
+	-> Annex (M.Map RemoteConfigField a)
+setRemoteCredPair' mkval parseconfig encsetup c gc storage mcreds = case mcreds of
+	Nothing -> maybe (return c) (setRemoteCredPair' mkval parseconfig encsetup c gc storage . Just)
 		=<< getRemoteCredPair pc gc storage
 	Just creds
 		| embedCreds pc -> do
@@ -75,11 +88,11 @@ setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
 		s <- liftIO $ encrypt cmd (pc, gc) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
-		return $ M.insert key (Accepted (toB64 s)) c
+		return $ M.insert key (mkval (Accepted (toB64 s))) c
 	storeconfig creds key Nothing =
-		return $ M.insert key (Accepted (toB64 $ encodeCredPair creds)) c
+		return $ M.insert key (mkval (Accepted (toB64 $ encodeCredPair creds))) c
 	
-	pc = either (const mempty) id (parseEncryptionConfig c)
+	pc = parseconfig c
 
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the

@@ -44,9 +44,7 @@ import qualified Remote.Glacier
 import qualified Remote.Ddar
 import qualified Remote.GitLFS
 import qualified Remote.Hook
-{-
 import qualified Remote.External
--}
 
 remoteTypes :: [RemoteType]
 remoteTypes = map adjustExportImportRemoteType
@@ -70,9 +68,7 @@ remoteTypes = map adjustExportImportRemoteType
 	, Remote.Ddar.remote
 	, Remote.GitLFS.remote
 	, Remote.Hook.remote
-{-
 	, Remote.External.remote
--}
 	]
 
 {- Builds a list of all available Remotes.

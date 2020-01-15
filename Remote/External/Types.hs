@@ -1,6 +1,6 @@
 {- External special remote data types.
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,7 +37,8 @@ import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
-import Types.Remote (RemoteConfig, RemoteStateHandle)
+import Types.RemoteState
+import Types.RemoteConfig
 import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
@@ -55,12 +56,12 @@ data External = External
 	-- ^ Contains states for external special remote processes
 	-- that are not currently in use.
 	, externalLastPid :: TVar PID
-	, externalDefaultConfig :: RemoteConfig
+	, externalDefaultConfig :: ParsedRemoteConfig
 	, externalGitConfig :: RemoteGitConfig
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	}
 
-newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
+newExternal :: ExternalType -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
 newExternal externaltype u c gc rs = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
@@ -78,7 +79,8 @@ data ExternalState = ExternalState
 	, externalShutdown :: IO ()
 	, externalPid :: PID
 	, externalPrepared :: TVar PrepareStatus
-	, externalConfig :: TVar RemoteConfig
+	, externalConfig :: TVar ParsedRemoteConfig
+	, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
 	}
 
 type PID = Int
