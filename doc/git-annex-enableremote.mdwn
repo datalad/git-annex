@@ -27,7 +27,8 @@ special remote.
   
 Some special remotes may need parameters to be specified every time they are
 enabled. For example, the directory special remote requires a directory=
-parameter every time.
+parameter every time. The command will prompt for any required parameters
+you leave out.
 
 This command can also be used to modify the configuration of an existing
 special remote, by specifying new values for parameters that are
