@@ -188,7 +188,7 @@ parseRemoteConfig c rpc =
 			(remoteConfigRestPassthrough rpc . fst)
 			(M.toList c')
 		in if not (null leftovers)
-			then Left $ "Unexpected fields: " ++
+			then Left $ "Unexpected parameters: " ++
 				unwords (map (fromProposedAccepted . fst) leftovers)
 			else Right $ M.fromList $
 				l ++ map (uncurry passthrough) passover
