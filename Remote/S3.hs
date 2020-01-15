@@ -215,10 +215,10 @@ s3Setup' ss u mcreds c gc
 	defbucket = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
 		[ (datacenterField, Proposed $ T.unpack $ AWS.defaultRegion AWS.S3)
-		, (Proposed "storageclass", Proposed "STANDARD")
-		, (hostField, Proposed  AWS.s3DefaultHost)
-		, (Proposed "port", Proposed "80")
-		, (Proposed "bucket", Proposed defbucket)
+		, (storageclassField, Proposed "STANDARD")
+		, (hostField, Proposed AWS.s3DefaultHost)
+		, (portField, Proposed "80")
+		, (bucketField, Proposed defbucket)
 		]
 
 	use fullconfig pc info = do
@@ -251,10 +251,10 @@ s3Setup' ss u mcreds c gc
 			M.mapKeys (Proposed . replace "x-archive-" "x-amz-" . fromProposedAccepted) $
 			-- encryption does not make sense here
 			M.insert encryptionField (Proposed "none") $
-			M.insert (Accepted "bucket") (Proposed validbucket) $
+			M.insert bucketField (Proposed validbucket) $
 			M.union c' $
 			-- special constraints on key names
-			M.insert (Proposed "mungekeys") (Proposed "ia") defaults
+			M.insert mungekeysField (Proposed "ia") defaults
 		pc <- either giveup return . parseRemoteConfig archiveconfig =<< configParser remote
 		info <- extractS3Info pc
 		checkexportimportsafe pc info

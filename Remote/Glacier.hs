@@ -126,8 +126,8 @@ glacierSetup' ss u mcreds c gc = do
 	remotename = fromJust (lookupName c)
 	defvault = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
-		[ (Proposed "datacenter", Proposed $ T.unpack $ AWS.defaultRegion AWS.Glacier)
-		, (Proposed "vault", Proposed defvault)
+		[ (datacenterField, Proposed $ T.unpack $ AWS.defaultRegion AWS.Glacier)
+		, (vaultField, Proposed defvault)
 		]
 
 prepareStore :: Remote -> Preparer Storer
