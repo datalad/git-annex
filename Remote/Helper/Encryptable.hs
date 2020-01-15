@@ -21,6 +21,8 @@ module Remote.Helper.Encryptable (
 	extractCipher,
 	isEncrypted,
 	describeEncryption,
+	encryptionField,
+	highRandomQualityField
 ) where
 
 import qualified Data.Map as M
@@ -62,8 +64,11 @@ encryptionConfigParsers =
 	, optionalStringParser (Accepted "keyid")
 	, optionalStringParser (Accepted "keyid+")
 	, optionalStringParser (Accepted "keyid-")
-	, (Accepted "highRandomQuality", \v _c -> Just . RemoteConfigValue <$> parseHighRandomQuality (fmap fromProposedAccepted v))
+	, (highRandomQualityField, \v _c -> Just . RemoteConfigValue <$> parseHighRandomQuality (fmap fromProposedAccepted v))
 	]
+
+highRandomQualityField :: RemoteConfigField
+highRandomQualityField = Accepted "highRandomQuality"
 
 encryptionConfigs :: S.Set RemoteConfigField
 encryptionConfigs = S.fromList (map fst encryptionConfigParsers)
@@ -151,7 +156,7 @@ encryptionSetup c gc = do
 		return (storeCipher cipher c', EncryptionIsSetup)
 	highRandomQuality = ifM (Annex.getState Annex.fast)
 		( return False
-		, case parseHighRandomQuality (fromProposedAccepted <$> M.lookup (Accepted "highRandomQuality") c) of
+		, case parseHighRandomQuality (fromProposedAccepted <$> M.lookup highRandomQualityField c) of
 			Left err -> giveup err
 			Right v -> return v
 		)

@@ -24,13 +24,12 @@ import Utility.DataUnits
 import Utility.CopyFile
 import Types.Messages
 import Types.Export
-import Types.ProposedAccepted
 import Types.Crypto
 import Types.RemoteConfig
 import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.ExportImport
 import Remote.Helper.Chunked
-import Remote.Helper.Encryptable (describeEncryption)
+import Remote.Helper.Encryptable (describeEncryption, encryptionField, highRandomQualityField)
 import Git.Types
 
 import Test.Tasty
@@ -124,17 +123,17 @@ perform rs unavailrs exportr ks = do
 
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
 adjustChunkSize r chunksize = adjustRemoteConfig r
-	(M.insert (Proposed "chunk") (RemoteConfigValue (show chunksize)))
+	(M.insert chunkField (RemoteConfigValue (show chunksize)))
 
 -- Variants of a remote with no encryption, and with simple shared
 -- encryption. Gpg key based encryption is not tested.
 encryptionVariants :: Remote -> Annex [Remote]
 encryptionVariants r = do
 	noenc <- adjustRemoteConfig r $
-		M.insert (Proposed "encryption") (RemoteConfigValue NoneEncryption)
+		M.insert encryptionField (RemoteConfigValue NoneEncryption)
 	sharedenc <- adjustRemoteConfig r $
-		M.insert (Proposed "encryption") (RemoteConfigValue SharedEncryption) .
-		M.insert (Proposed "highRandomQuality") (RemoteConfigValue False)
+		M.insert encryptionField (RemoteConfigValue SharedEncryption) .
+		M.insert highRandomQualityField (RemoteConfigValue False)
 	return $ catMaybes [noenc, sharedenc]
 
 -- Variant of a remote with exporttree disabled.
@@ -146,8 +145,8 @@ disableExportTree r = maybe (error "failed disabling exportree") return
 exportTreeVariant :: Remote -> Annex (Maybe Remote)
 exportTreeVariant r = ifM (Remote.isExportSupported r)
 	( adjustRemoteConfig r $
-		M.insert (Proposed "encryption") (RemoteConfigValue NoneEncryption) . 
-		M.insert (Proposed "exporttree") (RemoteConfigValue True)
+		M.insert encryptionField (RemoteConfigValue NoneEncryption) . 
+		M.insert exportTreeField (RemoteConfigValue True)
 	, return Nothing
 	)
 

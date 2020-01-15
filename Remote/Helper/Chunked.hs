@@ -16,6 +16,7 @@ module Remote.Helper.Chunked (
 	removeChunks,
 	retrieveChunks,
 	checkPresentChunks,
+	chunkField,
 ) where
 
 import Annex.Common
