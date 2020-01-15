@@ -12,6 +12,7 @@ module Types.StandardGroups where
 import Types.Remote (RemoteConfig)
 import Types.Group
 import Types.ProposedAccepted
+import Annex.SpecialRemote.Config (preferreddirField)
 
 import qualified Data.Map as M
 
@@ -72,7 +73,7 @@ associatedDirectory _ SmallArchiveGroup = Just "archive"
 associatedDirectory _ FullArchiveGroup = Just "archive"
 associatedDirectory (Just c) PublicGroup = Just $
 	maybe "public" fromProposedAccepted $
-		M.lookup (Accepted "preferreddir") c
+		M.lookup preferreddirField c
 associatedDirectory Nothing PublicGroup = Just "public"
 associatedDirectory _ _ = Nothing
 

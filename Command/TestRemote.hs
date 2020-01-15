@@ -27,6 +27,7 @@ import Types.Export
 import Types.ProposedAccepted
 import Types.Crypto
 import Types.RemoteConfig
+import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.ExportImport
 import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (describeEncryption)
@@ -139,7 +140,7 @@ encryptionVariants r = do
 -- Variant of a remote with exporttree disabled.
 disableExportTree :: Remote -> Annex Remote
 disableExportTree r = maybe (error "failed disabling exportree") return 
-		=<< adjustRemoteConfig r (M.delete (Accepted "exporttree"))
+		=<< adjustRemoteConfig r (M.delete exportTreeField)
 
 -- Variant of a remote with exporttree enabled.
 exportTreeVariant :: Remote -> Annex (Maybe Remote)

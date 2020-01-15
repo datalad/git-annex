@@ -75,15 +75,19 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 perform :: RemoteType -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
 perform t name c o = do
 	dummycfg <- liftIO dummyRemoteGitConfig
-	(c', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) Nothing c dummycfg
-	next $ cleanup u name c' o
+	let c' = M.delete uuidField c
+	(c'', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) Nothing c' dummycfg
+	next $ cleanup u name c'' o
   where
-	uuidfromuser = case fromProposedAccepted <$> M.lookup (Accepted "uuid") c of
+	uuidfromuser = case fromProposedAccepted <$> M.lookup uuidField c of
 		Just s
 			| isUUID s -> Just (toUUID s)
 			| otherwise -> giveup "invalid uuid"
 		Nothing -> Nothing
 	sameasu = toUUID . fromProposedAccepted <$> M.lookup sameasUUIDField c
+
+uuidField :: R.RemoteConfigField
+uuidField = Accepted "uuid"
 
 cleanup :: UUID -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandCleanup
 cleanup u name c o = do

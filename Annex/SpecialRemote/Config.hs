@@ -80,6 +80,9 @@ chunksizeField = Accepted "chunksize"
 embedCredsField :: RemoteConfigField
 embedCredsField = Accepted "embedcreds"
 
+preferreddirField :: RemoteConfigField
+preferreddirField = Accepted "preferreddir"
+
 exportTreeField :: RemoteConfigField
 exportTreeField = Accepted "exporttree"
 
@@ -100,6 +103,7 @@ commonFieldParsers =
 	, optionalStringParser sameasUUIDField
 	, optionalStringParser typeField
 	, trueFalseParser autoEnableField False
+	, optionalStringParser preferreddirField
 	]
 
 {- A remote with sameas-uuid set will inherit these values from the config
