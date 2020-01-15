@@ -37,7 +37,7 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Annex
 import Git.Remote
-import Remote.Helper.Encryptable (extractCipher)
+import Remote.Helper.Encryptable (extractCipher, parseEncryptionConfig)
 import Types.Crypto
 import Utility.Gpg
 import Annex.UUID
@@ -219,13 +219,21 @@ editForm new (RepoUUID uuid)
 				redirect DashboardR
 			_ -> do
 				let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-				config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
+				config <- liftAnnex $ fromMaybe mempty 
+					. M.lookup uuid
+					<$> readRemoteLog
 				let repoInfo = getRepoInfo mremote config
-				let repoEncryption = getRepoEncryption mremote config
+				let repoEncryption = getRepoEncryption mremote (Just config)
 				$(widgetFile "configurators/edit/repository")
 editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 	mr <- liftAnnex (repoIdRemote r)
-	let repoInfo = getRepoInfo mr Nothing
+	let repoInfo = case mr of
+		Just rmt -> do
+			config <- liftAnnex $ fromMaybe mempty
+				. M.lookup (Remote.uuid rmt)
+				<$> readRemoteLog
+			getRepoInfo mr config
+		Nothing -> getRepoInfo Nothing mempty
 	g <- liftAnnex gitRepo
 	mrepo <- liftAnnex $ maybe (pure Nothing) (Just <$$> Remote.getRepo) mr
 	let sshrepo = maybe False (remoteLocationIsSshUrl . flip parseRemoteLocation g . Git.repoLocation) mrepo
@@ -244,17 +252,21 @@ checkAssociatedDirectory cfg (Just r) = do
 			Nothing -> noop
 		_ -> noop
 
-getRepoInfo :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
-getRepoInfo (Just r) (Just c) = case fromProposedAccepted <$> M.lookup typeField c of
-	Just "S3"
+getRepoInfo :: Maybe Remote.Remote -> Remote.RemoteConfig -> Widget
+getRepoInfo (Just r) c = case fromProposedAccepted <$> M.lookup typeField c of
+	Just "S3" -> do
 #ifdef WITH_S3
-		| S3.configIA c -> IA.getRepoInfo c
+		pc <- liftAnnex $ either mempty id . parseRemoteConfig c
+			<$> Remote.configParser S3.remote
+		if S3.configIA pc
+			then IA.getRepoInfo c
+			else AWS.getRepoInfo c
+#else
+		AWS.getRepoInfo c
 #endif
-		| otherwise -> AWS.getRepoInfo c
 	Just t
 		| t /= "git" -> [whamlet|#{t} remote|]
 	_ -> getGitRepoInfo =<< liftAnnex (Remote.getRepo r)
-getRepoInfo (Just r) _ = getRepoInfo (Just r) (Just $ Remote.config r)
 getRepoInfo _ _ = [whamlet|git repository|]
 
 getGitRepoInfo :: Git.Repo -> Widget
@@ -263,7 +275,7 @@ getGitRepoInfo r = do
 	[whamlet|git repository located at <tt>#{loc}</tt>|]
 
 getRepoEncryption :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
-getRepoEncryption (Just _) (Just c) = case extractCipher c of
+getRepoEncryption (Just _) (Just c) = case extractCipher pc of
 	Nothing ->
 		[whamlet|not encrypted|]
 	(Just (SharedCipher _)) ->
@@ -271,6 +283,7 @@ getRepoEncryption (Just _) (Just c) = case extractCipher c of
 	(Just (EncryptedCipher _ _ ks)) -> desckeys ks
 	(Just (SharedPubKeyCipher _ ks)) -> desckeys ks
   where
+	pc = either mempty id $ parseEncryptionConfig c
 	desckeys (KeyIds { keyIds = ks }) = do
 		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 		knownkeys <- liftIO (secretKeys cmd)
