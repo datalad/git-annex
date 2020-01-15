@@ -40,6 +40,7 @@ remote = specialRemoteType $ RemoteType
 		[ optionalStringParser datacenterField
 		, optionalStringParser vaultField
 		, optionalStringParser fileprefixField
+		, optionalStringParser AWS.s3credsField
 		]
 	, setup = glacierSetup
 	, exportSupported = exportUnsupported

@@ -13,6 +13,7 @@ module Remote.Helper.AWS where
 import Annex.Common
 import Creds
 import Types.ProposedAccepted
+import Types.RemoteConfig
 
 import qualified Data.Map as M
 import qualified Data.ByteString as B
@@ -24,8 +25,11 @@ creds :: UUID -> CredPairStorage
 creds u = CredPairStorage
 	{ credPairFile = fromUUID u
 	, credPairEnvironment = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
-	, credPairRemoteField = Accepted "s3creds"
+	, credPairRemoteField = s3credsField
 	}
+
+s3credsField :: RemoteConfigField
+s3credsField = Accepted "s3creds"
 
 data Service = S3 | Glacier
 	deriving (Eq)

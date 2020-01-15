@@ -49,6 +49,7 @@ remote = specialRemoteType $ RemoteType
 	, generate = gen
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser urlField
+		, optionalStringParser davcredsField
 		]
 	, setup = webdavSetup
 	, exportSupported = exportIsSupported
@@ -57,6 +58,9 @@ remote = specialRemoteType $ RemoteType
 
 urlField :: RemoteConfigField
 urlField = Accepted "url"
+
+davcredsField :: RemoteConfigField
+davcredsField = Accepted "davcreds"
 
 gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
@@ -351,7 +355,7 @@ davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
 	{ credPairFile = fromUUID u
 	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
-	, credPairRemoteField = Accepted "davcreds"
+	, credPairRemoteField = davcredsField
 	}
 
 {- Content-Type to use for files uploaded to WebDAV. -}

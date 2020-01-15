@@ -88,6 +88,7 @@ remote = specialRemoteType $ RemoteType
 			, optionalStringParser portField
 			, optionalStringParser requeststyleField
 			, optionalStringParser mungekeysField
+			, optionalStringParser AWS.s3credsField
 			]
 		, remoteConfigRestPassthrough = \f ->
 			isMetaHeader f || isArchiveMetaHeader f
