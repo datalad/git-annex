@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="preferred way to automate population of the cache upon `get`"
+ date="2020-01-13T19:01:07Z"
+ content="""
+```
+# Populating the cache
+For the cache to be used, you need to get file contents into it somehow. A simple way to do that is, in a git-annex repository that already contains the content of files:
+
+    git annex copy --to cache
+
+You could run that anytime after you get content. There are also ways to automate it, but getting some files into the cache manually is a good enough start.
+```
+
+Hi Joey.  What would be the preferred way you would advise to use (ideally with minimal manual configuration) to make it happen? I.e. whenever user(s) `get` some load, it gets automagically `annex copied` to the cache?
+"""]]
