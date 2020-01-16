@@ -1,0 +1,77 @@
+[[!comment format=mdwn
+ username="hans"
+ avatar="http://cdn.libravatar.org/avatar/8bf4f81bbfce61274f5def013dde7083"
+ subject="comment 6"
+ date="2020-01-16T14:22:03Z"
+ content="""
+I have been trying `get` and `copy` and `whereis`. They all report failure and suggest making the remote `a3f8a46a-60fe-58e2-901b-2c093bcc22d -- smdata_encrypted_remote_wd_elements_small` available.
+
+The remote with this name is available -- at least, I can `sync` with it. However, in `.git/config` the `annex-uuid` is `97d51497-158f-54ef-baef-77a720c9d758`.
+
+as far as I can tell -- I'm shooting in the dark here -- that isn't the issue, because if I change the uuid in `.git/config` it still gives the same error, now with the changed uuid.
+
+So, let me review my mental model of this situation, which will hopefully reveal the gaping holes:
+
+normally, content tracking means each repo knows which other repos have copies of the file. In locked mode, as you said, the file is a symlink to the annexed object and if that target is missing the symlink is simply broken. In unlocked mode, the file is present at its correct location but if it is missing it is replaced with a text file with an annex object path as the contents.
+
+So, my content has somehow gone missing.
+
+Not knowing very much about git-annex's internals, my next question would be: how can I look for this content? I can't explore the files in the remote manually, since they are encrypted. This is what happens if I clone that bare repo again:
+
+```
+$mkdir test && cd test
+$git init
+$git remote add origin gcrypt::/media/hans/Elements/smdata_encrypted_remote_wd_elements_small
+$git annex init
+init  ok
+(recording state in git...)
+$git annex whereis demo_beheer.gpkg
+whereis demo_beheer.gpkg (0 copies) failed #ok, so I need to sync first
+$git annex sync
+commit 
+On branch master
+nothing to commit, working tree clean
+ok
+pull origin 
+gcrypt: Decrypting manifest
+gpg: Signature made do 16 jan 2020 14:08:44 CET
+gpg:                using RSA key xxxxxxxxxxxxxxxxxxxxxx
+gpg: Good signature from \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" [ultimate]
+From gcrypt::/media/hans/Elements/smdata_encrypted_remote_wd_elements_small
+ * [new branch]        synced/master    -> origin/synced/master
+ * [new branch]        synced/git-annex -> origin/synced/git-annex
+ * [new branch]        git-annex        -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+push origin 
+gcrypt: Decrypting manifest
+gpg: Signature made do 16 jan 2020 14:08:44 CET
+gpg:                using RSA key xxxxxxxxxxxxx
+gpg: Good signature from \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" [ultimate]
+Enumerating objects: 8, done.
+Counting objects: 100% (8/8), done.
+Compressing objects: 100% (6/6), done.
+Total 8 (delta 1), reused 1 (delta 0)
+gcrypt: Encrypting to: --throw-keyids --default-recipient-self
+gcrypt: Requesting manifest signature
+gpg: using \"xxxxxxxxxxxxxxxxxx\" as default secret key for signing
+To gcrypt::/media/hans/Elements/smdata_encrypted_remote_wd_elements_small
+   10150f10..79a49878  git-annex -> synced/git-annex
+ok
+#try again
+$git annex whereis demo_beheer.gpkg
+whereis demo_beheer.gpkg (1 copy) 
+        a3f8a46a-60fe-58e2-901b-2c093bcc22d3 -- smdata_encrypted_remote_wd_elements_small
+ok
+```
+
+So: the `git-annex` branch is indicating that the content is available in this bare remote, but is that not true? Is there a way for me to determine (with or without git-annex) if the content is actually there or not?
+
+From the speed at which the `git annex get` command returns its error message I get the impression that it's not actually checking the remote, but determining from the local `git-annex` branch that the content is not in the remote. Is that correct? Why does it then suggest making that remote available? In that case, is there a way to figure out if and when the `git-annex` branch logs have diverged from reality, OR alternatively how to find out if there is content in that repository?
+
+What is also really bugging me is that I have the content of some files available in one of my clones, but I can't access them via git-annex. My files are of such a number and format that manually fishing them out of `.git/annex/objects` is not feasible (e.g. shapefiles which consist of about six different files).
+
+
+Finally, the most relevant git-annex command I've been able to find is `git annex unused`, which gives me some interesting information in the bare repository (1900+ unused objects), but `addunused` doesn't seem to  bring things back.
+"""]]
