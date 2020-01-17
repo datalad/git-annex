@@ -177,9 +177,8 @@ externalSetup _ mu _ c gc = do
 			-- Now that we have an external, ask it to LISTCONFIGS, 
 			-- and re-parse the RemoteConfig strictly, so we can
 			-- error out if the user provided an unexpected config.
-			p <- strictRemoteConfigParser external
-			let p' = addRemoteConfigParser specialRemoteConfigParsers p
-			_ <- either giveup return $ parseRemoteConfig c' p'
+			either giveup return . parseRemoteConfig c' 
+				=<< strictRemoteConfigParser external
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 				INITREMOTE_SUCCESS -> result ()
 				INITREMOTE_FAILURE errmsg -> Just $ giveup errmsg
@@ -785,13 +784,14 @@ getInfoM external = (++)
 {- All unknown configs are passed through in case the external program
  - uses them. -}
 lenientRemoteConfigParser :: RemoteConfigParser
-lenientRemoteConfigParser = RemoteConfigParser
-	{ remoteConfigFieldParsers =
-		[ optionalStringParser externaltypeField
-		, trueFalseParser readonlyField False
-		]
-	, remoteConfigRestPassthrough = const True
-	}
+lenientRemoteConfigParser = addRemoteConfigParser specialRemoteConfigParsers $
+	RemoteConfigParser
+		{ remoteConfigFieldParsers =
+			[ optionalStringParser externaltypeField
+			, trueFalseParser readonlyField False
+			]
+		, remoteConfigRestPassthrough = const True
+		}
 
 {- When the remote supports LISTCONFIGS, only accept the ones it listed.
  - When it does not, accept all configs. -}
