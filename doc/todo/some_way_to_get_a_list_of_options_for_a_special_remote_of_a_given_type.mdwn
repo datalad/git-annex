@@ -8,4 +8,4 @@ manpage says
 and indeed I get asked for e.g. encryption to be explicitly specified (why not to default to none). But it would not even complain if I specify some bogus (mistyped etc) option.  I do not see any way (tried different --help's etc) to figure out what options any given special remote actually supports without going online to e.g. https://git-annex.branchable.com/special_remotes/rsync/ for `rsync` special remote.  It makes configuration of special remotes not a trivial matter for new users.  IMHO there should be some way (mentioned in man of initremote and enableremote) to get information about supported by the remote options, e.g. `git annex getremoteopts TYPE` or alike.  I am not sure how it should/would work for custom special remotes since I think protocol ATM doesn't support querying for a list of configuration options.  May be `GETCONFIG` interface command could be extended to return a list with of options with description? or some new command be added?
 
 [[!meta author=yoh]]
-[[!tag projects/repronim]]
+[[!tag projects/datalad]]
