@@ -257,7 +257,7 @@ getRepoInfo (Just r) c = case fromProposedAccepted <$> M.lookup typeField c of
 	Just "S3" -> do
 #ifdef WITH_S3
 		pc <- liftAnnex $ either mempty id . parseRemoteConfig c
-			<$> Remote.configParser S3.remote
+			<$> Remote.configParser S3.remote c
 		if S3.configIA pc
 			then IA.getRepoInfo c
 			else AWS.getRepoInfo c

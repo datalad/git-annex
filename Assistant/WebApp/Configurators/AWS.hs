@@ -171,7 +171,7 @@ getEnableS3R uuid = do
 	isia <- case M.lookup uuid m of
 		Just c -> liftAnnex $ do
 			pc <- either mempty id . parseRemoteConfig c
-				<$> Remote.configParser S3.remote
+				<$> Remote.configParser S3.remote c
 			return $ S3.configIA pc
 		Nothing -> return False
 	if isia

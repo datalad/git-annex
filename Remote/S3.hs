@@ -73,7 +73,7 @@ remote = specialRemoteType $ RemoteType
 	{ typename = "S3"
 	, enumerate = const (findSpecialRemotes "s3")
 	, generate = gen
-	, configParser = pure $ RemoteConfigParser
+	, configParser = const $ pure $ RemoteConfigParser
 		{ remoteConfigFieldParsers = 
 			[ optionalStringParser bucketField
 			, optionalStringParser hostField
@@ -230,7 +230,8 @@ s3Setup' ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		pc <- either giveup return . parseRemoteConfig fullconfig =<< configParser remote
+		pc <- either giveup return . parseRemoteConfig fullconfig
+			=<< configParser remote fullconfig
 		info <- extractS3Info pc
 		checkexportimportsafe pc info
 		case ss of
@@ -255,7 +256,8 @@ s3Setup' ss u mcreds c gc
 			M.union c' $
 			-- special constraints on key names
 			M.insert mungekeysField (Proposed "ia") defaults
-		pc <- either giveup return . parseRemoteConfig archiveconfig =<< configParser remote
+		pc <- either giveup return . parseRemoteConfig archiveconfig
+			=<< configParser remote archiveconfig
 		info <- extractS3Info pc
 		checkexportimportsafe pc info
 		hdl <- mkS3HandleVar pc gc u
@@ -1234,7 +1236,7 @@ enableBucketVersioning ss info _ _ _ = do
 		Enable oldc -> do
 			oldpc <- either (const mempty) id
 				. parseRemoteConfig oldc 
-				<$> configParser remote
+				<$> configParser remote oldc
 			oldinfo <- extractS3Info oldpc
 			when (versioning info /= versioning oldinfo) $
 				giveup "Cannot change versioning= of existing S3 remote."

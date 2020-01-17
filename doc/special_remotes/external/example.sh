@@ -137,7 +137,7 @@ doremove () {
 	local loc="$2"
 
 	# Note that it's not a failure to remove a
-	# fike that is not present.
+	# file that is not present.
 	if [ -e "$loc" ]; then
 		if runcmd rm -f "$loc"; then
 			echo REMOVE-SUCCESS "$key"
@@ -155,6 +155,12 @@ echo VERSION 1
 while read line; do
 	set -- $line
 	case "$1" in
+		LISTCONFIGS)
+			# One CONFIG line for each setting that we GETCONFIG
+			# later.
+			echo CONFIG directory store data here
+			echo CONFIGEND
+		;;
 		INITREMOTE)
 			# Do anything necessary to create resources
 			# used by the remote. Try to be idempotent.

@@ -30,6 +30,7 @@ module Remote.Helper.Special (
 	checkPresentDummy,
 	SpecialRemoteCfg(..),
 	specialRemoteCfg,
+	specialRemoteConfigParsers,
 	specialRemoteType,
 	specialRemote,
 	specialRemote',
@@ -169,8 +170,8 @@ specialRemoteCfg c = SpecialRemoteCfg (getChunkConfig c) True
 -- Modifies a base RemoteType to support chunking and encryption configs.
 specialRemoteType :: RemoteType -> RemoteType
 specialRemoteType r = r 
-	{ configParser = addRemoteConfigParser specialRemoteConfigParsers
-		<$> configParser r
+	{ configParser = \c -> addRemoteConfigParser specialRemoteConfigParsers
+		<$> configParser r c
 	}
 
 specialRemoteConfigParsers :: [RemoteConfigFieldParser]

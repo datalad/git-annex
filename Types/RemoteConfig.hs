@@ -44,8 +44,8 @@ data RemoteConfigParser = RemoteConfigParser
 	, remoteConfigRestPassthrough :: RemoteConfigField -> Bool
 	}
 
-mkRemoteConfigParser :: Monad m => [RemoteConfigFieldParser] -> m RemoteConfigParser
-mkRemoteConfigParser l = pure (RemoteConfigParser l (const False))
+mkRemoteConfigParser :: Monad m => [RemoteConfigFieldParser] -> RemoteConfig -> m RemoteConfigParser
+mkRemoteConfigParser l _ = pure (RemoteConfigParser l (const False))
 
 addRemoteConfigParser :: [RemoteConfigFieldParser] -> RemoteConfigParser -> RemoteConfigParser
 addRemoteConfigParser l rpc = rpc { remoteConfigFieldParsers = remoteConfigFieldParsers rpc ++ l }

@@ -123,7 +123,7 @@ webdavSetup _ mu mcreds c gc = do
 		(return . fromProposedAccepted)
 		(M.lookup urlField c)
 	(c', encsetup) <- encryptionSetup c gc
-	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote
+	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
 	creds <- maybe (getCreds pc gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' [("webdav", "true")]

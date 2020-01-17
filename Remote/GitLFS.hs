@@ -134,7 +134,7 @@ mySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	(c', _encsetup) <- encryptionSetup c gc
-	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote
+	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
 	case (isEncrypted pc, Git.GCrypt.urlPrefix `isPrefixOf` url) of
 		(False, False) -> noop
 		(True, True) -> Remote.GCrypt.setGcryptEncryption pc remotename

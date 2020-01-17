@@ -10,6 +10,8 @@ git-annex (7.20191231) UNRELEASED; urgency=medium
     foo=yes is expected
   * initremote, enableremote: Reject unknown parameters provided to these
     commands.
+  * Added LISTCONFIGS to external special remote protocol. Special remote
+    programs that use GETCONFIG/SETCONFIG are recommended to implement it.
 
  -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2020 12:51:40 -0400
 

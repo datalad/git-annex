@@ -54,8 +54,9 @@ could have its own protocol extension details, but none are currently used.
 	EXTENSIONS 
 
 Next, git-annex will generally send a message telling the special
-remote to start up. (Or it might send an INITREMOTE or EXPORTSUPPORTED,
-or perhaps other things in the future, so don't hardcode this order.)
+remote to start up. (Or it might send an INITREMOTE or EXPORTSUPPORTED or
+LISTCONFIGS, or perhaps other things in the future, so don't hardcode this
+order.)
 
 	PREPARE
 
@@ -116,9 +117,9 @@ The following requests *must* all be supported by the special remote.
     Indicates that INITREMOTE failed.
 * `PREPARE`  
   Tells the remote that it's time to prepare itself to be used.  
-  Only a few requests for details about the remote can come before this.
-  Those include EXTENSIONS, INITREMOTE, and EXPORTSUPPORTED, but others
-  may be added later.
+  Only a few requests for details about the remote can come before this
+  (EXTENSIONS, INITREMOTE, EXPORTSUPPORTED, and LISTCONFIGS,
+  but others may be added later).
   * `PREPARE-SUCCESS`  
     Sent as a response to PREPARE once the special remote is ready for use.
   * `PREPARE-FAILURE ErrorMsg`  
@@ -173,6 +174,19 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     Sent in response to a EXTENSIONS request, the List could be used to indicate
     protocol extensions that the special remote uses, but there are currently
     no such extensions.
+* `LISTCONFIGS`  
+  Requests the remote to return a list of settings it uses (with
+  `GETCONFIG` and `SETCONFIG`). Providing a list makes `git annex initremote`
+  work better, because it can check the user's input, and can also display
+  a list of settings with descriptions. Note that the user is not required
+  to provided all the settings listed here. A block of responses
+  can be made to this, which must always end with `CONFIGSEND`.
+  * `CONFIG Name Description`  
+    Indicates the name and description of a config setting. The description
+    should be reasonably short. Example:
+    "CONFIG directory store data here"
+  * `CONFIGEND`  
+    Indicates the end of the response block.
 * `GETCOST`  
   Requests the remote to return a use cost. Higher costs are more expensive.
   (See Config/Cost.hs for some standard costs.)
@@ -283,6 +297,8 @@ handling a request.
   Gets one of the special remote's configuration settings, which can have
   been passed by the user when running `git annex initremote`, or
   can have been set by a previous SETCONFIG. Can be run at any time.  
+  It's recommended that special remotes that use this implement
+  LISTCONFIGS.
   (git-annex replies with VALUE followed by the value. If the setting is
   not set, the value will be empty.)
 * `SETCREDS Setting User Password`  

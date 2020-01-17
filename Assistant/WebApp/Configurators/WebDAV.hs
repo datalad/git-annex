@@ -63,7 +63,7 @@ postEnableWebDAVR uuid = do
 	mcreds <- liftAnnex $ do
 		dummycfg <- liftIO dummyRemoteGitConfig
 		pc <- either mempty id . parseRemoteConfig c
-			<$> configParser WebDAV.remote
+			<$> configParser WebDAV.remote c
 		getRemoteCredPairFor "webdav" pc dummycfg (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $

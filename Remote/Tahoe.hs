@@ -121,7 +121,7 @@ tahoeSetup _ mu _ c _ = do
 	scs <- liftIO $ tahoeConfigure configdir
 		(fromProposedAccepted furl)
 		(fromProposedAccepted <$> (M.lookup scsField c))
-	pc <- either giveup return . parseRemoteConfig c =<< configParser remote
+	pc <- either giveup return . parseRemoteConfig c =<< configParser remote c
 	let c' = if embedCreds pc
 		then flip M.union c $ M.fromList
 			[ (furlField, furl)

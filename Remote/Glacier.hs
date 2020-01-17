@@ -116,7 +116,8 @@ glacierSetup' ss u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
-	pc <- either giveup return . parseRemoteConfig fullconfig =<< configParser remote
+	pc <- either giveup return . parseRemoteConfig fullconfig
+		=<< configParser remote fullconfig
 	case ss of
 		Init -> genVault pc gc u
 		_ -> return ()

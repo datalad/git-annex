@@ -107,7 +107,7 @@ gen baser u c gc rs = do
 			(Just remotename, Just c') -> do
 				pc <- either giveup return
 					. parseRemoteConfig c'
-					=<< configParser remote
+					=<< configParser remote c'
 				setGcryptEncryption pc remotename
 				storeUUIDIn (remoteConfig baser "uuid") u'
 				setConfig (Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
@@ -217,7 +217,7 @@ gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
 				| otherwise -> error "Another remote with the same name already exists."		
 
 		pc <- either giveup return . parseRemoteConfig c'
-			=<< configParser remote
+			=<< configParser remote c'
 		setGcryptEncryption pc remotename
 
 		{- Run a git fetch and a push to the git repo in order to get

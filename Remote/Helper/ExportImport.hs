@@ -77,10 +77,10 @@ adjustExportImportRemoteType rt = rt
 	, configParser = configparser
 	}
   where
-	configparser = addRemoteConfigParser exportImportConfigParsers 
-		<$> configParser rt
+	configparser c = addRemoteConfigParser exportImportConfigParsers 
+		<$> configParser rt c
 	setup' st mu cp c gc = do
-		pc <- either giveup return . parseRemoteConfig c =<< configparser
+		pc <- either giveup return . parseRemoteConfig c =<< configparser c
 		let checkconfig supported configured configfield cont =
 			ifM (supported rt pc gc)
 				( case st of
@@ -89,7 +89,7 @@ adjustExportImportRemoteType rt = rt
 							giveup $ "cannot enable both encryption and " ++ fromProposedAccepted configfield
 						| otherwise -> cont
 					Enable oldc -> do
-						oldpc <- either mempty id . parseRemoteConfig oldc <$> configparser
+						oldpc <- either mempty id . parseRemoteConfig oldc <$> configparser oldc
 						if configured pc /= configured oldpc
 							then giveup $ "cannot change " ++ fromProposedAccepted configfield ++ " of existing special remote"
 							else cont

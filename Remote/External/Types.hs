@@ -28,6 +28,7 @@ module Remote.External.Types (
 	AsyncMessage(..),
 	ErrorMsg,
 	Setting,
+	Description,
 	ProtocolVersion,
 	supportedProtocolVersions,
 ) where
@@ -51,17 +52,17 @@ import Data.Char
 
 data External = External
 	{ externalType :: ExternalType
-	, externalUUID :: UUID
+	, externalUUID :: Maybe UUID
 	, externalState :: TVar [ExternalState]
 	-- ^ Contains states for external special remote processes
 	-- that are not currently in use.
 	, externalLastPid :: TVar PID
 	, externalDefaultConfig :: ParsedRemoteConfig
-	, externalGitConfig :: RemoteGitConfig
+	, externalGitConfig :: Maybe RemoteGitConfig
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	}
 
-newExternal :: ExternalType -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
+newExternal :: ExternalType -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
 newExternal externaltype u c gc rs = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
@@ -131,6 +132,7 @@ data Request
 	| CHECKPRESENT SafeKey
 	| REMOVE SafeKey
 	| WHEREIS SafeKey
+	| LISTCONFIGS
 	| GETINFO
 	| EXPORTSUPPORTED
 	| EXPORT ExportLocation
@@ -147,6 +149,7 @@ needsPREPARE PREPARE = False
 needsPREPARE (EXTENSIONS _) = False
 needsPREPARE INITREMOTE = False
 needsPREPARE EXPORTSUPPORTED = False
+needsPREPARE LISTCONFIGS = False
 needsPREPARE _ = True
 
 instance Proto.Sendable Request where
@@ -167,6 +170,7 @@ instance Proto.Sendable Request where
 		[ "CHECKPRESENT", Proto.serialize key ]
 	formatMessage (REMOVE key) = [ "REMOVE", Proto.serialize key ]
 	formatMessage (WHEREIS key) = [ "WHEREIS", Proto.serialize key ]
+	formatMessage LISTCONFIGS = [ "LISTCONFIGS" ]
 	formatMessage GETINFO = [ "GETINFO" ]
 	formatMessage EXPORTSUPPORTED = ["EXPORTSUPPORTED"]
 	formatMessage (EXPORT loc) = [ "EXPORT", Proto.serialize loc ]
@@ -211,6 +215,8 @@ data Response
 	| CHECKURL_FAILURE ErrorMsg
 	| WHEREIS_SUCCESS String
 	| WHEREIS_FAILURE
+	| CONFIG Setting Description
+	| CONFIGEND
 	| INFOFIELD String
 	| INFOVALUE String
 	| INFOEND
@@ -245,6 +251,8 @@ instance Proto.Receivable Response where
 	parseCommand "CHECKURL-FAILURE" = Proto.parse1 CHECKURL_FAILURE
 	parseCommand "WHEREIS-SUCCESS" = Just . WHEREIS_SUCCESS
 	parseCommand "WHEREIS-FAILURE" = Proto.parse0 WHEREIS_FAILURE
+	parseCommand "CONFIG" = Proto.parse2 CONFIG
+	parseCommand "CONFIGEND" = Proto.parse0 CONFIGEND
 	parseCommand "INFOFIELD" = Proto.parse1 INFOFIELD
 	parseCommand "INFOVALUE" = Proto.parse1 INFOVALUE
 	parseCommand "INFOEND" = Proto.parse0 INFOEND
@@ -332,6 +340,7 @@ instance Proto.Receivable AsyncMessage where
 -- All are serializable.
 type ErrorMsg = String
 type Setting = String
+type Description = String
 type ProtocolVersion = Int
 type Size = Maybe Integer
 
