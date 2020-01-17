@@ -177,7 +177,7 @@ externalSetup _ mu _ c gc = do
 			-- Now that we have an external, ask it to LISTCONFIGS, 
 			-- and re-parse the RemoteConfig strictly, so we can
 			-- error out if the user provided an unexpected config.
-			either giveup return . parseRemoteConfig c' 
+			_ <- either giveup return . parseRemoteConfig c' 
 				=<< strictRemoteConfigParser external
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 				INITREMOTE_SUCCESS -> result ()
@@ -816,8 +816,11 @@ listConfigs external = handleRequest external LISTCONFIGS Nothing (collect [])
 
 remoteConfigParser :: RemoteConfig -> Annex RemoteConfigParser
 remoteConfigParser c
-	-- No need to ask when there is no config to parse.
-	| M.null c = return lenientRemoteConfigParser
+	-- No need to start the external when there is no config to parse,
+	-- or when everything in the config was already accepted; in those
+	-- cases the lenient parser will do the same thing as the strict
+	-- parser.
+	| M.null (M.filter isproposed c) = return lenientRemoteConfigParser
 	| otherwise = case parseRemoteConfig c lenientRemoteConfigParser of
 		Left _ -> return lenientRemoteConfigParser
 		Right pc -> case (getRemoteConfigValue externaltypeField pc, getRemoteConfigValue readonlyField pc) of
@@ -826,3 +829,6 @@ remoteConfigParser c
 			(Just externaltype, _) -> do
 				external <- newExternal externaltype Nothing pc Nothing Nothing
 				strictRemoteConfigParser external
+  where
+	isproposed (Accepted _) = False
+	isproposed (Proposed _) = True
