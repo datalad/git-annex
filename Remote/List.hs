@@ -110,7 +110,9 @@ remoteGen m t g = do
 	let cu = fromMaybe u $ remoteAnnexConfigUUID gc
 	let rs = RemoteStateHandle cu
 	let c = fromMaybe M.empty $ M.lookup cu m
-	pc <- either mempty id . parseRemoteConfig c <$> configParser t
+	pc <- if null c
+		then pure mempty
+		else either mempty id . parseRemoteConfig c <$> configParser t
 	generate t g u pc gc rs >>= \case
 		Nothing -> return Nothing
 		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r)) rs
