@@ -10,6 +10,7 @@
 module Types.RemoteConfig where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Typeable
 
 import Types.ProposedAccepted
@@ -48,4 +49,10 @@ mkRemoteConfigParser :: Monad m => [RemoteConfigFieldParser] -> RemoteConfig -> 
 mkRemoteConfigParser l _ = pure (RemoteConfigParser l (const False))
 
 addRemoteConfigParser :: [RemoteConfigFieldParser] -> RemoteConfigParser -> RemoteConfigParser
-addRemoteConfigParser l rpc = rpc { remoteConfigFieldParsers = remoteConfigFieldParsers rpc ++ l }
+addRemoteConfigParser l rpc = rpc
+	{ remoteConfigFieldParsers = 
+		remoteConfigFieldParsers rpc ++ filter isnew l
+	}
+  where
+	s = S.fromList (map (\(f, _) -> f) (remoteConfigFieldParsers rpc))
+	isnew (f, _) = not (S.member f s)
