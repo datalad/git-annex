@@ -72,7 +72,10 @@ findType config = maybe unspecified (specified . fromProposedAccepted) $
   where
 	unspecified = Left "Specify the type of remote with type="
 	specified s = case filter (findtype s) remoteTypes of
-		[] -> Left $ "Unknown remote type " ++ s
+		[] -> Left $ "Unknown remote type " ++ s 
+			++ " (pick from: "
+			++ intercalate " " (map typename remoteTypes)
+			++ ")"
 		(t:_) -> Right t
 	findtype s i = typename i == s
 

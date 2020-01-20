@@ -6,10 +6,12 @@ git-annex (7.20191231) UNRELEASED; urgency=medium
   * reinject --known: Fix bug that prevented it from working in a bare repo.
   * Support being used in a git repository that uses sha256 rather than sha1.
   * initremote, enableremote: Be stricter about rejecting invalid
-    configurations for remotes, particularly things like foo=true when
-    foo=yes is expected
-  * initremote, enableremote: Reject unknown parameters provided to these
-    commands.
+    configuration parameters for remotes, particularly things like foo=true
+    when foo=yes is expected.
+  * initremote, enableremote: Reject unknown configuration parameters
+    provided to these commands.
+  * initremote: Added --describe-other-params option, to show additional
+    configuration parameters you might want to set.
   * Added LISTCONFIGS to external special remote protocol. Special remote
     programs that use GETCONFIG/SETCONFIG are recommended to implement it.
 

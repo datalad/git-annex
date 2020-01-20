@@ -16,6 +16,7 @@ import Annex.SpecialRemote
 import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R
+import Types.RemoteConfig
 import Annex.UUID
 import Logs.UUID
 import Logs.Remote
@@ -26,18 +27,24 @@ import Config
 cmd :: Command
 cmd = command "initremote" SectionSetup
 	"creates a special (non-git) remote"
-	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
+	(paramPair paramName $ paramOptional $ paramRepeating paramParamValue)
 	(seek <$$> optParser)
 
 data InitRemoteOptions = InitRemoteOptions
 	{ cmdparams :: CmdParams
 	, sameas :: Maybe (DeferredParse UUID)
+	, describeOtherParams :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser InitRemoteOptions
 optParser desc = InitRemoteOptions
 	<$> cmdParams desc
 	<*> optional parseSameasOption
+	<*> switch
+		( long "describe-other-params"
+		<> short 'p'
+		<> help "describe other configuration parameters for a special remote"
+		)
 
 parseSameasOption :: Parser (DeferredParse UUID)
 parseSameasOption = parseUUIDOption <$> strOption
@@ -67,8 +74,11 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 					(Logs.Remote.keyValToConfig Proposed ws)
 					<$> readRemoteLog
 				t <- either giveup return (findType c)
-				starting "initremote" (ActionItemOther (Just name)) $
-					perform t name c o
+				if describeOtherParams o
+					then startingCustomOutput (ActionItemOther Nothing) $
+						describeOtherParamsFor c t
+					else starting "initremote" (ActionItemOther (Just name)) $
+						perform t name c o
 			)
 	)
 
@@ -100,3 +110,26 @@ cleanup u name c o = do
 			setConfig (remoteConfig c "config-uuid") (fromUUID cu)
 			Logs.Remote.configSet cu c
 	return True
+
+describeOtherParamsFor :: RemoteConfig -> RemoteType -> CommandPerform
+describeOtherParamsFor c t = do
+	cp <- R.configParser t c
+	let l = mapMaybe mk $ filter notinconfig $ remoteConfigFieldParsers cp
+	liftIO $ forM_ l $ \(p, pd, vd) -> do
+		putStrLn p
+		putStrLn ("\t" ++ pd)
+		case vd of
+			Nothing -> return ()
+			Just vd' -> putStrLn $ "\t(" ++ vd' ++ ")"
+	next $ return True
+  where
+	notinconfig fp = not (M.member (parserForField fp) c)
+	mk fp = case fieldDesc fp of
+		HiddenField -> Nothing
+		FieldDesc d -> Just
+			( fromProposedAccepted (parserForField fp)
+			, d
+			, case valueDesc fp of
+				Nothing -> Nothing
+				Just (ValueDesc vd) -> Just vd
+			)
