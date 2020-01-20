@@ -56,19 +56,20 @@ encryptionAlreadySetup = EncryptionIsSetup
 encryptionConfigParsers :: [RemoteConfigFieldParser]
 encryptionConfigParsers =
 	[ encryptionFieldParser
-	, optionalStringParser cipherField
-	, optionalStringParser cipherkeysField
-	, optionalStringParser pubkeysField
+	, optionalStringParser cipherField HiddenField
+	, optionalStringParser cipherkeysField HiddenField
+	, optionalStringParser pubkeysField HiddenField
 	, yesNoParser embedCredsField False
+		(FieldDesc "embed credentials into git repository")
 	, macFieldParser
 	, optionalStringParser (Accepted "keyid")
+		(FieldDesc "gpg key id")
 	, optionalStringParser (Accepted "keyid+")
+		(FieldDesc "add additional gpg key")
 	, optionalStringParser (Accepted "keyid-")
+		(FieldDesc "remove gpg key")
 	, highRandomQualityFieldParser
 	]
-
-highRandomQualityField :: RemoteConfigField
-highRandomQualityField = Accepted "highRandomQuality"
 
 encryptionConfigs :: S.Set RemoteConfigField
 encryptionConfigs = S.fromList (map parserForField encryptionConfigParsers)
@@ -84,30 +85,47 @@ encryptionFieldParser = RemoteConfigFieldParser
 	{ parserForField = encryptionField
 	, valueParser = \v c -> Just . RemoteConfigValue
 		<$> parseEncryptionMethod (fmap fromProposedAccepted v) c
+	, fieldDesc = FieldDesc "how to encrypt data stored in the special remote"
+	, valueDesc = Just $ ValueDesc $
+		intercalate " or " (M.keys encryptionMethods)
 	}
 
+encryptionMethods :: M.Map String EncryptionMethod
+encryptionMethods = M.fromList
+	[ ("none", NoneEncryption)
+	, ("shared", SharedEncryption)
+	, ("hybrid", HybridEncryption)
+	, ("pubkey", PubKeyEncryption)
+	, ("sharedpubkey", SharedPubKeyEncryption)
+	]
+
 parseEncryptionMethod :: Maybe String -> RemoteConfig -> Either String EncryptionMethod
-parseEncryptionMethod (Just "none") _ = Right NoneEncryption
-parseEncryptionMethod (Just "shared") _ = Right SharedEncryption
-parseEncryptionMethod (Just "hybrid") _ = Right HybridEncryption
-parseEncryptionMethod (Just "pubkey") _ = Right PubKeyEncryption
-parseEncryptionMethod (Just "sharedpubkey") _ = Right SharedPubKeyEncryption
+parseEncryptionMethod (Just s) _ = case M.lookup s encryptionMethods of
+	Just em -> Right em
+	Nothing -> Left badEncryptionMethod
 -- Hybrid encryption is the default when a keyid is specified without
 -- an encryption field, or when there's a cipher already but no encryption
 -- field.
 parseEncryptionMethod Nothing c
 	| M.member (Accepted "keyid") c || M.member cipherField c = Right HybridEncryption
-parseEncryptionMethod _ _ = 
-	Left $ "Specify " ++ intercalate " or "
-		(map ((fromProposedAccepted encryptionField ++ "=") ++)
-		["none","shared","hybrid","pubkey", "sharedpubkey"])
-		++ "."
+	| otherwise = Left badEncryptionMethod
+
+badEncryptionMethod :: String
+badEncryptionMethod = "Specify " ++ intercalate " or "
+	(map ((fromProposedAccepted encryptionField ++ "=") ++)
+		(M.keys encryptionMethods))
+	++ "."
+
+highRandomQualityField :: RemoteConfigField
+highRandomQualityField = Accepted "highRandomQuality"
 
 highRandomQualityFieldParser :: RemoteConfigFieldParser
 highRandomQualityFieldParser = RemoteConfigFieldParser
 	{ parserForField = highRandomQualityField
 	, valueParser = \v _c -> Just . RemoteConfigValue
 		<$> parseHighRandomQuality (fmap fromProposedAccepted v)
+	, fieldDesc = HiddenField
+	, valueDesc = Nothing
 	}
  
 parseHighRandomQuality :: Maybe String -> Either String Bool
@@ -120,6 +138,9 @@ macFieldParser :: RemoteConfigFieldParser
 macFieldParser = RemoteConfigFieldParser
 	{ parserForField = macField
 	, valueParser = \v _c -> Just . RemoteConfigValue <$> parseMac v
+	, fieldDesc = FieldDesc "how to encrypt filenames used on the remote"
+	, valueDesc = Just $ ValueDesc $
+		intercalate " or " (M.keys macMap)
 	}
 
 parseMac :: Maybe (ProposedAccepted String) -> Either String Mac

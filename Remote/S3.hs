@@ -76,19 +76,31 @@ remote = specialRemoteType $ RemoteType
 	, configParser = const $ pure $ RemoteConfigParser
 		{ remoteConfigFieldParsers = 
 			[ optionalStringParser bucketField
+				(FieldDesc "name of bucket to store content in")
 			, optionalStringParser hostField
+				(FieldDesc "S3 server hostname (default is Amazon S3)")
 			, optionalStringParser datacenterField
+				(FieldDesc "S3 datacenter to use (US, EU, us-west-1, ..)")
 			, optionalStringParser partsizeField
+				(FieldDesc "part size for multipart upload (eg 1GiB)")
 			, optionalStringParser storageclassField
+				(FieldDesc "storage class, eg STANDARD or REDUCED_REDUNDANCY")
 			, optionalStringParser fileprefixField
+				(FieldDesc "prefix to add to filenames in the bucket")
 			, yesNoParser versioningField False
+				(FieldDesc "enable versioning of bucket content")
 			, yesNoParser publicField False
+				(FieldDesc "allow public read access to the buckey")
 			, optionalStringParser publicurlField
+				(FieldDesc "url that can be used by public to download files")
 			, optionalStringParser protocolField
+				(FieldDesc "http or https")
 			, optionalStringParser portField
+				(FieldDesc "port to connect to")
 			, optionalStringParser requeststyleField
-			, optionalStringParser mungekeysField
-			, optionalStringParser AWS.s3credsField
+				(FieldDesc "for path-style requests, set to \"path\"")
+			, optionalStringParser mungekeysField HiddenField
+			, optionalStringParser AWS.s3credsField HiddenField
 			]
 		, remoteConfigRestPassthrough = \f ->
 			isMetaHeader f || isArchiveMetaHeader f

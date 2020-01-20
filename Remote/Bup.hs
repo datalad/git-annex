@@ -44,7 +44,9 @@ remote = specialRemoteType $ RemoteType
 	, enumerate = const (findSpecialRemotes "buprepo")
 	, generate = gen
 	, configParser = mkRemoteConfigParser
-		[optionalStringParser buprepoField]
+		[ optionalStringParser buprepoField
+			(FieldDesc "(required) bup repository to use")
+		]
 	, setup = bupSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

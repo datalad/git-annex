@@ -41,9 +41,15 @@ data RemoteConfigValue where
 data RemoteConfigFieldParser = RemoteConfigFieldParser
 	{ parserForField :: RemoteConfigField
 	, valueParser :: Maybe (ProposedAccepted String) -> RemoteConfig -> Either String (Maybe RemoteConfigValue)
-	--, fieldDesc :: String
-	--, valueExample :: String
+	, fieldDesc :: FieldDesc
+	, valueDesc :: Maybe ValueDesc
 	}
+
+data FieldDesc
+	= FieldDesc String
+	| HiddenField
+
+newtype ValueDesc = ValueDesc String
 
 data RemoteConfigParser = RemoteConfigParser
 	{ remoteConfigFieldParsers :: [RemoteConfigFieldParser]

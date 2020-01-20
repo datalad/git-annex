@@ -39,7 +39,9 @@ remote = specialRemoteType $ RemoteType
 	, generate = gen
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser androiddirectoryField
+			(FieldDesc "location on the Android device where the files are stored")
 		, optionalStringParser androidserialField
+			(FieldDesc "sometimes needed to specify which Android device to use")
 		]
 	, setup = adbSetup
 	, exportSupported = exportIsSupported

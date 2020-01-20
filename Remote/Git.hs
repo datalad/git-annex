@@ -81,7 +81,9 @@ remote = RemoteType
 	, enumerate = list
 	, generate = gen
 	, configParser = mkRemoteConfigParser
-		[optionalStringParser locationField]
+		[ optionalStringParser locationField
+			(FieldDesc "url of git remote to remember with special remote")
+		]
 	, setup = gitSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

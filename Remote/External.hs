@@ -788,7 +788,9 @@ lenientRemoteConfigParser = addRemoteConfigParser specialRemoteConfigParsers $
 	RemoteConfigParser
 		{ remoteConfigFieldParsers =
 			[ optionalStringParser externaltypeField
+				(FieldDesc "type of external special remote to use")
 			, trueFalseParser readonlyField False
+				(FieldDesc "enable readonly mode")
 			]
 		, remoteConfigRestPassthrough = const True
 		}

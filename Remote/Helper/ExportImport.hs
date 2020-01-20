@@ -106,7 +106,9 @@ adjustExportImportRemoteType rt = rt
 exportImportConfigParsers :: [RemoteConfigFieldParser]
 exportImportConfigParsers =
 	[ yesNoParser exportTreeField False
+		(FieldDesc "export trees of files to this remote")
 	, yesNoParser importTreeField False
+		(FieldDesc "import trees of files from this remote")
 	]
 
 -- | Adjust a remote to support exporttree=yes and importree=yes.

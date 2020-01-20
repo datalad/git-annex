@@ -99,11 +99,15 @@ importTree = fromMaybe False . getRemoteConfigValue importTreeField
 commonFieldParsers :: [RemoteConfigFieldParser]
 commonFieldParsers =
 	[ optionalStringParser nameField
-	, optionalStringParser sameasNameField
-	, optionalStringParser sameasUUIDField
+		(FieldDesc "name for the special remote")
+	, optionalStringParser sameasNameField HiddenField
+	, optionalStringParser sameasUUIDField HiddenField
 	, optionalStringParser typeField
+		(FieldDesc "type of special remote")
 	, trueFalseParser autoEnableField False
+		(FieldDesc "automatically enable special remote")
 	, optionalStringParser preferreddirField
+		(FieldDesc "directory whose content is preferred")
 	]
 
 {- A remote with sameas-uuid set will inherit these values from the config
@@ -204,26 +208,39 @@ parseRemoteConfig c rpc =
 	notaccepted (Proposed _) = True
 	notaccepted (Accepted _) = False
 
-optionalStringParser :: RemoteConfigField -> RemoteConfigFieldParser
-optionalStringParser f = RemoteConfigFieldParser f p
+optionalStringParser :: RemoteConfigField -> FieldDesc -> RemoteConfigFieldParser
+optionalStringParser f fielddesc = RemoteConfigFieldParser
+	{ parserForField = f 
+	, valueParser = p
+	, fieldDesc = fielddesc
+	, valueDesc = Nothing
+	}
   where
 	p (Just v) _c = Right (Just (RemoteConfigValue (fromProposedAccepted v)))
 	p Nothing _c = Right Nothing
 
-yesNoParser :: RemoteConfigField -> Bool -> RemoteConfigFieldParser
-yesNoParser = genParser yesNo "yes or no"
+yesNoParser :: RemoteConfigField -> Bool -> FieldDesc -> RemoteConfigFieldParser
+yesNoParser f v fd = genParser yesNo f v fd
+	(Just (ValueDesc "yes or no"))
 
-trueFalseParser :: RemoteConfigField -> Bool -> RemoteConfigFieldParser
-trueFalseParser = genParser Git.Config.isTrueFalse "true or false"
+trueFalseParser :: RemoteConfigField -> Bool -> FieldDesc -> RemoteConfigFieldParser
+trueFalseParser f v fd = genParser Git.Config.isTrueFalse f v fd
+	(Just (ValueDesc "true or false"))
 
 genParser
 	:: Typeable t
 	=> (String -> Maybe t)
-	-> String -- ^ description of the value
 	-> RemoteConfigField
 	-> t -- ^ fallback value
+	-> FieldDesc
+	-> Maybe ValueDesc
 	-> RemoteConfigFieldParser
-genParser parse desc f fallback = RemoteConfigFieldParser f p
+genParser parse f fallback fielddesc valuedesc = RemoteConfigFieldParser	
+	{ parserForField = f
+	, valueParser = p
+	, fieldDesc = fielddesc
+	, valueDesc = valuedesc
+	}
   where
 	p Nothing _c = Right (Just (RemoteConfigValue fallback))
 	p (Just v) _c = case parse (fromProposedAccepted v) of
@@ -232,4 +249,7 @@ genParser parse desc f fallback = RemoteConfigFieldParser f p
 			Accepted _ -> Right (Just (RemoteConfigValue fallback))
 			Proposed _ -> Left $
 				"Bad value for " ++ fromProposedAccepted f ++
-				" (expected " ++ desc ++ ")"
+				case valuedesc of
+					Just (ValueDesc vd) ->
+						" (expected " ++ vd ++ ")"
+					Nothing -> ""

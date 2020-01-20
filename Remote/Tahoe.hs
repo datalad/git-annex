@@ -60,7 +60,8 @@ remote = specialRemoteType $ RemoteType
 	, generate = gen
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser scsField
-		, optionalStringParser furlField
+			(FieldDesc "optional, normally a unique one is generated")
+		, optionalStringParser furlField HiddenField
 		]
 	, setup = tahoeSetup
 	, exportSupported = exportUnsupported

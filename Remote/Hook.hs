@@ -34,7 +34,9 @@ remote = specialRemoteType $ RemoteType
 	, enumerate = const (findSpecialRemotes "hooktype")
 	, generate = gen
 	, configParser = mkRemoteConfigParser
-		[optionalStringParser hooktypeField]
+		[ optionalStringParser hooktypeField
+			(FieldDesc "(required) specify collection of hooks to use")
+		]
 	, setup = hookSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

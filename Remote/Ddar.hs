@@ -37,7 +37,9 @@ remote = specialRemoteType $ RemoteType
 	, enumerate = const (findSpecialRemotes "ddarrepo")
 	, generate = gen
 	, configParser = mkRemoteConfigParser
-		[optionalStringParser ddarrepoField]
+		[ optionalStringParser ddarrepoField
+			(FieldDesc "(required) location of ddar archive to use")
+		]
 	, setup = ddarSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

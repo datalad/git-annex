@@ -54,6 +54,7 @@ remote = specialRemoteType $ RemoteType
 	, generate = gen
 	, configParser = mkRemoteConfigParser $ rsyncRemoteConfigs ++
 		[ optionalStringParser rsyncUrlField
+			(FieldDesc "(required) url or hostname:/directory for rsync to use")
 		]
 	, setup = rsyncSetup
 	, exportSupported = exportIsSupported
@@ -127,6 +128,7 @@ gen r u c gc rs = do
 rsyncRemoteConfigs :: [RemoteConfigFieldParser]
 rsyncRemoteConfigs = 
 	[ yesNoParser shellEscapeField True
+		(FieldDesc "avoid usual shell escaping (not recommended)")
 	]
 
 genRsyncOpts :: ParsedRemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts

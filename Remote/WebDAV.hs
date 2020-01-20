@@ -49,7 +49,8 @@ remote = specialRemoteType $ RemoteType
 	, generate = gen
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser urlField
-		, optionalStringParser davcredsField
+			(FieldDesc "(required) url to the WebDAV directory")
+		, optionalStringParser davcredsField HiddenField
 		]
 	, setup = webdavSetup
 	, exportSupported = exportIsSupported

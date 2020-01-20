@@ -61,7 +61,9 @@ remote = specialRemoteType $ RemoteType
 	, enumerate = const (return [])
 	, generate = gen
 	, configParser = mkRemoteConfigParser
-		[optionalStringParser urlField]
+		[ optionalStringParser urlField
+			(FieldDesc "url of git-lfs repository")
+		]
 	, setup = mySetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

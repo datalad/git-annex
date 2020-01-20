@@ -68,7 +68,9 @@ remote = specialRemoteType $ RemoteType
 	, generate = gen
 	, configParser = mkRemoteConfigParser $
 		Remote.Rsync.rsyncRemoteConfigs ++
-		[ optionalStringParser gitRepoField ]
+		[ optionalStringParser gitRepoField
+			(FieldDesc "(required) path or url to gcrypt repository")
+		]
 	, setup = gCryptSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

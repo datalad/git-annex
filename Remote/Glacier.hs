@@ -38,9 +38,12 @@ remote = specialRemoteType $ RemoteType
 	, generate = gen
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser datacenterField
+			(FieldDesc "S3 datacenter to use")
 		, optionalStringParser vaultField
+			(FieldDesc "name to use for vault")
 		, optionalStringParser fileprefixField
-		, optionalStringParser AWS.s3credsField
+			(FieldDesc "prefix to add to filenames in the vault")
+		, optionalStringParser AWS.s3credsField HiddenField
 		]
 	, setup = glacierSetup
 	, exportSupported = exportUnsupported

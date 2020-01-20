@@ -43,7 +43,9 @@ remote = specialRemoteType $ RemoteType
 	, enumerate = const (findSpecialRemotes "directory")
 	, generate = gen
 	, configParser = mkRemoteConfigParser
-		[optionalStringParser directoryField]
+		[ optionalStringParser directoryField
+			(FieldDesc "(required) where the special remote stores data")
+		]
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
