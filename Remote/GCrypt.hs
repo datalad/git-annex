@@ -66,8 +66,9 @@ remote = specialRemoteType $ RemoteType
 	-- and will call our gen on them.
 	, enumerate = const (return [])
 	, generate = gen
-	, configParser = mkRemoteConfigParser
-		[optionalStringParser gitRepoField]
+	, configParser = mkRemoteConfigParser $
+		Remote.Rsync.rsyncRemoteConfigs ++
+		[ optionalStringParser gitRepoField ]
 	, setup = gCryptSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported

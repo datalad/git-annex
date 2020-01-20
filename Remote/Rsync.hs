@@ -14,6 +14,7 @@ module Remote.Rsync (
 	remove,
 	checkKey,
 	withRsyncScratchDir,
+	rsyncRemoteConfigs,
 	genRsyncOpts,
 	RsyncOpts
 ) where
@@ -51,9 +52,8 @@ remote = specialRemoteType $ RemoteType
 	{ typename = "rsync"
 	, enumerate = const (findSpecialRemotes "rsyncurl")
 	, generate = gen
-	, configParser = mkRemoteConfigParser
-		[ yesNoParser shellEscapeField True
-		, optionalStringParser rsyncUrlField
+	, configParser = mkRemoteConfigParser $ rsyncRemoteConfigs ++
+		[ optionalStringParser rsyncUrlField
 		]
 	, setup = rsyncSetup
 	, exportSupported = exportIsSupported
@@ -122,6 +122,12 @@ gen r u c gc rs = do
 	specialcfg = (specialRemoteCfg c)
 		-- Rsync displays its own progress.
 		{ displayProgress = False }
+
+-- Things used by genRsyncOpts
+rsyncRemoteConfigs :: [RemoteConfigFieldParser]
+rsyncRemoteConfigs = 
+	[ yesNoParser shellEscapeField True
+	]
 
 genRsyncOpts :: ParsedRemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts
 genRsyncOpts c gc transport url = RsyncOpts
