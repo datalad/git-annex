@@ -792,7 +792,10 @@ lenientRemoteConfigParser = addRemoteConfigParser specialRemoteConfigParsers $
 			, trueFalseParser readonlyField False
 				(FieldDesc "enable readonly mode")
 			]
-		, remoteConfigRestPassthrough = const True
+		, remoteConfigRestPassthrough = Just
+			( const True
+			, [("*", FieldDesc "all other parameters are passed to external special remote program")]
+			)
 		}
 
 {- When the remote supports LISTCONFIGS, only accept the ones it listed.
@@ -804,14 +807,14 @@ strictRemoteConfigParser external = listConfigs external >>= \case
 		let s = S.fromList (map fst l)
 		let listed f = S.member (fromProposedAccepted f) s
 		return $ lenientRemoteConfigParser
-			{ remoteConfigRestPassthrough = listed }
+			{ remoteConfigRestPassthrough = Just (listed, l) }
 
-listConfigs :: External -> Annex (Maybe [(Setting, Description)])
+listConfigs :: External -> Annex (Maybe [(Setting, FieldDesc)])
 listConfigs external = handleRequest external LISTCONFIGS Nothing (collect [])
   where
 	collect l req = case req of
 		CONFIG s d -> Just $ return $
-			GetNextMessage $ collect ((s, d) : l)
+			GetNextMessage $ collect ((s, FieldDesc d) : l)
 		CONFIGEND -> result (Just (reverse l))
 		UNSUPPORTED_REQUEST -> result Nothing
 		_ -> Nothing

@@ -140,4 +140,9 @@ the S3 remote.
   then use the same bucket.
 
 * `x-amz-meta-*` are passed through as http headers when storing keys
-  in S3. see [the Internet Archive S3 interface documentation](https://archive.org/help/abouts3.txt) for example headers.
+  in S3.
+
+* `x-archive-meta-*` are passed through as http headers when storing keys
+  in the Internet Archive. See
+  [the Internet Archive S3 interface documentation](https://archive.org/help/abouts3.txt)
+  for example headers.

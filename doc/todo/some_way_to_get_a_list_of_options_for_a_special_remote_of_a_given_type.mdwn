@@ -9,3 +9,9 @@ and indeed I get asked for e.g. encryption to be explicitly specified (why not t
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] as eg `git annex initremote type=rsync --describe-other-params`.
+> 
+> External special remotes that implement LISTCONFIGS can also be queried:
+> 
+> 	git annex inittype type=external externaltype=foo --describe-other-params

@@ -78,7 +78,7 @@ encryptionConfigs = S.fromList (map parserForField encryptionConfigParsers)
 parseEncryptionConfig :: RemoteConfig -> Either String ParsedRemoteConfig
 parseEncryptionConfig c = parseRemoteConfig
 	(M.restrictKeys c encryptionConfigs)
-	(RemoteConfigParser encryptionConfigParsers (const False))
+	(RemoteConfigParser encryptionConfigParsers Nothing)
 
 encryptionFieldParser :: RemoteConfigFieldParser
 encryptionFieldParser = RemoteConfigFieldParser

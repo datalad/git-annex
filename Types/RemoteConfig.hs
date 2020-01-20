@@ -53,11 +53,11 @@ newtype ValueDesc = ValueDesc String
 
 data RemoteConfigParser = RemoteConfigParser
 	{ remoteConfigFieldParsers :: [RemoteConfigFieldParser]
-	, remoteConfigRestPassthrough :: RemoteConfigField -> Bool
+	, remoteConfigRestPassthrough :: Maybe (RemoteConfigField -> Bool, [(String, FieldDesc)])
 	}
 
 mkRemoteConfigParser :: Monad m => [RemoteConfigFieldParser] -> RemoteConfig -> m RemoteConfigParser
-mkRemoteConfigParser l _ = pure (RemoteConfigParser l (const False))
+mkRemoteConfigParser l _ = pure (RemoteConfigParser l Nothing)
 
 addRemoteConfigParser :: [RemoteConfigFieldParser] -> RemoteConfigParser -> RemoteConfigParser
 addRemoteConfigParser l rpc = rpc

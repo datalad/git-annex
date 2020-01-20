@@ -102,8 +102,13 @@ remote = specialRemoteType $ RemoteType
 			, optionalStringParser mungekeysField HiddenField
 			, optionalStringParser AWS.s3credsField HiddenField
 			]
-		, remoteConfigRestPassthrough = \f ->
-			isMetaHeader f || isArchiveMetaHeader f
+		, remoteConfigRestPassthrough = Just
+			( \f -> isMetaHeader f || isArchiveMetaHeader f
+			,
+				[ ("x-amz-meta-*", FieldDesc "http headers to add when storing on S3")
+				, ("x-archive-meta-*", FieldDesc "http headers to add when storing on Internet Archive")
+			  	]
+			)
 		}
 	, setup = s3Setup
 	, exportSupported = exportIsSupported

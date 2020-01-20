@@ -189,7 +189,7 @@ parseRemoteConfig c rpc =
   where
 	go l c' [] =
 		let (passover, leftovers) = partition
-			(remoteConfigRestPassthrough rpc . fst)
+			(maybe (const False) fst (remoteConfigRestPassthrough rpc) . fst)
 			(M.toList c')
 		    leftovers' = filter (notaccepted . fst) leftovers
 		in if not (null leftovers')

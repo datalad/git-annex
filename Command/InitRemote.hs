@@ -114,22 +114,22 @@ cleanup u name c o = do
 describeOtherParamsFor :: RemoteConfig -> RemoteType -> CommandPerform
 describeOtherParamsFor c t = do
 	cp <- R.configParser t c
-	let l = mapMaybe mk $ filter notinconfig $ remoteConfigFieldParsers cp
-	liftIO $ forM_ l $ \(p, pd, vd) -> do
-		putStrLn p
-		putStrLn ("\t" ++ pd)
-		case vd of
-			Nothing -> return ()
-			Just vd' -> putStrLn $ "\t(" ++ vd' ++ ")"
+	let l = map mk (filter notinconfig $ remoteConfigFieldParsers cp)
+		++ map mk' (maybe [] snd (remoteConfigRestPassthrough cp))
+	liftIO $ forM_ l $ \(p, fd, vd) -> case fd of
+		HiddenField -> return ()
+		FieldDesc d -> do
+			putStrLn p
+			putStrLn ("\t" ++ d)
+			case vd of
+				Nothing -> return ()
+				Just (ValueDesc d') ->
+					putStrLn $ "\t(" ++ d' ++ ")"
 	next $ return True
   where
 	notinconfig fp = not (M.member (parserForField fp) c)
-	mk fp = case fieldDesc fp of
-		HiddenField -> Nothing
-		FieldDesc d -> Just
-			( fromProposedAccepted (parserForField fp)
-			, d
-			, case valueDesc fp of
-				Nothing -> Nothing
-				Just (ValueDesc vd) -> Just vd
-			)
+	mk fp = ( fromProposedAccepted (parserForField fp)
+		, fieldDesc fp
+		, valueDesc fp
+		)
+	mk' (k, v) = (k, v, Nothing)
