@@ -10,8 +10,9 @@ git-annex (7.20191231) UNRELEASED; urgency=medium
     when foo=yes is expected.
   * initremote, enableremote: Reject unknown configuration parameters
     provided to these commands.
-  * initremote: Added --describe-other-params option, to show additional
-    configuration parameters you might want to set.
+  * initremote: Added --whatelse option, to show additional
+    configuration parameters you might want to set. Eg:
+    git annex initremote type=directory encryption=none --whatelse
   * Added LISTCONFIGS to external special remote protocol. Special remote
     programs that use GETCONFIG/SETCONFIG are recommended to implement it.
 

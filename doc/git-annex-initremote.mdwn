@@ -21,7 +21,7 @@ The remote's configuration is specified by the parameters passed
 to this command. Different types of special remotes need different
 configuration values, so consult the documentation of a special remote for
 details. The command will prompt for any required parameters you leave out;
-you can also pass --describe-other-params to see additional parameters.
+you can also pass --whatelse to see additional parameters.
 
 A few parameters that are supported by all special remotes are documented in
 the next section below.
@@ -38,14 +38,14 @@ want to use `git annex renameremote`.
 
 # OPTIONS
 
-* `--describe-other-params` / `-p`
+* `--whatelse` / `-w`
 
   Describe additional configuration parameters that you could specify.
 
   For example, if you know you want a S3 remote, but forget how to
   configure it:
 
-	git annex initremote mys3 type=S3 --describe-other-params
+	git annex initremote mys3 type=S3 --whatelse
 
 * `--fast`
 
@@ -88,7 +88,7 @@ want to use `git annex renameremote`.
   
   For details about this and other encrpytion settings, see
   <https://git-annex.branchable.com/encryption/>
-  or --describe-other-params
+  or --whatelse
 
 * `autoenable`
 

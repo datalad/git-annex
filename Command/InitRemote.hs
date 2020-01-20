@@ -33,7 +33,7 @@ cmd = command "initremote" SectionSetup
 data InitRemoteOptions = InitRemoteOptions
 	{ cmdparams :: CmdParams
 	, sameas :: Maybe (DeferredParse UUID)
-	, describeOtherParams :: Bool
+	, whatElse :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser InitRemoteOptions
@@ -41,8 +41,8 @@ optParser desc = InitRemoteOptions
 	<$> cmdParams desc
 	<*> optional parseSameasOption
 	<*> switch
-		( long "describe-other-params"
-		<> short 'p'
+		( long "whatelse"
+		<> short 'w'
 		<> help "describe other configuration parameters for a special remote"
 		)
 
@@ -74,7 +74,7 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 					(Logs.Remote.keyValToConfig Proposed ws)
 					<$> readRemoteLog
 				t <- either giveup return (findType c)
-				if describeOtherParams o
+				if whatElse o
 					then startingCustomOutput (ActionItemOther Nothing) $
 						describeOtherParamsFor c t
 					else starting "initremote" (ActionItemOther (Just name)) $
