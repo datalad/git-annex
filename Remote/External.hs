@@ -784,19 +784,22 @@ getInfoM external = (++)
 {- All unknown configs are passed through in case the external program
  - uses them. -}
 lenientRemoteConfigParser :: RemoteConfigParser
-lenientRemoteConfigParser = addRemoteConfigParser specialRemoteConfigParsers $
-	RemoteConfigParser
-		{ remoteConfigFieldParsers =
-			[ optionalStringParser externaltypeField
-				(FieldDesc "type of external special remote to use")
-			, trueFalseParser readonlyField False
-				(FieldDesc "enable readonly mode")
-			]
-		, remoteConfigRestPassthrough = Just
-			( const True
-			, [("*", FieldDesc "all other parameters are passed to external special remote program")]
-			)
-		}
+lenientRemoteConfigParser =
+	addRemoteConfigParser specialRemoteConfigParsers baseRemoteConfigParser
+
+baseRemoteConfigParser :: RemoteConfigParser
+baseRemoteConfigParser = RemoteConfigParser
+	{ remoteConfigFieldParsers =
+		[ optionalStringParser externaltypeField
+			(FieldDesc "type of external special remote to use")
+		, trueFalseParser readonlyField False
+			(FieldDesc "enable readonly mode")
+		]
+	, remoteConfigRestPassthrough = Just
+		( const True
+		, [("*", FieldDesc "all other parameters are passed to external special remote program")]
+		)
+	}
 
 {- When the remote supports LISTCONFIGS, only accept the ones it listed.
  - When it does not, accept all configs. -}
@@ -826,7 +829,7 @@ remoteConfigParser c
 	-- cases the lenient parser will do the same thing as the strict
 	-- parser.
 	| M.null (M.filter isproposed c) = return lenientRemoteConfigParser
-	| otherwise = case parseRemoteConfig c lenientRemoteConfigParser of
+	| otherwise = case parseRemoteConfig c baseRemoteConfigParser of
 		Left _ -> return lenientRemoteConfigParser
 		Right pc -> case (getRemoteConfigValue externaltypeField pc, getRemoteConfigValue readonlyField pc) of
 			(Nothing, _) -> return lenientRemoteConfigParser
