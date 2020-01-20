@@ -55,29 +55,36 @@ encryptionAlreadySetup = EncryptionIsSetup
 
 encryptionConfigParsers :: [RemoteConfigFieldParser]
 encryptionConfigParsers =
-	[ (encryptionField, \v c -> Just  . RemoteConfigValue <$> parseEncryptionMethod (fmap fromProposedAccepted v) c)
+	[ encryptionFieldParser
 	, optionalStringParser cipherField
 	, optionalStringParser cipherkeysField
 	, optionalStringParser pubkeysField
 	, yesNoParser embedCredsField False
-	, (macField, \v _c -> Just . RemoteConfigValue <$> parseMac v)
+	, macFieldParser
 	, optionalStringParser (Accepted "keyid")
 	, optionalStringParser (Accepted "keyid+")
 	, optionalStringParser (Accepted "keyid-")
-	, (highRandomQualityField, \v _c -> Just . RemoteConfigValue <$> parseHighRandomQuality (fmap fromProposedAccepted v))
+	, highRandomQualityFieldParser
 	]
 
 highRandomQualityField :: RemoteConfigField
 highRandomQualityField = Accepted "highRandomQuality"
 
 encryptionConfigs :: S.Set RemoteConfigField
-encryptionConfigs = S.fromList (map fst encryptionConfigParsers)
+encryptionConfigs = S.fromList (map parserForField encryptionConfigParsers)
 
 -- Parse only encryption fields, ignoring all others.
 parseEncryptionConfig :: RemoteConfig -> Either String ParsedRemoteConfig
 parseEncryptionConfig c = parseRemoteConfig
 	(M.restrictKeys c encryptionConfigs)
 	(RemoteConfigParser encryptionConfigParsers (const False))
+
+encryptionFieldParser :: RemoteConfigFieldParser
+encryptionFieldParser = RemoteConfigFieldParser
+	{ parserForField = encryptionField
+	, valueParser = \v c -> Just . RemoteConfigValue
+		<$> parseEncryptionMethod (fmap fromProposedAccepted v) c
+	}
 
 parseEncryptionMethod :: Maybe String -> RemoteConfig -> Either String EncryptionMethod
 parseEncryptionMethod (Just "none") _ = Right NoneEncryption
@@ -95,12 +102,25 @@ parseEncryptionMethod _ _ =
 		(map ((fromProposedAccepted encryptionField ++ "=") ++)
 		["none","shared","hybrid","pubkey", "sharedpubkey"])
 		++ "."
+
+highRandomQualityFieldParser :: RemoteConfigFieldParser
+highRandomQualityFieldParser = RemoteConfigFieldParser
+	{ parserForField = highRandomQualityField
+	, valueParser = \v _c -> Just . RemoteConfigValue
+		<$> parseHighRandomQuality (fmap fromProposedAccepted v)
+	}
  
 parseHighRandomQuality :: Maybe String -> Either String Bool
 parseHighRandomQuality Nothing = Right True
 parseHighRandomQuality (Just "false") = Right False
 parseHighRandomQuality (Just "true") = Right True
 parseHighRandomQuality _ = Left "expected highRandomQuality=true/false"
+	
+macFieldParser :: RemoteConfigFieldParser
+macFieldParser = RemoteConfigFieldParser
+	{ parserForField = macField
+	, valueParser = \v _c -> Just . RemoteConfigValue <$> parseMac v
+	}
 
 parseMac :: Maybe (ProposedAccepted String) -> Either String Mac
 parseMac Nothing = Right defaultMac

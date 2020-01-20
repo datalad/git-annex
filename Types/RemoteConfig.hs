@@ -38,7 +38,12 @@ data RemoteConfigValue where
  - Presence of fields that are not included in this list will cause
  - a parse failure.
  -}
-type RemoteConfigFieldParser = (RemoteConfigField, Maybe (ProposedAccepted String) -> RemoteConfig -> Either String (Maybe RemoteConfigValue))
+data RemoteConfigFieldParser = RemoteConfigFieldParser
+	{ parserForField :: RemoteConfigField
+	, valueParser :: Maybe (ProposedAccepted String) -> RemoteConfig -> Either String (Maybe RemoteConfigValue)
+	--, fieldDesc :: String
+	--, valueExample :: String
+	}
 
 data RemoteConfigParser = RemoteConfigParser
 	{ remoteConfigFieldParsers :: [RemoteConfigFieldParser]
@@ -54,5 +59,5 @@ addRemoteConfigParser l rpc = rpc
 		remoteConfigFieldParsers rpc ++ filter isnew l
 	}
   where
-	s = S.fromList (map (\(f, _) -> f) (remoteConfigFieldParsers rpc))
-	isnew (f, _) = not (S.member f s)
+	s = S.fromList (map parserForField (remoteConfigFieldParsers rpc))
+	isnew p = not (S.member (parserForField p) s)

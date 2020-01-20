@@ -193,19 +193,19 @@ parseRemoteConfig c rpc =
 				unwords (map (fromProposedAccepted . fst) leftovers')
 			else Right $ M.fromList $
 				l ++ map (uncurry passthrough) passover
-	go l c' ((f, p):rest) = do
-		v <- p (M.lookup f c) c
-		case v of
-			Just v' -> go ((f,v'):l) (M.delete f c') rest
+	go l c' (p:rest) = do
+		let f = parserForField p
+		(valueParser p) (M.lookup f c) c >>= \case
+			Just v -> go ((f,v):l) (M.delete f c') rest
 			Nothing -> go l (M.delete f c') rest
 	
 	passthrough f v = (f, RemoteConfigValue (PassedThrough (fromProposedAccepted v)))
-
+	
 	notaccepted (Proposed _) = True
 	notaccepted (Accepted _) = False
 
 optionalStringParser :: RemoteConfigField -> RemoteConfigFieldParser
-optionalStringParser f = (f, p)
+optionalStringParser f = RemoteConfigFieldParser f p
   where
 	p (Just v) _c = Right (Just (RemoteConfigValue (fromProposedAccepted v)))
 	p Nothing _c = Right Nothing
@@ -223,7 +223,7 @@ genParser
 	-> RemoteConfigField
 	-> t -- ^ fallback value
 	-> RemoteConfigFieldParser
-genParser parse desc f fallback = (f, p)
+genParser parse desc f fallback = RemoteConfigFieldParser f p
   where
 	p Nothing _c = Right (Just (RemoteConfigValue fallback))
 	p (Just v) _c = case parse (fromProposedAccepted v) of
