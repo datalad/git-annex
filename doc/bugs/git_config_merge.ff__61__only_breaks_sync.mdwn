@@ -1,0 +1,447 @@
+### Please describe the problem.
+
+Having globally configured git-merge to only allow fast forward merges breaks git-annex's sync command. 
+
+### What steps will reproduce the problem?
+
+Run the following script, beware it will change the global git config for `merge.ff`:
+
+```
+#!/bin/sh
+repro() {
+        rm -rf repo-a repo-b
+        mkdir repo-a repo-b
+        ( cd repo-a; git init; git annex init; git remote add repo-b ../repo-b )
+        ( cd repo-b; git init; git annex init; git remote add repo-a ../repo-a )
+
+        # Setup an initial commit a0 in repo-a
+        ( cd repo-a
+          touch a0
+          git add a0
+          git commit -m a0
+          git annex sync
+        )
+
+        # Pull a0 into repo-b and create commit 'b' on top of it
+        ( cd repo-b
+          git annex sync
+          touch b
+          git add b
+          git commit -m b
+        )
+
+        # Back in repo-a create a diverging commit 'a1' and try to sync
+        ( cd repo-a
+          touch a1
+          git add a1
+          git commit -m a1
+          git annex sync -d
+        )
+}
+
+# First try without merge.ff=only
+git config --global --unset merge.ff
+repro; rv=$?
+
+# Now with
+git config --global merge.ff only
+repro || echo "===== Breaks with merge.ff=only ====="
+[ $rv -eq 0 ] && echo "===== Works without merge.ff=only ====="
+```
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version 7.20190129-3 from Debian buster
+
+```
+$ git annex version
+git-annex version: 7.20190129
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+```
+
+### Please provide any additional information below.
+
+A run of the repro script above with `sh -x`:
+
+[[!format sh """
++ git config --global --unset merge.ff
++ repro
++ rm -rf repo-a repo-b
++ mkdir repo-a repo-b
++ cd repo-a
++ git init
+Initialized empty Git repository in /tmp/repo-a/.git/
++ git annex init
+init  ok
+(recording state in git...)
++ git remote add repo-b ../repo-b
++ cd repo-b
++ git init
+Initialized empty Git repository in /tmp/repo-b/.git/
++ git annex init
+init  ok
+(recording state in git...)
++ git remote add repo-a ../repo-a
++ cd repo-a
++ touch a0
++ git add a0
++ git commit -m a0
+[master (root-commit) 6c82d47] a0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 a0
++ git annex sync
+commit 
+On branch master
+nothing to commit, working tree clean
+ok
+pull repo-b 
+remote: Enumerating objects: 4, done.
+remote: Counting objects: 100% (4/4), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (3/3), done.
+From ../repo-b
+ * [new branch]      git-annex  -> repo-b/git-annex
+ok
+(merging repo-b/git-annex into git-annex...)
+(recording state in git...)
+push repo-b 
+Enumerating objects: 12, done.
+Counting objects: 100% (12/12), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (9/9), 805 bytes | 805.00 KiB/s, done.
+Total 9 (delta 1), reused 0 (delta 0)
+To ../repo-b
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
++ cd repo-b
++ git annex sync
+commit 
+On branch master
+
+Initial commit
+
+nothing to commit
+ok
+fatal: ambiguous argument 'refs/heads/master..refs/heads/synced/master': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+pull repo-a 
+From ../repo-a
+ * [new branch]      git-annex     -> repo-a/git-annex
+ * [new branch]      master        -> repo-a/master
+ * [new branch]      synced/master -> repo-a/synced/master
+
+
+Already up to date.
+ok
++ touch b
++ git add b
++ git commit -m b
+[master d3ecbbf] b
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 b
++ cd repo-a
++ touch a1
++ git add a1
++ git commit -m a1
+[master 7c4054b] a1
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 a1
++ git annex sync -d
+[2020-01-21 12:41:12.808810342] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-01-21 12:41:12.810537111] process done ExitSuccess
+[2020-01-21 12:41:12.810623305] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-01-21 12:41:12.812254921] process done ExitSuccess
+[2020-01-21 12:41:12.812457308] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..a2ceb59a5879cdf88bd33104c0ee8ac390b3f62e","--pretty=%H","-n1"]
+[2020-01-21 12:41:12.813939135] process done ExitSuccess
+[2020-01-21 12:41:12.814207234] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-01-21 12:41:12.814533549] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-01-21 12:41:12.820975511] read: git ["config","--null","--list"]
+[2020-01-21 12:41:12.822586611] process done ExitSuccess
+commit 
+[2020-01-21 12:41:12.823337737] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit","-a","-m","git-annex in dxld@Eli:/tmp/repo-a"]
+On branch master
+nothing to commit, working tree clean
+[2020-01-21 12:41:12.851712964] process done ExitFailure 1
+ok
+[2020-01-21 12:41:12.851809058] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-01-21 12:41:12.852844432] process done ExitSuccess
+[2020-01-21 12:41:12.85289997] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-01-21 12:41:12.853966619] process done ExitSuccess
+[2020-01-21 12:41:12.854022004] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/heads/synced/master"]
+[2020-01-21 12:41:12.85488393] process done ExitSuccess
+[2020-01-21 12:41:12.854935336] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:12.85636602] process done ExitSuccess
+pull repo-b 
+[2020-01-21 12:41:12.85658479] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fetch","repo-b"]
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 2 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (2/2), done.
+From ../repo-b
+ * [new branch]      master     -> repo-b/master
+[2020-01-21 12:41:12.869425035] process done ExitSuccess
+[2020-01-21 12:41:12.86951948] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2020-01-21 12:41:12.870907097] process done ExitSuccess
+[2020-01-21 12:41:12.870950213] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/repo-b/master"]
+[2020-01-21 12:41:12.871908557] process done ExitSuccess
+[2020-01-21 12:41:12.871965108] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/repo-b/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:12.873517012] process done ExitSuccess
+[2020-01-21 12:41:12.873627395] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/repo-b/synced/master"]
+[2020-01-21 12:41:12.874965525] process done ExitSuccess
+[2020-01-21 12:41:12.875039117] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/synced/master..refs/remotes/repo-b/synced/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:12.876601605] process done ExitSuccess
+
+[2020-01-21 12:41:12.876699748] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2020-01-21 12:41:12.878506453] process done ExitSuccess
+[2020-01-21 12:41:12.878622705] read: git ["--version"]
+[2020-01-21 12:41:12.879681841] process done ExitSuccess
+[2020-01-21 12:41:12.879787682] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","merge","--no-edit","refs/remotes/repo-b/master","--allow-unrelated-histories"]
+Merge made by the 'recursive' strategy.
+ b | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 b
+[2020-01-21 12:41:12.884914215] process done ExitSuccess
+ok
+[2020-01-21 12:41:12.885012011] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-01-21 12:41:12.886558493] process done ExitSuccess
+[2020-01-21 12:41:12.88678805] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-01-21 12:41:12.888312105] process done ExitSuccess
+[2020-01-21 12:41:12.888486534] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..a2ceb59a5879cdf88bd33104c0ee8ac390b3f62e","--pretty=%H","-n1"]
+[2020-01-21 12:41:12.890100289] process done ExitSuccess
+[2020-01-21 12:41:12.890310425] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2020-01-21 12:41:12.892087109] process done ExitSuccess
+[2020-01-21 12:41:12.892162993] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/repo-b/synced/master"]
+[2020-01-21 12:41:12.893271619] process done ExitSuccess
+[2020-01-21 12:41:12.893323578] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/remotes/repo-b/synced/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:12.894429364] process done ExitSuccess
+push repo-b 
+[2020-01-21 12:41:12.894494807] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","repo-b","+git-annex:synced/git-annex","master:synced/master"]
+Enumerating objects: 6, done.
+Counting objects: 100% (6/6), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 472 bytes | 472.00 KiB/s, done.
+Total 4 (delta 1), reused 0 (delta 0)
+To ../repo-b
+   6c82d47..40d7fc6  master -> synced/master
+[2020-01-21 12:41:12.939565851] process done ExitSuccess
+[2020-01-21 12:41:12.939790389] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","repo-b","git-annex"]
+[2020-01-21 12:41:12.945667784] process done ExitSuccess
+[2020-01-21 12:41:12.945804791] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","repo-b","master"]
+[2020-01-21 12:41:12.960382215] process done ExitFailure 1
+ok
+[2020-01-21 12:41:12.961199639] process done ExitSuccess
+[2020-01-21 12:41:12.961575886] process done ExitSuccess
++ rv=0
++ git config --global merge.ff only
++ repro
++ rm -rf repo-a repo-b
++ mkdir repo-a repo-b
++ cd repo-a
++ git init
+Initialized empty Git repository in /tmp/repo-a/.git/
++ git annex init
+init  ok
+(recording state in git...)
++ git remote add repo-b ../repo-b
++ cd repo-b
++ git init
+Initialized empty Git repository in /tmp/repo-b/.git/
++ git annex init
+init  ok
+(recording state in git...)
++ git remote add repo-a ../repo-a
++ cd repo-a
++ touch a0
++ git add a0
++ git commit -m a0
+[master (root-commit) 250bdc3] a0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 a0
++ git annex sync
+commit 
+On branch master
+nothing to commit, working tree clean
+ok
+pull repo-b 
+warning: no common commits
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 5 (delta 1), reused 0 (delta 0)
+Unpacking objects: 100% (5/5), done.
+From ../repo-b
+ * [new branch]      git-annex  -> repo-b/git-annex
+ok
+(merging repo-b/git-annex into git-annex...)
+(recording state in git...)
+push repo-b 
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (11/11), 1023 bytes | 1023.00 KiB/s, done.
+Total 11 (delta 0), reused 0 (delta 0)
+To ../repo-b
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
++ cd repo-b
++ git annex sync
+commit 
+On branch master
+
+Initial commit
+
+nothing to commit
+ok
+fatal: ambiguous argument 'refs/heads/master..refs/heads/synced/master': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+pull repo-a 
+From ../repo-a
+ * [new branch]      git-annex     -> repo-a/git-annex
+ * [new branch]      master        -> repo-a/master
+ * [new branch]      synced/master -> repo-a/synced/master
+
+
+Already up to date.
+ok
++ touch b
++ git add b
++ git commit -m b
+[master af18b51] b
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 b
++ cd repo-a
++ touch a1
++ git add a1
++ git commit -m a1
+[master 91e5f6f] a1
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 a1
++ git annex sync -d
+[2020-01-21 12:41:13.526664743] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-01-21 12:41:13.52932842] process done ExitSuccess
+[2020-01-21 12:41:13.529400247] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-01-21 12:41:13.530793109] process done ExitSuccess
+[2020-01-21 12:41:13.530950751] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4b03666eac77ff7f709a83289267cc1f28f80391","--pretty=%H","-n1"]
+[2020-01-21 12:41:13.532177334] process done ExitSuccess
+[2020-01-21 12:41:13.532400895] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-01-21 12:41:13.532647616] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-01-21 12:41:13.538048182] read: git ["config","--null","--list"]
+[2020-01-21 12:41:13.539367779] process done ExitSuccess
+commit 
+[2020-01-21 12:41:13.540002284] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit","-a","-m","git-annex in dxld@Eli:/tmp/repo-a"]
+On branch master
+nothing to commit, working tree clean
+[2020-01-21 12:41:13.568174475] process done ExitFailure 1
+ok
+[2020-01-21 12:41:13.568319083] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-01-21 12:41:13.57005936] process done ExitSuccess
+[2020-01-21 12:41:13.5701439] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-01-21 12:41:13.571885769] process done ExitSuccess
+[2020-01-21 12:41:13.571979878] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/heads/synced/master"]
+[2020-01-21 12:41:13.573389866] process done ExitSuccess
+[2020-01-21 12:41:13.573486391] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:13.575824245] process done ExitSuccess
+pull repo-b 
+[2020-01-21 12:41:13.575950332] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fetch","repo-b"]
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 2 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (2/2), done.
+From ../repo-b
+ * [new branch]      master     -> repo-b/master
+[2020-01-21 12:41:13.586295016] process done ExitSuccess
+[2020-01-21 12:41:13.586392073] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2020-01-21 12:41:13.587730993] process done ExitSuccess
+[2020-01-21 12:41:13.5877987] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/repo-b/master"]
+[2020-01-21 12:41:13.588901362] process done ExitSuccess
+[2020-01-21 12:41:13.588969352] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/remotes/repo-b/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:13.5904904] process done ExitSuccess
+[2020-01-21 12:41:13.590563378] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/repo-b/synced/master"]
+[2020-01-21 12:41:13.591686652] process done ExitSuccess
+[2020-01-21 12:41:13.591740872] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/synced/master..refs/remotes/repo-b/synced/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:13.593110565] process done ExitSuccess
+
+[2020-01-21 12:41:13.593182929] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2020-01-21 12:41:13.594562053] process done ExitSuccess
+[2020-01-21 12:41:13.594660841] read: git ["--version"]
+[2020-01-21 12:41:13.595595012] process done ExitSuccess
+[2020-01-21 12:41:13.59568225] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","merge","--no-edit","refs/remotes/repo-b/master","--allow-unrelated-histories"]
+fatal: Not possible to fast-forward, aborting.
+[2020-01-21 12:41:13.597312517] process done ExitFailure 128
+[2020-01-21 12:41:13.597552001] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--unmerged","-z","--","."]
+[2020-01-21 12:41:13.598903873] process done ExitSuccess
+[2020-01-21 12:41:13.598967865] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--deleted","-z","--","."]
+[2020-01-21 12:41:13.600107434] process done ExitSuccess
+failed
+[2020-01-21 12:41:13.600185848] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-01-21 12:41:13.601485474] process done ExitSuccess
+[2020-01-21 12:41:13.601548875] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-01-21 12:41:13.602954053] process done ExitSuccess
+[2020-01-21 12:41:13.603111747] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4b03666eac77ff7f709a83289267cc1f28f80391","--pretty=%H","-n1"]
+[2020-01-21 12:41:13.604578405] process done ExitSuccess
+[2020-01-21 12:41:13.60470379] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2020-01-21 12:41:13.606371207] process done ExitSuccess
+[2020-01-21 12:41:13.606457892] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/repo-b/synced/master"]
+[2020-01-21 12:41:13.607658403] process done ExitSuccess
+[2020-01-21 12:41:13.607726481] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/remotes/repo-b/synced/master..refs/heads/synced/master","--pretty=%H","-n1"]
+[2020-01-21 12:41:13.609097845] process done ExitSuccess
+push repo-b 
+[2020-01-21 12:41:13.60918811] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","repo-b","+git-annex:synced/git-annex","master:synced/master"]
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (2/2), 231 bytes | 231.00 KiB/s, done.
+Total 2 (delta 0), reused 0 (delta 0)
+To ../repo-b
+   250bdc3..91e5f6f  master -> synced/master
+[2020-01-21 12:41:13.651508284] process done ExitSuccess
+[2020-01-21 12:41:13.651669133] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","repo-b","git-annex"]
+[2020-01-21 12:41:13.657342122] process done ExitSuccess
+[2020-01-21 12:41:13.657603861] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","repo-b","master"]
+[2020-01-21 12:41:13.663212647] process done ExitFailure 1
+To ../repo-b
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to '../repo-b'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+ok
+[2020-01-21 12:41:13.663856234] process done ExitSuccess
+[2020-01-21 12:41:13.664249322] process done ExitSuccess
+git-annex: sync: 1 failed
++ echo ===== Breaks with merge.ff=only =====
+===== Breaks with merge.ff=only =====
++ [ 0 -eq 0 ]
++ echo ===== Works without merge.ff=only =====
+===== Works without merge.ff=only =====
+# End of transcript or log.
+"""]]
+
+Notice the call to git-merge, failing:
+
+```
+[2020-01-21 12:41:13.59568225] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","merge","--no-edit","refs/remotes/repo-b/master","--allow-unrelated-histories"]
+fatal: Not possible to fast-forward, aborting.
+```
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure! Using git-annex to keep artifacts in development repos works great usually :)
