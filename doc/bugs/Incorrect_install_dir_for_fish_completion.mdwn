@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+[git-annex Makefile: install-completions](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=Makefile;h=965f53e1fc4a8f6d69041eabaccd759268f6490f;hb=HEAD#l87)
+
+git-annex installs fish completions to the wrong directory. `$(SHAREDIR)/fish/completions` is the directory documented as being exclusive to completions which are shipped in the fish source code; third-party applications installing their own completions are intended to use `$(SHAREDIR)/fish/vendor_completions.d` instead.
+
+See [https://fishshell.com/docs/current/index.html#completion-path](https://fishshell.com/docs/current/index.html#completion-path)
+
+Note that this location can also be obtained in a similar manner to bash-completion:
+
+```
+$ pkg-config bash-completion --variable=completionsdir
+/usr/share/bash-completion/completions
+```
+
+```
+$ pkg-config fish --variable=completionsdir
+/usr/share/fish/vendor_completions.d
+```
+
+### What steps will reproduce the problem?
+
+Run "make install-completions", or install a linux distribution package of git-annex that builds with the current Makefile (Arch Linux or Debian will both show the same issue).
+
+### What version of git-annex are you using? On what operating system?
+
+Arch Linux
+
+git-annex 7.20191230-7
+
+### Please provide any additional information below.
+
+Apparently this is a very common mistake :/ so far I've seen many more projects do this wrong than do it right.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Not a user, just here to help improve cross-distro packaging. :)

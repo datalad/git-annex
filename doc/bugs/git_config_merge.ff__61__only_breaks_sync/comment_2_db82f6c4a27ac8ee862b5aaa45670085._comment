@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="dxld"
+ avatar="http://cdn.libravatar.org/avatar/742547a848e15c9f7fb381191c239141"
+ subject="comment 2"
+ date="2020-01-21T19:28:29Z"
+ content="""
+Honestly I feel like the (perceived) semantics of sync are broken by this behaviour. I would expect git-annex to do what it has to to make what I asked for happen.
+
+I agree that in general it's a good thing not to needlessly override git settings but for the sync command I really don't see any way that not merging can be considered sensible behaviour. To me as a user it just feels like I changed a setting completely unrelated to git-annex-sync and suddenly sync broke.
+
+Consider this: the git-annex-sync(1) man page never actually mentions that it will run git-merge. On the other hand git-pull(1) is very forthcoming with the fact that it's just a shorthand for `git fetch; git merge` so it's obvious to me that settings affecting merge will affect git-pull, not so for sync.
+
+I've been unable to sync my git-annex repos for a couple of months now because of this issue so firmly believe this is a serious usabiliy issue.
+
+At the very least we have a documentation issue here. Though I would still argue the behaviour is bonkers :)
+
+"""]]
