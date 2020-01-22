@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: related: shouldn't git annex try external remotes to download config?"""
+ date="2020-01-22T16:31:16Z"
+ content="""
+No, the external special remote protocol is not aimed at downloading git
+config files. Anyway, this code path is never involved with using 
+special remotes; the uuid of a special remote is known and so there is no
+need to ever download a git config file to discover it.
+"""]]
