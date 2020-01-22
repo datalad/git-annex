@@ -510,7 +510,7 @@ downloadConduit meterupdate req file uo =
 		case r of
 			Right () -> signalsuccess True
 			Left e -> do
-				signalsuccess False
+				() <- signalsuccess False
 				throwM e
 	
 {- Sinks a Response's body to a file. The file can either be opened in
