@@ -248,7 +248,7 @@ tryGitConfigRead autoinit r
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
-			(pipedconfig autoinit, return (Left $ giveup "configlist failed"))
+			(pipedconfig autoinit (Git.repoDescribe r), return (Left $ giveup "configlist failed"))
 			"configlist" [] configlistfields
 		case v of
 			Right r'
@@ -263,23 +263,25 @@ tryGitConfigRead autoinit r
   where
 	haveconfig = not . M.null . Git.config
 
-	pipedconfig mustincludeuuuid cmd params = do
+	pipedconfig mustincludeuuuid configloc cmd params = do
 		v <- liftIO $ Git.Config.fromPipe r cmd params
 		case v of
-			Right (r', val) -> do
+			Right (r', val, _err) -> do
 				unless (isUUIDConfigured r' || S.null val || not mustincludeuuuid) $ do
 					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ "Instead, got: " ++ show val
 					warning $ "This is unexpected; please check the network transport!"
 				return $ Right r'
-			Left l -> return $ Left l
+			Left l -> do
+				warning $ "Unable to parse git config from " ++ configloc
+				return $ Left l
 
 	geturlconfig = Url.withUrlOptions $ \uo -> do
 		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			liftIO $ hClose h
 			let url = Git.repoLocation r ++ "/config"
 			ifM (liftIO $ Url.downloadQuiet nullMeterUpdate url tmpfile uo)
-				( Just <$> pipedconfig False "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+				( Just <$> pipedconfig False url "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return Nothing
 				)
 		case v of

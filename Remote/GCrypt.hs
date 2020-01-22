@@ -56,6 +56,7 @@ import Utility.Tmp
 import Logs.Remote
 import Utility.Gpg
 import Utility.SshHost
+import Utility.Tuple
 import Messages.Progress
 import Types.ProposedAccepted
 
@@ -471,7 +472,7 @@ getGCryptId :: Bool -> Git.Repo -> RemoteGitConfig -> Annex (Maybe Git.GCrypt.GC
 getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
-	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
+	| not fast = extract . liftM fst3 <$> getM (eitherToMaybe <$>)
 		[ Ssh.onRemote NoConsumeStdin r (\f p -> liftIO (Git.Config.fromPipe r f p), return (Left $ error "configlist failed")) "configlist" [] []
 		, getConfigViaRsync r gc
 		]
@@ -480,7 +481,7 @@ getGCryptId fast r gc
 	extract Nothing = (Nothing, r)
 	extract (Just r') = (fromConfigValue <$> Git.Config.getMaybe coreGCryptId r', r')
 
-getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString))
+getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString, S.ByteString))
 getConfigViaRsync r gc = do
 	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
 	opts <- rsynctransport

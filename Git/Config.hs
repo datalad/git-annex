@@ -1,6 +1,6 @@
 {- git repository configuration handling
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import Data.Char
 import qualified System.FilePath.ByteString as P
+import Control.Concurrent.Async
 
 import Common
 import Git
@@ -184,19 +185,22 @@ coreBare = "core.bare"
 
 {- Runs a command to get the configuration of a repo,
  - and returns a repo populated with the configuration, as well as the raw
- - output of the command. -}
-fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, S.ByteString))
+ - output and any standard output of the command. -}
+fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
 fromPipe r cmd params = try $
-	withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		val <- S.hGetContents h
+	withOEHandles createProcessSuccess p $ \(hout, herr) -> do
+		geterr <- async $ S.hGetContents herr
+		getval <- async $ S.hGetContents hout
+		val <- wait getval
+		err <- wait geterr
 		r' <- store val r
-		return (r', val)
+		return (r', val, err)
   where
 	p = proc cmd $ toCommand params
 
 {- Reads git config from a specified file and returns the repo populated
  - with the configuration. -}
-fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, S.ByteString))
+fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
 fromFile r f = fromPipe r "git"
 	[ Param "config"
 	, Param "--file"
