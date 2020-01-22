@@ -261,7 +261,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just (toRawFilePath file)))
   where
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
-	downloader f p = downloadUrl urlkey p [url] f
+	downloader f p = Url.withUrlOptions $ downloadUrl urlkey p [url] f
 	go Nothing = return Nothing
 	-- If we downloaded a html file, try to use youtube-dl to
 	-- extract embedded media.

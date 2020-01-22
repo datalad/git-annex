@@ -1,6 +1,6 @@
 {- git credential interface
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,23 @@ credentialUsername = M.lookup "username" . fromCredential
 
 credentialPassword :: Credential -> Maybe String
 credentialPassword = M.lookup "password" . fromCredential
+
+credentialBasicAuth :: Credential -> Maybe BasicAuth
+credentialBasicAuth cred = BasicAuth
+	<$> credentialUsername cred
+	<*> credentialPassword cred
+
+getBasicAuthFromCredential :: Repo -> GetBasicAuth
+getBasicAuthFromCredential r u = do
+	c <- getUrlCredential u r
+	case credentialBasicAuth c of
+		Just ba -> return $ Just (ba, signalsuccess c)
+		Nothing -> do
+			signalsuccess c False
+			return Nothing
+  where
+	signalsuccess c True = approveUrlCredential c r
+	signalsuccess c False = rejectUrlCredential c r
 
 -- | This may prompt the user for login information, or get cached login
 -- information.

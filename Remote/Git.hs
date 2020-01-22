@@ -276,7 +276,7 @@ tryGitConfigRead autoinit r
 				warning $ "Unable to parse git config from " ++ configloc
 				return $ Left l
 
-	geturlconfig = Url.withUrlOptions $ \uo -> do
+	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
 		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			liftIO $ hClose h
 			let url = Git.repoLocation r ++ "/config"
@@ -382,7 +382,7 @@ inAnnex' repo rmt (State connpool duc _ _) key
 	checkhttp = do
 		showChecking repo
 		gc <- Annex.getGitConfig
-		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
+		ifM (Url.withUrlOptionsPromptingCreds $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
 			( return True
 			, giveup "not found"
 			)
@@ -514,7 +514,8 @@ copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile
 copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meterupdate
 	| Git.repoIsHttp repo = unVerified $ do
 		gc <- Annex.getGitConfig
-		Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
+		Url.withUrlOptionsPromptingCreds $
+			Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
 	| not $ Git.repoIsUrl repo = guardUsable repo (unVerified (return False)) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID

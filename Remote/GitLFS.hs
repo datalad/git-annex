@@ -37,6 +37,7 @@ import Crypto
 import Backend.Hash
 import Utility.Hash
 import Utility.SshHost
+import Utility.Url
 import Logs.Remote
 import Logs.RemoteState
 import qualified Utility.GitLFS as LFS
@@ -283,7 +284,7 @@ discoverLFSEndpoint tro h
 				if needauth (responseStatus resp)
 					then do
 						cred <- prompt $ inRepo $ Git.getUrlCredential (show lfsrepouri)
-						let endpoint' = addbasicauth cred endpoint
+						let endpoint' = addbasicauth (Git.credentialBasicAuth cred) endpoint
 						let testreq' = LFS.startTransferRequest endpoint' transfernothing
 						flip catchNonAsync (const (returnendpoint endpoint')) $ do
 						resp' <- makeSmallAPIRequest testreq'
@@ -303,12 +304,10 @@ discoverLFSEndpoint tro h
 
 		needauth status = status == unauthorized401
 
-		addbasicauth cred endpoint =
-			case (Git.credentialUsername cred, Git.credentialPassword cred) of
-				(Just u, Just p) ->
-					LFS.modifyEndpointRequest endpoint $
-						applyBasicAuth (encodeBS u) (encodeBS p)
-				_ -> endpoint
+		addbasicauth (Just ba) endpoint =
+			LFS.modifyEndpointRequest endpoint $
+				applyBasicAuth' ba
+		addbasicauth Nothing endpoint = endpoint
 
 -- The endpoint is cached for later use.
 getLFSEndpoint :: LFS.TransferRequestOperation -> TVar LFSHandle -> Annex (Maybe LFS.Endpoint)

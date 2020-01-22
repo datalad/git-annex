@@ -780,13 +780,12 @@ saveState nocommit = doSideAction $ do
 
 {- Downloads content from any of a list of urls, displaying a progress
  - meter. -}
-downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Annex Bool
-downloadUrl k p urls file = 
+downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Url.UrlOptions -> Annex Bool
+downloadUrl k p urls file uo = 
 	-- Poll the file to handle configurations where an external
 	-- download command is used.
 	meteredFile file (Just p) k $
-		Url.withUrlOptions $ \uo -> 
-			anyM (\u -> Url.download p u file uo) urls
+		anyM (\u -> Url.download p u file uo) urls
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

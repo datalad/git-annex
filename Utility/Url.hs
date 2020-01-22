@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -8,6 +8,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Utility.Url (
 	newManager,
@@ -35,6 +36,10 @@ module Utility.Url (
 	parseURIRelaxed,
 	matchStatusCodeException,
 	matchHttpExceptionContent,
+	BasicAuth(..),
+	GetBasicAuth,
+	noBasicAuth,
+	applyBasicAuth',
 ) where
 
 import Common
@@ -84,6 +89,7 @@ data UrlOptions = UrlOptions
 	, applyRequest :: Request -> Request
 	, httpManager :: Manager
 	, allowedSchemes :: S.Set Scheme
+	, getBasicAuth :: GetBasicAuth
 	}
 
 data UrlDownloader
@@ -101,10 +107,11 @@ defUrlOptions = UrlOptions
 	<*> pure id
 	<*> newManager tlsManagerSettings
 	<*> pure (S.fromList $ map mkScheme ["http", "https", "ftp"])
+	<*> pure noBasicAuth
 
-mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> UrlOptions
-mkUrlOptions defuseragent reqheaders urldownloader manager =
-	UrlOptions useragent reqheaders urldownloader applyrequest manager
+mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> GetBasicAuth -> UrlOptions
+mkUrlOptions defuseragent reqheaders urldownloader manager getbasicauth =
+	UrlOptions useragent reqheaders urldownloader applyrequest manager getbasicauth
   where
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
@@ -197,14 +204,14 @@ getUrlInfo url uo = case parseURIRelaxed url of
 	Nothing -> return (Right dne)
    where
 	go :: URI -> IO (Either String UrlInfo)
-	go u = case (urlDownloader uo, parseUrlRequest (show u)) of
+	go u = case (urlDownloader uo, parseRequest (show u)) of
 		(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
 			-- When http redirects to a protocol which 
 			-- conduit does not support, it will throw
 			-- a StatusCodeException with found302
 			-- and a Response with the redir Location.
 			(matchStatusCodeException (== found302))
-			(Right <$> existsconduit req)
+			(Right <$> existsconduit req uo)
 			(followredir r)
 				`catchNonAsync` (const $ return $ Right dne)
 		(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
@@ -243,18 +250,28 @@ getUrlInfo url uo = case parseURIRelaxed url of
 	extractfilename = contentDispositionFilename . B8.toString
 		<=< lookup hContentDisposition . responseHeaders
 
-	existsconduit req = do
+	existsconduit req uo' = do
 		let req' = headRequest (applyRequest uo req)
 		debugM "url" (show req')
-		runResourceT $ do
+		join $ runResourceT $ do
 			resp <- http req' (httpManager uo)
 			-- forces processing the response while
 			-- within the runResourceT
 			liftIO $ if responseStatus resp == ok200
-				then found
-					(extractlen resp)
-					(extractfilename resp)
-				else return dne
+				then do
+					let !len = extractlen resp
+					let !fn = extractfilename resp
+					return $ found len fn
+				else if responseStatus resp == unauthorized401
+					then return $ getBasicAuth uo' (show (getUri req)) >>= \case
+						Nothing -> return dne
+						Just (ba, signalsuccess) -> do
+							ui <- existsconduit
+								(applyBasicAuth' ba req)							
+								(uo' { getBasicAuth = noBasicAuth })
+							signalsuccess (urlExists ui)
+							return ui
+					else return $ return dne
 
 	existscurl u curlparams = do
 		output <- catchDefaultIO "" $
@@ -284,6 +301,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 				sz <- getFileSize' f stat
 				found (Just sz) Nothing
 			Nothing -> return dne
+	
 	followredir r (HttpExceptionRequest _ (StatusCodeException resp _)) = 
 		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of
 			Just url' -> case parseURIRelaxed url' of
@@ -334,7 +352,7 @@ download' nocurlerror meterupdate url file uo =
   where
 	go = case parseURIRelaxed url of
 		Just u -> checkPolicy uo u $
-			case (urlDownloader uo, parseUrlRequest (show u)) of
+			case (urlDownloader uo, parseRequest (show u)) of
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
 					(matchStatusCodeException (== found302))
 					(downloadConduit meterupdate req file uo >> return (Right ()))
@@ -416,12 +434,18 @@ downloadConduit :: MeterUpdate -> Request -> FilePath -> UrlOptions -> IO ()
 downloadConduit meterupdate req file uo =
 	catchMaybeIO (getFileSize file) >>= \case
 		Just sz | sz > 0 -> resumedownload sz
-		_ -> runResourceT $ do
+		_ -> join $ runResourceT $ do
 			liftIO $ debugM "url" (show req')
 			resp <- http req' (httpManager uo)
 			if responseStatus resp == ok200
-				then store zeroBytesProcessed WriteMode resp
-				else respfailure resp
+				then do
+					store zeroBytesProcessed WriteMode resp
+					return (return ())
+				else if responseStatus resp == unauthorized401
+					then return $ getBasicAuth uo (show (getUri req')) >>= \case
+						Nothing -> respfailure resp
+						Just ba -> retryauthed ba
+					else return $ respfailure resp
   where
 	req' = applyRequest uo $ req
 		-- Override http-client's default decompression of gzip
@@ -440,15 +464,23 @@ downloadConduit meterupdate req file uo =
 		dl
 		(const noop)
 	  where
-		dl = runResourceT $ do
+		dl = join $ runResourceT $ do
 			let req'' = req' { requestHeaders = resumeFromHeader sz : requestHeaders req }
 			liftIO $ debugM "url" (show req'')
 			resp <- http req'' (httpManager uo)
 			if responseStatus resp == partialContent206
-				then store (toBytesProcessed sz) AppendMode resp
+				then do
+					store (toBytesProcessed sz) AppendMode resp
+					return (return ())
 				else if responseStatus resp == ok200
-					then store zeroBytesProcessed WriteMode resp
-					else respfailure resp
+					then do
+						store zeroBytesProcessed WriteMode resp
+						return (return ())
+					else if responseStatus resp == unauthorized401
+						then return $ getBasicAuth uo (show (getUri req'')) >>= \case
+							Nothing -> respfailure resp
+							Just ba -> retryauthed ba
+						else return $ respfailure resp
 	
 	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
 		&& case lookup hContentRange h of
@@ -468,6 +500,18 @@ downloadConduit meterupdate req file uo =
 		sinkResponseFile meterupdate initialp file mode resp
 	
 	respfailure = giveup . B8.toString . statusMessage . responseStatus
+	
+	retryauthed (ba, signalsuccess) = do
+		r <- tryNonAsync $ downloadConduit
+			meterupdate
+			(applyBasicAuth' ba req)
+			file
+			(uo { getBasicAuth = noBasicAuth })
+		case r of
+			Right () -> signalsuccess True
+			Left e -> do
+				signalsuccess False
+				throwM e
 	
 {- Sinks a Response's body to a file. The file can either be opened in
  - WriteMode or AppendMode. Updates the meter as data is received.
@@ -502,7 +546,7 @@ downloadPartial url uo n = case parseURIRelaxed url of
 	Nothing -> return Nothing
 	Just u -> go u `catchNonAsync` const (return Nothing)
   where
-	go u = case parseUrlRequest (show u) of
+	go u = case parseRequest (show u) of
 		Nothing -> return Nothing
 		Just req -> do
 			let req' = applyRequest uo req
@@ -516,9 +560,6 @@ downloadPartial url uo n = case parseURIRelaxed url of
 parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
 	parseURI $ escapeURIString isAllowedInURI s
-
-parseUrlRequest :: URLString -> Maybe Request
-parseUrlRequest = parseUrlThrow
 
 {- Some characters like '[' are allowed in eg, the address of
  - an uri, but cannot appear unescaped further along in the uri.
@@ -628,3 +669,22 @@ curlRestrictedParams r u defport ps = case uriAuthority u of
 		, Param "--max-redirs", Param "0"
 		]
 	bracketaddr a = "[" ++ a ++ "]"
+
+data BasicAuth = BasicAuth
+	{ basicAuthUser :: String
+	, basicAuthPassword :: String
+	}
+
+-- Note that this is only used when using conduit, not curl.
+--
+-- The returned IO action is run after trying to use the BasicAuth,
+-- indicating if the password worked.
+type GetBasicAuth = URLString -> IO (Maybe (BasicAuth, Bool -> IO ()))
+
+noBasicAuth :: GetBasicAuth
+noBasicAuth = const $ pure Nothing
+
+applyBasicAuth' :: BasicAuth -> Request -> Request
+applyBasicAuth' ba = applyBasicAuth
+	(encodeBS (basicAuthUser ba))
+	(encodeBS (basicAuthPassword ba))

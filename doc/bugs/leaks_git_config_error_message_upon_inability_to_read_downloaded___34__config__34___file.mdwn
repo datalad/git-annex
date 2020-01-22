@@ -145,3 +145,6 @@ git annex 7.20190819+git2-g908476a9b-1~ndall+1 and the same with bleeding edge 7
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
 
+> [[done]]; the error message is improved and also git remotes that need
+> http basic auth to access will get password from `git credential`.
+> --[[Joey]]

@@ -747,7 +747,7 @@ checkUrlM external url =
 retrieveUrl :: Retriever
 retrieveUrl = fileRetriever $ \f k p -> do
 	us <- getWebUrls k
-	unlessM (downloadUrl k p us f) $
+	unlessM (withUrlOptions $ downloadUrl k p us f) $
 		giveup "failed to download content"
 
 checkKeyUrl :: Git.Repo -> CheckPresent

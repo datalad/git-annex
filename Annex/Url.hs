@@ -1,13 +1,14 @@
 {- Url downloading, with git-annex user agent and configured http
  - headers, security restrictions, etc.
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Annex.Url (
 	withUrlOptions,
+	withUrlOptionsPromptingCreds,
 	getUrlOptions,
 	getUserAgent,
 	ipAddressesUnlimited,
@@ -34,6 +35,7 @@ import qualified Utility.Url as U
 import Utility.IPAddress
 import Utility.HttpManagerRestricted
 import Utility.Metered
+import Git.Credential
 import qualified BuildInfo
 
 import Network.Socket
@@ -64,6 +66,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			<*> pure urldownloader
 			<*> pure manager
 			<*> (annexAllowedUrlSchemes <$> Annex.getGitConfig)
+			<*> pure U.noBasicAuth
 	
 	headers = annexHttpHeadersCommand <$> Annex.getGitConfig >>= \case
 		Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
@@ -123,6 +126,21 @@ ipAddressesUnlimited =
 
 withUrlOptions :: (U.UrlOptions -> Annex a) -> Annex a
 withUrlOptions a = a =<< getUrlOptions
+
+-- When downloading an url, if authentication is needed, uses
+-- git-credential to prompt for username and password.
+withUrlOptionsPromptingCreds :: (U.UrlOptions -> Annex a) -> Annex a
+withUrlOptionsPromptingCreds a = do
+	g <- Annex.gitRepo
+	uo <- getUrlOptions
+	a $ uo
+		{ U.getBasicAuth = getBasicAuthFromCredential g
+		-- Can't download with curl and handle basic auth,
+		-- so avoid using curl.
+		, U.urlDownloader = case U.urlDownloader uo of
+			U.DownloadWithCurl _ -> U.DownloadWithConduit $ U.DownloadWithCurlRestricted mempty
+			v -> v
+		}
 
 checkBoth :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex Bool
 checkBoth url expected_size uo =

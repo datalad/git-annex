@@ -387,7 +387,7 @@ retrieve hv r rs c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
-			Right us -> unlessM (downloadUrl k p us f) $
+			Right us -> unlessM (withUrlOptions $ downloadUrl k p us f) $
 				giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
