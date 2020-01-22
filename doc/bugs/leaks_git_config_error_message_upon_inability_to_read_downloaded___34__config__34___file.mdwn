@@ -143,4 +143,6 @@ git annex 7.20190819+git2-g908476a9b-1~ndall+1 and the same with bleeding edge 7
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
 
+> [[fixed|done]] what I consider to be the core issue in this bug report. 
+> --[[Joey]]
 
