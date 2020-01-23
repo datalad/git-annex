@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-23T18:59:53Z"
+ content="""
+It kind of looks like this S3 remote is being used without login
+credentials. That's not clear, because you could have environment variables
+set or creds cached, or not.
+
+Since it's "public: yes", it would fall back to the public url code path to
+get the file when there are no creds.
+
+There are a lot of ways that could fail. Eg, perhaps no publicurl has been
+configured for the remote. But in that case (and many other cases),
+an exception should be thrown and displayed.
+
+I think I need to know how to reproduce this to get any further.
+"""]]
