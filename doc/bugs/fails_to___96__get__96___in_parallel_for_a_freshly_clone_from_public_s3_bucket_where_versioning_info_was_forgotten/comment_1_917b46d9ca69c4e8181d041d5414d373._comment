@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-23T19:26:20Z"
+ content="""
+Looking in the git-annex branch of this repository, for information about
+a key such as  MD5E-s10555001--f8bc87e8841634b3d2f9ac0ba85d0a83.nii.gz.log
+which is one of the files that fails to download, all there is is this:
+
+	joey@darkstar:/tmp/ds000248#git-annex>cat ./f0b/978/MD5E-s10555001--f8bc87e8841634b3d2f9ac0ba85d0a83.nii.gz.log 
+	1531766688.020213886s 1 82a4b182-753f-4d93-a59e-20cfdd4d4237
+	1531766681.703832952s 1 e3612a8a-0c48-4374-9bfb-888f4010be54
+
+So location log says it's in s3-PUBLIC, but in fact no S3 version id has been recorded.
+
+And there were old bugs that prevented the recording of the S3 version id. 
+Notably, it used to be possible to set versioning=yes on an existing S3
+remote, and the files already stored in it necessarily lacked version ids
+then. That has been fixed.
+
+So, is it still possible to reproduce creating a repository with this problem?
+"""]]
