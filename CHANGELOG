@@ -19,6 +19,8 @@ git-annex (7.20191231) UNRELEASED; urgency=medium
     uuid configured.
   * Support git remotes that need http basic auth to be accessed,
     using git credential to get the password.
+  * Display a warning when concurrency is enabled but ssh connection caching
+    is not enabled or won't work due to a crippled filesystem.
 
  -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2020 12:51:40 -0400
 

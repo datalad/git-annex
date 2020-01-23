@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-23T15:51:46Z"
+ content="""
+I notice that debug output has no BatchMode=true in any ssh call. But
+the version of git-annex you show always runs ssh with that when
+-J is used, unless sshcaching is disabled.
+
+More evidence that sshcaching is disabled in your transcript is that when
+it does run ssh, it does not pass -S.
+
+I think the repository must be on a crippled filesystem, on which
+git-annex can't do ssh connection caching, because the filesystem
+does not support unix sockets. (Or it potentially could be crippled in some
+other way.) So it ignores the annex.sshcaching setting.
+You could work around this by setting the (undocumented)
+GIT_ANNEX_TMP_DIR to some temporary directory on a non-crippled filesystem.
+
+I'm going to add a warning message in this situation.
+"""]]

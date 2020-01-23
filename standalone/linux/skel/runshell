@@ -212,8 +212,8 @@ case "$os" in
 		useproot=1
 		
 		# Store ssh connection caching sockets outside of sdcard.
-		GIT_ANNEX_TMP_DIR="$TMPDIR"
-		export GIT_ANNEX_TMP_DIR
+		GIT_ANNEX_SSH_SOCKET_DIR="$TMPDIR"
+		export GIT_ANNEX_SSH_SOCKET_DIR
 
 		GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH MANPATH LOCPATH"
 		export GIT_ANNEX_STANDLONE_ENV
