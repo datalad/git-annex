@@ -48,3 +48,7 @@ as a less bad alternative. Still, I'd like to find a better one.
 --[[Joey]] 
 
 [[!tag confirmed]]
+
+> [[done]], I think this was fixed long ago, git-annex no longer installs a
+> sigint handler and I interrupt it all the time and it behaves as I would
+> expect and not as shown here --[[Joey]]
