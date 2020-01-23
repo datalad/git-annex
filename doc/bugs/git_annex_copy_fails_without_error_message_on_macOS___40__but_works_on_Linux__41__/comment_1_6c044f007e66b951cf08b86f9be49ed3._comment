@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-23T20:28:20Z"
+ content="""
+Adding --debug might provide more information.
+
+`git annex version` will certianly provide useful information, including
+the version of the DAV library git-annex was built with.
+"""]]
