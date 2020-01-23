@@ -35,3 +35,5 @@ Apparently this is a very common mistake :/ so far I've seen many more projects 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Not a user, just here to help improve cross-distro packaging. :)
+
+> [[fixed|done]] --[[Joey]]

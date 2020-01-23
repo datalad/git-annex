@@ -21,6 +21,7 @@ git-annex (7.20191231) UNRELEASED; urgency=medium
     using git credential to get the password.
   * Display a warning when concurrency is enabled but ssh connection caching
     is not enabled or won't work due to a crippled filesystem.
+  * Makefile: Move the fish completion to the vendor_completions.d directory.
 
  -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2020 12:51:40 -0400
 
