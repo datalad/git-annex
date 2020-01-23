@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="thanks"
+ date="2020-01-23T16:51:44Z"
+ content="""
+\"the only user-visible improvement is these error messages\" -- FWIW, I've been bitten by the lack of config param checking in the past (thought I had set a chunk size but didn't due to misspelled param name, had to re-create the remote.)
+"""]]
