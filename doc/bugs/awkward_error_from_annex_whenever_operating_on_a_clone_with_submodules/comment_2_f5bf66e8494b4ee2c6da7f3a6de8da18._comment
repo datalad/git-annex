@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-23T19:20:47Z"
+ content="""
+The bug I earlier hypothesized might be the same as this one has since been
+fixed. So it would be good to know if this bug is fixed. I do not think
+enough information was provided for me to be able to reproduce it.
+"""]]
