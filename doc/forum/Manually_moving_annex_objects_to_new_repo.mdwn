@@ -3,7 +3,7 @@ I want to create a repo with the contents of an old repo, but with a fresh commi
 However, I just want to make sure that the following steps will not result in the new repo being broken in some way:
 
 1. Create a new git annex repo.
-2. Copy all of the symlinks pointing from the old repo to the new one.
+2. Copy all of the symlinks from the old repo to the new one.
 3. Move .git/annex/objects from the old repo to the new one.
 4. Then "git annex add" everything in the new repo and commit.
 
