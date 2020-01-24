@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+Full build logs are at http://neuro.debian.net/_files/_buildlogs/git-annex/7.20191230+git152-gefb981388
+
+
+
+[[!format sh """
+...
+    prop_read_write_transferinfo:                         FAIL
+      *** Failed! Exception: 'recoverEncode: invalid argument (invalid character)' (after 1 test):
+      Exception thrown while showing test case: 'recoverEncode: invalid argument (invalid character)'
+      Use --quickcheck-replay=507010 to reproduce.
+
+
+"""]]
+
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
