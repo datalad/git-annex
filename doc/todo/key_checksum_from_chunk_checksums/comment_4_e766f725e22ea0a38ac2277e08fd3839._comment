@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Chel"
+ avatar="http://cdn.libravatar.org/avatar/a42feb5169f70b3edf7f7611f7e3640c"
+ subject="comment 4"
+ date="2020-01-26T22:48:07Z"
+ content="""
+Another theoretical use case (not available for now, but maybe for the future):
+verify with checksums parts of the file and re-download only those parts/chunks, that are bad.
+For this you need a checksum for each chunk and a \"global\" checksum in key, that somehow incorporates all these chunk checksums.
+An example of this is Tiger Tree Hash in file sharing.
+
+When I used the SHA256 backend in my downloads, I often wondered that the long process of checksumming a movie
+or an OS installation .iso is not ideal. Because if the file download is not finished, I get the wrong checksum,
+and the whole process needs to be repeated.
+
+And in the future git-annex can integrate a FUSE filesystem and literally store just chunks of files,
+but represent files as a whole in this virtual filesystem view.
+"""]]
