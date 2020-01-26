@@ -86,4 +86,4 @@ Repository status:
 
 Of course, I love it! Great project, thanks, Joey!
 
-However, you always want more features from it. It's great that git-annex continues to develop.
+However, /me always wants more features from it. It's great that git-annex continues to develop.
