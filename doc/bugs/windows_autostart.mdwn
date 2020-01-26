@@ -1,24 +1,3 @@
-### Please describe the problem.
-
-
-### What steps will reproduce the problem?
-
-
-### What version of git-annex are you using? On what operating system?
-
-
-### Please provide any additional information below.
-
-[[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
-
-
-# End of transcript or log.
-"""]]
-
-### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
-
 I installed git-annex in windows using the file git-annex-installer.exe, and now each time I'm starting my computer I get a message telling me that "C:\Program Files\Git\cmd\git-annex-autostart.vbs" cannot be found.
 
 This is very annoying and I don't need git-annex to be started at startup. I looked in msconfig.exe and I didn't find any entry for git-annex. Is there a way to disable this?
