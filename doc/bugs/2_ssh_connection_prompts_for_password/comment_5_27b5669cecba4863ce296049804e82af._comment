@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-01-23T17:51:58Z"
+ content="""
+Thank you Joey!  I can only confirm that the file system was likely a crippled/NFS one... So we would likely need to do some sensing on DataLad side and instruct git-annex. Will continue on our end at https://github.com/datalad/datalad/issues/4075
+"""]]

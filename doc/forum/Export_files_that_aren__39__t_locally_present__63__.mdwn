@@ -1,0 +1,7 @@
+I use git-annex to manage my Sansa Clip Zip running Rockbox as a directory special remote since it has a FAT filesystem and I don't want to waste half the storage. I'd like to avoid having a copy of all my music and podcasts on my laptop as well, but git-annex only seems to be able to export files that are locally present. Would it be possible to have git-annex try to copy non-present files directly from remotes where it believes the files are present, starting with the lowest cost remote? 
+
+It would also be cool to be able to convert subdirectory information on the remote into metadata in the repository. For example, I delete podcasts after listening to them, so when git-annex detects that it could either move it into the archive dir or add a "listened" tag in the repo.
+
+Soeaking of metadata, even though special remotes don't support it, I think it would be reasonable to treat files that have never been imported as having no metadata or some configurable default metadata per directory (like tag=listened or status=new) and use the metadata in the repo for files that have been imported previously when evaluating the wanted expression.
+
+Thoughts?

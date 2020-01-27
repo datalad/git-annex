@@ -1,0 +1,17 @@
+Hey folks.
+
+Repository B is a external 4Tb HDD kept in cold storage in an offsite location. It was a fully copy of everything in Git Annex about a year ago and serves as an offsite, offline backup.
+
+I'd like to update it.
+
+Repository A is my laptop, with about a 500Gb HDD. It probably has enough free space to `git annex get` a copy of all files that have been created since 1 year ago in Repository B. I'd like to;
+
+1) Get those files to my laptop that need updating in repository B
+2) Head to the offsite location.
+3) Mount the Repository B HDD on my laptop 
+4) From the Repository B, add A (the laptop) as a remote, run a "get" and a "sync", effectively updating Repository B with a "delta" of new files
+5) From Repository A, sync with B, getting an updated index of what exists on Repository B, for updating all the other online repositories I am back home.
+
+The question is, how do I structure the command in Step 1 to get the "delta" of files to update Repository B with?
+
+Thanks! 

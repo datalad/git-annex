@@ -1,0 +1,147 @@
+### Please describe the problem.
+
+If there are multiple files with the same keys in the repository and they are copied to bup special remote,
+then `git annex fsck --from=bup` with `--jobs=N` option (N >= 2) can show an error and remove these keys from bup.
+
+Based on the error message (about locked .git/annex/tmp/ file), this problem is probably not specific to bup,
+but I tested it with bup only.
+
+### What steps will reproduce the problem?
+
+1. Configure a bup special remote.
+2. Add files with the same content to annex (and with the same backend).
+3. Copy these files to bup.
+4. Run `git annex fsck --from=bup -JN` several times, until it removes these keys from bup.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 7.20191230-g985373f8e, build from source, on Debian GNU/Linux buster.
+
+bup 0.29.3-2 from Debian sid. Also tried with bup 0.30, build from source.
+
+### Please provide any additional information below.
+
+[[!format txt """
+~ $ mkdir testdir
+~ $ cd testdir
+~/testdir $ 
+~/testdir $ git init
+Initialized empty Git repository in /home/test/testdir/.git/
+~/testdir $ 
+~/testdir $ git annex init testrepo
+init testrepo (scanning for unlocked files...)
+ok
+(recording state in git...)
+~/testdir $ 
+~/testdir $ ls ~/.bup/index-cache/
+~/testdir $ 
+~/testdir $ git annex initremote bup type=bup buprepo=~/testdir/.bup encryption=none
+initremote bup (bup init...) 
+Reinitialized existing Git repository in /home/test/.bup/
+Initialized empty Git repository in /home/test/testdir/.bup/
+ok
+(recording state in git...)
+~/testdir $ 
+~/testdir $ ls ~/.bup/index-cache/
+None__home_test_testdir__bup
+~/testdir $ 
+~/testdir $ echo aaa >file1
+~/testdir $ echo aaa >file2
+~/testdir $ 
+~/testdir $ git annex add .
+add file1 
+ok                                
+add file2 
+ok                                
+(recording state in git...)
+~/testdir $ 
+~/testdir $ git commit -m files
+[master (root-commit) 7a03b66] files
+ 2 files changed, 2 insertions(+)
+ create mode 120000 file1
+ create mode 120000 file2
+~/testdir $ 
+~/testdir $ git -C .bup show-ref
+~/testdir $ 
+~/testdir $ git annex whereis
+whereis file1 (1 copy) 
+  	5d9b0df2-000b-4273-bc4a-fb3b9d8319bd -- testrepo [here]
+ok
+whereis file2 (1 copy) 
+  	5d9b0df2-000b-4273-bc4a-fb3b9d8319bd -- testrepo [here]
+ok
+~/testdir $ 
+~/testdir $ git annex copy --to=bup .
+copy file1 (to bup...) 
+
+bloom: creating from 1 file (3 objects).ing: 0 kbytes
+Receiving index from server: 1156/1156, done.
+bloom: creating from 1 file (3 objects).
+ok                                
+copy file2 ok
+(recording state in git...)
+~/testdir $ 
+~/testdir $ git annex lookupkey file1 file2
+SHA256E-s4--17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+SHA256E-s4--17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+~/testdir $ 
+~/testdir $ git -C .bup show-ref
+2076647ee23ad632c8cf96caf51febbd0604452c refs/heads/SHA256E-s4--17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+~/testdir $ 
+~/testdir $ git annex fsck --from=bup
+fsck file1 
+(checksum...) ok                                    
+fsck file2 
+(checksum...) ok                                    
+(recording state in git...)
+~/testdir $ 
+~/testdir $ git -C .bup show-ref
+2076647ee23ad632c8cf96caf51febbd0604452c refs/heads/SHA256E-s4--17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+"""]]
+
+Now run `git annex fsck --from=bup -J2` multiple times, until it drops the key from bup...
+
+[[!format txt """
+~/testdir $ git annex fsck --from=bup -J2
+fsck file1 fsck file2 
+
+100%  4 B                 5 B/s 0s                  
+  content cannot be completely removed from bup remote
+
+  file2: Bad file size (4 B smaller); dropped from bup
+(checksum...) 
+git-annex: .git/annex/tmp/fsck14654.SHA256E-s4--17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76: openBinaryFile: resource busy (file is locked)
+failed
+(fixing location log) (checksum...) ok
+(recording state in git...)
+git-annex: fsck: 1 failed
+~/testdir $ 
+~/testdir $ git -C .bup show-ref
+~/testdir $ 
+~/testdir $ git annex whereis
+whereis file1 (2 copies) 
+  	5d9b0df2-000b-4273-bc4a-fb3b9d8319bd -- testrepo [here]
+   	88cc362a-f87a-43c7-b194-e79b2ee91828 -- [bup]
+ok
+whereis file2 (2 copies) 
+  	5d9b0df2-000b-4273-bc4a-fb3b9d8319bd -- testrepo [here]
+   	88cc362a-f87a-43c7-b194-e79b2ee91828 -- [bup]
+ok
+~/testdir $ 
+~/testdir $ git annex fsck --from=bup 
+fsck file1 (fixing location log) 
+  ** Based on the location log, file1
+  ** was expected to be present, but its content is missing.
+failed
+fsck file2 ok
+(recording state in git...)
+git-annex: fsck: 1 failed
+~/testdir $ 
+~/testdir $ git annex whereis
+whereis file1 (1 copy) 
+  	5d9b0df2-000b-4273-bc4a-fb3b9d8319bd -- testrepo [here]
+ok
+whereis file2 (1 copy) 
+  	5d9b0df2-000b-4273-bc4a-fb3b9d8319bd -- testrepo [here]
+ok
+"""]]
