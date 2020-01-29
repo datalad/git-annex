@@ -2,7 +2,7 @@ TODOs for DataLad
 =================
 
 [[!inline pages="todo/* and !todo/done and !link(todo/done) and
-(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" sort=mtime feeds=no actions=yes archive=yes show=0]]
+(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]]
 
 
 <details>
