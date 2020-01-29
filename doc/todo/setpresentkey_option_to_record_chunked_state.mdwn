@@ -1,1 +1,3 @@
 In [[git-annex-setpresentkey]], could an option be added to record in [[`aaa/bbb/*.log.cnk`|internals]] that the key contents is present in chunked state, with a given number of chunks of a given size?
+
+[[!tag moreinfo]]

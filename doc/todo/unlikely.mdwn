@@ -1,0 +1,6 @@
+This tags is for todo items that seem unlikely to be implemented, and are
+in danger of being closed as wontfix.
+
+There's generally an objection to the goal of the todo item, or a reason
+it's not feasible to implement, which will need to be addressed to get it
+back on track.

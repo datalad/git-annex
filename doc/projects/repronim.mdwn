@@ -5,18 +5,18 @@ The center for Reproducible Neuroimaging computation develops standards and tool
 
 ## TODOs
 
-[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 ### Done:
 
-[[!inline pages="todo/* and !todo/done and link(todo/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="todo/* and !todo/done and link(todo/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 
 
 ## BUGs
 
-[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 ### Done:
 
-[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 

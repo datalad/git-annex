@@ -2,3 +2,4 @@ As we briefly discussed via email, it would be nice if sync could sync only some
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+[[!tag needsthought]]

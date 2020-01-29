@@ -6,3 +6,4 @@ Thanks in advance for considering
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+[[!tag confirmed]]

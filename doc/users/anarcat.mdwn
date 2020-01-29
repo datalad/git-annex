@@ -18,13 +18,13 @@ My todos
 ... same.
 
 [[!inline pages="todo/* and !todo/done and !link(todo/done) and
-link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]]
 
 Done
 ----
 
 [[!inline pages="todo/* and !todo/done and link(todo/done) and
-link(users/anarcat)" feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" feeds=no actions=yes archive=yes show=0 template=buglist]]
 
 My bugs
 =======

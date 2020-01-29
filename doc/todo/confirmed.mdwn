@@ -1,0 +1,2 @@
+This tag is for todo items that have an agreed upon plan of action, but
+have not been implemented yet.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-01-29T15:02:27Z"
+ content="""
+I'm not clear how the answer to that question would impact git-annex.
+
+Assuming this is built with external special remotes and/or plain git
+remotes, is there something lacking in git-annex to implement it now?
+"""]]

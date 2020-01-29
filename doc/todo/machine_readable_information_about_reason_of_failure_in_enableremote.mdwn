@@ -4,3 +4,4 @@ May be even more generally -- if there was a robust way to obtain errors for oth
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+[[!tag moreinfo]]

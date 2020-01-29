@@ -2,3 +2,5 @@ ATM it takes about a minute for 'git annex info' on a sizeable but not huge repo
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> I sense this one has reached its end, it's fast enough, so [[done]] --[[Joey]]

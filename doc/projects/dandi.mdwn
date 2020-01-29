@@ -5,21 +5,21 @@ DANDI: Distributed Archives for Neurophysiology Data Integration is a platform f
 
 ## TODOs
 
-[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 ### Done:
 
-[[!inline pages="todo/* and !todo/done and link(todo/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="todo/* and !todo/done and link(todo/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 
 
 ## BUGs
 
-[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 ### Done:
 
-[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0]] 
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 
 

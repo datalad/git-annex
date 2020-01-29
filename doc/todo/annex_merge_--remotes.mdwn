@@ -2,3 +2,4 @@ ATM 'annex merge' does not accept any parameter to specify which remotes to cons
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+[[!tag moreinfo]]
