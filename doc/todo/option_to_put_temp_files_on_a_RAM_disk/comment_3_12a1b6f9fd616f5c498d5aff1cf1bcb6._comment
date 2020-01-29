@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Re: use of RAM disk"
+ date="2020-01-29T07:49:08Z"
+ content="""
+The chunks case should fold into the original one if git-annex merges the chunks using [ioctl_ficlonerange](https://manpages.debian.org/buster/manpages-dev/ioctl_ficlonerange.2.en.html), but admittedly that is a) not portable (but neither is mounting a RAM-disk) and b) will only work on some file systems.
+
+I don't understand the applications in named pipes well enough to comment there (will have to read up a bit).
+
+But more generally, I'd gut-feeling-expect that if all is properly advertised (possibly by a fcntl, but [RWH_WRITE_LIFE_SHORT](https://manpages.debian.org/buster/manpages-dev/fcntl.2.en.html) doesn't quite seem to be it) and no fsyncs are sent (like [eatmydata](https://www.flamingspork.com/projects/libeatmydata/) does), any file should behave like that until a file system action is performed that forces it to be committed to disk -- or the kernel decides that it'd better use that RAM for something else, but that's what it can probably do best.
+
+I'm not sure the approach of screening (and possibly patching) data producers to not fsync (on some systems, closing might be an issue too, and that's where it gets more complex) is better than putting things to a RAM disk, I just think it's an alternative worth exploring.
+"""]]
