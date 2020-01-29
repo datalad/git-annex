@@ -5,3 +5,4 @@ Without such functionality we cannot consistently (cross-platform) use git-annex
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+[[!tag unlikely]]
