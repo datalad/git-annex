@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="chunks and checksums"
+ date="2020-01-28T18:20:34Z"
+ content="""
+\"verify with checksums parts of the file and re-download only those parts/chunks, that are bad.\" -- if I understand correctly, git-annex doesn't checksum [[chunks|chunking]], but can tell incompletely downloaded chunks based on size.
+
+My original use case (registering the presence of a chunked file in a remote without downloading it) might be implementable with [[todo/setpresentkey_option_to_record_chunked_state/]].  The checksums of the chunks would not be used though.
+
+"""]]

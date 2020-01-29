@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="use of RAM disk"
+ date="2020-01-28T17:23:28Z"
+ content="""
+You're right in general. There may be cases though, where a temp file doesn't just get moved into [[`.git/annex/objects`|internals]]: e.g. when [[chunking]] is used along with parallel downloads, chunks might go into separate temp files before being merged.  I was also thinking of use cases from [[todo/let_external_remotes_declare_support_for_named_pipes]], like [[todo/git-annex-cat]], where key contents is processed but not saved.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Use of the RAM disk"
+ date="2020-01-28T14:03:15Z"
+ content="""
+What benefit would that give?
+
+When the transfer is complete, the file will be moved over to `.git/annex/objects`. On the same file system, that's a simple operation; across file systems, that's effectively a copy.
+
+In both cases, the file gets written to disk once. In the original case, it's up to the operating system when to start writing the data to disk (that is, unless the file is flushed by git-annex, which I don't have reason to assume it does). With a RAM disk inbetween, the file would be copied only when it's transferred completely (and then needs to be moved once more to not show up as an incomplete file at its final location). With the original setup, if the operating system has RAM to spare, it can do roughly that already (not start writing until the file is closed). When it's under pressure, it will flush the file out as soon as possible.
+
+Is there any performance issue you see that'd be solved using the RAM disk? If so, that might be indicative of something git-annex can do without starting to mount around (eg. remove any syncs / flushes that sneaked into the tempfile saving process, or use fallocate to tell the OS of the size to come).
+"""]]
