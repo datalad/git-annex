@@ -37,3 +37,5 @@ git-annex is designed for scalability. The key points are:
   becomes increasingly expensive. Consider adjusting the `annex.queuesize`
   to a higher value, at the expense of it using more memory.
 
+* See also: [[tips/Repositories_with_large_number_of_files]]
+
