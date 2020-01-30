@@ -1,3 +1,5 @@
 Add an option to give git-annex a path to a RAM disk, and an option to set the maximum space to be used there.  git-annex often knows the size of the files it is downloading, since it's part of the key, so can determine in advance if a tempfile of that size would fit on the RAM disk.  One could instead symlink `.git/annex/tmp/` to a RAM disk, but this could cause memory overflow if a large file is transferred.
 
 Related: [[todo/keep_git-annex_branch_checked_out__63__]], [[todo/transitive_transfers]]
+
+[[!tag unlikely]]

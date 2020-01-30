@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-30T18:36:17Z"
+ content="""
+This would mean that, every time something about a key is looked up in the
+git-annex branch, it would also need to look at the metadata to see if this
+`alt_keys` field is set.
+
+So it doubles the time of every single query of the git-annex branch.
+
+I don't think that's a good idea, querying the git-annex branch is already
+often a bottleneck to commands.
+"""]]

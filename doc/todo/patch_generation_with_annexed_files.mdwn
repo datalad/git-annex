@@ -117,3 +117,5 @@ to a change to the master branch.
 
 But room needs to be left to add this kind of thing. Ie, what git-annex
 adds to the git patch needs to have its own expansion point.
+
+[[!tag needsthought]]

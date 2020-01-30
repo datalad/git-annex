@@ -12,3 +12,5 @@ An attempt at making it stream via unsafeInterleaveIO failed miserably
 and that is not the right approach. This would be a good place to use
 ResourceT, but it might need some changes to the Annex monad to allow
 combining the two. --[[Joey]]
+
+[[!tag confirmed]]

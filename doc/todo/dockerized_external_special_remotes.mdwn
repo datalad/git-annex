@@ -1,1 +1,3 @@
 If an external special remote is implemented as a Docker container, it can be safely autoenabled and run in a sandboxed way.  So the distributor of a repo that has annex files fetchable with a given special remote, could have the docker tag for the special remote configured on the git-annex branch, and users could then clone and use the repo without needing to install anything.
+
+[[!tag needsthought]]

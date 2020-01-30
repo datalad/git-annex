@@ -14,3 +14,5 @@ then B exported a tree containing `[foo, bar]`, and then A exported
 So, if one exported tree is a subset of the other, it's not necessary to
 unexport files added by the other tree. It's sufficient to check that files
 are present in the export and upload any that are missing. --[[Joey]]
+
+[[!tag confirmed]]

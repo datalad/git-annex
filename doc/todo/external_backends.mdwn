@@ -3,3 +3,5 @@ It would be good if one could define custom external [[backends]], the way one c
 @joey pointed out a potential problem: "needing to deal with the backend being missing or failing to work could have wide repurcussions in the code base."  I wonder if there are ways around that.  Suppose you specified a default backend to use in case a custom one was unavailable?  Then you could always compute a key from a file, even if it's not in the right backend.  And once a key is stored in git-annex, most of git-annex treats the key as just a string.  If the custom backend supports checksum verification, without the backend's implementation, keys from that backend would be treated like WORM/URL keys that do not support checksum checking.
 
 Thoughts?
+
+[[!tag needsthought]]

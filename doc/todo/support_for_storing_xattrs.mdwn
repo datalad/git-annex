@@ -13,3 +13,5 @@ At least `curl --xattr` saves `xdg.origin.url`.
 Perhaps `git-annex-metadata` could be leveraged to automatically store and restore xattrs? Might even work that addition of xattrs would always have to be done through a git-annex command, but restoration would be done automatically if git-annex noticed there are xattrs stored in metadata, and the file system is mounted with `user_xattr`.
 
 The `user` namespace is used for user xattrs and thus for "proposed metadata attributes" above. These attributes are valid git-annex metadata fields as-is.
+
+[[!tag unlikely]]

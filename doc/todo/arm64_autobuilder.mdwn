@@ -11,3 +11,6 @@ autobuilder? --[[Joey]]
 
 Currently running release builds for arm64 on my phone, but it's not
 practical to run an autobuilder there. --[[Joey]]
+
+>> [[done]]; the current qemu based autobuilder is not ideal, often gets
+>> stuck, but there's no point leaving this todo open. --[[Joey]]

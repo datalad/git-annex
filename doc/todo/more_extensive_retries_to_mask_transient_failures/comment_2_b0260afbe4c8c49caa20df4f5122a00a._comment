@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-30T17:45:39Z"
+ content="""
+I don't think that git-annex can generally abort an operation that is
+outright hung. While it's certianly possible to kill a worker thread, if
+that thread has other threads associated with it, they could keep on using
+resources. And if an external command is hung, the command would keep
+running. The only way to guarantee such an abort is to kill the whole
+git-annex process and let the signal reap its children. That's what the
+assistant does when the UI is used to stop a transfer, it kills the whole
+`git-annex transferkeys` process.
+
+(A locked git index file does not prevent git-annex from making transfers
+so AFAICS the comment above is not relevant.)
+"""]]

@@ -1,1 +1,3 @@
 When using [[linked worktrees|tips/Using_git-worktree_with_annex]], the main tree is currently handled differently from the linked trees: "if there is change in the tree then syncing doesn't update git worktrees and their indices, but updates the checked out branches. This is different to the handling of the main working directory as it's either got updated or left behind with its branch if there is a conflict."   Is there a reason for this?  Could linked worktrees be treated same as main one?
+
+[[!tag moreinfo]]

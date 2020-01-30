@@ -1,3 +1,5 @@
 Currently, git-annex-migrate leads to content (and metadata) being stored under both old and new keys.  git-annex-unused can drop the contents under the old key, but then you can't access the content if you check out an older commit.  Maybe, an option can be added to migrate keys using [git-replace](https://git-scm.com/docs/git-replace) ?  You'd git-replace the blob .git/annex/objects/old_key with the blob .git/annex/objects/new_key, the blob ../.git/annex/objects/old_key with the blob ../.git/annex/objects/new_key , etc.  You could then also have a setting to auto-migrate non-checksum keys to checksum keys whenever the contents gets downloaded.
 
 More generally, git-annex-replace could be implemented this way, doing what git-replace does, but for git-annex keys rather than git hashes.  [[git-annex-pre-commit]] might need to be changed to implement replacement of keys added later.
+
+[[!tag needsthought]]

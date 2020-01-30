@@ -9,3 +9,5 @@ This would invole:
 * The assistant ought to update the adjusted branch at some point after
   downloads, but it's not clear when. Perhaps this will need to be deferred
   until it can be done more cheaply, so it can do it after every file.
+
+[[!tag confirmed]]

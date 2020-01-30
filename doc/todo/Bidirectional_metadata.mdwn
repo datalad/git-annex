@@ -19,3 +19,5 @@ There are other situations this is useful (and I use), for example, when I conve
     git annex metadata --parentchild original.svg compressed.png
 
 and this would set 'parent' and 'child' metadata respectively.
+
+[[!tag needsthought]]

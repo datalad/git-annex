@@ -9,3 +9,6 @@ use restagePointerFile, but that did not help; git update-index does then
 smudge it during the `git annex unlock`, which is no faster (but at least
 doing it then would avoid the surprise of a slow `git status` or `git
 commit -a`). Afterwards, `git status` then smudged it again, unsure why!
+--[[Joey]]
+
+[[!tag confirmed]]

@@ -1,1 +1,3 @@
 Right now, when computing a WORM key from a relative path or a URL key from a URL, if the original string is longer than a SHA256 checksum, its tail is replaced with its md5.  Unfortunately, this eats up the file extension(s) at the end, causing the issues that \*E backends solve.   It would be better to keep the tail of the path and replace the start or the middle with the md5, preserving extensions (as configured in annex.maxextensionlength) the same way \*E backends do.  Maybe also, add a config option for the length beyond which the replacement-with-checksum happens?
+
+[[!tag confirmed]]

@@ -63,3 +63,5 @@ Thankfully, we already have a technology that can fill in elegantly here: parity
 
 
 This would also enhance the data-checking capabilities of git-annex, as data loss could be fixed and new parity files generated from the recovered files transparently, self-healing the archive.
+
+[[!tag unlikely]]

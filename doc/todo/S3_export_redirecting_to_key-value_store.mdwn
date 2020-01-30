@@ -1,3 +1,5 @@
 S3 lets you [redirect](https://docs.aws.amazon.com/AmazonS3/latest/dev/how-to-page-redirect.html) requests for an object to another object, or to a URL.  This could be used to export a git branch, in the manner of [[`git-annex-export`|git-annex-export]], but with annexed objects redirecting to a key-value S3 remote in the same bucket.
 
 Related: [[todo/simpler__44___trusted_export_remotes]] ; [[forum/Using_hashdirlower_layout_for_S3_special_remote]].
+
+[[!tag needsthought unlikely]]

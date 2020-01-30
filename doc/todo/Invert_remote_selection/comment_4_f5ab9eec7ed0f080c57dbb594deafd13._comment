@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-30T19:13:25Z"
+ content="""
+git-annex sync does support remote groups, so that might also help with
+this use case without needing additional syntax?
+"""]]

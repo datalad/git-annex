@@ -10,3 +10,5 @@ This has made me think that it would be nice to track changes to metadata, the s
 From reading the documentation about [[tips/metadata_driven_views]], it seems almost like #1 would be possible using views and doing a `git commit` myself, but that still just generates an "update" message on the `git-annex` branch. Even if it did work, using `git annex view 'NowPlaying=*'` excludes all files that aren't tagged with any machine, which makes adding new files harder.
 
 What do you think? Is this abuse of the `git-annex` branch? Would this interfere with [[design/caching_database]]?
+
+[[!tag needsthought moreinfo]]

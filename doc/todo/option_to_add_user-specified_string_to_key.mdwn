@@ -11,3 +11,5 @@ Cleaner would be to add a field to the key, as in MD5E-s0-uUSERKEYSTRING--d41d8c
 This enables attaching metadata not to file contents, but to the file itself; or partitioning keys (and therefore key metadata) into namespaces.   The downside is some loss of 
 deduplication.  This loss may be acceptable.  The loss can be mitigated for local repo and non-special remotes: after storing an object with e.g. MD5 d41d8cd98f00b204e9800998ecf8427e under .git/annex/objects, check if there is a symlink .git/annex/contenthash/d41d8cd98f00b204e9800998ecf8427e ; if not, make this a symlink to the object just stored; if yes,
 erase the object just stored, and hardlink the symlink's target instead.
+
+[[!tag unlikely moreinfo]]

@@ -21,3 +21,5 @@ repeatedly (though ssh connection caching helps some with that).
 > exposes this, when available. Some sftp servers can be locked down
 > so that the user can't run git-annex on them, so that could be the only
 > way to get diskreserve working for such a remote. --[[Joey]]
+
+[[!tag confirmed]]

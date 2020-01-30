@@ -109,3 +109,5 @@ The best fix would be to improve git's smudge/clean interface:
 
 * Allow clean filter to read work tree files itself, to avoid overhead of
   sending huge files through a pipe.
+
+[[!tag confirmed]]

@@ -19,3 +19,5 @@ writer and it would have already behaved as it would after the change.
 
 But: When a process writes to the journal, it will need to update its state
 to remember it's no longer empty. --[[Joey]]
+
+[[!tag confirmed]]

@@ -8,3 +8,5 @@ Perhaps: Find pairs of renames that swap content between two files.
 Run each pair in turn. Then run the current rename code. Although this
 still probably misses cases, where eg, content cycles amoung 3 files, and
 the same content amoung 3 other files. Is there a general algorythm?
+
+[[!tag needsthought]]

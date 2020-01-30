@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-30T18:20:42Z"
+ content="""
+This seems, at first glance, entirely out of scope for git-annex.
+
+There are other things that manage lots of git repositories. I've written one
+even (myrepos).
+"""]]

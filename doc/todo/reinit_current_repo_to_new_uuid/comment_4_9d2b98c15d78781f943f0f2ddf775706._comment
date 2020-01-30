@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-30T19:21:00Z"
+ content="""
+See [[todo/reinit_should_work_without_arguments]] for another argument for
+the same thing.
+"""]]

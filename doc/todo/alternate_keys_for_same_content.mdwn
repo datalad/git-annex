@@ -9,3 +9,4 @@ Also, sometimes one can determine the MD5 from the URL without downloading the f
 or because an MD5 was computed by a workflow manager that produced the file (Cromwell does this).   The special remote's "CHECKURL" implementation could record an MD5E key in the
 alt_keys metadata field of the URL key.   Then 'addurl --fast' could check alt_keys, and store in git an MD5E key rather than a URL key, if available.
 
+[[!tag unlikely]]

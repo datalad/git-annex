@@ -1,1 +1,3 @@
 If a git-annex repo is copied (e.g. by creating an AWS volume from a snapshot), there is a possibility of different repo copies with the same UUID.  It would help if there was an option to [[`git-annex-reinit`|git-annex-reinit]] that would create a new uuid for the current repo.
+
+[[!tag moreinfo]]

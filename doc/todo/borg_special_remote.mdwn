@@ -13,3 +13,5 @@ backups, and git-annex would then be aware of what was backed up in borg,
 and could do things like count that as a copy.
 
 --[[Joey]]
+
+[[!tag needsthought]]

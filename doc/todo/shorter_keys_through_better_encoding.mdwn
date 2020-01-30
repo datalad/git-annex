@@ -2,3 +2,6 @@ The link targets of annexed files are currently very long.   This creates proble
 
 
 Or, if you're tired of backend requests, maybe implement a scheme for external backends, like the one for external special remotes?  For external backend EXTNNN the user would put  a script git-annex-external-backend-NNN in the path; the script would support commands like calckey, examinekey .   Then I could also implement e.g. canonicalizing backends that strip away variable but semantically irrelevant information before computing the checksum.
+
+[[!meta title=avoid duplicating key twice in symlink to object file]]
+[[!tag unlikely]]

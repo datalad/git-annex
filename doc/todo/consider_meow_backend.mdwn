@@ -33,3 +33,6 @@ be useful to speed up checks on larger files. The license is a
 
 I know it might sound like a conflict of interest, but I *swear* I am
 not bringing this up only as a oblique feline reference. ;) -- [[anarcat]]
+
+> Let's concentrate on xxhash or other new hashes that are getting general
+> adoption, not niche hashes like meow. [[done]] --[[Joey]]

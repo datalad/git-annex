@@ -1,1 +1,3 @@
 To [[git-annex-test]] and [[git-annex-testremote]], add option to run tests under concurrency (-J).  Many possible bugs are unique to the concurrent case, and it's the case I often use.  While any bugs detected may be hard to reproduce, it's important to know _whether_ there are concurrency-related bugs.  Much of the trust in git-annex comes from its extensive test suite, but it's somewhat concerning to trust it with important data when the concurrency case is not tested at all.
+
+[[!tag unlikely]]
