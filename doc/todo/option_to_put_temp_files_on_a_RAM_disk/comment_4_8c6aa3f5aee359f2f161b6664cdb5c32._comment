@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-30T16:44:52Z"
+ content="""
+When git-annex downloads chunks, it uses a single file and seeks forward to
+the next chunk boundry when resuming, for example.
+
+I agree with chrysn's analysis on all points.
+
+Also, this smells of premature optimisation, and tying it to features that
+have not even been agreed on, let alone implemented or profiled, is weird.
+"""]]
