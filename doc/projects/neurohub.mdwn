@@ -19,8 +19,7 @@ NeuroHub [???](???)
 
 ### Done:
 
-[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/neurohub)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist
-] 
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/neurohub)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 
 
