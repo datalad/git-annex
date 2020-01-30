@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-30T19:24:47Z"
+ content="""
+How would running parallel commands with xargs be better than the current
+-J?
+"""]]
