@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-30T15:19:55Z"
+ content="""
+This will need the remote to provide a function `Key -> FilePath`,
+in order to support whatever hash directories or filename mangling the
+remote does. It might be better to generalize the function to
+`Url -> Key -> Url` where the first url is the publicurl value.
+(When exporttree=true, the function is probably not needed.)
+
+To support that function in external special remotes, the protocol would
+need to be extended. Hmm, that means that, in order to get a file, the
+external program would need to be installed, even though the actual file
+download only needs http. Contrast with the current readonly mode that
+doesn't need the external program to be installed since the url is recorded
+on the git-annex branch.
+
+I think that the only built-in remotes that would make sense to support
+this are rsync, directory[1], and webdav. s3 already supports it but could
+be refactored. git remotes already support http access which is effectively
+the same result, and git-lfs already supports unauthed downloads, assuming
+the server allows it.
+
+[1] a bit problimatic because old versions used a different
+hash directory than current versions, so unless it can return two urls,
+things stored with an old version won't be accessible
+"""]]
