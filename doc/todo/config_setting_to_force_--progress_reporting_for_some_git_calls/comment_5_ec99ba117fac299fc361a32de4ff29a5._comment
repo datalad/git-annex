@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-01-30T16:38:30Z"
+ content="""
+Heh, looking at the code, [[!commit
+24838547e2475b37d7e910361f9b6e087a1a0648]] in 2018
+made --progress be unconditionally passed when entering an adjusted branch.
+
+That was done for unrelated reasons, but I don't think there's anything more
+to do on this now.
+"""]]
