@@ -1,2 +1,8 @@
 This tag is for todo items that have an agreed upon plan of action, but
 have not been implemented yet.
+
+[[!inline pages="./todo/* and !./todo/*/* and !./todo/done and !link(done) 
+and link(todo/confirmed)
+and !*/Discussion and !./todo/moreinfo and !./todo/confirmed
+and !./todo/needsthought and !./todo/unlikely" actions=yes postform=yes postformtext="Add a new todo titled:"
+show=0 feedlimit=10 archive=yes template=buglist]]
