@@ -1,5 +1,5 @@
 This is git-annex's todo list. Link items to [[todo/done]] when done,
-or tags: [[todo/confirmed]] [[todo/moreinfo]] [[todo/needsthoughts]] [[todo/unlikely]] 
+or tags: [[todo/confirmed]] [[todo/moreinfo]] [[todo/needsthought]] [[todo/unlikely]] 
 
 [[!inline pages="./todo/* and !./todo/*/* and !./todo/done and !link(done) 
 and !*/Discussion and !./todo/moreinfo and !./todo/confirmed
