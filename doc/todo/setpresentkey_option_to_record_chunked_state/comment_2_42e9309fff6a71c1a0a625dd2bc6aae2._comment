@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="use case to record chunked state"
+ date="2020-01-29T17:48:40Z"
+ content="""
+\"What is the use case?\" -- to register with git-annex the presence of a file in a remote, that is already split into chunks, without downloading the file.
+\"I would rather not complicate setpresentkey with things not related to presence information\" -- makes sense.
+\"you may as well just write data to the branch yourself\" -- yes; just wasn't sure if that might break some invariant, e.g. between the branch and the SQL databases derived from it.
+
+Don't worry about this todo, I'll figure it out.
+"""]]

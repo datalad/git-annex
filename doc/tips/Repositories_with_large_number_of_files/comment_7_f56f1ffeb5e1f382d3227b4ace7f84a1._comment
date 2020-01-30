@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="breck7@4bbace32c18ebb98fc730d56c6ed76b7bcc0798e"
+ nickname="breck7"
+ avatar="http://cdn.libravatar.org/avatar/96a1ef57fee8349bd6f92faf153f9ec3"
+ subject="Thank you"
+ date="2020-01-30T15:15:24Z"
+ content="""
+I just ran into related git scaling issues while trying to make a repo in a folder with 6.5 million files. [Writeup](https://breckyunits.com/building-a-treebase-with-6-point-5-million-files.html). I did things the naive/wrong way on purpose, but now I'm curious if I could actually get this work fast, and your pointers are a good help. Thanks!
+"""]]

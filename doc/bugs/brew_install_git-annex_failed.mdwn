@@ -1,0 +1,49 @@
+### Please describe the problem.
+
+brew install git-annex failed.
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+Mac OS X 10.11 El Capitan
+
+### Please provide any additional information below.
+
+[[!format sh """
+95b3d57ce7--git-annex-7.20191230.tar.gz
+==> cabal v1-sandbox init
+==> cabal v1-update
+==> cabal v1-install --jobs=4 --max-backjumps=100000 alex
+==> cabal v1-install --jobs=4 --max-backjumps=100000 happy
+==> cabal v1-install --jobs=4 --max-backjumps=100000 c2hs
+==> cabal v1-install --jobs=4 --max-backjumps=100000 --only-dependencies --constraint http-conduit>=2.3 --constraint net
+==> cabal v1-configure --flags=s3 webapp
+==> cabal v1-install --jobs=4 --max-backjumps=100000 --prefix=/usr/local/Cellar/git-annex/7.20191230 --constraint http-c
+Last 15 lines from /Users/choi/Library/Logs/Homebrew/git-annex/08.cabal:
+StandaloneDeriving
+
+Please enable the extensions by copy/pasting these lines into the top of your file:
+
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE StandaloneDeriving #-}
+   |
+31 | share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^...
+cabal: Leaving directory '.'
+cabal: Error: some packages failed to install:
+git-annex-7.20191230-JGm7b2Gk5I8w0hi2BDCiw failed during the building phase.
+The exception was:
+ExitFailure 1
+
+
+Do not report this issue to Homebrew/brew or Homebrew/core!
+
+These open issues may also help:
+git-annex-remote-rclone 0.6 (new formula) https://github.com/Homebrew/homebrew-core/pull/49468
+git-annex: add OBJC_DISABLE_INITIALIZE_FORK_SAFETY environment variable https://github.com/Homebrew/homebrew-core/pull/48411
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
