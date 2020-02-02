@@ -18,3 +18,5 @@ Full build logs are at http://neuro.debian.net/_files/_buildlogs/git-annex/7.201
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
