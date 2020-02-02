@@ -1,4 +1,4 @@
-git-annex (7.20191231) UNRELEASED; urgency=medium
+git-annex (7.20200202.7) upstream; urgency=medium
 
   * add: --force-annex/--force-git options make it easier to override
     annex.largefiles configuration (and potentially safer as it avoids
@@ -22,8 +22,9 @@ git-annex (7.20191231) UNRELEASED; urgency=medium
   * Display a warning when concurrency is enabled but ssh connection caching
     is not enabled or won't work due to a crippled filesystem.
   * Makefile: Move the fish completion to the vendor_completions.d directory.
+  * Fixed a test suite failure when run in the C locale.
 
- -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2020 12:51:40 -0400
+ -- Joey Hess <id@joeyh.name>  Sun, 02 Feb 2020 00:00:00 -0400
 
 git-annex (7.20191230) upstream; urgency=medium
 
