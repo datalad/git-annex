@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Chel"
+ avatar="http://cdn.libravatar.org/avatar/a42feb5169f70b3edf7f7611f7e3640c"
+ subject="comment 1"
+ date="2020-02-01T02:55:03Z"
+ content="""
+Very interesting idea! But some problems:
+
+- As mentioned, not only `.git/annex/<...>` blobs need to be replaces for every key, but also `/annex/<...>`
+and all `../.git/annex/<...>`, `../../.git/annex/<...>`, etc.
+
+- In big repositories it can create a giant amount of *refs/replace/* refs.
+I don't know how it affects the performance if they are stored in .git/packed-refs,
+but it can interfere with the normal operation on a repo.
+For example `git show-ref` will not work without ` | grep` or something.
+"""]]

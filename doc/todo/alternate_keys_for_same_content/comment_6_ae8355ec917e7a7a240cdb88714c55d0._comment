@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Chel"
+ avatar="http://cdn.libravatar.org/avatar/a42feb5169f70b3edf7f7611f7e3640c"
+ subject="comment 6"
+ date="2020-02-01T02:32:01Z"
+ content="""
+There is also `aaa/bbb/*.log.cid` in git-annex branch for \"per-remote content identifiers for keys\".
+It could be another place to store alternate keys, but it is per-remote, so... no.
+
+As for the metadata field `alt_keys` — it is another case of
+\"[setting a metadata field to a key](/todo/Bidirectional_metadata/#comment-788380998b25267c5b99c4a865277102)\"
+in [[Bidirectional metadata]].
+
+Also, there is an interesting idea of [[git-annex-migrate using git-replace]].
+
+By the way, as far as I know (maybe things have changed since then),
+ipfs has a similar problem of different identifiers for the same content.
+Because it encodes how things are stored. And hash functions can also be changed.
+"""]]

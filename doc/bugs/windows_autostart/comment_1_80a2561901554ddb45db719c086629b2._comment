@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jeanpmbox-456@7222359de8d1f37a7cf25a519e8faf90a9517b50"
+ nickname="jeanpmbox-456"
+ avatar="http://cdn.libravatar.org/avatar/164eb4254c5f83d95d3e0b810ff7aab9"
+ subject="comment 1"
+ date="2020-02-01T11:35:37Z"
+ content="""
+I finally saw thanks to the file `Build/NullSoftInstaller.hs` and to NirSoft Program WhatInStartup that the startup script is located in `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`.
+
+It would be nice to have an option to activate this or not in the installation.
+"""]]
