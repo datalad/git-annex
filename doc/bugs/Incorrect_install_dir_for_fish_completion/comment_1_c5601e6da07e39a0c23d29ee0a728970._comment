@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="Chel"
+ avatar="http://cdn.libravatar.org/avatar/a42feb5169f70b3edf7f7611f7e3640c"
+ subject="comment 1"
+ date="2020-02-03T23:34:02Z"
+ content="""
+I've got an error from `make install` on version 7.20200202.7:
+
+~~~
+./git-annex --fish-completion-script git-annex 2>/dev/null \
+	> dest/usr/local/share/fish/completions/git-annex.fish
+make: *** [Makefile:87: install-completions] Error 2
+~~~
+
+I think there should be:
+
+[[!format  diff \"\"\"
+diff --git a/Makefile b/Makefile
+index eb3a34e6a..722921e00 100644
+--- a/Makefile
++++ b/Makefile
+@@ -86,7 +86,7 @@ install-completions: build
+                > $(DESTDIR)$(ZSH_COMPLETIONS_PATH)/_git-annex
+        install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/vendor_completions.d
+        ./git-annex --fish-completion-script git-annex 2>/dev/null \
+-               > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish
++               > $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/vendor_completions.d/git-annex.fish
+ 
+ test: git-annex git-annex-shell
+        ./git-annex test
+\"\"\"]]
+"""]]
