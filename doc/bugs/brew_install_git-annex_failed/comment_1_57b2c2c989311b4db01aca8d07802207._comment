@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="nrg@bd619d1ebf16e6324c546adea8be8fe1cc2b4325"
+ nickname="nrg"
+ avatar="http://cdn.libravatar.org/avatar/428b6c95b52769cf9eecdd351018eacb"
+ subject="Confirmed with macOS 10.14.6 building git-annex-7.20200202.7"
+ date="2020-02-03T23:10:22Z"
+ content="""
+The issue is also seen [here](https://github.com/Homebrew/homebrew-core/pull/49731).
+"""]]
