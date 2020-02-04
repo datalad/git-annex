@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="jafpoU"
+ avatar="http://cdn.libravatar.org/avatar/b1016484e481ea844c1fe42ace53e88f"
+ subject="comment 2"
+ date="2020-02-04T03:35:48Z"
+ content="""
+Thank you!
+
+Just to confirm then, `git-annex-merge` will
+
+1. union merge any ref with basename `git-annex` onto `git-annex`
+2. union merge `synced/$branch` onto `$branch` where `$branch` is the checked out branch
+
+?
+
+My goal is for all remotes to have a consistent view of where the annexed files are, without auto-merging any normal branches.
+
+Is the process you described above the easiest way to achieve this?
+"""]]
