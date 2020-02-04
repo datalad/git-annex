@@ -47,3 +47,4 @@ git-annex: add OBJC_DISABLE_INITIALIZE_FORK_SAFETY environment variable https://
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> [[fixed|done]] in git-annex master --[[Joey]]
