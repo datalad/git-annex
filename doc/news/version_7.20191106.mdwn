@@ -1,5 +1,0 @@
-git-annex 7.20191106 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * init: Fix bug that lost modifications to unlocked files when init is
-     re-ran in an already initialized repo.
-   * benchmark: Add --databases to benchmark sqlite databases."""]]
