@@ -1,0 +1,72 @@
+[[!comment format=mdwn
+ username="chkno@50332f55d5ef2f4b7c6bec5253b853a8f2dc770e"
+ nickname="chkno"
+ avatar="http://cdn.libravatar.org/avatar/8194377c81da838dda761a5d93b9c25c"
+ subject="Interim shell scripts"
+ date="2020-02-04T06:43:02Z"
+ content="""
+Until this feature is available in git annex proper, here are some small shell scripts that use [lndir](https://gitlab.freedesktop.org/xorg/util/lndir) to create a merged view of the .git/annex/objects areas of multiple git-annex repositories.
+
+* [union-link-annexes](https://chkno.net/union-link-annexes) (supports absolute paths only)
+* [union-link-annexes-with-sharp-edges](https://chkno.net/union-link-annexes-with-sharp-edges) (for relative paths when needed)
+
+Demo:
+
+    $ mkdir demo
+    $ cd demo
+
+    $ git init repo1
+    $ cd repo1
+    $ git annex init repo1
+    $ echo from1 > from1
+    $ echo both > both
+    $ git annex add from1 both
+    $ git commit -m .
+
+    $ cd ..
+    $ git clone repo1 repo2
+    $ cd repo2
+    $ echo from2 > from2
+    $ git annex add from2
+    $ git annex copy --from origin both
+    $ git annex sync
+    $ git annex list
+    here
+    |origin
+    ||
+    XX both
+    _X from1
+    X_ from2
+
+    $ cd ../repo1
+    $ git annex sync
+    $ cd ..
+
+
+    $ union-link-annexes merged \"$PWD\"/repo1 \"$PWD\"/repo2
+
+
+    $ grep . repo1/*
+    repo1/both:both
+    repo1/from1:from1
+    grep: repo1/from2: No such file or directory
+
+    $ grep . repo2/*
+    repo2/both:both
+    grep: repo2/from1: No such file or directory
+    repo2/from2:from2
+
+    $ grep . merged/*
+    merged/both:both
+    merged/from1:from1
+    merged/from2:from2
+
+    $ find merged -not -type d -printf '%p -> %l\n'
+    merged/both -> .git/annex/objects/XV/zk/SHA256E-s5--f6d...
+    merged/from1 -> .git/annex/objects/vf/8W/SHA256E-s6--16e...
+    merged/from2 -> .git/annex/objects/3M/P2/SHA256E-s6--21e...
+    merged/.git/annex/objects/vf/8W/SHA256E-s6--16e... -> ~/demo/repo1/.git/annex/objects/vf/8W/SHA256E-s6--16e...
+    merged/.git/annex/objects/XV/zk/SHA256E-s5--f6d... -> ~/demo/repo1/.git/annex/objects/XV/zk/SHA256E-s5--f6d...
+    merged/.git/annex/objects/3M/P2/SHA256E-s6--21e... -> ~/demo/repo2/.git/annex/objects/3M/P2/SHA256E-s6--21e...
+
+"""]]
