@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="union mounting and hidemissing"
+ date="2020-02-04T09:01:52Z"
+ content="""
+One easy way to achieve this with git-annex as is would be actual operating-system union mounting. This'll work as long as all (but the lowest / most costly) checkouts [have their missing files hidden](https://git-annex.branchable.com/tips/hiding_missing_files/). Just be sure not to call `git-annex` on the resulting directory (and if there's any danger of it, you might want to consider whiteing out the git configuration in an additional top layer), but only inside one of the supplying repositories.
+"""]]
