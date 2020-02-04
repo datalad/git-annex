@@ -1,10 +1,10 @@
-git-annex (7.20200204) UNRELEASED; urgency=medium
+git-annex (7.20200204) upstream; urgency=medium
 
   * Fix build with persistent-template 2.8.0.
   * Makefile: Really move the fish completion to the
     vendor_completions.d directory.
 
- -- Joey Hess <id@joeyh.name>  Tue, 04 Feb 2020 11:58:22 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 04 Feb 2020 14:30:55 -0400
 
 git-annex (7.20200202.7) upstream; urgency=medium
 
