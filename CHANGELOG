@@ -1,3 +1,9 @@
+git-annex (7.20200204) UNRELEASED; urgency=medium
+
+  * Fix build with newest version of persistent-template.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 04 Feb 2020 11:58:22 -0400
+
 git-annex (7.20200202.7) upstream; urgency=medium
 
   * add: --force-annex/--force-git options make it easier to override
