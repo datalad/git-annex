@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="retries due to locked index file"
+ date="2020-02-05T16:59:40Z"
+ content="""
+\"A locked git index file does not prevent git-annex from making transfers\" -- by \"mask transient failures\" I meant all types of failures, not just transfers.  So e.g. if concurrent operations fail due to contention for the index file lock, retries (after increasing, randomized intervals) could mask the failure.  This would help especially for writing scripts/tools on top of git-annex.  Logically, some operations -- like `git-annex-add` -- should never fail, and being able to assume that makes scripting easier.
+"""]]

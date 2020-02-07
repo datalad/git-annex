@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="example of where retries could help"
+ date="2020-02-05T22:19:26Z"
+ content="""
+As one example, I just had a `git-annex-copy` command fail twice with `git-annex: thread blocked indefinitely in an STM transaction`, then have the same command succeed (or at least get much further -- still running) on the third try.   I can write my own wrappers to mask such errors, but a built-in implementation seems generally useful and would know better which failures are likely transient.
+"""]]

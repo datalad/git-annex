@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="potential security issues?"
+ date="2020-02-06T21:00:55Z"
+ content="""
+I wonder if storing checksums in a general-purpose mutable metadata field may cause security issues.  Someone could use the [[`git-annex-metadata`|git-annex-metadata]] command to overwrite the checksum.  It should be stored in a read-only field written only by `git-annex` itself, like the `field-lastchanged` metadata already is.
+
+Of course, if someone is able to write the [[git-annex branch|internals#The_git-annex_branch]] directly, or get the user to pull merges to it, they could alter the checksum stored there.  Maybe, only trust stored checksums if `merge.verifySignatures=true`?
+"""]]
