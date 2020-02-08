@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="chkno@50332f55d5ef2f4b7c6bec5253b853a8f2dc770e"
+ nickname="chkno"
+ avatar="http://cdn.libravatar.org/avatar/8194377c81da838dda761a5d93b9c25c"
+ subject="Three union-mounting methods that *don't* work"
+ date="2020-02-08T06:21:03Z"
+ content="""
+Linux's in-tree union-mounting option overlayfs [does not support modifications to underlying filesystems while an overlayfs mount is active](https://www.kernel.org/doc/Documentation/filesystems/overlayfs.txt):
+
+> Changes to the underlying filesystems while part of a mounted overlay filesystem are not allowed.  If the underlying filesystem is changed, the behavior of the overlay is undefined, though it will not result in a crash or deadlock.
+
+I.e., it's great for the LiveCD case of combining a read-only squashfs and a private tmpfs into something that behaves just like a normal filesystem, but it cannot be used to export a read-only view of multiple mutable resources.
+
+I can report that [aufs](http://aufs.sourceforge.net/) also doesn't work for this use case, at least as of 2014 when I last tried it.  Writes to underlying filesystems cause kernel panics that bring the whole machine down.
+
+I can also report that [hanwen/go-fuse's unionfs](https://github.com/hanwen/go-fuse/blob/master/example/unionfs/main.go) doesn't work for this use case.  Example problem: Growing files' sizes get stuck at the size they were the first time they were viewed through the union mount.
+"""]]
