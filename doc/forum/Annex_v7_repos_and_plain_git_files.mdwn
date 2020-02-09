@@ -1,0 +1,23 @@
+Hi,
+This is not an issue, more some questions related to my 'legacy' git-annex worklfow which is disturbed with v7 repos.
+
+## The context
+I've got an old repo (initially v5) which has both plain git txt files and annexed binary files. The plain git files don't go through git-annex, only git.
+THis way, I have the classic git history of the txt files, versionning, plus the management of the (big) binaries via git-annex.
+The best of the two worlds.
+
+## The pb
+I converted it to v7, and it is now not possible to add plain git files anymore though 'git add', they are managed by git-annex automatically, probably because of the smudge filter added in .git/info/attributes.
+I understand (and like) this new behaviour, because it avoids adding big binary files though 'git add' by accident. But in this repo, I would like to come back to the old behaviour.
+
+## What I did
+I disabled git-annex smudge filter in the file .git/info/attributes, which is now:
+
+    #* filter=annex
+    .* !filter
+
+## Question at 100000$
+Is this safe ?
+
+## Question 2
+Is there an other way of achieving this (adding plain git files outside git-annex) ?
