@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="adding plain git files in v7 repos"
+ date="2020-02-09T18:08:30Z"
+ content="""
+What git-annex version are you using, and what are your git config settings?  In the current version, if `annex.largefiles` is not set, or if `annex.gitaddtoannex` is set to `false`, `git add` should [[add all files to plain git|forum/lets_discuss_git_add_behavior/#comment-37e0ecaf8e0f763229fd7b8ee9b5a577]].
+"""]]
