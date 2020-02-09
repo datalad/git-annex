@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 2"
+ date="2020-02-09T22:59:35Z"
+ content="""
+Thks for pointing me to the \"git add v7\" very interesting thread. It explains everything.
+
+I'm using git-annex version: 7.20190912 (the default in Ubuntu 19.10 packages).
+
+Neither annex.gitaddtoannex nor annex.largefiles were set in my repo. In this version, I have to set annex.largefiles to \"nothing\" to get the expected behaviour, annex.gitaddtoannex true/false does not change anything. Of course, I verified this behaviour in a fresh new repo without any config change/hack.
+
+But even if annex.gitaddtoannex does not change anything right now, I'll set it to false, in case later version of git-annex uses it.
+
+"""]]
