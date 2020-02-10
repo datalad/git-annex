@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 5"
+ date="2020-02-10T10:10:06Z"
+ content="""
+Thks for pointing me to Conda, I didn't know it.
+
+About Ubuntu 19.10 old git-annex package, it seems I have the expected revision. I rarely mess with the package manager (only nvidia drivers!), so I don't expect any issue there.
+
+<https://ubuntu.pkgs.org/19.10/ubuntu-universe-amd64/git-annex_7.20190912-1_amd64.deb.html>
+<https://packages.ubuntu.com/eoan/git-annex>
+
+Yes, I agree, my git-annex package is an old one. Ubuntu is supposed to be a stable main stream distro, so optional packages like git-annex are not the cutting edge ones. And 19.10 is not a LTS release, you can expect the situation to be worse on 18.04 LTS. Same on Debian, Raspbian etc...
+
+
+"""]]
