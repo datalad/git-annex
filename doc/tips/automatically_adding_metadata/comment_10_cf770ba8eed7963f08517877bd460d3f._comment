@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="max"
+ avatar="http://cdn.libravatar.org/avatar/ebbd4dd37b341d018077a12e7ccf9fbd"
+ subject="adding support for additional metadata tools?"
+ date="2020-02-10T04:45:55Z"
+ content="""
+hi there, sincere gratitude for your work on git-annex.
+
+is it worth considering a more modular setup (maybe a python script :) or even haskell) for working with metadata extractors?
+
+currently it really only supports field-based filtering extractors. i am particularly interested in using (minimally):
+
+mp3info - offers a formatting string for printing but doesn't fit super nicely into the \"want\" fields in shell script. could probably be hacked in.
+
+mp4info - does not seem to offer any native parameters for filtering; would likely need some engineering/thought about how to take in all possible fields then filtering off of those.
+
+alternatively i could just write some personal scripts here, but just thought others would find it useful for auto extracting content from mp3/m4a files. extract doesn't seem to perform as well on these as, say, .flac files.
+
+thanks again!
+"""]]
