@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="cnjr2"
+ avatar="http://cdn.libravatar.org/avatar/f7e9654cc967c8815947b19829bfd746"
+ subject="comment 33"
+ date="2020-02-12T10:37:24Z"
+ content="""
+First of all thanks for `git-annex`! I have recently discovered it and was so pleased to see how it solves problems that I had not anticipated!
+
+Related to [comment 26](http://git-annex.branchable.com/special_remotes/S3/#comment-e2000bfcb5d4c2d1a017f52c1c02a1ba) above, I want to create a bucket in Frankfurt. It seems like the aws library used by git-annex is from [aristidb/aws](https://github.com/aristidb/aws) where the topic of `V4` signing was raised in [this issue](https://github.com/aristidb/aws/issues/167) ([comment](https://github.com/aristidb/aws/issues/167#issuecomment-258864661) by you joey?). 
+
+Are there workarounds here? I can only use Frankfurt.
+
+Thanks again!
+
+
+"""]]
