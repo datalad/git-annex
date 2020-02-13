@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="Still wanted (update with example)"
+ date="2020-02-13T20:08:45Z"
+ content="""
+I see this page recently was edited (when todo's were tagged) and so I wanted to chime in that this is still a feature I'm looking for, and I have a much less hypothetical use case for it.
+
+I'm a PhD student working on a research project where I supervise several undergraduates. We have a git repository that manages all of our code, and I let git-annex manage the large datafiles (also in the same repository) on which we run our code. The main repository is hosted on GitHub, and my students have read-only access to it. They've each made forks to which they have write access. We use a special remote that we all have write-access to, with wanted set to standard and group set to archive, so that it gets all of the content and distributes it as needed (the data is massive so git-annex is vital here since the student laptops can't realistically download it all at any one time).
+
+They use pull requests to the main GitHub repository to integrate their code changes, but we need a way to get the content of the git-annex branches in their forks (which are pushed to from their local repos) into the git-annex branch in the main GitHub repository. The natural solution seems for me (who has read/write access to the main repo and the fork) to do this, essentially pulling in git-annex branches from their forks to my local repo, and then pushing it to the main repo on GitHub. It'd also be nice if I can then push this back to all of their forks, too. I can do this manually, but I think I'd need to actually check out the git-annex branch (or stuff it in another worktree) and then do lots of work manually (or automate it in a script).
+
+First I tried `git annex sync --no-commit --no-push --no-pull` which (somewhat to my surprise) *did* pull the git-annex branches from their forks into my local repo, but didn't push `git-annex` back anywhere, and it neither pushed nor pulled `master`. So this was a good start, but I wanted to also push *only* the git-annex branch to the main repo (and ideally to their forks, too). So then I (foolishly) started dropping flags, and ended up in inadvertently pulling their work-in-progress `master` branches into the mainline and pushing this super-merged thing back to all of them. I was able to do some reseting and quick force-pushes before anyone noticed, but I should've known better :)
+
+Throughout this process I'm trying to teach them how to use git-annex (it's pretty clearly the right tool for the job :) but need to be really careful with what `git annex sync` commands I encourage them to run since I don't want the, 
+
+I'd love it if there was like a `--git-annex-branch-only` option that I could pass that would then do all the pushing/pulling goodness of `git annex sync` but *without* touching `master` (or whatever branch happens to be checked out). I could then teach the students to always use this flag to avoid actually introducing changes to their master branch (they're still learning git, too, so they'd have a hard time recovering from this). Even better if this was configurable, and something I could stick in the `git-annex-config` options so that when they clone the repo this setting would propagate to them along with the git-annex branch. 
+
+Is something like this in the pipeline? Also, is there a simpler workaround I can do for now that doesn't involve tons of (manual) merges and pushes?
+
+Thanks so much for such an excellent tool; if we didn't have this, we'd essentially just give up on version control for our scientific data, which would be a real bummer. 
+"""]]
