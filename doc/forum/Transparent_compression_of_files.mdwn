@@ -1,0 +1,5 @@
+Hi,
+
+I have a lot of files which are around 80MB and can be easily compressed down to ~55MB. I did some tests with brotli and decompression was reasonable fast, at least fast enough that I would probably not notice given my current transfer speeds. In order to save disk space I would like to able to transparently compress my files. That means, a file is stored compressed in git-annex's blob store and decompressed when I `get` it.
+
+I understand that gpg does compression, but I don't want to deal with encryption, all my repos are local. I've looked at the code and from what I could see the Hash-Backends are rather simple. However, that's probably not the right place. Is this a planned feature? Would it be hard to implement? Of course, ideally the compression algorithm should be configurable. E.g. by just doing a syscall to `brotli` or `gzip`.
