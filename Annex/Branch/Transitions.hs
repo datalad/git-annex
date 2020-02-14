@@ -22,7 +22,7 @@ import Types.TrustLevel
 import Types.UUID
 import Types.MetaData
 import Types.Remote
-import Types.GitConfig
+import Types.GitConfig (GitConfig)
 import Types.ProposedAccepted
 import Annex.SpecialRemote.Config
 
