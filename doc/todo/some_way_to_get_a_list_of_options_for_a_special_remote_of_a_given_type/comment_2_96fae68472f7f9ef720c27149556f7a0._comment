@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-02-14T17:20:27Z"
+ content="""
+Sweet, thanks for the feature!
+
+I wondered, why `--whatelse` which has no semantic relation to \"parameter\" or \"config\", and not something like `--help-params`, `--help-configs`, or `--listconfigs` to relate it to either PARAMS (as --help reports configs) or LISTCONFIGS protocol command?
+"""]]
