@@ -1,5 +1,8 @@
 git-annex (7.20200205) UNRELEASED; urgency=medium
 
+  * fsck --from remote: Fix a concurrency bug that could make it incorrectly
+    detect that content in the remote is corrupt, and remove it, resulting in
+    data loss.
   * When git-annex is built with a ssh that does not support ssh connection
     caching, default annex.sshcaching to false, but let the user override it.
   * Improve warning messages further when ssh connection caching cannot

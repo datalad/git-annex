@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-14T18:49:07Z"
+ content="""
+Ugh, I think this could potentially result in data loss. Not when using bup, 
+but other special remotes.
+
+I've fixed it in git and will think about moving the date of the next
+release up.
+"""]]
