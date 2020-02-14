@@ -432,7 +432,9 @@ dropKey' repo r (State connpool duc _ _) key
 				return True
 		, return False
 		)
-	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
+	| Git.repoIsHttp repo = do
+		warning "dropping from http remote not supported"
+		return False
 	| otherwise = commitOnCleanup repo r $ do
 		let fallback = Ssh.dropKey repo key
 		P2PHelper.remove (Ssh.runProto r connpool (return False) fallback) key
@@ -536,7 +538,9 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 		else P2PHelper.retrieve
 			(\p -> Ssh.runProto r connpool (return (False, UnVerified)) (fallback p))
 			key file dest meterupdate
-	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
+	| otherwise = do
+		warning "copying from non-ssh, non-http remote not supported"
+		unVerified (return False)
   where
 	fallback p = unVerified $ feedprogressback $ \p' -> do
 		oh <- mkOutputHandlerQuiet
@@ -649,7 +653,9 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 			(\p -> Ssh.runProto r connpool (return False) (copyremotefallback p))
 			key file meterupdate
 		
-	| otherwise = giveup "copying to non-ssh repo not supported"
+	| otherwise = do
+		warning "copying to non-ssh repo not supported"
+		return False
   where
 	copylocal Nothing = return False
 	copylocal (Just (object, checksuccess)) = do

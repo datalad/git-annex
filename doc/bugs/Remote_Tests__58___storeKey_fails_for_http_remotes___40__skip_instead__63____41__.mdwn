@@ -78,3 +78,8 @@ It's possible there's another issue here I'm not entirely aware of.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Of course!  I use and rely on it daily :)
+
+> This is not a bug in the test suite, it turns out, but in
+> git-annex's handling of a http remote. It was throwing fatal errors
+> rather than the correct behavior of displaying a warning. [[fixed|done]]
+> --[[Joey]]
