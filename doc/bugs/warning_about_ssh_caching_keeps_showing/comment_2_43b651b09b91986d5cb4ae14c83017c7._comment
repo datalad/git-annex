@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="ssh caching"
+ date="2020-02-14T20:53:27Z"
+ content="""
+\"your build of git-annex may have been made without ssh connection caching support, which would happen if its configure program detected at build time that ssh doesn't support it\" -- yes, according to the [build log](https://dev.azure.com/conda-forge/84710dde-1620-425b-80d0-4cf5baca359d/_apis/build/builds/117561/logs/8).  I can add an ssh dependency to the conda-forge git-annex recipe.  It would be more flexible to not have that dependency and instead to have git-annex's behavior depend on the ssh available at runtime; but, I guess there's a reason it's a compile-time option?
+
+Also, I don't have ssh prompting for passwords since I use ssh-agent, and having the warning shown every time is distracting.  Maybe, a config option could be added to disable the warning?
+"""]]
