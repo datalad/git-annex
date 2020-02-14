@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="Editing Comments?"
+ date="2020-02-14T01:23:12Z"
+ content="""
+Is it possible to edit comments on the branchable wiki? I realized there was a sentence I failed to finish when posting [this comment](https://git-annex.branchable.com/todo/sync_--branches__to_sync_only_specified_branches___40__e.g._git-annex__41__/#comment-19feab1afb2e0b33315a8368a7cdebf7) and I'd love to go back and finish the thought. The \"Edit\" button at the top of the page lets me edit the content of the page, but not any of the comments.
+
+I tried cloning the wiki, editing the file corresponding to my comment, and then pushing, but the push was rejected (the changes were in doc tree so I expected it to be accepted, but perhaps comments are more locked down).
+"""]]
