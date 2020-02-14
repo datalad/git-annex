@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -27,8 +27,8 @@ data LogVariety
 
 {- Converts a path from the git-annex branch into one of the varieties
  - of logs used by git-annex, if it's a known path. -}
-getLogVariety :: RawFilePath -> Maybe LogVariety
-getLogVariety f
+getLogVariety :: GitConfig -> RawFilePath -> Maybe LogVariety
+getLogVariety config f
 	| f `elem` topLevelOldUUIDBasedLogs = Just OldUUIDBasedLog
 	| f `elem` topLevelNewUUIDBasedLogs = Just NewUUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
@@ -36,7 +36,7 @@ getLogVariety f
 	| isChunkLog f = ChunkLog <$> extLogFileKey chunkLogExt f
 	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
 	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
-	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
+	| otherwise = PresenceLog <$> firstJust (presenceLogs config f)
 
 {- All the old-format uuid-based logs stored in the top of the git-annex branch. -}
 topLevelOldUUIDBasedLogs :: [RawFilePath]
@@ -61,10 +61,10 @@ topLevelNewUUIDBasedLogs =
 
 
 {- All the ways to get a key from a presence log file -}
-presenceLogs :: RawFilePath -> [Maybe Key]
-presenceLogs f =
+presenceLogs :: GitConfig -> RawFilePath -> [Maybe Key]
+presenceLogs config f =
 	[ urlLogFileKey f
-	, locationLogFileKey f
+	, locationLogFileKey config f
 	]
 
 {- Top-level logs that are neither UUID based nor presence logs. -}
@@ -218,8 +218,17 @@ urlLogFileKey :: RawFilePath -> Maybe Key
 urlLogFileKey = extLogFileKey urlLogExt
 
 {- Converts a pathname into a key if it's a location log. -}
-locationLogFileKey :: RawFilePath -> Maybe Key
-locationLogFileKey path
-	-- Want only xx/yy/foo.log, not .log files in other places.
-	| length (splitDirectories (fromRawFilePath path)) /= 3 = Nothing
+locationLogFileKey :: GitConfig -> RawFilePath -> Maybe Key
+locationLogFileKey config path
+	| length (splitDirectories (fromRawFilePath path)) /= locationLogFileDepth config = Nothing
 	| otherwise = extLogFileKey ".log" path
+
+{- Depth of location log files within the git-annex branch.
+ -
+ - Normally they are xx/yy/key.log so depth 3. 
+ - The same extension is also used for other logs that
+ - are not location logs. -}
+locationLogFileDepth :: GitConfig -> Int
+locationLogFileDepth config = hashlevels + 1
+  where
+        HashLevels hashlevels = branchHashLevels config

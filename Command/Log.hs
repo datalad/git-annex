@@ -210,6 +210,7 @@ getAllLog = getGitLog []
 
 getGitLog :: [FilePath] -> [CommandParam] -> Annex ([RefChange], IO Bool)
 getGitLog fs os = do
+	config <- Annex.getGitConfig
 	(ls, cleanup) <- inRepo $ pipeNullSplit $
 		[ Param "log"
 		, Param "-z"
@@ -220,7 +221,7 @@ getGitLog fs os = do
 		[ Param $ Git.fromRef Annex.Branch.fullname
 		, Param "--"
 		] ++ map Param fs
-	return (parseGitRawLog (map decodeBL' ls), cleanup)
+	return (parseGitRawLog config (map decodeBL' ls), cleanup)
 
 -- Parses chunked git log --raw output, which looks something like:
 --
@@ -236,8 +237,8 @@ getGitLog fs os = do
 --
 -- The timestamp is not included before all changelines, so
 -- keep track of the most recently seen timestamp.
-parseGitRawLog :: [String] -> [RefChange]
-parseGitRawLog = parse epoch
+parseGitRawLog :: GitConfig -> [String] -> [RefChange]
+parseGitRawLog config = parse epoch
   where
 	epoch = toEnum 0 :: POSIXTime
 	parse oldts ([]:rest) = parse oldts rest
@@ -250,7 +251,7 @@ parseGitRawLog = parse epoch
 			(tss, cl') -> (parseTimeStamp tss, cl')
 	  	mrc = do
 			(old, new) <- parseRawChangeLine cl
-			key <- locationLogFileKey (toRawFilePath c2)
+			key <- locationLogFileKey config (toRawFilePath c2)
 			return $ RefChange
 				{ changetime = ts
 				, oldref = old

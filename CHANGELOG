@@ -9,6 +9,9 @@ git-annex (7.20200205) UNRELEASED; urgency=medium
     be used, to clearly state why.
   * Avoid throwing fatal errors when asked to write to a readonly
     git remote on http.
+  * Fix support for repositories tuned with annex.tune.branchhash1=true,
+    including --all not working and git-annex log not displaying anything
+    for annexed files.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Feb 2020 14:12:25 -0400
 

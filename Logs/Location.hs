@@ -130,8 +130,10 @@ loggedKeys :: Annex [Unchecked Key]
 loggedKeys = loggedKeys' (not <$$> checkDead)
 
 loggedKeys' :: (Key -> Annex Bool) -> Annex [Unchecked Key]
-loggedKeys' check = mapMaybe (defercheck <$$> locationLogFileKey)
-	<$> Annex.Branch.files
+loggedKeys' check = do
+	config <- Annex.getGitConfig
+	mapMaybe (defercheck <$$> locationLogFileKey config)
+		<$> Annex.Branch.files
   where
 	defercheck k = Unchecked $ ifM (check k)
 		( return (Just k)

@@ -577,10 +577,11 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	 -}
 	run [] = noop
 	run changers = do
+		config <- Annex.getGitConfig
 		trustmap <- calcTrustMap <$> getStaged trustLog
 		remoteconfigmap <- calcRemoteConfigMap <$> getStaged remoteLog
 		-- partially apply, improves performance
-		let changers' = map (\c -> c trustmap remoteconfigmap) changers
+		let changers' = map (\c -> c config trustmap remoteconfigmap) changers
 		fs <- branchFiles
 		forM_ fs $ \f -> do
 			content <- getStaged f

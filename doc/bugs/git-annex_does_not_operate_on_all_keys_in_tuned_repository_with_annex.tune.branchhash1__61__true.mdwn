@@ -87,3 +87,5 @@ Repository status:
 Of course, I love it! Great project, thanks, Joey!
 
 However, /me always wants more features from it. It's great that git-annex continues to develop.
+
+> [[fixed|done]] --[[Joey]] 

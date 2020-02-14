@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-14T19:01:50Z"
+ content="""
+Indeed this is a bug.  Easy to see why, note that "3":
+
+	locationLogFileKey path
+	        -- Want only xx/yy/foo.log, not .log files in other places.
+	        | length (splitDirectories (fromRawFilePath path)) /= 3 = Nothing
+
+So this also affected some other things that use that. Including `git-annex log`,
+potentially something to do with v2 upgrade (if a v2 repo could be tuned this way?),
+and handling transitions set up by `git annex forget`.
+
+(I also checked if annex.tune.objecthash1 similarly broke stuff that
+enumerated .git/annex/objects, but that was handled ok already.)
+"""]]
