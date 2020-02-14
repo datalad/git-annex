@@ -1,3 +1,12 @@
+git-annex (7.20200205) UNRELEASED; urgency=medium
+
+  * When git-annex is built with a ssh that does not support ssh connection
+    caching, default annex.sshcaching to false, but let the user override it.
+  * Improve warning messages further when ssh connection caching cannot
+    be used, to clearly state why.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 14 Feb 2020 14:12:25 -0400
+
 git-annex (7.20200204) upstream; urgency=medium
 
   * Fix build with persistent-template 2.8.0.

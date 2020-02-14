@@ -55,3 +55,5 @@ local repository version: 7
 I've been using git-annex for 1.5 years to manage bioinformatics analyses.  It's a very versatile and well-designed tool.  I've been able to adapt it to many use cases;
 the ability to easily write your own external backends has been especially helpful for that.  The amount of work and thought that has gone into designing/building git-annex is
 enormous, and very much appreciated.
+
+> [[done]]; see comment --[[Joey]]
