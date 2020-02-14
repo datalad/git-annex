@@ -1,0 +1,59 @@
+<details>
+<summary>ATM it is a formatted text (click to expand)</summary> 
+
+```shell
+$> git annex initremote myrsync type=rsync --whatelse
+shellescape
+	avoid usual shell escaping (not recommended)
+	(yes or no)
+rsyncurl
+	(required) url or hostname:/directory for rsync to use
+chunk
+	size of chunks (eg, 1MiB)
+encryption
+	how to encrypt data stored in the special remote
+	(hybrid or none or pubkey or shared or sharedpubkey)
+embedcreds
+	embed credentials into git repository
+	(yes or no)
+mac
+	how to encrypt filenames used on the remote
+	(HMACSHA1 or HMACSHA224 or HMACSHA256 or HMACSHA384 or HMACSHA512)
+keyid
+	gpg key id
+keyid+
+	add additional gpg key
+keyid-
+	remove gpg key
+exporttree
+	export trees of files to this remote
+	(yes or no)
+importtree
+	import trees of files from this remote
+	(yes or no)
+```
+</details>
+
+which would make it necessary to establish a possibly fragile parsing by any tool which would like to programmatically obtain/use/expose those options.
+
+It would be great if there was a way to trigger such listing be output in more friendly for machines form? e.g. a json dictionary alike
+
+```json
+{
+ "rsyncurl": {
+   "required": True,
+   "description": "url or hostname:/directory for rsync to use"
+ },
+ "shellescape": {
+   "description": "avoid usual shell escaping (not recommended)",
+   "choices": ["yes", "no"]
+   },
+   ...
+}
+```
+
+Looking at the [protocol](https://git-annex.branchable.com/design/external_special_remote_protocol/) I see no indication of "required" or "choices" to be actually explicitly provided by the remote fields, so I guess just supposed to be included in the text, so may be given current state of things, aforementioned dictionary would be simply ```{"NAME": "DESCRIPTION"}```,  which someone makes this proposed TODO less valuable.
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
