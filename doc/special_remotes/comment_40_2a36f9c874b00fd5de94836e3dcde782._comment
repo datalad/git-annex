@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="giuly.ippoliti@c1e2f0d5e40b128900f94f3d107d3719f87c3ff7"
+ nickname="giuly.ippoliti"
+ avatar="http://cdn.libravatar.org/avatar/4444ce1930af68fd817e9649d40e0359"
+ subject="Disable git annex logs"
+ date="2020-02-14T19:39:26Z"
+ content="""
+Hi,
+
+So while writing the globus special remote (git-annex-remote-globus) I often redirect my logs to annex. Nevertheless these logs are always logged out in the console, them being INFO, ERROR, DEBUG and I would like to control that. Is there a way to disable console logging of logs sent back to git annex?
+
+Something like ANNEX_LOG_LEVEL=self.annex.ERROR
+
+Thanks !!
+
+Regards
+Giulia
+"""]]
