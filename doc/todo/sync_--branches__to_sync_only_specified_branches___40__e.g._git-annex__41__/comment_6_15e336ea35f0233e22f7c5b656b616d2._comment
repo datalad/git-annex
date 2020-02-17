@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Still wanted (update with example)"""
+ date="2020-02-17T17:15:10Z"
+ content="""
+@Dan, thanks for explaining your use case.
+
+In particular, I see why you don't want to pull their master
+branches with the unfinished whatever, but do want to pull
+their git-annex branch, and probably fetch their feature branches
+too.
+
+I'm still unclear on why, after merging someone's feature
+branch into your branch (master I suppose), you would not
+want sync to push that updated branch back to origin? Is the issue not
+about pushing master to origin, but that you don't want it to push 
+master to their forks? But if their forks contain other changes in
+their master branches, it would not overwrite the changes.
+
+It does seem like setting remote.name.fetch would work in your use case,
+but I also understand why you might not want to use it -- refspecs are
+hard! -- and when you're dealing with feature branches that might be named
+anything, it's hard to write a refspec that does what you want, other than
+one that fetches everything and merges nothing.
+
+So I do see the appeal of a git-annex sync --only-annex that separates
+concerns, letting you use whatever git commands you normally would to
+commit and pull and push everything, except for the git-annex branch.
+
+And, that name implies it also syncs the annexed content, so no need to
+remember to use --content with it. (I want --content to be sync default,
+but there are backcompat issues with that so annex.synccontent is only an
+option.)
+
+Soo, I'm leaning toward adding that option and not some other --branches
+option that lists branches to sync or whatever.
+
+----
+
+And, since `git-annex config` can set repo-wide annex.synccontent and
+annex.autocommit that change the behavior of `git-annex sync`,
+it could make sense to also have a setting that enables --only-annex
+by default. I don't know if I'd encourage setting that in your repo though;,
+it might teach the students a non-standard git-annex behavior.
+Re that, it would be helpful if you could finish this interrupted
+thought of yours:
+
+> Throughout this process I'm trying to teach them how to use git-annex (it's
+> pretty clearly the right tool for the job :) but need to be really careful
+> with what `git annex sync` commands I encourage them to run since I don't
+> want the, 
+
+Because I'm not yet seeing how any use of git-annex sync by the students
+could be problimatic; it won't be able to push their master branch
+to your repo or anything.
+"""]]
