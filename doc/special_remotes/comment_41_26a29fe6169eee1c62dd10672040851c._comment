@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 41"""
+ date="2020-02-17T16:26:45Z"
+ content="""
+@giuly.ippoliti this is not the best place to ask.. 
+[[design/external_special_remote_protocol]] is a better place to discuss
+special remote implementation.
+
+Anyway, git-annex's --quiet option will shut up the INFO.
+DEBUG is only ever displayed when you use the --debug option.
+ERROR should only be used if you have a problem that the user is going to
+care about seeing.
+"""]]
