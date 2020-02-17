@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-17T16:06:26Z"
+ content="""
+My design process for this feature included almost getting stuck on wanting
+some kind of types for the values, and way to track which options are
+required, or exclusive of other options, or dependencies of other options,
+etc. All stuff that eg, an applicative option parser can support quite
+well, but it would complicate the external protocol enourmously, if it
+could be represented at all in it. So I had to eliminate all that.
+
+I think it's fairly uncommon for tab completion to do anything special
+about required parameters, or even mutually exclusive options (although
+git-annex tab completion does handle the latter), and while I can imagine
+a gui interface marking an input field as required, it seems
+that would be the least of its problems if it doesn't know what kind of
+control to use for the field?
+
+It would be easy to add --whatelse-json, but it would be limited to the
+name, a description of the purpose of the field, and maybe a description
+of the expected value or list of valid values.
+I'm unsure about the utility of that..
+"""]]
