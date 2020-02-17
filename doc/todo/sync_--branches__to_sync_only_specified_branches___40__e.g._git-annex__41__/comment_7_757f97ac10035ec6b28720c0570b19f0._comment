@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-02-17T19:07:47Z"
+ content="""
+Implemented --only-annex.
+
+I'm going to close this todo, but do follow up if that does not adequately
+cover your use case.
+"""]]

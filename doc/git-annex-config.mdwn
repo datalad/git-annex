@@ -64,7 +64,12 @@ These settings can be overridden on a per-repository basis using
 
 * `annex.synccontent`
 
-  Set to true to make git-annex sync default to syncing content.
+  Set to true to make git-annex sync default to syncing annexed content.
+
+* `annex.synconlyannex`
+
+  Set to true to make git-annex sync default to only sincing the git-annex
+  branch and annexed content.
 
 * `annex.securehashesonly`
 

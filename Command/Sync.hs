@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ module Command.Sync (
 	syncBranch,
 	updateBranches,
 	seekExportContent,
+	SyncOptions(..),
 ) where
 
 import Command
@@ -78,8 +79,10 @@ cmd = withGlobalOptions [jobsOption] $
 		"synchronize local repository with remotes"
 		(paramRepeating paramRemote) (seek <--< optParser)
 
-data SyncOptions  = SyncOptions
+data SyncOptions = SyncOptions
 	{ syncWith :: CmdParams
+	, onlyAnnexOption :: Bool
+	, notOnlyAnnexOption :: Bool
 	, commitOption :: Bool
 	, noCommitOption :: Bool
 	, messageOption :: Maybe String
@@ -90,13 +93,26 @@ data SyncOptions  = SyncOptions
 	, contentOfOption :: [FilePath]
 	, cleanupOption :: Bool
 	, keyOptions :: Maybe KeyOptions
-	, resolveMergeOverride :: ResolveMergeOverride
+	, resolveMergeOverride :: Bool
 	}
 
-newtype ResolveMergeOverride = ResolveMergeOverride Bool
-
-instance Default ResolveMergeOverride where
-	def = ResolveMergeOverride False
+instance Default SyncOptions where
+	def = SyncOptions
+		{ syncWith = []
+		, onlyAnnexOption = False
+		, notOnlyAnnexOption = False
+		, commitOption = False
+		, noCommitOption = False
+		, messageOption = Nothing
+		, pullOption = False
+		, pushOption = False
+		, contentOption = False
+		, noContentOption = False
+		, contentOfOption = []
+		, cleanupOption = False
+		, keyOptions = Nothing
+		, resolveMergeOverride = False
+		}
 
 optParser :: CmdParamsDesc -> Parser SyncOptions
 optParser desc = SyncOptions
@@ -104,6 +120,15 @@ optParser desc = SyncOptions
 		( metavar desc
 		<> completeRemotes
 		))
+	<*> switch 
+		( long "only-annex"
+		<> short 'a'
+		<> help "only sync git-annex branch and annexed file contents"
+		)
+	<*> switch 
+		( long "not-only-annex"
+		<> help "sync git branches as well as annex"
+		)
 	<*> switch
 		( long "commit"
 		<> help "commit changes to git"
@@ -124,16 +149,16 @@ optParser desc = SyncOptions
 		)
 	<*> switch 
 		( long "content"
-		<> help "transfer file contents" 
+		<> help "transfer annexed file contents" 
 		)
 	<*> switch
 		( long "no-content"
-		<> help "do not transfer file contents"
+		<> help "do not transfer annexed file contents"
 		)
 	<*> many (strOption
 		( long "content-of"
 		<> short 'C'
-		<> help "transfer file contents of files in a given location"
+		<> help "transfer contents of annexed files in a given location"
 		<> metavar paramPath
 		))
 	<*> switch
@@ -141,15 +166,17 @@ optParser desc = SyncOptions
 		<> help "remove synced/ branches from previous sync"
 		)
 	<*> optional parseAllOption
-	<*> (ResolveMergeOverride <$> invertableSwitch "resolvemerge" True
+	<*> invertableSwitch "resolvemerge" True
 		( help "do not automatically resolve merge conflicts"
-		))
+		)
 
 -- Since prepMerge changes the working directory, FilePath options
 -- have to be adjusted.
 instance DeferredParseClass SyncOptions where
 	finishParse v = SyncOptions
 		<$> pure (syncWith v)
+		<*> pure (onlyAnnexOption v)
+		<*> pure (notOnlyAnnexOption v)
 		<*> pure (commitOption v)
 		<*> pure (noCommitOption v)
 		<*> pure (messageOption v)
@@ -189,7 +216,7 @@ seek' o = do
 			-- These actions cannot be run concurrently.
 			mapM_ includeCommandAction $ concat
 				[ [ commit o ]
-				, [ withbranch (mergeLocal mergeConfig (resolveMergeOverride o)) ]
+				, [ withbranch (mergeLocal mergeConfig o) ]
 				, map (withbranch . pullRemote o mergeConfig) gitremotes
 				,  [ mergeAnnex ]
 				]
@@ -215,13 +242,14 @@ seek' o = do
 						, [ commitAnnex, mergeAnnex ]
 						]
 	
-			void $ includeCommandAction $ withbranch pushLocal
+			void $ includeCommandAction $ withbranch $ pushLocal o
 			-- Pushes to remotes can run concurrently.
 			mapM_ (commandAction . withbranch . pushRemote o) gitremotes
   where
 	shouldsynccontent = pure (contentOption o)
 		<||> pure (not (null (contentOfOption o)))
 		<||> (pure (not (noContentOption o)) <&&> getGitConfigVal annexSyncContent)
+		<||> onlyAnnex o
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
@@ -241,14 +269,14 @@ mergeConfig =
 	, Git.Merge.MergeUnrelatedHistories
 	]
 
-merge :: CurrBranch -> [Git.Merge.MergeConfig] -> ResolveMergeOverride -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
-merge currbranch mergeconfig resolvemergeoverride commitmode tomerge = case currbranch of
+merge :: CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
+merge currbranch mergeconfig o commitmode tomerge = case currbranch of
 	(Just b, Just adj) -> mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
 	(b, _) -> autoMergeFrom tomerge b mergeconfig canresolvemerge commitmode
   where
-	canresolvemerge = case resolvemergeoverride of
-		ResolveMergeOverride True -> getGitConfigVal annexResolveMerge
-		ResolveMergeOverride False -> return False
+	canresolvemerge = if resolveMergeOverride o
+		then getGitConfigVal annexResolveMerge
+		else return False
 
 syncBranch :: Git.Branch -> Git.Branch
 syncBranch = Git.Ref.underBase "refs/heads/synced" . fromAdjustedBranch
@@ -296,8 +324,10 @@ commit o = stopUnless shouldcommit $ starting "commit" (ActionItemOther Nothing)
 			]
 		return True
   where
-	shouldcommit = pure (commitOption o)
+	shouldcommit = notOnlyAnnex o <&&>
+		( pure (commitOption o)
 		<||> (pure (not (noCommitOption o)) <&&> getGitConfigVal annexAutoCommit)
+		)
 
 commitMsg :: Annex String
 commitMsg = do
@@ -316,14 +346,18 @@ commitStaged commitmode commitmessage = do
 	void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch parents
 	return True
 
-mergeLocal :: [Git.Merge.MergeConfig] -> ResolveMergeOverride -> CurrBranch -> CommandStart
-mergeLocal mergeconfig resolvemergeoverride currbranch@(Just _, _) =
+mergeLocal :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandStart
+mergeLocal mergeconfig o currbranch = stopUnless (notOnlyAnnex o) $
+	mergeLocal' mergeconfig o currbranch
+
+mergeLocal' :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandStart
+mergeLocal' mergeconfig o currbranch@(Just _, _) =
 	needMerge currbranch >>= \case
 		Nothing -> stop
 		Just syncbranch ->
 			starting "merge" (ActionItemOther (Just $ Git.Ref.describe syncbranch)) $
-				next $ merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit syncbranch
-mergeLocal _ _ (Nothing, madj) = do
+				next $ merge currbranch mergeconfig o Git.Branch.ManualCommit syncbranch
+mergeLocal' _ _ (Nothing, madj) = do
 	b <- inRepo Git.Branch.currentUnsafe
 	needMerge (b, madj) >>= \case
 		Nothing -> stop
@@ -348,8 +382,8 @@ needMerge (Just branch, madj) = ifM (allM id checks)
 	syncbranch = syncBranch branch
 	branch' = maybe branch (adjBranch . originalToAdjusted branch) madj
 
-pushLocal :: CurrBranch -> CommandStart
-pushLocal b = do
+pushLocal :: SyncOptions -> CurrBranch -> CommandStart
+pushLocal o b = stopUnless (notOnlyAnnex o) $ do
 	updateBranches b
 	stop
 
@@ -388,16 +422,25 @@ pullRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> 
 pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && wantpull) $
 	starting "pull" (ActionItemOther (Just (Remote.name remote))) $ do
 		showOutput
-		ifM fetch
-			( next $ mergeRemote remote branch mergeconfig (resolveMergeOverride o)
-			, next $ return True
+		ifM (onlyAnnex o)
+			( do
+				void $ fetch $ map Git.fromRef 
+					[ Annex.Branch.name
+					, syncBranch $ Annex.Branch.name
+					]
+				next $ return True
+			, ifM (fetch [])
+				( next $ mergeRemote remote branch mergeconfig o
+				, next $ return True
+				)
 			)
   where
-	fetch = do
+	fetch bs = do
 		repo <- Remote.getRepo remote
 		inRepoWithSshOptionsTo repo (Remote.gitconfig remote) $
-			Git.Command.runBool
+			Git.Command.runBool $
 				[Param "fetch", Param $ Remote.name remote]
+					++ map Param bs
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
 importRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
@@ -412,8 +455,7 @@ importRemote o mergeconfig remote currbranch
 				then Nothing
 				else Just (asTopFilePath (toRawFilePath s))
 			Command.Import.seekRemote remote branch subdir
-			void $ mergeRemote remote currbranch mergeconfig
-				(resolveMergeOverride o)
+			void $ mergeRemote remote currbranch mergeconfig o
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
@@ -422,8 +464,8 @@ importRemote o mergeconfig remote currbranch
  - were committed (or pushed changes, if this is a bare remote),
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote -> CurrBranch -> [Git.Merge.MergeConfig] -> ResolveMergeOverride -> CommandCleanup
-mergeRemote remote currbranch mergeconfig resolvemergeoverride = ifM isBareRepo
+mergeRemote :: Remote -> CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> CommandCleanup
+mergeRemote remote currbranch mergeconfig o = ifM isBareRepo
 	( return True
 	, case currbranch of
 		(Nothing, _) -> do
@@ -435,31 +477,37 @@ mergeRemote remote currbranch mergeconfig resolvemergeoverride = ifM isBareRepo
 	)
   where
 	mergelisted getlist = and <$> 
-		(mapM (merge currbranch mergeconfig resolvemergeoverride Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
+		(mapM (merge currbranch mergeconfig o Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [fromAdjustedBranch branch, syncBranch branch]
 
 pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pushRemote _o _remote (Nothing, _) = stop
-pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> needpush) $
-	starting "push" (ActionItemOther (Just (Remote.name remote))) $ next $ do
-		repo <- Remote.getRepo remote
-		showOutput
-		ok <- inRepoWithSshOptionsTo repo gc $
-			pushBranch remote branch
-		if ok
-			then postpushupdate repo
-			else do
-				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
-				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
-				return ok
+pushRemote o remote (Just branch, _) = do
+	onlyannex <- onlyAnnex o
+	let mainbranch = if onlyannex then Nothing else Just branch
+	stopUnless (pure (pushOption o) <&&> needpush mainbranch) $
+		starting "push" (ActionItemOther (Just (Remote.name remote))) $ next $ do
+			repo <- Remote.getRepo remote
+			showOutput
+			ok <- inRepoWithSshOptionsTo repo gc $
+				pushBranch remote mainbranch
+			if ok
+				then postpushupdate repo
+				else do
+					warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
+					showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
+					return ok
   where
 	gc = Remote.gitconfig remote
-	needpush
+	needpush mainbranch
 		| remoteAnnexReadOnly gc = return False
 		| not (remoteAnnexPush gc) = return False
-		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
+		| otherwise = anyM (newer remote) $ catMaybes
+			[ syncBranch <$> mainbranch
+			, Just (Annex.Branch.name)
+			]
 	-- Older remotes on crippled filesystems may not have a
 	-- post-receive hook set up, so when updateInstead emulation
 	-- is needed, run post-receive manually.
@@ -509,16 +557,17 @@ pushRemote o remote (Just branch, _) = stopUnless (pure (pushOption o) <&&> need
  - The sync push will fail to overwrite if receive.denyNonFastforwards is
  - set on the remote.
  -}
-pushBranch :: Remote -> Git.Branch -> Git.Repo -> IO Bool
-pushBranch remote branch g = directpush `after` annexpush `after` syncpush
+pushBranch :: Remote -> Maybe Git.Branch -> Git.Repo -> IO Bool
+pushBranch remote mbranch g = directpush `after` annexpush `after` syncpush
   where
-	syncpush = flip Git.Command.runBool g $ pushparams
-		[ Git.Branch.forcePush $ refspec Annex.Branch.name
-		, refspec $ fromAdjustedBranch branch
+	syncpush = flip Git.Command.runBool g $ pushparams $ catMaybes
+		[ Just $ Git.Branch.forcePush $ refspec Annex.Branch.name
+		, (refspec . fromAdjustedBranch) <$> mbranch
 		]
 	annexpush = void $ tryIO $ flip Git.Command.runQuiet g $ pushparams
 		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name ]
-	directpush = do
+	directpush = case mbranch of
+		Nothing -> noop
 		-- Git prints out an error message when this fails.
 		-- In the default configuration of receive.denyCurrentBranch,
 		-- the error message mentions that config setting
@@ -529,11 +578,12 @@ pushBranch remote branch g = directpush `after` annexpush `after` syncpush
 		-- including the error displayed when
 		-- receive.denyCurrentBranch=updateInstead -- the user
 		-- will want to see that one.
-		let p = flip Git.Command.gitCreateProcess g $ pushparams
-			[ Git.fromRef $ Git.Ref.base $ fromAdjustedBranch branch ]
-		(transcript, ok) <- processTranscript' p Nothing
-		when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
-			hPutStr stderr transcript
+		Just branch -> do
+			let p = flip Git.Command.gitCreateProcess g $ pushparams
+				[ Git.fromRef $ Git.Ref.base $ fromAdjustedBranch branch ]
+			(transcript, ok) <- processTranscript' p Nothing
+			when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
+				hPutStr stderr transcript
 	pushparams branches =
 		[ Param "push"
 		, Param $ Remote.name remote
@@ -784,3 +834,11 @@ cleanupRemote remote (Just b, _) =
 			, Param $ Git.fromRef $ syncBranch $
 				Git.Ref.base $ Annex.Branch.name
 			]
+
+notOnlyAnnex :: SyncOptions -> Annex Bool
+notOnlyAnnex o = not <$> onlyAnnex o
+
+onlyAnnex :: SyncOptions -> Annex Bool
+onlyAnnex o = do
+	cfg <- getGitConfigVal annexSyncOnlyAnnex
+	return $ not (notOnlyAnnexOption o) && (cfg || onlyAnnexOption o)

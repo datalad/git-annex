@@ -14,7 +14,7 @@ import qualified Annex
 import Git.Types
 import Annex.UpdateInstead
 import Annex.CurrentBranch
-import Command.Sync (mergeLocal, prepMerge, mergeConfig)
+import Command.Sync (mergeLocal, prepMerge, mergeConfig, SyncOptions(..))
 
 -- This does not need to modify the git-annex branch to update the 
 -- work tree, but auto-initialization might change the git-annex branch.
@@ -51,4 +51,5 @@ fixPostReceiveHookEnv = do
 updateInsteadEmulation :: CommandStart
 updateInsteadEmulation = do
 	prepMerge
-	mergeLocal mergeConfig def =<< getCurrentBranch
+	let o = def { notOnlyAnnexOption = True }
+	mergeLocal mergeConfig o =<< getCurrentBranch

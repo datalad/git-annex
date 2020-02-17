@@ -164,7 +164,7 @@ pushToRemotes' now remotes = do
 		updatemap succeeded failed
 		return failed
 		
-	push branch remote = Command.Sync.pushBranch remote branch
+	push branch remote = Command.Sync.pushBranch remote (Just branch)
 
 parallelPush :: Git.Repo -> [Remote] -> (Remote -> Git.Repo -> IO Bool)-> Assistant ([Remote], [Remote])
 parallelPush g rs a = do

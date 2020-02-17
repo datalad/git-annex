@@ -80,6 +80,7 @@ data GitConfig = GitConfig
 	, annexAutoCommit :: Configurable Bool
 	, annexResolveMerge :: Configurable Bool
 	, annexSyncContent :: Configurable Bool
+	, annexSyncOnlyAnnex :: Configurable Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
 	, annexYoutubeDlOptions :: [String]
@@ -151,6 +152,8 @@ extractGitConfig configsource r = GitConfig
 		getmaybebool (annex "resolvemerge")
 	, annexSyncContent = configurable False $ 
 		getmaybebool (annex "synccontent")
+	, annexSyncOnlyAnnex = configurable False $ 
+		getmaybebool (annex "synconlyannex")
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
 	, annexYoutubeDlOptions = getwords (annex "youtube-dl-options")
@@ -230,6 +233,7 @@ mergeGitConfig :: GitConfig -> GitConfig -> GitConfig
 mergeGitConfig gitconfig repoglobals = gitconfig
 	{ annexAutoCommit = merge annexAutoCommit
 	, annexSyncContent = merge annexSyncContent
+	, annexSyncOnlyAnnex = merge annexSyncOnlyAnnex
 	, annexResolveMerge = merge annexResolveMerge
 	, annexLargeFiles = merge annexLargeFiles
 	, annexAddUnlocked = merge annexAddUnlocked

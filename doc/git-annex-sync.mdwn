@@ -39,9 +39,20 @@ by running "git annex sync" on the remote.
 
   Only sync with the remotes with the lowest annex-cost value configured.
 
+* `--only-annex` `-a`, `--not-only-annex`
+
+  Only get sync the git-annex branch and annexed content with remotes.
+
+  This avoids pulling and pushing other branches, and it avoids committing
+  any local changes. It's up to you to use regular git commands to do that.
+
+  The `annex.synconlyannex` configuration can be set to true to make
+  this be the default behavior of `git-annex sync`. To override such
+  a setting, use `--not-only-annex`.
+
 * `--commit`, `--no-commit`
 
-  A commit is done by default (unless annex.autocommit is set to false).
+  A commit is done by default (unless `annex.autocommit` is set to false).
   
   Use --no-commit to avoid committing local changes.
 
@@ -51,8 +62,8 @@ by running "git annex sync" on the remote.
 
 * `--pull`, `--no-pull`
 
-  By default, git pulls from remotes and imports from some special remotes.
-  Use --no-pull to disable all pulling.
+  By default, syncing pulls from remotes and imports from some special
+  remotes. Use --no-pull to disable all pulling.
 
   When `remote.<name>.annex-pull` or `remote.<name>.annex-sync`
   are set to false, pulling is disabled for those remotes, and using
@@ -60,7 +71,7 @@ by running "git annex sync" on the remote.
 
 * `--push`, `--no-push` 
 
-  By default, git pushes changes to remotes and exports to some 
+  By default, syncing pushes changes to remotes and exports to some 
   special remotes. Use --no-push to disable all pushing.
   
   When `remote.<name>.annex-push` or `remote.<name>.annex-sync` are
@@ -128,7 +139,7 @@ by running "git annex sync" on the remote.
   [[git-annex-resolvemerge]](1) for details.)
 
   Use `--no-resolvemerge` to disable this automatic merge conflict
-  resolution. It can also be disabled by setting annex.resolvemerge
+  resolution. It can also be disabled by setting `annex.resolvemerge`
   to false.
 
 * `--cleanup`

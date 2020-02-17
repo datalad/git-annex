@@ -12,7 +12,7 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
 import Annex.CurrentBranch
-import Command.Sync (prepMerge, mergeLocal, mergeConfig, merge)
+import Command.Sync (prepMerge, mergeLocal, mergeConfig, merge, SyncOptions(..))
 
 cmd :: Command
 cmd = command "merge" SectionMaintenance
@@ -41,4 +41,5 @@ mergeSyncedBranch = mergeLocal mergeConfig def =<< getCurrentBranch
 mergeBranch :: Git.Ref -> CommandStart
 mergeBranch r = starting "merge" (ActionItemOther (Just (Git.fromRef r))) $ do
 	currbranch <- getCurrentBranch
-	next $ merge currbranch mergeConfig def Git.Branch.ManualCommit r
+	let o = def { notOnlyAnnexOption = True }
+	next $ merge currbranch mergeConfig o Git.Branch.ManualCommit r
