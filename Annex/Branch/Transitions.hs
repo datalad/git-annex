@@ -55,7 +55,7 @@ getTransitionCalculator ForgetDeadRemotes = Just dropDead
 -- is not removed from the remote log, for the same reason the trust log
 -- is not changed.
 dropDead :: TransitionCalculator
-dropDead config trustmap remoteconfigmap f content = case getLogVariety config f of
+dropDead gc trustmap remoteconfigmap f content = case getLogVariety gc f of
 	Just OldUUIDBasedLog
 		| f == trustLog -> PreserveFile
 		| f == remoteLog -> ChangeFile $
