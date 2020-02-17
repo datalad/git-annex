@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: adding support for additional metadata tools?"""
+ date="2020-02-17T16:55:20Z"
+ content="""
+@max, notice that the hook script contains special case handling for
+exiftool, including a config option for it. That was contributed by
+Klaus Ethgen. I'd be inclined to merge patches that add handling
+for other tools.
+
+I imagine you could add config settings for the format string etc.
+"""]]
