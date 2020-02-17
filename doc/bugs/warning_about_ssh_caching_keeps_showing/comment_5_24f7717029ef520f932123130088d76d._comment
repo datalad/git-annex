@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-02-17T16:29:58Z"
+ content="""
+I think the idea with detecting at build time is that if git-annex is being
+built on a platform where ssh doesn't support it, eg because it's not
+openssh but some other ssh implementation, it might as well compile out
+support rather than fail obscurely when it tries to use it. And it's
+uncommon for the systems where a program is built and used to have
+different ssh implementations, so runtime probing would only slow it
+down. (git-annex makes similar assumptions about eg, `cp --reflink` being
+supported or not, and I don't think it's very unusual to probe OS features
+at compile time.)
+
+The warning seems useful, because here we've discovered that you have been
+building git-annex without support for ssh caching all along!
+
+The way to disable the warning is to set annex.sshcaching=true
+(after [[!commit a4909470688287fc0009eaf82dab2e108bd214f1]]).
+"""]]
