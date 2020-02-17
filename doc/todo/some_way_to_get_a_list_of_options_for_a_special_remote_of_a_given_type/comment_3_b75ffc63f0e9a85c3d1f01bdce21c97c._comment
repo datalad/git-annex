@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-02-17T15:57:28Z"
+ content="""
+I stuggled with naming this option. I did consider something 
+with "config" (redundant with other configs), or "parameter"
+or "option" (redundant with other options). It was 
+--describe-other-params for a while but that was too long to type.
+
+--help would be the best name, but tying it into the main option parser is
+impractical; amoung other things it would make tab completion need to
+somehow run external special remotes to get a list of their parameters!
+
+The mnemonic for --whatelse, such as it is: You've gotten at least as
+far as type= (without which it won't work and will prompt for that),
+and want to know what else you can configure.
+"""]]
