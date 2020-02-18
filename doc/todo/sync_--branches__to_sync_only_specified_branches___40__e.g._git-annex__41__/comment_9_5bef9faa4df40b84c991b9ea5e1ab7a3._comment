@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-02-18T16:23:28Z"
+ content="""
+Indeed, I had missed the case of --no-content combined with --only-annex.
+Now implemented.
+
+It will be in the next release, which has slipped one day due to the above.
+;-)
+
+--
+
+I've improved the documentation of synced/ branches on the git-annex-sync
+man page, although users normally should not need to concern themselves
+with them.
+
+I see where the man page confused you about REMOTE/synced/BRANCH,
+that was some particularly poor wording and is fixed.
+
+The difficulty with documenting what git-annex sync does in extreme detail
+is that there are quite a lot of little hacks like synced branches that
+most users just don't need to know about, but help users in particular
+situations (who also generally don't know about or even notice it either).
+
+Just for example, sync sometimes pulls from the same remote twice. Why
+a second pull? Well, it knows it has spent a long time at the --content
+step, and so pulling again before it pushes makes it much less likely that
+the push will fail due to some other change having been made on the remote
+in the meantime. If a user were manually pulling and pushing, they would
+most likely pull again if their push failed due to such a situation, so
+there's not much point documenting what sync does (which could also change
+if I find a better approach).
+
+So I prefer to keep the description of sync as high level as possible.
+"""]]
