@@ -221,7 +221,7 @@ seek' o = do
 				,  [ mergeAnnex ]
 				]
 				
-			whenM shouldsynccontent $ do
+			whenM (shouldSyncContent o) $ do
 				mapM_ (withbranch . importRemote o mergeConfig) importremotes
 			
 				-- Send content to any exports before other
@@ -245,11 +245,6 @@ seek' o = do
 			void $ includeCommandAction $ withbranch $ pushLocal o
 			-- Pushes to remotes can run concurrently.
 			mapM_ (commandAction . withbranch . pushRemote o) gitremotes
-  where
-	shouldsynccontent = pure (contentOption o)
-		<||> pure (not (null (contentOfOption o)))
-		<||> (pure (not (noContentOption o)) <&&> getGitConfigVal annexSyncContent)
-		<||> onlyAnnex o
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
@@ -834,11 +829,18 @@ cleanupRemote remote (Just b, _) =
 			, Param $ Git.fromRef $ syncBranch $
 				Git.Ref.base $ Annex.Branch.name
 			]
+  
+shouldSyncContent :: SyncOptions -> Annex Bool
+shouldSyncContent o
+	| noContentOption o = pure False
+	| contentOption o || not (null (contentOfOption o)) = pure True
+	| otherwise = getGitConfigVal annexSyncContent <||> onlyAnnex o
 
 notOnlyAnnex :: SyncOptions -> Annex Bool
 notOnlyAnnex o = not <$> onlyAnnex o
 
 onlyAnnex :: SyncOptions -> Annex Bool
-onlyAnnex o = do
-	cfg <- getGitConfigVal annexSyncOnlyAnnex
-	return $ not (notOnlyAnnexOption o) && (cfg || onlyAnnexOption o)
+onlyAnnex o
+	| notOnlyAnnexOption o = pure False
+	| onlyAnnexOption o = pure True
+	| otherwise = getGitConfigVal annexSyncOnlyAnnex
