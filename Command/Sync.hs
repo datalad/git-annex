@@ -492,7 +492,6 @@ pushRemote o remote (Just branch, _) = do
 				then postpushupdate repo
 				else do
 					warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
-					showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
 					return ok
   where
 	gc = Remote.gitconfig remote
@@ -548,9 +547,6 @@ pushRemote o remote (Just branch, _) = do
  - But overwriting of data on synced/git-annex can happen, in a race.
  - The only difference caused by using a forced push in that case is that
  - the last repository to push wins the race, rather than the first to push.
- -
- - The sync push will fail to overwrite if receive.denyNonFastforwards is
- - set on the remote.
  -}
 pushBranch :: Remote -> Maybe Git.Branch -> Git.Repo -> IO Bool
 pushBranch remote mbranch g = directpush `after` annexpush `after` syncpush
