@@ -69,10 +69,6 @@ process.
 
   Fixed by converting to blob.
 
-----
-
-remaining todo:
-
 * migration
 
 > Investigated this in more detail, and I can't find a way to
@@ -145,7 +141,6 @@ remaining todo:
 >   Use scanUnlockedFiles to repopulate the Associated table.
 > 
 >   But that does not repopulate the Content table. Doing so needs
-<<<<<<< HEAD
 >   to iterate over the unlocked files, filter out any that are modified,
 >   and record the InodeCaches of the unmodified ones. Seems that it would
 >   have to use git's index to know which files are modified.
