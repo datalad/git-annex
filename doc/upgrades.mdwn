@@ -54,19 +54,19 @@ The upgrade events, so far:
 v7 repositories are automatically upgraded to v8.
 
 Some sqlite databases that git-annex uses were changed in v8 and have to be
-re-populated.
+re-populated. As a consequence:
 
-Any incremental fscks that were started in v7 won't resume where they left
-off in v8, but will instead begin again from the first file.
+* Any incremental fscks that were started in v7 won't resume where they left
+  off in v8, but will instead begin again from the first file.
 
-An interrupted export that was started in v7 won't resume where it left off
-after upgrade to v8; files will be re-uploaded to the export remote.
+* An interrupted export that was started in v7 won't resume where it left off
+  after upgrade to v8; files will be re-uploaded to the export remote.
 
-After the upgrade, git-annex will in some situations have to do extra
-work while it finishes populating the new databases. After this one-time
-speed cost, git-annex's speed will improve when using the new and improved
-databases.
-  
+* After the upgrade, git-annex will in some situations have to do extra
+  work while it finishes populating the new databases. After this one-time
+  speed cost, git-annex's speed will improve when using the new and improved
+  databases.
+
 Also, there are some behavior changes around adding dotfiles. While before
 git-annex add skipped adding dotfiles when operating on whole directories,
 and added dotfiles that were explicitly listed to the annex, it now adds
