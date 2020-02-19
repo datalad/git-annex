@@ -95,7 +95,7 @@ autoEnable = do
 					Left e -> warning (show e)
 					Right (_c, _u) ->
 						when (cu /= u) $
-							setConfig (remoteConfig c "config-uuid") (fromUUID cu)
+							setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
 			_ -> return ()
   where
 	configured rc = fromMaybe False $

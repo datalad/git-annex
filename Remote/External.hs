@@ -169,7 +169,7 @@ externalSetup _ mu _ c gc = do
 
 	c'' <- case getRemoteConfigValue readonlyField pc of
 		Just True -> do
-			setConfig (remoteConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
+			setConfig (remoteAnnexConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
 		_ -> do
 			pc' <- either giveup return $ parseRemoteConfig c' lenientRemoteConfigParser

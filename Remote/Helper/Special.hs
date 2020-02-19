@@ -81,8 +81,8 @@ findSpecialRemotes s = do
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()
 gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
-		setConfig (remoteConfig c (encodeBS' k)) v
-	storeUUIDIn (remoteConfig c "uuid") u
+		setConfig (remoteAnnexConfig c (encodeBS' k)) v
+	storeUUIDIn (remoteAnnexConfig c "uuid") u
 
 -- RetrievalVerifiableKeysSecure unless overridden by git config.
 --

@@ -81,7 +81,7 @@ seek o = do
 	
 	-- handle deprecated option
 	when (exportTracking o) $
-		setConfig (remoteConfig r "tracking-branch")
+		setConfig (remoteAnnexConfig r "tracking-branch")
 			(fromRef $ exportTreeish o)
 	
 	tree <- filterPreferredContent r =<<

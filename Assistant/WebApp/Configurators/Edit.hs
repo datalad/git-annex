@@ -306,7 +306,7 @@ getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
 		liftAnnex $ do
 			repo <- Remote.getRepo rmt
 			setConfig
-				(remoteConfig repo "ignore")
+				(remoteAnnexConfig repo "ignore")
 				(Git.Config.boolConfig False)
 		liftAnnex $ void Remote.remoteListRefresh
 		liftAssistant updateSyncRemotes

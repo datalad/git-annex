@@ -320,7 +320,7 @@ setupLink remotename (P2PAddressAuth addr authtoken) = do
 			, Param (formatP2PAddress addr)
 			]
 		when ok $ do
-			storeUUIDIn (remoteConfig remotename "uuid") theiruuid
+			storeUUIDIn (remoteAnnexConfig remotename "uuid") theiruuid
 			storeP2PRemoteAuthToken addr authtoken
 		return LinkSuccess
 	go (Right Nothing) = return $ AuthenticationError "Unable to authenticate with peer. Please check the address and try again."

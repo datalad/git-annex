@@ -265,7 +265,7 @@ changeSyncable (Just r) False = do
 changeSyncFlag :: Remote -> Bool -> Annex ()
 changeSyncFlag r enabled = do
 	repo <- Remote.getRepo r
-	let key = Config.remoteConfig repo "sync"
+	let key = Config.remoteAnnexConfig repo "sync"
 	Config.setConfig key (boolConfig enabled)
 	void Remote.remoteListRefresh
 

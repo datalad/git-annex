@@ -98,10 +98,10 @@ list autoinit = do
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	mapM (configRead autoinit) rs
   where
-	annexurl n = Git.ConfigKey ("remote." <> encodeBS' n <> ".annexurl")
+	annexurl r = remoteConfig r "annexurl"
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
-		case M.lookup (annexurl n) c of
+		case M.lookup (annexurl r) c of
 			Nothing -> return r
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
@@ -256,7 +256,7 @@ tryGitConfigRead autoinit r
 				| otherwise -> configlist_failed
 			Left _ -> configlist_failed
 	| Git.repoIsHttp r = storeUpdatedRemote geturlconfig
-	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
+	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteAnnexConfig r "uuid")
 	| Git.repoIsUrl r = return r
 	| otherwise = storeUpdatedRemote $ liftIO $ 
 		readlocalannexconfig `catchNonAsync` (const $ return r)

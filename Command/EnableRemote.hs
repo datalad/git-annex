@@ -94,7 +94,7 @@ cleanupSpecialRemote u c mcu = do
 		Nothing -> 
 			Logs.Remote.configSet u c
 		Just (SpecialRemote.ConfigFrom cu) -> do
-			setConfig (remoteConfig c "config-uuid") (fromUUID cu)
+			setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
 			Logs.Remote.configSet cu c
 	Remote.byUUID u >>= \case
 		Nothing -> noop

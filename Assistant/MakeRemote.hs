@@ -113,7 +113,7 @@ setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) mcu = do
 		Nothing ->
 			configSet u c'
 		Just (Annex.SpecialRemote.ConfigFrom cu) -> do
-			setConfig (remoteConfig c' "config-uuid") (fromUUID cu)
+			setConfig (remoteAnnexConfig c' "config-uuid") (fromUUID cu)
 			configSet cu c'
 	when setdesc $
 		whenM (isNothing . M.lookup u <$> uuidDescMap) $

@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -65,7 +65,11 @@ instance RemoteNameable Remote where
 {- A per-remote config setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
 remoteConfig r key = ConfigKey $
-	"remote." <> encodeBS' (getRemoteName r) <> ".annex-" <> key
+	"remote." <> encodeBS' (getRemoteName r) <> "." <> key
+
+{- A per-remote config annex setting in git config. -}
+remoteAnnexConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
+remoteAnnexConfig r key = remoteConfig r ("annex-" <> key)
 
 {- A global annex setting in git config. -}
 annexConfig :: UnqualifiedConfigKey -> ConfigKey
@@ -81,16 +85,16 @@ remoteCost' :: RemoteGitConfig -> Annex (Maybe Cost)
 remoteCost' = liftIO . getDynamicConfig . remoteAnnexCost
 
 setRemoteCost :: Git.Repo -> Cost -> Annex ()
-setRemoteCost r c = setConfig (remoteConfig r "cost") (show c)
+setRemoteCost r c = setConfig (remoteAnnexConfig r "cost") (show c)
 
 setRemoteAvailability :: Git.Repo -> Availability -> Annex ()
-setRemoteAvailability r c = setConfig (remoteConfig r "availability") (show c)
+setRemoteAvailability r c = setConfig (remoteAnnexConfig r "availability") (show c)
 
 setRemoteIgnore :: Git.Repo -> Bool -> Annex ()
-setRemoteIgnore r b = setConfig (remoteConfig r "ignore") (Git.Config.boolConfig b)
+setRemoteIgnore r b = setConfig (remoteAnnexConfig r "ignore") (Git.Config.boolConfig b)
 
 setRemoteBare :: Git.Repo -> Bool -> Annex ()
-setRemoteBare r b = setConfig (remoteConfig r "bare") (Git.Config.boolConfig b)
+setRemoteBare r b = setConfig (remoteAnnexConfig r "bare") (Git.Config.boolConfig b)
 
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare

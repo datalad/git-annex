@@ -166,7 +166,7 @@ mySetup _ mu _ c gc = do
 	-- (so it's also usable by git as a non-special remote),
 	-- and set remote.name.annex-git-lfs = true
 	gitConfigSpecialRemote u c' [("git-lfs", "true")]
-	setConfig (Git.ConfigKey ("remote." <> encodeBS' (getRemoteName c) <> ".url")) url
+	setConfig (remoteConfig (getRemoteName c) "url") url
 	return (c', u)
   where
 	url = maybe (giveup "Specify url=") fromProposedAccepted 
@@ -201,7 +201,7 @@ configKnownUrl r
 				set "config-uuid" (fromUUID cu) r'
 			Nothing -> return r'
 	set k v r' = do
-		let k' = remoteConfig r' k
+		let k' = remoteAnnexConfig r' k
 		setConfig k' v
 		return $ Git.Config.store' k' (Git.ConfigValue (encodeBS' v)) r'
 

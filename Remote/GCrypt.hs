@@ -113,7 +113,7 @@ gen baser u c gc rs = do
 					. parseRemoteConfig c'
 					=<< configParser remote c'
 				setGcryptEncryption pc remotename
-				storeUUIDIn (remoteConfig baser "uuid") u'
+				storeUUIDIn (remoteAnnexConfig baser "uuid") u'
 				setConfig (Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
 				gen' r u' pc gc rs
 			_ -> do

@@ -788,7 +788,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 				]
 		_ -> noop
 	  where
-		gitconfig = show (remoteConfig r "tracking-branch")
+		gitconfig = show (remoteAnnexConfig r "tracking-branch")
 
 	fillexport _ _ [] _ = return False
 	fillexport r db (tree:[]) mtbcommitsha = do
