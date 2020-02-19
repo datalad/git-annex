@@ -9,6 +9,8 @@ git-annex (7.20200226) upstream; urgency=high
     (Some debugging junk had crept in.)
   * Bugfix to getting content from an export remote with -J, when the
     export database was not yet populated.
+  * Bugfix: export --tracking (a deprecated option) set 
+    annex-annex-tracking-branch, instead of annex-tracking-branch.
 
  -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
 
