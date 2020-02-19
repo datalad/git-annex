@@ -1,0 +1,20 @@
+This has been a big change, I'm now 3 days and a 3000 line diff in and I
+finally got all the remote configuration settings converted to the new
+up-front parsing.
+
+Seems like quite a lot of work, since the only user-visible improvement is
+these error messages:
+
+	# git annex initremote demo type=directory directory=../foo encryption=none foo=bar
+	initremote demo
+	git-annex: Unexpected fields: foo
+	
+	# git annex initremote demo type=directory directory=../foo encryption=none exporttree=true
+	initremote demo
+	git-annex: Bad value for exporttree (expected yes or no)
+
+But this involved paying down technical debt in a big code base, so of course it was
+expensive.
+
+Anyway, it should now be relatively easy to implement
+`git annex initremote --list-params-for=S3`

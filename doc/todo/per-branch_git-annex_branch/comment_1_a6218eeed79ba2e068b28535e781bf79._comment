@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-30T18:10:49Z"
+ content="""
+That won't work, and here's why:
+
+You're in master, and you git checkout -b tmp
+
+Now you're in tmp, and you git-annex move foo --from origin
+
+Now you git checkout master. You delete tmp and tmp/git-annex.
+
+Except, foo has been moved from origin to the local repo. So now the local
+repo doesn't know it contains foo, at least until git-annex fsck notices
+it's there. Worse, no other repo knows where foo went, only that it was
+deleted from origin.
+
+Notice also that, even if you keep tmp around, tmp/git-annex must never get
+pushed, unless tmp get merged back into master. So even without deleting
+tmp, you get into this situation where other clones don't know where the
+file went.
+
+---
+
+git-annex v0 behaved just like this, and it quickly became apparent that it
+was not a good idea due to this kind of scenario.
+"""]]

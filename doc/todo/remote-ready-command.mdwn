@@ -17,3 +17,5 @@ git annex find . --in here --and --not --in kbfs | while read filename
 ```
 
 but this means that every `git annex copy` command creates a new commit per file transferred, rather than a single commit at the end of the transfer.  This may not seem like a big deal, but multiplying that over hundreds of files, it adds up to quite a bit of wasted disk space.  (I'll also be looking into ways to squash or prune such commits, but it'd be nice to not have to do that.)
+
+[[!tag confirmed needsthought]]

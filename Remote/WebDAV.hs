@@ -1,6 +1,6 @@
 {- WebDAV remotes.
  -
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -29,6 +29,7 @@ import Types.Export
 import qualified Git
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.Http
@@ -39,18 +40,30 @@ import Utility.Metered
 import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionContent)
 import Annex.UUID
 import Remote.WebDAV.DavLocation
+import Types.ProposedAccepted
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "webdav"
 	, enumerate = const (findSpecialRemotes "webdav")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser urlField
+			(FieldDesc "(required) url to the WebDAV directory")
+		, optionalStringParser davcredsField HiddenField
+		]
 	, setup = webdavSetup
 	, exportSupported = exportIsSupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+urlField :: RemoteConfigField
+urlField = Accepted "url"
+
+davcredsField :: RemoteConfigField
+davcredsField = Accepted "davcreds"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
   where
 	new cst = Just $ specialRemote c
@@ -95,9 +108,9 @@ gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
 			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert "url" "http://!dne!/" c) gc rs
+			, mkUnavailable = gen r u (M.insert urlField (RemoteConfigValue "http://!dne!/") c) gc rs
 			, getInfo = includeCredsInfo c (davCreds u) $
-				[("url", fromMaybe "unknown" (M.lookup "url" c))]
+				[("url", fromMaybe "unknown" $ getRemoteConfigValue urlField c)]
 			, claimUrl = Nothing
 			, checkUrl = Nothing
 			, remoteStateHandle = rs
@@ -107,11 +120,12 @@ gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
 webdavSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 webdavSetup _ mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	url <- case M.lookup "url" c of
-		Nothing -> giveup "Specify url="
-		Just url -> return url
+	url <- maybe (giveup "Specify url=")
+		(return . fromProposedAccepted)
+		(M.lookup urlField c)
 	(c', encsetup) <- encryptionSetup c gc
-	creds <- maybe (getCreds c' gc u) (return . Just) mcreds
+	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
+	creds <- maybe (getCreds pc gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' [("webdav", "true")]
 	c'' <- setRemoteCredPair encsetup c' gc (davCreds u) creds
@@ -255,7 +269,7 @@ runExport Nothing _ = return False
 runExport (Just h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
 
 configUrl :: Remote -> Maybe URLString
-configUrl r = fixup <$> M.lookup "url" (config r)
+configUrl r = fixup <$> getRemoteConfigValue urlField (config r)
   where
 	-- box.com DAV url changed
 	fixup = replace "https://www.box.com/dav/" boxComUrl
@@ -335,14 +349,14 @@ mkColRecursive d = go =<< existsDAV d
 				inLocation d mkCol
 			)
 
-getCreds :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe CredPair)
+getCreds :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe CredPair)
 getCreds c gc u = getRemoteCredPairFor "webdav" c gc (davCreds u)
 
 davCreds :: UUID -> CredPairStorage
 davCreds u = CredPairStorage
 	{ credPairFile = fromUUID u
 	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
-	, credPairRemoteField = "davcreds"
+	, credPairRemoteField = davcredsField
 	}
 
 {- Content-Type to use for files uploaded to WebDAV. -}

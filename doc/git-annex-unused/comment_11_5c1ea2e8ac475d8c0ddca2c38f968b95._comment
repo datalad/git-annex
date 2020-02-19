@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2020-01-01T18:54:04Z"
+ content="""
+Generally if git-annex unused does not identify some object as unused, that
+you expected would be unused, it's because it found a branch that still
+uses that object. It might be some old branch (or tag) that you made and
+forgot about, it might be a remote tracking branch, either for a remote
+that you forgot to sync the changes to, or for an old remote that
+got removed but in a way that left the tracking branch around.
+annex.used-refspec can also pull in other, non-branch refs.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="nrg@bd619d1ebf16e6324c546adea8be8fe1cc2b4325"
+ nickname="nrg"
+ avatar="http://cdn.libravatar.org/avatar/428b6c95b52769cf9eecdd351018eacb"
+ subject="Change introduced by persistent-sqlite and persistent-template"
+ date="2020-02-04T15:09:59Z"
+ content="""
+The change was introduced [here](https://github.com/yesodweb/persistent/commit/6ca1c2401f228293c64ae05e6109d4936b98c4b9).
+"""]]

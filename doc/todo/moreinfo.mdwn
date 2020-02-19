@@ -1,0 +1,5 @@
+This tags is for todo items needing followup from their submitter to better
+explain why this should be on git-annex's todo list.
+
+Feel free to remove this tag from the todo item if you've responded to a
+question.

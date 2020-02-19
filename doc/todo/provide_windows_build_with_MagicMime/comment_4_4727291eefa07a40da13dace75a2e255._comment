@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git-annex in docker on Windows"
+ date="2020-01-08T16:16:31Z"
+ content="""
+Maybe, git-annex on Windows could be run in a Docker container, operating on Windows files via bind mounts?  A conda-forge package could be made that translates git-annex command invocations into 'docker run' commands.
+"""]]

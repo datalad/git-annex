@@ -1,0 +1,85 @@
+### Please describe the problem.
+When running `git annex testremote origin --test-readonly=filename` on a git http remote that supports git-annex, the `storeKey` test fails with error:
+
+```
+storeKey:                        FAIL
+./Command/TestRemote.hs:277:
+(got: Left "copying to non-ssh repo not supported")
+```
+
+(Full example output below)
+
+
+### What steps will reproduce the problem?
+
+Using https://downloads.kitenet.net/.git/ as an example of a public repository with https git annex support:
+
+```
+$ git clone https://downloads.kitenet.net/.git/
+Cloning into 'downloads.kitenet.net'...
+$ cd downloads.kitenet.net/debug-me/linux/current/
+$ git annex get debug-me-standalone-amd64.tar.gz
+get debug-me-standalone-amd64.tar.gz (from origin...)
+(checksum...) ok
+(recording state in git...)
+$ git annex testremote origin --test-readonly debug-me-standalone-amd64.tar.gz
+testremote origin Remote Tests
+  unavailable remote
+    removeKey:                         dropping from http remote not supported
+OK
+    storeKey:                        FAIL
+      ./Command/TestRemote.hs:277:
+      (got: Left "copying to non-ssh repo not supported")
+    checkPresent:                    OK (0.02s)
+    retrieveKeyFile:                   download failed: ConnectionFailure Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 6, addrAddress = <assumed to be undefined>, addrCanonName = <assumed to be undefined>}, host name: Just "!dne!", service name: Just "443"): does not exist (Name or service not known)
+  download failed: ConnectionFailure Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 6, addrAddress = <assumed to be undefined>, addrCanonName = <assumed to be undefined>}, host name: Just "!dne!", service name: Just "443"): does not exist (Name or service not known)
+OK (0.01s)
+    retrieveKeyFileCheap:            OK
+  key size Just 13600699; NoChunks; encryption none
+    present True:                    OK (0.61s)
+    retrieveKeyFile:                 OK (2.39s)
+    fsck downloaded object:          OK
+    retrieveKeyFile resume from 33%: OK (1.95s)
+    fsck downloaded object:          OK
+    retrieveKeyFile resume from 0:   OK (1.94s)
+    fsck downloaded object:          OK
+    retrieveKeyFile resume from end: OK (0.68s)
+    fsck downloaded object:          OK
+
+1 out of 14 tests failed (7.61s)
+failed
+git-annex: testremote: 1 failed
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 7.20191230-g985373f8e
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.2.0.1 ghc-8.6.5 http-client-0.6.4 persistent-sqlite-2.10.5 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+```
+
+OS: Arch Linux (5.5.1-arch1-1)
+
+### Please provide any additional information below.
+
+I came across this while trying to make our hosted git and git-annex service (gin.g-node.org) open to public https git annex downloads.  I was using the `testremote` command to make sure everything works as intended and saw the error thinking, at first, that the server was serving something incorrectly.  The error message does clearly state that `copying to non-ssh repo not supported`, so I thought I'd try with kitenet to see if the same happens and it does.
+
+I don't know if this is a bug or intentional—perhaps the test should be failing to indicate that the remote doesn't support `storeKey`?  On the other hand, the `removeKey` test displays the "not supported" message and then passes, so maybe the `storeKey` test should behave the same way.
+
+It's possible there's another issue here I'm not entirely aware of.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Of course!  I use and rely on it daily :)
+
+> This is not a bug in the test suite, it turns out, but in
+> git-annex's handling of a http remote. It was throwing fatal errors
+> rather than the correct behavior of displaying a warning. [[fixed|done]]
+> --[[Joey]]

@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-17T15:33:31Z"
+ content="""
+@lykos, what happens when git-annex-remote-googledrive tries
+to resume in this situation and git-annex has written a different tmp file
+than what it partially uploaded before?
+
+I imagine it might resume after the last byte it sent before, and so
+the uploaded file gets corrupted?
+
+If so, there are two hard problems with this idea:
+
+1. If git-annex changes to reuse the same tmp file, then git-annex-remote-googledrive
+   will work with the new git-annex, but corrupt files when used with an old
+   git-annex.
+2. If someone has two clones, and starts an upload in one, but it's 
+   interrupted and then started later in the second clone, it would again
+   corrupt the file that gets uploaded. (This would also happen,
+   with a single clone, if git-annex unused gets used in between upload
+   attempts, and cleans up the tmp file.)
+
+The first could be dealt with by some protocol flag, but the second seems
+rather intractable, if git-annex-remote-googledrive behaves as I
+hypothesize it might. And even if git-annex-remote-googledrive behaves
+better that that somehow, it's certianly likely that some other remote
+would behave that way at some point.
+
+----
+
+As to implementation details, I started investigating before thinking
+about the above problem, so am leaving some notes here:
+
+This would first require that the tmp file is written atomically,
+otherwise an interruption in the wrong place would resume with a partial
+file. (File size can't be used since gpg changes the file size with
+compression etc.) Seems easy to implement: Make
+Remote.Helper.Special.fileStorer write to a different tmp file and rename
+it into place. 
+
+Internally, git-annex pipes the content from gpg, so it is only written to
+a temp file when using a remote that operates on files, as the external
+remotes do. Some builtin remotes don't. So resuming an upload to an
+encrypted remote past the chunk level can't work in general.
+
+There would need to be some way for the code that encrypts chunks
+(or whole objects) to detect that it's being used with a remote that
+operates on files, and then check if the tmp file already exists, and avoid
+re-writing it. This would need some way to examine a `Storer` and tell
+if it operates on files, which is not currently possisble, so would need
+some change to the data type.
+"""]]

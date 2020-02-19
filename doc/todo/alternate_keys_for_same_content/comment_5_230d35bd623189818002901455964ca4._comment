@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="simpler proposal"
+ date="2020-01-31T21:46:57Z"
+ content="""
+So, to fully and properly implement what the title of this todo suggests -- \"alternate keys for same content\" -- might be hard.  But to simply enable adding checksums to WORM/URL keys, stored separately on the git-annex branch rather than encoded in the key's name, is simpler.  This would let some WORM/URL keys to be treated as checksum-based keys when getting contents from untrusted remotes or when checking integrity with `git-annex-fsck`.  But this isn't really \"alternate keys for same content\": the content would be stored under only the WORM/URL key under which it was initially recorded.  The corresponding MD5 key would not be recorded in [[location_tracking]] as present.
+
+Checking whether a WORM/URL key has an associated checksum could be sped up by keeping a Bloom filter representing the set of WORM/URL keys for which `alt_keys` is set.
+
+In the `addurl --fast` case for special remotes, where the remote can determine a file's checksum without downloading, a checksum-based key would be recorded to begin with, as happens with `addurl` without `--fast`.  Currently I do this by manually calling plumbing commands like `git-annex-setpresentkey`, but having `addurl` do it seems better.
+"""]]

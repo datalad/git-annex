@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2020-02-15T04:45:01Z"
+ content="""
+Ilya, you wrote \"the ability to easily write your own external **backends** has been especially helpful\".  Did you mean \"external **remotes**\"? since \"external backends\" are yet [TODO AFAIK](https://git-annex.branchable.com/todo/external_backends/)
+"""]]

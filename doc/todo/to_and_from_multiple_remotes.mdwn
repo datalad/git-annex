@@ -65,3 +65,5 @@ action over each remote.
 Seems two runners are needed with different concurrency behavior, one that
 balances the load amoung remotes, and one that runs the same action against
 multiple remotes concurrently.
+
+[[!tag needsthought]]

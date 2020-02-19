@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-14T17:48:41Z"
+ content="""
+It seems you must have annex.jobs set to something, since concurrency
+is enabled without any -J option, so the easy fix is just to unset that.
+
+It kind of looks like your build of git-annex may have been made without
+ssh connection caching support, which would happen if its configure program
+detected at build time that ssh doesn't support it.
+
+That would be unusual if so, all the builds of git-annex that I'm aware of
+are made with ssh that does support it.
+
+There are a couple of even less likely scenarios, like
+`GIT_ANNEX_SSH_SOCKET_DIR` being set to a directory you can't write to.
+
+I've changed the code to always say explicitly why ssh caching can't be
+enabled. I also let annex.sshcaching override the build-time detection.
+
+I guess that's enough to close this, unless it turns out its
+reasons for not enabling it are not one of those I mentioned above, but
+something entirely bogus.
+"""]]

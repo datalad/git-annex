@@ -1,0 +1,5 @@
+Hello!
+
+&nbsp;&nbsp;&nbsp;&nbsp; So with Android 10, Syncthing may be facing some issues regarding where we can put our files on the device. However, the Syncthing-Fork from the Google Play store has granular control over when sync tasks can run, which I very much require; I was thinking of combining git-annex and Syncthing by syncing the `.git/annex/objects` directory, but I am still *very* new to this. Can anyone advise me what the best setup would be for the procedure, according to [`syncthing special remote`](https://git-annex.branchable.com/todo/syncthing_special_remote/)?
+
+&nbsp;&nbsp;&nbsp;&nbsp; Thank you kindly for the help!

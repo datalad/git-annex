@@ -3,3 +3,5 @@ I think it would be useful if the assistant (when monitoring a repo) could autom
 If I then add each repo as a remote of the other (from the command-line), assistant will still not sync files between the repos until I stop all the assistants running and then restart them. Presumably only on launch does the assistant check the list of remotes?
 
 I think this is perhaps causing issues for users not just on the command-line but also for users who create multiple local remotes from the webapp and then combine them, since the webapp is perhaps not restarting the assistant daemons after the combine operation? I'm not sure about this…
+
+[[!tag confirmed]]

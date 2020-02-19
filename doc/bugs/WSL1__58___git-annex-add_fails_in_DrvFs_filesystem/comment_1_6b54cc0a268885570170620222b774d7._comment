@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="annex2384@290036d126d86bcec28ee2f2ead549de1f59e90e"
+ nickname="annex2384"
+ avatar="http://cdn.libravatar.org/avatar/ad36fdc55abd8b9913b774fcd0177709"
+ subject="Using -o metadata?"
+ date="2020-02-04T03:22:45Z"
+ content="""
+I'm having the same issue, though I can add files if I set annex.addunlocked=true.
+"""]]

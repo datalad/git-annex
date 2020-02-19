@@ -1,0 +1,31 @@
+Hello,
+
+Has anyone encountered this issue:
+
+I have a repository in version 7. It has various remotes and clones from my frantic attempts to recover my data without really knowing what I'm doing. Anyways, the files in the repository are text files with hashes in them:
+
+
+    cat demo_beheer.gpkg
+    /annex/objects/SHA256E-s204800--a518c074bc22f673f0c73191a01426fef0a7d8b262a17d2729a4a3ac51da40ce.gpkg
+
+
+But in `.git/annex/objects` there are two-letter directories. I can find this file in there, but its name is different than the above. All the .gpkg files under `.git/annex/objects` are intact (I can open them), and also appear to be versions of the same file (the `demo_beheer.gpkg` one I'm looking for).
+
+
+    find -name '*.gpkg' -type f
+    ./.git/annex/objects/Gz/v4/SHA256E-s204800--01120000361af90c29ee27a51ef7a6157bc413dc768d8ba495b7df8360c6dbfe.gpkg/SHA256E-s204800--01120000361af90c29ee27a51ef7a6157bc413dc768d8ba495b7df8360c6dbfe.gpkg
+    ./.git/annex/objects/mV/6j/SHA256E-s204800--222d8fe6975a07a6305b27a453c7db62df0518458d53252bee2f8bac16d1329c.gpkg/SHA256E-s204800--222d8fe6975a07a6305b27a453c7db62df0518458d53252bee2f8bac16d1329c.gpkg
+    ./.git/annex/objects/Q3/30/SHA256E-s204800--71d2d90cb98ea98806b6f9ae479ffae7d2d7f6b1fb6ea970c108ef0b7b0a52ec.gpkg/SHA256E-s204800--71d2d90cb98ea98806b6f9ae479ffae7d2d7f6b1fb6ea970c108ef0b7b0a52ec.gpkg
+    ./.git/annex/objects/X7/QJ/SHA256E-s204800--d3ce397eb2f1d5080641e15a8d28a5ebabf56ce03b756ed6ceb93fec0d390c72.gpkg/SHA256E-s204800--d3ce397eb2f1d5080641e15a8d28a5ebabf56ce03b756ed6ceb93fec0d390c72.gpkg
+    ./.git/annex/transfer/failed/download/a3f8a46a-60fe-58e2-901b-2c093bcc22d3/SHA256E-s3989504--78a7d01d5b7331cb867464c5787264292b39905533be58822a63c9f6d9ea8b3d.gpkg
+    ./.git/annex/transfer/failed/download/a3f8a46a-60fe-58e2-901b-2c093bcc22d3/SHA256E-s1929216--03c015bdd9ac6efadf5d855bed734fb20531938d93d70c075cfc47b5f3f3a64b.gpkg
+    ./.git/annex/transfer/failed/download/a3f8a46a-60fe-58e2-901b-2c093bcc22d3/SHA256E-s946176--49fe39ceb46d2518bfff4dfe2e1e83c043ad76f13871c4143a5fff68540d943c.gpkg
+    ./.git/annex/transfer/failed/download/a3f8a46a-60fe-58e2-901b-2c093bcc22d3/SHA256E-s204800--a518c074bc22f673f0c73191a01426fef0a7d8b262a17d2729a4a3ac51da40ce.gpkg
+    ./.git/annex/transfer/failed/download/a3f8a46a-60fe-58e2-901b-2c093bcc22d3/SHA256E-s51445760--a44651f781e5fce11bc498ba7fc30a0b79e5f7e282226852ef949f45888fb6eb.gpkg
+    ./.git/annex/transfer/failed/download/a3f8a46a-60fe-58e2-901b-2c093bcc22d3/SHA256E-s4091904--3eb3df304d9fab549dcc657198c88bfc300f8c11836ecc62ae68538a67e3d430.gpkg
+    ./.git/annex/transfer/failed/download/a3f8a46a-60fe-58e2-901b-2c093bcc22d3/SHA256E-s63684608--e5ff8eb805b96c7e231b7450514d101397a98a11f9320416d78084b9cad58e93.gpkg
+    ./demo_beheer.gpkg
+
+Is this a recognized result of some slip-up I've made? I can't remember what exactly I did to reach here other than try to clone the repo various times, and I might have messed up some paths because of struggling with the gcrypt url formats. I can of course provide more details if that would help. Alternatively, does someone have an idea of how I could recover these files simply, to start over?
+
+Help would be much appreciated.

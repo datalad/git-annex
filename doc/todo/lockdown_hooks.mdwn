@@ -48,3 +48,5 @@ fed the names of files to operate on via stdin.
 > These hooks may be too specific to this purpose, while a more generalized
 > hook could also support things like [[storing_xattrs|support_for_storing_xattrs]]
 > --[[Joey]]
+
+[[!tag needsthought]]

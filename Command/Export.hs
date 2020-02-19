@@ -81,7 +81,7 @@ seek o = do
 	
 	-- handle deprecated option
 	when (exportTracking o) $
-		setConfig (remoteConfig r "annex-tracking-branch")
+		setConfig (remoteAnnexConfig r "tracking-branch")
 			(fromRef $ exportTreeish o)
 	
 	tree <- filterPreferredContent r =<<
@@ -216,7 +216,7 @@ mkDiffMap old new db = do
 			, (, (Nothing, Just (Git.DiffTree.file i))) <$> dstek
 			]
 	getek sha
-		| sha == nullSha = return Nothing
+		| sha `elem` nullShas = return Nothing
 		| otherwise = Just <$> exportKey sha
 
 newtype FileUploaded = FileUploaded { fromFileUploaded :: Bool }
@@ -310,7 +310,7 @@ cleanupExport r db ek loc sent = do
 
 startUnexport :: Remote -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
 startUnexport r db f shas = do
-	eks <- forM (filter (/= nullSha) shas) exportKey
+	eks <- forM (filter (`notElem` nullShas) shas) exportKey
 	if null eks
 		then stop
 		else starting ("unexport " ++ name r) (ActionItemOther (Just (fromRawFilePath f'))) $
@@ -359,7 +359,7 @@ cleanupUnexport r db eks loc = do
 
 startRecoverIncomplete :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
 startRecoverIncomplete r db sha oldf
-	| sha == nullSha = stop
+	| sha `elem` nullShas = stop
 	| otherwise = do
 		ek <- exportKey sha
 		let loc = exportTempName ek

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Re: comment 1 "
+ date="2020-01-31T19:47:59Z"
+ content="""
+The proposed implementation may be inefficient, but the idea has merit.
+
+What if that information is stored in a place where it can be used to verify migrations?
+
+For example, when entering that the migrating remote dropped the data into `git-annex:aaa/bbb/SHA1-s1234--somehash.log`, somewhere near there a record could be added that this was migrated to SHA512-s1234--longerhash. When then all the other remotes are asked to drop that file, they can actually do that because they see that it has been migrated, can verify the migration and are free to drop the file.
+
+Even later, when a remote wants to get an old name (eg. because it checked out an old version of master), it can look up the key, find where it was migrated to, and make the data available under its own name (by copying, or maybe by placing a symlink pointing file from `.git/annex/objects/Aa/Bb/SHA1-s1234--somehash/SHA1-s1234--somehash` to the new.
+"""]]

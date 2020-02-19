@@ -1,1 +1,3 @@
 git-annex-test failures sometimes reflect failures not of git-annex but of externals utils on which it relies.  E.g. when my installation or configuration of gpg has problems, git-annex test suite fails due to the tests that rely on gpg.  (And there doesn't seem to be a simple way to skip tests that match a regexp.)  git-annex could avoid that by running some simple sanity checks (beyond just existence) on gpg or other optional dependencies, and skipping tests if these checks fail.  E.g. if simple test commands to encrypt/sign a small file with gpg fail, then skip gpg-based tests (and warn the user).
+
+[[!tag unlikely]]

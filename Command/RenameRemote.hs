@@ -13,6 +13,7 @@ import Annex.SpecialRemote.Config (nameField, sameasNameField)
 import qualified Logs.Remote
 import qualified Types.Remote as R
 import qualified Remote
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 
@@ -50,6 +51,6 @@ perform u cfg mcu newname = do
 	let (namefield, cu) = case mcu of
 		Nothing -> (nameField, u)
 		Just (Annex.SpecialRemote.ConfigFrom u') -> (sameasNameField, u')
-	Logs.Remote.configSet cu (M.insert namefield newname cfg)
+	Logs.Remote.configSet cu (M.insert namefield (Proposed newname) cfg)
 	
 	next $ return True

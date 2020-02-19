@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-06T17:11:58Z"
+ content="""
+I can't think of a reasonable way to implement this.
+
+It would need to hash and then look for a known SHA256E key that uses the
+hash. But the layout of the git-annex branch doesn't provide any way to do
+that, except for iterating over every filename in the branch. Which
+would be prohibitively slow when reinjecting many files. (N times git
+ls-tree -r) So it would need to build a data structure to map from SHA256
+to known SHA256E key. That can't be stored in memory, git-annex doesn't
+let the content of the repo cause it to use arbitrary amounts of memory
+(hopefully).
+
+All I can think of is to traverse the git-annex branch and build a sqlite
+database and then query that, but that would add quite a lot of setup
+overhead to the command.
+"""]]

@@ -3,3 +3,5 @@ It would be useful to have a [[`git-annex-cat`|forum/Is_there_a___34__git_annex_
 If file is not present, or `remote.here.cost` is higher than `remote.someremote.cost` where file is present, `someremote` would get a `TRANSFER` request where the `FILE` argument is a named pipe, and a `cat` of that named pipe would be started.
 
 If file is not annexed, for uniformity `git-annex-cat file` would just call `cat file`.
+
+[[!tag needsthought]]

@@ -96,8 +96,8 @@ paramItem :: String
 paramItem = "ITEM"
 paramTreeish :: String
 paramTreeish = "TREEISH"
-paramKeyValue :: String
-paramKeyValue = "K=V"
+paramParamValue :: String
+paramParamValue = "PARAM=VALUE"
 paramNothing :: String
 paramNothing = ""
 paramRepeating :: String -> String

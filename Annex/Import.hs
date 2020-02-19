@@ -8,7 +8,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Import (
-	importTree,
 	ImportTreeConfig(..),
 	ImportCommitConfig(..),
 	buildImportCommit,
@@ -37,7 +36,6 @@ import Annex.Export
 import Annex.RemoteTrackingBranch
 import Command
 import Backend
-import Config
 import Types.Key
 import Types.KeySource
 import Messages.Progress

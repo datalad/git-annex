@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="An overdue and overlong reply"
+ date="2020-02-17T22:59:19Z"
+ content="""
+It looks like this functionality was implemented before I could get my comment writen, but I thought it might be useful to post it anyway. It seems like the implementing changes are now in master, so if I build from source I'll get these new features, right? I assume they'll also make it into the next release of git-annex (at which point I'll version bump at homebrew, which is what I'm having my students use to install git-annex).
+
+Thanks for your thoughtful response. I also agree that having an --only-annex option is perfectly satisfactory and more nuanced --branch-to-sync options are probably overkill. As to whether --only-annex should imply --content, I'm more agnostic and defer to your wisdom. However, if I call git-annex with --only-annex --no-content, will it push/pull the git-annex branches and leave the content alone? From looking at your commit message, it sounds like there is now a --not-only-annex option which can override a configured only-annex property, but it's not clear how --no-content might enter the picture.
+
+Let me try to finish my dangling thought from the last comment thread. For clarity, I'll introduce some labels for repositories and assume the only people working on this project are me (Dan) and two students, Alice and Bob. Let Dan-local refer to the repository on my laptop (and similar for {Alice,Bob}-local), let Dan-github refer to my repo on GitHub, and {Alice,Bob}-github refer to my student's forks. Dan has push access to {Dan,Alice,Bob}-github. Alice and Bob can fetch from {Dan,Alice,Bob}-github, but can *only* push to their own github repositories (Alice can push to Alice-github, Bob to Bob-github).
+
+Without an --only-annex option, I have two primary concerns. The first is the thought I left dangling, which I'll now complete:
+Throughout this process I'm trying to teach them how to use git-annex (it's pretty clearly the right tool for the job :) ) but need to be really careful with what git annex sync commands I encourage them to run since I don't want them to inadvertantly pull changes into their local branches (especially integrating changes from one another) and then wind up being confused as to how things got there. Like many newcomers to git, they're still at the rote learning stage where they are memorizing commands to type and are still developing a mental model of what's happening when they fetch/pull/push. For this reason, I think that avoiding their local branches changing as a side-effect of a git-annex command (i.e., by specifying this option in the config that travels in git-annex branch) will make it easier for them to understand base git. There's some risk that they'll learn bad git-annex habits from this and be surprised at all the things git annex sync does when they use it elsewhere, but for now it seems easier to help them understand git but use git-annex mechanically, and once they're comfortable with that I can help them to understand what git-annex is actually doing and the nuances of git annex sync.
+
+The second problem is that because I'm the only one with push access to Dan-GitHub, everything has to get there either via a pull request (which I  can accept after review) or I need to push it there myself via Dan-local. In particular, to keep the git-annex branch in Dan-GitHub up to date, I need to be integrating {Alice,Bob}-github/git-annex (or perhaps synced/git-annex?) into Dan-local/git-annex and then push it to Dan-GitHub/git-annex. I can do this manually, but it's a lot of typing (especially if there are many more students than just Alice and Bob), so git annex sync seems like a nice way to accomplish this. However, it has the side effect of *also* pulling in {Alice,Bob}-GitHub/{synced/master,master} and then pushing that up to Dan-GitHub/synced/master, and if Alice and Bob are also running git annex sync, changes from Alice will show up in Bob-local/master and vice versa. Moreover, if they're also pushing e.g. Alice-local/master -> Alice-GitHub/master, their pull requests will suddenly get very noisy as they'll incorporate more than just their own changes, and for them to remedy this it will require careful use of git reset which is a dangerous command for them to run at this stage of their learning.
+
+Git that I am, after running git annex sync I saw that my Dan-local/master was now ahead of Dan-GitHub/master, and I foolishly pushed, which now plopped half-baked code from Alice and Bob into the primary branch of our primary repository on github.
+It also had the unfortunate side-effect of closing out open pull requests from Alice and Bob (since github saw that their changes were now reachable from Dan-Github/master). I did some reset-ing, git annex sync --cleanup, and some force pushes to clean everything up before Alice or Bob could fetch, so other than having to re-open their pull requests, this didn't screw them up too much.
+
+
+Finally, I want to clarify my understanding of the synced/branch workflow, which seems clever but I never fully understood it. From some simple experimenting (I have not waded very far into the source code), it seems that if I just run git annex sync (with no flags and assuming I haven't configured anything to do otherwise), and assuming that BRANCH is checked out locally, it will do the following, *I think*:
+
+1. Stage and commit any changes in tracked files
+1. Merge synced/BRANCH into BRANCH
+2. Loop over remotes, for each
+   2. Pull from the remote (seems like it just fetches all branches)
+   2. Merge REMOTE/BRANCH into BRANCH
+   3. If REMOTE/synced/BRANCH exists, merge it into BRANCH
+7. Do octopus merge of all REMOTE/git-annex and REMOTE/synced/git-annex branches into local git-annex branch
+4. Loop over remotes again, for each
+   5. Push git-annex -> REMOTE/synced/git-annex
+   6. Push git-annex -> REMOTE/git-annex
+   6. Push BRANCH -> REMOTE/synced/BRANCH
+
+
+
+
+I'm a little confused by what the synced/git-annex branches are for, but I suppose they're even less likely to ever be checkoued out that git-annex and provide a safeguard. I *think* they will be included in the octopus merge described above.
+
+Step 3.2 (merge REMOTE/BRANCH into BRANCH) was a surprise to me based on my reading of the git annex sync documentation since I only expected it to only integrate changes from REMOTE/synced/BRANCH.
+
+
+It seems like neither the sync documentation on [branchable](https://git-annex.branchable.com/sync/) nor what is obtained with `man git-annex-sync` enumerate all of these steps, although reading them together gives an almost complete picture of what is going on. Since the documentation suggests the end user can just run these steps manually as an alternative to using `git annex sync`, it seems like it'd be helpful to very concretely document what those steps are.
+I'd be happy to take a crack at updating the documentation to be more thorough, but wanted to make sure I actually understand what is going on before doing so. 
+
+Again, I want to re-articulate how much I enjoy git annex and how difficult it would be to do any sort of version control for our data without it. I deeply appreciate the time and energy that you put into this very valuable and useful tool.
+"""]]

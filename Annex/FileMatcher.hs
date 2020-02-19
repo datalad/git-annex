@@ -37,8 +37,10 @@ import Types.Group
 import Types.FileMatcher
 import Types.GitConfig
 import Config.GitConfig
+import Annex.SpecialRemote.Config (preferreddirField)
 import Git.FilePath
 import Types.Remote (RemoteConfig)
+import Types.ProposedAccepted
 import Annex.CheckAttr
 import Git.CheckAttr (unspecifiedAttr)
 import qualified Git.Config
@@ -155,8 +157,8 @@ preferredContentKeylessTokens pcd =
 	, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
 	] ++ commonKeylessTokens LimitAnnexFiles
   where
-	preferreddir = fromMaybe "public" $
-		M.lookup "preferreddir" =<< (`M.lookup` configMap pcd) =<< repoUUID pcd
+	preferreddir = maybe "public" fromProposedAccepted $
+		M.lookup preferreddirField =<< (`M.lookup` configMap pcd) =<< repoUUID pcd
 
 preferredContentKeyedTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
 preferredContentKeyedTokens pcd =

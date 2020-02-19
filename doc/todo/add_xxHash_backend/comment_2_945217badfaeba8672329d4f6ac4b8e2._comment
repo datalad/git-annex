@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-09T20:52:25Z"
+ content="""
+Let alone blake3, which is 5-6 times as fast as blake2 while still
+apparently being a cryptographically secure hash.
+"""]]

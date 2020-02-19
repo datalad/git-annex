@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-22T15:11:05Z"
+ content="""
+This error message is not specific to a particular file in the repository, so if
+git-annex get outputs it, it doesn't help for the error message to be
+wrapped up in json. The actual purpose of --json-error messages is being
+able to correlate a failure to eg, get a particular file with an error
+message related to that action. Not in avoiding all possible stderr.
+
+The actual bug here is that it dumps git config to stderr at all.
+
+----
+
+The extra newlines are output to stdout, so not a problem WRT stderr.
+"""]]

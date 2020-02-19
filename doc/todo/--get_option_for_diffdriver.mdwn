@@ -1,1 +1,3 @@
 since there is no generic 'fuse' mode, I would like to request to have `--get` (or `--auto-get`) option for diffdriver.  I am trying to compare files across two branches on a repo I just cloned.  I cannot download all the files  and downloading differing keys across branches for the same file is a bit painful.  So I felt that it would be super nice if git annex could auto get those files from somewhere (well -- original clone)
+
+[[!tag confirmed]]

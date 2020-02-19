@@ -14,3 +14,6 @@ drives, but not from the network. --[[Joey]]
 > repository, in another repository it could be a fairly low cost. The user
 > would need to examine all the costs to pick the cost they want; using
 > remote names seems better UI. --[[Joey]]
+
+> > that seems convincing reason not to implement this and instead 
+> > implement remote groups. [[wontfix|done]] --[[Joey]]

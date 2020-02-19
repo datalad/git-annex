@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Avoid fetching from special remotes"""
+ date="2020-02-19T16:38:44Z"
+ content="""
+@Dan, set remote.name.skipFetchAll to true. Or make a remote group containing
+the remotes you do want to fetch from.
+"""]]

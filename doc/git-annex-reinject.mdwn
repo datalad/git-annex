@@ -36,8 +36,13 @@ needing to specify the dest file.
 
   With this option, each specified src file is hashed using the default
   key-value backend (or the one specified with `--backend`), and if git-annex
-  has a record of the file having been in the annex before, the content is
-  reinjected.
+  has a record of the resulting key having been in the annex before, the
+  content is reinjected.
+
+  Note that, when using a key-value backend that includes the filename
+  extension in the key, this will only work if the src files have the same
+  extensions as the files with the same content that was originally added
+  to git-annex.
 
   Note that this will reinject old versions of files that have been
   modified or deleted from the current git branch.

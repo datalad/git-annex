@@ -1,6 +1,6 @@
 {- git-annex remote list
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import Annex.UUID
 import Remote.Helper.Hooks
 import Remote.Helper.ReadOnly
 import Remote.Helper.ExportImport
+import Annex.SpecialRemote.Config
 import qualified Git
 import qualified Git.Config
 
@@ -109,7 +110,8 @@ remoteGen m t g = do
 	let cu = fromMaybe u $ remoteAnnexConfigUUID gc
 	let rs = RemoteStateHandle cu
 	let c = fromMaybe M.empty $ M.lookup cu m
-	generate t g u c gc rs >>= \case
+	pc <- either (const mempty) id . parseRemoteConfig c <$> configParser t c
+	generate t g u pc gc rs >>= \case
 		Nothing -> return Nothing
 		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r)) rs
 
@@ -126,8 +128,8 @@ updateRemote remote = do
 		| otherwise = return r
 
 {- Checks if a remote is syncable using git. -}
-gitSyncableRemote :: Remote -> Bool
-gitSyncableRemote r = remotetype r `elem`
+gitSyncableRemoteType :: RemoteType -> Bool
+gitSyncableRemoteType t = t `elem`
 	[ Remote.Git.remote
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote

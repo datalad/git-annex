@@ -396,12 +396,12 @@ withViewChanges addmeta removemeta = do
 	void $ liftIO cleanup
   where
 	handleremovals item
-		| DiffTree.srcsha item /= nullSha =
+		| DiffTree.srcsha item `notElem` nullShas =
 			handlechange item removemeta
 				=<< catKey (DiffTree.srcsha item)
 		| otherwise = noop
 	handleadds item
-		| DiffTree.dstsha item /= nullSha = 
+		| DiffTree.dstsha item `notElem` nullShas = 
 			handlechange item addmeta
 				=<< catKey (DiffTree.dstsha item)
 		| otherwise = noop

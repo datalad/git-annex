@@ -1,6 +1,6 @@
 {- git-annex Keys
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ module Key (
 	prop_isomorphic_key_encode
 ) where
 
+import Data.Char
 import qualified Data.Text as T
 import qualified Data.ByteString as S
 import qualified Data.Attoparsec.ByteString as A
@@ -79,11 +80,15 @@ instance Arbitrary KeyData where
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
 -- AssociatedFile cannot be empty, and cannot contain a NUL
--- (but can be Nothing)
+-- (but can be Nothing). 
 instance Arbitrary AssociatedFile where
-	arbitrary = (AssociatedFile . fmap toRawFilePath <$> arbitrary)
+  	arbitrary = (AssociatedFile . fmap conv <$> arbitrary)
 		`suchThat` (/= AssociatedFile (Just S.empty))
 		`suchThat` (\(AssociatedFile f) -> maybe True (S.notElem 0) f)
+	  where
+		-- Generating arbitrary unicode leads to encoding errors
+		-- when LANG=C, so limit to ascii.
+		conv = toRawFilePath . filter isAscii
 
 instance Arbitrary Key where
 	arbitrary = mkKey . const <$> arbitrary

@@ -30,6 +30,7 @@ import Assistant.Gpg
 import Utility.Gpg (KeyId)
 import Types.GitConfig
 import Config
+import Types.ProposedAccepted
 
 import qualified Data.Map as M
 
@@ -59,19 +60,19 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go (Just (u, c, mcu)) = setupSpecialRemote name Rsync.remote config Nothing
 		(Just u, R.Enable c, c) mcu
 	config = M.fromList
-		[ (encryptionField, "shared")
-		, ("rsyncurl", location)
-		, ("type", "rsync")
+		[ (encryptionField, Proposed "shared")
+		, (Proposed "rsyncurl", Proposed location)
+		, (typeField, Proposed "rsync")
 		]
 
 {- Inits a gcrypt special remote, and returns its name. -}
 makeGCryptRemote :: RemoteName -> String -> KeyId -> Annex RemoteName
 makeGCryptRemote remotename location keyid = 
 	initSpecialRemote remotename GCrypt.remote Nothing $ M.fromList
-		[ ("type", "gcrypt")
-		, ("gitrepo", location)
+		[ (typeField, Proposed "gcrypt")
+		, (Proposed "gitrepo", Proposed location)
 		, configureEncryption HybridEncryption
-		, ("keyid", keyid)
+		, (Proposed "keyid", Proposed keyid)
 		]
 
 type SpecialRemoteMaker = RemoteName -> RemoteType -> Maybe CredPair -> R.RemoteConfig -> Annex RemoteName
@@ -105,14 +106,14 @@ setupSpecialRemote' setdesc name remotetype config mcreds (mu, ss, c) mcu = do
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
-	let weakc = M.insert "highRandomQuality" "false" $ M.union config c
+	let weakc = M.insert (Proposed "highRandomQuality") (Proposed "false") (M.union config c)
 	dummycfg <- liftIO dummyRemoteGitConfig
 	(c', u) <- R.setup remotetype ss mu mcreds weakc dummycfg
 	case mcu of
 		Nothing ->
 			configSet u c'
 		Just (Annex.SpecialRemote.ConfigFrom cu) -> do
-			setConfig (remoteConfig c' "config-uuid") (fromUUID cu)
+			setConfig (remoteAnnexConfig c' "config-uuid") (fromUUID cu)
 			configSet cu c'
 	when setdesc $
 		whenM (isNothing . M.lookup u <$> uuidDescMap) $

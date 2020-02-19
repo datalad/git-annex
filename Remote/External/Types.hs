@@ -1,6 +1,6 @@
 {- External special remote data types.
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ module Remote.External.Types (
 	AsyncMessage(..),
 	ErrorMsg,
 	Setting,
+	Description,
 	ProtocolVersion,
 	supportedProtocolVersions,
 ) where
@@ -37,7 +38,8 @@ import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Types.Transfer (Direction(..))
 import Config.Cost (Cost)
-import Types.Remote (RemoteConfig, RemoteStateHandle)
+import Types.RemoteState
+import Types.RemoteConfig
 import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
@@ -50,17 +52,17 @@ import Data.Char
 
 data External = External
 	{ externalType :: ExternalType
-	, externalUUID :: UUID
+	, externalUUID :: Maybe UUID
 	, externalState :: TVar [ExternalState]
 	-- ^ Contains states for external special remote processes
 	-- that are not currently in use.
 	, externalLastPid :: TVar PID
-	, externalDefaultConfig :: RemoteConfig
-	, externalGitConfig :: RemoteGitConfig
+	, externalDefaultConfig :: ParsedRemoteConfig
+	, externalGitConfig :: Maybe RemoteGitConfig
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	}
 
-newExternal :: ExternalType -> UUID -> RemoteConfig -> RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
+newExternal :: ExternalType -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
 newExternal externaltype u c gc rs = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
@@ -78,7 +80,8 @@ data ExternalState = ExternalState
 	, externalShutdown :: IO ()
 	, externalPid :: PID
 	, externalPrepared :: TVar PrepareStatus
-	, externalConfig :: TVar RemoteConfig
+	, externalConfig :: TVar ParsedRemoteConfig
+	, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
 	}
 
 type PID = Int
@@ -129,6 +132,7 @@ data Request
 	| CHECKPRESENT SafeKey
 	| REMOVE SafeKey
 	| WHEREIS SafeKey
+	| LISTCONFIGS
 	| GETINFO
 	| EXPORTSUPPORTED
 	| EXPORT ExportLocation
@@ -145,6 +149,7 @@ needsPREPARE PREPARE = False
 needsPREPARE (EXTENSIONS _) = False
 needsPREPARE INITREMOTE = False
 needsPREPARE EXPORTSUPPORTED = False
+needsPREPARE LISTCONFIGS = False
 needsPREPARE _ = True
 
 instance Proto.Sendable Request where
@@ -165,6 +170,7 @@ instance Proto.Sendable Request where
 		[ "CHECKPRESENT", Proto.serialize key ]
 	formatMessage (REMOVE key) = [ "REMOVE", Proto.serialize key ]
 	formatMessage (WHEREIS key) = [ "WHEREIS", Proto.serialize key ]
+	formatMessage LISTCONFIGS = [ "LISTCONFIGS" ]
 	formatMessage GETINFO = [ "GETINFO" ]
 	formatMessage EXPORTSUPPORTED = ["EXPORTSUPPORTED"]
 	formatMessage (EXPORT loc) = [ "EXPORT", Proto.serialize loc ]
@@ -209,6 +215,8 @@ data Response
 	| CHECKURL_FAILURE ErrorMsg
 	| WHEREIS_SUCCESS String
 	| WHEREIS_FAILURE
+	| CONFIG Setting Description
+	| CONFIGEND
 	| INFOFIELD String
 	| INFOVALUE String
 	| INFOEND
@@ -243,6 +251,8 @@ instance Proto.Receivable Response where
 	parseCommand "CHECKURL-FAILURE" = Proto.parse1 CHECKURL_FAILURE
 	parseCommand "WHEREIS-SUCCESS" = Just . WHEREIS_SUCCESS
 	parseCommand "WHEREIS-FAILURE" = Proto.parse0 WHEREIS_FAILURE
+	parseCommand "CONFIG" = Proto.parse2 CONFIG
+	parseCommand "CONFIGEND" = Proto.parse0 CONFIGEND
 	parseCommand "INFOFIELD" = Proto.parse1 INFOFIELD
 	parseCommand "INFOVALUE" = Proto.parse1 INFOVALUE
 	parseCommand "INFOEND" = Proto.parse0 INFOEND
@@ -330,6 +340,7 @@ instance Proto.Receivable AsyncMessage where
 -- All are serializable.
 type ErrorMsg = String
 type Setting = String
+type Description = String
 type ProtocolVersion = Int
 type Size = Maybe Integer
 

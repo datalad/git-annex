@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,13 +24,15 @@ import Annex.UUID
 import Config
 import Config.DynamicConfig
 import Types.GitConfig
+import Types.ProposedAccepted
+import Git.Config
 
 import qualified Data.Map as M
 
 cmd :: Command
 cmd = command "enableremote" SectionSetup
 	"enables git-annex to use a remote"
-	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
+	(paramPair paramName $ paramOptional $ paramRepeating paramParamValue)
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
@@ -41,7 +43,7 @@ start [] = unknownNameError "Specify the remote to enable."
 start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
-	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig rest)
+	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig Proposed rest)
 		=<< SpecialRemote.findExisting name
 	go (r:_) = do
 		-- This could be either a normal git remote or a special
@@ -85,21 +87,23 @@ startSpecialRemote name config (Just (u, c, mcu)) =
 performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
 performSpecialRemote t u oldc c gc mcu = do
 	(c', u') <- R.setup t (R.Enable oldc) (Just u) Nothing c gc
-	next $ cleanupSpecialRemote u' c' mcu
+	next $ cleanupSpecialRemote t u' c' mcu
 
-cleanupSpecialRemote :: UUID -> R.RemoteConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandCleanup
-cleanupSpecialRemote u c mcu = do
+cleanupSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandCleanup
+cleanupSpecialRemote t u c mcu = do
 	case mcu of
 		Nothing -> 
 			Logs.Remote.configSet u c
 		Just (SpecialRemote.ConfigFrom cu) -> do
-			setConfig (remoteConfig c "config-uuid") (fromUUID cu)
+			setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
 			Logs.Remote.configSet cu c
 	Remote.byUUID u >>= \case
 		Nothing -> noop
 		Just r -> do
 			repo <- R.getRepo r
 			setRemoteIgnore repo False
+	unless (Remote.gitSyncableRemoteType t) $
+		setConfig (remoteConfig c "skipFetchAll") (boolConfig True)
 	return True
 
 unknownNameError :: String -> Annex a

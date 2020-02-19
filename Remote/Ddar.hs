@@ -18,11 +18,13 @@ import Types.Creds
 import qualified Git
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
+import Types.ProposedAccepted
 
 data DdarRepo = DdarRepo
 	{ ddarRepoConfig :: RemoteGitConfig
@@ -30,16 +32,23 @@ data DdarRepo = DdarRepo
 	}
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "ddar"
 	, enumerate = const (findSpecialRemotes "ddarrepo")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser ddarrepoField
+			(FieldDesc "(required) location of ddar archive to use")
+		]
 	, setup = ddarSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+ddarrepoField :: RemoteConfigField
+ddarrepoField = Accepted "ddarrepo"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	cst <- remoteCost gc $
 		if ddarLocal ddarrepo
@@ -98,8 +107,8 @@ ddarSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
-	let ddarrepo = fromMaybe (giveup "Specify ddarrepo=") $
-		M.lookup "ddarrepo" c
+	let ddarrepo = maybe (giveup "Specify ddarrepo=") fromProposedAccepted $
+		M.lookup ddarrepoField c
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The ddarrepo is stored in git config, as well as this repo's

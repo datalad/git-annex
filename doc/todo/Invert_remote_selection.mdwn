@@ -28,3 +28,5 @@ This problem comes up surprisingly often due to:
   5. Some repos being too large for a machine (e.g., repacking fails due to low memory), but which can still act like a dumb file-store.
 
 The problem gets worse when you have a lot of remotes or a lot of repos to manage (I have both). My impression is that this feature would require a syntax addition for git-annex-sync only. I like '!' because it behaves the same in GNU find and sh.
+
+[[!tag needsthought]]

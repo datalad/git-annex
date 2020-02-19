@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-29T15:10:09Z"
+ content="""
+Based on my last comment, I think, if you still need this, you
+should try configuring remote.name.fetch to avoid fetching the git-annex
+branches you don't want to merge.
+
+If that's not sufficient, followup and we can think about the other options
+I discussed earlier.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="annex2384@290036d126d86bcec28ee2f2ead549de1f59e90e"
+ nickname="annex2384"
+ avatar="http://cdn.libravatar.org/avatar/ad36fdc55abd8b9913b774fcd0177709"
+ subject="Similar use case"
+ date="2020-02-04T03:48:39Z"
+ content="""
+I have a similar use case, wanting to sync files to my music player from a machine that doesn't store a local copy of my music collection. I'm using a directory special remote with exporttree=yes since the player uses a FAT filesystem. Spooling locally would be absolutely fine with me; I just don't want to fetch any content that's already on the player. I suppose I could so something clever with the preferred content expression to accomplish this, but it seems like it might be complicated. For example, I think I could put the laptop and player each in a \"playersync\" group, with the player additionally in a \"player\" group, set the groupwanted expression on the playersync gorup to the files I want on the player, set the player's wanted to groupwanted and the laptop's wanted to \"groupwanted and not inallgroup=player\". But that seems pretty convoluted.
+"""]]

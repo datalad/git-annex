@@ -13,6 +13,7 @@ import Annex.Content
 import Backend
 import Types.KeySource
 import Utility.Metered
+import qualified Git
 
 cmd :: Command
 cmd = command "reinject" SectionUtility 
@@ -65,8 +66,13 @@ startKnown src = notAnnexed src $
 				)
 
 notAnnexed :: FilePath -> CommandStart -> CommandStart
-notAnnexed src = ifAnnexed (toRawFilePath src) $
-	giveup $ "cannot used annexed file as src: " ++ src
+notAnnexed src a = 
+	ifM (fromRepo Git.repoIsLocalBare)
+		( a
+		, ifAnnexed (toRawFilePath src)
+			(giveup $ "cannot used annexed file as src: " ++ src)
+			a
+		)
 
 perform :: FilePath -> Key -> CommandPerform
 perform src key = ifM move

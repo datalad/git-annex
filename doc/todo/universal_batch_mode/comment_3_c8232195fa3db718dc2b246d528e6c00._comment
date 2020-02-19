@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-01-06T18:53:02Z"
+ content="""
+Thanks for digging that up.
+
+Hmm, if the goal was to check each command for such problems when adding
+--batch, it didn't stop `git-annex add --batch` from being added, despite
+indeed having such a buffering behavior. You can currently shoot your foot
+combining that with `git annex readpresentkey --batch`, the same way as you
+could with a hypothetical universal batch mode that let you run add
+followed by readpresentkey.
+
+I don't see a universal batch mode being really able to detect
+and avoid such problems either. How is it supposed to know that an add of
+"dir/" will amoung other things add the content of key FOO, which was not
+present before, and so a readpresentkey FOO should be delayed until after
+the add, and the add's buffer flushed. It would have to model the
+behavior of commands and insert barriers/flush points, and the modeling
+could necessarily not be that fine-grained, so it would need to flush
+the add buffer every time before readpresentkey. But there are surely
+ways to combine batch use of add and readpresentkey that you know won't be
+affected by the add buffering, and that would make those unncessarily slow.
+
+Anyway, looking at the implementation of --batch for different commands,
+sometimes it's trivial enough to wish it were generalized, but other times
+there is batch-specific behavior. `add --batch` errors out if --update
+is also used. `checkpresentkey --batch` outputs status codes rather than
+the command's normal behavior of exiting 1/0. So we need batch-specific
+implementations.
+
+---
+
+idea: What might be good is a mode that lets any batch-capable commands
+be combined together, not trying to support every possible command, and
+perhaps with some added commands that the user can use to flush buffers
+etc between operations as desired. Eg:
+
+	git annex batch <<EOF
+	add dir/
+	add whatever
+	flush
+	readpresentkey FOO
+	EOF
+"""]]

@@ -1,11 +1,12 @@
 {- git-annex crypto types
  -
- - Copyright 2011-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Types.Crypto (
+	EncryptionMethod(..),
 	Cipher(..),
 	StorableCipher(..),
 	EncryptedCipherVariant(..),
@@ -14,12 +15,24 @@ module Types.Crypto (
 	Mac(..),
 	readMac,
 	showMac,
+	macMap,
 	defaultMac,
 	calcMac,
 ) where
 
 import Utility.Hash
 import Utility.Gpg (KeyIds(..))
+
+import Data.Typeable
+import qualified Data.Map as M
+
+data EncryptionMethod
+	= NoneEncryption
+	| SharedEncryption
+	| PubKeyEncryption
+	| SharedPubKeyEncryption
+	| HybridEncryption
+	deriving (Typeable, Eq)
 
 -- XXX ideally, this would be a locked memory region
 data Cipher = Cipher String | MacOnlyCipher String
@@ -50,9 +63,13 @@ showMac HmacSha512 = "HMACSHA512"
 
 -- Read the MAC algorithm from the remote config.
 readMac :: String -> Maybe Mac
-readMac "HMACSHA1"   = Just HmacSha1
-readMac "HMACSHA224" = Just HmacSha224
-readMac "HMACSHA256" = Just HmacSha256
-readMac "HMACSHA384" = Just HmacSha384
-readMac "HMACSHA512" = Just HmacSha512
-readMac _ = Nothing
+readMac n = M.lookup n macMap
+
+macMap :: M.Map String Mac
+macMap = M.fromList
+	[ ("HMACSHA1", HmacSha1)
+	, ("HMACSHA224", HmacSha224)
+	, ("HMACSHA256", HmacSha256)
+	, ("HMACSHA384", HmacSha384)
+	, ("HMACSHA512", HmacSha512)
+	]

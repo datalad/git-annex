@@ -1,6 +1,6 @@
 {- git-annex ssh interface, with connection caching
  -
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -98,13 +98,31 @@ consumeStdinParams NoConsumeStdin = [Param "-n"]
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
 sshCachingInfo :: (SshHost, Maybe Integer) -> Annex (Maybe FilePath, [CommandParam])
-sshCachingInfo (host, port) = go =<< sshCacheDir
+sshCachingInfo (host, port) = go =<< sshCacheDir'
   where
-	go Nothing = return (Nothing, [])
-	go (Just dir) =
+	go (Right dir) =
 		liftIO (bestSocketPath $ dir </> hostport2socket host port) >>= return . \case
 			Nothing -> (Nothing, [])
 			Just socketfile -> (Just socketfile, sshConnectionCachingParams socketfile)
+	-- No connection caching with concurrency is not a good
+	-- combination, so warn the user.
+	go (Left whynocaching) = do
+		Annex.getState Annex.concurrency >>= \case
+                	NonConcurrent -> return ()
+			Concurrent {} -> warnnocaching whynocaching
+			ConcurrentPerCpu -> warnnocaching whynocaching
+		return (Nothing, [])
+	
+	warnnocaching whynocaching = do
+		warning nocachingwarning
+		warning whynocaching
+	
+	nocachingwarning = unwords
+		[ "You have enabled concurrency, but git-annex is not able"
+		, "to use ssh connection caching. This may result in"
+		, "multiple ssh processes prompting for passwords at the"
+		, "same time."
+		]
 
 {- Given an absolute path to use for a socket file,
  - returns whichever is shorter of that or the relative path to the same
@@ -133,26 +151,43 @@ sshConnectionCachingParams socketfile =
 	, Param "-o", Param "ControlPersist=yes"
 	]
 
+sshSocketDirEnv :: String
+sshSocketDirEnv = "GIT_ANNEX_SSH_SOCKET_DIR"
+
 {- ssh connection caching creates sockets, so will not work on a
- - crippled filesystem. A GIT_ANNEX_TMP_DIR can be provided to use
- - a different filesystem. -}
+ - crippled filesystem. -}
 sshCacheDir :: Annex (Maybe FilePath)
-sshCacheDir
-	| BuildInfo.sshconnectioncaching = 
-		ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
-			( ifM crippledFileSystem
-				( maybe (return Nothing) usetmpdir =<< gettmpdir
-				, Just <$> fromRepo gitAnnexSshDir 
-				)
-			, return Nothing
+sshCacheDir = eitherToMaybe <$> sshCacheDir'
+
+sshCacheDir' :: Annex (Either String FilePath)
+sshCacheDir' = 
+	ifM (fromMaybe BuildInfo.sshconnectioncaching . annexSshCaching <$> Annex.getGitConfig)
+		( ifM crippledFileSystem
+			( gettmpdir >>= \case
+				Nothing ->
+					return (Left crippledfswarning)
+				Just tmpdir -> 
+					liftIO $ catchMsgIO $
+						usetmpdir tmpdir
+			, Right <$> fromRepo gitAnnexSshDir 
 			)
-	| otherwise = return Nothing
+		, return (Left "annex.sshcaching is not set to true")
+		)
   where
-	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
-	usetmpdir tmpdir = liftIO $ catchMaybeIO $ do
+	gettmpdir = liftIO $ getEnv sshSocketDirEnv
+
+	usetmpdir tmpdir = do
 		let socktmp = tmpdir </> "ssh"
 		createDirectoryIfMissing True socktmp
 		return socktmp
+	
+	crippledfswarning = unwords
+		[ "This repository is on a crippled filesystem, so unix named"
+		, "pipes probably don't work, and ssh connection caching"
+		, "relies on those. One workaround is to set"
+		, sshSocketDirEnv
+		, "to point to a directory on a non-crippled filesystem."
+		]
 
 portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,8 +24,12 @@ import Utility.DataUnits
 import Utility.CopyFile
 import Types.Messages
 import Types.Export
+import Types.Crypto
+import Types.RemoteConfig
+import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.ExportImport
 import Remote.Helper.Chunked
+import Remote.Helper.Encryptable (describeEncryption, encryptionField, highRandomQualityField)
 import Git.Types
 
 import Test.Tasty
@@ -109,7 +113,7 @@ perform rs unavailrs exportr ks = do
 	desc r' k = intercalate "; " $ map unwords
 		[ [ "key size", show (fromKey keySize k) ]
 		, [ show (getChunkConfig (Remote.config r')) ]
-		, ["encryption", fromMaybe "none" (M.lookup "encryption" (Remote.config r'))]
+		, ["encryption", describeEncryption (Remote.config r')]
 		]
 	descexport k1 k2 = intercalate "; " $ map unwords
 		[ [ "exporttree=yes" ]
@@ -119,33 +123,35 @@ perform rs unavailrs exportr ks = do
 
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
 adjustChunkSize r chunksize = adjustRemoteConfig r
-	(M.insert "chunk" (show chunksize))
+	(M.insert chunkField (RemoteConfigValue (show chunksize)))
 
 -- Variants of a remote with no encryption, and with simple shared
 -- encryption. Gpg key based encryption is not tested.
 encryptionVariants :: Remote -> Annex [Remote]
 encryptionVariants r = do
-	noenc <- adjustRemoteConfig r (M.insert "encryption" "none")
+	noenc <- adjustRemoteConfig r $
+		M.insert encryptionField (RemoteConfigValue NoneEncryption)
 	sharedenc <- adjustRemoteConfig r $
-		M.insert "encryption" "shared" .
-		M.insert "highRandomQuality" "false"
+		M.insert encryptionField (RemoteConfigValue SharedEncryption) .
+		M.insert highRandomQualityField (RemoteConfigValue False)
 	return $ catMaybes [noenc, sharedenc]
 
 -- Variant of a remote with exporttree disabled.
 disableExportTree :: Remote -> Annex Remote
 disableExportTree r = maybe (error "failed disabling exportree") return 
-		=<< adjustRemoteConfig r (M.delete "exporttree")
+		=<< adjustRemoteConfig r (M.delete exportTreeField)
 
 -- Variant of a remote with exporttree enabled.
 exportTreeVariant :: Remote -> Annex (Maybe Remote)
 exportTreeVariant r = ifM (Remote.isExportSupported r)
 	( adjustRemoteConfig r $
-		M.insert "encryption" "none" . M.insert "exporttree" "yes"
+		M.insert encryptionField (RemoteConfigValue NoneEncryption) . 
+		M.insert exportTreeField (RemoteConfigValue True)
 	, return Nothing
 	)
 
 -- Regenerate a remote with a modified config.
-adjustRemoteConfig :: Remote -> (Remote.RemoteConfig -> Remote.RemoteConfig) -> Annex (Maybe Remote)
+adjustRemoteConfig :: Remote -> (Remote.ParsedRemoteConfig -> Remote.ParsedRemoteConfig) -> Annex (Maybe Remote)
 adjustRemoteConfig r adjustconfig = do
 	repo <- Remote.getRepo r
 	Remote.generate (Remote.remotetype r)

@@ -18,6 +18,7 @@ import Common
 import qualified System.Console.Concurrent as Console
 import qualified System.Console.Regions as Regions
 import Control.Concurrent.STM
+import Control.Monad.IO.Class
 import qualified Data.Text as T
 #ifndef mingw32_HOST_OS
 import GHC.IO.Encoding
@@ -120,13 +121,14 @@ concurrentOutputSupported = return True -- Windows is always unicode
 
 {- Hide any currently displayed console regions while running the action,
  - so that the action can use the console itself. -}
-hideRegionsWhile :: MessageState -> Annex a -> Annex a
-hideRegionsWhile s a 
-	| concurrentOutputEnabled s = bracketIO setup cleanup go
+hideRegionsWhile :: (MonadIO m, Monad m, MonadMask m) => MessageState -> m a -> m a
+hideRegionsWhile s a
+	| concurrentOutputEnabled s = bracket setup cleanup go
 	| otherwise = a
   where
-	setup = Regions.waitDisplayChange $ swapTMVar Regions.regionList []
-	cleanup = void . atomically . swapTMVar Regions.regionList
+	setup = liftIO $ 
+		Regions.waitDisplayChange $ swapTMVar Regions.regionList []
+	cleanup = liftIO . void . atomically . swapTMVar Regions.regionList
 	go _ = do
 		liftIO $ hFlush stdout
 		a

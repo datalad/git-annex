@@ -32,3 +32,5 @@ surprise users... I suggest using a logic similar to
 [[git-annex-import]] for consistency reasons.
 
 Thanks! -- [[anarcat]]
+
+[[!tag unlikely]]

@@ -20,6 +20,7 @@ import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
+import Types.ProposedAccepted
 import Git.Types (RemoteName, fromRef, fromConfigKey)
 import qualified Remote.GCrypt as GCrypt
 import qualified Annex
@@ -177,7 +178,7 @@ postEnableRsyncR = enableSshRemote getsshinput enableRsyncNet enablersync
   where
 	enablersync sshdata u = redirect $ ConfirmSshR
 		(sshdata { sshCapabilities = [RsyncCapable] }) u
-	getsshinput = parseSshUrl <=< M.lookup "rsyncurl"
+	getsshinput = parseSshUrl . fromProposedAccepted <=< M.lookup (Accepted "rsyncurl")
 
 {- This only handles gcrypt repositories that are located on ssh servers;
  - ones on local drives are handled via another part of the UI. -}
@@ -191,7 +192,7 @@ postEnableSshGCryptR u = whenGcryptInstalled $
 		sshConfigurator $
 			checkExistingGCrypt sshdata' $
 				giveup "Expected to find an encrypted git repository, but did not."
-	getsshinput = parseSshUrl <=< M.lookup "gitrepo"
+	getsshinput = parseSshUrl . fromProposedAccepted <=< M.lookup (Accepted "gitrepo")
 
 getEnableSshGitRemoteR :: UUID -> Handler Html
 getEnableSshGitRemoteR = postEnableSshGitRemoteR
@@ -200,7 +201,7 @@ postEnableSshGitRemoteR = enableSshRemote getsshinput enableRsyncNet enablesshgi
   where
 	enablesshgitremote sshdata u = redirect $ ConfirmSshR sshdata u
 
-	getsshinput = parseSshUrl <=< M.lookup "location"
+	getsshinput = parseSshUrl . fromProposedAccepted <=< M.lookup (Accepted "location")
 
 {- To enable a remote that uses ssh as its transport, 
  - parse a config key to get its url, and display a form
@@ -424,7 +425,7 @@ getConfirmSshR sshdata u
 		$(widgetFile "configurators/ssh/combine")
 	handleexisting (Just _) = prepSsh False sshdata $ \sshdata' -> do
 		m <- liftAnnex readRemoteLog
-		case M.lookup "type" =<< M.lookup u m of
+		case fromProposedAccepted <$> (M.lookup typeField =<< M.lookup u m) of
 			Just "gcrypt" -> combineExistingGCrypt sshdata' u
 			_ -> makeSshRepo ExistingRepo sshdata'
 
@@ -474,7 +475,7 @@ enableGCrypt :: SshData -> RemoteName -> Handler Html
 enableGCrypt sshdata reponame = setupRemote postsetup Nothing Nothing mk
   where
 	mk = enableSpecialRemote reponame GCrypt.remote Nothing $
-		M.fromList [("gitrepo", genSshUrl sshdata)]
+		M.fromList [(Proposed "gitrepo", Proposed (genSshUrl sshdata))]
 	postsetup _ = redirect DashboardR
 
 {- Combining with a gcrypt repository that may not be
@@ -546,11 +547,11 @@ makeSshRepo rs sshdata
 	setup r = do
 		m <- readRemoteLog
 		let c = fromMaybe M.empty (M.lookup (Remote.uuid r) m)
-		let c' = M.insert "location" (genSshUrl sshdata) $
-			M.insert "type" "git" $
-			case M.lookup nameField c of
+		let c' = M.insert (Proposed "location") (Proposed (genSshUrl sshdata)) $
+			M.insert typeField (Proposed "git") $
+			case fromProposedAccepted <$> M.lookup nameField c of
 				Just _ -> c
-				Nothing -> M.insert nameField (Remote.name r) c
+				Nothing -> M.insert nameField (Proposed (Remote.name r)) c
 		configSet (Remote.uuid r) c'
 
 makeSshRepoConnection :: RepoStatus -> Annex RemoteName -> (Remote -> Annex ()) -> Handler Html

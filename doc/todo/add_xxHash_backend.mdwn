@@ -1,1 +1,3 @@
 From https://cyan4973.github.io/xxHash/ , xxHash seems much faster than md5 with comparable quality.  There's a Haskell implementation.
+
+[[!tag moreinfo]]

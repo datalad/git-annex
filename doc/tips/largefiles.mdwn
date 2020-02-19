@@ -18,7 +18,7 @@ and `git add`/`git commit -a` will add the large files to the annex and the
 small files to git.
 
 Other commands that use the annex.largefiles configuration include
-`git annex import`, git annex addurl`, `git annex importfeed`, and
+`git annex import`, `git annex addurl`, `git annex importfeed`, and
 the assistant.
 
 ## examples

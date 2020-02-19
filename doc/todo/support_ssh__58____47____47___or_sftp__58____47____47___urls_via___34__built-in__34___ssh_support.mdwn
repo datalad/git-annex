@@ -37,3 +37,4 @@ I wondered if it would be feasible for git annex natively support ssh (scp) and/
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+[[!tag unlikely moreinfo]]

@@ -1,0 +1,6 @@
+How do I run git-annex-sync without syncing master?
+
+i.e.
+
+* fetch and union merge the git-annex branch from every remote listed
+* push the updated git-annex branch to every remote listed

@@ -22,6 +22,8 @@ import Types.TrustLevel
 import Types.UUID
 import Types.MetaData
 import Types.Remote
+import Types.GitConfig (GitConfig)
+import Types.ProposedAccepted
 import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
@@ -34,7 +36,7 @@ data FileTransition
 	= ChangeFile Builder
 	| PreserveFile
 
-type TransitionCalculator = TrustMap -> M.Map UUID RemoteConfig -> RawFilePath -> L.ByteString -> FileTransition
+type TransitionCalculator = GitConfig -> TrustMap -> M.Map UUID RemoteConfig -> RawFilePath -> L.ByteString -> FileTransition
 
 getTransitionCalculator :: Transition -> Maybe TransitionCalculator
 getTransitionCalculator ForgetGitHistory = Nothing
@@ -53,7 +55,7 @@ getTransitionCalculator ForgetDeadRemotes = Just dropDead
 -- is not removed from the remote log, for the same reason the trust log
 -- is not changed.
 dropDead :: TransitionCalculator
-dropDead trustmap remoteconfigmap f content = case getLogVariety f of
+dropDead gc trustmap remoteconfigmap f content = case getLogVariety gc f of
 	Just OldUUIDBasedLog
 		| f == trustLog -> PreserveFile
 		| f == remoteLog -> ChangeFile $
@@ -85,7 +87,7 @@ dropDead trustmap remoteconfigmap f content = case getLogVariety f of
 	trustmap' = trustmap `M.union`
 		M.map (const DeadTrusted) (M.filter sameasdead remoteconfigmap)
 	sameasdead cm =
-		case toUUID <$> M.lookup sameasUUIDField cm of
+		case toUUID . fromProposedAccepted <$> M.lookup sameasUUIDField cm of
 			Nothing -> False
 			Just u' -> M.lookup u' trustmap == Just DeadTrusted
 	minimizesameasdead u l

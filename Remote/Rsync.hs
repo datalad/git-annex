@@ -1,6 +1,6 @@
 {- A remote that is only accessible by rsync.
  -
- - Copyright 2011-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ module Remote.Rsync (
 	remove,
 	checkKey,
 	withRsyncScratchDir,
+	rsyncRemoteConfigs,
 	genRsyncOpts,
 	RsyncOpts
 ) where
@@ -30,6 +31,7 @@ import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Types.Export
+import Types.ProposedAccepted
 import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
@@ -41,20 +43,31 @@ import Types.Creds
 import Annex.DirHashes
 import Utility.Tmp.Dir
 import Utility.SshHost
+import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "rsync"
 	, enumerate = const (findSpecialRemotes "rsyncurl")
 	, generate = gen
+	, configParser = mkRemoteConfigParser $ rsyncRemoteConfigs ++
+		[ optionalStringParser rsyncUrlField
+			(FieldDesc "(required) url or hostname:/directory for rsync to use")
+		]
 	, setup = rsyncSetup
 	, exportSupported = exportIsSupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+shellEscapeField :: RemoteConfigField
+shellEscapeField = Accepted "shellescape"
+
+rsyncUrlField :: RemoteConfigField
+rsyncUrlField = Accepted "rsyncurl"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
@@ -111,7 +124,14 @@ gen r u c gc rs = do
 		-- Rsync displays its own progress.
 		{ displayProgress = False }
 
-genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts
+-- Things used by genRsyncOpts
+rsyncRemoteConfigs :: [RemoteConfigFieldParser]
+rsyncRemoteConfigs = 
+	[ yesNoParser shellEscapeField True
+		(FieldDesc "avoid usual shell escaping (not recommended)")
+	]
+
+genRsyncOpts :: ParsedRemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts
 genRsyncOpts c gc transport url = RsyncOpts
 	{ rsyncUrl = url
 	, rsyncOptions = appendtransport $ opts []
@@ -119,7 +139,7 @@ genRsyncOpts c gc transport url = RsyncOpts
 		opts (remoteAnnexRsyncUploadOptions gc)
 	, rsyncDownloadOptions = appendtransport $
 		opts (remoteAnnexRsyncDownloadOptions gc)
-	, rsyncShellEscape = (yesNo =<< M.lookup "shellescape" c) /= Just False
+	, rsyncShellEscape = fromMaybe True (getRemoteConfigValue shellEscapeField c)
 	}
   where
 	appendtransport l = (++ l) <$> transport
@@ -161,8 +181,8 @@ rsyncSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> Remo
 rsyncSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let url = fromMaybe (giveup "Specify rsyncurl=") $
-		M.lookup "rsyncurl" c
+	let url = maybe (giveup "Specify rsyncurl=") fromProposedAccepted $
+		M.lookup rsyncUrlField c
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The rsyncurl is stored in git config, not only in this remote's

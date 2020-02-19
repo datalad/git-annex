@@ -558,8 +558,8 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 reverseAdjustedTree :: Sha -> Adjustment -> Sha -> Annex Sha
 reverseAdjustedTree basis adj csha = do
 	(diff, cleanup) <- inRepo (Git.DiffTree.commitDiff csha)
-	let (adds, others) = partition (\dti -> Git.DiffTree.srcsha dti == nullSha) diff
-	let (removes, changes) = partition (\dti -> Git.DiffTree.dstsha dti == nullSha) others
+	let (adds, others) = partition (\dti -> Git.DiffTree.srcsha dti `elem` nullShas) diff
+	let (removes, changes) = partition (\dti -> Git.DiffTree.dstsha dti `elem` nullShas) others
 	adds' <- catMaybes <$>
 		mapM (adjustTreeItem reverseadj) (map diffTreeToTreeItem adds)
 	treesha <- Git.Tree.adjustTree

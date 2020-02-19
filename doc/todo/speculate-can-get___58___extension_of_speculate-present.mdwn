@@ -2,3 +2,5 @@ Add `remote.<name>.annex-speculate-can-get` config setting for non-special remot
 
 Then one can make a quick clone of the current repo, and instead of re-configuring all its remotes in the new clone, just configure the origin to be a `speculate-can-get` remote.
 This would also be useful when you have unconnected but related repos, and want to occasionally share files between them without merging their histories.
+
+[[!tag needsthought]]

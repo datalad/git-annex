@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-30T16:44:52Z"
+ content="""
+When git-annex downloads chunks, it downloads one chunk at a time
+(no parallelisation downloads of chunks of the same key) to either a temp
+file or a memory buffer, decrypts if necessary, and then appends the
+chunk to the destination file.
+
+Since chunks are often stored entirely in ram, the chunk size is typically
+a small fraction of ram. It seems unlikely to me that the kernel would
+often decide to unncessarily flush a small write to a temp file out to disk
+and drop it from the cache when the very next operation after writing the
+file is reading it back in.
+
+chrysn's analysis seems right.
+
+Also, this smells of premature optimisation, and tying it to features that
+have not even been agreed on, let alone implemented, makes it kind of super
+low priority?
+"""]]

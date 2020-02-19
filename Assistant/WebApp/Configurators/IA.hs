@@ -25,6 +25,7 @@ import Types.Remote (RemoteConfig)
 import qualified Annex.Url as Url
 import Creds
 import Annex.SpecialRemote.Config
+import Types.ProposedAccepted
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -131,21 +132,22 @@ postAddIAR = iaConfigurator $ do
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
+			let wrap (k, v) = (Proposed k, Proposed v)
+			let c = map wrap $ catMaybes
+				[ Just ("type", "S3")
+				, Just ("host", S3.iaHost)
+				, Just ("bucket", escapeHeader name)
+				, Just ("x-archive-meta-title", escapeHeader $ T.unpack $ itemName input)
+				, if mediaType input == MediaOmitted
+					then Nothing
+					else Just ("x-archive-mediatype", formatMediaType $ mediaType input)
+				, (,) <$> pure "x-archive-meta-collection" <*> collectionMediaType (mediaType input)
+				-- Make item show up ASAP.
+				, Just ("x-archive-interactive-priority", "1")
+				, Just ("preferreddir", name)
+				]
 			AWS.makeAWSRemote initSpecialRemote S3.remote PublicGroup (extractCreds input) name $
-				M.fromList $ catMaybes
-					[ Just $ configureEncryption NoEncryption
-					, Just ("type", "S3")
-					, Just ("host", S3.iaHost)
-					, Just ("bucket", escapeHeader name)
-					, Just ("x-archive-meta-title", escapeHeader $ T.unpack $ itemName input)
-					, if mediaType input == MediaOmitted
-						then Nothing
-						else Just ("x-archive-mediatype", formatMediaType $ mediaType input)
-					, (,) <$> pure "x-archive-meta-collection" <*> collectionMediaType (mediaType input)
-					-- Make item show up ASAP.
-					, Just ("x-archive-interactive-priority", "1")
-					, Just ("preferreddir", name)
-					]
+				M.fromList $ configureEncryption NoEncryption : c
 		_ -> $(widgetFile "configurators/addia")
 #else
 postAddIAR = giveup "S3 not supported by this build"
@@ -202,7 +204,7 @@ $if (not exists)
     have been uploaded, and the Internet Archive has processed them.
 |]
   where
-	bucket = fromMaybe "" $ M.lookup "bucket" c
+	bucket = maybe "" fromProposedAccepted $ M.lookup (Accepted "bucket") c
 #ifdef WITH_S3
 	url = S3.iaItemUrl bucket
 #else

@@ -42,3 +42,6 @@ apparently it is actually timing out on checking (I guess after chunk completion
 
 
 [[!meta author="yoh"]]
+
+> I see that the bug in the DAV library has been fixed (in 2018),
+> so hopefully nothing more needs to be done. [[done]] --[[Joey]]

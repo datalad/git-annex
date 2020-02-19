@@ -1,6 +1,6 @@
 {- Using bup as a remote.
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,6 +25,7 @@ import qualified Git.Ref
 import Config
 import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
@@ -33,20 +34,28 @@ import Utility.UserInfo
 import Annex.UUID
 import Annex.Ssh
 import Utility.Metered
+import Types.ProposedAccepted
 
 type BupRepo = String
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "bup"
 	, enumerate = const (findSpecialRemotes "buprepo")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser buprepoField
+			(FieldDesc "(required) bup repository to use")
+		]
 	, setup = bupSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+buprepoField :: RemoteConfigField
+buprepoField = Accepted "buprepo"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	bupr <- liftIO $ bup2GitRemote buprepo
 	cst <- remoteCost gc $
@@ -108,8 +117,8 @@ bupSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane
-	let buprepo = fromMaybe (giveup "Specify buprepo=") $
-		M.lookup "buprepo" c
+	let buprepo = maybe (giveup "Specify buprepo=") fromProposedAccepted $
+		M.lookup buprepoField c
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- bup init will create the repository.

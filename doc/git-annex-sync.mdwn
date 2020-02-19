@@ -12,7 +12,7 @@ This command synchronizes the local repository with its remotes.
 
 The sync process involves first committing any local changes to files
 that have previously been added to the repository,
-then fetching and merging the `synced/master` and the `git-annex` branch
+then fetching and merging the current branch and the `git-annex` branch
 from the remote repositories, and finally pushing the changes back to
 those branches on the remote repositories. You can use standard git
 commands to do each of those steps by hand, or if you don't want to
@@ -21,11 +21,18 @@ worry about the details, you can use sync.
 The content of annexed objects is not synced by default, but the --content
 option (see below) can make that also be synchronized.
 
-Note that syncing with a remote will not normally update the remote's working
-tree with changes made to the local repository. (Unless it's configured
-with receive.denyCurrentBranch=updateInstead.) However, those changes
-are pushed to the remote, so they can be merged into its working tree
-by running "git annex sync" on the remote.
+When using git-annex, often remotes are not bare repositories, because
+it's helpful to add remotes for nearby machines that you want
+to access the same annexed content. Syncing with a non-bare remote will
+not normally update the remote's current branch with changes from the local
+repository. (Unless the remote is configured with
+receive.denyCurrentBranch=updateInstead.)
+
+To make working with such non-bare remotes easier, sync pushes not only
+local `master` to remote `master`, but also to remote `synced/master` (and
+similar with other branches). When `git-annex sync` is later run on the
+remote, it will merge the `synced/` branches that the repository has
+received.
 
 # OPTIONS
 
@@ -39,9 +46,24 @@ by running "git annex sync" on the remote.
 
   Only sync with the remotes with the lowest annex-cost value configured.
 
+* `--only-annex` `-a`, `--not-only-annex`
+
+  Only sync the git-annex branch and annexed content with remotes,
+  not other git branches.
+
+  This avoids pulling and pushing other branches, and it avoids committing
+  any local changes. It's up to you to use regular git commands to do that.
+
+  The `annex.synconlyannex` configuration can be set to true to make
+  this be the default behavior of `git-annex sync`. To override such
+  a setting, use `--not-only-annex`.
+
+  When this is combined with --no-content, only the git-annex branch
+  will be synced.
+
 * `--commit`, `--no-commit`
 
-  A commit is done by default (unless annex.autocommit is set to false).
+  A commit is done by default (unless `annex.autocommit` is set to false).
   
   Use --no-commit to avoid committing local changes.
 
@@ -51,8 +73,8 @@ by running "git annex sync" on the remote.
 
 * `--pull`, `--no-pull`
 
-  By default, git pulls from remotes and imports from some special remotes.
-  Use --no-pull to disable all pulling.
+  By default, syncing pulls from remotes and imports from some special
+  remotes. Use --no-pull to disable all pulling.
 
   When `remote.<name>.annex-pull` or `remote.<name>.annex-sync`
   are set to false, pulling is disabled for those remotes, and using
@@ -60,7 +82,7 @@ by running "git annex sync" on the remote.
 
 * `--push`, `--no-push` 
 
-  By default, git pushes changes to remotes and exports to some 
+  By default, syncing pushes changes to remotes and exports to some 
   special remotes. Use --no-push to disable all pushing.
   
   When `remote.<name>.annex-push` or `remote.<name>.annex-sync` are
@@ -128,7 +150,7 @@ by running "git annex sync" on the remote.
   [[git-annex-resolvemerge]](1) for details.)
 
   Use `--no-resolvemerge` to disable this automatic merge conflict
-  resolution. It can also be disabled by setting annex.resolvemerge
+  resolution. It can also be disabled by setting `annex.resolvemerge`
   to false.
 
 * `--cleanup`

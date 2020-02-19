@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-29T14:39:06Z"
+ content="""
+I would rather not complicate setpresentkey with things not related to
+presence information.
+
+This seems pretty deep into messing with git-annex's internals to seem
+plausible to me as a separate command. At some point, you may as well just
+write data to the branch yourself. What is the use case?
+"""]]

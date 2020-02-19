@@ -1,0 +1,21 @@
+I have a git repository with a webdav annex remote. I have used this remote to store a few large files, and transfer them to other computers.
+
+I have done this on three Linux computers on different networks, and it works beautifully! Truly a life-saver!
+
+However, I today tried setting up a macOS computer, and 
+
+    git annex copy --from=myremote
+
+fails with the simple error message "failed". It downloads about ten megabytes without issue before failing. It then continues with the next file and again downloads a bit (ca. 10 Mb), then fails. The JSON error message has an empty error message field, and the JSON progress messages only contain business-as-usual before the error. 
+
+On the computer that has this problem, I am running macOS 10.15.2 and git-annex 7.20191230. 
+
+I tried WiFi and wired network connections, which doesn't make a difference. The hard drive has enough space for the files. I tried manually selecting various annexed files, but all fail after 10 Mb.
+
+The same command worked on the linux boxes I set up a few days ago.
+
+The problem really is that I am getting no meaningful error message for triaging this problem.
+
+Any help would be appreciated!
+
+[[!tag moreinfo]]

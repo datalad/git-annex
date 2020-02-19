@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-02-17T16:47:33Z"
+ content="""
+I agree with Ilya's points.
+
+And it's unresonable to characterize this as data loss, because git itself
+does not store file timestamp data. Making such mischaracterizations does,
+however, cause me, as the maintainer, to wonder if this is a feature that
+is worth keeping, since I have no interest in descending that rabbit hole
+or fighting such accusations. Generally, going to the strongest possible
+argument, when requesting a change, is not actually your best move.
+
+Closing this bug report.
+"""]]

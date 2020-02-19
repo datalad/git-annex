@@ -1,3 +1,5 @@
 If a spec of the [[sqlite database schemas|todo/sqlite_database_improvements]] could be added to the [[internals]] docs, this would open some possibilities for third-party tools based on this info.  E.g. one could write some sqlite3 queries to get aggregate info on the number (and total size?) of keys present in specific combinations of repos.  It would of course be understood that this is internal info subject to frequent change.
 
 Also, if [[Sometimes the databases are used for data that has not yet been committed to git|devblog/day_607__v8_is_done]], this would improve [[future_proofing]].
+
+[[!tag needsthought unlikely]]

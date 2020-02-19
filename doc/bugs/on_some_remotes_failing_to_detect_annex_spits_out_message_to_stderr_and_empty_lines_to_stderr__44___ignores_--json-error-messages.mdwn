@@ -54,3 +54,7 @@ PS ignore "ignores --json-error-messages" part of the subject -- was detected in
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] what I consider to be the core issue in this bug report. 
+> --[[Joey]]
+

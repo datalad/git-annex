@@ -1,3 +1,4 @@
 It would help if there was a universal batch mode, where git-annex command lines are given as lines in an input file, and are executed as a batch.  A batch could contain different git-annex commands (as opposed to different parameters for one command). git-annex could intelligently group, reorder and parallelize the execution, as long as the overall effect of the batch is unchanged.  (I.e. commands affecting different keys/paths could be run in parallel; commands repeatedly doing the same thing could be collapsed; git command batching could span different git-annex commands; etc.)  I find myself implementing something like that in python on top of git-annex, but it would be much more efficient and robust if supported natively.  Maybe, the DataLad project would also find this useful?
 
+[[!tag needsthought]]
 

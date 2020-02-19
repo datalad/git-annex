@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-07T19:24:31Z"
+ content="""
+"/annex/objects/SHA256E-s204800--a518c074bc22f673f0c73191a01426fef0a7d8b262a17d2729a4a3ac51da40ce.gpkg" is
+used when an annexed object in a v7 repository is unlocked.
+
+If you run `git annex lock` on it, it will be turned backed into a symlink to
+the .git/annex/objects file.
+
+Normally unlocked files have that pointer replaced with the file content when 
+it's available, and only when the file content is not available would you see
+that pointer. I guess you've done something to get your repository into this
+state where the content is present but the unlocked file is not populated with 
+it. It's likely that running `git annex fsck` on the file would fix that problem.
+"""]]

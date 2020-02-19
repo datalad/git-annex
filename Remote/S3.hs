@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -57,6 +57,7 @@ import Annex.Magic
 import Logs.Web
 import Logs.MetaData
 import Types.MetaData
+import Types.ProposedAccepted
 import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
@@ -68,16 +69,92 @@ type BucketName = String
 type BucketObject = String
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "S3"
 	, enumerate = const (findSpecialRemotes "s3")
 	, generate = gen
+	, configParser = const $ pure $ RemoteConfigParser
+		{ remoteConfigFieldParsers = 
+			[ optionalStringParser bucketField
+				(FieldDesc "name of bucket to store content in")
+			, optionalStringParser hostField
+				(FieldDesc "S3 server hostname (default is Amazon S3)")
+			, optionalStringParser datacenterField
+				(FieldDesc "S3 datacenter to use (US, EU, us-west-1, ..)")
+			, optionalStringParser partsizeField
+				(FieldDesc "part size for multipart upload (eg 1GiB)")
+			, optionalStringParser storageclassField
+				(FieldDesc "storage class, eg STANDARD or REDUCED_REDUNDANCY")
+			, optionalStringParser fileprefixField
+				(FieldDesc "prefix to add to filenames in the bucket")
+			, yesNoParser versioningField False
+				(FieldDesc "enable versioning of bucket content")
+			, yesNoParser publicField False
+				(FieldDesc "allow public read access to the buckey")
+			, optionalStringParser publicurlField
+				(FieldDesc "url that can be used by public to download files")
+			, optionalStringParser protocolField
+				(FieldDesc "http or https")
+			, optionalStringParser portField
+				(FieldDesc "port to connect to")
+			, optionalStringParser requeststyleField
+				(FieldDesc "for path-style requests, set to \"path\"")
+			, optionalStringParser mungekeysField HiddenField
+			, optionalStringParser AWS.s3credsField HiddenField
+			]
+		, remoteConfigRestPassthrough = Just
+			( \f -> isMetaHeader f || isArchiveMetaHeader f
+			,
+				[ ("x-amz-meta-*", FieldDesc "http headers to add when storing on S3")
+				, ("x-archive-meta-*", FieldDesc "http headers to add when storing on Internet Archive")
+			  	]
+			)
+		}
 	, setup = s3Setup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+bucketField :: RemoteConfigField
+bucketField = Accepted "bucket"
+
+hostField :: RemoteConfigField
+hostField = Accepted "host"
+
+datacenterField :: RemoteConfigField
+datacenterField = Accepted "datacenter"
+
+partsizeField :: RemoteConfigField
+partsizeField = Accepted "partsize"
+
+storageclassField :: RemoteConfigField
+storageclassField = Accepted "storageclass"
+
+fileprefixField :: RemoteConfigField
+fileprefixField = Accepted "fileprefix"
+
+versioningField :: RemoteConfigField
+versioningField = Accepted "versioning"
+
+publicField :: RemoteConfigField
+publicField = Accepted "public"
+
+publicurlField :: RemoteConfigField
+publicurlField = Accepted "publicurl"
+
+protocolField :: RemoteConfigField
+protocolField = Accepted "protocol"
+
+requeststyleField :: RemoteConfigField
+requeststyleField = Accepted "requeststyle"
+
+portField :: RemoteConfigField
+portField = Accepted "port"
+
+mungekeysField :: RemoteConfigField
+mungekeysField = Accepted "mungekeys"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	info <- extractS3Info c
@@ -134,7 +211,7 @@ gen r u c gc rs = do
 			, appendonly = versioning info
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert "host" "!dne!" c) gc rs
+			, mkUnavailable = gen r u (M.insert hostField (RemoteConfigValue ("!dne!" :: String)) c) gc rs
 			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c info)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
@@ -148,21 +225,21 @@ s3Setup ss mu mcreds c gc = do
 
 s3Setup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 s3Setup' ss u mcreds c gc
-	| configIA c = archiveorg
+	| maybe False (isIAHost . fromProposedAccepted) (M.lookup hostField c) = archiveorg
 	| otherwise = defaulthost
   where
 	remotename = fromJust (lookupName c)
 	defbucket = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
-		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.S3)
-		, ("storageclass", "STANDARD")
-		, ("host", AWS.s3DefaultHost)
-		, ("port", "80")
-		, ("bucket", defbucket)
+		[ (datacenterField, Proposed $ T.unpack $ AWS.defaultRegion AWS.S3)
+		, (storageclassField, Proposed "STANDARD")
+		, (hostField, Proposed AWS.s3DefaultHost)
+		, (portField, Proposed "80")
+		, (bucketField, Proposed defbucket)
 		]
-		
-	use fullconfig info = do
-		enableBucketVersioning ss info fullconfig gc u
+
+	use fullconfig pc info = do
+		enableBucketVersioning ss info pc gc u
 		gitConfigSpecialRemote u fullconfig [("s3", "true")]
 		return (fullconfig, u)
 
@@ -170,36 +247,40 @@ s3Setup' ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup c gc
 		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 		let fullconfig = c'' `M.union` defaults
-		info <- extractS3Info fullconfig
-		checkexportimportsafe fullconfig info
+		pc <- either giveup return . parseRemoteConfig fullconfig
+			=<< configParser remote fullconfig
+		info <- extractS3Info pc
+		checkexportimportsafe pc info
 		case ss of
-			Init -> genBucket fullconfig gc u
+			Init -> genBucket pc gc u
 			_ -> return ()
-		use fullconfig info
+		use fullconfig pc info
 
 	archiveorg = do
 		showNote "Internet Archive mode"
 		c' <- setRemoteCredPair noEncryptionUsed c gc (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
-		let validbucket = replace " " "-" $
-			fromMaybe (giveup "specify bucket=") $
-				getBucketName c'
+		let validbucket = replace " " "-" $ map toLower $
+			maybe (giveup "specify bucket=") fromProposedAccepted
+				(M.lookup bucketField c')
 		let archiveconfig = 
 			-- IA acdepts x-amz-* as an alias for x-archive-*
-			M.mapKeys (replace "x-archive-" "x-amz-") $
+			M.mapKeys (Proposed . replace "x-archive-" "x-amz-" . fromProposedAccepted) $
 			-- encryption does not make sense here
-			M.insert encryptionField "none" $
-			M.insert "bucket" validbucket $
+			M.insert encryptionField (Proposed "none") $
+			M.insert bucketField (Proposed validbucket) $
 			M.union c' $
 			-- special constraints on key names
-			M.insert "mungekeys" "ia" defaults
-		info <- extractS3Info archiveconfig
-		checkexportimportsafe archiveconfig info
-		hdl <- mkS3HandleVar archiveconfig gc u
+			M.insert mungekeysField (Proposed "ia") defaults
+		pc <- either giveup return . parseRemoteConfig archiveconfig
+			=<< configParser remote archiveconfig
+		info <- extractS3Info pc
+		checkexportimportsafe pc info
+		hdl <- mkS3HandleVar pc gc u
 		withS3HandleOrFail u hdl $
-			writeUUIDFile archiveconfig u info
-		use archiveconfig info
+			writeUUIDFile pc u info
+		use archiveconfig pc info
 	
 	checkexportimportsafe c' info =
 		unlessM (Annex.getState Annex.force) $
@@ -293,7 +374,7 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
-retrieve :: S3HandleVar -> Remote -> RemoteStateHandle -> RemoteConfig -> S3Info -> Retriever
+retrieve :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Retriever
 retrieve hv r rs c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
 	(Just h) -> 
 		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
@@ -306,7 +387,7 @@ retrieve hv r rs c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
-			Right us -> unlessM (downloadUrl k p us f) $
+			Right us -> unlessM (withUrlOptions $ downloadUrl k p us f) $
 				giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
@@ -330,7 +411,7 @@ remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> liftIO $ runResource
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 	return $ either (const False) (const True) res
 
-checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> RemoteConfig -> S3Info -> CheckPresent
+checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> CheckPresent
 checkKey hv r rs c info k = withS3Handle hv $ \case
 	Just h -> do
 		showChecking r
@@ -627,7 +708,7 @@ checkPresentExportWithContentIdentifierS3 hv r info _k loc knowncids =
  - so first check if the UUID file already exists and we can skip creating
  - it.
  -}
-genBucket :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+genBucket :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genBucket c gc u = do
 	showAction "checking bucket"
 	info <- extractS3Info c
@@ -652,7 +733,7 @@ genBucket c gc u = do
 		writeUUIDFile c u info h
 	
 	locconstraint = mkLocationConstraint $ T.pack datacenter
-	datacenter = fromJust $ M.lookup "datacenter" c
+	datacenter = fromJust $ getRemoteConfigValue datacenterField c
 	-- "NEARLINE" as a storage class when creating a bucket is a
 	-- nonstandard extension of Google Cloud Storage.
 	storageclass = case getStorageClass c of
@@ -667,7 +748,7 @@ genBucket c gc u = do
  - Note that IA buckets can only created by having a file
  - stored in them. So this also takes care of that.
  -}
-writeUUIDFile :: RemoteConfig -> UUID -> S3Info -> S3Handle -> Annex ()
+writeUUIDFile :: ParsedRemoteConfig -> UUID -> S3Info -> S3Handle -> Annex ()
 writeUUIDFile c u info h = do
 	v <- checkUUIDFile c u info h
 	case v of
@@ -684,7 +765,7 @@ writeUUIDFile c u info h = do
 
 {- Checks if the UUID file exists in the bucket
  - and has the specified UUID already. -}
-checkUUIDFile :: RemoteConfig -> UUID -> S3Info -> S3Handle -> Annex (Either SomeException Bool)
+checkUUIDFile :: ParsedRemoteConfig -> UUID -> S3Info -> S3Handle -> Annex (Either SomeException Bool)
 checkUUIDFile c u info h = tryNonAsync $ liftIO $ runResourceT $ do
 	resp <- tryS3 $ sendS3Handle h (S3.getObject (bucket info) file)
 	case resp of
@@ -700,7 +781,7 @@ checkUUIDFile c u info h = tryNonAsync $ liftIO $ runResourceT $ do
 	file = T.pack $ uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 
-uuidFile :: RemoteConfig -> FilePath
+uuidFile :: ParsedRemoteConfig -> FilePath
 uuidFile c = getFilePrefix c ++ "annex-uuid"
 
 tryS3 :: ResourceT IO a -> ResourceT IO (Either S3.S3Error a)
@@ -724,7 +805,7 @@ type S3HandleVar = TVar (Either (Annex (Maybe S3Handle)) (Maybe S3Handle))
 
 {- Prepares a S3Handle for later use. Does not connect to S3 or do anything
  - else expensive. -}
-mkS3HandleVar :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex S3HandleVar
+mkS3HandleVar :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex S3HandleVar
 mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $ do
 	mcreds <- getRemoteCredPair c gc (AWS.creds u)
 	case mcreds of
@@ -755,24 +836,24 @@ withS3HandleOrFail u hv a = withS3Handle hv $ \case
 needS3Creds :: UUID -> String
 needS3Creds u = missingCredPairFor "S3" (AWS.creds u)
 
-s3Configuration :: RemoteConfig -> S3.S3Configuration AWS.NormalQuery
+s3Configuration :: ParsedRemoteConfig -> S3.S3Configuration AWS.NormalQuery
 s3Configuration c = cfg
 	{ S3.s3Port = port
-	, S3.s3RequestStyle = case M.lookup "requeststyle" c of
+	, S3.s3RequestStyle = case getRemoteConfigValue requeststyleField c of
 		Just "path" -> S3.PathStyle
 		Just s -> giveup $ "bad S3 requeststyle value: " ++ s
 		Nothing -> S3.s3RequestStyle cfg
 	}
   where
-	h = fromJust $ M.lookup "host" c
-	datacenter = fromJust $ M.lookup "datacenter" c
+	h = fromJust $ getRemoteConfigValue hostField c
+	datacenter = fromJust $ getRemoteConfigValue datacenterField c
 	-- When the default S3 host is configured, connect directly to
 	-- the S3 endpoint for the configured datacenter.
 	-- When another host is configured, it's used as-is.
 	endpoint
 		| h == AWS.s3DefaultHost = AWS.s3HostName $ T.pack datacenter
 		| otherwise = T.encodeUtf8 $ T.pack h
-	port = case M.lookup "port" c of
+	port = case getRemoteConfigValue portField c of
 		Just s -> 
 			case reads s of
 				[(p, _)]
@@ -787,7 +868,7 @@ s3Configuration c = cfg
 			Just AWS.HTTPS -> 443
 			Just AWS.HTTP -> 80
 			Nothing -> 80
-	cfgproto = case M.lookup "protocol" c of
+	cfgproto = case getRemoteConfigValue protocolField c of
 		Just "https" -> Just AWS.HTTPS
 		Just "http" -> Just AWS.HTTP
 		Just s -> giveup $ "bad S3 protocol value: " ++ s
@@ -814,7 +895,7 @@ data S3Info = S3Info
 	, host :: Maybe String
 	}
 
-extractS3Info :: RemoteConfig -> Annex S3Info
+extractS3Info :: ParsedRemoteConfig -> Annex S3Info
 extractS3Info c = do
 	b <- maybe
 		(giveup "S3 bucket not configured")
@@ -829,13 +910,13 @@ extractS3Info c = do
 		, metaHeaders = getMetaHeaders c
 		, partSize = getPartSize c
 		, isIA = configIA c
-		, versioning = boolcfg "versioning"
-		, public = boolcfg "public"
-		, publicurl = M.lookup "publicurl" c
-		, host = M.lookup "host" c
+		, versioning = fromMaybe False $
+			getRemoteConfigValue versioningField c
+		, public = fromMaybe False $
+			getRemoteConfigValue publicField c
+		, publicurl = getRemoteConfigValue publicurlField c
+		, host = getRemoteConfigValue hostField c
 		}
-  where
-	boolcfg k = fromMaybe False $ yesNo =<< M.lookup k c
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
 putObject info file rbody = (S3.putObject (bucket info) file rbody)
@@ -850,41 +931,51 @@ acl info
 	| public info = Just S3.AclPublicRead
 	| otherwise = Nothing
 
-getBucketName :: RemoteConfig -> Maybe BucketName
-getBucketName = map toLower <$$> M.lookup "bucket"
+getBucketName :: ParsedRemoteConfig -> Maybe BucketName
+getBucketName = map toLower <$$> getRemoteConfigValue bucketField
 
-getStorageClass :: RemoteConfig -> S3.StorageClass
-getStorageClass c = case M.lookup "storageclass" c of
+getStorageClass :: ParsedRemoteConfig -> S3.StorageClass
+getStorageClass c = case getRemoteConfigValue storageclassField c of
 	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
 	Just s -> S3.OtherStorageClass (T.pack s)
 	_ -> S3.Standard
 
-getPartSize :: RemoteConfig -> Maybe Integer
-getPartSize c = readSize dataUnits =<< M.lookup "partsize" c
+getPartSize :: ParsedRemoteConfig -> Maybe Integer
+getPartSize c = readSize dataUnits =<< getRemoteConfigValue partsizeField c
 
-getMetaHeaders :: RemoteConfig -> [(T.Text, T.Text)]
-getMetaHeaders = map munge . filter ismetaheader . M.assocs
+getMetaHeaders :: ParsedRemoteConfig -> [(T.Text, T.Text)]
+getMetaHeaders = map munge
+	. filter (isMetaHeader . fst)
+	. M.assocs
+	. getRemoteConfigPassedThrough
   where
-	ismetaheader (h, _) = metaprefix `isPrefixOf` h
-	metaprefix = "x-amz-meta-"
-	metaprefixlen = length metaprefix
-	munge (k, v) = (T.pack $ drop metaprefixlen k, T.pack v)
+	metaprefixlen = length metaPrefix
+	munge (k, v) = (T.pack $ drop metaprefixlen (fromProposedAccepted k), T.pack v)
 
-getFilePrefix :: RemoteConfig -> String
-getFilePrefix = M.findWithDefault "" "fileprefix"
+isMetaHeader :: RemoteConfigField -> Bool
+isMetaHeader h = metaPrefix `isPrefixOf` fromProposedAccepted h
 
-getBucketObject :: RemoteConfig -> Key -> BucketObject
+isArchiveMetaHeader :: RemoteConfigField -> Bool
+isArchiveMetaHeader h = "x-archive-" `isPrefixOf` fromProposedAccepted h
+
+metaPrefix :: String
+metaPrefix = "x-amz-meta-"
+
+getFilePrefix :: ParsedRemoteConfig -> String
+getFilePrefix = fromMaybe "" . getRemoteConfigValue fileprefixField
+
+getBucketObject :: ParsedRemoteConfig -> Key -> BucketObject
 getBucketObject c = munge . serializeKey
   where
-	munge s = case M.lookup "mungekeys" c of
+	munge s = case getRemoteConfigValue mungekeysField c :: Maybe String of
 		Just "ia" -> iaMunge $ getFilePrefix c ++ s
 		_ -> getFilePrefix c ++ s
 
-getBucketExportLocation :: RemoteConfig -> ExportLocation -> BucketObject
+getBucketExportLocation :: ParsedRemoteConfig -> ExportLocation -> BucketObject
 getBucketExportLocation c loc =
 	getFilePrefix c ++ fromRawFilePath (fromExportLocation loc)
 
-getBucketImportLocation :: RemoteConfig -> BucketObject -> Maybe ImportLocation
+getBucketImportLocation :: ParsedRemoteConfig -> BucketObject -> Maybe ImportLocation
 getBucketImportLocation c obj
 	-- The uuidFile should not be imported.
 	| obj == uuidfile = Nothing
@@ -910,8 +1001,8 @@ iaMunge = (>>= munge)
 		| isSpace c = []
 		| otherwise = "&" ++ show (ord c) ++ ";"
 
-configIA :: RemoteConfig -> Bool
-configIA = maybe False isIAHost . M.lookup "host"
+configIA :: ParsedRemoteConfig -> Bool
+configIA = maybe False isIAHost . getRemoteConfigValue hostField
 
 {- Hostname to use for archive.org S3. -}
 iaHost :: HostName
@@ -963,7 +1054,7 @@ debugMapper level t = forward "S3" (T.unpack t)
 		AWS.Warning -> warningM
 		AWS.Error -> errorM
 
-s3Info :: RemoteConfig -> S3Info -> [(String, String)]
+s3Info :: ParsedRemoteConfig -> S3Info -> [(String, String)]
 s3Info c info = catMaybes
 	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
 	, Just ("endpoint", w82s (BS.unpack (S3.s3Endpoint s3c)))
@@ -982,10 +1073,10 @@ s3Info c info = catMaybes
 	showstorageclass (S3.OtherStorageClass t) = T.unpack t
 	showstorageclass sc = show sc
 
-getPublicWebUrls :: UUID -> RemoteStateHandle -> S3Info -> RemoteConfig -> Key -> Annex [URLString]
+getPublicWebUrls :: UUID -> RemoteStateHandle -> S3Info -> ParsedRemoteConfig -> Key -> Annex [URLString]
 getPublicWebUrls u rs info c k = either (const []) id <$> getPublicWebUrls' u rs info c k
 
-getPublicWebUrls' :: UUID -> RemoteStateHandle -> S3Info -> RemoteConfig -> Key -> Annex (Either String [URLString])
+getPublicWebUrls' :: UUID -> RemoteStateHandle -> S3Info -> ParsedRemoteConfig -> Key -> Annex (Either String [URLString])
 getPublicWebUrls' u rs info c k
 	| not (public info) = return $ Left $ 
 		"S3 bucket does not allow public access; " ++ needS3Creds u
@@ -1125,7 +1216,7 @@ getS3VersionID rs k = do
 s3VersionField :: MetaField
 s3VersionField = mkMetaFieldUnchecked "V"
 
-eitherS3VersionID :: S3Info -> RemoteStateHandle -> RemoteConfig -> Key -> S3.Object -> Annex (Either String (Either S3.Object S3VersionID))
+eitherS3VersionID :: S3Info -> RemoteStateHandle -> ParsedRemoteConfig -> Key -> S3.Object -> Annex (Either String (Either S3.Object S3VersionID))
 eitherS3VersionID info rs c k fallback
 	| versioning info = getS3VersionID rs k >>= return . \case
 		[] -> if exportTree c
@@ -1150,7 +1241,7 @@ getS3VersionIDPublicUrls mk info rs k =
 -- Enable versioning on the bucket can only be done at init time;
 -- setting versioning in a bucket that git-annex has already exported
 -- files to risks losing the content of those un-versioned files.
-enableBucketVersioning :: SetupStage -> S3Info -> RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+enableBucketVersioning :: SetupStage -> S3Info -> ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 #if MIN_VERSION_aws(0,21,1)
 enableBucketVersioning ss info c gc u = do
 #else
@@ -1160,7 +1251,10 @@ enableBucketVersioning ss info _ _ _ = do
 		Init -> when (versioning info) $
 			enableversioning (bucket info)
 		Enable oldc -> do
-			oldinfo <- extractS3Info oldc
+			oldpc <- either (const mempty) id
+				. parseRemoteConfig oldc 
+				<$> configParser remote oldc
+			oldinfo <- extractS3Info oldpc
 			when (versioning info /= versioning oldinfo) $
 				giveup "Cannot change versioning= of existing S3 remote."
   where

@@ -48,3 +48,5 @@ subsequent WHEREIS, which may complicate its code slightly.
 
 Note that the protocol does allow querying with GETCONFIG etc before
 responding to a WHEREIS request.
+
+[[!tag confirmed]]

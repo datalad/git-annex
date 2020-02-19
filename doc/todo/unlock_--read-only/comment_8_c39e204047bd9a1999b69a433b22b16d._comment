@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: I wonder if "thin mode" could generalize beyond hardlinks"""
+ date="2020-01-29T15:15:06Z"
+ content="""
+The ideas in that comment won't work, and here's why: 
+
+If git-annex does not maintain a hardlink in .git/annex/objects,
+then when you run git checkout and it replaces the working tree file
+with some other version, or deletes it, it's deleted the only copy
+of the annex object that is stored on your disk. So you lose data.
+"""]]

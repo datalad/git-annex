@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-30T18:43:19Z"
+ content="""
+I think it would be safe to make this change for WORM keys, which 
+certianly don't need to generate the same key for 2 files with the same
+name.
+
+Less sure about URL keys, if two git-annex addurls versions pick different
+keys for the same url, then there would be a merge conflict, where
+currently there is not. I think I've addurled the same url in different
+clones of a repo before, probably. Although addurl with and without --fast
+or --relaxed also causes that problem and maybe it's not worth worrying
+about it.
+"""]]

@@ -25,6 +25,7 @@ import Creds
 import Assistant.Gpg
 import Git.Types (RemoteName)
 import Annex.SpecialRemote.Config
+import Types.ProposedAccepted
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -131,10 +132,10 @@ postAddS3R = awsConfigurator $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote initSpecialRemote S3.remote TransferGroup (extractCreds input) name $ M.fromList
 				[ configureEncryption $ enableEncryption input
-				, ("type", "S3")
-				, ("datacenter", T.unpack $ datacenter input)
-				, ("storageclass", show $ storageClass input)
-				, ("chunk", "1MiB")
+				, (typeField, Proposed "S3")
+				, (Proposed "datacenter", Proposed $ T.unpack $ datacenter input)
+				, (Proposed "storageclass", Proposed $ show $ storageClass input)
+				, (Proposed "chunk", Proposed "1MiB")
 				]
 		_ -> $(widgetFile "configurators/adds3")
 #else
@@ -155,8 +156,8 @@ postAddGlacierR = glacierConfigurator $ do
 			let name = T.unpack $ repoName input
 			makeAWSRemote initSpecialRemote Glacier.remote SmallArchiveGroup (extractCreds input) name $ M.fromList
 				[ configureEncryption $ enableEncryption input
-				, ("type", "glacier")
-				, ("datacenter", T.unpack $ datacenter input)
+				, (typeField, Proposed "glacier")
+				, (Proposed "datacenter", Proposed $ T.unpack $ datacenter input)
 				]
 		_ -> $(widgetFile "configurators/addglacier")
 #else
@@ -167,7 +168,13 @@ getEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
-	if maybe False S3.configIA (M.lookup uuid m)
+	isia <- case M.lookup uuid m of
+		Just c -> liftAnnex $ do
+			pc <- either mempty id . parseRemoteConfig c
+				<$> Remote.configParser S3.remote c
+			return $ S3.configIA pc
+		Nothing -> return False
+	if isia
 		then redirect $ EnableIAR uuid
 		else postEnableS3R uuid
 #else
@@ -222,7 +229,7 @@ makeAWSRemote maker remotetype defaultgroup (AWSCreds ak sk) name config =
 getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = [whamlet|S3 remote using bucket: #{bucket}|]
   where
-	bucket = fromMaybe "" $ M.lookup "bucket" c
+	bucket = maybe "" fromProposedAccepted $ M.lookup (Accepted "bucket") c
 
 #ifdef WITH_S3
 previouslyUsedAWSCreds :: Annex (Maybe CredPair)

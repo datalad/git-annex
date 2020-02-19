@@ -9,3 +9,5 @@ Add a file to a fresh annex, observe it has no metadata.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes I love it! (Except for its spotty timestamp support)
+
+> [[notabug|done]] --[[Joey]]

@@ -1,4 +1,4 @@
-git-annex (8.20191107) UNRELEASED; urgency=medium
+git-annex (8.20200221) UNRELEASED; urgency=medium
 
   * New v8 repository version.
   * v7 upgrades automatically to v8.
@@ -23,13 +23,72 @@ git-annex (8.20191107) UNRELEASED; urgency=medium
 
  -- Joey Hess <id@joeyh.name>  Tue, 29 Oct 2019 15:13:03 -0400
 
-git-annex (7.20191231) UNRELEASED; urgency=medium
+git-annex (7.20200220) UNRELEASED; urgency=medium
+
+  * Bugfix: export --tracking (a deprecated option) set 
+    annex-annex-tracking-branch, instead of annex-tracking-branch.
+  * initremote, enableremote: Set remote.name.skipFetchAll when
+    the remote cannot be fetched from by git, so git fetch --all
+    will not try to use it.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:48:58 -0400
+
+git-annex (7.20200219) upstream; urgency=medium
+
+  * Added sync --only-annex, which syncs the git-annex branch and annexed
+    content but leaves managing the other git branches up to you.
+  * Added annex.synconlyannex git config setting, which can also be set with
+    git-annex config to configure sync in all clones of the repo.
+  * fsck --from remote: Fix a concurrency bug that could make it incorrectly
+    detect that content in the remote is corrupt, and remove it, resulting in
+    data loss.
+  * When git-annex is built with a ssh that does not support ssh connection
+    caching, default annex.sshcaching to false, but let the user override it.
+  * Improve warning messages further when ssh connection caching cannot
+    be used, to clearly state why.
+  * Avoid throwing fatal errors when asked to write to a readonly
+    git remote on http.
+  * Fix support for repositories tuned with annex.tune.branchhash1=true,
+    including --all not working and git-annex log not displaying anything
+    for annexed files.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:44:43 -0400
+
+git-annex (7.20200204) upstream; urgency=medium
+
+  * Fix build with persistent-template 2.8.0.
+  * Makefile: Really move the fish completion to the
+    vendor_completions.d directory.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 04 Feb 2020 14:30:55 -0400
+
+git-annex (7.20200202.7) upstream; urgency=medium
 
   * add: --force-annex/--force-git options make it easier to override
     annex.largefiles configuration (and potentially safer as it avoids
     bugs like the smudge bug fixed in the last release).
+  * reinject --known: Fix bug that prevented it from working in a bare repo.
+  * Support being used in a git repository that uses sha256 rather than sha1.
+  * initremote, enableremote: Be stricter about rejecting invalid
+    configuration parameters for remotes, particularly things like foo=true
+    when foo=yes is expected.
+  * initremote, enableremote: Reject unknown configuration parameters
+    provided to these commands.
+  * initremote: Added --whatelse option, to show additional
+    configuration parameters you might want to set. Eg:
+    git annex initremote type=directory encryption=none --whatelse
+  * Added LISTCONFIGS to external special remote protocol. Special remote
+    programs that use GETCONFIG/SETCONFIG are recommended to implement it.
+  * init: Avoid an ugly error message when http remote has no git-annex
+    uuid configured.
+  * Support git remotes that need http basic auth to be accessed,
+    using git credential to get the password.
+  * Display a warning when concurrency is enabled but ssh connection caching
+    is not enabled or won't work due to a crippled filesystem.
+  * Makefile: Move the fish completion to the vendor_completions.d directory.
+  * Fixed a test suite failure when run in the C locale.
 
- -- Joey Hess <id@joeyh.name>  Wed, 01 Jan 2020 12:51:40 -0400
+ -- Joey Hess <id@joeyh.name>  Sun, 02 Feb 2020 00:00:00 -0400
 
 git-annex (7.20191230) upstream; urgency=medium
 

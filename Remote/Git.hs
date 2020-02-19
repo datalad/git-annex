@@ -37,6 +37,7 @@ import qualified Annex.SpecialRemote.Config as SpecialRemote
 import Utility.Tmp
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Config.DynamicConfig
 import Annex.Init
 import Types.CleanupActions
@@ -59,11 +60,12 @@ import P2P.Address
 import Annex.Path
 import Creds
 import Types.NumCopies
+import Types.ProposedAccepted
 import Annex.Action
 import Messages.Progress
-import qualified Utility.RawFilePath as R
 
 #ifndef mingw32_HOST_OS
+import qualified Utility.RawFilePath as R
 import Utility.FileMode
 #endif
 
@@ -78,10 +80,17 @@ remote = RemoteType
 	{ typename = "git"
 	, enumerate = list
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser locationField
+			(FieldDesc "url of git remote to remember with special remote")
+		]
 	, setup = gitSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
+
+locationField :: RemoteConfigField
+locationField = Accepted "location"
 
 list :: Bool -> Annex [Git.Repo]
 list autoinit = do
@@ -89,10 +98,10 @@ list autoinit = do
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
 	mapM (configRead autoinit) rs
   where
-	annexurl n = Git.ConfigKey ("remote." <> encodeBS' n <> ".annexurl")
+	annexurl r = remoteConfig r "annexurl"
 	tweakurl c r = do
 		let n = fromJust $ Git.remoteName r
-		case M.lookup (annexurl n) c of
+		case M.lookup (annexurl r) c of
 			Nothing -> return r
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
@@ -111,7 +120,8 @@ list autoinit = do
 gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 gitSetup Init mu _ c _ = do
 	let location = fromMaybe (giveup "Specify location=url") $
-		Url.parseURIRelaxed =<< M.lookup "location" c
+		Url.parseURIRelaxed . fromProposedAccepted
+			=<< M.lookup locationField c
 	rs <- Annex.getGitRemotes
 	u <- case filter (\r -> Git.location r == Git.Url location) rs of
 		[r] -> getRepoUUID r
@@ -125,7 +135,7 @@ gitSetup (Enable _) (Just u) _ c _ = do
 		[ Param "remote"
 		, Param "add"
 		, Param $ fromMaybe (giveup "no name") (SpecialRemote.lookupName c)
-		, Param $ fromMaybe (giveup "no location") (M.lookup "location" c)
+		, Param $ maybe (giveup "no location") fromProposedAccepted (M.lookup locationField c)
 		]
 	return (c, u)
 gitSetup (Enable _) Nothing _ _ _ = error "unable to enable git remote with no specified uuid"
@@ -151,7 +161,7 @@ configRead autoinit r = do
 			Just r' -> return r'
 		_ -> return r
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs
 	-- Remote.GitLFS may be used with a repo that is also encrypted
 	-- with gcrypt so is checked first.
@@ -202,7 +212,7 @@ gen r u c gc rs
 			, remoteStateHandle = rs
 			}
 
-unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+unavailable :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 unavailable r = gen r'
   where
 	r' = case Git.location r of
@@ -238,7 +248,7 @@ tryGitConfigRead autoinit r
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
-			(pipedconfig, return (Left $ giveup "configlist failed"))
+			(pipedconfig autoinit (Git.repoDescribe r), return (Left $ giveup "configlist failed"))
 			"configlist" [] configlistfields
 		case v of
 			Right r'
@@ -246,30 +256,32 @@ tryGitConfigRead autoinit r
 				| otherwise -> configlist_failed
 			Left _ -> configlist_failed
 	| Git.repoIsHttp r = storeUpdatedRemote geturlconfig
-	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
+	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteAnnexConfig r "uuid")
 	| Git.repoIsUrl r = return r
 	| otherwise = storeUpdatedRemote $ liftIO $ 
 		readlocalannexconfig `catchNonAsync` (const $ return r)
   where
 	haveconfig = not . M.null . Git.config
 
-	pipedconfig cmd params = do
+	pipedconfig mustincludeuuuid configloc cmd params = do
 		v <- liftIO $ Git.Config.fromPipe r cmd params
 		case v of
-			Right (r', val) -> do
-				unless (isUUIDConfigured r' || S.null val) $ do
+			Right (r', val, _err) -> do
+				unless (isUUIDConfigured r' || S.null val || not mustincludeuuuid) $ do
 					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ "Instead, got: " ++ show val
 					warning $ "This is unexpected; please check the network transport!"
 				return $ Right r'
-			Left l -> return $ Left l
+			Left l -> do
+				warning $ "Unable to parse git config from " ++ configloc
+				return $ Left l
 
-	geturlconfig = Url.withUrlOptions $ \uo -> do
+	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
 		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			liftIO $ hClose h
 			let url = Git.repoLocation r ++ "/config"
 			ifM (liftIO $ Url.downloadQuiet nullMeterUpdate url tmpfile uo)
-				( Just <$> pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+				( Just <$> pipedconfig False url "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return Nothing
 				)
 		case v of
@@ -370,7 +382,7 @@ inAnnex' repo rmt (State connpool duc _ _) key
 	checkhttp = do
 		showChecking repo
 		gc <- Annex.getGitConfig
-		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
+		ifM (Url.withUrlOptionsPromptingCreds $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
 			( return True
 			, giveup "not found"
 			)
@@ -420,7 +432,9 @@ dropKey' repo r (State connpool duc _ _) key
 				return True
 		, return False
 		)
-	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
+	| Git.repoIsHttp repo = do
+		warning "dropping from http remote not supported"
+		return False
 	| otherwise = commitOnCleanup repo r $ do
 		let fallback = Ssh.dropKey repo key
 		P2PHelper.remove (Ssh.runProto r connpool (return False) fallback) key
@@ -502,7 +516,8 @@ copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile
 copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meterupdate
 	| Git.repoIsHttp repo = unVerified $ do
 		gc <- Annex.getGitConfig
-		Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
+		Url.withUrlOptionsPromptingCreds $
+			Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
 	| not $ Git.repoIsUrl repo = guardUsable repo (unVerified (return False)) $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
@@ -523,7 +538,9 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 		else P2PHelper.retrieve
 			(\p -> Ssh.runProto r connpool (return (False, UnVerified)) (fallback p))
 			key file dest meterupdate
-	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
+	| otherwise = do
+		warning "copying from non-ssh, non-http remote not supported"
+		unVerified (return False)
   where
 	fallback p = unVerified $ feedprogressback $ \p' -> do
 		oh <- mkOutputHandlerQuiet
@@ -636,7 +653,9 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 			(\p -> Ssh.runProto r connpool (return False) (copyremotefallback p))
 			key file meterupdate
 		
-	| otherwise = giveup "copying to non-ssh repo not supported"
+	| otherwise = do
+		warning "copying to non-ssh repo not supported"
+		return False
   where
 	copylocal Nothing = return False
 	copylocal (Just (object, checksuccess)) = do

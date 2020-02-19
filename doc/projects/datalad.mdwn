@@ -2,14 +2,14 @@ TODOs for DataLad
 =================
 
 [[!inline pages="todo/* and !todo/done and !link(todo/done) and
-(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" sort=mtime feeds=no actions=yes archive=yes show=0]]
+(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]]
 
 
 <details>
 <summary>Done</summary>
 
 [[!inline pages="todo/* and !todo/done and link(todo/done) and
-(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" feeds=no actions=yes archive=yes show=0]]
+(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" feeds=no actions=yes archive=yes show=0 template=buglist]]
 
 </details>
 
@@ -17,7 +17,7 @@ My bugs
 =======
 
 [[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
-(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist]]
+(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
 
 
 
@@ -25,6 +25,6 @@ My bugs
 <summary>Fixed</summary>
 
 [[!inline pages="bugs/* and !bugs/done and link(bugs/done) and
-(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" feeds=no actions=yes archive=yes show=0  template=buglist]]
+(author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle))" feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
 
 </details>

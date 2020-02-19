@@ -12,4 +12,4 @@ To discover more, visit
 
 # TODO/BUGs pages which should likely be tagged with one of the projects
 
-[[!inline pages="(todo/* or bugs/*) and (author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle)) and !tagged(projects/*)" sort=mtime feeds=no actions=yes archive=yes show=0]]
+[[!inline pages="(todo/* or bugs/*) and (author(yoh) or author(mih) or author(ben) or author(yarikoptic) or author(kyle)) and !tagged(projects/*)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]]

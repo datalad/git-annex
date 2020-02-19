@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="CandyAngel"
+ avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
+ subject="comment 2"
+ date="2020-01-25T01:11:42Z"
+ content="""
+Create the new repository and then add the \"source\" repository as a [local cache](/tips/local_caching_of_annexed_files).
+
+This will allow you to copy the symlinks to the new repository and `git annex get` the content, in any order you like, with all the safety precautions of git-annex. The fact that it came from the cache isn't stored either, so it is added cleanly!
+
+I use this method very heavily and it works really well.
+"""]]

@@ -26,3 +26,5 @@ a new empty directory in its place and start putting files in there.
 What's needed is an action that creates directories only up to a given
 point, which can be either .git/annex or the top of the worktree depending
 on what's being done. --[[Joey]]
+
+[[!tag confirmed]]

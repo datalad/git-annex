@@ -1,3 +1,5 @@
+[[!meta title="http remotes that require authentication are not yet supported"]]
+
 It is not a ground shaking issue, but probably would be best to handle it more gracefully.
 
 Initially mentioned while doing install using datalad. Account/permission is required to access this particular repo, ask Canadians for access if you don't have it yet Joey.  credentials I guess got asked for and cached by git upon initial invocation, so upon subsequent calls didn't ask for any:
@@ -143,4 +145,6 @@ git annex 7.20190819+git2-g908476a9b-1~ndall+1 and the same with bleeding edge 7
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
 
-
+> [[done]]; the error message is improved and also git remotes that need
+> http basic auth to access will get password from `git credential`.
+> --[[Joey]]

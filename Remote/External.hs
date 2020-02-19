@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,10 +16,12 @@ import Types.Remote
 import Types.Export
 import Types.CleanupActions
 import Types.UrlContents
+import Types.ProposedAccepted
 import qualified Git
 import Config
-import Git.Config (isTrueFalse, boolConfig)
+import Git.Config (boolConfig)
 import Git.Env
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.ReadOnly
@@ -41,18 +43,26 @@ import Control.Concurrent.STM
 import Control.Concurrent.Async
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "external"
 	, enumerate = const (findSpecialRemotes "externaltype")
 	, generate = gen
+	, configParser = remoteConfigParser
 	, setup = externalSetup
 	, exportSupported = checkExportSupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+externaltypeField :: RemoteConfigField
+externaltypeField = Accepted "externaltype"
+
+readonlyField :: RemoteConfigField
+readonlyField = Accepted "readonly"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs
 	-- readonly mode only downloads urls; does not use external program
 	| remoteAnnexReadOnly gc = do
@@ -69,7 +79,7 @@ gen r u c gc rs
 			exportUnsupported
 			exportUnsupported
 	| otherwise = do
-		external <- newExternal externaltype u c gc (Just rs)
+		external <- newExternal externaltype (Just u) c (Just gc) (Just rs)
 		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
 		avail <- getAvailability external r gc
@@ -152,32 +162,43 @@ gen r u c gc rs
 externalSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 externalSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
+	pc <- either giveup return $ parseRemoteConfig c lenientRemoteConfigParser
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
-		M.lookup "externaltype" c
+		getRemoteConfigValue externaltypeField pc
 	(c', _encsetup) <- encryptionSetup c gc
 
-	c'' <- case M.lookup "readonly" c of
-		Just v | isTrueFalse v == Just True -> do
-			setConfig (remoteConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
+	c'' <- case getRemoteConfigValue readonlyField pc of
+		Just True -> do
+			setConfig (remoteAnnexConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
 		_ -> do
-			external <- newExternal externaltype u c' gc Nothing
+			pc' <- either giveup return $ parseRemoteConfig c' lenientRemoteConfigParser
+			external <- newExternal externaltype (Just u) pc' (Just gc) Nothing
+			-- Now that we have an external, ask it to LISTCONFIGS, 
+			-- and re-parse the RemoteConfig strictly, so we can
+			-- error out if the user provided an unexpected config.
+			_ <- either giveup return . parseRemoteConfig c' 
+				=<< strictRemoteConfigParser external
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 				INITREMOTE_SUCCESS -> result ()
 				INITREMOTE_FAILURE errmsg -> Just $ giveup errmsg
 				_ -> Nothing
-			withExternalState external $
-				liftIO . atomically . readTVar . externalConfig
+			-- Any config changes the external made before
+			-- responding to INITREMOTE need to be applied to
+			-- the RemoteConfig.
+			changes <- withExternalState external $
+				liftIO . atomically . readTVar . externalConfigChanges
+			return (changes c')
 
 	gitConfigSpecialRemote u c'' [("externaltype", externaltype)]
 	return (c'', u)
 
-checkExportSupported :: RemoteConfig -> RemoteGitConfig -> Annex Bool
+checkExportSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
 checkExportSupported c gc = do
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
-		remoteAnnexExternalType gc <|> M.lookup "externaltype" c
+		remoteAnnexExternalType gc <|> getRemoteConfigValue externaltypeField c
 	checkExportSupported' 
-		=<< newExternal externaltype NoUUID c gc Nothing
+		=<< newExternal externaltype Nothing c (Just gc) Nothing
 
 checkExportSupported' :: External -> Annex Bool
 checkExportSupported' external = go `catchNonAsync` (const (return False))
@@ -387,36 +408,48 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (DIRHASH_LOWER k) = 
 		send $ VALUE $ fromRawFilePath $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
-		liftIO $ atomically $ modifyTVar' (externalConfig st) $
-			M.insert setting value
+		liftIO $ atomically $ do
+			modifyTVar' (externalConfig st) $
+				M.insert (Accepted setting) $
+					RemoteConfigValue (PassedThrough value)
+			modifyTVar' (externalConfigChanges st) $ \f ->
+				f . M.insert (Accepted setting) (Accepted value)
 	handleRemoteRequest (GETCONFIG setting) = do
-		value <- fromMaybe "" . M.lookup setting
+		value <- fromMaybe ""
+			. M.lookup (Accepted setting)
+			. getRemoteConfigPassedThrough
 			<$> liftIO (atomically $ readTVar $ externalConfig st)
 		send $ VALUE value
-	handleRemoteRequest (SETCREDS setting login password) = do
-		let v = externalConfig st
-		c <- liftIO $ atomically $ readTVar v
-		let gc = externalGitConfig external
-		c' <- setRemoteCredPair encryptionAlreadySetup c gc
-			(credstorage setting)
-			(Just (login, password))
-		void $ liftIO $ atomically $ swapTVar v c'
-	handleRemoteRequest (GETCREDS setting) = do
-		c <- liftIO $ atomically $ readTVar $ externalConfig st
-		let gc = externalGitConfig external
-		creds <- fromMaybe ("", "") <$> 
-			getRemoteCredPair c gc (credstorage setting)
-		send $ CREDS (fst creds) (snd creds)
-	handleRemoteRequest GETUUID = send $
-		VALUE $ fromUUID $ externalUUID external
+	handleRemoteRequest (SETCREDS setting login password) = case (externalUUID external, externalGitConfig external) of
+		(Just u, Just gc) -> do
+			let v = externalConfig st
+			c <- liftIO $ atomically $ readTVar v
+			c' <- setRemoteCredPair' RemoteConfigValue id encryptionAlreadySetup c gc
+				(credstorage setting u)
+				(Just (login, password))
+			void $ liftIO $ atomically $ swapTVar v c'
+		_ -> senderror "cannot send SETCREDS here"
+	handleRemoteRequest (GETCREDS setting) = case (externalUUID external, externalGitConfig external) of
+		(Just u, Just gc) -> do
+			c <- liftIO $ atomically $ readTVar $ externalConfig st
+			creds <- fromMaybe ("", "") <$> 
+				getRemoteCredPair c gc (credstorage setting u)
+			send $ CREDS (fst creds) (snd creds)
+		_ -> senderror "cannot send GETCREDS here"
+	handleRemoteRequest GETUUID = case externalUUID external of
+		Just u -> send $ VALUE $ fromUUID u
+		Nothing -> senderror "cannot send GETUUID here"
 	handleRemoteRequest GETGITDIR = 
 		send . VALUE . fromRawFilePath =<< fromRepo Git.localGitDir
-	handleRemoteRequest (SETWANTED expr) =
-		preferredContentSet (externalUUID external) expr
-	handleRemoteRequest GETWANTED = do
-		expr <- fromMaybe "" . M.lookup (externalUUID external)
-			<$> preferredContentMapRaw
-		send $ VALUE expr
+	handleRemoteRequest (SETWANTED expr) = case externalUUID external of
+		Just u -> preferredContentSet u expr
+		Nothing -> senderror "cannot send SETWANTED here"
+	handleRemoteRequest GETWANTED = case externalUUID external of
+		Just u -> do
+			expr <- fromMaybe "" . M.lookup u
+				<$> preferredContentMapRaw
+			send $ VALUE expr
+		Nothing -> senderror "cannot send GETWANTED here"
 	handleRemoteRequest (SETSTATE key state) =
 		case externalRemoteStateHandle external of
 			Just h -> setRemoteState h key state
@@ -448,13 +481,13 @@ handleRequest' st external req mp responsehandler
 	send = sendMessage st external
 	senderror = sendMessage st external . ERROR 
 
-	credstorage setting = CredPairStorage
+	credstorage setting u = CredPairStorage
 		{ credPairFile = base
 		, credPairEnvironment = (base ++ "login", base ++ "password")
-		, credPairRemoteField = setting
+		, credPairRemoteField = Accepted setting
 		}
 	  where
-		base = replace "/" "_" $ fromUUID (externalUUID external) ++ "-" ++ setting
+		base = replace "/" "_" $ fromUUID u ++ "-" ++ setting
 			
 	withurl mk uri = handleRemoteRequest $ mk $
 		setDownloader (show uri) OtherDownloader
@@ -579,6 +612,7 @@ startExternal external = do
 			createProcess p `catchIO` runerr cmdpath
 		stderrelay <- async $ errrelayer herr
 		cv <- newTVarIO $ externalDefaultConfig external
+		ccv <- newTVarIO id
 		pv <- newTVarIO Unprepared
 		pid <- atomically $ do
 			n <- succ <$> readTVar (externalLastPid external)
@@ -593,6 +627,7 @@ startExternal external = do
 				void $ waitForProcess ph
 			, externalPrepared = pv
 			, externalConfig = cv
+			, externalConfigChanges = ccv
 			}
 	
 	basecmd = externalRemoteProgram $ externalType external
@@ -712,7 +747,7 @@ checkUrlM external url =
 retrieveUrl :: Retriever
 retrieveUrl = fileRetriever $ \f k p -> do
 	us <- getWebUrls k
-	unlessM (downloadUrl k p us f) $
+	unlessM (withUrlOptions $ downloadUrl k p us f) $
 		giveup "failed to download content"
 
 checkKeyUrl :: Git.Repo -> CheckPresent
@@ -745,3 +780,63 @@ getInfoM external = (++)
 		INFOVALUE v -> Just $ return $
 			GetNextMessage $ collect ((f, v) : l)
 		_ -> Nothing
+
+{- All unknown configs are passed through in case the external program
+ - uses them. -}
+lenientRemoteConfigParser :: RemoteConfigParser
+lenientRemoteConfigParser =
+	addRemoteConfigParser specialRemoteConfigParsers baseRemoteConfigParser
+
+baseRemoteConfigParser :: RemoteConfigParser
+baseRemoteConfigParser = RemoteConfigParser
+	{ remoteConfigFieldParsers =
+		[ optionalStringParser externaltypeField
+			(FieldDesc "type of external special remote to use")
+		, trueFalseParser readonlyField False
+			(FieldDesc "enable readonly mode")
+		]
+	, remoteConfigRestPassthrough = Just
+		( const True
+		, [("*", FieldDesc "all other parameters are passed to external special remote program")]
+		)
+	}
+
+{- When the remote supports LISTCONFIGS, only accept the ones it listed.
+ - When it does not, accept all configs. -}
+strictRemoteConfigParser :: External -> Annex RemoteConfigParser
+strictRemoteConfigParser external = listConfigs external >>= \case
+	Nothing -> return lenientRemoteConfigParser
+	Just l -> do
+		let s = S.fromList (map fst l)
+		let listed f = S.member (fromProposedAccepted f) s
+		return $ lenientRemoteConfigParser
+			{ remoteConfigRestPassthrough = Just (listed, l) }
+
+listConfigs :: External -> Annex (Maybe [(Setting, FieldDesc)])
+listConfigs external = handleRequest external LISTCONFIGS Nothing (collect [])
+  where
+	collect l req = case req of
+		CONFIG s d -> Just $ return $
+			GetNextMessage $ collect ((s, FieldDesc d) : l)
+		CONFIGEND -> result (Just (reverse l))
+		UNSUPPORTED_REQUEST -> result Nothing
+		_ -> Nothing
+
+remoteConfigParser :: RemoteConfig -> Annex RemoteConfigParser
+remoteConfigParser c
+	-- No need to start the external when there is no config to parse,
+	-- or when everything in the config was already accepted; in those
+	-- cases the lenient parser will do the same thing as the strict
+	-- parser.
+	| M.null (M.filter isproposed c) = return lenientRemoteConfigParser
+	| otherwise = case parseRemoteConfig c baseRemoteConfigParser of
+		Left _ -> return lenientRemoteConfigParser
+		Right pc -> case (getRemoteConfigValue externaltypeField pc, getRemoteConfigValue readonlyField pc) of
+			(Nothing, _) -> return lenientRemoteConfigParser
+			(_, Just True) -> return lenientRemoteConfigParser
+			(Just externaltype, _) -> do
+				external <- newExternal externaltype Nothing pc Nothing Nothing
+				strictRemoteConfigParser external
+  where
+	isproposed (Accepted _) = False
+	isproposed (Proposed _) = True

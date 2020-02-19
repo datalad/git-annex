@@ -39,6 +39,7 @@ import Utility.Gpg
 import qualified Remote.GCrypt as GCrypt
 import qualified Types.Remote
 import Utility.Android
+import Types.ProposedAccepted
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -325,7 +326,7 @@ getFinishAddDriveR drive = go
 		makewith $ const $ do
 			r <- liftAnnex $ addRemote $
 				enableSpecialRemote remotename' GCrypt.remote Nothing $ M.fromList
-					[("gitrepo", dir)]
+					[(Proposed "gitrepo", Proposed dir)]
 			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}
 	makeunencrypted = makewith $ \isnew -> (,)

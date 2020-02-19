@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-01-30T17:36:09Z"
+ content="""
+I don't want to complicate the location logs with time-dependent sameas
+hacks.
+
+Is this repo that's been copied a special remote? fsck --fast --from would
+then not be very fast since it has to talk to the special remote. A
+dedicated command could be faster than that.
+
+If the repo is a git-annex repo though, I'd expect git annex fsck --fast 
+to be nearly optimal, the only extra work it does over such a dedicated
+command, I think, is a stat of the object file to check if it's present.
+"""]]

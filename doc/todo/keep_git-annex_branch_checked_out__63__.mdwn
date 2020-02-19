@@ -1,1 +1,3 @@
 Currently, the git-annex branch is not checked out, but is accessed as needed with commands like git-cat.  Could git-annex work faster if it kept the git-annex branch checked out?  Especially if one could designate a fast location (like a ramdisk) for keeping the checked-out copy.   Maybe git-worktree could be used to tie the separate checkout to the repository.
+
+[[!tag unlikely]]

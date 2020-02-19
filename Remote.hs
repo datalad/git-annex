@@ -24,7 +24,7 @@ module Remote (
 	remoteTypes,
 	remoteList,
 	remoteList',
-	gitSyncableRemote,
+	gitSyncableRemoteType,
 	remoteMap,
 	remoteMap',
 	uuidDescriptions,
@@ -131,7 +131,7 @@ byNameWithUUID = checkuuid <=< byName
 			repo <- getRepo r
 			ifM (liftIO $ getDynamicConfig $ remoteAnnexIgnore (gitconfig r))
 				( giveup $ noRemoteUUIDMsg r ++
-					" (" ++ show (remoteConfig repo "ignore") ++
+					" (" ++ show (remoteAnnexConfig repo "ignore") ++
 					" is set)"
 				, giveup $ noRemoteUUIDMsg r
 				)

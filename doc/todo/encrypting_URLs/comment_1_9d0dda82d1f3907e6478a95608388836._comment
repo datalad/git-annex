@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-30T18:25:58Z"
+ content="""
+Is this about SETURLPRESENT in an external special remote, or is addurl
+also supposed to enctypt an url? And how would addurl know if the user
+wants to encrypt it, and using what gpg keys?
+
+If your git-annex repo contains information about files you want to remain
+private, why not just keep that repo private?
+"""]]

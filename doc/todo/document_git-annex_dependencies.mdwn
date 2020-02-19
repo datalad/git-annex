@@ -1,1 +1,3 @@
 It would help to document, in one place, the external programs and libraries on which git-annex depends for various functionalities, including optional ones.  Ones I know: curl, gpg, bup.  But there are also references in places to lsof, rsync, nocache.  For reliable packaging, it would be useful to have an authoritative list of dependencies and which functionality each supports.
+
+[[!tag unlikely]]

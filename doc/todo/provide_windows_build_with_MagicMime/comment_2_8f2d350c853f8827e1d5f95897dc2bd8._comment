@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-01-06T19:27:23Z"
+ content="""
+FWIW:
+
+- I am not yet sure if WSL would ever become a panacea. So far in my attempts I kept running into issues which related to how you (user) expose Windows file system(s) inside WSL, and there might be no \"one setup which fits all the use cases\".
+
+- There seems to be efforts like https://github.com/nscaife/file-windows which seems to promise building Windows binaries of file and libmagic for Windows - may be it could be used here.
+
+- IMHO an ideal way for git-annex deployment on windows would have been a conda-forge build of it.  Unfortunately it would not facilitate solution here since I do not see [windows build for libmagic](https://anaconda.org/search?q=libmagic). (meanwhile [filed an issue](https://github.com/conda-forge/libmagic-feedstock/issues/11), if resolved - could give an additional motivation to approach [git-annex-feedstock/issues/15](https://github.com/conda-forge/git-annex-feedstock/issues/15)
+"""]]

@@ -1,6 +1,6 @@
 {- Using git-lfs as a remote.
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import Types.Remote
 import Annex.Url
 import Types.Key
 import Types.Creds
+import Types.ProposedAccepted
 import qualified Annex
 import qualified Annex.SpecialRemote.Config
 import qualified Git
@@ -24,6 +25,7 @@ import qualified Git.GCrypt
 import qualified Git.Credential as Git
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.Git
@@ -35,6 +37,7 @@ import Crypto
 import Backend.Hash
 import Utility.Hash
 import Utility.SshHost
+import Utility.Url
 import Logs.Remote
 import Logs.RemoteState
 import qualified Utility.GitLFS as LFS
@@ -52,18 +55,25 @@ import qualified Data.Text.Encoding as E
 import qualified Control.Concurrent.MSemN as MSemN
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "git-lfs"
 	-- Remote.Git takes care of enumerating git-lfs remotes too,
 	-- and will call our gen on them.
 	, enumerate = const (return [])
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser urlField
+			(FieldDesc "url of git-lfs repository")
+		]
 	, setup = mySetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+urlField :: RemoteConfigField
+urlField = Accepted "url"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	-- If the repo uses gcrypt, get the underlaying repo without the
 	-- gcrypt url, to do LFS endpoint discovery on.
@@ -127,9 +137,10 @@ mySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	(c', _encsetup) <- encryptionSetup c gc
-	case (isEncrypted c', Git.GCrypt.urlPrefix `isPrefixOf` url) of
+	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
+	case (isEncrypted pc, Git.GCrypt.urlPrefix `isPrefixOf` url) of
 		(False, False) -> noop
-		(True, True) -> Remote.GCrypt.setGcryptEncryption c' remotename
+		(True, True) -> Remote.GCrypt.setGcryptEncryption pc remotename
 		(True, False) -> unlessM (Annex.getState Annex.force) $
 			giveup $ unwords $
 				[ "Encryption is enabled for this remote,"
@@ -155,10 +166,11 @@ mySetup _ mu _ c gc = do
 	-- (so it's also usable by git as a non-special remote),
 	-- and set remote.name.annex-git-lfs = true
 	gitConfigSpecialRemote u c' [("git-lfs", "true")]
-	setConfig (Git.ConfigKey ("remote." <> encodeBS' (getRemoteName c) <> ".url")) url
+	setConfig (remoteConfig (getRemoteName c) "url") url
 	return (c', u)
   where
-	url = fromMaybe (giveup "Specify url=") (M.lookup "url" c)
+	url = maybe (giveup "Specify url=") fromProposedAccepted 
+		(M.lookup urlField c)
 	remotename = fromJust (lookupName c)
 
 {- Check if a remote's url is one known to belong to a git-lfs repository.
@@ -175,8 +187,10 @@ configKnownUrl r
 	| otherwise = return Nothing
   where
 	match g c = fromMaybe False $ do
-		t <- M.lookup Annex.SpecialRemote.Config.typeField c
-		u <- M.lookup "url" c
+		t <- fromProposedAccepted
+			<$> M.lookup Annex.SpecialRemote.Config.typeField c
+		u <- fromProposedAccepted
+			<$> M.lookup urlField c
 		let u' = Git.Remote.parseRemoteLocation u g
 		return $ Git.Remote.RemoteUrl (Git.repoLocation r) == u' 
 			&& t == typename remote
@@ -187,7 +201,7 @@ configKnownUrl r
 				set "config-uuid" (fromUUID cu) r'
 			Nothing -> return r'
 	set k v r' = do
-		let k' = remoteConfig r' k
+		let k' = remoteAnnexConfig r' k
 		setConfig k' v
 		return $ Git.Config.store' k' (Git.ConfigValue (encodeBS' v)) r'
 
@@ -270,7 +284,7 @@ discoverLFSEndpoint tro h
 				if needauth (responseStatus resp)
 					then do
 						cred <- prompt $ inRepo $ Git.getUrlCredential (show lfsrepouri)
-						let endpoint' = addbasicauth cred endpoint
+						let endpoint' = addbasicauth (Git.credentialBasicAuth cred) endpoint
 						let testreq' = LFS.startTransferRequest endpoint' transfernothing
 						flip catchNonAsync (const (returnendpoint endpoint')) $ do
 						resp' <- makeSmallAPIRequest testreq'
@@ -290,12 +304,10 @@ discoverLFSEndpoint tro h
 
 		needauth status = status == unauthorized401
 
-		addbasicauth cred endpoint =
-			case (Git.credentialUsername cred, Git.credentialPassword cred) of
-				(Just u, Just p) ->
-					LFS.modifyEndpointRequest endpoint $
-						applyBasicAuth (encodeBS u) (encodeBS p)
-				_ -> endpoint
+		addbasicauth (Just ba) endpoint =
+			LFS.modifyEndpointRequest endpoint $
+				applyBasicAuth' ba
+		addbasicauth Nothing endpoint = endpoint
 
 -- The endpoint is cached for later use.
 getLFSEndpoint :: LFS.TransferRequestOperation -> TVar LFSHandle -> Annex (Maybe LFS.Endpoint)

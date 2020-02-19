@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git-annex ubuntu package"
+ date="2020-02-10T02:07:10Z"
+ content="""
+P.S. It's a bit concerning if 7.20190912 is the default git-annex version in a common distro: it's the version most likely to confuse users with the changed `git add` behavior.  Can this be fixed?  Is it definitely the default version?   I don't know much about Ubuntu packaging, but from [https://packages.ubuntu.com/](https://packages.ubuntu.com/), 19.10 (`focal`) seems to have version [7.20191230](https://packages.ubuntu.com/focal/utils/git-annex)?
+"""]]

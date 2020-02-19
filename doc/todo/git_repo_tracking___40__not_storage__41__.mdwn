@@ -6,3 +6,5 @@ A few possibilities:
 - Create branches or tags in an annex that collect a set of version-compatible checkouts for related projects. The commit/tag messages provide a natural place for meta-commentary
 - Save and version files that aren't quite junk but don't belong *in* a repo (logs, dumps, backups, editor project/workspace files, notes/to-do lists, build-artifacts, test-coverage/linter stat databases, shell history) alongside the repo, making it easier to have a consistent environment for working on one project across multiple systems.
 - Make separate system-specific "master" branches for the main projects directory on each system, then edit and push changes from any other. For example, prep the projects directory on an infrequently-used laptop from your desktop and push/pull the changes.
+
+[[!tag unlikely moreinfo]]

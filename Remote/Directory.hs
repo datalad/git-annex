@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import Types.Creds
 import qualified Git
 import Config.Cost
 import Config
+import Annex.SpecialRemote.Config
 import Utility.FileMode
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
@@ -34,18 +35,26 @@ import Annex.UUID
 import Utility.Metered
 import Utility.Tmp
 import Utility.InodeCache
+import Types.ProposedAccepted
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "directory"
 	, enumerate = const (findSpecialRemotes "directory")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser directoryField
+			(FieldDesc "(required) where the special remote stores data")
+		]
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+directoryField :: RemoteConfigField
+directoryField = Accepted "directory"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
@@ -111,8 +120,8 @@ directorySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> 
 directorySetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
-	let dir = fromMaybe (giveup "Specify directory=") $
-		M.lookup "directory" c
+	let dir = maybe (giveup "Specify directory=") fromProposedAccepted $
+		M.lookup directoryField c
 	absdir <- liftIO $ absPath dir
 	liftIO $ unlessM (doesDirectoryExist absdir) $
 		giveup $ "Directory does not exist: " ++ absdir
@@ -121,7 +130,7 @@ directorySetup _ mu _ c gc = do
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' [("directory", absdir)]
-	return (M.delete "directory" c', u)
+	return (M.delete directoryField c', u)
 
 {- Locations to try to access a given Key in the directory.
  - We try more than one since we used to write to different hash

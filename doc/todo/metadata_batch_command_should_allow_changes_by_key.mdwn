@@ -14,3 +14,6 @@ to my surprise all i got was the retrial of the existing meta-data instead of th
 IHO git annex should allow to store metadata in batch mode by key
 
 [[!meta title="metadata --batch parses json strictly, loosen?"]]
+
+> [[done]] I guess, as there's been no response to my question in over a
+> year. --[[Joey]]

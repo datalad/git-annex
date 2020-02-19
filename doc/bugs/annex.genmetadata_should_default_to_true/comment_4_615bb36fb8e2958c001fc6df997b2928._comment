@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="reasons not to have annex.genmetadata default to true"
+ date="2020-02-10T18:40:52Z"
+ content="""
+Some reasons `annex.genmetadata` should *not* default to true: (1) ordinary git does not preserve file modtimes, probably on purpose: if you have some kind of `make` process, you want `git update` to cause updated files to have updated modtimes, not the modtimes from when the files were added to git, so that `make` can detect the change and update downstream files; (2) as @joey noted, potentially wasteful bloat, especially for repos with many files; (3) two different copies of a file may have different modtimes, but all copies must have the same git-annex metadata, because metadata is attached to the [[key|backends]], which for most backends is computed from file contents.
+
+The WOM backend stores the modtime in the key, but then does not store checksums.  If [[todo/external_backends]] are implemented, you could make one that includes both the checksum and the modtime in the key. 
+"""]]

@@ -1,0 +1,83 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="what am I doing wrong?"
+ date="2020-01-13T20:05:38Z"
+ content="""
+I have tried to use this but I do not see it in effect:
+
+[[!format sh \"\"\"
+$> mkdir repo && cd repo && git init && git annex init && git annex config --set addunlocked anything && git show git-annex:config.log && touch 1 2 && git add 1 && git annex add 2 && git commit -m 'committing' && ls -l && git show
+Initialized empty Git repository in /tmp/repo/.git/
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+addunlocked anything ok
+(recording state in git...)
+1578945668.466039639s addunlocked anything
+add 2 
+ok
+(recording state in git...)
+[master (root-commit) e428211] committing
+ 2 files changed, 1 insertion(+)
+ create mode 100644 1
+ create mode 120000 2
+total 4
+-rw------- 1 yoh yoh   0 Jan 13 15:01 1
+lrwxrwxrwx 1 yoh yoh 178 Jan 13 15:01 2 -> .git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+commit e428211fe0c64e67cf45d8c92165c866db5ba75f (HEAD -> master)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Mon Jan 13 15:01:08 2020 -0500
+
+    committing
+
+diff --git a/1 b/1
+new file mode 100644
+index 0000000..e69de29
+diff --git a/2 b/2
+new file mode 120000
+index 0000000..ea46194
+--- /dev/null
++++ b/2
+@@ -0,0 +1 @@
++.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+\"\"\"]]
+
+so I have tried to say that \"anything\" (all files) should be added unlocked.  But it seems that neither file (`1` added via `git add` and `2` added via `git annex add`) were added unlocked.  
+
+<details>
+<summary>Here is some info on version/config: (click to expand)</summary> 
+
+
+[[!format sh \"\"\"
+(git-annex)lena:/tmp/repo[master]
+$> cat .git/config 
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = f220cc03-1510-4e23-acb5-b95723ecf9fc
+	version = 7
+[filter \"annex\"]
+	smudge = git-annex smudge -- %f
+	clean = git-annex smudge --clean -- %f
+(dev3) 1 17256.....................................:Mon 13 Jan 2020 03:03:30 PM EST:.
+(git-annex)lena:/tmp/repo[master]
+$> git annex version
+git-annex version: 7.20191230+git2-g2b9172e98-1~ndall+1
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 7
+
+\"\"\"]]
+
+</details>
+"""]]

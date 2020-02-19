@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="Nick_P"
+ avatar="http://cdn.libravatar.org/avatar/abf8aa3ac1a976a6a292416b9c604581"
+ subject="comment 3"
+ date="2020-02-12T10:50:06Z"
+ content="""
+Relatedly, my team is struggling to identify the process for \"add and share a file\" - e.g., add the hash to git, and copy the content to a central git-annex remote, and push the git-annex branch information that the file is now in the central remote.
+
+We used 'git annex sync' and 'git annex sync --content' for a while, but this creates the synced/ branches which introduced confusion; and it's unclear why both --content and with args are needed; and if I remember, it also committed or pushed changes we didn't want it to.
+
+Now we do like this:
+
+     git checkout features/your-new-branch
+     git annex add my-new-file
+     git commit -m \".....\"
+     git push # pushes your \"features\" branch
+     git annex copy --to SharedRemote --jobs=5 <files or folders>
+     git fetch origin git-annex:refs/remotes/origin/git-annex
+     git annex merge
+     git push origin git-annex
+
+I've read through <https://git-annex.branchable.com/walkthrough/> , <https://git-annex.branchable.com/todo/sync_--branches__to_sync_only_specified_branches___40__e.g._git-annex__41__/> , <https://git-annex.branchable.com/sync/>
+
+Maybe the OP has the same confusion, that there seems to be a missing git-annex-sync that does only (a) copy to a remote and (b) the git-annex branch work - Anyone able to help out direct us to how it's intended to be done?
+"""]]

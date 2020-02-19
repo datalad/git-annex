@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-02T19:41:34Z"
+ content="""
+Minimal reproducer:
+
+	bash$ LANG=C ghci Utility/FileSystemEncoding.hs
+	ghci> useFileSystemEncoding
+	ghci> toRawFilePath "\611584"
+	"*** Exception: recoverEncode: invalid argument (invalid character)
+
+No such problem in a unicode locale.
+
+The problem does not, though, affect actually using git-annex in LANG=C
+with a filename with that in its name.
+
+Odd because the filesystem encoding is supposed to round-tip well,
+anything, but here encoding a string with it is failing internally.
+Maybe the thing is, it's not really round-tripping? QuickCheck arbitrary
+magics up a FilePath that contains that, so it's starting in the middle and
+trying to convert it out.
+
+[[!commit 70395659db9f662e61009d984fc9b0b2f24fdece]] introduced this while
+fixing another intermittent encoding test case failure.
+
+	ghci> Data.Char.generalCategory  '\611584'
+	NotAssigned
+
+I think it would make sense to filter out NotAssigned and PrivateUse.
+"""]]

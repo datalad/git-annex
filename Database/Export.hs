@@ -5,11 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
+#if MIN_VERSION_persistent_template(2,8,0)
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE StandaloneDeriving #-}
+#endif
 
 module Database.Export (
 	ExportHandle,
@@ -224,7 +229,7 @@ runExportDiffUpdater updater h old new = do
 	void $ liftIO cleanup
   where
 	getek sha
-		| sha == nullSha = return Nothing
+		| sha `elem` nullShas = return Nothing
 		| otherwise = Just <$> exportKey sha
 
 {- Diff from the old to the new tree and update the ExportTree table. -}

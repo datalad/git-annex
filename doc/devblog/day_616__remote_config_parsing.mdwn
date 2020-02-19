@@ -1,0 +1,9 @@
+I'm in the middle of a big change to internals. Remotes have buried inside
+them a string-based configuration, and those settings are only parsed when
+they're used, so bad configuration is often ignored rather than being
+detected when the user inputs it. The parsing is moving to happen upfront.
+
+This is something I could not have done when I first wrote git-annex,
+because the values that get parsed have many different types, so how can a
+single Remote data type contain those, whatever they are? Now I know how
+to use the Typeable class to do such things.

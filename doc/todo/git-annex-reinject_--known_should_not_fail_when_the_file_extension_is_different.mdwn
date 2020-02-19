@@ -5,3 +5,5 @@ I think it would be better if `git annex reinject --known` would ignore the file
 This problem does not affect `git annex reinject` without `--known`.
 
 --spwhitton
+
+> mentioned this on the git-annex reinject man page; [[done]] --[[Joey]]

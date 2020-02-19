@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-21T18:31:22Z"
+ content="""
+I feel it's right for git-annex sync to honor git configs, so it's right
+for it to not merge origin/master. And, without that merge, it's right for
+it to fail to push master to origin. Since it does push synced/master, this
+does not prevent other clones of the repo, where git-annex sync is later
+ran, from getting the changes made by this sync.
+
+That leaves only this ugly thing:
+
+fatal: ambiguous argument 'refs/heads/master..refs/heads/synced/master': unknown revision or path not in the working tree.
+
+Which comes from Git.Branch.changed, but I'm not clear how the fast forward
+configuration would prevent either of those refs from existing.
+"""]]

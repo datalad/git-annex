@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-06T18:07:00Z"
+ content="""
+There are not any situations where after losing the sqlite databases 
+git-annex can't recover the information that was stored in them by other
+means. I know because the v8 upgrade deletes all the old sqlite databases
+and then recovers the information by other means. So no future-proofing
+impact here.
+"""]]

@@ -9,7 +9,7 @@ module Types.RemoteState where
 
 import Types.UUID
 
-{- When per-remote state, its UUID is used to identify it.
+{- When there is per-remote state, remotes are identified by UUID.
  -
  - However, sameas remotes mean that two different Remote implementations
  - can be used for the same underlying data store. To avoid them using

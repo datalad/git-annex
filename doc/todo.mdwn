@@ -1,5 +1,7 @@
-This is git-annex's todo list. Link items to [[todo/done]] when done. A more complete [[design/roadmap/]] is also available.
+This is git-annex's todo list. Link items to [[todo/done]] when done,
+or tags: [[todo/confirmed]] [[todo/moreinfo]] [[todo/needsthought]] [[todo/unlikely]] 
 
 [[!inline pages="./todo/* and !./todo/*/* and !./todo/done and !link(done) 
-and !*/Discussion" actions=yes postform=yes postformtext="Add a new todo titled:"
-show=0 feedlimit=10 archive=yes]]
+and !*/Discussion and !./todo/moreinfo and !./todo/confirmed
+and !./todo/needsthought and !./todo/unlikely" actions=yes postform=yes postformtext="Add a new todo titled:"
+show=0 feedlimit=10 archive=yes template=buglist]]

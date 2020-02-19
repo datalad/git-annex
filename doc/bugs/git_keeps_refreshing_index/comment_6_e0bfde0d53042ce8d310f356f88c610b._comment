@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="t+gitannex@1d62779e8b54f30a854739f61542a6885167b01f"
+ nickname="t+gitannex"
+ avatar="http://cdn.libravatar.org/avatar/87c7f62c00e4a744aa500423e421120f"
+ subject="comment 6"
+ date="2020-02-06T11:07:34Z"
+ content="""
+I'm able to reproduce this with git annex 7.20191230 and git 2.25.0 on Arch Linux, but I've had it on OSX in the past as well. The annex uses a v7 repository. I don't need to do anything besides unlocking some files and running git status. Unlocking 10 files, git status takes 3s and with 85 files it takes 20s, so it seems to scale linearly with the no of files. Happy to share more details about the repository if it's useful.
+"""]]

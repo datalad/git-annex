@@ -13,3 +13,5 @@ need a git hook run before checkout to rescue such files.
 Also some parts of git-annex's code, including `withObjectLoc`, assume
 that the .annex/objects is present, and so it would need to be changed
 to look at the work tree file. --[[Joey]]
+
+[[!tag needsthought]]

@@ -108,7 +108,7 @@ unstageFile file repo = do
 unstageFile' :: TopFilePath -> Streamer
 unstageFile' p = pureStreamer $ L.fromStrict $
 	"0 "
-	<> encodeBS' (fromRef nullSha)
+	<> encodeBS' (fromRef deleteSha)
 	<> "\t"
 	<> indexPath p
 

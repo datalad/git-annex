@@ -19,8 +19,11 @@ For a list and details, see <https://git-annex.branchable.com/special_remotes/>
  
 The remote's configuration is specified by the parameters passed
 to this command. Different types of special remotes need different
-configuration values. The command will prompt for parameters as needed. A
-few parameters that are supported by all special remotes are documented in
+configuration values, so consult the documentation of a special remote for
+details. The command will prompt for any required parameters you leave out;
+you can also pass --whatelse to see additional parameters.
+
+A few parameters that are supported by all special remotes are documented in
 the next section below.
 
 Once a special remote has been initialized once with this command,
@@ -34,6 +37,15 @@ that's no longer used has taken the name you want to reuse, you might
 want to use `git annex renameremote`.
 
 # OPTIONS
+
+* `--whatelse` / `-w`
+
+  Describe additional configuration parameters that you could specify.
+
+  For example, if you know you want a S3 remote, but forget how to
+  configure it:
+
+	git annex initremote mys3 type=S3 --whatelse
 
 * `--fast`
 
@@ -66,7 +78,7 @@ want to use `git annex renameremote`.
 
 * `encryption`
 
-  All special remotes support encryption. You will need to specify
+  Almost all special remotes support encryption. You will need to specify
   what encryption, if any, to use. 
 
   If you do not want any encryption, use `encryption=none`
@@ -76,6 +88,7 @@ want to use `git annex renameremote`.
   
   For details about this and other encrpytion settings, see
   <https://git-annex.branchable.com/encryption/>
+  or --whatelse
 
 * `autoenable`
 

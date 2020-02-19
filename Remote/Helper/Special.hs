@@ -1,6 +1,6 @@
 {- helpers for special remotes
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -30,6 +30,8 @@ module Remote.Helper.Special (
 	checkPresentDummy,
 	SpecialRemoteCfg(..),
 	specialRemoteCfg,
+	specialRemoteConfigParsers,
+	specialRemoteType,
 	specialRemote,
 	specialRemote',
 	lookupName,
@@ -79,8 +81,8 @@ findSpecialRemotes s = do
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()
 gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
-		setConfig (remoteConfig c (encodeBS' k)) v
-	storeUUIDIn (remoteConfig c "uuid") u
+		setConfig (remoteAnnexConfig c (encodeBS' k)) v
+	storeUUIDIn (remoteAnnexConfig c "uuid") u
 
 -- RetrievalVerifiableKeysSecure unless overridden by git config.
 --
@@ -149,7 +151,7 @@ checkPresentDummy :: Key -> Annex Bool
 checkPresentDummy _ = error "missing checkPresent implementation"
 
 type RemoteModifier
-	= RemoteConfig
+	= ParsedRemoteConfig
 	-> Preparer Storer
 	-> Preparer Retriever
 	-> Preparer Remover
@@ -162,8 +164,18 @@ data SpecialRemoteCfg = SpecialRemoteCfg
 	, displayProgress :: Bool
 	}
 
-specialRemoteCfg :: RemoteConfig -> SpecialRemoteCfg
+specialRemoteCfg :: ParsedRemoteConfig -> SpecialRemoteCfg
 specialRemoteCfg c = SpecialRemoteCfg (getChunkConfig c) True
+
+-- Modifies a base RemoteType to support chunking and encryption configs.
+specialRemoteType :: RemoteType -> RemoteType
+specialRemoteType r = r 
+	{ configParser = \c -> addRemoteConfigParser specialRemoteConfigParsers
+		<$> configParser r c
+	}
+
+specialRemoteConfigParsers :: [RemoteConfigFieldParser]
+specialRemoteConfigParsers = chunkConfigParsers ++ encryptionConfigParsers
 
 -- Modifies a base Remote to support both chunking and encryption,
 -- which special remotes typically should support.
@@ -212,7 +224,7 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 			}
 		}
 	cip = cipherKey c (gitconfig baser)
-	isencrypted = isJust (extractCipher c)
+	isencrypted = isEncrypted c
 
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 

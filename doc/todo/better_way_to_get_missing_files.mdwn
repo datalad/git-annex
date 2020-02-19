@@ -32,3 +32,5 @@ Two open questions:
   objects over time. So leave the update up to the user to run the command
   when they want it? But then the user may get confused, why did it
   download files and they didn't appear?
+
+[[!tag needsthought]]

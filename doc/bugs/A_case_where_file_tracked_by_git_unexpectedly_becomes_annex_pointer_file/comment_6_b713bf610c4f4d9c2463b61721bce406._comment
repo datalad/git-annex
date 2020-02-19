@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-01-01T17:41:13Z"
+ content="""
+I've added git-annex add --force-large and --force-small, which would be
+good to use to avoid this kind of too-broad overriding problem in the future.
+"""]]

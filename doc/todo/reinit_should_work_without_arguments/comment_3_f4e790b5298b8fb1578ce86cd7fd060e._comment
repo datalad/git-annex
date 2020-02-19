@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-01-30T19:19:53Z"
+ content="""
+The same thing is being also dicussed at [[todo/reinit_current_repo_to_new_uuid]]
+so I'm closing this todo in favor of that one.
+"""]]

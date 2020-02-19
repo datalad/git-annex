@@ -12,3 +12,5 @@ I often transfer files via mediums that have transfer limits, but I am eventuall
 
 
 Currently, I've been using tricks to select a subset of the files, such as a range of file-sizes.
+
+[[!tag needsthought]]

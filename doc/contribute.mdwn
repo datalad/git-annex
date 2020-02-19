@@ -69,6 +69,6 @@ As Haskell programs go, git-annex does not use too many advanced features.
 [Learn You A Haskell](http://learnyouahaskell.com/) will teach you enough
 to get started.
 
-Of course git-annex does use monads, and particularly the `Annex``monad
+Of course git-annex does use monads, and particularly the `Annex` monad
 which gives access to its state about the git repository as well as
 lower-level IO.

@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-01-22T16:04:37Z"
+ content="""
+git-annex could use `git credential` if the config download fails with
+401 unauthorized and then retry with the credentials. (The git-lfs special
+remote already does this.) And it would also need to do the same thing
+when getting a key from the remote.
+
+But that would not help with the https://git.bic.mni.mcgill.ca example,
+apparently, because there's no 401, but a 302 redirect to a 200,
+that is indistingishable from a successful download. 
+
+Yeah, when git-annex expects a git config, if it doesn't parse as one,
+it could retry, asking for credentials.
+But that seems asking for trouble: what if it fails to parse for
+another reason, maybe the web server served up something other than the
+expected config, maybe a captive portal got in the way. There would be a
+username/password prompt that doesn't make sense to the user at all.
+
+And if this happens in a key download, git-annex certianly has no way to
+tell that what it downloaded is not intended as the content of a key,
+short of verifying the content, and failure to verify certainly doesn't
+justify prompting for a username/password.
+
+So, I am not comfortable with falling back to ask for credentials unless
+I've seen a http status code that indicates they are necessary.
+And IMHO gitlab's use of a 302 redirect to a login page is a bug in
+gitlab, and will need to be fixed there, or a better http server used.
+"""]]

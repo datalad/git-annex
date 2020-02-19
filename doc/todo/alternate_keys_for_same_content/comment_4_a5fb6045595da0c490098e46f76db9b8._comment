@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2020-01-31T20:32:00Z"
+ content="""
+\"can be used to verify migrations\" -- my hope was to *avoid* migrations, i.e. to get the benefit you'd get from migrating to a checksum-based key, without doing the migration.
+"""]]

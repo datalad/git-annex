@@ -5,3 +5,5 @@ Now I followed the documentation about the special remote adb and created that r
 Which is caused by the fact that I didn't have checked out the files on my workstation. I don't need the files on this pc so it would be stupid to checkout partially huge files there or in other words I don't need the files at that place, I don't get why the export command not has a --from option where it can get the files?
 
 Is there a reason that does not exist and if so what would be a way to do sending files to the android device without ssh-ing into my server?
+
+[[!tag unlikely]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Nick_P"
+ avatar="http://cdn.libravatar.org/avatar/abf8aa3ac1a976a6a292416b9c604581"
+ subject="comment 5"
+ date="2020-02-18T10:17:25Z"
+ content="""
+(repeat with corrected formatting)
+
+I think the new `git annex sync --only-annex` will replace the last three lines of my sequence above. I aim to experiment to confirm that.
+
+<https://git-annex.branchable.com/todo/sync_--branches__to_sync_only_specified_branches___40__e.g._git-annex__41__/#comment-52dbdba2331659011519bcc4bda4cf18>
+"""]]

@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-01-07T17:59:35Z"
+ content="""
+I was thinking about implementing this today, but the shattered attack got
+in the way. Anyway, it seems like most of a plan:
+
+* Make RemoteConfig contain Accepted or Proposed values. enableremote and initremote
+  set Proposed values; Accepted values are anything read from git-annex:remote.log
+  (update: done)
+* When a RemoteConfig value fails to parse, it may make sense to use a
+  default instead when it's Accepted, and error out when it's Proposed. This could
+  be used when parsing foo=yes/no to avoid treating foo=true the same as
+  foo=no, which some things do currently do 
+  (eg importtree, exporttree, embedcreds).
+  (update: Done for most yes/no and true/false parsers, surely missed a
+  few though, (including autoenable).)
+* Add a Remote method that returns a list of all RemoteConfig fields it
+  uses. This is the one part I'm not sure about, because that violates DRY.
+  It would be nicer to have a parser that can also generate a list of the
+  fields it parses.
+* Before calling Remote setup, see if there is any Proposed value in 
+  RemoteConfig whose field is not in the list. If so, error out.
+* For external special remotes, add a LISTCONFIG message. The program
+  reponds with a list of all the fields it may want to later GETCONFIG.
+  If the program responds with UNSUPPORTED-REQUEST then it needs to return
+  something that says any and all fields are allowed.
+* External special remotes are responsible for parsing the content of
+  GETCONFIG, as they do now, and can error out if there's a problem.
+
+Having a method return a list of fields will also allow
+implementing
+<https://git-annex.branchable.com/todo/some_way_to_get_a_list_of_options_for_a_special_remote_of_a_given_type/>.
+It may be worthwhile to add, along with the field name, a human readable
+description of its value.
+"""]]

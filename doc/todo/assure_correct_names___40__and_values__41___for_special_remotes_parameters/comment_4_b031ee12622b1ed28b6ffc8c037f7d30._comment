@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-17T21:15:16Z"
+ content="""
+Added LISTCONFIGS to external special remote protocol, and once your
+special remotes implement it, initremote will notice if the user provides
+any setting with the wrong name.
+
+(external special remotes could already verify the values of settings using
+GETCONFIG at the INITREMOTE stage, and use INITREMOTE-FAILURE to inform the
+user of bad or missing values)
+"""]]

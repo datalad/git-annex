@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-01-30T16:23:55Z"
+ content="""
+Occurs to me that any git-annex command could result in an automatic
+init, and since v7 is default, will enter an adjusted branch when on a
+crippled filesystem.
+
+I don't think it makes sense to add --progress to every single
+git-annex command.
+
+I suppose, if your code always runs git-annex init after clone, then it
+would be good enough to have git-annex init be the only thing that
+supports --progress. If something else needs it (maybe the view commands),
+we can treat that separately.
+"""]]

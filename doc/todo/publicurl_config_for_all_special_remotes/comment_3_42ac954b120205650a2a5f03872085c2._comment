@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-01-29T15:04:06Z"
+ content="""
+I'm not sure how to implement this in git-annex's Remote API.
+retrieveKeyFile/retrieveExport would need to check it and download
+the url, so that would need modifications of those methods of every
+remote that implements this. And it would need to be possible to
+enable the remote in readonly mode.
+
+It might be possible to use a mixin to modify a Remote to support this?
+"""]]

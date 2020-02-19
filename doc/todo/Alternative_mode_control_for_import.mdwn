@@ -15,3 +15,6 @@ Apologies for the brevity, I've already typed this out once..
     git annex import --mode=Ns $src        # (just creates symlinks for new)
     git annex import --mode=Nsd $src       # (invalid mode due to data loss)
     git annex import --mode=Nid $src       # (invalid or require --force)
+
+> Current thinking is in [[remove_legacy_import_directory_interface]].
+> This old todo is redundant, so [[wontfix|done]] --[[Joey]]

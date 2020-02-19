@@ -84,9 +84,9 @@ install-completions: build
 	install -d $(DESTDIR)$(ZSH_COMPLETIONS_PATH)
 	./git-annex --zsh-completion-script git-annex 2>/dev/null \
 		> $(DESTDIR)$(ZSH_COMPLETIONS_PATH)/_git-annex
-	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/vendor_completions.d
 	./git-annex --fish-completion-script git-annex 2>/dev/null \
-		> $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/completions/git-annex.fish
+		> $(DESTDIR)$(PREFIX)/$(SHAREDIR)/fish/vendor_completions.d/git-annex.fish
 
 test: git-annex git-annex-shell
 	./git-annex test

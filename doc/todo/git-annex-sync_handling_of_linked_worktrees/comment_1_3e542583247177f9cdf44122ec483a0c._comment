@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-30T17:12:40Z"
+ content="""
+That tip was written by leni536, and I don't really understand what it's
+talking about with a difference in sync behavior. I'm not sure it's
+accurate or describes what happens clearly.
+
+To me it seems really simple, no matter if you have a regular work tree, or
+are using git-worktree or whatever: sync fetches, merges, and pushes. Merging
+updates the current work tree, and AFAIK not whatever other work trees might
+be using the same .git repository. In any case, sync should behave the same
+as git pull as far as updating work trees goes.
+
+Can you please show an example of whatever problem you may have with the
+current behavior?
+"""]]

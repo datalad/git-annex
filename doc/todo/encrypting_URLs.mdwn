@@ -7,3 +7,4 @@ store files under paths like s3://mybucket/randomstring/myfile ; the URL is "pub
 If the URLs could be stored encrypted in the git-annex branch, one could track such files using the ordinary web remote.  One could use an S3 export-tree
 remote to share a directory with specific recipient(s), without them needing either AWS credentials or git-annex.
 
+[[!tag unlikely moreinfo]]

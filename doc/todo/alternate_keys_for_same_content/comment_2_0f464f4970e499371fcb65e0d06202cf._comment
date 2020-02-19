@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="alternate keys"
+ date="2020-01-31T19:23:35Z"
+ content="""
+\"every time something about a key is looked up in the git-annex branch, it would also need to look at the metadata to see if this alt_keys field is set\" -- not every time, just when checking if the key is checksum-based, and if content matches the checksum.  Also, isn't metadata [[cached in a database|design/caching_database]]?
+"""]]

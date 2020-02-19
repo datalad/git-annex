@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -161,6 +161,11 @@ performRemote key afile backend numcopies remote =
 		]
 	ai = mkActionItem (key, afile)
 	withtmp a = do
+		-- Put it in the gitAnnexTmpObjectDir since that's on a
+		-- filesystem where object temp files are normally
+		-- stored. The pid prevents multiple fsck processes
+		-- contending over the same file. (Multiple threads cannot,
+		-- because OnlyActionOn is used.)
 		pid <- liftIO getPID
 		t <- fromRepo gitAnnexTmpObjectDir
 		createAnnexDirectory t
@@ -541,7 +546,7 @@ badContentRemote remote localcopy key = do
 
 runFsck :: Incremental -> ActionItem -> Key -> Annex Bool -> CommandStart
 runFsck inc ai key a = stopUnless (needFsck inc key) $
-	starting "fsck" ai $ do
+	starting "fsck" (OnlyActionOn key ai) $ do
 		ok <- a
 		when ok $
 			recordFsckTime inc key

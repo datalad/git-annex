@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-01-30T16:41:42Z"
+ content="""
+That's the use case I'd guessed, but it seems things would have to line up
+exactly for it to work. Ie, I think git-annex requires all the chunks to be
+the same size, and may fail in unexpected ways if they are not.
+
+You do not need to worry about any internal caching when modifying the
+git-annex branch, because updates to the git-annex branch are always being
+merged from remotes, so any such caching has to detect changes and update
+itself.
+"""]]

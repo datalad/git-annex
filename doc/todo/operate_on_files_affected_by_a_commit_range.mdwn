@@ -1,1 +1,4 @@
 Sometimes you want to operate on files touched by commits in a range, e.g. to `git-annex-copy` files added in the last 10 commits to an S3 special remote.  Could the option be added, to commands that take a path to operate on, to give a commit range, with the meaning "operate on files changed by these commits"?
+
+> Since my comment gives a way to do it, and there was no followup, I think
+> this is [[done]] --[[Joey]]

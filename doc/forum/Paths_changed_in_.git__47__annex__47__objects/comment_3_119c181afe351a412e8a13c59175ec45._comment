@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-01-07T19:31:14Z"
+ content="""
+Looking more closely at your list of files, your repository does not
+contain a copy of the current version of demo_beheer.gpkg, which is
+"SHA256E-s204800--a518c074bc22f673f0c73191a01426fef0a7d8b262a17d2729a4a3ac51da40ce.gpkg"
+
+There's evidence you tried to download that key from somewhere, but the
+download failed.
+
+So, it seems that your repository is not in any unsual state, you're just
+confused about how an unlocked file that is not present looks. Probably
+commands like these will be useful:
+
+	git annex get demo_beheer.gpkg
+	git annex whereis demo_beheer.gpkg
+"""]]

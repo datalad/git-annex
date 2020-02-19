@@ -267,7 +267,7 @@ withKeysReferencedDiff a getdiff extractsha = do
   where
   	go d = do
 		let sha = extractsha d
-		unless (sha == nullSha) $
+		unless (sha `elem` nullShas) $
 			catKey sha >>= maybe noop a
 
 {- Filters out keys that have an associated file that's not modified. -}

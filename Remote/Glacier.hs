@@ -1,6 +1,6 @@
 {- Amazon Glacier remotes.
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import Types.Remote
 import qualified Git
 import Config
 import Config.Cost
+import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
@@ -25,21 +26,40 @@ import Utility.Metered
 import qualified Annex
 import Annex.UUID
 import Utility.Env
+import Types.ProposedAccepted
 
 type Vault = String
 type Archive = FilePath
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "glacier"
 	, enumerate = const (findSpecialRemotes "glacier")
 	, generate = gen
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser datacenterField
+			(FieldDesc "S3 datacenter to use")
+		, optionalStringParser vaultField
+			(FieldDesc "name to use for vault")
+		, optionalStringParser fileprefixField
+			(FieldDesc "prefix to add to filenames in the vault")
+		, optionalStringParser AWS.s3credsField HiddenField
+		]
 	, setup = glacierSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+datacenterField :: RemoteConfigField
+datacenterField = Accepted "datacenter"
+	
+vaultField :: RemoteConfigField
+vaultField = Accepted "vault"
+
+fileprefixField :: RemoteConfigField
+fileprefixField = Accepted "fileprefix"
+
+gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u c gc rs = new <$> remoteCost gc veryExpensiveRemoteCost
   where
 	new cst = Just $ specialRemote' specialcfg c
@@ -99,8 +119,10 @@ glacierSetup' ss u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup c gc
 	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
 	let fullconfig = c'' `M.union` defaults
+	pc <- either giveup return . parseRemoteConfig fullconfig
+		=<< configParser remote fullconfig
 	case ss of
-		Init -> genVault fullconfig gc u
+		Init -> genVault pc gc u
 		_ -> return ()
 	gitConfigSpecialRemote u fullconfig [("glacier", "true")]
 	return (fullconfig, u)
@@ -108,8 +130,8 @@ glacierSetup' ss u mcreds c gc = do
 	remotename = fromJust (lookupName c)
 	defvault = remotename ++ "-" ++ fromUUID u
 	defaults = M.fromList
-		[ ("datacenter", T.unpack $ AWS.defaultRegion AWS.Glacier)
-		, ("vault", defvault)
+		[ (datacenterField, Proposed $ T.unpack $ AWS.defaultRegion AWS.Glacier)
+		, (vaultField, Proposed defvault)
 		]
 
 prepareStore :: Remote -> Preparer Storer
@@ -224,21 +246,21 @@ checkKey r k = do
 glacierAction :: Remote -> [CommandParam] -> Annex Bool
 glacierAction r = runGlacier (config r) (gitconfig r) (uuid r)
 
-runGlacier :: RemoteConfig -> RemoteGitConfig -> UUID -> [CommandParam] -> Annex Bool
+runGlacier :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> [CommandParam] -> Annex Bool
 runGlacier c gc u params = go =<< glacierEnv c gc u
   where
 	go Nothing = return False
 	go (Just e) = liftIO $
 		boolSystemEnv "glacier" (glacierParams c params) (Just e)
 
-glacierParams :: RemoteConfig -> [CommandParam] -> [CommandParam]
+glacierParams :: ParsedRemoteConfig -> [CommandParam] -> [CommandParam]
 glacierParams c params = datacenter:params
   where
 	datacenter = Param $ "--region=" ++
 		fromMaybe (giveup "Missing datacenter configuration")
-			(M.lookup "datacenter" c)
+			(getRemoteConfigValue datacenterField c)
 
-glacierEnv :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe [(String, String)])
+glacierEnv :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex (Maybe [(String, String)])
 glacierEnv c gc u = do
 	liftIO checkSaneGlacierCommand
 	go =<< getRemoteCredPairFor "glacier" c gc creds
@@ -251,16 +273,17 @@ glacierEnv c gc u = do
 	creds = AWS.creds u
 	(uk, pk) = credPairEnvironment creds
 
-getVault :: RemoteConfig -> Vault
+getVault :: ParsedRemoteConfig -> Vault
 getVault = fromMaybe (giveup "Missing vault configuration") 
-	. M.lookup "vault"
+	. getRemoteConfigValue vaultField
 
 archive :: Remote -> Key -> Archive
 archive r k = fileprefix ++ serializeKey k
   where
-	fileprefix = M.findWithDefault "" "fileprefix" $ config r
+	fileprefix = fromMaybe "" $
+		getRemoteConfigValue fileprefixField $ config r
 
-genVault :: RemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
+genVault :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex ()
 genVault c gc u = unlessM (runGlacier c gc u params) $
 	giveup "Failed creating glacier vault."
   where

@@ -67,16 +67,17 @@ upgrade = do
 
 locationLogs :: Annex [(Key, FilePath)]
 locationLogs = do
+	config <- Annex.getGitConfig
 	dir <- fromRepo gitStateDir
 	liftIO $ do
 		levela <- dirContents dir
 		levelb <- mapM tryDirContents levela
 		files <- mapM tryDirContents (concat levelb)
-		return $ mapMaybe islogfile (concat files)
+		return $ mapMaybe (islogfile config) (concat files)
   where
 	tryDirContents d = catchDefaultIO [] $ dirContents d
-	islogfile f = maybe Nothing (\k -> Just (k, f)) $
-			locationLogFileKey (toRawFilePath f)
+	islogfile config f = maybe Nothing (\k -> Just (k, f)) $
+			locationLogFileKey config (toRawFilePath f)
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do

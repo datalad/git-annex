@@ -11,3 +11,5 @@ runs it will pile up a change in the git-annex branch.
 So, suggest a flag to avoid generally unnecessary branch update.
 It would also make sense to add it to the other trust level commands,
 and possibly other config setting commands. --[[Joey]]
+
+[[!tag needsthought]]

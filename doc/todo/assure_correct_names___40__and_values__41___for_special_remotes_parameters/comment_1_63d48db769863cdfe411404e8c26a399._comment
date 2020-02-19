@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-06T16:12:01Z"
+ content="""
+There's a subtle backwards compatibility issue here: The stored config of a
+special remote is used when enabling it, so if an older version of
+git-annex is used to enable a remote, there might be a setting that it does
+not know about, or a value it doesn't understand. If that caused it to fail
+to enable the remote it wouldn't be possible to use it, at least w/o
+changing/removing the config.
+
+For example, autoenable=true did not used to be a config setting, but older
+versions of git-annex can still use remotes that have that.
+
+Another example is chunk=. While older versions of git-annex don't
+understand that, and so won't use chunks when storing/retrieving, 
+the newer git-annex falls back to getting the unchunked object.
+So things stored by the old git-annex can be retrieved by the new,
+but not vice-versa.
+
+Another example is S3's storageclass=. Older git-annex doesn't understand
+it, so uses the default storage class, but that behavior is interoperable
+with the new behavior.
+
+So the stored config of a remote should not be checked
+everytime the remote is instantiated, but only the new settings passed
+to initremote/enableremote. That will complicate the API, since currently
+the old and new config are combined together by enableremote.
+"""]]

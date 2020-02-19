@@ -1115,7 +1115,15 @@ Like other git commands, git-annex is configured via `.git/config`.
 
 * `annex.synccontent`
 
-  Set to true to make git-annex sync default to syncing content.
+  Set to true to make git-annex sync default to syncing annexed content.
+
+  To configure the behavior in all clones of the repository,
+  this can be set in [[git-annex-config]](1).
+
+* `annex.synconlyannex`
+
+  Set to true to make git-annex sync default to only sincing the git-annex
+  branch and annexed content.
 
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]](1).

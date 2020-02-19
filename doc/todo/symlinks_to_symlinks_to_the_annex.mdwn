@@ -1,3 +1,5 @@
 If file A is annexed and dropped, and B is a relative symlink to A, then git annex get B should result in A being fetched, but currently doesn't.
 This would especially help if B is deep within some dir 'mydir', and you do git annex get mydir: annexed files under mydir get fetched,
 but not annexed files elsewhere in the repository to which symlinks under mydir point.   So such symlinks under mydir will continue to remain broken.
+
+[[!tag unlikely]]

@@ -17,8 +17,8 @@ import Git.Types
 data DiffTreeItem = DiffTreeItem
 	{ srcmode :: FileMode
 	, dstmode :: FileMode
-	, srcsha :: Sha -- nullSha if file was added
-	, dstsha :: Sha -- nullSha if file was deleted
+	, srcsha :: Sha -- null sha if file was added
+	, dstsha :: Sha -- null sha if file was deleted
 	, status :: String
 	, file :: TopFilePath
 	} deriving Show

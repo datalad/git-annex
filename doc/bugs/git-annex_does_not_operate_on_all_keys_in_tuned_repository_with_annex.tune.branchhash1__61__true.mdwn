@@ -1,0 +1,91 @@
+### Please describe the problem.
+
+git annex commands with `--all` option in tuned repository (with `annex.tune.branchhash1=true`) do not do anything.
+
+### What steps will reproduce the problem?
+
+1. Initialize a tuned annex repository with `git annex init -c annex.tune.branchhash1=true`.
+2. Add some files to annex.
+3. Now `git annex whereis --all` and `git annex fsck --all` (and maybe other commands) don't show/do anything.
+
+### What version of git-annex are you using? On what operating system?
+
+Version 7.20191230-g985373f8e, compiled from sources, on Debian buster 10.2.
+
+### Please provide any additional information below.
+
+[[!format txt """
+~ $ mkdir testdir
+~ $ cd testdir
+~/testdir $ 
+~/testdir $ git init
+Initialized empty Git repository in /home/test/testdir/.git/
+~/testdir $ 
+~/testdir $ git annex init -c annex.tune.branchhash1=true testrepo
+init testrepo (scanning for unlocked files...)
+ok
+(recording state in git...)
+~/testdir $ 
+~/testdir $ echo abcabc >file
+~/testdir $ 
+~/testdir $ git annex add file
+add file 
+ok                                
+(recording state in git...)
+~/testdir $ 
+~/testdir $ git commit -m file
+[master (root-commit) b910684] file
+ 1 file changed, 1 insertion(+)
+ create mode 120000 file
+~/testdir $ 
+~/testdir $ git annex whereis
+whereis file (1 copy) 
+  	67d9c35f-e206-404f-a9da-6c94894a4f9f -- testrepo [here]
+ok
+~/testdir $ 
+~/testdir $ git annex whereis --all
+~/testdir $ 
+~/testdir $ git annex fsck
+fsck file (checksum...) ok
+(recording state in git...)
+~/testdir $ 
+~/testdir $ git annex fsck --all
+(recording state in git...)
+"""]]
+
+But `--key` option works:
+
+[[!format txt """
+~/testdir $ git annex lookupkey file
+SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470
+~/testdir $ 
+~/testdir $ git annex whereis --key SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470
+whereis SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470 (1 copy) 
+  	67d9c35f-e206-404f-a9da-6c94894a4f9f -- testrepo [here]
+ok
+~/testdir $ 
+~/testdir $ git annex fsck --key SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470
+fsck SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470 (checksum...) ok
+(recording state in git...)
+"""]]
+
+Repository status:
+
+[[!format txt """
+~/testdir $ find .git/annex/objects/ -type f
+.git/annex/objects/J3/3f/SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470/SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470
+~/testdir $ 
+~/testdir $ git ls-tree -r git-annex
+100644 blob 20f9faf7ca569d23da5f106a445609d018fa221d	activity.log
+100644 blob 71f3551b7119daa3c4679d2b790d72b6bc06cbb8	c34/SHA256E-s7--2ed91d820157c0530ffbae54122d998e0de6d958f266b682f7c528942f770470.log
+100644 blob d475e423f6fb4863559e8cca981ae8a433f68516	difference.log
+100644 blob bf91bd54df30e28f40b49670cf9c9c26ff600a22	uuid.log
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Of course, I love it! Great project, thanks, Joey!
+
+However, /me always wants more features from it. It's great that git-annex continues to develop.
+
+> [[fixed|done]] --[[Joey]] 

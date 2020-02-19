@@ -29,19 +29,8 @@ seems unreliable/broken on Windows.
   to avoid this, but only ended up with encoding crashes, or worse
   mojibake than this.
 
-* `md5FilePath` still uses the filesystem encoding, and so may produce the
-  wrong value on Windows. This would impact keys that contain problem characters
-  (probably coming from the filename extension), and might cause
-  interoperability problems when git-annex generates the hash directories of a
-  remote, for example a rsync remote.
-
-* `encodeW8` is used in Git.UnionMerge, and while I fixed the other calls to
-  encodeW8, which all involved ByteStrings reading from git and so can just
-  treat it as utf-8 on Windows (via `decodeBS`), in the union merge case,
-  the ByteString has no defined encoding. It may have been written on Unix
-  and contain keys with invalid unicode in them. On windows, the union
-  merge code should probably check if it's valid utf-8, and if not,
-  abort the merge.
+  > This may be use to windows actually using utf-16, but git-annex uses
+  > utf-8 for filename encoding when on windows.
 
 * If interoperating with a git-annex repository from a unix system, it's
   possible for a key to contain some invalid utf-8, which means its filename

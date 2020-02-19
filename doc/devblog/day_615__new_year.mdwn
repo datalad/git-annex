@@ -1,0 +1,21 @@
+The release of git-annex with all the ByteString optimisations went out
+earlier this week. The Windows autobuilder was down and I didn't try to get
+it building on Windows, so fixed that today, luckily all those changes only
+broke a few bits of Windows-specific code.
+
+Also today, I added git-annex add --force-annex/--force-git options.
+These do the same thing as -c annex.largefiles=anthing etc, but 
+are easier to type and may avoid some tricky git behavior in some edge
+cases.
+
+I'd kind of like to get back to v8 this month and perhaps release it.
+There's a `v8` branch now, which as well as the sqlite changes adds a new
+annex.dotfiles config setting, and cleans up the special cases around
+adding dotfiles. Anyone not using git-annex to manage large dotfiles
+(or files in dotdirs) won't be impacted, but those who do will need to
+enable annex.dotfiles and configure annex.largefiles to match the dotfiles
+they want annexed. There is a risk that someone who's in the habit of
+running `git annex add .dotfile` to add them to the annex will be surprised
+when the new version adds them to git because they've not done the necessary
+configuration. I'm still mulling over whether this is an acceptable risk
+to mostly de-uglify and de-special-case dotfiles.

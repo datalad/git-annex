@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -48,6 +48,7 @@ module Messages (
 	outputMessage,
 	withMessageState,
 	prompt,
+	mkPrompter,
 ) where
 
 import System.Log.Logger
@@ -55,6 +56,7 @@ import System.Log.Formatter
 import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple
 import Control.Concurrent
+import Control.Monad.IO.Class
 import qualified Data.ByteString as S
 
 import Common
@@ -290,14 +292,21 @@ commandProgressDisabled = withMessageState $ \s -> return $
  - the user.
  -}
 prompt :: Annex a -> Annex a
-prompt a = debugLocks $ Annex.getState Annex.concurrency >>= \case
-	NonConcurrent -> a
+prompt a = do
+	p <- mkPrompter
+	p a
+
+{- Like prompt, but for a non-annex action that prompts. -}
+mkPrompter :: (MonadMask m, MonadIO m) => Annex (m a -> m a)
+mkPrompter = Annex.getState Annex.concurrency >>= \case
+	NonConcurrent -> return id
 	(Concurrent _) -> goconcurrent
 	ConcurrentPerCpu -> goconcurrent
   where
 	goconcurrent = withMessageState $ \s -> do
 		let l = promptLock s
-		bracketIO
-			(takeMVar l)
-			(putMVar l)
-			(const $ hideRegionsWhile s a)
+		return $ \a ->
+			debugLocks $ bracketIO
+				(takeMVar l)
+				(putMVar l)
+				(const $ hideRegionsWhile s a)

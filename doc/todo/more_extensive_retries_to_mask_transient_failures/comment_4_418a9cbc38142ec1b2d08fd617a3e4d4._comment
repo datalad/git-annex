@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="aborting stuck operations so they can be retried"
+ date="2020-02-05T16:39:36Z"
+ content="""
+\"The only way to guarantee such an abort is to kill the whole git-annex process and let the signal reap its children\" -- then maybe the initial `git-annex` command can be made a wrapper that starts a separate `git-annex` process to do the actual work, monitors its progress, and kills/reaps/restarts it if it gets stuck?   Or `-Jn` could work by starting up several separate git-annex processes, [[each handling a subset of files|parallel_possibilities/#comment-304240ba804513291c1a996b8eb3fd1c]], and the original process could kill/reap/restart any sub-process that gets stuck.  This of course presumes idempotent operations.
+"""]]

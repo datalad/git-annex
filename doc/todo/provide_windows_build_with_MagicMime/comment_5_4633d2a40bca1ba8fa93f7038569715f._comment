@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-01-08T18:26:17Z"
+ content="""
+I guess that `git annex adjust --unlock` would avoid whatever the problem
+is with the symlinks.
+"""]]

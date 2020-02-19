@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-01-30T18:49:47Z"
+ content="""
+Since there is a separate todo item [[external_backends]], let's not
+discuss that idea here.
+
+key/f would have been a great idea to have had 10 years ago.
+(Although it does mean that if the object file somehow gets moved out of
+its directory, there's no indication in its name that it's a git-annex
+object file)
+
+But if that's all this todo is about, we'd need some kind of transition
+plan for existing repos with history containing symlinks to key/key. 
+I doubt there is a good way to make that transition.
+"""]]

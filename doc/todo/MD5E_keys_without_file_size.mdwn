@@ -1,3 +1,5 @@
 Would it be hard to support MD5E keys that omit the -sSIZE part, the way this is allowed for URL keys?  I have a use case where I have the MD5 hashes and filenames of files stored in the cloud, but not their sizes, and want to construct keys for these files to use with setpresentkey and registerurl.  I could construct URL keys, but then I lose the error-checking and have to set annex.security.allow-unverified-downloads .  Or maybe, extend URL keys to permit an -hMD5 hash to be part of the key?
 
 Another (and more generally useful) solution would be [[todo/alternate_keys_for_same_content/]].  Then can start with a URL-based key but then attach an MD5 to it as metadata, and have the key treated as a checksum-containing key, without needing to migrate the contents to a new key.
+
+[[!tag moreinfo]]

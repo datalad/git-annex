@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="fasthans@87884c78197fe1a25ac25ae7fa1d930c147e9592"
+ avatar="http://cdn.libravatar.org/avatar/6d89ddec3053d8df7e57cf2f28c8cdcd"
+ subject="prior research"
+ date="2020-01-07T19:07:17Z"
+ content="""
+I forgot to mention, all I've been able to find that seemed related was this post: https://git-annex.branchable.com/bugs/fix_git-annex_paths___47___objects___40__repository_not_available__41__/
+
+but I couldn't figure out if this was a similar problem to mine.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="default git-annex version in distros"
+ date="2020-02-10T18:55:29Z"
+ content="""
+\"you can expect the situation to be worse on 18.04 LTS\" -- if the default version there is before 7.20190912 there is no chance of user confusion, only versions 7.20190912 through 7.20191017 can cause it.  I take it it's not possible to change the default version included in existing distributions?  Sorry, don't know how Ubuntu/Debian packaging works...
+"""]]

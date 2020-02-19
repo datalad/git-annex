@@ -81,7 +81,7 @@ getRepoUUID r = do
 	updatecache u = do
 		g <- gitRepo
 		when (g /= r) $ storeUUIDIn cachekey u
-	cachekey = remoteConfig r "uuid"
+	cachekey = remoteAnnexConfig r "uuid"
 
 removeRepoUUID :: Annex ()
 removeRepoUUID = do

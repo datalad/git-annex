@@ -82,7 +82,7 @@ doMerge hashhandle ch differ repo streamer = do
  - a line suitable for update-index that union merges the two sides of the
  - diff. -}
 mergeFile :: String -> RawFilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
-mergeFile info file hashhandle h = case filter (/= nullSha) [Ref asha, Ref bsha] of
+mergeFile info file hashhandle h = case filter (`notElem` nullShas) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
 	shas -> use

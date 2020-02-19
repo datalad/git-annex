@@ -58,7 +58,7 @@ perform p = do
 	-- Take two passes through the diff, first doing any removals,
 	-- and then any adds. This order is necessary to handle eg, removing
 	-- a directory and replacing it with a file.
-	let (removals, adds) = partition (\di -> dstsha di == nullSha) diff'
+	let (removals, adds) = partition (\di -> dstsha di `elem` nullShas) diff'
 	let mkrel di = liftIO $ relPathCwdToFile $ fromRawFilePath $
 		fromTopFilePath (file di) g
 

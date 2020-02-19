@@ -26,3 +26,5 @@ In any case, the new test suite would need to be run somewhere;
 running it on at least some of the autobuilders might be a good way.
 
 --[[Joey]] 
+
+[[!tag confirmed]]

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-01-06T17:41:21Z"
+ content="""
+This is either a bug in <http://hackage.haskell.org/package/aws> or
+Digital Ocean's implementation of the S3 protocol. I don't know which,
+but I do know it has to be fixed in one of those two place, and not
+in git-annex.
+
+The fact that the aws library can't even parse an error message out of
+their response kind of says something.
+
+But the real problem seems to
+While they claim to support V2 signatures,
+my guess is there's a problem with their support for V2, since they're
+mostly dealing with V4. The aws library's support for V4 is experimental
+and [apparently buggy](https://github.com/aristidb/aws/issues/262), but
+as git-annex uses it, it will only use V2.
+"""]]

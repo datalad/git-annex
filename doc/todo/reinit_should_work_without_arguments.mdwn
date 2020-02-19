@@ -63,3 +63,6 @@ repositories:
     git annex sync
 
 Thanks for any feedback or comments... -- [[anarcat]]
+
+> [[done]], as duplicate of [[todo/reinit_current_repo_to_new_uuid]]
+> --[[Joey]]

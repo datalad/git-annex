@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="Chel"
+ avatar="http://cdn.libravatar.org/avatar/a42feb5169f70b3edf7f7611f7e3640c"
+ subject="comment 1"
+ date="2020-02-03T22:36:59Z"
+ content="""
+If I am not mistaken, you need to:
+
+1) manually fetch `git-annex` from everywhere,
+
+2) not have the `synced/master` branch (or it should be an ancestor of `master`),
+
+3) use [[git-annex-merge]] or `git annex sync --no-pull --no-push` (maybe just `--no-pull` is enough),
+
+4) manually push `git-annex` back to every other repository.
+
+Other remarks:
+
+- You can use `git annex sync --cleanup` to delete all `synced/*` branches.
+- Or you can check out another branch and run `git annex sync` — it will fetch all branches, but merge only the current.
+- I don't fully understand how `synced/git-annex` works, so maybe the real answer is more complex.
+"""]]

@@ -3,7 +3,7 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if neccessary.
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@
 {-# LANGUAGE Rank2Types #-}
 
 module Crypto (
+	EncryptionMethod(..),
 	Cipher,
 	KeyIds(..),
 	EncKey,
@@ -37,7 +38,6 @@ module Crypto (
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.UTF8 (fromString)
-import qualified Data.Map as M
 import Control.Monad.IO.Class
 
 import Annex.Common
@@ -232,14 +232,18 @@ class LensGpgEncParams a where
 
 {- Extract the GnuPG options from a pair of a Remote Config and a Remote
  - Git Config. -}
-instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
+instance LensGpgEncParams (ParsedRemoteConfig, RemoteGitConfig) where
 	getGpgEncParamsBase (_c,gc) = map Param (remoteAnnexGnupgOptions gc)
 	getGpgEncParams (c,gc) = getGpgEncParamsBase (c,gc) ++
  		{- When the remote is configured to use public-key encryption,
 		 - look up the recipient keys and add them to the option list. -}
-		case M.lookup encryptionField c of
-			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup cipherkeysField c
-			Just "sharedpubkey" -> Gpg.pkEncTo $ maybe [] (splitc ',') $ M.lookup pubkeysField c
+		case getRemoteConfigValue encryptionField c of
+			Just PubKeyEncryption -> 
+				Gpg.pkEncTo $ maybe [] (splitc ',') $
+					getRemoteConfigValue cipherkeysField c
+			Just SharedPubKeyEncryption ->
+				Gpg.pkEncTo $ maybe [] (splitc ',') $
+					getRemoteConfigValue pubkeysField c
 			_ -> []
 	getGpgDecParams (_c,gc) = map Param (remoteAnnexGnupgDecryptOptions gc)
 

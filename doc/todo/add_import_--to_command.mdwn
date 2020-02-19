@@ -4,3 +4,5 @@ I have a bunch of files I want to track with `git-annex` that are sitting in an 
     git-annex import --to=s3-remote /mnt/usb-drive/myfiles
 
 The proposed `--to=remote` option would add the files to my repo as `import` normally does, but it wouldn't every keep the content in the repo, the only copy would now sit in `s3-remote`. As little disk space as possible would be staged temporarily in `~/my-laptop-repo`. Perhaps the easiest option would be to import a file normally, but them immediately do a `move` to `s3-remote`? But, ideally for larger files, we would want to stream them directly from `/mnt/usb-drive/myfiles` to `s3-remote` without ever staging them at `~/my-laptop-repo`.
+
+[[!tag unlikely needsthought]]

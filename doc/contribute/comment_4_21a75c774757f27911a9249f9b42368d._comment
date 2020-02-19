@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""@Dan"""
+ date="2020-02-17T17:05:03Z"
+ content="""
+That might be an ikiwiki issue, because you're supposed to be able to git
+push any change that a user could make on the web, and I think anyone can
+delete a comment and then make a new comment in its place. Probably
+two pushes would work ... or just copy and then delete the comment and paste
+into a new comment.
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jochen.keil@38b1f86ab65128dab3e62e726403ceee4f5141bf"
+ nickname="jochen.keil"
+ avatar="http://cdn.libravatar.org/avatar/a1329c0b3a262017553cc5497aa12c18"
+ subject="comment 2"
+ date="2020-02-14T12:04:53Z"
+ content="""
+Thanks for your hint, I appretiate that and I think it could be done that way.
+
+However, on closer thought I was wondering if git-annex is the right tool for job. I had the impression that my idea came more from a hammer and nail situation. So, FUSE came to my mind. I popped it into google and found this: https://github.com/FS-make-simple/fusecompress
+Unfortunately this does not look very active though.
+
+Now, since I'm already at the FS layer I can look into ZFS compression. My repos are already on ZFS but I haven't looked at the built-in compression yet. I think I'll evaluate that first. If none of that is satisfactory I'll turn to git-annex again :)
+"""]]

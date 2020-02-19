@@ -1,11 +1,11 @@
 Name: git-annex
-Version: 8.20200101
+Version: 8.20200221
 Cabal-Version: >= 1.8
 License: AGPL-3
 Maintainer: Joey Hess <id@joeyh.name>
 Author: Joey Hess
 Stability: Stable
-Copyright: 2010-2019 Joey Hess
+Copyright: 2010-2020 Joey Hess
 License-File: COPYRIGHT
 Homepage: http://git-annex.branchable.com/
 Build-type: Custom
@@ -296,7 +296,7 @@ source-repository head
 custom-setup
   Setup-Depends: base (>= 4.11.1.0), hslogger, split, unix-compat, process,
     filepath, exceptions, bytestring, directory, IfElse, data-default,
-    filepath-bytestring (>= 1.4.2.1.0),
+    filepath-bytestring (>= 1.4.2.1.1),
     utf8-string, transformers, Cabal
 
 Executable git-annex
@@ -315,13 +315,13 @@ Executable git-annex
    case-insensitive,
    random,
    dlist,
-   unix-compat,
+   unix-compat (>= 0.5),
    SafeSemaphore,
    async,
    directory (>= 1.2),
    disk-free-space,
    filepath,
-   filepath-bytestring (>= 1.4.2.1.0),
+   filepath-bytestring (>= 1.4.2.1.1),
    IfElse,
    hslogger,
    monad-logger,
@@ -394,7 +394,6 @@ Executable git-annex
   if (os(windows))
     Build-Depends:
       Win32 (>= 2.6.1.0),
-      unix-compat (>= 0.5),
       setenv,
       process (>= 1.6.2.0),
       silently (>= 1.2.5.1)
@@ -996,8 +995,10 @@ Executable git-annex
     Types.MetaData
     Types.Mime
     Types.NumCopies
+    Types.ProposedAccepted
     Types.RefSpec
     Types.Remote
+    Types.RemoteConfig
     Types.RemoteState
     Types.RepoVersion
     Types.ScheduledActivity

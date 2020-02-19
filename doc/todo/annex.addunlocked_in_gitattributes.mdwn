@@ -9,3 +9,5 @@ would effectively build up a file match expression. So it might then follow
 that the git config should also be a file match expression, with "true"
 being the same as "anything" and "false" the same as "nothing" for
 back-compat. --[[Joey]]
+
+> This got accomplished by other means, [[done]] --[[Joey]]

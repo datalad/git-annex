@@ -5,3 +5,27 @@ git also uses this mechanism to start warning of upcoming breaking changes in fu
 Another way to signal breaking changes can be to use some form of [semantic versioning](https://semver.org/) for git-annex versions, bumping the major version number to indicate incompatible changes.  [[7.20190912|news/version_7.20190912]] would then be 8.20190912 .  This would help when specifying [package dependencies](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html#package-match-specifications).
 
 Of course, best is to avoid breaking changes, as @joeyh ultimately [[managed to do with v7|news/version_7.20191024]].  But they'll happen, and some people miss the [[current scheme for announcing them|forum/lets_discuss_git_add_behavior/#comment-727918fd9abda5445891f2022ac225c8]], so low-cost ways to extend the scheme might help.
+
+> This todo item was prompted by the `git add` behavior
+> change. But that was caused by an automatic upgrade to repo version 7,
+> not by any particular recent version of git-annex. It was actually
+> implemented in 2016 or something like that and repo versions v6 (and v7)
+> always had that behavior. Warning about it back then would not have helped
+> with people who encountered the change in behavior in 2019.
+> And, before a user upgraded to v6/v7, `git add` did not run git-annex, so
+> there is no way that git-annex could have made `git add` warn about a
+> upcoming behavior change.
+> 
+> The major version number of git-annex indicates what repository version
+> number it supports. 8.20190912 would not support v8 repositories, so
+> that's not the right version number for it.
+> 
+> Intentional changes to git-annex behavior have been very scant if you
+> look back over the changelog. If I were making one today, I'd maybe think
+> about warning first for a while. But that also slows down the development
+> velocity if something is dependent on that behavior change, since you
+> then have to wait some period of time for users to see the warning.
+> 
+> Anyway, I don't see any point leaving a todo item open about a
+> hypothetical future change, and I'm not willing to commit to always doing
+> it, so [[done]] I guess? --[[Joey]]

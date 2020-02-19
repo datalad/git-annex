@@ -1,6 +1,6 @@
 {- Credentials storage
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@ module Creds (
 	module Types.Creds,
 	CredPairStorage(..),
 	setRemoteCredPair,
+	setRemoteCredPair',
 	getRemoteCredPair,
 	getRemoteCredPairFor,
 	missingCredPairFor,
@@ -23,11 +24,14 @@ module Creds (
 import Annex.Common
 import qualified Annex
 import Types.Creds
+import Types.RemoteConfig
+import Annex.SpecialRemote.Config
 import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigField)
-import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
+import Types.ProposedAccepted
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher, parseEncryptionConfig)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -53,32 +57,47 @@ data CredPairStorage = CredPairStorage
  - cipher. The EncryptionIsSetup is witness to that being the case.
  -}
 setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair encsetup c gc storage mcreds = case mcreds of
-	Nothing -> maybe (return c) (setRemoteCredPair encsetup c gc storage . Just)
-		=<< getRemoteCredPair c gc storage
+setRemoteCredPair = setRemoteCredPair' id
+	(either (const mempty) id . parseEncryptionConfig)
+
+setRemoteCredPair'
+	:: (ProposedAccepted String -> a)
+	-> (M.Map RemoteConfigField a -> ParsedRemoteConfig)
+	-> EncryptionIsSetup
+	-> M.Map RemoteConfigField a
+	-> RemoteGitConfig
+	-> CredPairStorage
+	-> Maybe CredPair
+	-> Annex (M.Map RemoteConfigField a)
+setRemoteCredPair' mkval parseconfig encsetup c gc storage mcreds = case mcreds of
+	Nothing -> maybe (return c) (setRemoteCredPair' mkval parseconfig encsetup c gc storage . Just)
+		=<< getRemoteCredPair pc gc storage
 	Just creds
-		| embedCreds c ->
+		| embedCreds pc -> do
 			let key = credPairRemoteField storage
-			in storeconfig creds key =<< flip remoteCipher gc =<< localcache creds
-		| otherwise -> localcache creds
+			localcache creds
+			storeconfig creds key =<< remoteCipher pc gc
+		| otherwise -> do
+			localcache creds
+			return c
   where
-	localcache creds = do
-		writeCacheCredPair creds storage
-		return c
+	localcache creds = writeCacheCredPair creds storage
 
 	storeconfig creds key (Just cipher) = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
-		s <- liftIO $ encrypt cmd (c, gc) cipher
+		s <- liftIO $ encrypt cmd (pc, gc) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
-		return $ M.insert key (toB64 s) c
+		return $ M.insert key (mkval (Accepted (toB64 s))) c
 	storeconfig creds key Nothing =
-		return $ M.insert key (toB64 $ encodeCredPair creds) c
+		return $ M.insert key (mkval (Accepted (toB64 $ encodeCredPair creds))) c
+	
+	pc = parseconfig c
 
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the
  - value in RemoteConfig. -}
-getRemoteCredPair :: RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Annex (Maybe CredPair)
+getRemoteCredPair :: ParsedRemoteConfig -> RemoteGitConfig -> CredPairStorage -> Annex (Maybe CredPair)
 getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
   where
 	fromenv = liftIO $ getEnvCredPair storage
@@ -86,7 +105,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 	fromconfig = do
 		let key = credPairRemoteField storage
 		mcipher <- remoteCipher' c gc
-		case (M.lookup key c, mcipher) of
+		case (fromProposedAccepted <$> getRemoteConfigValue key c, mcipher) of
 			(Nothing, _) -> return Nothing
 			(Just enccreds, Just (cipher, storablecipher)) ->
 				fromenccreds enccreds cipher storablecipher
@@ -114,7 +133,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 			return $ Just credpair
 		_ -> error "bad creds"
 
-getRemoteCredPairFor :: String -> RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Annex (Maybe CredPair)
+getRemoteCredPairFor :: String -> ParsedRemoteConfig -> RemoteGitConfig -> CredPairStorage -> Annex (Maybe CredPair)
 getRemoteCredPairFor this c gc storage = go =<< getRemoteCredPair c gc storage
   where
 	go Nothing = do
@@ -183,7 +202,7 @@ removeCreds file = do
 	let f = d </> file
 	liftIO $ nukeFile f
 
-includeCredsInfo :: RemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
+includeCredsInfo :: ParsedRemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
 includeCredsInfo c storage info = do
 	v <- liftIO $ getEnvCredPair storage
 	case v of
