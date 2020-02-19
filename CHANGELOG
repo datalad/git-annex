@@ -1,18 +1,17 @@
 git-annex (8.20200221) UNRELEASED; urgency=medium
 
   * New v8 repository version.
-  * v7 upgrades automatically to v8.
-  * Any incremental fscks that were started in v7 won't resume where
-    they left off in v8, but will instead begin again from the first file.
-  * An interrupted export that was started in v7 won't resume where it left
-    off after upgrade to v8; files will be re-uploaded to the export remote.
-  * After the upgrade, git-annex will in some situations have to do extra
-    work while it finishes populating its sqlite databases.
+  * v7 upgrades automatically to v8. The upgrade deletes old sqlite
+    databases, which may cause git-annex to need to do extra work to
+    regenerate the databases or due to not having the information from the
+    old databases available. Two notable cases are interrupted incremental
+    fscks and interrupted exports, both of which will restart from the
+    beginning.
+  * Improved serialization of filenames and keys to the sqlite databases,
+    avoiding encoding problems.
   * Add some missing indexes to sqlite databases. This will speed up
     some things involving export and import remotes, and git-annex smudge.
     Microbenchmarks show around 10-25% speedup of sqlite database operations.
-  * Improved serialization of filenames and keys to the sqlite databases,
-    avoiding encoding problems.
   * add: When adding a whole directory, any dotfiles found in it will
     not be skipped, but will be added to git by default. This behavior
     can be configured with annex.dotfiles.
