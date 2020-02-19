@@ -24,7 +24,7 @@ module Remote (
 	remoteTypes,
 	remoteList,
 	remoteList',
-	gitSyncableRemote,
+	gitSyncableRemoteType,
 	remoteMap,
 	remoteMap',
 	uuidDescriptions,

@@ -60,7 +60,7 @@ calcSyncRemotes = do
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
-		, syncGitRemotes = filter Remote.gitSyncableRemote syncable
+		, syncGitRemotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) syncable
 		, syncDataRemotes = dataremotes
 		, exportRemotes = exportremotes
 		, downloadRemotes = contentremotes

@@ -199,7 +199,7 @@ seek' o = do
 	let withbranch a = a =<< getCurrentBranch
 
 	remotes <- syncRemotes (syncWith o)
-	let gitremotes = filter Remote.gitSyncableRemote remotes
+	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
 	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 	let (exportremotes, keyvalueremotes) = partition (exportTree . Remote.config) dataremotes
@@ -300,7 +300,7 @@ syncRemotes' ps available =
 	listed = concat <$> mapM Remote.byNameOrGroup ps
 	
 	good r
-		| Remote.gitSyncableRemote r =
+		| Remote.gitSyncableRemoteType (Remote.remotetype r) =
 			Remote.Git.repoAvail =<< Remote.getRepo r
 		| otherwise = return True
 	

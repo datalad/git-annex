@@ -128,8 +128,8 @@ updateRemote remote = do
 		| otherwise = return r
 
 {- Checks if a remote is syncable using git. -}
-gitSyncableRemote :: Remote -> Bool
-gitSyncableRemote r = remotetype r `elem`
+gitSyncableRemoteType :: RemoteType -> Bool
+gitSyncableRemoteType t = t `elem`
 	[ Remote.Git.remote
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote

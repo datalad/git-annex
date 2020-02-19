@@ -23,6 +23,7 @@ import Logs.Remote
 import Types.GitConfig
 import Types.ProposedAccepted
 import Config
+import Git.Config
 
 cmd :: Command
 cmd = command "initremote" SectionSetup
@@ -87,7 +88,7 @@ perform t name c o = do
 	dummycfg <- liftIO dummyRemoteGitConfig
 	let c' = M.delete uuidField c
 	(c'', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) Nothing c' dummycfg
-	next $ cleanup u name c'' o
+	next $ cleanup t u name c'' o
   where
 	uuidfromuser = case fromProposedAccepted <$> M.lookup uuidField c of
 		Just s
@@ -99,8 +100,8 @@ perform t name c o = do
 uuidField :: R.RemoteConfigField
 uuidField = Accepted "uuid"
 
-cleanup :: UUID -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandCleanup
-cleanup u name c o = do
+cleanup :: RemoteType -> UUID -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandCleanup
+cleanup t u name c o = do
 	case sameas o of
 		Nothing -> do
 			describeUUID u (toUUIDDesc name)
@@ -109,6 +110,8 @@ cleanup u name c o = do
 			cu <- liftIO genUUID
 			setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
 			Logs.Remote.configSet cu c
+	unless (Remote.gitSyncableRemoteType t) $
+		setConfig (remoteConfig c "skipFetchAll") (boolConfig True)
 	return True
 
 describeOtherParamsFor :: RemoteConfig -> RemoteType -> CommandPerform
