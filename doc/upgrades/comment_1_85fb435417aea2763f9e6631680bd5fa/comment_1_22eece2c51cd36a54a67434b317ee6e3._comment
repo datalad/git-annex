@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2017-03-21T17:43:33Z"
- content="""
-@rok it's a consequence of using smudge/clean filters; git add passes
-the file through the filters.
-"""]]

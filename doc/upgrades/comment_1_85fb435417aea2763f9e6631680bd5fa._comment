@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="rok"
- avatar="http://cdn.libravatar.org/avatar/a80e31241cb35a3cf9bf8de34e05fc2d"
- subject="v6 default behavior"
- date="2017-03-16T09:24:50Z"
- content="""
-I'm curious about the choice to change the behavior of critical git commands (such as add) in such a drastic way in V6, i.e. why does \"git add\" no longer add files to the git repo? The default of annex should be exclusive rather than inclusive, I shouldn't need to specify which files to *exclude* from annex, rather the other way around. This is an especially confusing default for code. What is the logic here? 
-"""]]
