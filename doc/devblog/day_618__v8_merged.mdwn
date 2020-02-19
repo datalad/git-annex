@@ -1,0 +1,5 @@
+v8 is now merged into master and so the next release will use v8.
+
+The presumably last v7 release happened earlier today, with some
+accumulated changes, including a data loss bug in
+`git-annex fsck --from remote -J`.
