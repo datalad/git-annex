@@ -1,4 +1,4 @@
-git-annex (7.20200205) UNRELEASED; urgency=medium
+git-annex (7.20200219) upstream; urgency=medium
 
   * Added sync --only-annex, which syncs the git-annex branch and annexed
     content but leaves managing the other git branches up to you.
@@ -17,7 +17,7 @@ git-annex (7.20200205) UNRELEASED; urgency=medium
     including --all not working and git-annex log not displaying anything
     for annexed files.
 
- -- Joey Hess <id@joeyh.name>  Fri, 14 Feb 2020 14:12:25 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:44:43 -0400
 
 git-annex (7.20200204) upstream; urgency=medium
 
