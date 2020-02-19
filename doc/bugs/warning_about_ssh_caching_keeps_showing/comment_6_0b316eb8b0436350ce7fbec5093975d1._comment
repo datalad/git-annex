@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git-annex build-time dependencies"
+ date="2020-02-18T19:33:32Z"
+ content="""
+\"git-annex makes similar assumptions about eg, `cp --reflink` being supported or not, and I don't think it's very unusual to probe OS features at compile time\" -- this works well for package managers tied to specific distros.  But consider something like [[install/conda]] that creates packages meant to be installed on a variety of systems.  I can add a run-time dependency on `coreutils` to ensure that `cp --reflink` works, but I'm a bit wary about requiring git-annex users to replace all core utils with conda-forge ones.  For one, these may be slower, being compiled for a generic architecture. For two, if they're not fully backwards-compatible, they make break some assumptions relied on by other parts of the distro.
+"""]]

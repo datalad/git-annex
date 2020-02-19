@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="Avoid fetching from special remotes"
+ date="2020-02-19T00:22:04Z"
+ content="""
+I have a few special remotes configured in my git annex-ed repo. As far as `git` is concerned, these are just ordinary remotes (they have entries in the `.git/config` file). As a result, when I do something like `git fetch --all` it still tries to fetch from them. This of course fails (since they aren't actually git repositories). It isn't the end of the world, but causes some extra noise in my output (I use `magit` in emacs for most of my `git` workflow, so I have to drill down a bit to see what actually failed and then dismiss it as an expected failure).
+
+It'd be nice if I could just prevent `git` from fetching from these special remotes. Is there a clever way I can set `remote.<name>.fetch` in the local config so as to leave these remotes alone when fetching?
+"""]]
