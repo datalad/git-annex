@@ -135,20 +135,6 @@ Involved moving the .git-annex/ directory into a separate git-annex branch.
 After this upgrade, you should make sure you include the git-annex branch
 when git pushing and pulling.
 
-### tips for this upgrade
-
-This upgrade is easier (and faster!) than the previous upgrades.
-You don't need to upgrade every repository at once; it's sufficient
-to upgrade each repository only when you next use it.
-	
-Example upgrade process:
-
-	cd localrepo
-	git pull
-	git annex upgrade
-	git commit -m "upgrade v2 to v3"
-	git gc
-
 ## v1 -> v2 (git-annex version 0.20110316)
 
 Involved adding hashing to .git/annex/ and changing the names of all keys.
@@ -163,33 +149,6 @@ the SHA backends after the conversion will have their file size tracked,
 and that information will be used by git-annex for disk free space checking.
 To ensure that information is available for all your annexed files, see
 [[upgrades/SHA_size]].
-
-### tips for this upgrade
-
-This upgrade can tend to take a while, if you have a lot of files.
-
-Each clone of a repository should be individually upgraded.
-Until a repository's remotes have been upgraded, git-annex
-will refuse to communicate with them.
-
-Start by upgrading one repository, and then you can commit
-the changes git-annex staged during upgrade, and push them out to other
-repositories. And then upgrade those other repositories. Doing it this
-way avoids git-annex doing some duplicate work during the upgrade.
-
-Example upgrade process:
-
-	cd localrepo
-	git pull
-	git annex upgrade
-	git commit -m "upgrade v1 to v2"
-	git push
-
-	ssh remote
-	cd remoterepo
-	git pull
-	git annex upgrade
-	...
 
 ## v0 -> v1 (git-annex version 0.04)
 
