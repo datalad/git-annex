@@ -20,11 +20,6 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
     that no longer adds them to the annex, but to git. This behavior
     can be configured with annex.dotfiles.
   * add: Removed the --include-dotfiles option.
-
- -- Joey Hess <id@joeyh.name>  Tue, 29 Oct 2019 15:13:03 -0400
-
-git-annex (7.20200220) UNRELEASED; urgency=medium
-
   * Bugfix: export --tracking (a deprecated option) set 
     annex-annex-tracking-branch, instead of annex-tracking-branch.
   * initremote, enableremote: Set remote.name.skipFetchAll when
