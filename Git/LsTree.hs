@@ -21,7 +21,6 @@ module Git.LsTree (
 import Common
 import Git
 import Git.Command
-import Git.Sha
 import Git.FilePath
 import qualified Git.Filename
 import Utility.Attoparsec
