@@ -8,7 +8,7 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
     fscks and interrupted exports, both of which will restart from the
     beginning.
   * Improved serialization of filenames and keys to the sqlite databases,
-    avoiding encoding problems.
+    avoiding encoding problems and speeding up operations on them.
   * Add some missing indexes to sqlite databases. This will speed up
     some things involving export and import remotes, and git-annex smudge.
     Microbenchmarks show around 10-25% speedup of sqlite database operations.
