@@ -96,7 +96,7 @@ all locked files in the local repository.
 
 The behavior of some commands changes in an upgraded repository:
 
-* `When `annex.largefiles` is configured, git add` will add matching 
+* When `annex.largefiles` is configured, git add` will add matching 
    files to the annex, rather than adding them directly to the git
    repository.
 
