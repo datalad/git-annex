@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: comment 4"""
+ date="2020-02-20T19:30:38Z"
+ content="""
+With approptiate locking to prevent concurrency problems. As is the case
+extensively throughout git-annex, although users seem to keep expecting
+that to not be the case no matter how many times I assure them it is.
+"""]]

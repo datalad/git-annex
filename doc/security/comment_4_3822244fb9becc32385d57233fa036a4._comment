@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-02-20T20:29:20Z"
+ content="""
+If you have a problem with some change that was made to fix a security
+hole, about the only thing you can do is file a bug report. With some
+really well thought out way to improve it ideally. I'm certianly not going
+to revert security hole fixes because some comment here complains about
+them.
+"""]]
