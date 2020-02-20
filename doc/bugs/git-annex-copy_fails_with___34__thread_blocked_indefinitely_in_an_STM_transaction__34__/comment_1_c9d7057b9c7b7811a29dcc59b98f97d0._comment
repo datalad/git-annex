@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-20T17:13:13Z"
+ content="""
+You seem to be the only one reporting this problem, and you have mentioned
+seeing it multiple times. There must be something unusual in how you are
+using git-annex.
+
+A recent similar problem that was fixed in 
+[[!commit 667d38a8f11c1ee8f256cdbd80e225c2bae06595]]
+involved having multiple files with the same key. It would be good
+to verify if the bug still occurs with the fixed git-annex, assuming you
+have a way to reproduce this bug.
+
+Without a way to reproduce it, all I can suggest is building git-annex with
+the DebugLocks build flag (`stack build --flag DebugLocks`). That will make
+it display a backtrace when the error occurs, assuming it's happening in
+one of the places where debugging is enabled. If not, we'll have to
+instrument more places in the code that use STM.
+
+Also, redirecting all the output like you have done just risks hiding
+a useful clue, so you should show the full regular console output
+ideally w/o json enabled.
+
+I have merged your other bug report about of `git annex fsck` with this one.
+"""]]

@@ -45,3 +45,6 @@ Linux ip-172-31-87-151.ec2.internal 4.14.133-113.105.amzn2.x86_64 #1 SMP Wed Jul
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> This is apparently the same problem as
+> [[git-annex-copy_fails_with___34__thread_blocked_indefinitely_in_an_STM_transaction__34__]]
+> which was filed by the same person, so merging. [[done]]. --[[Joey]]
