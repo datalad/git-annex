@@ -25,6 +25,10 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
     the remote cannot be fetched from by git, so git fetch --all
     will not try to use it.
   * Makefile: Support newer versions of cabal that use the new-build system.
+  * Fix some cases where handling of keys with extensions varied depending
+    on the locale.
+  * annex.maxextensionlength used to be the number of characters, not
+    bytes, when in a utf-8 locale. It's now always the number of bytes.
 
  -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:48:58 -0400
 

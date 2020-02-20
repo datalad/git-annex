@@ -1,6 +1,6 @@
 {- git-annex hashing backends
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,7 +24,9 @@ import Utility.Metered
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
+import qualified System.FilePath.ByteString as P
 import Data.Char
+import Data.Word
 import Control.DeepSeq
 import Control.Exception (evaluate)
 
@@ -104,22 +106,22 @@ keyValueE hash source meterupdate =
   where
 	addE k = do
 		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
-		let ext = selectExtension maxlen (keyFilename source)
+		let ext = selectExtension maxlen (toRawFilePath (keyFilename source))
 		return $ Just $ alterKey k $ \d -> d
-			{ keyName = keyName d <> encodeBS ext
+			{ keyName = keyName d <> ext
 			, keyVariety = hashKeyVariety hash (HasExt True)
 			}
 
-selectExtension :: Maybe Int -> FilePath -> String
+selectExtension :: Maybe Int -> RawFilePath -> S.ByteString
 selectExtension maxlen f
 	| null es = ""
-	| otherwise = intercalate "." ("":es)
+	| otherwise = S.intercalate "." ("":es)
   where
-	es = filter (not . null) $ reverse $
-		take 2 $ filter (all validInExtension) $
+	es = filter (not . S.null) $ reverse $
+		take 2 $ filter (S.all validInExtension) $
 		takeWhile shortenough $
-		reverse $ splitc '.' $ takeExtensions f
-	shortenough e = length e <= fromMaybe maxExtensionLen maxlen
+		reverse $ S.split (fromIntegral (ord '.')) (P.takeExtensions f)
+	shortenough e = S.length e <= fromMaybe maxExtensionLen maxlen
 
 maxExtensionLen :: Int
 maxExtensionLen = 4 -- long enough for "jpeg"
@@ -152,11 +154,13 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 keyHash :: Key -> S.ByteString
 keyHash = fst . splitKeyNameExtension
 
-validInExtension :: Char -> Bool
+validInExtension :: Word8 -> Bool
 validInExtension c
-	| isAlphaNum c = True
-	| c == '.' = True
-	| otherwise = False
+	| c >= 48 && c <= 57 = True -- numbers
+	| c >= 65 && c <= 90 = True -- A-Z
+	| c >= 97 && c <= 122 = True -- a-z
+	| c <= 127 = False -- other ascii, spaces, punctuation, control chars
+	| otherwise = True -- utf8 is allowed, also other encodings
 
 {- Upgrade keys that have the \ prefix on their hash due to a bug, or
  - that contain non-alphanumeric characters in their extension.
@@ -168,7 +172,7 @@ validInExtension c
 needsUpgrade :: Key -> Bool
 needsUpgrade key = or
 	[ "\\" `S8.isPrefixOf` keyHash key
-	, any (not . validInExtension) (decodeBS $ snd $ splitKeyNameExtension key)
+	, S.any (not . validInExtension) (snd $ splitKeyNameExtension key)
 	, not (hasExt (fromKey keyVariety key)) && keyHash key /= fromKey keyName key
 	]
 
@@ -188,7 +192,7 @@ trivialMigrate' oldkey newbackend afile maxextlen
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ alterKey oldkey $ \d -> d
 			{ keyName = keyHash oldkey 
-				<> encodeBS' (selectExtension maxextlen (fromRawFilePath file))
+				<> selectExtension maxextlen file
 			, keyVariety = newvariety
 			}
 	{- Upgrade to fix bad previous migration that created a

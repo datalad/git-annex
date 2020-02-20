@@ -871,11 +871,11 @@ Like other git commands, git-annex is configured via `.git/config`.
 
 * `annex.maxextensionlength`
 
-  Maximum length of what is considered a filename extension when adding a
-  file to a backend that preserves filename extensions. The default length
-  is 4, which allows extensions like "jpeg". The dot before the extension
-  is not counted part of its length.  At most two extensions at the end of
-  a filename will be preserved, e.g. .gz or .tar.gz .
+  Maximum length, in bytes, of what is considered a filename extension when
+  adding a file to a backend that preserves filename extensions. The
+  default length is 4, which allows extensions like "jpeg". The dot before
+  the extension is not counted part of its length. At most two extensions
+  at the end of a filename will be preserved, e.g. .gz or .tar.gz .
 
 * `annex.diskreserve`
 
