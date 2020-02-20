@@ -7,3 +7,5 @@ Also, the error messages that *are* written to stderr are not always in json for
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex has been an extremely flexible and versatile tool.  So far I've been able to adapt to most usage scenarios I've encountered.
+
+> [[wontfix|done]] --[[Joey]]
