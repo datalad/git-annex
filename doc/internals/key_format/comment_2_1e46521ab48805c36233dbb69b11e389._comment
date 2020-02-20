@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-02-20T20:12:24Z"
+ content="""
+Like git, git-annex tries to be character set agnostic when it comes to
+filenames, including key filenames.
+
+It's certianly possible for a key to contain non-ascii bytes in its name,
+and an extension containing unicode or some other non-ascii value is one
+way that can in fact happen.
+
+(Looks like, in a C locale, ".extü" is 5 chars long, so is considered too
+long to be an extension, while in a unicode locale, it's 4 chars long, so
+is treated as an extension.)
+"""]]
