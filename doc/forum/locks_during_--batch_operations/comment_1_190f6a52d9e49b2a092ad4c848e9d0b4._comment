@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-20T21:33:35Z"
+ content="""
+No, there are not.
+
+I'd like to turn this question around. You, and others, seem to have low
+expectations of git-annex's locking and handling of concurrency. Is there a
+change to the documentation somewhere that would convey that git-annex
+handles multiple concurrent operations, without stepping on each other's
+toes, with extensive fine-grained locking at both the thread and file level?
+
+Because I keep anwering what seems like the same question, over and over.
+And I don't understand why people seem to expect the worst, it's kind of a
+downer and it's tedious to keep having to reassure people. Is it
+something I did? Is it a general expectation that concurrency is hard and
+so everything will get it wrong? Is it specifically git certianly having
+poor locking in several places notably around the index and assuming that
+git-annex will inherit it?
+"""]]
