@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="backends vs special remotes"
+ date="2020-02-20T19:23:04Z"
+ content="""
+@annex2384 \"Backend which doesn't store files at all?\" -- are you sure you're thinking of backends and not of [[special_remotes]]?  Backends don't \"store files\", special remotes do.  Backends create keys identifying specific contents.
+
+Not sure I fully understand your use case, but you could write an [[external special remote|special_remotes/external]] that, for a given git-annex key, stores \"the location of possible local copies of the file\" -- e.g. using `SETSTATE` or `SETURIPRESENT`.
+"""]]
