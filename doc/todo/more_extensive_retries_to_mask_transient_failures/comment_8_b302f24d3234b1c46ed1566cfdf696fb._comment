@@ -1,0 +1,83 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-02-20T15:43:59Z"
+ content="""
+While separate processes for would of course work, it would add quite a
+lot of overhead. Especially in places like Annex.Queue where multiple
+threads can currently cooperate in building up something that gets flushed
+to disk together, and separate processes would need to do more work.
+
+Of course, it's also entirely possible to write your own program that runs
+concurrent git-annex processes and kills them if they seem stuck or
+whatever.
+
+----
+
+Thinking some more about what would be necessary to make worker threads
+cancellable, they would first of all need to use async whenever they fork
+any threads of their own. That would be fairly easy to arrange for in the
+git-annex code, although it's currently not the case. (Remote.Git at least
+forks a thread w/o using async.)
+
+If a special remote uses a library that itself uses worker threads, that
+library would also need to use async. But I am pretty sure that the
+libraries in question (S3 and DAV) don't spawn off threads. Also, it would
+be an easy sell in the haskell community that any such library that
+spawns off its own threads use async or something similar that causes
+cancelation of an API call to cancel the threads.
+
+That leaves processes, and it occurs to me that there all at least 3
+different types of processes a remote might run.
+
+1. Interactive processes. Eg, ssh prompting for a password, or
+   git-credential. Killing such a process in the middle of user input
+   or after it's output a prompt would not be good. Also, being blocked
+   by a prompt is not the same as having stalled a download.
+
+   Locking already prevents more than one thread from running
+   such an interactive process; the actions are run inside `prompt`.
+   So, something would need to be done to prevent killing threads that
+   are in `prompt`.
+
+2. Processes in worker pools shared amoung threads of the remote.
+   The ExternalState pool is an example of this, the P2PSshConnectionPool
+   is another.
+
+   Killing a thread needs to kill whatever external process
+   it's currently using, but  on the other hand, it could have started an
+   external process that's idle, or that is now being used by some other
+   thread, and that process should not be killed.
+
+   I think these all work the same: A process is removed from the pool
+   while it's being used, and then gets put back into the pool once
+   it's idle again. So, register the pid as belonging to a thread when
+   the thread removes it from the pool, and deregister it when the thread
+   returns it.
+
+3. All the rest. For these what's needed is some way to register
+   the pid of the process that a thread starts as belonging to the thread,
+   so that on killing the thread that pid can also be killed.
+   
+   Starting the process and registering it needs to be done 
+   in an exception-safe way; if a cancelation exception is thrown
+   as the process is started and before registering its pid, 
+   the process needs to be killed.
+
+   This seems like it would need wrappers for everything in
+   Utility.Process, to gather and register the pids.
+
+   It might be that a remote runs a child thread using withAsync, and
+   then that thread starts a process. So the process would be
+   registered as belonging to the child thread. Then, if the parent
+   thread gets killed, the signal would propigate to kill the child thread
+   due to async being used. Resulting in the process being left running,
+   because it was not registered as belonging to the parent process.
+   This is difficult to solve, because the child thread does not know what
+   thread is its parent.
+
+Wow, this looks like a lot of work, and it would be fragile -- 
+any mistake would not be noticed until git-annex tried to kill a worker
+thread, and left a process behind -- and the consequence of a mistake
+could potentially be a (slowish) fork bomb.
+"""]]

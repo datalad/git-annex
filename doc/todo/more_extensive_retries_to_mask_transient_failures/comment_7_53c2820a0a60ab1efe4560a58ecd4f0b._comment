@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: retries due to locked index file"""
+ date="2020-02-20T15:32:11Z"
+ content="""
+If you have a bug where concurrent adds fail due to some locking problem,
+please file a bug report. This is not the correct place to discuss that
+problem. 
+
+[So far all you've shown is that a git index file lock,
+which could be a stale lock or a lock due to some git operation not under
+the control of git-annex, causes git annex add to fail. Since git-annex
+takes it own lock before any operation that touches the index file,
+I'm quite confident that concurrent git-annex adds do not interfere with
+one-another. See Annex.Queue which uses withExclusiveLock when flushing
+the queue.]
+"""]]
