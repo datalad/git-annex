@@ -24,6 +24,7 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
   * initremote, enableremote: Set remote.name.skipFetchAll when
     the remote cannot be fetched from by git, so git fetch --all
     will not try to use it.
+  * Makefile: Support newer versions of cabal that use the new-build system.
 
  -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:48:58 -0400
 

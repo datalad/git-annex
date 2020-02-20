@@ -44,10 +44,14 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 
 git-annex: tmp/configure-stamp
 	$(BUILDER) build $(BUILDERCOMMONOPTIONS) $(BUILDEROPTIONS)
-	if [ "$(BUILDER)" = stack ]; then \
+	@if [ "$(BUILDER)" = stack ]; then \
 		ln -sf $$(stack path $(BUILDERCOMMONOPTIONS) --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
-		ln -sf dist/build/git-annex/git-annex git-annex; \
+		if [ -d dist-newstyle ]; then \
+			ln -sf $$(find dist-newstyle/ -executable -type f |grep 'git-annex$$') git-annex; \
+		else \
+			ln -sf dist/build/git-annex/git-annex git-annex; \
+		fi; \
 	fi
 
 git-annex-shell: git-annex
