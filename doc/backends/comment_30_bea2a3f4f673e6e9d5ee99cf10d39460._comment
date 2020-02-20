@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="annex2384@290036d126d86bcec28ee2f2ead549de1f59e90e"
+ nickname="annex2384"
+ avatar="http://cdn.libravatar.org/avatar/ad36fdc55abd8b9913b774fcd0177709"
+ subject="Backend which doesn't stoee files at all?"
+ date="2020-02-20T14:52:21Z"
+ content="""
+I'd like to be able to have a \"thin\" repo on a FAT32 filesystem. Since this precludes hardlinks, is there a way to make a backend that just keeps track of the file's hash so we can detect when it changes? This would obviously need to rely on having copies in other repos for backup purposes. I'm thinking a mode that behaves more like Unison, which just used its fingerprint file to detect changes that need to be synced.
+
+There would still be a file in the backend named by SHA256, but instead of storing the content it would store the location of possible local copies of the file. This would obviously need to use a smudge filter. It could be the default backend for thin repos on filesystems that don't support hardlinks.
+
+"""]]
