@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: representing unlocked state of files"""
+ date="2020-02-20T20:23:41Z"
+ content="""
+Starting with "/annex/objects" is not enough, the remainder of
+the first line of the file has to parse as a git-annex key
+for it to be a pointer file.
+"""]]
