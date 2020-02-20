@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="titaniumfiles@5227364ee3e2f9207bc36b6ebb281fc7af6d3c16"
+ nickname="titaniumfiles"
+ avatar="http://cdn.libravatar.org/avatar/067eaf551eb18de259f4d88966622326"
+ subject="comment 4"
+ date="2020-02-20T19:34:24Z"
+ content="""
+Sorry for the delay; basically, since I'm using git submodules inside the annex repo as well, while I might want to exclude certain files from my submodules, I still want them in the root annex repository; so I want to read all exclusions from, at the very least, the global `~/.gitignore` (which I *think* also affects `git annex`?) so that when adding to the annex, I'd still have the excluded files when cloning somewhere else.
+
+As a side question, does `git annex` honor `.gitignores` in sub-directories as well, for excluding files in said sub-directories?
+"""]]
