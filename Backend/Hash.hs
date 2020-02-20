@@ -156,9 +156,7 @@ keyHash = fst . splitKeyNameExtension
 
 validInExtension :: Word8 -> Bool
 validInExtension c
-	| c >= 48 && c <= 57 = True -- numbers
-	| c >= 65 && c <= 90 = True -- A-Z
-	| c >= 97 && c <= 122 = True -- a-z
+	| isAlphaNum (chr (fromIntegral c)) = True
 	| c <= 127 = False -- other ascii, spaces, punctuation, control chars
 	| otherwise = True -- utf8 is allowed, also other encodings
 
