@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="locking granularity"
+ date="2020-02-20T22:35:33Z"
+ content="""
+Joey,
+
+I very much value all the work/thought you've put into making git-annex robust, starting with choosing Haskell.
+
+As to why the question keeps coming up...
+
+I often find myself wanting to use git-annex in what seems to me non-standard ways, so it's possible the usage pattern wasn't planned/optimized/tested for.
+E.g. with `git-annex-get --batch` the typical usage would be to feed a large batch of keys at once, and to not have other git-annex processes running at the time.
+The git-annex test suite [[does not test under concurrency|todo/add_tests_under_concurrency]].  I've run into intermittent failures with concurrent operations, that
+were fixed by disabling concurrency.  I'll try at some point to isolate reproducible examples of these failures, but they do happen quite consistently on my system.
+
+I understand that git-annex is parallelism-safe in that parallelism does not cause data loss.  But things short of data loss, like intermittent failures/deadlocks, are something I still need to work around, when using git-annex as a building block in larger automated workflows.
+
+"""]]
