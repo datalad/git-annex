@@ -1,0 +1,5 @@
+Hello!
+
+&nbsp;&nbsp;&nbsp;&nbsp; Is it possible to configure `annex.largefiles` to include or exclude any patterns from a file?
+
+Thank you kindly for the help!

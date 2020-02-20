@@ -1,0 +1,8 @@
+It would make git-annex much simpler to use if annexed files could be transparently auto-fetched when programs try to read them, without requiring an explicit `git-annex-get`.
+
+What approaches have people tried to make this work, and what were the results / takeaways?
+
+Some related pages: [[news/sharebox_a_FUSE_filesystem_for_git-annex]]; [[todo/union_mounting]]; [[using fanotify|forum/expire_files__44___move_to_other_hosts]] .
+
+My attempt at a FUSE filesystem that calls `git-annex-get` as needed: [here](https://github.com/broadinstitute/viral-ngs/blob/is-dx-benchmarks/tools/git-annex-remotes/git-annex-on-demand.py).  However, it gets an annexed file as soon as a symlink to it is read, which can also happen when just listing a directory; it also only works with locked annexed files.
+
