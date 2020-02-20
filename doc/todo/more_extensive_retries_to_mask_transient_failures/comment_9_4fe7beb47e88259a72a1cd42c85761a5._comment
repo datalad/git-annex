@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-02-20T18:31:59Z"
+ content="""
+Hmm, the reason I'm not worried about leaking open FDs
+when killing threads is because `bracket` is generally used 
+when opening files, with a cleanup action that closes them.
+(when not doing lazy IO and letting the GC close the file once the value
+goes out of scope). So when a thread is canceled, the cleanup actions
+automatically run.
+
+So what's needed is a way to use `bracket` for the non-interactive,
+non-pooled processes.
+
+Currently processes are run by things like `safeSystem`
+and `readProcess`, neither of which use a bracketing operation.
+But they could use a bracketOnError with an cleanup action that
+is passed the pid and kill -9's it.
+
+That avoids the registration and the child thread problem.
+"""]]
