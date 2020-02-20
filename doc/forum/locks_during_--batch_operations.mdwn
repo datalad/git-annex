@@ -1,0 +1,3 @@
+Are there locks that git-annex holds for the entirety of e.g. `git-annex-get --batch`?
+
+As part of [[forum/auto-fetching_annexed_files_on_open__40____41__]], I'd like to keep one or more long-running `git-annex-get --batch` processes and pipe the keys I need fetched as needed, rather than start a new git-annex process for each key.   But, this only makes sense if, while waiting to read more keys from stdin, git-annex is no holding locks that could interfere with other git-annex calls.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="running parallel commands with xargs"
+ date="2020-02-20T20:48:33Z"
+ content="""
+\"How would running parallel commands with xargs be better than the current -J\" -- it would allow writing wrappers that kill/retry stuck git-annex process trees, as suggested [[here|https://git-annex.branchable.com/todo/more_extensive_retries_to_mask_transient_failures/#comment-209f8a8c38e63fb3a704e1282cb269c7]].
+"""]]
