@@ -53,7 +53,8 @@ different types of processes a remote might run.
    while it's being used, and then gets put back into the pool once
    it's idle again. So, register the pid as belonging to a thread when
    the thread removes it from the pool, and deregister it when the thread
-   returns it.
+   returns it. If the thread gets killed, don't add it back to the pool,
+   but instead kill the process.
 
 3. All the rest. For these what's needed is some way to register
    the pid of the process that a thread starts as belonging to the thread,
