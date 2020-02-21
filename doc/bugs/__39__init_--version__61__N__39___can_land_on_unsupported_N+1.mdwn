@@ -1,0 +1,51 @@
+I expected `git annex init --version=N`, where N is a version in
+`autoUpgradeableVersions`, to auto-upgrade in a way that lands on a
+supported version.  For example, with a git-annex built from a recent
+master (835a214de), `supportedVersions` contains only 8, and I
+expected
+
+    git init && git annex init --version=6
+
+to result in a v8 repo.  Instead it lands on v7:
+
+    git config annex.version # => 7
+
+Shouldn't the auto-upgrade mapping by `init` be carried all the way
+through until a supported version is reached?
+
+I was able to get the behavior I expected with the change below.
+
+[[!format diff """
+diff --git a/Command/Init.hs b/Command/Init.hs
+index db6cb14fb..ad7ed8962 100644
+--- a/Command/Init.hs
++++ b/Command/Init.hs
+@@ -36,11 +36,15 @@ optParser desc = InitOptions
+ parseRepoVersion :: Monad m => String -> m RepoVersion
+ parseRepoVersion s = case RepoVersion <$> readish s of
+ 	Nothing -> fail $ "version parse error"
+-	Just v
+-		| v `elem` supportedVersions -> return v
+-		| otherwise -> case M.lookup v autoUpgradeableVersions of
+-			Just v' -> return v'
+-			Nothing -> fail $ s ++ " is not a currently supported repository version"
++	Just v -> case check v of
++		Nothing -> fail $ s ++ " is not a currently supported repository version"
++		Just supported -> return supported
++  where
++	check v'
++		| v' `elem` supportedVersions = Just v'
++		| otherwise = case M.lookup v' autoUpgradeableVersions of
++			Just v'' -> check v''
++			Nothing -> Nothing
+ 
+ seek :: InitOptions -> CommandSeek
+ seek = commandAction . start
+"""]]
+
+I'm quite confident that my attempt above is not pretty, but if I got
+lucky and it's passable Haskell, I'd be happy to send a patch.
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
