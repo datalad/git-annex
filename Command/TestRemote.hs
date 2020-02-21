@@ -322,8 +322,8 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		Right (rand, _) -> liftIO $ B.hPut h rand
 	liftIO $ hClose h
 	let ks = KeySource
-		{ keyFilename = f
-		, contentLocation = f
+		{ keyFilename = toRawFilePath f
+		, contentLocation = toRawFilePath f
 		, inodeCache = Nothing
 		}
 	k <- fromMaybe (error "failed to generate random key")

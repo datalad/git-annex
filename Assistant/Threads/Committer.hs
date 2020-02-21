@@ -286,9 +286,9 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	  	ks = keySource ld
 		doadd = sanitycheck ks $ do
 			(mkey, _mcache) <- liftAnnex $ do
-				showStart "add" $ toRawFilePath $ keyFilename ks
+				showStart "add" $ keyFilename ks
 				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
-			maybe (failedingest change) (done change $ keyFilename ks) mkey
+			maybe (failedingest change) (done change $ fromRawFilePath $ keyFilename ks) mkey
 	add _ _ = return Nothing
 
 	{- Avoid overhead of re-injesting a renamed unlocked file, by
@@ -320,7 +320,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	fastadd change key = do
 		let source = keySource $ lockedDown change
 		liftAnnex $ finishIngestUnlocked key source
-		done change (keyFilename source) key
+		done change (fromRawFilePath $ keyFilename source) key
 
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
@@ -347,14 +347,14 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	 - and is still a hard link to its contentLocation,
 	 - before ingesting it. -}
 	sanitycheck keysource a = do
-		fs <- liftIO $ getSymbolicLinkStatus $ keyFilename keysource
-		ks <- liftIO $ getSymbolicLinkStatus $ contentLocation keysource
+		fs <- liftIO $ getSymbolicLinkStatus $ fromRawFilePath $ keyFilename keysource
+		ks <- liftIO $ getSymbolicLinkStatus $ fromRawFilePath $ contentLocation keysource
 		if deviceID ks == deviceID fs && fileID ks == fileID fs
 			then a
 			else do
 				-- remove the hard link
 				when (contentLocation keysource /= keyFilename keysource) $
-					void $ liftIO $ tryIO $ removeFile $ contentLocation keysource
+					void $ liftIO $ tryIO $ removeFile $ fromRawFilePath $ contentLocation keysource
 				return Nothing
 
 	{- Shown an alert while performing an action to add a file or
@@ -400,7 +400,7 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 			else return checked
   where
 	check openfiles change@(InProcessAddChange { lockedDown = ld })
-		| S.member (contentLocation (keySource ld)) openfiles = Left change
+		| S.member (fromRawFilePath (contentLocation (keySource ld))) openfiles = Left change
 	check _ change = Right change
 
 	mkinprocess (c, Just ld) = Just InProcessAddChange
@@ -411,11 +411,11 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 
 	canceladd (InProcessAddChange { lockedDown = ld }) = do
 		let ks = keySource ld
-		warning $ keyFilename ks
+		warning $ fromRawFilePath (keyFilename ks)
 			++ " still has writers, not adding"
 		-- remove the hard link
 		when (contentLocation ks /= keyFilename ks) $
-			void $ liftIO $ tryIO $ removeFile $ contentLocation ks
+			void $ liftIO $ tryIO $ removeFile $ fromRawFilePath $ contentLocation ks
 	canceladd _ = noop
 
 	openwrite (_file, mode, _pid)
@@ -434,7 +434,8 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 	 -}
 	findopenfiles keysources = ifM crippledFileSystem
 		( liftIO $ do
-			let segments = segmentXargsUnordered $ map keyFilename keysources
+			let segments = segmentXargsUnordered $
+				map (fromRawFilePath . keyFilename) keysources
 			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
 		, liftIO $ Lsof.queryDir lockdowndir
 		)

@@ -584,7 +584,7 @@ getKey b f = fromJust <$> annexeval go
   where
 	go = Types.Backend.getKey b ks Utility.Metered.nullMeterUpdate
 	ks = Types.KeySource.KeySource
-		{ Types.KeySource.keyFilename = f
-		, Types.KeySource.contentLocation = f
+		{ Types.KeySource.keyFilename = toRawFilePath f
+		, Types.KeySource.contentLocation = toRawFilePath f
 		, Types.KeySource.inodeCache = Nothing
 		}

@@ -20,8 +20,11 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 		(batchable run (pure ()))
 
 run :: () -> String -> Annex Bool
-run _ file = genKey (KeySource file file Nothing) nullMeterUpdate Nothing >>= \case
+run _ file = genKey ks nullMeterUpdate Nothing >>= \case
 	Just (k, _) -> do
 		liftIO $ putStrLn $ serializeKey k
 		return True
 	Nothing -> return False
+  where
+	ks = KeySource file' file' Nothing
+	file' = toRawFilePath file

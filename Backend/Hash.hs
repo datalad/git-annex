@@ -90,7 +90,7 @@ hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> MeterUpdate -> Annex (Maybe Key)
 keyValue hash source meterupdate = do
-	let file = contentLocation source
+	let file = fromRawFilePath (contentLocation source)
 	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file meterupdate
 	return $ Just $ mkKey $ \k -> k
@@ -106,7 +106,7 @@ keyValueE hash source meterupdate =
   where
 	addE k = do
 		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
-		let ext = selectExtension maxlen (toRawFilePath (keyFilename source))
+		let ext = selectExtension maxlen (keyFilename source)
 		return $ Just $ alterKey k $ \d -> d
 			{ keyName = keyName d <> ext
 			, keyVariety = hashKeyVariety hash (HasExt True)

@@ -367,8 +367,8 @@ finishDownloadWith :: AddUnlockedMatcher -> FilePath -> UUID -> URLString -> Fil
 finishDownloadWith addunlockedmatcher tmp u url file = do
 	backend <- chooseBackend file
 	let source = KeySource
-		{ keyFilename = file
-		, contentLocation = tmp
+		{ keyFilename = toRawFilePath file
+		, contentLocation = toRawFilePath tmp
 		, inodeCache = Nothing
 		}
 	genKey source nullMeterUpdate backend >>= \case

@@ -369,8 +369,8 @@ downloadImport remote importtreeconfig importablecontents = do
 		f <- fromRepo $ fromTopFilePath $ locworktreefilename loc
 		backend <- chooseBackend (fromRawFilePath f)
 		let ks = KeySource
-			{ keyFilename = (fromRawFilePath f)
-			, contentLocation = tmpfile
+			{ keyFilename = f
+			, contentLocation = toRawFilePath tmpfile
 			, inodeCache = Nothing
 			}
 		fmap fst <$> genKey ks nullMeterUpdate backend

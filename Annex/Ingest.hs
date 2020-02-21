@@ -49,6 +49,7 @@ import Annex.AdjustedBranch
 import Annex.FileMatcher
 
 import Control.Exception (IOException)
+import qualified Utility.RawFilePath as R
 
 data LockedDown = LockedDown
 	{ lockDownConfig :: LockDownConfig
@@ -91,13 +92,15 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 		Just tmpdir -> withhardlink tmpdir
 	)
   where
+	file' = toRawFilePath file
+
 	nohardlink = withTSDelta $ liftIO . nohardlink'
 
 	nohardlink' delta = do
 		cache <- genInodeCache (toRawFilePath file) delta
 		return $ LockedDown cfg $ KeySource
-			{ keyFilename = file
-			, contentLocation = file
+			{ keyFilename = file'
+			, contentLocation = file'
 			, inodeCache = cache
 			}
 	
@@ -116,8 +119,8 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 		createLink file tmpfile
 		cache <- genInodeCache (toRawFilePath tmpfile) delta
 		return $ LockedDown cfg $ KeySource
-			{ keyFilename = file
-			, contentLocation = tmpfile
+			{ keyFilename = file'
+			, contentLocation = toRawFilePath tmpfile
 			, inodeCache = cache
 			}
 
@@ -135,10 +138,11 @@ ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
 		Just k -> do
 			let f = keyFilename source
 			if lockingFile cfg
-				then addLink f k mic
+				then addLink (fromRawFilePath f) k mic
 				else do
-					mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus (contentLocation source)
-					stagePointerFile (toRawFilePath f) mode =<< hashPointerFile k
+					mode <- liftIO $ catchMaybeIO $
+						fileMode <$> R.getFileStatus (contentLocation source)
+					stagePointerFile f mode =<< hashPointerFile k
 			return (Just k)
 
 {- Ingests a locked down file into the annex. Does not update the working
@@ -151,12 +155,15 @@ ingest' _ _ Nothing _ _ = return (Nothing, Nothing)
 ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage = withTSDelta $ \delta -> do
 	k <- case mk of
 		Nothing -> do
-			backend <- maybe (chooseBackend $ keyFilename source) (return . Just) preferredbackend
+			backend <- maybe
+				(chooseBackend $ fromRawFilePath $ keyFilename source)
+				(return . Just)
+				preferredbackend
 			fmap fst <$> genKey source meterupdate backend
 		Just k -> return (Just k)
 	let src = contentLocation source
-	ms <- liftIO $ catchMaybeIO $ getFileStatus src
-	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta src) ms
+	ms <- liftIO $ catchMaybeIO $ R.getFileStatus src
+	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta (fromRawFilePath src)) ms
 	case (mcache, inodeCache source) of
 		(_, Nothing) -> go k mcache ms
 		(Just newc, Just c) | compareStrong c newc -> go k mcache ms
@@ -168,12 +175,12 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	go _ _ _ = failure "failed to generate a key"
 
 	golocked key mcache s =
-		tryNonAsync (moveAnnex key $ contentLocation source) >>= \case
+		tryNonAsync (moveAnnex key $ fromRawFilePath $ contentLocation source) >>= \case
 			Right True -> do
 				populateAssociatedFiles key source restage
 				success key mcache s		
 			Right False -> giveup "failed to add content to annex"
-			Left e -> restoreFile (keyFilename source) key e
+			Left e -> restoreFile (fromRawFilePath $ keyFilename source) key e
 
 	gounlocked key (Just cache) s = do
 		-- Remove temp directory hard link first because
@@ -181,7 +188,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		-- already has a hard link.
 		cleanCruft source
 		cleanOldKeys (keyFilename source) key
-		linkToAnnex key (keyFilename source) (Just cache) >>= \case
+		linkToAnnex key (fromRawFilePath $ keyFilename source) (Just cache) >>= \case
 			LinkAnnexFailed -> failure "failed to link to annex"
 			_ -> do
 				finishIngestUnlocked' key source restage
@@ -189,11 +196,11 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	gounlocked _ _ _ = failure "failed statting file"
 
 	success k mcache s = do
-		genMetaData k (toRawFilePath (keyFilename source)) s
+		genMetaData k (keyFilename source) s
 		return (Just k, mcache)
 
 	failure msg = do
-		warning $ keyFilename source ++ " " ++ msg
+		warning $ fromRawFilePath (keyFilename source) ++ " " ++ msg
 		cleanCruft source
 		return (Nothing, Nothing)
 
@@ -205,7 +212,7 @@ finishIngestUnlocked key source = do
 finishIngestUnlocked' :: Key -> KeySource -> Restage -> Annex ()
 finishIngestUnlocked' key source restage = do
 	Database.Keys.addAssociatedFile key
-		=<< inRepo (toTopFilePath (toRawFilePath (keyFilename source)))
+		=<< inRepo (toTopFilePath (keyFilename source))
 	populateAssociatedFiles key source restage
 
 {- Copy to any other locations using the same key. -}
@@ -214,22 +221,22 @@ populateAssociatedFiles key source restage = do
 	obj <- calcRepo (gitAnnexLocation key)
 	g <- Annex.gitRepo
 	ingestedf <- flip fromTopFilePath g
-		<$> inRepo (toTopFilePath (toRawFilePath (keyFilename source)))
+		<$> inRepo (toTopFilePath (keyFilename source))
 	afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
 	forM_ (filter (/= ingestedf) afs) $
 		populatePointerFile restage key obj
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $
-	liftIO $ nukeFile $ contentLocation source
+	liftIO $ nukeFile $ fromRawFilePath $ contentLocation source
 
 -- If a worktree file was was hard linked to an annex object before,
 -- modifying the file would have caused the object to have the wrong
 -- content. Clean up from that.
-cleanOldKeys :: FilePath -> Key -> Annex ()
+cleanOldKeys :: RawFilePath -> Key -> Annex ()
 cleanOldKeys file newkey = do
 	g <- Annex.gitRepo
-	topf <- inRepo (toTopFilePath (toRawFilePath file))
+	topf <- inRepo (toTopFilePath file)
 	ingestedf <- fromRepo $ fromTopFilePath topf
 	oldkeys <- filter (/= newkey)
 		<$> Database.Keys.getAssociatedKey topf

@@ -85,8 +85,8 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 	genkey Nothing = do
 		content <- calcRepo $ gitAnnexLocation oldkey
 		let source = KeySource
-			{ keyFilename = fromRawFilePath file
-			, contentLocation = fromRawFilePath  content
+			{ keyFilename = file
+			, contentLocation = content
 			, inodeCache = Nothing
 			}
 		v <- genKey source nullMeterUpdate (Just newbackend)

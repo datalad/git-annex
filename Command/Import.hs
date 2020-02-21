@@ -118,11 +118,13 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 startLocal :: AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
-		( starting "import" (ActionItemWorkTreeFile (toRawFilePath destfile))
+		( starting "import" (ActionItemWorkTreeFile destfile')
 			pickaction
 		, stop
 		)
   where
+	destfile' = toRawFilePath destfile
+
 	deletedup k = do
 		showNote $ "duplicate of " ++ serializeKey k
 		verifyExisting k destfile
@@ -182,7 +184,7 @@ startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 		-- weakly the same as the origianlly locked down file's
 		-- inode cache. (Since the file may have been copied,
 		-- its inodes may not be the same.)
-		newcache <- withTSDelta $ liftIO . genInodeCache (toRawFilePath destfile)
+		newcache <- withTSDelta $ liftIO . genInodeCache destfile'
 		let unchanged = case (newcache, inodeCache (keySource ld)) of
 			(_, Nothing) -> True
 			(Just newc, Just c) | compareWeak c newc -> True
@@ -193,8 +195,8 @@ startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 		-- is what will be ingested.
 		let ld' = ld
 			{ keySource = KeySource
-				{ keyFilename = destfile
-				, contentLocation = destfile
+				{ keyFilename = destfile'
+				, contentLocation = destfile'
 				, inodeCache = newcache
 				}
 			}
@@ -203,7 +205,7 @@ startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)
-			, next $ Command.Add.addSmall $ toRawFilePath destfile 
+			, next $ Command.Add.addSmall destfile'
 			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ destfile ++ " " ++ why

@@ -16,6 +16,7 @@ import Git.FilePath
 import Utility.Metered
 
 import qualified Data.ByteString.Char8 as S8
+import qualified Utility.RawFilePath as R
 
 backends :: [Backend]
 backends = [backend]
@@ -36,10 +37,10 @@ backend = Backend
 keyValue :: KeySource -> MeterUpdate -> Annex (Maybe Key)
 keyValue source _ = do
 	let f = contentLocation source
-	stat <- liftIO $ getFileStatus f
-	sz <- liftIO $ getFileSize' f stat
+	stat <- liftIO $ R.getFileStatus f
+	sz <- liftIO $ getFileSize' (fromRawFilePath f) stat
 	relf <- fromRawFilePath . getTopFilePath
-		<$> inRepo (toTopFilePath $ toRawFilePath $ keyFilename source)
+		<$> inRepo (toTopFilePath $ keyFilename source)
 	return $ Just $ mkKey $ \k -> k
 		{ keyName = genKeyName relf
 		, keyVariety = WORMKey
