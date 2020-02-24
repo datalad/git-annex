@@ -1,0 +1,3 @@
+To help understand hard-to-replicate failures, add an option to always generate a debug log but to erase it as a final step if an operation succeeds.  If an operation fails, keep the log and print a message pointing to it.
+
+Maybe, save such logs somewhere under .git/annex and have a command to upload them (over https and encrypted with @joeyh's key?)  to some server where they can be examined.
