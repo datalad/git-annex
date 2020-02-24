@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="Interaction with config annex.synccontent"
+ date="2020-02-24T21:34:50Z"
+ content="""
+So far, the new `--only-annex` option (and related `annex.synconlyannex` set to `true` config setting) are working beautifully for me, thanks!
+
+As described previously, `--only-annex` now implies `--content`, but this can be overridden with something like `git annex sync --only-annex --no-content` (and this works successfully for me). I wanted to configure it so it will *always* not sync content. For example, when on a new clone, running `git annex sync --only-annex` without first configuring [wanted](https://git-annex.branchable.com/git-annex-wanted/)/[group assignments](https://git-annex.branchable.com/preferred_content/standard_groups/)/etc can result in a lot of files moving around on a big repository, which I'd rather not interrupt brusquely with `C-c`.
+
+I thought that perhaps setting `annex.synccontent` to `false` might achieve this, but from some experimenting it doesn't: doing `git annex config --set annex.synccontent false` and then `git annex sync --only-annex` will still sync content). This isn't a huge surprise, since it's not a documented feature for [git annex config](https://git-annex.branchable.com/git-annex-config/) which only described what setting `annex.synccontent` to `true` will accomplish (and doesn't mention what setting it to `false` would do). However, it seems like it would be in the spirit of letting users override the `--only-annex` implies `--content` option, if desired.
+
+Apologies if this is better to discuss over at the [git annex config](https://git-annex.branchable.com/git-annex-config/) page, or if @joeyh doesn't want to implement it at all, but just wanted to suggest it.
+"""]]
