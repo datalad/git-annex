@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-24T17:13:45Z"
+ content="""
+Your patch is perfectly fine haskell code.
+
+But, looking at it, the problem is deeper than init --version.
+Running git-annex in a v3 repo produces a v5 repo,
+then running git-annex again produces a v6 repo,
+then v7, then v8.
+
+So the problem is really that autoUpgradeableVersions
+should map everything to latestVersion. At least currently,
+since all versions should be upgraded to v8.
+
+(Really it could just be a list of versions that all
+are assumed to upgrade to latestVersion, but I left it a map
+in case at some point there are two concurrent version
+tracks without an autoupgrade between them.)
+
+Anyway, attach a git format-patch next time so I can git am it. :)
+"""]]

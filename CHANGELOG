@@ -29,6 +29,9 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
     on the locale.
   * annex.maxextensionlength used to be the number of characters, not
     bytes, when in a utf-8 locale. It's now always the number of bytes.
+  * init --version: When the version given is one that automatically
+    upgrades to a newer version, use the newer version instead.
+  * Auto upgrades from older repo versions, like v5, now jump right to v8.
 
  -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:48:58 -0400
 

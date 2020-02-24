@@ -49,3 +49,5 @@ lucky and it's passable Haskell, I'd be happy to send a patch.
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
