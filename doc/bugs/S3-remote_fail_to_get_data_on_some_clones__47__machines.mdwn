@@ -1,0 +1,67 @@
+### Please describe the problem.
+
+I created a dataset with datalad and added multiple remotes/buckets on a private S3-like server (minio).
+On the HPC I am able to get the data and push it.
+On another machine, I cannot get the data, here are the debug info.
+
+
+$ git-annex get -v -d --from s3unf.phantom.anat.mri   sub-01/ses-ana001/anat/sub-01_ses-ana001_T1w.nii.gz 
+[2020-02-21 16:20:09.399086] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-02-21 16:20:09.405552] process done ExitSuccess
+[2020-02-21 16:20:09.405884] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-02-21 16:20:09.411446] process done ExitSuccess
+[2020-02-21 16:20:09.413223] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..050f99f2712d25b581b58a3adc6af83b8d5345b0","--pretty=%H","-n1"]
+[2020-02-21 16:20:09.419815] process done ExitSuccess
+[2020-02-21 16:20:09.420835] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-02-21 16:20:09.421976] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-02-21 16:20:09.456813] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-02-21 16:20:09.462354] process done ExitSuccess
+[2020-02-21 16:20:09.462577] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-02-21 16:20:09.468639] process done ExitSuccess
+[2020-02-21 16:20:09.468923] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","sub-01/ses-ana001/anat/sub-01_ses-ana001_T1w.nii.gz"]
+get sub-01/ses-ana001/anat/sub-01_ses-ana001_T1w.nii.gz (from s3unf.phantom.anat.mri...) 
+[2020-02-21 16:20:09.585446] String to sign: "GET\n\n\nFri, 21 Feb 2020 21:20:09 GMT\n/phantom.anat.mri/SHA256E-s28509481-S1073741824-C1--7eb345c88a120d934cb390ad0385149cb6ae8540a2ed6689251cba22b7832306.nii.gz"
+[2020-02-21 16:20:09.585844] Host: "<redacted_hostname>"
+[2020-02-21 16:20:09.586001] Path: "/phantom.anat.mri/SHA256E-s28509481-S1073741824-C1--7eb345c88a120d934cb390ad0385149cb6ae8540a2ed6689251cba22b7832306.nii.gz"
+[2020-02-21 16:20:09.586261] Query string: ""
+[2020-02-21 16:20:09.586423] Header: [("Date","Fri, 21 Feb 2020 21:20:09 GMT"),("Authorization","AWS manager:k/aaaaaaaaaaaaaaaaaaaaaa=")]
+[2020-02-21 16:20:09.593542] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+[2020-02-21 16:20:09.594433] String to sign: "GET\n\n\nFri, 21 Feb 2020 21:20:09 GMT\n/phantom.anat.mri/SHA256E-s28509481--7eb345c88a120d934cb390ad0385149cb6ae8540a2ed6689251cba22b7832306.nii.gz"
+[2020-02-21 16:20:09.594667] Host: "<redacted_hostname>"
+[2020-02-21 16:20:09.594819] Path: "/phantom.anat.mri/SHA256E-s28509481--7eb345c88a120d934cb390ad0385149cb6ae8540a2ed6689251cba22b7832306.nii.gz"
+[2020-02-21 16:20:09.595006] Query string: ""
+[2020-02-21 16:20:09.595153] Header: [("Date","Fri, 21 Feb 2020 21:20:09 GMT"),("Authorization","AWS manager:wwwwwwwwwwwwwwwwwww ")]
+[2020-02-21 16:20:09.596938] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+failed
+[2020-02-21 16:20:09.600838] process done ExitSuccess
+[2020-02-21 16:20:09.601651] process done ExitSuccess
+git-annex: get: 1 failed
+
+
+When running that command, no request is sent to the server!? (in minio trace logs), but I don't know why.
+
+
+
+### What steps will reproduce the problem?
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+latest package in conda-forge on ubuntu
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes.
+

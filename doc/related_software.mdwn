@@ -55,4 +55,6 @@ designed to interoperate with it.
 
 * [AnnexRemote](https://github.com/Lykos153/AnnexRemote) is a python library for creating new external special remotes.
 
+* [Git::Annex](https://metacpan.org/release/Git-Annex) is a Perl interface to git-annex, including a script `annex-review-unused` for interactively processing git-annex-unused output
+
 See also [[not]] for software that is *not* related to git-annex, but similar.

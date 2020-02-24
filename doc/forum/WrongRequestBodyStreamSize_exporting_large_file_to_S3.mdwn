@@ -1,0 +1,30 @@
+I've been trying out exporting to S3 with Wasabi, it has worked for some files, but for one large file I had to set a partsize value otherwise the upload would be rejected.
+
+Even with a partsize value, the upload still fails though. It gets right to the end and then fails with `WrongRequestBodyStreamSize`.
+
+```
+export wasabi 2020-01-24/guix_data_service_full.dump
+100%  7.31 GiB         45 MiB/s 0s
+  HttpExceptionRequest Request {
+    host                 = "data-guix-gnu-org-database-dumps.s3.wasabisys.com"
+    port                 = 443
+    secure               = True
+    requestHeaders       = [("Date","Sat, 22 Feb 2020 08:49:58 GMT"),("Authorization","<REDACTED>")]
+    path                 = "/2020-01-24/guix_data_service_full.dump"
+    queryString          = "partNumber=78&uploadId=MaRGWhxX1uZZ12IdGSSsc3rinnMgmKMfOcXRPuSo1zxzCviuBR37gxh_4gAmtvOmiRyqJjCMfgO4zhqKOB2Fi8WPLE2b7Iix-2gXkXgcIvLVlijoixwRS-UcllhHhG38"
+    method               = "PUT"
+    proxy                = Nothing
+    rawBody              = False
+    redirectCount        = 10
+    responseTimeout      = ResponseTimeoutDefault
+    requestVersion       = HTTP/1.1
+  }
+   (WrongRequestBodyStreamSize 31419314 29814466)
+failed
+```
+
+I've tried with partsizes from 100MB to 5GB, and I'm on a pretty recent version of git-annex: 7.20200219. I'm not sure if this is an issue in git-annex, or the aws or http-client dependencies.
+
+Thanks,
+
+Chris

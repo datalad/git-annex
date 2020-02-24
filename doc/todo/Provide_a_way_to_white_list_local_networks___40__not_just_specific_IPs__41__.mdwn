@@ -1,0 +1,5 @@
+Original whining and use case [is buried in the comments to CVE fix announcement](https://git-annex.branchable.com/security/#comment-7d9435f13213b85896a3424c342c9a1f). In summary: `http_proxy` environment variable could point to some address within local network (e.g. `10.0.0.1/24`). `security.allowed-ip-addresses` (or older `annex.security.allowed-http-addresses`) seems to support only a whitespace separate list of addresses (too tedious to list for sizeable private networks) or "all" (too much) not support networks.  
+In case of `http_proxy` it would also be valuable to be able to limit to specific (e.g. privileged) port(s) (thus kicking back to `http` from a generic `ip`), to avoid opening access to some malicious user providing URLs on the same private network on some other port.  I think both address + port "wishlist" items are related thus filing in a single issue. 
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
