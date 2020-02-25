@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-02-25T19:46:02Z"
+ content="""
+Back to the proxy question, I suppose if you have multiple internal 
+networks and the proxy can only access one of them (eg your DMZ),
+then allowing access to the proxy is not as bad as "all".
+
+And then DMZ/24 makes explicit that git-annex can access everything in that
+network.
+
+Nor am I opposed to that syntax generally (although as I user, I consider
+it pretty opaque TBH, not being in the habit of counting bits in my head).
+The only haskell implementation I can find is in the `ip` package,
+which would be a new dependency for git-annex.
+"""]]
