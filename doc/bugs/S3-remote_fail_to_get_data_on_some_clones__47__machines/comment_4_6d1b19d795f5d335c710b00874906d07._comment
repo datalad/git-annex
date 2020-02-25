@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-02-25T17:45:07Z"
+ content="""
+Hmm, git-annex does display a big warning message if there's a local proxy
+that its security does not allow it to use.
+
+Still, annex.security.allowed-ip-addresses seems like the only likely
+reason git-annex would not connect to a server while curl does.
+"""]]
