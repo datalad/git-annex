@@ -1,0 +1,12 @@
+Like git annex runs git-annex, git-annex foo could run git-annex-foo when
+it's not built-in.
+
+One user of this would be annex-review-unused, which
+its author would rather name git-annex-reviewunused if that
+made "git annex reviewunused" work.
+
+In CmdLine, where autocorrect is handled, it would need to 
+search the path for all "git-annex-" commands and then 
+either dispatch the one matching the inputcmdname,
+or do autocorrect with the list of those commands 
+included along with the builtins. --[[Joey]] 
