@@ -12,5 +12,5 @@ By default, git-annex avoids connections to local IP adddresses,
 for security reasons. If you have a local http proxy, it won't use it
 either. You could try this:
 
-	git config annex.security.allowed-ip-addresses any
+	git config annex.security.allowed-ip-addresses all
 """]]
