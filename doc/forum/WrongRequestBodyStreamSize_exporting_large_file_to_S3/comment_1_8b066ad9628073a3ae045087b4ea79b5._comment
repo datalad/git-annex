@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-25T16:47:29Z"
+ content="""
+How large, in bytes, is the file you were trying to upload there,
+and what was the partsize?
+
+WrongRequestBodyStreamSize is an exception from the http-client
+library. It throws this when writing a request to the http server
+and the stream of data included in the request somehow does not have the
+length it expected.
+
+It expected 31419314 bytes and got only 29814466, and this appears
+to have been the last part of the file.
+
+Looking at the http-client code, it seems almost certainly due to a
+RequestBodyStream declaring an incorrect length of the stream. And,
+git-annex does use RequestBodyStream in particular in S3 multipart uploads.
+So it seems most likely a git-annex bug.
+"""]]
