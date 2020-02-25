@@ -103,10 +103,12 @@ embeddedIpv4 v = case v of
  - match that address in a SockAddr. Nothing when the address cannot be
  - parsed.
  -
+ - When a port is specified, will only match a SockAddr using the same port.
+ -
  - This does not involve any DNS lookups.
  -}
-makeAddressMatcher :: String -> IO (Maybe (SockAddr -> Bool))
-makeAddressMatcher s = go
+makeAddressMatcher :: String -> Maybe PortNumber -> IO (Maybe (SockAddr -> Bool))
+makeAddressMatcher s mp = go
 	<$> catchDefaultIO [] (getAddrInfo (Just hints) (Just s) Nothing)
   where
 	hints = defaultHints
@@ -117,6 +119,11 @@ makeAddressMatcher s = go
 	go [] = Nothing
 	go l = Just $ \sockaddr -> any (match sockaddr) (map addrAddress l)
 
-	match (SockAddrInet _ a) (SockAddrInet _ b) = a == b
-	match (SockAddrInet6 _ _ a _) (SockAddrInet6 _ _ b _) = a == b
+	match (SockAddrInet p a) (SockAddrInet _ b) = a == b && matchport p
+	match (SockAddrInet6 p _ a _) (SockAddrInet6 _ _ b _) = a == b && matchport p
 	match _ _ = False
+
+	matchport p = case mp of
+		Nothing -> True
+		Just p' -> p == p'
+

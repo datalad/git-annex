@@ -41,6 +41,7 @@ import qualified BuildInfo
 import Network.Socket
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
+import Text.Read
 
 defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
@@ -85,10 +86,11 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			manager <- liftIO $ U.newManager $ 
 				avoidtimeout $ tlsManagerSettings
 			return (urldownloader, manager)
-		allowedaddrs -> do
+		allowedaddrsports -> do
 			addrmatcher <- liftIO $ 
 				(\l v -> any (\f -> f v) l) . catMaybes
-					<$> mapM makeAddressMatcher allowedaddrs
+					<$> mapM (uncurry makeAddressMatcher) 
+						(mapMaybe splitAddrPort allowedaddrsports)
 			-- Default to not allowing access to loopback
 			-- and private IP addresses to avoid data
 			-- leakage.
@@ -119,6 +121,19 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 	-- or so, but some web servers are slower and git-annex has its own
 	-- separate timeout controls, so disable that.
 	avoidtimeout s = s { managerResponseTimeout = responseTimeoutNone }
+
+splitAddrPort :: String -> Maybe (String, Maybe PortNumber)
+splitAddrPort s
+	-- "[addr]:port" (also allow "[addr]")
+	| "[" `isPrefixOf` s = case splitc ']' (drop 1 s) of
+		[a,cp] -> case splitc ':' cp of
+			["",p] -> do
+				pn <- readMaybe p
+				return (a, Just pn)
+			[""] -> Just (a, Nothing)
+			_ -> Nothing
+		_ -> Nothing
+	| otherwise = Just (s, Nothing)
 
 ipAddressesUnlimited :: Annex Bool
 ipAddressesUnlimited = 

@@ -1608,6 +1608,11 @@ Remotes are configured using these settings in `.git/config`.
   Note that, since the interfaces of curl and youtube-dl do not allow
   these IP address restrictions to be enforced, curl and youtube-dl will
   never be used unless annex.security.allowed-ip-addresses=all.
+  
+  To allow accessing local or private IP addresses on only specific ports,
+  use the syntax "[addr]:port". For example,
+  "[127.0.0.1]:80 [127.0.0.1]:443 [::1]:80 [::1]:443" allows
+  localhost on the http ports only.
 
 * `annex.security.allowed-http-addresses`
 

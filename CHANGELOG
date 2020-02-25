@@ -32,6 +32,8 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
   * init --version: When the version given is one that automatically
     upgrades to a newer version, use the newer version instead.
   * Auto upgrades from older repo versions, like v5, now jump right to v8.
+  * Extended annex.security.allowed-ip-addresses to let specific ports
+    of an IP address to be used, while denying use of other ports.
 
  -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:48:58 -0400
 

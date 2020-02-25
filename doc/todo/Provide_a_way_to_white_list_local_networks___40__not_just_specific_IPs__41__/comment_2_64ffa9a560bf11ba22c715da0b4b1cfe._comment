@@ -4,7 +4,7 @@
  date="2020-02-25T18:32:02Z"
  content="""
 As to ports, it seems reasonable to support eg
-security.allowed-ip-addresses=127.0.0.1:80 to make sure that the massive
+security.allowed-ip-addresses=[127.0.0.1]:80 to make sure that the massive
 electron app I have running on some random other port doesn't get abused
 to exfiltrate the contents of my $HOME. As a non-random example. :)
 """]]
