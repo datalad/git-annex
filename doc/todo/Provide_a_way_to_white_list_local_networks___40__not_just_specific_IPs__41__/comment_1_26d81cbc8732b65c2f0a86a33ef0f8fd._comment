@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-25T17:47:45Z"
+ content="""
+If the goal is just to allow the `http_proxy` to be used even though it
+points to a proxy on the local network, then it could be done
+with some "trustproxy" config, without needing to complicate
+annex.security.allowed-http-addresses.
+
+I am doubtful about the security of local http proxies though,
+in the threat model that git-annex needs to worry about. When
+`http_proxy` is set, urls get passed to it as-is; git-annex is not
+currently able to interpose any checking that the url is on an allowed
+IP address.
+
+(git-annex cannot send http://$ipaddr/ to the http proxy, 
+because the http server may require a specific hostname.
+And if git-annex only resolved the hostname and rejected ones on invalid
+IPs, then the http proxy would again resolve the hostname, and might
+see a different IP address than git-annex did.)
+
+So allowing a local http proxy seems just as insecure as
+annex.security.allowed-http-addresses=all.
+"""]]
