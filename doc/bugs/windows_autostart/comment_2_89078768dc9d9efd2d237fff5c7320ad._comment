@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-02-25T20:37:20Z"
+ content="""
+It seems to me that the real bug here is that somehow 
+"C:\Program Files\Git\cmd\git-annex-autostart.vbs" either
+does not exist, or it fails to run it.
+
+Does that file actually exist? It's supposed to be installed the same
+as git-annex.exe gets installed, in the same directory.
+"""]]
