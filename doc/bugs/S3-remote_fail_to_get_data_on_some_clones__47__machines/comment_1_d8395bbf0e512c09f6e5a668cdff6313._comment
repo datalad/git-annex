@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="no traffic getting out"
+ date="2020-02-25T16:55:23Z"
+ content="""
+Things are getting weirder.
+There is no traffic coming out of my machine (`tcpdump`) when running the `git-annex get`.
+When I run curl pointing to the same https address, it works, the server receives the request.
+I tried the standalone version, different versions from ubuntu repos, conda-forge, all the same on Ubuntu 18.04 machines, finally from a docker-container with anaconda (debian-based I think), same thing.
+
+When I connect to my cellphone as a hotspot, it works!
+Is there any way to have more debug from the S3 remote code, or from haskell S3 or network packages?
+
+I am loosing my mind here.
+Help :/
+
+Thanks!
+
+"""]]
