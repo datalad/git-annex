@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-25T17:24:51Z"
+ content="""
+It certianly seems to have sent a request to *somewhere*,
+since it gets back a response:
+
+    [2020-02-21 16:20:09.596938] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+
+Kind of looks like that response is not the response that a S3 server
+should generate, since it's missing the usual metadata.
+"""]]
