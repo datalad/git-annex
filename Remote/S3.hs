@@ -354,9 +354,7 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 					else do
 						-- Calculate size of part that will
 						-- be read.
-						let sz = if fsz - pos < partsz'
-							then fsz - pos
-							else partsz'
+						let sz = min (fsz - pos) partsz'
 						let p' = offsetMeterUpdate p (toBytesProcessed pos)
 						let numchunks = ceiling (fromIntegral sz / fromIntegral defaultChunkSize :: Double)
 						let popper = handlePopper numchunks defaultChunkSize p' fh
