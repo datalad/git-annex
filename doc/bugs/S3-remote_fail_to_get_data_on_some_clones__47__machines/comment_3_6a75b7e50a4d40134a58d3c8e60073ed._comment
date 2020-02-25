@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-02-25T17:35:02Z"
+ content="""
+Unfortunately --debug is all the debug info that's available.
+
+One possibility that comes to mind is a http proxy. Perhaps curl is
+using some proxy that is necessary to get data out, and git-annex is not.
+
+By default, git-annex avoids connections to local IP adddresses,
+for security reasons. If you have a local http proxy, it won't use it
+either. You could try this:
+
+	git config annex.security.allowed-ip-addresses any
+"""]]
