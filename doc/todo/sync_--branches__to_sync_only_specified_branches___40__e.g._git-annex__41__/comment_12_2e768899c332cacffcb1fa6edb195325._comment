@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2020-02-25T16:31:55Z"
+ content="""
+Generally, command-line options should override other configuration,
+so --only-annex seems like it should enable content syncing even if
+annex.synccontent=false were a documented setting, the same as --content
+should.
+
+I think a case could be made for annex.synccontent=false +
+annex.synconlyannex=true not syncing content.
+
+I do wonder though if that's the best approach. It kind of seems like what
+you really want is a way to configure a default preferred content
+expression for clones that do not have a specific one configured. And
+that seems more broadly useful than fine-tuning the interaction of two
+git-annex sync configurations.
+"""]]
