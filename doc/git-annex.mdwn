@@ -1595,8 +1595,9 @@ Remotes are configured using these settings in `.git/config`.
   private network.
 
   This setting can override that behavior, allowing access to particular
-  IP addresses. For example "127.0.0.1 ::1" allows access to localhost
-  (both IPV4 and IPV6). To allow access to all IP addresses, use "all"
+  IP addresses that would normally be blocked. For example "127.0.0.1 ::1"
+  allows access to localhost (both IPV4 and IPV6).
+  To allow access to all IP addresses, use "all"
   
   Think very carefully before changing this; there are security
   implications. Anyone who can get a commit into your git-annex repository
