@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+Originally detected while testing newer (7.20200204+git1-gb2c529b88-1~ndall+1) [git-annex-standalone build against DataLad](https://github.com/datalad/datalad/pull/4116): one of our tests started to hang. Even using a different way of invoking external commands which was recently added to DataLad, it looks like `git annex enableremote` simply does not return:
+
+[[!format sh """
+[DEBUG  ] Async run ['git-annex', 'enableremote', '--debug', '-c', 'remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/3d284eaf', 'target2'] 
+[DEBUG  ] Launching process ['git-annex', 'enableremote', '--debug', '-c', 'remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/3d284eaf', 'target2'] 
+[DEBUG  ] Process 16621 started 
+[DEBUG  ] Waiting for process 16621 to complete 
+[Level 5] Read 46 bytes from 16621[stdout]: 
+[Level 9] stdout| (merging target2/git-annex into git-annex...)
+|   
+[Level 5] Read 28 bytes from 16621[stdout]: 
+[Level 9] stdout| (recording state in git...)
+|   
+No output has been received in the last 10m0s, this potentially indicates a stalled build or something wrong with the build itself.
+"""]]
+
+[Full log link](https://travis-ci.org/datalad/datalad/jobs/655416864#L8664).
+
+Unfortunately ATM I do not have any further information, besides that we all failed to reproduce it locally and the issue is not happening with older build of git-annex-standalone (e.g. 7.20190819+git2-g908476a9b-1~ndall+1).
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
