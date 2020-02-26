@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-02-26T20:58:16Z"
+ content="""
+> How do I produce such a repo, I thought that git-annex has fixed the problem that made it not include the S3 versioning information? I don't want to see a lot of repos being created with that information missing.
+
+Sorry if I was not clear.  Those repositories were produced in 2018 when available/used version of git annex was not yet \"fixed\".  Newer datasets, have .rmet files, e.g. just checked https://github.com/OpenNeuroDatasets/ds002596 (full of .rmet files in git-annex branch ;))
+
+>  Easily fixed.
+
+Thanks. FTR in 7.20200219-129-ge52034150
+"""]]

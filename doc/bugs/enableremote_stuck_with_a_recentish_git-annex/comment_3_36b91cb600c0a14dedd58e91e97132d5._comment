@@ -1,0 +1,100 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="--debug output"
+ date="2020-02-26T20:36:28Z"
+ content="""
+<details>
+<summary>here is the --debug output (well, logged by datalad, so there is some decoration) for the stuck `enableremote`</summary> 
+
+```shell
+[DEBUG  ] Async run ['git-annex', 'enableremote', '-c', 'remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35', 'target2', '--debug'] 
+[DEBUG  ] Launching process ['git-annex', 'enableremote', '-c', 'remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35', 'target2', '--debug'] 
+[DEBUG  ] Process 16886 started 
+[DEBUG  ] Waiting for process 16886 to complete 
+[Level 5] Read 232 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.411270506] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"show-ref\",\"git-annex\"]
+|   
+[Level 5] Read 309 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.414030967] process done ExitSuccess
+| [2020-02-26 20:21:00.414120854] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+|   
+[Level 5] Read 57 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.416528464] process done ExitSuccess
+|   
+[Level 5] Read 300 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.416774225] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"log\",\"refs/heads/git-annex..4205e0fe09bdb15c518d8475778452b26a0b931a\",\"--pretty=%H\",\"-n1\"]
+|   
+[Level 5] Read 57 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.420055075] process done ExitSuccess
+|   
+[Level 5] Read 300 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.420146676] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"log\",\"refs/heads/git-annex..e7c5d7333e2ba07d8eb6a4ddadd9affae13c40eb\",\"--pretty=%H\",\"-n1\"]
+|   
+[Level 5] Read 56 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.42378637] process done ExitSuccess
+|   
+[Level 5] Read 230 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.430135272] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"cat-file\",\"--batch\"]
+|   
+[Level 5] Read 278 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.432035636] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+|   
+[Level 5] Read 46 bytes from 16886[stdout]: 
+[Level 9] stdout| (merging target2/git-annex into git-annex...)
+|   
+[Level 5] Read 259 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.435904786] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+|   
+[Level 5] Read 244 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.438156653] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"update-index\",\"-z\",\"--index-info\"]
+|   
+[Level 5] Read 320 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.440579446] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"e7c5d7333e2ba07d8eb6a4ddadd9affae13c40eb\",\"--\"]
+|   
+[Level 5] Read 57 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.444964246] process done ExitSuccess
+|   
+[Level 5] Read 56 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.44534127] process done ExitSuccess
+|   
+[Level 5] Read 300 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.447359547] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"log\",\"e7c5d7333e2ba07d8eb6a4ddadd9affae13c40eb..refs/heads/git-annex\",\"--pretty=%H\",\"-n1\"]
+|   
+[Level 5] Read 57 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.450117916] process done ExitSuccess
+|   
+[Level 5] Read 28 bytes from 16886[stdout]: 
+[Level 9] stdout| (recording state in git...)
+|   
+[Level 5] Read 221 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.45026688] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"write-tree\"]
+|   
+[Level 5] Read 415 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.453577825] process done ExitSuccess
+| [2020-02-26 20:21:00.453656296] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"commit-tree\",\"bc6e2bf931ad9e846895d60189f9af41d9705724\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\",\"-p\",\"e7c5d7333e2ba07d8eb6a4ddadd9affae13c40eb\"]
+|   
+[Level 5] Read 57 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.456300928] process done ExitSuccess
+|   
+[Level 5] Read 287 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.45636449] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"remote.target1.annex-ssh-options=-o ControlMaster=auto -S /home/travis/.cache/datalad/sockets/44786c35\",\"update-ref\",\"refs/heads/git-annex\",\"c06d34b848f1a4095d0e2d59bf36b96469e168ea\"]
+|   
+[Level 5] Read 57 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.459600142] process done ExitSuccess
+|   
+[Level 5] Read 71 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.460816011] read: git [\"config\",\"--null\",\"--list\"]
+|   
+[Level 5] Read 57 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.462948244] process done ExitSuccess
+|   
+[Level 5] Read 246 bytes from 16886[stderr]: 
+[Level 9] stderr| [2020-02-26 20:21:00.464013355] read: ssh [\"datalad-test\",\"-S\",\".git/annex/ssh/datalad-test\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/tmp/datalad_temp_test_publish_depends_q8i1lpv' '--debug'\"]
+|   
+No output has been received in the last 10m0s, this potentially indicates a stalled build or something wrong with the build itself.
+Check the details on how to adjust your build configuration on: https://docs.travis-ci.com/user/common-build-problems/#build-times-out-because-no-output-was-received
+```
+</details>
+
+"""]]

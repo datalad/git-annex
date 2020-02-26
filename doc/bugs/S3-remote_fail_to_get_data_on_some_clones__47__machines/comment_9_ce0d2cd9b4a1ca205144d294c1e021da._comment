@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="comment 9"
+ date="2020-02-26T19:15:11Z"
+ content="""
+The only difference in the `dig` answer when running from the outside is additional answer sections: 
+```
+;; AUTHORITY SECTION:
+<redacted_domain>.        3600    IN      NS      ns22.domaincontrol.com.
+<redacted_domain>.        3600    IN      NS      ns21.domaincontrol.com.
+
+;; ADDITIONAL SECTION:
+ns22.domaincontrol.com. 21      IN      A       173.201.68.11
+ns22.domaincontrol.com. 21      IN      AAAA    2603:5:2241::b
+ns21.domaincontrol.com. 21      IN      A       97.74.100.11
+ns21.domaincontrol.com. 21      IN      AAAA    2603:5:2141::b
+
+```
+"""]]
