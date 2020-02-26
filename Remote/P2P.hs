@@ -26,6 +26,7 @@ import Remote.Helper.Git
 import Remote.Helper.ExportImport
 import Remote.Helper.P2P
 import Utility.AuthToken
+import Annex.SpecialRemote.Config
 
 import Control.Concurrent.STM
 
@@ -42,8 +43,9 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	}
 
-chainGen :: P2PAddress -> Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-chainGen addr r u c gc rs = do
+chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+chainGen addr r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	connpool <- mkConnectionPool
 	cst <- remoteCost gc veryExpensiveRemoteCost
 	let protorunner = runProto u addr connpool

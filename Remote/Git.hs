@@ -161,20 +161,21 @@ configRead autoinit r = do
 			Just r' -> return r'
 		_ -> return r
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs
 	-- Remote.GitLFS may be used with a repo that is also encrypted
 	-- with gcrypt so is checked first.
-	| remoteAnnexGitLFS gc = Remote.GitLFS.gen r u c gc rs
-	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u c gc rs
+	| remoteAnnexGitLFS gc = Remote.GitLFS.gen r u rc gc rs
+	| Git.GCrypt.isEncrypted r = Remote.GCrypt.chainGen r u rc gc rs
 	| otherwise = case repoP2PAddress r of
 		Nothing -> do
 			st <- mkState r u gc
-			go st <$> remoteCost gc defcst
-		Just addr -> Remote.P2P.chainGen addr r u c gc rs
+			c <- parsedRemoteConfig remote rc
+			go st c <$> remoteCost gc defcst
+		Just addr -> Remote.P2P.chainGen addr r u rc gc rs
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-	go st cst = Just new
+	go st c cst = Just new
 	  where
 		new = Remote 
 			{ uuid = u
@@ -205,14 +206,14 @@ gen r u c gc rs
 			, appendonly = False
 			, availability = availabilityCalc r
 			, remotetype = remote
-			, mkUnavailable = unavailable r u c gc rs
+			, mkUnavailable = unavailable r u rc gc rs
 			, getInfo = gitRepoInfo new
 			, claimUrl = Nothing
 			, checkUrl = Nothing
 			, remoteStateHandle = rs
 			}
 
-unavailable :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+unavailable :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 unavailable r = gen r'
   where
 	r' = case Git.location r of

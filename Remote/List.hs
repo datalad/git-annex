@@ -20,7 +20,6 @@ import Annex.UUID
 import Remote.Helper.Hooks
 import Remote.Helper.ReadOnly
 import Remote.Helper.ExportImport
-import Annex.SpecialRemote.Config
 import qualified Git
 import qualified Git.Config
 
@@ -110,8 +109,7 @@ remoteGen m t g = do
 	let cu = fromMaybe u $ remoteAnnexConfigUUID gc
 	let rs = RemoteStateHandle cu
 	let c = fromMaybe M.empty $ M.lookup cu m
-	pc <- either (const mempty) id . parseRemoteConfig c <$> configParser t c
-	generate t g u pc gc rs >>= \case
+	generate t g u c gc rs >>= \case
 		Nothing -> return Nothing
 		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r)) rs
 

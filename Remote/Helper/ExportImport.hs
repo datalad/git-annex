@@ -72,15 +72,11 @@ importIsSupported = \_ _ -> return True
 -- | Prevent or allow exporttree=yes and importtree=yes when
 -- setting up a new remote, depending on exportSupported and importSupported.
 adjustExportImportRemoteType :: RemoteType -> RemoteType
-adjustExportImportRemoteType rt = rt
-	{ setup = setup'
-	, configParser = configparser
-	}
+adjustExportImportRemoteType rt = rt { setup = setup' }
   where
-	configparser c = addRemoteConfigParser exportImportConfigParsers 
-		<$> configParser rt c
 	setup' st mu cp c gc = do
-		pc <- either giveup return . parseRemoteConfig c =<< configparser c
+		pc <- either giveup return . parseRemoteConfig c
+			=<< configParser rt c
 		let checkconfig supported configured configfield cont =
 			ifM (supported rt pc gc)
 				( case st of
@@ -89,7 +85,7 @@ adjustExportImportRemoteType rt = rt
 							giveup $ "cannot enable both encryption and " ++ fromProposedAccepted configfield
 						| otherwise -> cont
 					Enable oldc -> do
-						oldpc <- either mempty id . parseRemoteConfig oldc <$> configparser oldc
+						oldpc <- parsedRemoteConfig rt oldc
 						if configured pc /= configured oldpc
 							then giveup $ "cannot change " ++ fromProposedAccepted configfield ++ " of existing special remote"
 							else cont
@@ -102,14 +98,6 @@ adjustExportImportRemoteType rt = rt
 				if importTree pc && not (exportTree pc)
 					then giveup "cannot enable importtree=yes without also enabling exporttree=yes"
 					else setup rt st mu cp c gc
-
-exportImportConfigParsers :: [RemoteConfigFieldParser]
-exportImportConfigParsers =
-	[ yesNoParser exportTreeField False
-		(FieldDesc "export trees of files to this remote")
-	, yesNoParser importTreeField False
-		(FieldDesc "import trees of files from this remote")
-	]
 
 -- | Adjust a remote to support exporttree=yes and importree=yes.
 --

@@ -284,7 +284,7 @@ isEncrypted = isJust . extractCipher
 
 describeEncryption :: ParsedRemoteConfig -> String
 describeEncryption c = case extractCipher c of
-	Nothing -> "none" ++ show (getRemoteConfigValue cipherField c :: Maybe String) ++ show (M.keys c)
+	Nothing -> "none"
 	Just cip -> nameCipher cip ++ " (" ++ describeCipher cip ++ ")"
 
 nameCipher :: StorableCipher -> String

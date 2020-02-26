@@ -28,6 +28,7 @@ import Annex.Tmp
 import Annex.UUID
 import qualified Annex.Url as Url
 import Remote.Helper.ExportImport
+import Annex.SpecialRemote.Config
 
 import Network.URI
 
@@ -53,9 +54,10 @@ list _autoinit = do
 	r <- liftIO $ Git.Construct.remoteNamed "bittorrent" (pure Git.Construct.fromUnknown)
 	return [r]
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r _ c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r _ rc gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
+	c <- parsedRemoteConfig remote rc
 	return $ Just Remote
 		{ uuid = bitTorrentUUID
 		, cost = cst

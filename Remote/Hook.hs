@@ -45,8 +45,9 @@ remote = specialRemoteType $ RemoteType
 hooktypeField :: RemoteConfigField
 hooktypeField = Accepted "hooktype"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote c
 		(simplyPrepare $ store hooktype)
@@ -80,7 +81,7 @@ gen r u c gc rs = do
 			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u c
+			, mkUnavailable = gen r u rc
 				(gc { remoteAnnexHookType = Just "!dne!" })
 				rs
 			, getInfo = return [("hooktype", hooktype)]

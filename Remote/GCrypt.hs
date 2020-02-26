@@ -80,16 +80,16 @@ remote = specialRemoteType $ RemoteType
 gitRepoField :: RemoteConfigField
 gitRepoField = Accepted "gitrepo"
 
-chainGen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-chainGen gcryptr u c gc rs = do
+chainGen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+chainGen gcryptr u rc gc rs = do
 	g <- gitRepo
 	-- get underlying git repo with real path, not gcrypt path
 	r <- liftIO $ Git.GCrypt.encryptedRemote g gcryptr
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
-	gen r' u c gc rs
+	gen r' u rc gc rs
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen baser u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen baser u rc gc rs = do
 	-- doublecheck that cache matches underlying repo's gcrypt-id
 	-- (which might not be set), only for local repos
 	(mgcryptid, r) <- getGCryptId True baser gc
@@ -97,7 +97,9 @@ gen baser u c gc rs = do
 	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName baser)) of
 		(Just gcryptid, Just cachedgcryptid)
 			| gcryptid /= cachedgcryptid -> resetup gcryptid r
-		_ -> gen' r u c gc rs
+		_ -> do
+			c <- parsedRemoteConfig remote rc
+			gen' r u c gc rs
   where
 	-- A different drive may have been mounted, making a different
 	-- gcrypt remote available. So need to set the cached
@@ -108,10 +110,8 @@ gen baser u c gc rs = do
 		let u' = genUUIDInNameSpace gCryptNameSpace gcryptid
 		v <- M.lookup u' <$> readRemoteLog
 		case (Git.remoteName baser, v) of
-			(Just remotename, Just c') -> do
-				pc <- either giveup return
-					. parseRemoteConfig c'
-					=<< configParser remote c'
+			(Just remotename, Just rc') -> do
+				pc <- parsedRemoteConfig remote rc'
 				setGcryptEncryption pc remotename
 				storeUUIDIn (remoteConfig baser "uuid") u'
 				setConfig (Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid

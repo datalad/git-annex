@@ -59,10 +59,12 @@ vaultField = Accepted "vault"
 fileprefixField :: RemoteConfigField
 fileprefixField = Accepted "fileprefix"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = new <$> remoteCost gc veryExpensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = new 
+	<$> parsedRemoteConfig remote rc
+	<*> remoteCost gc veryExpensiveRemoteCost
   where
-	new cst = Just $ specialRemote' specialcfg c
+	new c cst = Just $ specialRemote' specialcfg c
 		(prepareStore this)
 		(prepareRetrieve this)
 		(simplyPrepare $ remove this)
@@ -105,10 +107,10 @@ gen r u c gc rs = new <$> remoteCost gc veryExpensiveRemoteCost
 			, checkUrl = Nothing
 			, remoteStateHandle = rs
 			}
-	specialcfg = (specialRemoteCfg c)
-		-- Disabled until jobList gets support for chunks.
-		{ chunkConfig = NoChunks
-		}
+		specialcfg = (specialRemoteCfg c)
+			-- Disabled until jobList gets support for chunks.
+			{ chunkConfig = NoChunks
+			}
 
 glacierSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 glacierSetup ss mu mcreds c gc = do

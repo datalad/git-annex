@@ -67,13 +67,17 @@ shellEscapeField = Accepted "shellescape"
 rsyncUrlField :: RemoteConfigField
 rsyncUrlField = Accepted "rsyncurl"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
 		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
+	let specialcfg = (specialRemoteCfg c)
+		-- Rsync displays its own progress.
+		{ displayProgress = False }
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ fileStorer $ store o)
 		(simplyPrepare $ fileRetriever $ retrieve o)
@@ -119,10 +123,6 @@ gen r u c gc rs = do
 			, checkUrl = Nothing
 			, remoteStateHandle = rs
 			}
-  where
-	specialcfg = (specialRemoteCfg c)
-		-- Rsync displays its own progress.
-		{ displayProgress = False }
 
 -- Things used by genRsyncOpts
 rsyncRemoteConfigs :: [RemoteConfigFieldParser]

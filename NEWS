@@ -1,3 +1,18 @@
+git-annex (7.20200226) upstream; urgency=high
+
+  There was a serious regression in gcrypt and encrypted git-lfs remotes.
+  Since version 7.20200202.7, git-annex incorrectly stored content
+  on those remotes without encrypting it.
+
+  If your remotes are affected, you will want to make sure to delete
+  any content that git-annex has stored on them that is not encrypted!
+
+  One way to do so is, before upgrading to this version,
+  run git-annex move --from the affected remotes. It will move
+  only the content that was not encrypted.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
+
 git-annex (7.20191024) upstream; urgency=medium
 
   When annex.largefiles is not configured, `git add` and `git commit -a`

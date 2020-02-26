@@ -1622,7 +1622,7 @@ test_crypto = do
 				checkKeys cip (Just v) <&&> checkCipher encipher ks'
 		_ -> return False
 	  where
-		pc =either mempty id $
+		pc = either (const (Types.Remote.ParsedRemoteConfig mempty mempty)) id $
 			Remote.Helper.Encryptable.parseEncryptionConfig c
 		keysMatch (Utility.Gpg.KeyIds ks') =
 			maybe False (\(Utility.Gpg.KeyIds ks2) ->
@@ -1632,7 +1632,7 @@ test_crypto = do
 		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
 			dummycfg <- Types.GitConfig.dummyRemoteGitConfig
-			let encparams = (mempty :: Types.Remote.ParsedRemoteConfig, dummycfg)
+			let encparams = (Types.Remote.ParsedRemoteConfig mempty mempty, dummycfg)
 			cipher <- Crypto.decryptCipher gpgcmd encparams cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (serializeKeys cipher) keys

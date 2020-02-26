@@ -57,8 +57,9 @@ data CredPairStorage = CredPairStorage
  - cipher. The EncryptionIsSetup is witness to that being the case.
  -}
 setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair = setRemoteCredPair' id
-	(either (const mempty) id . parseEncryptionConfig)
+setRemoteCredPair = setRemoteCredPair' id go
+  where
+	go c = either (const (ParsedRemoteConfig mempty c)) id (parseEncryptionConfig c)
 
 setRemoteCredPair'
 	:: (ProposedAccepted String -> a)
@@ -203,18 +204,18 @@ removeCreds file = do
 	liftIO $ nukeFile f
 
 includeCredsInfo :: ParsedRemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
-includeCredsInfo c storage info = do
+includeCredsInfo pc@(ParsedRemoteConfig cm _) storage info = do
 	v <- liftIO $ getEnvCredPair storage
 	case v of
 		Just _ -> do
 			let (uenv, penv) = credPairEnvironment storage
 			ret $ "from environment variables (" ++ unwords [uenv, penv] ++ ")"
-		Nothing -> case (`M.lookup` c) (credPairRemoteField storage) of
+		Nothing -> case (`M.lookup` cm) (credPairRemoteField storage) of
 			Nothing -> ifM (existsCacheCredPair storage)
 				( ret "stored locally"
 				, ret "not available"
 				)
-			Just _ -> case extractCipher c of
+			Just _ -> case extractCipher pc of
 				Just (EncryptedCipher {}) -> ret "embedded in git repository (gpg encrypted)"
 				_ -> ret "embedded in git repository (not encrypted)"
   where

@@ -21,6 +21,7 @@ import Annex.UUID
 import Utility.Metered
 import qualified Annex.Url as Url
 import Annex.YoutubeDl
+import Annex.SpecialRemote.Config
 
 remote :: RemoteType
 remote = RemoteType
@@ -41,8 +42,9 @@ list _autoinit = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" (pure Git.Construct.fromUnknown)
 	return [r]
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r _ c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r _ rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just Remote
 		{ uuid = webUUID

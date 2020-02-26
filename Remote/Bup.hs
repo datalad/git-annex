@@ -55,8 +55,9 @@ remote = specialRemoteType $ RemoteType
 buprepoField :: RemoteConfigField
 buprepoField = Accepted "buprepo"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	bupr <- liftIO $ bup2GitRemote buprepo
 	cst <- remoteCost gc $
 		if bupLocal buprepo
@@ -99,6 +100,10 @@ gen r u c gc rs = do
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
 		}
+	let specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve bup
+		{ chunkConfig = NoChunks
+		}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store this buprepo)
 		(simplyPrepare $ retrieve buprepo)
@@ -107,10 +112,6 @@ gen r u c gc rs = do
 		this
   where
 	buprepo = fromMaybe (giveup "missing buprepo") $ remoteAnnexBupRepo gc
-	specialcfg = (specialRemoteCfg c)
-		-- chunking would not improve bup
-		{ chunkConfig = NoChunks
-		}
 
 bupSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 bupSetup _ mu _ c gc = do

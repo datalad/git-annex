@@ -154,15 +154,16 @@ portField = Accepted "port"
 mungekeysField :: RemoteConfigField
 mungekeysField = Accepted "mungekeys"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
 	info <- extractS3Info c
 	hdl <- mkS3HandleVar c gc u
 	magic <- liftIO initMagicMime
-	return $ new cst info hdl magic
+	return $ new c cst info hdl magic
   where
-	new cst info hdl magic = Just $ specialRemote c
+	new c cst info hdl magic = Just $ specialRemote c
 		(simplyPrepare $ store hdl this info magic)
 		(simplyPrepare $ retrieve hdl this rs c info)
 		(simplyPrepare $ remove hdl this info)
@@ -211,7 +212,7 @@ gen r u c gc rs = do
 			, appendonly = versioning info
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert hostField (RemoteConfigValue ("!dne!" :: String)) c) gc rs
+			, mkUnavailable = gen r u (M.insert hostField (Proposed "!dne!") rc) gc rs
 			, getInfo = includeCredsInfo c (AWS.creds u) (s3Info c info)
 			, claimUrl = Nothing
 			, checkUrl = Nothing
@@ -1251,9 +1252,7 @@ enableBucketVersioning ss info _ _ _ = do
 		Init -> when (versioning info) $
 			enableversioning (bucket info)
 		Enable oldc -> do
-			oldpc <- either (const mempty) id
-				. parseRemoteConfig oldc 
-				<$> configParser remote oldc
+			oldpc <- parsedRemoteConfig remote oldc
 			oldinfo <- extractS3Info oldpc
 			when (versioning info /= versioning oldinfo) $
 				giveup "Cannot change versioning= of existing S3 remote."

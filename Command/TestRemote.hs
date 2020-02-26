@@ -24,8 +24,8 @@ import Utility.DataUnits
 import Utility.CopyFile
 import Types.Messages
 import Types.Export
-import Types.Crypto
 import Types.RemoteConfig
+import Types.ProposedAccepted
 import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.ExportImport
 import Remote.Helper.Chunked
@@ -122,18 +122,18 @@ perform rs unavailrs exportr ks = do
 		]
 
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
-adjustChunkSize r chunksize = adjustRemoteConfig r
-	(M.insert chunkField (RemoteConfigValue (show chunksize)))
+adjustChunkSize r chunksize = adjustRemoteConfig r $
+	M.insert chunkField (Proposed (show chunksize))
 
 -- Variants of a remote with no encryption, and with simple shared
 -- encryption. Gpg key based encryption is not tested.
 encryptionVariants :: Remote -> Annex [Remote]
 encryptionVariants r = do
 	noenc <- adjustRemoteConfig r $
-		M.insert encryptionField (RemoteConfigValue NoneEncryption)
+		M.insert encryptionField (Proposed "none")
 	sharedenc <- adjustRemoteConfig r $
-		M.insert encryptionField (RemoteConfigValue SharedEncryption) .
-		M.insert highRandomQualityField (RemoteConfigValue False)
+		M.insert encryptionField (Proposed "shared") .
+		M.insert highRandomQualityField (Proposed "false")
 	return $ catMaybes [noenc, sharedenc]
 
 -- Variant of a remote with exporttree disabled.
@@ -145,19 +145,20 @@ disableExportTree r = maybe (error "failed disabling exportree") return
 exportTreeVariant :: Remote -> Annex (Maybe Remote)
 exportTreeVariant r = ifM (Remote.isExportSupported r)
 	( adjustRemoteConfig r $
-		M.insert encryptionField (RemoteConfigValue NoneEncryption) . 
-		M.insert exportTreeField (RemoteConfigValue True)
+		M.insert encryptionField (Proposed "none") . 
+		M.insert exportTreeField (Proposed "yes")
 	, return Nothing
 	)
 
 -- Regenerate a remote with a modified config.
-adjustRemoteConfig :: Remote -> (Remote.ParsedRemoteConfig -> Remote.ParsedRemoteConfig) -> Annex (Maybe Remote)
+adjustRemoteConfig :: Remote -> (Remote.RemoteConfig -> Remote.RemoteConfig) -> Annex (Maybe Remote)
 adjustRemoteConfig r adjustconfig = do
 	repo <- Remote.getRepo r
+	let ParsedRemoteConfig _ origc = Remote.config r
 	Remote.generate (Remote.remotetype r)
 		repo
 		(Remote.uuid r)
-		(adjustconfig (Remote.config r))
+		(adjustconfig origc)
 		(Remote.gitconfig r)
 		(Remote.remoteStateHandle r)
 

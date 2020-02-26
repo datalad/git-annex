@@ -54,8 +54,9 @@ remote = specialRemoteType $ RemoteType
 directoryField :: RemoteConfigField
 directoryField = Accepted "directory"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
 	return $ Just $ specialRemote c
@@ -106,7 +107,7 @@ gen r u c gc rs = do
 			, appendonly = False
 			, availability = LocallyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u c
+			, mkUnavailable = gen r u rc
 				(gc { remoteAnnexDirectory = Just "/dev/null" }) rs
 			, getInfo = return [("directory", dir)]
 			, claimUrl = Nothing
