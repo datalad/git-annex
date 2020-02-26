@@ -1,4 +1,4 @@
-git-annex (8.20200226) UNRELEASED; urgency=medium
+git-annex (8.20200226) upstream; urgency=medium
 
   * New v8 repository version.
   * v7 upgrades automatically to v8. The upgrade deletes old sqlite
@@ -22,18 +22,18 @@ git-annex (8.20200226) UNRELEASED; urgency=medium
   * initremote, enableremote: Set remote.name.skipFetchAll when
     the remote cannot be fetched from by git, so git fetch --all
     will not try to use it.
-  * Makefile: Support newer versions of cabal that use the new-build system.
   * Fix some cases where handling of keys with extensions varied depending
     on the locale.
   * annex.maxextensionlength used to be the number of characters, not
     bytes, when in a utf-8 locale. It's now always the number of bytes.
+  * Extended annex.security.allowed-ip-addresses to let specific ports
+    of an IP address to be used, while denying use of other ports.
   * init --version: When the version given is one that automatically
     upgrades to a newer version, use the newer version instead.
   * Auto upgrades from older repo versions, like v5, now jump right to v8.
-  * Extended annex.security.allowed-ip-addresses to let specific ports
-    of an IP address to be used, while denying use of other ports.
+  * Makefile: Support newer versions of cabal that use the new-build system.
 
- -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 18:49:58 -0400
 
 git-annex (7.20200226) upstream; urgency=high
 
