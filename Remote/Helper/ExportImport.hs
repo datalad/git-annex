@@ -160,7 +160,6 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 				{ storeExport = \f k loc p -> do
 					db <- getciddb ciddbv
 					exportdb <- getexportdb exportdbv
-					updateexportdb exportdb exportdbv
 					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
 					oldcids <- liftIO $ concat
 						<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
@@ -277,8 +276,7 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		lcklckv <- liftIO newEmptyTMVarIO
 		dbv <- liftIO newEmptyTMVarIO
 		exportinconflict <- liftIO $ newTVarIO False
-		exportupdated <- liftIO $ newTMVarIO ()
-		return (dbv, lcklckv, exportinconflict, exportupdated)
+		return (dbv, lcklckv, exportinconflict)
 
 	-- Only open the database once it's needed.
 	getciddb (dbtv, lcklckv) =
@@ -300,13 +298,18 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 				)
 	
 	-- Only open the database once it's needed.
-	getexportdb (dbv, lcklckv, _, _) = 
+	--
+	-- After opening the database, check if the export log is
+	-- different than the database, and update the database, to notice
+	-- when an export has been updated from another repository.
+	getexportdb (dbv, lcklckv, exportinconflict) = 
 		liftIO (atomically (tryReadTMVar dbv)) >>= \case
 			Just db -> return db
 			-- let only one thread take the lock
 			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
 				( do
 					db <- Export.openDb (uuid r)
+					updateexportdb db exportinconflict
 					liftIO $ atomically $ putTMVar dbv db
 					return db
 				-- loser waits for winner to open the db and
@@ -314,24 +317,18 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 				, liftIO $ atomically (readTMVar dbv)
 				)
 
-	getexportinconflict (_, _, v, _) = v
+	getexportinconflict (_, _, v) = v
 
-	-- Check once if the export log is different than the database and
-	-- updates the database, to notice when an export has been
-	-- updated from another repository.				
-	updateexportdb db (_, _, exportinconflict, exportupdated) =
-		liftIO (atomically (tryTakeTMVar exportupdated)) >>= \case
-			Just () -> Export.updateExportTreeFromLog db >>= \case
-				Export.ExportUpdateSuccess -> return ()
-				Export.ExportUpdateConflict -> do
-					warnExportImportConflict r
-					liftIO $ atomically $
-						writeTVar exportinconflict True
-			Nothing -> return ()
+	updateexportdb db exportinconflict =
+		Export.updateExportTreeFromLog db >>= \case
+			Export.ExportUpdateSuccess -> return ()
+			Export.ExportUpdateConflict -> do
+				warnExportImportConflict r
+				liftIO $ atomically $
+					writeTVar exportinconflict True
 		
 	getexportlocs dbv k = do
 		db <- getexportdb dbv
-		updateexportdb db dbv
 		liftIO $ Export.getExportTree db k
 
 	retrieveKeyFileFromExport dbv k _af dest p = unVerified $

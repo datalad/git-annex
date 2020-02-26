@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-02-26T18:22:46Z"
+ content="""
+How do I produce such a repo, I thought that git-annex has fixed the 
+problem that made it not include the S3 versioning information?
+I don't want to see a lot of repos being created with that information
+missing.
+
+----
+
+Anyway, the S3 version is is a red herring, the failure is actually
+caused by the export db not getting populated from the git-annex branch
+before some threads try to use it. Remote.Helper.ExportImport has a
+updateexportdb that lets one thread update the db, but other threads
+don't block waiting for it. Easily fixed.
+"""]]
