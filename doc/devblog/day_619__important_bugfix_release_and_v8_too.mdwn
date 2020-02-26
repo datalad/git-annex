@@ -1,0 +1,14 @@
+A [[nasty_bug|bugs/gcrypt_special_remote_not_working]]
+that made git-annex store content on gcrypt and git-lfs
+without encrypting it led to a bugfix-only release,
+7.20200226.
+
+Since v8 was already close to release -- I was thinking probably Friday --
+and the autobuilders are already building that version, it made sense to
+move up the v8 release as well, so that's also been released today.
+
+That bug was happened because of an oversight when I was doing the big
+remote config parsing change. I tested that a lot, but I didn't think
+to test that gcrypt actually stored content encrypted! I need to do
+something about [[todo/network_test_suite]], so this kind of breakage
+in special remotes can be caught.
