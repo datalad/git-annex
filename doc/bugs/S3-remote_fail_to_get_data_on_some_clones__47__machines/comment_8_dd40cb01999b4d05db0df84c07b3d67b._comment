@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="comment 8"
+ date="2020-02-26T19:11:53Z"
+ content="""
+The only relevant traffic when running the `git-annex get` is the DNS call for the A record, the answer from the DNS is right (and AAAA record but no IPV6 on our network so 0 results).
+"""]]
