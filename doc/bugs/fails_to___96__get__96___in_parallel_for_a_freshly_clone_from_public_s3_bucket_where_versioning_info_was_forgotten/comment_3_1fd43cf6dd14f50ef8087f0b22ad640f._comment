@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2020-02-26T17:42:51Z"
+ content="""
+correction:  I found that on that fast(er) server I did have `annex.retry 3` set at the user level `~/.gitconfig`, that is why I didn't experience it (disadvantage of all the workaround customizations, heh heh).  Removing that setting, reproduces it on the fast box as well, so doesn't have much to do with network speed etc
+"""]]
