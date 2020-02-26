@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-02-26T20:14:47Z"
+ content="""
+thank you for the quick follow up joey.  I got confused about
+
+> --debug output is often useful. ... and maybe a --debug output
+
+since all `--debug` output from running `enableremote` is present in the log extract I have shown AFAIK... started digging, if `--debug` preceds `-c` -- it is not in effect, filed a [dedicated issue](https://git-annex.branchable.com/bugs/--debug_is_not_in_effect_if_precedes_-c/?updated).
+
+
+I  repositioned `--debug` after `-c`. Results will appear later on [travis log](https://travis-ci.org/datalad/datalad/jobs/655516059?utm_medium=notification&utm_source=github_status) and I will update here.
+
+Re type of remote:  it is actually a regular git remote. Before running `enableremote` on my laptop it looks like:
+
+```
+[remote \"target2\"]
+	url = ssh://datalad-test/home/yoh/.tmp/datalad_temp_test_publish_dependsfgrfi8tn
+	fetch = +refs/heads/*:refs/remotes/target2/*
+	datalad-publish-depends = target1
+```
+
+and then after `enableremote`:
+
+```
+[remote \"target2\"]
+	url = ssh://datalad-test/home/yoh/.tmp/datalad_temp_test_publish_dependsfgrfi8tn
+	fetch = +refs/heads/*:refs/remotes/target2/*
+	datalad-publish-depends = target1
+	annex-uuid = 31b92c58-edd1-4675-8b06-7d40f3bcc40d
+	annex-ignore = false
+```
+
+"""]]
