@@ -1,0 +1,67 @@
+### Please describe the problem.
+
+Identified while troubleshooting another [issue](https://git-annex.branchable.com/bugs/enableremote_stuck_with_a_recentish_git-annex/#comment-2116c5e109aaf39ffd62f3bdeeb14602)
+
+[[!format sh """
+$> 'git-annex' 'enableremote' --debug -cremote.target1.blah=1 'target1'      
+enableremote target1 ok
+
+$> 'git-annex' 'enableremote'  -cremote.target1.blah=1 --debug 'target1'     
+[2020-02-26 14:46:47.789794028] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","remote.target1.blah=1","show-ref","git-annex"]
+[2020-02-26 14:46:47.797917978] process done ExitSuccess
+[2020-02-26 14:46:47.798350533] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","remote.target1.blah=1","show-ref","--hash","refs/heads/git-annex"]
+[2020-02-26 14:46:47.802576899] process done ExitSuccess
+[2020-02-26 14:46:47.802884873] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","remote.target1.blah=1","log","refs/heads/git-annex..b1ab0b11fbbc94ffd3d52adb7a0e93c3d45d8b52","--pretty=%H","-n1"]
+[2020-02-26 14:46:47.813289406] process done ExitSuccess
+[2020-02-26 14:46:47.815873454] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","remote.target1.blah=1","cat-file","--batch"]
+[2020-02-26 14:46:47.818598891] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","remote.target1.blah=1","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-02-26 14:46:47.824657055] read: git ["config","--null","--list"]
+[2020-02-26 14:46:47.835897478] process done ExitSuccess
+enableremote target1 [2020-02-26 14:46:47.83652184] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","remote.target1.blah=1","config","remote.target1.annex-ignore","false"]
+[2020-02-26 14:46:47.842277017] process done ExitSuccess
+[2020-02-26 14:46:47.842703576] read: git ["config","--null","--list"]
+[2020-02-26 14:46:47.853478328] process done ExitSuccess
+ok
+[2020-02-26 14:46:47.855317715] process done ExitSuccess
+[2020-02-26 14:46:47.856835556] process done ExitSuccess
+
+"""]]
+
+I consider it a bug since options shouldn't be order dependent, and even if they were -- `--debug` is listed before `-c` in `git annex enableremote --help`:
+
+[[!format sh """
+$> git annex enableremote --help
+git-annex enableremote - enables git-annex to use a remote
+
+Usage: git-annex enableremote [NAME K=V ...]
+
+Available options:
+  --force                  allow actions that may lose annexed data
+  -F,--fast                avoid slow operations
+  -q,--quiet               avoid verbose output
+  -v,--verbose             allow verbose output (default)
+  -d,--debug               show debug messages
+  --no-debug               don't show debug messages
+  -b,--backend NAME        specify key-value backend to use
+  -N,--numcopies NUMBER    override default number of copies
+  --trust REMOTE           override trust setting
+  --semitrust REMOTE       override trust setting back to default
+  --untrust REMOTE         override trust setting to untrusted
+  -c,--config NAME=VALUE   override git configuration setting
+  --user-agent NAME        override default User-Agent
+  --trust-glacier          Trust Amazon Glacier inventory
+  --notify-finish          show desktop notification after transfer finishes
+  --notify-start           show desktop notification after transfer starts
+  -h,--help                Show this help text
+
+For details, run: git-annex help enableremote
+
+$> git annex version             
+git-annex version: 7.20190819+git2-g908476a9b-1~ndall+1
+
+"""]]
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
+
