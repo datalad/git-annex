@@ -5,12 +5,16 @@ News for git-annex 8.20200226:
    You can prevent this, by runing: git config annex.autoupgraderepository false
    The upgrade process involves regenerating some sqlite databases. There are a
    couple consequences of the upgrade to keep in mind:
+
    * Any incremental fscks that were started in v7 won't resume where
      they left off in v8, but will instead begin again from the first file.
+
    * An interrupted export that was started in v7 won't resume where it left
      off after upgrade to v8; files will be re-uploaded to the export remote.
+
    * After the upgrade, git-annex will in some situations have to do extra
      work while it finishes populating its sqlite databases.
+
    Also, there are some behavior changes around adding dotfiles. While before
    git-annex add skipped adding dotfiles when operating on whole directories,
    and added dotfiles that were explicitly listed to the annex, it now adds
