@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-02-26T17:58:05Z"
+ content="""
+DNS is typically needed yes. That it gets a http response 
+from some server seems to imply it's able to resolve the IP address of
+the server. So I'd guess DNS is not the problem, unless it's resolving the
+*wrong* IP address and connecting to the wrong server. Which would be
+consistent with tcpdump not showing any traffic to the server.
+
+ncsd can be configured on some systems to do DNS lookups. It's normal
+for glibc to try to connect to nscd for a DNS lookup and fall back to a
+regular lookup when it's not installed. That seems to be all your strace is
+showing.
+
+The next line of your strace shows it connecting to 127.0.0.53
+That seems to be an address systemd sets up to use resolvd for dns.
+That connection seems to succeed, so I guess dns resolution proceeds using
+resolved.
+
+All this DNS stuff is completely normal glibc name resolution as far as I
+can see.
+
+My suggestion is to tcpdump the entire network traffic when git-annex is
+running, and analize that.
+"""]]
