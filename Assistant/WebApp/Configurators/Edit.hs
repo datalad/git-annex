@@ -256,8 +256,7 @@ getRepoInfo :: Maybe Remote.Remote -> Remote.RemoteConfig -> Widget
 getRepoInfo (Just r) c = case fromProposedAccepted <$> M.lookup typeField c of
 	Just "S3" -> do
 #ifdef WITH_S3
-		pc <- liftAnnex $ either mempty id . parseRemoteConfig c
-			<$> Remote.configParser S3.remote c
+		pc <- liftAnnex $ parsedRemoteConfig S3.remote c
 		if S3.configIA pc
 			then IA.getRepoInfo c
 			else AWS.getRepoInfo c
@@ -283,7 +282,8 @@ getRepoEncryption (Just _) (Just c) = case extractCipher pc of
 	(Just (EncryptedCipher _ _ ks)) -> desckeys ks
 	(Just (SharedPubKeyCipher _ ks)) -> desckeys ks
   where
-	pc = either mempty id $ parseEncryptionConfig c
+	pc = either (const (Remote.ParsedRemoteConfig mempty mempty)) id $
+		parseEncryptionConfig c
 	desckeys (KeyIds { keyIds = ks }) = do
 		cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 		knownkeys <- liftIO (secretKeys cmd)

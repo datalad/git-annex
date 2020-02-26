@@ -1,4 +1,4 @@
-git-annex (8.20191107) upstream; urgency=medium
+git-annex (8.20200226) upstream; urgency=medium
   
   This version of git-annex uses repository version 8 for all repositories.
 
@@ -20,7 +20,22 @@ git-annex (8.20191107) upstream; urgency=medium
   and added dotfiles that were explicitly listed to the annex, it now adds
   dotfiles to git by default, unless annex.dotfiles is set to true.
 
- -- Joey Hess <id@joeyh.name>  Thu, 07 Nov 2019 13:21:11 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
+
+git-annex (7.20200226) upstream; urgency=high
+
+  There was a serious regression in gcrypt and encrypted git-lfs remotes.
+  Since version 7.20200202.7, git-annex incorrectly stored content
+  on those remotes without encrypting it.
+
+  If your remotes are affected, you will want to make sure to delete
+  any content that git-annex has stored on them that is not encrypted!
+
+  One way to do so is, before upgrading to this version,
+  run git-annex move --from the affected remotes. It will move
+  only the content that was not encrypted.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
 
 git-annex (7.20191024) upstream; urgency=medium
 

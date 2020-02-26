@@ -74,8 +74,9 @@ scsField = Accepted "shared-convergence-secret"
 furlField :: RemoteConfigField
 furlField = Accepted "introducer-furl"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
 	hdl <- liftIO $ TahoeHandle
 		<$> maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)

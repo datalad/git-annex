@@ -73,8 +73,9 @@ remote = specialRemoteType $ RemoteType
 urlField :: RemoteConfigField
 urlField = Accepted "url"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	-- If the repo uses gcrypt, get the underlaying repo without the
 	-- gcrypt url, to do LFS endpoint discovery on.
 	r' <- if Git.GCrypt.isEncrypted r
@@ -85,14 +86,18 @@ gen r u c gc rs = do
 	sem <- liftIO $ MSemN.new 1
 	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing sem r' gc
 	cst <- remoteCost gc expensiveRemoteCost
+	let specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve git-lfs
+		{ chunkConfig = NoChunks
+		}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store rs h)
 		(simplyPrepare $ retrieve rs h)
 		(simplyPrepare $ remove h)
 		(simplyPrepare $ checkKey rs h)
-		(this cst)
+		(this c cst)
   where
-	this cst = Remote
+	this c cst = Remote
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
@@ -122,14 +127,10 @@ gen r u c gc rs = do
 		-- content cannot be removed from a git-lfs repo
 		, appendonly = True
 		, mkUnavailable = return Nothing
-		, getInfo = gitRepoInfo (this cst)
+		, getInfo = gitRepoInfo (this c cst)
 		, claimUrl = Nothing
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
-		}
-	specialcfg = (specialRemoteCfg c)
-		-- chunking would not improve git-lfs
-		{ chunkConfig = NoChunks
 		}
 
 mySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)

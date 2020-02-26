@@ -54,8 +54,9 @@ androiddirectoryField = Accepted "androiddirectory"
 androidserialField :: RemoteConfigField
 androidserialField = Accepted "androidserial"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	let this = Remote
 		{ uuid = u
 		-- adb operates over USB or wifi, so is not as cheap

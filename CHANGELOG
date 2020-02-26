@@ -1,4 +1,4 @@
-git-annex (8.20200221) UNRELEASED; urgency=medium
+git-annex (8.20200226) UNRELEASED; urgency=medium
 
   * New v8 repository version.
   * v7 upgrades automatically to v8. The upgrade deletes old sqlite
@@ -19,8 +19,6 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
     that no longer adds them to the annex, but to git. This behavior
     can be configured with annex.dotfiles.
   * add: Removed the --include-dotfiles option.
-  * Bugfix: export --tracking (a deprecated option) set 
-    annex-annex-tracking-branch, instead of annex-tracking-branch.
   * initremote, enableremote: Set remote.name.skipFetchAll when
     the remote cannot be fetched from by git, so git fetch --all
     will not try to use it.
@@ -34,12 +32,24 @@ git-annex (8.20200221) UNRELEASED; urgency=medium
   * Auto upgrades from older repo versions, like v5, now jump right to v8.
   * Extended annex.security.allowed-ip-addresses to let specific ports
     of an IP address to be used, while denying use of other ports.
-  * Bugfix to getting content from an export remote with -J, when the
-    export database was not yet populated.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
+
+git-annex (7.20200226) upstream; urgency=high
+
+  * Fix serious regression in gcrypt and encrypted git-lfs remotes.
+    Since version 7.20200202.7, git-annex incorrectly stored content
+    on those remotes without encrypting it.
+    If your remotes are affected, you will want to make sure to delete
+    any content that git-annex has stored on them that is not encrypted!
   * info: Fix display of the encryption value.
     (Some debugging junk had crept in.)
+  * Bugfix to getting content from an export remote with -J, when the
+    export database was not yet populated.
+  * Bugfix: export --tracking (a deprecated option) set 
+    annex-annex-tracking-branch, instead of annex-tracking-branch.
 
- -- Joey Hess <id@joeyh.name>  Wed, 19 Feb 2020 12:48:58 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
 
 git-annex (7.20200219) upstream; urgency=medium
 

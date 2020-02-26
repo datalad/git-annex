@@ -22,7 +22,9 @@ type RemoteConfigField = ProposedAccepted String
 type RemoteConfig = M.Map RemoteConfigField (ProposedAccepted String)
 
 {- Before being used a RemoteConfig has to be parsed. -}
-type ParsedRemoteConfig = M.Map RemoteConfigField RemoteConfigValue
+data ParsedRemoteConfig = ParsedRemoteConfig
+	(M.Map RemoteConfigField RemoteConfigValue)
+	RemoteConfig
 
 {- Remotes can have configuration values of many types, so use Typeable
  - to let them all be stored in here. -}

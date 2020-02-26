@@ -15,7 +15,7 @@ import Creds
 import qualified Remote.WebDAV as WebDAV
 import Assistant.WebApp.MakeRemote
 import qualified Remote
-import Types.Remote (RemoteConfig, configParser)
+import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
 import Git.Types (RemoteName)
@@ -62,8 +62,7 @@ postEnableWebDAVR uuid = do
 	let url = fromProposedAccepted $ fromJust $ M.lookup (Accepted "url") c
 	mcreds <- liftAnnex $ do
 		dummycfg <- liftIO dummyRemoteGitConfig
-		pc <- either mempty id . parseRemoteConfig c
-			<$> configParser WebDAV.remote c
+		pc <- parsedRemoteConfig WebDAV.remote c
 		getRemoteCredPairFor "webdav" pc dummycfg (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $

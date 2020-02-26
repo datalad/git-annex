@@ -62,12 +62,13 @@ externaltypeField = Accepted "externaltype"
 readonlyField :: RemoteConfigField
 readonlyField = Accepted "readonly"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs
 	-- readonly mode only downloads urls; does not use external program
 	| remoteAnnexReadOnly gc = do
+		c <- parsedRemoteConfig remote rc
 		cst <- remoteCost gc expensiveRemoteCost
-		mk cst GloballyAvailable
+		mk c cst GloballyAvailable
 			readonlyStorer
 			retrieveUrl
 			readonlyRemoveKey
@@ -79,6 +80,7 @@ gen r u c gc rs
 			exportUnsupported
 			exportUnsupported
 	| otherwise = do
+		c <- parsedRemoteConfig remote rc
 		external <- newExternal externaltype (Just u) c (Just gc) (Just rs)
 		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
@@ -101,7 +103,7 @@ gen r u c gc rs
 		let cheapexportsupported = if exportsupported
 			then exportIsSupported
 			else exportUnsupported
-		mk cst avail
+		mk c cst avail
 			(storeKeyM external)
 			(retrieveKeyFileM external)
 			(removeKeyM external)
@@ -113,7 +115,7 @@ gen r u c gc rs
 			exportactions
 			cheapexportsupported
   where
-	mk cst avail tostore toretrieve toremove tocheckkey towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported = do
+	mk c cst avail tostore toretrieve toremove tocheckkey towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported = do
 		let rmt = Remote
 			{ uuid = u
 			, cost = cst
@@ -144,7 +146,7 @@ gen r u c gc rs
 			, availability = avail
 			, remotetype = remote 
 				{ exportSupported = cheapexportsupported }
-			, mkUnavailable = gen r u c
+			, mkUnavailable = gen r u rc
 				(gc { remoteAnnexExternalType = Just "!dne!" }) rs
 			, getInfo = togetinfo
 			, claimUrl = toclaimurl
@@ -409,25 +411,28 @@ handleRequest' st external req mp responsehandler
 		send $ VALUE $ fromRawFilePath $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
-			modifyTVar' (externalConfig st) $
-				M.insert (Accepted setting) $
-					RemoteConfigValue (PassedThrough value)
+			modifyTVar' (externalConfig st) $ \(ParsedRemoteConfig m c) ->
+				let m' = M.insert
+					(Accepted setting)
+					(RemoteConfigValue (PassedThrough value))
+					m
+				in ParsedRemoteConfig m' c
 			modifyTVar' (externalConfigChanges st) $ \f ->
 				f . M.insert (Accepted setting) (Accepted value)
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- fromMaybe ""
-			. M.lookup (Accepted setting)
+			. (M.lookup (Accepted setting))
 			. getRemoteConfigPassedThrough
 			<$> liftIO (atomically $ readTVar $ externalConfig st)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do
 			let v = externalConfig st
-			c <- liftIO $ atomically $ readTVar v
-			c' <- setRemoteCredPair' RemoteConfigValue id encryptionAlreadySetup c gc
+			(ParsedRemoteConfig m c) <- liftIO $ atomically $ readTVar v
+			m' <- setRemoteCredPair' RemoteConfigValue (\m' -> ParsedRemoteConfig m' c) encryptionAlreadySetup m gc
 				(credstorage setting u)
 				(Just (login, password))
-			void $ liftIO $ atomically $ swapTVar v c'
+			void $ liftIO $ atomically $ swapTVar v (ParsedRemoteConfig m' c)
 		_ -> senderror "cannot send SETCREDS here"
 	handleRemoteRequest (GETCREDS setting) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do

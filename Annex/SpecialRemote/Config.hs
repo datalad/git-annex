@@ -11,7 +11,8 @@
 module Annex.SpecialRemote.Config where
 
 import Common
-import Types.Remote (RemoteConfigField, RemoteConfig)
+import Types.Remote (RemoteConfigField, RemoteConfig, configParser)
+import Types
 import Types.UUID
 import Types.ProposedAccepted
 import Types.RemoteConfig
@@ -106,6 +107,10 @@ commonFieldParsers =
 		(FieldDesc "type of special remote")
 	, trueFalseParser autoEnableField False
 		(FieldDesc "automatically enable special remote")
+	, yesNoParser exportTreeField False
+		(FieldDesc "export trees of files to this remote")
+	, yesNoParser importTreeField False
+		(FieldDesc "import trees of files from this remote")
 	, optionalStringParser preferreddirField
 		(FieldDesc "directory whose content is preferred")
 	]
@@ -162,7 +167,7 @@ findByRemoteConfig matching = map sameasuuid . filter (matching . snd) . M.toLis
 
 {- Extracts a value from ParsedRemoteConfig. -}
 getRemoteConfigValue :: HasCallStack => Typeable v => RemoteConfigField -> ParsedRemoteConfig -> Maybe v
-getRemoteConfigValue f m = case M.lookup f m of
+getRemoteConfigValue f (ParsedRemoteConfig m _) = case M.lookup f m of
 	Just (RemoteConfigValue v) -> case cast v of
 		Just v' -> Just v'
 		Nothing -> error $ unwords
@@ -176,12 +181,19 @@ getRemoteConfigValue f m = case M.lookup f m of
 
 {- Gets all fields that remoteConfigRestPassthrough matched. -}
 getRemoteConfigPassedThrough :: ParsedRemoteConfig -> M.Map RemoteConfigField String
-getRemoteConfigPassedThrough = M.mapMaybe $ \(RemoteConfigValue v) ->
-	case cast v of
-		Just (PassedThrough s) -> Just s
-		Nothing -> Nothing
+getRemoteConfigPassedThrough (ParsedRemoteConfig m _) = 
+	flip M.mapMaybe m $ \(RemoteConfigValue v) ->
+		case cast v of
+			Just (PassedThrough s) -> Just s
+			Nothing -> Nothing
 
 newtype PassedThrough = PassedThrough String
+
+parsedRemoteConfig :: RemoteType -> RemoteConfig -> Annex ParsedRemoteConfig
+parsedRemoteConfig t c = either (const emptycfg) id . parseRemoteConfig c 
+	<$> configParser t c
+  where
+	emptycfg = ParsedRemoteConfig mempty c
 
 parseRemoteConfig :: RemoteConfig -> RemoteConfigParser -> Either String ParsedRemoteConfig
 parseRemoteConfig c rpc =
@@ -195,8 +207,10 @@ parseRemoteConfig c rpc =
 		in if not (null leftovers')
 			then Left $ "Unexpected parameters: " ++
 				unwords (map (fromProposedAccepted . fst) leftovers')
-			else Right $ M.fromList $
-				l ++ map (uncurry passthrough) passover
+			else
+				let m = M.fromList $
+					l ++ map (uncurry passthrough) passover
+				in Right (ParsedRemoteConfig m c)
 	go l c' (p:rest) = do
 		let f = parserForField p
 		(valueParser p) (M.lookup f c) c >>= \case

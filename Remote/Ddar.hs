@@ -48,20 +48,25 @@ remote = specialRemoteType $ RemoteType
 ddarrepoField :: RemoteConfigField
 ddarrepoField = Accepted "ddarrepo"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = do
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc $
 		if ddarLocal ddarrepo
 			then nearlyCheapRemoteCost
 			else expensiveRemoteCost
+	let specialcfg = (specialRemoteCfg c)
+		-- chunking would not improve ddar
+		{ chunkConfig = NoChunks
+		}
 	return $ Just $ specialRemote' specialcfg c
 		(simplyPrepare $ store ddarrepo)
 		(simplyPrepare $ retrieve ddarrepo)
 		(simplyPrepare $ remove ddarrepo)
 		(simplyPrepare $ checkKey ddarrepo)
-		(this cst)
+		(this c cst)
   where
-	this cst = Remote
+	this c cst = Remote
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
@@ -97,10 +102,6 @@ gen r u c gc rs = do
 		, remoteStateHandle = rs
 		}
 	ddarrepo = maybe (giveup "missing ddarrepo") (DdarRepo gc) (remoteAnnexDdarRepo gc)
-	specialcfg = (specialRemoteCfg c)
-		-- chunking would not improve ddar
-		{ chunkConfig = NoChunks
-		}
 
 ddarSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 ddarSetup _ mu _ c gc = do

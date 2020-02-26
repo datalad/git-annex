@@ -63,10 +63,12 @@ urlField = Accepted "url"
 davcredsField :: RemoteConfigField
 davcredsField = Accepted "davcreds"
 
-gen :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen r u rc gc rs = new
+	<$> parsedRemoteConfig remote rc
+	<*> remoteCost gc expensiveRemoteCost
   where
-	new cst = Just $ specialRemote c
+	new c cst = Just $ specialRemote c
 		(prepareDAV this $ store chunkconfig)
 		(prepareDAV this $ retrieve chunkconfig)
 		(prepareDAV this $ remove)
@@ -108,7 +110,7 @@ gen r u c gc rs = new <$> remoteCost gc expensiveRemoteCost
 			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
-			, mkUnavailable = gen r u (M.insert urlField (RemoteConfigValue "http://!dne!/") c) gc rs
+			, mkUnavailable = gen r u (M.insert urlField (Proposed "http://!dne!/") rc) gc rs
 			, getInfo = includeCredsInfo c (davCreds u) $
 				[("url", fromMaybe "unknown" $ getRemoteConfigValue urlField c)]
 			, claimUrl = Nothing
