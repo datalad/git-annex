@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="comment 5"
+ date="2020-02-26T13:46:22Z"
+ content="""
+Yes the local IP is already listed in the security parameters, the error message was quite informative.
+There are no proxy configured on any of the machines.
+tcpdump should show me any data going out to the server.
+
+I looked at the AWS.S3 package, and it seems some bucket resolve function might rely on the DNS, correct me if I am wrong.
+The requeststyle is set to path as this is what minio can provide, so the 
+Could it be that the local DNS do not support some functions that S3 rely on?
+However, I already created remotes and pushed data from these servers in the past and I don't think the DNS server has changed since.
+
+As the hotspot test shows, this is an interaction of the local network configuration with git-annex+dependencies code, but I can't figure out how to debug that.
+
+Thanks.
+"""]]
