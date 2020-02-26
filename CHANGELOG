@@ -7,6 +7,8 @@ git-annex (7.20200226) upstream; urgency=high
     any content that git-annex has stored on them that is not encrypted!
   * info: Fix display of the encryption value.
     (Some debugging junk had crept in.)
+  * Bugfix to getting content from an export remote with -J, when the
+    export database was not yet populated.
 
  -- Joey Hess <id@joeyh.name>  Wed, 26 Feb 2020 17:18:16 -0400
 
