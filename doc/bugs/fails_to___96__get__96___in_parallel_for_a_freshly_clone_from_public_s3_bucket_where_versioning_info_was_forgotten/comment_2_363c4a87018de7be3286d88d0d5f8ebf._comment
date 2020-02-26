@@ -1,0 +1,231 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="requires -c annex.retry=2 to workaround"
+ date="2020-02-26T17:34:55Z"
+ content="""
+no, it would not be easily possible to reproduce such a dataset, but there is an ample number of them now available from openneuro.
+Another example on ds000115, where no versioning information seems to be available as well.
+
+<details>
+<summary>But it seems to be getting files just fine on a fast box with fast network (smaug) and annex 7.20190819+git2-g908476a9b-1~ndall+1</summary> 
+
+```shell
+$> ( sudo rm -rf tmpds && git clone https://github.com/OpenNeuroDatasets/ds000115.git tmpds && builtin cd tmpds && git annex enableremote s3-PUBLIC && git annex get -J 8 --json sub-01 && echo \"success\" || { echo \"try again\"; gi
+t annex get -J 8 sub-01; } )
+Cloning into 'tmpds'...
+remote: Enumerating objects: 4222, done.
+remote: Counting objects: 100% (4222/4222), done.
+remote: Compressing objects: 100% (2921/2921), done.
+remote: Total 4222 (delta 259), reused 4222 (delta 259), pack-reused 0
+Receiving objects: 100% (4222/4222), 389.19 KiB | 4.93 MiB/s, done.
+Resolving deltas: 100% (259/259), done.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+enableremote s3-PUBLIC ok
+(recording state in git...)
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  unknown export location
+  unknown export location
+  unknown export location
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+{\"command\":\"get\",\"note\":\"from s3-PUBLIC...\nfrom s3-PUBLIC...\nchecksum...\",\"success\":true,\"key\":\"MD5E-s19916325--b0bc24ff278e3ef7031e6c801fc6c694.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter2backtask_bold.nii.gz\"}
+{\"command\":\"get\",\"note\":\"from s3-PUBLIC...\nchecksum...\",\"success\":true,\"key\":\"MD5E-s19915954--e9f91cc343144c541ca35831c62e9503.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter1backtask_bold.nii.gz\"}
+{\"command\":\"get\",\"note\":\"from s3-PUBLIC...\nfrom s3-PUBLIC...\nchecksum...\",\"success\":true,\"key\":\"MD5E-s35278866--09ae0c4f8a8eb6d379104e9ab9ca577a.nii.gz\",\"file\":\"sub-01/anat/sub-01_T1w.nii.gz\"}
+{\"command\":\"get\",\"note\":\"from s3-PUBLIC...\nfrom s3-PUBLIC...\nchecksum...\",\"success\":true,\"key\":\"MD5E-s19875519--1a412c009b3d247b95f774b9099d55a8.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter0backtask_bold.nii.gz\"}
+success
+2 16341.....................................:Wed 26 Feb 2020 12:19:20 PM EST:.
+smaug:/mnt/btrfs/scrap/tmp
+$> git annex version
+git-annex version: 7.20190819+git2-g908476a9b-1~ndall+1
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512
+E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 S
+HA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+
+```
+</details>
+
+<details>
+<summary>while it fails to get all files upon initial attempt on my laptop with annex 7.20200204+git62-gcc4521068-1~ndall+1 </summary> 
+
+```shell
+lena:/tmp
+$> ( sudo rm -rf tmpds && git clone https://github.com/OpenNeuroDatasets/ds000115.git tmpds && builtin cd tmpds && git annex enableremote s3-PUBLIC && git annex get -J 8 --json sub-01 && echo \"success\" || { echo \"try again\"; git annex get -J 8 sub-01; } )
+Cloning into 'tmpds'...
+remote: Enumerating objects: 4222, done.
+remote: Counting objects: 100% (4222/4222), done.
+remote: Compressing objects: 100% (2921/2921), done.
+remote: Total 4222 (delta 259), reused 4222 (delta 259), pack-reused 0
+Receiving objects: 100% (4222/4222), 389.19 KiB | 753.00 KiB/s, done.
+Resolving deltas: 100% (259/259), done.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+enableremote s3-PUBLIC ok
+(recording state in git...)
+  8.76s user 3.42s system 99% cpu 12.267 total
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  unknown export location
+  unknown export location
+  unknown export location
+{\"command\":\"get\",\"wanted\":[{\"here\":false,\"uuid\":\"3970e64d-b24a-48e7-83b4-1ec6fdaa229d\",\"description\":\"[s3-PUBLIC]\"},{\"here\":false,\"uuid\":\"4a13d847-362b-4211-9124-861b9a8f4c13\",\"description\":\"root@6dedfdc60b41:/datalad/ds000115\"}],\"note\":\"from s3-PUBLIC...\nUnable to access these remotes: s3-PUBLIC\nTry making some of these repositories available:\n\t3970e64d-b24a-48e7-83b4-1ec6fdaa229d -- [s3-PUBLIC]\n \t4a13d847-362b-4211-9124-861b9a8f4c13 -- root@6dedfdc60b41:/datalad/ds000115\n\n(Note that these git remotes have annex-ignore set: origin)\",\"skipped\":[],\"success\":false,\"key\":\"MD5E-s35278866--09ae0c4f8a8eb6d379104e9ab9ca577a.nii.gz\",\"file\":\"sub-01/anat/sub-01_T1w.nii.gz\"}
+{\"command\":\"get\",\"wanted\":[{\"here\":false,\"uuid\":\"3970e64d-b24a-48e7-83b4-1ec6fdaa229d\",\"description\":\"[s3-PUBLIC]\"},{\"here\":false,\"uuid\":\"4a13d847-362b-4211-9124-861b9a8f4c13\",\"description\":\"root@6dedfdc60b41:/datalad/ds000115\"}],\"note\":\"from s3-PUBLIC...\nUnable to access these remotes: s3-PUBLIC\nTry making some of these repositories available:\n\t3970e64d-b24a-48e7-83b4-1ec6fdaa229d -- [s3-PUBLIC]\n \t4a13d847-362b-4211-9124-861b9a8f4c13 -- root@6dedfdc60b41:/datalad/ds000115\n\n(Note that these git remotes have annex-ignore set: origin)\",\"skipped\":[],\"success\":false,\"key\":\"MD5E-s19915954--e9f91cc343144c541ca35831c62e9503.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter1backtask_bold.nii.gz\"}
+{\"command\":\"get\",\"wanted\":[{\"here\":false,\"uuid\":\"3970e64d-b24a-48e7-83b4-1ec6fdaa229d\",\"description\":\"[s3-PUBLIC]\"},{\"here\":false,\"uuid\":\"4a13d847-362b-4211-9124-861b9a8f4c13\",\"description\":\"root@6dedfdc60b41:/datalad/ds000115\"}],\"note\":\"from s3-PUBLIC...\nUnable to access these remotes: s3-PUBLIC\nTry making some of these repositories available:\n\t3970e64d-b24a-48e7-83b4-1ec6fdaa229d -- [s3-PUBLIC]\n \t4a13d847-362b-4211-9124-861b9a8f4c13 -- root@6dedfdc60b41:/datalad/ds000115\n\n(Note that these git remotes have annex-ignore set: origin)\",\"skipped\":[],\"success\":false,\"key\":\"MD5E-s19916325--b0bc24ff278e3ef7031e6c801fc6c694.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter2backtask_bold.nii.gz\"}
+{\"command\":\"get\",\"note\":\"from s3-PUBLIC...\nchecksum...\",\"success\":true,\"key\":\"MD5E-s19875519--1a412c009b3d247b95f774b9099d55a8.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter0backtask_bold.nii.gz\"}
+git-annex: get: 3 failed
+try again
+get sub-01/func/sub-01_task-letter1backtask_bold.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get sub-01/func/sub-01_task-letter2backtask_bold.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+get sub-01/anat/sub-01_T1w.nii.gz (from s3-PUBLIC...) 
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+(checksum...) ok
+(recording state in git...)
+( sudo rm -rf tmpds && git clone  tmpds && builtin cd tmpds && git annex   &&}  12.89s user 6.48s system 17% cpu 1:48.24 total
+(dev3) 1 30089.....................................:Wed 26 Feb 2020 12:23:12 PM EST:.
+lena:/tmp
+$> git annex version
+git-annex version: 7.20200204+git62-gcc4521068-1~ndall+1
+
+```
+</details>
+
+or 7.20190819+git2-g908476a9b-1~ndall+1 as well.  So it seems to boil down to slow(er) networking causing annex too quickly give up.
+
+<details>
+<summary>Running get with --debug shows only a single Request being sent</summary> 
+
+```shell
+lena:/tmp
+$> ( sudo rm -rf tmpds && git clone https://github.com/OpenNeuroDatasets/ds000115.git tmpds && builtin cd tmpds && git annex enableremote s3-PUBLIC && git annex get --debug -J 8 --json sub-01 ; ) 
+Cloning into 'tmpds'...
+remote: Enumerating objects: 4222, done.
+remote: Counting objects: 100% (4222/4222), done.
+remote: Compressing objects: 100% (2921/2921), done.
+remote: Total 4222 (delta 259), reused 4222 (delta 259), pack-reused 0
+Receiving objects: 100% (4222/4222), 389.19 KiB | 935.00 KiB/s, done.
+Resolving deltas: 100% (259/259), done.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+enableremote s3-PUBLIC ok
+(recording state in git...)
+[2020-02-26 12:26:19.646897501] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2020-02-26 12:26:19.655216807] process done ExitSuccess
+[2020-02-26 12:26:19.655320586] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-02-26 12:26:19.658449065] process done ExitSuccess
+[2020-02-26 12:26:19.658605031] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..9088cb243b450cddf9d0efc28f7f4ae057ffad23\",\"--pretty=%H\",\"-n1\"]
+[2020-02-26 12:26:19.662572852] process done ExitSuccess
+[2020-02-26 12:26:19.664852493] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-02-26 12:26:19.668114175] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-02-26 12:26:19.67758125] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2020-02-26 12:26:19.684929526] process done ExitSuccess
+[2020-02-26 12:26:19.685314107] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2020-02-26 12:26:19.69392093] process done ExitSuccess
+[2020-02-26 12:26:19.69430796] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"sub-01\"]
+[2020-02-26 12:26:19.700836327] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-02-26 12:26:19.700836297] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-02-26 12:26:19.701069494] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-02-26 12:26:19.701090289] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-02-26 12:26:19.702350099] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-02-26 12:26:19.702739318] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-02-26 12:26:19.703280813] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-02-26 12:26:19.703705127] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  Remote is configured to use versioning, but no S3 version ID is recorded for this key
+  unknown export location
+  unknown export location
+  unknown export location
+[2020-02-26 12:26:19.758474799] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\",\"9b2dd0df25c9725a5a999d86746cf34d58942a0d\",\"--\"]
+{\"command\":\"get\",\"wanted\":[{\"here\":false,\"uuid\":\"3970e64d-b24a-48e7-83b4-1ec6fdaa229d\",\"description\":\"[s3-PUBLIC]\"},{\"here\":false,\"uuid\":\"4a13d847-362b-4211-9124-861b9a8f4c13\",\"description\":\"root@6dedfdc60b41:/datalad/ds000115\"}],\"note\":\"from s3-PUBLIC...\nUnable to access these remotes: s3-PUBLIC\nTry making some of these repositories available:\n\t3970e64d-b24a-48e7-83b4-1ec6fdaa229d -- [s3-PUBLIC]\n \t4a13d847-362b-4211-9124-861b9a8f4c13 -- root@6dedfdc60b41:/datalad/ds000115\n\n(Note that these git remotes have annex-ignore set: origin)\",\"skipped\":[],\"success\":false,\"key\":\"MD5E-s19916325--b0bc24ff278e3ef7031e6c801fc6c694.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter2backtask_bold.nii.gz\"}
+{\"command\":\"get\",\"wanted\":[{\"here\":false,\"uuid\":\"3970e64d-b24a-48e7-83b4-1ec6fdaa229d\",\"description\":\"[s3-PUBLIC]\"},{\"here\":false,\"uuid\":\"4a13d847-362b-4211-9124-861b9a8f4c13\",\"description\":\"root@6dedfdc60b41:/datalad/ds000115\"}],\"note\":\"from s3-PUBLIC...\nUnable to access these remotes: s3-PUBLIC\nTry making some of these repositories available:\n\t3970e64d-b24a-48e7-83b4-1ec6fdaa229d -- [s3-PUBLIC]\n \t4a13d847-362b-4211-9124-861b9a8f4c13 -- root@6dedfdc60b41:/datalad/ds000115\n\n(Note that these git remotes have annex-ignore set: origin)\",\"skipped\":[],\"success\":false,\"key\":\"MD5E-s19915954--e9f91cc343144c541ca35831c62e9503.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter1backtask_bold.nii.gz\"}
+{\"command\":\"get\",\"wanted\":[{\"here\":false,\"uuid\":\"3970e64d-b24a-48e7-83b4-1ec6fdaa229d\",\"description\":\"[s3-PUBLIC]\"},{\"here\":false,\"uuid\":\"4a13d847-362b-4211-9124-861b9a8f4c13\",\"description\":\"root@6dedfdc60b41:/datalad/ds000115\"}],\"note\":\"from s3-PUBLIC...\nUnable to access these remotes: s3-PUBLIC\nTry making some of these repositories available:\n\t3970e64d-b24a-48e7-83b4-1ec6fdaa229d -- [s3-PUBLIC]\n \t4a13d847-362b-4211-9124-861b9a8f4c13 -- root@6dedfdc60b41:/datalad/ds000115\n\n(Note that these git remotes have annex-ignore set: origin)\",\"skipped\":[],\"success\":false,\"key\":\"MD5E-s35278866--09ae0c4f8a8eb6d379104e9ab9ca577a.nii.gz\",\"file\":\"sub-01/anat/sub-01_T1w.nii.gz\"}
+[2020-02-26 12:26:19.766878604] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-02-26 12:26:19.767158129] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-02-26 12:26:19.851709223] process done ExitSuccess
+[2020-02-26 12:26:19.947314114] Request {
+  host                 = \"openneuro.org.s3.amazonaws.com\"
+  port                 = 80
+  secure               = False
+  requestHeaders       = [(\"Accept-Encoding\",\"identity\"),(\"User-Agent\",\"git-annex/7.20190819+git2-g908476a9b-1~ndall+1\")]
+  path                 = \"/ds000115/sub-01/func/sub-01_task-letter0backtask_bold.nii.gz\"
+  queryString          = \"\"
+  method               = \"GET\"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+
+
+
+Comment from Yarik:  WAITING here  FOR SECONDS for any output
+
+
+{\"command\":\"get\",\"note\":\"from s3-PUBLIC...\nchecksum...\",\"success\":true,\"key\":\"MD5E-s19875519--1a412c009b3d247b95f774b9099d55a8.nii.gz\",\"file\":\"sub-01/func/sub-01_task-letter0backtask_bold.nii.gz\"}
+[2020-02-26 12:26:37.921920147] process done ExitSuccess
+[2020-02-26 12:26:37.922115361] process done ExitSuccess
+[2020-02-26 12:26:37.922365844] process done ExitSuccess
+[2020-02-26 12:26:37.922600701] process done ExitSuccess
+[2020-02-26 12:26:37.922863082] process done ExitSuccess
+[2020-02-26 12:26:37.923112144] process done ExitSuccess
+[2020-02-26 12:26:37.923365928] process done ExitSuccess
+[2020-02-26 12:26:37.923571279] process done ExitSuccess
+[2020-02-26 12:26:37.923756395] process done ExitSuccess
+[2020-02-26 12:26:37.923937489] process done ExitSuccess
+[2020-02-26 12:26:37.92408496] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2020-02-26 12:26:37.924519626] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2020-02-26 12:26:37.928315529] process done ExitSuccess
+[2020-02-26 12:26:37.92837579] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-02-26 12:26:37.931065243] process done ExitSuccess
+[2020-02-26 12:26:37.931117591] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2020-02-26 12:26:37.935370176] process done ExitSuccess
+[2020-02-26 12:26:37.935408603] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"e7455c411db4691a4ba0571fa0f6c804ad7dfc2c\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+[2020-02-26 12:26:37.938230054] process done ExitSuccess
+[2020-02-26 12:26:37.938266402] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"4c1269e4de04001766e6dcf0373b726409f4f4df\"]
+[2020-02-26 12:26:37.940995248] process done ExitSuccess
+[2020-02-26 12:26:37.941574513] process done ExitSuccess
+[2020-02-26 12:26:37.941834172] process done ExitSuccess
+[2020-02-26 12:26:37.942081282] process done ExitSuccess
+git-annex: get: 3 failed
+
+$> git annex version
+git-annex version: 7.20190819+git2-g908476a9b-1~ndall+1
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+
+```
+</details>
+
+and adding ` -c annex.retry=2` seems to be sufficient to workaround the issue and then `get` works for me even on the laptop. 
+"""]]
