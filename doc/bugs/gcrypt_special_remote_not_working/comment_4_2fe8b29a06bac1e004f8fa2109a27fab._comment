@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-02-26T22:34:35Z"
+ content="""
+Hmm, one idea is that git-annex fsck --from remote, when the remote is
+encrypted, could check if the non-encrypted key is present. If so, it
+could warn loudly.
+
+(I don't think it could delete it safely; the user would still have to do
+that. Deleting it might violate numcopies and lead to data loss. It
+could move it to the local repo, but that risks fsck filling up the local
+repo, and also it's not guaranteed that the local repo is a place the user
+expects to continue storing data; it could even be a throwaway repo they're
+going to nuke after the fsck.)
+
+This does make a slow fsck path even slower, which is a bit of a heavy
+price to pay going forward. Although the belt-and-suspenders nature
+of checking that git-annex has not forgotten to encrypt some data may be
+worth it.
+"""]]
