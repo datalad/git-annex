@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-02-26T22:22:38Z"
+ content="""
+I'm releasing a fix now.
+
+It didn't seem practical to make git-annex automatically clean up any
+encrypted data that got stored by mistake. For one thing, this leakage may
+have consequences that git-annex users will need to work through on their
+own. (sigh) Also, I just didn't see a good way to make it automatically
+delete it.
+
+So, the release announcement just has this advice for how to recover:
+
+	If your remotes are affected, you will want to make sure to delete
+	any content that git-annex has stored on them that is not encrypted!
+
+	One way to do so is, before upgrading to this version,
+	run git-annex move --from the affected remotes. It will move
+	only the content that was not encrypted.
+
+I think that will be sufficient for most. It's also possible
+that some may need to run `git annex fsck --fast --from` on affected
+remotes, if git-annex got confused about encrypted content that was stored
+on them not being present, because it wrongly was looking for non-encrypted
+content. I think that would only be necessary if a similar fsck was
+run earlier using the broken git-annex version.
+
+If you have encountered this problem and need help with recovery, post
+a comment.
+
+Very sorry about this mess. [[todo/network_test_suite]] is needed to
+be sure such problems are caught.
+"""]]
