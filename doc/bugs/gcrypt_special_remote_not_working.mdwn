@@ -1,3 +1,5 @@
+[[!meta title="regression: encryption not used for gcrypt and git-lfs remotes"]]
+
 ### Please describe the problem.
 
 Adding a special gcrypt remote with encryption set to hybrid does not work as expected.
