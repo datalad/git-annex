@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-02-26T19:18:09Z"
+ content="""
+encrypted git-lfs remotes are also affected.
+
+The cause is that Remote.Git is used for all remotes with an url, which
+both of these have, and internally dispatches to generate them. But that
+means that the configParser from Remote.Git gets used for them, and it does
+not include the encryption fields.
+"""]]
