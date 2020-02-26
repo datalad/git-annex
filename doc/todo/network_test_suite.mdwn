@@ -20,6 +20,9 @@ More examples:
   could at least try to multicast back to the same host)
 * git-annex addurl and git-annex importfeed with http urls.
   And testing the various security configs that affect them.
+* The reversions where git-annex forgot to encrypt content stored
+  on gcrypt and git-lfs remotes could have been detected if there was a
+  test suite that tested them.
 
 This could be done as a new command or a flag to `git annex test`.
 In any case, the new test suite would need to be run somewhere;

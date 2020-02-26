@@ -48,3 +48,4 @@ remote annex size: 10 bytes
 
 I am using git-annex since 2014 for all kinds of situations and I am very grateful for all the work you've put into this software. It even gets better over time ;)
 
+> [[fixed|done]] in git-annex 7.20200226. --[[Joey]]
