@@ -1,6 +1,12 @@
 git-annex (8.20200227) UNRELEASED; urgency=medium
 
   * Bugfix: Don't ignore --debug when it is followed by -c.
+  * whereis: If a remote fails to report on urls where a key
+    is located, display a warning, rather than giving up and not displaying
+    any information.
+  * When external special remotes fail but neglect to provide an error
+    message, say what request failed, which is better than displaying an
+    empty error message to the user.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Feb 2020 00:44:11 -0400
 

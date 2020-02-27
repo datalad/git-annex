@@ -183,7 +183,8 @@ externalSetup _ mu _ c gc = do
 				=<< strictRemoteConfigParser external
 			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 				INITREMOTE_SUCCESS -> result ()
-				INITREMOTE_FAILURE errmsg -> Just $ giveup errmsg
+				INITREMOTE_FAILURE errmsg -> Just $ giveup $
+					respErrorMessage "INITREMOTE" errmsg
 				_ -> Nothing
 			-- Any config changes the external made before
 			-- responding to INITREMOTE need to be applied to
@@ -218,7 +219,7 @@ storeKeyM external = fileStorer $ \k f p ->
 			TRANSFER_SUCCESS Upload k' | k == k' -> result True
 			TRANSFER_FAILURE Upload k' errmsg | k == k' ->
 				Just $ do
-					warning errmsg
+					warning $ respErrorMessage "TRANSFER" errmsg
 					return (Result False)
 			_ -> Nothing
 
@@ -229,7 +230,8 @@ retrieveKeyFileM external = fileRetriever $ \d k p ->
 			TRANSFER_SUCCESS Download k'
 				| k == k' -> result ()
 			TRANSFER_FAILURE Download k' errmsg
-				| k == k' -> Just $ giveup errmsg
+				| k == k' -> Just $ giveup $
+					respErrorMessage "TRANSFER" errmsg
 			_ -> Nothing
 
 removeKeyM :: External -> Remover
@@ -240,7 +242,7 @@ removeKeyM external k = safely $
 				| k == k' -> result True
 			REMOVE_FAILURE k' errmsg
 				| k == k' -> Just $ do
-					warning errmsg
+					warning $ respErrorMessage "REMOVE" errmsg
 					return (Result False)
 			_ -> Nothing
 
@@ -254,7 +256,8 @@ checkPresentM external k = either giveup id <$> go
 			CHECKPRESENT_FAILURE k'
 				| k' == k -> result $ Right False
 			CHECKPRESENT_UNKNOWN k' errmsg
-				| k' == k -> result $ Left errmsg
+				| k' == k -> result $ Left $
+					respErrorMessage "CHECKPRESENT" errmsg
 			_ -> Nothing
 
 whereisKeyM :: External -> Key -> Annex [String]
@@ -270,7 +273,7 @@ storeExportM external f k loc p = safely $
 		TRANSFER_SUCCESS Upload k' | k == k' -> result True
 		TRANSFER_FAILURE Upload k' errmsg | k == k' ->
 			Just $ do
-				warning errmsg
+				warning $ respErrorMessage "TRANSFER" errmsg
 				return (Result False)
 		UNSUPPORTED_REQUEST -> Just $ do
 			warning "TRANSFEREXPORT not implemented by external special remote"
@@ -286,7 +289,7 @@ retrieveExportM external k loc d p = safely $
 			| k == k' -> result True
 		TRANSFER_FAILURE Download k' errmsg
 			| k == k' -> Just $ do
-				warning errmsg
+				warning $ respErrorMessage "TRANSFER" errmsg
 				return (Result False)
 		UNSUPPORTED_REQUEST -> Just $ do
 			warning "TRANSFEREXPORT not implemented by external special remote"
@@ -304,7 +307,8 @@ checkPresentExportM external k loc = either giveup id <$> go
 		CHECKPRESENT_FAILURE k'
 			| k' == k -> result $ Right False
 		CHECKPRESENT_UNKNOWN k' errmsg
-			| k' == k -> result $ Left errmsg
+			| k' == k -> result $ Left $
+				respErrorMessage "CHECKPRESENT" errmsg
 		UNSUPPORTED_REQUEST -> result $
 			Left "CHECKPRESENTEXPORT not implemented by external special remote"
 		_ -> Nothing
@@ -316,7 +320,7 @@ removeExportM external k loc = safely $
 			| k == k' -> result True
 		REMOVE_FAILURE k' errmsg
 			| k == k' -> Just $ do
-				warning errmsg
+				warning $ respErrorMessage "REMOVE" errmsg
 				return (Result False)
 		UNSUPPORTED_REQUEST -> Just $ do
 			warning "REMOVEEXPORT not implemented by external special remote"
@@ -684,12 +688,18 @@ checkPrepared st external = do
 						setprepared Prepared
 						return (Result ())
 					PREPARE_FAILURE errmsg -> Just $ do
-						setprepared $ FailedPrepare errmsg
-						giveup errmsg
+						let errmsg' = respErrorMessage "PREPARE" errmsg
+						setprepared $ FailedPrepare errmsg'
+						giveup errmsg'
 					_ -> Nothing
   where
 	setprepared status = liftIO $ atomically $ void $
 		swapTVar (externalPrepared st) status
+
+respErrorMessage :: String -> String -> String
+respErrorMessage req err
+	| null err = req ++ " failed with no reason given"
+	| otherwise = err
 
 {- Caches the cost in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its
@@ -743,7 +753,8 @@ checkUrlM external url =
 		CHECKURL_CONTENTS sz f -> result $ UrlContents sz $
 			if null f then Nothing else Just $ mkSafeFilePath f
 		CHECKURL_MULTI l -> result $ UrlMulti $ map mkmulti l
-		CHECKURL_FAILURE errmsg -> Just $ giveup errmsg
+		CHECKURL_FAILURE errmsg -> Just $ giveup $
+			respErrorMessage "CHECKURL" errmsg
 		UNSUPPORTED_REQUEST -> giveup "CHECKURL not implemented by external special remote"
 		_ -> Nothing
   where

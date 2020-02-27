@@ -92,7 +92,18 @@ getRemoteUrls key remote
 		<$> askremote
 		<*> claimedurls
   where
-	askremote = maybe (pure []) (flip id key) (whereisKey remote)
+	askremote = case whereisKey remote of
+		Nothing -> pure []
+		Just w -> tryNonAsync (w key) >>= \case
+			Right l -> pure l
+			Left e -> do
+				warning $ unwords
+					[ "unable to query remote"
+					, name remote
+					, "for urls:"
+					, show e
+					]
+				return []
 	claimedurls = do
 		us <- map fst 
 			. filter (\(_, d) -> d == OtherDownloader)
