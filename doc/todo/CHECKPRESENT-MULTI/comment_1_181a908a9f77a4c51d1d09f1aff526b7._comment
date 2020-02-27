@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="batch presence checking"
+ date="2020-02-27T20:33:44Z"
+ content="""
+Beyond individual large files, maybe this could speed up checking that a whole directory is present in an export remote, by using a command like [`gsutil ls`](https://cloud.google.com/storage/docs/gsutil/commands/ls) to list the present files, instead of calling [`gsutil stat`](https://cloud.google.com/storage/docs/gsutil/commands/stat) on each file individually.
+"""]]
