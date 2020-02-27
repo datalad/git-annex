@@ -65,3 +65,5 @@ git-annex version: 7.20190819+git2-g908476a9b-1~ndall+1
 [[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]
+
+> fixed in [8.20200226-3-gc089f395b](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=c089f395b0c7d6416a3d4f2bf3211404acfd5b0e) --[[yarikoptic]]
