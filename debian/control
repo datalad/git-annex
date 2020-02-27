@@ -121,7 +121,7 @@ Suggests:
 	tahoe-lafs,
 	libnss-mdns,
 	uftp,
-Breaks: datalad (< 0.11.1~)
+Breaks: datalad (< 0.12.3~)
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file
  contents into git. While that may seem paradoxical, it is useful when
