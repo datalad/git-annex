@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -104,6 +104,7 @@ data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, repoadjustment :: (Git.Repo -> IO Git.Repo)
 	, gitconfig :: GitConfig
+	, gitconfigadjustment :: (GitConfig -> GitConfig)
 	, gitremotes :: Maybe [Git.Repo]
 	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
@@ -161,6 +162,7 @@ newState c r = do
 		{ repo = r
 		, repoadjustment = return
 		, gitconfig = c
+		, gitconfigadjustment = id
 		, gitremotes = Nothing
 		, backend = Nothing
 		, remotes = []
@@ -314,19 +316,13 @@ calcRepo a = do
 getGitConfig :: Annex GitConfig
 getGitConfig = getState gitconfig
 
-{- Modifies a GitConfig setting. -}
+{- Modifies a GitConfig setting. The modification persists across
+ - reloads of the repo's config. -}
 changeGitConfig :: (GitConfig -> GitConfig) -> Annex ()
-changeGitConfig a = changeState $ \s -> s { gitconfig = a (gitconfig s) }
-
-{- Changing the git Repo data also involves re-extracting its GitConfig. -}
-changeGitRepo :: Git.Repo -> Annex ()
-changeGitRepo r = do
-	adjuster <- getState repoadjustment
-	r' <- liftIO $ adjuster r
-	changeState $ \s -> s
-		{ repo = r'
-		, gitconfig = extractGitConfig FromGitConfig r'
-		}
+changeGitConfig f = changeState $ \s -> s
+	{ gitconfigadjustment = gitconfigadjustment s . f
+	, gitconfig = f (gitconfig s)
+	}
 
 {- Adds an adjustment to the Repo data. Adjustments persist across reloads
  - of the repo's config. -}
@@ -334,6 +330,18 @@ adjustGitRepo :: (Git.Repo -> IO Git.Repo) -> Annex ()
 adjustGitRepo a = do
 	changeState $ \s -> s { repoadjustment = \r -> repoadjustment s r >>= a }
 	changeGitRepo =<< gitRepo
+
+{- Changing the git Repo data also involves re-extracting its GitConfig. -}
+changeGitRepo :: Git.Repo -> Annex ()
+changeGitRepo r = do
+	repoadjuster <- getState repoadjustment
+	gitconfigadjuster <- getState gitconfigadjustment
+	r' <- liftIO $ repoadjuster r
+	changeState $ \s -> s
+		{ repo = r'
+		, gitconfig = gitconfigadjuster $
+			extractGitConfig FromGitConfig r'
+		}
 
 {- Gets the RemoteGitConfig from a remote, given the Git.Repo for that
  - remote. -}

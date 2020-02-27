@@ -1,3 +1,9 @@
+git-annex (8.20200227) UNRELEASED; urgency=medium
+
+  * Bugfix: Don't ignore --debug when it is followed by -c.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 27 Feb 2020 00:44:11 -0400
+
 git-annex (8.20200226) upstream; urgency=medium
 
   * New v8 repository version.
