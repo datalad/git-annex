@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="another example of git-annex-fsck reporting dead keys as errors"
+ date="2020-02-27T21:39:57Z"
+ content="""
+[[!format sh \"\"\"
+(master_env_v174_py36) 16:36  [viral-ngs-benchmarks] $ git annex fsck wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-f\
+ix-gatk-mindepth_sha256_20bbb1d96cf58235d325a4ea2def8c3d840d9c2ab5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl
+fsck wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-fix-gatk-mindepth_sha256_20bbb1d96cf58235d325a4ea2def8c3d840d9c2ab\
+5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl
+  ** Required content wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-fix-gatk-mindepth_sha256_20bbb1d96cf58235d325a4ea\
+2def8c3d840d9c2ab5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl is missing from these repositories:
+        449efa47-a0e1-4376-a17f-42c7a1f509d1 -- Benchmarks for viral-ngs, stored on Amazon S3 [viral-ngs-benchmarks-s3]
+
+  ** No known copies exist of wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-fix-gatk-mindepth_sha256_20bbb1d96cf58235\
+d325a4ea2def8c3d840d9c2ab5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl
+  These dead repositories used to have copies
+        461e3f01-1ff4-43d6-8dfa-71b839a25881 -- crogit runner crogrun_200207_174047__8035____git_9cb32e7230b
+failed
+(recording state in git...)
+git-annex: fsck: 1 failed
+(master_env_v174_py36) 16:36  [viral-ngs-benchmarks] $ git annex dead --key `git annex lookupkey wdl/quay.io-broadinstitute-viral-ngs-\
+dev_1.25.0-11-g6fe46aa-is-fix-gatk-mindepth_sha256_20bbb1d96cf58235d325a4ea2def8c3d840d9c2ab5dddf573f9471c57f7414f1/assemble_denovo/ta\
+sks_assembly.wdl`
+dead MD5E-s15002--4f40b2c4a2ba81128db649e6096b5fec.wdl ok
+(master_env_v174_py36) 16:37  [viral-ngs-benchmarks] $ git annex fsck wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-f\
+ix-gatk-mindepth_sha256_20bbb1d96cf58235d325a4ea2def8c3d840d9c2ab5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl
+fsck wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-fix-gatk-mindepth_sha256_20bbb1d96cf58235d325a4ea2def8c3d840d9c2ab\
+5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl
+  ** Required content wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-fix-gatk-mindepth_sha256_20bbb1d96cf58235d325a4ea\
+2def8c3d840d9c2ab5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl is missing from these repositories:
+        449efa47-a0e1-4376-a17f-42c7a1f509d1 -- Benchmarks for viral-ngs, stored on Amazon S3 [viral-ngs-benchmarks-s3]
+
+  ** No known copies exist of wdl/quay.io-broadinstitute-viral-ngs-dev_1.25.0-11-g6fe46aa-is-fix-gatk-mindepth_sha256_20bbb1d96cf58235\
+d325a4ea2def8c3d840d9c2ab5dddf573f9471c57f7414f1/assemble_denovo/tasks_assembly.wdl
+  These dead repositories used to have copies
+        461e3f01-1ff4-43d6-8dfa-71b839a25881 -- crogit runner crogrun_200207_174047__8035____git_9cb32e7230b
+failed
+(recording state in git...)
+git-annex: fsck: 1 failed
+\"\"\"]]
+"""]]
