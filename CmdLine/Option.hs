@@ -59,5 +59,5 @@ commonGlobalOptions =
 	setforce v = Annex.changeState $ \s -> s { Annex.force = v }
 	setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
-	setdebug = Annex.changeGitConfig $ \c -> c { annexDebug = True }
-	unsetdebug = Annex.changeGitConfig $ \c -> c { annexDebug = False }
+	setdebug = Annex.overrideGitConfig $ \c -> c { annexDebug = True }
+	unsetdebug = Annex.overrideGitConfig $ \c -> c { annexDebug = False }

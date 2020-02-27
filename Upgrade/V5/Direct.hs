@@ -19,7 +19,6 @@ module Upgrade.V5.Direct (
 ) where
 
 import Annex.Common
-import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Ref
@@ -35,7 +34,6 @@ setIndirect = do
 	setbare
 	switchHEADBack
 	setConfig (annexConfig "direct") val
-	Annex.changeGitConfig $ \c -> c { annexDirect = False }
   where
 	val = Git.Config.boolConfig False
 	coreworktree = ConfigKey "core.worktree"

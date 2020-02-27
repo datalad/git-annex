@@ -102,9 +102,7 @@ prepUUID = whenM ((==) NoUUID <$> getUUID) $
 	storeUUID =<< liftIO genUUID
 
 storeUUID :: UUID -> Annex ()
-storeUUID u = do
-	Annex.changeGitConfig $ \c -> c { annexUUID = u }
-	storeUUIDIn configkeyUUID u
+storeUUID = storeUUIDIn configkeyUUID
 
 storeUUIDIn :: ConfigKey -> UUID -> Annex ()
 storeUUIDIn configfield = setConfig configfield . fromUUID

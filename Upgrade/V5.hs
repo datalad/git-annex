@@ -10,7 +10,6 @@
 module Upgrade.V5 where
 
 import Annex.Common
-import qualified Annex
 import Config
 import Config.Smudge
 import Annex.InodeSentinal
@@ -84,7 +83,6 @@ convertDirect = do
 	 - space, with less preservation of old versions of files
 	 - as does annex.thin. -}
 	setConfig (annexConfig "thin") (boolConfig True)
-	Annex.changeGitConfig $ \c -> c { annexThin = True }
 	Direct.setIndirect
 	cur <- fromMaybe (error "Somehow no branch is checked out")
 		<$> inRepo Git.Branch.current

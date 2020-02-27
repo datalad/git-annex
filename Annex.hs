@@ -28,7 +28,7 @@ module Annex (
 	fromRepo,
 	calcRepo,
 	getGitConfig,
-	changeGitConfig,
+	overrideGitConfig,
 	changeGitRepo,
 	adjustGitRepo,
 	getRemoteGitConfig,
@@ -316,10 +316,10 @@ calcRepo a = do
 getGitConfig :: Annex GitConfig
 getGitConfig = getState gitconfig
 
-{- Modifies a GitConfig setting. The modification persists across
+{- Overrides a GitConfig setting. The modification persists across
  - reloads of the repo's config. -}
-changeGitConfig :: (GitConfig -> GitConfig) -> Annex ()
-changeGitConfig f = changeState $ \s -> s
+overrideGitConfig :: (GitConfig -> GitConfig) -> Annex ()
+overrideGitConfig f = changeState $ \s -> s
 	{ gitconfigadjustment = gitconfigadjustment s . f
 	, gitconfig = f (gitconfig s)
 	}

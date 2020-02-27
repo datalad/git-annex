@@ -35,6 +35,6 @@ getGitConfigVal' f = (f <$> Annex.getGitConfig) >>= \case
 		-- config makes all repository-global default
 		-- values populate the GitConfig with HasGlobalConfig
 		-- values, so it will only need to be done once.
-		Annex.changeGitConfig (\gc -> mergeGitConfig gc globalgc)
+		Annex.overrideGitConfig (\gc -> mergeGitConfig gc globalgc)
 		f <$> Annex.getGitConfig
 	c -> return c
