@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-02-27T15:52:10Z"
+ content="""
+Not sure what you meant by \"need to know how to reproduce this to get any further\" since a full example was provided, and to reproduce \"this\" problem, commands could have been cut/paste'ed.
+Now, with all the changes to git-annex, and that dataset (may be next time I would do some kind of fast-export on them or host a dedicated clone), it would indeed be hard if not impossible to reproduce, and I do not observe it with git annex `7.20200219+git135-g34d726cba-1~ndall+1` so I will mark it as done
+"""]]

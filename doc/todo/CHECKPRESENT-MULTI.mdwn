@@ -1,0 +1,5 @@
+Having very big files in chunked special remotes makes operations like fsck, move or drop extremely slow. Eg. a movie of 20GiB in a special remote with the [recommended chunk size](https://github.com/DanielDent/git-annex-remote-rclone/issues/1) of 50MiB results in 400 lookups each time the presence of the key is checked. One could increase the chunk size, but that has other disadvantages: a) Chunks are apparently still [buffered in memory](https://git-annex.branchable.com/todo/upload_large_chunks_without_buffering_in_memory/) b) one would lose more transfer progress if the special remote does not implement resumable transfers and c) it would render the use of `git annex inprogress` for streaming purposes useless. Letting the remote know about all the keys that are about to be checked would allow it to optimise the request to the remote server.
+
+So I propose a protocol extension `CHECKPRESENT-MULTI Key1 Key2...` to let the remote do the optimised lookup after which it can reply with a list of present keys `PRESENT Key1 Key2...`. This list can be empty if none of the keys are present: `PRESENT`.
+
+--Lykos

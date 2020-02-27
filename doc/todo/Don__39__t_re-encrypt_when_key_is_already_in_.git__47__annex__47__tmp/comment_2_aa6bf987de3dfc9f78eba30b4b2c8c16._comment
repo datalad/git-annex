@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 2"
+ date="2020-02-27T13:12:28Z"
+ content="""
+git-annex-remote-googledrive compares partial checksums after every transmitted chunk and before resuming a transfer, so it would not be affected by both problems you describe. However, you're probably right that some other remote might not behave that way.
+
+My current workaround is to move the file to a tmp directory specific to the remote (and UUID) and when uploading, prefer files inside this directory. Downsides are that it can use slightly more disc space and that git-annex-remote-googledrive has to handle cleanup itself. But I think it's good enough. And the problem probably does not justify changes as big as apparently needed. Thanks for your thoughts on this!
+"""]]
