@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-02-28T17:23:52Z"
+ content="""
+Seems to me that having a file in your working tree whose content is
+missing is something that it's reasonable for fsck to mention as a problem.
+
+       When a key is specified, indicates that the content of that
+       key has been irretrievably lost. This prevents commands  like
+       git annex  fsck  --all from complaining about it; --all will
+       not operate on the key anymore.
+
+That's the intention of marking a key as dead, to avoid a fsck --all
+complaining about some long-ago loss that is no longer relevant but left
+traces in the repository.
+
+So I don't see a bug here.
+"""]]
