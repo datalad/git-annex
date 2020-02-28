@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="comment 10"
+ date="2020-02-28T15:44:50Z"
+ content="""
+@joey
+
+I am now trying from scratch, created a new repository and trying to create the remote from the server to the S3 on the same network.
+
+```
+git-annex config --set annex.security.allowed-ip-addresses 10.10.10.20
+git annex initremote -d s3.test type=S3 encryption=none autoenable=true host=s3.unf-montreal.ca port=443 protocol=https chunk=1GiB bucket=test requeststyle=path
+```
+
+I get the following error despite relaxing the security option. (same thing with 'all' instead of 10.10.10.20).
+
+Maybe this security check is broken, and this is why I have problem just getting data from the local network?
+
+
+```
+ (InternalException (ConnectionRestricted \"Configuration of annex.security.allowed-ip-addresses does not allow accessing address 10.10.10.20\"))
+```
+
+Also, when I add the option exporttree=no
+
+```
+git-annex: Unexpected parameters: exporttree
+failed
+```
+
+while the option exists in the doc, and I used it in the past.
+
+Version
+
+```
+$ git-annex version
+git-annex version: 7.20200219-g5094a3f
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 7
+```
+
+
+Thank you for your help.
+
+"""]]
