@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 2"
+ date="2020-02-28T16:17:08Z"
+ content="""
+Which version do you use? There was a [bug](https://git-annex.branchable.com/bugs/gcrypt_special_remote_not_working/) in an earlier version of this month which was [fixed](https://git-annex.branchable.com/devblog/day_619__important_bugfix_release_and_v8_too/) with [7.20200226](https://git-annex.branchable.com/news/version_7.20200226/).
+"""]]
