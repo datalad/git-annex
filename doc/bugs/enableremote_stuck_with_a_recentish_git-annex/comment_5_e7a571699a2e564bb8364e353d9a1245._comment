@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-02-28T19:15:21Z"
+ content="""
+yes, we establish control paths (so all of us - git, git-annex, and datalad could use them and thus not re-prompting password by each tool).
+and I also spotted that we are missing control path for target2 -- [filed an issue](https://github.com/datalad/datalad/issues/4195).  But the curious point is that it doesn't stall with older git-annex.  I will rerun on travis with the same level of logging, but older git-annex, to see may be that interaction is somehow different.
+"""]]
