@@ -7,6 +7,8 @@ git-annex (8.20200227) UNRELEASED; urgency=medium
   * When external special remotes fail but neglect to provide an error
     message, say what request failed, which is better than displaying an
     empty error message to the user.
+  * Fix build with ghc 8.8 (MonadFail)
+    Thanks, Peter Simons
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Feb 2020 00:44:11 -0400
 

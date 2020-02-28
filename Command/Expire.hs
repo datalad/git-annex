@@ -17,7 +17,7 @@ import Annex.VectorClock
 import qualified Remote
 import Utility.HumanTime
 
-import Control.Monad.Fail as Fail ( MonadFail(..) )
+import Control.Monad.Fail as Fail (MonadFail(..))
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 

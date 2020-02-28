@@ -9,7 +9,7 @@
 
 module CmdLine.GitAnnex.Options where
 
-import Control.Monad.Fail as Fail ( MonadFail(..) )
+import Control.Monad.Fail as Fail (MonadFail(..))
 import Options.Applicative
 import qualified Data.Map as M
 

@@ -13,7 +13,7 @@ import Annex.Version
 import Types.RepoVersion
 import qualified Annex.SpecialRemote
 
-import Control.Monad.Fail as Fail ( MonadFail(..) )
+import Control.Monad.Fail as Fail (MonadFail(..))
 import qualified Data.Map as M
 	
 cmd :: Command

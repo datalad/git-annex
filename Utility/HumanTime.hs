@@ -19,7 +19,7 @@ module Utility.HumanTime (
 import Utility.PartialPrelude
 import Utility.QuickCheck
 
-import Control.Monad.Fail as Fail ( MonadFail(..) )
+import Control.Monad.Fail as Fail (MonadFail(..))
 import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Clock.POSIX (POSIXTime)
