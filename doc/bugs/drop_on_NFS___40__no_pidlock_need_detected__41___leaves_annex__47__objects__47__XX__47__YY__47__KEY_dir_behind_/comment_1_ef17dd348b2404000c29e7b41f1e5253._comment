@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-02-28T17:39:43Z"
+ content="""
+You should always enable pidlock on NFS.
+
+AFAIK, there has been no particular change to git-annex that prevents .nfs
+files from causing problems when git-annex uses posix file locking.
+There might have been some change in the behavior of a nfs server, eg
+it might delete the .nfs file *eventually*, but only after git-annex
+has tried, and failed, to delete the non-empty key directory. Seems like
+the kind of thing that network latency etc could make nondeterministic.
+
+There are already at least two other open bug reports wishing that
+git-annex somehow discover when a repo is on NFS and enable pidlock.
+<https://git-annex.branchable.com/bugs/huge_multiple_copies_of___39__.nfs__42____39___and___39__.panfs__42____39___being_created/>
+<https://git-annex.branchable.com/bugs/git-annex__58___content_is_locked__while_trying_to_move_under_NFS_and_pidlock/>
+
+(The second of those is really about something else, but it's been waiting
+on a fix being confirmed for 3 years, so the only useful part of it is I
+guess the last message in the thread, which discusses the difficulty of
+detecting NFS.)
+
+So I'm inclined to merge this bug report with the first of those.
+"""]]
