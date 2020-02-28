@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2020-02-28T17:51:47Z"
+ content="""
+You need to use git config to set that, not git-annex config.
+
+git-annex config can only be used with a few carefully
+chosen configuration settings that make sense to 
+apply to all clones of the repository. annex.security.allowed-ip-addresses
+is not amoung those. This is clearly documented in the git-annex config man
+page IMHO, but I'm always interested to learn about problems with
+documentation.
+"""]]
