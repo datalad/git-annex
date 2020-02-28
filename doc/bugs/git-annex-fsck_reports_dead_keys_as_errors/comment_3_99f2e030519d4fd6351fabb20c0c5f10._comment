@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="fsck of dead keys"
+ date="2020-02-28T18:44:21Z"
+ content="""
+\"having a file in your working tree whose content is missing is something that it's reasonable for fsck to mention as a problem\" -- makes sense.  For [[`git-annex-fsck --key`|git-annex-fsck]], not sure you need to warn about an explicitly [[`git-annex-dead`|git-annex-dead]]'ed key, but I guess that depends on the context in which the command is used.
+"""]]

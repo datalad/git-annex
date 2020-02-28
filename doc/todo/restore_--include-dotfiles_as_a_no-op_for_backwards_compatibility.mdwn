@@ -1,0 +1,1 @@
+Thanks for [[addressing|news/version_8.20200226]] "[[bugs/dotfiles_handled_differently]]".  One small thing: to preserve backwards compatibility, could `--include-dotfiles` be made a no-op, rather than an invalid flag?
