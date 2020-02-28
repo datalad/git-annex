@@ -1,0 +1,12 @@
+Hello,
+
+my final goal is to store files on an untrusted external server/USB drive in an encrypted git repository.
+
+- First I set up the external git repository with `git init --bare /path/to/external`
+- Second I add the special remote with `git annex initremote encrypted-origin type=gcrypt gitrepo=/path/to/external encryption=hybrid keyid=$keyid`
+- Then I sync with `git annex sync`
+- Then I copy the files to the remote with `git annex copy -t encrypted-origin`
+
+I can now see the annexed files in the remote repository **unencrypted**. I do not want the copied files to be readable on the remote.
+
+Is that the intended behaviour, or did I do something wrong?
