@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-02-28T17:49:52Z"
+ content="""
+This was a bug in git-annex versions before 7.20200226.
+It's since been fixed.
+
+<https://git-annex.branchable.com/bugs/gcrypt_special_remote_not_working/>
+"""]]
