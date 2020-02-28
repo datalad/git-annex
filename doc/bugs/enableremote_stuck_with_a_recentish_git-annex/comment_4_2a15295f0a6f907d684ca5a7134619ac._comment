@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-02-28T18:44:07Z"
+ content="""
+Since this is a regular git remote, all enableremote
+does is the usual uuid probing. And that's where it hangs,
+sshing to the remote to run git-annex-shell configlist.
+
+One thing I notice is that you went to some trouble to pass 
+with -c annex-ssh-options for target1. I assume for some important reason,
+probably having to do with making ssh work in this environment.
+But this remote is target2, so it doesn't use those options when it sshes
+to it.
+"""]]
