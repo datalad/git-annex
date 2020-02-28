@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-02-28T17:28:57Z"
+ content="""
+passing public=yes to initremote does not make git-annex use anonymous http
+to access a S3 remote, if you have S3 credentials in the environment. I
+don't remember if I tried to repro it w/o S3 credentials or not, but either
+way the bug is not clear about how git-annex was trying to access the
+remote when it failed.
+"""]]
