@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="comment 13"
+ date="2020-02-28T20:20:09Z"
+ content="""
+> You need to use git config to set that, not git-annex config.
+
+Unless I am getting crazy, I am pretty sure I managed to make that command work before with git-annex (the --set option is not in the git config syntax), so I wrote it in my own doc a few months back. In the git-repo I ran it before, the .git/config file contains the option. 
+
+The command returns a nice message that made me think it worked: 
+
+```
+$ git-annex config --set annex.security.allowed-ip-addresses 10.10.10.20
+annex.security.allowed-ip-addresses 10.10.10.20 ok
+(recording state in git...)
+```
+
+- About the doc, I am not sure if I got the command from the man page. Maybe an example of how to set these variables with git config (`git config --add <name> <value>`) in the man page would avoid this kind of mistakes from dumb users like me ;). Maybe I thought that git-annex-config also change .git/config file.
+
+- The ConnectionRestricted for annex.security.allowed-ip-addresses do not show-up when trying to get data from a clone of the git where the remote was configured after correctly setting that option. That is why there was no traffic out except the DNS request.
+
+- Maybe git-annex config should not return a nice message when trying to set an unknown option. 
+
+I will open a separate bug for the exporttree shortly.
+
+Now it works!
+Thanks for your help!
+
+"""]]
