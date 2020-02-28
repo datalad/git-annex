@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2020-02-28T17:55:48Z"
+ content="""
+I'd be interested in a separate bug report about exporttree=no not being
+accepted by git-annex. (I just tried it myself with a S3 remote and it was
+accepted, but maybe I don't completely understand what you did.)
+"""]]
