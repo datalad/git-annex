@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-02-28T18:00:01Z"
+ content="""
+There are probably some other special remotes that are similarly able
+to resume and would safely deal with the problems I mentioned. rsync
+comes to mind. But I'm inclined to agree with you that the scope of the
+changes I found needed to support it in git-annex may not be warranted.
+
+Using your own tmp file a reasonable workaround.
+
+git-annex actually has an internal concept of a "tmp work dir"
+which is associated with a key and can contain whatever tmp files
+might be needed to transfer that key. The nice thing about it is
+that any time git-annex deletes a key's tmp file, it first deletes
+its tmp work dir. The annoying this about it is that the tmp file
+has to exist (even if empty) as long as the tmp work dir does,
+otherwise there's a risk the directory will never get cleaned up.
+
+It's currently only used for downloads, eg with youtube-dl. But it would
+probably also work for uploads. It might make sense to extend the protocol
+to request git-annex tell what the tmp work dir is, and to make sure the
+above invariant is satisfied. But if you would like to live a little
+dangerously, just take the name of the tmp file, and prefix "work.".
+Eg, for the tmp file ".git/annex/tmp/SHA256--x", use
+".git/annex/tmp/work.SHA256--x/".
+"""]]
