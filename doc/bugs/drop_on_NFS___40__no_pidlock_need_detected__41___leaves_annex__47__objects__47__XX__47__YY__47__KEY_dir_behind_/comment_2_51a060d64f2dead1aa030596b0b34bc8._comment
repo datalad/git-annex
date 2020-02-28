@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-02-28T18:47:26Z"
+ content="""
+> AFAIK, there has been no particular change to git-annex that prevents .nfs files from causing problems when git-annex uses posix file locking. There might have been some change in the behavior of a nfs server, eg it might delete the .nfs file eventually, but only after git-annex has tried, and failed, to delete the non-empty key directory. Seems like the kind of thing that network latency etc could make nondeterministic.
+
+Just if that could shine any light, in aforementioned datalad issue, [this specific comment](https://github.com/datalad/datalad/issues/3929#issuecomment-589712933), I state (although show only for the recent annex) that without any change to NFS server/mount, and on a local nfs mount (so network is largely out of question) we ended with .nfs* files with older gitannex and without them in newer.  It might be some change in how git-annex deleted files/directories, but no change to NFS. 
+
+As for the git-annex version differences, inbetween I believe there was this fix [7.20190819-98-g94c75d2bd AKA 7.20190912~21](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=94c75d2bd9a50c6348f716b8b945b056cb56e447) for [regression: fails to detect need for pidlock on an NSF mount](https://git-annex.branchable.com/bugs/regression__58___fails_to_detect_need_for_pidlock_on_an_NSF_mount/) which might or not be related -- didn't check
+
+
+> So I'm inclined to merge this bug report with the first of those.
+
+FWIW, that is ok with me.
+"""]]
