@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-02-28T18:58:48Z"
+ content="""
+Export remotes don't use chunks, and use CHECKPRESENTEXPORT rather than
+CHECKPRESENT. And git-annex tries to not buffer the whole worktree in
+memory, but stream through it, so it can support very large worktrees.
+So this idea, which I do think is a good idea, seems limited to checking 
+chunks.
+
+(I'd probably want to make the chunk handling code only include up to 1
+million or so chunk keys in a request, again to avoid using too much memory.
+1 million chunk keys needs 160 mb ram max, 80 or less typically.)
+
+At least for purposes of chunks, the reply to CHECKPRESENT-MULTI only needs
+to say if all the keys are present. If even one chunk is missing, the object
+as a whole is not present in the remote. That seems like a useful simplication.
+
+Internally, probably Remote.checkPresent should change to taking a `[Key]`
+list. Simpler than adding a whole other method for this.
+
+Remote.External could use CHECKPRESENT when there's one key in the list,
+and CHECKPRESENT-MULTI when the are multiple, falling back to CHECKPRESENT
+on an UNSUPPORTED-REQUEST reply. But, I think it ought to be an
+extension to the protocol, to avoid that extra roundtrip.
+"""]]
