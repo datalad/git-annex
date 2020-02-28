@@ -1,0 +1,5 @@
+Add config setting `remote.<name>.annex-presence-ttl`, such that the result of `CHECKPRESENT|CHECKPRESENTEXPORT Key` from that remote for that key will be cached locally and reused, with the cache entry invalidated after the specified duration.  The cache can just be the [[location_tracking]] info: if it has been most recently updated within this duration, just assume the key is present without contacting the remote.  Maybe also, on a cache miss update the location tracking info with the more recent timestamp reconfirming the presence.
+
+Then can also extend the [[design/external_special_remote_protocol]] to let a remote send a batch inventory of its contents, which will batch-update the presence info, which will then be valid for the specified time.
+
+Related: [[todo/CHECKPRESENT-MULTI]]; [[design/external_special_remote_protocol/export_and_import_appendix/#index2h2]]; [[trust]].
