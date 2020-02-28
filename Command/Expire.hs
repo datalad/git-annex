@@ -17,6 +17,7 @@ import Annex.VectorClock
 import qualified Remote
 import Utility.HumanTime
 
+import Control.Monad.Fail as Fail ( MonadFail(..) )
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
@@ -105,9 +106,9 @@ parseExpire ps = do
 		Nothing -> giveup $ "bad expire time: " ++ s
 		Just d -> Just (now - durationToPOSIXTime d)
 
-parseActivity :: Monad m => String -> m Activity
+parseActivity :: MonadFail m => String -> m Activity
 parseActivity s = case readish s of
-	Nothing -> fail $ "Unknown activity. Choose from: " ++ 
+	Nothing -> Fail.fail $ "Unknown activity. Choose from: " ++ 
 		unwords (map show [minBound..maxBound :: Activity])
 	Just v -> return v
 

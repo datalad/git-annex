@@ -9,6 +9,7 @@
 
 module CmdLine.GitAnnex.Options where
 
+import Control.Monad.Fail as Fail ( MonadFail(..) )
 import Options.Applicative
 import qualified Data.Map as M
 
@@ -215,8 +216,8 @@ parseAllOption = flag' WantAllKeys
 	<> help "operate on all versions of all files"
 	)
 
-parseKey :: Monad m => String -> m Key
-parseKey = maybe (fail "invalid key") return . deserializeKey
+parseKey :: MonadFail m => String -> m Key
+parseKey = maybe (Fail.fail "invalid key") return . deserializeKey
 
 -- Options to match properties of annexed files.
 annexedMatchingOptions :: [GlobalOption]

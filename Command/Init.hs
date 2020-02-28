@@ -13,6 +13,7 @@ import Annex.Version
 import Types.RepoVersion
 import qualified Annex.SpecialRemote
 
+import Control.Monad.Fail as Fail ( MonadFail(..) )
 import qualified Data.Map as M
 	
 cmd :: Command
@@ -33,14 +34,14 @@ optParser desc = InitOptions
 		<> help "Override default annex.version"
 		))
 
-parseRepoVersion :: Monad m => String -> m RepoVersion
+parseRepoVersion :: MonadFail m => String -> m RepoVersion
 parseRepoVersion s = case RepoVersion <$> readish s of
-	Nothing -> fail $ "version parse error"
+	Nothing -> Fail.fail $ "version parse error"
 	Just v
 		| v `elem` supportedVersions -> return v
 		| otherwise -> case M.lookup v autoUpgradeableVersions of
 			Just v' -> return v'
-			Nothing -> fail $ s ++ " is not a currently supported repository version"
+			Nothing -> Fail.fail $ s ++ " is not a currently supported repository version"
 
 seek :: InitOptions -> CommandSeek
 seek = commandAction . start

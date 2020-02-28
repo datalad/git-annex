@@ -19,6 +19,7 @@ module Utility.HumanTime (
 import Utility.PartialPrelude
 import Utility.QuickCheck
 
+import Control.Monad.Fail as Fail ( MonadFail(..) )
 import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Clock.POSIX (POSIXTime)
@@ -44,7 +45,7 @@ daysToDuration :: Integer -> Duration
 daysToDuration i = Duration $ i * dsecs
 
 {- Parses a human-input time duration, of the form "5h", "1m", "5h1m", etc -}
-parseDuration :: Monad m => String -> m Duration
+parseDuration :: MonadFail m => String -> m Duration
 parseDuration = maybe parsefail (return . Duration) . go 0
   where
 	go n [] = return n
@@ -55,7 +56,7 @@ parseDuration = maybe parsefail (return . Duration) . go 0
 				u <- M.lookup c unitmap
 				go (n + num * u) rest
 			_ -> return $ n + num
-	parsefail = fail "duration parse error; expected eg \"5m\" or \"1h5m\""
+	parsefail = Fail.fail "duration parse error; expected eg \"5m\" or \"1h5m\""
 
 fromDuration :: Duration -> String
 fromDuration Duration { durationSeconds = d }
