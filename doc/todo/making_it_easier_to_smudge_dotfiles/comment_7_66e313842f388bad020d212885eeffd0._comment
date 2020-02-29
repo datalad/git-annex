@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="adding dotfiles"
+ date="2020-02-29T21:35:06Z"
+ content="""
+Thanks -- this also resolves [[bugs/dotfiles_handled_differently]] (which wasn't actually a bug, just an unexpected special case).
+
+[[Manpage|git-annex]] says \"Setting annex.dotfiles to true makes dotfiles be added to the annex the same as any other file\" -- \"same as any other file\" means that if `annex.largefiles` is *not* set, or if `annex.gitaddtoannex` is set to `false`,  `git add .mydotfile` still adds to git, correct?   So, basically, if `annex.dotfiles=false` (default), dotfiles are handled specially (always added to git regardless of other settings), while if `annex.dotfiles=true`, dotfiles are handled the same as non-dotfiles?
+"""]]
