@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2020-02-29T06:10:19Z"
+ content="""
+FWIW -- two excerpts:
+[good session](http://www.onerussian.com/tmp/travis-656403954.log), [bad session](http://www.onerussian.com/tmp/travis-655516047.log)
+command to obtain
+
+[[!format sh \"\"\"
+> for j in 655516047 656403954; do wget -q -O- https://api.travis-ci.org/v3/job/$j/log.txt | sed -n -e'/Launching.*nableremote.*target2/,100000p' | sed -ne '1,/^I: done/p' | sed -e 's/2020-..-.. ..:..:..\........../TIMESTAMP/g' >| /tmp/travis-$j.log; done
+\"\"\"]]
+
+still too much details and too many differences unfortunately. But at least shows that the same invocation of ssh proceeds normally in the good case (first one is the only one in bad, in good ones, more come):
+[[!format sh \"\"\"
+$> grep 'read: ssh .\"datalad-test\",' travis-6*.log      
+travis-655516047.log:[Level 9] stderr| [TIMESTAMP] read: ssh [\"datalad-test\",\"-S\",\".git/annex/ssh/datalad-test\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/tmp/datalad_temp_test_publish_dependsymsjz245' '--debug'\"]
+travis-656403954.log:[Level 9] stderr| [TIMESTAMP read: ssh [\"datalad-test\",\"-S\",\".git/annex/ssh/datalad-test\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/tmp/datalad_temp_test_publish_depends60annfb5' '--debug'\"]
+travis-656403954.log:[Level 9] stderr| [TIMESTAMP] read: ssh [\"datalad-test\",\"-S\",\".git/annex/ssh/datalad-test\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-o\",\"ControlMaster=auto\",\"-S\",\"/home/travis/.cache/datalad/sockets/04825add\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/tmp/datalad_temp_test_publish_dependsgxlws0yt' '--debug'\"]
+travis-656403954.log:[Level 11] stderr| [TIMESTAMP] read: ssh [\"datalad-test\",\"-S\",\".git/annex/ssh/datalad-test\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-o\",\"ControlMaster=auto\",\"-S\",\"/home/travis/.cache/datalad/sockets/04825add\",\"-n\",\"-T\",\"git-annex-shell 'commit' '/tmp/datalad_temp_test_publish_dependsgxlws0yt' '--debug' --uuid 7d69e4d6-f4d0-43c0-bf5a-0e6e8c363613\"] 
+travis-656403954.log:[Level 11] stderr| [TIMESTAMP] read: ssh [\"datalad-test\",\"
+\"\"\"]]
+
+and there is close to no chance for `\"git-annex-shell 'configlist' '/tmp/datalad_temp_test_publish_depends_q8i1lpv' '--debug'\"` to actually be the one which got stuck? (`ssh` is more likely of cause, but I am really not sure why...).  Note, that if download full log (urls are above), in that \"bad\" session
+```
+$> grep configlist log.txt 
+[Level 9] stderr| [2020-02-26 20:21:35.087032521] read: ssh [\"localhost\",\"-S\",\".git/annex/ssh/localhost\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-o\",\"ControlMaster=auto\",\"-S\",\"/home/travis/.cache/datalad/sockets/2e18ea6b\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/tmp/datalad_temp_test_publish_depends7k9yct_j' '--debug'\"]
+[Level 9] stderr| [2020-02-26 20:21:36.785462409] read: ssh [\"datalad-test\",\"-S\",\".git/annex/ssh/datalad-test\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/tmp/datalad_temp_test_publish_dependsymsjz245' '--debug'\"]
+```
+so -- there is a prior session (probably to another remote) with configlist and that one works out just fine...  just that it goes to localhost, not datalad-test (set to 127.0.0.1 in /etc/hosts).
+"""]]
