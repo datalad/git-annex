@@ -51,3 +51,4 @@ git-annex: fsck: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git-annex helps me keep my sanity :)  
 
+> [[notabug|done]] per comments --[[Joey]]

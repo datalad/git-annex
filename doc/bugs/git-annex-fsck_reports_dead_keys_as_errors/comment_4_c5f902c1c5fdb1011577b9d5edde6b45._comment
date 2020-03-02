@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-03-02T18:54:05Z"
+ content="""
+As yes, I missed that you also had an example of fsck --key as well as fsck
+of a file in the working tree with a dead key.
+
+I think the same basic reasoning applies for fsck --key as for fscking a
+worktree file. The user appears to be particularly interested in that key,
+so fsck should tell them about the obious problem that it has no remaining
+content. It's not like --all.
+"""]]
