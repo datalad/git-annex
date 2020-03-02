@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2020-03-02T19:23:55Z"
+ content="""
+> What git-annex version is it that does not exhibit the problem?
+
+I know for sure that `8.20200226+git16-ge156a2b74-1~ndall+1` doesn't -- that is the one we are still distributing in neurodebian. In the past we tested other intermediate versions (like  7.20191114+git43-ge29663773) which also didn't exhibit it AT THAT TIME (different datalad, and possibly different git which gets bundled).
+
+> It would be worth checking on the server if ssh has run the process.
+
+I will try to do that later.
+"""]]
