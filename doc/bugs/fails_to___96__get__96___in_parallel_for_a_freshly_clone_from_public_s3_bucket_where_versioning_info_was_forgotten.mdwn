@@ -88,6 +88,8 @@ get sub-01/meg/sub-01_task-audiovisual_run-01_meg.fif (from s3-PUBLIC...)
 
 
 [[!meta author=yoh]]
-[[!tag projects/repronim]]
+[[!tag projects/datalad]]
 
 > [[fixed|done]] --[[Joey]]
+
+> fixed in [7.20200219-129-ge52034150 AKA 8.20200226~12](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=7.20200219-129-ge52034150) --[[yarikoptic]]
