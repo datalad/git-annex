@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-02T18:45:27Z"
+ content="""
+With old git-annex, --include-dotfiles made dotfiles be added to the
+annex. With current git-annex, the default is to add them to git.
+Two such different behaviors do not seem like preserving backwards
+compatability. 
+ 
+Consider if a user actually has dotfiles that are large
+files, and was in the habit of running eg "git-annex add . --include-dotfiles".
+Currently, they will get an error message about an unknown option, and can then
+read about the behavior change, and learn they want to set
+annex.dotfiles=true.
+
+But, if --include-dotfiles is still supported as a no-op, that user would
+instead add a large file and bloat their git repo with its content as it is
+not annexed.
+
+Now, the same kind of thing can happen if the user instead was in the
+habit of running "git-annex add .bigfile" with the old git-annex
+to annex the file, as that will now add it to git instead.
+That's a bit concerning and so I hope users will notice the news about
+the behavior change of that. But adding back --include-dotfiles
+only widens the amount of users who will see an unexpected behavior change.
+
+I did consider fully preserving back-compat when committing that change:
+
+	The git add behavior changes could be avoided if it turns out to be
+	really annoying, but then it would need to behave the old way when
+	annex.dotfiles=false and the new way when annex.dotfiles=true. I'd
+	rather not have the config option result in such divergent behavior as
+	`git annex add .` skipping a dotfile (old) vs adding to annex (new).
+"""]]
