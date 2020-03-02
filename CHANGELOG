@@ -9,6 +9,7 @@ git-annex (8.20200227) UNRELEASED; urgency=medium
     empty error message to the user.
   * Fix build with ghc 8.8 (MonadFail)
     Thanks, Peter Simons
+  * stack.yaml: Updated to lts-14.27.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Feb 2020 00:44:11 -0400
 
