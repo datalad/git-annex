@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-03-02T19:56:49Z"
+ content="""
+Sure, some minor change in git-annex could tickle non-deterministic
+behavior, eg something to do with timing of when it deletes the file 
+vs the later closing of the file that drops the lock.
+
+That regression made git-annex init fail when NFS doesn't have posix lock
+support enabled. It can detect that, and enables pidlock, but it can't
+detect NFS when it is pretending to support posix locks.
+"""]]

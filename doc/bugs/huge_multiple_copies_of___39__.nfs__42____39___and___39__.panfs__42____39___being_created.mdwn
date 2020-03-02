@@ -30,3 +30,5 @@ Clone a git annex repo on a network file system,  run
 """]]
 
 [[!meta title="git-annex and NFS don't mix; could git annex init detect NFS and refuse to use it?"]]
+
+[[!tag projects/datalad]]
