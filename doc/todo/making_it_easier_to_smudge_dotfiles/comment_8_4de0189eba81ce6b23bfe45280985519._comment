@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-03-02T19:00:27Z"
+ content="""
+Yes, `git add` default behavior with dotfiles has not changed
+and you have to set both annex.gitaddtoannex and annex.dotfiles
+to change it.
+"""]]
