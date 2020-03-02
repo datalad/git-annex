@@ -57,6 +57,7 @@ git-annex (7.20200226) upstream; urgency=high
     on those remotes without encrypting it.
     If your remotes are affected, you will want to make sure to delete
     any content that git-annex has stored on them that is not encrypted!
+  * initremote: Fix regression in parsing the exporttree= parameter.
   * info: Fix display of the encryption value.
     (Some debugging junk had crept in.)
   * Bugfix to getting content from an export remote with -J, when the

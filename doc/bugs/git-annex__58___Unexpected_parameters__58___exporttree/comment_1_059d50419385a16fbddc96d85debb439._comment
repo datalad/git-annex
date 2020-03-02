@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-02T17:20:36Z"
+ content="""
+This was already fixed in git-annex 7.20200226, it turns out.
+Some changes required to deal with a related reversion fixed it in passing.
+
+(Note that exporttree=no is the default, so there should
+be no need to specify it.)
+"""]]
