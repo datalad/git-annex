@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-02T17:48:17Z"
+ content="""
+The failing test case is testing all the hashes that git-annex uses.
+Quite likely what has happened is that the hash implementation has been
+built with a CPU-specific optimisation that is not available on your AMD.
+
+The hash implementations are in http://hackage.haskell.org/package/cryptonite
+
+While cryptonite has build flags for CPU-specific features,
+there are also, in its C code, some checks of gcc defines that indicate
+specific CPU features. I found #defines checking `__SSE2__` and `__SSE4__`
+and `__AVX__` (mostly in blake2) and there might be others. That seems
+likely to be a bug in cryptonite, if its build flags are not fully
+controlling use of things like SSE.
+
+I've made a change to git-annex's test suite to narrow down the problem;
+it now tests each hash individually, so you'll see which specific ones
+fail.
+"""]]

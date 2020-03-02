@@ -161,7 +161,7 @@ tests crippledfilesystem adjustedbranchok opts =
 		| otherwise = Nothing
 
 properties :: TestTree
-properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
+properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 	[ testProperty "prop_encode_decode_roundtrip" Git.Filename.prop_encode_decode_roundtrip
 	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
@@ -185,8 +185,6 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_parse_build_contentidentifier_log" Logs.ContentIdentifier.prop_parse_build_contentidentifier_log
 	, testProperty "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
 	, testProperty "prop_parse_build_TrustLevelLog" Logs.Trust.prop_parse_build_TrustLevelLog
-	, testProperty "prop_hashes_stable" Utility.Hash.prop_hashes_stable
-	, testProperty "prop_mac_stable" Utility.Hash.prop_mac_stable
 	, testProperty "prop_schedule_roundtrips" Utility.Scheduled.QuickCheck.prop_schedule_roundtrips
 	, testProperty "prop_past_sane" Utility.Scheduled.prop_past_sane
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
@@ -198,7 +196,12 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
 	, testProperty "prop_b64_roundtrips" Utility.Base64.prop_b64_roundtrips
 	, testProperty "prop_standardGroups_parse" Logs.PreferredContent.prop_standardGroups_parse
-	]
+	] ++ map (uncurry testProperty) combos
+  where
+	combos = concat
+		[ Utility.Hash.props_hashes_stable
+		, Utility.Hash.props_macs_stable
+		]
 
 {- These tests set up the test environment, but also test some basic parts
  - of git-annex. They are always run before the unitTests. -}
