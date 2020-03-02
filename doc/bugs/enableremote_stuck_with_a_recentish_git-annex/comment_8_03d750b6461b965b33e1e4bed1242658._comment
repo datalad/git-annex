@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-03-02T19:34:40Z"
+ content="""
+Wait, the intial bug report said 7.20200204 had the
+problem, but you say the newer 8.20200226 does not?
+Either 8.20200226 was a typo of the wrong version,
+or it seems this bug has been fixed.
+"""]]
