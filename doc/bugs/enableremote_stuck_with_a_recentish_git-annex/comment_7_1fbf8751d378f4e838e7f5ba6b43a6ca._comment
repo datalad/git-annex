@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-03-02T17:10:12Z"
+ content="""
+It seems very unlikely that git-annex-shell configlist would get stuck,
+all it does is run git config --list.
+
+Not impossible of course. It would be worth checking on the server if
+ssh has run the process.
+
+What git-annex version is it that does not exhibit the problem?
+"""]]
