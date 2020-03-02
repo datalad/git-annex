@@ -3,8 +3,9 @@
  subject="""comment 1"""
  date="2020-02-26T19:04:47Z"
  content="""
-Almost certainly a reversion caused by the special
+Reversion caused by the special
 remote config overhaul in version 7.20200202.7.
+<https://git-annex.branchable.com/todo/assure_correct_names___40__and_values__41___for_special_remotes_parameters/>
 
 This is really bad. The one good thing is it does not
 seem to affect other types of special remotes, including
