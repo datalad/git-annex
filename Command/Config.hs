@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Command.Config where
 import Command
 import Logs.Config
 import Config
+import Types.GitConfig (globalConfigs)
 import Git.Types (ConfigKey(..), fromConfigValue)
 
 import qualified Data.ByteString.Char8 as S8
@@ -53,24 +54,29 @@ optParser _ = setconfig <|> getconfig <|> unsetconfig
 		)
 
 seek :: Action -> CommandSeek
-seek (SetConfig ck@(ConfigKey name) val) = commandAction $
+seek (SetConfig ck@(ConfigKey name) val) = checkIsGlobalConfig ck $ commandAction $
 	startingUsualMessages (decodeBS' name) (ActionItemOther (Just (fromConfigValue val))) $ do
 		setGlobalConfig ck val
 		when (needLocalUpdate ck) $
 			setConfig ck (fromConfigValue val)
 		next $ return True
-seek (UnsetConfig ck@(ConfigKey name)) = commandAction $
+seek (UnsetConfig ck@(ConfigKey name)) = checkIsGlobalConfig ck $ commandAction $
 	startingUsualMessages (decodeBS' name) (ActionItemOther (Just "unset")) $do
 		unsetGlobalConfig ck
 		when (needLocalUpdate ck) $
 			unsetConfig ck
 		next $ return True
-seek (GetConfig ck) = commandAction $
+seek (GetConfig ck) = checkIsGlobalConfig ck $ commandAction $
 	startingCustomOutput (ActionItemOther Nothing) $ do
 		getGlobalConfig ck >>= \case
 			Nothing -> return ()
 			Just (ConfigValue v) -> liftIO $ S8.putStrLn v
 		next $ return True
+
+checkIsGlobalConfig :: ConfigKey -> Annex a -> Annex a
+checkIsGlobalConfig ck@(ConfigKey name) a
+	| elem ck globalConfigs = a
+	| otherwise = giveup $ decodeBS name ++ " is not a configuration setting that can be stored in the git-annex branch"
 
 needLocalUpdate :: ConfigKey -> Bool
 needLocalUpdate (ConfigKey "annex.securehashesonly") = True

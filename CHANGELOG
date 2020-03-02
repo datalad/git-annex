@@ -10,6 +10,9 @@ git-annex (8.20200227) UNRELEASED; urgency=medium
   * Fix build with ghc 8.8 (MonadFail)
     Thanks, Peter Simons
   * stack.yaml: Updated to lts-14.27.
+  * git-annex config: Only allow configs be set that are ones git-annex actually
+    supports reading from repo-global config, to avoid confused users trying
+    to set other configs with this.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Feb 2020 00:44:11 -0400
 

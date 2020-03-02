@@ -167,7 +167,7 @@ mySetup _ mu _ c gc = do
 	-- (so it's also usable by git as a non-special remote),
 	-- and set remote.name.annex-git-lfs = true
 	gitConfigSpecialRemote u c' [("git-lfs", "true")]
-	setConfig (remoteConfig (getRemoteName c) "url") url
+	setConfig (remoteConfig c "url") url
 	return (c', u)
   where
 	url = maybe (giveup "Specify url=") fromProposedAccepted 

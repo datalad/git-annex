@@ -1,10 +1,11 @@
 {- git-annex configuration
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Types.GitConfig ( 
@@ -13,9 +14,14 @@ module Types.GitConfig (
 	GitConfig(..),
 	extractGitConfig,
 	mergeGitConfig,
+	globalConfigs,
 	RemoteGitConfig(..),
 	extractRemoteGitConfig,
 	dummyRemoteGitConfig,
+	annexConfig,
+	RemoteNameable(..),
+	remoteAnnexConfig,
+	remoteConfig,
 ) where
 
 import Common
@@ -43,6 +49,7 @@ import Utility.Url (Scheme, mkScheme)
 
 import Control.Concurrent.STM
 import qualified Data.Set as S
+import qualified Data.ByteString as B
 
 -- | A configurable value, that may not be fully determined yet because
 -- the global git config has not yet been loaded.
@@ -125,84 +132,86 @@ data GitConfig = GitConfig
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
 extractGitConfig configsource r = GitConfig
-	{ annexVersion = RepoVersion <$> getmayberead (annex "version")
-	, annexUUID = maybe NoUUID toUUID $ getmaybe (annex "uuid")
-	, annexNumCopies = NumCopies <$> getmayberead (annex "numcopies")
+	{ annexVersion = RepoVersion <$> getmayberead (annexConfig "version")
+	, annexUUID = maybe NoUUID toUUID $ getmaybe (annexConfig "uuid")
+	, annexNumCopies = NumCopies <$> getmayberead (annexConfig "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $
-		readSize dataUnits =<< getmaybe (annex "diskreserve")
-	, annexDirect = getbool (annex "direct") False
+		readSize dataUnits =<< getmaybe (annexConfig "diskreserve")
+	, annexDirect = getbool (annexConfig "direct") False
 	, annexBackend = maybe
 		-- annex.backends is the old name of the option, still used
 		-- when annex.backend is not set.
-		(headMaybe $ getwords (annex "backends"))
+		(headMaybe $ getwords (annexConfig "backends"))
 		Just
-		(getmaybe (annex "backend"))
-	, annexQueueSize = getmayberead (annex "queuesize")
-	, annexBloomCapacity = getmayberead (annex "bloomcapacity")
-	, annexBloomAccuracy = getmayberead (annex "bloomaccuracy")
-	, annexSshCaching = getmaybebool (annex "sshcaching")
-	, annexAlwaysCommit = getbool (annex "alwayscommit") True
-	, annexCommitMessage = getmaybe (annex "commitmessage")
-	, annexMergeAnnexBranches = getbool (annex "merge-annex-branches") True
-	, annexDelayAdd = getmayberead (annex "delayadd")
-	, annexHttpHeaders = getlist (annex "http-headers")
-	, annexHttpHeadersCommand = getmaybe (annex "http-headers-command")
+		(getmaybe (annexConfig "backend"))
+	, annexQueueSize = getmayberead (annexConfig "queuesize")
+	, annexBloomCapacity = getmayberead (annexConfig "bloomcapacity")
+	, annexBloomAccuracy = getmayberead (annexConfig "bloomaccuracy")
+	, annexSshCaching = getmaybebool (annexConfig "sshcaching")
+	, annexAlwaysCommit = getbool (annexConfig "alwayscommit") True
+	, annexCommitMessage = getmaybe (annexConfig "commitmessage")
+	, annexMergeAnnexBranches = getbool (annexConfig "merge-annex-branches") True
+	, annexDelayAdd = getmayberead (annexConfig "delayadd")
+	, annexHttpHeaders = getlist (annexConfig "http-headers")
+	, annexHttpHeadersCommand = getmaybe (annexConfig "http-headers-command")
 	, annexAutoCommit = configurable True $ 
-		getmaybebool (annex "autocommit")
+		getmaybebool (annexConfig "autocommit")
 	, annexResolveMerge = configurable True $ 
-		getmaybebool (annex "resolvemerge")
+		getmaybebool (annexConfig "resolvemerge")
 	, annexSyncContent = configurable False $ 
-		getmaybebool (annex "synccontent")
+		getmaybebool (annexConfig "synccontent")
 	, annexSyncOnlyAnnex = configurable False $ 
-		getmaybebool (annex "synconlyannex")
-	, annexDebug = getbool (annex "debug") False
-	, annexWebOptions = getwords (annex "web-options")
-	, annexYoutubeDlOptions = getwords (annex "youtube-dl-options")
-	, annexAriaTorrentOptions = getwords (annex "aria-torrent-options")
-	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
+		getmaybebool (annexConfig "synconlyannex")
+	, annexDebug = getbool (annexConfig "debug") False
+	, annexWebOptions = getwords (annexConfig "web-options")
+	, annexYoutubeDlOptions = getwords (annexConfig "youtube-dl-options")
+	, annexAriaTorrentOptions = getwords (annexConfig "aria-torrent-options")
+	, annexCrippledFileSystem = getbool (annexConfig "crippledfilesystem") False
 	, annexLargeFiles = configurable Nothing $
-		fmap Just $ getmaybe (annex "largefiles")
-	, annexDotFiles = configurable False $ getmaybebool (annex "dotfiles")
-	, annexGitAddToAnnex = getbool (annex "gitaddtoannex") True
-	, annexAddSmallFiles = getbool (annex "addsmallfiles") True
-	, annexFsckNudge = getbool (annex "fscknudge") True
-	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
+		fmap Just $ getmaybe (annexConfig "largefiles")
+	, annexDotFiles = configurable False $
+		getmaybebool (annexConfig "dotfiles")
+	, annexGitAddToAnnex = getbool (annexConfig "gitaddtoannex") True
+	, annexAddSmallFiles = getbool (annexConfig "addsmallfiles") True
+	, annexFsckNudge = getbool (annexConfig "fscknudge") True
+	, annexAutoUpgrade = toAutoUpgrade $
+		getmaybe (annexConfig "autoupgrade")
 	, annexExpireUnused = maybe Nothing Just . parseDuration
-		<$> getmaybe (annex "expireunused")
-	, annexSecureEraseCommand = getmaybe (annex "secure-erase-command")
-	, annexGenMetaData = getbool (annex "genmetadata") False
-	, annexListen = getmaybe (annex "listen")
-	, annexStartupScan = getbool (annex "startupscan") True
-	, annexHardLink = getbool (annex "hardlink") False
-	, annexThin = getbool (annex "thin") False
+		<$> getmaybe (annexConfig "expireunused")
+	, annexSecureEraseCommand = getmaybe (annexConfig "secure-erase-command")
+	, annexGenMetaData = getbool (annexConfig "genmetadata") False
+	, annexListen = getmaybe (annexConfig "listen")
+	, annexStartupScan = getbool (annexConfig "startupscan") True
+	, annexHardLink = getbool (annexConfig "hardlink") False
+	, annexThin = getbool (annexConfig "thin") False
 	, annexDifferences = getDifferences r
 	, annexUsedRefSpec = either (const Nothing) Just . parseRefSpec 
-		=<< getmaybe (annex "used-refspec")
-	, annexVerify = getbool (annex "verify") True
-	, annexPidLock = getbool (annex "pidlock") False
+		=<< getmaybe (annexConfig "used-refspec")
+	, annexVerify = getbool (annexConfig "verify") True
+	, annexPidLock = getbool (annexConfig "pidlock") False
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
-		getmayberead (annex "pidlocktimeout")
+		getmayberead (annexConfig "pidlocktimeout")
 	, annexAddUnlocked = configurable Nothing $
-		fmap Just $ getmaybe (annex "addunlocked")
-	, annexSecureHashesOnly = getbool (annex "securehashesonly") False
-	, annexRetry = getmayberead (annex "retry")
+		fmap Just $ getmaybe (annexConfig "addunlocked")
+	, annexSecureHashesOnly = getbool (annexConfig "securehashesonly") False
+	, annexRetry = getmayberead (annexConfig "retry")
 	, annexRetryDelay = Seconds
-		<$> getmayberead (annex "retrydelay")
+		<$> getmayberead (annexConfig "retrydelay")
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
 		maybe ["http", "https", "ftp"] words $
-			getmaybe (annex "security.allowed-url-schemes")
+			getmaybe (annexConfig "security.allowed-url-schemes")
 	, annexAllowedIPAddresses = fromMaybe "" $
-		getmaybe (annex "security.allowed-ip-addresses")
+		getmaybe (annexConfig "security.allowed-ip-addresses")
 			<|>
-		getmaybe (annex "security.allowed-http-addresses") -- old name
+		getmaybe (annexConfig "security.allowed-http-addresses") -- old name
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
-		getmaybe (annex "security.allow-unverified-downloads")
-	, annexMaxExtensionLength = getmayberead (annex "maxextensionlength")
+		getmaybe (annexConfig "security.allow-unverified-downloads")
+	, annexMaxExtensionLength = getmayberead (annexConfig "maxextensionlength")
 	, annexJobs = fromMaybe NonConcurrent $ 
-		parseConcurrency =<< getmaybe (annex "jobs")
-	, annexCacheCreds = getbool (annex "cachecreds") True
-	, annexAutoUpgradeRepository = getbool (annex "autoupgraderepository") True
-	, annexCommitMode = if getbool (annex "allowsign") False
+		parseConcurrency =<< getmaybe (annexConfig "jobs")
+	, annexCacheCreds = getbool (annexConfig "cachecreds") True
+	, annexAutoUpgradeRepository = getbool (annexConfig "autoupgraderepository") True
+	, annexCommitMode = if getbool (annexConfig "allowsign") False
 		then ManualCommit
 		else AutomaticCommit
 	, coreSymlinks = getbool "core.symlinks" True
@@ -225,8 +234,6 @@ extractGitConfig configsource r = GitConfig
 		FromGitConfig -> HasGitConfig v
 		FromGlobalConfig -> HasGlobalConfig v
 
-	annex k = ConfigKey $ "annex." <> k
-			
 	onemegabyte = 1000000
 
 {- Merge a GitConfig that comes from git-config with one containing
@@ -248,6 +255,18 @@ mergeGitConfig gitconfig repoglobals = gitconfig
 			HasGlobalConfig v -> HasGlobalConfig v
 			_ -> HasGitConfig d
 		HasGlobalConfig v -> HasGlobalConfig v
+
+{- Configs that can be set repository-global. -}
+globalConfigs :: [ConfigKey]
+globalConfigs =
+	[ annexConfig "autocommit"
+	, annexConfig "synccontent"
+	, annexConfig "synconlyannex"
+	, annexConfig "resolvemerge"
+	, annexConfig "largefiles"
+	, annexConfig "dotfiles"
+	, annexConfig "addunlocked"
+	]
 
 {- Per-remote git-annex settings. Each setting corresponds to a git-config
  - key such as <remote>.annex-foo, or if that is not set, a default from
@@ -366,13 +385,9 @@ extractRemoteGitConfig r remotename = do
 	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
-	getmaybe' k = mplus (Git.Config.getMaybe (key k) r)
-		(Git.Config.getMaybe (remotekey k) r)
+	getmaybe' k = mplus (Git.Config.getMaybe (annexConfig k) r)
+		(Git.Config.getMaybe (remoteAnnexConfig remotename k) r)
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
-
-	key k = ConfigKey $ "annex." <> k
-	remotekey k = ConfigKey $
-		"remote." <> encodeBS' remotename <> ".annex-" <> k
 
 notempty :: Maybe String -> Maybe String	
 notempty Nothing = Nothing
@@ -382,3 +397,27 @@ notempty (Just s) = Just s
 dummyRemoteGitConfig :: IO RemoteGitConfig
 dummyRemoteGitConfig = atomically $ 
 	extractRemoteGitConfig Git.Construct.fromUnknown "dummy"
+
+type UnqualifiedConfigKey = B.ByteString
+
+{- A global annex setting in git config. -}
+annexConfig :: UnqualifiedConfigKey -> ConfigKey
+annexConfig key = ConfigKey ("annex." <> key)
+
+class RemoteNameable r where
+	getRemoteName :: r -> RemoteName
+
+instance RemoteNameable Git.Repo where
+	getRemoteName r = fromMaybe "" (Git.remoteName r)
+
+instance RemoteNameable RemoteName where
+	 getRemoteName = id
+
+{- A per-remote annex setting in git config. -}
+remoteAnnexConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
+remoteAnnexConfig r key = remoteConfig r ("annex-" <> key)
+
+{- A per-remote setting in git config. -}
+remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
+remoteConfig r key = ConfigKey $
+	"remote." <> encodeBS' (getRemoteName r) <> "." <> key

@@ -16,7 +16,7 @@ import Types
 import Types.UUID
 import Types.ProposedAccepted
 import Types.RemoteConfig
-import Config
+import Types.GitConfig
 import qualified Git.Config
 
 import qualified Data.Map as M
@@ -234,8 +234,12 @@ optionalStringParser f fielddesc = RemoteConfigFieldParser
 	p Nothing _c = Right Nothing
 
 yesNoParser :: RemoteConfigField -> Bool -> FieldDesc -> RemoteConfigFieldParser
-yesNoParser f v fd = genParser yesNo f v fd
+yesNoParser f v fd = genParser yesno f v fd
 	(Just (ValueDesc "yes or no"))
+  where
+	yesno "yes" = Just True
+	yesno "no" = Just False
+	yesno _ = Nothing
 
 trueFalseParser :: RemoteConfigField -> Bool -> FieldDesc -> RemoteConfigFieldParser
 trueFalseParser f v fd = genParser Git.Config.isTrueFalse f v fd

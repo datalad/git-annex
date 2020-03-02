@@ -5,10 +5,14 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Config where
+module Config (
+	module Config,
+	annexConfig,
+	remoteAnnexConfig,
+	remoteConfig,
+) where
 
 import Annex.Common
 import qualified Git
@@ -18,12 +22,8 @@ import qualified Annex
 import Config.Cost
 import Config.DynamicConfig
 import Types.Availability
+import Types.GitConfig
 import Git.Types
-import qualified Types.Remote as Remote
-
-import qualified Data.ByteString as S
-
-type UnqualifiedConfigKey = S.ByteString
 
 {- Looks up a setting in git config. This is not as efficient as using the
  - GitConfig type. -}
@@ -49,31 +49,6 @@ reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 {- Unsets a git config setting. (Leaves it in state.) -}
 unsetConfig :: ConfigKey -> Annex ()
 unsetConfig key = void $ inRepo $ Git.Config.unset key
-
-class RemoteNameable r where
-	getRemoteName :: r -> RemoteName
-
-instance RemoteNameable Git.Repo where
-	getRemoteName r = fromMaybe "" (Git.remoteName r)
-
-instance RemoteNameable RemoteName where
-	 getRemoteName = id
-
-instance RemoteNameable Remote where
-	getRemoteName = Remote.name
-
-{- A per-remote config setting in git config. -}
-remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
-remoteConfig r key = ConfigKey $
-	"remote." <> encodeBS' (getRemoteName r) <> "." <> key
-
-{- A per-remote config annex setting in git config. -}
-remoteAnnexConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
-remoteAnnexConfig r key = remoteConfig r ("annex-" <> key)
-
-{- A global annex setting in git config. -}
-annexConfig :: UnqualifiedConfigKey -> ConfigKey
-annexConfig key = ConfigKey ("annex." <> key)
 
 {- Calculates cost for a remote. Either the specific default, or as configured 
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
@@ -108,8 +83,3 @@ crippledFileSystem = annexCrippledFileSystem <$> Annex.getGitConfig
 setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b =
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
-
-yesNo :: String -> Maybe Bool
-yesNo "yes" = Just True
-yesNo "no" = Just False
-yesNo _ = Nothing

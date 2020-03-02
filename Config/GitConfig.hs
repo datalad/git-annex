@@ -17,7 +17,8 @@ import Logs.Config
  - repository-global defaults when the GitConfig does not yet 
  - have a value.
  -
- - Note: Be sure to add the config value to mergeGitConfig.
+ - Note: Be sure to add the config to mergeGitConfig and to
+ - globalConfigs.
  -}
 getGitConfigVal :: (GitConfig -> Configurable a) -> Annex a
 getGitConfigVal f = getGitConfigVal' f >>= \case

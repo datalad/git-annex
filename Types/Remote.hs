@@ -153,6 +153,9 @@ data RemoteA a = Remote
 	, remoteStateHandle :: RemoteStateHandle
 	}
 
+instance RemoteNameable (RemoteA a) where
+	getRemoteName = name
+
 instance Show (RemoteA a) where
 	show remote = "Remote { name =\"" ++ name remote ++ "\" }"
 
