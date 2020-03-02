@@ -1,0 +1,64 @@
+### Please describe the problem.
+
+When running git-annex tests on a specific machine I get the following error:
+
+```
+$ ./dist-newstyle/build/x86_64-linux/ghc-8.6.5/git-annex-8.20200226/build/git-annex/git-annex test -v -p Tests.QuickCheck.prop_hashes_stable
+Tests
+  QuickCheck
+    prop_hashes_stable: Illegal instruction (core dumped)
+```
+
+(I get the same error when just running `./dist-newstyle/build/x86_64-linux/ghc-8.6.5/git-annex-8.20200226/build/git-annex/git-annex test`, but after successful passes of previous tests.)
+
+### What steps will reproduce the problem?
+
+Run the following on a machine with the CPU "AMD Phenom(tm) II X3 720 Processor":
+
+```
+git clone git://git-annex.branchable.com/ git-annex
+cd git-annex
+cabal install -j --only-dependencies
+cabal configure
+cabal build -j
+./dist-newstyle/build/x86_64-linux/ghc-8.6.5/git-annex-8.20200226/build/git-annex/git-annex test -v -p Tests.QuickCheck.prop_hashes_stable
+```
+
+### What version of git-annex are you using? On what operating system?
+
+I'm trying to build git-annex from the current "master". However, the same problem exists in 7.20190819, 7.20191230 and 7.20200204.
+
+I'm building on NixOS, release 19.09, using GHC 8.6.5.
+
+### Please provide any additional information below.
+
+I believe the problem was initially encountered on NixOS' build farm, https://hydra.nixos.org/ , when trying to build the git-annex package version 7.20190819 for NixOS/nixpkgs. (As a result, the built package was not available when I tried to update my installation of NixOS, which led me to investigating this problem.)
+
+So I tried to build the same package (and other versions, see above) on my own machine running NixOS (which has AMD Phenom II CPU). It consistently failed during testing on numerous attempts with different configurations. However, another machine (with AMD FX-8300 CPU) was able to build the same package, and never had the same test failures.
+
+Then I built git-annex on both machines from source (not as a Nix package), using cabal, and tried to run tests, as shown in the beginning. I got the same results: Phenom II failed the test Tests.QuickCheck.prop_hashes_stable with "Illegal instruction", while FX-8300 passed it.
+
+I do **not** think that my Phenom II machine has hardware problems: I ran MemTest recently, and this machine is able to build other packages (including GCC and GHC) just fine.
+
+Moreover, the same problem occurs on hydra.hixos.org , and it looks like it's sporadic (repeating the build can fix it). I guess that this depends on which machine is assigned to build the package: some machines are able to build it, while others are not.
+
+So, my hypothesis is that git-annex's tests (and maybe non-test code pieces as well) use some CPU instructions that are not supported on Phenom II (and other) CPUs, but supported on later CPUs such as FX-8300. Probably this is even a problem of GHC rather than of git-annex, but I'm not qualified to tell (I know nothing relevant about Haskell compilation or code generation).
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[nix-shell:~/build/git-annex]$ ./dist-newstyle/build/x86_64-linux/ghc-8.6.5/git-annex-8.20200226/build/git-annex/git-annex test -v -p Tests.QuickCheck.prop_hashes_stable
+Illegal instruction (core dumped)
+
+[nix-shell:~/build/git-annex]$ dmesg | tail -n1
+[151755.340563] traps: git-annex:w[20112] trap invalid opcode ip:2d6c567 sp:7fefa0a1fd98 error:0 in git-annex[407000+313b000]
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm using git-annex as a core of the simple in-house system that handles storage, transfer and tracking of multi-GB data sets, taking advantage of git for version tracking, git-annex for data storage and transfer, and a single SSH access point to both of them.
+
+I must admit that it was a pain to adapt git-annex to my needs, and probably I did it in a manner that wasn't an intended/supported way of using git-annex. But it does the job.
