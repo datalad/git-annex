@@ -11,8 +11,7 @@ git-annex (8.20200227) UNRELEASED; urgency=medium
     Thanks, Peter Simons
   * stack.yaml: Updated to lts-14.27.
   * git-annex config: Only allow configs be set that are ones git-annex actually
-    supports reading from repo-global config, to avoid confused users trying
-    to set other configs with this.
+    supports reading from repo-global config, to avoid confusion.
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Feb 2020 00:44:11 -0400
 
