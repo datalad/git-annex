@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2020-03-02T19:03:44Z"
+ content="""
+It's true that you can currently use git-annex config to set absolutely any
+value, but git-annex only looks at the values that are listed in the
+documentation.
+
+I suppose I'll change it to reject other values.
+
+----
+
+So, you say it works, but I still don't understand the behavior you
+originally reported. Have you somehow fixed it? Or just not reproduced it
+with your new from scratch repository?
+"""]]
