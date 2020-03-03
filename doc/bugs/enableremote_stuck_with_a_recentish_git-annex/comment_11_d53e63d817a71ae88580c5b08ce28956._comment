@@ -1,0 +1,71 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 11"
+ date="2020-03-03T17:48:16Z"
+ content="""
+> It would be worth checking on the server if ssh has run the process.
+
+Added a bunch of `ps auxw -H` calls in the code and monitoring of the process for when it calls enableremote on target2.  
+
+<details>
+<summary>
+Here is the diff for `ps auxw -H` right before running `enableremote` and then right after the outside process notes that it was ran (and probably hanged):
+</summary>
+
+
+```
+@@ -91,22 +91,28 @@
+ root      1745  0.0  0.2  82604 22000 ?        Ss   16:00   0:00   /usr/bin/python3 /usr/bin/google_accounts_daemon
+ root      1764  0.0  0.0  65512  6312 ?        Ss   16:00   0:00   /usr/sbin/sshd -D
+ root      1998  0.0  0.0  96936  7004 ?        Ss   16:00   0:00     sshd: travis [priv]
+-travis    2014  0.0  0.0  96936  3488 ?        S    16:00   0:00       sshd: travis@pts/0
++travis    2014  0.1  0.0  96936  3488 ?        S    16:00   0:00       sshd: travis@pts/0
+ travis    2015  0.1  0.1  31864 12732 pts/0    Ss+  16:00   0:00         bash /home/travis/build.sh
+ travis    2637  0.0  0.1 429472 16088 pts/0    Sl+  16:00   0:00           ruby /home/travis/.travis/agent
+ travis    9632  0.0  0.0  22448  2996 pts/0    S+   16:05   0:00           /bin/bash ../tools/ci/stalling-enable-remote.sh
+-travis    9634 20.7  0.5 165156 47104 pts/0    S+   16:05   0:03             python -m nose -s -v ../datalad/distribution/tests/test_publish.py:test_publish_depends
+-travis   17483  0.0  0.0   4508   788 pts/0    S+   16:05   0:00               sh -c echo '==== right before enableremote target2'; date; ps auxw -H
+-travis   17485  0.0  0.0  47388  3472 pts/0    R+   16:05   0:00                 ps auxw -H
+-travis   17344  0.0  0.0  17168   644 pts/0    S+   16:05   0:00             sleep 1
++travis    9634 20.8  0.5 165156 47108 pts/0    S+   16:05   0:03             python -m nose -s -v ../datalad/distribution/tests/test
++travis   17486  0.0  0.5 1074090736 42496 pts/0 Sl+ 16:05   0:00               /usr/lib/git-annex.linux/exe/git-annex --library-path
++travis   17510  0.0  0.0  21156  4264 pts/0    S+   16:05   0:00                 /usr/lib/git-annex.linux/exe/git --library-path /us
++travis   17511  0.0  0.0  21156  2228 pts/0    S+   16:05   0:00                 /usr/lib/git-annex.linux/exe/git --library-path /us
++travis   17512  0.0  0.0  21204  4160 pts/0    S+   16:05   0:00                 /usr/lib/git-annex.linux/exe/git --library-path /us
++travis   17520  0.0  0.0      0     0 pts/0    Z+   16:05   0:00                 [ssh] <defunct>
++travis   17552  0.0  0.0  47388  3440 pts/0    R+   16:05   0:00             ps auxw -H
+ root     16839  0.5  0.0  96936  6872 ?        Ss   16:05   0:00     sshd: travis [priv]
+ travis   16845  0.5  0.0  96936  4168 ?        S    16:05   0:00       sshd: travis@notty
+ root     17310  0.0  0.0  96936  6964 ?        Ss   16:05   0:00     sshd: travis [priv]
+ travis   17316  0.0  0.0  96936  4104 ?        S    16:05   0:00       sshd: travis@notty
++root     17521  0.0  0.0  96936  6924 ?        Ss   16:05   0:00     sshd: travis [priv]
++travis   17528  0.0  0.0  96936  3668 ?        S    16:05   0:00       sshd: travis@notty
+ travis    2008  0.0  0.0  45276  4664 ?        Ss   16:00   0:00   /lib/systemd/systemd --user
+ travis    2009  0.0  0.0  63256  1908 ?        S    16:00   0:00     (sd-pam)
+ root      3439  0.1  0.8 335396 68348 ?        Ssl  16:01   0:00   /usr/bin/dockerd -H fd://
+-root      3462  0.2  0.4 268004 34968 ?        Ssl  16:01   0:00     docker-containerd --config /var/run/docker/containerd/containerd.toml
++root      3462  0.2  0.4 268004 34968 ?        Ssl  16:01   0:00     docker-containerd --config /var/run/docker/containerd/container
+ travis    5658  0.0  0.0  11148   316 ?        Ss   16:03   0:00   ssh-agent
+-travis   16841  0.0  0.0  44924   704 ?        Ss   16:05   0:00   ssh -fN -o ControlMaster=auto -o ControlPersist=15m -o ControlPath=/home/travis/.cache/datalad/sockets/a1cd7d63 localhost
+-travis   17312  0.0  0.0  44924   708 ?        Ss   16:05   0:00   ssh -fN -o ControlMaster=auto -o ControlPersist=15m -o ControlPath=/home/travis/.cache/datalad/sockets/31d0eb5a datalad-test
++travis   16841  0.0  0.0  44924   704 ?        Ss   16:05   0:00   ssh -fN -o ControlMaster=auto -o ControlPersist=15m -o ControlPat
++travis   17312  0.0  0.0  44924   708 ?        Ss   16:05   0:00   ssh -fN -o ControlMaster=auto -o ControlPersist=15m -o ControlPat
++travis   17525  0.0  0.0  44928   712 ?        Ss   16:05   0:00   ssh: .git/annex/ssh/datalad-test [mux]
+```
+
+</details>
+
+[full travis log](https://api.travis-ci.org/v3/job/657811641/log.txt)  . Unfortunately the \"after\" call has truncated command lines :-/   But you can see new processes:
+
+```
++travis   17486  0.0  0.5 1074090736 42496 pts/0 Sl+ 16:05   0:00               /usr/lib/git-annex.linux/exe/git-annex --library-path
++travis   17510  0.0  0.0  21156  4264 pts/0    S+   16:05   0:00                 /usr/lib/git-annex.linux/exe/git --library-path /us
++travis   17511  0.0  0.0  21156  2228 pts/0    S+   16:05   0:00                 /usr/lib/git-annex.linux/exe/git --library-path /us
++travis   17512  0.0  0.0  21204  4160 pts/0    S+   16:05   0:00                 /usr/lib/git-annex.linux/exe/git --library-path /us
++travis   17520  0.0  0.0      0     0 pts/0    Z+   16:05   0:00                 [ssh] <defunct>
+...
++travis   17525  0.0  0.0  44928   712 ?        Ss   16:05   0:00   ssh: .git/annex/ssh/datalad-test [mux]
+```
+and no `configlist`.  so it does seems to be ssh stalling for some reason
+"""]]
