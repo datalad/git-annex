@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="lhunath@3b4ff15f4600f3276d1776a490b734fca0f5c245"
+ nickname="lhunath"
+ avatar="http://cdn.libravatar.org/avatar/6388e539b56b3875cc9aceb9f404b3ad"
+ subject="comment 5"
+ date="2020-03-03T20:33:47Z"
+ content="""
+Seems like git-annex should report on that.  Simply saying \"git-annex: upgrade: 1 failed\" because git is 2.21 is extremely unhelpful.  If git-annex requires a certain version of git, it should test for that and be explicit about that requirement in its error output.  I needed this comment in order to resolve the issue.
+
+For me, 2.21 is just what macOS ships with.
+"""]]
