@@ -1,0 +1,82 @@
+I set up synchronization between two new git-annex repositories via a webdav export remote for the files content and tor p2p for the git commits.
+
+The following notes apply to a Debian testing system with around 8.20200227. (I compile from source.)
+
+I wanted to understand what the individual setup steps are doing in detail. I hope I'll have time to contribute this into the documentation (man pages) or maybe motivate Joey to do some changes in the code.
+
+## git-annex enable-tor
+
+This is what the **enable-tor** command does:
+
+Be
+hiddenServiceSocketFile=/var/lib/tor-annex/$(id -u)_$(git config --get annex.uuid)/s
+
+- prepHiddenServiceSocketDir effectively does
+  mkdir -p $(dirname $hiddenServiceSocketFile)
+
+- adds two lines to /etc/tor/torrc
+
+  HiddenServiceDir /var/lib/tor/tor-annex_$(id -u)_$(git config --get annex.uuid)
+  HiddenServicePort $newport unix:$hiddenServiceSocketFile
+
+- restarts the tor service and waits for it to come back
+
+- parses the OnionAddress from the $HiddenServiceDir/hostname that tor should have written after restart
+
+- stores the OnionAddress and $newport into .git/annex/creds/p2paddrs
+
+### Comments to enable-tor
+
+- Why can't $newport be a fixed port? There will always only be one
+  HiddenservicePort per annex HiddenServiceDir.
+  
+  Confirmed in comment in Auth.hs:
+  
+  -- We can omit the port and just use the onion address for the creds file,
+  -- because any given tor hidden service runs on a single port and has a
+  -- unique onion address.
+
+- Wouldn't it be easier if git-annex-remotedaemon would just run a child tor
+  process? This way git-annex would fully control the config file and there were
+  no permission issues with the socket.
+
+- The path to the tor socket file is hard coded and git-remote-daemon can not be
+  instructed to use a different file. Thus it is not possible to explore
+  alternative setups, e.g. systemd user services.
+
+## git-annex-p2p --pair
+
+Man page: https://git-annex.branchable.com/git-annex-p2p
+
+I did not use the --pair option since it was unclear to me what exact Wormhole version was needed. Also it was to magic for me.
+So far I did the pairing only in one direction and still the synchronization seems to work at least in one direction. I don't remember ATM whether I also tested the other direction.
+
+### --gen-addresses
+
+- generates an auth token
+- stores the auth token in .git/annex/creds/p2pauth
+- prints some string to be passed to --link in another annex repo
+
+### --link
+
+- runs git remote add $remotename (formatP2PAddress addr)
+- storeUUIDIn (remoteAnnexConfig remotename "uuid") theiruuid
+  does effectively: git config --set remote.$remotename.annex-uuid theiruuid
+- storeP2PRemoteAuthToken addr authtoken
+  stores the auth token in .git/annex/creds/$onionaddr
+
+## git-annex remotedaemon, git-annex assistant
+
+Now I can start git-annex remotedaemon and the synchronization works.
+Also git-annex assistant works. However after killing the assistant, it seems that sometimes I needed to restart the remotedaemon, otherwise there was an error about some socket problem.
+
+## webdav export remote
+
+I needed some time to find out that I need to configure "annex-tracking-branch" for an export remote in order for the assistant to automatically sync file content.
+
+## Links
+
+https://git-annex.branchable.com/special_remotes/tor/
+https://git-annex.branchable.com/tips/peer_to_peer_network_with_tor/
+https://2019.www.torproject.org/docs/onion-services
+https://riseup.net/en/security/network-security/tor/onionservices-best-practices
