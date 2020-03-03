@@ -1,0 +1,20 @@
+I still don't like repeated name inside each symlink.
+
+I enabled every tunable I found to make it sane for me: ./git/annex/objects/xxx/SHA256-.../SHA256-...
+I expect to have no more than 1.000.000 files which I care about even if I live till 100 years, which nicely fit into performance window of filesystem of 4096 folders with 5000 files each.
+I don't care about readonly files -- I have BTRFS snapshots and weekly backups for the case of unintentional disaster and corruption of some files till SHA don't match anymore.
+I don't care about nice distributed lock-free mechanics of git annex -- I always commit each new annex file as separate commit and don't mess with scripting git write operations in my repo.
+What I care is symlinks length -- to fit into my screen width in terminal file manager, repo performance and underlying git repo size -- all of which are dependent on the length of path till the real file.
+
+What I found reading git-annex forum/todo/bugs and datalad issues for two month -- all are old discussions, ideas and maybe obsolete plans.
+I even found somewhere proposal for single-lock model of working for git-annex.
+
+* https://git-annex.branchable.com/design/new_repo_versions/
+* https://github.com/datalad/datalad/issues/32
+
+Yet what I did not found is the status of the idea to add such tunable to git-annex.
+Deadly unsafe tunable to drop nested SHA-SHA folder would totally satisfy me -- and I would immediately go writing scripts to replay whole my git history onto the freshly initialized git-annex with new symlinks.
+Especially if waiting for "more safe" single-lock git-annex w/o SHA-SHA may take years.
+
+So, what is the status of plans?
+Do you have any idea how many years (or month?) left to wait until the idea will brew enough to become vital and git-annex codebase transforms into more suitable state to implement such tunable?
