@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-04T20:50:08Z"
+ content="""
+Is this causing something not to work for you?
+
+It clearly ought to be fixed, but it extends rather beyond external remote
+programs. Eg, gpg is not bundled but is run with the bundled locales.
+ssh is bundled but is only used if the system does not have ssh, and if the
+system does, that also is run with the bundled locales. git is bundled, but
+may run other programs that are not bundled (git-remote-gcrypt comes to
+mind), which would run with the bundled locales etc. Only the webapp
+currently sanitizes the environment when starting a web browser.
+
+Probably the cleanest way to solve it would be to make git-annex
+unset the problem parts of the bundled environment when running
+all commands. (I think that would be `GCONV_PATH` and `LOCPATH`;
+others like `PATH` and `MANPATH` need to be seen by non-bundled programs.)
+And have the wrapper scripts in bin/ restore the bundled environment back
+again for their programs to use. Eg, have runshell also
+set `ANNEX_GCONV_PATH`, and the wrapper scripts have
+`GCONV_PATH="$ANNEX_GCONV_PATH"`.
+
+It might be possible to have git-annex just unset those env vars on startup, 
+instead of needing to do it every time in the System.Process wrapper.
+That would avoid slowing down non-standalone git-annex with checking,
+on every command invocation, if it needs to sanitize its environment.
+I'm not sure if a program that unsets `GCONV_PATH` and `LOCPATH` on startup
+will prevent glibc from using them or not, would have to test or code dive
+glibc to find out.
+
+(That would not make the bundled git run non-bundled git-remote-gcrypt
+w/o the bundled environment. If that kind of thing were really a problem,
+the only solution would seem to be to modify git.)
+"""]]
