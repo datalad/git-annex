@@ -69,6 +69,7 @@ main = do
 	Annex.eval state $ do
 		buildrpms topdir updated
 		makeinfos updated version
+	syncToArchiveOrg
 
 -- Download a build from the autobuilder, virus check it, and return its
 -- version.
@@ -241,3 +242,13 @@ buildrpms topdir l = do
 		("git-annex-standalone-" ++ tararch ++ ".tar.gz") `isSuffixOf` f
 	script = topdir </> "standalone" </> "rpm" </> "rpmbuild-from-standalone-tarball"
 	rpmrepo = "git-annex/linux/current/rpms"
+
+-- My .mrconfig is configured to copy new files to archive.org,
+-- and moves old versions of content to archive.org to free up space on my
+-- server.
+syncToArchiveOrg :: IO ()
+syncToArchiveOrg = void $ boolSystem "mr" 
+	[ Param "-d"
+	, File "/srv/web/downloads.kitenet.net"
+	, Param "update"
+	]

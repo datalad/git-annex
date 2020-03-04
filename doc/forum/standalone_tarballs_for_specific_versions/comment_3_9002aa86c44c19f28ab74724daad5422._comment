@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-03-04T16:25:55Z"
+ content="""
+That file had not been uploaded to archive.org, so there was no archive.org
+url available for it.
+
+What I'll do is automate the upload to archive.org after each release,
+so the tarballs should usually be available from there, barring some breakage.
+"""]]
