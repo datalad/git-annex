@@ -1,0 +1,13 @@
+Hello! <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp; I am running `Termux` on a `Huawei P20` running `Android 9.x`; when syncing content, I seem to keep getting this on most / all annexed objects:
+
+```bash
+/data/data/com.termux/files/home/git-annex.linux/shimmed/cp/cp: preserving times for '.git/annex/othertmp/*': Operation not permitted
+```
+
+where `*` is replaced by whatever object is in the folder. I don't know if this is a permissions issue or not, but it is kind of annoying, and takes time from the sync process itself. <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp; Is there any way to change the shimmed `cp` to ignore times? <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp; Thank you kindly for the help!

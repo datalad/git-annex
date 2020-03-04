@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://id.pvgoran.name/"
+ nickname="pvgoran"
+ avatar="http://cdn.libravatar.org/avatar/e32a61d9c49989ae31d7a30d6af27f5c73d8d46ba03c840a612791fe5c820b87"
+ subject="comment 3"
+ date="2020-03-03T03:16:25Z"
+ content="""
+After rebuilding `cryptonite` without AES-NI support as suggested in https://github.com/haskell-crypto/cryptonite/issues/260#issuecomment-484185981 (by passing `--constraint=\"cryptonite -support_aesni\"` to `cabal install --dependencies-only` and to `cabal build`), all of QuickCheck tests pass on the machine in question. (Many other tests fail, but it's probably because I run tests from a not-yet-installed `git-annex` binary.)
+
+So `cryptonite` apparently uses these AES-NI instructions (if configured to support them) without runtime checks (or at least without working runtime checks). Which constitutes a problem for any binary distributions that include `cryptonite` code: either they won't work on older CPUs, or they will not work as fast as they could on newer CPUs.
+
+"""]]

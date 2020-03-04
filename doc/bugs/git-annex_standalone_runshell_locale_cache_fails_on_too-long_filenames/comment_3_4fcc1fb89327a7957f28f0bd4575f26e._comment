@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git-annex standalone and long filenames in locale cache"
+ date="2020-03-03T22:36:42Z"
+ content="""
+I'm finding it would be useful to have a conda package variant based on the standalone git-annex version (the normal variant has dependencies that sometimes conflict with other packages).  So it would still be useful to fix  this issue (another example of it is [here](https://dev.azure.com/conda-forge/84710dde-1620-425b-80d0-4cf5baca359d/_apis/build/builds/127349/logs/10)).  If `md5sum` is not available, maybe can use `cksum`?
+"""]]

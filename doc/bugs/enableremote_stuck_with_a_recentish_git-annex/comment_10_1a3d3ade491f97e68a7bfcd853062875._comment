@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 10"
+ date="2020-03-02T20:54:12Z"
+ content="""
+I am sorry! I rushed pasting I guess and didn't spot that pasted the wrong one.  Instead of `8.20200226+git16-ge156a2b74-1~ndall+1` I meant `7.20190819+git2-g908476a9b-1~ndall+1` which [we have in neurodebian ATM](http://neuro.debian.net/pkgs/git-annex-standalone.html?highlight=standalone). `8.20200226+git16-ge156a2b74-1~ndall+1`  is a bad one!
+"""]]

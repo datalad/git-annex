@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://id.pvgoran.name/"
+ nickname="pvgoran"
+ avatar="http://cdn.libravatar.org/avatar/e32a61d9c49989ae31d7a30d6af27f5c73d8d46ba03c840a612791fe5c820b87"
+ subject="comment 4"
+ date="2020-03-03T03:19:01Z"
+ content="""
+joey, can you tell what problems I will face if I run a git-annex binary with broken blake2 implementation? What functionality of git-annex will fail?
+"""]]
