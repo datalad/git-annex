@@ -129,6 +129,11 @@ ORIG_LOCPATH="$LOCPATH"
 export ORIG_LOCPATH
 if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 	LOCPATH="$HOME/.cache/git-annex/locales/$(echo "$base" | tr / _ )"
+	# try to generate a short version, if md5sum is available
+	locpathmd5=$( (echo "$LOCPATH" | md5sum | cut -d ' ' -f 1 2>/dev/null) || true)
+	if [ -n "$locpathmd5" ]; then
+		LOCPATH="$HOME/.cache/git-annex/locales/$locpathmd5"
+	fi
 	export LOCPATH
 	
 	# Clean up locale caches when their standalone bundle no longer exists.
