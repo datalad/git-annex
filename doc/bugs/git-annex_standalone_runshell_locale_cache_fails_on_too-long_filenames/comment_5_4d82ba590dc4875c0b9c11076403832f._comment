@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="locale info caching for standalone git-annex"
+ date="2020-03-04T17:04:42Z"
+ content="""
+For now I'm using the following [patch](https://github.com/conda-forge/git-annex-feedstock/blob/master/recipe/0001-fix-long-paths-in-locales.patch).
+If the dir with the standalone version is writable, may be simplest to just store the locale cache under that dir?
+
+"""]]
