@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2020-03-04T17:15:58Z"
+ content="""
+Great, thanks.   This'll permanently fix the [issue](https://github.com/conda/conda/issues/9707) of package conflicts when installing git-annex (or tools that depend on it, like DataLad) alongside other things into conda environments.
+"""]]
