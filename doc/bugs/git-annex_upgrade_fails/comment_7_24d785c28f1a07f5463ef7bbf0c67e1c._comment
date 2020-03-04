@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-03-04T16:54:32Z"
+ content="""
+You are responding to a bug that was fixed and closed 6 months ago 
+with some complaint about a vague error message.
+
+While it's true that the error message reported in the original bug report
+was not very good -- because git was crashing! -- the fix involved making
+git-annex detect the problimatic git versions and display a useful message.
+See [[!commit 1558e03014f6a5ebf71e04f1498dd3c1acdbad5c]]
+
+If you are having a problem with current versions of git-annex, you need to
+file a new bug report, not followup vaguely to an old one. Thank you.
+"""]]
