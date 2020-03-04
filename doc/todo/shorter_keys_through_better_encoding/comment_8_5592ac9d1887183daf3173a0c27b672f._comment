@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="amerlyq+annex@12121d70a602f094228689a0a24d348d478a8af1"
+ nickname="amerlyq+annex"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="re: shorter symlinks"
+ date="2020-03-04T00:48:02Z"
+ content="""
+I don't need strategy nor safety.
+Create a tunable for new repos to disable directory sha completely (and if not sustainable - even readonly bit safety) - and that is enough.
+I will replay whole my history again onto new repo and make fs snapshotting more frequently.
+I can even live without base64.
+Changing defaults is undesirable - and that is understandable. 
+But we would still prefer to have an option, even if to bear the whole grunt of consequences ourselves.
+Sometimes I wonder if it worth to learn Haskell only to fork gitannex for specific needs, but the reason for this encompassing endeavor seems lame :(
+"""]]

@@ -9,15 +9,18 @@ I wanted to understand what the individual setup steps are doing in detail. I ho
 This is what the **enable-tor** command does:
 
 Be
-hiddenServiceSocketFile=/var/lib/tor-annex/$(id -u)_$(git config --get annex.uuid)/s
+`hiddenServiceSocketFile=/var/lib/tor-annex/$(id -u)_$(git config --get annex.uuid)/s`
 
 - prepHiddenServiceSocketDir effectively does
-  mkdir -p $(dirname $hiddenServiceSocketFile)
+
+  `mkdir -p $(dirname $hiddenServiceSocketFile)`
 
 - adds two lines to /etc/tor/torrc
 
+  ```
   HiddenServiceDir /var/lib/tor/tor-annex_$(id -u)_$(git config --get annex.uuid)
   HiddenServicePort $newport unix:$hiddenServiceSocketFile
+  ```
 
 - restarts the tor service and waits for it to come back
 
@@ -32,9 +35,11 @@ hiddenServiceSocketFile=/var/lib/tor-annex/$(id -u)_$(git config --get annex.uui
   
   Confirmed in comment in Auth.hs:
   
+  ```
   -- We can omit the port and just use the onion address for the creds file,
   -- because any given tor hidden service runs on a single port and has a
   -- unique onion address.
+  ```
 
 - Wouldn't it be easier if git-annex-remotedaemon would just run a child tor
   process? This way git-annex would fully control the config file and there were
@@ -46,7 +51,7 @@ hiddenServiceSocketFile=/var/lib/tor-annex/$(id -u)_$(git config --get annex.uui
 
 ## git-annex-p2p --pair
 
-Man page: https://git-annex.branchable.com/git-annex-p2p
+Man page: <https://git-annex.branchable.com/git-annex-p2p>
 
 I did not use the --pair option since it was unclear to me what exact Wormhole version was needed. Also it was to magic for me.
 So far I did the pairing only in one direction and still the synchronization seems to work at least in one direction. I don't remember ATM whether I also tested the other direction.
@@ -76,7 +81,7 @@ I needed some time to find out that I need to configure "annex-tracking-branch" 
 
 ## Links
 
-https://git-annex.branchable.com/special_remotes/tor/
-https://git-annex.branchable.com/tips/peer_to_peer_network_with_tor/
-https://2019.www.torproject.org/docs/onion-services
-https://riseup.net/en/security/network-security/tor/onionservices-best-practices
+- <https://git-annex.branchable.com/special_remotes/tor>
+- <https://git-annex.branchable.com/tips/peer_to_peer_network_with_tor>
+- <https://2019.www.torproject.org/docs/onion-services>
+- <https://riseup.net/en/security/network-security/tor/onionservices-best-practices>

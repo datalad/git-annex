@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="URL for git-annex-standalone for specific version"
+ date="2020-03-04T01:33:30Z"
+ content="""
+`git-annex-whereis` does not seem to report a URL... how do I find it?
+
+[[!format sh \"\"\"
+(base) 20:26  [downloads.kitenet.net] $ git annex whereis /data/sw/ga-archive/downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+whereis git-annex/linux/current/git-annex-standalone-amd64.tar.gz (1 copy)
+        840760dc-08f0-11e2-8c61-576b7e66acfd -- main repo [origin]
+\"\"\"]]
+
+Reason for needing a stable per-version URL is that conda recipes require one.
+"""]]
