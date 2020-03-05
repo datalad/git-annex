@@ -1,6 +1,6 @@
 {- git-annex file permissions
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -65,22 +65,17 @@ annexFileMode = withShared $ return . go
 	go _ = stdFileMode
 	sharedmode = combineModes groupSharedModes
 
-{- Creates a directory inside the gitAnnexDir, including any parent
- - directories. Makes directories with appropriate permissions. -}
+{- Creates a directory inside the gitAnnexDir, creating any parent
+ - directories up to and including the gitAnnexDir.
+ - Makes directories with appropriate permissions. -}
 createAnnexDirectory :: FilePath -> Annex ()
-createAnnexDirectory dir = walk dir [] =<< top
+createAnnexDirectory dir = do
+	top <- parentDir . fromRawFilePath <$> fromRepo gitAnnexDir
+	createDirectoryUnder' top dir createdir
   where
-	top = parentDir . fromRawFilePath <$> fromRepo gitAnnexDir
-	walk d below stop
-		| d `equalFilePath` stop = done
-		| otherwise = ifM (liftIO $ doesDirectoryExist d)
-			( done
-			, walk (parentDir d) (d:below) stop
-			)
-	  where
-		done = forM_ below $ \p -> do
-			liftIO $ createDirectoryIfMissing True p
-			setAnnexDirPerm p
+	createdir p = do
+		liftIO $ createDirectory p
+		setAnnexDirPerm p
 
 {- Normally, blocks writing to an annexed file, and modifies file
  - permissions to allow reading it.

@@ -19,6 +19,7 @@ import Control.Monad
 import System.FilePath
 import System.PosixCompat.Files
 import Control.Applicative
+import Control.Monad.IO.Class
 import System.IO.Unsafe (unsafeInterleaveIO)
 import System.IO.Error
 import Data.Maybe
@@ -181,20 +182,29 @@ nukeFile file = void $ tryWhenExists go
  - working directory, not to the first FilePath.
  -}
 createDirectoryUnder :: FilePath -> FilePath -> IO ()
-createDirectoryUnder topdir dir0 = do
-	p <- relPathDirToFile topdir dir0
+createDirectoryUnder topdir dir =
+	createDirectoryUnder' topdir dir createDirectory
+
+createDirectoryUnder'
+	:: (MonadIO m, MonadCatch m)
+	=> FilePath
+	-> FilePath
+	-> (FilePath -> m ())
+	-> m ()
+createDirectoryUnder' topdir dir0 mkdir = do
+	p <- liftIO $ relPathDirToFile topdir dir0
 	let dirs = splitDirectories p
 	-- Catch cases where the dir is not beneath the topdir.
 	-- If the relative path between them starts with "..",
 	-- it's not. And on Windows, if they are on different drives,
 	-- the path will not be relative.
 	if headMaybe dirs == Just ".." || isAbsolute p
-		then ioError $ customerror userErrorType
+		then liftIO $ ioError $ customerror userErrorType
 			("createDirectoryFrom: not located in " ++ topdir)
 		-- If dir0 is the same as the topdir, don't try to create
 		-- it, but make sure it does exist.
 		else if null dirs
-			then unlessM (doesDirectoryExist topdir) $
+			then liftIO $ unlessM (doesDirectoryExist topdir) $
 				ioError $ customerror doesNotExistErrorType
 					"createDirectoryFrom: does not exist"
 			else createdirs $
@@ -203,20 +213,20 @@ createDirectoryUnder topdir dir0 = do
 	customerror t s = mkIOError t s Nothing (Just dir0)
 
 	createdirs [] = pure ()
-	createdirs (dir:[]) = createdir dir ioError
+	createdirs (dir:[]) = createdir dir (liftIO . ioError)
 	createdirs (dir:dirs) = createdir dir $ \_ -> do
 		createdirs dirs
-		createdir dir ioError
+		createdir dir (liftIO . ioError)
 
 	-- This is the same method used by createDirectoryIfMissing,
 	-- in particular the handling of errors that occur when the
 	-- directory already exists. See its source for explanation
 	-- of several subtleties.
-	createdir dir notexisthandler = tryIOError (createDirectory dir) >>= \case
+	createdir dir notexisthandler = tryIO (mkdir dir) >>= \case
 		Right () -> pure ()
 		Left e
 			| isDoesNotExistError e -> notexisthandler e
-			| isAlreadyExistsError e || isPermissionError e -> do
-				unlessM (doesDirectoryExist dir) $
+			| isAlreadyExistsError e || isPermissionError e ->
+				liftIO $ unlessM (doesDirectoryExist dir) $
 					ioError e
-			| otherwise -> ioError e
+			| otherwise -> liftIO $ ioError e
