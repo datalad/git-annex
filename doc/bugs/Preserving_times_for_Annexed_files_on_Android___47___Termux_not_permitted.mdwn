@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+Hello! <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp; I am running `Termux` on a `Huawei P20` running `Android 9.x`; when syncing content, I seem to keep getting this on most / all annexed objects:
+
+```bash
+/data/data/com.termux/files/home/git-annex.linux/shimmed/cp/cp: preserving times for '.git/annex/othertmp/*': Operation not permitted
+```
+
+where `*` is replaced by whatever object is in the folder. I don't know if this is a permissions issue or not, but it is kind of annoying, and takes time from the sync process itself. <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp; Is there any way to change the shimmed `cp` to ignore times? <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp; Thank you kindly for the help!
+
+
+### What steps will reproduce the problem?
+
+&nbsp;&nbsp;&nbsp;&nbsp; Simply adding or syncing content in a git annex repository in Termux on Android.
+
+### What version of git-annex are you using? On what operating system?
+
+&nbsp;&nbsp;&nbsp;&nbsp; `Version 8.20200227-ge156a2b74`
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+This is a bloody awesome project, and while I've just started using it, I'm eagre to learn more! Thank you kindly for the all the work put into this!
