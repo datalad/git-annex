@@ -1,0 +1,83 @@
+In DataLad, there are some dotfiles that we want to annex
+(e.g. `.datalad/metadata/objects/*`), so we need to set
+`annex.dotfiles=true`.  Ideally that would be in effect for annex
+commands that DataLad executes without setting `annex.dotfiles=true`
+in the repo.  DataLad configuring `annex.dotfiles` in the repo seems
+problematic because the change in behavior would be surprising to
+users that call `git annex add` directly.  And more generally, DataLad
+should be able to operate in existing git(-annex) repos without
+changing configuration values in the background.
+
+That reasoning leads to using `-c annex.dotfiles=true` in our calls to
+git-annex.  By doing that combined with `--force-large`, we can make
+`git annex add` send a dotfile to the annex.  However, if the file is
+later unlocked, it switches to being store in git, presumably when the
+clean filter runs.  The script below provides a concrete example of
+this when running on an unlocked adjusted branch.
+
+So, I think this is expected behavior.  `annex.dotfiles=true` is no
+longer in effect when the clean filter runs, and the dotfile goes into
+git instead.  The only way I can think of to work around this
+annex->git conversion is to set `annex.dotfiles=true` in the repo.
+But, as I mentioned in the first paragraph, I'm hoping to avoid that.
+Is there another solution that I'm overlooking?
+
+
+[[!format sh """
+#!/bin/sh
+
+set -eux
+
+cd "$(mktemp -d --tmpdir gx-XXXXXXX)"
+
+echo $(git annex version --raw)
+git init
+git annex init
+git commit --allow-empty -mc0
+git annex adjust --unlock
+
+echo one >.dot
+git annex add -c annex.dotfiles=true --force-large .dot
+git commit -mdot
+git diff
+"""]]
+
+```
++ mktemp -d --tmpdir gx-XXXXXXX
++ cd /tmp/gx-dVCRKik
++ git annex version --raw
++ echo 8.20200226
+8.20200226
++ git init
+Initialized empty Git repository in /tmp/gx-dVCRKik/.git/
++ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
++ git commit --allow-empty -mc0
+[master (root-commit) 594fa63] c0
++ git annex adjust --unlock
+adjust
+Switched to branch 'adjusted/master(unlocked)'
+ok
++ echo one
++ git annex add -c annex.dotfiles=true --force-large .dot
+add .dot
+ok
+(recording state in git...)
++ git commit -mdot
+[adjusted/master(unlocked) 826ad5d] dot
+ 1 file changed, 1 insertion(+)
+ create mode 100644 .dot
++ git diff
+diff --git a/.dot b/.dot
+index 9a70ce7..5626abf 100644
+--- a/.dot
++++ b/.dot
+@@ -1 +1 @@
+-/annex/objects/SHA256E-s4--2c8b08da5ce60398e1f19af0e5dccc744df274b826abe585eaba68c525434806.dot
++one
+```
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]

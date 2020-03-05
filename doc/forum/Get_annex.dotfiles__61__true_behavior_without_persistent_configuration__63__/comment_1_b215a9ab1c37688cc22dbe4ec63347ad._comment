@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="annexing only large dotfiles"
+ date="2020-03-05T19:31:37Z"
+ content="""
+Maybe, set `annex.dotfiles=true`, then in `.gitattributes` at repo root put `.* annex.largefiles=nothing`, and in .gitattributes under .datalad put `.* annex.largefiles=anything`?
+"""]]
