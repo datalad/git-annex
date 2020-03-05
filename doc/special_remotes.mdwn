@@ -38,7 +38,7 @@ Here are specific instructions for using git-annex with various services:
 * [[Box.com|tips/using_box.com_as_a_special_remote]]
 * [Ceph](https://github.com/mhameed/git-annex-remote-ceph)
 * [chef-vault](https://github.com/3ofcoins/knife-annex/)
-* [[Dropbox|rclone]]
+* [[Dropbox|tips/dropboxannex]]
 * [[FTP|rclone]]
 * [[Flickr|tips/flickrannex]]
 * [Freenet](https://github.com/xloem/gitlakepy)

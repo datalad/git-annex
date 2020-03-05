@@ -1,32 +1,14 @@
-owncloudannex 0.2.0
-=========
+For using Owncloud and Nextcloud 
+as a special remote, there are currently three choices:
 
-Hook program for gitannex to use owncloud as backend
+* Use git-annex's builtin [[special_remotes/webdav]] support.
 
-# Requirements:
+* Alternatively, rclone supports them
+  so the [[rclone_special_remote|special_remotes/rclone]] can be used.
 
-    python2
-    python-requests
+* Alternatively, there is a dedicated special remote,
+  <https://github.com/TobiasTheViking/owncloudannex>
+  (Last updated 2014)
 
-Credit for the webdav api interface goes to https://launchpad.net/python-webdav-lib
-
-# Install
-Clone the git repository in your home folder.
-
-    git clone git://github.com/TobiasTheViking/owncloudannex.git 
-
-This should make a ~/owncloudannex folder
-
-# Setup
-Make the file executable, and link it into PATH
-
-    cd ~/owncloudannex; chmod +x git-annex-remote-owncloud; sudo ln -sf `pwd`/git-annex-remote-owncloud /usr/local/bin/git-annex-remote-owncloud
-
-# Commands for gitannex:
-
-    USERNAME="login" PASSWORD="password" git annex initremote owncloud type=external externaltype=owncloud encryption=shared folder=gitannex url="https://host/remote.php/webdav/"
-    git annex describe dropbox "the owncloud library"
-
-# Note
-
-This can also be accomplished through the [[special_remotes/webdav]] special remote as Owncloud and Nextcloud are basically webdav endpoints.
+At this time it's not clear which is better, so if you find one works
+best, please comment below.
