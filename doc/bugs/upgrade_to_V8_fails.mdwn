@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+Automatic upgrade fails with error messages like
+
+git-annex: Repository /data/images is at unsupported version 7. Automatic upgrade exception! roebi.jpg: getSymbolicLinkStatus: does not exist (No such file or directory)
+
+This is the second repository where this happens.
+
+The problem occurs when issuing any git-annex command from the command line, like git-annex add, sync etc.
+
+### What steps will reproduce the problem?
+
+not clear when this happens. Both, the file and the symlink exist. 
+The file is symlinked from two directories within git-annex.
+
+### What version of git-annex are you using? On what operating system?
+
+Arch Linux
+git-annex version: 8.20200226-g8bc393a63
+the error first apperard in 8.20200226-5
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+everything worked like a charm until this recent change
