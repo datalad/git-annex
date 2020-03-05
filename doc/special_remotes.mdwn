@@ -32,7 +32,6 @@ to tie git-annex into many cloud services.
 Here are specific instructions for using git-annex with various services:
 
 * [[Amazon_Glacier|tips/using_Amazon_Glacier]]
-* [[Amazon Cloud drive|rclone]]
 * [[Amazon_S3|tips/using_Amazon_S3]]
 * [[Backblaze B2|tips/using_Backblaze_B2]]
 * [[Box.com|tips/using_box.com_as_a_special_remote]]

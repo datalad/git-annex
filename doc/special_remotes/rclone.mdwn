@@ -2,7 +2,6 @@
 directories to and from a vast variety of cloud provider and protocols. At
 the time of writing, this includes the following services:
 
-  * Amazon Drive ([See note](https://rclone.org/amazonclouddrive/#status))
   * Amazon S3 / Dreamhost / Ceph / Minio / Wasabi
   * Backblaze B2
   * Box
