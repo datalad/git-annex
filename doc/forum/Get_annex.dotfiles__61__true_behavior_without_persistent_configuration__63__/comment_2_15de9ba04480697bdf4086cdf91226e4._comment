@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="re: annexing only large dotfiles"
+ date="2020-03-05T19:56:50Z"
+ content="""
+Thanks for the reply, Ilya.  Sorry, I think my mention of `.datalad/`
+along with an example that used a top-level dotfile was unnecessarily
+confusing.  It's not an issue of sending some files dotfiles to annex
+and some to git.  It's just wanting to avoid setting `annex.dotfiles`
+in `.git/config` (or `git-annex:config.log`) of the repos that DataLad
+touches.
+"""]]
