@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-05T17:54:38Z"
+ content="""
+Implemented createDirectoryUnder, now just have to change every
+createDirectoryIfMissing True to it.. There are only 75 of them so not
+super bad?
+
+Also, of course, some library might use it, but I doubt any that do
+create directories inside the git repo, more likely they would be creating
+tmp dirs or stuff like that.
+"""]]
