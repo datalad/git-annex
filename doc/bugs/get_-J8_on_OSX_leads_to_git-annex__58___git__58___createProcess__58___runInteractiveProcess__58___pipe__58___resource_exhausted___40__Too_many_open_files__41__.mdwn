@@ -1,0 +1,52 @@
+### Please describe the problem.
+
+running `git annex get -J8` on OSX (git annex 8.20200226 installed via brew)
+
+  - distribution:  10.14.6/x86_64
+  - encoding:
+    - default: utf-8
+    - filesystem: utf-8
+    - locale.prefered: UTF-8
+  - max_path_length: 272
+  - name: Darwin
+  - release: 18.7.0
+  - type: posix
+  - version: Darwin Kernel Version 18.7.0: Tue Aug 20 16:57:14 PDT 2019; root:xnu-4903.271.2~2/RELEASE_X86_64
+
+
+results in git annex failing to get some files with errors about too many open files:
+
+[[!format sh """
+get .datalad/metadata/objects/0b/cn-65a581e2e22f95210db4d750cbcd1c.xz (from origin...) (checksum...) ok
+get .datalad/metadata/objects/16/cn-020f8a40eed616291d855f13793e6e.xz (from origin...) (checksum...) ok
+get .datalad/metadata/objects/0e/ds-2e262d6ab40f1f0fa399e80866f732 (from origin...) (checksum...) ok
+get .datalad/metadata/objects/0f/cn-550a7aca2cc94645e63cda96476d40.xz
+git-annex: git: createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
+failed
+get .datalad/metadata/objects/0f/cn-3c0d085acbb8ea3af430f826828b69.xz (from origin...) (checksum...) ok
+get .datalad/metadata/objects/1d/ds-8e8fbd9d2834f108c7bd5ddb4294eb (from origin...) (checksum...) ok
+get .datalad/metadata/objects/0b/ds-cd8a472d84af1980703baca7ad4910 (from origin...) (checksum...) ok
+get .datalad/metadata/objects/1b/ds-9f695168fd28140c49a45523b9ce5f (from origin...) (checksum...) ok
+get .datalad/metadata/objects/21/ds-92598325890e1d079e1a0a8e4fd9df
+git-annex: git: createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
+failed
+get .datalad/metadata/objects/0f/ds-550a7aca2cc94645e63cda96476d40 (from origin...) (checksum...) ok
+get .datalad/metadata/objects/06/cn-2c3eade47bd2d9052658c6a9d10a57.xz (from origin...) (checksum...) ok
+get .datalad/metadata/objects/21/cn-92598325890e1d079e1a0a8e4fd9df.xz (from origin...) (checksum...) ok
+get .datalad/metadata/objects/1b/cn-f55a26461f99a8ac1dde6b618e3425.xz (from origin...) (checksum...)
+git-annex: .git/annex/othertmp.lck: openFd: resource exhausted (Too many open files)
+failed
+get .datalad/metadata/objects/26/ds-0ad917bee8d05db1dd27d0ad50c1bb
+git-annex: git: createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
+"""]]
+
+Full bundle of logs with a bit older (20191230) and this newer version, and full output of `datalad wtf` is available from [http://www.onerussian.com/tmp/git-annex-J8-logs.tar.gz](http://www.onerussian.com/tmp/git-annex-J8-logs.tar.gz).
+
+possibly related, but not yet marked done [issue I found is from 6 years ago](https://git-annex.branchable.com/bugs/Resource_exhausted/).
+
+I have tried to replicate this on some other OSX boxes a few weeks back but I have not reproduced it, so might be specific about this one.  FWIW `ulimit` reported "unlimited"
+
+I will try to get a chance to troubleshoot it more to provide possibly more details whenever I get access to it again.  Meanwhile just informing, and would welcome additional instructions on what to look at (besides adding `--debug` and running lsof in a loop in parallel) to troubleshoot it.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
