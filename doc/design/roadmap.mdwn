@@ -1,42 +1,8 @@
 git-annex is in a mode of continual user-driven improvement, involving numerous
 small issues and often easily implemented ideas.
 
-Here are some larger/ongoing plans for git-annex, in no particular order.
+Here are open todo items that have been confirmed as worth doing:
 
-Speed improvements, including:
-
-* Speed up git checkout in v7 repository by 
-  improving git's smudge/clean filter interface, or some other approach, to avoid needing to fork
-  git-annex once per file during the checkout.
-  <https://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/>
-  <https://git-annex.branchable.com/todo/Long_Running_Filter_Process/>
-
-* Improve parallelism.
-  <https://git-annex.branchable.com/todo/parallel_possibilities>
-
-Improvements to tree export support, including supporting export to more
-external special remotes, more
-efficient renames, and improving support for exporting non-annexed files.
-<https://git-annex.branchable.com/todo/export_paired_rename_innefficenctcy/>
-
-Improve support for branches where annexed files without content locally
-present are hidden (adjust --hide-missing). Including interface for
-operating on hidden files to get them, speeding up generation of the
-branch, and updating it more frequently.
-<https://git-annex.branchable.com/todo/better_way_to_get_missing_files/>
-Also unify adjusted branches and view branches.
-<https://git-annex.branchable.com/todo/unify_adjust_with_view/>
-
-Improve Windows support. Further improve using git-annex in Windows
-Subsystem for Linux (WSL). Get Windows fully supported with no caveats.
-Possibly even supporting indirect mode with symlinks.
-<https://git-annex.branchable.com/todo/windows_support/>
-<https://git-annex.branchable.com/todo/utilising_the_mklink_command_on_windows_to_utilise_symlinks_and_therefore_indirect_mode_on_windows/>
-
-Add more special remotes, and/or ship a collection of existing external
-special remotes as part of git-annex. Improve existing special remotes,
-eg adding support for Glacier lifecycles to S3.
-<https://git-annex.branchable.com/todo/wishlist__58___Restore_s3_files_moved_to_Glacier/>
-
-Deltas to improve transfer of modified versions of files.
-<https://git-annex.branchable.com/design/assistant/deltas/>
+[[!inline pages="./todo/* and !./todo/*/* and !./todo/done and !link(todo/done) 
+and link(todo/confirmed) and !*/Discussion and !./todo/moreinfo and 
+!./todo/confirmed and !./todo/needsthought and !./todo/unlikely"]]
