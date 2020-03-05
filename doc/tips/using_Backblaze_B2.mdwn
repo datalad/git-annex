@@ -1,0 +1,10 @@
+For using Backblaze B2 as a special remote, there are currently two
+choices:
+
+* Using [[special_remotes/rclone]]  
+  (Actively maintained)
+* A dedicated special remote, <https://github.com/encryptio/git-annex-remote-b2>  
+  (Last updated 2016)
+
+At this time it's not clear which is better, so if you find one works
+better than the other, please comment below.

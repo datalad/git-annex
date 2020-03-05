@@ -1,29 +1,14 @@
-megaannex 0.2.0
-=========
+For using [Mega](https://mega.nz)
+as a special remote, there are currently three choices:
 
-Hook program for git-annex to use mega.co.nz as backend
+* There is a dedicated special remote,
+  <https://github.com/dxtr/megaannex-go>  
+  Last updated 2016
+* Alternatively, rclone supports Mega,
+  so the [[rclone_special_remote|special_remotes/rclone]] can be used.
+* Alternatively, there's an older dedicated special remote,
+  <https://github.com/TobiasTheViking/megaannex>  
+  Reported to be no longer working
 
-# Requirements:
-
-    python2
-    requests>=0.10
-    pycrypto
-
-Credit for the mega api interface goes to: https://github.com/richardasaurus/mega.py 
-
-# Install
-Clone the git repository in your home folder.
-
-    git clone git://github.com/TobiasTheViking/megaannex.git 
-
-This should make a ~/megaannex folder
-
-# Setup
-Make the file executable, and link it into PATH
-
-    cd ~/megaannex; chmod +x git-annex-remote-mega; sudo ln -sf `pwd`/git-annex-remote-mega /usr/local/bin/git-annex-remote-mega
-
-# Commands for gitannex:
-
-    USERNAME="user" PASSWORD="pword" git annex initremote mega type=external externaltype=mega encryption=shared folder=gitannex
-    git annex describe mega "the mega.co.nz library"
+At this time it's not clear which is better, so if you find one works
+best, please comment below.

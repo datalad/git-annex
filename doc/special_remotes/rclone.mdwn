@@ -1,5 +1,6 @@
-[rclone](https://rclone.org/) is a command line program to sync files and directories to and from a vast variety of cloud provider and protocols. At the time of writing, this includes the following services:
-
+[rclone](https://rclone.org/) is a command line program to sync files and
+directories to and from a vast variety of cloud provider and protocols. At
+the time of writing, this includes the following services:
 
   * Amazon Drive ([See note](https://rclone.org/amazonclouddrive/#status))
   * Amazon S3 / Dreamhost / Ceph / Minio / Wasabi
@@ -24,6 +25,7 @@
   * Yandex Disk
   * The local filesystem
 
-That list is regularly expanding. git-annex supports all of those through the use of the [rclone special remote](https://github.com/DanielDent/git-annex-remote-rclone).
+That list is regularly expanding. git-annex supports all of those through
+the use of the [rclone special remote](https://github.com/DanielDent/git-annex-remote-rclone).
 
 See their documentation for more concrete examples.

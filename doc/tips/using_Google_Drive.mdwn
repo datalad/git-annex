@@ -1,0 +1,9 @@
+For using [Google Drive](https://google.com/drive)
+as a special remote, there are currently two choices:
+
+* A dedicated special remote,
+  <https://github.com/Lykos153/git-annex-remote-googledrive>  
+  Includes support for exporttree and other features.
+* Using [[special_remotes/rclone]]
+
+If you find one works best, please comment below.

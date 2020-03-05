@@ -1,9 +1,19 @@
-[Google Cloud Storage](https://cloud.google.com/products/cloud-storage)
-supports the same API as Amazon S3, so the
-[[S3 special remote|special_remotes/S3]] can be used with it.
-Here is a configuration example:
+For using [Google Cloud Storage](https://cloud.google.com/products/cloud-storage)
+as a special remote, there are currently three choices:
+
+* Google Cloud Storage supports supports the same API as Amazon S3, so
+  git-annex's built-in [[S3 special remote|special_remotes/S3]] can be used
+  with it. You may need to configure Google Cloud Storage to allow
+  "Interoperable Access". Here is how to set up the special remote:
 
 	git annex initremote cloud type=S3 encryption=none host=storage.googleapis.com port=80
 
-Thanks to jterrance for the [original tip](https://gist.github.com/4576324).
---[[Joey]] 
+* Alternatively, rclone supports Google Cloud Storage's native API,
+  so the [[rclone_special_remote|special_remotes/rclone]] can be used.
+
+* Alternatively, there is a dedicated special remote,
+  <https://github.com/bgilbert/gcsannex>  
+  (Last updated 2016)
+
+At this time it's not clear which is better, so if you find one works
+best, please comment below.

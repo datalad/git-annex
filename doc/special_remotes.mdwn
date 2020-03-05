@@ -17,7 +17,6 @@ the git history is not stored in them.
 * [[gcrypt]] (encrypted git repositories!)
 * [[git-lfs]]
 * [[hook]]
-* [[rclone]]
 * [[rsync]]
 * [[S3]] (Amazon S3, and other compatible services)
 * [[tahoe]]
@@ -30,34 +29,43 @@ the git history is not stored in them.
 The above special remotes are built into git-annex, and can be used
 to tie git-annex into many cloud services.
 
-Here are specific instructions
-for using git-annex with various services:
+Here are specific instructions for using git-annex with various services:
 
 * [[Amazon_Glacier|tips/using_Amazon_Glacier]]
-* [Amazon Cloud drive](https://github.com/DanielDent/git-annex-remote-rclone)
+* [[Amazon Cloud drive|rclone]]
 * [[Amazon_S3|tips/using_Amazon_S3]]
-* [Backblaze's B2](https://github.com/encryptio/git-annex-remote-b2)
+* [[Backblaze B2|tips/using_Backblaze_B2]]
 * [[Box.com|tips/using_box.com_as_a_special_remote]]
 * [Ceph](https://github.com/mhameed/git-annex-remote-ceph)
 * [chef-vault](https://github.com/3ofcoins/knife-annex/)
-* [Dropbox](https://github.com/DanielDent/git-annex-remote-rclone)
+* [[Dropbox|rclone]]
+* [[FTP|rclone]]
 * [[Flickr|tips/flickrannex]]
 * [Freenet](https://github.com/xloem/gitlakepy)
 * [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
-* [Google Drive](https://github.com/Lykos153/git-annex-remote-googledrive)
-* [hubiC](https://github.com/Schnouki/git-annex-remote-hubic)
+* [[Google Drive|tips/using_Google_Drive]]
+* [[hubiC|tips/using_Hubic]]
 * [[IMAP|forum/special_remote_for_IMAP]]
 * [[tips/Internet_Archive_via_S3]]
 * [[ipfs]]
-* [[Mega.co.nz|tips/megaannex]]
-* [Microsoft One Drive](https://github.com/DanielDent/git-annex-remote-rclone)
-* [Openstack Swift / Rackspace cloud files / Memset Memstore](https://github.com/DanielDent/git-annex-remote-rclone)
+* [[Jottacloud|rclone]]
+* [[Mega|tips/megaannex]]
+* [[Microsoft Azure Blob Storage|rclone]]
+* [[Microsoft OneDrive|rclone]]
+* [[OpenDrive|rclone]]
+* [[Openstack Swift / Rackspace cloud files / Memset Memstore|rclone]]
 * [[OwnCloud|tips/owncloudannex]]
-* [pCloud](https://github.com/tochev/git-annex-remote-pcloud)
+* [[pCloud|rclone]]
+* [[QingStor|rclone]]
+* [[SFTP|rclone]]
 * [[SkyDrive|tips/skydriveannex]]
 * [smb / sftp](https://github.com/grawity/code/blob/master/net/git-annex-remote-gvfs)
 * [[Usenet|forum/nntp__47__usenet special remote]]
-* [Yandex Disk](https://github.com/DanielDent/git-annex-remote-rclone)
+* [[Yandex Disk|rclone]]
+
+If a service is not mentioned above, it's worth checking if 
+[rclone](https://rclone.org/) supports it, then you can use the
+[[rclone_special_remote|rclone]].
 
 Want to add support for something else? [[Write your own!|external]]
 

@@ -1,0 +1,9 @@
+For using Hubic as a special remote, there are currently two choices:
+
+* Using [[special_remotes/rclone]]  
+  Actively maintained.
+* A dedicated special remote,
+  <https://github.com/Schnouki/git-annex-remote-hubic>  
+  Not actively maintained.
+
+If you find one works best, please comment below.
