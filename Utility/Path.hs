@@ -41,7 +41,7 @@ import Prelude
 
 import Utility.Monad
 import Utility.UserInfo
-import Utility.Directory
+import Utility.SystemDirectory
 import Utility.Split
 import Utility.FileSystemEncoding
 
@@ -73,6 +73,8 @@ simplifyPath path = dropTrailingPathSeparator $
 		p' = dropTrailingPathSeparator p
 
 {- Makes a path absolute.
+ -
+ - Also simplifies it using simplifyPath.
  -
  - The first parameter is a base directory (ie, the cwd) to use if the path
  - is not already absolute, and should itsef be absolute.
@@ -124,12 +126,19 @@ dirContains a b = a == b
 
 {- Converts a filename into an absolute path.
  -
+ - Also simplifies it using simplifyPath.
+ -
  - Unlike Directory.canonicalizePath, this does not require the path
  - already exists. -}
 absPath :: FilePath -> IO FilePath
-absPath file = do
-	cwd <- getCurrentDirectory
-	return $ absPathFrom cwd file
+absPath file
+	-- Avoid unncessarily getting the current directory when the path
+	-- is already absolute. absPathFrom uses simplifyPath
+	-- so also used here for consistency.
+	| isAbsolute file = return $ simplifyPath file
+	| otherwise = do
+		cwd <- getCurrentDirectory
+		return $ absPathFrom cwd file
 
 {- Constructs a relative path from the CWD to a file.
  -
