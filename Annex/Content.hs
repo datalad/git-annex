@@ -879,8 +879,7 @@ withTmpWorkDir key action = do
 		liftIO $ writeFile obj ""
 		setAnnexFilePerm obj
 	let tmpdir = gitAnnexTmpWorkDir obj
-	liftIO $ createDirectoryIfMissing True tmpdir
-	setAnnexDirPerm tmpdir
+	createAnnexDirectory tmpdir
 	res <- action tmpdir
 	case res of
 		Just _ -> liftIO $ removeDirectoryRecursive tmpdir

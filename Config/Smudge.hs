@@ -33,8 +33,9 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 	gf <- Annex.fromRepo Git.attributes
 	lfs <- readattr lf
 	gfs <- readattr gf
+	gittop <- fromRawFilePath . Git.localGitDir <$> gitRepo
 	liftIO $ unless ("filter=annex" `isInfixOf` (lfs ++ gfs)) $ do
-		createDirectoryIfMissing True (takeDirectory lf)
+		createDirectoryUnder gittop (takeDirectory lf)
 		writeFile lf (lfs ++ "\n" ++ unlines stdattr)
   where
 	readattr = liftIO . catchDefaultIO "" . readFileStrict

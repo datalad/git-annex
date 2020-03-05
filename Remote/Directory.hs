@@ -170,13 +170,13 @@ checkDiskSpaceDirectory d k = do
 
 store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
 store d chunkconfig k b p = liftIO $ do
-	void $ tryIO $ createDirectoryIfMissing True tmpdir
+	void $ tryIO $ createDirectoryUnder d tmpdir
 	case chunkconfig of
-		LegacyChunks chunksize -> Legacy.store chunksize finalizeStoreGeneric k b p tmpdir destdir
+		LegacyChunks chunksize -> Legacy.store d chunksize (finalizeStoreGeneric d) k b p tmpdir destdir
 		_ -> do
 			let tmpf = tmpdir </> kf
 			meteredWriteFile p tmpf b
-			finalizeStoreGeneric tmpdir destdir
+			finalizeStoreGeneric d tmpdir destdir
 			return True
   where
 	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> kf
@@ -187,11 +187,11 @@ store d chunkconfig k b p = liftIO $ do
  - in the dest directory, moves it into place. Anything already existing
  - in the dest directory will be deleted. File permissions will be locked
  - down. -}
-finalizeStoreGeneric :: FilePath -> FilePath -> IO ()
-finalizeStoreGeneric tmp dest = do
+finalizeStoreGeneric :: FilePath -> FilePath -> FilePath -> IO ()
+finalizeStoreGeneric d tmp dest = do
 	void $ tryIO $ allowWrite dest -- may already exist
 	void $ tryIO $ removeDirectoryRecursive dest -- or not exist
-	createDirectoryIfMissing True (parentDir dest)
+	createDirectoryUnder d (parentDir dest)
 	renameDirectory tmp dest
 	-- may fail on some filesystems
 	void $ tryIO $ do
@@ -267,7 +267,7 @@ checkPresentGeneric' d check = ifM check
 
 storeExportM :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportM d src _k loc p = liftIO $ catchBoolIO $ do
-	createDirectoryIfMissing True (takeDirectory dest)
+	createDirectoryUnder d (takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
 	viaTmp (\tmp () -> withMeteredFile src p (L.writeFile tmp)) dest ()
@@ -298,7 +298,7 @@ renameExportM :: FilePath -> Key -> ExportLocation -> ExportLocation -> Annex (M
 renameExportM d _k oldloc newloc = liftIO $ Just <$> go
   where
 	go = catchBoolIO $ do
-		createDirectoryIfMissing True (takeDirectory dest)
+		createDirectoryUnder d (takeDirectory dest)
 		renameFile src dest
 		removeExportLocation d oldloc
 		return True
@@ -413,7 +413,7 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
 	catchIO go (return . Left . show)
   where
 	go = do
-		liftIO $ createDirectoryIfMissing True destdir
+		liftIO $ createDirectoryUnder dir destdir
 		withTmpFileIn destdir template $ \tmpf tmph -> do
 			liftIO $ withMeteredFile src p (L.hPut tmph)
 			liftIO $ hFlush tmph

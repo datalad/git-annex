@@ -372,7 +372,7 @@ store' repo r rsyncopts
 			let tmpf = tmpdir </> fromRawFilePath (keyFile k)
 			meteredWriteFile p tmpf b
 			let destdir = parentDir $ gCryptLocation repo k
-			Remote.Directory.finalizeStoreGeneric tmpdir destdir
+			Remote.Directory.finalizeStoreGeneric (Git.repoLocation repo) tmpdir destdir
 			return True
 	| Git.repoIsSsh repo = if accessShell r
 		then fileStorer $ \k f p -> do

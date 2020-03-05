@@ -57,6 +57,7 @@ import Annex.Tmp
 import Annex.GitOverlay
 import Utility.Tmp.Dir
 import Utility.CopyFile
+import Utility.Directory
 import qualified Database.Keys
 import Config
 
@@ -375,10 +376,10 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	 - index file is currently locked.)
 	 -}
 	changestomerge (Just updatedorig) = withOtherTmp $ \othertmpdir -> do
-		tmpwt <- fromRepo gitAnnexMergeDir
 		git_dir <- fromRawFilePath <$> fromRepo Git.localGitDir
+		tmpwt <- fromRepo gitAnnexMergeDir
 		withTmpDirIn othertmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
-			withemptydir tmpwt $ withWorkTree tmpwt $ do
+			withemptydir git_dir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
 				-- Copy in refs and packed-refs, to work
 				-- around bug in git 2.13.0, which
@@ -390,7 +391,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 					whenM (doesFileExist src) $ do
 						dest <- relPathDirToFile git_dir src
 						let dest' = tmpgit </> dest
-						createDirectoryIfMissing True (takeDirectory dest')
+						createDirectoryUnder git_dir (takeDirectory dest')
 						void $ createLinkOrCopy src dest'
 				-- This reset makes git merge not care
 				-- that the work tree is empty; otherwise
@@ -411,12 +412,12 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 					else return $ return False
 	changestomerge Nothing = return $ return False
 	
-	withemptydir d a = bracketIO setup cleanup (const a)
+	withemptydir git_dir d a = bracketIO setup cleanup (const a)
 	  where
 		setup = do
 			whenM (doesDirectoryExist d) $
 				removeDirectoryRecursive d
-			createDirectoryIfMissing True d
+			createDirectoryUnder git_dir d
 		cleanup _ = removeDirectoryRecursive d
 
 	{- A merge commit has been made between the basisbranch and 

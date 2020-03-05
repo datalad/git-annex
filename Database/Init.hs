@@ -1,6 +1,6 @@
 {- Persistent sqlite database initialization
  -
- - Copyright 2015-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Database.Init where
 import Annex.Common
 import Annex.Perms
 import Utility.FileMode
+import Utility.Directory
 
 import Database.Persist.Sqlite
 import Control.Monad.IO.Class (liftIO)
@@ -29,9 +30,10 @@ initDb db migration = do
 	let dbdir = takeDirectory db
 	let tmpdbdir = dbdir ++ ".tmp"
 	let tmpdb = tmpdbdir </> "db"
-	let tdb = T.pack tmpdb	
+	let tdb = T.pack tmpdb
+	top <- parentDir . fromRawFilePath <$> fromRepo gitAnnexDir
 	liftIO $ do
-		createDirectoryIfMissing True tmpdbdir
+		createDirectoryUnder top tmpdbdir
 		runSqliteInfo (enableWAL tdb) migration
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring

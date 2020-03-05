@@ -90,7 +90,6 @@ foreground pidfile a = do
  - Fails if the pid file is already locked by another process. -}
 lockPidFile :: FilePath -> IO ()
 lockPidFile pidfile = do
-	createDirectoryIfMissing True (parentDir pidfile)
 #ifndef mingw32_HOST_OS
 	fd <- openFd pidfile ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)

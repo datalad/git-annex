@@ -48,7 +48,7 @@ runHooks r starthook stophook a = do
 	dir <- fromRepo gitAnnexRemotesDir
 	let lck = dir </> remoteid ++ ".lck"
 	whenM (notElem lck . M.keys <$> getLockCache) $ do
-		liftIO $ createDirectoryIfMissing True dir
+		createAnnexDirectory dir
 		firstrun lck
 	a
   where

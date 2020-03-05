@@ -75,6 +75,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
 	liftIO $ debugM desc $ "logging to " ++ logfile
+	createAnnexDirectory (parentDir pidfile)
 #ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
 	logfd <- liftIO $ handleToFd =<< openLog logfile
