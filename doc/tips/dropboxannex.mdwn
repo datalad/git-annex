@@ -4,7 +4,7 @@ For using Dropbox as a special remote, there are currently two choices:
   so the [[rclone_special_remote|special_remotes/rclone]] can be used.  
   (Actively maintained)
 * Alternatively, there is a dedicated special remote,
-  <https://github.com/TobiasTheViking/dropboxannex>
+  <https://github.com/TobiasTheViking/dropboxannex>  
   (Last updated 2014)
 
 At this time it's not clear which is better, so if you find one works
