@@ -245,8 +245,9 @@ explodePackedRefsFile r = do
 		nukeFile f
   where
 	makeref (sha, ref) = do
-		let dest = fromRawFilePath (localGitDir r) </> fromRef ref
-		createDirectoryIfMissing True (parentDir dest)
+		let gitd = fromRawFilePath (localGitDir r)
+		let dest = gitd </> fromRef ref
+		createDirectoryUnder gitd (parentDir dest)
 		unlessM (doesFileExist dest) $
 			writeFile dest (fromRef sha)
 

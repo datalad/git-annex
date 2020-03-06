@@ -10,7 +10,6 @@ module Database.Init where
 import Annex.Common
 import Annex.Perms
 import Utility.FileMode
-import Utility.Directory
 
 import Database.Persist.Sqlite
 import Control.Monad.IO.Class (liftIO)

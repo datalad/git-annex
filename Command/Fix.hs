@@ -94,7 +94,7 @@ fixSymlink file link = do
 		mtime <- catchMaybeIO $ modificationTimeHiRes
 			<$> getSymbolicLinkStatus file
 #endif
-		createDirectoryIfMissing True (parentDir file)
+		createWorkTreeDirectory (parentDir file)
 		removeFile file
 		createSymbolicLink link file
 #if ! defined(mingw32_HOST_OS)

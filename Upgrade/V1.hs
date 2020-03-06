@@ -17,6 +17,7 @@ import qualified Data.ByteString.Lazy as L
 import Annex.Common
 import Annex.Content
 import Annex.Link
+import Annex.Perms
 import Types.Key
 import Logs.Presence
 import qualified Annex.Queue
@@ -115,7 +116,7 @@ moveLocationLogs = do
 		dest <- fromRepo $ logFile2 k
 		dir <- fromRepo Upgrade.V2.gitStateDir
 		let f = dir </> l
-		liftIO $ createDirectoryIfMissing True (parentDir dest)
+		createWorkTreeDirectory (parentDir dest)
 		-- could just git mv, but this way deals with
 		-- log files that are not checked into git,
 		-- as well as merging with already upgraded

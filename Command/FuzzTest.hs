@@ -13,6 +13,7 @@ import Command
 import qualified Annex
 import qualified Git.Config
 import Config
+import Annex.Perms
 import Utility.ThreadScheduler
 import Utility.DiskFree
 import Git.Types (fromConfigKey)
@@ -172,10 +173,10 @@ instance Arbitrary FuzzAction where
 		]
 
 runFuzzAction :: FuzzAction -> Annex ()
-runFuzzAction (FuzzAdd (FuzzFile f)) = liftIO $ do
-	createDirectoryIfMissing True $ parentDir f
-	n <- getStdRandom random :: IO Int
-	writeFile f $ show n ++ "\n"
+runFuzzAction (FuzzAdd (FuzzFile f)) = do
+	createWorkTreeDirectory (parentDir f)
+	n <- liftIO (getStdRandom random :: IO Int)
+	liftIO $ writeFile f $ show n ++ "\n"
 runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $ nukeFile f
 runFuzzAction (FuzzMove (FuzzFile src) (FuzzFile dest)) = liftIO $
 	rename src dest

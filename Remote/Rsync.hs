@@ -27,6 +27,7 @@ import Config.Cost
 import Annex.Content
 import Annex.UUID
 import Annex.Ssh
+import Annex.Perms
 import Remote.Helper.Special
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
@@ -218,7 +219,7 @@ store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
 storeGeneric :: RsyncOpts -> MeterUpdate -> FilePath -> (FilePath -> Annex Bool) -> Annex Bool
 storeGeneric o meterupdate basedest populatedest = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> basedest
-	liftIO $ createDirectoryIfMissing True $ parentDir dest
+	createAnnexDirectory (parentDir dest)
 	ok <- populatedest dest
 	ps <- sendParams
 	if ok

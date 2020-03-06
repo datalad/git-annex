@@ -49,6 +49,7 @@ import qualified Remote.Helper.Ssh as Ssh
 import Utility.Metered
 import Annex.UUID
 import Annex.Ssh
+import Annex.Perms
 import qualified Remote.Rsync
 import qualified Remote.Directory
 import Utility.Rsync
@@ -283,7 +284,7 @@ setupRepo gcryptid r
 	 - which is needed for direct rsync of objects to work.
 	 -}
 	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
-		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
+		createAnnexDirectory (tmp </> objectDir)
 		dummycfg <- liftIO dummyRemoteGitConfig
 		(rsynctransport, rsyncurl, _) <- rsyncTransport r dummycfg
 		let tmpconfig = tmp </> "config"
@@ -368,7 +369,7 @@ store' repo r rsyncopts
 	| not $ Git.repoIsUrl repo = 
 		byteStorer $ \k b p -> guardUsable repo (return False) $ liftIO $ do
 			let tmpdir = Git.repoLocation repo </> "tmp" </> fromRawFilePath (keyFile k)
-			void $ tryIO $ createDirectoryIfMissing True tmpdir
+			void $ tryIO $ createDirectoryUnder (Git.repoLocation repo) tmpdir
 			let tmpf = tmpdir </> fromRawFilePath (keyFile k)
 			meteredWriteFile p tmpf b
 			let destdir = parentDir $ gCryptLocation repo k

@@ -20,6 +20,7 @@ import qualified Command.Add
 import Annex.Content
 import Annex.Ingest
 import Annex.CheckIgnore
+import Annex.Perms
 import Annex.UUID
 import Annex.YoutubeDl
 import Logs.Web
@@ -168,7 +169,7 @@ performRemote addunlockedmatcher r o uri file sz = ifAnnexed (toRawFilePath file
 downloadRemoteFile :: AddUnlockedMatcher -> Remote -> DownloadOptions -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
 downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd file $ do
 	let urlkey = Backend.URL.fromUrl uri sz
-	liftIO $ createDirectoryIfMissing True (parentDir file)
+	createWorkTreeDirectory (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
 		( do
 			addWorkTree addunlockedmatcher (Remote.uuid r) loguri file urlkey Nothing
@@ -271,7 +272,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 		)
 	normalfinish tmp = checkCanAdd file $ do
 		showDestinationFile file
-		liftIO $ createDirectoryIfMissing True (parentDir file)
+		createWorkTreeDirectory (parentDir file)
 		finishDownloadWith addunlockedmatcher tmp webUUID url file
 	tryyoutubedl tmp
 		-- Ask youtube-dl what filename it will download
@@ -357,7 +358,7 @@ downloadWith' downloader dummykey u url afile =
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		ok <- Transfer.notifyTransfer Transfer.Download url $
 			Transfer.download u dummykey afile Transfer.stdRetry $ \p -> do
-				liftIO $ createDirectoryIfMissing True (parentDir tmp)
+				createAnnexDirectory (parentDir tmp)
 				downloader tmp p
 		if ok
 			then return (Just tmp)
@@ -389,9 +390,9 @@ addWorkTree addunlockedmatcher u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
 		-- Move to final location for large file check.
-		pruneTmpWorkDirBefore tmp $ \_ -> liftIO $ do
-			createDirectoryIfMissing True (takeDirectory file)
-			renameFile tmp file
+		pruneTmpWorkDirBefore tmp $ \_ -> do
+			createWorkTreeDirectory (takeDirectory file)
+			liftIO $ renameFile tmp file
 		largematcher <- largeFilesMatcher
 		large <- checkFileMatcher largematcher file
 		if large
@@ -438,7 +439,7 @@ nodownloadWeb addunlockedmatcher o url urlinfo file
 nodownloadWeb' :: AddUnlockedMatcher -> URLString -> Key -> FilePath -> Annex (Maybe Key)
 nodownloadWeb' addunlockedmatcher url key file = checkCanAdd file $ do
 	showDestinationFile file
-	liftIO $ createDirectoryIfMissing True (parentDir file)
+	createWorkTreeDirectory (parentDir file)
 	addWorkTree addunlockedmatcher webUUID url file key Nothing
 	return (Just key)
 

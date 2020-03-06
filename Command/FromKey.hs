@@ -13,6 +13,7 @@ import Command
 import qualified Annex.Queue
 import Annex.Content
 import Annex.WorkTree
+import Annex.Perms
 import qualified Annex
 import qualified Backend.URL
 
@@ -85,7 +86,7 @@ perform key file = lookupFileNotHidden (toRawFilePath file) >>= \case
 		( hasothercontent
 		, do
 			link <- calcRepo $ gitAnnexLink file key
-			liftIO $ createDirectoryIfMissing True (parentDir file)
+			createWorkTreeDirectory (parentDir file)
 			liftIO $ createSymbolicLink link file
 			Annex.Queue.addCommand "add" [Param "--"] [file]
 			next $ return True

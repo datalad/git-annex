@@ -25,6 +25,7 @@ import Annex.FileMatcher
 import Annex.Ingest
 import Annex.InodeSentinal
 import Annex.Import
+import Annex.Perms
 import Annex.RemoteTrackingBranch
 import Utility.InodeCache
 import Logs.Location
@@ -176,12 +177,12 @@ startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 	importfilechecked ld k = do
 		-- Move or copy the src file to the dest file.
 		-- The dest file is what will be ingested.
-		liftIO $ createDirectoryIfMissing True (parentDir destfile)
+		createWorkTreeDirectory (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
 			then void $ copyFileExternal CopyAllMetaData srcfile destfile
 			else moveFile srcfile destfile
 		-- Get the inode cache of the dest file. It should be
-		-- weakly the same as the origianlly locked down file's
+		-- weakly the same as the originally locked down file's
 		-- inode cache. (Since the file may have been copied,
 		-- its inodes may not be the same.)
 		newcache <- withTSDelta $ liftIO . genInodeCache destfile'
