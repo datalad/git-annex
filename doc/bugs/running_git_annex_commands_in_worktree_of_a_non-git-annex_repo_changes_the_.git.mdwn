@@ -1,0 +1,67 @@
+### Please describe the problem.
+If `git annex init` has not been run on a repo, running git-annex commands on the linked  worktrees should not change them, but seems to.
+
+### What steps will reproduce the problem?
+
+See log below
+### What version of git-annex are you using? On what operating system?
+8.20200226 on Amazon Linux 2
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+(master_env_v178_py36) 17:07  [a] $ ls -alt
+total 4
+drwxrwxr-x  8 ilya ilya  166 Mar  6 17:07 .git
+drwxrwxr-x  3 ilya ilya   32 Mar  6 17:07 .
+-rw-rw-r--  1 ilya ilya    0 Mar  6 17:07 myfile
+drwxrwxrwt 15 root root 4096 Mar  6 17:07 ..
+(master_env_v178_py36) 17:07  [a] $ git worktree add ../b
+Preparing worktree (new branch 'b')
+HEAD is now at 9a5d353 first commit
+(master_env_v178_py36) 17:08  [a] $ pushd ../b
+/tmp/b /tmp/a /data/branches/is-add-asm-improvability-metrics
+(master_env_v178_py36) 17:08  [b] $ ls -alt
+total 8
+drwxrwxr-x  2 ilya ilya   32 Mar  6 17:08 .
+-rw-rw-r--  1 ilya ilya    0 Mar  6 17:08 myfile
+drwxrwxrwt 16 root root 4096 Mar  6 17:08 ..
+-rw-rw-r--  1 ilya ilya   32 Mar  6 17:08 .git
+(master_env_v178_py36) 17:08  [b] $ git annex get
+git-annex: First run: git-annex init
+(master_env_v178_py36) 17:08  [b] $ ls -alt
+total 4
+drwxrwxr-x  2 ilya ilya   32 Mar  6 17:08 .
+lrwxrwxrwx  1 ilya ilya   21 Mar  6 17:08 .git -> ../a/.git/worktrees/b
+-rw-rw-r--  1 ilya ilya    0 Mar  6 17:08 myfile
+drwxrwxrwt 16 root root 4096 Mar  6 17:08 ..
+(master_env_v178_py36) 17:08  [b] $ ls -alt /tmp/b/../a/.git/worktrees/b/annex
+lrwxrwxrwx 1 ilya ilya 11 Mar  6 17:08 /tmp/b/../a/.git/worktrees/b/annex -> ../../annex
+
+
+(master_env_v178_py36) 17:12  [b] $ git annex version
+git-annex version: 8.20200226-g2d3ef2c07
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlit\
+e-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_2\
+24 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE\
+2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224\
+ BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+
+(master_env_v178_py36) 17:14  [b] $ uname -a
+Linux ip-172-31-80-211.ec2.internal 4.14.171-136.231.amzn2.x86_64 #1 SMP Thu Feb 27 20:22:48 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
