@@ -29,9 +29,6 @@ mkcmd n d = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek ps = withFilesInGit (commandAction . whenAnnexed start) =<< workTreeItems ps
 
-{- Before v6, the unlock subcommand replaces the symlink with a copy of
- - the file's content. In v6 and above, it converts the file from a symlink
- - to a pointer. -}
 start :: RawFilePath -> Key -> CommandStart
 start file key = ifM (isJust <$> isAnnexLink file)
 	( starting "unlock" (mkActionItem (key, AssociatedFile (Just file))) $
@@ -42,7 +39,7 @@ start file key = ifM (isJust <$> isAnnexLink file)
 perform :: RawFilePath -> Key -> CommandPerform
 perform dest key = do
 	destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus dest
-	replaceFile (fromRawFilePath dest) $ \tmp ->
+	replaceWorkTreeFile (fromRawFilePath dest) $ \tmp ->
 		ifM (inAnnex key)
 			( do
 				r <- linkFromAnnex key tmp destmode

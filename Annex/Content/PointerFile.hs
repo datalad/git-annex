@@ -39,7 +39,7 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 		let f' = fromRawFilePath f
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f'
 		liftIO $ nukeFile f'
-		(ic, populated) <- replaceFile f' $ \tmp -> do
+		(ic, populated) <- replaceWorkTreeFile f' $ \tmp -> do
 			let tmp' = toRawFilePath tmp
 			ok <- linkOrCopy k (fromRawFilePath obj) tmp destmode >>= \case
 				Just _ -> thawContent tmp >> return True
@@ -62,7 +62,7 @@ depopulatePointerFile key file = do
 	let mode = fmap fileMode st
 	secureErase file'
 	liftIO $ nukeFile file'
-	ic <- replaceFile file' $ \tmp -> do
+	ic <- replaceWorkTreeFile file' $ \tmp -> do
 		liftIO $ writePointerFile (toRawFilePath tmp) key mode
 #if ! defined(mingw32_HOST_OS)
 		-- Don't advance mtime; this avoids unncessary re-smudging

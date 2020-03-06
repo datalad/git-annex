@@ -208,7 +208,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		stageSymlink dest' =<< hashSymlink l
 
 	replacewithsymlink dest link = withworktree dest $ \f ->
-		replaceFile f $ makeGitLink link . toRawFilePath
+		replaceWorkTreeFile f $ makeGitLink link . toRawFilePath
 
 	makepointer key dest destmode = do
 		unless inoverlay $ 
@@ -256,7 +256,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				, case selectwant' (LsFiles.unmergedSha u) of
 					Nothing -> noop
 					Just sha -> withworktree item $ \f -> 
-						replaceFile f $ \tmp -> do
+						replaceWorkTreeFile f $ \tmp -> do
 							c <- catObject sha
 							liftIO $ L.writeFile tmp c
 				)

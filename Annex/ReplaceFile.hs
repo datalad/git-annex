@@ -1,20 +1,47 @@
 {- git-annex file replacing
  -
- - Copyright 2013-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
 
-module Annex.ReplaceFile where
+module Annex.ReplaceFile (
+	replaceGitAnnexDirFile,
+	replaceGitDirFile,
+	replaceWorkTreeFile,
+	replaceFile,
+) where
 
 import Annex.Common
 import Annex.Tmp
+import Annex.Perms
+import Git
 import Utility.Tmp.Dir
 #ifndef mingw32_HOST_OS
 import Utility.Path.Max
 #endif
+
+{- replaceFile on a file located inside the gitAnnexDir. -}
+replaceGitAnnexDirFile :: FilePath -> (FilePath -> Annex a) -> Annex a
+replaceGitAnnexDirFile = replaceFile createAnnexDirectory
+
+{- replaceFile on a file located inside the .git directory. -}
+replaceGitDirFile :: FilePath -> (FilePath -> Annex a) -> Annex a
+replaceGitDirFile = replaceFile $ \dir -> do
+	top <- fromRawFilePath <$> fromRepo localGitDir
+	liftIO $ createDirectoryUnder top dir
+
+{- replaceFile on a worktree file. -}
+replaceWorkTreeFile :: FilePath -> (FilePath -> Annex a) -> Annex a
+replaceWorkTreeFile = replaceFile $ \dir ->
+	fromRepo repoWorkTree >>= liftIO . \case
+		Just wt -> createDirectoryUnder (fromRawFilePath wt) dir
+		-- Should never happen, but let the file move be what
+		-- throws an exception as that would more clearly indicate
+		-- the problem.
+		Nothing -> noop
 
 {- Replaces a possibly already existing file with a new version, 
  - atomically, by running an action.
@@ -27,9 +54,12 @@ import Utility.Path.Max
  - will be deleted, and the existing file will be preserved.
  -
  - Throws an IO exception when it was unable to replace the file.
+ -
+ - The createdirectory action is only run when moving the file into place
+ - fails, and can create any parent directory structure needed.
  -}
-replaceFile :: FilePath -> (FilePath -> Annex a) -> Annex a
-replaceFile file action = withOtherTmp $ \othertmpdir -> do
+replaceFile :: (FilePath -> Annex ()) -> FilePath -> (FilePath -> Annex a) -> Annex a
+replaceFile createdirectory file action = withOtherTmp $ \othertmpdir -> do
 #ifndef mingw32_HOST_OS
 	-- Use part of the filename as the template for the temp
 	-- directory. This does not need to be unique, but it
@@ -44,13 +74,13 @@ replaceFile file action = withOtherTmp $ \othertmpdir -> do
 	withTmpDirIn othertmpdir basetmp $ \tmpdir -> do
 		let tmpfile = tmpdir </> basetmp
 		r <- action tmpfile
-		liftIO $ replaceFileFrom tmpfile file
+		replaceFileFrom tmpfile file createdirectory
 		return r
 
-replaceFileFrom :: FilePath -> FilePath -> IO ()
-replaceFileFrom src dest = go `catchIO` fallback
+replaceFileFrom :: FilePath -> FilePath -> (FilePath -> Annex ()) -> Annex ()
+replaceFileFrom src dest createdirectory = go `catchIO` fallback
   where
-	go = moveFile src dest
+	go = liftIO $ moveFile src dest
 	fallback _ = do
-		createDirectoryIfMissing True $ parentDir dest
+		createdirectory (parentDir dest)
 		go

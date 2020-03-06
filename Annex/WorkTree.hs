@@ -100,7 +100,7 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 				Just k' | k' == k -> do
 					destmode <- liftIO $ catchMaybeIO $
 						fileMode <$> R.getFileStatus f
-					ic <- replaceFile (fromRawFilePath f) $ \tmp -> do
+					ic <- replaceWorkTreeFile (fromRawFilePath f) $ \tmp -> do
 						let tmp' = toRawFilePath tmp
 						linkFromAnnex k tmp destmode >>= \case
 							LinkAnnexOk -> 

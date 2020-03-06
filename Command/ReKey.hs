@@ -93,7 +93,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 			st <- liftIO $ R.getFileStatus file
 			when (linkCount st > 1) $ do
 				freezeContent oldobj
-				replaceFile (fromRawFilePath file) $ \tmp -> do
+				replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 					unlessM (checkedCopyFile oldkey oldobj tmp Nothing) $
 						error "can't lock old key"
 					thawContent tmp

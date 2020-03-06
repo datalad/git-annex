@@ -29,7 +29,7 @@ writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog f c
 withLogHandle :: FilePath -> (Handle -> Annex a) -> Annex a
 withLogHandle f a = do
 	createAnnexDirectory (parentDir f)
-	replaceFile f $ \tmp ->
+	replaceGitAnnexDirFile f $ \tmp ->
 		bracket (setup tmp) cleanup a
   where
 	setup tmp = do

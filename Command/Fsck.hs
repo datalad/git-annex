@@ -332,7 +332,7 @@ verifyWorkTree key file = do
 	case mk of
 		Just k | k == key -> whenM (inAnnex key) $ do
 			showNote "fixing worktree content"
-			replaceFile (fromRawFilePath file) $ \tmp -> do
+			replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 				ifM (annexThin <$> Annex.getGitConfig)
 					( void $ linkFromAnnex key tmp mode

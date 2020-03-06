@@ -67,7 +67,7 @@ start fixwhat file key = do
 
 breakHardLink :: RawFilePath -> Key -> RawFilePath -> CommandPerform
 breakHardLink file key obj = do
-	replaceFile (fromRawFilePath file) $ \tmp -> do
+	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		let obj' = fromRawFilePath obj
 		unlessM (checkedCopyFile key obj' tmp mode) $
@@ -79,7 +79,7 @@ breakHardLink file key obj = do
 
 makeHardLink :: RawFilePath -> Key -> CommandPerform
 makeHardLink file key = do
-	replaceFile (fromRawFilePath file) $ \tmp -> do
+	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		linkFromAnnex key tmp mode >>= \case
 			LinkAnnexFailed -> error "unable to make hard link"
