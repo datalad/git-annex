@@ -26,8 +26,9 @@ import qualified Command.Sync
 mergeThread :: NamedThread
 mergeThread = namedThread "Merger" $ do
 	g <- liftAnnex gitRepo
-	let dir = fromRawFilePath (Git.localGitDir g) </> "refs"
-	liftIO $ createDirectoryIfMissing True dir
+	let gitd = fromRawFilePath (Git.localGitDir g)
+	let dir = gitd </> "refs"
+	liftIO $ createDirectoryUnder gitd dir
 	let hook a = Just <$> asIO2 (runHandler a)
 	changehook <- hook onChange
 	errhook <- hook onErr

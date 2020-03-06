@@ -15,6 +15,7 @@ import Logs.Transfer
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import qualified Remote
+import Annex.Perms
 
 import Control.Concurrent
 import qualified Data.Map as M
@@ -24,7 +25,7 @@ import qualified Data.Map as M
 transferWatcherThread :: NamedThread
 transferWatcherThread = namedThread "TransferWatcher" $ do
 	dir <- liftAnnex $ gitAnnexTransferDir <$> gitRepo
-	liftIO $ createDirectoryIfMissing True dir
+	liftAnnex $ createAnnexDirectory dir
 	let hook a = Just <$> asIO2 (runHandler a)
 	addhook <- hook onAdd
 	delhook <- hook onDel

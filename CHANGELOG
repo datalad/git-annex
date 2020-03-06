@@ -1,5 +1,8 @@
 git-annex (8.20200227) UNRELEASED; urgency=medium
 
+  * Improve behavior when a directory git-annex is writing to gets
+    unmounted. Previously it could in some cases re-create the mount point
+    and directory tree, and even write object contents to the wrong disk.
   * Bugfix: Don't ignore --debug when it is followed by -c.
   * whereis: If a remote fails to report on urls where a key
     is located, display a warning, rather than giving up and not displaying

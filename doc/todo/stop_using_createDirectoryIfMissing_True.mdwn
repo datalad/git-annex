@@ -28,3 +28,5 @@ point, which can be either .git/annex or the top of the worktree depending
 on what's being done. --[[Joey]]
 
 [[!tag confirmed]]
+
+> [[fixed|done]], all relevant calls have been converted. --[[Joey]]

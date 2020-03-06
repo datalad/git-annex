@@ -41,6 +41,7 @@ import Remote.Helper.Encryptable (extractCipher, parseEncryptionConfig)
 import Types.Crypto
 import Utility.Gpg
 import Annex.UUID
+import Annex.Perms
 import Assistant.Ssh
 import Config
 import Config.GitConfig
@@ -246,9 +247,9 @@ checkAssociatedDirectory cfg (Just r) = do
 	repoconfig <- M.lookup (Remote.uuid r) <$> readRemoteLog
 	case repoGroup cfg of
 		RepoGroupStandard gr -> case associatedDirectory repoconfig gr of
-			Just d -> inRepo $ \g ->
-				createDirectoryIfMissing True $
-					fromRawFilePath (Git.repoPath g) </> d
+			Just d -> do
+				top <- fromRawFilePath <$> fromRepo Git.repoPath
+				createWorkTreeDirectory (top </> d)
 			Nothing -> noop
 		_ -> noop
 

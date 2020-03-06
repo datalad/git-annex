@@ -154,8 +154,11 @@ sshConnectionCachingParams socketfile =
 sshSocketDirEnv :: String
 sshSocketDirEnv = "GIT_ANNEX_SSH_SOCKET_DIR"
 
-{- ssh connection caching creates sockets, so will not work on a
- - crippled filesystem. -}
+{- Returns the directory where ssh connection caching sockets can be
+ - stored.
+ - 
+ - The directory will be created if it does not exist.
+ -}
 sshCacheDir :: Annex (Maybe FilePath)
 sshCacheDir = eitherToMaybe <$> sshCacheDir'
 
@@ -169,7 +172,10 @@ sshCacheDir' =
 				Just tmpdir -> 
 					liftIO $ catchMsgIO $
 						usetmpdir tmpdir
-			, Right <$> fromRepo gitAnnexSshDir 
+			, do
+				d <- fromRepo gitAnnexSshDir
+				createAnnexDirectory d
+				return (Right d)
 			)
 		, return (Left "annex.sshcaching is not set to true")
 		)
@@ -221,7 +227,6 @@ prepSocket socketfile sshhost sshparams = do
 	-- Cleanup at shutdown.
 	Annex.addCleanup SshCachingCleanup sshCleanup
 	
-	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	let socketlock = socket2lock socketfile
 
 	Annex.getState Annex.concurrency >>= \case
