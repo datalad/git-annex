@@ -35,13 +35,7 @@ replaceGitDirFile = replaceFile $ \dir -> do
 
 {- replaceFile on a worktree file. -}
 replaceWorkTreeFile :: FilePath -> (FilePath -> Annex a) -> Annex a
-replaceWorkTreeFile = replaceFile $ \dir ->
-	fromRepo repoWorkTree >>= liftIO . \case
-		Just wt -> createDirectoryUnder (fromRawFilePath wt) dir
-		-- Should never happen, but let the file move be what
-		-- throws an exception as that would more clearly indicate
-		-- the problem.
-		Nothing -> noop
+replaceWorkTreeFile = replaceFile createWorkTreeDirectory
 
 {- Replaces a possibly already existing file with a new version, 
  - atomically, by running an action.

@@ -11,6 +11,7 @@ module Annex.Perms (
 	setAnnexDirPerm,
 	annexFileMode,
 	createAnnexDirectory,
+	createWorkTreeDirectory,
 	noUmask,
 	freezeContent,
 	isContentWritePermOk,
@@ -25,6 +26,7 @@ module Annex.Perms (
 
 import Annex.Common
 import Utility.FileMode
+import Git
 import Git.ConfigTypes
 import qualified Annex
 import Config
@@ -76,6 +78,20 @@ createAnnexDirectory dir = do
 	createdir p = do
 		liftIO $ createDirectory p
 		setAnnexDirPerm p
+
+{- Create a directory in the git work tree, creating any parent
+ - directories up to the top of the work tree.
+ -
+ - Uses default permissions.
+ -}
+createWorkTreeDirectory :: FilePath -> Annex ()
+createWorkTreeDirectory dir = do
+	fromRepo repoWorkTree >>= liftIO . \case
+		Just wt -> createDirectoryUnder (fromRawFilePath wt) dir
+		-- Should never happen, but let whatever tries to write
+		-- to the directory be what throws an exception, as that
+		-- will be clearer than an exception from here.
+		Nothing -> noop
 
 {- Normally, blocks writing to an annexed file, and modifies file
  - permissions to allow reading it.
