@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="re: Invalid option `--include-dotfiles'"
+ date="2020-03-06T22:56:35Z"
+ content="""
+DataLad has been updated for the removal of `--include-dotfiles` in
+the latest git-annex release (8.20200226), but there hasn't been a
+DataLad release yet that includes that fix.  So I'd say the easiest
+fix for now would be installing a developmental version of DataLad
+(both `master` and `maint` have the fix).  I think downgrading your
+git-annex version would be problematic because your repo has probably
+already been auto-upgraded to v8.
+"""]]
