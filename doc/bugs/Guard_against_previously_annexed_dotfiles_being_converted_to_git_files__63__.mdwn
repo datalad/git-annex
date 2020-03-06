@@ -1,0 +1,66 @@
+I've been thinking a bit more about `annex.dotfiles` in the context of
+[this forum post][0].  It seems to me that annexed dotfiles can jump
+to git in a way that's surprising and worth raising as a possible bug.
+
+Say that I have repo with `annex.dotfiles=true` in the .git/config,
+and I add some dotfiles to the annex.  Then, someone clones that repo
+and goes into an adjusted state (either by running `git annex adjust
+--unlock` or by being on a crippled file system).  In that clone,
+calling `annex get` on any of the annexed dotfiles will lead to those
+files being added to the index as regular files.  (Demo included
+below.)
+
+The above issue could be resolved by the user storing
+`annex.dotfiles=true` in `git-annex:config.log`, but perhaps it'd be
+feasible for git-annex to guard against already annexed dotfiles
+migrating to git?
+
+Thanks in advance.
+
+[[!format sh """
+git annex version | head -1
+
+cd "$(mktemp -d --tmpdir gx-XXXXXXX)"
+git init a
+(
+    cd a
+    git annex init a
+    git config annex.dotfiles true
+    mkdir .reallybig
+    echo "a" >.reallybig/foo
+    git annex add .reallybig/foo
+    git commit -m"add foo"
+)
+
+git clone a b
+(
+    cd b
+    git annex init b
+    git annex adjust --unlock
+    git annex get .reallybig
+    git status
+    git diff --cached
+)
+"""]]
+
+```
+git-annex version: 8.20200226
+[...]
+On branch adjusted/master(unlocked)
+Changes to be committed:
+        modified:   .reallybig/foo
+
+diff --git a/.reallybig/foo b/.reallybig/foo
+index 3de500c..7898192 100644
+--- a/.reallybig/foo
++++ b/.reallybig/foo
+@@ -1 +1 @@
+-/annex/objects/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7
++a
+```
+
+[0]: https://git-annex.branchable.com/forum/Get_annex.dotfiles__61__true_behavior_without_persistent_configuration__63__/
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
