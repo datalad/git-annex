@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="can use copies=groupname:number"
+ date="2020-03-05T20:26:01Z"
+ content="""
+You could use the approach mentioned in the `preferred-content`
+manpage:
+
+    Preferred content expressions have no equivalent to the `--in`
+    option, but groups can accomplish similar things. You can add
+    repositories to groups, and match against the groups in a
+    preferred content expression. So rather than `--in=usbdrive`,
+    put all the USB drives into a \"transfer\" group, and use
+    `copies=transfer:1`
+
+"""]]

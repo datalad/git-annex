@@ -1,0 +1,5 @@
+For [preferred content expressions](https://git-annex.branchable.com/git-annex-preferred-content/), is there an option analogous to the "--in=repo" [matching option](https://git-annex.branchable.com/git-annex-matching-options/)?
+
+I was surprised not to find it, but maybe I have overlooked something.
+
+Many thanks
