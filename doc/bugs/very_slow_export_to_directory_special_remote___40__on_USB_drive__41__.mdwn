@@ -47,3 +47,19 @@ Well, I'm coming back to git-annex after several years. So far it is better than
 - Finally we have exporttree, yeah!
 
 
+## 2020-03-07 update
+
+Turns out, the problem is more complex. I wanted to be clever. When I set up the two synced annex repos I made the mistake of not specifying exporttree=yes at the beginning. But I wanted to re-use the initial name. So I tried hard to remove all evidence of the previous existence of a special remote with that name from git-annex.
+
+I checked out the git-annex branch in a separate worktree (see **man git worktree**) in both repositories, deleted the lines for that remote from remote.log and pushed to the other repo (not git annex sync). I even made the changes in parallel in both repos before pushing in both directions so that the special merge does not bring the lines back. I actually was sure there was nothing left of the old remotes. Of course I also deleted them from .git/config.
+
+Somehow, there is again a line in remote.log for that remote without exporttree=yes. So now, after the last git annex sync --content, I have a mixture of an exported tree and an exported annex object store in the same special remote dir.
+
+I also noticed that the repo that was so slow did not have the `remote.$REMOTE.annex-tracking-branch` config. But I could still run `sync --content` somehow. After adding this config, the last sync actually ran with 2 MB/s but it still wrote in object store format, not as an exported tree.
+
+Some questions:
+
+- Is there any other place where git-annex stores information about remotes then remote.log?
+- The object store files in the remote were stored in format AAA/BBB/$HASH with three character directory names. While in .git/annex/objects the folders have two characters. What are those characters? I believe the 3 characters format is for remotes that potentially do not distinguish letter case?
+- Is there a command to get the full path of a file in the object store (two or three letters) from the hash?
+- Maybe there is still a bug. Is there a possibility that git-annex could forget that a remote is configured with exporttree=yes? Especially if I export to the same directory on the same usb drive from two synced repos?
