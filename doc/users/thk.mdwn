@@ -10,6 +10,10 @@ My TODO items
   - use a common group defined in /usr/share/base-passwd/group.master, e.g. "floppy"
   - make the root folder sticky
   - make sure all users on all machines are part of the common group
+- Collect problems with NTFS tree exports, e.g.
+  - Spaces at the end in filenames
+  - single quotes in filenames
+  - dots?
 - more experiences with ext4 encryption feature:
 
   <https://www.techort.com/encryption-in-ext4-how-it-works-habrahabr/>
