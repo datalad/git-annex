@@ -17,6 +17,10 @@ I tried to mount the drive without sync but failed. Even with the usdisks2 servi
 
 TODO(thk): try other drive and other laptop once the current transfer finishes...
 
+Update 2020-03-07:
+
+- export to a different USB drive (both seagate, same size, similar age) from the same machine with the exact same setup (but NTFS filesystem) runs with ~80 MiB/s. So this is perfect. This time there is also no problem with a lost exporttree=yes config.
+
 ### What version of git-annex are you using? On what operating system?
 
 - git-annex version: 8.20200227-gf56dfe791
