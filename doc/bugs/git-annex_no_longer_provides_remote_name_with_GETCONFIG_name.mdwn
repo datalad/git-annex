@@ -15,3 +15,6 @@ Originally reported at https://github.com/datalad/datalad/issues/4259
 
 There is no day that ends without me being grateful for git-annex ;-)
 
+[[!meta author=mih]]
+[[!tag projects/datalad]]
+
