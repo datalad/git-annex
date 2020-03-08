@@ -8,7 +8,7 @@ My TODO items
 - write a tip on how to deal with permission issues on ext formatted USB drives
   - works of course only on Debian and derivatives
   - use a common group defined in /usr/share/base-passwd/group.master, e.g. "floppy"
-  - make the root folder sticky
+  - use setgid bit: https://en.wikipedia.org/wiki/Setuid#SGID
   - make sure all users on all machines are part of the common group
 - Collect problems with NTFS tree exports, e.g.
   - Spaces at the end in filenames
