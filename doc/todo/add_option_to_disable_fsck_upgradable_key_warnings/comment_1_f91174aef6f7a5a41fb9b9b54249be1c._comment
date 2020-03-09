@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-09T16:24:11Z"
+ content="""
+git-annex fsck only displays that warning when annex.securehashesonly=true.
+That is not a default setting.
+
+Seems to me, setting that when your repo legitimately uses insecure
+hashes will cause other problems, eg git-annex will refuse to transfer
+content using insecure hashes since it cannot verify it.
+So, you could just unset that.
+
+I suppose, if you've migrated away from those hashes, but still have old
+objects using them present in the annex, and turned on
+annex.securehashesonly=true, fsck --all will warn about the objects.
+If that's the problem, it might make sense to disable the warning for
+--all and --key.
+"""]]
