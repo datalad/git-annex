@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,13 +20,28 @@ cmd = dontCheck repoExists $
 	noDaemonRunning $
 	-- ^ avoid upgrading repo out from under daemon
 	command "upgrade" SectionMaintenance "upgrade repository"
-		paramNothing (withParams seek)
+		paramNothing (seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withNothing (commandAction start)
+data UpgradeOptions = UpgradeOptions
+	{ autoOnly :: Bool
+	}
 
-start :: CommandStart
-start = starting "upgrade" (ActionItemOther Nothing) $ do
+optParser :: CmdParamsDesc -> Parser UpgradeOptions
+optParser _ = UpgradeOptions
+	<$> switch
+		( long "autoonly"
+		<> help "only do automatic upgrades"
+		)
+
+seek :: UpgradeOptions -> CommandSeek
+seek o = commandAction (start o)
+
+start :: UpgradeOptions -> CommandStart
+start (UpgradeOptions { autoOnly = True }) = do
+	starting "upgrade" (ActionItemOther Nothing) $ do
+	getVersion >>= maybe noop checkUpgrade
+	next $ return True
+start _ = starting "upgrade" (ActionItemOther Nothing) $ do
 	whenM (isNothing <$> getVersion) $ do
 		initialize Nothing Nothing
 	r <- upgrade False latestVersion

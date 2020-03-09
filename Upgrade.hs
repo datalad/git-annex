@@ -1,6 +1,6 @@
 {- git-annex upgrade support
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,8 @@ module Upgrade where
 import Annex.Common
 import qualified Annex
 import qualified Git
+import Config
+import Config.Files
 import Annex.Version
 import Types.RepoVersion
 #ifndef mingw32_HOST_OS
@@ -61,17 +63,25 @@ needsUpgrade v
 upgrade :: Bool -> RepoVersion -> Annex Bool
 upgrade automatic destversion = do
 	upgraded <- go =<< getVersion
-	when upgraded $
-		setVersion destversion
+	when upgraded
+		postupgrade
 	return upgraded
   where
 	go (Just v)
 		| v >= destversion = return True
-		| otherwise = ifM (up v)
-			( go (Just (RepoVersion (fromRepoVersion v + 1)))
-			, return False
+		| otherwise = ifM upgradingRemote
+			( upgraderemote
+			, ifM (up v)
+				( go (Just (RepoVersion (fromRepoVersion v + 1)))
+				, return False
+				)
 			)
 	go _ = return True
+
+	postupgrade = ifM upgradingRemote
+		( reloadConfig
+		, setVersion destversion
+		)
 
 #ifndef mingw32_HOST_OS
 	up (RepoVersion 0) = Upgrade.V0.upgrade
@@ -87,3 +97,19 @@ upgrade automatic destversion = do
 	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
 	up (RepoVersion 7) = Upgrade.V7.upgrade automatic
 	up _ = return True
+
+	-- Upgrade local remotes by running git-annex upgrade in them.
+	-- This avoids complicating the upgrade code by needing to handle
+	-- upgrading a git repo other than the current repo.
+	upgraderemote = do
+		rp <- fromRawFilePath <$> fromRepo Git.repoPath
+		cmd <- liftIO readProgramFile
+		liftIO $ boolSystem' cmd
+			[ Param "upgrade"
+			, Param "--quiet"
+			, Param "--autoonly"
+			]
+			(\p -> p { cwd = Just rp })
+
+upgradingRemote :: Annex Bool
+upgradingRemote = isJust <$> fromRepo Git.remoteName

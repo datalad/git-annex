@@ -5,10 +5,17 @@ a repo that has it as a remote, this is displayed:
 
 This happens because git ls-files is run to list the files of the clone.
 But, it has some strange behavior when relative paths are used. Result is
-it always fails. This also causes the keys database of the clone to not get
-repopulated after being deleted for the upgrade. That's not a fatal problem
-because git-annex is always prepared for the keys database being out of
-date, but it could result in considerably more work being done later.
+it always fails. 
+
+This also causes the keys database of the clone to not get
+repopulated after being deleted for the upgrade. 
+That's not a fatal problem because git-annex is always prepared for the
+keys database being out of date, but it could result in considerably more
+work being done later.
+
+Also, the associated files does not get repopulated when it fails like
+that. That could cause worse problems. I have not tried to see what happens
+when the repo that fails to be upgraded has unlocked files.
 
 I also found some v1 upgrade code that does the same thing, and presumably
 also has the problem, although there are probably no v1 repos left. 
@@ -22,3 +29,11 @@ that looks like it would have then problem. That would affect upgrading
 from a V5 direct mode repo to V6.
 
 --[[Joey]
+
+> Fixed all such upgrade bugs by changing how local remotes are upgraded,
+> running git-annex upgrade inside the remote.
+> 
+> Also, guarded all git ls-files calls with a check that it's not being
+> run on a local remote, just in case there are other such bugs.
+> 
+> [[done]] --[[Joey]]

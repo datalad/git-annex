@@ -8,7 +8,7 @@ git annex upgrade
 
 # DESCRIPTION
 
-Upgrades the repository.
+Upgrades the repository to the latest version.
 
 Each git-annex repository has an annex.version in its git configuration,
 that indicates the repository version. When an old repository version
@@ -23,6 +23,13 @@ Currently, git-annex supports upgrades all the way back to version 0, which
 was only used by its author. It's expected that git-annex will always
 support upgrading from all past repository versions -- this is necessary to
 allow archives to be taken offline for years and later used.
+
+# OPTIONS
+
+* --autoonly
+
+  Only do whatever automatic upgrade can be done, don't necessarily
+  upgrade to the latest version. This is used internally by git-annex.
 
 # SEE ALSO
 
