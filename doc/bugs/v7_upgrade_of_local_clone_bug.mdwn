@@ -1,0 +1,20 @@
+When a local clone was at v7 and gets upgraded to v8 by a command run in
+a repo that has it as a remote, this is displayed:
+
+"fatal: ../path/to/clone is outside repository"
+
+This happens because git ls-files is run to list the files of the clone.
+But, it has some strange behavior when relative paths are used. Result is
+it always fails. This also causes the keys database of the clone to not get
+repopulated after being deleted for the upgrade. That's not a fatal problem
+because git-annex is always prepared for the keys database being out of
+date, but it could result in considerably more work being done later.
+
+I also found some v1 upgrade code that does the same thing, and presumably
+also has the problem, although there are probably no v1 repos left. 
+This seems like it could be a larger problem that only upgrades, but
+luckily upgrades seem like the only time that git-annex, running in one
+repo, needs to do anything involving listing the files in the working tree
+of a remote.
+
+--[[Joey]
