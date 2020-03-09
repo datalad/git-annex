@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="re: rationale"
+ date="2020-03-09T22:17:51Z"
+ content="""
+> Is there a rationale for not having the option for preferred contents?
+
+Hmm, I wouldn't be able to answer this myself, but digging around a
+bit it looks like there used to be an `in=` option.  Here's the
+rationale given in that commit:
+
+```
+CommitDate: Fri Oct 19 16:09:21 2012 -0400
+40aab719dfe9c3bd240656c1ff387cad0ba8d96d
+
+Replace \"in=\" with \"present\" in preferred content expressions
+
+in= was problimatic in two ways. First, it referred to a remote by name,
+but preferred content expressions can be evaluated elsewhere, where that
+remote doesn't exist, or a different remote has the same name. This name
+lookup code could error out at runtime. Secondly, in= seemed pretty useless.
+in=here did not cause content to be gotten, but it did let present content
+be dropped.
+
+present is more useful, although \"not present\" is unstable and should be
+avoided.
+```
+
+"""]]
