@@ -62,3 +62,5 @@ Illegal instruction (core dumped)
 I'm using git-annex as a core of the simple in-house system that handles storage, transfer and tracking of multi-GB data sets, taking advantage of git for version tracking, git-annex for data storage and transfer, and a single SSH access point to both of them.
 
 I must admit that it was a pain to adapt git-annex to my needs, and probably I did it in a manner that wasn't an intended/supported way of using git-annex. But it does the job.
+
+> [[closing|done]] as it's a bug in cryptonite --[[Joey]]
