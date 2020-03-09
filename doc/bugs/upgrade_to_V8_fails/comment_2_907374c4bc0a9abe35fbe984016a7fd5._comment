@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-03-09T17:46:31Z"
+ content="""
+You need to tell me a sequence of commands that can reproduce this problem.
+At the moment, I don't know how to, and so don't know how to fix it.
+
+If you don't know how to reporoduce the problem, you need to at least
+more clearly explain it. I don't know what it could mean for a file to be
+"symlinked from two directories". What was the full filename of the 
+file that you deleted? What was the path in which you ran git-annex?
+"""]]
