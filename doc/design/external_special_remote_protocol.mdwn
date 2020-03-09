@@ -180,7 +180,9 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
   work better, because it can check the user's input, and can also display
   a list of settings with descriptions. Note that the user is not required
   to provided all the settings listed here. A block of responses
-  can be made to this, which must always end with `CONFIGSEND`.
+  can be made to this, which must always end with `CONFIGSEND`.  
+  (Do not include settings like "name" that are common to all external
+  special remotes.)
   * `CONFIG Name Description`  
     Indicates the name and description of a config setting. The description
     should be reasonably short. Example:
@@ -298,7 +300,7 @@ handling a request.
   been passed by the user when running `git annex initremote`, or
   can have been set by a previous SETCONFIG. Can be run at any time.  
   It's recommended that special remotes that use this implement
-  LISTCONFIGS.
+  LISTCONFIGS.  
   (git-annex replies with VALUE followed by the value. If the setting is
   not set, the value will be empty.)
 * `SETCREDS Setting User Password`  
