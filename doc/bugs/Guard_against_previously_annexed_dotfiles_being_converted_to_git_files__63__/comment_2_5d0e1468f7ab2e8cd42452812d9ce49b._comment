@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-03-09T18:07:12Z"
+ content="""
+Analysis: Command.Smudge.shouldAnnex was changed
+in [[!commit 3cd375723658398a4b15ff8ec19e562ec4622488]] to check, for dotfiles,
+if annex.dotfiles is set. If not, it always returns False, so the file
+always gets added to git when it's smudged.
+
+After getting a file, git-annex tells git to update its index, which
+smudges the file. Of course, there are also plenty of other things that can
+cause a file to be smudged.
+
+Bad. Fix is very easy, luckily. It just needs to, rather than returning
+False, checking if the file was annexed, same as is done for non-dotfiles.
+"""]]

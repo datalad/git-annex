@@ -64,3 +64,5 @@ index 3de500c..7898192 100644
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

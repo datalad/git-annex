@@ -176,7 +176,7 @@ shouldAnnex file indexmeta moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitCon
 	checkmatcher d
 		| dotfile file = ifM (getGitConfigVal annexDotFiles)
 			( go
-			, return False
+			, d
 			)
 		| otherwise = go
 	  where
