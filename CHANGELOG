@@ -1,5 +1,7 @@
 git-annex (8.20200227) UNRELEASED; urgency=medium
 
+  * Fix regression that prevented external special remotes from using
+    GETCONFIG to query values like "name". (Introduced in version 7.20200202.7.)
   * Improve behavior when a directory git-annex is writing to gets
     unmounted. Previously it could in some cases re-create the mount point
     and directory tree, and even write object contents to the wrong disk.
