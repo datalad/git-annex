@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 10"
+ date="2020-03-09T19:05:08Z"
+ content="""
+\"seems to have installed a new git in the conda env (see conda list below), but for whatever reason, invoking git still reaches outside the conda env\" -- that's really strange; at this point I'd consider re-installing Miniconda from scratch, updating conda to the current version, creating a datalad env from scratch, and seeing if the oddity goes away.
+"""]]
