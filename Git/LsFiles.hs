@@ -320,7 +320,7 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
  - point in the future. If the output is not as expected, will use Nothing.
  -}
 inodeCaches :: [RawFilePath] -> Repo -> IO ([(FilePath, Maybe InodeCache)], IO Bool)
-inodeCaches locs repo = do
+inodeCaches locs repo = guardSafeForLsFiles repo $ do
 	(ls, cleanup) <- pipeNullSplit params repo
 	return (parse Nothing (map decodeBL ls), cleanup)
   where
