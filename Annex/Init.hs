@@ -34,6 +34,7 @@ import Annex.Version
 import Annex.Difference
 import Annex.UUID
 import Annex.WorkTree
+import Annex.Fixup
 import Config
 import Config.Files
 import Config.Smudge
@@ -129,6 +130,7 @@ initialize' mversion = checkCanInitialize  $ do
 				)
 	propigateSecureHashesOnly
 	createInodeSentinalFile False
+	fixupUnusualReposAfterInit
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -280,3 +282,8 @@ propigateSecureHashesOnly :: Annex ()
 propigateSecureHashesOnly =
 	maybe noop (setConfig "annex.securehashesonly" . fromConfigValue)
 		=<< getGlobalConfig "annex.securehashesonly"
+
+fixupUnusualReposAfterInit :: Annex ()
+fixupUnusualReposAfterInit = do
+	gc <- Annex.getGitConfig
+	void $ inRepo $ \r -> fixupUnusualRepos r gc

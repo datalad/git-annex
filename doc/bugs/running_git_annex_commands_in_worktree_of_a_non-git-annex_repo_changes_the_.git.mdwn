@@ -65,3 +65,4 @@ Linux ip-172-31-80-211.ec2.internal 4.14.171-136.231.amzn2.x86_64 #1 SMP Thu Feb
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> [[fixed|done]] --[[Joey]]

@@ -1,6 +1,6 @@
 {- git-annex repository fixups
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,8 +12,6 @@ module Annex.Fixup where
 import Git.Types
 import Git.Config
 import Types.GitConfig
-import Config.Files
-import qualified Git
 import Utility.Path
 import Utility.SafeCommand
 import Utility.Directory
@@ -86,24 +84,21 @@ fixupDirect r = r
  - into a symlink. But we don't need too, since the repo will use adjusted
  - unlocked branches.
  -
- - Before making any changes, check if there's a .noannex file
- - in the repo. If that file will prevent git-annex from being used,
- - there's no need to fix up the repository.
+ - Don't do any of this if the repo has not been initialized for git-annex
+ - use yet.
  -}
 fixupUnusualRepos :: Repo -> GitConfig -> IO Repo
 fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d }) }) c
-	| needsSubmoduleFixup r = ifM notnoannex
-		( do
-			when (coreSymlinks c) $
-				(replacedotgit >> unsetcoreworktree)
-					`catchNonAsync` \_e -> hPutStrLn stderr
-						"warning: unable to convert submodule to form that will work with git-annex"
-			return $ r'
-				{ config = M.delete "core.worktree" (config r)
-				}
-		, return r
-		)
-	| otherwise = ifM (needsGitLinkFixup r <&&> notnoannex)
+	| isNothing (annexVersion c) = return r
+	| needsSubmoduleFixup r = do
+		when (coreSymlinks c) $
+			(replacedotgit >> unsetcoreworktree)
+				`catchNonAsync` \_e -> hPutStrLn stderr
+					"warning: unable to convert submodule to form that will work with git-annex"
+		return $ r'
+			{ config = M.delete "core.worktree" (config r)
+			}
+	| otherwise = ifM (needsGitLinkFixup r)
 		( do
 			when (coreSymlinks c) $
 				(replacedotgit >> worktreefixup)
@@ -144,8 +139,6 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 	r'
 		| coreSymlinks c = r { location = l { gitdir = dotgit } }
 		| otherwise = r
-
-	notnoannex = isNothing <$> noAnnexFileContent (fmap fromRawFilePath (Git.repoWorkTree r))
 fixupUnusualRepos r _ = return r
 
 needsSubmoduleFixup :: Repo -> Bool

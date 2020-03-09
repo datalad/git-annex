@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-09T18:31:46Z"
+ content="""
+Hmm, fixupUnusualRepos was earlier changed to check for .noannex
+files, and avoid doing anything. Didn't think big enough I suppose.
+
+I agree, git-annex should not be hacking on git repos that have not had
+git-annex initialized in them yet. Luckily all the hacks are about making
+.git files into symlinks so links to annexed files work, so it will be ok
+for the .git file to remain unconverted until the end of git-annex init,
+or even by a subsequent git-annex command.
+"""]]
