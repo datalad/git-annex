@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-03-09T19:00:35Z"
+ content="""
+git-annex does not use blake2 by default. If someone has configured it to
+use blake2 (probably because they want the speed) and added some files to 
+a repo, it will then use blake2 to hash those files going forward.
+
+So, in balance, it seems better to disable the unsafe optimisation,
+and have it be a little bit slower, than not work on some machines.
+
+Thanks for fileing the issue on cryptonite. I don't see anything further to
+be done in git-annex, so I'll close this bug now.
+"""]]
