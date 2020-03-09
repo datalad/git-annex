@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="sam.nastase@2b4a9b3e5094dab41e0a4de0b808a2697a3e9860"
+ nickname="sam.nastase"
+ avatar="http://cdn.libravatar.org/avatar/55c74b521bcb7322069f35bf655f81e0"
+ subject="comment 11"
+ date="2020-03-09T22:43:56Z"
+ content="""
+I'm on an institutional server and don't have admin privileges, so I'm using the existing conda (v4.7.5) installation and installing datalad with `conda install -c conda-forge datalad`. On a second try, can confirm that `git` is not listed among the conda `NEW packages that will be INSTALLED`, although it does get `git-annex conda-forge/linux-64::git-annex-8.20200226-nodep_h1234567_1` (as well as `gitdb` and `gitpython`). Conda env still points to the external git installation. Running the conda version of `datalad save` gives me the `Invalid option `--include-dotfiles'` error, so I install from GitHub with `pip install git+https://github.com/datalad/datalad.git`. However, this doesn't seem to change anything (I think this is why I ended up conda uninstalling datalad previouosly). Is there away to ensure the version installed from GitHub via pip takes precedence?
+"""]]
