@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-09T16:16:23Z"
+ content="""
+Hmm, I wonder if I was aware that any externals used GETCONFIG with things
+like name. Seems I might have heard about it at one point and forgotten?
+Reading the external protocol, it does say it's anything passed to
+initremote.
+
+I've fixed this. Release should happen by tomorrow.
+
+(I've also backported the fix to the 7.x branch.)
+"""]]
