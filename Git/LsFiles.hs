@@ -40,7 +40,13 @@ import System.Posix.Types
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 
-{- Scans for files that are checked into git's index at the specified locations. -}
+{- Lists files that are checked into git's index at the specified paths.
+ - With no paths, all files are listed.
+ -
+ - Paths are relative to the CWD. So this should only be used on the
+ - current Repo, not on clones. (Same goes for all the rest of this
+ - module!)
+ -}
 inRepo :: [RawFilePath] -> Repo -> IO ([RawFilePath], IO Bool)
 inRepo = inRepo' [] 
 

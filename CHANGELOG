@@ -18,6 +18,8 @@ git-annex (8.20200227) UNRELEASED; urgency=medium
   * git-annex config: Only allow configs be set that are ones git-annex actually
     supports reading from repo-global config, to avoid confusion.
   * Linux standalone: Use md5sum to shorten paths in .cache/git-annex/locales
+  * Fix a problem in auto-upgrade of a clone to v8 that caused a
+    message "fatal: <path> is outside repository".
 
  -- Joey Hess <id@joeyh.name>  Thu, 27 Feb 2020 00:44:11 -0400
 
