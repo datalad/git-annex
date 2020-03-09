@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="scinu"
+ avatar="http://cdn.libravatar.org/avatar/c5a190c5c0ce61a5be141609dff37fe1"
+ subject="Problem solved (partially)"
+ date="2020-03-09T17:00:52Z"
+ content="""
+If I \"git rm\" the files causing problems, the upgrade to V8 runs through.
+
+So, I'm not sure what's causing the problem, but at least I can work again.
+
+Best, Scinu
+"""]]
