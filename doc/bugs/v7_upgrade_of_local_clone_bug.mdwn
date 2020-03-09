@@ -17,4 +17,8 @@ luckily upgrades seem like the only time that git-annex, running in one
 repo, needs to do anything involving listing the files in the working tree
 of a remote.
 
+Hmm, Upgrade.V5 also has a LsFiles.stagedDetails
+that looks like it would have then problem. That would affect upgrading
+from a V5 direct mode repo to V6.
+
 --[[Joey]
