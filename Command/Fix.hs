@@ -88,17 +88,16 @@ makeHardLink file key = do
 
 fixSymlink :: FilePath -> FilePath -> CommandPerform
 fixSymlink file link = do
-	liftIO $ do
 #if ! defined(mingw32_HOST_OS)
-		-- preserve mtime of symlink
-		mtime <- catchMaybeIO $ modificationTimeHiRes
-			<$> getSymbolicLinkStatus file
+	-- preserve mtime of symlink
+	mtime <- liftIO $ catchMaybeIO $ modificationTimeHiRes
+		<$> getSymbolicLinkStatus file
 #endif
-		createWorkTreeDirectory (parentDir file)
-		removeFile file
-		createSymbolicLink link file
+	createWorkTreeDirectory (parentDir file)
+	liftIO $ removeFile file
+	liftIO $ createSymbolicLink link file
 #if ! defined(mingw32_HOST_OS)
-		maybe noop (\t -> touch file t False) mtime
+	liftIO $ maybe noop (\t -> touch file t False) mtime
 #endif
 	next $ cleanupSymlink file
 

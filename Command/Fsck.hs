@@ -219,7 +219,7 @@ fixLink key file = do
 	go want have
 		| want /= fromRawFilePath (fromInternalGitPath have) = do
 			showNote "fixing link"
-			liftIO $ createWorkTreeDirectory (parentDir (fromRawFilePath file))
+			createWorkTreeDirectory (parentDir (fromRawFilePath file))
 			liftIO $ removeFile (fromRawFilePath file)
 			addAnnexLink want file
 		| otherwise = noop
