@@ -420,9 +420,9 @@ handleRequest' st external req mp responsehandler
 			modifyTVar' (externalConfigChanges st) $ \f ->
 				f . M.insert (Accepted setting) (Accepted value)
 	handleRemoteRequest (GETCONFIG setting) = do
-		value <- fromMaybe ""
+		value <- maybe "" fromProposedAccepted
 			. (M.lookup (Accepted setting))
-			. getRemoteConfigPassedThrough
+			. unparsedRemoteConfig
 			<$> liftIO (atomically $ readTVar $ externalConfig st)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = case (externalUUID external, externalGitConfig external) of
