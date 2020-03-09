@@ -1,5 +1,0 @@
-git-annex 7.20200204 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix build with persistent-template 2.8.0.
-   * Makefile: Really move the fish completion to the
-     vendor\_completions.d directory."""]]
