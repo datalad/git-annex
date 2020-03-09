@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-09T17:00:38Z"
+ content="""
+This looks like a serious regression in 8.x. It is not an intentional part
+of the annex.dotfiles change. I have confirmed the last 7.x release did not
+have the behavior.
+
+(Notice that annex.dotfiles is not used in the repo where the problem
+occurs. The regression was probably introduced by the annex.dotfiles
+changes, but the dotfile could just as well have been added by git-annex v5
+with git-annex add --include-dotfiles and the result committed to git would
+be the same.)
+
+A simpler test case is to unlock the dotfile in the first repo, then
+all that needs to be run in its clone is `git annex get`.
+"""]]
