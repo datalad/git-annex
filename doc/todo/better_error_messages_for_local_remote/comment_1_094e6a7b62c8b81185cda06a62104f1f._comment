@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="Also no clear error for permission problems"
+ date="2020-03-06T17:51:20Z"
+ content="""
+I was exporting (with exporttree) to a directory remote on an external ext4 formatted USB drive.
+As is usually the case, there was permission problem. My current user did not have write permission for one directory I was exporting to.
+git-annex just printed \"failed\" after it actually completed the file transfer with 100%.
+Even with --verbose and --debug I could not figure out the problem until I discovered the permission problem.
+"""]]

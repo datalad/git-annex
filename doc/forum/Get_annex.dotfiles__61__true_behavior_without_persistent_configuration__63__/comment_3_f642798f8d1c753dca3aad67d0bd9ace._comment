@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="sam.nastase@2b4a9b3e5094dab41e0a4de0b808a2697a3e9860"
+ nickname="sam.nastase"
+ avatar="http://cdn.libravatar.org/avatar/55c74b521bcb7322069f35bf655f81e0"
+ subject="Invalid option `--include-dotfiles'"
+ date="2020-03-06T22:17:32Z"
+ content="""
+I just reinstalled DataLad (v0.12.2) via conda today and tried to do a `datalad save` on a preexisting datalad dataset and got previously unseen error with \"Invalid option `--include-dotfiles'\". Is this related to ongoing development? Or is there some easy fix? Thanks! (apologies if this is a poor place to post)
+"""]]

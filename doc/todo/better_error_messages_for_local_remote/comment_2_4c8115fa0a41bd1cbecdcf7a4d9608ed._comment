@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="No clear error message for failing names on NTFS"
+ date="2020-03-07T12:50:19Z"
+ content="""
+I tried to export a tree to NTFS with a filename that contained spaces, single quotes and dots. Only after removing all of them the export succeeded. There error messages was just \"failed\".
+"""]]

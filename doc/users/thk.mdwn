@@ -1,0 +1,19 @@
+I'm thk at debian org
+
+
+My TODO items
+
+- write a tip on using git worktree to inspect the git-annex branch
+  - Is there a way to filter out the directories?
+- write a tip on how to deal with permission issues on ext formatted USB drives
+  - works of course only on Debian and derivatives
+  - use a common group defined in /usr/share/base-passwd/group.master, e.g. "floppy"
+  - use setgid bit: https://en.wikipedia.org/wiki/Setuid#SGID
+  - make sure all users on all machines are part of the common group
+- Collect problems with NTFS tree exports, e.g.
+  - Spaces at the end in filenames
+  - single quotes in filenames
+  - dots?
+- more experiences with ext4 encryption feature:
+
+  <https://www.techort.com/encryption-in-ext4-how-it-works-habrahabr/>

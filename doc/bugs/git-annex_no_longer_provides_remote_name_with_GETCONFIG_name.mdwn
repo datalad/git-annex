@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+A special remote implementation that needs to look up further config based on the remote name no longer works, because a recent change prevents `GETCONFIG name` to return the remote name while `git annex initremote` is driving the special remote implementation.
+
+
+### What version of git-annex are you using? On what operating system?
+
+It used to work with 7.20191230 and no longer does with 8.20200226, test on Debian and Ubuntu.
+
+### Please provide any additional information below.
+
+Originally reported at https://github.com/datalad/datalad/issues/4259
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+There is no day that ends without me being grateful for git-annex ;-)
+
+[[!meta author=mih]]
+[[!tag projects/datalad]]
+
