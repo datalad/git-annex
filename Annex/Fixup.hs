@@ -83,8 +83,8 @@ fixupDirect r = r
  - also converted to a symlink so links to .git/annex will work. 
  - 
  - When the filesystem doesn't support symlinks, we cannot make .git
- - into a symlink. But we don't need too, since the repo will use direct
- - mode.
+ - into a symlink. But we don't need too, since the repo will use adjusted
+ - unlocked branches.
  -
  - Before making any changes, check if there's a .noannex file
  - in the repo. If that file will prevent git-annex from being used,
