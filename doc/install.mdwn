@@ -26,6 +26,10 @@ detailed instructions             | quick install
 All the download links above use https for security. For added security, see
 [[verifying_downloads]].
 
+## Historical builds
+
+Many of historical builds available from the [https://downloads.kitenet.net/.git/](https://downloads.kitenet.net/.git/) git-annex repository.  Visit [downloads.kitenet.net](https://downloads.kitenet.net/) for more information.
+
 ## Building it yourself
 
 git-annex is [[Free Software|license]], written in [Haskell](http://www.haskell.org/).
