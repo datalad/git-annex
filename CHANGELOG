@@ -9,6 +9,7 @@ git-annex (8.20200227) UNRELEASED; urgency=medium
     that the cwd will be inside the repo being upgraded. In particular,
     this fixes a problem where upgrading a v7 repo to v8 caused an ugly
     git error message.
+  * Fix upgrade failure when a file has been deleted from the working tree.
   * Improve behavior when a directory git-annex is writing to gets
     unmounted. Previously it could in some cases re-create the mount point
     and directory tree, and even write object contents to the wrong disk.

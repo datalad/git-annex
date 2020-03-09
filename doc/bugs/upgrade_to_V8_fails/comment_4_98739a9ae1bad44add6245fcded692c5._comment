@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-03-09T20:53:45Z"
+ content="""
+I was able to reverse engineer the error message by deleting one of the
+file in the git repository, but not staging the deletion.
+
+That does not seem to match what you were saying about the symlink
+existing, but perhaps it was upgrading some other repository where
+the file was deleted, or very likely I am failing to understand what you
+were trying to explain.
+
+Since what I've fixed is the only way it could throw that exception, I'm
+going to assume this bug is fixed, but if you try the next version of
+git-annex and it still has the problem, do follow up.
+"""]]
