@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="sam.nastase@2b4a9b3e5094dab41e0a4de0b808a2697a3e9860"
+ nickname="sam.nastase"
+ avatar="http://cdn.libravatar.org/avatar/55c74b521bcb7322069f35bf655f81e0"
+ subject="comment 14"
+ date="2020-03-10T19:04:34Z"
+ content="""
+Oh right, good point about conda. Although I'm not sure why using a new installation of miniconda would make any difference relative to using the system's conda. When running `conda create -c conda-forge -n datalad-env git-annex` it wants to install:
+    git conda-forge/linux-64::git-2.25.0-pl526hce37bd2_0
+    git-annex conda-forge/linux-64::git-annex-8.20200226-hfc01302_101
+
+I think I understand the git version issue now. I had requested admin update git (v1.8), so they had me sourcing some environment variables pointing to a newer version (v2.9). Apparently this was overriding the conda git installation; when I started from scratch on the server, it correctly uses git v2.25 rather than v1.8.
+
+Following your recipe, I needed a `conda install pip`, then pip installed DataLad from GitHub. However, I'm still running against the previous error:
+
+    CommandError: 'git-annex add -c annex.dotfiles=true --json --json-error-messages -- CHANGES README dataset_description.json derivatives/fmriprep derivatives/freesurfer derivatives/logs participants.tsv sub-002/sub-002_scans.tsv
+
+...listing many files, then:
+
+    sub-315/sub-315_scans.tsv' failed with exitcode 1 under /mnt/bucket/labs/hasson/snastase/narratives
+    git-annex: Repository /mnt/bucket/labs/hasson/snastase/narratives is at unsupported version 7. Automatic upgrade exception! derivatives/mriqc: getSymbolicLinkStatus: does not exist (No such file or directory)
+
+Am I just missing some step in the workflow? If there's no obvious solution, I can probably just re-create the entire datalad dataset from scratch with the new software versions in this conda env.
+"""]]
