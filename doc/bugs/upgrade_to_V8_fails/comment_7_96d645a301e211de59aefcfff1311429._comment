@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="scinu"
+ avatar="http://cdn.libravatar.org/avatar/c5a190c5c0ce61a5be141609dff37fe1"
+ subject="Double symlinks"
+ date="2020-03-10T22:06:48Z"
+ content="""
+Sorry for not being clear
+
+for example /papers is a directory under git annex, 
+
+a.pdf is a symlink to a file in the annex (annex filename abbreviated) as created by \"git-annex add\"
+
+topic1/a.pdf  is another symlink to the same file in the annex           this is a copy of a.pdf, registered with \"git-annex add\"
+topic1/a.pdf  is yet another symlink to the same file in the annex       this is another copy of a.pdf, registered with \"git-annex add\"
+
+so the directory listing would look like this:
+
+/papers/.git/annex/....
+/papers/a.pdf          -> .git/annex/objects/pm/XX/SHA256E-s107393...
+
+/papers/topic1/a.pdf   -> .git/annex/objects/pm/XX/SHA256E-s107393...
+/papers/topic2/a.pdf   -> .git/annex/objects/pm/XX/SHA256E-s107393...
+
+All of these symlinks point to the same file on disk under /papers/.git/annex/...
+
+
+
+"""]]
