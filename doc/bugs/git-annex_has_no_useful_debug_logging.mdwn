@@ -1,0 +1,9 @@
+Exporting to a directory on an USB drive (ext4) fails for exactly one file. All other files exported fine.
+
+I already renamed the file (it contained an umlaut and a space), I checked permissions, I ran fsck over the file in the annex.
+
+The metered write goes up to 100% then it stalls for one or two seconds and afterwards git-annex just says "Failed".
+
+My issue is that git-annex in general is hard to debug. I ran the command with --verbose and --debug but this also did not provide any clue.
+
+I believe good error handling and logging is a non-trivial problem in Haskell?
