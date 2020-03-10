@@ -17,9 +17,7 @@ import Types.CleanupActions
 import qualified Annex
 import Annex.LockFile
 import Annex.LockPool
-#ifndef mingw32_HOST_OS
 import Annex.Perms
-#endif
 
 {- Modifies a remote's access functions to first run the
  - annex-start-command hook, and trigger annex-stop-command on shutdown.
