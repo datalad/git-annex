@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="stable url for standalone build"
+ date="2020-03-10T17:10:33Z"
+ content="""
+Ok -- until this gets automated, could you manually push the 8.20200309 standalone tarball to archive.org?
+(My setup now relies on the standalone conda build, and this would let me get the recent bug fixes.)
+Thanks a lot!
+
+"""]]

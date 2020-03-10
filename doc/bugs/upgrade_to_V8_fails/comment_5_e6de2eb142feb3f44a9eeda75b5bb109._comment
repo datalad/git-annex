@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="scinu"
+ avatar="http://cdn.libravatar.org/avatar/c5a190c5c0ce61a5be141609dff37fe1"
+ subject="more specifics"
+ date="2020-03-10T03:49:04Z"
+ content="""
+Thanks a lot!
+
+The double symlinks exist, since I often have collections of files living in several subdirectories. This is useful for my scientific paper collection which is one big pile, but I also copy some git-annex symlink to several topical subdiretories. Since its just a symlink this does not take up space. The big advantage is to be able to get the contents of specific topics I'm working on, and dropping them if I don't need them.
+
+I use the same structure for data files that I only use occasionally. (I know about tags, but this is much more convenient.)
+
+As for the error, it's difficult to debug for me. Possibly its the one you found (symlink to non-existing content). Can I go back to the V7 state of the repository by checking out an older git version? If not, I might try on some harddrives that I haven't synced yet since the version 7->8 upgrade.
+"""]]
