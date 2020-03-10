@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="conda"
+ date="2020-03-10T17:16:31Z"
+ content="""
+Did it work?
+I wonder why you got the standalone (nodep) git-annex build in your environment -- this should only happen when package conflicts prevent the normal package from getting installed.
+When you create a fresh env with git-annex, which package version do you get?
+
+\"don't have admin privileges, so I'm using the existing conda (v4.7.5) installation\" -- with [[install/conda]] you don't need admin privileges, you can get the [installer](https://docs.conda.io/en/latest/miniconda.html#linux-installers) and install it in your own dir.
+"""]]
