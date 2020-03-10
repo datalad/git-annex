@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 1"
+ date="2020-03-10T14:09:33Z"
+ content="""
+There is a changelog at [Hackage](https://hackage.haskell.org/package/git-annex-8.20200309/changelog).
+
+v6 is very old.  v8 includes speed improvements; downside is it's new so less tested by users, upside is that bugfixes are more likely to happen for it than for legacy versions, and that you avoid an eventual [[git-annex-upgrade]].  I'd probably install v8.
+
+
+"""]]
