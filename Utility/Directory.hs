@@ -20,6 +20,7 @@ import System.FilePath
 import System.PosixCompat.Files
 import Control.Applicative
 import Control.Monad.IO.Class
+import Control.Monad.IfElse
 import System.IO.Unsafe (unsafeInterleaveIO)
 import System.IO.Error
 import Data.Maybe
@@ -27,7 +28,6 @@ import Prelude
 
 #ifndef mingw32_HOST_OS
 import Utility.SafeCommand
-import Control.Monad.IfElse
 #endif
 
 import Utility.SystemDirectory
