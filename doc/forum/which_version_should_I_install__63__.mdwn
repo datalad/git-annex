@@ -1,0 +1,5 @@
+Should I install the version in my apt repo (6), or (7) or (8)?
+
+Also, I'd like to know what the major difference is in the versions, I've googled this and found nothing.
+
+(other than bug fixes and "repo format changes"), I wanted to know if the repo format change is a good reason to try to run the latest v8.
