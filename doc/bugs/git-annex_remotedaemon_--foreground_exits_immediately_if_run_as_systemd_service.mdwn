@@ -1,0 +1,218 @@
+### Please describe the problem.
+
+I want to start git-annex remotedaemon on login as a systemd user service. And I want to have logs in journald, not in .gi/annex/daemon.log. Thus I use this service definition:
+
+```
+[Unit]
+Description=remotedaemon running in ~/annex
+
+[Service]
+ExecStart=%h/.local/bin/git-annex remotedaemon --verbose --debug --foreground
+WorkingDirectory=%h/annex
+```
+
+Unfortunately, the git-annex process exits immediately. So I added strace:
+
+    ExecStart=/usr/bin/strace %h/.local/bin/git-annex remotedaemon --verbose --debug --foreground
+
+And got (journald logs; removed time, username and "strace[$PID]" from line beginnings):
+
+```
+systemd[1644]: Started remotedaemon running in ~/annex.
+execve("/home/thk/.local/bin/git-annex", ["/home/thk/.local/bin/git-annex", "remotedaemon", "--verbose", "--debug", "--foreground"], 0x7fff95d3eda0 /* 42 vars */) = 0
+brk(NULL)                               = 0x4f44000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=148740, ...}) = 0
+mmap(NULL, 148740, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f63b2a9f000
+close(3)                                = 0
+
+<<<<<<<<< cut library loading >>>>>>>>>
+
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f63b252d000
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f63b252a000
+arch_prctl(ARCH_SET_FS, 0x7f63b252a740) = 0
+mprotect(0x7f63b2720000, 12288, PROT_READ) = 0
+mprotect(0x7f63b2540000, 4096, PROT_READ) = 0
+mprotect(0x7f63b2829000, 4096, PROT_READ) = 0
+mprotect(0x7f63b2568000, 4096, PROT_READ) = 0
+mprotect(0x7f63b2732000, 4096, PROT_READ) = 0
+mprotect(0x7f63b27b5000, 4096, PROT_READ) = 0
+mprotect(0x7f63b27ba000, 4096, PROT_READ) = 0
+mprotect(0x7f63b27c7000, 4096, PROT_READ) = 0
+mprotect(0x7f63b27e4000, 4096, PROT_READ) = 0
+mprotect(0x7f63b280b000, 8192, PROT_READ) = 0
+mprotect(0x7f63b2a9b000, 4096, PROT_READ) = 0
+mprotect(0x7f63b2951000, 16384, PROT_READ) = 0
+mprotect(0x388b000, 77824, PROT_READ)   = 0
+mprotect(0x7f63b2aec000, 4096, PROT_READ) = 0
+munmap(0x7f63b2a9f000, 148740)          = 0
+set_tid_address(0x7f63b252aa10)         = 144630
+set_robust_list(0x7f63b252aa20, 24)     = 0
+rt_sigaction(SIGRTMIN, {sa_handler=0x7f63b28156b0, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x7f63b2821520}, NULL, 8) = 0
+rt_sigaction(SIGRT_1, {sa_handler=0x7f63b2815750, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x7f63b2821520}, NULL, 8) = 0
+rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+brk(NULL)                               = 0x4f44000
+brk(0x4f65000)                          = 0x4f65000
+openat(AT_FDCWD, "/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=3031632, ...}) = 0
+mmap(NULL, 3031632, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f63b2245000
+close(3)                                = 0
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, {tv_sec=0, tv_nsec=10054427}) = 0
+sysinfo({uptime=38828, loads=[21056, 51328, 54784], totalram=16756289536, freeram=1420591104, sharedram=967385088, bufferram=867651584, totalswap=34099687424, freeswap=34099687424, procs=1643, totalhigh=0, freehigh=0, mem_unit=1}) = 0
+prlimit64(0, RLIMIT_AS, NULL, {rlim_cur=RLIM64_INFINITY, rlim_max=RLIM64_INFINITY}) = 0
+mmap(0x4200000000, 1099512676352, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0) = 0x4200000000
+madvise(0x4200000000, 1099512676352, MADV_DONTNEED) = 0
+madvise(0x4200000000, 1099512676352, MADV_DONTDUMP) = 0
+mmap(0x4200000000, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x4200000000
+madvise(0x4200000000, 1048576, MADV_WILLNEED) = 0
+madvise(0x4200000000, 1048576, MADV_DODUMP) = 0
+mmap(0x4200100000, 1048576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x4200100000
+madvise(0x4200100000, 1048576, MADV_WILLNEED) = 0
+madvise(0x4200100000, 1048576, MADV_DODUMP) = 0
+mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f63b1a44000
+mprotect(0x7f63b1a45000, 8388608, PROT_READ|PROT_WRITE) = 0
+clone(child_stack=0x7f63b2243fb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7f63b22449d0, tls=0x7f63b2244700, child_tidptr=0x7f63b22449d0) = 144633
+openat(AT_FDCWD, "/proc/self/task/144633/comm", O_RDWR) = 4
+write(4, "ghc_ticker", 10)              = 10
+close(4)                                = 0
+rt_sigaction(SIGINT, {sa_handler=0x36a9820, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGINT, NULL, {sa_handler=0x36a9820, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, 8) = 0
+rt_sigaction(SIGINT, {sa_handler=0x36a9820, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b25a4100}, NULL, 8) = 0
+rt_sigaction(SIGPIPE, {sa_handler=0x36a9780, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, {sa_handler=SIG_IGN, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGQUIT, {sa_handler=0x36a9800, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGTSTP, {sa_handler=0x36a9840, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, NULL, 8) = 0
+epoll_create(256)                       = 4
+fcntl(4, F_SETFD, FD_CLOEXEC)           = 0
+pipe([5, 6])                            = 0
+fcntl(6, F_GETFL)                       = 0x1 (flags O_WRONLY)
+fcntl(6, F_SETFL, O_WRONLY|O_NONBLOCK)  = 0
+fcntl(5, F_SETFD, FD_CLOEXEC)           = 0
+fcntl(6, F_SETFD, FD_CLOEXEC)           = 0
+eventfd2(0, 0)                          = 7
+fcntl(7, F_GETFL)                       = 0x2 (flags O_RDWR)
+fcntl(7, F_SETFL, O_RDWR|O_NONBLOCK)    = 0
+fcntl(7, F_SETFD, FD_CLOEXEC)           = 0
+epoll_ctl(4, EPOLL_CTL_ADD, 5, {EPOLLIN, {u32=5, u64=5}}) = 0
+epoll_ctl(4, EPOLL_CTL_ADD, 7, {EPOLLIN, {u32=7, u64=7}}) = 0
+mmap(NULL, 8392704, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7f63b1243000
+mprotect(0x7f63b1244000, 8388608, PROT_READ|PROT_WRITE) = 0
+clone(child_stack=0x7f63b1a42fb0, flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, parent_tidptr=0x7f63b1a439d0, tls=0x7f63b1a43700, child_tidptr=0x7f63b1a439d0) = 144635
+openat(AT_FDCWD, "/proc/self/task/144635/comm", O_RDWR) = 8
+write(8, "git-annex:w", 11)             = 11
+close(8)                                = 0
+futex(0x4f63820, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x4f636f8, FUTEX_WAIT_PRIVATE, 0, NULL) = 0
+futex(0x4f63700, FUTEX_WAKE_PRIVATE, 1) = 0
+pipe([8, 9])                            = 0
+fcntl(9, F_GETFL)                       = 0x1 (flags O_WRONLY)
+fcntl(9, F_SETFL, O_WRONLY|O_NONBLOCK)  = 0
+fcntl(8, F_SETFD, FD_CLOEXEC)           = 0
+fcntl(9, F_SETFD, FD_CLOEXEC)           = 0
+eventfd2(0, 0)                          = 10
+fcntl(10, F_GETFL)                      = 0x2 (flags O_RDWR)
+fcntl(10, F_SETFL, O_RDWR|O_NONBLOCK)   = 0
+fcntl(10, F_SETFD, FD_CLOEXEC)          = 0
+futex(0x4f63818, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x4f63820, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x3eea308, FUTEX_WAKE_PRIVATE, 1) = 1
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, {tv_sec=0, tv_nsec=11616402}) = 0
+futex(0x3eea308, FUTEX_WAIT_PRIVATE, 2, NULL) = -1 EAGAIN (Resource temporarily unavailable)
+futex(0x3eea308, FUTEX_WAIT_PRIVATE, 2, NULL) = 0
+futex(0x3eea308, FUTEX_WAKE_PRIVATE, 1) = 0
+rt_sigprocmask(SIG_BLOCK, [INT], [], 8) = 0
+rt_sigaction(SIGINT, {sa_handler=0x36a98c0, sa_mask=[], sa_flags=SA_RESTORER|SA_RESETHAND|SA_SIGINFO, sa_restorer=0x7f63b2821520}, NULL, 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+ioctl(0, TCGETS, 0x7ffec62b8ec0)        = -1 ENOTTY (Inappropriate ioctl for device)
+ioctl(1, TCGETS, 0x7ffec62b8ec0)        = -1 ENOTTY (Inappropriate ioctl for device)
+ioctl(2, TCGETS, 0x7ffec62b8ec0)        = -1 ENOTTY (Inappropriate ioctl for device)
+getcwd("/home/thk/annex", 4096)         = 16
+stat("/home/thk/annex/.git/config", {st_mode=S_IFREG|0640, st_size=958, ...}) = 0
+pipe([11, 12])                          = 0
+pipe([13, 14])                          = 0
+rt_sigprocmask(SIG_BLOCK, [INT], [], 8) = 0
+vfork()                                 = 144638
+close(12)                               = 0
+fcntl(11, F_SETFD, FD_CLOEXEC)          = 0
+close(14)                               = 0
+fcntl(13, F_SETFD, FD_CLOEXEC)          = 0
+read(13, "", 4)                         = 0
+close(13)                               = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+fcntl(11, F_GETFL)                      = 0 (flags O_RDONLY)
+fcntl(11, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+ioctl(11, TCGETS, 0x7ffec62b8ec0)       = -1 ENOTTY (Inappropriate ioctl for device)
+read(11, 0x42001de010, 8192)            = -1 EAGAIN (Resource temporarily unavailable)
+epoll_ctl(4, EPOLL_CTL_MOD, 11, {EPOLLIN|EPOLLONESHOT, {u32=11, u64=11}}) = -1 ENOENT (No such file or directory)
+epoll_ctl(4, EPOLL_CTL_ADD, 11, {EPOLLIN|EPOLLONESHOT, {u32=11, u64=11}}) = 0
+futex(0x4f636fc, FUTEX_WAIT_PRIVATE, 0, NULL) = 0
+futex(0x4f63700, FUTEX_WAKE_PRIVATE, 1) = 0
+read(11, "include.path\n/usr/share/git-core"..., 8192) = 4547
+read(11, "", 8192)                      = 0
+close(11)                               = 0
+futex(0x4f6381c, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x4f63820, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x3eea308, FUTEX_WAKE_PRIVATE, 1) = 1
+wait4(144638, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 144638
+getcwd("/home/thk/annex", 4096)         = 16
+stat(".git", {st_mode=S_IFDIR|0750, st_size=4096, ...}) = 0
+dup(0)                                  = 11
+ioctl(11, TCGETS, 0x7ffec62b8ec0)       = -1 ENOTTY (Inappropriate ioctl for device)
+dup(1)                                  = 12
+ioctl(12, TCGETS, 0x7ffec62b8ec0)       = -1 ENOTTY (Inappropriate ioctl for device)
+openat(AT_FDCWD, "/dev/null", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 13
+fstat(13, {st_mode=S_IFCHR|0666, st_rdev=makedev(0x1, 0x3), ...}) = 0
+ioctl(13, TCGETS, 0x7ffec62b8ec0)       = -1 ENOTTY (Inappropriate ioctl for device)
+close(0)                                = 0
+dup2(13, 0)                             = 0
+ioctl(0, TCGETS, 0x7ffec62b8ec0)        = -1 ENOTTY (Inappropriate ioctl for device)
+close(1)                                = 0
+dup2(2, 1)                              = 1
+ioctl(1, TCGETS, 0x7ffec62b8ec0)        = -1 ENOTTY (Inappropriate ioctl for device)
+futex(0x7f63a4000be8, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x7f63a4000bf0, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x3eea308, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x4f636f8, FUTEX_WAIT_PRIVATE, 0, NULL
+strace[144630]: futex(0x4f636f8, FUTEX_WAIT_PRIVATE, 0, NULL
+strace[144630]: 2020-03-11 20:32:43.838670
+2020-03-11 20:32:43.838670
+ = 0
+futex(0x4f63) = 0
+futex(0x7f63a4000bec, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x7f63a4000bf0, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x3eea308, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x4f636fc, FUTEX_WAIT_PRIVATE, 0, NULL) = 0
+futex(0x4f63700, FUTEX_WAKE_PRIVATE, 1) = 0
+wait4(-1, 0x42000abc68, WNOHANG|WSTOPPED, NULL) = 0
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, {tv_sec=0, tv_nsec=15617173}) = 0
+write(9, "\376", 1)                     = 1
+write(6, "\376", 1)                     = 1
+openat(AT_FDCWD, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 4
+read(4, "0-7\n", 8192)                  = 4
+close(4)                                = 0
+rt_sigprocmask(SIG_BLOCK, [INT], [], 8) = 0
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, {tv_sec=0, tv_nsec=15818971}) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+futex(0x4f63818, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x4f63820, FUTEX_WAKE_PRIVATE, 1) = 1
+futex(0x3eea308, FUTEX_WAKE_PRIVATE, 1) = 1
+sched_yield()                           = 0
+futex(0x7f63b22449d0, FUTEX_WAIT, 144633, NULL) = ? ERESTARTSYS (To be restarted if SA_RESTART is set)
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_KILLED, si_pid=144642, si_uid=350977, si_status=SIGPIPE, si_utime=0, si_stime=0} ---
+futex(0x7f63b22449d0, FUTEX_WAIT, 144633, NULL) = 0
+munmap(0x7f63b0241000, 8392704)         = 0
+rt_sigprocmask(SIG_BLOCK, [TTOU], [], 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+rt_sigaction(SIGINT, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, NULL, 8) = 0
+rt_sigaction(SIGPIPE, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, NULL, 8) = 0
+rt_sigaction(SIGTSTP, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x7f63b2821520}, NULL, 8) = 0
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, {tv_sec=0, tv_nsec=16548690}) = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
+systemd[1644]: annex-remotedaemon.service: Succeeded.
+```
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 8.20200227-gf56dfe791 on Debian testing
