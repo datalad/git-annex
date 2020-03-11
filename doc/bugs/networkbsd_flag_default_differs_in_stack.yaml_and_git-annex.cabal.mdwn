@@ -1,0 +1,1 @@
+Not sure it's a bug, but the networkbsd flag defaults to true in git-annex.cabal and to false in stack.yaml -- is that intended?
