@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 5"
+ date="2020-03-11T18:07:32Z"
+ content="""
+thank you again for being so helpful:
+
+I was using an old lts ubuntu, but the repos only had git-annex v6, and install from source wasn't working, so I upgraded to... ubuntu 19.10 / eoan, and it looks like http://neuro.debian.net/ doesn't yet support that release. 
+
+I don't exactly love polluting my apt sources, but I can be compelled to if that's my best / only option.
+
+I'll keep digging, if I can find a prebuilt .deb, I'll likely use that. (too bad there isn't a snap?)
+"""]]
