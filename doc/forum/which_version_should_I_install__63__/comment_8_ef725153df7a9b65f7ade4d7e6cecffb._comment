@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 8"
+ date="2020-03-11T21:34:14Z"
+ content="""
+\"conda script looks gross, its opaque, and wants to install ms / vs code\" -- in its defense, conda is open-source and is very widely used, so any problems with it are unlikely to go undetected.  What is \"ms / vs\"?
+
+It _would_ be good at some point to create a Docker image with git-annex, that could operate sandboxed, but Docker doesn't handle symlinks well.
+
+\"this website is a train wreck\" -- the website is an editable wiki, so you can fix things yourself, or submit [[pull requests|forum/where_to_submit_pull_requests_for_git-annex?]].  But can I suggest you phrase things less... harshly?  @joeyh has done and is doing a crazy amount of work on git-annex and other public projects, demanding a perfect website on top of that is too much.
+"""]]
