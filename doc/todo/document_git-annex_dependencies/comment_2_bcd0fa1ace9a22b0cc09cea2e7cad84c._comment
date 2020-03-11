@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="gsasl dependency"
+ date="2020-03-11T22:13:47Z"
+ content="""
+Thanks for the `debian/control` pointer.
+
+Is `gsasl` a dependency?  Homebrew thinks it is, and it's mentioned in the forums, but I can't find uses of it in the code.
+"""]]
