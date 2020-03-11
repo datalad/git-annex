@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="past versions of annexed files"
+ date="2020-03-11T21:55:57Z"
+ content="""
+1. \"Of a file, to see the changes to that file's content that have happened over time\" -- See [[todo/git-annex-init_should_configure_git_diff_driver]].
+2. \"Of a file, to be able to revert it to an older version of that file's content\" -- if you create a branch off the commit with that file version,  and check out that branch, this will check out the file pointer to the older contents version.  You may need to then [[`git-annex-get`|git-annex-get]] that old content if it has been moved somewhere.
+3. \"Of a file, to get visibility into what versions of that file's content are available on what remotes\" -- see [[`git-annex-log`|git-annex-log]]
+"""]]
