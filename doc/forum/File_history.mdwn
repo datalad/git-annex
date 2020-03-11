@@ -4,6 +4,7 @@ I'm having some trouble getting an understanding and visibility into the content
 `git log -p` reveals these changes as symlink changes under `.git/annex`.
 
 What I want is:
+
 1. Of a file, to see the changes to that file's content that have happened over time.
 2. Of a file, to be able to revert it to an older version of that file's content.
 3. Of a file, to get visibility into what versions of that file's content are available on what remotes.
