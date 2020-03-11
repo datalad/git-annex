@@ -1,0 +1,5 @@
+`git annex find --batch` will not accept absolute paths to files in the repo, but `git annex find /abs/path` works.
+
+I tested `git annex lookupkey --batch` which does not have this problem.
+
+--spwhitton
