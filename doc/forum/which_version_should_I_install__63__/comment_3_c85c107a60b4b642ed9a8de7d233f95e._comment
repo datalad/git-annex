@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="make install failing for 8.20200309, any ideas as to why?"
+ date="2020-03-11T17:26:06Z"
+ content="""
+screen scrape below, I have no idea why it thinks that text file is locked, so weird.
+
+
+# git status
+HEAD detached at 8.20200309
+nothing to commit, working tree clean
+
+
+
+# make install PREFIX=/usr/local
+if [ \"cabal\" = ./Setup ]; then ghc --make Setup; fi
+if [ \"cabal\" != stack ]; then \
+	cabal configure  --ghc-options=\"\"; \
+else \
+	cabal setup ; \
+fi
+Warning: The configure command is a part of the legacy v1 style of cabal
+usage.
+
+Please switch to using either the new project style and the new-configure
+command or the legacy v1-configure alias as new-style projects will become the
+default in the next version of cabal-install. Please file a bug if you cannot
+replicate a working v1- use case with the new-style commands.
+
+For more information, see: https://wiki.haskell.org/Cabal/NewBuild
+
+Resolving dependencies...
+Warning: solver failed to find a solution:
+Could not resolve dependencies:
+[__0] trying: git-annex-8.20200309 (user goal)
+[__1] unknown package: filepath-bytestring (dependency of git-annex)
+[__1] fail (backjumping, conflict set: filepath-bytestring, git-annex)
+After searching the rest of the dependency tree exhaustively, these were the
+goals I've had most trouble fulfilling: git-annex, filepath-bytestring
+Trying configure anyway.
+./dist/setup/setup.version: openFile: resource busy (file is locked)
+make: *** [Makefile:37: tmp/configure-stamp] Error 1
+
+"""]]
