@@ -1,0 +1,39 @@
+Some of git-annex's calls to git duplicate the `--config` values that
+are passed by the caller.  Here's an example:
+
+[[!format sh """
+cd "$(mktemp -d --tmpdir gx-XXXXXXX)"
+git init
+git annex init -c foo.bar=true --debug
+"""]]
+
+```
+[...]
+[2020-03-11 10:59:12.932497354] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","foo.bar=true","config","annex.uuid","ffad618f-a272-4d1b-8a5b-73778661ac1b"]
+[2020-03-11 10:59:12.934971688] process done ExitSuccess
+[2020-03-11 10:59:12.93926062] read: git ["config","--null","--list"]
+[2020-03-11 10:59:12.941719766] process done ExitSuccess
+[2020-03-11 10:59:12.942450637] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","foo.bar=true","-c","foo.bar=true","show-ref","git-annex"]
+[...]
+[2020-03-11 10:59:12.955818683] read: git ["config","--null","--list"]
+[2020-03-11 10:59:12.958211547] process done ExitSuccess
+[2020-03-11 10:59:12.958313557] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","foo.bar=true","-c","foo.bar=true","-c","foo.bar=true","status","--porcelain"]
+[2020-03-11 10:59:12.960857733] process done ExitSuccess
+[2020-03-11 10:59:12.960928142] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","foo.bar=true","-c","foo.bar=true","-c","foo.bar=true","config","filter.annex.smudge","git-annex smudge -- %f"]
+[2020-03-11 10:59:12.963408762] process done ExitSuccess
+[...]
+```
+
+Based on looking at the full output, it seems like a repeated
+`--config` value gets tacked on each time after the configuration is
+re-read.
+
+The above is with a git-annex built from 8.20200226-161-g1978a2420.  I
+see the same duplicates with a git-annex built from
+7.20190819-2-g908476a9b.
+
+Those extra values shouldn't cause any problems, but this issue seems
+worth filing in case there's a simple fix.
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
