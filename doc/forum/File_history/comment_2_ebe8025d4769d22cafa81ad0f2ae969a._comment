@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2020-03-11T22:00:53Z"
+ content="""
+actually, for (3), `git-annex-log` isn't what you want: it shows _past_ locations, you want _current_ ones.  See [[`git-annex-whereis`|git-annex-whereis]] and [[`git-annex-list`|git-annex-list]].
+"""]]
