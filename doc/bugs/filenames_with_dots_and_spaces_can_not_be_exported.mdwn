@@ -1,0 +1,15 @@
+### Please describe the problem.
+
+The file `Kontoauszug 01.01.2019 - 31.12.2019 - CH1234567890123456789 - 2019-12-31.pdf` can not be exported. The error message is just "failed".
+
+I added code (pull request underway) to log IOExceptions and saw this exception message:
+
+    /media/thk/thk-sg2/annex-exporttree-sg2/shared/finance/taxes/2019/: openTempFile: invalid argument (Invalid argument)
+
+After renaming the file to `Kontoauszug 01012019 - 31122019 - CH2480808009412070498 - 2019-12-31.pdf` it could be exported.
+
+I am not yet sure what exact combinations of dots, spaces and maybe dashes cause the failure.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 8.20200309-05df404212, Debian testing
