@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-14T19:47:45Z"
+ content="""
+remotedaemon --foreground speaks a line-based API over stdio.
+So it does not make sense to use it the way you're using it.
+
+It may be that --foreground should be renamed to something else, and a new
+--foreground option added that just runs the daemon in its usual mode w/o
+backgrounding. I think only the assistant uses --foreground, although it is
+a documented option and there's always the possibility someone has found a
+use for it.
+"""]]
