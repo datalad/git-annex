@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-14T19:44:48Z"
+ content="""
+This seems likely to invole the specific filesystem used for
+/media/thk/thk-sg2/. I woud not be surprised if eg FAT had limitations on
+filenames with dots.
+
+Generally I think that if the remote being exported to cannot support the
+filename, the export should fail. Mangling the filenames should be up to
+the user. 
+
+But there should certianly be a better error message than "failed" in this
+case, so that at least needs to be fixed.
+"""]]
