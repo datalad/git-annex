@@ -226,3 +226,18 @@ I added some log statements and found out that in module **RemoteDaemon.Core** i
 exits with an exception saying
 
     <stdin>: hGetLine: end of file
+
+### 2020-03-14 Update with workaround
+
+So **man systemd.exec** says in section **StandardInput=**:
+
+> If null is selected, standard input will be connected to /dev/null, i.e. all read attempts by the process will result in immediate EOF.
+
+and
+
+> This setting defaults to null.
+
+My current workaround is this ExecStart line in my systemd service definition:
+
+    ExecStart=/bin/sh -c 'sleep infinity | git-annex remotedaemon --verbose --debug --foreground'
+
