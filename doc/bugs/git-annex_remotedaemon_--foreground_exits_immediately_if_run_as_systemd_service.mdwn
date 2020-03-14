@@ -216,3 +216,13 @@ systemd[1644]: annex-remotedaemon.service: Succeeded.
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 8.20200227-gf56dfe791 on Debian testing
+
+### 2020-03-14 Update
+
+I added some log statements and found out that in module **RemoteDaemon.Core** in function **runInteractive** the expression
+
+    reader `concurrently` writer `concurrently` controller
+
+exits with an exception saying
+
+    <stdin>: hGetLine: end of file
