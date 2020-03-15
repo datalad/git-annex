@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-I want to start git-annex remotedaemon on login as a systemd user service. And I want to have logs in journald, not in .gi/annex/daemon.log. Thus I use this service definition:
+I want to start git-annex remotedaemon on login as a systemd user service. And I want to have logs in journald, not in .git/annex/daemon.log. Thus I use this service definition:
 
 ```
 [Unit]
