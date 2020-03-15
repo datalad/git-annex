@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="jksrecko"
+ avatar="http://cdn.libravatar.org/avatar/5b4ec0230521d006e2ece44fe1d9800b"
+ subject="comment 3"
+ date="2020-03-15T09:54:00Z"
+ content="""
+I forgot to mention that I also get:
+
+\"Not updating export to [remote] to reflect changes to the tree, because export tracking is not enabled.  (Set remote.[remotename].annex-tracking-branch to enable it.)\"
+
+But I have this set. Maybe I get it because there was no successful sync yet?
+"""]]
