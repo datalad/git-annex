@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jksrecko"
+ avatar="http://cdn.libravatar.org/avatar/5b4ec0230521d006e2ece44fe1d9800b"
+ subject="comment 2"
+ date="2020-03-15T09:13:27Z"
+ content="""
+I'm facing a same issue and it persists (tried to sync a couple of times) for one of my adb remotes (DCIM on SD card, i.e. /storage/[vol_id]/DCIM and wanted expression which excludes thumbs and .emptyshow file).
+
+I get \"Failed to import some files from [remotename]. Re-run command to resume import.\" message and no files are imported. Same as for the reporter of the issue, I get that all the files are pulled ok.
+
+I'm using the latest version of git annex (8.20200309-ga9d56a1ab).
+
+"""]]
