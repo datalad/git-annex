@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2020-03-16T16:48:38Z"
+ content="""
+It seems to me that the process tree you pasted there comes from 
+the host where git-annex is running, and not the host that it sshes
+to in order to run git-annex-shell.
+
+What I was suggesting is, if ssh $host git-annex-shell seems to be hanging,
+it then makes sense to go look at $host and see if git-annex-shell is
+running there, or has already run there (eg looking at
+the ssh log). That bisects the problem space to one side or the other.
+"""]]
