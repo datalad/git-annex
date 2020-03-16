@@ -1,0 +1,15 @@
+I am using git annex to sync a portion of my home directory. The main use/sync point is on my desktop and laptop. The desktop and laptop are connected to a NAS and usb drives.
+
+So, the repos are connected like so:
+       NAS - backup
+          ^          ^
+         /             \
+desktop - client      laptop - client
+         \              /
+          v            v
+          USB drive - archive
+
+The idea is the NAS should get all files, the USB drive acts as an archive to keep the clients a bit lighter weight, even while off site.
+
+Question:
+If the laptop is used offsite with the usb drive archive and the laptop archives a file never yet seen by the NAS, will the NAS ever get this file? Note: the USB drive is never directly connected to the NAS and is not in its list of remotes.
