@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="comment 2"
+ date="2020-03-16T20:42:55Z"
+ content="""
+Now I learned how to add debug messages into git-annex. And I learned that there actually already is logging infrastructure in the code.
+
+How does one close bugs here in the wiki?
+
+Actually I would like to assign the bug to myself with the task of finding the right place here in the wiki (or code) to document how to add debug statements. I only discovered accidentally somewhere the debugM method.
+
+
+"""]]
