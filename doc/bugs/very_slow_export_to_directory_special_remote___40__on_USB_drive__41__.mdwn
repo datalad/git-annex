@@ -71,3 +71,5 @@ Some questions:
 - The object store files in the remote were stored in format AAA/BBB/$HASH with three character directory names. While in .git/annex/objects the folders have two characters. What are those characters? I believe the 3 characters format is for remotes that potentially do not distinguish letter case?
 - Is there a command to get the full path of a file in the object store (two or three letters) from the hash?
 - Maybe there is still a bug. Is there a possibility that git-annex could forget that a remote is configured with exporttree=yes? Especially if I export to the same directory on the same usb drive from two synced repos?
+
+[[done]]
