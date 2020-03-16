@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-16T16:13:00Z"
+ content="""
+The obvious question to ask, which I can't really imagine making any
+progress without an answer to: What files did git-annex have open?
+
+I did notice that of the two git-annex logs, one got 19 files before
+failing, while the other got 27. It seems unlikely that, if git-annex, or
+an external remote, or git, or whatever is somehow leaking file handles,
+it would leak different numbers at different times. Which leads to the
+second question: What else on the system has files open and how many?
+
+OSX has a global limit of 12k open files, and a per process limit of 10k.
+
+`git-annex get` on linux needs to open around 16 files per file it
+downloads. So if git-annex were somehow leaking every single open FD,
+it would successfully download over 600 files before hitting the
+per-process limit. If every subprocess git-annex forks also leaked every
+open FD, it would of course vary by remote, but with a regular git clone
+on the local filesystem, the number of files opened per get is still only
+62, so still over an order of magnitude less.
+
+Seems much more likely that the system is unhappy for some other reason.
+"""]]
