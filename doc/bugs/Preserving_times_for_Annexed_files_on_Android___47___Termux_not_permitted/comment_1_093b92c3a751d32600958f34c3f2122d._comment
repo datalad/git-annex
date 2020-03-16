@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-16T17:56:51Z"
+ content="""
+What git-annex could do is avoid passing -p to cp when it's running on
+android.
+
+Utility.Android.osAndroid already has a way to detect
+that, but running uname on every file copy is not an acceptable
+performance hit, so it would need to somehow only do it once.
+
+I am not currently seeing a satisfactory way to do that,
+everything adds at least some overhead (ie a MVar lookup) 
+to every file copy in the non-android case, and it's just 
+not acceptable that a niche use case like android adversely
+affect linux.
+
+Also, I don't think I saw this when I used git-annex on android,
+although I'm not sure if I tried anything that does copy a file.
+And it probably happens when the repo is in the sdcard, but not when it's
+in other locations, like the termux home directory, that are not on the
+mess of a filesystem stack that android uses for the sdcard.
+"""]]
