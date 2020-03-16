@@ -1,3 +1,10 @@
+git-annex (8.20200310) UNRELEASED; urgency=medium
+
+  * Fix a minor bug that caused options provided with -c to be passed
+    multiple times to git.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 16 Mar 2020 12:43:33 -0400
+
 git-annex (8.20200309) upstream; urgency=medium
 
   * Fix bug that caused unlocked annexed dotfiles to be added to git by the

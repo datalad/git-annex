@@ -37,3 +37,5 @@ worth filing in case there's a simple fix.
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

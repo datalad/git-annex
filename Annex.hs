@@ -325,7 +325,11 @@ overrideGitConfig f = changeState $ \s -> s
 	}
 
 {- Adds an adjustment to the Repo data. Adjustments persist across reloads
- - of the repo's config. -}
+ - of the repo's config.
+ -
+ - Note that the action may run more than once, and should avoid eg,
+ - appending the same value to a repo's config when run repeatedly.
+ -}
 adjustGitRepo :: (Git.Repo -> IO Git.Repo) -> Annex ()
 adjustGitRepo a = do
 	changeState $ \s -> s { repoadjustment = \r -> repoadjustment s r >>= a }

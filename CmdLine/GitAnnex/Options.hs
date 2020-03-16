@@ -93,8 +93,11 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
   where
 	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n }
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
-	setgitconfig v = Annex.adjustGitRepo $ \r -> Git.Config.store (encodeBS' v) $ 
-		r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] }
+	setgitconfig v = Annex.adjustGitRepo $ \r -> 
+		if Param v `elem` gitGlobalOpts r
+			then return r
+			else Git.Config.store (encodeBS' v) $ 
+				r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] }
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
 
 {- Parser that accepts all non-option params. -}
