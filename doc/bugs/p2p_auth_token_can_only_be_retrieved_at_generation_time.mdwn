@@ -1,0 +1,9 @@
+### Please describe the problem.
+
+`git annex p2p --gen-address` creates an auth token and than immediately prints it out so that it can be used to pair with another machine.
+
+But what am I supposed to do if I want to pair a third machine later? I do not want to call `--gen-address` again since it probably creates another token or even worse overwrites the token already used for one pairing.
+
+So we lack a command like `git annex p2p --show-address` that just prints the same as `--gen-address`. This is trivial since we just need to concatenate `.git/annex/creds/p2paddrs`, a colon and `.git/annex/creds/p2pauth`?
+
+Actually this would be a fun starter project for a new contributor to git-annex? (me?)
