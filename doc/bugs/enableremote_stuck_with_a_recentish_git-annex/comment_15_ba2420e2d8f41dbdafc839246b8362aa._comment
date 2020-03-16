@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2020-03-16T18:27:34Z"
+ content="""
+Re ControlPersist=yes, git-annex runs ssh -O stop on a socket file on exit,
+unless some other git-annex process is also using that socket. So they don't
+hangaround stale. By passing options to make ssh use other sockets, 
+you bypass that.
+
+I do see in https://github.com/datalad/datalad/pull/4265
+that you seem to have reproduced the hang without running git-annex at all?
+Is that right? Seems to say not a git-annex bug. Perhaps some innocuous
+change in behavior by git-annex, that tickles whatever the real problem is.
+"""]]
