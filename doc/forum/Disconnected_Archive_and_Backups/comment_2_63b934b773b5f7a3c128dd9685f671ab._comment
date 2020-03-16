@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="lasitus"
+ avatar="http://cdn.libravatar.org/avatar/dfe778f28027aeb75876172022aa5de3"
+ subject="comment 2"
+ date="2020-03-16T22:29:31Z"
+ content="""
+Not sure why I didn't just try this rather than asking... but now that I've tried it, it doesn't make it to the nas.
+
+```
+whereis archive/testOnLaptop3.img (2 copies)
+        19955c70-90fc-4aa4-9531-ff7fb9fd3a9e -- [usbssd]
+        fe861a5c-818b-4b66-8f2c-0717ba5ed081 -- laptop
+```
+
+I would normally be running git annex assistant, but for this test, I ran
+
+```
+git annex sync --content
+```
+on my laptop and then on my desktop without my laptop connected to the network.
+
+When run on my laptop, I had a thumb drive and the external SSD plugged in. The external SSD is an archive. It archived it off the usb thumb drive, because this is a client and left it on my laptop. I plugged in the external ssd to my desktop and ran sync --content, and it never copied it over, because it is archived (as expected) even though the NAS hadn't backed it up yet. I assume this is because the NAS never is directly connected to the usb ssd nor is the ssd ever connected directly to the nas, so the desktop doesn't shuttle it between the two. I suppose I could fix this particular layout by making the nas the archive, but having the ability to have a large data dump when offsite for a long time and have it automatically archive to an ssd seems nice. Perhaps I can make a rule set myself that does what I want, or change the layout with existing groups.
+"""]]
