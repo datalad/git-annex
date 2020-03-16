@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-16T18:09:30Z"
+ content="""
+I'm doubtful about this:
+
+* It's not super likely that a debug log will have enough information in it
+  to replicate a one-off problem. At best they generally provide some clues
+  that need to be confirmed with experiments, so the problem needs to be
+  reproduced before I can fix it.
+* This risks accumulating a bunch of debug logs if the user is doing things
+  that fail. Things can fail for a wide array or reasons that do not need
+  to be debugged, eg git-annex get fails all the time for valid reasons
+  such as a host not being accessible or drive not being mounted.
+* A debug log might contain some sensitive information, git-annex should
+  certianly not be sending them around without the user's eyes on them.
+* If the user noticed git-annex is accumulating a bunch of debug logs,
+  and does feel they are sensitive information, they may lose trust in
+  git-annex.
+"""]]
