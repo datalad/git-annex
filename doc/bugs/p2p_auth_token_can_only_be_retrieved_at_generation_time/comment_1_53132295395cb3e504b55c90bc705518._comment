@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-16T17:20:10Z"
+ content="""
+You can run git-annex p2p --gen-addresses repeatedly. Each address
+can be given to one entity you want to grant access to the repository.
+
+That way, if you choose to revoke access later, you can revoke just one.
+
+Not that there's currently a command to revoke, but it just deletes
+the address from .git/annex/creds/p2pauth.
+
+If you'd like to contribute, you could maybe improve the documentation
+so it's clearer that --gen-addresses can be used repeatedly, 
+or add a --remove-address or something like that.
+"""]]
