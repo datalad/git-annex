@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 13"
+ date="2020-03-16T17:57:27Z"
+ content="""
+It should be the same host:
+
+```
+$> grep test /etc/hosts
+127.0.0.1  	datalad-test
+
+```
+
+FWIW more of details of my struggle is available on [datalad/pull/4265#issuecomment-597416284](https://github.com/datalad/datalad/pull/4265#issuecomment-597416284). The last suspicion was that may be while on travis that process simply doesn't return fully if it opens a new socket, path to which we provide but do not have ssh yet \"serving\" it.  Another side topic (might formalize later on) which might or not be related is that git-annex uses `ControlPersist=yes` thus without any time out. FWIW, when datalad starts one, we use `ControlPersist=15m` (we might want to reduce it but at least it is not forever).  Setting it to `ControlPersist=1m` (not `yes`) by git-annex, and hoping that ssh would close that eventually, might unstuck us... didn't try
+"""]]
