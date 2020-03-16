@@ -85,3 +85,7 @@ I needed some time to find out that I need to configure "annex-tracking-branch" 
 - <https://git-annex.branchable.com/tips/peer_to_peer_network_with_tor>
 - <https://2019.www.torproject.org/docs/onion-services>
 - <https://riseup.net/en/security/network-security/tor/onionservices-best-practices>
+
+## Update 2020-03-16
+
+https://git-annex.branchable.com/bugs/p2p_auth_token_can_only_be_retrieved_at_generation_time
