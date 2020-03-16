@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="reply: disconnected archive"
+ date="2020-03-16T18:56:13Z"
+ content="""
+> If the laptop is used offsite with the usb drive archive and the
+> laptop archives a file never yet seen by the NAS, will the NAS ever
+> get this file?
+
+It looks like there is a path the content could go in this case:
+
+    laptop -> USB -> desktop -> NAS
+
+You don't mention how you are syncing, but assuming that you're doing
+so in a way that actually transfers the content to each node of that
+path (e.g., `git annex sync --content` with appropriately configured
+preferred content), then I'd say the answer is \"yes\".
+
+"""]]
