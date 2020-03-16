@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-16T17:27:59Z"
+ content="""
+I guess that [[bugs/filenames_with_dots_and_spaces_can_not_be_exported]]
+is the bug report about the actual failure, and lack of a useful error
+message after the failure, and this bug is left as just a complaint about
+lack  of debug logging.
+
+I'm not sure what to do about this bug. I'm not going to go around adding debug
+logging statement to git-annex at random until some arbitrary criteria is
+reached at which point there is "enough" to close this bug. It kind of
+follows that I either leave the bug open forever, which is useless, or
+close it immediately. Do you have an alternative suggestion?
+"""]]
