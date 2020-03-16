@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-16T17:14:20Z"
+ content="""
+Yes. When cabal is used, it will unset the flag as
+necessary if an older version of network is available. Meanwhile,
+stack uses lts-14.27, which includes network-2.x, and somehow stack
+forces the networkbsd flag to not be unset in that case. (I don't know
+how/why.)
+"""]]
