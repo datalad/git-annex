@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-16T17:37:27Z"
+ content="""
+The directory special remote uses haskell's native ByteString library,
+which tends to be easily capable of fully saturating IO on most systems.
+The imposition of a meter by Utility.Metered does not change that
+appreciably, it just uses a small amount of CPU time to update a counter 
+and occasionally display progress.
+
+ByteString uses a default 32kb chunk size, so if having the drive mounted sync
+means it flushes the cache after every 32kb write, well there's your problem.
+
+All your other questions have been discussed elsewhere on this website
+AFAIK, and I'm not going to try to discuss all that here. Bug reports
+should be about a single bug.
+"""]]
