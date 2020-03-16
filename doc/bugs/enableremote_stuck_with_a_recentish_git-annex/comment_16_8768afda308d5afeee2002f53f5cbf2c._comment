@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 16"
+ date="2020-03-16T19:54:42Z"
+ content="""
+overall - yes. It still might be just our \"Runner\" issue.  I am not 100% sure in that since a reimplementation (WitlessRunner, used now in many places of the master version) which shouldn't have similar drawbacks, and should not stall -- it did stall as well and we didn't dig yet deeper.  Another \"anecdotal\" observation was that I saw the \"python -m nose\" which runs our tests to not exit cleanly, waiting for some process to be done, or until I Ctrl-C it... didn't analyze that situation either.
+I will try to find some time to dig into this deeper and/or bisect (isn't easy/fun since didn't manage to reproduce locally yet).  Thank you for the details and comments about sockets -- I am yet to fully analyze that situation as well.  I just know that I do have some hanging around and they might have been initiated by a git-annex process which we start pointing to some not-yet initiated socket.
+"""]]
