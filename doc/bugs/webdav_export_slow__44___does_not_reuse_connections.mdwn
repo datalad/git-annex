@@ -1,0 +1,11 @@
+### Please describe the problem.
+
+I am running an initial export to my NAS over WebDAV. The repo contains many small files and it already runs for a day. Even the smallest file takes around a second to upload.
+
+Looking at strace and the code, it seems that for each file, git annex not only establishes a complete new TCP connection, it even also reads the credentials from .git/annex/creds for each file.
+
+Are there ways to make WebDAV faster?
+Could http connections be reused?
+Could multiple files be uploaded in parallel?
+
+Apparently files are also upload to a temporary location and renamed after successful upload. This adds additional latency and thus parallel uploads could provide a speed up?
