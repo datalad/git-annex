@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 4"
+ date="2020-03-17T02:35:49Z"
+ content="""
+Sorry, it should have occurred to me that \"archive\", \"client\", and
+\"backup\" in your initial post were referring to git-annex's standard
+groups.  Indeed then, as you say, the desktop won't get the content
+from the archive because, as a client, it uses this content
+expression:
+
+```
+(include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1
+```
+
+> Perhaps I can make a rule set myself that does what I want
+
+I think that, for the desktop repo, extending the expression above
+with something like
+
+```
+(not (copies=backup:1 or copies=incrementalbackup:1))
+```
+
+would do what you're after.  That should make the desktop grab the
+file from the usb if it hasn't reached the NAS.
+
+Here's the complete configuration that I think should be needed:
+
+```
+git annex wanted . groupwanted
+git annex groupwanted client '(include=* and ((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1)) or (not (copies=backup:1 or copies=incrementalbackup:1)))) or approxlackingcopies=1'
+```
+
+"""]]
