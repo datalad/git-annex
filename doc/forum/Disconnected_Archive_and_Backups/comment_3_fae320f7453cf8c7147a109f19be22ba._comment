@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="lasitus"
+ avatar="http://cdn.libravatar.org/avatar/dfe778f28027aeb75876172022aa5de3"
+ subject="comment 3"
+ date="2020-03-17T02:15:13Z"
+ content="""
+Wow! Such an amazing feature to make your own groups. This is so powerful.
+
+I did this, if anyone else is wanting to do this type setup:
+
+```
+groupwanted mainclient = (include=* and ((exclude=*/archive/* and exclude=archive/*) or (not copies=backup:1) or (not (copies=archive:1 or copies=smallarchive:1)))) or approxlackingcopies=1
+```
+
+I basically added (not copies=backup:1) to the main client so that it will pull stuff off the archive and deliver it to the NAS before not needing it itself. It did exactly that; in the same sync, it grabbed content from the external ssd, transferred it to the nas, then dropped it.
+"""]]
