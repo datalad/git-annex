@@ -1,0 +1,93 @@
+When on an adjusted branch, `git annex sync` will sync the submodule
+commit for the initial addition of a submodule, but it doesn't seem to
+sync changes in the recorded commit.  Here's a demo of the issue based
+off of Michael's script at [DataLad's issue 4292][0].
+
+[[!format sh """
+cd "$(mktemp -d --tmpdir gx-sync-demo-XXXXXXX)"
+
+git init
+git annex init
+git commit --allow-empty -mc0
+git annex adjust --unlock
+
+git init sub
+git -C sub commit --allow-empty -mc0
+git submodule add ./sub
+git commit -m'add sub'
+# A new submodule is sync'd.
+git annex sync --no-commit --no-push --no-pull --no-content
+
+git -C sub commit --allow-empty -mc1
+git add sub
+git commit -m'sub update'
+
+# A change in the submodule ID is not.
+git annex sync --no-commit --no-push --no-pull --no-content
+git diff master..
+"""]]
+
+With a git-annex built from 8.20200309-62-gc8fec6ab0, the submodule
+remains modified between `master` and `adjusted/master(unlocked))`.
+
+```
+diff --git a/sub b/sub
+index ed67764..a27fd83 160000
+--- a/sub
++++ b/sub
+@@ -1 +1 @@
+-Subproject commit ed6776462d0842bf0a317d2e3ee1983572a217ff
++Subproject commit a27fd837958466ba4fb751a3de139c03548be1ad
+```
+
+I was able to resolve the issue (i.e. the above demo outputs an empty
+diff) with the patch below, though that might of course be the
+completely wrong way to fix this.
+
+Thanks in advance for looking into this issue.
+
+[[!format patch """
+From fa3a4be5497300b9b39e121008b474e9dd405fd3 Mon Sep 17 00:00:00 2001
+From: Kyle Meyer <kyle@kyleam.com>
+Date: Tue, 17 Mar 2020 22:16:06 -0400
+Subject: [PATCH] adjust: Propagate submodule changes back to original branch
+
+When the recorded submodule commit changes on an adjusted branch, the
+change is carried in the function that reverseAdjustedCommit passes
+for adjustTree's adjusttreeitem parameter.  Update the CommitObject
+handling in adjustTree to consider adjusttreeitem so that a submodule
+change is synced back.
+---
+ Git/Tree.hs | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/Git/Tree.hs b/Git/Tree.hs
+index da05a3fa5..9627ae969 100644
+--- a/Git/Tree.hs
++++ b/Git/Tree.hs
+@@ -237,8 +237,12 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
+ 				let !modified' = modified || slmodified || wasmodified
+ 				go h modified' (subtree : c) depth intree is'
+ 			Just CommitObject -> do
+-				let ti = TreeCommit (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
+-				go h wasmodified (ti:c) depth intree is
++				let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
++				v <- adjusttreeitem ti
++				let commit = tc $ fromMaybe ti v
++				go h wasmodified (commit:c) depth intree is
++				where
++					tc (TreeItem f m s) = TreeCommit f m s
+ 			_ -> error ("unexpected object type \"" ++ decodeBS (LsTree.typeobj i) ++ "\"")
+ 		| otherwise = return (c, wasmodified, i:is)
+ 
+-- 
+2.25.1
+
+"""]]
+
+
+[0]: https://github.com/datalad/datalad/issues/4292
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
+
