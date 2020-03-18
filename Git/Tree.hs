@@ -237,8 +237,12 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 				let !modified' = modified || slmodified || wasmodified
 				go h modified' (subtree : c) depth intree is'
 			Just CommitObject -> do
-				let ti = TreeCommit (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
-				go h wasmodified (ti:c) depth intree is
+				let ti = TreeItem (LsTree.file i) (LsTree.mode i) (LsTree.sha i)
+				v <- adjusttreeitem ti
+				let commit = tc $ fromMaybe ti v
+				go h wasmodified (commit:c) depth intree is
+				where
+					tc (TreeItem f m s) = TreeCommit f m s
 			_ -> error ("unexpected object type \"" ++ decodeBS (LsTree.typeobj i) ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
