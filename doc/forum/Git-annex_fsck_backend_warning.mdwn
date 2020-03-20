@@ -1,0 +1,42 @@
+Since a week or two, git-annex fsck gives a warning that my files (all of them) can be upgraded to an improved key format (SHA256E). However, I use the SHA256E key format as long as I remember and running the proposed command doesn't remove the warning for the next git-annex fsck:
+
+```
+% git-annex fsck documenten/foto_maarten.jpg                     
+fsck documenten/foto_maarten.jpg (checksum...) 
+  documenten/foto_maarten.jpg: Can be upgraded to an improved key format. You can do so by running: git annex migrate --backend=SHA256E documenten/foto_maarten.jpg
+ok
+(recording state in git...)
+
+% git-annex info documenten/foto_maarten.jpg
+file: documenten/foto_maarten.jpg
+size: 349.34 kilobytes
+key: SHA256E-s349336--c0535bad49d6c58c722b941ea020ea1f3ce2aae74c2570c14bfe920ea2171f36.jpg
+present: true
+
+% git annex migrate --backend=SHA256E documenten/foto_maarten.jpg
+migrate documenten/foto_maarten.jpg (checksum...) (checksum...) ok
+(recording state in git...)
+
+% git-annex fsck documenten/foto_maarten.jpg                     
+fsck documenten/foto_maarten.jpg (checksum...) 
+  documenten/foto_maarten.jpg: Can be upgraded to an improved key format. You can do so by running: git annex migrate --backend=SHA256E documenten/foto_maarten.jpg
+ok
+(recording state in git...)
+```
+
+I'm using git-annex as provided with Debian testing. Currently, that's
+
+```
+% git-annex version  
+git-annex version: 8.20200226
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+Any idea what's going on here and how to solve it? I couldn't find anything so far.
