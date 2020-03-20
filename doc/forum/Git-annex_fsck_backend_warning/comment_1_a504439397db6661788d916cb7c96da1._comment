@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment: introduced by 09df58c4e"
+ date="2020-03-20T16:20:05Z"
+ content="""
+I see these false positive warnings too.  This is enough to trigger
+the issue on my end:
+
+[[!format sh \"\"\"
+cd \"$(mktemp -d --tmpdir gx-XXXXXXX)\"
+git init
+git annex init
+>foo.txt
+git annex add foo.txt
+git annex fsck foo.txt
+\"\"\"]]
+
+```
+[...]
+fsck foo.txt (checksum...) 
+  foo.txt: Can be upgraded to an improved key format. You can do so by running: git annex migrate --backend=SHA256E foo.txt
+ok
+```
+
+The presence of the warning bisects to 09df58c4e (handle keys with
+extensions consistently in all locales, 2020-02-20), which was a part
+of the 8.20200226 release.
+
+"""]]
