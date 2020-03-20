@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="sponsoring?"
+ date="2020-03-19T08:40:31Z"
+ content="""
+I am running into this problem right now. I exported a movie collection from laptop A and then a huge collection of photos from laptop B to an USB drive. Both exports ran many hours.
+Now when I want to export the next collection of files, I see:
+
+> git annex export master --to usb-sg2
+>
+>  Resolving export conflict..
+>
+> unexport usb-sg2 path/to/some/picture/file.jpg ok
+
+Do you already have a solution for this in mind? Could I speed up the implementation with sponsorship? This is a hard blocker now for me in my consolidation of our data with git-annex. I would rather not spend many nights to keep exporting and unexporting the same files over and over.
+
+Maybe I could hack this as a temporary workaround by manually changing the exported trees in the exports.log file? The \"conflicting\" exports are in two separate sub-trees.
+"""]]
