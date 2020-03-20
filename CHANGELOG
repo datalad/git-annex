@@ -2,6 +2,8 @@ git-annex (8.20200310) UNRELEASED; urgency=medium
 
   * webdav: Made exporttree remotes faster by caching connection to the
     server.
+  * fsck: Fix reversion in 8.20200226 that made it incorrectly warn
+    that hashed keys with an extension should be upgraded.
   * Fix a minor bug that caused options provided with -c to be passed
     multiple times to git.
 

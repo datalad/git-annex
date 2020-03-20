@@ -157,7 +157,8 @@ keyHash = fst . splitKeyNameExtension
 validInExtension :: Word8 -> Bool
 validInExtension c
 	| isAlphaNum (chr (fromIntegral c)) = True
-	| c <= 127 = False -- other ascii, spaces, punctuation, control chars
+	| fromIntegral c == ord '.' = True
+	| c <= 127 = False -- other ascii: spaces, punctuation, control chars
 	| otherwise = True -- utf8 is allowed, also other encodings
 
 {- Upgrade keys that have the \ prefix on their hash due to a bug, or
