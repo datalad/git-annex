@@ -15,7 +15,7 @@ import Creds
 import qualified Remote.WebDAV as WebDAV
 import Assistant.WebApp.MakeRemote
 import qualified Remote
-import Types.Remote (RemoteConfig)
+import Types.Remote (RemoteConfig, config)
 import Types.StandardGroups
 import Logs.Remote
 import Git.Types (RemoteName)
@@ -89,16 +89,16 @@ postEnableWebDAVR _ = giveup "WebDAV not supported by this build"
 
 #ifdef WITH_WEBDAV
 makeWebDavRemote :: SpecialRemoteMaker -> RemoteName -> CredPair -> RemoteConfig -> Handler ()
-makeWebDavRemote maker name creds config = 
+makeWebDavRemote maker name creds c = 
 	setupCloudRemote TransferGroup Nothing $
-		maker name WebDAV.remote (Just creds) config
+		maker name WebDAV.remote (Just creds) c
 
 {- Only returns creds previously used for the same hostname. -}
 previouslyUsedWebDAVCreds :: String -> Annex (Maybe CredPair)
 previouslyUsedWebDAVCreds hostname =
 	previouslyUsedCredPair WebDAV.davCreds WebDAV.remote samehost
   where
-	samehost url = case urlHost =<< WebDAV.configUrl url of
+	samehost r = case urlHost =<< WebDAV.configUrl (config r) of
 		Nothing -> False
 		Just h -> h == hostname
 #endif

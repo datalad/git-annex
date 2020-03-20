@@ -11,3 +11,5 @@ Could multiple files be uploaded in parallel?
 Apparently files are also upload to a temporary location and renamed after successful upload. This adds additional latency and thus parallel uploads could provide a speed up?
 
 [[!tag confirmed]]
+
+> [[fixed|done]] --[[Joey]]
