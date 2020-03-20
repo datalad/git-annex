@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-20T15:48:35Z"
+ content="""
+Indeed, regular webdav special remote uses prepareDav
+which sets up a single DAV context that is used for all stores,
+but export does not and so creates a new context each time.
+
+S3 gets around this using an MVar that contains the S3 handle.
+Webdav should be able to do the same.
+
+(The upload to a temp location is necessary, otherwise resuming an
+interrupted upload would not be able to check which files had been fully
+uploaded yet in some situations. Or something like that. I forget the exact
+circumstances, but it's documented in a comment where storeExport is defined
+in Types.Remote.)
+
+(Opened [[todo/support_concurrency_for_export]].)
+"""]]
