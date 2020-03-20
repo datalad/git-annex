@@ -37,8 +37,8 @@ import Types.CleanupActions
 import Types.Concurrency
 import Git.Env
 import Git.Ssh
-#ifndef mingw32_HOST_OS
 import Annex.Perms
+#ifndef mingw32_HOST_OS
 import Annex.LockPool
 #endif
 
