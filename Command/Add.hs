@@ -108,7 +108,7 @@ addSmallOverridden file = do
 	showNote "adding content to git repository"
 	let file' = fromRawFilePath file
 	s <- liftIO $ getSymbolicLinkStatus file'
-	if isSymbolicLink s
+	if not (isRegularFile s)
 		then addFile file 
 		else do
 			-- Can't use addFile because the clean filter will
