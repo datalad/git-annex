@@ -1,0 +1,127 @@
+Passing a modified submodule to `git annex --force-small` triggers a
+failure:
+
+[[!format sh """
+cd "$(mktemp -d --tmpdir gx-XXXXXXX)"
+git init
+git annex init
+git init sub
+git -C sub commit --allow-empty -m"c0"
+git submodule add ./sub
+
+git -C sub commit --allow-empty -m"c1"
+git commit -m'sub change'
+git annex add --force-small sub
+"""]]
+
+```
+[...]
+add sub (adding content to git repository) fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+fatal: Unable to add (null) to database
+
+git-annex: fd:18: hGetLine: end of file
+failed
+git-annex: user error (git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"] exited 128)
+```
+
+The demo above passes a submodule to `annex add`, but the more
+realistic scenario would be passing a directory (most likely ".") that
+happens to include a modified submodule.
+
+The failure is happening when `addSmallOverridden` calls `hash-object`
+with the submodule path.  As far as I can see, `addSmallOverridden`
+will only receive a directory if the path in question is a submodule
+(based on ls-files not traversing into submodules).  So, perhaps an
+appropriate fix is to go through `addFile` rather
+`hash-object/update-index` when the file is a directory.  I've
+included a patch to do that below.  The first patch is for an issue in
+`addSmallOverridden` that I noticed when making the change.
+
+[[!format patch """
+From 58b5a1acf7dfe305b9284cf3423a58853c13451a Mon Sep 17 00:00:00 2001
+From: Kyle Meyer <kyle@kyleam.com>
+Date: Mon, 23 Mar 2020 15:45:15 -0400
+Subject: [PATCH 1/2] add --force-small: Don't dereference link when checking
+ file status
+
+addSmallOverridden calls getFileStatus and then checks the result with
+isSymbolicLink.  getFileStatus dereferences symbolic links, so
+isSymbolicLink will always return false (assuming the getFileStatus
+call doesn't fail on a broken link).  Use getSymbolicLinkStatus
+instead.
+---
+ Command/Add.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Command/Add.hs b/Command/Add.hs
+index e142aac0b..56e6fb236 100644
+--- a/Command/Add.hs
++++ b/Command/Add.hs
+@@ -107,7 +107,7 @@ addSmallOverridden :: RawFilePath -> Annex Bool
+ addSmallOverridden file = do
+ 	showNote "adding content to git repository"
+ 	let file' = fromRawFilePath file
+-	s <- liftIO $ getFileStatus file'
++	s <- liftIO $ getSymbolicLinkStatus file'
+ 	if isSymbolicLink s
+ 		then addFile file 
+ 		else do
+-- 
+2.25.1
+
+"""]]
+
+[[!format patch """
+From c823d69a7b477f770fe539a74b788b61df173a76 Mon Sep 17 00:00:00 2001
+From: Kyle Meyer <kyle@kyleam.com>
+Date: Mon, 23 Mar 2020 15:45:15 -0400
+Subject: [PATCH 2/2] add --force-small: Send all non-regular files through
+ addFile
+
+Running `git annex add --force-small` on a modified submodule fails
+when the submodule path is fed to hash-object.  This failure is
+unlikely to be triggered by a caller passing a submodule explicitly to
+`git annex add` because there's nothing useful that annex-add can do
+with a submodule.  A more likely scenario for hitting this failure is
+that the caller passes "." or a subdirectory to `annex-add` while a
+submodule underneath the specified path happens to be modified.
+
+addSmallOverridden already routes symbolic links through addFile
+rather than using the custom hash-object/update-index call.  The
+latter is valid only for regular files, so extend this condition so
+that everything that isn't a regular file goes through addFile.  Doing
+so avoids the above error because submodules come in as directories.
+---
+ Command/Add.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Command/Add.hs b/Command/Add.hs
+index 56e6fb236..72aae5f3c 100644
+--- a/Command/Add.hs
++++ b/Command/Add.hs
+@@ -108,7 +108,7 @@ addSmallOverridden file = do
+ 	showNote "adding content to git repository"
+ 	let file' = fromRawFilePath file
+ 	s <- liftIO $ getSymbolicLinkStatus file'
+-	if isSymbolicLink s
++	if not (isRegularFile s)
+ 		then addFile file 
+ 		else do
+ 			-- Can't use addFile because the clean filter will
+-- 
+2.25.1
+
+"""]]
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
+
