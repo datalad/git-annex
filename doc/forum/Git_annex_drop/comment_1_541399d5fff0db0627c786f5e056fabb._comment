@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ps"
+ avatar="http://cdn.libravatar.org/avatar/d492f87525ce24bc22ff1348d0c60b0d"
+ subject="Solved"
+ date="2020-03-23T19:07:53Z"
+ content="""
+It had to do with dotfiles. The files I was trying to keep track of were in a dot directory, and hence git annex didn't include it in the annex (and hence couldn't drop them).
+"""]]
