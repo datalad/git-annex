@@ -107,7 +107,7 @@ addSmallOverridden :: RawFilePath -> Annex Bool
 addSmallOverridden file = do
 	showNote "adding content to git repository"
 	let file' = fromRawFilePath file
-	s <- liftIO $ getFileStatus file'
+	s <- liftIO $ getSymbolicLinkStatus file'
 	if isSymbolicLink s
 		then addFile file 
 		else do
