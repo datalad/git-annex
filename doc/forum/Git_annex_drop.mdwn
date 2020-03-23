@@ -1,2 +1,4 @@
 Hi,
 I am trying to use git annex to store some of the files on my laptop on an external drive. However, after running `git annex sync --content` on both repositories and _then_ trying to run `git annex drop <file>` doesn't free up any space on the local laptop repository (in fact it doesn't give any terminal output). Can anyone point me in a direction to solve this?
+
+Edit. Wth? Even `git annex drop --force` doesn't work. Is there some obvious thing I'm missing?
