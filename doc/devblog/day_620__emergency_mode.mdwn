@@ -1,0 +1,20 @@
+I'm only working on git-annex a day or two a week at present. Like
+everyone, dealing with the covid-19 crisis taking up a lot of my time.
+Some days I can't concentrate, some days I am dealing with basic needs,
+and other days I am rushing to develop other software targeted at this crisis.
+(See my [personal blog](https://joeyh.name/blog/).)
+
+I remotely attended the
+[MONII](https://www.mcgill.ca/neuro/channels/event/virtual-web-based-making-open-neuroscience-infrastructures-interoperable-30-303671)
+conference a week ago, with lots of researchers doing things with software
+related to git-annex, some in the health field, and something that struck
+me was a mention that it's important that scientists continue their work,
+even if it's not directly related to the crisis. All kinds of fields are
+going to be important in the time ahead beyond saving lives.
+
+So I am prioritizing anything scientists need to use git-annex, and
+anything those working on the crisis might need. If that's you and you need
+something, you can use the new "priority" tag on bugs and todos, and it
+will go right to the top of the [[design/roadmap]]. Do bear in mind that I
+have limited time/resources/attention right now, so only use it when you
+really need something urgently.
