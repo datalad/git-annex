@@ -13,7 +13,7 @@ belonging to those projects will be prioritized so do not generally need to
 be listed here.
 
 [[!inline pages="(todo/* and link(todo/priority) and !link(todo/done)) or
-                 (bugs/* and link(bugs/priority) and !link (bugs/done))"
+                 (bugs/* and link(bugs/priority) and !link(bugs/done))"
 		 template=buglist]]
 
 # confirmed
