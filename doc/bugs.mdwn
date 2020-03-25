@@ -4,7 +4,8 @@ To mark a bug as closed add \[\[done\]\] to the end of the original bug descript
 
 [[!inline pages="./bugs/* and !./bugs/*/* and !./bugs/done and !link(done) 
 and !./bugs/moreinfo and !./bugs/confirmed and !./bugs/forwarded and !./bugs/duplicate
-and !*/Discussion" actions=yes postform=yes postformtext="Report a new bug titled:" show=0 archive=yes
+and !./bugs/priority and !*/Discussion"
+actions=yes postform=yes postformtext="Report a new bug titled:" show=0 archive=yes
 feedlimit=10 template=buglist]]
 
 [[!edittemplate template=templates/bugtemplate match="bugs/*" silent=yes]]

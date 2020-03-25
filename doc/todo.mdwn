@@ -3,5 +3,7 @@ or tags: [[todo/confirmed]] [[todo/moreinfo]] [[todo/needsthought]] [[todo/unlik
 
 [[!inline pages="./todo/* and !./todo/*/* and !./todo/done and !link(done) 
 and !*/Discussion and !./todo/moreinfo and !./todo/confirmed
-and !./todo/needsthought and !./todo/unlikely" actions=yes postform=yes postformtext="Add a new todo titled:"
+and !./todo/needsthought and !./todo/unlikely
+and !./todo/priority" 
+actions=yes postform=yes postformtext="Add a new todo titled:"
 show=0 feedlimit=10 archive=yes template=buglist]]

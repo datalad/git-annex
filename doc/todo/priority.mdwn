@@ -1,0 +1,13 @@
+This tag is for high priority todo items.
+
+During the current crisis, please only add things that are either needed
+by scientists using git-annex (for any reason), or by organizations working
+on the crisis.
+
+Note that several [[projects]] use git-annex for science and items tagged
+belonging to those projects will be prioritized so do not generally need to
+be listed here.
+
+[[!inline pages="todo/* and !todo/*/* and !todo/done and !link(todo/done) 
+and link(todo/priority) and !*/Discussion" show=0 feedlimit=10
+archive=yes template=buglist]]
