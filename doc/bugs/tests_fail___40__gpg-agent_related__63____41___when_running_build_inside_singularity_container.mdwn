@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+I am trying to setup a cron job on github actions to daily test datalad against bleeding edge git-annex. All the few commands I am using are all in the workflow file: https://github.com/datalad/datalad-extensions/pull/7/files#diff-8364c688b76bfaf5df947cfd4d74eef7R42
+
+To build git-annex I am using a singularity container (based on buster with all build-dependencies installed).
+While building a binary standalone package (from first prepared .dsc) 3 tests fail:
+
+`3 out of 260 tests failed (195.33s)`
+
+- [web view of the logs](https://github.com/datalad/datalad-extensions/pull/7/checks?check_run_id=532056262)
+- [and here they are all in raw form (probably would expire soon)](https://pipelines.actions.githubusercontent.com/2UPlDxaVvvbkeFX4btxWorCjpJvj40zvWY5ogH2yZibhOMcU7O/_apis/pipelines/1/runs/182/signedlogcontent/3?urlExpires=2020-03-24T23%3A51%3A03.1656651Z&urlSigningMethod=HMACV1&urlSignature=zmkF8NBdaLU3pAOT3WJ2C6R81sZjH4%2Bka2QiVynkEkU%3D) 
+
+outside the container system is some ubuntu -- inside debian stable (buster).  singularity bind mounts HOME, /tmp and passes all environment variables inside the container.
+
+if you search for `Z FAIL` you would find the hit
+[[!format sh """
+2020-03-24T23:41:28.7154039Z     crypto:                                               [adjusted/master(unlocked) f647310] empty
+2020-03-24T23:41:28.7485256Z adjust ok
+2020-03-24T23:41:34.7685919Z gpg: can't connect to the agent: File name too long
+2020-03-24T23:41:34.7687700Z gpg: error getting the KEK: No agent running
+2020-03-24T23:41:34.7689081Z gpg: error reading '[stdin]': No agent running
+2020-03-24T23:41:34.7690114Z gpg: import from '[stdin]' failed: No agent running
+2020-03-24T23:41:34.7693611Z FAIL
+"""]]
+
+I wonder if it relates to the discrepancy of gpg-agent running outside of the container and gpg inside the container, which I have detected when saw
+
+[[!format sh """
+2020-03-24T23:34:08.8873100Z gpg: WARNING: server 'gpg-agent' is older than us (2.2.4 < 2.2.12)
+2020-03-24T23:34:08.8873946Z gpg: Note: Outdated servers may lack important security fixes.
+2020-03-24T23:34:08.8875072Z gpg: Note: Use the command "gpgconf --kill all" to restart them.
+2020-03-24T23:34:08.9223394Z  signfile git-annex_8.20200309+git101-ga51a94f61-1~ndall+1_source.buildinfo
+"""]]
+
+in the beginning of the run, or may be just the fact that inside the container it shouldn't use `gpg-agent`...
+I wonder if there is an easy way to disable tests which would rely on having connection to gpg-agent?
+
+FWIW,
+- similarish and [then mitigated situation happened awhile back](https://git-annex.branchable.com/bugs/7.20181211+git29-gab4a1bed9_fails_tests_during_neurodebian_build/)
+- the same version package builds fine using our conventional neurodebian build setup using cowbuilder (no singularity)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
