@@ -6,6 +6,9 @@ git-annex (8.20200310) UNRELEASED; urgency=medium
     that hashed keys with an extension should be upgraded.
   * Fix a minor bug that caused options provided with -c to be passed
     multiple times to git.
+  * add --force-small: Fix a bug that, when adding a symbolic link,
+    checked in the content of the file the symlink pointed to.
+    Thanks, Kyle Meyer for noticing and for the patch.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Mar 2020 12:43:33 -0400
 
