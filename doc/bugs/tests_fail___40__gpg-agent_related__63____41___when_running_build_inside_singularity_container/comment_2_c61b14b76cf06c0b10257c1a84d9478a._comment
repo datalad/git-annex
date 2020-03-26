@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-03-26T16:55:30Z"
+ content="""
+Tried to reproduce it here running in a directory with the same lenth, but
+no failures. It could have to do with the old version of gpg-agent.
+
+(I don't see how gpg inside the container could talk to gpg-agent outside
+the container at all, unless the container shares a filesystem, and even
+then, gpg inside the container is being run with a nonstandard home
+directory, so it will not try to talk to a gpg-agent socket in the usual
+home directory.)
+
+I have a patch that makes the path to the socket file relative, but can't
+verify if it will fix the problem. I've applied it anyway.
+"""]]

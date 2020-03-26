@@ -1574,10 +1574,13 @@ test_crypto = do
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
 	testscheme scheme = do
-		gpgtmp <- (</> "gpgtest") <$> absPath tmpdir
+		abstmp <- absPath tmpdir
+		testscheme' scheme abstmp
+	testscheme' scheme abstmp = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
+		-- Use a relative path to avoid too long path to gpg's
+		-- agent socket.
+		gpgtmp <- (</> "gpgtmp") <$> relPathCwdToFile abstmp
 		createDirectoryIfMissing False gpgtmp
-		testscheme' scheme gpgtmp
-	testscheme' scheme gpgtmp = intmpclonerepo $ whenM (Utility.Path.inPath (Utility.Gpg.unGpgCmd gpgcmd)) $ do
 		Utility.Gpg.testTestHarness gpgtmp gpgcmd 
 			@? "test harness self-test failed"
 		Utility.Gpg.testHarness gpgtmp gpgcmd $ do
