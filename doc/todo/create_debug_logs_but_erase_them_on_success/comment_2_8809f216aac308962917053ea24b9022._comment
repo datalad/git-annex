@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 2"
+ date="2020-03-26T20:36:28Z"
+ content="""
+When testing a new version of git-annex-remote-googledrive, I often use a wrapper script like this:
+
+```
+# .zshrc.local
+
+f_git_annex () {
+        log_file=$(mktemp \"$(git rev-parse --git-dir 2>/dev/null)/annex/debug.XXX.log\" 2>/dev/null)
+        if [ $? -ne 0 ]; then
+                echo \"Error creating log file. Proceeding without logging.\"
+                git annex $@
+                return $?
+        fi
+
+        git annex $@ --debug 2> $log_file
+        if [ $? -ne 0 ]; then
+                echo \"Errors occurred. Debug log in $log_file\"
+                return $?
+        else
+                rm $log_file
+        fi
+      }
+alias ga='f_git_annex'
+```
+It's good enough for me in those cases. Changing the first line of the function to something like this
+```
+log_file=$(umask 077; mktemp /tmp/annex.debug.XXX.log\" 2>/dev/null)
+```
+would help against accumulating logs.
+"""]]
