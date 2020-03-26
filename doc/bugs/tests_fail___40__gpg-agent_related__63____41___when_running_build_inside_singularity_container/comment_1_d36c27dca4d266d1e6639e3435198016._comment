@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-26T16:19:02Z"
+ content="""
+After wasting 20 minutes on github's atrocious mess of an interface, I
+managed to download some raw logs that I can look at in something that does
+not freeze the javascript interpreter constantly while searching for "FAIL". 
+(This is quite a mess to inflict on yourself all in the name of proprietary
+monoculture, just saying.)
+
+Full relevant except:
+
+	2020-03-24T23:41:28.7154004Z     crypto:                                               [adjusted/master(unlocked) f647310] empty
+	2020-03-24T23:41:28.7485238Z adjust ok
+	2020-03-24T23:41:34.7685883Z gpg: can't connect to the agent: File name too long
+	2020-03-24T23:41:34.7687691Z gpg: error getting the KEK: No agent running
+	2020-03-24T23:41:34.7689073Z gpg: error reading '[stdin]': No agent running
+	2020-03-24T23:41:34.7690106Z gpg: import from '[stdin]' failed: No agent running
+	2020-03-24T23:41:34.7693591Z FAIL
+	2020-03-24T23:41:34.7695318Z       Exception: user error (gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--import","-q"] exited 2)
+
+Very odd that it omits any mention of what subtest failed. I have a feeling
+this log only contains stdout and not stderr, or something other weird is
+happening. Probably if that were not missing it would say "test harness
+self-test failed".
+
+gpg communicates with the agent over a unix socket. On linux, the path 
+to a socket is limited to 109 bytes. The test is being run in 
+"/home/runner/work/datalad-extensions/datalad-extensions/build/git-annex-8.20200309+git101-ga51a94f61"
+which is 100 bytes. Add ".t/gpgtest/" and the name of the socket, and it's too
+long.
+
+Quick fix is to cd to /tmp or something before running the test suite.
+""]]
