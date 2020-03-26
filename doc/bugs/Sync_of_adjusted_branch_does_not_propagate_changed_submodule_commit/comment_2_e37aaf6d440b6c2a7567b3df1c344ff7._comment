@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-03-26T18:53:05Z"
+ content="""
+Ok, figured it out.. reverseAdjustedTree uses a `propchanges`
+function that looks at the diff from adjusted branch to basis,
+and substitutes the new sha for the old one. So that's
+how the sha get changed.
+
+My analysis was otherwise correct, I think. And your patch is fine, now
+that I understand that. Applying it as-is.
+"""]]
