@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-26T17:15:02Z"
+ content="""
+Really well done, thank you. Applied both.
+
+About the only thing I have to add is, I wonder if it would be better for 
+--force-small to just temporarily disable the clean filter and always
+use git add. Seems that might be less likely to run into this kind of
+breakage. OTOH, it looks like you've found all the possible bugs in it
+already... So I suppose I'll wait until the next bug is found in it to
+think about doing that. ;-)
+"""]]
