@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-03-26T18:15:57Z"
+ content="""
+Little bit of a scary change, because calls to adjustTree could be not
+handling the case of a submodule correctly in their adjusttreeitem
+function.
+
+So I checked them all..
+
+Command.Export uses adjustTree with an adjusttreeitem
+function that runs catKey on the sha from the TreeItem.
+I think that would be ok, because catKey will see it's not 
+a key, and in that case it passes back the TreeItem unchanged.
+
+Each different adjusted branch has its
+own function. Most of those check if the TreeItem
+is a symlink, with a submodule is not, and they'll return
+it unchanged.
+
+The PresenceAdjustment instead
+uses catKey, and again looks ok, because it falls back to returning the
+TreeItem unchanged.
+
+The LockAdjustment, when the TreeItem is not a symlink, also uses catKey,
+which will see it's not a key, and also falls back to returning the
+TreeItem unchanged.
+
+
+Think that's everything, so this seems a safe change to make.
+
+----
+
+But.. I don't actually understand how your change fixes the problem!
+
+(Of course, I tried your patch, and it does work...)
+
+I've been staring at it for 30 minutes and it seems to me that
+the TreeItem you have it construct gets passed to adjusttreeitem,
+which always returns it unchanged (per analysis above). Then you
+deconstruct the TreeItem, extracting the file mode and sha, and
+construct a TreeCommit from those. As far as I can see, that TreeCommit
+must be identical to the one it constructed before this patch.
+
+Hmm, so I added a debug print and it's not the same, the sha
+is different. Even weirder, the sha in `commit` never get stored
+in the git repo.
+
+What am I missing?
+"""]]
