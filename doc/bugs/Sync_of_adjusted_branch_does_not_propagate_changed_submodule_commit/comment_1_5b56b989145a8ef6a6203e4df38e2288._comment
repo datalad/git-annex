@@ -44,8 +44,7 @@ construct a TreeCommit from those. As far as I can see, that TreeCommit
 must be identical to the one it constructed before this patch.
 
 Hmm, so I added a debug print and it's not the same, the sha
-is different. Even weirder, the sha in `commit` never get stored
-in the git repo.
+is different.
 
 What am I missing?
 """]]
