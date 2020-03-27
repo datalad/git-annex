@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2020-03-27T21:11:13Z"
+ content="""
+My \"upgrade to most recent version\" advice should have mentioned that the most recent version is 8.*, which will auto-upgrade your repositories to version 8.   If for whatever reason you don't want to do the upgrade right now, 7.* versions from 7.20191024 restore old behavior, as Kyle suggested.  Note  that if you have `annex.largefiles` configured, `git add` will add matching files to the annex, unless `annex.gitaddtoannex`. 
+"""]]
