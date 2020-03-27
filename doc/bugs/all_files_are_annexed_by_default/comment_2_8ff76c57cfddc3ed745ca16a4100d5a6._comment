@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment: resolved by 7.20191024"
+ date="2020-03-27T20:49:44Z"
+ content="""
+> git annex 7.20190912-1
+
+The `git add` behavior that you describe changed in 7.20191024.  The
+CHANGELOG entries under that release provide a good description of the
+current behavior.
+"""]]
