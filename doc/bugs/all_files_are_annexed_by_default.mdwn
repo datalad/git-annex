@@ -11,9 +11,9 @@ Any idea about how to solve it?
 
 Thank you
 
-git version 2.20.1
 
-git annex version 7.20190912-1
-
+Versions:
+git  2.20.1 /
+git annex  7.20190912-1 /
 ubuntu 19.10
 
