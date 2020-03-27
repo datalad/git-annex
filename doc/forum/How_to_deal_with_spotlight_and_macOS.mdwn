@@ -1,0 +1,21 @@
+I have been using git annex for a while. I use it completely manually (i.e."git annex add .; git annex sync; git annex copy . --to=desktop") as a DIY Dropbox replacement. 
+
+I have some issues inherent with git annex but they will be reserved to another post.
+
+What I want to ask about now is how to integrate my git annex workflow with macOS?
+
+Specifically:
+
+1) If I search for something in spotlight, it apparently does not search the 'names' of symlinks, and so it is impossible to have spotlight index the git annex archive?
+2) Opening files in git annex, in particular, PDF files with Preview.app, the names of the files are the targets of the symlinks, not their names, so that you end up seeing "SHA256E-s146178--a7e80c95ffe943ceca774d7931651ab4c16574c6f4059ade342a3cdbda3a5ef9.pdf" as the title of the Preview.app window of the PDF you're looking at. This is especially heinous when you have many many open files and you're trying to find one of them and the titles just give you zero information.
+3) Trying to attach some of these files into mail attachments, again, the filename the recipient gets is "SHA256E-s146178--a7e80c95ffe943ceca774d7931651ab4c16574c6f4059ade342a3cdbda3a5ef9.pdf" which is quite useless for them, or even harmful because it can be very confusing if there are 10 attachments from git annex and they all have these crazy names.
+
+Is there anything that can be done about this? This seems to be a conflict between macOS insisting on referring to the target of symlinks as the true names for the files whereas git annex is happy with the names of the symlinks.
+
+I have used several things to work around this, e.g., instead of spotlight I can run 
+find . -iname "*something*" 
+in the terminal to search my archive (I have one archive with all my files).
+
+However it would be nice to integrate this into spotlight.
+
+The bigger problem are the file names. Is it possible to fix this by using hard links instead? Or somehow fool macOS into reading the names of the symlinks instead of the names of the targets of the symlinks?
