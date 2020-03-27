@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git add behavior"
+ date="2020-03-27T20:49:19Z"
+ content="""
+It's a change in default behavior, but the old default was restored in the more recent versions.   (Detailed discussion [[here|forum/lets_discuss_git_add_behavior]]).  Can you upgrade to the most recent version?  [[install/conda]] lets you install one without being root.  You might also want to set `annex.gitaddtoannex` to `false`.
+"""]]
