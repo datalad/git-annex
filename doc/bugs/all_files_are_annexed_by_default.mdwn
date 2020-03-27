@@ -1,0 +1,19 @@
+Hello,
+
+I am using git annex for three years with no issues :-), but now I am facing a problem I’ve never seen before.
+
+I have a repository with several annexed files since 2017. Usually, I add big files with ``git annex add`` while for regular  small files, I always use a simple ``git add``.
+My problem is, now, all files added with ``git annex add`` are always considered as annexed files, which is undesirable. If I clone a new copy of the repository, ``git add`` works as expected, but from the moment I run a simple ``git annex get somefile``, all ``git add`` is executed as if it were a ``git annex add``.
+
+I don't know if this is a bug or just a change in the default behavior.
+
+Any idea about how to solve it?
+
+Thank you
+
+git version 2.20.1
+
+git annex version 7.20190912-1
+
+ubuntu 19.10
+
