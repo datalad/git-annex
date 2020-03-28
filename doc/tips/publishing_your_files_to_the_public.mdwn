@@ -17,7 +17,7 @@ remote for the first time.
 
 Set up your special [[S3 remote|special_remotes/S3]] with (at least) these options:
 
-	git annex initremote public-s3 type=s3 encryption=none bucket=$BUCKET exporttree=yes public=yes encryption=none
+	git annex initremote public-s3 type=s3 encryption=none bucket=$BUCKET exporttree=yes public=yes
 
 Be sure to replace $BUCKET with something like 
 "public-bucket-joey" when you follow along in your shell.
