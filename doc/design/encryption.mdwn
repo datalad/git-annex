@@ -29,7 +29,7 @@ There does not seem to be much benefit to using the same cipher for
 two different encrypted remotes.
 
 So, the encrypted cipher is just stored with the rest of a remote's
-configuration in `remotes.log` (see [[internals]]). When `git
+configuration in `remote.log` (see [[internals]]). When `git
 annex intiremote` makes a remote, it generates a random symmetric
 cipher, and encrypt it with the specified gpg key. To allow another gpg
 public key access, update the encrypted cipher to be encrypted to both gpg
@@ -90,7 +90,7 @@ remotes.
 The symmetric cipher can be used to encrypt other content than the content
 sent to the remote. In particular, it may make sense to encrypt whatever
 access keys are used by the special remote with the cipher, and store that
-in remotes.log. This way anyone whose gpg key has been given access to 
+in `remote.log`. This way anyone whose gpg key has been given access to 
 the cipher can get access to whatever other credentials are needed to
 use the special remote.
 
