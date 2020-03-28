@@ -1,5 +1,5 @@
 If I understand correctly, 'git annex repair' first runs 'git fsck' and then tries to repair the repository by connecting to available remotes.
 
-It can take a long when 'git annex repair' runs 'git fsck' (at least 14 hours in my case). For me, it is not very convenient to have the remotes available during this entire time. It would be nice if I could connect to them only when necessary. This makes me wonder if it is possible to separate the running of git fsck from the operation of connecting to the remotes to repair the local repository. Or similarly, it would be nice to be able to run 'git annex repair' again quickly if it had just ran.
+It can take a long time when 'git annex repair' runs 'git fsck' (at least 14 hours in my case). For me, it is not very convenient to have the remotes available during this entire time. It would be nice if I could connect to them only when necessary. This makes me wonder if it is possible to separate the running of git fsck from the operation of connecting to the remotes to repair the local repository. Or similarly, it would be nice to be able to run 'git annex repair' again quickly if it had just ran.
 
 Thanks for any help on this
