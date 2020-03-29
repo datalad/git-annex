@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="spotlight and macOS"
+ date="2020-03-29T15:27:40Z"
+ content="""
+I also struggle with these issues on macOS.
+
+One workaround would be to always use [unlocked files](https://git-annex.branchable.com/tips/unlocked_files/), 
+
+    git config annex.addunlocked true
+
+The main disadvantage here is that you use double the disk space for every file. After switching to unlocked files you could then also switch to `thin` mode:
+
+    git config annex.thin true
+    git annex fix
+
+Which would only keep 1 copy of every file (using hardlinks), so you are back down to a normal amount of disk space, but you give up some of the protections of git-annex since you could easily delete the only copy of your files.
+
+I have verified that using unlocked files and using unlocked-thin both fix file names in Preview and mail attachments. I'm not sure if both these methods allow files to be indexed by Spotlight.
+
+I have also been hoping to integrate many of these features into [git-annex-turtle](https://github.com/andrewringler/git-annex-turtle) using the [Search and Spotlight](https://developer.apple.com/design/human-interface-guidelines/macos/system-capabilities/search-and-spotlight/) developer APIs. Namely [Core Spotlight](https://developer.apple.com/documentation/corespotlight) could be used to index all `git-annex` locked/unlocked/present/not-present files and [Quick Look](https://developer.apple.com/design/human-interface-guidelines/macos/system-capabilities/quick-look/) APIs could be used to allow previewing of not present files using cached thumbnails.
+
+—Andrew
+
+"""]]
