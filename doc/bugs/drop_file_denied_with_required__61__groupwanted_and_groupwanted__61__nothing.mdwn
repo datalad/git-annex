@@ -51,8 +51,6 @@ git annex whereis file
 
 ### Please provide any additional information below.
 
-Which additional information could be of use? The transcript is pretty much above.
-
 [[!format sh """
 # transcript
 [user@host annex-test]$ mkdir local remote
