@@ -32,7 +32,7 @@ cmd = command "pre-commit" SectionPlumbing
 	(withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = lockPreCommitHook $ do
+seek ps = do
 	l <- workTreeItems ps
 	-- fix symlinks to files being committed
 	flip withFilesToBeCommitted l $ \f -> commandAction $
@@ -74,7 +74,3 @@ showMetaDataChange = showLongNote . unlines . concatMap showmeta . fromMetaData
 	showset v
 		| isSet v = "+"
 		| otherwise = "-"
-
-{- Takes exclusive lock; blocks until available. -}
-lockPreCommitHook :: Annex a -> Annex a
-lockPreCommitHook = withExclusiveLock gitAnnexPreCommitLock

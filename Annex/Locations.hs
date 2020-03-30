@@ -66,7 +66,6 @@ module Annex.Locations (
 	gitAnnexJournalDir',
 	gitAnnexJournalLock,
 	gitAnnexGitQueueLock,
-	gitAnnexPreCommitLock,
 	gitAnnexMergeLock,
 	gitAnnexIndex,
 	gitAnnexIndexStatus,
@@ -468,10 +467,6 @@ gitAnnexJournalLock r = fromRawFilePath $ gitAnnexDir r P.</> "journal.lck"
  - other git state that should only have one writer at a time. -}
 gitAnnexGitQueueLock :: Git.Repo -> FilePath
 gitAnnexGitQueueLock r = fromRawFilePath $ gitAnnexDir r P.</> "gitqueue.lck"
-
-{- Lock file for the pre-commit hook. -}
-gitAnnexPreCommitLock :: Git.Repo -> FilePath
-gitAnnexPreCommitLock r = fromRawFilePath $ gitAnnexDir r P.</> "precommit.lck"
 
 {- Lock file for direct mode merge. -}
 gitAnnexMergeLock :: Git.Repo -> FilePath
