@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-03-30T15:59:33Z"
+ content="""
+The precommit.lck is no longer used, it was not needed since v8. But
+this bug does not really appear to be about that lock at all.
+
+Pity there was no followup to my last questions. At this point I can either
+close the bug report, or mark it moreinfo or something, but it seems pretty
+unlikely we will get to the bottom of it.
+"""]]
