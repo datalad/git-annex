@@ -57,7 +57,6 @@ import Annex.Tmp
 import Annex.GitOverlay
 import Utility.Tmp.Dir
 import Utility.CopyFile
-import Utility.Directory
 import qualified Database.Keys
 import Config
 

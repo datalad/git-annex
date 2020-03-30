@@ -14,7 +14,6 @@ module Utility.Directory (
 	module Utility.SystemDirectory
 ) where
 
-import System.IO.Error
 import Control.Monad
 import System.FilePath
 import System.PosixCompat.Files
