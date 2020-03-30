@@ -46,7 +46,7 @@ import Config
 import Config.GitConfig
 import Annex.SpecialRemote.Config
 import Config.DynamicConfig
-import Config.Files
+import Annex.Path
 import Annex.Wanted
 import Annex.Content
 import Command.Get (getKey')
@@ -509,7 +509,7 @@ pushRemote o remote (Just branch, _) = do
 		Nothing -> return True
 		Just wt -> ifM needemulation
 			( liftIO $ do
-				p <- readProgramFile
+				p <- programPath
 				boolSystem' p [Param "post-receive"]
 					(\cp -> cp { cwd = Just (fromRawFilePath wt) })
 			, return True

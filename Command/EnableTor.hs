@@ -16,7 +16,7 @@ import P2P.Annex
 import Utility.Tor
 import Annex.UUID
 #ifndef mingw32_HOST_OS
-import Config.Files
+import Annex.Path
 #endif
 import P2P.IO
 import qualified P2P.Protocol as P2P
@@ -53,7 +53,7 @@ start _os = do
 			Nothing -> giveup "Need user-id parameter."
 			Just userid -> go userid
 		else starting "enable-tor" (ActionItemOther Nothing) $ do
-			gitannex <- liftIO readProgramFile
+			gitannex <- liftIO programPath
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps
 			maybe noop showLongNote

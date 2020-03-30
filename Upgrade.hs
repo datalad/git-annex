@@ -13,7 +13,7 @@ import Annex.Common
 import qualified Annex
 import qualified Git
 import Config
-import Config.Files
+import Annex.Path
 import Annex.Version
 import Types.RepoVersion
 #ifndef mingw32_HOST_OS
@@ -103,7 +103,7 @@ upgrade automatic destversion = do
 	-- upgrading a git repo other than the current repo.
 	upgraderemote = do
 		rp <- fromRawFilePath <$> fromRepo Git.repoPath
-		cmd <- liftIO readProgramFile
+		cmd <- liftIO programPath
 		liftIO $ boolSystem' cmd
 			[ Param "upgrade"
 			, Param "--quiet"

@@ -61,27 +61,6 @@ removeAutoStartFile path = do
 programFile :: IO FilePath
 programFile = userConfigFile "program"
 
-{- Returns a command to run for git-annex. -}
-readProgramFile :: IO FilePath
-readProgramFile = do
-	programfile <- programFile
-	p <- catchDefaultIO cmd $ 
-		fromMaybe cmd . headMaybe . lines <$> readFile programfile
-	ifM (inPath p)
-		( return p
-		, ifM (inPath cmd)
-			( return cmd
-			, cannotFindProgram
-			)
-		)
-  where
-	cmd = "git-annex"
-
-cannotFindProgram :: IO a
-cannotFindProgram = do
-	f <- programFile
-	giveup $ "cannot find git-annex program in PATH or in the location listed in " ++ f
-
 {- A .noannex file in a git repository prevents git-annex from
  - initializing that repository.. The content of the file is returned. -}
 noAnnexFileContent :: Maybe FilePath -> IO (Maybe String)

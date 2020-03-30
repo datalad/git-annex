@@ -33,7 +33,7 @@ import Assistant.WebApp.SideBar
 import Command.P2P (unusedPeerRemoteName, PairingResult(..))
 import P2P.Address
 import Git
-import Config.Files
+import Annex.Path
 import Utility.Process.Transcript
 
 import qualified Data.Map as M
@@ -72,7 +72,7 @@ getPrepareWormholePairR pairingwith = do
 
 enableTor :: Handler ()
 enableTor = do
-	gitannex <- liftIO readProgramFile
+	gitannex <- liftIO programPath
 	(transcript, ok) <- liftIO $ processTranscript gitannex ["enable-tor"] Nothing
 	if ok
 		-- Reload remotedameon so it's serving the tor hidden

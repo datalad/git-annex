@@ -1,3 +1,10 @@
+git-annex (8.20200331) UNRELEASED; urgency=medium
+
+  * Improve git-annex's ability to find the path to its program,
+    especially when it needs to run itself in another repo to upgrade it.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
+
 git-annex (8.20200330) upstream; urgency=medium
 
   * fsck: Fix reversion in 8.20200226 that made it incorrectly warn

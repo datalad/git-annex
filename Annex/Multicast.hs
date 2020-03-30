@@ -7,7 +7,7 @@
 
 module Annex.Multicast where
 
-import Config.Files
+import Annex.Path
 import Utility.Env
 import Utility.PartialPrelude
 
@@ -22,7 +22,7 @@ multicastReceiveEnv = "GIT_ANNEX_MULTICAST_RECEIVE"
 
 multicastCallbackEnv :: IO (FilePath, [(String, String)], Handle)
 multicastCallbackEnv = do
-	gitannex <- readProgramFile
+	gitannex <- programPath
 	-- This will even work on Windows
 	(rfd, wfd) <- createPipeFd
 	rh <- fdToHandle rfd
