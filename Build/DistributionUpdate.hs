@@ -228,7 +228,7 @@ buildrpms topdir l = do
 		<$> liftIO (getDirectoryContents rpmrepo)
 	forM_ tarrpmarches $ \(tararch, rpmarch) ->
 		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) -> do
-			liftIO $ mapM_ nukeFile (filter ((tararch ++ ".rpm") `isSuffixOf`) oldrpms)
+			liftIO $ mapM_ nukeFile (filter ((rpmarch ++ ".rpm") `isSuffixOf`) oldrpms)
 			void $ liftIO $ boolSystem script 
 				[ Param rpmarch
 				, File tarball
