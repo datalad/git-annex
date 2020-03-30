@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="clarification re: upgrades"
+ date="2020-03-30T15:24:01Z"
+ content="""
+p.s. the italics in my comment re: upgrading to v8 were an accident of formatting (`7.*` / `8.*` got interpreted as italics), not some emphasis of caution about the upgrade.  v8 has been working fine for me, and on this forum there has been only [[one|bugs/upgrade_to_V8_fails]] report of an issue with the upgrade, which has since been fixed.  You can also guard against any possible upgrade issues by backing up `.git/annex/` (excluding `.git/annex/objects`) and git config files before the upgrade.
+
+One small v8 change to note is the [more uniform handling of dotfiles](https://hackage.haskell.org/package/git-annex-8.20200226/changelog); old scripts using `--include-dotfiles` flag of `git-annex-add` would need to be updated.
+"""]]
