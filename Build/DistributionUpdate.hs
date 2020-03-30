@@ -66,10 +66,12 @@ main = do
 	changeWorkingDirectory repodir
 	updated <- catMaybes <$> mapM (getbuild repodir) autobuilds
 	state <- Annex.new =<< Git.Construct.fromPath "."
-	Annex.eval state $ do
+	ood <- Annex.eval state $ do
 		buildrpms topdir updated
 		makeinfos updated version
 	syncToArchiveOrg
+	unless (null ood) $
+		error $ "Some info files are out of date: " ++ show (map fst ood)
 
 -- Download a build from the autobuilder, virus check it, and return its
 -- version.
@@ -167,8 +169,7 @@ makeinfos updated version = do
 	ds <- liftIO $ forM infos (readish <$$> readFile)
 	let dis = zip infos ds
 	let ood = filter outofdate dis
-	unless (null ood) $
-		error $ "Some info files are out of date: " ++ show (map fst ood)
+	return ood
   where
 	outofdate (_, md) = case md of
 		Nothing -> True
