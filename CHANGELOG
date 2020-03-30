@@ -1,11 +1,7 @@
-git-annex (8.20200310) UNRELEASED; urgency=medium
+git-annex (8.20200330) upstream; urgency=medium
 
-  * webdav: Made exporttree remotes faster by caching connection to the
-    server.
   * fsck: Fix reversion in 8.20200226 that made it incorrectly warn
     that hashed keys with an extension should be upgraded.
-  * Fix a minor bug that caused options provided with -c to be passed
-    multiple times to git.
   * add --force-small: Fix a bug that, when adding a symbolic link,
     checked in the content of the file the symlink pointed to.
     Thanks, Kyle Meyer for the patch.
@@ -14,8 +10,12 @@ git-annex (8.20200310) UNRELEASED; urgency=medium
   * When syncing changes back from an adjusted branch to the basis branch,
     include changes to submodules.
     Thanks, Kyle Meyer for the patch.
+  * webdav: Made exporttree remotes faster by caching connection to the
+    server.
+  * Fix a minor bug that caused options provided with -c to be passed
+    multiple times to git.
 
- -- Joey Hess <id@joeyh.name>  Mon, 16 Mar 2020 12:43:33 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 12:14:50 -0400
 
 git-annex (8.20200309) upstream; urgency=medium
 
