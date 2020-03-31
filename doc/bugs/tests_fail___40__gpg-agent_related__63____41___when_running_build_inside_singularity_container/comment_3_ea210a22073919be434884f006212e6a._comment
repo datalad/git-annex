@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2020-03-31T01:22:53Z"
+ content="""
+Thank you Joey!
+TL;DR: If you don't manage to reproduce it with the call below -- let's consider the issue doesn't exist ;) at least I found a workaround.
+
+if you would like to try, after `apt-get install singularity-container`:
+ 
+```
+git clone git://github.com/datalad/datalad-extensions -b enh-git-annex && cd datalad-extensions && scripts/ci/build_git_annex build
+```
+(it might ask for a passkey to your gpg at some point - building signed pkgs) -- it might or might not fail for you!
+
+Ghosts: it fails if I just run `scripts/ci/build_git_annex build` in my original local git repository. If, instead of `build/` I am providing some path outside of current directory (i.e. not just `build`) when I am under $HOME -- it seems to work.  So I started to build out under /tmp/git-annex and github actions seems to pass now!: https://github.com/datalad/datalad-extensions/runs/547292760?check_suite_focus=true
+
+But it also passes for me when I do above like under `/tmp/` , or when I provide build directory still somewhere in my home, e.g. `~/build`.
+I think it is some singularity bind mounts madness somehow interfering.
+
+
+"""]]
