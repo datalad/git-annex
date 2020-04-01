@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="Also problem with USB drives"
+ date="2020-03-31T06:36:12Z"
+ content="""
+With a git annex repo on an USB drive and a linux filesystem (e.g. ext4) one often has the problem that users on different machines have different user ids. Thus one always needs to correct the user (chown) or permissions (chmod) before one can write to that repo.
+
+So it would help a lot, if git-annex would respect gits config setting \"core.sharedrepository\".
+
+From what I can see, the SUID bit seems to work at least. I use the group \"floppy\" as owner group for my USB drive repos since its group id is the same on all Debian machines and there is no harm to add users to it.
+"""]]

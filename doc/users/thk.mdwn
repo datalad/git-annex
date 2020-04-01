@@ -1,7 +1,7 @@
 I'm thk at debian org
 
 
-My TODO items
+# My TODO items
 
 - write a tip on using git worktree to inspect the git-annex branch
   - Is there a way to filter out the directories?
@@ -17,3 +17,10 @@ My TODO items
 - more experiences with ext4 encryption feature:
 
   <https://www.techort.com/encryption-in-ext4-how-it-works-habrahabr/>
+
+# Bugs that affect me
+
+- [[todo/sharedRepository_mode_not_supported_by_git-annex]] - some pain
+- [[tips/shared_git_annex_directory_between_multiple_users]]
+- [[todo/support_concurrency_for_export]] (maybe nice?)
+- [[todo/more_efficient_resolution_of_trivial_export_conflicts]] - endless pain!

@@ -40,7 +40,7 @@ Here are specific instructions for using git-annex with various services:
 * [[Dropbox|tips/dropboxannex]]
 * [[FTP|rclone]]
 * [[Flickr|tips/flickrannex]]
-* [Freenet](https://github.com/xloem/gitlakepy)
+* [Freenet and Siacoin Skynet](https://github.com/xloem/gitlakepy)
 * [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
 * [[Google Drive|tips/using_Google_Drive]]
 * [[hubiC|tips/using_Hubic]]

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://openid.jorsn.eu/"
+ avatar="http://cdn.libravatar.org/avatar/250999e054ac1e0c82a45d8b5dcfad69ec611f16216b7c1df36a3df1d715aa37"
+ subject="automatic repository upgrades"
+ date="2020-03-30T23:24:51Z"
+ content="""
+Hi Joey,
+
+I really like git-annex but there is one thing which annoys me and friends of mine: Automatic repo upgrades.
+
+I just installed the newer version as an unstable package from my distro[^1] for a test and noticed afterwards that git-annex v7[^2] doesn't work anymore.
+
+This is something I would like to be warned about in advance; it's nothing I would expect. Imagine a repo shared between people. One of them gets a new version of git-annex installed by the system admin, thus converting the repo accidentally, without even noticing. The others will be happy.
+
+So please document `annex.autoupgraderepository` in the man page and set it to `false` by default.
+
+Stay happy and healthy,
+
+Johannes
+
+[^1]: so didn't read the news first
+[^2]: the stable distro package
+"""]]
