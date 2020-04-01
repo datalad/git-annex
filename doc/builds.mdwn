@@ -24,8 +24,6 @@
 <h2>Windows</h2>
 <iframe width=1024 height=20em scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/windows/build-version">
 </iframe>
-<h2>Debian standalone packages</h2>
-![Build git-annex snapshot](https://github.com/datalad/datalad-extensions/workflows/Build%20git-annex%20snapshot/badge.svg)
 """]]
 
 # build logs
@@ -50,8 +48,5 @@
 </iframe>
 <h2><a href="https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/">Windows</a></h2>
 <a href="http://vps.zaytsev.net:8080/">here</a>
-<h2><a href="https://buildd.debian.org/status/package.php?p=git-annex&suite=sid">Debian</a></h2>
-<iframe width=1024 scrolling=no height=500px frameborder=0 marginheight=0 marginwidth=0 src="https://buildd.debian.org/status/package.php?p=git-annex&suite=sid">
-</iframe>
-<iframe width=1024 scrolling=yes height=500px frameborder=0 marginheight=0 marginwidth=0 src="http://matrix.hackage.haskell.org/package/git-annex">
-</iframe>
+<h2>Debian standalone packages</h2>
+![Build git-annex snapshot](https://github.com/datalad/datalad-extensions/workflows/Build%20git-annex%20snapshot/badge.svg)
