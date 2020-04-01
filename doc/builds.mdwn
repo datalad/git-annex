@@ -48,5 +48,5 @@
 </iframe>
 <h2>Debian standalone packages</h2>
 ![Build git-annex snapshot](https://github.com/datalad/datalad-extensions/workflows/Build%20git-annex%20snapshot/badge.svg)
-<h2><a href="https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/">Windows</a></h2>
+<h2>Windows</h2>
 <a href="http://vps.zaytsev.net:8080/">here (limited access)</a>
