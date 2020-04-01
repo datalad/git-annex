@@ -46,7 +46,7 @@
 <h2>OSX Yosemite</h2>
 <iframe width=1024 scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/">
 </iframe>
-<h2><a href="https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/">Windows</a></h2>
-<a href="http://vps.zaytsev.net:8080/">here</a>
 <h2>Debian standalone packages</h2>
 ![Build git-annex snapshot](https://github.com/datalad/datalad-extensions/workflows/Build%20git-annex%20snapshot/badge.svg)
+<h2><a href="https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/">Windows</a></h2>
+<a href="http://vps.zaytsev.net:8080/">here (limited access)</a>
