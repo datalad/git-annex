@@ -23,6 +23,9 @@ so the path itself if fine. I also tried enclosing the dir name in quotes, doubl
 Also tried by creating a symbolic link to the path name and specifying the link name, but no joy 
 I was hoping that it was the ":" between  mtp and host that was the issue) 
 
+I have also attempted just to use the directory special remote as well - but I get same error.
+
+
 
 ### What version of git-annex are you using? On what operating system?
 8.20200226  (but I have also seen same issue on earlier ver 7) 
