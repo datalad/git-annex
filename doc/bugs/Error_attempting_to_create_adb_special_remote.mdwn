@@ -1,0 +1,38 @@
+### Please describe the problem.
+I get error while attempting to create an adb special remote
+Problem appears to be with gvfs (mtp)  mount point that my phone is getting mounted to.
+
+### What steps will reproduce the problem?
+Attache android phone to computer via USB. (eg Pixel3A, Samsung Galaxy S6  etc.)
+Phone mounts using gvfs-mtp. (GNOME virt file system)
+ Specifically in my case at the following path:
+
+/run/user/1000/gvfs/mtp\:host\=Google_Pixel_3a_94MBYKEOEJS/Internal\ shared\ storage/DCIM
+
+Attempt to create adb special remote as follows:
+
+git annex initremote android type=adb 
+androiddirectory=/run/user/1000/gvfs/mtp\:host\=Google_PixeGoogle_Pixel_3a_94MBYKEOEJS/Internal\ shared\ storage/DCIM 
+encryption=none exporttree=yes importtree=yes 
+
+Results in following error message:
+initremote android git-annex: adb: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory) failed git-annex: initremote: 1 failed
+
+I can successfully 'cd' into this directroy path via xterm and browse the phone's DCIM directory etc.
+
+### What version of git-annex are you using? On what operating system?
+8.20200226  (but I have also seen same issue on earlier ver 7) 
+I upgraded to 8 in hope of rectifying the issue.
+
+### Please provide any additional information below.
+
+Running Debian 10.3
+
+
+### Have you had any luck using git-annex before? 
+Yes, have been using git-annex for several years, but this is my first attempt at using the adb special remote.
+
+Thanks
+M.
+
+
