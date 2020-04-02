@@ -3,7 +3,7 @@ I get error while attempting to create an adb special remote
 Problem appears to be with gvfs (mtp)  mount point that my phone is getting mounted to.
 
 ### What steps will reproduce the problem?
-Attache android phone to computer via USB. (eg Pixel3A, Samsung Galaxy S6  etc.)
+Attach android phone to computer via USB. (eg Pixel3A, Samsung Galaxy S6  etc.)
 Phone mounts using gvfs-mtp. (GNOME virt file system)
  Specifically in my case at the following path:
 
