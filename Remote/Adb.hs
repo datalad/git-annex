@@ -128,12 +128,12 @@ adbSetup _ mu _ c gc = do
 		(giveup "Specify androiddirectory=")
 		(pure . AndroidPath . fromProposedAccepted)
 		(M.lookup androiddirectoryField c)
-	serial <- getserial =<< liftIO enumerateAdbConnected
+	serial <- getserial =<< enumerateAdbConnected
 	let c' = M.insert androidserialField (Proposed (fromAndroidSerial serial)) c
 
 	(c'', _encsetup) <- encryptionSetup c' gc
 
-	ok <- liftIO $ adbShellBool serial
+	ok <- adbShellBool serial
 		[Param "mkdir", Param "-p", File (fromAndroidPath adir)]
 	unless ok $
 		giveup "Creating directory on Android device failed."
@@ -166,15 +166,15 @@ store' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
 store' serial dest src = store'' serial dest src (return True)
 
 store'' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool -> Annex Bool
-store'' serial dest src canoverwrite = do
+store'' serial dest src canoverwrite = checkAdbInPath False $ do
 	let destdir = takeDirectory $ fromAndroidPath dest
-	liftIO $ void $ adbShell serial [Param "mkdir", Param "-p", File destdir]
+	void $ adbShell serial [Param "mkdir", Param "-p", File destdir]
 	showOutput -- make way for adb push output
 	let tmpdest = fromAndroidPath dest ++ ".annextmp"
 	ifM (liftIO $ boolSystem "adb" (mkAdbCommand serial [Param "push", File src, File tmpdest]))
 		( ifM canoverwrite
 			-- move into place atomically
-			( liftIO $ adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)]
+			( adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)]
 			, do
 				void $ remove' serial (AndroidPath tmpdest)
 				return False
@@ -189,7 +189,7 @@ retrieve serial adir = fileRetriever $ \dest k _p ->
 		giveup "adb pull failed"
 
 retrieve' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
-retrieve' serial src dest = do
+retrieve' serial src dest = checkAdbInPath False $ do
 	showOutput -- make way for adb pull output
 	liftIO $ boolSystem "adb" $ mkAdbCommand serial
 		[ Param "pull"
@@ -201,7 +201,7 @@ remove :: AndroidSerial -> AndroidPath -> Remover
 remove serial adir k = remove' serial (androidLocation adir k)
 
 remove' :: AndroidSerial -> AndroidPath -> Annex Bool
-remove' serial aloc = liftIO $ adbShellBool serial
+remove' serial aloc = adbShellBool serial
 	[Param "rm", Param "-f", File (fromAndroidPath aloc)]
 
 checkKey :: Remote -> AndroidSerial -> AndroidPath -> CheckPresent
@@ -210,7 +210,7 @@ checkKey r serial adir k = checkKey' r serial (androidLocation adir k)
 checkKey' :: Remote -> AndroidSerial -> AndroidPath -> Annex Bool
 checkKey' r serial aloc = do
 	showChecking r
-	out <- liftIO $ adbShellRaw serial $ unwords
+	out <- adbShellRaw serial $ unwords
 		[ "if test -e ", shellEscape (fromAndroidPath aloc)
 		, "; then echo y"
 		, "; else echo n"
@@ -247,7 +247,7 @@ removeExportM serial adir _k loc = remove' serial aloc
 	aloc = androidExportLocation adir loc
 
 removeExportDirectoryM :: AndroidSerial -> AndroidPath -> ExportDirectory -> Annex Bool
-removeExportDirectoryM serial abase dir = liftIO $ adbShellBool serial
+removeExportDirectoryM serial abase dir = adbShellBool serial
 	[Param "rm", Param "-rf", File (fromAndroidPath adir)]
   where
 	adir = androidExportLocation abase (mkExportLocation (fromExportDirectory dir))
@@ -258,14 +258,19 @@ checkPresentExportM r serial adir _k loc = checkKey' r serial aloc
 	aloc = androidExportLocation adir loc
 
 renameExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
-renameExportM serial adir _k old new = liftIO $ Just <$> 
-	adbShellBool serial [Param "mv", Param "-f", File oldloc, File newloc]
+renameExportM serial adir _k old new = Just <$> adbShellBool serial ps
   where
 	oldloc = fromAndroidPath $ androidExportLocation adir old
 	newloc = fromAndroidPath $ androidExportLocation adir new
+	ps =
+		[ Param "mv"
+		, Param "-f"
+		, File oldloc
+		, File newloc
+		]
 
 listImportableContentsM :: AndroidSerial -> AndroidPath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-listImportableContentsM serial adir = liftIO $
+listImportableContentsM serial adir =
 	process <$> adbShell serial
 		[ Param "find"
 		-- trailing slash is needed, or android's find command
@@ -300,7 +305,7 @@ retrieveExportWithContentIdentifierM serial adir loc cid dest mkkey _p = catchDe
 	ifM (retrieve' serial src dest)
 		( do
 			k <- mkkey
-			currcid <- liftIO $ getExportContentIdentifier serial adir loc
+			currcid <- getExportContentIdentifier serial adir loc
 			return $ if currcid == Right (Just cid)
 				then k
 				else Nothing
@@ -315,7 +320,7 @@ storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
 	-- file is expensive and don't want to do it unncessarily.
 	ifM checkcanoverwrite
 		( ifM (store'' serial dest src checkcanoverwrite)
-			( liftIO $ getExportContentIdentifier serial adir loc >>= return . \case
+			( getExportContentIdentifier serial adir loc >>= return . \case
 				Right (Just cid) -> Right cid
 				Right Nothing -> Left "adb failed to store file"
 				Left _ -> Left "unable to get content identifier for file stored on adtb"
@@ -325,7 +330,7 @@ storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
 		)
   where
 	dest = androidExportLocation adir loc
-	checkcanoverwrite = liftIO $
+	checkcanoverwrite =
 		getExportContentIdentifier serial adir loc >>= return . \case
 			Right (Just cid) | cid `elem` overwritablecids -> True
 			Right Nothing -> True
@@ -333,7 +338,7 @@ storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
 
 removeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 removeExportWithContentIdentifierM serial adir k loc removeablecids = catchBoolIO $
-	liftIO (getExportContentIdentifier serial adir loc) >>= \case
+	getExportContentIdentifier serial adir loc >>= \case
 		Right Nothing -> return True
 		Right (Just cid) | cid `elem` removeablecids ->
 			removeExportM serial adir k loc
@@ -341,7 +346,7 @@ removeExportWithContentIdentifierM serial adir k loc removeablecids = catchBoolI
 
 checkPresentExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 checkPresentExportWithContentIdentifierM serial adir _k loc knowncids = 
-	liftIO $ getExportContentIdentifier serial adir loc >>= \case
+	getExportContentIdentifier serial adir loc >>= \case
 		Right (Just cid) | cid `elem` knowncids -> return True
 		Right _ -> return False
 		Left _ -> giveup "unable to access Android device"
@@ -351,8 +356,8 @@ androidExportLocation adir loc = AndroidPath $
 	fromAndroidPath adir ++ "/" ++ fromRawFilePath (fromExportLocation loc)
 
 -- | List all connected Android devices.
-enumerateAdbConnected :: IO [AndroidSerial]
-enumerateAdbConnected = 
+enumerateAdbConnected :: Annex [AndroidSerial]
+enumerateAdbConnected = checkAdbInPath [] $ liftIO $
 	mapMaybe parse . lines <$> readProcess "adb" ["devices"]
   where
 	parse l = 
@@ -364,11 +369,11 @@ enumerateAdbConnected =
 -- | Runs a command on the android device with the given serial number.
 --
 -- Any stdout from the command is returned, separated into lines.
-adbShell :: AndroidSerial -> [CommandParam] -> IO (Maybe [String])
+adbShell :: AndroidSerial -> [CommandParam] -> Annex (Maybe [String])
 adbShell serial cmd = adbShellRaw serial $
 	unwords $ map shellEscape (toCommand cmd)
 
-adbShellBool :: AndroidSerial -> [CommandParam] -> IO Bool
+adbShellBool :: AndroidSerial -> [CommandParam] -> Annex Bool
 adbShellBool serial cmd =
 	adbShellRaw serial cmd' >>= return . \case
 		Just l -> end l == ["y"]
@@ -379,8 +384,8 @@ adbShellBool serial cmd =
 
 -- | Runs a raw shell command on the android device.
 -- Any necessary shellEscaping must be done by caller.
-adbShellRaw :: AndroidSerial -> String -> IO (Maybe [String])
-adbShellRaw serial cmd = catchMaybeIO $ 
+adbShellRaw :: AndroidSerial -> String -> Annex (Maybe [String])
+adbShellRaw serial cmd = checkAdbInPath Nothing $ liftIO $ catchMaybeIO $ 
 	processoutput <$> readProcess "adb"
 		[ "-s"
 		, fromAndroidSerial serial
@@ -393,13 +398,21 @@ adbShellRaw serial cmd = catchMaybeIO $
 	-- despite both linux and android being unix systems.
 	trimcr = takeWhile (/= '\r')
 
+checkAdbInPath :: a -> Annex a -> Annex a
+checkAdbInPath d a = ifM (isJust <$> liftIO (searchPath "adb"))
+	( a
+	, do
+		warning "adb command not found in PATH. Install it to use this remote."
+		return d
+	)
+
 mkAdbCommand :: AndroidSerial -> [CommandParam] -> [CommandParam]
 mkAdbCommand serial cmd = [Param "-s", Param (fromAndroidSerial serial)] ++ cmd
 
 -- Gets the current content identifier for a file on the android device.
 -- If the file is not present, returns Right Nothing
-getExportContentIdentifier :: AndroidSerial -> AndroidPath -> ExportLocation -> IO (Either ExitCode (Maybe ContentIdentifier))
-getExportContentIdentifier serial adir loc = liftIO $ do
+getExportContentIdentifier :: AndroidSerial -> AndroidPath -> ExportLocation -> Annex (Either ExitCode (Maybe ContentIdentifier))
+getExportContentIdentifier serial adir loc = do
 	ls <- adbShellRaw serial $ unwords
 		[ "if test -e ", shellEscape aloc
 		, "; then stat -c"
