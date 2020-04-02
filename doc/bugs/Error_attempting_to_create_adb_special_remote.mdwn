@@ -19,9 +19,10 @@ Results in following error message:
 initremote android git-annex: adb: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory) failed git-annex: initremote: 1 failed
 
 I can successfully 'cd' into the path via xterm and browse the phone's DCIM directory etc as normal
-so the path itself if fine. I also tried enclosing the dir name is quotes, double quotes etc but that didn't help
-Also tried by creating a symbolic link to the path name and specifying the link name, but no joy (I was hoping that it was the ":" between  mtp and host that was the issue) 
-I'm thinking this is related to gvfs-mtp ?
+so the path itself if fine. I also tried enclosing the dir name in quotes, double quotes etc but that didn't help
+Also tried by creating a symbolic link to the path name and specifying the link name, but no joy 
+I was hoping that it was the ":" between  mtp and host that was the issue) 
+
 
 ### What version of git-annex are you using? On what operating system?
 8.20200226  (but I have also seen same issue on earlier ver 7) 
