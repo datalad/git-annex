@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="javkalas@30f67400375ff022347b37236b63786ecf79cd82"
+ nickname="javkalas"
+ avatar="http://cdn.libravatar.org/avatar/2343ce9a9d022cb24c5896fb00f1e12f"
+ subject="comment 36"
+ date="2020-04-03T19:09:52Z"
+ content="""
+I think this was the kind of change that bites hardest the people who don't follow development. I have a repo that for 6 years has had exactly one file tracked with git-annex. I don't want to track anything else. Then today, a file was auto-added to git-annex (tiny js file, no idea why) and when I pulled on server my web page went down :) Anyway, point being, if you don't want many files tracked by git annex, you probably don't read much about git annex either, and won't notice such a change until it bites you.
+
+I did
+
+     $ git config annex.largefiles '(largerthan=9999999999kb)'
+
+"""]]
