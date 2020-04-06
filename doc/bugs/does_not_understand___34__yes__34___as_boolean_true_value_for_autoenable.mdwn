@@ -1,0 +1,70 @@
+### Please describe the problem.
+
+git takes "Boolean true literals are yes, on, true, and 1."
+
+IMHO git-annex should centrally/uniformly handle all boolean values for all configuration and remote settings.
+
+majority of the boolean variable settings e.g. for special remotes in examples etc use `yes`.  But examples with `autoenable` seems to use `true` and having `yes` causes git-annex to not autoenable it:
+
+```shell
+$> (set -x ; ds=ds002396; rm -rf $ds; git clone https://github.com/OpenNeuroDatasets/$ds.git && git -C $ds show origin/git-annex:remote.log && git -C $ds annex init && git -C $ds annex info | grep -i s3-public )
++zsh:194> ds=ds002396 
++zsh:194> rm -rf ds002396
++zsh:194> git clone https://github.com/OpenNeuroDatasets/ds002396.git
+Cloning into 'ds002396'...
+remote: Enumerating objects: 93, done.
+remote: Counting objects: 100% (93/93), done.
+remote: Compressing objects: 100% (56/56), done.
+remote: Total 93 (delta 19), reused 93 (delta 19), pack-reused 0
+Receiving objects: 100% (93/93), 9.30 KiB | 414.00 KiB/s, done.
+Resolving deltas: 100% (19/19), done.
++zsh:194> git -C ds002396 show origin/git-annex:remote.log
+6b554bb8-47cc-4f88-b3f0-b4becdb80272 autoenable=yes bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds002396/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=http://openneuro.org.s3.amazonaws.com/ storageclass=STANDARD type=S3 versioning=yes timestamp=1579150706.611377263s
++zsh:194> git -C ds002396 annex init
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+ok
+(recording state in git...)
++zsh:194> git -C ds002396 annex info
++zsh:194> grep '--color=auto' -d skip -i s3-public
+ 	6b554bb8-47cc-4f88-b3f0-b4becdb80272 -- s3-PUBLIC
+```
+
+<details>
+<summary>whenever it autoenables if I explicitly replace yes with true here:</summary> 
+
+```shell
+$> ds=ds002396; rm -rf $ds*; ( git clone https://github.com/OpenNeuroDatasets/$ds.git && cd $ds && git checkout git-annex && sed -i -e 's,autoenable=yes,autoenable=true,g' remote.log && git commit -m "fix yes to true" -a && git checkout master; ) && git clone $ds $ds-clone && git -C $ds-clone annex init
+Cloning into 'ds002396'...
+remote: Enumerating objects: 93, done.
+remote: Counting objects: 100% (93/93), done.
+remote: Compressing objects: 100% (56/56), done.
+remote: Total 93 (delta 19), reused 93 (delta 19), pack-reused 0
+Receiving objects: 100% (93/93), 9.30 KiB | 4.65 MiB/s, done.
+Resolving deltas: 100% (19/19), done.
+CHANGES  dataset_description.json  sub-01/  sub-02/
+Branch 'git-annex' set up to track remote branch 'git-annex' from 'origin'.
+Switched to a new branch 'git-annex'
+[git-annex 3770aed] fix yes to true
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+Switched to branch 'master'
+Your branch is up to date with 'origin/master'.
+Cloning into 'ds002396-clone'...
+done.
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+(Auto enabling special remote s3-PUBLIC...)
+ok
+(recording state in git...)
+
+```
+</details>
+
+FWIW -- above examples are with git annex 7.20190819+git2-g908476a9b-1~ndall+1 but initially investigated using 8.20200330+git28-g7ebc11877-1~ndall+1
+
+References: [initial report on neurostars](https://neurostars.org/t/datalad-install-problem-ds002393/6544/3)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
