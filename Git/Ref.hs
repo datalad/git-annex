@@ -145,8 +145,8 @@ delete :: Sha -> Ref -> Repo -> IO ()
 delete oldvalue ref = run
 	[ Param "update-ref"
 	, Param "-d"
-	, Param $ fromRef ref
-	, Param $ fromRef oldvalue
+	, Param $ decodeBS' (fromRef ref)
+	, Param $ decodeBS' (fromRef oldvalue)
 	]
 
 {- Gets the sha of the tree a ref uses. 
@@ -154,13 +154,17 @@ delete oldvalue ref = run
  - The ref may be something like a branch name, and it could contain
  - ":subdir" if a subtree is wanted. -}
 tree :: Ref -> Repo -> IO (Maybe Sha)
-tree (Ref ref) = extractSha . decodeBS <$$> pipeReadStrict
-	[ Param "rev-parse", Param "--verify", Param "--quiet", Param ref' ]
+tree (Ref ref) = extractSha <$$> pipeReadStrict
+	[ Param "rev-parse"
+	, Param "--verify"
+	, Param "--quiet"
+	, Param (decodeBS' ref')
+	]
   where
-	ref' = if ":" `isInfixOf` ref
+	ref' = if ":" `S.isInfixOf` ref
 		then ref
 		-- de-reference commit objects to the tree
-		else ref ++ ":"
+		else ref <> ":"
 
 {- Checks if a String is a legal git ref name.
  -

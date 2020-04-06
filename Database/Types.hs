@@ -28,6 +28,7 @@ import Foreign.C.Types
 import Key
 import Utility.InodeCache
 import Utility.FileSize
+import Utility.FileSystemEncoding
 import Git.Types
 import Types.UUID
 import Types.Import
@@ -94,10 +95,10 @@ newtype SSha = SSha String
 	deriving (Eq, Show)
 
 toSSha :: Sha -> SSha
-toSSha (Ref s) = SSha s
+toSSha (Ref s) = SSha (decodeBS' s)
 
 fromSSha :: SSha -> Ref
-fromSSha (SSha s) = Ref s
+fromSSha (SSha s) = Ref (encodeBS' s)
 
 instance PersistField SSha where
 	toPersistValue (SSha b) = toPersistValue b

@@ -284,7 +284,7 @@ parseUnmerged s
 				then Nothing
 				else do
 					treeitemtype <- readTreeItemType (encodeBS rawtreeitemtype)
-					sha <- extractSha rawsha
+					sha <- extractSha (encodeBS' rawsha)
 					return $ InternalUnmerged (stage == 2) (toRawFilePath file)
 						(Just treeitemtype) (Just sha)
 		_ -> Nothing

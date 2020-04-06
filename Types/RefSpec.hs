@@ -32,7 +32,7 @@ parseRefSpec v = case partitionEithers (map mk $ splitc ':' v) of
 	mk ('+':s)
 		| any (`elem` s) "*?" =
 			Right $ AddMatching $ compileGlob s CaseSensative
-		| otherwise = Right $ AddRef $ Ref s
+		| otherwise = Right $ AddRef $ Ref $ encodeBS s
 	mk ('-':s) = Right $ RemoveMatching $ compileGlob s CaseSensative
 	mk "reflog" = Right AddRefLog
 	mk s = Left $ "bad refspec item \"" ++ s ++ "\" (expected + or - prefix)"
@@ -43,10 +43,10 @@ applyRefSpec refspec rs getreflog = go [] refspec
 	go c [] = return (reverse c)
 	go c (AddRef r : rest) = go (r:c) rest
 	go c (AddMatching g : rest) =
-		let add = filter (matchGlob g . fromRef) rs
+		let add = filter (matchGlob g . decodeBS' . fromRef) rs
 		in go (add ++ c) rest
 	go c (AddRefLog : rest) = do
 		reflog <- getreflog
 		go (reflog ++ c) rest
 	go c (RemoveMatching g : rest) = 
-		go (filter (not . matchGlob g . fromRef) c) rest
+		go (filter (not . matchGlob g . decodeBS' . fromRef) c) rest

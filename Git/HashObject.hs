@@ -18,6 +18,7 @@ import qualified Utility.CoProcess as CoProcess
 import Utility.Tmp
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
 
@@ -39,7 +40,7 @@ hashFile :: HashObjectHandle -> FilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
   where
 	send to = hPutStrLn to =<< absPath file
-	receive from = getSha "hash-object" $ hGetLine from
+	receive from = getSha "hash-object" $ S8.hGetLine from
 
 class HashableBlob t where
 	hashableBlobToHandle :: Handle -> t -> IO ()

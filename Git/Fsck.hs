@@ -139,7 +139,8 @@ isMissing s r = either (const True) (const False) <$> tryIO dump
 		] r
 
 findShas :: [String] -> [Sha]
-findShas = catMaybes . map extractSha . concat . map words . filter wanted
+findShas = catMaybes . map (extractSha . encodeBS') 
+	. concat . map words . filter wanted
   where
 	wanted l = not ("dangling " `isPrefixOf` l)
 

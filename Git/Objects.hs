@@ -26,13 +26,13 @@ listPackFiles r = filter (".pack" `isSuffixOf`)
 
 listLooseObjectShas :: Repo -> IO [Sha]
 listLooseObjectShas r = catchDefaultIO [] $
-	mapMaybe (extractSha . concat . reverse . take 2 . reverse . splitDirectories)
+	mapMaybe (extractSha . encodeBS . concat . reverse . take 2 . reverse . splitDirectories)
 		<$> dirContentsRecursiveSkipping (== "pack") True (objectsDir r)
 
 looseObjectFile :: Repo -> Sha -> FilePath
 looseObjectFile r sha = objectsDir r </> prefix </> rest
   where
-	(prefix, rest) = splitAt 2 (fromRef sha)
+	(prefix, rest) = splitAt 2 (decodeBS' (fromRef sha))
 
 listAlternates :: Repo -> IO [FilePath]
 listAlternates r = catchDefaultIO [] (lines <$> readFile alternatesfile)

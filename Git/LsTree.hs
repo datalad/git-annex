@@ -106,6 +106,6 @@ formatLsTree :: TreeItem -> String
 formatLsTree ti = unwords
 	[ showOct (mode ti) ""
 	, decodeBS (typeobj ti)
-	, fromRef (sha ti)
+	, decodeBS' (fromRef (sha ti))
 	, fromRawFilePath (getTopFilePath (file ti))
 	]

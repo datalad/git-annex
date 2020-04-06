@@ -15,6 +15,9 @@ import Git.Command
 import Git.Sha
 
 import qualified Data.Set as S
+import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B8
 
 data History t = History t (S.Set (History t))
 	deriving (Show, Eq, Ord)
@@ -53,8 +56,9 @@ getHistoryToDepth n commit r = do
 	!h <- fmap (truncateHistoryToDepth n) 
 		. build Nothing 
 		. map parsehistorycommit
-		. lines
-		<$> hGetContents inh
+		. map B.copy
+		. B8.lines
+		<$> L.hGetContents inh
 	hClose inh
 	void $ waitForProcess pid
 	return h
@@ -93,7 +97,7 @@ getHistoryToDepth n commit r = do
 		, Param "--format=%T %H %P"
 		]
 	
-	parsehistorycommit l = case map extractSha (splitc ' ' l) of
+	parsehistorycommit l = case map extractSha (S8.split ' ' l) of
 		(Just t:Just c:ps) -> Just $ 
 			( HistoryCommit
 				{ historyCommit = c
