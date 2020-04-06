@@ -1,0 +1,78 @@
+My understanding is that a preferred content value of "anything" (or
+equivalently the standard group "backup") should consider deleted
+files from a remote as wanted.  I'm not a heavy user of preferred
+content myself, so this understanding is based primarily off of the
+[preferred_content/standard_groups][0] documentation saying
+
+```
+### backup
+
+All content is wanted. Even content of old/deleted files.
+
+`anything`
+```
+
+At least with the scenarios I've constructed, I haven't been able to
+find a case where old files are considered.  As an example:
+
+[[!format sh """
+cd "$(mktemp -d ${TMPDIR:-/tmp}/gx-XXXXXXX)"
+
+git init a
+(
+    cd a
+    git annex init a
+    >foo && git annex add foo && git commit -m"add foo"
+    git rm foo && git commit -m"delete foo"
+)
+
+git clone a b
+(
+    cd b
+    git annex init b
+    git annex wanted . anything
+    git annex sync
+
+    set -x
+
+    git show git-annex:uuid.log
+    git show git-annex:preferred-content.log
+
+    git annex find --want-get
+    git annex get --auto
+    git annex unused
+)
+"""]]
+
+```
+[...]
++ git show git-annex:uuid.log
+17fae615-a90b-405a-85c2-9d0f28246bdf a timestamp=1586190820.385256186s
+1f0ad7d6-31ba-4d7e-a2e6-ab6acb3338c9 b timestamp=1586190820.750487084s
++ git show git-annex:preferred-content.log
+1f0ad7d6-31ba-4d7e-a2e6-ab6acb3338c9 anything timestamp=1586190820.867633471s
++ git annex find --want-get
++ git annex get --auto
++ git annex unused
+unused . (checking for unused data...) ok
+```
+
+The output above is with 8.20200330, but I saw the same result when I
+tried with 7.20190819.
+
+I haven't been able to think of another way to interpret "Even content
+of old/deleted files", so I think at least this is a documentation
+bug.
+
+[Related DataLad issue](https://github.com/datalad/datalad/issues/4369#issuecomment-608603732)
+
+[0]: https://git-annex.branchable.com/preferred_content/standard_groups/
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes.  Thank you!  :>
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
