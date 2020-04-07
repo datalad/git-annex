@@ -1,0 +1,90 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2020-04-07T18:25:46Z"
+ content="""
+> I don't feel git-annex necessarily needs to mimic git here in accepting all those things. It's well known that not all of git's UI choices are good, and git-annex does not mimic all of them, eg git has some very nasty positional --switch parsing.
+
+I would not over-generalize this issue to all possible `git` UI bad decisions... Talking about configuration boolean options, given the:
+
+> But readonly and autoenable using true/false while all other special remote configs uses yes/no is not good UI either.
+
+IMHO staying inline with git would bring desired consistent (even if undesired flexibility, which I do not like either) handling.  
+
+FWIW, in DataLad, in reading the bool config values [we have](https://github.com/datalad/datalad/blob/master/datalad/config.py#L120)
+
+```python
+ def anything2bool(val):
+    if hasattr(val, 'lower'):
+        val = val.lower()
+    if val in {\"off\", \"no\", \"false\", \"0\"} or not bool(val):
+        return False
+    elif val in {\"on\", \"yes\", \"true\", True} \
+            or (hasattr(val, 'isdigit') and val.isdigit() and int(val)) \
+            or isinstance(val, int) and val:
+        return True
+    else:
+        raise TypeError(
+            \"Got value %s which could not be interpreted as a boolean\"
+            % repr(val))
+```
+so for better or for worse, any non-0 positive integer is considered `True` as well... it seems we are ALMOST inline with git:
+
+```shell
+$> for v in true yes 1 200 '' false no 0 -1 0.00 0.1 string; do echo -n \"$v=\"; git -c \"sec.blah=$v\" config --bool sec.blah; python -c \"from datalad.config import anything2bool; print(anything2bool('$v'))\"; echo; done
+true=true
+True
+
+yes=true
+True
+
+1=true
+True
+
+200=true
+True
+
+=false
+False
+
+false=false
+False
+
+no=false
+False
+
+0=false
+False
+
+-1=true
+Traceback (most recent call last):
+  File \"<string>\", line 1, in <module>
+  File \"/home/yoh/proj/datalad/datalad-maint/datalad/config.py\", line 132, in anything2bool
+    % repr(val))
+TypeError: Got value '-1' which could not be interpreted as a boolean
+
+0.00=fatal: bad numeric config value '0.00' for 'sec.blah': invalid unit
+Traceback (most recent call last):
+  File \"<string>\", line 1, in <module>
+  File \"/home/yoh/proj/datalad/datalad-maint/datalad/config.py\", line 132, in anything2bool
+    % repr(val))
+TypeError: Got value '0.00' which could not be interpreted as a boolean
+
+0.1=fatal: bad numeric config value '0.1' for 'sec.blah': invalid unit
+Traceback (most recent call last):
+  File \"<string>\", line 1, in <module>
+  File \"/home/yoh/proj/datalad/datalad-maint/datalad/config.py\", line 132, in anything2bool
+    % repr(val))
+TypeError: Got value '0.1' which could not be interpreted as a boolean
+
+string=fatal: bad numeric config value 'string' for 'sec.blah': invalid unit
+Traceback (most recent call last):
+  File \"<string>\", line 1, in <module>
+  File \"/home/yoh/proj/datalad/datalad-maint/datalad/config.py\", line 132, in anything2bool
+    % repr(val))
+TypeError: Got value 'string' which could not be interpreted as a boolean
+
+```
+so only the negative integer is tolerated by git but not by us.  I will send a quick PR
+"""]]
