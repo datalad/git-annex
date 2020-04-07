@@ -66,7 +66,7 @@ optParser desc = do
 			[bs] -> 
 				let (branch, subdir) = separate (== ':') bs
 				in RemoteImportOptions r
-					(Ref branch)
+					(Ref (encodeBS' branch))
 					(if null subdir then Nothing else Just subdir)
 			_ -> giveup "expected BRANCH[:SUBDIR]"
 

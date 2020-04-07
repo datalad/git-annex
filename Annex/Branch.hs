@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Branch (
 	fullname,
 	name,
@@ -57,7 +59,7 @@ import qualified Git.LsTree
 import Git.LsTree (lsTreeParams)
 import qualified Git.HashObject
 import Annex.HashObject
-import Git.Types (Ref(..), fromRef, RefDate, TreeItemType(..))
+import Git.Types (Ref(..), fromRef, fromRef', RefDate, TreeItemType(..))
 import Git.FilePath
 import Annex.CatFile
 import Annex.Perms
@@ -79,11 +81,11 @@ name = Git.Ref "git-annex"
 
 {- Fully qualified name of the branch. -}
 fullname :: Git.Ref
-fullname = Git.Ref $ "refs/heads/" ++ fromRef name
+fullname = Git.Ref $ "refs/heads/" <> fromRef' name
 
 {- Branch's name in origin. -}
 originname :: Git.Ref
-originname = Git.Ref $ "origin/" ++ fromRef name
+originname = Git.Ref $ "origin/" <> fromRef' name
 
 {- Does origin/git-annex exist? -}
 hasOrigin :: Annex Bool
@@ -329,9 +331,9 @@ commitIndex' jl branchref message basemessage retrynum parents = do
   where
 	-- look for "parent ref" lines and return the refs
 	commitparents = map (Git.Ref . snd) . filter isparent .
-		map (toassoc . decodeBL) . L.split newline
+		map (toassoc . L.toStrict) . L.split newline
 	newline = fromIntegral (ord '\n')
-	toassoc = separate (== ' ')
+	toassoc = separate' (== (fromIntegral (ord ' ')))
 	isparent (k,_) = k == "parent"
 		
 	{- The race can be detected by checking the commit's
@@ -440,8 +442,8 @@ forceUpdateIndex jl branchref = do
 needUpdateIndex :: Git.Ref -> Annex Bool
 needUpdateIndex branchref = do
 	f <- fromRepo gitAnnexIndexStatus
-	committedref <- Git.Ref . firstLine <$>
-		liftIO (catchDefaultIO "" $ readFileStrict f)
+	committedref <- Git.Ref . firstLine' <$>
+		liftIO (catchDefaultIO mempty $ B.readFile f)
 	return (committedref /= branchref)
 
 {- Record that the branch's index has been updated to correspond to a
@@ -623,11 +625,12 @@ ignoreRefs rs = do
 		unlines $ map fromRef $ S.elems s
 
 getIgnoredRefs :: Annex (S.Set Git.Sha)
-getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
+getIgnoredRefs = 
+	S.fromList . mapMaybe Git.Sha.extractSha . B8.lines <$> content
   where
 	content = do
 		f <- fromRepo gitAnnexIgnoredRefs
-		liftIO $ catchDefaultIO "" $ readFile f
+		liftIO $ catchDefaultIO mempty $ B.readFile f
 
 addMergedRefs :: [(Git.Sha, Git.Branch)] -> Annex ()
 addMergedRefs [] = return ()

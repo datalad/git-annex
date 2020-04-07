@@ -1664,7 +1664,7 @@ test_add_subdirs = intmpclonerepo $ do
 	unlessM (hasUnlockedFiles <$> getTestMode) $ do
 		git_annex "sync" [] @? "sync failed"
 		l <- annexeval $ Utility.FileSystemEncoding.decodeBL
-			<$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+			<$> Annex.CatFile.catObject (Git.Types.Ref (encodeBS "HEAD:dir/foo"))
 		"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
 	createDirectory "dir2"

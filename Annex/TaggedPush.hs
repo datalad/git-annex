@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.TaggedPush where
 
 import Annex.Common
@@ -15,6 +17,8 @@ import qualified Git.Ref
 import qualified Git.Command
 import qualified Git.Branch
 import Utility.Base64
+
+import qualified Data.ByteString as S
 
 {- Converts a git branch into a branch that is tagged with a UUID, typically
  - the UUID of the repo that will be pushing it, and possibly with other
@@ -31,11 +35,11 @@ import Utility.Base64
  - refs, per git-check-ref-format.
  -}
 toTaggedBranch :: UUID -> Maybe String -> Git.Branch -> Git.Ref
-toTaggedBranch u info b = Git.Ref $ intercalate "/" $ catMaybes
+toTaggedBranch u info b = Git.Ref $ S.intercalate "/" $ catMaybes
 	[ Just "refs/synced"
 	, Just $ fromUUID u
-	, toB64 <$> info
-	, Just $ Git.fromRef $ Git.Ref.base b
+	, toB64' . encodeBS <$> info
+	, Just $ Git.fromRef' $ Git.Ref.base b
 	]
 
 fromTaggedBranch :: Git.Ref -> Maybe (UUID, Maybe String)

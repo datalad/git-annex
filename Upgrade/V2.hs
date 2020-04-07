@@ -92,7 +92,8 @@ logFiles dir = return . filter (".log" `isSuffixOf`)
 
 push :: Annex ()
 push = do
-	origin_master <- inRepo $ Git.Ref.exists $ Git.Ref "origin/master"
+	origin_master <- inRepo $ Git.Ref.exists $ 
+		Git.Ref $ encodeBS' "origin/master"
 	origin_gitannex <- Annex.Branch.hasOrigin
 	case (origin_master, origin_gitannex) of
 		(_, True) -> do

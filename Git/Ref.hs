@@ -26,7 +26,7 @@ headFile :: Repo -> FilePath
 headFile r = fromRawFilePath (localGitDir r) </> "HEAD"
 
 setHeadRef :: Ref -> Repo -> IO ()
-setHeadRef ref r = writeFile (headFile r) ("ref: " ++ fromRef ref)
+setHeadRef ref r = S.writeFile (headFile r) ("ref: " <> fromRef' ref)
 
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
@@ -55,7 +55,7 @@ removeBase dir r
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}
 underBase :: String -> Ref -> Ref
-underBase dir r = Ref $ encodeBS' $ dir ++ "/" ++ fromRef (base r)
+underBase dir r = Ref $ encodeBS dir <> "/" <> fromRef' (base r)
 
 {- Convert a branch such as "master" into a fully qualified ref. -}
 branchRef :: Branch -> Ref

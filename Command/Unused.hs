@@ -5,11 +5,9 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, OverloadedStrings #-}
 
 module Command.Unused where
-
-import qualified Data.Map as M
 
 import Command
 import Logs.Unused
@@ -36,6 +34,11 @@ import Logs.View (is_branchView)
 import Annex.BloomFilter
 import qualified Database.Keys
 import Annex.InodeSentinal
+
+import qualified Data.Map as M
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
+import Data.Char
 
 cmd :: Command
 cmd = command "unused" SectionMaintenance "look for unused file content"
@@ -221,8 +224,7 @@ withKeysReferenced' mdir initial a = do
 
 withKeysReferencedDiffGitRefs :: RefSpec -> (Key -> Annex ()) -> Annex ()
 withKeysReferencedDiffGitRefs refspec a = do
-	rs <- relevantrefs . decodeBS'
-		<$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
+	rs <- relevantrefs <$> inRepo (Git.Command.pipeReadStrict [Param "show-ref"])
 	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha)
 		=<< inRepo Git.Branch.currentUnsafe
 	let haveHead = any (\(shaRef, _) -> Just shaRef == shaHead) rs
@@ -233,12 +235,12 @@ withKeysReferencedDiffGitRefs refspec a = do
   where
 	relevantrefs = map (\(r, h) -> (Git.Ref r, Git.Ref h)) .
 		filter ourbranches .
-		map (separate (== ' ')) .
-		lines
+		map (separate' (== (fromIntegral (ord ' ')))) .
+		S8.lines
 	nubRefs = nubBy (\(x, _) (y, _) -> x == y)
-	ourbranchend = '/' : Git.fromRef Annex.Branch.name
-	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
-		&& not ("refs/synced/" `isPrefixOf` b)
+	ourbranchend = S.cons (fromIntegral (ord '/')) (Git.fromRef' Annex.Branch.name)
+	ourbranches (_, b) = not (ourbranchend `S.isSuffixOf` b)
+		&& not ("refs/synced/" `S.isPrefixOf` b)
 		&& not (is_branchView (Git.Ref b))
 	getreflog rs = inRepo $ Git.RefLog.getMulti rs
 

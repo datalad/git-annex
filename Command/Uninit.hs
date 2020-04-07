@@ -35,7 +35,7 @@ check = do
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 		giveup "can only run uninit from the top of the git repository"
   where
-	current_branch = Git.Ref . Prelude.head . lines . decodeBS' <$> revhead
+	current_branch = Git.Ref . encodeBS' . Prelude.head . lines . decodeBS' <$> revhead
 	revhead = inRepo $ Git.Command.pipeReadStrict
 		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 

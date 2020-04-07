@@ -264,7 +264,8 @@ parseGitRawLog config = parse epoch
 parseRawChangeLine :: String -> Maybe (Git.Ref, Git.Ref)
 parseRawChangeLine = go . words
   where
-	go (_:_:oldsha:newsha:_) = Just (Git.Ref oldsha, Git.Ref newsha)
+	go (_:_:oldsha:newsha:_) = 
+		Just (Git.Ref (encodeBS oldsha), Git.Ref (encodeBS newsha))
 	go _ = Nothing
 
 parseTimeStamp :: String -> POSIXTime

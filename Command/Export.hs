@@ -37,6 +37,7 @@ import Utility.Tmp
 import Utility.Metered
 import Utility.Matcher
 
+import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import Control.Concurrent
@@ -112,7 +113,7 @@ getExportCommit r treeish
 		return (fmap (tb, ) commitsha)
 	| otherwise = return Nothing
   where
-	baseref = Ref $ takeWhile (/= ':') $ fromRef $ 
+	baseref = Ref $ S8.takeWhile (/= ':') $ fromRef' $ 
 		Git.Ref.removeBase refsheads treeish
 	refsheads = "refs/heads"
 
