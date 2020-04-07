@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-04-07T17:28:52Z"
+ content="""
+Yes, true, git-annex has some inconsistent parsing of these.
+
+It's certianly at least a bug worth fixing that the Git.Config parser only
+supports "true" and not "1" and "on". (And IIRC git-config also has a
+special case for true boolean settings that has only the setting in the
+config file, without a value -- which git-annex also may not parse.)
+
+On special remotes, Kyle's right. Same reasoning also applies to 
+booleans set by git-annex config. I don't immediately see any good way to
+add a translation layer to either when things are set, it would be an ugly
+addition in both cases.
+
+I don't feel git-annex necessarily needs to mimic git here in accepting
+all those things. It's well known that not all of git's UI choices are good,
+and git-annex does not mimic all of them, eg git has some very nasty
+positional --switch parsing.
+
+But readonly and autoenable using true/false while all other special remote
+configs uses yes/no is not good UI either.
+"""]]
