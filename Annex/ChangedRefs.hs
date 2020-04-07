@@ -1,6 +1,6 @@
 {- Waiting for changed git refs
  -
- - Copyright 2014-216 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2016 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,13 +24,14 @@ import qualified Utility.SimpleProtocol as Proto
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMChan
+import qualified Data.ByteString as S
 
 newtype ChangedRefs = ChangedRefs [Git.Ref]
 	deriving (Show)
 
 instance Proto.Serializable ChangedRefs where
 	serialize (ChangedRefs l) = unwords $ map Git.fromRef l
-	deserialize = Just . ChangedRefs . map Git.Ref . words
+	deserialize = Just . ChangedRefs . map (Git.Ref . encodeBS) . words
 
 data ChangedRefsHandle = ChangedRefsHandle DirWatcherHandle (TBMChan Git.Sha)
 
@@ -97,7 +98,7 @@ notifyHook chan reffile _
 	| ".lock" `isSuffixOf` reffile = noop
 	| otherwise = void $ do
 		sha <- catchDefaultIO Nothing $
-			extractSha <$> readFile reffile
+			extractSha <$> S.readFile reffile
 		-- When the channel is full, there is probably no reader
 		-- running, or ref changes have been occuring very fast,
 		-- so it's ok to not write the change to it.

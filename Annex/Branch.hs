@@ -29,7 +29,9 @@ module Annex.Branch (
 	withIndex,
 ) where
 
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Function
@@ -643,11 +645,11 @@ getMergedRefs = S.fromList . map fst <$> getMergedRefs'
 getMergedRefs' :: Annex [(Git.Sha, Git.Branch)]
 getMergedRefs' = do
 	f <- fromRepo gitAnnexMergedRefs
-	s <- liftIO $ catchDefaultIO "" $ readFile f
-	return $ map parse $ lines s
+	s <- liftIO $ catchDefaultIO mempty $ B.readFile f
+	return $ map parse $ B8.lines s
   where
 	parse l = 
-		let (s, b) = separate (== '\t') l
+		let (s, b) = separate' (== (fromIntegral (ord '\t'))) l
 		in (Ref s, Ref b)
 
 {- Grafts a treeish into the branch at the specified location,

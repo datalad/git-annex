@@ -59,7 +59,7 @@ setIndirect = do
 fromDirectBranch :: Ref -> Ref
 fromDirectBranch directhead = case splitc '/' $ fromRef directhead of
 	("refs":"heads":"annex":"direct":rest) -> 
-		Ref $ "refs/heads/" ++ intercalate "/" rest
+		Ref $ encodeBS' $ "refs/heads/" ++ intercalate "/" rest
 	_ -> directhead
 
 switchHEADBack :: Annex ()

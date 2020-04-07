@@ -10,8 +10,10 @@ module Git.UnionMerge (
 	mergeIndex
 ) where
 
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
+import qualified Data.ByteString.Char8 as S8
 import qualified Data.Set as S
 
 import Common
@@ -54,13 +56,13 @@ mergeIndex hashhandle ch repo bs = forM_ bs $ \b ->
 
 {- For merging two trees. -}
 mergeTrees :: Ref -> Ref -> HashObjectHandle -> CatFileHandle -> Repo -> Streamer
-mergeTrees (Ref x) (Ref y) hashhandle ch = doMerge hashhandle ch
-	("diff-tree":diffOpts ++ [x, y, "--"])
+mergeTrees x y hashhandle ch = doMerge hashhandle ch
+	("diff-tree":diffOpts ++ [fromRef x, fromRef y, "--"])
 
 {- For merging a single tree into the index. -}
 mergeTreeIndex :: Ref -> HashObjectHandle -> CatFileHandle -> Repo -> Streamer
-mergeTreeIndex (Ref r) hashhandle ch = doMerge hashhandle ch $
-	"diff-index" : diffOpts ++ ["--cached", r, "--"]
+mergeTreeIndex r hashhandle ch = doMerge hashhandle ch $
+	"diff-index" : diffOpts ++ ["--cached", fromRef r, "--"]
 
 diffOpts :: [String]
 diffOpts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
@@ -69,19 +71,19 @@ diffOpts = ["--raw", "-z", "-r", "--no-renames", "-l0"]
  - using git to get a raw diff. -}
 doMerge :: HashObjectHandle -> CatFileHandle -> [String] -> Repo -> Streamer
 doMerge hashhandle ch differ repo streamer = do
-	(diff, cleanup) <- pipeNullSplit (map Param differ) repo
+	(diff, cleanup) <- pipeNullSplit' (map Param differ) repo
 	go diff
 	void $ cleanup
   where
 	go [] = noop
-	go (info:file:rest) = mergeFile (decodeBL' info) (L.toStrict file) hashhandle ch >>=
+	go (info:file:rest) = mergeFile info file hashhandle ch >>=
 		maybe (go rest) (\l -> streamer l >> go rest)
 	go (_:[]) = error $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the
  - diff. -}
-mergeFile :: String -> RawFilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
+mergeFile :: S.ByteString -> RawFilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
 mergeFile info file hashhandle h = case filter (`notElem` nullShas) [Ref asha, Ref bsha] of
 	[] -> return Nothing
 	(sha:[]) -> use sha
@@ -89,7 +91,7 @@ mergeFile info file hashhandle h = case filter (`notElem` nullShas) [Ref asha, R
 		=<< either return (hashBlob hashhandle . L8.unlines)
 		=<< calcMerge . zip shas <$> mapM getcontents shas
   where
-	[_colonmode, _bmode, asha, bsha, _status] = words info
+	[_colonmode, _bmode, asha, bsha, _status] = S8.words info
 	use sha = return $ Just $
 		updateIndexLine sha TreeFile $ asTopFilePath file
 	-- Get file and split into lines to union merge.

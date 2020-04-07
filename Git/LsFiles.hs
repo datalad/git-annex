@@ -36,9 +36,10 @@ import Utility.InodeCache
 import Utility.TimeStamp
 
 import Numeric
+import Data.Char
 import System.Posix.Types
 import qualified Data.Map as M
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString as S
 
 {- It's only safe to use git ls-files on the current repo, not on a remote.
  -
@@ -81,7 +82,7 @@ inRepo' ps l repo = guardSafeForLsFiles repo $ pipeNullSplit' params repo
 {- Files that are checked into the index or have been committed to a
  - branch. -}
 inRepoOrBranch :: Branch -> [RawFilePath] -> Repo -> IO ([RawFilePath], IO Bool)
-inRepoOrBranch (Ref b) = inRepo' [Param $ "--with-tree=" ++ b]
+inRepoOrBranch b = inRepo' [Param $ "--with-tree=" ++ fromRef b]
 
 {- Scans for files at the specified locations that are not checked into git. -}
 notInRepo :: Bool -> [RawFilePath] -> Repo -> IO ([RawFilePath], IO Bool)
@@ -189,21 +190,21 @@ stagedDetails = stagedDetails' []
  - contents. -}
 stagedDetails' :: [CommandParam] -> [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails' ps l repo = guardSafeForLsFiles repo $ do
-	(ls, cleanup) <- pipeNullSplit params repo
+	(ls, cleanup) <- pipeNullSplit' params repo
 	return (map parseStagedDetails ls, cleanup)
   where
 	params = Param "ls-files" : Param "--stage" : Param "-z" : ps ++ 
 		Param "--" : map (File . fromRawFilePath) l
 
-parseStagedDetails :: L.ByteString -> StagedDetails
+parseStagedDetails :: S.ByteString -> StagedDetails
 parseStagedDetails s
-	| null file = (L.toStrict s, Nothing, Nothing)
-	| otherwise = (toRawFilePath file, extractSha sha, readmode mode)
+	| S.null file = (s, Nothing, Nothing)
+	| otherwise = (file, extractSha sha, readmode mode)
   where
-	(metadata, file) = separate (== '\t') (decodeBL' s)
-	(mode, metadata') = separate (== ' ') metadata
-	(sha, _) = separate (== ' ') metadata'
-	readmode = fst <$$> headMaybe . readOct
+	(metadata, file) = separate' (== fromIntegral (ord '\t')) s
+	(mode, metadata') = separate' (== fromIntegral (ord ' ')) metadata
+	(sha, _) = separate' (== fromIntegral (ord ' ')) metadata'
+	readmode = fst <$$> headMaybe . readOct . decodeBS'
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}
