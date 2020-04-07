@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-04-07T15:30:54Z"
+ content="""
+As of 7.20200202.7, initremote and enableremote will refuse to accept
+unknown values:
+
+```
+$ git annex initremote d type=directory directory=/$PWD../dir/ autoenable=yes encryption=none
+initremote d                                         
+git-annex: Bad value for autoenable (expected true or false)
+failed
+git-annex: initremote: 1 failed
+```
+
+Here's your [todo][0] related to those changes.
+
+Rejecting invalid values isn't the more liberal casting of boolean
+values that you're asking for here, but the above behavior would stop
+an initremote caller from misconfiguring the remote, preventing cases
+like the report you link to.
+
+Assuming that taking multiple values for a boolean is a good thing in
+general, it seems like it'd be problematic to switch special remote
+parameters over to this behavior.  The stored config is used when
+enabling it in other repos, so an older version of git-annex would
+see, say, autoenable=yes and not treat it as autoenable=true.  To
+avoid that, I suppose git-annex could map the value onto the currently
+accepted form when storing the config, but I'd guess at that point
+support for multiple ways to say true isn't really worth the
+trade-off.
+
+[0]: https://git-annex.branchable.com/todo/assure_correct_names___40__and_values__41___for_special_remotes_parameters/
+
+"""]]
