@@ -90,7 +90,7 @@ updateIndexLine :: Sha -> TreeItemType -> TopFilePath -> L.ByteString
 updateIndexLine sha treeitemtype file = L.fromStrict $
 	fmtTreeItemType treeitemtype
 	<> " blob "
-	<> fromRef sha
+	<> fromRef' sha
 	<> "\t"
 	<> indexPath file
 
@@ -108,7 +108,7 @@ unstageFile file repo = do
 unstageFile' :: TopFilePath -> Streamer
 unstageFile' p = pureStreamer $ L.fromStrict $
 	"0 "
-	<> fromRef deleteSha
+	<> fromRef' deleteSha
 	<> "\t"
 	<> indexPath p
 

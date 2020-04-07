@@ -10,6 +10,7 @@ module Git.DiffTreeItem (
 ) where
 
 import System.Posix.Types
+import qualified Data.ByteString as S
 
 import Git.FilePath
 import Git.Types
@@ -19,6 +20,6 @@ data DiffTreeItem = DiffTreeItem
 	, dstmode :: FileMode
 	, srcsha :: Sha -- null sha if file was added
 	, dstsha :: Sha -- null sha if file was deleted
-	, status :: String
+	, status :: S.ByteString
 	, file :: TopFilePath
 	} deriving Show

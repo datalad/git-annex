@@ -84,8 +84,11 @@ type RemoteName = String
 newtype Ref = Ref S.ByteString
 	deriving (Eq, Ord, Read, Show)
 
-fromRef :: Ref -> S.ByteString
-fromRef (Ref s) = s
+fromRef :: Ref -> String
+fromRef = decodeBS' . fromRef'
+
+fromRef' :: Ref -> S.ByteString
+fromRef' (Ref s) = s
 
 {- Aliases for Ref. -}
 type Branch = Ref

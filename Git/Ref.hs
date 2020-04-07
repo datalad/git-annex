@@ -17,6 +17,7 @@ import Git.Types
 
 import Data.Char (chr, ord)
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 
 headRef :: Ref
 headRef = Ref "HEAD"
@@ -41,10 +42,11 @@ base = removeBase "refs/heads/" . removeBase "refs/remotes/"
 {- Removes a directory such as "refs/heads/master" from a
  - fully qualified ref. Any ref not starting with it is left as-is. -}
 removeBase :: String -> Ref -> Ref
-removeBase dir (Ref r)
-	| prefix `isPrefixOf` r = Ref (drop (length prefix) r)
-	| otherwise = Ref r
+removeBase dir r
+	| prefix `isPrefixOf` rs = Ref $ encodeBS $ drop (length prefix) rs
+	| otherwise = r
   where
+	rs = fromRef r
 	prefix = case end dir of
 		['/'] -> dir
 		_ -> dir ++ "/"
@@ -53,7 +55,7 @@ removeBase dir (Ref r)
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}
 underBase :: String -> Ref -> Ref
-underBase dir r = Ref $ dir ++ "/" ++ fromRef (base r)
+underBase dir r = Ref $ encodeBS' $ dir ++ "/" ++ fromRef (base r)
 
 {- Convert a branch such as "master" into a fully qualified ref. -}
 branchRef :: Branch -> Ref
@@ -66,21 +68,25 @@ branchRef = underBase "refs/heads"
  - of a repo.
  -}
 fileRef :: RawFilePath -> Ref
-fileRef f = Ref $ ":./" ++ fromRawFilePath f
+fileRef f = Ref $ ":./" <> f
 
 {- Converts a Ref to refer to the content of the Ref on a given date. -}
 dateRef :: Ref -> RefDate -> Ref
-dateRef (Ref r) (RefDate d) = Ref $ r ++ "@" ++ d
+dateRef r (RefDate d) = Ref $ fromRef' r <> "@" <> encodeBS' d
 
 {- A Ref that can be used to refer to a file in the repository as it
  - appears in a given Ref. -}
 fileFromRef :: Ref -> RawFilePath -> Ref
-fileFromRef (Ref r) f = let (Ref fr) = fileRef f in Ref (r ++ fr)
+fileFromRef r f = let (Ref fr) = fileRef f in Ref (fromRef' r <> fr)
 
 {- Checks if a ref exists. -}
 exists :: Ref -> Repo -> IO Bool
 exists ref = runBool
-	[Param "show-ref", Param "--verify", Param "-q", Param $ fromRef ref]
+	[ Param "show-ref"
+	, Param "--verify"
+	, Param "-q"
+	, Param $ fromRef ref
+	]
 
 {- The file used to record a ref. (Git also stores some refs in a
  - packed-refs file.) -}
@@ -107,26 +113,26 @@ sha branch repo = process <$> showref repo
 		]
 	process s
 		| S.null s = Nothing
-		| otherwise = Just $ Ref $ decodeBS' $ firstLine' s
+		| otherwise = Just $ Ref $ firstLine' s
 
 headSha :: Repo -> IO (Maybe Sha)
 headSha = sha headRef
 
 {- List of (shas, branches) matching a given ref or refs. -}
 matching :: [Ref] -> Repo -> IO [(Sha, Branch)]
-matching refs repo =  matching' (map fromRef refs) repo
+matching = matching' []
 
 {- Includes HEAD in the output, if asked for it. -}
 matchingWithHEAD :: [Ref] -> Repo -> IO [(Sha, Branch)]
-matchingWithHEAD refs repo = matching' ("--head" : map fromRef refs) repo
+matchingWithHEAD = matching' [Param "--head"]
 
-{- List of (shas, branches) matching a given ref spec. -}
-matching' :: [String] -> Repo -> IO [(Sha, Branch)]
-matching' ps repo = map gen . lines . decodeBS' <$> 
-	pipeReadStrict (Param "show-ref" : map Param ps) repo
+matching' :: [CommandParam] -> [Ref] -> Repo -> IO [(Sha, Branch)]
+matching' ps rs repo = map gen . S8.lines <$> 
+	pipeReadStrict (Param "show-ref" : ps ++ rps) repo
   where
-	gen l = let (r, b) = separate (== ' ') l
+	gen l = let (r, b) = separate' (== fromIntegral (ord ' ')) l
 		in (Ref r, Ref b)
+	rps = map (Param . fromRef) rs
 
 {- List of (shas, branches) matching a given ref.
  - Duplicate shas are filtered out. -}
@@ -137,7 +143,7 @@ matchingUniq refs repo = nubBy uniqref <$> matching refs repo
 
 {- List of all refs. -}
 list :: Repo -> IO [(Sha, Ref)]
-list = matching' []
+list = matching' [] []
 
 {- Deletes a ref. This can delete refs that are not branches, 
  - which git branch --delete refuses to delete. -}
@@ -145,8 +151,8 @@ delete :: Sha -> Ref -> Repo -> IO ()
 delete oldvalue ref = run
 	[ Param "update-ref"
 	, Param "-d"
-	, Param $ decodeBS' (fromRef ref)
-	, Param $ decodeBS' (fromRef oldvalue)
+	, Param $ fromRef ref
+	, Param $ fromRef oldvalue
 	]
 
 {- Gets the sha of the tree a ref uses. 

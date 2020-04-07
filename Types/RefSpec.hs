@@ -43,10 +43,10 @@ applyRefSpec refspec rs getreflog = go [] refspec
 	go c [] = return (reverse c)
 	go c (AddRef r : rest) = go (r:c) rest
 	go c (AddMatching g : rest) =
-		let add = filter (matchGlob g . decodeBS' . fromRef) rs
+		let add = filter (matchGlob g . fromRef) rs
 		in go (add ++ c) rest
 	go c (AddRefLog : rest) = do
 		reflog <- getreflog
 		go (reflog ++ c) rest
 	go c (RemoveMatching g : rest) = 
-		go (filter (not . matchGlob g . decodeBS' . fromRef) c) rest
+		go (filter (not . matchGlob g . fromRef) c) rest

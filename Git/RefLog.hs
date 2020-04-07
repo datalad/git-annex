@@ -21,7 +21,7 @@ get b = getMulti [b]
 
 {- Gets reflogs for multiple branches. -}
 getMulti :: [Branch] -> Repo -> IO [Sha]
-getMulti bs = get' (map (Param . decodeBS' . fromRef) bs)
+getMulti bs = get' (map (Param . fromRef) bs)
 
 get' :: [CommandParam] -> Repo -> IO [Sha]
 get' ps = mapMaybe (extractSha . S.copy) . S8.lines <$$> pipeReadStrict ps'
