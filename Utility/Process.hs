@@ -1,7 +1,7 @@
 {- System.Process enhancements, including additional ways of running
  - processes, and logging.
  -
- - Copyright 2012-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -53,6 +53,7 @@ import System.Log.Logger
 import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
+import qualified Data.ByteString as S
 
 type CreateProcessRunner = forall a. CreateProcess -> ((Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO a) -> IO a
 
@@ -85,25 +86,20 @@ writeReadProcessEnv
 	-> [String]
 	-> Maybe [(String, String)]
 	-> (Maybe (Handle -> IO ()))
-	-> (Maybe (Handle -> IO ()))
-	-> IO String
-writeReadProcessEnv cmd args environ writestdin adjusthandle = do
+	-> IO S.ByteString
+writeReadProcessEnv cmd args environ writestdin = do
 	(Just inh, Just outh, _, pid) <- createProcess p
 
-	maybe (return ()) (\a -> a inh) adjusthandle
-	maybe (return ()) (\a -> a outh) adjusthandle
-
 	-- fork off a thread to start consuming the output
-	output  <- hGetContents outh
 	outMVar <- newEmptyMVar
-	_ <- forkIO $ E.evaluate (length output) >> putMVar outMVar ()
+	_ <- forkIO $ putMVar outMVar =<< S.hGetContents outh
 
 	-- now write and flush any input
 	maybe (return ()) (\a -> a inh >> hFlush inh) writestdin
 	hClose inh -- done with stdin
 
 	-- wait on the output
-	takeMVar outMVar
+	output <- takeMVar outMVar
 	hClose outh
 
 	-- wait on the process

@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, OverloadedStrings #-}
 
 module Annex.AdjustedBranch (
 	Adjustment(..),
@@ -61,6 +61,7 @@ import qualified Database.Keys
 import Config
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 
 -- How to perform various adjustments to a TreeItem.
 class AdjustTreeItem t where
@@ -128,7 +129,7 @@ newtype BasisBranch = BasisBranch Ref
 -- refs/basis/adjusted/master(unlocked).
 basisBranch :: AdjBranch -> BasisBranch
 basisBranch (AdjBranch adjbranch) = BasisBranch $
-	Ref ("refs/basis/" ++ fromRef (Git.Ref.base adjbranch))
+	Ref ("refs/basis/" <> fromRef' (Git.Ref.base adjbranch))
 
 getAdjustment :: Branch -> Maybe Adjustment
 getAdjustment = fmap fst . adjustedToOriginal
@@ -405,7 +406,8 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 					<||> (resolveMerge (Just updatedorig) tomerge True <&&> commitResolvedMerge commitmode)
 				if merged
 					then do
-						!mergecommit <- liftIO $ extractSha <$> readFile (tmpgit </> "HEAD")
+						!mergecommit <- liftIO $ extractSha
+							<$> S.readFile (tmpgit </> "HEAD")
 						-- This is run after the commit lock is dropped.
 						return $ postmerge mergecommit
 					else return $ return False

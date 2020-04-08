@@ -72,6 +72,8 @@ import Utility.Process.Transcript
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M
+import qualified Data.ByteString as S
+import Data.Char
 
 cmd :: Command
 cmd = withGlobalOptions [jobsOption] $
@@ -444,11 +446,11 @@ importRemote o mergeconfig remote currbranch
 	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
 		Nothing -> noop
 		Just tb -> do
-			let (b, s) = separate (== ':') (Git.fromRef tb)
+			let (b, p) = separate' (== (fromIntegral (ord ':'))) (Git.fromRef' tb)
 			let branch = Git.Ref b
-			let subdir = if null s
+			let subdir = if S.null p
 				then Nothing
-				else Just (asTopFilePath (toRawFilePath s))
+				else Just (asTopFilePath p)
 			Command.Import.seekRemote remote branch subdir
 			void $ mergeRemote remote currbranch mergeconfig o
   where

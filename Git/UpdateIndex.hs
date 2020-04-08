@@ -75,14 +75,14 @@ lsTree (Ref x) repo streamer = do
 	mapM_ streamer s
 	void $ cleanup
   where
-	params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
+	params = map Param ["ls-tree", "-z", "-r", "--full-tree", decodeBS' x]
 lsSubTree :: Ref -> FilePath -> Repo -> Streamer
 lsSubTree (Ref x) p repo streamer = do
 	(s, cleanup) <- pipeNullSplit params repo
 	mapM_ streamer s
 	void $ cleanup
   where
-	params = map Param ["ls-tree", "-z", "-r", "--full-tree", x, p]
+	params = map Param ["ls-tree", "-z", "-r", "--full-tree", decodeBS' x, p]
 
 {- Generates a line suitable to be fed into update-index, to add
  - a given file with a given sha. -}
@@ -90,7 +90,7 @@ updateIndexLine :: Sha -> TreeItemType -> TopFilePath -> L.ByteString
 updateIndexLine sha treeitemtype file = L.fromStrict $
 	fmtTreeItemType treeitemtype
 	<> " blob "
-	<> encodeBS (fromRef sha)
+	<> fromRef' sha
 	<> "\t"
 	<> indexPath file
 
@@ -108,7 +108,7 @@ unstageFile file repo = do
 unstageFile' :: TopFilePath -> Streamer
 unstageFile' p = pureStreamer $ L.fromStrict $
 	"0 "
-	<> encodeBS' (fromRef deleteSha)
+	<> fromRef' deleteSha
 	<> "\t"
 	<> indexPath p
 

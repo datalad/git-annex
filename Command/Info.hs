@@ -181,7 +181,7 @@ dirInfo o dir = showCustom (unwords ["info", dir]) $ do
 
 treeishInfo :: InfoOptions -> String -> Annex ()
 treeishInfo o t = do
-	mi <- getTreeStatInfo o (Git.Ref t)
+	mi <- getTreeStatInfo o (Git.Ref (encodeBS' t))
 	case mi of
 		Nothing -> noInfo t
 		Just i -> showCustom (unwords ["info", t]) $ do

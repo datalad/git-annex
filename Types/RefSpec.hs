@@ -32,7 +32,7 @@ parseRefSpec v = case partitionEithers (map mk $ splitc ':' v) of
 	mk ('+':s)
 		| any (`elem` s) "*?" =
 			Right $ AddMatching $ compileGlob s CaseSensative
-		| otherwise = Right $ AddRef $ Ref s
+		| otherwise = Right $ AddRef $ Ref $ encodeBS s
 	mk ('-':s) = Right $ RemoveMatching $ compileGlob s CaseSensative
 	mk "reflog" = Right AddRefLog
 	mk s = Left $ "bad refspec item \"" ++ s ++ "\" (expected + or - prefix)"

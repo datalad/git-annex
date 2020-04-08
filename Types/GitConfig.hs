@@ -343,7 +343,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexReadOnly = getbool "readonly" False
 		, remoteAnnexCheckUUID = getbool "checkuuid" True
 		, remoteAnnexVerify = getbool "verify" True
-		, remoteAnnexTrackingBranch = Git.Ref <$>
+		, remoteAnnexTrackingBranch = Git.Ref . encodeBS <$>
 			( notempty (getmaybe "tracking-branch")
 			<|> notempty (getmaybe "export-tracking") -- old name
 			)

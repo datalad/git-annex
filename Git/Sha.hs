@@ -5,31 +5,43 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.Sha where
 
 import Common
 import Git.Types
 
+import qualified Data.ByteString as S
+import Data.Char
+
 {- Runs an action that causes a git subcommand to emit a Sha, and strips
  - any trailing newline, returning the sha. -}
-getSha :: String -> IO String -> IO Sha
+getSha :: String -> IO S.ByteString -> IO Sha
 getSha subcommand a = maybe bad return =<< extractSha <$> a
   where
 	bad = error $ "failed to read sha from git " ++ subcommand
 
-{- Extracts the Sha from a string. There can be a trailing newline after
- - it, but nothing else. -}
-extractSha :: String -> Maybe Sha
+{- Extracts the Sha from a ByteString. 
+ -
+ - There can be a trailing newline after it, but nothing else.
+ -}
+extractSha :: S.ByteString -> Maybe Sha
 extractSha s
 	| len `elem` shaSizes = val s
-	| len - 1 `elem` shaSizes && length s' == len - 1 = val s'
+	| len - 1 `elem` shaSizes && S.length s' == len - 1 = val s'
 	| otherwise = Nothing
   where
-	len = length s
-	s' = firstLine s
+	len = S.length s
+	s' = firstLine' s
 	val v
-		| all (`elem` "1234567890ABCDEFabcdef") v = Just $ Ref v
+		| S.all validinsha v = Just $ Ref v
 		| otherwise = Nothing
+	validinsha w = or
+		[ w >= 48 && w <= 57 -- 0-9
+		, w >= 97 && w <= 102 -- a-f
+		, w >= 65 && w <= 70 -- A-F
+		]
 
 {- Sizes of git shas. -}
 shaSizes :: [Int]
@@ -41,7 +53,9 @@ shaSizes =
 {- Git plumbing often uses a all 0 sha to represent things like a
  - deleted file. -}
 nullShas :: [Sha]
-nullShas = map (\n -> Ref (replicate n '0')) shaSizes
+nullShas = map (\n -> Ref (S.replicate n zero)) shaSizes
+  where
+	zero = fromIntegral (ord '0')
 
 {- Sha to provide to git plumbing when deleting a file.
  -

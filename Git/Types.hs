@@ -81,11 +81,14 @@ instance IsString ConfigValue where
 type RemoteName = String
 
 {- A git ref. Can be a sha1, or a branch or tag name. -}
-newtype Ref = Ref String
+newtype Ref = Ref S.ByteString
 	deriving (Eq, Ord, Read, Show)
 
 fromRef :: Ref -> String
-fromRef (Ref s) = s
+fromRef = decodeBS' . fromRef'
+
+fromRef' :: Ref -> S.ByteString
+fromRef' (Ref s) = s
 
 {- Aliases for Ref. -}
 type Branch = Ref

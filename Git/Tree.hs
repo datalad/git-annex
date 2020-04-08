@@ -38,6 +38,7 @@ import System.Posix.Types
 import Control.Monad.IO.Class
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.ByteString.Char8 as S8
 
 newtype Tree = Tree [TreeContent]
 	deriving (Show)
@@ -106,7 +107,7 @@ mkTree (MkTreeHandle cp) l = CoProcess.query cp send receive
 			NewSubTree _ _ -> error "recordSubTree internal error; unexpected NewSubTree"
 			TreeCommit f fm s -> mkTreeOutput fm CommitObject s f
 		hPutStr h "\NUL" -- signal end of tree to --batch
-	receive h = getSha "mktree" (hGetLine h)
+	receive h = getSha "mktree" (S8.hGetLine h)
 
 treeMode :: FileMode
 treeMode = 0o040000

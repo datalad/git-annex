@@ -330,7 +330,7 @@ addLink :: FilePath -> FilePath -> Maybe Key -> Assistant (Maybe Change)
 addLink file link mk = do
 	debug ["add symlink", file]
 	liftAnnex $ do
-		v <- catObjectDetails $ Ref $ ':':file
+		v <- catObjectDetails $ Ref $ encodeBS' $ ':':file
 		case v of
 			Just (currlink, sha, _type)
 				| s2w8 link == L.unpack currlink ->

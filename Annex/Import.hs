@@ -122,7 +122,9 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Nothing -> pure committedtree
 			Just dir -> 
 				let subtreeref = Ref $
-					fromRef committedtree ++ ":" ++ fromRawFilePath (getTopFilePath dir)
+					fromRef' committedtree 
+						<> ":"
+						<> getTopFilePath dir
 				in fromMaybe emptyTree
 					<$> inRepo (Git.Ref.tree subtreeref)
 		updateexportdb importedtree

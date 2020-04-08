@@ -12,6 +12,9 @@ import Git
 import Git.Command
 import Git.Sha
 
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
+
 {- Gets the reflog for a given branch. -}
 get :: Branch -> Repo -> IO [Sha]
 get b = getMulti [b]
@@ -21,7 +24,7 @@ getMulti :: [Branch] -> Repo -> IO [Sha]
 getMulti bs = get' (map (Param . fromRef) bs)
 
 get' :: [CommandParam] -> Repo -> IO [Sha]
-get' ps = mapMaybe extractSha . lines . decodeBS <$$> pipeReadStrict ps'
+get' ps = mapMaybe (extractSha . S.copy) . S8.lines <$$> pipeReadStrict ps'
   where
 	ps' = catMaybes
 		[ Just $ Param "log"

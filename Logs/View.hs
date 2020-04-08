@@ -9,6 +9,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Logs.View (
 	currentView,
 	setView,
@@ -31,6 +33,7 @@ import Logs.File
 import qualified Data.Text as T
 import qualified Data.Set as S
 import Data.Char
+import qualified Data.ByteString as B
 
 setView :: View -> Annex ()
 setView v = do
@@ -54,11 +57,11 @@ recentViews = do
 currentView :: Annex (Maybe View)
 currentView = go =<< inRepo Git.Branch.current
   where
-	go (Just b) | branchViewPrefix `isPrefixOf` fromRef b =
+	go (Just b) | branchViewPrefix `B.isPrefixOf` fromRef' b =
 		headMaybe . filter (\v -> branchView v == b) <$> recentViews
 	go _ = return Nothing
 
-branchViewPrefix :: String
+branchViewPrefix :: B.ByteString
 branchViewPrefix = "refs/heads/views"
 
 {- Generates a git branch name for a View.
@@ -68,10 +71,11 @@ branchViewPrefix = "refs/heads/views"
  -}
 branchView :: View -> Git.Branch
 branchView view
-	| null name = Git.Ref branchViewPrefix
-	| otherwise = Git.Ref $ branchViewPrefix ++ "/" ++ name
+	| B.null name = Git.Ref branchViewPrefix
+	| otherwise = Git.Ref $ branchViewPrefix <> "/" <> name
   where
-	name = intercalate ";" $ map branchcomp (viewComponents view)
+	name = encodeBS' $
+		intercalate ";" $ map branchcomp (viewComponents view)
 	branchcomp c
 		| viewVisible c = branchcomp' c
 		| otherwise = "(" ++ branchcomp' c ++ ")"
@@ -92,7 +96,7 @@ branchView view
 is_branchView :: Git.Branch -> Bool
 is_branchView (Ref b)
 	| b == branchViewPrefix = True
-	| otherwise = (branchViewPrefix ++ "/") `isPrefixOf` b
+	| otherwise = (branchViewPrefix <> "/") `B.isPrefixOf` b
 
 prop_branchView_legal :: View -> Bool
 prop_branchView_legal = Git.Ref.legal False . fromRef . branchView

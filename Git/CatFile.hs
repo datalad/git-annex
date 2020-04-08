@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.CatFile (
 	CatFileHandle,
 	catFileStart,
@@ -22,7 +24,6 @@ module Git.CatFile (
 import System.IO
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as L8
 import qualified Data.Map as M
 import Data.String
 import Data.Char
@@ -69,11 +70,11 @@ catFileStop h = do
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> RawFilePath -> IO L.ByteString
 catFile h branch file = catObject h $ Ref $
-	fromRef branch ++ ":" ++ fromRawFilePath (toInternalGitPath file)
+	fromRef' branch <> ":" <> toInternalGitPath file
 
 catFileDetails :: CatFileHandle -> Branch -> RawFilePath -> IO (Maybe (L.ByteString, Sha, ObjectType))
 catFileDetails h branch file = catObjectDetails h $ Ref $
-	fromRef branch ++ ":" ++ fromRawFilePath (toInternalGitPath file)
+	fromRef' branch <> ":" <> toInternalGitPath file
 
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
@@ -148,7 +149,7 @@ parseResp object l
 	| " missing" `isSuffixOf` l -- less expensive than full check
 		&& l == fromRef object ++ " missing" = Just DNE
 	| otherwise = case words l of
-		[sha, objtype, size] -> case extractSha sha of
+		[sha, objtype, size] -> case extractSha (encodeBS sha) of
 			Just sha' -> case (readObjectType (encodeBS objtype), reads size) of
 				(Just t, [(bytes, "")]) -> 
 					Just $ ParsedResp sha' bytes t
@@ -218,39 +219,39 @@ catTree h treeref = go <$> catObjectDetails h treeref
 catCommit :: CatFileHandle -> Ref -> IO (Maybe Commit)
 catCommit h commitref = go <$> catObjectDetails h commitref
   where
-	go (Just (b, _, CommitObject)) = parseCommit b
+	go (Just (b, _, CommitObject)) = parseCommit (L.toStrict b)
 	go _ = Nothing
 
-parseCommit :: L.ByteString -> Maybe Commit
+parseCommit :: S.ByteString -> Maybe Commit
 parseCommit b = Commit
-	<$> (extractSha . L8.unpack =<< field "tree")
-	<*> Just (maybe [] (mapMaybe (extractSha . L8.unpack)) (fields "parent"))
+	<$> (extractSha =<< field "tree")
+	<*> Just (maybe [] (mapMaybe extractSha) (fields "parent"))
 	<*> (parsemetadata <$> field "author")
 	<*> (parsemetadata <$> field "committer")
-	<*> Just (L8.unpack $ L.intercalate (L.singleton nl) message)
+	<*> Just (decodeBS $ S.intercalate (S.singleton nl) message)
   where
 	field n = headMaybe =<< fields n
 	fields n = M.lookup (fromString n) fieldmap
 	fieldmap = M.fromListWith (++) ((map breakfield) header)
 	breakfield l =
-		let (k, sp_v) = L.break (== sp) l
-		in (k, [L.drop 1 sp_v])
-	(header, message) = separate L.null ls
-	ls = L.split nl b
+		let (k, sp_v) = S.break (== sp) l
+		in (k, [S.drop 1 sp_v])
+	(header, message) = separate S.null ls
+	ls = S.split nl b
 
 	-- author and committer lines have the form: "name <email> date"
 	-- The email is always present, even if empty "<>"
 	parsemetadata l = CommitMetaData
-		{ commitName = whenset $ L.init name_sp
+		{ commitName = whenset $ S.init name_sp
 		, commitEmail = whenset email
-		, commitDate = whenset $ L.drop 2 gt_sp_date
+		, commitDate = whenset $ S.drop 2 gt_sp_date
 		}
 	  where
-		(name_sp, rest) = L.break (== lt) l
-		(email, gt_sp_date) = L.break (== gt) (L.drop 1 rest)
+		(name_sp, rest) = S.break (== lt) l
+		(email, gt_sp_date) = S.break (== gt) (S.drop 1 rest)
 		whenset v
-			| L.null v = Nothing
-			| otherwise = Just (L8.unpack v)
+			| S.null v = Nothing
+			| otherwise = Just (decodeBS v)
 
 	nl = fromIntegral (ord '\n')
 	sp = fromIntegral (ord ' ')

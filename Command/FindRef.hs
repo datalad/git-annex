@@ -22,6 +22,6 @@ seek o = Find.seek o'
   where
 	o' = o 
 		{ Find.keyOptions = Just $ WantBranchKeys $
-			map Git.Ref (Find.findThese o)
+			map (Git.Ref . encodeBS') (Find.findThese o)
 		, Find.findThese = []
 		}

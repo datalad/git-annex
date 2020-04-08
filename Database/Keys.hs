@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Database.Keys (
 	DbHandle,
@@ -44,6 +45,7 @@ import Git.Types
 import Git.Index
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 import qualified System.FilePath.ByteString as P
 
 {- Runs an action that reads from the database.
@@ -237,8 +239,8 @@ reconcileStaged qh = do
 		Nothing -> noop
   where
 	go cur indexcache = do
-		(l, cleanup) <- inRepo $ pipeNullSplit diff
-		changed <- procdiff (map decodeBL' l) False
+		(l, cleanup) <- inRepo $ pipeNullSplit' diff
+		changed <- procdiff l False
 		void $ liftIO cleanup
 		-- Flush database changes immediately
 		-- so other processes can see them.
@@ -278,15 +280,16 @@ reconcileStaged qh = do
 		, Param "--no-ext-diff"
 		]
 	
-	procdiff (info:file:rest) changed = case words info of
-		((':':_srcmode):dstmode:_srcsha:dstsha:_change:[])
-			-- Only want files, not symlinks
-			| dstmode /= decodeBS' (fmtTreeItemType TreeSymlink) -> do
-				maybe noop (reconcile (asTopFilePath (toRawFilePath file)))
-					=<< catKey (Ref dstsha)
-				procdiff rest True
-			| otherwise -> procdiff rest changed
-		_ -> return changed -- parse failed
+	procdiff (info:file:rest) changed
+		| ":" `S.isPrefixOf` info = case S8.words info of
+			(_colonsrcmode:dstmode:_srcsha:dstsha:_change:[])
+				-- Only want files, not symlinks
+				| dstmode /= fmtTreeItemType TreeSymlink -> do
+					maybe noop (reconcile (asTopFilePath file))
+						=<< catKey (Ref dstsha)
+					procdiff rest True
+				| otherwise -> procdiff rest changed
+			_ -> return changed -- parse failed
 	procdiff _ changed = return changed
 
 	-- Note that database writes done in here will not necessarily 

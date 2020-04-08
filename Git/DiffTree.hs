@@ -1,6 +1,6 @@
 {- git diff-tree interface
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,7 +17,9 @@ module Git.DiffTree (
 	commitDiff,
 ) where
 
-import Numeric
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 
 import Common
 import Git
@@ -27,6 +29,7 @@ import Git.FilePath
 import Git.DiffTreeItem
 import qualified Git.Filename
 import qualified Git.Ref
+import Utility.Attoparsec
 
 {- Checks if the DiffTreeItem modifies a file with a given name
  - or under a directory by that name. -}
@@ -89,7 +92,7 @@ commitDiff ref = getdiff (Param "show")
 getdiff :: CommandParam -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 getdiff command params repo = do
 	(diff, cleanup) <- pipeNullSplit ps repo
-	return (parseDiffRaw (map decodeBL diff), cleanup)
+	return (parseDiffRaw diff, cleanup)
   where
 	ps = 
 		command :
@@ -100,26 +103,28 @@ getdiff command params repo = do
 		params
 
 {- Parses --raw output used by diff-tree and git-log. -}
-parseDiffRaw :: [String] -> [DiffTreeItem]
+parseDiffRaw :: [L.ByteString] -> [DiffTreeItem]
 parseDiffRaw l = go l
   where
 	go [] = []
-	go (info:f:rest) = mk info f : go rest
-	go (s:[]) = error $ "diff-tree parse error near \"" ++ s ++ "\""
+	go (info:f:rest) = case A.parse (parserDiffRaw (L.toStrict f)) info of
+		A.Done _ r -> r : go rest
+		A.Fail _ _ err -> error $ "diff-tree parse error: " ++ err
+	go (s:[]) = error $ "diff-tree parse error near \"" ++ decodeBL' s ++ "\""
 
-	mk info f = DiffTreeItem
-		{ srcmode = readmode srcm
-		, dstmode = readmode dstm
-		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
-		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
-		, status = s
-		, file = asTopFilePath $ fromInternalGitPath $ Git.Filename.decode $ toRawFilePath f
-		}
-	  where
-		readmode = fst . Prelude.head . readOct
-
-		-- info = :<srcmode> SP <dstmode> SP <srcsha> SP <dstsha> SP <status>
-		(srcm, past_srcm) = splitAt 7 $ drop 1 info
-		(dstm, past_dstm) = splitAt 7 past_srcm
-		(ssha, past_ssha) = separate (== ' ') past_dstm
-		(dsha, s) = separate (== ' ') past_ssha
+-- :<srcmode> SP <dstmode> SP <srcsha> SP <dstsha> SP <status>
+parserDiffRaw :: RawFilePath -> A.Parser DiffTreeItem
+parserDiffRaw f = DiffTreeItem
+	<$ A8.char ':'
+	<*> octal
+	<* A8.char ' '
+	<*> octal
+	<* A8.char ' '
+	<*> (maybe (fail "bad srcsha") return . extractSha =<< nextword)
+	<* A8.char ' '
+	<*> (maybe (fail "bad dstsha") return . extractSha =<< nextword)
+	<* A8.char ' '
+	<*> A.takeByteString
+	<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f)
+  where
+	nextword = A8.takeTill (== ' ')

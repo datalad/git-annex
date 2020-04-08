@@ -3,3 +3,9 @@ to contain a ByteString, rather than a String, would eliminate a
 fromRawFilePath that uses about 1% of runtime.
 
 [[!tag confirmed]]
+
+> Well, I did the conversion. Running that command does not seem to have 
+> sped up by any appreciable amount. But, I did notice several places where
+> using ByteString is certainly more efficient. It may just be that it
+> doesn't matter if git-annex is IO bound etc. Still, glad I did it.
+> [[done]] --[[Joey]]

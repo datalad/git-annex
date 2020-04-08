@@ -58,7 +58,7 @@ urlCredential = Credential . M.singleton "url"
 
 runCredential :: String -> Credential -> Repo -> IO Credential
 runCredential action input r =
-	parseCredential <$> pipeWriteRead 
+	parseCredential . decodeBS <$> pipeWriteRead 
 		[ Param "credential"
 		, Param action
 		]

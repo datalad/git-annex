@@ -11,6 +11,7 @@ module Utility.Misc (
 	hGetContentsStrict,
 	readFileStrict,
 	separate,
+	separate',
 	firstLine,
 	firstLine',
 	segment,
@@ -53,6 +54,13 @@ separate c l = unbreak $ break c l
 	unbreak r@(a, b)
 		| null b = r
 		| otherwise = (a, tail b)
+
+separate' :: (Word8 -> Bool) -> S.ByteString -> (S.ByteString, S.ByteString)
+separate' c l = unbreak $ S.break c l
+  where
+	unbreak r@(a, b)
+		| S.null b = r
+		| otherwise = (a, S.tail b)
 
 {- Breaks out the first line. -}
 firstLine :: String -> String

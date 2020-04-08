@@ -18,6 +18,7 @@ import qualified Git.Config
 import qualified Git.Ref
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B8
 
 {- The currently checked out branch.
  -
@@ -39,25 +40,27 @@ current r = do
 
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Branch)
-currentUnsafe r = parse . firstLine'
-	<$> pipeReadStrict [Param "symbolic-ref", Param "-q", Param $ fromRef Git.Ref.headRef] r
+currentUnsafe r = parse . firstLine' <$> pipeReadStrict
+	[ Param "symbolic-ref"
+	, Param "-q"
+	, Param $ fromRef Git.Ref.headRef
+	] r
   where
 	parse b
 		| B.null b = Nothing
-		| otherwise = Just $ Git.Ref $ decodeBS b
+		| otherwise = Just $ Git.Ref b
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
 changed :: Branch -> Branch -> Repo -> IO Bool
 changed origbranch newbranch repo
 	| origbranch == newbranch = return False
-	| otherwise = not . null
+	| otherwise = not . B.null
 		<$> changed' origbranch newbranch [Param "-n1"] repo
   where
 
-changed' :: Branch -> Branch -> [CommandParam] -> Repo -> IO String
-changed' origbranch newbranch extraps repo =
-	decodeBS <$> pipeReadStrict ps repo
+changed' :: Branch -> Branch -> [CommandParam] -> Repo -> IO B.ByteString
+changed' origbranch newbranch extraps repo = pipeReadStrict ps repo
   where
 	ps =
 		[ Param "log"
@@ -68,7 +71,7 @@ changed' origbranch newbranch extraps repo =
 {- Lists commits that are in the second branch and not in the first branch. -}
 changedCommits :: Branch -> Branch -> [CommandParam] -> Repo -> IO [Sha]
 changedCommits origbranch newbranch extraps repo = 
-	catMaybes . map extractSha . lines
+	catMaybes . map extractSha . B8.lines
 		<$> changed' origbranch newbranch extraps repo
 	
 {- Check if it's possible to fast-forward from the old
@@ -163,8 +166,7 @@ commitCommand' runner commitmode ps = runner $
  -}
 commit :: CommitMode -> Bool -> String -> Branch -> [Ref] -> Repo -> IO (Maybe Sha)
 commit commitmode allowempty message branch parentrefs repo = do
-	tree <- getSha "write-tree" $
-		decodeBS' <$> pipeReadStrict [Param "write-tree"] repo
+	tree <- getSha "write-tree" $ pipeReadStrict [Param "write-tree"] repo
 	ifM (cancommit tree)
 		( do
 			sha <- commitTree commitmode message parentrefs tree repo

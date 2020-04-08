@@ -158,12 +158,12 @@ buildExported exported = go (exportedTreeish exported : incompleteExportedTreeis
   where
 	go [] = mempty
 	go (r:rs) = rref r <> mconcat [ charUtf8 ' ' <> rref r' | r' <- rs ]
-	rref r = byteString (encodeBS' (Git.fromRef r))
+	rref = byteString . Git.fromRef'
 
 exportedParser :: A.Parser Exported
 exportedParser = Exported <$> refparser <*> many refparser
   where
-	refparser = (Git.Ref . decodeBS <$> A8.takeWhile1 (/= ' ') )
+	refparser = (Git.Ref <$> A8.takeWhile1 (/= ' ') )
 		<* ((const () <$> A8.char ' ') <|> A.endOfInput)
 
 logExportExcluded :: UUID -> ((Git.Tree.TreeItem -> IO ()) -> Annex a) -> Annex a

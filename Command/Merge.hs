@@ -26,7 +26,7 @@ seek [] = do
 	commandAction mergeSyncedBranch
 seek bs = do
 	prepMerge
-	forM_ bs (commandAction . mergeBranch . Git.Ref)
+	forM_ bs (commandAction . mergeBranch . Git.Ref . encodeBS')
 
 mergeAnnexBranch :: CommandStart
 mergeAnnexBranch = starting "merge" (ActionItemOther (Just "git-annex")) $ do

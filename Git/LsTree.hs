@@ -96,7 +96,7 @@ parserLsTree = TreeItem
 	<*> A8.takeTill (== ' ')
 	<* A8.char ' '
 	-- sha
-	<*> (Ref . decodeBS' <$> A8.takeTill (== '\t'))
+	<*> (Ref <$> A8.takeTill (== '\t'))
 	<* A8.char '\t'
 	-- file
 	<*> (asTopFilePath . Git.Filename.decode <$> A.takeByteString)

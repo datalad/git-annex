@@ -50,7 +50,7 @@ data BranchFilePath = BranchFilePath Ref TopFilePath
 {- Git uses the branch:file form to refer to a BranchFilePath -}
 descBranchFilePath :: BranchFilePath -> S.ByteString
 descBranchFilePath (BranchFilePath b f) =
-	encodeBS' (fromRef b) <> ":" <> getTopFilePath f
+	fromRef' b <> ":" <> getTopFilePath f
 
 {- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> RawFilePath

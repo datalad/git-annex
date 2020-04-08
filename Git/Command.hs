@@ -81,11 +81,16 @@ pipeReadStrict' reader params repo = assertLocal repo $
 {- Runs a git command, feeding it an input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory
  - strictly. -}
-pipeWriteRead :: [CommandParam] -> Maybe (Handle -> IO ()) -> Repo -> IO String
+pipeWriteRead :: [CommandParam] -> Maybe (Handle -> IO ()) -> Repo -> IO S.ByteString
 pipeWriteRead params writer repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
-		(gitEnv repo) writer (Just adjusthandle)
+		(gitEnv repo) writer'
   where
+	writer' = case writer of
+		Nothing -> Nothing
+		Just a -> Just $ \h -> do
+			adjusthandle h
+			a h
 	adjusthandle h = hSetNewlineMode h noNewlineTranslation
 
 {- Runs a git command, feeding it input on a handle with an action. -}

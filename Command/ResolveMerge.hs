@@ -13,6 +13,8 @@ import Git.Sha
 import qualified Git.Branch
 import Annex.AutoMerge
 
+import qualified Data.ByteString as S
+
 cmd :: Command
 cmd = command "resolvemerge" SectionPlumbing
 	"resolve merge conflicts"
@@ -27,7 +29,7 @@ start = starting "resolvemerge" (ActionItemOther Nothing) $ do
 	d <- fromRawFilePath <$> fromRepo Git.localGitDir
 	let merge_head = d </> "MERGE_HEAD"
 	them <- fromMaybe (error nomergehead) . extractSha
-		<$> liftIO (readFile merge_head)
+		<$> liftIO (S.readFile merge_head)
 	ifM (resolveMerge (Just us) them False)
 		( do
 			void $ commitResolvedMerge Git.Branch.ManualCommit
