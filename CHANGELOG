@@ -3,6 +3,8 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
   * Improve git-annex's ability to find the path to its program,
     especially when it needs to run itself in another repo to upgrade it.
   * adb: Better messages when the adb command is not installed.
+  * Various speed improvements gained by using ByteStrings for git refs and
+    shas.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 
