@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+
+### What steps will reproduce the problem?
+
+```
+chymera@silenthost /mnt/data/ni_data $ git annex direct
+[...]
+direct ofM.vta/20180730_070313_6592_1_1/8/pdata/1/reco ok
+direct ofM.vta/20180730_070313_6592_1_1/8/pdata/1/visu_pars ok
+direct ofM.vta/20180730_070313_6592_1_1/8/pulseprogram ok
+direct ofM.vta/20180730_070313_6592_1_1/8/specpar ok
+direct ofM.vta/20180730_070313_6592_1_1/8/uxnmr.info ok
+error: git-annex died of signal 11
+chymera@silenthost /mnt/data/ni_data $ git annex direct
+commit
+
+^C
+```
+
+I let it try to resume for a very long time (about a day) and it did nothing.
+
+
+### What version of git-annex are you using? On what operating system?
+
+6.20170818 on Gentoo Linux
+
+### Please provide any additional information below.
+
+This is a fairly large repository which was only just cloned and with all data transferred (`git clone` and `git annex get .` worked fine).
+
+
+
+
