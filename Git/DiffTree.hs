@@ -17,7 +17,6 @@ module Git.DiffTree (
 	commitDiff,
 ) where
 
-import Numeric
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
