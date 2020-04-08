@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-04-08T01:08:10Z"
+ content="""
+> Surely values that git does not even document can be considered to have undefined behavior.
+
+yeah. integers which aren't 0 or 1 are indeed a dark (undocumented) zone. Might be worth contributing to git and making them documented (probably better to not change behavior at this point).
+"""]]
