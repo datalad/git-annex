@@ -1,0 +1,26 @@
+Profiling `git annex find --in web` found that a single decodeFilePath in
+gitAnnexIndex uses 1.4% of time.
+
+The call path is getRef to withIndex to gitAnnexIndex.
+
+The FilePath is put into the environment. Switching to use RawFilePath
+environment when running processes would be a bit involved, because
+System.Process does not support it and would need to be modified/forked.
+(The rawfilepath package did it, but unfortunately also changed its API in
+other ways.)
+
+However... git-annex starts up a single, long-running git cat-file
+process. The only reason it needs to get gitAnnexIndex after that is
+running is to select the git process that is using the right index file.
+
+So, one way would be to make withIndexFile less generic,
+eg a withAnnexIndexFile that does not need the filename to be calculated
+each time.
+
+Or, keep withIndexFile generic but change Annex.cachedgitenv to contain
+ByteStrings, and convert to FilePath only when that environment is used to
+start a new process. (This seems like it would be a little slower than
+the other alternative, since constructing a RawFilePath is also not
+entirely without cost, although significantly faster.)
+
+--[[Joey]] 
