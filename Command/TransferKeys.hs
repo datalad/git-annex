@@ -17,6 +17,7 @@ import qualified Remote
 import Utility.SimpleProtocol (dupIoHandles)
 import Git.Types (RemoteName)
 import qualified Database.Keys
+import Annex.BranchState
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
@@ -29,6 +30,7 @@ seek = withNothing (commandAction start)
 
 start :: CommandStart
 start = do
+	enableInteractiveJournalAccess
 	(readh, writeh) <- liftIO dupIoHandles
 	runRequests readh writeh runner
 	stop

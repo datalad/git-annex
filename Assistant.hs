@@ -50,6 +50,7 @@ import Utility.ThreadScheduler
 import Utility.HumanTime
 import qualified BuildInfo
 import Annex.Perms
+import Annex.BranchState
 import Utility.LogFile
 #ifdef mingw32_HOST_OS
 import Utility.Env
@@ -70,8 +71,8 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
  - stdout and stderr descriptors. -}
 startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = do
-	
 	Annex.changeState $ \s -> s { Annex.daemon = True }
+	enableInteractiveJournalAccess
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
 	liftIO $ debugM desc $ "logging to " ++ logfile

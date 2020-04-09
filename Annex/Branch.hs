@@ -42,6 +42,7 @@ import Data.ByteString.Builder
 import Control.Concurrent (threadDelay)
 
 import Annex.Common
+import Types.BranchState
 import Annex.BranchState
 import Annex.Journal
 import Annex.GitOverlay
@@ -123,7 +124,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 
 {- Ensures that the branch and index are up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run. -}
-update :: Annex ()
+update :: Annex BranchState
 update = runUpdateOnce $ void $ updateTo =<< siblingBranches
 
 {- Forces an update even if one has already been run. -}
@@ -221,8 +222,10 @@ updateTo' pairs = do
  - Returns an empty string if the file doesn't exist yet. -}
 get :: RawFilePath -> Annex L.ByteString
 get file = do
-	update
-	getLocal file
+	st <- update
+	if journalIgnorable st
+		then getRef fullname file
+		else getLocal file
 
 {- Like get, but does not merge the branch, so the info returned may not
  - reflect changes in remotes.
@@ -274,7 +277,9 @@ maybeChange file f = lockJournal $ \jl -> do
 
 {- Records new content of a file into the journal -}
 set :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex ()
-set = setJournalFile
+set jl f c = do
+	journalChanged
+	setJournalFile jl f c
 
 {- Commit message used when making a commit of whatever data has changed
  - to the git-annex brach. -}
@@ -359,7 +364,7 @@ commitIndex' jl branchref message basemessage retrynum parents = do
  - that have not been committed yet. There may be duplicates in the list. -}
 files :: Annex [RawFilePath]
 files = do
-	update
+	_  <- update
 	-- ++ forces the content of the first list to be buffered in memory,
 	-- so use getJournalledFilesStale which should be much smaller most
 	-- of the time. branchFiles will stream as the list is consumed.

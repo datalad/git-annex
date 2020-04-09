@@ -14,6 +14,7 @@ import CmdLine.GitAnnex.Options
 import Options.Applicative
 import Limit
 import Types.FileMatcher
+import Annex.BranchState
 
 data BatchMode = Batch BatchFormat | NoBatch
 
@@ -72,7 +73,9 @@ batchInput fmt parser a = go =<< batchLines fmt
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
 batchLines :: BatchFormat -> Annex [String]
-batchLines fmt = liftIO $ splitter <$> getContents
+batchLines fmt = do
+	enableInteractiveJournalAccess
+	liftIO $ splitter <$> getContents
   where
 	splitter = case fmt of
 		BatchLine -> lines

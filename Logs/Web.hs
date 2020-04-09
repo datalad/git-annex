@@ -90,7 +90,7 @@ knownUrls = do
 	{- Ensure the git-annex branch's index file is up-to-date and
 	 - any journaled changes are reflected in it, since we're going
 	 - to query its index directly. -}
-	Annex.Branch.update
+	_ <- Annex.Branch.update
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	Annex.Branch.withIndex $ do
 		top <- fromRepo Git.repoPath

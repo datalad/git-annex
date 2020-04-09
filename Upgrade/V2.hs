@@ -102,12 +102,12 @@ push = do
 			-- will immediately work. Not pushed here,
 			-- because it's less obnoxious to let the user
 			-- push.
-			Annex.Branch.update
+			void Annex.Branch.update
 		(True, False) -> do
 			-- push git-annex to origin, so that
 			-- "git push" will from then on
 			-- automatically push it
-			Annex.Branch.update -- just in case
+			void Annex.Branch.update -- just in case
 			showAction "pushing new git-annex branch to origin"
 			showOutput
 			inRepo $ Git.Command.run
@@ -118,7 +118,7 @@ push = do
 		_ -> do
 			-- no origin exists, so just let the user
 			-- know about the new branch
-			Annex.Branch.update
+			void Annex.Branch.update
 			showLongNote $
 				"git-annex branch created\n" ++
 				"Be sure to push this branch when pushing to remotes.\n"

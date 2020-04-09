@@ -22,6 +22,7 @@ import Utility.SimpleProtocol
 import Utility.ThreadScheduler
 import Config
 import Annex.Ssh
+import Annex.BranchState
 import Types.Messages
 
 import Control.Concurrent
@@ -163,7 +164,9 @@ genTransportHandle = do
 	annexstate <- newMVar =<< Annex.new =<< Git.CurrentRepo.get
 	g <- Annex.repo <$> readMVar annexstate
 	let h = TransportHandle (LocalRepo g) annexstate
-	liftAnnex h $ Annex.setOutput QuietOutput
+	liftAnnex h $ do
+		Annex.setOutput QuietOutput
+		enableInteractiveJournalAccess
 	return h
 
 updateTransportHandle :: TransportHandle -> IO TransportHandle

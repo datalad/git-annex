@@ -30,7 +30,7 @@ seek bs = do
 
 mergeAnnexBranch :: CommandStart
 mergeAnnexBranch = starting "merge" (ActionItemOther (Just "git-annex")) $ do
-	Annex.Branch.update
+	_ <- Annex.Branch.update
 	-- commit explicitly, in case no remote branches were merged
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	next $ return True

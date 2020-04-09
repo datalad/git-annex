@@ -45,7 +45,7 @@ perform :: Transitions -> Bool -> CommandPerform
 perform ts True = do
 	recordTransitions Branch.change ts
 	-- get branch committed before contining with the transition
-	Branch.update
+	_ <- Branch.update
 	void $ Branch.performTransitions ts True []
 	next $ return True
 perform _ False = do

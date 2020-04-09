@@ -11,13 +11,23 @@ What if, once at startup, it checked if the journal was entirely empty.
 If so, it can remember that, and avoid reading journal files.
 Perhaps paired with staging the journal if it's not empty.
 
+When a process writes to the journal, it will need to update its state
+to remember it's no longer empty.
+
 This could lead to behavior changes in some cases where one command is
 writing changes and another command used to read them from the journal and
 may no longer do so. But any such behavior change is of a behavior that
 used to involve a race; the reader could just as well be ahead of the
 writer and it would have already behaved as it would after the change.
 
-But: When a process writes to the journal, it will need to update its state
-to remember it's no longer empty. --[[Joey]]
+> Hmm, not so fast. If the user has two --batch processes, one that makes
+> changes and the other that queries, they will expect the querying process
+> to see the changes after they were made. There's no race, the user can
+> control which process runs by feeding batch inputs to them.
+> 
+> So, --batch and the assistant, as well as batch-like things that don't
+> use --batch will need to disable this optimisation it seems. --[[Joey]]
 
 [[!tag confirmed]]
+
+>> [[done]] speedup was around 5% --[[Joey]]

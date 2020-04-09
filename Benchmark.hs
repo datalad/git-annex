@@ -28,7 +28,7 @@ mkGenerator cmds userinput = do
 	-- so skewing the runtime of the first action that will be
 	-- benchmarked.
 	Annex.Branch.commit "benchmarking"
-	Annex.Branch.update
+	_ <- Annex.Branch.update
 	l <- mapM parsesubcommand $ split [";"] userinput
 	return $ do
 		forM_ l $ \(cmd, seek, st) ->
