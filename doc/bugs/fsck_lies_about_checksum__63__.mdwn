@@ -6,8 +6,7 @@ Well there is a (checksum...) ok output if the file exists, but I find 'ok' to b
 
 ### What steps will reproduce the problem?
 
-Just drop a file in the repo and than fsck it. git-annex will tell you that the checksum
-is okay but the file dosen't exits.
+Just drop/move a file in the repo and than fsck it. git-annex will tell you 'ok' but the file dosen't exits.
 
 ```sh
 sc@section9 ~/t/repo2> git status
