@@ -1,0 +1,76 @@
+### Please describe the problem.
+
+git-annex fsck tells ok, if there is no file present - is this behavior correct? I would expect git-annex to tell me that the file is not available.
+Well there is a (checksum...) ok output if the file exists, but I find 'ok' to be misleading if there is no file present. You could think that the file was checked and the checksum was correct - but this is not the case.
+
+
+### What steps will reproduce the problem?
+
+Just drop/move a file in the repo and than fsck it. git-annex will tell you 'ok' but the file dosen't exits.
+
+```sh
+sc@section9 ~/t/repo2> git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+nothing to commit, working tree clean
+sc@section9 ~/t/repo2> git annex info XMonad.png 
+file: XMonad.png
+size: 397.17 kilobytes
+key: SHA256E-s397167--4114f98837a83581add0f513ac2c1f0257ad8de0c18614ca30a9a5dbfe7a5904.png
+present: true
+sc@section9 ~/t/repo2> git annex fsck XMonad.png 
+fsck XMonad.png (checksum...) ok
+(recording state in git...)
+sc@section9 ~/t/repo2> git annex move --to origin XMonad.png
+move XMonad.png ok
+(recording state in git...)
+sc@section9 ~/t/repo2> git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+nothing to commit, working tree clean
+sc@section9 ~/t/repo2> git annex info XMonad.png 
+file: XMonad.png
+size: 397.17 kilobytes
+key: SHA256E-s397167--4114f98837a83581add0f513ac2c1f0257ad8de0c18614ca30a9a5dbfe7a5904.png
+present: false
+sc@section9 ~/t/repo2> git annex fsck XMonad.png 
+fsck XMonad.png ok   # ok? well there is no file, how can git-annex tell me that Xmonad.png checksum is okay?
+(recording state in git...)
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```sh
+sc@section9 ~/t/repo2> git annex version
+git-annex version: 8.20200330
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.3 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+
+
+sc@section9 ~> cat /etc/issue 
+
+<<< Welcome to NixOS 19.09.2370.e10c65cdb35 (\m) - \l >>>
+
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
