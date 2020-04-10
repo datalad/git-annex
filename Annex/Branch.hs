@@ -170,15 +170,18 @@ updateTo' pairs = do
 	if null tomerge
 		{- Even when no refs need to be merged, the index
 		 - may still be updated if the branch has gotten ahead 
-		 - of the index. -}
-		then do
-			whenM (needUpdateIndex branchref) $ lockJournal $ \jl -> do
+		 - of the index, or just if the journal is dirty. -}
+		then ifM (needUpdateIndex branchref)
+			( lockJournal $ \jl -> do
 				forceUpdateIndex jl branchref
 				{- When there are journalled changes
 				 - as well as the branch being updated,
 				 - a commit needs to be done. -}
 				when dirty $
-					go branchref True [] jl
+					go branchref dirty [] jl
+			, when dirty $
+				lockJournal $ go branchref dirty []
+			)
 		else lockJournal $ go branchref dirty tomerge
 	return $ not $ null tomerge
   where
