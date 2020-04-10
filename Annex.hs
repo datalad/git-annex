@@ -67,6 +67,7 @@ import Types.DesktopNotify
 import Types.CleanupActions
 import Types.AdjustedBranch
 import Types.WorkerPool
+import Types.IndexFiles
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
@@ -148,7 +149,7 @@ data AnnexState = AnnexState
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
 	, keysdbhandle :: Maybe Keys.DbHandle
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
-	, cachedgitenv :: Maybe (FilePath, [(String, String)])
+	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	}
 

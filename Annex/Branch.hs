@@ -419,14 +419,12 @@ prepareModifyIndex _jl = do
 withIndex :: Annex a -> Annex a
 withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
-withIndex' bootstrapping a = do
-	f <- fromRepo gitAnnexIndex
-	withIndexFile f $ do
-		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
-			unless bootstrapping create
-			createAnnexDirectory $ takeDirectory f
-			unless bootstrapping $ inRepo genIndex
-		a
+withIndex' bootstrapping a = withIndexFile AnnexIndexFile $ \f -> do
+	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
+		unless bootstrapping create
+		createAnnexDirectory $ takeDirectory f
+		unless bootstrapping $ inRepo genIndex
+	a
 
 {- Updates the branch's index to reflect the current contents of the branch.
  - Any changes staged in the index will be preserved.

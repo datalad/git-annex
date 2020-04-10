@@ -1,15 +1,19 @@
 {- Temporarily changing the files git uses.
  -
- - Copyright 2014-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.GitOverlay where
+module Annex.GitOverlay (
+	module Annex.GitOverlay,
+	AltIndexFile(..),
+) where
 
 import qualified Control.Exception as E
 
 import Annex.Common
+import Types.IndexFiles
 import Git
 import Git.Types
 import Git.Index
@@ -18,13 +22,8 @@ import qualified Annex
 import qualified Annex.Queue
 
 {- Runs an action using a different git index file. -}
-withIndexFile :: FilePath -> Annex a -> Annex a
-withIndexFile f a = do
-	f' <- liftIO $ indexEnvVal f
-	withAltRepo
-		(usecachedgitenv f' $ \g -> addGitEnv g indexEnv f')
-		(\g g' -> g' { gitEnv = gitEnv g })
-		a
+withIndexFile :: AltIndexFile -> (FilePath -> Annex a) -> Annex a
+withIndexFile i = withAltRepo usecachedgitenv restoregitenv
   where
 	-- This is an optimisation. Since withIndexFile is run repeatedly,
 	-- typically with the same file, and addGitEnv uses the slow
@@ -37,22 +36,40 @@ withIndexFile f a = do
 	-- Git object in the first place, but it's more efficient to let
 	-- the environment be inherited in all calls to git where it
 	-- does not need to be modified.)
-	usecachedgitenv f' m g = case gitEnv g of
-		Just _ -> liftIO $ m g
+	--
+	-- Also, the use of AltIndexFile avoids needing to construct
+	-- the FilePath each time, which saves enough time to be worth the
+	-- added complication.
+	usecachedgitenv g = case gitEnv g of
 		Nothing -> Annex.withState $ \s -> case Annex.cachedgitenv s of
-			Just (cachedf, cachede) | f' == cachedf ->
-				return (s, g { gitEnv = Just cachede })
+			Just (cachedi, cachedf, cachede) | i == cachedi ->
+				return (s, (g { gitEnv = Just cachede }, cachedf))
 			_ -> do
-				g' <- m g
-				return (s { Annex.cachedgitenv = (,) <$> Just f' <*> gitEnv g' }, g')
+				r@(g', f) <- addindex g
+				let cache = (,,)
+					<$> Just i
+					<*> Just f
+					<*> gitEnv g'
+				return (s { Annex.cachedgitenv = cache }, r)
+		Just _ -> liftIO $ addindex g
+	
+	addindex g = do
+		f <- indexEnvVal $ case i of
+			AnnexIndexFile -> gitAnnexIndex g
+			ViewIndexFile -> gitAnnexViewIndex g
+		g' <- addGitEnv g indexEnv f
+		return (g', f)
+	
+	restoregitenv g g' = g' { gitEnv = gitEnv g }
 
 {- Runs an action using a different git work tree.
  -
  - Smudge and clean filters are disabled in this work tree. -}
 withWorkTree :: FilePath -> Annex a -> Annex a
-withWorkTree d = withAltRepo
-	(\g -> return $ g { location = modlocation (location g), gitGlobalOpts = gitGlobalOpts g ++ disableSmudgeConfig })
+withWorkTree d a = withAltRepo
+	(\g -> return $ (g { location = modlocation (location g), gitGlobalOpts = gitGlobalOpts g ++ disableSmudgeConfig }, ()))
 	(\g g' -> g' { location = location g, gitGlobalOpts = gitGlobalOpts g })
+	(const a)
   where
 	modlocation l@(Local {}) = l { worktree = Just (toRawFilePath d) }
 	modlocation _ = error "withWorkTree of non-local git repo"
@@ -70,29 +87,29 @@ withWorkTree d = withAltRepo
  - Needs git 2.2.0 or newer.
  -}
 withWorkTreeRelated :: FilePath -> Annex a -> Annex a
-withWorkTreeRelated d = withAltRepo modrepo unmodrepo
+withWorkTreeRelated d a = withAltRepo modrepo unmodrepo (const a)
   where
 	modrepo g = liftIO $ do
 		g' <- addGitEnv g "GIT_COMMON_DIR"
 			=<< absPath (fromRawFilePath (localGitDir g))
 		g'' <- addGitEnv g' "GIT_DIR" d
-		return (g'' { gitEnvOverridesGitDir = True })
+		return (g'' { gitEnvOverridesGitDir = True }, ())
 	unmodrepo g g' = g'
 		{ gitEnv = gitEnv g
 		, gitEnvOverridesGitDir = gitEnvOverridesGitDir g
 		}
 
 withAltRepo 
-	:: (Repo -> Annex Repo)
+	:: (Repo -> Annex (Repo, t))
 	-- ^ modify Repo
 	-> (Repo -> Repo -> Repo)
 	-- ^ undo modifications; first Repo is the original and second
 	-- is the one after running the action.
-	-> Annex a
+	-> (t -> Annex a)
 	-> Annex a
 withAltRepo modrepo unmodrepo a = do
 	g <- gitRepo
-	g' <- modrepo g
+	(g', t) <- modrepo g
 	q <- Annex.Queue.get
 	v <- tryNonAsync $ do
 		Annex.changeState $ \s -> s
@@ -101,7 +118,7 @@ withAltRepo modrepo unmodrepo a = do
 			-- with the modified repo.
 			, Annex.repoqueue = Nothing
 			}
-		a
+		a t
 	void $ tryNonAsync Annex.Queue.flush
 	Annex.changeState $ \s -> s
 		{ Annex.repo = unmodrepo g (Annex.repo s)

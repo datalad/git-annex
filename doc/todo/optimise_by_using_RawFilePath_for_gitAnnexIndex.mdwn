@@ -24,3 +24,5 @@ the other alternative, since constructing a RawFilePath is also not
 entirely without cost, although significantly faster.)
 
 --[[Joey]] 
+
+> [[done]], and benchmarking shows at least 1.75% speedup --[[Joey]]

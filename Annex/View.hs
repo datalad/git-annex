@@ -412,9 +412,7 @@ withViewChanges addmeta removemeta = do
  - Note that the file does not necessarily exist, or can contain
  - info staged for an old view. -}
 withViewIndex :: Annex a -> Annex a
-withViewIndex a = do
-	f <- fromRepo gitAnnexViewIndex
-	withIndexFile f a
+withViewIndex = withIndexFile ViewIndexFile . const
 
 {- Generates a branch for a view, using the view index file
  - to make a commit to the view branch. The view branch is not

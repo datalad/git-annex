@@ -988,6 +988,7 @@ Executable git-annex
     Types.GitConfig
     Types.Group
     Types.Import
+    Types.IndexFiles
     Types.Key
     Types.KeySource
     Types.LockCache
