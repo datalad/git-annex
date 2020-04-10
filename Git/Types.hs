@@ -101,6 +101,7 @@ newtype RefDate = RefDate String
 
 {- Types of objects that can be stored in git. -}
 data ObjectType = BlobObject | CommitObject | TreeObject
+	deriving (Show)
 
 readObjectType :: S.ByteString -> Maybe ObjectType
 readObjectType "blob" = Just BlobObject

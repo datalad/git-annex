@@ -1,6 +1,6 @@
 {- git cat-file interface
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,9 @@ module Git.CatFile (
 import System.IO
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Char8 as S8
+import qualified Data.Attoparsec.ByteString as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 import qualified Data.Map as M
 import Data.String
 import Data.Char
@@ -83,9 +86,9 @@ catObject h object = maybe L.empty fst3 <$> catObjectDetails h object
 
 catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha, ObjectType))
 catObjectDetails h object = query (catFileProcess h) object newlinefallback $ \from -> do
-	header <- hGetLine from
+	header <- S8.hGetLine from
 	case parseResp object header of
-		Just (ParsedResp sha size objtype) -> do
+		Just (ParsedResp sha objtype size) -> do
 			content <- S.hGet from (fromIntegral size)
 			eatchar '\n' from
 			return $ Just (L.fromChunks [content], sha, objtype)
@@ -113,9 +116,9 @@ catObjectDetails h object = query (catFileProcess h) object newlinefallback $ \f
 {- Gets the size and type of an object, without reading its content. -}
 catObjectMetaData :: CatFileHandle -> Ref -> IO (Maybe (Sha, FileSize, ObjectType))
 catObjectMetaData h object = query (checkFileProcess h) object newlinefallback $ \from -> do
-	resp <- hGetLine from
+	resp <- S8.hGetLine from
 	case parseResp object resp of
-		Just (ParsedResp sha size objtype) ->
+		Just (ParsedResp sha objtype size) ->
 			return $ Just (sha, size, objtype)
 		Just DNE -> return Nothing
 		Nothing -> error $ "unknown response from git cat-file " ++ show (resp, object)
@@ -127,35 +130,39 @@ catObjectMetaData h object = query (checkFileProcess h) object newlinefallback $
 		objtype <- queryObjectType object (gitRepo h)
 		return $ (,,) <$> sha <*> sz <*> objtype
 
-data ParsedResp = ParsedResp Sha FileSize ObjectType | DNE
+data ParsedResp = ParsedResp Sha ObjectType FileSize | DNE
+	deriving (Show)
 
 query :: CoProcess.CoProcessHandle -> Ref -> IO a -> (Handle -> IO a) -> IO a
 query hdl object newlinefallback receive
 	-- git cat-file --batch uses a line based protocol, so when the
 	-- filename itself contains a newline, have to fall back to another
 	-- method of getting the information.
-	| '\n' `elem` s = newlinefallback
+	| '\n' `S8.elem` s = newlinefallback
 	-- git strips carriage return from the end of a line, out of some
 	-- misplaced desire to support windows, so also use the newline
 	-- fallback for those.
-	| "\r" `isSuffixOf` s = newlinefallback
+	| "\r" `S8.isSuffixOf` s = newlinefallback
 	| otherwise = CoProcess.query hdl send receive
   where
-	send to = hPutStrLn to s
-	s = fromRef object
+	send to = S8.hPutStrLn to s
+	s = fromRef' object
 
-parseResp :: Ref -> String -> Maybe ParsedResp
-parseResp object l 
-	| " missing" `isSuffixOf` l -- less expensive than full check
-		&& l == fromRef object ++ " missing" = Just DNE
-	| otherwise = case words l of
-		[sha, objtype, size] -> case extractSha (encodeBS sha) of
-			Just sha' -> case (readObjectType (encodeBS objtype), reads size) of
-				(Just t, [(bytes, "")]) -> 
-					Just $ ParsedResp sha' bytes t
-				_ -> Nothing
-			Nothing -> Nothing
-		_ -> Nothing
+parseResp :: Ref -> S.ByteString -> Maybe ParsedResp
+parseResp object s
+	| " missing" `S.isSuffixOf` s -- less expensive than full check
+		&& s == fromRef' object <> " missing" = Just DNE
+	| otherwise = eitherToMaybe $ A.parseOnly respParser s
+
+respParser :: A.Parser ParsedResp
+respParser = ParsedResp
+	<$> (maybe (fail "bad sha") return . extractSha =<< nextword)
+	<* A8.char ' '
+	<*> (maybe (fail "bad object type") return . readObjectType =<< nextword)
+	<* A8.char ' '
+	<*> A8.decimal
+  where
+	nextword = A8.takeTill (== ' ')
 
 querySingle :: CommandParam -> Ref -> Repo -> (Handle -> IO a) -> IO (Maybe a)
 querySingle o r repo reader = assertLocal repo $
