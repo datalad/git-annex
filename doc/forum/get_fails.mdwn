@@ -2,8 +2,10 @@ Running
 
 ```git annex get . --from=remote```
 
-on a repository fails for particular annexed files.
+on a repository fails for particular annexed files despite the files being in the remote.
 
-Any idea what the issue could be?
+I tried running `git annex fsck` in the repository but that did not seem to help.
+
+Any idea what the issue could be? 
 
 Thanks
