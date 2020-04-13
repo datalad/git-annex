@@ -59,7 +59,7 @@ read' repo = go repo
 	go Repo { location = LocalUnknown d } = git_config d
 	go _ = assertLocal repo $ error "internal"
 	git_config d = withHandle StdoutHandle createProcessSuccess p $
-		hRead repo
+		hRead repo ConfigNullList
 	  where
 		params = ["config", "--null", "--list"]
 		p = (proc "git" params)
@@ -74,7 +74,7 @@ global = do
 	ifM (doesFileExist $ home </> ".gitconfig")
 		( do
 			repo <- withHandle StdoutHandle createProcessSuccess p $
-				hRead (Git.Construct.fromUnknown)
+				hRead (Git.Construct.fromUnknown) ConfigNullList
 			return $ Just repo
 		, return Nothing
 		)
@@ -83,18 +83,18 @@ global = do
 	p = (proc "git" params)
 
 {- Reads git config from a handle and populates a repo with it. -}
-hRead :: Repo -> Handle -> IO Repo
-hRead repo h = do
+hRead :: Repo -> ConfigStyle -> Handle -> IO Repo
+hRead repo st h = do
 	val <- S.hGetContents h
-	store val repo
+	store val st repo
 
 {- Stores a git config into a Repo, returning the new version of the Repo.
  - The git config may be multiple lines, or a single line.
  - Config settings can be updated incrementally.
  -}
-store :: S.ByteString -> Repo -> IO Repo
-store s repo = do
-	let c = parse s
+store :: S.ByteString -> ConfigStyle -> Repo -> IO Repo
+store s st repo = do
+	let c = parse s st
 	updateLocation $ repo
 		{ config = (M.map Prelude.head c) `M.union` config repo
 		, fullconfig = M.unionWith (++) c (fullconfig repo)
@@ -137,21 +137,19 @@ updateLocation' r l = do
 			return $ l { worktree = Just (toRawFilePath p) }
 	return $ r { location = l' }
 
+data ConfigStyle = ConfigList | ConfigNullList
+
 {- Parses git config --list or git config --null --list output into a
  - config map. -}
-parse :: S.ByteString -> M.Map ConfigKey [ConfigValue]
-parse s
+parse :: S.ByteString -> ConfigStyle -> M.Map ConfigKey [ConfigValue]
+parse s st
 	| S.null s = M.empty
-	-- --list output will have a '=' in the first line
-	-- (The first line of --null --list output is the name of a key,
-	-- which is assumed to never contain '='.)
-	| S.elem eq firstline = sep eq $ S.split nl s
-	-- --null --list output separates keys from values with newlines
-	| otherwise = sep nl $ S.split 0 s
+	| otherwise = case st of
+		ConfigList -> sep eq $ S.split nl s
+		ConfigNullList -> sep nl $ S.split 0 s
   where
 	nl = fromIntegral (ord '\n')
 	eq = fromIntegral (ord '=')
-	firstline = S.takeWhile (/= nl) s
 
 	sep c = M.fromListWith (++)
 		. map (\(k,v) -> (ConfigKey k, [ConfigValue (S.drop 1 v)])) 
@@ -186,14 +184,14 @@ coreBare = "core.bare"
 {- Runs a command to get the configuration of a repo,
  - and returns a repo populated with the configuration, as well as the raw
  - output and any standard output of the command. -}
-fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
-fromPipe r cmd params = try $
+fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
+fromPipe r cmd params st = try $
 	withOEHandles createProcessSuccess p $ \(hout, herr) -> do
 		geterr <- async $ S.hGetContents herr
 		getval <- async $ S.hGetContents hout
 		val <- wait getval
 		err <- wait geterr
-		r' <- store val r
+		r' <- store val st r
 		return (r', val, err)
   where
 	p = proc cmd $ toCommand params
@@ -206,7 +204,7 @@ fromFile r f = fromPipe r "git"
 	, Param "--file"
 	, File f
 	, Param "--list"
-	]
+	] ConfigList
 
 {- Changes a git config setting in the specified config file.
  - (Creates the file if it does not already exist.) -}

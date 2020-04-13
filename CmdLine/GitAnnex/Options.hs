@@ -96,7 +96,7 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 	setgitconfig v = Annex.adjustGitRepo $ \r -> 
 		if Param v `elem` gitGlobalOpts r
 			then return r
-			else Git.Config.store (encodeBS' v) $ 
+			else Git.Config.store (encodeBS' v) Git.Config.ConfigList $ 
 				r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] }
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
 

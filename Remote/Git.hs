@@ -249,7 +249,7 @@ tryGitConfigRead autoinit r
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
-			(pipedconfig autoinit (Git.repoDescribe r), return (Left $ giveup "configlist failed"))
+			(pipedconfig Git.Config.ConfigList autoinit (Git.repoDescribe r), return (Left $ giveup "configlist failed"))
 			"configlist" [] configlistfields
 		case v of
 			Right r'
@@ -264,8 +264,8 @@ tryGitConfigRead autoinit r
   where
 	haveconfig = not . M.null . Git.config
 
-	pipedconfig mustincludeuuuid configloc cmd params = do
-		v <- liftIO $ Git.Config.fromPipe r cmd params
+	pipedconfig st mustincludeuuuid configloc cmd params = do
+		v <- liftIO $ Git.Config.fromPipe r cmd params st
 		case v of
 			Right (r', val, _err) -> do
 				unless (isUUIDConfigured r' || S.null val || not mustincludeuuuid) $ do
@@ -282,7 +282,7 @@ tryGitConfigRead autoinit r
 			liftIO $ hClose h
 			let url = Git.repoLocation r ++ "/config"
 			ifM (liftIO $ Url.downloadQuiet nullMeterUpdate url tmpfile uo)
-				( Just <$> pipedconfig False url "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
+				( Just <$> pipedconfig Git.Config.ConfigNullList False url "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return Nothing
 				)
 		case v of

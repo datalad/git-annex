@@ -6,6 +6,7 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
   * Sped up query commands that read the git-annex branch by around 9%.
   * Various speed improvements gained by using ByteStrings for git refs and
     shas.
+  * Fix a potential failure to parse git config.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

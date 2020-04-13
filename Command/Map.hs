@@ -222,18 +222,18 @@ tryScan r
 		Nothing -> return $ Just r
 	| otherwise = liftIO $ safely $ Git.Config.read r
   where
-	pipedconfig pcmd params = liftIO $ safely $
+	pipedconfig st pcmd params = liftIO $ safely $
 		withHandle StdoutHandle createProcessSuccess p $
-			Git.Config.hRead r
+			Git.Config.hRead r st
 	  where
 		p = proc pcmd $ toCommand params
 
 	configlist = Ssh.onRemote NoConsumeStdin r
-		(pipedconfig, return Nothing) "configlist" [] []
+		(pipedconfig Git.Config.ConfigList, return Nothing) "configlist" [] []
 	manualconfiglist = do
 		gc <- Annex.getRemoteGitConfig r
 		(sshcmd, sshparams) <- Ssh.toRepo NoConsumeStdin r gc remotecmd
-		liftIO $ pipedconfig sshcmd sshparams
+		liftIO $ pipedconfig Git.Config.ConfigNullList sshcmd sshparams
 	  where
 		remotecmd = "sh -c " ++ shellEscape
 			(cddir ++ " && " ++ "git config --null --list")
