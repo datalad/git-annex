@@ -84,12 +84,17 @@ parseRemoteLocation s repo = ret $ calcloc s
 	  where
 		replacement = decodeBS' $ S.drop (S.length prefix) $
 			S.take (S.length bestkey - S.length suffix) bestkey
-		(ConfigKey bestkey, ConfigValue bestvalue) = maximumBy longestvalue insteadofs
+		(bestkey, bestvalue) = 
+			case maximumBy longestvalue insteadofs of
+				(ConfigKey k, ConfigValue v) -> (k, v)
+				(ConfigKey k, NoConfigValue) -> (k, mempty)
 		longestvalue (_, a) (_, b) = compare b a
-		insteadofs = filterconfig $ \(ConfigKey k, ConfigValue v) -> 
-			prefix `S.isPrefixOf` k &&
-			suffix `S.isSuffixOf` k &&
-			v `S.isPrefixOf` encodeBS l
+		insteadofs = filterconfig $ \case
+			(ConfigKey k, ConfigValue v) -> 
+				prefix `S.isPrefixOf` k &&
+				suffix `S.isSuffixOf` k &&
+				v `S.isPrefixOf` encodeBS l
+			(_, NoConfigValue) -> False
 		filterconfig f = filter f $
 			concatMap splitconfigs $ M.toList $ fullconfig repo
 		splitconfigs (k, vs) = map (\v -> (k, v)) vs

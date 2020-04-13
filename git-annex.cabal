@@ -371,7 +371,7 @@ Executable git-annex
    tasty-quickcheck,
    tasty-rerun
   CC-Options: -Wall
-  GHC-Options: -Wall -fno-warn-tabs
+  GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Extensions: PackageImports, LambdaCase
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
