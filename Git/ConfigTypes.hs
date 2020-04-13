@@ -23,7 +23,6 @@ data SharedRepository = UnShared | GroupShared | AllShared | UmaskShared Int
 getSharedRepository :: Repo -> SharedRepository
 getSharedRepository r =
 	case Git.Config.getMaybe "core.sharedrepository" r of
-		Nothing -> UnShared
 		Just (ConfigValue v) -> case S8.map toLower v of
 			"1" -> GroupShared
 			"2" -> AllShared
@@ -33,6 +32,8 @@ getSharedRepository r =
 			"world" -> AllShared
 			"everybody" -> AllShared
 			_ -> maybe UnShared UmaskShared (readish (decodeBS' v))
+		Just NoConfigValue -> UnShared
+		Nothing -> UnShared
 
 data DenyCurrentBranch = UpdateInstead | RefusePush | WarnPush | IgnorePush
 	deriving (Eq)
@@ -45,4 +46,5 @@ getDenyCurrentBranch r =
 			"warn" -> WarnPush
 			"ignore" -> IgnorePush
 			_ -> RefusePush
+		Just NoConfigValue -> RefusePush
 		Nothing -> RefusePush

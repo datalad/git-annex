@@ -55,6 +55,7 @@ buildGlobalConfig = buildMapLog configkeybuilder valuebuilder
   where
 	configkeybuilder (ConfigKey k) = byteString k
 	valuebuilder (ConfigValue v) = byteString v
+	valuebuilder NoConfigValue = mempty
 
 parseGlobalConfig :: L.ByteString -> MapLog ConfigKey ConfigValue
 parseGlobalConfig = parseMapLog configkeyparser valueparser

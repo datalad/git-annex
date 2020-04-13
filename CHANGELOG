@@ -7,6 +7,8 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
   * Various speed improvements gained by using ByteStrings for git refs and
     shas.
   * Fix a potential failure to parse git config.
+  * Support boolean git configs that are represented by the name of the
+    setting with no value, eg "core.bare" is the same as "core.bare = true".
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

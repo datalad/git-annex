@@ -58,6 +58,7 @@ instance FromUUID ConfigValue where
 
 instance ToUUID ConfigValue where
 	toUUID (ConfigValue v) = toUUID v
+	toUUID NoConfigValue = NoUUID
 
 -- There is no matching FromUUID U.UUID because a git-annex UUID may
 -- be NoUUID or perhaps contain something not allowed in a canonical UUID.

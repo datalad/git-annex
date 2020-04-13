@@ -135,6 +135,7 @@ updateLocation' r l = do
 			top <- absPath $ fromRawFilePath (gitdir l)
 			let p = absPathFrom top (fromRawFilePath d)
 			return $ l { worktree = Just (toRawFilePath p) }
+		Just NoConfigValue -> return l
 	return $ r { location = l' }
 
 data ConfigStyle = ConfigList | ConfigNullList
@@ -152,8 +153,12 @@ parse s st
 	eq = fromIntegral (ord '=')
 
 	sep c = M.fromListWith (++)
-		. map (\(k,v) -> (ConfigKey k, [ConfigValue (S.drop 1 v)])) 
+		. map (\(k,v) -> (ConfigKey k, [mkval v])) 
 		. map (S.break (== c))
+	
+	mkval v 
+		| S.null v = NoConfigValue
+		| otherwise = ConfigValue (S.drop 1 v)
 
 {- Checks if a string from git config is a true/false value. -}
 isTrueFalse :: String -> Maybe Bool
@@ -166,6 +171,7 @@ isTrueFalse' (ConfigValue s)
 	| otherwise = Nothing
   where
 	s' = S8.map toLower s
+isTrueFalse' NoConfigValue = Just True
 
 boolConfig :: Bool -> String
 boolConfig True = "true"

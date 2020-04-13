@@ -1,12 +1,11 @@
 {- git data types
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Git.Types where
 
@@ -18,6 +17,8 @@ import qualified Data.ByteString as S
 import System.Posix.Types
 import Utility.SafeCommand
 import Utility.FileSystemEncoding
+import qualified Data.Semigroup as Sem
+import Prelude
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -54,8 +55,20 @@ data Repo = Repo
 newtype ConfigKey = ConfigKey S.ByteString
 	deriving (Ord, Eq)
 
-newtype ConfigValue = ConfigValue S.ByteString
-	deriving (Ord, Eq, Semigroup, Monoid)
+data ConfigValue
+	= ConfigValue S.ByteString
+	| NoConfigValue
+	-- ^ git treats a setting with no value as different than a setting
+	-- with an empty value
+	deriving (Ord, Eq)
+
+instance Sem.Semigroup ConfigValue where
+	ConfigValue a <> ConfigValue b = ConfigValue (a <> b)
+	a <> NoConfigValue = a
+	NoConfigValue <> b = b
+
+instance Monoid ConfigValue where
+	mempty = ConfigValue mempty
 
 instance Default ConfigValue where
 	def = ConfigValue mempty
@@ -68,6 +81,7 @@ instance Show ConfigKey where
 
 fromConfigValue :: ConfigValue -> String
 fromConfigValue (ConfigValue s) = decodeBS' s
+fromConfigValue NoConfigValue = mempty
 
 instance Show ConfigValue where
 	show = fromConfigValue

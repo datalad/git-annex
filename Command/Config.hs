@@ -69,8 +69,9 @@ seek (UnsetConfig ck@(ConfigKey name)) = checkIsGlobalConfig ck $ commandAction 
 seek (GetConfig ck) = checkIsGlobalConfig ck $ commandAction $
 	startingCustomOutput (ActionItemOther Nothing) $ do
 		getGlobalConfig ck >>= \case
-			Nothing -> return ()
 			Just (ConfigValue v) -> liftIO $ S8.putStrLn v
+			Just NoConfigValue -> return ()
+			Nothing -> return ()
 		next $ return True
 
 checkIsGlobalConfig :: ConfigKey -> Annex a -> Annex a

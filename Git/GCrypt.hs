@@ -98,6 +98,7 @@ getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
 	defaultkey = "gcrypt.participants"
 	parse (Just (ConfigValue "simple")) = []
 	parse (Just (ConfigValue b)) = words (decodeBS' b)
+	parse (Just NoConfigValue) = []
 	parse Nothing = []
 
 remoteParticipantConfigKey :: RemoteName -> ConfigKey
