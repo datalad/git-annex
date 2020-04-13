@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-04-13T17:45:51Z"
+ content="""
+I've made the git-config parser support all the ways of indicating true and
+false that git documents, including the strange distinction between an empty
+config setting (false) and no config setting (true). I'm not going to
+chase undocumented git behavior that could vary between versions of git.
+
+That also made it support values like "on" that are set by
+git-annex config --set. It was always possible to set such things.
+Older git-annex will display an error message if used with a repo
+that has such values set. That seems acceptable.
+
+I have not done anything about making special remote configs consistent.
+"""]]
