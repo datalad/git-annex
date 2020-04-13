@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 2"
+ date="2020-04-13T18:58:50Z"
+ content="""
+> All of the commands you ran looked only at files in the current
+> tree, so of course did not operate on deleted files.
+
+Okay.  I incorrectly thought `--auto` would bypass that.
+
+Thank you for the doc updates.
+"""]]
