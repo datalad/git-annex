@@ -22,7 +22,6 @@ import Config
 import Remote.List
 import Logs.Remote
 import Logs.Trust
-import qualified Git.Config
 import qualified Types.Remote as Remote
 import Git.Types (RemoteName)
 
@@ -99,7 +98,7 @@ autoEnable = do
 			_ -> return ()
   where
 	configured rc = fromMaybe False $
-		Git.Config.isTrueFalse . fromProposedAccepted
+		trueFalseParser' . fromProposedAccepted
 			=<< M.lookup autoEnableField rc
 	canenable u = (/= DeadTrusted) <$> lookupTrust u
 	getenabledremotes = M.fromList

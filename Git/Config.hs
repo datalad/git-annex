@@ -166,8 +166,17 @@ isTrueFalse = isTrueFalse' . ConfigValue . encodeBS'
 
 isTrueFalse' :: ConfigValue -> Maybe Bool
 isTrueFalse' (ConfigValue s)
+	| s' == "yes" = Just True
+	| s' == "on" = Just True
 	| s' == "true" = Just True
+	| s' == "1" = Just True
+
+	| s' == "no" = Just False
+	| s' == "off" = Just False
 	| s' == "false" = Just False
+	| s' == "0" = Just False
+	| s' == "" = Just False
+
 	| otherwise = Nothing
   where
 	s' = S8.map toLower s

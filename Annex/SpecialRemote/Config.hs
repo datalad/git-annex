@@ -17,7 +17,6 @@ import Types.UUID
 import Types.ProposedAccepted
 import Types.RemoteConfig
 import Types.GitConfig
-import qualified Git.Config
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -242,8 +241,16 @@ yesNoParser f v fd = genParser yesno f v fd
 	yesno _ = Nothing
 
 trueFalseParser :: RemoteConfigField -> Bool -> FieldDesc -> RemoteConfigFieldParser
-trueFalseParser f v fd = genParser Git.Config.isTrueFalse f v fd
+trueFalseParser f v fd = genParser trueFalseParser' f v fd
 	(Just (ValueDesc "true or false"))
+
+-- Not using Git.Config.isTrueFalse because git supports
+-- a lot of other values for true and false in its configs,
+-- and this is not a git config and we want to avoid that mess.
+trueFalseParser' :: String -> Maybe Bool
+trueFalseParser' "true" = Just True
+trueFalseParser' "false" = Just False
+trueFalseParser' _ = Nothing
 
 genParser
 	:: Typeable t
