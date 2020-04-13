@@ -41,7 +41,7 @@ Paths of files or directories to operate on can be specified.
 
 * `--auto`
 
-  Rather than copying all specified files, only copy files that don't yet have
+  Rather than copying all specified files, only copy those that don't yet have
   the desired number of copies, or that are preferred content of the
   destination repository. See [[git-annex-preferred-content]](1)
 

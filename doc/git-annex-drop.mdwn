@@ -31,7 +31,7 @@ Paths of files or directories to drop can be specified.
 
 * `--auto`
 
-  Rather than trying to drop all specified files, drop only files that
+  Rather than trying to drop all specified files, drop only those that
   are not preferred content of the repository.
   See [[git-annex-preferred-content]](1)
 

@@ -20,7 +20,7 @@ be specified.
 
 * `--auto`
 
-  Rather than getting all specified files, get only files that don't yet
+  Rather than getting all the specified files, get only those that don't yet
   have the desired number of copies, or that are preferred content of the
   repository. See [[git-annex-preferred-content]](1)
 
