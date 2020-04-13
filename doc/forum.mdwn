@@ -1,18 +1,9 @@
-# Best way to extract git-annex object files (with correct names) in absence of git log?
+This is a place to discuss using git-annex.
+If you need help, advice, or anything, post about it here.
 
-**Issue**:
+But, please don't post bug reports here. Put them in [[bugs]].  
+And please don't make wishlist requests here. Put them in [[todo]].  
+(If you post bugs/todo here, it'll just get moved.)
 
-  * any git log is missing, so restore not viable
-  * annex directory is empty, i.e. no symlinks (.git/annex present, though)
-  * annex A: .git/annex/transfer/download/failed contains files
-  * annex B: .git/annex/objects contains files
-  * git-annex fsck -A: checksums files present
-  * git-annex fix: no change
-  * git-annex sync [--content]: on B fetched objects, fails on A (iirc)
-  * git-annex find: nothing
-  * git-annex unused shows couple of files on annex A and B
-  * git-annex addunused && git-annex unlock makes them available but filename is missing: "unused.SHA256E-[...].pdf"
-
-**Question**: any chance of restoring those files with their correct names?
-
-Thanks i.a. for any recommendations.
+[[!inline pages="forum/* and !*/Discussion" archive=yes feedlimit=10 
+rootpage=forum postformtext="Add a new thread titled:"]]
