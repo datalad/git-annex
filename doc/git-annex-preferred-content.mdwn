@@ -48,6 +48,10 @@ elsewhere to allow removing it).
   [[git-annex-export]](1)) and [[git-annex-import]](1), these match relative
   to the top of the subdirectory.
 
+  Note that, when a command is run with the `--all` option, or in a bare
+  repository, there is no filename associated with an annexed object,
+  and so "include=" and "exclude=" will not match.
+
 * `copies=number`
 
   Matches only files that git-annex believes to have the specified number
@@ -159,6 +163,10 @@ elsewhere to allow removing it).
   `git annex enableremote $remote preferreddir=$dirname`
 
   (If no directory name is configured, it uses "public" by default.)
+
+  Note that, when a command is run with the `--all` option, or in a bare
+  repository, there is no filename associated with an annexed object,
+  and so "inpreferreddir" will not match.
 
 * `standard`
 

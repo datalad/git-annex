@@ -12,12 +12,16 @@ Makes the content of annexed files available in this repository. This
 will involve copying them from a remote repository, or downloading them,
 or transferring them from some kind of key-value store.
 
+With no parameters, gets all annexed files in the current directory whose
+content was not already present. Paths of files or directories to get can
+be specified.
+
 # OPTIONS
 
 * `--auto`
 
-  Rather than getting all files, get only files that don't yet have
-  the desired number of copies, or that are preferred content of the
+  Rather than getting all specified files, get only files that don't yet
+  have the desired number of copies, or that are preferred content of the
   repository. See [[git-annex-preferred-content]](1)
 
 * `--from=remote`

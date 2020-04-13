@@ -18,6 +18,9 @@ in some other repository.
 Content that is required to be stored in the repository will not be dropped
 even if enough copies exist elsewhere. See [[git-annex-required]](1).
 
+With no parameters, tries to drop all annexed files in the current directory.
+Paths of files or directories to drop can be specified.
+
 # OPTIONS
 
 * `--from=remote`
@@ -44,7 +47,8 @@ even if enough copies exist elsewhere. See [[git-annex-required]](1).
   Rather than specifying a filename or path to drop, this option can be
   used to drop all available versions of all files.
 
-  This is the default behavior when running git-annex drop in a bare repository.
+  This is the default behavior when running git-annex drop in a bare
+  repository.
 
   Note that this bypasses checking the .gitattributes annex.numcopies
   setting and required content settings.

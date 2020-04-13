@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-04-13T16:03:16Z"
+ content="""
+All of the commands you ran looked only at files in the current tree,
+so of course did not operate on deleted files. Eg, "git annex get" and "git
+annex get ." are identical, and obviously the current directory does not
+contain any deleted files.
+
+But there are commands that do operate on deleted files, including eg `git
+annex sync --content --all` and `git annex get --all`. Those commands will
+honor preferred content settings including "anything" when operating on
+deleted files. (The assistant also periodically does.)
+
+I've added a note to that effect to the preferred content
+documentation. Also several command's man pages didn't make entirely
+explicit that they operated on files in the current tree
+(although the main git-annex man page does document that),
+so improved that documentation too.
+"""]]

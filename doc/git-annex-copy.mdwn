@@ -10,6 +10,9 @@ git annex copy `[path ...] [--from=remote|--to=remote]`
 
 Copies the content of files from or to another remote.
 
+With no parameters, operates on all annexed files in the current directory.
+Paths of files or directories to operate on can be specified.
+
 # OPTIONS
 
 * `--from=remote`
@@ -38,7 +41,7 @@ Copies the content of files from or to another remote.
 
 * `--auto`
 
-  Rather than copying all files, only copy files that don't yet have
+  Rather than copying all specified files, only copy files that don't yet have
   the desired number of copies, or that are preferred content of the
   destination repository. See [[git-annex-preferred-content]](1)
 

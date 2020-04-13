@@ -51,6 +51,11 @@ All content is wanted. Even content of old/deleted files.
 
 `anything`
 
+(Note that most git-annex commands operate on files present in the
+working tree by default, and using this does not change that. The assistant
+does operate on deleted files, and other commands can be made to do so with
+the --all option.)
+
 ### incrementalbackup
 
 Only wants content that's not already backed up to another backup

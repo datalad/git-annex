@@ -99,9 +99,9 @@ received.
   The `annex.synccontent` configuration can be set to true to make content
   be synced by default.
 
-  Normally this tries to get each annexed file that the local repository
-  does not yet have, and then copies each file to every remote that it
-  is syncing with.
+  Normally this tries to get each annexed file that is in the working tree
+  and whose content the local repository does not yet have, and then copies
+  each file to every remote that it is syncing with.
   This behavior can be overridden by configuring the preferred content
   of a repository. See [[git-annex-preferred-content]](1).
 
