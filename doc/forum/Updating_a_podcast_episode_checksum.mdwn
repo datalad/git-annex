@@ -1,0 +1,27 @@
+I've been experimenting with `git-annex` as a podcatcher and really loving it so far. I've just hit one small snag I'm unclear on how best to resolve.
+
+I initially added a feed with a command like the following
+
+```
+git annex importfeed --fast --template='example-podcast/${itempubdate}-${itemtitle}${extension}' https://example.org/example.rss
+git annex get example-podcast/*
+```
+
+This downloaded nearly all of the episodes of the podcast. Several episodes, however, failed with errors like the following:
+
+```
+get 2020_03_12-The_Covenanters.mp3 (from web...) 
+                                   
+  verification of content failed
+
+  Unable to access these remotes: web
+
+  Try making some of these repositories available:
+  	00000000-0000-0000-0000-000000000001 -- web
+failed
+git-annex: get: 1 failed
+```
+
+Based on [this thread](https://git-annex.branchable.com/forum/Simple_question_about_web_remote/) I gather that the problem is that one file size was returned when I ran `importfeed` and another was returned on the subsequent `get`. What I'd like to download all of the episodes that failed to download (i.e. all of those that are not present in the annex right now) and update their checksums to match the file size currently returned by their respective URLs.
+
+I would prefer not to switch to a URL backend, because as I understand it this would mean that at some time in the future the file could be updated on the webserver and my local copy could be overwritten. For that reason, I would like to update the checksums for all podcast episodes this one time, so I can finish downloading the series and be assured that these versions of the episodes will be preserved. 
