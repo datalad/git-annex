@@ -1,0 +1,93 @@
+A [couple of failing tests][0] on DataLad's end pointed to a recent
+change in git-annex creating commits on the git-annex branch despite
+`-c annex.alwayscommit=false` being specified.  One of those tests
+checks that, when we're doing a bulk operation adding metadata to
+files, we don't generate many separate commits on the git-annex branch
+for each `git annex metadata` call.  Based of off that, here's a
+script that shows that `-c annex.alwayscommit=false` isn't honored on
+the second call to `git annex metadata`.
+
+[[!format sh """
+set -x
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/gx-XXXXXXX)"
+
+git init && git annex init
+>one && git annex add one && git commit -m'add one'
+
+ga_head=$(git rev-parse git-annex)
+git annex metadata -c annex.alwayscommit=false --set a=1 one
+git annex metadata -c annex.alwayscommit=false --set b=2 one
+git log --oneline --stat $ga_head..git-annex
+
+git annex merge
+git log --oneline --stat $ga_head..git-annex
+"""]]
+
+```
+[...]
++ git annex metadata -c annex.alwayscommit=false --set b=2 one
+metadata one (recording state in git...)
+
+  a=1
+  a-lastchanged=2020-04-14@21-16-48
+  b=2
+  b-lastchanged=2020-04-14@21-16-48
+  lastchanged=2020-04-14@21-16-48
+ok
++ git log --oneline --stat 8e7323181b1481aa6d8ed1059a46f8da29de0629..git-annex
+84b987f update
+ ...0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log.met | 1 +
+ 1 file changed, 1 insertion(+)
++ git annex merge
+merge git-annex (recording state in git...)
+ok
++ git log --oneline --stat 8e7323181b1481aa6d8ed1059a46f8da29de0629..git-annex
+2cb57d6 update
+ ...0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log.met | 1 +
+ 1 file changed, 1 insertion(+)
+84b987f update
+ ...0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.log.met | 1 +
+ 1 file changed, 1 insertion(+)
+```
+
+Before eedd73b84 (fix reversion caused by earlier optimisation to
+git-annex branch reads, 2020-04-10), the output of the first `git log`
+call would instead be empty, and the second log call (after `git annex
+merge`) would show a single commit for the metadata changes.
+
+I wasn't able to make much progress understanding eedd73b84 or the
+commit it references, aeca7c220 (Sped up query commands that read the
+git-annex branch by around 5%, 2020-04-09).  The main change in
+eedd73b84 is the addition of the `else` branch, so not too
+surprisingly I can restore the change in behavior by guarding the
+`else` branch with a condition that checks `annexAlwaysCommit` (diff
+below).  But I don't have a clear enough understanding to write a
+commit message that justifies that change or to be confident that this
+change is good overall (though `git annex test` did not report any
+failures).
+
+[[!format diff """
+diff --git a/Annex/Branch.hs b/Annex/Branch.hs
+index 712c5c10f..f248b3eb4 100644
+--- a/Annex/Branch.hs
++++ b/Annex/Branch.hs
+@@ -179,8 +179,9 @@ updateTo' pairs = do
+ 				 - a commit needs to be done. -}
+ 				when dirty $
+ 					go branchref dirty [] jl
+-			, when dirty $
+-				lockJournal $ go branchref dirty []
++			, whenM (annexAlwaysCommit <$> Annex.getGitConfig) $
++				when dirty $
++					lockJournal $ go branchref dirty []
+ 			)
+ 		else lockJournal $ go branchref dirty tomerge
+ 	return $ not $ null tomerge
+"""]]
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
+
+[0]: https://github.com/datalad/datalad-extensions/pull/9
