@@ -32,3 +32,4 @@ git-annex version: 6.20180807+git291-g549114118-1~ndall+1
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+> [[closing|done]] per my comment --[[Joey]]

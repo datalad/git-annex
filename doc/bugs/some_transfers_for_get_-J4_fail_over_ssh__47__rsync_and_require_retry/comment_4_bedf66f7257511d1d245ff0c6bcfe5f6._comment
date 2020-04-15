@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-04-15T18:00:35Z"
+ content="""
+Whatever caused rsync to fail like this, git-annex no longer even uses
+rsync in gets from git remotes, unless the remote has a git-annex-shell
+older than 6.20180316. Ie, debian oldstable.
+
+So it seems unlikely that whatever the problem was is still relevant.
+There is not enough information here to say anything more. I'm gonna close
+this, but do repopen it if it comes back.
+"""]]
