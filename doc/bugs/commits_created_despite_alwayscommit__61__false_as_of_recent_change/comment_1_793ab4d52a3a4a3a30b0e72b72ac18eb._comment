@@ -9,4 +9,8 @@ journal files, so it would operate with out of date information.
 
 The only way to fix this, I think, is to disable the entire optimisation
 when annex.alwayscommit is false and the journal is dirty.
+
+Or hmm, it should not be a problem for it to stage the journal files to the
+index, but not commit the index. Not clear to me why it would be committing
+even after that change, so I'll investigate that first.
 """]]
