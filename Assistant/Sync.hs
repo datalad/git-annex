@@ -216,7 +216,8 @@ manualPull currentbranch remotes = do
 				, return $ Just r
 				)
 		else return Nothing
-	haddiverged <- liftAnnex Annex.Branch.forceUpdate
+	haddiverged <- Annex.Branch.refsWereMerged
+		<$> liftAnnex Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r
 			currentbranch Command.Sync.mergeConfig def

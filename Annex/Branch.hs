@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ module Annex.Branch (
 	hasSibling,
 	siblingBranches,
 	create,
+	UpdateMade(..),
 	update,
 	forceUpdate,
 	updateTo,
@@ -125,11 +126,16 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 {- Ensures that the branch and index are up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run. -}
 update :: Annex BranchState
-update = runUpdateOnce $ void $ updateTo =<< siblingBranches
+update = runUpdateOnce $ journalClean <$$> updateTo =<< siblingBranches
 
 {- Forces an update even if one has already been run. -}
-forceUpdate :: Annex Bool
+forceUpdate :: Annex UpdateMade
 forceUpdate = updateTo =<< siblingBranches
+
+data UpdateMade = UpdateMade
+	{ refsWereMerged :: Bool
+	, journalClean :: Bool
+	}
 
 {- Merges the specified Refs into the index, if they have any changes not
  - already in it. The Branch names are only used in the commit message;
@@ -149,13 +155,13 @@ forceUpdate = updateTo =<< siblingBranches
  -
  - Returns True if any refs were merged in, False otherwise.
  -}
-updateTo :: [(Git.Sha, Git.Branch)] -> Annex Bool
+updateTo :: [(Git.Sha, Git.Branch)] -> Annex UpdateMade
 updateTo pairs = ifM (annexMergeAnnexBranches <$> Annex.getGitConfig)
 	( updateTo' pairs
-	, return False
+	, return (UpdateMade False False)
 	)
 
-updateTo' :: [(Git.Sha, Git.Branch)] -> Annex Bool
+updateTo' :: [(Git.Sha, Git.Branch)] -> Annex UpdateMade
 updateTo' pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
@@ -167,7 +173,7 @@ updateTo' pairs = do
 		else do
 			mergedrefs <- getMergedRefs
 			filterM isnewer (excludeset mergedrefs unignoredrefs)
-	if null tomerge
+	journalclean <- if null tomerge
 		{- Even when no refs need to be merged, the index
 		 - may still be updated if the branch has gotten ahead 
 		 - of the index, or just if the journal is dirty. -}
@@ -179,11 +185,23 @@ updateTo' pairs = do
 				 - a commit needs to be done. -}
 				when dirty $
 					go branchref dirty [] jl
-			, when dirty $
-				lockJournal $ go branchref dirty []
+				return True
+			, if dirty
+				then ifM (annexAlwaysCommit <$> Annex.getGitConfig)
+					( do
+						lockJournal $ go branchref dirty []
+						return True
+					, return False
+					)
+				else return True
 			)
-		else lockJournal $ go branchref dirty tomerge
-	return $ not $ null tomerge
+		else do
+			lockJournal $ go branchref dirty tomerge
+			return True
+	return $ UpdateMade
+		{ refsWereMerged = not (null tomerge)
+		, journalClean = journalclean
+		}
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
 	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r

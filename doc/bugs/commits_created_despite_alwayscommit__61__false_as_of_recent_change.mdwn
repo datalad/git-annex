@@ -91,3 +91,5 @@ index 712c5c10f..f248b3eb4 100644
 [[!tag projects/datalad]]
 
 [0]: https://github.com/datalad/datalad-extensions/pull/9
+
+> [[fixed|done]] --[[Joey]]

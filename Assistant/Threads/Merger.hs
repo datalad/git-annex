@@ -65,7 +65,8 @@ onChange file
 	| ".lock" `isSuffixOf` file = noop
 	| isAnnexBranch file = do
 		branchChanged
-		diverged <- liftAnnex Annex.Branch.forceUpdate
+		diverged <- Annex.Branch.refsWereMerged
+			<$> liftAnnex Annex.Branch.forceUpdate
 		when diverged $ do
 			updateExportTreeFromLogAll
 			queueDeferredDownloads "retrying deferred download" Later

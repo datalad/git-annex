@@ -28,26 +28,24 @@ checkIndexOnce a = unlessM (indexChecked <$> getState) $ do
 	changeState $ \s -> s { indexChecked = True }
 
 {- Runs an action to update the branch, if it's not been updated before
- - in this run of git-annex. -}
-runUpdateOnce :: Annex () -> Annex BranchState
+ - in this run of git-annex. 
+ -
+ - The action should return True if anything that was in the journal
+ - before got staged (or if the journal was empty). That lets an opmisation
+ - be done: The journal then does not need to be checked going forward,
+ - until new information gets written to it.
+ -}
+runUpdateOnce :: Annex Bool -> Annex BranchState
 runUpdateOnce a = do
 	st <- getState
 	if branchUpdated st
 		then return st
 		else do
-			a
+			journalstaged <- a
 			let stf = \st' -> st'
 				{ branchUpdated = True
-				-- The update staged anything that was
-				-- journalled before, so the journal
-				-- does not need to be checked going
-				-- forward, unless new information
-				-- gets written to it, or unless
-				-- this run of git-annex needs to notice
-				-- changes journalled by other processes
-				-- while it's running.
-				, journalIgnorable = not $
-					journalNeverIgnorable st'
+				, journalIgnorable = journalstaged 
+					&& not (journalNeverIgnorable st')
 				}
 			changeState stf
 			return (stf st)
