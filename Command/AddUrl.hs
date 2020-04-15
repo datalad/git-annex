@@ -103,7 +103,7 @@ seek o = startConcurrency commandStages $ do
 			else checkUrl addunlockedmatcher r o' u
 	forM_ (addUrls o) (\u -> go (o, u))
 	case batchOption o of
-		Batch fmt -> batchInput fmt (parseBatchInput o) go
+		Batch fmt -> batchInput fmt (pure . parseBatchInput o) go
 		NoBatch -> noop
 
 parseBatchInput :: AddUrlOptions -> String -> Either String (AddUrlOptions, URLString)

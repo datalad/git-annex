@@ -3,3 +3,5 @@
 I tested `git annex lookupkey --batch` which does not have this problem.
 
 --spwhitton
+
+> [[fixed|done]] --[[Joey]]

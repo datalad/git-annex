@@ -31,7 +31,7 @@ optParser desc = SetPresentKeyOptions
 seek :: SetPresentKeyOptions -> CommandSeek
 seek o = case batchOption o of
 	Batch fmt -> batchInput fmt
-		(parseKeyStatus . words)
+		(pure . parseKeyStatus . words)
 		(batchCommandAction . start)
 	NoBatch -> either giveup (commandAction . start)
 		(parseKeyStatus $ params o)

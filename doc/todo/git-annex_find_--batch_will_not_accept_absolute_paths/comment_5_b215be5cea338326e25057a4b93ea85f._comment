@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-04-15T19:22:12Z"
+ content="""
+Most of it can be fixed by making batchStart make
+files relative.
+
+Other affected commands that do custom parsing of
+batch input, so will need to make the file from it
+relative themselves: fromkey metadata rekey rmurl
+
+Also, `git annex info /path/to/file` fails for unlocked
+files and works for locked files, because it does not pass
+filenames through git ls-files. I think it's the only
+command that does not, when not in batch mode.
+
+(I suppose alternatively, lookupKey could make the filename relative,
+but I don't know if that is the only thing that fails on absolute
+filenames, so prefer to make them all relative on input.)
+
+Ok, all done..
+"""]]

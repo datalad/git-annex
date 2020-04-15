@@ -47,11 +47,14 @@ seek o = case (batchOption o, keyFilePairs o) of
 seekBatch :: BatchFormat -> CommandSeek
 seekBatch fmt = batchInput fmt parse commandAction
   where
-	parse s = 
+	parse s = do
 		let (keyname, file) = separate (== ' ') s
-		in if not (null keyname) && not (null file)
-			then Right $ go file (keyOpt keyname)
-			else Left "Expected pairs of key and filename"
+		if not (null keyname) && not (null file)
+			then do
+				file' <- liftIO $ relPathCwdToFile file
+				return $ Right $ go file' (keyOpt keyname)
+			else return $
+				Left "Expected pairs of key and filename"
 	go file key = starting "fromkey" (mkActionItem (key, toRawFilePath file)) $
 		perform key file
 

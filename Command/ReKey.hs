@@ -39,17 +39,21 @@ optParser desc = ReKeyOptions
 
 -- Split on the last space, since a FilePath can contain whitespace,
 -- but a Key very rarely does.
-batchParser :: String -> Either String (RawFilePath, Key)
+batchParser :: String -> Annex (Either String (RawFilePath, Key))
 batchParser s = case separate (== ' ') (reverse s) of
 	(rk, rf)
-		| null rk || null rf -> Left "Expected: \"file key\""
+		| null rk || null rf -> return $ Left "Expected: \"file key\""
 		| otherwise -> case deserializeKey (reverse rk) of
-			Nothing -> Left "bad key"
-			Just k -> Right (toRawFilePath (reverse rf), k)
+			Nothing -> return $ Left "bad key"
+			Just k -> do
+				let f = reverse rf
+				f' <- liftIO $ relPathCwdToFile f
+				return $ Right (toRawFilePath f', k)
 
 seek :: ReKeyOptions -> CommandSeek
 seek o = case batchOption o of
-	Batch fmt -> batchInput fmt batchParser (batchCommandAction . start)
+	Batch fmt -> batchInput fmt batchParser $
+		batchCommandAction . start
 	NoBatch -> withPairs (commandAction . start . parsekey) (reKeyThese o)
   where
 	parsekey (file, skey) =

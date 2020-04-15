@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-04-15T19:13:39Z"
+ content="""
+Other commands like whereis --batch also behave the same.
+
+Looks like what's going on is, when an absolute path is passed
+as a parameter, it feeds thru git ls-files, producing a relative file.
+But with --batch, it stays absolute. This causes things that try to eg,
+look up the file in the tree to not find it.
+
+So, --batch needs to make filepaths relative too..
+"""]]

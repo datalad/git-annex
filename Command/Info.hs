@@ -119,7 +119,7 @@ optParser desc = InfoOptions
 seek :: InfoOptions -> CommandSeek
 seek o = case batchOption o of
 	NoBatch -> withWords (commandAction . start o) (infoFor o)
-	Batch fmt -> batchInput fmt Right (itemInfo o)
+	Batch fmt -> batchInput fmt (pure . Right) (itemInfo o)
 
 start :: InfoOptions -> [String] -> CommandStart
 start o [] = do
@@ -152,9 +152,11 @@ itemInfo o p = ifM (isdir p)
 				v' <- Remote.nameToUUID' p
 				case v' of
 					Right u -> uuidInfo o u
-					Left _ -> ifAnnexed (toRawFilePath p)
-						(fileInfo o p)
-						(treeishInfo o p)
+					Left _ -> do
+						relp <- liftIO $ relPathCwdToFile p
+						ifAnnexed (toRawFilePath relp)
+							(fileInfo o relp)
+							(treeishInfo o p)
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)

@@ -148,16 +148,21 @@ instance FromJSON MetaDataFields where
 fieldsField :: T.Text
 fieldsField = T.pack "fields"
 
-parseJSONInput :: String -> Either String (Either RawFilePath Key, MetaData)
-parseJSONInput i = do
-	v <- eitherDecode (BU.fromString i)
-	let m = case itemAdded v of
-		Nothing -> emptyMetaData
-		Just (MetaDataFields m') -> m'
-	case (itemKey v, itemFile v) of
-		(Just k, _) -> Right (Right k, m)
-		(Nothing, Just f) -> Right (Left (toRawFilePath f), m)
-		(Nothing, Nothing) -> Left "JSON input is missing either file or key"
+parseJSONInput :: String -> Annex (Either String (Either RawFilePath Key, MetaData))
+parseJSONInput i = case eitherDecode (BU.fromString i) of
+	Left e -> return (Left e)
+	Right v -> do
+		let m = case itemAdded v of
+			Nothing -> emptyMetaData
+			Just (MetaDataFields m') -> m'
+		case (itemKey v, itemFile v) of
+			(Just k, _) -> return $
+				Right (Right k, m)
+			(Nothing, Just f) -> do
+				f' <- liftIO $ relPathCwdToFile f
+				return $ Right (Left (toRawFilePath f'), m)
+			(Nothing, Nothing) -> return $ 
+				Left "JSON input is missing either file or key"
 
 startBatch :: (Either RawFilePath Key, MetaData) -> CommandStart
 startBatch (i, (MetaData m)) = case i of

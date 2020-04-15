@@ -30,16 +30,20 @@ optParser desc = RmUrlOptions
 
 seek :: RmUrlOptions -> CommandSeek
 seek o = case batchOption o of
-	Batch fmt -> batchInput fmt batchParser (batchCommandAction . start)
+	Batch fmt -> batchInput fmt batchParser
+		(batchCommandAction . start)
 	NoBatch -> withPairs (commandAction . start) (rmThese o)
 
 -- Split on the last space, since a FilePath can contain whitespace,
 -- but a url should not.
-batchParser :: String -> Either String (FilePath, URLString)
+batchParser :: String -> Annex (Either String (FilePath, URLString))
 batchParser s = case separate (== ' ') (reverse s) of
 	(ru, rf)
-		| null ru || null rf -> Left "Expected: \"file url\""
-		| otherwise -> Right (reverse rf, reverse ru)
+		| null ru || null rf -> return $ Left "Expected: \"file url\""
+		| otherwise -> do
+			let f = reverse rf
+			f' <- liftIO $ relPathCwdToFile f
+			return $ Right (f', reverse ru)
 
 start :: (FilePath, URLString) -> CommandStart
 start (file, url) = flip whenAnnexed file' $ \_ key ->

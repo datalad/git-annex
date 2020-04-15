@@ -38,7 +38,7 @@ seek o = case batchOption o of
 			(rn:[]) -> toRemote rn >>= \r -> return (flip check (Just r))
 			[] -> return (flip check Nothing)
 			_ -> wrongnumparams
-		batchInput fmt Right $ checker >=> batchResult
+		batchInput fmt (pure . Right) $ checker >=> batchResult
   where
 	wrongnumparams = giveup "Wrong number of parameters"
 					

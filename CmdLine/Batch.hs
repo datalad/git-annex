@@ -50,7 +50,7 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 	batchseeker (opts, NoBatch, params) =
 		mapM_ (go NoBatch opts) params
 	batchseeker (opts, batchmode@(Batch fmt), _) = 
-		batchInput fmt Right (go batchmode opts)
+		batchInput fmt (pure . Right) (go batchmode opts)
 
 	go batchmode opts p =
 		unlessM (handler opts p) $
@@ -62,13 +62,19 @@ batchBadInput :: BatchMode -> Annex ()
 batchBadInput NoBatch = liftIO exitFailure
 batchBadInput (Batch _) = liftIO $ putStrLn ""
 
--- Reads lines of batch mode input and passes to the action to handle.
-batchInput :: BatchFormat -> (String -> Either String a) -> (a -> Annex ()) -> Annex ()
+-- Reads lines of batch mode input, runs a parser, and passes the result
+-- to the action.
+--
+-- Note that if the batch input includes a worktree filename, it should
+-- be converted to relative. Normally, filename parameters are passed
+-- through git ls-files, which makes them relative, but batch mode does
+-- not use that, and absolute worktree files are likely to cause breakage.
+batchInput :: BatchFormat -> (String -> Annex (Either String a)) -> (a -> Annex ()) -> Annex ()
 batchInput fmt parser a = go =<< batchLines fmt
   where
 	go [] = return ()
 	go (l:rest) = do
-		either parseerr a (parser l)
+		either parseerr a =<< parser l
 		go rest
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
@@ -95,9 +101,12 @@ batchCommandAction a = maybe (batchBadInput (Batch BatchLine)) (const noop)
 -- Reads lines of batch input and passes the filepaths to a CommandStart
 -- to handle them.
 --
+-- Absolute filepaths are converted to relative.
+--
 -- File matching options are not checked.
-batchStart :: BatchFormat -> (String -> CommandStart) -> Annex ()
-batchStart fmt a = batchInput fmt Right $ batchCommandAction . a
+batchStart :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
+batchStart fmt a = batchInput fmt (Right <$$> liftIO . relPathCwdToFile) $
+	batchCommandAction . a
 
 -- Like batchStart, but checks the file matching options
 -- and skips non-matching files.
