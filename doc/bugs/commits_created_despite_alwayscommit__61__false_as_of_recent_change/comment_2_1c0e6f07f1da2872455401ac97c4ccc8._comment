@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-04-15T16:30:43Z"
+ content="""
+Tried to implement that approach, but it has a problem: Once the journal
+gets staged into the index, the journal is no longer dirty. So, when
+git-annex is later run with annex.alwayscommit=true, it won't know it needs
+to commit the index to the branch. It would only do so after some other
+subsequent change is made. So `git annex merge` would not commit the staged
+changes as it does now.
+
+Solving that would need some other indication that the index has staged
+changes in it, eg a flag file or some comparison of index file timestamp
+with the git-annex branch ref timestamp. But whatever it is would need to
+be checked for when annex.alwayscommit=true. So git-annex would become
+slower in the common case to support annex.alwayscommit=false.
+
+The slowdown would be much less than the win of the optimisation that
+caused this, but still I am not much of a fan of slowing things back down
+for an uncommon case.
+
+(The only way around that, maybe, would be to leave a file in the journal
+after staging it, so git-annex treats the journal as dirty without needing
+to check anything else, and so knows it needs to commit the annex index
+later. But then the journal would be treated as dirty every time git-annex
+starts up, and so would be staged into the index. Which would make running
+with annex.alwayscommit=false slower. Maybe the file could have a special
+name that git-annex knows it does not need to stage? This feels like a lot
+of complexity being added.)
+
+So, I'm now leaning more toward disabling the optimisation when
+annex.alwayscommit=false. The journal won't be staged to the index
+then, and git-annex will have to check for journalled changes as long
+as it's running with that configuration. No worse than it was before.
+"""]]
