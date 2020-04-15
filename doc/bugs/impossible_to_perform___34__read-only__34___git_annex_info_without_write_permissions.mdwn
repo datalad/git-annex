@@ -18,3 +18,6 @@ unless there is really a need to have this operations performed within the same 
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]]; I implemented annex.merge-annex-branches=false to avoid
+> the unwanted behavior, and have not heard any complaints, so.. --[[Joey]]
