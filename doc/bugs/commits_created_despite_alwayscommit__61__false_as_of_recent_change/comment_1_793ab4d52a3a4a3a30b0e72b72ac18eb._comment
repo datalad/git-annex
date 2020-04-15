@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-04-15T16:09:02Z"
+ content="""
+That change would lead to buggy behavior, because git-annex would then not
+commit the journal files, and the optimisation prevents it reading the
+journal files, so it would operate with out of date information.
+
+The only way to fix this, I think, is to disable the entire optimisation
+when annex.alwayscommit is set and the journal is dirty.
+"""]]
