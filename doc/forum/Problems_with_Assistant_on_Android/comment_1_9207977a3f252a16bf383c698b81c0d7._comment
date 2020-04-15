@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Christoph.Schmidpeter@d3e5d124c7d5459315c2a9f983ab9a70b88e1d03"
+ nickname="Christoph.Schmidpeter"
+ avatar="http://cdn.libravatar.org/avatar/c1b4f994eff390020c710a3d9fdb7fa1"
+ subject="Problems with Assistant and Android"
+ date="2020-04-15T12:59:44Z"
+ content="""
+I cannot connect as ssh seems to be not included in Android. How do I get it work with Android?
+"""]]
