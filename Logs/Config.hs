@@ -64,7 +64,10 @@ parseGlobalConfig = parseMapLog configkeyparser valueparser
 	valueparser = ConfigValue <$> A.takeByteString
 
 loadGlobalConfig :: Annex (M.Map ConfigKey ConfigValue)
-loadGlobalConfig = M.filter (\(ConfigValue v) -> not (S.null v)) 
+loadGlobalConfig = M.filter nonempty 
 	. simpleMap
 	. parseGlobalConfig
 	<$> Annex.Branch.get configLog
+  where
+	nonempty (ConfigValue v) = not (S.null v)
+	nonempty NoConfigValue = True
