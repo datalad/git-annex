@@ -223,8 +223,10 @@ storeBupUUID u buprepo = do
 					giveup "ssh failed"
 		else liftIO $ do
 			r' <- Git.Config.read r
-			let ConfigValue olduuid = Git.Config.get configkeyUUID mempty r'
-			when (S.null olduuid) $
+			let noolduuid = case Git.Config.get configkeyUUID mempty r' of
+				ConfigValue olduuid -> S.null olduuid
+				NoConfigValue -> True
+			when noolduuid $
 				Git.Command.run
 					[ Param "config"
 					, Param "annex.uuid"

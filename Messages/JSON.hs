@@ -65,9 +65,11 @@ none :: JSONBuilder
 none = id
 
 start :: String -> Maybe RawFilePath -> Maybe Key -> JSONBuilder
-start command file key _ = Just (o, False)
+start command file key _ = case j of
+	Object o -> Just (o, False)
+	_ -> Nothing
   where
-	Object o = toJSON' $ JSONActionItem
+	j = toJSON' $ JSONActionItem
 		{ itemCommand = Just command
 		, itemKey = key
 		, itemFile = fromRawFilePath <$> file
@@ -102,18 +104,22 @@ note s (Just (o, e)) = Just (HM.insertWith combinelines "note" (toJSON' s) o, e)
 	combinelines new _old = new
 
 info :: String -> JSONBuilder
-info s _ = Just (o, True)
+info s _ = case j of
+	Object o -> Just (o, True)
+	_ -> Nothing
   where
-	Object o = object ["info" .= toJSON' s]
+	j = object ["info" .= toJSON' s]
 
 data JSONChunk v where
 	AesonObject :: Object -> JSONChunk Object
 	JSONChunk :: ToJSON' v => [(String, v)] -> JSONChunk [(String, v)]
 
 add :: JSONChunk v -> JSONBuilder
-add v (Just (o, e)) = Just (HM.union o' o, e)
+add v (Just (o, e)) = case j of
+	Object o' -> Just (HM.union o' o, e)
+	_ -> Nothing
   where
-	Object o' = case v of
+	j = case v of
 		AesonObject ao -> Object ao
 		JSONChunk l -> object $ map mkPair l
 	mkPair (s, d) = (packString s, toJSON' d)
@@ -125,12 +131,15 @@ complete v _ = add v (Just (HM.empty, True))
 -- Show JSON formatted progress, including the current state of the JSON 
 -- object for the action being performed.
 progress :: Maybe Object -> Maybe Integer -> BytesProcessed -> IO ()
-progress maction msize bytesprocessed = emit $ case maction of
-	Just action -> HM.insert "action" (Object action) o
-	Nothing -> o
+progress maction msize bytesprocessed = 
+	case j of
+		Object o -> emit $ case maction of
+			Just action -> HM.insert "action" (Object action) o
+			Nothing -> o
+		_ -> return ()
   where
 	n = fromBytesProcessed bytesprocessed :: Integer
-	Object o = case msize of
+	j = case msize of
 		Just size -> object
 			[ "byte-progress" .= n
 			, "percent-progress" .= showPercentage 2 (percentage size n)

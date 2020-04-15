@@ -143,12 +143,12 @@ getTransfers' dirs wanted = do
 	transfers <- filter (wanted . transferKey)
 		<$> mapMaybe parseTransferFile . concat <$> findfiles
 	infos <- mapM checkTransfer transfers
-	return $ map (\(t, Just i) -> (t, i)) $
-		filter running $ zip transfers infos
+	return $ mapMaybe running $ zip transfers infos
   where
 	findfiles = liftIO . mapM dirContentsRecursive
 		=<< mapM (fromRepo . transferDir) dirs
-	running (_, i) = isJust i
+	running (t, Just i) = Just (t, i)
+	running (_, Nothing) = Nothing
 
 {- Number of bytes remaining to download from matching downloads that are in
  - progress. -}

@@ -46,9 +46,9 @@ insertCostAfter [] _ = []
 insertCostAfter l pos
 	| pos < 0 = costBetween 0 (l !! 0) : l
 	| nextpos > maxpos = l ++ [1 + l !! maxpos]
-	| item == nextitem =
-		let (_dup:new:l') = insertCostAfter lastsegment 0
-		in firstsegment ++ [costBetween item new, new] ++ l'
+	| item == nextitem = case insertCostAfter lastsegment 0 of
+		(_dup:new:l') -> firstsegment ++ [costBetween item new, new] ++ l'
+		_ -> error "insertCostAfter internal error"
 	| otherwise =
 		firstsegment ++ [costBetween item nextitem ] ++ lastsegment
   where

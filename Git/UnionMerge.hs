@@ -84,14 +84,16 @@ doMerge hashhandle ch differ repo streamer = do
  - a line suitable for update-index that union merges the two sides of the
  - diff. -}
 mergeFile :: S.ByteString -> RawFilePath -> HashObjectHandle -> CatFileHandle -> IO (Maybe L.ByteString)
-mergeFile info file hashhandle h = case filter (`notElem` nullShas) [Ref asha, Ref bsha] of
-	[] -> return Nothing
-	(sha:[]) -> use sha
-	shas -> use
-		=<< either return (hashBlob hashhandle . L8.unlines)
-		=<< calcMerge . zip shas <$> mapM getcontents shas
+mergeFile info file hashhandle h = case S8.words info of
+	[_colonmode, _bmode, asha, bsha, _status] -> 
+		case filter (`notElem` nullShas) [Ref asha, Ref bsha] of
+		[] -> return Nothing
+		(sha:[]) -> use sha
+		shas -> use
+			=<< either return (hashBlob hashhandle . L8.unlines)
+			=<< calcMerge . zip shas <$> mapM getcontents shas
+	_ -> return Nothing
   where
-	[_colonmode, _bmode, asha, bsha, _status] = S8.words info
 	use sha = return $ Just $
 		updateIndexLine sha TreeFile $ asTopFilePath file
 	-- Get file and split into lines to union merge.

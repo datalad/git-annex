@@ -119,8 +119,9 @@ perform c o k = case getSet o of
 cleanup :: Key -> CommandCleanup
 cleanup k = do
 	m <- getCurrentMetaData k
-	let Object o = toJSON' (MetaDataFields m)
-	maybeShowJSON $ AesonObject o
+	case toJSON' (MetaDataFields m) of
+		Object o -> maybeShowJSON $ AesonObject o
+		_ -> noop
 	showLongNote $ unlines $ concatMap showmeta $
 		map unwrapmeta (fromMetaData m)
 	return True
