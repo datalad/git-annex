@@ -225,20 +225,22 @@ upgradeToDistribution newdir cleanup distributionfile = do
 
 {- Finds where the old version was installed. -}
 oldVersionLocation :: IO FilePath
-oldVersionLocation = do
-	pdir <- parentDir <$> readProgramFile
+oldVersionLocation = readProgramFile >>= \case
+	Nothing -> error "Cannot find old distribution bundle; not upgrading."
+	Just pf -> do
+		let pdir = parentDir pf
 #ifdef darwin_HOST_OS
-	let dirs = splitDirectories pdir
-	{- It will probably be deep inside a git-annex.app directory. -}
-	let olddir = case findIndex ("git-annex.app" `isPrefixOf`) dirs of
-		Nothing -> pdir
-		Just i -> joinPath (take (i + 1) dirs)
+		let dirs = splitDirectories pdir
+		{- It will probably be deep inside a git-annex.app directory. -}
+		let olddir = case findIndex ("git-annex.app" `isPrefixOf`) dirs of
+			Nothing -> pdir
+			Just i -> joinPath (take (i + 1) dirs)
 #else
-	let olddir = pdir
+		let olddir = pdir
 #endif
-	when (null olddir) $
-		error $ "Cannot find old distribution bundle; not upgrading. (Looked in " ++ pdir ++ ")"
-	return olddir
+		when (null olddir) $
+			error $ "Cannot find old distribution bundle; not upgrading. (Looked in " ++ pdir ++ ")"
+		return olddir
 
 {- Finds a place to install the new version.
  - Generally, put it in the parent directory of where the old version was
@@ -344,10 +346,9 @@ distributionInfoSigUrl = distributionInfoUrl ++ ".sig"
  - trustedkeys.gpg, next to the git-annex program.
  -}
 verifyDistributionSig :: GpgCmd -> FilePath -> IO Bool
-verifyDistributionSig gpgcmd sig = do
-	p <- readProgramFile
-	if isAbsolute p
-		then withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
+verifyDistributionSig gpgcmd sig = readProgramFile >>= \case
+	Just p | isAbsolute p ->
+		withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
 			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
 			boolGpgCmd gpgcmd
 				[ Param "--no-default-keyring"
@@ -360,4 +361,4 @@ verifyDistributionSig gpgcmd sig = do
 				, Param "--verify"
 				, File sig
 				]
-		else return False
+	_ -> return False

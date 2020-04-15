@@ -32,24 +32,14 @@ programPath = go =<< getEnv "GIT_ANNEX_PROGRAMPATH"
 		exe <- getExecutablePath
 		p <- if isAbsolute exe
 			then return exe
-			else readProgramFile
+			else fromMaybe exe <$> readProgramFile
 		maybe cannotFindProgram return =<< searchPath p
 
 {- Returns the path for git-annex that is recorded in the programFile. -}
-readProgramFile :: IO FilePath
+readProgramFile :: IO (Maybe FilePath)
 readProgramFile = do
 	programfile <- programFile
-	p <- catchDefaultIO cmd $ 
-		fromMaybe cmd . headMaybe . lines <$> readFile programfile
-	ifM (inPath p)
-		( return p
-		, ifM (inPath cmd)
-			( return cmd
-			, cannotFindProgram
-			)
-		)
-  where
-	cmd = "git-annex"
+	headMaybe . lines <$> readFile programfile
 
 cannotFindProgram :: IO a
 cannotFindProgram = do
