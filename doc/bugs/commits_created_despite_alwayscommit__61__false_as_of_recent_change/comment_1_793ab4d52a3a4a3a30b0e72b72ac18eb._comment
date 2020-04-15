@@ -4,13 +4,15 @@
  date="2020-04-15T16:09:02Z"
  content="""
 That change would lead to buggy behavior, because git-annex would then not
-commit the journal files, and the optimisation prevents it reading the
+stage the journal files, and the optimisation prevents it reading the
 journal files, so it would operate with out of date information.
 
-The only way to fix this, I think, is to disable the entire optimisation
-when annex.alwayscommit is false and the journal is dirty.
+The right fix, I think is to avoid making a commit, and instead only stage
+the journal files into the annex index. 
 
-Or hmm, it should not be a problem for it to stage the journal files to the
-index, but not commit the index. Not clear to me why it would be committing
-even after that change, so I'll investigate that first.
+But probably only when annex.alwayscommit=false and still commit when it's
+true, because leaving staged changes in the annex index without
+committing them risks git gc deleting the objects used, which is a
+documented gotcha with annex.alwayscommit=false but not something users
+should otherwise need to worry about.
 """]]
