@@ -1,0 +1,307 @@
+### Please describe the problem.
+
+I have set up a host machine and a VM with git annex assistant 'Local computer' sharing. When pairing the pairing gets stuck at 'Pairing in progress ..' and I have to manually click on 
+dashbord desite sync succeeding.
+When I modify and safe one file on the host the transfer bar gets almost always stuck
+at 100% and the respective file on the VM only shows the SHA instead of the actual content, or after some stuck transfer files simply don't get updated anymore. (Same behaviour when transferring vice versa)
+I then have to cancel the transfer and run git annex get on the VM, defeating the purpose of the annex assistant.
+
+
+### What steps will reproduce the problem?
+
+- Setup file sharing via git annex assistant 'Local computer' sharing (behaviour probably also via remote server)
+- Notice that pairing gets stuck at 'Pairing in progress..' but sync succeeds.
+- Click on Dashbord
+- Create files in the shared folder
+- Modify files alternately on both machines until status bar gets stuck at 100% for many files (around 90%-100% of times)
+- Notice that respective file on other machine contains only SHA instead of updated content or does not get updated anymore.
+
+### What version of git-annex are you using? On what operating system?
+8.20200330-7 on manjaro-kde-19.0.2-200311-linux54
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[2020-04-15 13:48:21.7056893] main: starting assistant version 8.20200330-gdbad6c5c3
+[2020-04-15 13:48:21.718362084] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2020-04-15 13:48:21.912322575] Watcher: Performing startup scan
+(started...) 
+Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygenI1lLqc/key
+Your public key has been saved in /tmp/git-annex-keygenI1lLqc/key.pub
+The key fingerprint is:
+SHA256:5V7j4+jy3W/D7hT+rBExiTQcB+WDwBoIkkplPIEKbqQ alejandra@alejandra-pc
+The key's randomart image is:
++---[RSA 3072]----+
+|  ==o. . ...=+o  |
+|.+o+  . . .o.* . |
+|B.  .    o. o *  |
+|Eo      .o     + |
+|.       S . o .. |
+|         . o ....|
+|          . o oo |
+|        .  + o.=o|
+|         ++ o =*=|
++----[SHA256]-----+
+[2020-04-15 13:48:38.095033553] main: Pairing in progress
+Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygenoF74Qa/key
+Your public key has been saved in /tmp/git-annex-keygenoF74Qa/key.pub
+The key fingerprint is:
+SHA256:lVu+FAF9gP/jGOamjGbFzXFx1uT4Hfy0GIdoDbZLwcU alejandra@alejandra-pc
+The key's randomart image is:
++---[RSA 3072]----+
+|          oB=o .o|
+|          ooBE=o+|
+|          o*o=.Bo|
+|         .o++.=o=|
+|        S..+o= .+|
+|          o.=.o  |
+|         . o.+ . |
+|        oo  + .  |
+|       o. oo     |
++----[SHA256]-----+
+[2020-04-15 13:49:57.556502118] main: Pairing in progress
+[2020-04-15 13:50:30.588506645] PairListener: Syncing with manjarobios.local_Desktop_annex 
+warning: no common commits
+From ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex
+ * [new branch]      adjusted/master(unlocked) -> manjarobios.local_Desktop_annex/adjusted/master(unlocked)
+ * [new branch]      git-annex  -> manjarobios.local_Desktop_annex/git-annex
+ * [new branch]      master     -> manjarobios.local_Desktop_annex/master
+(merging manjarobios.local_Desktop_annex/git-annex into git-annex...)
+(recording state in git...)
+(Merging into master...) Already up to date!
+Merge made by the 'recursive' strategy.
+(Merging into adjusted branch...) 
+Updating 4c91e84..6342378
+Fast-forward
+[2020-04-15 13:50:33.654970467] Pusher: Syncing with manjarobios.local_Desktop_annex 
+remote: error: cannot lock ref 'refs/heads/synced/git-annex': reference already exists        
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+ ! [remote rejected] git-annex -> synced/git-annex (failed to update ref)
+error: failed to push some refs to 'ssh://manjarobios@git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/'
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   136b79c..305df7c  master -> synced/master
+ * [new branch]      git-annex -> synced/git-annex
+From ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex
+ + 0872b3a...ed5e6fb adjusted/master(unlocked) -> manjarobios.local_Desktop_annex/adjusted/master(unlocked)  (forced update)
+Everything up-to-date
+[2020-04-15 13:54:38.785014695] Committer: Adding TestFile1.txt
+add TestFile1.txt ok
+[2020-04-15 13:54:38.846796771] Committer: Committing changes to git
+(recording state in git...)
+[2020-04-15 13:54:38.908886364] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(recording state in git...)
+
+
+100%  2 B                 1 B/s 0s
+                                  
+[2020-04-15 13:54:41.563838822] Transferrer: Uploaded TestFile1.txt
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   351d3ca..c1900de  git-annex -> synced/git-annex
+   305df7c..5b93460  master -> synced/master
+[2020-04-15 13:54:47.631284311] Committer: Adding TestFile1.txt
+add TestFile1.txt ok
+[2020-04-15 13:54:47.656086205] Committer: Committing changes to git
+(recording state in git...)
+
+
+100%  17 B              986 B/s 0s
+                                  
+[2020-04-15 13:54:47.859686766] Transferrer: Uploaded TestFile1.txt
+[2020-04-15 13:54:47.93982864] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(recording state in git...)
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   c1900de..46b5173  git-annex -> synced/git-annex
+   5b93460..c3dbb6f  master -> synced/master
+(merging synced/git-annex into git-annex...)
+(merging synced/git-annex into git-annex...)
+(Merging into master...) Updating c3dbb6f..3cb38cd
+Fast-forward
+ TestFile1.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(Merging into adjusted branch...) 
+Updating e2cde79..640c290
+Fast-forward
+ TestFile1.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[2020-04-15 13:56:23.138926931] Committer: Committing changes to git
+(recording state in git...)
+[2020-04-15 13:56:23.230412042] Pusher: Syncing with manjarobios.local_Desktop_annex 
+
+
+100%  32 B              182 B/s 0s
+                                  
+(checksum...) [2020-04-15 13:56:23.471654381] Transferrer: Downloaded TestFile1.txt
+[2020-04-15 13:56:24.67751826] Committer: Adding TestFile1.txt
+add TestFile1.txt ok
+[2020-04-15 13:56:24.692071343] Committer: Committing changes to git
+(recording state in git...)
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   46b5173..bc7da3b  git-annex -> synced/git-annex
+[2020-04-15 13:56:37.508510449] Pusher: Syncing with manjarobios.local_Desktop_annex 
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   bc7da3b..9d994e6  git-annex -> synced/git-annex
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+(Merging into master...) Updating 3cb38cd..644b2c2
+Fast-forward
+ TestFile1.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(Merging into adjusted branch...) 
+Updating 2efdbac..3ad6997
+Fast-forward
+ TestFile1.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[2020-04-15 13:57:26.572140658] Committer: Committing changes to git
+(recording state in git...)
+[2020-04-15 13:57:26.711267728] Pusher: Syncing with manjarobios.local_Desktop_annex 
+[2020-04-15 13:57:28.045186493] Committer: Adding TestFile1.txt
+add TestFile1.txt ok
+[2020-04-15 13:57:28.067821299] Committer: Committing changes to git
+(recording state in git...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   9d994e6..ac253ff  git-annex -> synced/git-annex
+   644b2c2..c0ef509  master -> synced/master
+[2020-04-15 13:57:37.205281607] Committer: Adding TestFile1.txt
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+add TestFile1.txt ok
+[2020-04-15 13:57:37.344736169] Committer: Committing changes to git
+(recording state in git...)
+
+
+100%  63 B              3 KiB/s 0s
+                                  
+[2020-04-15 13:57:37.604509822] Transferrer: Uploaded TestFile1.txt
+[2020-04-15 13:57:43.872997704] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(recording state in git...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   ac253ff..301cec6  git-annex -> synced/git-annex
+   ffebc7f..71d50f9  master -> synced/master
+(merging synced/git-annex into git-annex...)
+(Merging into master...) Updating 71d50f9..d6fbcef
+Fast-forward
+ TextFileCreadedByVm.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 TextFileCreadedByVm.txt
+(Merging into adjusted branch...) 
+Updating 6cf6158..e464f35
+Fast-forward
+ TextFileCreadedByVm.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 TextFileCreadedByVm.txt
+[2020-04-15 13:58:28.922447217] Committer: Committing changes to git
+(recording state in git...)
+[2020-04-15 13:58:29.003532092] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(recording state in git...)
+[2020-04-15 13:58:30.121232466] Committer: Committing changes to git
+(recording state in git...)
+(merging synced/git-annex into git-annex...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   301cec6..8a60331  git-annex -> synced/git-annex
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'ssh://manjarobios@git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+(Merging into master...) Updating d6fbcef..3f389fd
+Fast-forward
+ TextFileCreadedByVm.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[2020-04-15 13:58:43.352572624] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(Merging into adjusted branch...) 
+Updating 6f7e537..411e021
+Fast-forward
+ TextFileCreadedByVm.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[2020-04-15 13:58:46.473084994] Committer: Committing changes to git
+(recording state in git...)
+[2020-04-15 13:58:47.879634494] Committer: Adding TextFileC..dByVm.txt
+add TextFileCreadedByVm.txt ok
+[2020-04-15 13:58:47.90195794] Committer: Committing changes to git
+(recording state in git...)
+(merging synced/git-annex into git-annex...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   8a60331..fb78a8e  git-annex -> synced/git-annex
+[2020-04-15 13:59:01.63874079] Pusher: Syncing with manjarobios.local_Desktop_annex 
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   fb78a8e..e44b5a7  git-annex -> synced/git-annex
+[2020-04-15 13:59:16.580076548] Committer: Adding TextFileC..dByVm.txt
+add TextFileCreadedByVm.txt ok
+[2020-04-15 13:59:16.602073897] Committer: Committing changes to git
+(recording state in git...)
+[2020-04-15 13:59:16.657771598] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(recording state in git...)
+
+
+100%  33 B              3 KiB/s 0s
+                                  
+[2020-04-15 13:59:16.768196257] Transferrer: Uploaded TextFileC..dByVm.txt
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   e44b5a7..b2ab43f  git-annex -> synced/git-annex
+   0e228b8..16959d0  master -> synced/master
+[2020-04-15 13:59:28.352892434] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(recording state in git...)
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   b2ab43f..1cddb88  git-annex -> synced/git-annex
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+(Merging into master...) Updating 16959d0..42aeae0
+Fast-forward
+ TextFileCreadedByVm.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(Merging into adjusted branch...) 
+Updating cc589d4..8108c64
+Fast-forward
+ TextFileCreadedByVm.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[2020-04-15 13:59:49.422226799] Committer: Adding TextFileC..dByVm.txt
+add TextFileCreadedByVm.txt ok
+[2020-04-15 13:59:49.43447346] Committer: Committing changes to git
+(recording state in git...)
+[2020-04-15 13:59:49.47331159] Pusher: Syncing with manjarobios.local_Desktop_annex 
+(merging synced/git-annex into git-annex...)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+   1cddb88..f85dba3  git-annex -> synced/git-annex
+fd:72: hPutStr: illegal operation (handle is closed)
+(Merging into master...) Updating 42aeae0..88cba5b
+Fast-forward
+ TextFileCreadedByVm.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+To ssh://git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to 'ssh://manjarobios@git-annex-manjarobios.local-manjarobios_22_Desktop.2Fannex/~/Desktop/annex/'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and integrate the remote changes
+hint: (e.g. 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+fd:72: hPutStr: illegal operation (handle is closed)
+[2020-04-15 14:00:59.469617044] Committer: Adding TextFileC..dByVm.txt
+add TextFileCreadedByVm.txt (Merging into master...) Updating 88cba5b..b1c4ef8
+Fast-forward
+ TextFromVm2.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 TextFromVm2.txt
+[2020-04-15 14:02:43.220016515] Committer: Adding TextFileC..dByVm.txt
+add TextFileCreadedByVm.txt 
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
