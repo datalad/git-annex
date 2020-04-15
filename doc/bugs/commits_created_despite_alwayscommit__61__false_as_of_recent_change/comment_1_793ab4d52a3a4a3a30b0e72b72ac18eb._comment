@@ -8,5 +8,5 @@ commit the journal files, and the optimisation prevents it reading the
 journal files, so it would operate with out of date information.
 
 The only way to fix this, I think, is to disable the entire optimisation
-when annex.alwayscommit is set and the journal is dirty.
+when annex.alwayscommit is false and the journal is dirty.
 """]]
