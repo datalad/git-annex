@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-04-15T19:05:59Z"
+ content="""
+Reproduced it, the problem only happens when the files are unlocked,
+not the locked files I was trying. The --unlocked option is not the
+problem.
+"""]]
