@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-04-15T16:47:44Z"
+ content="""
+Found another problem with that optimisation: When
+annex.merge-annex-branches=false, the journal does
+not get staged or committed, but the optimisation
+assumes it always does. So, git-annex won't see any
+journalled changes then.
+"""]]
