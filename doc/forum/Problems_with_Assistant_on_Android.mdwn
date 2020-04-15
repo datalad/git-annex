@@ -1,1 +1,1 @@
-However, when I try to sync via Assistant I cannot connect as ssh seems to be not included in Android. How do I get it work with Android?
+I try to sync a server and Android device via git annex assistant. I cannot connect to the server on the Android device, however (I can connect via a PC). It seems that ssh is not included in Android and needed by Annex. How can I get ssh/Assistant get working on Android?
