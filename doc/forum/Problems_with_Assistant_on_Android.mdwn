@@ -1,0 +1,1 @@
+However, when I try to sync via Assistant I cannot connect as ssh seems to be not included in Android. How do I get it work with Android?
