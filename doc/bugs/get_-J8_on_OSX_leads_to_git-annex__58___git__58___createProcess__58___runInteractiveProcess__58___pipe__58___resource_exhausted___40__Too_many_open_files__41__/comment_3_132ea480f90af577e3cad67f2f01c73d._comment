@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2020-04-16T03:43:13Z"
+ content="""
+Sorry, forgot to mention, I do not think I had spotted any file descriptor leaking.  The number of used up file descriptors (according to `lsof`) was fluctuating as process kept going but was not really steadily growing
+"""]]
