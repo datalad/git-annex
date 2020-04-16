@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="it is many more &quot;open files&quot; in reality"
+ date="2020-04-16T03:41:07Z"
+ content="""
+Michael has reported [a similar issue on Linux](https://github.com/datalad/datalad/issues/4404).  I was initially also \"skeptical\".  But the reason really is that each git-annex process takes HUNDREDS of open files (dynamic libraries etc), and parallel execution of `get` adds a good number of pipes on top (counted ~3000 for `get -J 8` process).  I thought to investigate more before reporting and then randomly ran into this not so old report from myself ;)
+
+A quick demo:
+[[!format sh \"\"\"
+$> echo BEFORE; lsof | grep annex | nl | tail -n 2; git clone http://datasets.datalad.org/allen-brain-observatory/visual-coding-neuropixels/ecephys-cache/.git && cd ecephys-cache && git annex get -J5 * >/dev/null & p=$! && sleep 3 && echo DURING && lsof | grep annex | nl | tail -n 2; kill %1 
+BEFORE
+Cloning into 'ecephys-cache'...
+remote: Counting objects: 5875, done.
+remote: Compressing objects: 100% (3046/3046), done.
+remote: Total 5875 (delta 2335), reused 4599 (delta 1424)
+Receiving objects: 100% (5875/5875), 73.55 MiB | 30.39 MiB/s, done.
+Resolving deltas: 100% (2335/2335), done.
+Checking out files: 100% (573/573), done.
+[1] 17335
+DURING
+  2242	git       17424               yoh   67w      REG                9,1 40018173     131020 /tmp/ecephys-cache/.git/annex/tmp/SHA512E-s665395296--8327d0715923b88a2b6b179d02a40acb1630e420a73a16a3422b6b245e9c0e57e21529919136492ab2c746256f99831200c36b7e071ea24f25abb37efc28de13.h5
+  2243	git       17424               yoh   68w      REG                9,1 67095741     131021 /tmp/ecephys-cache/.git/annex/tmp/SHA512E-s166348896--3bb739a0df1acd478eb84545a7c22c31933458fcd44ce211d4dd555bc979170bef11126064fed730e3b289d41999cc1c6fb0b6c35870bb996a4faa2e34a75403.h5
+\"\"\"]]
+so with `-J5` 3 seconds after initial call with `-J5` I get over 2k open files used by annex (according to grep, may be some managed to escape matching).
+"""]]
