@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="find wanted on remote?"
+ date="2020-04-16T21:19:44Z"
+ content="""
+Is there a way to use find to figure out what is wanted (for getting or dropping) on a given remote? I want to be able to do this to anticipate the outbound consequences of a sync (I can anticipate the inbound consequences of a sync, modulo file availability on remotes, using `git annex find --wanted-get --not --in here`). 
+
+I could manually figure out the wanted expressions for an arbitrary remote (resolving any group assignments, etc) and then use that expression, but it'd be nice to be able to do something like `git annex find --wanted-get-at remotename --not --in remotename --in here` to figure out what things will get copied *to* the remote if I run `git annex sync --content`. I presume this logic is implemented somewhere since it gets used when doing `git annex sync --content`, and perhaps there's a way that I can do it using `git annex find` or other commands and I'm just not seeing how to do it.
+"""]]
