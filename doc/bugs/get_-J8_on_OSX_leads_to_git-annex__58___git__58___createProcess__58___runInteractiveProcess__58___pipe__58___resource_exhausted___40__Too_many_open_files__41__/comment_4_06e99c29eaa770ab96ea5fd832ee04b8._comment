@@ -3,7 +3,53 @@
  subject="""comment 4"""
  date="2020-04-17T16:37:07Z"
  content="""
-git-annex should open only around 4 pipes to git per thread.
+I'm seeing a lot of git cat-file processes, not a lot of any other process.
 
-Ok, it's leaking git cat-file processes apparently, and only in -J mode.
+Each -J increment adds 3 threads for the different command stages
+(start, perform, cleanup). Each thread might need a git cat-file
+run with either of two different parameters, and on either of two different
+index files. (Both are needed for unlocked files, only one for locked
+files.)
+
+So, 5x3x2x2=60 copies of git cat-file max for -J5.
+And experimentally, that's exactly how many I see in the worst case
+repo where all files are unlocked. (Plus 4 which I think are owned by
+the controlling thread or something). Using your test case, I am seeing 44.
+So I don't think there's a subprocess leak here.
+
+IIUC, what you show is lsof of things open by git-annex and any git processes
+that happen to open a file with "annex" in its name, being around 3000.
+
+Now, lsof is for one thing showing a file that two different threads have
+open, as being opened twice. 
+
+	git-annex 1459862 1459863 ghc_ticke       joey  mem       REG                8,1    169720    9175285 /lib/x86_64-linux-gnu/ld-2.30.so
+	git-annex 1459862 1459873 git-annex       joey  mem       REG                8,1    169720    9175285 /lib/x86_64-linux-gnu/ld-2.30.so
+
+That is different threads of the same process, that has certianly not
+opened ld.so repeatedly.
+
+So, you should be using `lsof -Ki` or something. With that, I see around
+1019 files open, between git-annex and git. git-annex by itself has only
+246.
+
+(Interestingly, the majority of those seem to be sqlite. I'm unsure
+why sqlite is opening the same database 30 times. A single thread often
+has the same database opened repeatedly. Might be that the sqlite database
+layer has a too large connection pool. There are also a lot of FIFO's,
+which I think also belong to sqlite, unless they're something internal to
+the ghc runtime.)
+
+Looking at Michael's bug report, looks like they were running with -J8.
+I don't see that exceeding the default ulimit of 1024. If they were really
+running at -J32, it would. It's not clear to me either how datalad's --jobs
+interacts with git-annex's -J, does it pass through or do you run multiple
+git-annex processes? People in that bug report are referring to multiple
+git-annex processes, which git-annex -J does not result in.
+
+All these -J5 etc values seem a bit high. I doubt that more than -J2
+makes a lot of sense given the command stages optimisation, that makes
+it use 6 threads and balance the work better than it used to. Only
+time it really would if if you're getting from several different
+remotes that each bottleneck on a different resource.
 """]]
