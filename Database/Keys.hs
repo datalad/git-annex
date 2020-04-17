@@ -61,7 +61,7 @@ import qualified System.FilePath.ByteString as P
  -}
 runReader :: Monoid v => (SQL.ReadHandle -> Annex v) -> Annex v
 runReader a = do
-	h <- getDbHandle
+	h <- Annex.getState Annex.keysdbhandle
 	withDbState h go
   where
 	go DbUnavailable = return (mempty, DbUnavailable)
@@ -85,7 +85,7 @@ runReaderIO a = runReader (liftIO . a)
  - The database is created if it doesn't exist yet. -}
 runWriter :: (SQL.WriteHandle -> Annex ()) -> Annex ()
 runWriter a = do
-	h <- getDbHandle
+	h <- Annex.getState Annex.keysdbhandle
 	withDbState h go
   where
 	go st@(DbOpen qh) = do
@@ -100,17 +100,6 @@ runWriter a = do
 
 runWriterIO :: (SQL.WriteHandle -> IO ()) -> Annex ()
 runWriterIO a = runWriter (liftIO . a)
-
-{- Gets the handle cached in Annex state; creates a new one if it's not yet
- - available, but doesn't open the database. -}
-getDbHandle :: Annex DbHandle
-getDbHandle = go =<< Annex.getState Annex.keysdbhandle
-  where
-	go (Just h) = pure h
-	go Nothing = do
-		h <- liftIO newDbHandle
-		Annex.changeState $ \s -> s { Annex.keysdbhandle = Just h }
-		return h
 
 {- Opens the database, perhaps creating it if it doesn't exist yet.
  -
@@ -153,9 +142,7 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
  - data to it.
  -}
 closeDb :: Annex ()
-closeDb = Annex.getState Annex.keysdbhandle >>= \case
-	Nothing -> return ()
-	Just h -> liftIO (closeDbHandle h)
+closeDb = liftIO . closeDbHandle =<< Annex.getState Annex.keysdbhandle
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile k f

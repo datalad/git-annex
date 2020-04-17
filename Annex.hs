@@ -109,7 +109,6 @@ data AnnexState = AnnexState
 	, gitremotes :: Maybe [Git.Repo]
 	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
-	, remoteannexstate :: M.Map UUID AnnexState
 	, output :: MessageState
 	, concurrency :: Concurrency
 	, force :: Bool
@@ -147,7 +146,7 @@ data AnnexState = AnnexState
 	, workers :: Maybe (TMVar (WorkerPool AnnexState))
 	, activekeys :: TVar (M.Map Key ThreadId)
 	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
-	, keysdbhandle :: Maybe Keys.DbHandle
+	, keysdbhandle :: Keys.DbHandle
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
 	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
@@ -159,6 +158,7 @@ newState c r = do
 	emptyactivekeys <- newTVarIO M.empty
 	o <- newMessageState
 	sc <- newTMVarIO False
+	kh <- Keys.newDbHandle
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
@@ -167,7 +167,6 @@ newState c r = do
 		, gitremotes = Nothing
 		, backend = Nothing
 		, remotes = []
-		, remoteannexstate = M.empty
 		, output = o
 		, concurrency = NonConcurrent
 		, force = False
@@ -205,7 +204,7 @@ newState c r = do
 		, workers = Nothing
 		, activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
-		, keysdbhandle = Nothing
+		, keysdbhandle = kh
 		, cachedcurrentbranch = Nothing
 		, cachedgitenv = Nothing
 		, urloptions = Nothing
@@ -233,7 +232,7 @@ run' mvar a = do
 	flush s'
 	return (r, s')
   where
-	flush = maybe noop Keys.flushDbQueue . keysdbhandle
+	flush = Keys.flushDbQueue . keysdbhandle
 
 {- Performs an action in the Annex monad from a starting state, 
  - and throws away the new state. -}

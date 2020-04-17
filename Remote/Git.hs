@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,7 +12,7 @@ module Remote.Git (
 	remote,
 	configRead,
 	repoAvail,
-	onLocal,
+	onLocalRepo,
 ) where
 
 import Annex.Common
@@ -375,7 +375,7 @@ inAnnex rmt st key = do
 	inAnnex' repo rmt st key
 
 inAnnex' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
-inAnnex' repo rmt (State connpool duc _ _) key
+inAnnex' repo rmt st@(State connpool duc _ _ _) key
 	| Git.repoIsHttp repo = checkhttp
 	| Git.repoIsUrl repo = checkremote
 	| otherwise = checklocal
@@ -393,7 +393,7 @@ inAnnex' repo rmt (State connpool duc _ _) key
 	checklocal = ifM duc
 		( guardUsable repo (cantCheck repo) $
 			maybe (cantCheck repo) return
-				=<< onLocalFast repo rmt (Annex.Content.inAnnexSafe key)
+				=<< onLocalFast st (Annex.Content.inAnnexSafe key)
 		, cantCheck repo
 		)
 
@@ -421,10 +421,10 @@ dropKey r st key = do
 		(\e -> warning (show e) >> return False)
 
 dropKey' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
-dropKey' repo r (State connpool duc _ _) key
+dropKey' repo r st@(State connpool duc _ _ _) key
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (return False) $
-			commitOnCleanup repo r $ onLocalFast repo r $ do
+			commitOnCleanup repo r st $ onLocalFast st $ do
 				whenM (Annex.Content.inAnnex key) $ do
 					Annex.Content.lockContentForRemoval key $ \lock -> do
 						Annex.Content.removeAnnex lock
@@ -436,7 +436,7 @@ dropKey' repo r (State connpool duc _ _) key
 	| Git.repoIsHttp repo = do
 		warning "dropping from http remote not supported"
 		return False
-	| otherwise = commitOnCleanup repo r $ do
+	| otherwise = commitOnCleanup repo r st $ do
 		let fallback = Ssh.dropKey repo key
 		P2PHelper.remove (Ssh.runProto r connpool (return False) fallback) key
 
@@ -446,14 +446,14 @@ lockKey r st key callback = do
 	lockKey' repo r st key callback
 
 lockKey' :: Git.Repo -> Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r
-lockKey' repo r (State connpool duc _ _) key callback
+lockKey' repo r st@(State connpool duc _ _ _) key callback
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo failedlock $ do
 			inorigrepo <- Annex.makeRunner
 			-- Lock content from perspective of remote,
 			-- and then run the callback in the original
 			-- annex monad, not the remote's.
-			onLocalFast repo r $ 
+			onLocalFast st $ 
 				Annex.Content.lockContentShared key $
 					liftIO . inorigrepo . callback
 		, failedlock
@@ -514,7 +514,7 @@ copyFromRemote' forcersync r st key file dest meterupdate = do
 	copyFromRemote'' repo forcersync r st key file dest meterupdate
 
 copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meterupdate
+copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest meterupdate
 	| Git.repoIsHttp repo = unVerified $ do
 		gc <- Annex.getGitConfig
 		Url.withUrlOptionsPromptingCreds $
@@ -524,7 +524,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _) key file dest meter
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocalFast repo r $ do
+		onLocalFast st $ do
 			v <- Annex.Content.prepSendAnnex key
 			case v of
 				Nothing -> return (False, UnVerified)
@@ -643,13 +643,13 @@ copyToRemote r st key file meterupdate = do
 	copyToRemote' repo r st key file meterupdate
 
 copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
+copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 	| not $ Git.repoIsUrl repo = ifM duc
-		( guardUsable repo (return False) $ commitOnCleanup repo r $
+		( guardUsable repo (return False) $ commitOnCleanup repo r st $
 			copylocal =<< Annex.Content.prepSendAnnex key
 		, return False
 		)
-	| Git.repoIsSsh repo = commitOnCleanup repo r $
+	| Git.repoIsSsh repo = commitOnCleanup repo r st $
 		P2PHelper.store
 			(\p -> Ssh.runProto r connpool (return False) (copyremotefallback p))
 			key file meterupdate
@@ -668,7 +668,7 @@ copyToRemote' repo r st@(State connpool duc _ _) key file meterupdate
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocalFast repo r $ ifM (Annex.Content.inAnnex key)
+		onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, runTransfer (Transfer Download u (fromKey id key)) file stdRetry $ \p -> do
 				copier <- mkCopier hardlink st params
@@ -715,6 +715,13 @@ repairRemote r a = return $ do
 		ensureInitialized
 		a `finally` stopCoProcesses
 
+data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo (MVar (Maybe Annex.AnnexState))
+
+{- This can safely be called on a Repo that is not local, but of course
+ - onLocal will not work if used with the result. -}
+mkLocalRemoteAnnex :: Git.Repo -> Annex (LocalRemoteAnnex)
+mkLocalRemoteAnnex repo = LocalRemoteAnnex repo <$> liftIO (newMVar Nothing)
+
 {- Runs an action from the perspective of a local remote.
  -
  - The AnnexState is cached for speed and to avoid resource leaks.
@@ -724,23 +731,29 @@ repairRemote r a = return $ do
  - The remote will be automatically initialized/upgraded first,
  - when possible.
  -}
-onLocal :: Git.Repo -> Remote -> Annex a -> Annex a
-onLocal repo r a = do
-	m <- Annex.getState Annex.remoteannexstate
-	case M.lookup (uuid r) m of
-		Nothing -> do
-			st <- liftIO $ Annex.new repo
-			go (st, ensureInitialized >> a)
-		Just st -> go (st, a)
+onLocal :: State -> Annex a -> Annex a
+onLocal (State _ _ _ _ lra) = onLocal' lra
+
+onLocalRepo :: Git.Repo -> Annex a -> Annex a
+onLocalRepo repo a = do
+	lra <- mkLocalRemoteAnnex repo
+	onLocal' lra a
+
+onLocal' :: LocalRemoteAnnex -> Annex a -> Annex a
+onLocal' (LocalRemoteAnnex repo v) a = liftIO (takeMVar v) >>= \case
+	Nothing -> do
+		st <- liftIO $ Annex.new repo
+		go (st, ensureInitialized >> a)
+	Just st -> go (st, a)
   where
-	cache st = Annex.changeState $ \s -> s
-		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
 	go (st, a') = do
 		curro <- Annex.getState Annex.output
-		(ret, st') <- liftIO $ Annex.run (st { Annex.output = curro }) $
+		let act = Annex.run (st { Annex.output = curro }) $
 			a' `finally` stopCoProcesses
-		cache st'
+		(ret, st') <- liftIO $ act `onException` cache st
+		liftIO $ cache st'
 		return ret
+	cache st = putMVar v (Just st)
 
 {- Faster variant of onLocal.
  -
@@ -749,8 +762,8 @@ onLocal repo r a = do
  - it gets the most current value. Caller of onLocalFast can make changes
  - to the branch, however.
  -}
-onLocalFast :: Git.Repo -> Remote -> Annex a -> Annex a
-onLocalFast repo r a = onLocal repo r $ Annex.BranchState.disableUpdate >> a
+onLocalFast :: State -> Annex a -> Annex a
+onLocalFast st a = onLocal st $ Annex.BranchState.disableUpdate >> a
 
 -- To avoid the overhead of trying copy-on-write every time, it's tried
 -- once and if it fails, is not tried again.
@@ -784,7 +797,7 @@ rsyncOrCopyFile st rsyncparams src dest p =
 		)
   where
 	copycowtried = case st of
-		State _ _ (CopyCoWTried v) _ -> v
+		State _ _ (CopyCoWTried v) _ _ -> v
 	dorsync = do
 		-- dest may already exist, so make sure rsync can write to it
 		void $ liftIO $ tryIO $ allowWrite dest
@@ -796,12 +809,12 @@ rsyncOrCopyFile st rsyncparams src dest p =
 	docopywith a = liftIO $ watchFileSize dest p $
 		a CopyTimeStamps src dest
 
-commitOnCleanup :: Git.Repo -> Remote -> Annex a -> Annex a
-commitOnCleanup repo r a = go `after` a
+commitOnCleanup :: Git.Repo -> Remote -> State -> Annex a -> Annex a
+commitOnCleanup repo r st a = go `after` a
   where
 	go = Annex.addCleanup (RemoteCleanup $ uuid r) cleanup
 	cleanup
-		| not $ Git.repoIsUrl repo = onLocalFast repo r $
+		| not $ Git.repoIsUrl repo = onLocalFast st $
 			doQuietSideAction $
 				Annex.Branch.commit =<< Annex.Branch.commitMessage
 		| otherwise = void $ do
@@ -857,23 +870,24 @@ mkCopier remotewanthardlink st rsyncparams = do
  - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
-data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig))
+data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig)) LocalRemoteAnnex
 
 getRepoFromState :: State -> Annex Git.Repo
-getRepoFromState (State _ _ _ a) = fst <$> a
+getRepoFromState (State _ _ _ a _) = fst <$> a
 
 #ifndef mingw32_HOST_OS
 {- The config of the remote git repository, cached for speed. -}
 getGitConfigFromState :: State -> Annex GitConfig
-getGitConfigFromState (State _ _ _ a) = snd <$> a
+getGitConfigFromState (State _ _ _ a _) = snd <$> a
 #endif
 
 mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
 mkState r u gc = do
 	pool <- Ssh.mkP2PSshConnectionPool
 	copycowtried <- liftIO newCopyCoWTried
+	lra <- mkLocalRemoteAnnex r
 	(duc, getrepo) <- go
-	return $ State pool duc copycowtried getrepo
+	return $ State pool duc copycowtried getrepo lra
   where
 	go
 		| remoteAnnexCheckUUID gc = return

@@ -13,6 +13,8 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     true and false, including "yes", "on", "1", etc.
   * Fix --batch commands (and git-annex info) to accept absolute filenames 
     for unlocked files, which already worked for locked files.
+  * Avoid repeatedly opening keys db when accessing a local git remote
+    and -J is used.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 
