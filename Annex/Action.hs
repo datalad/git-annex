@@ -23,7 +23,10 @@ import Utility.Exception
 import Annex.Common
 import qualified Annex
 import Annex.Content
-import Annex.Concurrent
+import Annex.CatFile
+import Annex.CheckAttr
+import Annex.HashObject
+import Annex.CheckIgnore
 
 {- Actions to perform each time ran. -}
 startup :: Annex ()
@@ -36,6 +39,14 @@ shutdown nocommit = do
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
 	stopCoProcesses
 	liftIO reapZombies -- zombies from long-running git processes
+
+{- Stops all long-running git query processes. -}
+stopCoProcesses :: Annex ()
+stopCoProcesses = do
+	catFileStop
+	checkAttrStop
+	hashObjectStop
+	checkIgnoreStop
 
 {- Reaps any zombie processes that may be hanging around.
  -

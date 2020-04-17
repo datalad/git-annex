@@ -1,73 +1,18 @@
-{- git-annex concurrent state
+{- git-annex worker thread pool
  -
  - Copyright 2015-2019 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.Concurrent where
+module Annex.WorkerPool where
 
 import Annex
 import Annex.Common
-import qualified Annex.Queue
-import Annex.Action
 import Types.WorkerPool
-import Remote.List
 
 import Control.Concurrent
 import Control.Concurrent.STM
-import qualified Data.Map as M
-
-{- Allows forking off a thread that uses a copy of the current AnnexState
- - to run an Annex action.
- -
- - The returned IO action can be used to start the thread.
- - It returns an Annex action that must be run in the original 
- - calling context to merge the forked AnnexState back into the
- - current AnnexState.
- -}
-forkState :: Annex a -> Annex (IO (Annex a))
-forkState a = do
-	st <- dupState
-	return $ do
-		(ret, newst) <- run st a
-		return $ do
-			mergeState newst
-			return ret
-
-{- Returns a copy of the current AnnexState that is safe to be
- - used when forking off a thread. 
- -
- - After an Annex action is run using this AnnexState, it
- - should be merged back into the current Annex's state,
- - by calling mergeState.
- -}
-dupState :: Annex AnnexState
-dupState = do
-	-- Make sure that some expensive actions have been done before
-	-- starting threads. This way the state has them already run,
-	-- and each thread won't try to do them.
-	_ <- remoteList
-
-	st <- Annex.getState id
-	return $ st
-		-- each thread has its own repoqueue
-		{ Annex.repoqueue = Nothing
-		-- avoid sharing eg, open file handles
-		, Annex.catfilehandles = M.empty
-		, Annex.checkattrhandle = Nothing
-		, Annex.checkignorehandle = Nothing
-		}
-
-{- Merges the passed AnnexState into the current Annex state.
- - Also closes various handles in it. -}
-mergeState :: AnnexState -> Annex ()
-mergeState st = do
-	st' <- liftIO $ snd <$> run st stopCoProcesses
-	forM_ (M.toList $ Annex.cleanup st') $
-		uncurry addCleanup
-	Annex.Queue.mergeFrom st'
-	changeState $ \s -> s { errcounter = errcounter s + errcounter st' }
 
 {- Runs an action and makes the current thread have the specified stage
  - while doing so. If too many other threads are running in the specified

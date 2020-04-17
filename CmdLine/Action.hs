@@ -245,11 +245,6 @@ startConcurrency usedstages a = do
 			liftIO $ setNumCapabilities n
 	
 	initworkerpool n = do
-		-- Generate the remote list now, to avoid each thread
-		-- generating it, which would be more expensive and
-		-- could cause threads to contend over eg, calls to
-		-- setConfig.
-		_ <- remoteList
 		tv <- liftIO newEmptyTMVarIO
 		Annex.changeState $ \s -> s { Annex.workers = Just tv }
 		st <- dupState

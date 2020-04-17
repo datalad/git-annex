@@ -74,6 +74,7 @@ import Git.FilePath
 import Annex.Perms
 import Annex.Link
 import Annex.LockPool
+import Annex.WorkerPool
 import Messages.Progress
 import Types.Remote (unVerified, Verification(..), RetrievalSecurityPolicy(..))
 import qualified Types.Remote
@@ -87,7 +88,6 @@ import Annex.InodeSentinal
 import Utility.InodeCache
 import Annex.Content.LowLevel
 import Annex.Content.PointerFile
-import Annex.Concurrent
 import Types.WorkerPool
 import qualified Utility.RawFilePath as R
 

@@ -30,9 +30,9 @@ import Utility.ThreadScheduler
 import Annex.LockPool
 import Types.Key
 import qualified Types.Remote as Remote
-import Annex.Concurrent
 import Types.Concurrency
 import Types.WorkerPool
+import Annex.WorkerPool
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M

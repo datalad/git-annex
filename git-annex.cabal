@@ -668,6 +668,7 @@ Executable git-annex
     Annex.View
     Annex.View.ViewedFile
     Annex.Wanted
+    Annex.WorkerPool
     Annex.WorkTree
     Annex.YoutubeDl
     Backend
