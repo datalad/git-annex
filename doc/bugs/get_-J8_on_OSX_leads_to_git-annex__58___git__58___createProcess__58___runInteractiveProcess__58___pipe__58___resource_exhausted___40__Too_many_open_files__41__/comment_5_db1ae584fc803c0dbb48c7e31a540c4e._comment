@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-04-17T21:09:41Z"
+ content="""
+The sqlite open files is a red herring: That happened only when
+using a remote in a local directory. Anyway, I've fixed that.
+
+The open files I'm seeing now in my artifical
+test case (two local repos with 1000 unlocked files, git-annex get between them, lsof
+-Ki run after that's moved 500 files, while the git-annex process is suspended):
+
+	no -J	48
+	-J2	104
+	-J5	185
+	-J32	964
+
+Which seems fine, 28 file handles per -J increment.
+
+If you have something worse than that, show me the lsof.
+"""]]
