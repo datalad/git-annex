@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="quick follow up"
+ date="2020-04-17T20:34:55Z"
+ content="""
+>  It's not clear to me either how datalad's --jobs interacts with git-annex's -J, does it pass through or do you run multiple git-annex processes? 
+
+ATM we just run a single `annex get` with `-J` option ATM (FWIW -- in `--batch` mode IIRC).  Things might change in the future to balance across different submodules.
+
+> All these -J5 etc values seem a bit high. I doubt that more than -J2 makes a lot of sense given the command stages optimisation, that makes it use 6 threads and balance the work better than it used to.
+
+I could do some timing later on, but I did see benefits as I could not go over 40-60MBps in a single download process (e.g. from S3) but parallel ones (even as high as 8 or 10) could easily carry that throughput in parallel, thus scaling up quite nicely.  If interested -- you could experiment on smaug to which you have access to possibly observe similar effects.
+"""]]
