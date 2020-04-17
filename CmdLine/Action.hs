@@ -17,7 +17,6 @@ import Types.Concurrency
 import Messages.Concurrent
 import Types.Messages
 import Types.WorkerPool
-import Remote.List
 
 import Control.Concurrent
 import Control.Concurrent.Async
