@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-04-17T16:37:07Z"
+ content="""
+git-annex should open only around 4 pipes to git per thread.
+
+Ok, it's leaking git cat-file processes apparently, and only in -J mode.
+"""]]
