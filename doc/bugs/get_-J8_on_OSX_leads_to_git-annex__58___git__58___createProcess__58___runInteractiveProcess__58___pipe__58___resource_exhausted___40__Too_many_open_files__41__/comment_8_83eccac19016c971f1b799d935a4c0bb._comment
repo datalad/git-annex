@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2020-04-18T02:14:32Z"
+ content="""
+FWIW, kept running it a bit more, the number `git cat-file` processes grew up a bit (to 42) with total open files 1034 but seems to be stable, i.e. one other support that there is no leaking processes or file descriptors -- just sheer growth of sub processes leading to large number of open files. 
+"""]]
