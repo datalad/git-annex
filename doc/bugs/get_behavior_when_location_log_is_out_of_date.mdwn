@@ -1,0 +1,7 @@
+When location log says a remote contains a file, 
+but it is out of date, a get --from that remote will silently fail to do
+anything.
+
+(This happened with a git remote on a drive fwiw). 
+
+--[[Joey]]
