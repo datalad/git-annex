@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+Finding files by metadata is possible with
+
+    git annex find --metadata some-key="something*"
+
+From looking at the code, inspecting .git/annex and running this multiple times, it seems to me that this does not use any cache.
+Accordingly, it takes ~25s on my large repo.
+
+This is too slow for many use cases.
+
+I was not sure whether to add this here as a bug or in the todo section.
+The design notes for [[design/caching_database]] gave me the impression that some metadata caching is already planned?
+
+A metadata cache could track the git-annex commit sha-1 that it was built for. Then git-annex only needs to check, whether any change to a metadata file happened in a commit between the current HEAD of the git-annex branch and the commit sha-1 of the cache.
+
+### What version of git-annex are you using? On what operating system?
+
+8.20200227-gf56dfe791
