@@ -1,0 +1,127 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2020-04-18T02:05:52Z"
+ content="""
+>  5x3x2x2=60 copies of git cat-file max for -J5.
+
+So there is now up to 60 `git` processes, where each one has about 20 open files, totaling up to 1200 open files... so we are getting into thousands 
+<details>
+<summary>
+In my current attempt on the laptop, here is a `pstree` with counts per each process and total at the bottom - 883 open files for -J5 invocation, with each `git cat-file` taking between 14 and 29:
+</summary> 
+
+```shell
+$> total=0; pstree -l -a --compact-not -T -p `pgrep datalad` | sed -e 's,--library-path /[^ ]*,,g' -e 's,/usr/lib/git-annex.linux/shimmed/git/,,g' -e 's,--git-dir=.git --work-tree=. --literal-pathspecs -c annex.dotfiles=true,,g' | nl | while read l; do pid=$(echo \"$l\" | sed -e 's/.*,\([0-9][0-9]*\).*/\1/g'); of=$(lsof -Ki -p $pid 2>/dev/null|grep -v COMMAND | wc -l); echo \"$l\" | sed -e \"s/,$pid/,$pid = $of/g\"; total=$(($total + $of)) ; done; echo \"Total: $total open files across all processes\"
+1	datalad,2807826 = 54 /home/yoh/proj/datalad/datalad-maint/venvs/dev3/bin/datalad -l debug install -J 5 -g ///labs/haxby/raiders
+2	  `-git-annex,2808614 = 149  /usr/lib/git-annex.linux/shimmed/git-annex/git-annex get -c annex.dotfiles=true --json --json-error-messages --json-progress -J5 -- .
+3	      |-git,2808649 = 16  git  cat-file --batch
+4	      |-git,2808650 = 14  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+5	      |-(git,2808653 = 0)
+6	      |-git,2808654 = 16  git  cat-file --batch
+7	      |-git,2808655 = 16  git  cat-file --batch
+8	      |-git,2808656 = 16  git  cat-file --batch
+9	      |-git,2808657 = 16  git  cat-file --batch
+10	      |-git,2808658 = 16  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+11	      |-git,2808659 = 16  git  cat-file --batch
+12	      |-git,2808660 = 16  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+13	      |-git,2808661 = 16  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+14	      |-git,2808662 = 16  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+15	      |-git,2808663 = 16  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+16	      |-git,2808669 = 16  git  cat-file --batch
+17	      |-git,2808670 = 16  git  cat-file --batch
+18	      |-git,2808671 = 16  git  cat-file --batch
+19	      |-git,2808672 = 16  git  cat-file --batch
+20	      |-git,2808673 = 16  git  cat-file --batch
+21	      |-git,2808674 = 14  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+22	      |-git,2808675 = 14  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+23	      |-git,2808676 = 14  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+24	      |-git,2808677 = 14  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+25	      |-git,2808678 = 14  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+26	      |-git,2808679 = 17  git  cat-file --batch
+27	      |-git,2808680 = 14  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+28	      |-git,2808682 = 25  git  cat-file --batch
+29	      |-git,2808683 = 23  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+30	      |-git,2808685 = 26  git  cat-file --batch
+31	      |-git,2808686 = 24  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+32	      |-git,2808688 = 27  git  cat-file --batch
+33	      |-git,2808689 = 24  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+34	      |-git,2808690 = 28  git  cat-file --batch
+35	      |-git,2808691 = 26  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+36	      |-git,2808693 = 29  git  cat-file --batch
+37	      |-git,2808694 = 27  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+38	      |-git,2809036 = 26  git  cat-file --batch
+39	      `-git,2809037 = 24  git  cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+Total: 883 open files across all processes
+```
+
+</details>
+
+<details>
+<summary>
+looking at the one with 29 open files:
+</summary> 
+
+```shell
+$> lsof -Ki -p 2808691
+COMMAND     PID USER   FD   TYPE   DEVICE SIZE/OFF     NODE NAME
+git     2808691  yoh  cwd    DIR    259,5     4096 16654129 /tmp/raiders
+git     2808691  yoh  rtd    DIR    259,5     4096        2 /
+git     2808691  yoh  txt    REG    259,5   165632  8395234 /usr/lib/git-annex.linux/lib64/ld-linux-x86-64.so.2
+git     2808691  yoh  mem    REG    259,5   337024 11806232 /usr/lib/locale/aa_DJ.utf8/LC_CTYPE
+git     2808691  yoh  mem    REG    259,5     3284 11807992 /usr/lib/locale/en_US.utf8/LC_TIME
+git     2808691  yoh  mem    REG    259,5  1824496  8394627 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/libc.so.6
+git     2808691  yoh  mem    REG    259,5    35808  8395214 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/librt.so.1
+git     2808691  yoh  mem    REG    259,5   114128  8395210 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/libpthread.so.0
+git     2808691  yoh  mem    REG    259,5   121280  8395232 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/libz.so.1
+git     2808691  yoh  mem    REG    259,5   539304  8395937 /usr/lib/git-annex.linux/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
+git     2808691  yoh  mem    REG    259,5  3008120  8395330 /usr/lib/git-annex.linux/shimmed/git/git
+git     2808691  yoh    0r  FIFO     0,13      0t0 99400741 pipe
+git     2808691  yoh    1w  FIFO     0,13      0t0 99400742 pipe
+git     2808691  yoh    2w   REG     0,48        0 35023711 /home/yoh/.tmp/datalad_temp__runneroutput__mq55kiau
+git     2808691  yoh   77u  IPv4 99400731      0t0      TCP lena:38384->falkor.dartmouth.edu:http (CLOSE_WAIT)
+git     2808691  yoh   82u  IPv4 99392984      0t0      TCP lena:38386->falkor.dartmouth.edu:http (CLOSE_WAIT)
+git     2808691  yoh   83u  IPv4 99392024      0t0      TCP lena:38380->falkor.dartmouth.edu:http (ESTABLISHED)
+git     2808691  yoh   84u  IPv4 99400730      0t0      TCP lena:38382->falkor.dartmouth.edu:http (ESTABLISHED)
+git     2808691  yoh   85u  IPv4 99377953      0t0      TCP lena:38388->falkor.dartmouth.edu:http (CLOSE_WAIT)
+git     2808691  yoh   86w   REG    259,5 68071663 16654712 /tmp/raiders/.git/annex/tmp/MD5E-s6658782008--8def61aac5f6742194027447390405ff.hdf5.gz
+git     2808691  yoh   87w   REG    259,5 53047218 16654713 /tmp/raiders/.git/annex/tmp/MD5E-s121517414--f83afa4a5dff04b5a1467afd30e74632.nii.gz
+git     2808691  yoh   89w   REG    259,5 23378713 16654715 /tmp/raiders/.git/annex/tmp/MD5E-s23378713--7a238410b5c496a29e7967da21332c03.nii.gz
+git     2808691  yoh   94u  IPv4 99398310      0t0      TCP lena:38390->falkor.dartmouth.edu:http (CLOSE_WAIT)
+git     2808691  yoh  102u  IPv4 99394953      0t0      TCP lena:38400->falkor.dartmouth.edu:http (CLOSE_WAIT)
+git     2808691  yoh  106u  IPv4 99399711      0t0      TCP lena:38402->falkor.dartmouth.edu:http (CLOSE_WAIT)
+git     2808691  yoh  107w   REG    259,5   545747 16654726 /tmp/raiders/.git/annex/objects/2X/Kz/MD5E-s545747--e2c2cd58ad55da46bf778d223e01389e.nii.gz/MD5E-s545747--e2c2cd58ad55da46bf778d223e01389e.nii.gz
+```
+
+</details>
+
+<details>
+<summary>and only 16</summary> 
+
+```shell
+$> lsof -Ki -p 2808669
+
+COMMAND     PID USER   FD   TYPE DEVICE SIZE/OFF     NODE NAME
+git     2808669  yoh  cwd    DIR  259,5     4096 16654129 /tmp/raiders
+git     2808669  yoh  rtd    DIR  259,5     4096        2 /
+git     2808669  yoh  txt    REG  259,5   165632  8395234 /usr/lib/git-annex.linux/lib64/ld-linux-x86-64.so.2
+git     2808669  yoh  mem    REG  259,5  1322694 16654180 /tmp/raiders/.git/objects/pack/pack-3ed86065dacf772445fec4258d6e60ebe21baf77.pack
+git     2808669  yoh  mem    REG  259,5   505212 16654181 /tmp/raiders/.git/objects/pack/pack-3ed86065dacf772445fec4258d6e60ebe21baf77.idx
+git     2808669  yoh  mem    REG  259,5   337024 11806232 /usr/lib/locale/aa_DJ.utf8/LC_CTYPE
+git     2808669  yoh  mem    REG  259,5     3284 11807992 /usr/lib/locale/en_US.utf8/LC_TIME
+git     2808669  yoh  mem    REG  259,5  1824496  8394627 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/libc.so.6
+git     2808669  yoh  mem    REG  259,5    35808  8395214 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/librt.so.1
+git     2808669  yoh  mem    REG  259,5   114128  8395210 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/libpthread.so.0
+git     2808669  yoh  mem    REG  259,5   121280  8395232 /usr/lib/git-annex.linux/lib/x86_64-linux-gnu/libz.so.1
+git     2808669  yoh  mem    REG  259,5   539304  8395937 /usr/lib/git-annex.linux/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
+git     2808669  yoh  mem    REG  259,5  3008120  8395330 /usr/lib/git-annex.linux/shimmed/git/git
+git     2808669  yoh    0r  FIFO   0,13      0t0 99388817 pipe
+git     2808669  yoh    1w  FIFO   0,13      0t0 99388818 pipe
+git     2808669  yoh    2w   REG   0,48        0 35023711 /home/yoh/.tmp/datalad_temp__runneroutput__mq55kiau
+```
+</details>
+ we can see why it is fluctuating, although I have no clue why those are opened by `git cat-file`: connections to the remote (although -- why??), looking at .git/annex/tmp?
+
+But overall problem seems to me is this heavy growth of external processes due to multiple external `git` invocations per each `annex get` thread, and then each process consuming very small, but still tens of, open files.
+"""]]
