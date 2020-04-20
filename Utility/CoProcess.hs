@@ -9,7 +9,8 @@
 {-# LANGUAGE CPP #-}
 
 module Utility.CoProcess (
-	CoProcessHandle,
+	CoProcessHandle(..),
+	CoProcessState(..),
 	start,
 	stop,
 	query,

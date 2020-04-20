@@ -1,6 +1,6 @@
 {- git-annex concurrent state
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,12 +11,28 @@ import Annex
 import Annex.Common
 import qualified Annex.Queue
 import Annex.Action
+import Types.Concurrency
 import Types.WorkerPool
+import Types.CatFileHandles
 import Remote.List
 
 import Control.Concurrent
 import Control.Concurrent.STM
 import qualified Data.Map as M
+
+setConcurrency :: Concurrency -> Annex ()
+setConcurrency NonConcurrent = Annex.changeState $ \s -> s 
+	{ Annex.concurrency = NonConcurrent
+	}
+setConcurrency c = do
+	cfh <- Annex.getState Annex.catfilehandles
+	cfh' <- case cfh of
+		CatFileHandlesNonConcurrent _ -> liftIO catFileHandlesPool
+		CatFileHandlesPool _ -> pure cfh
+	Annex.changeState $ \s -> s
+		{ Annex.concurrency = c
+		, Annex.catfilehandles = cfh'
+		}
 
 {- Allows forking off a thread that uses a copy of the current AnnexState
  - to run an Annex action.
@@ -50,11 +66,17 @@ dupState = do
 	_ <- remoteList
 
 	st <- Annex.getState id
-	return $ st
+	-- Make sure that concurrency is enabled, if it was not already,
+	-- so the resource pools are set up.
+	st' <- case Annex.concurrency st of
+		NonConcurrent -> do
+			setConcurrency (Concurrent 1)
+			Annex.getState id
+		_ -> return st
+	return $ st'
 		-- each thread has its own repoqueue
 		{ Annex.repoqueue = Nothing
-		-- avoid sharing eg, open file handles
-		, Annex.catfilehandles = M.empty
+		-- avoid sharing open file handles
 		, Annex.checkattrhandle = Nothing
 		, Annex.checkignorehandle = Nothing
 		}

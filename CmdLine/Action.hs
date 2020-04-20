@@ -199,8 +199,7 @@ startConcurrency :: UsedStages -> Annex a -> Annex a
 startConcurrency usedstages a = do
 	fromcmdline <- Annex.getState Annex.concurrency
 	fromgitcfg <- annexJobs <$> Annex.getGitConfig
-	let usegitcfg = Annex.changeState $ 
-		\c -> c { Annex.concurrency = fromgitcfg }
+	let usegitcfg = setConcurrency fromgitcfg
 	case (fromcmdline, fromgitcfg) of
 		(NonConcurrent, NonConcurrent) -> a
 		(Concurrent n, _) ->

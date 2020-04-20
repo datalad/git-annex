@@ -975,6 +975,7 @@ Executable git-annex
     Types.Backend
     Types.Benchmark
     Types.BranchState
+    Types.CatFileHandles
     Types.CleanupActions
     Types.Command
     Types.Concurrency
@@ -1089,6 +1090,7 @@ Executable git-annex
     Utility.Process.Transcript
     Utility.QuickCheck
     Utility.RawFilePath
+    Utility.ResourcePool
     Utility.Rsync
     Utility.SafeCommand
     Utility.Scheduled

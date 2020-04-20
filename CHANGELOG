@@ -15,6 +15,8 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     for unlocked files, which already worked for locked files.
   * Avoid repeatedly opening keys db when accessing a local git remote
     and -J is used.
+  * Avoid running a large number of git cat-file child processes when run
+    with a large -J value.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

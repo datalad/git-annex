@@ -36,6 +36,7 @@ import CmdLine.GlobalSetter
 import qualified Backend
 import qualified Types.Backend as Backend
 import Utility.HumanTime
+import Annex.Concurrent
 
 -- Global options that are accepted by all git-annex sub-commands,
 -- although not always used.
@@ -395,7 +396,7 @@ jsonProgressOption =
 -- action in `allowConcurrentOutput`.
 jobsOption :: [GlobalOption]
 jobsOption = 
-	[ globalSetter set $ 
+	[ globalSetter setConcurrency $ 
 		option (maybeReader parseConcurrency)
 			( long "jobs" <> short 'J' 
 			<> metavar (paramNumber `paramOr` "cpus")
@@ -403,8 +404,6 @@ jobsOption =
 			<> hidden
 			)
 	]
-  where
-	set v = Annex.changeState $ \s -> s { Annex.concurrency = v }
 
 timeLimitOption :: [GlobalOption]
 timeLimitOption = 

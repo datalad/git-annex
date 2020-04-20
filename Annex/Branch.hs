@@ -418,8 +418,8 @@ mergeIndex :: JournalLocked -> [Git.Ref] -> Annex ()
 mergeIndex jl branches = do
 	prepareModifyIndex jl
 	hashhandle <- hashObjectHandle
-	ch <- catFileHandle
-	inRepo $ \g -> Git.UnionMerge.mergeIndex hashhandle ch g branches
+	withCatFileHandle $ \ch ->
+		inRepo $ \g -> Git.UnionMerge.mergeIndex hashhandle ch g branches
 
 {- Removes any stale git lock file, to avoid git falling over when
  - updating the index.

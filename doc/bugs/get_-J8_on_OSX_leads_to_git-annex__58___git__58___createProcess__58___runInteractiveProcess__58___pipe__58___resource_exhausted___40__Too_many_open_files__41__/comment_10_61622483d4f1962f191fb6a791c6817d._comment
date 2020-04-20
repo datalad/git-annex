@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2020-04-20T17:24:53Z"
+ content="""
+Implemented the cat-file pool. Capped at 2 cat-files of each distinct type,
+so it will start a max of 8 no matter the -J level.
+
+(Although cat-file can also be run in those repositories so there will be
+more then.)
+
+While testing, I noticed git-anenx drop -Jn starts n git check-attr
+processes, so the same thing ought to be done with them. Leaving this bug open
+for that, but I do think that the problem you reported should be fixed now.
+"""]]

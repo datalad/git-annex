@@ -1,9 +1,11 @@
 {- git cat-file interface, with handle automatically stored in the Annex monad
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Annex.CatFile (
 	catFile,
@@ -12,7 +14,7 @@ module Annex.CatFile (
 	catTree,
 	catCommit,
 	catObjectDetails,
-	catFileHandle,
+	withCatFileHandle,
 	catObjectMetaData,
 	catFileStop,
 	catKey,
@@ -27,6 +29,7 @@ module Annex.CatFile (
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import System.PosixCompat.Types
+import Control.Concurrent.STM
 
 import Annex.Common
 import qualified Git
@@ -39,64 +42,94 @@ import qualified Git.Ref
 import Annex.Link
 import Annex.CurrentBranch
 import Types.AdjustedBranch
+import Types.CatFileHandles
+import Utility.ResourcePool
 
 catFile :: Git.Branch -> RawFilePath -> Annex L.ByteString
-catFile branch file = do
-	h <- catFileHandle
+catFile branch file = withCatFileHandle $ \h -> 
 	liftIO $ Git.CatFile.catFile h branch file
 
 catFileDetails :: Git.Branch -> RawFilePath -> Annex (Maybe (L.ByteString, Sha, ObjectType))
-catFileDetails branch file = do
-	h <- catFileHandle
+catFileDetails branch file = withCatFileHandle $ \h -> 
 	liftIO $ Git.CatFile.catFileDetails h branch file
 
 catObject :: Git.Ref -> Annex L.ByteString
-catObject ref = do
-	h <- catFileHandle
+catObject ref = withCatFileHandle $ \h ->
 	liftIO $ Git.CatFile.catObject h ref
 
 catObjectMetaData :: Git.Ref -> Annex (Maybe (Sha, Integer, ObjectType))
-catObjectMetaData ref = do
-	h <- catFileHandle
+catObjectMetaData ref = withCatFileHandle $ \h ->
 	liftIO $ Git.CatFile.catObjectMetaData h ref
 
 catTree :: Git.Ref -> Annex [(FilePath, FileMode)]
-catTree ref = do
-	h <- catFileHandle
+catTree ref = withCatFileHandle $ \h -> 
 	liftIO $ Git.CatFile.catTree h ref
 
 catCommit :: Git.Ref -> Annex (Maybe Commit)
-catCommit ref = do
-	h <- catFileHandle
+catCommit ref = withCatFileHandle $ \h -> 
 	liftIO $ Git.CatFile.catCommit h ref
 
 catObjectDetails :: Git.Ref -> Annex (Maybe (L.ByteString, Sha, ObjectType))
-catObjectDetails ref = do
-	h <- catFileHandle
+catObjectDetails ref = withCatFileHandle $ \h ->
 	liftIO $ Git.CatFile.catObjectDetails h ref
 
 {- There can be multiple index files, and a different cat-file is needed
- - for each. This is selected by setting GIT_INDEX_FILE in the gitEnv. -}
-catFileHandle :: Annex Git.CatFile.CatFileHandle
-catFileHandle = do
-	m <- Annex.getState Annex.catfilehandles
+ - for each. That is selected by setting GIT_INDEX_FILE in the gitEnv
+ - before running this. -}
+withCatFileHandle :: (Git.CatFile.CatFileHandle -> Annex a) -> Annex a
+withCatFileHandle a = do
+	cfh <- Annex.getState Annex.catfilehandles
 	indexfile <- fromMaybe "" . maybe Nothing (lookup indexEnv)
 		<$> fromRepo gitEnv
-	case M.lookup indexfile m of
-		Just h -> return h
-		Nothing -> do
-			h <- inRepo Git.CatFile.catFileStart
-			let m' = M.insert indexfile h m
-			Annex.changeState $ \s -> s { Annex.catfilehandles = m' }
-			return h
+	p <- case cfh of
+		CatFileHandlesNonConcurrent m -> case M.lookup indexfile m of
+			Just p -> return p
+			Nothing -> do
+				p <- mkResourcePoolNonConcurrent startcatfile
+				let !m' = M.insert indexfile p m
+				Annex.changeState $ \s -> s { Annex.catfilehandles = CatFileHandlesNonConcurrent m' }
+				return p
+		CatFileHandlesPool tm -> do
+			m <- liftIO $ atomically $ takeTMVar tm
+			case M.lookup indexfile m of
+				Just p -> do
+					liftIO $ atomically $ putTMVar tm m
+					return p
+				Nothing -> do
+					p  <- mkResourcePool maxCatFiles
+					let !m' = M.insert indexfile p m
+					liftIO $ atomically $ putTMVar tm m'
+					return p
+	withResourcePool p startcatfile a
+  where
+	startcatfile = inRepo Git.CatFile.catFileStart
+
+{- A lot of git cat-file processes are unlikely to improve concurrency,
+ - because a query to them takes only a little bit of CPU, and tends to be
+ - bottlenecked on disk. Also, they each open a number of files, so
+ - using too many might run out of file handles. So, only start a maximum
+ - of 2.
+ -
+ - Note that each different index file gets its own pool of cat-files;
+ - this is the size of each pool. In all, 4 times this many cat-files
+ - may end up running.
+ -}
+maxCatFiles :: Int
+maxCatFiles = 2
 
 {- Stops all running cat-files. Should only be run when it's known that
  - nothing is using the handles, eg at shutdown. -}
 catFileStop :: Annex ()
 catFileStop = do
-	m <- Annex.withState $ pure . \s ->
-		(s { Annex.catfilehandles = M.empty }, Annex.catfilehandles s)
-	liftIO $ mapM_ Git.CatFile.catFileStop (M.elems m)
+	cfh <- Annex.getState Annex.catfilehandles
+	m <- case cfh of
+		CatFileHandlesNonConcurrent m -> do
+			Annex.changeState $ \s -> s { Annex.catfilehandles = CatFileHandlesNonConcurrent M.empty }
+			return m
+		CatFileHandlesPool tm ->
+			liftIO $ atomically $ swapTMVar tm M.empty
+	liftIO $ forM_ (M.elems m) $ \p ->
+		freeResourcePool p Git.CatFile.catFileStop
 
 {- From ref to a symlink or a pointer file, get the key. -}
 catKey :: Ref -> Annex (Maybe Key)

@@ -43,7 +43,6 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
 import Annex.Fixup
-import Git.CatFile
 import Git.HashObject
 import Git.CheckAttr
 import Git.CheckIgnore
@@ -68,6 +67,7 @@ import Types.CleanupActions
 import Types.AdjustedBranch
 import Types.WorkerPool
 import Types.IndexFiles
+import Types.CatFileHandles
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
@@ -116,7 +116,7 @@ data AnnexState = AnnexState
 	, daemon :: Bool
 	, branchstate :: BranchState
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
-	, catfilehandles :: M.Map FilePath CatFileHandle
+	, catfilehandles :: CatFileHandles
 	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, checkignorehandle :: Maybe CheckIgnoreHandle
@@ -174,7 +174,7 @@ newState c r = do
 		, daemon = False
 		, branchstate = startBranchState
 		, repoqueue = Nothing
-		, catfilehandles = M.empty
+		, catfilehandles = catFileHandlesNonConcurrent
 		, hashobjecthandle = Nothing
 		, checkattrhandle = Nothing
 		, checkignorehandle = Nothing

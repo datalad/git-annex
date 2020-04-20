@@ -11,6 +11,7 @@ import Utility.PartialPrelude
 -- the former specifies 1 job of each particular kind, but there can be
 -- more than one kind of job running concurrently.
 data Concurrency = NonConcurrent | Concurrent Int | ConcurrentPerCpu
+	deriving (Eq)
 
 parseConcurrency :: String -> Maybe Concurrency
 parseConcurrency "cpus" = Just ConcurrentPerCpu
