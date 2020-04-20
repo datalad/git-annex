@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-04-20T15:54:15Z"
+ content="""
+Thinking about this over the weekend, I had two ideas:
+
+* The worker pool has an AnnexState for each thread. If those could be
+  partitioned so eg perfom stage is always run by the same threads,
+  then when only one stage needs cat-file, the overall number of cat-file
+  processes would be reduced by 1/3rd.
+
+  This might be the least resource intensive approach. But, as threads
+  transition between stages, their AnnexState necessarily does too,
+  and the cleanup stage might need some state change made in the perform
+  stage, so swapping out the perform AnnexState for a cleanup one
+  seems hard to accomplish.
+
+* Could have a pool of cat-files, and just have worker threads block until
+  one is available. This would let it be pinned to the -J number, or
+  event to a smaller number.
+
+  Seems likely that only 2 or 3 in the cat-file pool will
+  maximise concurrency, because it's not a major bottleneck most of the
+  time, and when it is the actual bottleneck is probably disk IO and so
+  won't be helped by more (and likely more only increase unncessary seeks).
+"""]]
