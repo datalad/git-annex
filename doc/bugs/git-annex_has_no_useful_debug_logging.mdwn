@@ -7,3 +7,5 @@ The metered write goes up to 100% then it stalls for one or two seconds and afte
 My issue is that git-annex in general is hard to debug. I ran the command with --verbose and --debug but this also did not provide any clue.
 
 I believe good error handling and logging is a non-trivial problem in Haskell?
+
+> [[notabug|done]] --[[Joey]]
