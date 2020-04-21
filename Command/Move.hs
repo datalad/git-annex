@@ -187,16 +187,10 @@ fromStart removewhen afile key ai src = case removewhen of
 			fromPerform src removewhen key afile
 
 fromOk :: Remote -> Key -> Annex Bool
-fromOk src key 
-	| Remote.hasKeyCheap src =
-		either (const checklog) return =<< haskey
-	| otherwise = checklog
-  where
-	haskey = Remote.hasKey src key
-	checklog = do
-		u <- getUUID
-		remotes <- Remote.keyPossibilities key
-		return $ u /= Remote.uuid src && elem src remotes
+fromOk src key = do
+	u <- getUUID
+	remotes <- Remote.keyPossibilities key
+	return $ u /= Remote.uuid src && elem src remotes
 
 fromPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
 fromPerform src removewhen key afile = do

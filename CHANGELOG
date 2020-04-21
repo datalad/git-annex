@@ -19,6 +19,10 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     with a large -J value.
   * Avoid running with more git check-attr and check-ignore processes than
     there are CPU cores when run with a large -J value.
+  * get --from, move --from: When used with a local git remote, these used
+    to silently skip files that the location log thought were present on the
+    remote, when the remote actually no longer contained them. Since that
+    behavior could be surprising, now instead display a warning.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

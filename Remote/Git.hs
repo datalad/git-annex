@@ -527,7 +527,9 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 		onLocalFast st $ do
 			v <- Annex.Content.prepSendAnnex key
 			case v of
-				Nothing -> return (False, UnVerified)
+				Nothing -> do
+					warning "content is not present in remote"
+					return (False, UnVerified)
 				Just (object, checksuccess) -> do
 					copier <- mkCopier hardlink st params
 					runTransfer (Transfer Download u (fromKey id key))
