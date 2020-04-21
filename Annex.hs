@@ -120,7 +120,7 @@ data AnnexState = AnnexState
 	, catfilehandles :: CatFileHandles
 	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe (ResourcePool CheckAttrHandle)
-	, checkignorehandle :: Maybe CheckIgnoreHandle
+	, checkignorehandle :: Maybe (ResourcePool CheckIgnoreHandle)
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
 	, forcenumcopies :: Maybe NumCopies

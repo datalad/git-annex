@@ -619,6 +619,7 @@ Executable git-annex
     Annex.CheckIgnore
     Annex.Common
     Annex.Concurrent
+    Annex.Concurrent.Utility
     Annex.Content
     Annex.Content.LowLevel
     Annex.Content.PointerFile

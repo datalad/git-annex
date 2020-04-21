@@ -17,8 +17,8 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     and -J is used.
   * Avoid running a large number of git cat-file child processes when run
     with a large -J value.
-  * Avoid running with more git check-attr processes than there are CPUs
-    cores when run with a large -J value.
+  * Avoid running with more git check-attr and check-ignore processes than
+    there are CPU cores when run with a large -J value.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

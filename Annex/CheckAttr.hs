@@ -16,7 +16,7 @@ import qualified Git.CheckAttr as Git
 import qualified Annex
 import Utility.ResourcePool
 import Types.Concurrency
-import GHC.Conc
+import Annex.Concurrent.Utility
 
 {- All gitattributes used by git-annex. -}
 annexAttrs :: [Git.Attr]
@@ -54,13 +54,7 @@ mkConcurrentCheckAttrHandle c =
  - while respecting the -Jn value.
  -}
 maxCheckAttrs :: Concurrency -> IO Int
-maxCheckAttrs c = do
-	let cn = case c of
-		Concurrent n -> n
-		NonConcurrent -> 1
-		ConcurrentPerCpu -> 1
-	pn <- liftIO getNumProcessors
-	return (min cn pn)
+maxCheckAttrs = concurrencyUpToCpus
 
 checkAttrStop :: Annex ()
 checkAttrStop = maybe noop stop =<< Annex.getState Annex.checkattrhandle
