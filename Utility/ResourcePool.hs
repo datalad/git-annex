@@ -8,7 +8,7 @@
 {-# LANGUAGE BangPatterns #-}
 
 module Utility.ResourcePool (
-	ResourcePool,
+	ResourcePool(..),
 	mkResourcePool,
 	mkResourcePoolNonConcurrent,
 	withResourcePool,

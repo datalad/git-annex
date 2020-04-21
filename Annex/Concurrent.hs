@@ -14,6 +14,7 @@ import Annex.Action
 import Types.Concurrency
 import Types.WorkerPool
 import Types.CatFileHandles
+import Annex.CheckAttr
 import Remote.List
 
 import Control.Concurrent
@@ -29,9 +30,11 @@ setConcurrency c = do
 	cfh' <- case cfh of
 		CatFileHandlesNonConcurrent _ -> liftIO catFileHandlesPool
 		CatFileHandlesPool _ -> pure cfh
+	cah <- mkConcurrentCheckAttrHandle c
 	Annex.changeState $ \s -> s
 		{ Annex.concurrency = c
 		, Annex.catfilehandles = cfh'
+		, Annex.checkattrhandle = Just cah
 		}
 
 {- Allows forking off a thread that uses a copy of the current AnnexState
@@ -67,7 +70,7 @@ dupState = do
 
 	st <- Annex.getState id
 	-- Make sure that concurrency is enabled, if it was not already,
-	-- so the resource pools are set up.
+	-- so the concurrency-safe resource pools are set up.
 	st' <- case Annex.concurrency st of
 		NonConcurrent -> do
 			setConcurrency (Concurrent 1)
@@ -77,7 +80,6 @@ dupState = do
 		-- each thread has its own repoqueue
 		{ Annex.repoqueue = Nothing
 		-- avoid sharing open file handles
-		, Annex.checkattrhandle = Nothing
 		, Annex.checkignorehandle = Nothing
 		}
 

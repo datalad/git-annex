@@ -71,6 +71,7 @@ import Types.CatFileHandles
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
+import Utility.ResourcePool
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
@@ -118,7 +119,7 @@ data AnnexState = AnnexState
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
 	, catfilehandles :: CatFileHandles
 	, hashobjecthandle :: Maybe HashObjectHandle
-	, checkattrhandle :: Maybe CheckAttrHandle
+	, checkattrhandle :: Maybe (ResourcePool CheckAttrHandle)
 	, checkignorehandle :: Maybe CheckIgnoreHandle
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
