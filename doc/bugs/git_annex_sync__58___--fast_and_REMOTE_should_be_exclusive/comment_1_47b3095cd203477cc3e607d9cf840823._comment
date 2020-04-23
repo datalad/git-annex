@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-04-23T19:29:59Z"
+ content="""
+--fast is a global option that is parsed for all commands and 
+does varying different things in different commands.
+That's mostly a relic from before git-annex's option parser supported
+per-command options. It would be hard to untangle at this point.
+
+What it actually does currently is sync with the remotes you listed and
+then the --fast *adds* whatever fastest remote it can find. That must
+explain the behavior you saw, although I would expect that it would have
+first synced with the remote you listed and only after that,
+started filling the fast remote.
+
+Anyway, it seems that `git annex sync --fast foo bar`
+should either pick whichever of foo or bar currently has the lowest cost,
+and sync with it, or it should error out as you suggest (necessarily after
+option parsing). Adding another remote that has a low cost is certianly too
+surprising.
+"""]]
