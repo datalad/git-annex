@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+Without checking the manpage, I did:
+
+    cd usb-drive-1/annex
+    git annex sync --content --fast usb-drive-2
+
+I thought, that ´--fast´ would mean the same thing as in [[git-annex-copy]]:
+
+> When copying content to a remote, avoid a round trip to check if the remote already has content. This can be faster, but might skip copying content to the remote in some cases.
+
+Only here with [[git-annex-sync]], `--fast` means:
+
+> Only sync with the remotes with the lowest annex-cost value configured
+
+This is sub-optimal UI and this ship has sailed. But the command should have failed because it does not make sense to specify both --fast and a REMOTE, does it?
+
+I only noticed after a while that annex was syncing to remote at ~/annex and filling my laptops hard disk.
+
+I actually used `--fast` because I was annoyed by annex iterating over all files in the repo during the sync, which for some reason it doesn't do when syncing with an SSH remote.
+
+### What version of git-annex are you using? On what operating system?
+
+8.20200330, Debian testing
