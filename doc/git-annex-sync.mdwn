@@ -46,6 +46,9 @@ received.
 
   Only sync with the remotes with the lowest annex-cost value configured.
 
+  When a list of remotes (or remote groups) is provided, it picks from
+  amoung those, otherwise it picks from amoung all remotes.
+
 * `--only-annex` `-a`, `--not-only-annex`
 
   Only sync the git-annex branch and annexed content with remotes,

@@ -22,3 +22,5 @@ I actually used `--fast` because I was annoyed by annex iterating over all files
 ### What version of git-annex are you using? On what operating system?
 
 8.20200330, Debian testing
+
+> [[fixed|done]] --[[Joey]]
