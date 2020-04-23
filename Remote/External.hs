@@ -201,7 +201,7 @@ externalSetup _ mu _ c gc = do
 			return (changes c')
 
 	gitConfigSpecialRemote u c'' [("externaltype", externaltype)]
-	return (c'', u)
+	return (M.delete readonlyField c'', u)
 
 checkExportSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
 checkExportSupported c gc = do

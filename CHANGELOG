@@ -29,6 +29,8 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     To disable running the external special remote program, now need to set
     remote.name.annex-externaltype=readonly. That is done when
     git-annex enableremote is passed readonly=true.
+  * Stop storing readonly=true in remote.log of external special remotes;
+    it is a local setting only.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

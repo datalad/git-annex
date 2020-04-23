@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-04-23T16:39:16Z"
+ content="""
+Looking closer at the affected special remote configs:
+
+* readonly=true is only used by external special remotes. It used to be
+  stored in the remote.log, but after examining it, I have changed that.
+
+  So, it could be safely changed to also accept readonly=yes with no
+  back-compat issues.
+
+* When git-annex init is run, any autoenable= that is stored never results
+  in an error no matter what the value is; if it doesn't recognise it, it
+  assumes false. (And more generally, no value already stored in remote.log
+  causes a parse error, even if it cannot be parsed.) So autoenable=yes
+  would only result in older git-annex init not enabling the remote. Which
+  I guess is not a hard problem for a user to recover from, the remote
+  clearly won't be enabled when they try to use it. Two arguments in favor
+  of not worrying about backwards compatability for autoenable=yes:
+  
+  1. When autoenable=true was added originally, we obviously didn't worry
+     that older git-annex's would ignore that config and not autoenable.
+  
+  2. If the user does anything other than git-annex init, autoenabling
+     doesn't happen currently, which seems like rather more foot shooting
+     potential for ending up w/o a remote autoenabled, but I'm not seeing
+     much complaint about that. Though IIRC there might be a todo about it.
+
+So I'm leaning a bit toward it would be ok to accept yes/no as well as
+true/false for those two, without worrying about translation to values old
+git-annex will understand.
+
+But.. Allowing yes/no for these two while still also allowing true/false
+does not remove the special case, it just buries it a bit. All the other
+initremote booleans are yes/no and not true/false. And changing them
+*would* need a translation layer. I don't feel that bit of uniformity is
+worth that added complexity.
+"""]]
