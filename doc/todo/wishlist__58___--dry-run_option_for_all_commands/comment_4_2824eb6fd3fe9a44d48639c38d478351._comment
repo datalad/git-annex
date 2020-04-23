@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-04-23T20:13:39Z"
+ content="""
+`git annex find --want-get --not --in here` should simulate get --auto/sync well
+
+`git annex find --want-drop --in here` will simulate what drop --auto/sync would
+try to drop
+
+What would be nice to have is a way to simulate `copy --auto --to foo`
+and `drop --auto --from foo` which are of course also things sync does.
+That could be something like:
+
+	git annex find --want-get-by remote --not --in remote
+	git annex find --want-drop-by remote --in remote
+"""]]
