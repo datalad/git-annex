@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-04-23T17:13:42Z"
+ content="""
+So, enableremote readonly=true sets remote.name.annex-readonly
+in git config. And it assumes that, if that is set, you don't want to use
+the external special remote program at all, but instead a previous use of
+it elsewhere should have stored the urls where git-annex can download content
+stored in that remote.
+
+The use case for enableremote readonly=true is that you want to provide a
+way for users to get content you have stored in your remote without the
+bother of installing a third-party program to access it. While you could
+set remote.name.annex-readonly in git config after enableremote,
+you would need to have the program installed for the enableremote step,
+and readonly=true avoids that.
+
+It's the same as `git annex copy --to s3` registering the content as stored
+in the s3 remote, not the web remote, even if git-annex knows there's a
+publically available url that can be used to access it.
+
+If git-annex treated that as also storing the content to the web remote,
+then it would be maintaining two sets of books for the same copy of the file.
+So instead the user needs to enable use of the s3 remote 
+(even if without any S3 creds in a necessarily read-only mode) in order for
+git-annex to access files stored on it. And same with these external
+special remotes, except their code is not built into git-annex, so
+readonly=true provides a way to not need to run their code at all.
+
+Now, you did not pass readonly=true to enableremote from what I
+understand, but instead came along later and set
+remote.name.annex-readonly=true in git config. And I think your goal was to
+keep using the special remote program for eg downloads, but prevent
+writing to the remote.
+
+So yes, it would be better if enableremote readonly=true set some other
+config than remote.name.annex-readonly. As it is, there's no way to
+distinguish between the two use cases.
+
+---
+
+Ok, I'm gonna make remote.name.annex-externaltype=readonly be a special
+case that avoids running the external special remote program. 
+
+In the case where no program is available, it will check if
+remote.name.annex-readonly is set, and if so when it fails it will
+suggest the user might want to set annex-externaltype=readonly to deal with
+this change.
+"""]]

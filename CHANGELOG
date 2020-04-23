@@ -23,6 +23,12 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     to silently skip files that the location log thought were present on the
     remote, when the remote actually no longer contained them. Since that
     behavior could be surprising, now instead display a warning.
+  * external special remotes: remote.name.annex-readonly=true no longer
+    disables running the external special remote program. Instead, it just
+    makes the remote operate in a readonly mode, same as any remote.
+    To disable running the external special remote program, now need to set
+    remote.name.annex-externaltype=readonly. That is done when
+    git-annex enableremote is passed readonly=true.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

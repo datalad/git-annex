@@ -8,3 +8,4 @@ In an external special remote, if I set annex-readonly=true, I get
 
 Removing the annex-readonly setting lets checkpresentkey work.   But isn't checkpresentkey a read-only operation?
 
+> [[fixed|done]] --[[Joey]]

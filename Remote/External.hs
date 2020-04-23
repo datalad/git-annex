@@ -65,7 +65,7 @@ readonlyField = Accepted "readonly"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs
 	-- readonly mode only downloads urls; does not use external program
-	| remoteAnnexReadOnly gc = do
+	| externaltype == "readonly" = do
 		c <- parsedRemoteConfig remote rc
 		cst <- remoteCost gc expensiveRemoteCost
 		mk c cst GloballyAvailable
@@ -165,15 +165,22 @@ externalSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> R
 externalSetup _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	pc <- either giveup return $ parseRemoteConfig c lenientRemoteConfigParser
-	let externaltype = fromMaybe (giveup "Specify externaltype=") $
-		getRemoteConfigValue externaltypeField pc
+	let readonlyconfig = getRemoteConfigValue readonlyField pc == Just True
+	let externaltype = if readonlyconfig
+		then "readonly"
+		else fromMaybe (giveup "Specify externaltype=") $
+			getRemoteConfigValue externaltypeField pc
 	(c', _encsetup) <- encryptionSetup c gc
 
-	c'' <- case getRemoteConfigValue readonlyField pc of
-		Just True -> do
+	c'' <- if readonlyconfig
+		then do
+			-- Setting annex-readonly is not really necessary
+			-- anymore, but older versions of git-annex used
+			-- this, not externaltype=readonly, so still set
+			-- it.
 			setConfig (remoteAnnexConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
-		_ -> do
+		else do
 			pc' <- either giveup return $ parseRemoteConfig c' lenientRemoteConfigParser
 			external <- newExternal externaltype (Just u) pc' (Just gc) Nothing
 			-- Now that we have an external, ask it to LISTCONFIGS, 
@@ -200,8 +207,10 @@ checkExportSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
 checkExportSupported c gc = do
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
 		remoteAnnexExternalType gc <|> getRemoteConfigValue externaltypeField c
-	checkExportSupported' 
-		=<< newExternal externaltype Nothing c (Just gc) Nothing
+	if externaltype == "readonly"
+		then return False
+		else checkExportSupported' 
+			=<< newExternal externaltype Nothing c (Just gc) Nothing
 
 checkExportSupported' :: External -> Annex Bool
 checkExportSupported' external = go `catchNonAsync` (const (return False))
@@ -649,7 +658,16 @@ startExternal external = do
 		giveup $ "Cannot run " ++ cmd ++ " -- Make sure it's executable and that its dependencies are installed."
 	runerr Nothing _ = do
 		path <- intercalate ":" <$> getSearchPath
-		giveup $ "Cannot run " ++ basecmd ++ " -- It is not installed in PATH (" ++ path ++ ")"
+		let err = "Cannot run " ++ basecmd ++ " -- It is not installed in PATH (" ++ path ++ ")"
+		case (lookupName (unparsedRemoteConfig (externalDefaultConfig external)), remoteAnnexReadOnly <$> externalGitConfig external) of
+			(Just rname, Just True) -> giveup $ unlines
+				[ err
+				, "This remote has annex-readonly=true, and previous versions of"
+				, "git-annex would tried to download from it without"
+				, "installing " ++ basecmd ++ ". If you want that, you need to set:"
+				, "git config remote." ++ rname ++ ".annex-externaltype readonly"
+				]
+			_ -> giveup err
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
