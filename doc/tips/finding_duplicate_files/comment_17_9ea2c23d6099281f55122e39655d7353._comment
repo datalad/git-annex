@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="Delete duplicates and specify preferred locations"
+ date="2020-04-26T11:18:39Z"
+ content="""
+I leave this here for people who understand python. I wrote the output of Joey's first script in file \"duplicates\". You want to comment out the last line while trying and add some print statements.
+
+
+```
+from itertools import *
+from functools import partial
+from pprint import pprint
+import subprocess
+
+with open('duplicates', 'rb') as f:
+  duplicates = f.read()
+
+duplicates = duplicates.split(b\"\n\n\")
+
+preferences = b\"\"\"XXXXXXXXXXXXXXXXXXXXXXXXX Add more lines below
+\"\"\".splitlines()
+
+ignore = b\"\"\"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX Add more lines below
+\"\"\".splitlines()
+
+deletes = []
+
+def matches(prefixes, f):
+  for prefix in prefixes:
+    if f.startswith(prefix):
+      return True
+  return False
+
+for block in duplicates:
+  files = block.splitlines()
+  if any(filter(partial(matches, ignore), files)):
+    continue
+
+  delete = list(filterfalse(partial(matches, preferences), files))
+
+  if len(delete) + 1 == len(files):
+    deletes.extend(delete)
+
+for d in deletes:
+  pprint(d)
+  subprocess.run([b\"git\", b\"rm\", d], capture_output=True, check=True)
+```
+"""]]
