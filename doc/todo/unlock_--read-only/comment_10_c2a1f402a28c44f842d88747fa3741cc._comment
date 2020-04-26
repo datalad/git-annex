@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="ct.git-annex@230092d9bd3cf09ced2b9605cdb14ad0a3db265d"
+ nickname="ct.git-annex"
+ avatar="http://cdn.libravatar.org/avatar/271d3b6a528ac0320c7ac9f296ea9b31"
+ subject="comment 10"
+ date="2020-04-26T20:18:48Z"
+ content="""
+joeyh, could you please elaborate what v7/v8 does different to v5 when unlocking? I don't get it.
+
+I need this feature (checked out real/hardlinked files while being immutable) as well. Even if it is only a thin layer of protection it may help. Where supported, git annex may use the file immutable attributes (as discussed in https://git-annex.branchable.com/internals/lockdown/) for better protection.
+
+Imo it's lock/unlock which isn't clear about naming/semantics. We have to things here: 1. symlink vs. direct files  2. protection against mutation.  These 2 things mingle together in the current implementation they are different concepts. We can not choose any free combination of these (writable symlink into the object store makes no sense). But a little finer control would be appreciated. No idea how to do this in a concrete way.
+
+Maybe some 'git annex protect' command to set different protection modes on content (which could be abstract, no need to comply to unix semantics. for example: appendable, writable, immutable, deletable etc. git-annex could enforce the mode lazily if not supported directly)
+
+or 'git annex rolock' (needs better name) .. which is like unlock but makes the file immutable/write protected somehow.
+
+"""]]
