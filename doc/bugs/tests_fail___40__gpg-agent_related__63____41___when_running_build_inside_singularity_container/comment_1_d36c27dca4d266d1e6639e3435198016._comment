@@ -32,4 +32,4 @@ which is 100 bytes. Add ".t/gpgtest/" and the name of the socket, and it's too
 long.
 
 Quick fix is to cd to /tmp or something before running the test suite.
-""]]
+"""]]

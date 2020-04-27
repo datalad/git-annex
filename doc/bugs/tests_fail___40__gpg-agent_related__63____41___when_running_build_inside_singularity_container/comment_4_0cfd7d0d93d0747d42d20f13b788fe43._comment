@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-04-27T18:10:54Z"
+ content="""
+I guess your command there would need to be run in a directory /home/runner/work/datalad-extensions
+to replicate the path I saw earlier.
+
+I did try it, but the singulatriy pull is failing with "While pulling shub
+image: download did not succeed: 400 Bad Request".
+
+Running it in some directory like /tmp avoiding the problem
+more or less confirms my hypothesis that it's a socket path length
+problem. Both /tmp/build and /home/yoh/build are much shorter than
+/home/runner/work/datalad-extensions/datalad-extensions/build.
+"""]]
