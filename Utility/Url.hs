@@ -162,8 +162,8 @@ allowedScheme uo u = uscheme `S.member` allowedSchemes uo
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size.
  -
- - The Left error is returned if policy does not allow accessing the url
- - or the url scheme is not supported.
+ - The Left error is returned if policy or the restricted http manager
+ - does not allow accessing the url or the url scheme is not supported.
  -}
 checkBoth :: URLString -> Maybe Integer -> UrlOptions -> IO (Either String Bool)
 checkBoth url expected_size uo = fmap go <$> check url expected_size uo
@@ -195,8 +195,8 @@ assumeUrlExists = UrlInfo True Nothing Nothing
 {- Checks that an url exists and could be successfully downloaded,
  - also returning its size and suggested filename if available.
  -
- - The Left error is returned if policy does not allow accessing the url
- - or the url scheme is not supported.
+ - The Left error is returned if policy or the restricted http manages
+ - does not allow accessing the url or the url scheme is not supported.
  -}
 getUrlInfo :: URLString -> UrlOptions -> IO (Either String UrlInfo)
 getUrlInfo url uo = case parseURIRelaxed url of
@@ -205,15 +205,8 @@ getUrlInfo url uo = case parseURIRelaxed url of
    where
 	go :: URI -> IO (Either String UrlInfo)
 	go u = case (urlDownloader uo, parseRequest (show u)) of
-		(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
-			-- When http redirects to a protocol which 
-			-- conduit does not support, it will throw
-			-- a StatusCodeException with found302
-			-- and a Response with the redir Location.
-			(matchStatusCodeException (== found302))
-			(Right <$> existsconduit req uo)
-			(followredir r)
-				`catchNonAsync` (const $ return $ Right dne)
+		(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) ->
+			existsconduit r req
 		(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 			| isfileurl u -> Right <$> existsfile u
 			| isftpurl u -> (Right <$> existscurlrestricted r u url ftpport)
@@ -250,7 +243,23 @@ getUrlInfo url uo = case parseURIRelaxed url of
 	extractfilename = contentDispositionFilename . B8.toString
 		<=< lookup hContentDisposition . responseHeaders
 
-	existsconduit req uo' = do
+	existsconduit r req =
+		let go = catchcrossprotoredir r (existsconduit' req uo)
+		in catchJust matchconnectionrestricted go retconnectionrestricted
+	
+	matchconnectionrestricted he@(HttpExceptionRequest _ (InternalException ie)) =
+		case fromException ie of
+			Just (ConnectionRestricted why) -> Just he
+			_ -> Nothing
+	matchconnectionrestricted _ = Nothing
+
+	retconnectionrestricted he@(HttpExceptionRequest _ (InternalException ie)) =
+		case fromException ie of
+			Just (ConnectionRestricted why) -> return (Left why)
+			_ -> throwM he
+	retconnectionrestricted he = throwM he
+
+	existsconduit' req uo' = do
 		let req' = headRequest (applyRequest uo req)
 		debugM "url" (show req')
 		join $ runResourceT $ do
@@ -266,7 +275,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 					then return $ getBasicAuth uo' (show (getUri req)) >>= \case
 						Nothing -> return dne
 						Just (ba, signalsuccess) -> do
-							ui <- existsconduit
+							ui <- existsconduit'
 								(applyBasicAuth' ba req)							
 								(uo' { getBasicAuth = noBasicAuth })
 							signalsuccess (urlExists ui)
@@ -301,6 +310,14 @@ getUrlInfo url uo = case parseURIRelaxed url of
 				sz <- getFileSize' f stat
 				found (Just sz) Nothing
 			Nothing -> return dne
+
+	-- When http server redirects to a protocol which conduit does not
+	-- support, it will throw a StatusCodeException with found302
+	-- and a Response with the redir Location.
+	catchcrossprotoredir r a = 
+		catchJust (matchStatusCodeException (== found302))
+			(Right <$> a)
+			(followredir r)
 	
 	followredir r (HttpExceptionRequest _ (StatusCodeException resp _)) = 
 		case headMaybe $ map decodeBS $ getResponseHeader hLocation resp of

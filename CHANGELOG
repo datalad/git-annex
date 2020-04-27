@@ -34,6 +34,9 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
   * sync: When some remotes to sync with are specified, and --fast is too,
     pick the lowest cost of the specified remotes, do not sync with a
     faster remote that was not specified.
+  * addurl: When run with --fast on an url that 
+    annex.security.allowed-ip-addresses prevents accessing, display
+    a more useful message.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

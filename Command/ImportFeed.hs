@@ -162,10 +162,6 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 			r <- Remote.claimingUrl url
 			if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
 				then do
-					urlinfo <- if relaxedOption (downloadOptions opts)
-						then pure Url.assumeUrlExists
-						else Url.withUrlOptions $
-							Url.getUrlInfo url
 					let dlopts = (downloadOptions opts)
 						-- force using the filename
 						-- chosen here
@@ -173,7 +169,14 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 						-- don't use youtube-dl
 						, rawOption = True
 						}
-					maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
+					let go urlinfo = maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
+					if relaxedOption (downloadOptions opts)
+						then go Url.assumeUrlExists
+						else Url.withUrlOptions (Url.getUrlInfo url) >>= \case
+							Right urlinfo -> go urlinfo
+							Left err -> do
+								warning err
+								return []
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)

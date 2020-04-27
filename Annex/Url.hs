@@ -177,9 +177,5 @@ exists url uo = liftIO (U.exists url uo) >>= \case
 	Right b -> return b
 	Left err -> warning err >> return False
 
-getUrlInfo :: U.URLString -> U.UrlOptions -> Annex U.UrlInfo
-getUrlInfo url uo = liftIO (U.getUrlInfo url uo) >>= \case
-	Right i -> return i
-	Left err -> do
-		warning err
-		return $ U.UrlInfo False Nothing Nothing
+getUrlInfo :: U.URLString -> U.UrlOptions -> Annex (Either String U.UrlInfo)
+getUrlInfo url uo = liftIO (U.getUrlInfo url uo)

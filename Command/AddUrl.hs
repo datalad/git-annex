@@ -194,11 +194,16 @@ startWeb addunlockedmatcher o urlstring = go $ fromMaybe bad $ parseURI urlstrin
   where
 	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
-	go url = startingAddUrl urlstring o $ do
+	go url = startingAddUrl urlstring o $
+		if relaxedOption (downloadOptions o)
+			then go' url Url.assumeUrlExists
+			else Url.withUrlOptions (Url.getUrlInfo urlstring) >>= \case
+				Right urlinfo -> go' url urlinfo
+				Left err -> do
+					warning err
+					next $ return False
+	go' url urlinfo = do
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		urlinfo <- if relaxedOption (downloadOptions o)
-			then pure Url.assumeUrlExists
-			else Url.withUrlOptions $ Url.getUrlInfo urlstring
 		file <- adjustFile o <$> case fileOption (downloadOptions o) of
 			Just f -> pure f
 			Nothing -> case Url.urlSuggestedFile urlinfo of
