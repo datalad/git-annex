@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-04-27T19:46:22Z"
+ content="""
+I should try to remember that (\"On linux, the path to a socket is limited to 109 bytes\") since I bet it might be biting me in some other cases... And [on other systems it seems might even be shorter](https://unix.stackexchange.com/questions/367008/why-is-socket-path-length-limited-to-a-hundred-chars). Someone might even like to check if it is not accounting for the path to the image/some mountpoint outside of the singularity container which would then limit it even further. 
+
+Re singularity: dunno.  I have now retried with 2.6.1-2~nd100+1 from neurodebian and 3.5.2+ds1-1 from Debian, in both cases `singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster` seems to start downloading.
+"""]]
