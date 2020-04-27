@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-04-27T16:27:49Z"
+ content="""
+What you can do is run `git annex whereis` on the file,
+and paste the url to `git annex addurl`. Once it downloads it to a 
+new file, you can rename that over top of the old file.
+
+(BTW, `git annex importfeed --fast` uses the URL backend,
+which you mentioned you did not want to use. Easily dealt with
+by running `git annex migrate` on the files.)
+"""]]
