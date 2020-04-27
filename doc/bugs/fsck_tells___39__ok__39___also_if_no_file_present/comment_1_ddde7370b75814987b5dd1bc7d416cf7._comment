@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-04-27T16:02:29Z"
+ content="""
+fsck finds problems with the repository.
+
+A file not being present in the local repository is not a problem, if the
+file is known to be present in some other repository.
+
+The ability to have some files not present in the local repository, but
+retreivable by `git annex get` when you need them, is one of the main
+features of git-annex, since it lets you manage quantities of data larger
+than you have space for on your computer.
+
+If you want to know what files are not present in your local repository,
+there is a way to do that: `git annex find --not --in here`
+"""]]

@@ -8,11 +8,16 @@ git annex fsck `[path ...]`
 
 # DESCRIPTION
 
-With no parameters, this command checks the whole annex for consistency,
-and warns about or fixes any problems found. This is a good complement to
-`git fsck`.
+This command checks annexed files for consistency, and warns about or
+fixes any problems found. This is a good complement to `git fsck`.
 
-With parameters, only the specified files are checked.
+The default is to check all annexed files in the current directory and
+subdirectories. With parameters, only the specified files are checked.
+
+The problems fsck finds include files that have gotten corrupted,
+files whose content has somehow become lost, files that do not have the
+configured number of copies yet made, and keys that can be upgraded to a
+better format.
 
 # OPTIONS
 
