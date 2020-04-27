@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-04-27T16:21:30Z"
+ content="""
+If you pass git-annex the name of a file to operate on, and it does not
+display the name of that file, the file is probably not an annexed file.
+
+The other possibility would be that the file's content has *already* been
+dropped. If git-annex sees there is nothing it needs to do to drop an
+annexed file, it does not display anything either.
+
+I suggest you run `git annex whereis` with the file. If it does not display
+anything, it is not an annexed file. If it does display something, it will
+probably tell you where the content of the file is, since it's not in the
+local repository.
+"""]]
