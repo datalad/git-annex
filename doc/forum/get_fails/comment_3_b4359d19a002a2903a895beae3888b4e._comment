@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-04-27T16:15:41Z"
+ content="""
+Well, it does seem that the `cp` command is failing. Usually when cp fails,
+it displays an error message, so it would probably help to display the
+complete output when you run the git-annex command.
+"""]]
