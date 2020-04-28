@@ -1,0 +1,12 @@
+git-annex test could run git-annex testremote with a single directory
+remote. This would both find bugs in testremote, and probably generally
+bugs involving special remote operations, of course especially with the
+directory remote.
+
+To avoid confusing output, running testremote itself is not ideal,
+instead, it would be great to have Command.TestRemote export a TestTree,
+that could then be added to the test suite's TestTree. 
+
+(See [[bugs/testremote_failures_starting_with_aeca7c220]])
+
+--[[Joey]]
