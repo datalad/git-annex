@@ -23,8 +23,9 @@ It's not hard!
 
 ## libraries
 
-For Python, there is a [library](https://github.com/Lykos153/AnnexRemote)
-that takes care of all the protocol details.
+For Python, there is a [library by Lykos153](https://github.com/Lykos153/AnnexRemote)
+and a [library by xloem](https://github.com/xloem/gitlakepy)
+that take care of all the protocol details.
 
 ## examples
 
