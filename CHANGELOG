@@ -37,6 +37,10 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
   * addurl: When run with --fast on an url that 
     annex.security.allowed-ip-addresses prevents accessing, display
     a more useful message.
+  * When the required content is set to "groupwanted", use whatever
+    expression has been set in groupwanted as the required content of the
+    repo, similar to how setting required content to "standard" already
+    worked.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

@@ -131,3 +131,5 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I had, some time ago I synced my phone with it. I stopped because of the painful crippled file system there, and the annex was so large that the phone was slow. But I always wanted to restart annexing, to archive and partially checkout my libraries, and maybe do the phone sync right (probably via a special remote)! It seems to be THE tool as soon as a repo is split over multiple disks.
+
+> [[fixed|done]] --[[Joey]]

@@ -92,8 +92,9 @@ preferredRequiredMapsLoad' mktokens = do
 		in simpleMap
 			. parseLogOldWithUUID (\u -> mk u . decodeBS <$> A.takeByteString)
 			<$> Annex.Branch.get l
-	pc <- genmap preferredContentLog =<< groupPreferredContentMapRaw
-	rc <- genmap requiredContentLog M.empty
+	gm <- groupPreferredContentMapRaw
+	pc <- genmap preferredContentLog gm
+	rc <- genmap requiredContentLog gm
 	-- Required content is implicitly also preferred content, so combine.
 	let pc' = M.unionWith combiner pc rc
 	return (pc', rc)
