@@ -1,0 +1,81 @@
+A DataLad test that calls `git-annex initremote ...` [started to
+fail][0] with a recent version of git-annex.  I can trigger the
+failure if I strip away the DataLad-bits by using the built-in
+directory remote:
+
+[[!format sh """
+cd "$(mktemp -d ${TMPDIR:-/tmp}/gx-testremote-XXXXXXX)"
+git annex version
+mkdir dremote
+git init a
+(
+    cd a
+    git annex init
+    git annex initremote d type=directory directory="$PWD/../dremote" encryption=none
+    git annex testremote d
+)
+"""]]
+
+
+```
+git-annex version: 8.20200331-geec124409
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify TorrentParser Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.4 feed-1.2.0.1 ghc-8.6.5 http-client-0.6.4 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+Initialized empty Git repository in /tmp/gx-testremote-wB72esA/a/.git/
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+initremote d ok
+(recording state in git...)
+testremote d (generating test keys...) Remote Tests
+  unavailable remote
+    removeKey:                                         /dev/null/tmp/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key: openBinaryFile: inappropriate type (Not a directory)
+[... 42 lines ...]
+    storeKey:                                        OK (0.03s)
+    present True:                                    FAIL
+      ./Command/TestRemote.hs:206:
+      failed
+    storeKey when already present:                   OK
+    present True:                                    FAIL
+      ./Command/TestRemote.hs:206:
+      failed
+    retrieveKeyFile:                                 FAIL
+      ./Command/TestRemote.hs:206:
+      failed
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from 33%:                 FAIL
+      Exception: .git/annex/objects/Fj/g7/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key: openBinaryFile: does not exist (No such file or directory)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from 0:                   FAIL
+      Exception: failed to lock content: .git/annex/objects/Fj/g7/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key: getFileStatus: does not exist (No such file or directory)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from end:                 cp: cannot stat '.git/annex/objects/Fj/g7/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key': No such file or directory
+FAIL
+      Exception: failed to lock content: .git/annex/objects/Fj/g7/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key: getFileStatus: does not exist (No such file or directory)
+    fsck downloaded object:                          OK
+    removeKey when present:                          OK
+[... 900 lines ...]
+
+212 out of 573 tests failed (0.92s)
+
+git-annex: failed to lock content: .git/annex/objects/Fj/g7/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key/SHA256E-s1048576--46beaff739fefc2d8e88242e04c5be92ecfd14b7c28c06ffccc282767d891a0e.this-is-a-test-key: getFileStatus: does not exist (No such file or directory)
+failed
+(recording state in git...)
+git-annex: testremote: 1 failed
+```
+
+The output above is with the current master (eec124409).  I don't see
+the failures when using the latest release (8.20200330).  Based on
+bisecting, I believe these failures start happening with aeca7c220
+(Sped up query commands that read the git-annex branch by around 5%,
+2020-04-09).
+
+[0]: https://github.com/datalad/datalad/issues/4445
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
