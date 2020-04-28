@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-04-28T17:32:26Z"
+ content="""
+Reproduced on a host that is not behind a satellite http cache.
+
+My earlier change did not fix it. With my change, GNUPGHOME is something like
+"../gpgtmp/1". So the version of gpg in this singularity must be converting
+that relative path to an absolute path, too long for a socket path.
+Which seems like kind of ridiculous behavior, but gpg does `chdir()` in
+places so maybe that's why.
+
+Tried a few changes, including removing --use-agent and --no-tty
+(it still tries to use the agent), using --no-use-agent
+(option is obsolete and it still tries to use the agent).
+
+Affected version of gnupg is 2.2.12, and I think 2.2.20 does not behave
+that way, because it always puts the gpg agent socket in
+/run/user/uuid/gnupg/ not in GNUPGHOME. (OTOH, the docs for gpg say 
+it uses the standard socket since 2.1.) Or something about the singularity
+environment could be altering gpg's behavior.
+
+Anyway, this is kind of ridiculous behavior from gpg, and the only thing
+I can see that git-annex could do to avoid it is set GNUPGHOME to some
+short path in /tmp. But then git-annex would have to not honor TMPDIR
+for that, because that could be set to some path that is too long. Ignoring
+TMPDIR would be easily argued to be a bug in git-annex, while this is pretty
+clearly a bug in an old version of gpg.
+"""]
