@@ -39,6 +39,7 @@ import "crypto-api" Crypto.Random
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import Control.Concurrent.STM hiding (check)
 
 cmd :: Command
 cmd = command "testremote" SectionTesting
@@ -99,7 +100,7 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 perform :: [Remote] -> [Remote] -> Maybe Remote -> [Key] -> CommandPerform
 perform rs unavailrs exportr ks = do
 	let ea = maybe exportUnsupported Remote.exportActions exportr
-	st <- Annex.getState id
+	st <- liftIO . newTVarIO =<< Annex.getState id
 	let tests = testGroup "Remote Tests" $ concat
 		[ [ testGroup "unavailable remote" (testUnavailable st r (Prelude.head ks)) | r <- unavailrs ]
 		, [ testGroup (desc r k) (test st r k) | k <- ks, r <- rs ]
@@ -162,7 +163,7 @@ adjustRemoteConfig r adjustconfig = do
 		(Remote.gitconfig r)
 		(Remote.remoteStateHandle r)
 
-test :: Annex.AnnexState -> Remote -> Key -> [TestTree]
+test :: TVar Annex.AnnexState -> Remote -> Key -> [TestTree]
 test st r k = catMaybes
 	[ whenwritable $ check "removeKey when not present" remove
 	, whenwritable $ present False
@@ -203,7 +204,7 @@ test st r k = catMaybes
   where
 	whenwritable a = if Remote.readonly r then Nothing else Just a
 	check desc a = testCase desc $
-		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
+		runTestCase st a @? "failed"
 	present b = check ("present " ++ show b) $
 		(== Right b) <$> Remote.hasKey r k
 	fsck = case maybeLookupBackendVariety (fromKey keyVariety k) of
@@ -217,7 +218,16 @@ test st r k = catMaybes
 	store = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
 	remove = Remote.removeKey r k
 
-testExportTree :: Annex.AnnexState -> Maybe Remote -> Remote.ExportActions Annex -> Key -> Key -> [TestTree]
+runTestCase :: TVar Annex.AnnexState -> Annex a -> IO a
+runTestCase stv a = do
+	st <- atomically $ readTVar stv
+	(r, st') <- Annex.run st $ do
+		Annex.setOutput QuietOutput 
+		a
+	atomically $ writeTVar stv st'
+	return r
+
+testExportTree :: TVar Annex.AnnexState -> Maybe Remote -> Remote.ExportActions Annex -> Key -> Key -> [TestTree]
 testExportTree _ Nothing _ _ _ = []
 testExportTree st (Just _) ea k1 k2 =
 	[ check "check present export when not present" $
@@ -245,7 +255,7 @@ testExportTree st (Just _) ea k1 k2 =
 	testexportdirectory = "testremote-export"
 	testexportlocation = mkExportLocation (toRawFilePath (testexportdirectory </> "location"))
 	check desc a = testCase desc $
-		Annex.eval st (Annex.setOutput QuietOutput >> a) @? "failed"
+		runTestCase st a @? "failed"
 	storeexport k = do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
@@ -261,7 +271,7 @@ testExportTree st (Just _) ea k1 k2 =
 		Nothing -> return True
 		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
 
-testUnavailable :: Annex.AnnexState -> Remote -> Key -> [TestTree]
+testUnavailable :: TVar Annex.AnnexState -> Remote -> Key -> [TestTree]
 testUnavailable st r k =
 	[ check (== Right False) "removeKey" $
 		Remote.removeKey r k
@@ -278,8 +288,7 @@ testUnavailable st r k =
 	]
   where
 	check checkval desc a = testCase desc $ do
-		v <- Annex.eval st $ do
-			Annex.setOutput QuietOutput
+		v <- runTestCase st $
 			either (Left  . show) Right <$> tryNonAsync a
 		checkval v  @? ("(got: " ++ show v ++ ")")
 

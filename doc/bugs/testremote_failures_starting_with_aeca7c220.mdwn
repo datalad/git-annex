@@ -79,3 +79,5 @@ bisecting, I believe these failures start happening with aeca7c220
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

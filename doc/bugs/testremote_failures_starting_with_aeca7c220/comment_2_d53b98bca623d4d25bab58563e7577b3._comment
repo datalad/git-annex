@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-04-28T20:56:01Z"
+ content="""
+Fairly sure it's something to do with the chunk log. The tests with no
+chunks succeed, so the subsequent failures could be due to it failing to
+see information about chunks used to store the key when it then tries to
+retrieve it.
+
+Aha: It's using Annex.eval, so it does stuff, and throws away the changed
+state. So, after writing to the journal, when journalIgnorable = False,
+it will then forget that, and will try to read from the branch, ignoring
+the journal.
+
+I checked all Annex.eval, and all the rest have the pattern 
+Annex.eval =<< Annex.new. This is the only one that *reuses*
+an old state across multiple Annex.eval. And it's not like the commit that
+triggered this made Annex.eval more dangerous; that were never a good thing
+to do and probably only didn't break on some other state being lost before
+due to luck.
+"""]]
