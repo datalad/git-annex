@@ -41,6 +41,8 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     expression has been set in groupwanted as the required content of the
     repo, similar to how setting required content to "standard" already
     worked.
+  * Avoid a test suite failure when the environment does not let gpg be
+    tested due to eg, too long a path to the agent socket.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-04-28T19:29:05Z"
+ content="""
+Hmm, it could be that /run is not mounted in the container and then gpg
+falls back to putting the socket in the home directory.
+
+Ok, I'm just going to make this test be skipped if it fails to import the
+test key.
+"""]]

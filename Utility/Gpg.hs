@@ -376,9 +376,18 @@ keyBlock public ls = unlines
 #ifndef mingw32_HOST_OS
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but sets up the test key in a subdirectory of 
- - the passed directory and uses it. -}
-testHarness :: FilePath -> GpgCmd -> IO a -> IO a
-testHarness tmpdir cmd a = bracket setup cleanup (const a)
+ - the passed directory and uses it.
+ -
+ - If the test harness is not able to be set up (eg, because gpg is not
+ - installed or because there is some problem importing the test key,
+ - perhaps related to the agent socket), the action is not run, and Nothing
+ - is returned.
+ -}
+testHarness :: FilePath -> GpgCmd -> IO a -> IO (Maybe a)
+testHarness tmpdir cmd a = ifM (inPath (unGpgCmd cmd))
+	( bracket (eitherToMaybe <$> tryNonAsync setup) cleanup go
+	, return Nothing
+	)
   where
 	var = "GNUPGHOME"		
 
@@ -395,8 +404,12 @@ testHarness tmpdir cmd a = bracket setup cleanup (const a)
 			[testSecretKey, testKey]
 		return orig
 		
-	cleanup (Just v) = setEnv var v True
-	cleanup Nothing = unsetEnv var
+	cleanup (Just (Just v)) = setEnv var v True
+	cleanup (Just Nothing) = unsetEnv var
+	cleanup Nothing = return ()
+
+	go (Just _) = Just <$> a
+	go Nothing = return Nothing
 
         makenewdir n = do
 		let subdir = tmpdir </> show n
@@ -406,9 +419,12 @@ testHarness tmpdir cmd a = bracket setup cleanup (const a)
 
 {- Tests the test harness. -}
 testTestHarness :: FilePath -> GpgCmd -> IO Bool
-testTestHarness tmpdir cmd = do
-	keys <- testHarness tmpdir cmd $ findPubKeys cmd testKeyId
-	return $ KeyIds [testKeyId] == keys
+testTestHarness tmpdir cmd =
+	testHarness tmpdir cmd (findPubKeys cmd testKeyId) >>= \case
+		Nothing -> do
+			hPutStrLn stderr "unable to test gpg, setting up the test harness did not succeed"
+			return True
+		Just keys -> return $ KeyIds [testKeyId] == keys
 
 checkEncryptionFile :: GpgCmd -> FilePath -> Maybe KeyIds -> IO Bool
 checkEncryptionFile cmd filename keys =
