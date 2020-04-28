@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-04-28T20:43:42Z"
+ content="""
+To be clear, have you only seen this when running testremote, or also
+another git-annex command?
+
+Verified that commit is where it started failing.
+
+(Seems like it would be worth adding testremote of a directory remote to
+the test suite..)
+"""]]
