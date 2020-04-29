@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Command.TestRemote where
 
 import Command
@@ -27,7 +29,6 @@ import Types.Export
 import Types.RemoteConfig
 import Types.ProposedAccepted
 import Annex.SpecialRemote.Config (exportTreeField)
-import Remote.Helper.ExportImport
 import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (describeEncryption, encryptionField, highRandomQualityField)
 import Git.Types
@@ -99,28 +100,23 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 
 perform :: [Remote] -> [Remote] -> Maybe Remote -> [Key] -> CommandPerform
 perform rs unavailrs exportr ks = do
-	let ea = maybe exportUnsupported Remote.exportActions exportr
 	st <- liftIO . newTVarIO =<< Annex.getState id
-	let tests = testGroup "Remote Tests" $ concat
-		[ [ testGroup "unavailable remote" (testUnavailable st r (Prelude.head ks)) | r <- unavailrs ]
-		, [ testGroup (desc r k) (test st r k) | k <- ks, r <- rs ]
-		, [ testGroup (descexport k1 k2) (testExportTree st exportr ea k1 k2) | k1 <- take 2 ks, k2 <- take 2 (reverse ks) ]
-		]
+	let tests = mkTestTree
+		(runTestCase st) 
+		(map (\r -> Described (descr r) (pure r)) rs)
+		(map (\r -> Described (descr r) (pure r)) unavailrs)
+		(fmap pure exportr)
+		(map (\k -> Described (desck k) (pure k)) ks)
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
 		Nothing -> error "No tests found!?"
 		Just act -> liftIO act
 	next $ cleanup rs ks ok
   where
-	desc r' k = intercalate "; " $ map unwords
-		[ [ "key size", show (fromKey keySize k) ]
-		, [ show (getChunkConfig (Remote.config r')) ]
-		, ["encryption", describeEncryption (Remote.config r')]
+	descr r = intercalate "; " $ map unwords
+		[ [ show (getChunkConfig (Remote.config r)) ]
+		, ["encryption", describeEncryption (Remote.config r)]
 		]
-	descexport k1 k2 = intercalate "; " $ map unwords
-		[ [ "exporttree=yes" ]
-		, [ "key1 size", show (fromKey keySize k1) ]
-		, [ "key2 size", show (fromKey keySize k2) ]
-		]
+	desck k = unwords [ "key size", show (fromKey keySize k) ]
 
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
 adjustChunkSize r chunksize = adjustRemoteConfig r $
@@ -163,62 +159,14 @@ adjustRemoteConfig r adjustconfig = do
 		(Remote.gitconfig r)
 		(Remote.remoteStateHandle r)
 
-test :: TVar Annex.AnnexState -> Remote -> Key -> [TestTree]
-test st r k = catMaybes
-	[ whenwritable $ check "removeKey when not present" remove
-	, whenwritable $ present False
-	, whenwritable $ check "storeKey" store
-	, whenwritable $ present True
-	, whenwritable $ check "storeKey when already present" store
-	, Just $ present True
-	, Just $ check "retrieveKeyFile" $ do
-		lockContentForRemoval k removeAnnex
-		get
-	, Just $ check "fsck downloaded object" fsck
-	, Just $ check "retrieveKeyFile resume from 33%" $ do
-		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- prepTmp k
-		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
-			sz <- hFileSize h
-			L.hGet h $ fromInteger $ sz `div` 3
-		liftIO $ L.writeFile tmp partial
-		lockContentForRemoval k removeAnnex
-		get
-	, Just $ check "fsck downloaded object" fsck
-	, Just $ check "retrieveKeyFile resume from 0" $ do
-		tmp <- prepTmp k
-		liftIO $ writeFile tmp ""
-		lockContentForRemoval k removeAnnex
-		get
-	, Just $ check "fsck downloaded object" fsck
-	, Just $ check "retrieveKeyFile resume from end" $ do
-		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- prepTmp k
-		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
-		lockContentForRemoval k removeAnnex
-		get
-	, Just $ check "fsck downloaded object" fsck
-	, whenwritable $ check "removeKey when present" remove
-	, whenwritable $ present False
-	]
-  where
-	whenwritable a = if Remote.readonly r then Nothing else Just a
-	check desc a = testCase desc $
-		runTestCase st a @? "failed"
-	present b = check ("present " ++ show b) $
-		(== Right b) <$> Remote.hasKey r k
-	fsck = case maybeLookupBackendVariety (fromKey keyVariety k) of
-		Nothing -> return True
-		Just b -> case Backend.verifyKeyContent b of
-			Nothing -> return True
-			Just verifier -> verifier k (serializeKey k)
-	get = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
-		Remote.retrieveKeyFile r k (AssociatedFile Nothing)
-			dest nullMeterUpdate
-	store = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
-	remove = Remote.removeKey r k
+data Described t = Described
+	{ getDesc :: String
+	, getVal :: t
+	}
 
-runTestCase :: TVar Annex.AnnexState -> Annex a -> IO a
+type RunAnnex = forall a. Annex a -> IO a
+
+runTestCase :: TVar Annex.AnnexState -> RunAnnex
 runTestCase stv a = do
 	st <- atomically $ readTVar stv
 	(r, st') <- Annex.run st $ do
@@ -227,69 +175,177 @@ runTestCase stv a = do
 	atomically $ writeTVar stv st'
 	return r
 
-testExportTree :: TVar Annex.AnnexState -> Maybe Remote -> Remote.ExportActions Annex -> Key -> Key -> [TestTree]
-testExportTree _ Nothing _ _ _ = []
-testExportTree st (Just _) ea k1 k2 =
-	[ check "check present export when not present" $
-		not <$> checkpresentexport k1
-	, check "remove export when not present" (removeexport k1)
-	, check "store export" (storeexport k1)
-	, check "check present export after store" $
-		checkpresentexport k1
-	, check "store export when already present" (storeexport k1)
-	, check "retrieve export" (retrieveexport k1)
-	, check "store new content to export" (storeexport k2)
-	, check "check present export after store of new content" $
-		checkpresentexport k2
-	, check "retrieve export new content" (retrieveexport k2)
-	, check "remove export" (removeexport k2)
-	, check "check present export after remove" $
-		not <$> checkpresentexport k2
-	, check "retrieve export fails after removal" $
-		not <$> retrieveexport k2
-	, check "remove export directory" removeexportdirectory
-	, check "remove export directory that is already removed" removeexportdirectory
+-- Note that the same remotes and keys should be produced each time
+-- the provided actions are called.
+mkTestTree
+	:: RunAnnex
+	-> [Described (Annex Remote)]
+	-> [Described (Annex Remote)]
+	-> Maybe (Annex Remote)
+	-> [Described (Annex Key)]
+	-> TestTree
+mkTestTree runannex mkrs mkunavailrs mkexportr mkks = testGroup "Remote Tests" $ concat
+	[ [ testGroup "unavailable remote" (testUnavailable runannex (getVal mkr) (getVal (Prelude.head mkks))) | mkr <- mkunavailrs ]
+	, [ testGroup (desc mkr mkk) (test runannex (getVal mkr) (getVal mkk)) | mkk <- mkks, mkr <- mkrs ]
+	, [ testGroup (descexport mkk1 mkk2) (testExportTree runannex mkexportr (getVal mkk1) (getVal mkk2)) | mkk1 <- take 2 mkks, mkk2 <- take 2 (reverse mkks) ]
+	]
+   where
+	desc r k = intercalate "; " $ map unwords
+		[ [ getDesc k ]
+		, [ getDesc r ]
+		]
+	descexport k1 k2 = intercalate "; " $ map unwords
+		[ [ "exporttree=yes" ]
+		, [ getDesc k1 ]
+		, [ getDesc k2 ]
+		]
+
+test :: RunAnnex -> Annex Remote -> Annex Key -> [TestTree]
+test runannex mkr mkk =
+	[ check "removeKey when not present" $ \r k ->
+		whenwritable r $ remove r k
+	, check ("present " ++ show False) $ \r k ->
+		whenwritable r $ present r k False
+	, check "storeKey" $ \r k ->
+		whenwritable r $ store r k
+	, check ("present " ++ show True) $ \r k ->
+		whenwritable r $ present r k True
+	, check "storeKey when already present" $ \r k ->
+		whenwritable r $ store r k
+	, check ("present " ++ show True) $ \r k -> present r k True
+	, check "retrieveKeyFile" $ \r k -> do
+		lockContentForRemoval k removeAnnex
+		get r k
+	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile resume from 33%" $ \r k -> do
+		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
+		tmp <- prepTmp k
+		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
+			sz <- hFileSize h
+			L.hGet h $ fromInteger $ sz `div` 3
+		liftIO $ L.writeFile tmp partial
+		lockContentForRemoval k removeAnnex
+		get r k
+	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile resume from 0" $ \r k -> do
+		tmp <- prepTmp k
+		liftIO $ writeFile tmp ""
+		lockContentForRemoval k removeAnnex
+		get r k
+	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile resume from end" $ \r k -> do
+		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
+		tmp <- prepTmp k
+		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
+		lockContentForRemoval k removeAnnex
+		get r k
+	, check "fsck downloaded object" fsck
+	, check "removeKey when present" $ \r k -> 
+		whenwritable r $ remove r k
+	, check ("present " ++ show False) $ \r k -> 
+		whenwritable r $ present r k False
+	]
+  where
+	whenwritable r a
+		| Remote.readonly r = return True
+		| otherwise = a
+	check desc a = testCase desc $ do
+		let a' = do
+			r <- mkr
+			k <- mkk
+			a r k
+		runannex a' @? "failed"
+	present r k b = (== Right b) <$> Remote.hasKey r k
+	fsck _ k = case maybeLookupBackendVariety (fromKey keyVariety k) of
+		Nothing -> return True
+		Just b -> case Backend.verifyKeyContent b of
+			Nothing -> return True
+			Just verifier -> verifier k (serializeKey k)
+	get r k = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
+		Remote.retrieveKeyFile r k (AssociatedFile Nothing)
+			dest nullMeterUpdate
+	store r k = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
+	remove r k = Remote.removeKey r k
+
+testExportTree :: RunAnnex -> Maybe (Annex Remote) -> Annex Key -> Annex Key -> [TestTree]
+testExportTree _ Nothing _ _ = []
+testExportTree runannex (Just mkr) mkk1 mkk2 =
+	[ check "check present export when not present" $ \ea k1 _k2 ->
+		not <$> checkpresentexport ea k1
+	, check "remove export when not present" $ \ea k1 _k2 -> 
+		removeexport ea k1
+	, check "store export" $ \ea k1 _k2 ->
+		storeexport ea k1
+	, check "check present export after store" $ \ea k1 _k2 ->
+		checkpresentexport ea k1
+	, check "store export when already present" $ \ea k1 _k2 ->
+		storeexport ea k1
+	, check "retrieve export" $ \ea k1 _k2 -> 
+		retrieveexport ea k1
+	, check "store new content to export" $ \ea _k1 k2 ->
+		storeexport ea k2
+	, check "check present export after store of new content" $ \ea _k1 k2 ->
+		checkpresentexport ea k2
+	, check "retrieve export new content" $ \ea _k1 k2 ->
+		retrieveexport ea k2
+	, check "remove export" $ \ea _k1 k2 -> 
+		removeexport ea k2
+	, check "check present export after remove" $ \ea _k1 k2 ->
+		not <$> checkpresentexport ea k2
+	, check "retrieve export fails after removal" $ \ea _k1 k2 ->
+		not <$> retrieveexport ea k2
+	, check "remove export directory" $ \ea _k1 _k2 ->
+		removeexportdirectory ea
+	, check "remove export directory that is already removed" $ \ea _k1 _k2 ->
+		removeexportdirectory ea
 	-- renames are not tested because remotes do not need to support them
 	]
   where
 	testexportdirectory = "testremote-export"
 	testexportlocation = mkExportLocation (toRawFilePath (testexportdirectory </> "location"))
-	check desc a = testCase desc $
-		runTestCase st a @? "failed"
-	storeexport k = do
+	check desc a = testCase desc $ do
+		let a' = do
+			ea <- Remote.exportActions <$> mkr
+			k1 <- mkk1
+			k2 <- mkk2
+			a ea k1 k2
+		runannex a' @? "failed"
+	storeexport ea k = do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
-	retrieveexport k = withTmpFile "exported" $ \tmp h -> do
+	retrieveexport ea k = withTmpFile "exported" $ \tmp h -> do
 		liftIO $ hClose h
 		ifM (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate)
 			( verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified k tmp
 			, return False
 			)
-	checkpresentexport k = Remote.checkPresentExport ea k testexportlocation
-	removeexport k = Remote.removeExport ea k testexportlocation
-	removeexportdirectory = case Remote.removeExportDirectory ea of
+	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
+	removeexport ea k = Remote.removeExport ea k testexportlocation
+	removeexportdirectory ea = case Remote.removeExportDirectory ea of
 		Nothing -> return True
 		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
 
-testUnavailable :: TVar Annex.AnnexState -> Remote -> Key -> [TestTree]
-testUnavailable st r k =
-	[ check (== Right False) "removeKey" $
+testUnavailable :: RunAnnex -> Annex Remote -> Annex Key -> [TestTree]
+testUnavailable runannex mkr mkk =
+	[ check (== Right False) "removeKey" $ \r k ->
 		Remote.removeKey r k
-	, check (== Right False) "storeKey" $
+	, check (== Right False) "storeKey" $ \r k -> 
 		Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
-	, check (`notElem` [Right True, Right False]) "checkPresent" $
+	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
 		Remote.checkPresent r k
-	, check (== Right False) "retrieveKeyFile" $
+	, check (== Right False) "retrieveKeyFile" $ \r k ->
 		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
 			Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate
-	, check (== Right False) "retrieveKeyFileCheap" $
+	, check (== Right False) "retrieveKeyFileCheap" $ \r k ->
 		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest -> unVerified $
 			Remote.retrieveKeyFileCheap r k (AssociatedFile Nothing) dest
 	]
   where
 	check checkval desc a = testCase desc $ do
-		v <- runTestCase st $
-			either (Left  . show) Right <$> tryNonAsync a
+		v <- runannex $ do
+			r <- mkr
+			k <- mkk
+			either (Left  . show) Right <$> tryNonAsync (a r k)
 		checkval v  @? ("(got: " ++ show v ++ ")")
 
 cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
