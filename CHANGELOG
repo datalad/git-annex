@@ -43,6 +43,7 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     worked.
   * Avoid a test suite failure when the environment does not let gpg be
     tested due to eg, too long a path to the agent socket.
+  * test: Include testremote tests, run on a directory special remote.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
 

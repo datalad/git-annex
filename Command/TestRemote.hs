@@ -87,9 +87,7 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 		else r { Remote.readonly = True }
 	rs <- if Remote.readonly r'
 		then return [r']
-		else do
-			rs <- catMaybes <$> mapM (adjustChunkSize r') (chunkSizes basesz fast)
-			concat <$> mapM encryptionVariants rs
+		else remoteVariants r' basesz fast
 	unavailrs  <- catMaybes <$> mapM Remote.mkUnavailable [r']
 	exportr <- if Remote.readonly r'
 		then return Nothing
@@ -98,10 +96,15 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
   where
 	basesz = fromInteger $ sizeOption o
 
+remoteVariants :: Remote -> ByteSize -> Bool -> Annex [Remote]
+remoteVariants r basesz fast = do
+	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
+	concat <$> mapM encryptionVariants rs
+
 perform :: [Remote] -> [Remote] -> Maybe Remote -> [Key] -> CommandPerform
 perform rs unavailrs exportr ks = do
 	st <- liftIO . newTVarIO =<< Annex.getState id
-	let tests = mkTestTree
+	let tests = testGroup "Remote Tests" $ mkTestTrees
 		(runTestCase st) 
 		(map (\r -> Described (descr r) (pure r)) rs)
 		(map (\r -> Described (descr r) (pure r)) unavailrs)
@@ -177,14 +180,14 @@ runTestCase stv a = do
 
 -- Note that the same remotes and keys should be produced each time
 -- the provided actions are called.
-mkTestTree
+mkTestTrees
 	:: RunAnnex
 	-> [Described (Annex Remote)]
 	-> [Described (Annex Remote)]
 	-> Maybe (Annex Remote)
 	-> [Described (Annex Key)]
-	-> TestTree
-mkTestTree runannex mkrs mkunavailrs mkexportr mkks = testGroup "Remote Tests" $ concat
+	-> [TestTree]
+mkTestTrees runannex mkrs mkunavailrs mkexportr mkks = concat $
 	[ [ testGroup "unavailable remote" (testUnavailable runannex (getVal mkr) (getVal (Prelude.head mkks))) | mkr <- mkunavailrs ]
 	, [ testGroup (desc mkr mkk) (test runannex (getVal mkr) (getVal mkk)) | mkk <- mkks, mkr <- mkrs ]
 	, [ testGroup (descexport mkk1 mkk2) (testExportTree runannex mkexportr (getVal mkk1) (getVal mkk2)) | mkk1 <- take 2 mkks, mkk2 <- take 2 (reverse mkks) ]

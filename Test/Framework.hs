@@ -79,10 +79,10 @@ annexeval a = do
 		Annex.setOutput Types.Messages.QuietOutput
 		a `finally` Annex.Action.stopCoProcesses
 
-innewrepo :: Assertion -> Assertion
+innewrepo :: IO () -> IO ()
 innewrepo a = withgitrepo $ \r -> indir r a
 
-inmainrepo :: Assertion -> Assertion
+inmainrepo :: IO a -> IO a
 inmainrepo a = do
 	d <- mainrepodir
 	indir d a

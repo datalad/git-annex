@@ -24,6 +24,7 @@ import Options.Applicative (switch, long, help, internal)
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.UTF8 as BU8
 import System.Environment
+import Control.Concurrent.STM
 
 import Common
 import CmdLine.GitAnnex.Options
@@ -65,6 +66,7 @@ import qualified Annex.AdjustedBranch
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
+import qualified Command.TestRemote
 import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified BuildInfo
@@ -145,7 +147,7 @@ ingredients =
 
 tests :: Bool -> Bool -> TestOptions -> TestTree
 tests crippledfilesystem adjustedbranchok opts = 
-	testGroup "Tests" $ properties :
+	testGroup "Tests" $ properties : testRemote :
 		map (\(d, te) -> withTestMode te initTests (unitTests d)) testmodes
   where
 	testmodes = catMaybes
@@ -202,6 +204,51 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 		[ Utility.Hash.props_hashes_stable
 		, Utility.Hash.props_macs_stable
 		]
+
+testRemote :: IO TestTree
+testRemote = withResource newEmptyTMVarIO (const noop) $ \getv -> 
+	testGroup "Remote Tests" $ concat
+		[ [testCase "init" (prep getv)]
+		, go getv
+		]
+  where
+	reponame = "test repo"
+	remotename = "dir"
+	basesz = 1024 * 1024
+	prep getv = do
+		d <- newmainrepodir
+		setmainrepodir d
+		innewrepo $ do
+			git_annex "init" [reponame, "--quiet"]
+				@? "init failed"
+			createDirectory "remotedir"
+			git_annex "initremote"
+				[ remotename
+				, "type=directory"
+				, "directory=remotedir"
+				, "encryption=none"
+				, "--quiet"
+				]
+				@? "init failed"
+			r <- annexeval $ either error return 
+				=<< Remote.byName' remotename 
+			rs <- Command.TestRemote.remoteVariants r basesz False
+			unavailrs <- annexeval $ catMaybes
+				<$> mapM Types.Remote.mkUnavailable [r]
+			exportr <- annexeval $ Command.TestRemote.exportTreeVariant r
+			ks <- annexeval $ mapM Command.TestRemote.randKey $
+				Command.TestRemote.keySizes basesz False
+			v <- getv
+			liftIO $ atomically $ putTMVar v
+				(rs, (unavailrs, (descexportr, ks)))
+	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailrs mkexportr mkks
+	  where
+		runannex = inmainrepo . annexeval
+		mkrs = map descas "remote" (fst <$> v)
+		mkunavailrs = fst . snd <$> v
+		mkexportr = fst . snd . snd <$> v
+		mkks = snd . snd . snd <$> v
+		v = atomically . readTMVar =<< getv
 
 {- These tests set up the test environment, but also test some basic parts
  - of git-annex. They are always run before the unitTests. -}
@@ -281,7 +328,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "addurl" test_addurl
 	]
 
--- this test case create the main repo
+-- this test case creates the main repo
 test_init :: Assertion
 test_init = innewrepo $ do
 	ver <- annexVersion <$> getTestMode
