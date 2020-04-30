@@ -216,6 +216,7 @@ testRemote = withResource newEmptyTMVarIO (const noop) $ \getv ->
   where
 	reponame = "test repo"
 	remotename = "dir"
+	remotetype =" directory"
 	basesz = 1024 * 1024
 	keysizes = Command.TestRemote.keySizes basesz False
 	prep getv = do
@@ -227,7 +228,7 @@ testRemote = withResource newEmptyTMVarIO (const noop) $ \getv ->
 			createDirectory "remotedir"
 			git_annex "initremote"
 				[ remotename
-				, "type=directory"
+				, "type=" ++ remotetype
 				, "directory=remotedir"
 				, "encryption=none"
 				, "--quiet"
@@ -244,9 +245,9 @@ testRemote = withResource newEmptyTMVarIO (const noop) $ \getv ->
 	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailr mkexportr mkks
 	  where
 		runannex = inmainrepo . annexeval
-		mkrs = [descas "remote" (fst <$> v)]
+		mkrs = [descas (remotetype ++ " remote") (fst <$> v)]
 		mkunavailr = fst . snd <$> v
-		mkexportr = Nothing -- fst . snd . snd <$> v
+		mkexportr = fst . snd . snd <$> v
 		mkks = map (\(sz, n) -> desckeysize sz (getk n))
 			(zip keysizes [0..])
 		getk n = fmap (!! n) (snd . snd . snd <$> v)

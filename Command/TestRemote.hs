@@ -89,7 +89,7 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 		then return [r']
 		else remoteVariants r' basesz fast
 	unavailr  <- Remote.mkUnavailable r'
-	exportr <- if Remote.readonly r'
+	let exportr = if Remote.readonly r'
 		then return Nothing
 		else exportTreeVariant r'
 	perform rs unavailr exportr ks
@@ -101,14 +101,14 @@ remoteVariants r basesz fast = do
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
 	concat <$> mapM encryptionVariants rs
 
-perform :: [Remote] -> Maybe Remote -> Maybe Remote -> [Key] -> CommandPerform
+perform :: [Remote] -> Maybe Remote -> Annex (Maybe Remote) -> [Key] -> CommandPerform
 perform rs unavailr exportr ks = do
 	st <- liftIO . newTVarIO =<< Annex.getState id
 	let tests = testGroup "Remote Tests" $ mkTestTrees
 		(runTestCase st) 
 		(map (\r -> Described (descr r) (pure r)) rs)
 		(pure unavailr)
-		(fmap pure exportr)
+		exportr
 		(map (\k -> Described (desck k) (pure k)) ks)
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
 		Nothing -> error "No tests found!?"
@@ -184,7 +184,7 @@ mkTestTrees
 	:: RunAnnex
 	-> [Described (Annex Remote)]
 	-> Annex (Maybe Remote)
-	-> Maybe (Annex Remote)
+	-> Annex (Maybe Remote)
 	-> [Described (Annex Key)]
 	-> [TestTree]
 mkTestTrees runannex mkrs mkunavailr mkexportr mkks = concat $
@@ -270,9 +270,8 @@ test runannex mkr mkk =
 	store r k = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
 	remove r k = Remote.removeKey r k
 
-testExportTree :: RunAnnex -> Maybe (Annex Remote) -> Annex Key -> Annex Key -> [TestTree]
-testExportTree _ Nothing _ _ = []
-testExportTree runannex (Just mkr) mkk1 mkk2 =
+testExportTree :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> Annex Key -> [TestTree]
+testExportTree runannex mkr mkk1 mkk2 =
 	[ check "check present export when not present" $ \ea k1 _k2 ->
 		not <$> checkpresentexport ea k1
 	, check "remove export when not present" $ \ea k1 _k2 -> 
@@ -307,11 +306,13 @@ testExportTree runannex (Just mkr) mkk1 mkk2 =
 	testexportdirectory = "testremote-export"
 	testexportlocation = mkExportLocation (toRawFilePath (testexportdirectory </> "location"))
 	check desc a = testCase desc $ do
-		let a' = do
-			ea <- Remote.exportActions <$> mkr
-			k1 <- mkk1
-			k2 <- mkk2
-			a ea k1 k2
+		let a' = mkr >>= \case
+			Just r -> do
+				let ea = Remote.exportActions r
+				k1 <- mkk1
+				k2 <- mkk2
+				a ea k1 k2
+			Nothing -> return True
 		runannex a' @? "failed"
 	storeexport ea k = do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
