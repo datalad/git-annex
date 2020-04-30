@@ -10,3 +10,5 @@ that could then be added to the test suite's TestTree.
 (See [[bugs/testremote_failures_starting_with_aeca7c220]])
 
 --[[Joey]]
+
+> [[done]] --[[Joey]]

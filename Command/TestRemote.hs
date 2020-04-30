@@ -30,7 +30,7 @@ import Types.RemoteConfig
 import Types.ProposedAccepted
 import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.Chunked
-import Remote.Helper.Encryptable (describeEncryption, encryptionField, highRandomQualityField)
+import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
 import Git.Types
 
 import Test.Tasty
@@ -85,41 +85,42 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 	let r' = if null (testReadonlyFile o)
 		then r
 		else r { Remote.readonly = True }
-	rs <- if Remote.readonly r'
-		then return [r']
-		else remoteVariants r' basesz fast
+	let drs = if Remote.readonly r'
+		then [Described "remote" (pure (Just r'))]
+		else remoteVariants (Described "remote" (pure r')) basesz fast
 	unavailr  <- Remote.mkUnavailable r'
 	let exportr = if Remote.readonly r'
 		then return Nothing
 		else exportTreeVariant r'
-	perform rs unavailr exportr ks
+	perform drs unavailr exportr ks
   where
 	basesz = fromInteger $ sizeOption o
 
-remoteVariants :: Remote -> Int -> Bool -> Annex [Remote]
-remoteVariants r basesz fast = do
-	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
-	concat <$> mapM encryptionVariants rs
-
-perform :: [Remote] -> Maybe Remote -> Annex (Maybe Remote) -> [Key] -> CommandPerform
-perform rs unavailr exportr ks = do
+perform :: [Described (Annex (Maybe Remote))] -> Maybe Remote -> Annex (Maybe Remote) -> [Key] -> CommandPerform
+perform drs unavailr exportr ks = do
 	st <- liftIO . newTVarIO =<< Annex.getState id
 	let tests = testGroup "Remote Tests" $ mkTestTrees
 		(runTestCase st) 
-		(map (\r -> Described (descr r) (pure r)) rs)
+		drs
 		(pure unavailr)
 		exportr
 		(map (\k -> Described (desck k) (pure k)) ks)
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
 		Nothing -> error "No tests found!?"
 		Just act -> liftIO act
+	rs <- catMaybes <$> mapM getVal drs
 	next $ cleanup rs ks ok
   where
-	descr r = intercalate "; " $ map unwords
-		[ [ show (getChunkConfig (Remote.config r)) ]
-		, ["encryption", describeEncryption (Remote.config r)]
-		]
 	desck k = unwords [ "key size", show (fromKey keySize k) ]
+
+remoteVariants :: Described (Annex Remote) -> Int -> Bool -> [Described (Annex (Maybe Remote))]
+remoteVariants dr basesz fast = 
+	concatMap encryptionVariants $
+		map chunkvariant (chunkSizes basesz fast)
+  where
+	chunkvariant sz = Described (getDesc dr ++ " chunksize=" ++ show sz) $ do
+		r <- getVal dr
+		adjustChunkSize r sz
 
 adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
 adjustChunkSize r chunksize = adjustRemoteConfig r $
@@ -127,14 +128,20 @@ adjustChunkSize r chunksize = adjustRemoteConfig r $
 
 -- Variants of a remote with no encryption, and with simple shared
 -- encryption. Gpg key based encryption is not tested.
-encryptionVariants :: Remote -> Annex [Remote]
-encryptionVariants r = do
-	noenc <- adjustRemoteConfig r $
-		M.insert encryptionField (Proposed "none")
-	sharedenc <- adjustRemoteConfig r $
-		M.insert encryptionField (Proposed "shared") .
-		M.insert highRandomQualityField (Proposed "false")
-	return $ catMaybes [noenc, sharedenc]
+encryptionVariants :: Described (Annex (Maybe Remote)) -> [Described (Annex (Maybe Remote))]
+encryptionVariants dr = [noenc, sharedenc]
+  where
+	noenc = Described (getDesc dr ++ " encryption=none") $
+		getVal dr >>= \case
+			Nothing -> return Nothing
+			Just r -> adjustRemoteConfig r $
+				M.insert encryptionField (Proposed "none")
+	sharedenc = Described (getDesc dr ++ " encryption=shared") $
+		getVal dr >>= \case
+			Nothing -> return Nothing
+			Just r -> adjustRemoteConfig r $
+				M.insert encryptionField (Proposed "shared") .
+				M.insert highRandomQualityField (Proposed "false")
 
 -- Variant of a remote with exporttree disabled.
 disableExportTree :: Remote -> Annex Remote
@@ -182,7 +189,7 @@ runTestCase stv a = do
 -- the provided actions are called.
 mkTestTrees
 	:: RunAnnex
-	-> [Described (Annex Remote)]
+	-> [Described (Annex (Maybe Remote))]
 	-> Annex (Maybe Remote)
 	-> Annex (Maybe Remote)
 	-> [Described (Annex Key)]
@@ -203,7 +210,7 @@ mkTestTrees runannex mkrs mkunavailr mkexportr mkks = concat $
 		, [ getDesc k2 ]
 		]
 
-test :: RunAnnex -> Annex Remote -> Annex Key -> [TestTree]
+test :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 test runannex mkr mkk =
 	[ check "removeKey when not present" $ \r k ->
 		whenwritable r $ remove r k
@@ -253,10 +260,11 @@ test runannex mkr mkk =
 		| Remote.readonly r = return True
 		| otherwise = a
 	check desc a = testCase desc $ do
-		let a' = do
-			r <- mkr
-			k <- mkk
-			a r k
+		let a' = mkr >>= \case
+			Just r -> do
+				k <- mkk
+				a r k
+			Nothing -> return True
 		runannex a' @? "failed"
 	present r k b = (== Right b) <$> Remote.hasKey r k
 	fsck _ k = case maybeLookupBackendVariety (fromKey keyVariety k) of

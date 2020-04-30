@@ -148,7 +148,7 @@ ingredients =
 tests :: Bool -> Bool -> TestOptions -> TestTree
 tests crippledfilesystem adjustedbranchok opts = 
 	testGroup "Tests" $ properties 
-		: withTestMode remotetestmode Nothing testRemote
+		: withTestMode remotetestmode Nothing testRemotes
 		: map (\(d, te) -> withTestMode te (Just initTests) (unitTests d)) testmodes
   where
 	testmodes = catMaybes
@@ -207,16 +207,25 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 		, Utility.Hash.props_macs_stable
 		]
 
-testRemote :: TestTree
-testRemote = withResource newEmptyTMVarIO (const noop) $ \getv -> 
-	testGroup "Remote Tests" $ concat
-		[ [testCase "init" (prep getv)]
-		, go getv
+testRemotes :: TestTree
+testRemotes = testGroup "Remote Tests"
+	[ testRemote "directory"
+		[ "directory=remotedir"
+		, "encryption=none"
 		]
+		(createDirectory "remotedir")
+	]
+
+testRemote :: String -> [String] -> IO () -> TestTree
+testRemote remotetype config preinitremote = 
+	withResource newEmptyTMVarIO (const noop) $ \getv -> 
+		testGroup ("remote type " ++ remotetype) $ concat
+			[ [testCase "init" (prep getv)]
+			, go getv
+			]
   where
 	reponame = "test repo"
-	remotename = "dir"
-	remotetype =" directory"
+	remotename = "testremote"
 	basesz = 1024 * 1024
 	keysizes = Command.TestRemote.keySizes basesz False
 	prep getv = do
@@ -225,17 +234,15 @@ testRemote = withResource newEmptyTMVarIO (const noop) $ \getv ->
 		innewrepo $ do
 			git_annex "init" [reponame, "--quiet"]
 				@? "init failed"
-			createDirectory "remotedir"
+			preinitremote
 			git_annex "initremote"
-				[ remotename
+				([ remotename
 				, "type=" ++ remotetype
-				, "directory=remotedir"
-				, "encryption=none"
 				, "--quiet"
-				]
+				] ++ config)
 				@? "init failed"
 			r <- annexeval $ either error return 
-				=<< Remote.byName' remotename 
+				=<< Remote.byName' remotename
 			unavailr <- annexeval $ Types.Remote.mkUnavailable r
 			exportr <- annexeval $ Command.TestRemote.exportTreeVariant r
 			ks <- annexeval $ mapM Command.TestRemote.randKey keysizes
@@ -245,7 +252,8 @@ testRemote = withResource newEmptyTMVarIO (const noop) $ \getv ->
 	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailr mkexportr mkks
 	  where
 		runannex = inmainrepo . annexeval
-		mkrs = [descas (remotetype ++ " remote") (fst <$> v)]
+		mkrs = Command.TestRemote.remoteVariants mkr basesz False
+		mkr = descas (remotetype ++ " remote") (fst <$> v)
 		mkunavailr = fst . snd <$> v
 		mkexportr = fst . snd . snd <$> v
 		mkks = map (\(sz, n) -> desckeysize sz (getk n))
