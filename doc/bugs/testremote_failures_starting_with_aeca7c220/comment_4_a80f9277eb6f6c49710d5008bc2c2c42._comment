@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="thanks!"
+ date="2020-04-28T21:41:30Z"
+ content="""
+Wow, thanks for the quick fix.  Confirmed that the failing DataLad
+test that initiated this bug report is back to green with fa98025de.
+"""]]
