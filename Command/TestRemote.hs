@@ -88,26 +88,26 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 	rs <- if Remote.readonly r'
 		then return [r']
 		else remoteVariants r' basesz fast
-	unavailrs  <- catMaybes <$> mapM Remote.mkUnavailable [r']
+	unavailr  <- Remote.mkUnavailable r'
 	exportr <- if Remote.readonly r'
 		then return Nothing
 		else exportTreeVariant r'
-	perform rs unavailrs exportr ks
+	perform rs unavailr exportr ks
   where
 	basesz = fromInteger $ sizeOption o
 
-remoteVariants :: Remote -> ByteSize -> Bool -> Annex [Remote]
+remoteVariants :: Remote -> Int -> Bool -> Annex [Remote]
 remoteVariants r basesz fast = do
 	rs <- catMaybes <$> mapM (adjustChunkSize r) (chunkSizes basesz fast)
 	concat <$> mapM encryptionVariants rs
 
-perform :: [Remote] -> [Remote] -> Maybe Remote -> [Key] -> CommandPerform
-perform rs unavailrs exportr ks = do
+perform :: [Remote] -> Maybe Remote -> Maybe Remote -> [Key] -> CommandPerform
+perform rs unavailr exportr ks = do
 	st <- liftIO . newTVarIO =<< Annex.getState id
 	let tests = testGroup "Remote Tests" $ mkTestTrees
 		(runTestCase st) 
 		(map (\r -> Described (descr r) (pure r)) rs)
-		(map (\r -> Described (descr r) (pure r)) unavailrs)
+		(pure unavailr)
 		(fmap pure exportr)
 		(map (\k -> Described (desck k) (pure k)) ks)
 	ok <- case tryIngredients [consoleTestReporter] mempty tests of
@@ -183,12 +183,12 @@ runTestCase stv a = do
 mkTestTrees
 	:: RunAnnex
 	-> [Described (Annex Remote)]
-	-> [Described (Annex Remote)]
+	-> Annex (Maybe Remote)
 	-> Maybe (Annex Remote)
 	-> [Described (Annex Key)]
 	-> [TestTree]
-mkTestTrees runannex mkrs mkunavailrs mkexportr mkks = concat $
-	[ [ testGroup "unavailable remote" (testUnavailable runannex (getVal mkr) (getVal (Prelude.head mkks))) | mkr <- mkunavailrs ]
+mkTestTrees runannex mkrs mkunavailr mkexportr mkks = concat $
+	[ [ testGroup "unavailable remote" (testUnavailable runannex mkunavailr (getVal (Prelude.head mkks))) ]
 	, [ testGroup (desc mkr mkk) (test runannex (getVal mkr) (getVal mkk)) | mkk <- mkks, mkr <- mkrs ]
 	, [ testGroup (descexport mkk1 mkk2) (testExportTree runannex mkexportr (getVal mkk1) (getVal mkk2)) | mkk1 <- take 2 mkks, mkk2 <- take 2 (reverse mkks) ]
 	]
@@ -328,7 +328,7 @@ testExportTree runannex (Just mkr) mkk1 mkk2 =
 		Nothing -> return True
 		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
 
-testUnavailable :: RunAnnex -> Annex Remote -> Annex Key -> [TestTree]
+testUnavailable :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 testUnavailable runannex mkr mkk =
 	[ check (== Right False) "removeKey" $ \r k ->
 		Remote.removeKey r k
@@ -344,12 +344,15 @@ testUnavailable runannex mkr mkk =
 			Remote.retrieveKeyFileCheap r k (AssociatedFile Nothing) dest
 	]
   where
-	check checkval desc a = testCase desc $ do
-		v <- runannex $ do
-			r <- mkr
-			k <- mkk
-			either (Left  . show) Right <$> tryNonAsync (a r k)
-		checkval v  @? ("(got: " ++ show v ++ ")")
+	check checkval desc a = testCase desc $ 
+		join $ runannex $ mkr >>= \case
+			Just r -> do
+				k <- mkk
+				v <- either (Left  . show) Right
+					<$> tryNonAsync (a r k)
+				return $ checkval v
+					@? ("(got: " ++ show v ++ ")")
+			Nothing -> return noop
 
 cleanup :: [Remote] -> [Key] -> Bool -> CommandCleanup
 cleanup rs ks ok

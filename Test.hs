@@ -24,7 +24,7 @@ import Options.Applicative (switch, long, help, internal)
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.UTF8 as BU8
 import System.Environment
-import Control.Concurrent.STM
+import Control.Concurrent.STM hiding (check)
 
 import Common
 import CmdLine.GitAnnex.Options
@@ -147,14 +147,16 @@ ingredients =
 
 tests :: Bool -> Bool -> TestOptions -> TestTree
 tests crippledfilesystem adjustedbranchok opts = 
-	testGroup "Tests" $ properties : testRemote :
-		map (\(d, te) -> withTestMode te initTests (unitTests d)) testmodes
+	testGroup "Tests" $ properties 
+		: withTestMode remotetestmode Nothing testRemote
+		: map (\(d, te) -> withTestMode te (Just initTests) (unitTests d)) testmodes
   where
 	testmodes = catMaybes
 		[ canadjust ("v8 adjusted unlocked branch", (testMode opts (RepoVersion 8)) { adjustedUnlockedBranch = True })
 		, unlesscrippled ("v8 unlocked", (testMode opts (RepoVersion 8)) { unlockedFiles = True })
 		, unlesscrippled ("v8 locked", testMode opts (RepoVersion 8))
 		]
+	remotetestmode = testMode opts (RepoVersion 8)
 	unlesscrippled v
 		| crippledfilesystem = Nothing
 		| otherwise = Just v
@@ -205,7 +207,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 		, Utility.Hash.props_macs_stable
 		]
 
-testRemote :: IO TestTree
+testRemote :: TestTree
 testRemote = withResource newEmptyTMVarIO (const noop) $ \getv -> 
 	testGroup "Remote Tests" $ concat
 		[ [testCase "init" (prep getv)]
@@ -215,6 +217,7 @@ testRemote = withResource newEmptyTMVarIO (const noop) $ \getv ->
 	reponame = "test repo"
 	remotename = "dir"
 	basesz = 1024 * 1024
+	keysizes = Command.TestRemote.keySizes basesz False
 	prep getv = do
 		d <- newmainrepodir
 		setmainrepodir d
@@ -232,23 +235,24 @@ testRemote = withResource newEmptyTMVarIO (const noop) $ \getv ->
 				@? "init failed"
 			r <- annexeval $ either error return 
 				=<< Remote.byName' remotename 
-			rs <- Command.TestRemote.remoteVariants r basesz False
-			unavailrs <- annexeval $ catMaybes
-				<$> mapM Types.Remote.mkUnavailable [r]
+			unavailr <- annexeval $ Types.Remote.mkUnavailable r
 			exportr <- annexeval $ Command.TestRemote.exportTreeVariant r
-			ks <- annexeval $ mapM Command.TestRemote.randKey $
-				Command.TestRemote.keySizes basesz False
+			ks <- annexeval $ mapM Command.TestRemote.randKey keysizes
 			v <- getv
 			liftIO $ atomically $ putTMVar v
-				(rs, (unavailrs, (descexportr, ks)))
-	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailrs mkexportr mkks
+				(r, (unavailr, (exportr, ks)))
+	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailr mkexportr mkks
 	  where
 		runannex = inmainrepo . annexeval
-		mkrs = map descas "remote" (fst <$> v)
-		mkunavailrs = fst . snd <$> v
-		mkexportr = fst . snd . snd <$> v
-		mkks = snd . snd . snd <$> v
-		v = atomically . readTMVar =<< getv
+		mkrs = [descas "remote" (fst <$> v)]
+		mkunavailr = fst . snd <$> v
+		mkexportr = Nothing -- fst . snd . snd <$> v
+		mkks = map (\(sz, n) -> desckeysize sz (getk n))
+			(zip keysizes [0..])
+		getk n = fmap (!! n) (snd . snd . snd <$> v)
+		v = liftIO $ atomically . readTMVar =<< getv
+		descas = Command.TestRemote.Described
+		desckeysize sz = descas ("key size " ++ show sz)
 
 {- These tests set up the test environment, but also test some basic parts
  - of git-annex. They are always run before the unitTests. -}

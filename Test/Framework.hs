@@ -417,17 +417,19 @@ testMode opts v = TestMode
 hasUnlockedFiles :: TestMode -> Bool
 hasUnlockedFiles m = unlockedFiles m || adjustedUnlockedBranch m
 
-withTestMode :: TestMode -> TestTree -> TestTree -> TestTree
-withTestMode testmode inittests = withResource prepare release . const
+withTestMode :: TestMode -> Maybe TestTree -> TestTree -> TestTree
+withTestMode testmode minittests = withResource prepare release . const
   where
 	prepare = do
 		setTestMode testmode
 		setmainrepodir =<< newmainrepodir
-		case tryIngredients [consoleTestReporter] mempty inittests of
-			Nothing -> error "No tests found!?"
-			Just act -> unlessM act $
-				error "init tests failed! cannot continue"
-		return ()
+		case minittests of
+			Just inittests ->
+				case tryIngredients [consoleTestReporter] mempty inittests of
+					Nothing -> error "No tests found!?"
+					Just act -> unlessM act $
+						error "init tests failed! cannot continue"
+			Nothing -> return ()
 	release _ = noop
 
 setTestMode :: TestMode -> IO ()
