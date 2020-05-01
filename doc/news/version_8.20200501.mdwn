@@ -1,0 +1,46 @@
+git-annex 8.20200501 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Improve git-annex's ability to find the path to its program,
+     especially when it needs to run itself in another repo to upgrade it.
+   * adb: Better messages when the adb command is not installed.
+   * Sped up query commands that read the git-annex branch by around 9%.
+   * Various speed improvements gained by using ByteStrings for git refs and
+     shas.
+   * Fix a potential failure to parse git config.
+   * Support boolean git configs that are represented by the name of the
+     setting with no value, eg "core.bare" is the same as "core.bare = true".
+   * When parsing git configs, support all the documented ways to write
+     true and false, including "yes", "on", "1", etc.
+   * Fix --batch commands (and git-annex info) to accept absolute filenames
+     for unlocked files, which already worked for locked files.
+   * Avoid repeatedly opening keys db when accessing a local git remote
+     and -J is used.
+   * Avoid running a large number of git cat-file child processes when run
+     with a large -J value.
+   * Avoid running with more git check-attr and check-ignore processes than
+     there are CPU cores when run with a large -J value.
+   * get --from, move --from: When used with a local git remote, these used
+     to silently skip files that the location log thought were present on the
+     remote, when the remote actually no longer contained them. Since that
+     behavior could be surprising, now instead display a warning.
+   * external special remotes: remote.name.annex-readonly=true no longer
+     disables running the external special remote program. Instead, it just
+     makes the remote operate in a readonly mode, same as any remote.
+     To disable running the external special remote program, now need to set
+     remote.name.annex-externaltype=readonly. That is done when
+     git-annex enableremote is passed readonly=true.
+   * Stop storing readonly=true in remote.log of external special remotes;
+     it is a local setting only.
+   * sync: When some remotes to sync with are specified, and --fast is too,
+     pick the lowest cost of the specified remotes, do not sync with a
+     faster remote that was not specified.
+   * addurl: When run with --fast on an url that
+     annex.security.allowed-ip-addresses prevents accessing, display
+     a more useful message.
+   * When the required content is set to "groupwanted", use whatever
+     expression has been set in groupwanted as the required content of the
+     repo, similar to how setting required content to "standard" already
+     worked.
+   * Avoid a test suite failure when the environment does not let gpg be
+     tested due to eg, too long a path to the agent socket.
+   * test: Include testremote tests, run on a directory special remote."""]]
