@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-01T18:57:22Z"
+ content="""
+stracing transferkeys after it got stuck, it was stuck until 
+this completed:
+
+	wait4(461218, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0, NULL) = 461218
+
+That pid was "git --git-dir=../annex2/.git --work-tree=../annex2
+--literal-pathspecs --literal-pathspecs -c core.safecrlf=false update-index
+-q --refresh -z --stdin", and it did have a git-annex smudge --clean that
+seemed stuck for a while.
+
+Then it proceeded doing this:
+
+	rename("../annex2/.git/annexindex.0/index", "../annex2/.git/index") = 0
+
+annex2 is the remote. That temp directory and the git update-index process
+says restagePointerFile is what got stuck.
+
+I managed to strace the stuck git-annex smudge --clean, and it's in a loop:
+
+	rt_sigprocmask(SIG_BLOCK, ~[RTMIN RT_1], [], 8) = 0
+	rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+	rt_sigprocmask(SIG_BLOCK, ~[RTMIN RT_1], [], 8) = 0
+
+(Just before that loop, it seemed to be waiting for some
+child processes, but I didn't catch which ones they were.)
+
+After many iterations:
+
+	rt_sigprocmask(SIG_BLOCK, ~[RTMIN RT_1], [], 8) = 0
+	rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+	munmap(0x7f4438549000, 41947136)        = 0
+	munmap(0x7f443ad4a000, 41947136)        = 0
+	exit_group(0)                           = ?
+	+++ exited with 0 +++
+"""]]

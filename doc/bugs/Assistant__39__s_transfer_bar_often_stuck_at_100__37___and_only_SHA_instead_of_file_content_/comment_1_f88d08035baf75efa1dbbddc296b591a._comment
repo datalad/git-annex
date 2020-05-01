@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-01T17:53:57Z"
+ content="""
+I was able to reproduce the progress bar sticking at 100%. I made two local
+repos in the assistant, each a remote of the other (not using ssh), and
+added a file to one. It reached 100% fairly quickly, and then sat there
+for a minute or so, before getting unstuck.
+
+(The bug submitter's log includes "hPutStr: illegal operation (handle is
+closed)" and I did not always see that in my test. May be unrelated.)
+
+While stuck like that, I noticed that git-annex info also said the transfer
+was still in progress. So apparently transferkeys is being delayed from
+finishing the transfer for some reason.
+
+Looking at ps, I noticed that "git-annex smudge --clean -- thefile" was a
+child process of transferkeys. (The file was unlocked, and was the file I
+had just added and that it was stuck on.) This may be a red herring; I
+don't always see that when it's stuck.
+
+On a hunch, I stopped the assistant process that was running in the sibling
+repo of the one where I was adding files. So there was only a single
+assistant running, not two. That seems to have gotten rid of the delay, or
+at least most of it. It still takes around 6s longer than I would have
+expected at the end.
+
+Running transferkeys manually, and feeding it requests in its internal
+protocol, transfers happened in well under a second. It did not do any
+smudging then.
+
+My guess so far is that something about the two assistants causes a race,
+which it has to delay for a while to recover from.
+"""]]
