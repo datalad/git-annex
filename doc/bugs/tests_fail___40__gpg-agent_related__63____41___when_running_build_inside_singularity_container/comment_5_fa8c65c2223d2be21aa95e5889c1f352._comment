@@ -27,4 +27,4 @@ short path in /tmp. But then git-annex would have to not honor TMPDIR
 for that, because that could be set to some path that is too long. Ignoring
 TMPDIR would be easily argued to be a bug in git-annex, while this is pretty
 clearly a bug in an old version of gpg.
-"""]
+"""]]
