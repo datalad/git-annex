@@ -115,7 +115,7 @@ getbuild repodir (url, f) = do
 		return $ if null bv || any (not . versionchar) bv then Nothing else Just bv
 	versionchar c = isAlphaNum c || c == '.' || c == '-'
 
-makeinfos :: [(FilePath, Version)] -> Version -> Annex ()
+makeinfos :: [(FilePath, Version)] -> Version -> Annex [([Char], Maybe GitAnnexDistribution)]
 makeinfos updated version = do
 	mapM_ (\f -> inRepo $ runBool [Param "annex", Param "add", File f]) (map fst updated)
 	void $ inRepo $ runBool 
