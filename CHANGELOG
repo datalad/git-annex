@@ -1,4 +1,4 @@
-git-annex (8.20200331) UNRELEASED; urgency=medium
+git-annex (8.20200501) upstream; urgency=medium
 
   * Improve git-annex's ability to find the path to its program,
     especially when it needs to run itself in another repo to upgrade it.
@@ -45,7 +45,7 @@ git-annex (8.20200331) UNRELEASED; urgency=medium
     tested due to eg, too long a path to the agent socket.
   * test: Include testremote tests, run on a directory special remote.
 
- -- Joey Hess <id@joeyh.name>  Mon, 30 Mar 2020 15:58:34 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 01 May 2020 13:09:24 -0400
 
 git-annex (8.20200330) upstream; urgency=medium
 
