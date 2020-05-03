@@ -1,0 +1,177 @@
+### Please describe the problem.
+
+A very simple scenario where a git annex is cloned via git:// protocol results in the cloned repo being not functional.
+
+Specifically, in a repo that had been cloned via git:// protocol, I encounter a 'not available' error when attempting git annex get
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ git annex get motd
+get motd (not available)
+  Try making some of these repositories available:
+        f75d1e03-3b95-45be-9d30-ca8996e0b69a -- foo
+failed
+git-annex: get: 1 failed
+"""]]
+
+
+### What steps will reproduce the problem?
+
+The first step is to run git daemon for the git:// protocol:
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch$ git daemon --export-all --enable=receive-pack --base-path=. &
+[1] 10519
+"""]]
+
+Now make a reference git annex repo:
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch$ git init foo
+Initialized empty Git repository in /home/shaddy/tmp/gitresearch/foo/.git/
+shaddy@jazz-deb:~/tmp/gitresearch$ cd foo
+shaddy@jazz-deb:~/tmp/gitresearch/foo$ git annex init foo
+init foo ok
+(recording state in git...)
+shaddy@jazz-deb:~/tmp/gitresearch/foo$ cp /etc/motd .
+shaddy@jazz-deb:~/tmp/gitresearch/foo$ git annex add motd
+add motd ok
+(recording state in git...)
+shaddy@jazz-deb:~/tmp/gitresearch/foo$ git commit -m foo
+[master (root-commit) 16dbab7] foo
+ 1 file changed, 1 insertion(+)
+ create mode 120000 motd
+"""]]
+
+Now create a clone via git://:
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch/foo$ cd ..
+shaddy@jazz-deb:~/tmp/gitresearch$ git clone git://localhost/foo bar
+Cloning into 'bar'...
+remote: Enumerating objects: 13, done.
+remote: Counting objects: 100% (13/13), done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 13 (delta 1), reused 0 (delta 0)
+Receiving objects: 100% (13/13), done.
+Resolving deltas: 100% (1/1), done.
+shaddy@jazz-deb:~/tmp/gitresearch$ cd bar
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ git annex init bar
+init bar (merging origin/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ git annex sync
+commit
+On branch master
+Your branch is up to date with 'origin/master'.
+
+nothing to commit, working tree clean
+ok
+pull origin
+ok
+push origin
+Enumerating objects: 8, done.
+Counting objects: 100% (8/8), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 675 bytes | 168.00 KiB/s, done.
+Total 6 (delta 1), reused 1 (delta 0)
+To git://localhost/foo
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+"""]]
+
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ git annex get motd
+get motd (not available)
+  Try making some of these repositories available:
+        f75d1e03-3b95-45be-9d30-ca8996e0b69a -- foo
+failed
+git-annex: get: 1 failed
+"""]]
+
+Now the simple attempt to get the motd file fails:
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ git annex get motd
+get motd (not available)
+  Try making some of these repositories available:
+        f75d1e03-3b95-45be-9d30-ca8996e0b69a -- foo
+failed
+git-annex: get: 1 failed
+"""]]
+
+The confirmation that using local remotes in this simple way works file:
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ cd ..
+shaddy@jazz-deb:~/tmp/gitresearch$ git clone foo xyz
+Cloning into 'xyz'...
+done.
+shaddy@jazz-deb:~/tmp/gitresearch$ cd xyz
+shaddy@jazz-deb:~/tmp/gitresearch/xyz$ git annex init xyz
+init xyz (merging origin/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+shaddy@jazz-deb:~/tmp/gitresearch/xyz$ git annex sync
+commit
+On branch master
+Your branch is up to date with 'origin/master'.
+
+nothing to commit, working tree clean
+ok
+pull origin
+ok
+push origin
+Enumerating objects: 8, done.
+Counting objects: 100% (8/8), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 707 bytes | 353.00 KiB/s, done.
+Total 6 (delta 1), reused 0 (delta 0)
+To /home/shaddy/tmp/gitresearch/foo
+   9be7f98..1a2bd51  git-annex -> synced/git-annex
+ok
+shaddy@jazz-deb:~/tmp/gitresearch/xyz$ ls -lL motd
+ls: cannot access 'motd': No such file or directory
+shaddy@jazz-deb:~/tmp/gitresearch/xyz$ git annex get motd
+get motd (from origin...) (checksum...) ok
+(recording state in git...)
+shaddy@jazz-deb:~/tmp/gitresearch/xyz$ ls -lL motd
+-r--r--r-- 1 shaddy shaddy 286 May  3 12:08 motd
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ lsb_release -a
+No LSB modules are available.
+Distributor ID: Debian
+Description:    Debian GNU/Linux 10 (buster)
+Release:        10
+Codename:       buster
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ uname -a
+Linux jazz-deb 4.19.0-8-amd64 #1 SMP Debian 4.19.98-1 (2020-01-26) x86_64 GNU/Linux
+shaddy@jazz-deb:~/tmp/gitresearch/bar$ git annex version
+git-annex version: 7.20190129
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+"""]]
+
+### Please provide any additional information below.
+
+Already posted above
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Well... it did work for git's local protocol...
