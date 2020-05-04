@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-04T17:01:56Z"
+ content="""
+git-annex no longer supports direct mode in current versions,
+so whatever code might have caused that behavior is removed.
+
+The signal 11 is, however, suprising. If a current version of git-annex
+segfaults, it would be worth filing a bug report and chasing that down,
+although only after you test your machine's memory for problems that might
+lead to a sefault.
+"""]]

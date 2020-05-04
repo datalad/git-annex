@@ -29,6 +29,4 @@ I let it try to resume for a very long time (about a day) and it did nothing.
 
 This is a fairly large repository which was only just cloned and with all data transferred (`git clone` and `git annex get .` worked fine).
 
-
-
-
+> [[closing|done]] per my comment --[[Joey]]
