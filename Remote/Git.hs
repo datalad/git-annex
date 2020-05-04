@@ -149,15 +149,15 @@ gitSetup (Enable _) Nothing _ _ _ = error "unable to enable git remote with no s
 configRead :: Bool -> Git.Repo -> Annex Git.Repo
 configRead autoinit r = do
 	gc <- Annex.getRemoteGitConfig r
-	u <- getRepoUUID r
+	hasuuid <- (/= NoUUID) <$> getRepoUUID r
 	annexignore <- liftIO $ getDynamicConfig (remoteAnnexIgnore gc)
-	case (repoCheap r, annexignore, u) of
+	case (repoCheap r, annexignore, hasuuid) of
 		(_, True, _) -> return r
 		(True, _, _)
-			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r
+			| remoteAnnexCheckUUID gc -> tryGitConfigRead autoinit r hasuuid
 			| otherwise -> return r
-		(False, _, NoUUID) -> configSpecialGitRemotes r >>= \case
-			Nothing -> tryGitConfigRead autoinit r
+		(False, _, False) -> configSpecialGitRemotes r >>= \case
+			Nothing -> tryGitConfigRead autoinit r False
 			Just r' -> return r'
 		_ -> return r
 
@@ -244,8 +244,8 @@ repoAvail r
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
-tryGitConfigRead :: Bool -> Git.Repo -> Annex Git.Repo
-tryGitConfigRead autoinit r 
+tryGitConfigRead :: Bool -> Git.Repo -> Bool -> Annex Git.Repo
+tryGitConfigRead autoinit r hasuuid
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
@@ -258,9 +258,12 @@ tryGitConfigRead autoinit r
 			Left _ -> configlist_failed
 	| Git.repoIsHttp r = storeUpdatedRemote geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteAnnexConfig r "uuid")
-	| Git.repoIsUrl r = return r
-	| otherwise = storeUpdatedRemote $ liftIO $ 
-		readlocalannexconfig `catchNonAsync` (const $ return r)
+	| Git.repoIsUrl r = do
+		set_ignore "uses a protocol not supported by git-annex" False
+		return r
+	| otherwise = storeUpdatedRemote $
+		liftIO readlocalannexconfig
+			`catchNonAsync` const failedreadlocalconfig
   where
 	haveconfig = not . M.null . Git.config
 
@@ -338,6 +341,13 @@ tryGitConfigRead autoinit r
 			Annex.getState Annex.repo
 		s <- Annex.new r
 		Annex.eval s $ check `finally` stopCoProcesses
+		
+	failedreadlocalconfig = do
+		unless hasuuid $ case Git.remoteName r of
+			Nothing -> noop
+			Just n -> do
+				warning $ "Remote " ++ n ++ " cannot currently be accessed."
+		return r
 		
 	configlistfields = if autoinit
 		then [(Fields.autoInit, "1")]
@@ -898,7 +908,7 @@ mkState r u gc = do
 			rv <- liftIO newEmptyMVar
 			let getrepo = ifM (liftIO $ isEmptyMVar rv)
 				( do
-					r' <- tryGitConfigRead False r
+					r' <- tryGitConfigRead False r True
 					let t = (r', extractGitConfig FromGitConfig r')
 					void $ liftIO $ tryPutMVar rv t
 					return t

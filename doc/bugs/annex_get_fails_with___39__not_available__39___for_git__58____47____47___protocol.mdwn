@@ -175,3 +175,6 @@ Already posted above
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Well... it did work for git's local protocol...
+
+> [[done]], this was not really a bug, but I have added a warning message
+> --[[Joey]]

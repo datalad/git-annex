@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-04T16:13:02Z"
+ content="""
+git-annex cannot possibly support operation over the git protocol, because
+that protocol does not have any way to add an extension such as git-annex
+to it.
+
+So git-annex currently completely ignores git:// repositories, the same as
+it would any git repository using some other foreign protocol.
+(eg rsync or a protocol added by a git extension)
+
+This is actually identical behavior to if the remote had "url =
+/media/whatever" and the drive was unmounted after the repo was cloned.
+git-annex is not able to discover a uuid for the remote, and so it does
+not know the remote contains the content, and so it does not say anything
+about not being able to get the content from the remote, because it
+never tried. IOW, this is a "beware of the leopard" situation.
+
+So, it would better for this to be handled the same way that a ssh remote
+that lacks git-annex-shell is handled, by explicitly setting annex-ignore
+on first use and displaying a warning. (Although it should not set
+annex-ignore for the /media/whatever case, because the drive may later get
+mounted again.)
+"""]]
