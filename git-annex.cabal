@@ -372,10 +372,11 @@ Executable git-annex
    tasty-rerun
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
-  Extensions: PackageImports, LambdaCase
+  Default-Language: Haskell98
+  Default-Extensions: PackageImports, LambdaCase
+  Other-Extensions: TemplateHaskell
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
-  Other-Extensions: TemplateHaskell
 
   -- Fully optimize for production.
   if flag(Production)
