@@ -244,12 +244,12 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		<=< lookup hContentDisposition . responseHeaders
 
 	existsconduit r req =
-		let go = catchcrossprotoredir r (existsconduit' req uo)
-		in catchJust matchconnectionrestricted go retconnectionrestricted
+		let a = catchcrossprotoredir r (existsconduit' req uo)
+		in catchJust matchconnectionrestricted a retconnectionrestricted
 	
 	matchconnectionrestricted he@(HttpExceptionRequest _ (InternalException ie)) =
 		case fromException ie of
-			Just (ConnectionRestricted why) -> Just he
+			Just (ConnectionRestricted _why) -> Just he
 			_ -> Nothing
 	matchconnectionrestricted _ = Nothing
 
