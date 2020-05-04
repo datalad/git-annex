@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-04T17:07:55Z"
+ content="""
+The command uses `git fsck` to get a list of git objects that are missing
+from the repository. It then tries to get those objects from remotes. So,
+skipping the fsck is not really possible.
+
+Also in some cases, it may need to fsck again after the initial pass.
+
+You must have an exceptionally large git repo (and/or slow computer) for git
+fsck to take more than several minutes.
+
+I wonder if passing --connectivity-only to git fsck speeds it up
+significantly for you? Actually corrupted blobs are probably much rarer
+than blobs that are just missing, so it might be that git annex repair
+could optionally use that to run fsck faster.
+"""]]
