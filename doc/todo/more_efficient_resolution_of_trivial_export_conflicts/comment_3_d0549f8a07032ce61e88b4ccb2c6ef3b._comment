@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-04T18:36:30Z"
+ content="""
+Hmm, but.. What if both A and B's trees are subsets
+of the resolved tree? Safe then?
+
+A exports `[(foo, 1)]`, while B exports `[(bar, 2)]`
+the resolved tree is `[(foo, 1), (bar, 2)]`.
+
+Well, what was in the export before? Suppose it was `[(foo, 2)]`..
+Then B would have renamed foo to bar, and A exported 1 to foo.
+Order is unknown, so the export has either of `[(foo, 1), (bar, 2)]`
+or `[(bar, 1)]`
+
+Yeah, still not safe even when both trees are subsets.
+
+----
+
+An optimisation like this needs some way to detect if there's been a rename
+like B keeps doing in these examples. If there has not been any rename,
+the optimisation is safe.
+
+export.log contains only the sha of the tree that has been exported
+by each repo to the export remote. It might contains some trees that
+were exported before, but when it gets compacted, that information is
+lost, and anyway there's no way to know if B exported some old tree before
+or after A exported its most recently exported tree. So, I don't think
+retrospective rename detection is possible.
+"""]]

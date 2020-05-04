@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-04T17:30:59Z"
+ content="""
+I took a look at this, the relevant code is here:
+
+                        warning "Resolving export conflict.."
+                        forM_ ts $ \oldtreesha -> do
+                                -- Unexport both the srcsha and the dstsha,
+                                -- because the wrong content may have
+                                -- been renamed to the dstsha due to the
+                                -- export conflict.
+                                let unexportboth d =
+                                        [ Git.DiffTree.srcsha d
+                                        , Git.DiffTree.dstsha d
+                                        ]
+                                -- Don't rename to temp, because the
+                                -- content is unknown; delete instead.
+                                mapdiff
+                                        (\diff -> commandAction $ startUnexport r db (Git.DiffTree.file diff) (unexportboth diff))
+                                        oldtreesha new
+
+So, it diffs from the tree in the export conflict to the new, resolved tree.
+Any file that differs -- eg, any file that was involved in the conflict -- 
+gets removed from the export.
+
+> In the todo, I said:
+> 
+> For example, if A exports a tree containing `[foo]`, and B exports a tree
+> containing `[foo, bar]`, bar gets unexported when resolving the conflict.
+
+Let's be more clear about the content of the trees, and say A exports
+`[(foo, 1)]` and B exports `[(foo, 1), (bar, 1)]`.
+
+If the export is then resolved to `[(foo, 1), (bar, 1)]`,
+we can see nothing needs to be done. But what it currently does is
+diff from `[(foo, 1)]` to the resolution and so unexports bar.
+
+If B had instead exported `[(foo, 1), (bar, 2)]`, then
+it would still need to diff from that the the resolution, and so would
+unexport bar, and so it should.
+
+But.. but.. ugh. Consider an export conflict that started with `[(bar, 1)]`
+exported. A exported `[(bar, 2)]` and B exported `[(baz, 1)]` (by renaming bar
+to baz). So the export remote might contain `[(baz, 2)]` (A uploaded 2 to bar,
+and then B renamed bar to baz) or it might contain `[(bar, 2), (baz, 1)]`;
+we do not know ordering between A and B.
+
+If the export conflict resolution is `[(bar, 2), (baz 1)]` then the tree
+exported by B is a subset, so it skips that one. And the tree
+exported by A is a subset, so ummm... it skips that one. And so nothing gets
+unexported. Then, it proceeds to try to upload any missing files
+to the export. If the export remote contains `[(bar, 2), (baz, 1)]` nothing is
+missing, nothing gets uploaded, all is well. But if the export remote
+contains `[(baz, 2)]`, it will upload `(bar, 2)`, resulting in 
+`[(bar, 2), (baz 2)]`. That is not what it's supposed to contain.
+
+So, no, this optimisation will not work!
+
+The only way to make this optimisation work, I think, is to not do renaming
+when updating export remotes. But file renaming is more common than export
+conflicts; you can always adjust your workflow to avoid export conflicts,
+by pulling from the remote you tend to conflict with, before performing an
+export.
+"""]]

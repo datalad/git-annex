@@ -16,3 +16,5 @@ unexport files added by the other tree. It's sufficient to check that files
 are present in the export and upload any that are missing. --[[Joey]]
 
 [[!tag confirmed]]
+
+> I proved this is not a safe optimisation, so [[wontfix|done]] --[[Joey]]
