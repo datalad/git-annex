@@ -1,0 +1,68 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="Still fails with git-annex 8.20200330 via backports"
+ date="2020-05-04T09:02:03Z"
+ content="""
+Just in case there is a concern that version 7 was too old to include potential fixes, I upgraded another machine via Debian backports, to have git-annex 8.20200330.
+
+Here's the same test playing out:
+
+
+[[!format sh \"\"\"
+shaddy@notjazz-debbackports:~/git-research01$ git daemon --export-all --enable=receive-pack --base-path=. &
+[1] 4965
+shaddy@notjazz-debbackports:~/git-research01$ git clone git://localhost/foo xyz
+Cloning into 'xyz'...
+remote: Enumerating objects: 34, done.
+remote: Counting objects: 100% (34/34), done.
+remote: Compressing objects: 100% (29/29), done.
+remote: Total 34 (delta 9), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (34/34), done.
+Resolving deltas: 100% (9/9), done.
+shaddy@notjazz-debbackports:~/git-research01$ cd xyz/
+shaddy@notjazz-debbackports:~/git-research01/xyz$ git annex sync
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+commit (recording state in git...)
+
+On branch master
+Your branch is up to date with 'origin/master'.
+
+nothing to commit, working tree clean
+ok
+pull origin
+ok
+push origin
+Enumerating objects: 8, done.
+Counting objects: 100% (8/8), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 704 bytes | 64.00 KiB/s, done.
+Total 6 (delta 1), reused 1 (delta 0), pack-reused 0
+To git://localhost/foo
+   2e4b34f..b5ce3d8  git-annex -> synced/git-annex
+ok
+shaddy@notjazz-debbackports:~/git-research01/xyz$ git annex get motd
+get motd (not available)
+  Try making some of these repositories available:
+        02ebc1c9-52d3-4377-bf29-1e4319ce2cf1 -- shaddy@notjazz-debbackports:~/git-research01/foo
+failed
+git-annex: get: 1 failed
+shaddy@notjazz-debbackports:~/git-research01/xyz$ git annex version
+git-annex version: 8.20200330
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+shaddy@notjazz-debbackports:~/git-research01/xyz$ 
+
+\"\"\"]]
+
+"""]]
