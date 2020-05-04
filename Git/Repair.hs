@@ -122,24 +122,26 @@ retrieveMissingObjects missing referencerepo r
 			)
 	pullremotes tmpr (rmt:rmts) fetchrefs ms
 		| not (foundBroken ms) = return ms
-		| otherwise = do
-			putStrLn $ "Trying to recover missing objects from remote " ++ repoDescribe rmt ++ "."
-			ifM (fetchfrom (repoLocation rmt) fetchrefs tmpr)
-				( do
-					void $ explodePacks tmpr
-					void $ copyObjects tmpr r
-					case ms of
-						FsckFailed -> pullremotes tmpr rmts fetchrefs ms
-						FsckFoundMissing s t -> do
-							stillmissing <- findMissing (S.toList s) r
-							pullremotes tmpr rmts fetchrefs (FsckFoundMissing stillmissing t)
-				, pullremotes tmpr rmts fetchrefs ms
-				)
-	fetchfrom fetchurl ps fetchr = runBool ps' fetchr'
+		| otherwise = case remoteName rmt of
+			Just n -> do
+				putStrLn $ "Trying to recover missing objects from remote " ++ n ++ "."
+				ifM (fetchfrom n fetchrefs tmpr)
+					( do
+						void $ explodePacks tmpr
+						void $ copyObjects tmpr r
+						case ms of
+							FsckFailed -> pullremotes tmpr rmts fetchrefs ms
+							FsckFoundMissing s t -> do
+								stillmissing <- findMissing (S.toList s) r
+								pullremotes tmpr rmts fetchrefs (FsckFoundMissing stillmissing t)
+					, pullremotes tmpr rmts fetchrefs ms
+					)
+			Nothing -> pullremotes tmpr rmts fetchrefs ms
+	fetchfrom loc ps fetchr = runBool ps' fetchr'
 	  where
 		ps' = 
 			[ Param "fetch"
-			, Param fetchurl
+			, Param loc
 			, Param "--force"
 			, Param "--update-head-ok"
 			, Param "--quiet"
