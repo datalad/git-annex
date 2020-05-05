@@ -1,0 +1,7 @@
+I stuffed up the [android_sync_with_adb instructions](https://git-annex.branchable.com/tips/android_sync_with_adb) and not for the first time, ending up with everything deleted from my annex except what was on my phone.
+
+I think I previously fixed it with a 'git reset --hard' however this time it has spread to all my annexes. And every time I sync the wrong situation is restored.
+
+I know I haven't lost any files, but how can I get the symlinks back the way they were?
+
+What branches do I need to reset on which repositories?
