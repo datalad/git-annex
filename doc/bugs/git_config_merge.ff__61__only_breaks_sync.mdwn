@@ -445,3 +445,6 @@ fatal: Not possible to fast-forward, aborting.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Sure! Using git-annex to keep artifacts in development repos works great usually :)
+
+> Closing as I don't think this behavior is actually a bug. [[done]]
+> --[[Joey]]

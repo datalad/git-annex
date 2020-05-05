@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-05T17:05:32Z"
+ content="""
+The sync man page does mention fetching and merging:
+
+	The sync process involves first committing any local changes to files
+	that have previously been added to the repository,
+	then fetching and merging the current branch
+
+Not that I really buy the argument that not mentioning use of some specific git
+command means that it should bypass git configurations that apply to that
+command. git commands often don't document other git commands that they use
+as plumbing, for example.
+
+The output with this configuration is essentially:
+
+	pull repo-b
+	fatal: Not possible to fast-forward, aborting.
+	failed
+
+So the user is told right there that sync tried to pull.
+And the pull failed. Why? Something to do with fast-forward. While this would
+be clearer if git mentioned the config that is making it require a fast-forward,
+it does not seem an indecipherable behavior.
+
+And also, you have to have *globally* configured an option that prevents fast forwarding.
+That is a major, massive change to git's behavior. git is going to be falling over on
+pull all the time in many circumstances with the same error message.
+
+Similarly, if you had configured merge.verifySignatures globally, git-annex
+sync would be likely to fail. All your arguments would seem to require I also
+override that option. But that could be a big security hole.
+"""]]

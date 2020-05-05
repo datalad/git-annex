@@ -346,36 +346,41 @@ mergeLocal mergeconfig o currbranch = stopUnless (notOnlyAnnex o) $
 	mergeLocal' mergeconfig o currbranch
 
 mergeLocal' :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandStart
-mergeLocal' mergeconfig o currbranch@(Just _, _) =
-	needMerge currbranch >>= \case
+mergeLocal' mergeconfig o currbranch@(Just branch, _) =
+	needMerge currbranch branch >>= \case
 		Nothing -> stop
 		Just syncbranch ->
 			starting "merge" (ActionItemOther (Just $ Git.Ref.describe syncbranch)) $
 				next $ merge currbranch mergeconfig o Git.Branch.ManualCommit syncbranch
-mergeLocal' _ _ (Nothing, madj) = do
-	b <- inRepo Git.Branch.currentUnsafe
-	needMerge (b, madj) >>= \case
+mergeLocal' _ _ currbranch@(Nothing, _) = inRepo Git.Branch.currentUnsafe >>= \case
+	Just branch -> needMerge currbranch branch >>= \case
 		Nothing -> stop
 		Just syncbranch ->
 			starting "merge" (ActionItemOther (Just $ Git.Ref.describe syncbranch)) $ do
-				warning $ "There are no commits yet in the currently checked out branch, so cannot merge any remote changes into it."
+				warning $ "There are no commits yet to branch " ++ Git.fromRef branch ++ ", so cannot merge " ++ Git.fromRef syncbranch ++ " into it."
 				next $ return False
+	Nothing -> stop
 
 -- Returns the branch that should be merged, if any.
-needMerge :: CurrBranch -> Annex (Maybe Git.Branch)
-needMerge (Nothing, _) = return Nothing
-needMerge (Just branch, madj) = ifM (allM id checks)
+needMerge :: CurrBranch -> Git.Branch -> Annex (Maybe Git.Branch)
+needMerge currbranch headbranch = ifM (allM id checks)
 	( return (Just syncbranch)
 	, return Nothing
 	)
   where
-	checks =
-		[ not <$> isBareRepo
-		, inRepo (Git.Ref.exists syncbranch)
-		, inRepo (Git.Branch.changed branch' syncbranch)
-		]
-	syncbranch = syncBranch branch
-	branch' = maybe branch (adjBranch . originalToAdjusted branch) madj
+	syncbranch = syncBranch headbranch
+	checks = case currbranch of
+		(Just _, madj) -> 
+			let branch' = maybe headbranch (adjBranch . originalToAdjusted headbranch) madj
+			in 
+				[ not <$> isBareRepo
+				, inRepo (Git.Ref.exists syncbranch)
+				, inRepo (Git.Branch.changed branch' syncbranch)
+				]
+		(Nothing, _) ->
+			[ not <$> isBareRepo
+			, inRepo (Git.Ref.exists syncbranch)
+			]
 
 pushLocal :: SyncOptions -> CurrBranch -> CommandStart
 pushLocal o b = stopUnless (notOnlyAnnex o) $ do

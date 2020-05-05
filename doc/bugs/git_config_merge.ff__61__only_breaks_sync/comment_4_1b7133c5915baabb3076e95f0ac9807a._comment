@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-05-05T17:27:31Z"
+ content="""
+As to the "fatal: ambiguous argument" message, it happens in the same test
+case w/o that global git config.
+
+	[2020-05-05 13:28:27.204706608] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/master..refs/heads/synced/master","--pretty=%H","-n1"]
+	fatal: ambiguous argument 'refs/heads/master..refs/heads/synced/master': unknown revision or path not in the working tree.
+
+It's caused by sync being run with no master branch yet, and nothing to commit
+to create one. refs/heads/synced/master does exist; it was synced from the
+other repo. Fixed that message.
+"""]]
