@@ -44,6 +44,9 @@ services.
   
   Note that anyone who knows these addresses can access your
   repository over the P2P networks.
+  
+  This can be run repeatedly, in order to give different addresses 
+  out to different people.
 
 * `--link`
 
