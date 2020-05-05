@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-05T16:40:36Z"
+ content="""
+As I said, the purpose of the --foreground option is to enable a line-based
+protocol using stdin. The assistant uses that. Other things could too, I
+don't know. It's a documented interface.
+
+Yes, if you run the remotedaemon for tor, you typically don't pass that
+option, and so it does not use stdin. But an option to run in the foreground
+like that would need to be a different option than the already existing,
+documented, and used --foreground option.
+
+So, this is not a bug report, it's a feature request.
+"""]]
