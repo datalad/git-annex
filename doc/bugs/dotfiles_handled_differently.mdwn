@@ -30,3 +30,7 @@ Untracked files:
 
 # End of transcript or log.
 """]]
+
+> There have been several changes to dotfiles since this bug was filed. I
+> think most relevantly, annex.dotfiles can be set to let annex.largefiles
+> control them too. So this seems [[done]] --[[Joey]]
