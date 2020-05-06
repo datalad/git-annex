@@ -1,0 +1,13 @@
+Backblaze announced that they now have S3 storage for buckets created after May 4th.
+
+My current attempt to use it as an S3 remote has me with the following:
+export AWS_ACCESS_KEY_ID=keyID
+export AWS_SECRET_ACCESS_KEY=applicationID
+git-annex initremote backblaze type=S3 host=s3.us-west-000.backblazeb2.com (the full s3 endpoint) embedcreds=yes encryption=hybrid keyid=CA3D8351 bucket=<my bucket name> protocol=https
+
+and the output:
+
+initremote backblaze (encryption setup) (to gpg keys: 41AAE7DCCA3D8351) (checking bucket...) (creating bucket in US...)
+git-annex: S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = ""}, s3ErrorCode = "AuthorizationHeaderMalformed", s3ErrorMessage = "Authorization header does not contain a Credential", s3ErrorResource = Nothing, s3ErrorHostId = Nothing, s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+failed
+git-annex: initremote: 1 failed
