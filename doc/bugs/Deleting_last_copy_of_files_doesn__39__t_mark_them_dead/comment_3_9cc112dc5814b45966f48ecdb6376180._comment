@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="glasserc"
+ avatar="http://cdn.libravatar.org/avatar/8e865c04033751520601e9c15e58ddc4"
+ subject="Is `dead` really the solution here?"
+ date="2020-05-06T20:29:03Z"
+ content="""
+I encountered this behavior as well on an annex where I had decided to move a file into a different, unrelated repository. I used `dropunused` to get rid of the contents. Now I have a repository for which `git annex get` constantly complains that a file is not known to be in any repository.
+
+As a naive user, I wouldn't have considered \"dead\" to be the description for this file. It isn't lost in any way, just untracked in the context of this repository. It's a bit surprising that once a file is ever tracked, it can never be untracked by any means -- even marking it as dead is still tracking the deadness of the file.
+
+I guess from a theoretical point of view that some branch or some repo somewhere might still refer to the file in some way and its absence might therefore have consequences later on. From a practical point of view, once the commit removing the last link to the file is on master on all known repositories, it seems like we can consider this file \"deleted\" in a way that is distinct from \"dead\".
+
+Leaving aside what the status is called, how about detecting it automatically on `dropunused`? This is a bit different from detecting it on `drop` because we have already concluded that the file is \"gone\" in some way.
+
+"""]]
