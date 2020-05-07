@@ -150,4 +150,4 @@ So it seems git-annex should revert back to reporting errors from underlying `gi
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
-
+> [[fixed|done]], thanks for tracking it back to the root cause. --[[Joey]] 

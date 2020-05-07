@@ -36,7 +36,7 @@ import Annex.AdjustedBranch
 import qualified Data.ByteString as S
 
 upgrade :: Bool -> Annex Bool
-upgrade automatic = flip catchNonAsync (const $ return False) $ do
+upgrade automatic = flip catchNonAsync onexception $ do
 	unless automatic $
 		showAction "v5 to v6"
 	ifM isDirect
@@ -55,6 +55,10 @@ upgrade automatic = flip catchNonAsync (const $ return False) $ do
 	unlessM isDirect $
 		createInodeSentinalFile True
 	return True
+  where
+	onexception e = do
+		warning $ "caught exception: " ++ show e
+		return False
 
 -- git before 2.22 would OOM running git status on a large file.
 --
