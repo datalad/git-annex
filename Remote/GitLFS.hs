@@ -134,34 +134,35 @@ gen r u rc gc rs = do
 		}
 
 mySetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-mySetup _ mu _ c gc = do
+mySetup ss mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 
 	(c', _encsetup) <- encryptionSetup c gc
 	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
+	let failinitunlessforced msg = case ss of
+		Init -> unlessM (Annex.getState Annex.force) (giveup msg)
+		Enable _ -> noop
 	case (isEncrypted pc, Git.GCrypt.urlPrefix `isPrefixOf` url) of
 		(False, False) -> noop
 		(True, True) -> Remote.GCrypt.setGcryptEncryption pc remotename
-		(True, False) -> unlessM (Annex.getState Annex.force) $
-			giveup $ unwords $
-				[ "Encryption is enabled for this remote,"
-				, "but only the files that git-annex stores on"
-				, "it would be encrypted; "
-				, "anything that git push sends to it would"
-				, "not be encrypted. Recommend prefixing the"
-				, "url with \"gcrypt::\" to also encrypt"
-				, "git pushes."
-				, "(Use --force if you want to use this"
-				, "likely insecure configuration.)"
-				]
-		(False, True) -> unlessM (Annex.getState Annex.force) $
-			giveup $ unwords $
-				[ "You used a \"gcrypt::\" url for this remote,"
-				, "but encryption=none prevents git-annex"
-				, "from encrypting files it stores there."
-				, "(Use --force if you want to use this"
-				, "likely insecure configuration.)"
-				]
+		(True, False) -> failinitunlessforced $ unwords $
+			[ "Encryption is enabled for this remote,"
+			, "but only the files that git-annex stores on"
+			, "it would be encrypted; "
+			, "anything that git push sends to it would"
+			, "not be encrypted. Recommend prefixing the"
+			, "url with \"gcrypt::\" to also encrypt"
+			, "git pushes."
+			, "(Use --force if you want to use this"
+			, "likely insecure configuration.)"
+			]
+		(False, True) -> failinitunlessforced $ unwords
+			[ "You used a \"gcrypt::\" url for this remote,"
+			, "but encryption=none prevents git-annex"
+			, "from encrypting files it stores there."
+			, "(Use --force if you want to use this"
+			, "likely insecure configuration.)"
+			]
 
 	-- Set up remote.name.url to point to the repo,
 	-- (so it's also usable by git as a non-special remote),

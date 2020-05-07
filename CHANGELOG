@@ -13,6 +13,9 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
   * S3: Support signature=v4, to use S3 Signature Version 4.
     Some S3 services seem to require v4, while others may only
     support v2, which remains the default.
+  * git-lfs repos that encrypt the annexed content but not the git repo
+    only need --force passed to initremote, allow enableremote and
+    autoenable of such remotes without forcing again.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
 
