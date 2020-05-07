@@ -1,0 +1,153 @@
+### Please describe the problem.
+
+I got into a repository I have not used for a while, and then `datalad` commands failed because annex failed to upgrade it from v5.  No details/reason is given at any level making it impossible to figure out for a user what to do/try next:
+
+<details>
+<summary>very original datalad invocation (click to expand)</summary> 
+
+[[!format sh """
+(git-annex)lena:~pymvpa/papers[master]bib
+$> datalad run -m "Regenerate haxbylab_hl.bib" --input haxbylab.bib --output haxbylab_hl.bib --explicit 'make {outputs}'
+[INFO   ] Making sure inputs are available (this may take some time) 
+CommandError: command '['git', '-c', 'annex.merge-annex-branches=false', 'annex', 'find', '-c', 'annex.dotfiles=true', '-c', 'remote.origin.annex-ssh-options=-o ControlMaster=auto -S /home/yoh/.cache/datalad/sockets/git.pymvpa.org -o ControlMaster=auto -S /home/yoh/.cache/datalad/sockets/1d961cfa', '--json', '--json-error-messages', '--not', '--in', '.', '--', 'bib/haxbylab.bib']' failed with exitcode 1
+Failed to run ['git', '-c', 'annex.merge-annex-branches=false', 'annex', 'find', '-c', 'annex.dotfiles=true', '-c', 'remote.origin.annex-ssh-options=-o ControlMaster=auto -S /home/yoh/.cache/datalad/sockets/git.pymvpa.org -o ControlMaster=auto -S /home/yoh/.cache/datalad/sockets/1d961cfa', '--json', '--json-error-messages', '--not', '--in', '.', '--', 'bib/haxbylab.bib'] under '/home/yoh/proj/pymvpa/papers'. Exit code=1. out= err=git-annex: Repository /home/yoh/proj/pymvpa/papers is at unsupported version 5. Automatic upgrade failed!
+
+git-annex: Repository /home/yoh/proj/pymvpa/papers is at unsupported version 5. Automatic upgrade failed!
+"""]]
+
+</details>
+
+[[!format sh """
+$> git annex version
+git-annex version: 8.20200309+git133-gc29943f40-1~ndall+1
+
+$> git annex info
+git-annex: Repository /home/yoh/proj/pymvpa/papers is at unsupported version 5. Automatic upgrade failed!
+
+
+$> git annex upgrade
+upgrade (v5 to v6...) failed
+git-annex: upgrade: 1 failed
+
+
+$> git annex upgrade --debug
+upgrade (v5 to v6...) [2020-05-07 10:52:03.727276447] read: git ["--version"]
+[2020-05-07 10:52:03.730015743] process done ExitSuccess
+[2020-05-07 10:52:03.730119216] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","--head"]
+[2020-05-07 10:52:03.733213698] process done ExitSuccess
+[2020-05-07 10:52:03.733691083] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","ls-tree","--full-tree","-z","-r","--","HEAD"]
+[2020-05-07 10:52:03.736803336] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch"]
+[2020-05-07 10:52:03.737004108] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-05-07 10:52:03.954238715] process done ExitSuccess
+[2020-05-07 10:52:03.954308318] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","status","--porcelain"]
+[2020-05-07 10:52:04.017909723] process done ExitSuccess
+[2020-05-07 10:52:04.018217705] call: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","config","filter.annex.smudge","git-annex smudge -- %f"]
+[2020-05-07 10:52:04.022805323] process done ExitSuccess
+[2020-05-07 10:52:04.022870176] read: git ["config","--null","--list"]
+[2020-05-07 10:52:04.025862758] process done ExitSuccess
+[2020-05-07 10:52:04.025898818] call: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","config","filter.annex.clean","git-annex smudge --clean -- %f"]
+[2020-05-07 10:52:04.028657032] process done ExitSuccess
+[2020-05-07 10:52:04.028691215] read: git ["config","--null","--list"]
+[2020-05-07 10:52:04.031420328] process done ExitSuccess
+failed
+[2020-05-07 10:52:04.055445542] process done ExitSuccess
+[2020-05-07 10:52:04.058899774] process done ExitSuccess
+git-annex: upgrade: 1 failed
+
+"""]]
+
+Downgrading git-annex to 7.20190819+git2-g908476a9b-1~ndall+1 helped to reveal the issue:
+
+[[!format sh """
+$> git annex upgrade --debug                                                     
+upgrade (v5 to v6...) [2020-05-07 10:56:49.99032766] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","--head"]
+[2020-05-07 10:56:50.00402489] process done ExitSuccess
+(scanning for unlocked files...)
+[2020-05-07 10:56:50.004777461] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","ls-tree","--full-tree","-z","-r","--","HEAD"]
+[2020-05-07 10:56:50.019113817] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch"]
+[2020-05-07 10:56:50.020051726] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-05-07 10:56:50.414585722] process done ExitSuccess
+[2020-05-07 10:56:50.414672616] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","status","--porcelain"]
+[2020-05-07 10:56:50.532708468] process done ExitSuccess
+[2020-05-07 10:56:50.532790172] call: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","config","filter.annex.smudge","git-annex smudge -- %f"]
+[2020-05-07 10:56:50.536471232] process done ExitSuccess
+[2020-05-07 10:56:50.536530991] read: git ["config","--null","--list"]
+[2020-05-07 10:56:50.540818414] process done ExitSuccess
+[2020-05-07 10:56:50.540897171] call: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","config","filter.annex.clean","git-annex smudge --clean -- %f"]
+[2020-05-07 10:56:50.544562826] process done ExitSuccess
+[2020-05-07 10:56:50.544626978] read: git ["config","--null","--list"]
+[2020-05-07 10:56:50.552390589] process done ExitSuccess
+
+git-annex: ../.git/info/attributes: openFile: permission denied (Permission denied)
+failed
+[2020-05-07 10:56:50.57632181] process done ExitSuccess
+[2020-05-07 10:56:50.578345312] process done ExitSuccess
+git-annex: upgrade: 1 failed
+
+$> git annex version
+git-annex version: 7.20190819+git2-g908476a9b-1~ndall+1
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+
+$> git annex info           
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 5
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	4435399f-0e03-432c-9ab2-cab8df04fc9b -- mih@meiner:~/psycho/papers/belka
+ 	bcefa304-7d94-11e3-bb19-532dbfa67366 -- origin
+ 	c44ff4fd-1cfb-46f9-b5d1-c471208c4947 -- yoh@novo:~/proj/pymvpa/papers [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 504.74 gigabytes (+1 megabyte reserved)
+temporary object directory size: 10.72 megabytes (clean up with git-annex unused)
+local annex keys: 242
+local annex size: 50.57 megabytes
+annexed files in working tree: 229
+size of annexed files in working tree: 377.47 megabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+	SHA256E: 229
+
+$> git annex upgrade
+upgrade (v5 to v6...) (scanning for unlocked files...)
+
+git-annex: ../.git/info/attributes: openFile: permission denied (Permission denied)
+failed
+git-annex: upgrade: 1 failed
+
+"""]]
+
+note that `info` works out without failing to upgrade with that older version.
+
+and indeed somehow I have:
+
+[[!format sh """
+$> ls -ld ../.git/info/attributes           
+-rw-r--r-- 1 root yoh 39 Jun  5  2009 ../.git/info/attributes
+
+$> find .git -uid 0
+.git/hooks/pre-commit.disabled
+.git/info/attributes
+"""]]
+
+fixing ownership and rerunning upgrade worked (older version was remained used):
+[[!format sh """
+$> git annex upgrade
+upgrade (v5 to v6...) (scanning for unlocked files...)
+(v6 to v7...) ok
+"""]]
+
+So it seems git-annex should revert back to reporting errors from underlying `git` invocations to make it possible to debug such cases
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
+
