@@ -77,6 +77,10 @@ the S3 remote.
   If you get an error about a host name not existing, it's a good
   indication that you need to use this.
 
+* `signature` - This controls the S3 signature version to use.
+  "v2" is currently the default, "v4" is needed to use some S3 services.
+  If you get some kind of authentication error, try "v4".
+
 * `bucket` - S3 requires that buckets have a globally unique name, 
   so by default, a bucket name is chosen based on the remote name
   and UUID. This can be specified to pick a bucket name.

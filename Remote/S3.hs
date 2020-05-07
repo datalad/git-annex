@@ -99,6 +99,8 @@ remote = specialRemoteType $ RemoteType
 				(FieldDesc "port to connect to")
 			, optionalStringParser requeststyleField
 				(FieldDesc "for path-style requests, set to \"path\"")
+			, signatureVersionParser signatureField
+				(FieldDesc "S3 signature version")
 			, optionalStringParser mungekeysField HiddenField
 			, optionalStringParser AWS.s3credsField HiddenField
 			]
@@ -147,6 +149,22 @@ protocolField = Accepted "protocol"
 
 requeststyleField :: RemoteConfigField
 requeststyleField = Accepted "requeststyle"
+
+signatureField :: RemoteConfigField
+signatureField = Accepted "signature"
+
+newtype SignatureVersion = SignatureVersion Int
+
+signatureVersionParser :: RemoteConfigField -> FieldDesc -> RemoteConfigFieldParser
+signatureVersionParser f fd =
+	genParser go f defver fd
+		(Just (ValueDesc "v2 or v4"))
+  where
+	go "v2" = Just (SignatureVersion 2)
+	go "v4" = Just (SignatureVersion 4)
+	go _ = Nothing
+
+	defver = SignatureVersion 2
 
 portField :: RemoteConfigField
 portField = Accepted "port"
@@ -877,7 +895,10 @@ s3Configuration c = cfg
 		Nothing
 			| port == 443 -> AWS.HTTPS
 			| otherwise -> AWS.HTTP
-	cfg = S3.s3 proto endpoint False
+	cfg = case getRemoteConfigValue signatureField c of
+		Just (SignatureVersion 4) -> 
+			S3.s3v4 proto endpoint False S3.SignWithEffort
+		_ -> S3.s3 proto endpoint False
 
 data S3Info = S3Info
 	{ bucket :: S3.Bucket

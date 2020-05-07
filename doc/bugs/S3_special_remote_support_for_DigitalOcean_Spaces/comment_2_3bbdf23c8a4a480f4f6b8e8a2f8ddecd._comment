@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-07T16:46:14Z"
+ content="""
+I have added to git-annex a way to use v4 authentication signatures.
+
+You will need a daily build, or the next release of git-annex.
+
+Give it a try by adding signature=v4 to your initremote
+or enableremote, and please let me know if it works or how it fails with
+that.
+"""]]

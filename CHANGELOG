@@ -10,6 +10,9 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
   * sync: Avoid an ugly error message when nothing has been committed to
     master yet and there is a synced master branch to merge from.
   * upgrade: When upgrade fails due to an exception, display it.
+  * S3: Support signature=v4, to use S3 Signature Version 4.
+    Some S3 services seem to require v4, while others may only
+    support v2, which remains the default.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
 
