@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-05-07T15:56:38Z"
+ content="""
+`git annex get` will only complain about files that are still in the
+current branch. If you want to use `--all` though, you will have to mark
+such files as dead. git-annex otherwise has no way to differentiate between
+the last copy of a file being lost inaverdently and intentionally removed.
+
+Auto-deading files would hide problems.
+
+> even marking it as dead is still tracking the deadness of the file
+
+You can use git-annex forget to prune that information from the git-annex
+branch, but it's completely reasonable for a git repository to retain
+history by default.
+
+> Leaving aside what the status is called, how about detecting it
+> automatically on `dropunused`
+
+Unused files are only unused in the head of branches, not in all the
+history of the git repository. Again, git is all about preserving the
+history of files.
+"""]]
