@@ -3,7 +3,9 @@ Fails with below error
 
 ### What steps will reproduce the problem?
 Click add another repository
+
 Click Let's get start
+
 Receive Error
 
 ### What version of git-annex are you using? On what operating system?
