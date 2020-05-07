@@ -1,0 +1,47 @@
+### Please describe the problem.
+
+Original complaints could be found mentioned in the comments of the [importfeed page](https://git-annex.branchable.com/git-annex-importfeed/): when using `addurl`, and even when the server provides Content-Disposition field with the filename, git-annex seems (BTW -- no Content-Disposition was mentioned in the --debug output) to take that filename value and obfuscates it (replaces '-' with '_' etc) to what supposed to be the original filename.
+
+
+[[!format sh """
+$> mkdir /tmp/testrepo; cd /tmp/testrepo; git init; git annex init; 
+mkdir: cannot create directory ‘/tmp/testrepo’: File exists
+E: could not determine git repository root
+Initialized empty Git repository in /tmp/testrepo/.git/
+init  ok
+(recording state in git...)
+
+$> git annex addurl --fast  https://girder.dandiarchive.org/api/v1/item/5e9f9588b5c9745bad9f58ff/download      
+addurl https://girder.dandiarchive.org/api/v1/item/5e9f9588b5c9745bad9f58ff/download (to sub_mouse_AAYYT_ses_20180420_sample_2_slice_20180420_slice_2_cell_20180420_sample_2.nwb) ok
+(recording state in git...)
+
+$> ls -l
+total 4
+lrwxrwxrwx 1 yoh yoh 184 May  7 17:02 sub_mouse_AAYYT_ses_20180420_sample_2_slice_20180420_slice_2_cell_20180420_sample_2.nwb -> .git/annex/objects/Gj/9z/URL-s9335000--https&c%%girder.dandiarchive.org-48163bc503cb7181516be86ef215f923/URL-s9335000--https&c%%girder.dandiarchive.org-48163bc503cb7181516be86ef215f923
+"""]]]
+
+whenever original content-disposition was having "-" in the filename, which are perfectly safe the filename AFAIK:
+
+[[!format sh """
+$> wget -S https://girder.dandiarchive.org/api/v1/item/5e9f9588b5c9745bad9f58ff/download                
+... bunch of forwards to the final one with the content disposition field
+Resolving dandiarchive.s3.amazonaws.com (dandiarchive.s3.amazonaws.com)... 52.219.101.51
+Connecting to dandiarchive.s3.amazonaws.com (dandiarchive.s3.amazonaws.com)|52.219.101.51|:443... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 200 OK
+  x-amz-id-2: VgJE1jV5XUkBQXZDWgR5WEDfmHJp4Fj6fGo6z2tYkLfyTsxDWC+m92B2qOSVppCuiRFu2QpNV5M=
+  x-amz-request-id: 1221CAC30E3931CF
+  Date: Thu, 07 May 2020 21:02:52 GMT
+  Last-Modified: Wed, 22 Apr 2020 00:54:32 GMT
+  ETag: "acf3b4f5951435245a0efcd4a518e77d"
+  Content-Disposition: attachment; filename="sub-mouse-AAYYT_ses-20180420-sample-2_slice-20180420-slice-2_cell-20180420-sample-2.nwb"
+...
+
+$> git annex version
+git-annex version: 7.20190708+git9-gfa3524b95-1~ndall+1
+
+"""]]
+
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
