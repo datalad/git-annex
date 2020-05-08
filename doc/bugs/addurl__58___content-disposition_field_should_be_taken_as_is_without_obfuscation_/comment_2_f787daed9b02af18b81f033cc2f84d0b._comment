@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-08T18:19:20Z"
+ content="""
+`git-annex import` does not do any sanitization, and that could be
+considered inconsistent, particularly when importing from a remote like S3.
+
+A difference with that is, it creates a remote tracking branch for the
+imported files. (That happens to avoid "../" path traversal because git
+generally avoids it.) Maybe the real difference is, import from a special
+remote is completely analagous to fetching from a git remote. So it feels
+different to me than adding an url does. 
+
+If I sync with a S3 bucket and it turns out it imported a escape sequence
+file, well I could have looked at the bucket first, or imported and
+reviewed the branch before merging it. And if I was syncing with a git
+remote the same thing could happen. So it feels like I should have no
+expectation git-annex would protect me. Whereis, if I add an url and the
+web server uses an obscure-ish http header to surprise me with a similar
+malicious filename, I had no way before hand to know that would happen, and
+so it does feel like git-annex should protect me.
+
+(Although if git did prevent that, git-annex should too, and I'd be
+fine with git preventing that.)
+"""]]
