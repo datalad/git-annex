@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-08T17:18:08Z"
+ content="""
+So it's trying to run "su -c". Does your OSX have the "osascript"
+command available? It's supposed to use that when available, which is the
+right way to run a command as root on OSX.
+"""]]
