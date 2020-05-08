@@ -1,0 +1,103 @@
+This is an upstream resubmission of [Debian bug #959506](https://bugs.debian.org/959506).
+
+### Please describe the problem.
+
+As of v8, git-annex divides files into “large” and “non-large” files, the
+former of which are supposed to be automatically added to the annex and the
+latter to vanilla git when running `git annex add`. git-annex uses the
+configuration option `annex.largefiles`, a file matching expression, to
+categorize files as “large”; all other files end up as “non-large”.
+
+Furthermore, git-annex always treats “dotfiles” as “non-large”, without
+consulting `annex.largefiles`. Setting the configuration option
+`annex.dotfiles` (false by default) makes git-annex use `annex.largefiles`
+to also categorize “dotfiles”.
+
+The manual never defines which files are considered “dotfiles”, therefore
+I am assuming a definition of “a dotfile is a non-directory file whose
+basename begins with an ASCII period”. git-annex however will treat any file
+in any directory as a dotfile – i.e., it will ignore `annex.largefiles` and
+always add the file to vanilla git, unless `annex.dotfiles` is set to true
+– as long as the relative pathname to the file begins with an ASCII period,
+e.g. `.foo/bar.txt` (which is *not* a dotfile according to the assumed
+definition above). git-annex will further cease treating the same file as
+a dotfile if the relative pathname no longer begins with an ASCII period,
+e.g. because the working directory has been changed.
+
+I expect git-annex to distinguish between dotfiles and non-dotfiles solely
+by looking at the file's basename, even if the relative path to the file
+begins with a dot. I also expect `annex.dotfiles` to have no influence
+whatsoever on files whose basename doesn't begin with an ASCII period, even
+if the containing directory does. git-annex's *actual* behavior is highly
+counter-intuitive to the notion that being a dotfile is a property of the
+file's (base-)name. Due to the lack of definition of dotfiles in the manual,
+it is unclear to me whether this is intended (but in my opinion quirky)
+behavior, or rather a bug.
+
+### What steps will reproduce the problem?
+
+1.  Set up a repository for use with git-annex. Leave `annex.dotfiles` at
+    its default value (`false`), and `annex.largefiles` unset.
+
+2.  Create files `bar1`, `bar2` and `bar3` within a directory `.foo`. What
+    matters is that `.foo` begins with a period, `bar1` etc. don't.
+
+3.  Run `git annex add .foo/bar1`. git-annex will have forced the file into
+    vanilla git as a “non-large” file, because it is recognized as
+    a “dotfile”. But `bar1` is not a dotfile because it does not begin with
+    a period.
+
+4.  (Optional.) Set `annex.dotfiles` to `true` and run `git annex add
+    .foo/bar2`. The file is added to the annex. In conjunction with step 3,
+    this shows that git-annex really does apply the `annex.dotfiles` setting
+    to files such as `.foo/bar2`, even if they aren't “dotfiles” because the
+    file basenames don't start with a period.
+
+5.  (Optional.) Set `annex.dotfiles` back to false, change directory to
+    `.foo`, then run `git annex add bar3`. The file will be added to the
+    annex, as it is no longer recognized as a dotfile. This shows that
+    git-annex's behavior is inconsistent: the same file is either seen as
+    a dotfile or not, depending on which directory git-annex is run from and
+    what the resulting relative pathnames look like.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex v8.20200330, on Debian sid, as of 2020-05-08
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ cd /tmp/git-annex-dotfiles
+$ git init
+Initialized empty Git repository in /tmp/git-annex-dotfiles/.git/
+$ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+$ mkdir .foo
+$ echo a > .foo/bar1
+$ echo b > .foo/bar2
+$ echo c > .foo/bar3
+$ git annex add .foo/bar1   # I expect this to be added to the annex, but no
+add .foo/bar1 (non-large file; adding content to git repository) ok
+(recording state in git...)
+$ git config annex.dotfiles true
+$ git annex add .foo/bar2   # clearly affected by annex.dotfiles
+add .foo/bar2
+ok
+(recording state in git...)
+$ git config annex.dotfiles false
+$ cd .foo
+$ git annex add bar3        # clearly affected by the exact relative pathname
+add bar3
+ok
+(recording state in git...)
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes. git-annex has been in use on my end for a couple of years, and it is my
+go-to solution for “want something versioned, but can't store the
+contents themselves (too big, too sensitive, etc.)?”. Furthermore, git-annex
+documentation in general is excellent. But that is also why I'm stumped that
+the manual is so silent on this point.
