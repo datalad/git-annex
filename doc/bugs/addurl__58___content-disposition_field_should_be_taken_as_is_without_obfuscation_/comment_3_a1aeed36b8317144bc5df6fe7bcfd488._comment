@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-08T19:56:27Z"
+ content="""
+Implemented git-annex addurl --preserve-filename, which will do what you
+want.
+
+Leaving this bug open because I only implemented it for web urls, not yet
+for torrents and other special remotes that have their own url scheme.
+The sanitization for those is currently done at a lower level than addurl,
+and so that will take a bit more work to implement.
+
+(importfeed does not, I think, need to implement this option, because
+the filenames are based on information from the rss feed, and it's
+perfectly fine to sanitize eg a podcast episode title to get a reasonable
+filename.)
+"""]]

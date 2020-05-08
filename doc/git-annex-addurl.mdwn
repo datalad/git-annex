@@ -57,6 +57,16 @@ be used to get better filenames.
   If the file already exists, addurl will record that it can be downloaded
   from the specified url(s).
 
+* `--preserve-filename`
+
+   When the web server (or torrent, etc) provides a filename, use it as-is,
+   avoiding sanitizing unusual characters, or truncating it to length, or any
+   other modifications.
+
+   git-annex will still check the filename for safety, and if the filename
+   has a security problem such as path traversal or an escape sequence,
+   it will refuse to add it.
+
 * `--pathdepth=N`
 
   Rather than basing the filename on the whole url, this causes a path to

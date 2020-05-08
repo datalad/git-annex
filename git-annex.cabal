@@ -661,6 +661,7 @@ Executable git-annex
     Annex.TaggedPush
     Annex.Tmp
     Annex.Transfer
+    Annex.UntrustedFilePath
     Annex.UpdateInstead
     Annex.UUID
     Annex.Url

@@ -1,6 +1,6 @@
 {- path manipulation
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -24,7 +24,6 @@ module Utility.Path (
 	inPath,
 	searchPath,
 	dotfile,
-	sanitizeFilePath,
 	splitShortExtensions,
 
 	prop_upFrom_basics,
@@ -35,7 +34,6 @@ module Utility.Path (
 import System.FilePath
 import Data.List
 import Data.Maybe
-import Data.Char
 import Control.Applicative
 import Prelude
 
@@ -275,22 +273,6 @@ dotfile file
 	| otherwise = "." `isPrefixOf` f || dotfile (takeDirectory file)
   where
 	f = takeFileName file
-
-{- Given a string that we'd like to use as the basis for FilePath, but that
- - was provided by a third party and is not to be trusted, returns the closest
- - sane FilePath.
- -
- - All spaces and punctuation and other wacky stuff are replaced
- - with '_', except for '.'
- - "../" will thus turn into ".._", which is safe.
- -}
-sanitizeFilePath :: String -> FilePath
-sanitizeFilePath = map sanitize
-  where
-	sanitize c
-		| c == '.' = c
-		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
-		| otherwise = c
 
 {- Similar to splitExtensions, but knows that some things in FilePaths
  - after a dot are too long to be extensions. -}

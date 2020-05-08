@@ -16,6 +16,10 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
   * git-lfs repos that encrypt the annexed content but not the git repo
     only need --force passed to initremote, allow enableremote and
     autoenable of such remotes without forcing again.
+  * addurl, importfeed: Avoid adding filenames with leading '.', instead
+    it will be replaced with '_'.
+  * addurl --preserve-filename: New option, uses server-provided filename
+    without any sanitization, but with some security checking.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
 

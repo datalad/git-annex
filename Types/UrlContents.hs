@@ -13,7 +13,7 @@ module Types.UrlContents (
 ) where
 
 import Utility.Url
-import Utility.Path
+import Annex.UntrustedFilePath
 
 import System.FilePath
 
@@ -35,13 +35,7 @@ newtype SafeFilePath = SafeFilePath FilePath
 mkSafeFilePath :: FilePath -> SafeFilePath
 mkSafeFilePath p = SafeFilePath $ if null p' then "file" else p'
   where
-	p' = joinPath $ filter safe $ map sanitizeFilePath $ splitDirectories p
-	safe s
-		| isDrive s = False
-		| s == ".." = False
-		| s == ".git" = False
-		| null s = False
-		| otherwise = True
+	p' = joinPath $ map sanitizeFilePath $ splitDirectories p
 
 fromSafeFilePath :: SafeFilePath -> FilePath
 fromSafeFilePath (SafeFilePath p) = p

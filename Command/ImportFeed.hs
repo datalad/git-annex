@@ -40,6 +40,7 @@ import Logs.MetaData
 import Annex.MetaData
 import Annex.FileMatcher
 import Command.AddUrl (addWorkTree)
+import Annex.UntrustedFilePath
 
 cmd :: Command
 cmd = notBareRepo $

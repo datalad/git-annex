@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ import Annex.CheckIgnore
 import Annex.Perms
 import Annex.UUID
 import Annex.YoutubeDl
+import Annex.UntrustedFilePath
 import Logs.Web
 import Types.KeySource
 import Types.UrlContents
@@ -52,6 +53,7 @@ data DownloadOptions = DownloadOptions
 	{ relaxedOption :: Bool
 	, rawOption :: Bool
 	, fileOption :: Maybe FilePath
+	, preserveFilenameOption :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser AddUrlOptions
@@ -77,7 +79,7 @@ optParser desc = AddUrlOptions
 		)
 
 parseDownloadOptions :: Bool -> Parser DownloadOptions
-parseDownloadOptions withfileoption = DownloadOptions
+parseDownloadOptions withfileoptions = DownloadOptions
 	<$> switch
 		( long "relaxed"
 		<> help "skip size check"
@@ -86,12 +88,18 @@ parseDownloadOptions withfileoption = DownloadOptions
 		( long "raw"
 		<> help "disable special handling for torrents, youtube-dl, etc"
 		)
-	<*> if withfileoption
+	<*> (if withfileoptions
 		then optional (strOption
 			( long "file" <> metavar paramFile
 			<> help "specify what file the url is added to"
 			))
-		else pure Nothing
+		else pure Nothing)
+	<*> (if withfileoptions
+		then switch
+			( long "preserve-filename"
+			<> help "use filename provided by server as-is"
+			)
+		else pure False)
 
 seek :: AddUrlOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
@@ -207,15 +215,34 @@ startWeb addunlockedmatcher o urlstring = go $ fromMaybe bad $ parseURI urlstrin
 		file <- adjustFile o <$> case fileOption (downloadOptions o) of
 			Just f -> pure f
 			Nothing -> case Url.urlSuggestedFile urlinfo of
-				Nothing -> pure $ url2file url (pathdepthOption o) pathmax
-				Just sf -> do
-					let f = truncateFilePath pathmax $
-						sanitizeFilePath sf
-					ifM (liftIO $ doesFileExist f <||> doesDirectoryExist f)
-						( pure $ url2file url (pathdepthOption o) pathmax
-						, pure f
-						)
+				Just sf | not (null sf) -> if preserveFilenameOption (downloadOptions o)
+					then do
+						checkPreserveFileNameSecurity sf
+						return sf
+					else do
+						let f = truncateFilePath pathmax $
+							sanitizeFilePath sf
+						ifM (liftIO $ doesFileExist f <||> doesDirectoryExist f)
+							( pure $ url2file url (pathdepthOption o) pathmax
+							, pure f
+							)
+				_ -> pure $ url2file url (pathdepthOption o) pathmax
 		performWeb addunlockedmatcher o urlstring file urlinfo
+
+-- sanitizeFilePath avoids all these security problems
+-- (and probably others, but at least this catches the most egrarious ones).
+checkPreserveFileNameSecurity :: FilePath -> Annex ()
+checkPreserveFileNameSecurity f = do
+	checksecurity escapeSequenceInFilePath False "escape sequence"
+	checksecurity pathTraversalInFilePath True "path traversal"
+	checksecurity gitDirectoryInFilePath True "contains a .git directory"
+  where
+	checksecurity p canshow d = when (p f) $
+		giveup $ concat
+			[ "--preserve-filename was used, but the filename "
+			, if canshow then "(" ++ f ++ ") " else ""
+			, "has a security problem (" ++ d ++ "), not adding."
+			]
 
 performWeb :: AddUnlockedMatcher -> AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
 performWeb addunlockedmatcher o url file urlinfo = ifAnnexed (toRawFilePath file) addurl geturl
