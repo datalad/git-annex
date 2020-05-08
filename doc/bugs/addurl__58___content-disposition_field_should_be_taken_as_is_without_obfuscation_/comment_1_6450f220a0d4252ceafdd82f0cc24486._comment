@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-08T16:50:14Z"
+ content="""
+This is due to the filename being passed through sanitizeFilePath.
+
+There are security concerns here. If the filename contains "../"
+it absolutely has to be modified, or the command would have to fail and
+refuse the import it.
+
+If the filename contains an ANSI escape sequence, it could potentially
+lead to a security hole. Or if the filename starts with "-" it could be
+somewhere between a possible security hole and just very annoying to work
+with. As could a filename that contains a newline, which will
+break large quantities of shell pipelines. While generally git repos can
+have these problems with files in them too, the exposure seems larger when
+talking to some random web server than when pulling from a repo.
+
+Also, cross filesystem compatibility is a concern. It used to allow "|" in
+the filename, but a bug pointed out that cannot be used on fat filesystems.
+And "\\" means different things on linux and windows, so probably best to avoid
+filenames containing it on linux too.
+
+Finally, it's somewhat opinionated, since it replaces spaces with
+underscores. That's certainly the least defensible thing.
+
+(git-annex may also truncate the filename if it's longer than what the
+filesystem supports.)
+
+So, it's clearly wrong that it should be taken as-is without obfuscation,
+IMHO. Maybe there's a way to improve it to meet some use case though.
+
+I could see having a config that avoids sanitizing the filename, but
+makes addurl fail if the filename looks like a security problem. 
+
+Though that has the downside that git-annex would then need to
+comprehensively track, going forward, all the ways that people find to make
+filenames be a security problem; the current method, by being strict in
+what it lets through, probably limits expoits to ones involving a) unicode
+or b) the user's wetware.
+"""]]
