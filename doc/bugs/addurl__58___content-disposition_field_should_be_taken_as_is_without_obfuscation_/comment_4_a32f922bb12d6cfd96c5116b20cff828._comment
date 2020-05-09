@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2020-05-09T22:10:43Z"
+ content="""
+> If the filename contains an ANSI escape sequence, it could potentially lead to a security hole.
+> ... As could a filename that contains a newline, which will break large quantities of shell pipelines. 
+
+IMHO those indeed are ok to target for sanitization
+
+> Or if the filename starts with \"-\" it could be somewhere between a possible security hole and just very annoying to work with.
+
+So why not to sanitize it only at the beginning of the filename?  
+`-` is a very common and a safe character to use within filename. For that matter we VERY frequently use `-` in filenames. It even became part of our BIDS standard in neuroimaging: https://bids-specification.readthedocs.io where we separate `_key` from `value`, e.g.in ` .  I really do not see why git-annex should so aggressively sanitize filenames as replacing \"-\" within filenames -- it makes nothing more secure or convenient.
+
+> While generally git repos can have these problems with files in them too, the exposure seems larger when talking to some random web server than when pulling from a repo.
+
+Well, not sure about ansi characters and new line symbols, but typically files are saved by the browsers with the name suggested by the server.
+"""]]
