@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 35"
+ date="2020-05-10T16:30:51Z"
+ content="""
+> I don't want to enable versioning since that permanently loses the chance of dropping any objects (even if they're stored elsewhere)
+
+I believe it is in principle [possible to remove object versions](https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html) from S3 and/or completely wipe out an object with all of its versions (so it wouldn't be just a DeleteMarker added as the most recent version).  So in principle git-annex could (if doesn't already, didn't check) delete previous versions in a versioned bucket upon `drop`.
+"""]]
