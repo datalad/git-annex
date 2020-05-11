@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-11T16:50:25Z"
+ content="""
+If the GCS remote is not configured to encrypt or chunk the files
+stored in it, they can be accessed by other things than git-annex, but
+the names of the files will be the git-annex keys (eg their hash),
+which may or may not work for what you're processing them with.
+
+If the thing you're processing them with needs to operate on
+the original filenames, you need to use a remote configured with
+exporttree=yes. Then you can use `git annex export master --to remote`
+to make the remote contain a copy of the tree of files in your master
+branch.
+
+Not all special remotes support that feature. For GCS, there is one
+option that does, using the S3 interface to GCS. (rclone and gcsannex do
+not support exporttree)
+"""]]
