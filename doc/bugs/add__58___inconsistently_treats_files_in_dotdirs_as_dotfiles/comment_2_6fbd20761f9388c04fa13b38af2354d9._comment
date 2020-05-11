@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-11T16:40:46Z"
+ content="""
+I'm also reluctant to start another behavior change in this area, there has
+been more than enough drama around dotfile handling recently.
+
+At least the behavior change would only result in small files that users
+want to store in git being annexed, rather than large files being
+unexpectedly put in git.
+
+It would also be possible for users to get back the current behavior if
+desired by configuring annex.dotfiles and annex.largefiles.
+
+Also as far as the priority of this goes, I think that the number of
+dotdirs that contain files that get version controlled at all is probably
+quite small, excluding version controlling of HOME.
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-11T16:31:58Z"
+ content="""
+I think it's quite likely that most people consider files in dotdirs to be
+dotfiles, most of the time. (.git/index is clearly not a dotfile,
+.git/config probably is) The exact semantics of it are vague enough that
+it's probably better to not consider them when it comes to this bug report.
+
+The actual bug is not about whether .foo/bar is a dotfile, but about
+inconsistent behavior adding it.
+
+Avoiding treating them as dotfiles, even if they're broadly understood as
+such would resolve the inconsistency.
+
+Otoh, the inconsistency only arises when run inside a dot directory,
+which is probably a fairly rare thing to do.
+"""]]
