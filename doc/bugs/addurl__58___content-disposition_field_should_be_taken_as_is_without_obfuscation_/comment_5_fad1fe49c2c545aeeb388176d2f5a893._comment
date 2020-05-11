@@ -3,10 +3,12 @@
  subject="""comment 5"""
  date="2020-05-11T17:20:07Z"
  content="""
-I agree that it may as well allow non-leading '-'.
+I agree that it may as well allow non-leading '-'. But, if you are relying
+on getting the unsanitized filename generally, you should use
+--preserve-filename
 
 Web browsers do do some santization, particulary of '/'.
-Chrome removes leading "." as well. Often files are downloaded to locations
+Chrome removes leading "." as well. Often files are downloaded
 without the user confirming it. I suspect there is enough insecurity
 in that area that someone could make a living injecting bitcoin miners into
 dotfiles.

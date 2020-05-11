@@ -45,3 +45,5 @@ git-annex version: 7.20190708+git9-gfa3524b95-1~ndall+1
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[done]] --[[Joey]]

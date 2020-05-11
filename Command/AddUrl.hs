@@ -136,14 +136,16 @@ checkUrl addunlockedmatcher r o u = do
 	go _ (Left e) = void $ commandAction $ startingAddUrl u o $ do
 		warning (show e)
 		next $ return False
-	go deffile (Right (UrlContents sz f)) = do
-		let f = adjustFile o (fromMaybe (maybe deffile sanitizeFilePath mf) (fileOption (downloadOptions o)))
-		void $ commandAction $ startRemote addunlockedmatcher r o f u sz
+	go deffile (Right (UrlContents sz mf)) = do
+		f <- maybe (pure deffile) (sanitizeOrPreserveFilePath o) mf
+		let f' = adjustFile o (fromMaybe f (fileOption (downloadOptions o)))
+		void $ commandAction $ startRemote addunlockedmatcher r o f' u sz
 	go deffile (Right (UrlMulti l)) = case fileOption (downloadOptions o) of
 		Nothing ->
 			forM_ l $ \(u', sz, f) -> do
-				let f' = adjustFile o (deffile </> sanitizeFilePath f)
-				void $ commandAction $ startRemote addunlockedmatcher r o f' u' sz
+				f' <- sanitizeOrPreserveFilePath o f
+				let f'' = adjustFile o (deffile </> sanitizeFilePath f')
+				void $ commandAction $ startRemote addunlockedmatcher r o f'' u' sz
 		Just f -> case l of
 			[] -> noop
 			((u',sz,_):[]) -> do
@@ -215,19 +217,25 @@ startWeb addunlockedmatcher o urlstring = go $ fromMaybe bad $ parseURI urlstrin
 		file <- adjustFile o <$> case fileOption (downloadOptions o) of
 			Just f -> pure f
 			Nothing -> case Url.urlSuggestedFile urlinfo of
-				Just sf | not (null sf) -> if preserveFilenameOption (downloadOptions o)
-					then do
-						checkPreserveFileNameSecurity sf
-						return sf
-					else do
-						let f = truncateFilePath pathmax $
-							sanitizeFilePath sf
-						ifM (liftIO $ doesFileExist f <||> doesDirectoryExist f)
+				Just sf -> do
+					f <- sanitizeOrPreserveFilePath o sf
+					if preserveFilenameOption (downloadOptions o)
+						then pure f
+						else ifM (liftIO $ doesFileExist f <||> doesDirectoryExist f)
 							( pure $ url2file url (pathdepthOption o) pathmax
 							, pure f
 							)
 				_ -> pure $ url2file url (pathdepthOption o) pathmax
 		performWeb addunlockedmatcher o urlstring file urlinfo
+
+sanitizeOrPreserveFilePath :: AddUrlOptions -> FilePath -> Annex FilePath
+sanitizeOrPreserveFilePath o f
+	| preserveFilenameOption (downloadOptions o) && not (null f) = do
+		checkPreserveFileNameSecurity f
+		return f
+	| otherwise = do
+		pathmax <- liftIO $ fileNameLengthLimit "."
+		return $ truncateFilePath pathmax $ sanitizeFilePath f
 
 -- sanitizeFilePath avoids all these security problems
 -- (and probably others, but at least this catches the most egrarious ones).
