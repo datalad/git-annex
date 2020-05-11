@@ -3,7 +3,7 @@
  subject="""V4"""
  date="2020-05-07T16:49:05Z"
  content="""
-@bec.watson, I've now added a way to use V4 authentication, the authentication=v4
+@bec.watson, I've now added a way to use V4 authentication, the signature=v4
 option. 
 
 Please file a bug report if it still doesn't work.
