@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="efraim@78c5af2ab57cf0d7aa23bae3dd0adb700c98217c"
+ nickname="efraim"
+ avatar="http://cdn.libravatar.org/avatar/6dc24928a791046ff66c8c7bd7a33099"
+ subject="comment 2"
+ date="2020-05-11T11:29:34Z"
+ content="""
+I rebuilt git-annex with the new signature v4 patch and I got it to work.
+
+I had to create a new application key that wasn't tied to a bucket or else I would get an 'access denied' error. I didn't set any prefix on the files uploaded.
+
+AWS_ACCESS_KEY_ID=keyID AWS_SECRET_ACCESS_KEY=applicationKey git-annex initremote backblaze type=S3 host=S3-endpoint bucket=bucketID protocol=https signature=v4
+
+This created a new bucket with the same bucketID as the one I previously created and intended to use, and with the name equal to the bucketID
+
+I suspect if I had done bucket=bucketName and not bucketID I could've used a bucket specific key but now that it's set up it's not worth it to me to try to change it.
+"""]]
