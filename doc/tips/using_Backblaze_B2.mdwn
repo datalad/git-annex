@@ -1,8 +1,23 @@
-For using Backblaze B2 as a special remote, there are currently two
+For using Backblaze B2 as a special remote, there are currently three
 choices:
 
 * Using [[special_remotes/rclone]]  
   (Actively maintained)
+
+* Google Cloud Storage supports supports the same API as Amazon S3, so
+  git-annex's built-in [[S3 special remote|special_remotes/S3]] can be used
+  with it. 
+
+  However, it needs S3 version 4 signatures, which are only supported by
+  git-annex 8.20200508 and newer.
+
+  Here is how to set up the special remote:
+
+        git annex initremote backblaze type=S3 signature=v4 host=$endpoint bucket=$bucketid protocol=https
+
+  Remember to replace $endpoint with the actual backblaze endpoint and $bucketid with
+  the bucketid.
+
 * A dedicated special remote, <https://github.com/encryptio/git-annex-remote-b2>  
   (Last updated 2016)
 

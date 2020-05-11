@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-11T17:04:08Z"
+ content="""
+Thanks for verifying it works. I've updated [[tips/using_Backblaze_B2]] to
+mention this alternative, hopefully I got the config right. (Is the
+endpoint always the same?)
+"""]]
