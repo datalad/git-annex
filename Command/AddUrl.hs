@@ -136,13 +136,13 @@ checkUrl addunlockedmatcher r o u = do
 	go _ (Left e) = void $ commandAction $ startingAddUrl u o $ do
 		warning (show e)
 		next $ return False
-	go deffile (Right (UrlContents sz mf)) = do
-		let f = adjustFile o (fromMaybe (maybe deffile fromSafeFilePath mf) (fileOption (downloadOptions o)))
+	go deffile (Right (UrlContents sz f)) = do
+		let f = adjustFile o (fromMaybe (maybe deffile sanitizeFilePath mf) (fileOption (downloadOptions o)))
 		void $ commandAction $ startRemote addunlockedmatcher r o f u sz
 	go deffile (Right (UrlMulti l)) = case fileOption (downloadOptions o) of
 		Nothing ->
 			forM_ l $ \(u', sz, f) -> do
-				let f' = adjustFile o (deffile </> fromSafeFilePath f)
+				let f' = adjustFile o (deffile </> sanitizeFilePath f)
 				void $ commandAction $ startRemote addunlockedmatcher r o f' u' sz
 		Just f -> case l of
 			[] -> noop

@@ -25,9 +25,14 @@ import System.FilePath
  - so no dotfiles that might control a program are inadvertently created,
  - and to avoid filenames being treated as options to commands the user
  - might run.
+ -
+ - Also there's an off chance the string might be empty, so to avoid
+ - needing to handle such an invalid filepath, return a dummy "file" in
+ - that case.
  -}
 sanitizeFilePath :: String -> FilePath
-sanitizeFilePath = leading . map sanitize
+sanitizeFilePath [] = "file"
+sanitizeFilePath f = leading (map sanitize f)
   where
 	sanitize c
 		| c == '.' || c == '-' = c

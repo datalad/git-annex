@@ -190,7 +190,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
-								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' (f </> fromSafeFilePath subf) sz
+								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' (f </> sanitizeFilePath subf) sz
 							return $ if all isJust kl
 								then catMaybes kl
 								else []

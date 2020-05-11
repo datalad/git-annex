@@ -401,8 +401,8 @@ torrentContents :: URLString -> Annex UrlContents
 torrentContents u = convert
 	<$> (liftIO . torrentFileSizes =<< tmpTorrentFile u)
   where
-	convert [(fn, sz)] = UrlContents (Just sz) (Just (mkSafeFilePath fn))
+	convert [(fn, sz)] = UrlContents (Just sz) (Just fn)
 	convert l = UrlMulti $ map mkmulti (zip l [1..])
 
 	mkmulti ((fn, sz), n) = 
-		(torrentUrlWithNum u n, Just sz, mkSafeFilePath $ joinPath $ drop 1 $ splitPath fn)
+		(torrentUrlWithNum u n, Just sz, joinPath $ drop 1 $ splitPath fn)

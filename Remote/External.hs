@@ -769,14 +769,14 @@ checkUrlM :: External -> URLString -> Annex UrlContents
 checkUrlM external url = 
 	handleRequest external (CHECKURL url) Nothing $ \req -> case req of
 		CHECKURL_CONTENTS sz f -> result $ UrlContents sz $
-			if null f then Nothing else Just $ mkSafeFilePath f
+			if null f then Nothing else Just f
 		CHECKURL_MULTI l -> result $ UrlMulti $ map mkmulti l
 		CHECKURL_FAILURE errmsg -> Just $ giveup $
 			respErrorMessage "CHECKURL" errmsg
 		UNSUPPORTED_REQUEST -> giveup "CHECKURL not implemented by external special remote"
 		_ -> Nothing
   where
-	mkmulti (u, s, f) = (u, s, mkSafeFilePath f)
+	mkmulti (u, s, f) = (u, s, f)
 
 retrieveUrl :: Retriever
 retrieveUrl = fileRetriever $ \f k p -> do
