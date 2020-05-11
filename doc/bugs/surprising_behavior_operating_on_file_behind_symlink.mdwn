@@ -1,0 +1,10 @@
+If foo is a symlink to bar, and foo/file exists, then `git annex add bar/file`
+silently does nothing. So do other commands if the file is already annexed.
+
+git's behavior on these is to complain that it's "beyond a symbolic link"
+and fail.
+
+This happens because git ls-files doesn't list the file, but then I think
+the code that handles erroring if a file that does not exist is specified
+doesn't catch it because the file does exist, it's just behind the symlink.
+--[[Joey]]
