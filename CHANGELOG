@@ -18,8 +18,12 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
     autoenable of such remotes without forcing again.
   * addurl, importfeed: Avoid adding filenames with leading '.', instead
     it will be replaced with '_'.
+  * addurl, importfeed: Allow '-' in filenames, as long as it's not the
+    first character.
   * addurl --preserve-filename: New option, uses server-provided filename
-    without any sanitization, but with some security checking.
+    without any sanitization, but will fail if the filename has an obvious
+    security problem like using an escape sequence or trying to escape
+    the current directory.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
 

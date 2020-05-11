@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-05-11T17:20:07Z"
+ content="""
+I agree that it may as well allow non-leading '-'.
+
+Web browsers do do some santization, particulary of '/'.
+Chrome removes leading "." as well. Often files are downloaded to locations
+without the user confirming it. I suspect there is enough insecurity
+in that area that someone could make a living injecting bitcoin miners into
+dotfiles.
+"""]]

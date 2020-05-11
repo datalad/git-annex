@@ -15,25 +15,28 @@ import System.FilePath
  - sane FilePath.
  -
  - All spaces and punctuation and other wacky stuff are replaced
- - with '_', except for '.'
+ - with '_', except for '.' and '-'
  -
  - "../" becomes ".._", which is safe.
  - "/foo" becomes "_foo", which is safe.
  - "c:foo" becomes "c_foo", which is safe even on windows.
  - 
- - Leading '.' is also replaced with '_', so ".git/foo" becomes "_git_foo"
- - and so no dotfiles that might control a program are inadvertently created.
+ - Leading '.' and '-' are also replaced with '_', so
+ - so no dotfiles that might control a program are inadvertently created,
+ - and to avoid filenames being treated as options to commands the user
+ - might run.
  -}
 sanitizeFilePath :: String -> FilePath
-sanitizeFilePath = leadingdot . map sanitize
+sanitizeFilePath = leading . map sanitize
   where
 	sanitize c
-		| c == '.' = c
+		| c == '.' || c == '-' = c
 		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
 		| otherwise = c
 
-	leadingdot ('.':s) = '_':s
-	leadingdot s = s
+	leading ('.':s) = '_':s
+	leading ('-':s) = '_':s
+	leading s = s
 
 escapeSequenceInFilePath :: FilePath -> Bool
 escapeSequenceInFilePath f = '\ESC' `elem` f
