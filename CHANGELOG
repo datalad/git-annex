@@ -24,6 +24,8 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
     without any sanitization, but will fail if the filename has an obvious
     security problem like using an escape sequence or trying to escape
     the current directory.
+  * Display a warning message when asked to operate on a file inside a
+    directory that's a symbolic link to elsewhere.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
 

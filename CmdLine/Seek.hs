@@ -243,28 +243,47 @@ newtype WorkTreeItem = WorkTreeItem FilePath
 -- seeking for such files.
 newtype AllowHidden = AllowHidden Bool
 
--- Many git commands seek work tree items matching some criteria,
+-- Many git commands like ls-files seek work tree items matching some criteria,
 -- and silently skip over anything that does not exist. But users expect
 -- an error message when one of the files they provided as a command-line
 -- parameter doesn't exist, so this checks that each exists.
+--
+-- Also, when two directories are symlinked, referring to a file
+-- inside the symlinked directory will be silently skipped by git commands
+-- like ls-files. But, the user would be surprised for it to be skipped, so
+-- check if the parent directories are symlinks.
 workTreeItems :: CmdParams -> Annex [WorkTreeItem]
 workTreeItems = workTreeItems' (AllowHidden False)
 
 workTreeItems' :: AllowHidden -> CmdParams -> Annex [WorkTreeItem]
 workTreeItems' (AllowHidden allowhidden) ps = do
 	currbranch <- getCurrentBranch
-	forM_ ps $ \p ->
-		unlessM (exists p <||> hidden currbranch p) $ do
-			toplevelWarning False (p ++ " not found")
-			Annex.incError
+	forM_ ps $ \p -> do
+		relf <- liftIO $ relPathCwdToFile p
+		ifM (not <$> (exists p <||> hidden currbranch relf))
+			( prob (p ++ " not found")
+			, whenM (viasymlink (upFrom relf)) $
+				prob (p ++ " is beyond a symbolic link")
+			)
 	return (map (WorkTreeItem) ps)
   where
 	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
-	hidden currbranch p
-		| allowhidden = do
-			f <- liftIO $ relPathCwdToFile p
-			isJust <$> catObjectMetaDataHidden (toRawFilePath f) currbranch
+
+	viasymlink Nothing = return False
+	viasymlink (Just p) =
+		ifM (liftIO $ isSymbolicLink <$> getSymbolicLinkStatus p)
+			( return True
+			, viasymlink (upFrom p)
+			)
+
+	hidden currbranch f
+		| allowhidden = isJust
+			<$> catObjectMetaDataHidden (toRawFilePath f) currbranch
 		| otherwise = return False
 
+	prob msg = do
+		toplevelWarning False msg
+		Annex.incError
+	
 notSymlink :: RawFilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> R.getSymbolicLinkStatus f

@@ -88,7 +88,7 @@ parentDir :: FilePath -> FilePath
 parentDir = takeDirectory . dropTrailingPathSeparator
 
 {- Just the parent directory of a path, or Nothing if the path has no
-- parent (ie for "/" or ".") -}
+- parent (ie for "/" or "." or "foo") -}
 upFrom :: FilePath -> Maybe FilePath
 upFrom dir
 	| length dirs < 2 = Nothing
