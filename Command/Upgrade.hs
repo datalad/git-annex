@@ -13,12 +13,13 @@ import Annex.Version
 import Annex.Init
 
 cmd :: Command
-cmd = dontCheck repoExists $
-	-- ^ because an old version may not seem to exist
+cmd = dontCheck
+	-- because an old version may not seem to exist
 	-- and also, this avoids automatic silent upgrades before
 	-- this command can start up.
+	repoExists $
+	-- avoid upgrading repo out from under daemon
 	noDaemonRunning $
-	-- ^ avoid upgrading repo out from under daemon
 	command "upgrade" SectionMaintenance "upgrade repository"
 		paramNothing (seek <$$> optParser)
 

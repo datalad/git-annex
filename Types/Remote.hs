@@ -266,10 +266,10 @@ data ImportActions a = ImportActions
 	, retrieveExportWithContentIdentifier 
 		:: ExportLocation
 		-> ContentIdentifier
+		-- file to write content to
 		-> FilePath
-		-- ^ file to write content to
+		-- callback that generates a key from the downloaded content
 		-> a (Maybe Key)
-		-- ^ callback that generates a key from the downloaded content
 		-> MeterUpdate
 		-> a (Maybe Key)
 	-- Exports content to an ExportLocation, and returns the
@@ -292,8 +292,8 @@ data ImportActions a = ImportActions
 		:: FilePath
 		-> Key
 		-> ExportLocation
+		-- old content that it's safe to overwrite
 		-> [ContentIdentifier]
-		-- ^ old content that it's safe to overwrite
 		-> MeterUpdate
 		-> a (Either String ContentIdentifier)
 	-- This is used rather than removeExport when a special remote
