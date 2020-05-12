@@ -9,8 +9,8 @@ git annex unlock `[path ...]`
 # DESCRIPTION
 
 Normally, the content of annexed files is protected from being changed.
-Unlocking an annexed file allows it to be modified. This replaces the
-symlink for each specified file with the file's content.
+Unlocking an annexed file allows it to be modified. When no files are
+specified, all annexed files in the current directory are unlocked.
 
 Unlocking a file changes how it is stored in the git repository (from a
 symlink to a pointer file), so this command will make a change that you
@@ -31,6 +31,16 @@ the content be made instead of a copy. (Only when supported by the file
 system.) While this can save considerable disk space, any modification made
 to a file will cause the old version of the file to be lost from the local
 repository. So, enable annex.thin with care.
+
+# EXAMPLES
+
+	# git annex unlock disk-image
+	# git commit -m "unlocked to allow VM to make changes as it runs"
+
+	# git annex unlock photo.jpg
+	# gimp photo.jpg
+	# git annex lock photo.jpg
+	# git commit -m "redeye removal"
 
 # OPTIONS
 

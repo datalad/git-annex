@@ -16,6 +16,16 @@ With no parameters, gets all annexed files in the current directory whose
 content was not already present. Paths of files or directories to get can
 be specified.
 
+# EXAMPLES
+
+	# evince foo.pdf
+	error: Unable to open document foo.pdf: No such file or directory
+	# ls foo.pdf
+	foo.pdf@
+	# git annex get foo.pdf
+	get foo.pdf (from origin..) ok
+	# evince foo.pdf
+
 # OPTIONS
 
 * `--auto`

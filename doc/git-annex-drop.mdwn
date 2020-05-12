@@ -21,6 +21,19 @@ even if enough copies exist elsewhere. See [[git-annex-required]](1).
 With no parameters, tries to drop all annexed files in the current directory.
 Paths of files or directories to drop can be specified.
 
+# EXAMPLES
+
+	# git annex drop *.jpeg
+	drop photo1.jpg (checking origin...) ok
+	drop photo2.jpg (unsafe)
+	  Could only verify the existence of 0 out of 1 necessary copies
+
+	  Rather than dropping this file, try using: git annex move
+
+	  (Use --force to override this check, or adjust numcopies.)
+	failed
+	drop photo3.jpg (checking origin...) ok
+
 # OPTIONS
 
 * `--from=remote`

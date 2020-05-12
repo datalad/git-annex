@@ -29,6 +29,15 @@ in a repository. This is useful for repositories that have a policy
 reason not to use git-annex. The content of the file will be displayed
 to the user who tries to run git-annex init.
 
+# EXAMPLES
+
+	# git annex add foo
+	git-annex: First run: git-annex init
+	# git annex init
+	init ok
+	# git annex add foo
+	add foo ok
+
 # OPTIONS
 
 * `--version=N`

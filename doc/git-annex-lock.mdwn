@@ -1,6 +1,6 @@
 # NAME
 
-git-annex lock - undo unlock command
+git-annex lock - lock files to prevent modification
 
 # SYNOPSIS
 
@@ -8,8 +8,13 @@ git annex lock `[path ...]`
 
 # DESCRIPTION
 
-Use this to undo an unlock command if you don't want to modify
-the files any longer, or have made modifications you want to discard.
+Lock the specified annexed files, to prevent them from being modified.
+When no files are specified, all annexed files in the current directory are
+locked.
+
+Locking a file changes how it is stored in the git repository (from a
+pointer file to a symlink), so this command will make a change that you
+can commit.
 
 # OPTIONS
 

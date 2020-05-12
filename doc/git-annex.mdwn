@@ -54,12 +54,6 @@ content from the key-value store.
 
 # COMMONLY USED COMMANDS
 
-Like many git commands, git-annex can be passed a path that
-is either a file or a directory. In the latter case it acts on all relevant
-files in the directory. When no path is specified, most git-annex commands
-default to acting on all relevant files in the current directory (and
-subdirectories).
-
 * `help`
 
   Display built-in help.
@@ -68,8 +62,7 @@ subdirectories).
 
 * `add [path ...]`
 
-  Adds files in the path to the annex. If no path is specified, adds
-  files from the current directory and below. 
+  Adds files to the annex.
   
   See [[git-annex-add]](1) for details.
 
@@ -1821,9 +1814,9 @@ These environment variables are used by git-annex when set:
   variable can confuse git-annex's book-keeping, sometimes in ways that
   `git annex fsck` is unable to repair.
 
-Some special remotes use additional environment variables
-for authentication etc. For example, `AWS_ACCESS_KEY_ID`
-and `GIT_ANNEX_P2P_AUTHTOKEN`. See special remote documentation.
+* Some special remotes use additional environment variables
+  for authentication etc. For example, `AWS_ACCESS_KEY_ID`
+  and `GIT_ANNEX_P2P_AUTHTOKEN`. See special remote documentation.
 
 # FILES
 

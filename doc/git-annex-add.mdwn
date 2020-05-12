@@ -29,6 +29,13 @@ supporting symlinks.)
 This command can also be used to add symbolic links, both symlinks to
 annexed content, and other symlinks.
 
+# EXAMPLES
+
+	# git annex add foo bar
+	add foo ok
+	add bar ok
+	# git commit -m added
+
 # OPTIONS
 
 * `--force`
