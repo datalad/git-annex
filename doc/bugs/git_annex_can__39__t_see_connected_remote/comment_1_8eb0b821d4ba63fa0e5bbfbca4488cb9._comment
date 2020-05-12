@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-12T16:43:25Z"
+ content="""
+Does the repository at /run/media/chymera/data0/data 
+have an annex.uuid of 9f775012-942e-4ea7-96be-3bec8e4fcbf4 ?
+
+Also, does that repository have the content of the file in it?
+Running ls on the file in the working tree will not tell you that.
+
+Easy way to answer both question is:
+cd to the remote and run git-annex whereis on the file
+
+(If the answer to either question is no, there's no bug.)
+"""]]
