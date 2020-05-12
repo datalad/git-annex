@@ -1,0 +1,47 @@
+### Please describe the problem.
+
+Git annex won't pull from available remote
+
+### What steps will reproduce the problem?
+
+See full log demonstrating the issue. The file is accessible from a remote which is recorded, both remotes are synced, but instead it attempts a nonexistent remote download.
+
+```
+chymera@silenthost ~/data $ git annex get histology/sub-6532/sub-6532_slice-15gfp_zoom-5_scene-5_transmission.tif
+get histology/sub-6532/sub-6532_slice-15gfp_zoom-5_scene-5_transmission.tif (not available)
+  Try making some of these repositories available:
+  	9f775012-942e-4ea7-96be-3bec8e4fcbf4 -- chymera@localhost.localdomain:~/data
+failed
+git-annex: get: 1 failed
+chymera@silenthost ~/data $ git remote -v
+data0	/run/media/chymera/data0/data (fetch)
+data0	/run/media/chymera/data0/data (push)
+data1	/run/media/chymera/data1/data (fetch)
+data1	/run/media/chymera/data1/data (push)
+ofmhost	ofmhost:data (fetch)
+ofmhost	ofmhost:data (push)
+chymera@silenthost ~/data $ git log | head -1
+commit 6f7b889c3487fb6dacbfd7a3a6fa8c55ea3ed274
+chymera@silenthost ~/data $ pushd /run/media/chymera/data0/data
+/run/media/chymera/data0/data ~/data
+chymera@silenthost /run/media/chymera/data0/data $ git remote -v
+data1	/run/media/chymera/data1/data (fetch)
+data1	/run/media/chymera/data1/data (push)
+ofmhost	ofmhost:data (fetch)
+ofmhost	ofmhost:data (push)
+quiethost	/quiethost/home/chymera/data/ (fetch)
+quiethost	/quiethost/home/chymera/data/ (push)
+silenthost	/silenthost/home/chymera/data (fetch)
+silenthost	/silenthost/home/chymera/data (push)
+chymera@silenthost /run/media/chymera/data0/data $ ls -lah histology/sub-6532/sub-6532_slice-15gfp_zoom-5_scene-5_transmission.tif
+-rwxrwxrwx 1 chymera chymera 192 May 12 02:41 histology/sub-6532/sub-6532_slice-15gfp_zoom-5_scene-5_transmission.tif
+chymera@silenthost /run/media/chymera/data0/data $ git log | head -1
+commit 6f7b889c3487fb6dacbfd7a3a6fa8c55ea3ed274
+```
+
+### What version of git-annex are you using? On what operating system?
+=git-annex-6.20170818-r1 on Gentoo Linux
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I keep coming back to it, it's given me a steady stream of frustration and satisfaction for over 5 years.
+
