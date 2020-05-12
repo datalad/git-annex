@@ -4,7 +4,7 @@ choices:
 * Using [[special_remotes/rclone]]  
   (Actively maintained)
 
-* Google Cloud Storage supports supports the same API as Amazon S3, so
+* Backblaze B2 supports supports the same API as Amazon S3, so
   git-annex's built-in [[S3 special remote|special_remotes/S3]] can be used
   with it. 
 
