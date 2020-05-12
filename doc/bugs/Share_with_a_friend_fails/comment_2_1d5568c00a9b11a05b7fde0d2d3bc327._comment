@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="ryan.singer@5db89d157f0565db67eac571e2433fa96c187e32"
+ nickname="ryan.singer"
+ avatar="http://cdn.libravatar.org/avatar/a3ad31fba780a2cbebeeda3f3e627afb"
+ subject="comment 2"
+ date="2020-05-12T23:26:11Z"
+ content="""
+Seems like osascript works, but git annex doesn't seem to be using it.
+"""]]
