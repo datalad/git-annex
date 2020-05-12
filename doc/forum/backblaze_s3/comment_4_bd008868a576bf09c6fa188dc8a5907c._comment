@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="efraim@78c5af2ab57cf0d7aa23bae3dd0adb700c98217c"
+ nickname="efraim"
+ avatar="http://cdn.libravatar.org/avatar/6dc24928a791046ff66c8c7bd7a33099"
+ subject="comment 4"
+ date="2020-05-12T13:16:51Z"
+ content="""
+my remote ended up being s3.us-west-000.backblazeb2.com but I take it the us-west string can be other regions, and the 000 is 002 in their press release. The code snippet you posted looks good.
+"""]]
