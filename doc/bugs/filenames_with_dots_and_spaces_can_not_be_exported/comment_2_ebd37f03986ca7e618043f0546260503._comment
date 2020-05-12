@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-12T17:36:17Z"
+ content="""
+This is one of a larger pattern of exceptions in remote operations
+not being displayed. It should be deal with broadly, not only this case.
+
+I looked into two approaches..
+
+1. Change the remote interface to not return False, but always throw
+   exceptions on failure. Then each thing using the interface can
+   catch and display exceptions.  
+   Pro: Catch and display is more centralized, a single remote can't forget
+   to catch some exception.  
+   Con: What failed might be a command, which displays its own error
+   message. Then an exception, eg "command foo failed" would still need
+   to be thrown and displayed. (A workaround would be to add a new type of
+   exception, to be thrown in this situation, that does not get displayed.)
+
+2. Add functions like catchBoolIOAndWarn and remote modify code to use them,
+   so when exceptions are caught, they're displayed.  
+   Pro: Avoids above con. Easy to change a little at a time, easy to
+   check with grep that a remote is using that rather than catchBoolIO.
+   Con: Sometimes an exception will be caught for a reason that should
+   not result in a warning, so a remote will need to keep using catchBoolIO
+   there. That's ok when the exception is something the remote deals with
+   itself. OTOH, some actions like renameExport should probably not display
+   a warning (because when that fails, it falls back to a delete and
+   re-upload so it's not a hard failure), and which are which may not be
+   clear.
+
+I'm leaning toward #1, but without the added type of exception
+probably unless that does turn out to be worth doing in some case.
+"""]]
