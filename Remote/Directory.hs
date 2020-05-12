@@ -410,7 +410,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 
 storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
 storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
-	catchIO go (return . Left . show)
+	catchNonAsync go (return . Left . show)
   where
 	go = do
 		liftIO $ createDirectoryUnder dir destdir

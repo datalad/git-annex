@@ -627,7 +627,7 @@ startExternal external = do
 			}
 		p <- propgit g basep
 		(Just hin, Just hout, Just herr, ph) <- 
-			createProcess p `catchIO` runerr cmdpath
+			createProcess p `catchNonAsync` runerr cmdpath
 		stderrelay <- async $ errrelayer herr
 		cv <- newTVarIO $ externalDefaultConfig external
 		ccv <- newTVarIO id
