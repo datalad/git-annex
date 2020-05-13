@@ -84,8 +84,8 @@ gen r u rc gc rs = do
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
-			, retrieveKeyFile = retreiveKeyFileDummy
-			, retrieveKeyFileCheap = retrieveCheap
+			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileCheap = Nothing
 			-- HttpManagerRestricted is used here, so this is
 			-- secure.
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
@@ -161,9 +161,6 @@ finalizeStore dav tmp dest = do
 	inLocation dest $ void $ safely $ delContentM
 	maybe noop (void . mkColRecursive) (locationParent dest)
 	moveDAV (baseURL dav) tmp dest
-
-retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
 
 retrieve :: DavHandleVar -> ChunkConfig -> Retriever
 retrieve hv cc = fileRetriever $ \d k p ->

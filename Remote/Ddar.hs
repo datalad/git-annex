@@ -71,8 +71,8 @@ gen r u rc gc rs = do
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = storeKeyDummy
-		, retrieveKeyFile = retreiveKeyFileDummy
-		, retrieveKeyFileCheap = retrieveCheap
+		, retrieveKeyFile = retrieveKeyFileDummy
+		, retrieveKeyFileCheap = Nothing
 		-- ddar communicates over ssh, not subject to http redirect
 		-- type attacks
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
@@ -161,9 +161,6 @@ retrieve ddarrepo = byteRetriever $ \k sink -> do
 	(_, Just h, _, pid) <- liftIO $ createProcess p
 	liftIO (hClose h >> forceSuccessProcess p pid)
 		`after` (sink =<< liftIO (L.hGetContents h))
-
-retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
 
 remove :: DdarRepo -> Remover
 remove ddarrepo key = do

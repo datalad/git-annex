@@ -53,18 +53,22 @@ toPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 toPerform key file remote = go Upload file $
 	upload (uuid remote) key file stdRetry $ \p -> do
 		tryNonAsync (Remote.storeKey remote key file p) >>= \case
-			Left e -> do
-				warning (show e)
-				return False
 			Right () -> do
 				Remote.logStatus remote key InfoPresent
 				return True
+			Left e -> do
+				warning (show e)
+				return False
 
 fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key file remote = go Upload file $
 	download (uuid remote) key file stdRetry $ \p ->
-		getViaTmp (retrievalSecurityPolicy remote) (RemoteVerify remote) key $ 
-			\t -> Remote.retrieveKeyFile remote key file t p
+		getViaTmp (retrievalSecurityPolicy remote) (RemoteVerify remote) key $ \t ->
+			tryNonAsync (Remote.retrieveKeyFile remote key file t p) >>= \case
+				Right v -> return (True, v)	
+				Left e -> do
+					warning (show e)
+					return (False, UnVerified)
 
 go :: Direction -> AssociatedFile -> (NotifyWitness -> Annex Bool) -> CommandPerform
 go direction file a = notifyTransfer direction file a >>= liftIO . exitBool

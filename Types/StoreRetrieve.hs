@@ -28,7 +28,7 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex ()
 -- Action that retrieves a Key's content from a remote, passing it to a
 -- callback, which will fully consume the content before returning.
 -- Throws exception if key is not present, or remote is not accessible.
-type Retriever = Key -> MeterUpdate -> (ContentSource -> Annex Bool) -> Annex Bool
+type Retriever = Key -> MeterUpdate -> (ContentSource -> Annex ()) -> Annex ()
 
 -- Action that removes a Key's content from a remote.
 -- Succeeds if key is already not present; never throws exceptions.

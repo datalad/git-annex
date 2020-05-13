@@ -69,7 +69,7 @@ gen r u rc gc rs = do
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
-			, retrieveKeyFile = retreiveKeyFileDummy
+			, retrieveKeyFile = retrieveKeyFileDummy
 			, retrieveKeyFileCheap = retrieveKeyFileCheapM dir chunkconfig
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = removeKeyDummy
@@ -205,21 +205,19 @@ retrieveKeyFileM d (LegacyChunks _) = Legacy.retrieve locations d
 retrieveKeyFileM d _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile =<< getLocation d k)
 
-retrieveKeyFileCheapM :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> Annex Bool
+retrieveKeyFileCheapM :: FilePath -> ChunkConfig -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 -- no cheap retrieval possible for chunks
-retrieveKeyFileCheapM _ (UnpaddedChunks _) _ _ _ = return False
-retrieveKeyFileCheapM _ (LegacyChunks _) _ _ _ = return False
+retrieveKeyFileCheapM _ (UnpaddedChunks _) = Nothing
+retrieveKeyFileCheapM _ (LegacyChunks _) = Nothing
 #ifndef mingw32_HOST_OS
-retrieveKeyFileCheapM d NoChunks k _af f = liftIO $ catchBoolIO $ do
+retrieveKeyFileCheapM d NoChunks = Just $ \k _af f -> liftIO $ do
 	file <- absPath =<< getLocation d k
 	ifM (doesFileExist file)
-		( do
-			createSymbolicLink file f
-			return True
-		, return False
+		( createSymbolicLink file f
+		, giveup "content file not present in remote"
 		)
 #else
-retrieveKeyFileCheapM _ _ _ _ _ = return False
+retrieveKeyFileCheapM _ _ = Nothing
 #endif
 
 removeKeyM :: FilePath -> Remover

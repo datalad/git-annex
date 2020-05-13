@@ -76,8 +76,8 @@ gen r u rc gc rs = new
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
-			, retrieveKeyFile = retreiveKeyFileDummy
-			, retrieveKeyFileCheap = retrieveCheap this
+			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileCheap = Nothing
 			-- glacier-cli does not follow redirects and does
 			-- not support file://, as far as we know, but
 			-- there's no guarantee that will continue to be
@@ -169,7 +169,7 @@ store' r k b p = go =<< glacierEnv c gc u
 retrieve :: Remote -> Retriever
 retrieve = byteRetriever . retrieve'
 
-retrieve' :: Remote -> Key -> (L.ByteString -> Annex Bool) -> Annex Bool
+retrieve' :: Remote -> Key -> (L.ByteString -> Annex ()) -> Annex ()
 retrieve' r k sink = go =<< glacierEnv c gc u
   where
 	c = config r
@@ -183,26 +183,22 @@ retrieve' r k sink = go =<< glacierEnv c gc u
 		, Param $ archive r k
 		]
 	go Nothing = giveup "cannot retrieve from glacier"
-	go (Just e) = do
+	go (Just environ) = do
 		let cmd = (proc "glacier" (toCommand params))
-			{ env = Just e
+			{ env = Just environ
 			, std_out = CreatePipe
 			}
 		(_, Just h, _, pid) <- liftIO $ createProcess cmd
-		-- Glacier cannot store empty files, so if the output is
-		-- empty, the content is not available yet.
-		ok <- ifM (liftIO $ hIsEOF h)
-			( return False
-			, sink =<< liftIO (L.hGetContents h)
-			)
-		liftIO $ hClose h
-		liftIO $ forceSuccessProcess cmd pid
-		unless ok $ do
-			showLongNote "Recommend you wait up to 4 hours, and then run this command again."
-		return ok
-
-retrieveCheap :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap _ _ _ _ = return False
+		let cleanup = liftIO $ do
+			hClose h
+			forceSuccessProcess cmd pid
+		flip finally cleanup $ do
+			-- Glacier cannot store empty files, so if
+			-- the output is empty, the content is not
+			-- available yet.
+			whenM (liftIO $ hIsEOF h) $
+				giveup "Content is not available from glacier yet. Recommend you wait up to 4 hours, and then run this command again."
+			sink =<< liftIO (L.hGetContents h)
 
 remove :: Remote -> Remover
 remove r k = glacierAction r

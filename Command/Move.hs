@@ -207,7 +207,11 @@ fromPerform src removewhen key afile = do
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile stdRetry $ \p ->
 			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
-				Remote.retrieveKeyFile src key afile t p
+				tryNonAsync (Remote.retrieveKeyFile src key afile t p) >>= \case
+					Right v -> return (True, v)
+					Left e -> do
+						warning (show e)
+						return (False, UnVerified)
 	dispatch _ _ False = stop -- failed
 	dispatch RemoveNever _ True = next $ return True -- copy complete
 	dispatch RemoveSafe deststartedwithcopy True = lockContentShared key $ \_lck -> do

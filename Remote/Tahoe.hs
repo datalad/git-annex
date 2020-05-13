@@ -87,7 +87,7 @@ gen r u rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = store rs hdl
 		, retrieveKeyFile = retrieve rs hdl
-		, retrieveKeyFileCheap = \_ _ _ -> return False
+		, retrieveKeyFileCheap = Nothing
 		-- Tahoe cryptographically verifies content.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove
@@ -141,11 +141,14 @@ store rs hdl k _f _p = sendAnnex k noop $ \src ->
 		(giveup "tahoe failed to store content")
 		(\cap -> storeCapability rs k cap)
 
-retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-retrieve rs hdl k _f d _p = unVerified $ go =<< getCapability rs k
+retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
+retrieve rs hdl k _f d _p = do
+	go =<< getCapability rs k
+	return UnVerified
   where
-	go Nothing = return False
-	go (Just cap) = liftIO $ requestTahoe hdl "get" [Param cap, File d]
+	go Nothing = giveup "tahoe capability is not known"
+	go (Just cap) = unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File d]) $
+		giveup "tahoe failed to reteieve content"
 
 remove :: Key -> Annex Bool
 remove _k = do

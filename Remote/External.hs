@@ -121,8 +121,8 @@ gen r u rc gc rs
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
-			, retrieveKeyFile = retreiveKeyFileDummy
-			, retrieveKeyFileCheap = \_ _ _ -> return False
+			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileCheap = Nothing
 			-- External special remotes use many http libraries
 			-- and have no protection against redirects to
 			-- local private web servers, or in some cases

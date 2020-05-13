@@ -21,7 +21,7 @@ module Remote.Helper.Special (
 	fileRetriever,
 	byteRetriever,
 	storeKeyDummy,
-	retreiveKeyFileDummy,
+	retrieveKeyFileDummy,
 	removeKeyDummy,
 	checkPresentDummy,
 	SpecialRemoteCfg(..),
@@ -112,7 +112,7 @@ fileRetriever a k m callback = do
 -- A Retriever that generates a lazy ByteString containing the Key's
 -- content, and passes it to a callback action which will fully consume it
 -- before returning.
-byteRetriever :: (Key -> (L.ByteString -> Annex Bool) -> Annex Bool) -> Retriever
+byteRetriever :: (Key -> (L.ByteString -> Annex ()) -> Annex ()) -> Retriever
 byteRetriever a k _m callback = a k (callback . ByteContent)
 
 {- The base Remote that is provided to specialRemote needs to have
@@ -122,8 +122,8 @@ byteRetriever a k _m callback = a k (callback . ByteContent)
  -}
 storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 storeKeyDummy _ _ _ = error "missing storeKey implementation"
-retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-retreiveKeyFileDummy _ _ _ _ = unVerified (return False)
+retrieveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
+retrieveKeyFileDummy _ _ _ _ = error "missing retrieveKeyFile implementation"
 removeKeyDummy :: Key -> Annex Bool
 removeKeyDummy _ = return False
 checkPresentDummy :: Key -> Annex Bool
@@ -168,11 +168,13 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
   where
 	encr = baser
 		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
-		, retrieveKeyFile = \k _f d p -> cip >>= unVerified . retrieveKeyFileGen k d p
-		, retrieveKeyFileCheap = \k f d -> cip >>= maybe
-			(retrieveKeyFileCheap baser k f d)
-			-- retrieval of encrypted keys is never cheap
-			(\_ -> return False)
+		, retrieveKeyFile = \k _f d p -> cip >>= retrieveKeyFileGen k d p
+		, retrieveKeyFileCheap = case retrieveKeyFileCheap baser of
+			Nothing -> Nothing
+			Just a
+				-- retrieval of encrypted keys is never cheap
+				| isencrypted -> Nothing
+				| otherwise -> Just $ \k f d -> a k f d
 		-- When encryption is used, the remote could provide
 		-- some other content encrypted by the user, and trick
 		-- git-annex into decrypting it, leaking the decryption
@@ -226,10 +228,11 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 					storer (enck k) (ByteContent encb) p
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
-	retrieveKeyFileGen k dest p enc = safely $
+	retrieveKeyFileGen k dest p enc = do
 		displayprogress p k Nothing $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
 				enck k dest p' (sink dest enc encr)
+		return UnVerified
 	  where
 		enck = maybe id snd enc
 
@@ -268,27 +271,25 @@ sink
 	-> Maybe Handle
 	-> Maybe MeterUpdate
 	-> ContentSource
-	-> Annex Bool
-sink dest enc c mh mp content = do
-	case (enc, mh, content) of
-		(Nothing, Nothing, FileContent f)
-			| f == dest -> noop
-			| otherwise -> liftIO $ moveFile f dest
-		(Just (cipher, _), _, ByteContent b) -> do
-			cmd <- gpgCmd <$> Annex.getGitConfig
+	-> Annex ()
+sink dest enc c mh mp content = case (enc, mh, content) of
+	(Nothing, Nothing, FileContent f)
+		| f == dest -> noop
+		| otherwise -> liftIO $ moveFile f dest
+	(Just (cipher, _), _, ByteContent b) -> do
+		cmd <- gpgCmd <$> Annex.getGitConfig
+		decrypt cmd c cipher (feedBytes b) $
+			readBytes write
+	(Just (cipher, _), _, FileContent f) -> do
+		cmd <- gpgCmd <$> Annex.getGitConfig
+		withBytes content $ \b ->
 			decrypt cmd c cipher (feedBytes b) $
 				readBytes write
-		(Just (cipher, _), _, FileContent f) -> do
-			cmd <- gpgCmd <$> Annex.getGitConfig
-			withBytes content $ \b ->
-				decrypt cmd c cipher (feedBytes b) $
-					readBytes write
-			liftIO $ nukeFile f
-		(Nothing, _, FileContent f) -> do
-			withBytes content write
-			liftIO $ nukeFile f
-		(Nothing, _, ByteContent b) -> write b
-	return True
+		liftIO $ nukeFile f
+	(Nothing, _, FileContent f) -> do
+		withBytes content write
+		liftIO $ nukeFile f
+	(Nothing, _, ByteContent b) -> write b
   where
 	write b = case mh of
 		Just h -> liftIO $ b `streamto` h

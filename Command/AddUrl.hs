@@ -189,15 +189,19 @@ downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd file $ do
 			-- so that the remote knows what url it
 			-- should use to download it.
 			setTempUrl urlkey loguri
-			let downloader = \dest p -> fst 
-				<$> Remote.retrieveKeyFile r urlkey
-					(AssociatedFile (Just (toRawFilePath file))) dest p
+			let downloader = \dest p ->
+				tryNonAsync (Remote.retrieveKeyFile r urlkey af dest p) >>= \case
+					Right _ -> return True
+					Left e -> do
+						warning (show e)
+						return False
 			ret <- downloadWith addunlockedmatcher downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
 			return ret
 		)
   where
 	loguri = setDownloader uri OtherDownloader
+	af = AssociatedFile (Just (toRawFilePath file))
 
 startWeb :: AddUnlockedMatcher -> AddUrlOptions -> URLString -> CommandStart
 startWeb addunlockedmatcher o urlstring = go $ fromMaybe bad $ parseURI urlstring

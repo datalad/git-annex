@@ -274,8 +274,9 @@ test runannex mkr mkk =
 			Nothing -> return True
 			Just verifier -> verifier k (serializeKey k)
 	get r k = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
-		Remote.retrieveKeyFile r k (AssociatedFile Nothing)
-			dest nullMeterUpdate
+		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate) >>= \case
+			Right v -> return (True, v)
+			Left _ -> return (False, UnVerified)
 	store r k = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
 	remove r k = Remote.removeKey r k
 
@@ -348,10 +349,14 @@ testUnavailable runannex mkr mkk =
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->
 		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
-			Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate
-	, check (== Right False) "retrieveKeyFileCheap" $ \r k ->
-		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest -> unVerified $
-			Remote.retrieveKeyFileCheap r k (AssociatedFile Nothing) dest
+			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate) >>= \case
+				Right v -> return (True, v)
+				Left _ -> return (False, UnVerified)
+	, check (== Right False) "retrieveKeyFileCheap" $ \r k -> case Remote.retrieveKeyFileCheap r of
+		Nothing -> return False
+		Just a -> getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest -> 
+			unVerified $ isRight
+				<$> tryNonAsync (a k (AssociatedFile Nothing) dest)
 	]
   where
 	check checkval desc a = testCase desc $ 

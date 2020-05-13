@@ -132,8 +132,8 @@ gen' r u c gc rs = do
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = storeKeyDummy
-		, retrieveKeyFile = retreiveKeyFileDummy
-		, retrieveKeyFileCheap = \_ _ _ -> return False
+		, retrieveKeyFile = retrieveKeyFileDummy
+		, retrieveKeyFileCheap = Nothing
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = removeKeyDummy
 		, lockContent = Nothing
@@ -393,7 +393,7 @@ retrieve r rsyncopts k p sink = do
 retrieve' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Retriever
 retrieve' repo r rsyncopts
 	| not $ Git.repoIsUrl repo = byteRetriever $ \k sink ->
-		guardUsable repo (return False) $
+		guardUsable repo (giveup "cannot access remote") $
 			sink =<< liftIO (L.readFile $ gCryptLocation repo k)
 	| Git.repoIsSsh repo = if accessShell r
 		then fileRetriever $ \f k p -> do

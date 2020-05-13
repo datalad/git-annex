@@ -52,7 +52,7 @@ gen r _ rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey
-		, retrieveKeyFileCheap = downloadKeyCheap
+		, retrieveKeyFileCheap = Nothing
 		-- HttpManagerRestricted is used here, so this is
 		-- secure.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
@@ -80,22 +80,22 @@ gen r _ rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-downloadKey key _af dest p = unVerified $ get =<< getWebUrls key
+downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
+downloadKey key _af dest p = do
+	get =<< getWebUrls key
+	return UnVerified
   where
-	get [] = do
-		warning "no known url"
-		return False
-	get urls = untilTrue urls $ \u -> do
-		let (u', downloader) = getDownloader u
-		case downloader of
-			YoutubeDownloader -> do
-				showOutput
-				youtubeDlTo key u' dest
-			_ -> Url.withUrlOptions $ downloadUrl key p [u'] dest
-
-downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
-downloadKeyCheap _ _ _ = return False
+	get [] = giveup "no known url"
+	get urls = do
+		r <- untilTrue urls $ \u -> do
+			let (u', downloader) = getDownloader u
+			case downloader of
+				YoutubeDownloader -> do
+					showOutput
+					youtubeDlTo key u' dest
+				_ -> Url.withUrlOptions $ downloadUrl key p [u'] dest
+		unless r $
+			giveup "download failed"
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to web not supported"

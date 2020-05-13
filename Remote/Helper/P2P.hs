@@ -39,11 +39,13 @@ store runner k af p = do
 			Just False -> giveup "transfer failed"
 			Nothing -> giveup "can't connect to remote"
 
-retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 retrieve runner k af dest p =
 	metered (Just p) k $ \m p' -> 
-		fromMaybe (False, UnVerified)
-			<$> runner p' (P2P.get dest k af m p')
+		runner p' (P2P.get dest k af m p') >>= \case
+			Just (True, v) -> return v
+			Just (False, _) -> giveup "transfer failed"
+			Nothing -> giveup "can't connec to remote"
 
 remove :: ProtoRunner Bool -> Key -> Annex Bool
 remove runner k = fromMaybe False <$> runner (P2P.remove k)

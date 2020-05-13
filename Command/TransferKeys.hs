@@ -48,7 +48,11 @@ start = do
 		| otherwise = notifyTransfer direction file $
 			download (Remote.uuid remote) key file stdRetry $ \p ->
 				getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key $ \t -> do
-					r <- Remote.retrieveKeyFile remote key file t p
+					r <- tryNonAsync (Remote.retrieveKeyFile remote key file t p) >>= \case
+						Left e -> do
+							warning (show e)
+							return (False, UnVerified)
+						Right v -> return (True, v)
 					-- Make sure we get the current
 					-- associated files data for the key,
 					-- not old cached data.

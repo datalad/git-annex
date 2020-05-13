@@ -41,6 +41,7 @@ import Data.Time.Clock.POSIX
 import System.Posix.Types (EpochTime)
 import qualified Data.Set as S
 import qualified Data.Map as M
+import Data.Either
 
 cmd :: Command
 cmd = withGlobalOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
@@ -174,17 +175,20 @@ performRemote key afile backend numcopies remote =
 		cleanup
 		cleanup `after` a tmp
 	getfile tmp = ifM (checkDiskSpace (Just (takeDirectory tmp)) key 0 True)
-		( ifM (Remote.retrieveKeyFileCheap remote key afile tmp)
+		( ifM (getcheap tmp)
 			( return (Just True)
 			, ifM (Annex.getState Annex.fast)
 				( return Nothing
-				, Just . fst <$>
-					Remote.retrieveKeyFile remote key (AssociatedFile Nothing) tmp dummymeter
+				, Just . isRight <$> tryNonAsync (getfile' tmp)
 				)
 			)
 		, return (Just False)
 		)
+	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) tmp dummymeter
 	dummymeter _ = noop
+	getcheap tmp = case Remote.retrieveKeyFileCheap remote of
+		Just a -> isRight <$> tryNonAsync (a key afile tmp)
+		Nothing -> return False
 
 startKey :: Maybe Remote -> Incremental -> (Key, ActionItem) -> NumCopies -> CommandStart
 startKey from inc (key, ai) numcopies =

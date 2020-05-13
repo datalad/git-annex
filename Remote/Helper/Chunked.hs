@@ -221,8 +221,8 @@ removeChunks remover u chunkconfig encryptor k = do
  - other chunks in the list is fed to the sink.
  -
  - If retrival of one of the subsequent chunks throws an exception,
- - gives up and returns False. Note that partial data may have been
- - written to the sink in this case.
+ - gives up. Note that partial data may have been written to the sink
+ - in this case.
  -
  - Resuming is supported when using chunks. When the destination file
  - already exists, it skips to the next chunked key that would be needed
@@ -236,8 +236,8 @@ retrieveChunks
 	-> Key
 	-> FilePath
 	-> MeterUpdate
-	-> (Maybe Handle -> Maybe MeterUpdate -> ContentSource -> Annex Bool)
-	-> Annex Bool
+	-> (Maybe Handle -> Maybe MeterUpdate -> ContentSource -> Annex ())
+	-> Annex ()
 retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 	| noChunks chunkconfig =
 		-- Optimisation: Try the unchunked key first, to avoid
@@ -251,14 +251,10 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
-			then return True -- dest is already complete
-			else firstavail currsize ls' `catchNonAsync` unable
+			then noop -- dest is already complete
+			else firstavail currsize ls'
 
-	unable e = do
-		warning (show e)
-		return False
-
-	firstavail _ [] = return False
+	firstavail _ [] = giveup "chunk retrieval failed"
 	firstavail currsize ([]:ls) = firstavail currsize ls
 	firstavail currsize ((k:ks):ls)
 		| k == basek = getunchunked
@@ -271,25 +267,22 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 			v <- tryNonAsync $
 				retriever (encryptor k) p $ \content ->
 					bracketIO (maybe opennew openresume offset) hClose $ \h -> do
-						void $ tosink (Just h) p content
+						tosink (Just h) p content
 						let sz = toBytesProcessed $
 							fromMaybe 0 $ fromKey keyChunkSize k
 						getrest p h sz sz ks
-							`catchNonAsync` unable
 			case v of
 				Left e
-					| null ls -> unable e
+					| null ls -> throwM e
 					| otherwise -> firstavail currsize ls
 				Right r -> return r
 
-	getrest _ _ _ _ [] = return True
+	getrest _ _ _ _ [] = noop
 	getrest p h sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
 		liftIO $ p' zeroBytesProcessed
-		ifM (retriever (encryptor k) p' $ tosink (Just h) p')
-			( getrest p h sz (addBytesProcessed bytesprocessed sz) ks
-			, unable "chunk retrieval failed"
-			)
+		retriever (encryptor k) p' $ tosink (Just h) p'
+		getrest p h sz (addBytesProcessed bytesprocessed sz) ks
 
 	getunchunked = retriever (encryptor basek) basep $ tosink Nothing basep
 

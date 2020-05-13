@@ -89,10 +89,12 @@ data RemoteA a = Remote
 	-- Retrieves a key's contents to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
-	, retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a (Bool, Verification)
+	-- Throws exception on failure.
+	, retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a Verification
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
-	, retrieveKeyFileCheap :: Key -> AssociatedFile -> FilePath -> a Bool
+	-- Throws exception on failure.
+	, retrieveKeyFileCheap :: Maybe (Key -> AssociatedFile -> FilePath -> a ())
 	-- Security policy for reteiving keys from this remote.
 	, retrievalSecurityPolicy :: RetrievalSecurityPolicy
 	-- Removes a key's contents (succeeds if the contents are not present)
@@ -186,7 +188,7 @@ data Verification
 	-- ^ Content likely to have been altered during transfer,
 	-- verify even if verification is normally disabled
 
-unVerified :: Monad m => m Bool -> m (Bool, Verification)
+unVerified :: Monad m => m a -> m (a, Verification)
 unVerified a = do
 	ok <- a
 	return (ok, UnVerified)

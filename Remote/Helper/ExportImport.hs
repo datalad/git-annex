@@ -202,15 +202,12 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		, retrieveKeyFile = \k af dest p ->
 			let retrieveexport = retrieveKeyFileFromExport dbv k af dest p
 			in if appendonly r
-				then do
-					ret@(ok, _v) <- retrieveKeyFile r k af dest p
-					if ok
-						then return ret
-						else retrieveexport
+				then retrieveKeyFile r k af dest p
+					`catchNonAsync` const retrieveexport
 				else retrieveexport
 		, retrieveKeyFileCheap = if appendonly r
 			then retrieveKeyFileCheap r
-			else \_ _ _ -> return False
+			else Nothing
 		-- Removing a key from an export would need to
 		-- change the tree in the export log to not include
 		-- the file. Otherwise, conflicts when removing
@@ -318,18 +315,16 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		db <- getexportdb dbv
 		liftIO $ Export.getExportTree db k
 
-	retrieveKeyFileFromExport dbv k _af dest p = unVerified $
-		if maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (fromKey keyVariety k))
-			then do
-				locs <- getexportlocs dbv k
-				case locs of
-					[] -> do
-						ifM (liftIO $ atomically $ readTVar $ getexportinconflict dbv)
-							( warning "unknown export location, likely due to the export conflict"
-							, warning "unknown export location"
-							)
-						return False
-					(l:_) -> retrieveExport (exportActions r) k l dest p
-			else do
-				warning $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
-				return False
+	retrieveKeyFileFromExport dbv k _af dest p
+		| maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (fromKey keyVariety k)) = do
+			locs <- getexportlocs dbv k
+			case locs of
+				[] -> ifM (liftIO $ atomically $ readTVar $ getexportinconflict dbv)
+					( giveup "unknown export location, likely due to the export conflict"
+					, giveup "unknown export location"
+					)
+				(l:_) -> do
+					unlessM (retrieveExport (exportActions r) k l dest p) $
+						giveup "retrieving from export failed"
+					return UnVerified
+		| otherwise = giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"

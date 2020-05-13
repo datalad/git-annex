@@ -183,7 +183,7 @@ gen r u rc gc rs
 			, name = Git.repoDescribe r
 			, storeKey = copyToRemote new st
 			, retrieveKeyFile = copyFromRemote new st
-			, retrieveKeyFileCheap = copyFromRemoteCheap new st
+			, retrieveKeyFileCheap = copyFromRemoteCheap new st r
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = dropKey new st
 			, lockContent = Just (lockKey new st)
@@ -515,50 +515,55 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 	failedlock = giveup "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+copyFromRemote :: Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 copyFromRemote = copyFromRemote' False
 
-copyFromRemote' :: Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+copyFromRemote' :: Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 copyFromRemote' forcersync r st key file dest meterupdate = do
 	repo <- getRepo r
 	copyFromRemote'' repo forcersync r st key file dest meterupdate
 
-copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
+copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest meterupdate
-	| Git.repoIsHttp repo = unVerified $ do
+	| Git.repoIsHttp repo = do
 		gc <- Annex.getGitConfig
-		Url.withUrlOptionsPromptingCreds $
+		ok <- Url.withUrlOptionsPromptingCreds $
 			Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
-	| not $ Git.repoIsUrl repo = guardUsable repo (unVerified (return False)) $ do
+		unless ok $
+			giveup "failed to download content"
+		return UnVerified
+	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
 		params <- Ssh.rsyncParams r Download
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocalFast st $ do
-			v <- Annex.Content.prepSendAnnex key
-			case v of
-				Nothing -> do
-					warning "content is not present in remote"
-					return (False, UnVerified)
-				Just (object, checksuccess) -> do
-					copier <- mkCopier hardlink st params
-					runTransfer (Transfer Download u (fromKey id key))
-						file stdRetry $ \p ->
-							metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
-								copier object dest p' checksuccess
+		onLocalFast st $ Annex.Content.prepSendAnnex key >>= \case
+			Just (object, checksuccess) -> do
+				copier <- mkCopier hardlink st params
+				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
+					file stdRetry $ \p ->
+						metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
+							copier object dest p' checksuccess
+				if ok
+					then return v
+					else giveup "failed to retrieve content from remote"
+			Nothing -> giveup "content is not present in remote"
 	| Git.repoIsSsh repo = if forcersync
-		then fallback meterupdate
+		then do
+			(ok, v) <- fallback meterupdate
+			if ok
+				then return v
+				else giveup "failed to retrieve content from remote"
 		else P2PHelper.retrieve
 			(\p -> Ssh.runProto r connpool (return (False, UnVerified)) (fallback p))
 			key file dest meterupdate
-	| otherwise = do
-		warning "copying from non-ssh, non-http remote not supported"
-		unVerified (return False)
+	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
 	fallback p = unVerified $ feedprogressback $ \p' -> do
 		oh <- mkOutputHandlerQuiet
 		Ssh.rsyncHelper oh (Just (combineMeterUpdate p' p))
 			=<< Ssh.rsyncParamsRemote False r Download key dest file
+
 	{- Feed local rsync's progress info back to the remote,
 	 - by forking a feeder thread that runs
 	 - git-annex-shell transferinfo at the same time
@@ -619,33 +624,26 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 					=<< tryTakeMVar pidv
 		bracketIO noop (const cleanup) (const $ a feeder)
 
-copyFromRemoteCheap :: Remote -> State -> Key -> AssociatedFile -> FilePath -> Annex Bool
-copyFromRemoteCheap r st key af file = do
-	repo <- getRepo r
-	copyFromRemoteCheap' repo r st key af file
-
-copyFromRemoteCheap' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> Annex Bool
+copyFromRemoteCheap :: Remote -> State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
+copyFromRemoteCheap r st repo
 #ifndef mingw32_HOST_OS
-copyFromRemoteCheap' repo r st key af file
-	| not $ Git.repoIsUrl repo = guardUsable repo (return False) $ do
+	| not $ Git.repoIsUrl repo = Just $ \key _af file -> guardUsable repo (giveup "cannot access remote") $ do
 		gc <- getGitConfigFromState st
 		loc <- liftIO $ gitAnnexLocation key repo gc
 		liftIO $ ifM (R.doesPathExist loc)
 			( do
 				absloc <- absPath (fromRawFilePath loc)
-				catchBoolIO $ do
-					createSymbolicLink absloc file
-					return True
-			, return False
+				createSymbolicLink absloc file
+			, giveup "remote does not contain key"
 			)
-	| Git.repoIsSsh repo =
+	| Git.repoIsSsh repo = Just $ \key af file ->
 		ifM (Annex.Content.preseedTmp key file)
-			( fst <$> copyFromRemote' True r st key af file nullMeterUpdate
-			, return False
+			( void $ copyFromRemote' True r st key af file nullMeterUpdate
+			, giveup "cannot preseed rsync with existing content"
 			)
-	| otherwise = return False
+	| otherwise = Nothing
 #else
-copyFromRemoteCheap' _ _ _ _ _ _ = return False
+copyFromRemoteCheap' _ _ _ = Nothing
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}

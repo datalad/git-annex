@@ -193,8 +193,8 @@ gen r u rc gc rs = do
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
-			, retrieveKeyFile = retreiveKeyFileDummy
-			, retrieveKeyFileCheap = retrieveCheap
+			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileCheap = Nothing
 			-- HttpManagerRestricted is used here, so this is
 			-- secure.
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
@@ -417,9 +417,6 @@ retrieveHelper' :: S3Handle -> FilePath -> MeterUpdate -> S3.GetObject -> Annex 
 retrieveHelper' h f p req = liftIO $ runResourceT $ do
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle h req
 	Url.sinkResponseFile p zeroBytesProcessed f WriteMode rsp
-
-retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
 
 remove :: S3HandleVar -> Remote -> S3Info -> Remover
 remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> liftIO $ runResourceT $ do

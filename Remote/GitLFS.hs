@@ -102,8 +102,8 @@ gen r u rc gc rs = do
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = storeKeyDummy
-		, retrieveKeyFile = retreiveKeyFileDummy
-		, retrieveKeyFileCheap = retrieveCheap
+		, retrieveKeyFile = retrieveKeyFileDummy
+		, retrieveKeyFileCheap = Nothing
 		-- content stored on git-lfs is hashed with SHA256
 		-- no matter what git-annex key it's for, and the hash
 		-- is checked on download
@@ -524,9 +524,6 @@ checkKey rs h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 				| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size ->
 					giveup "git-lfs server replied with other object than the one we requested"
 				| otherwise -> return True
-
-retrieveCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap _ _ _ = return False
 
 remove :: TVar LFSHandle -> Remover
 remove _h _key = do

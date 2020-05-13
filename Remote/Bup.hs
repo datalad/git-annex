@@ -70,8 +70,8 @@ gen r u rc gc rs = do
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = storeKeyDummy
-		, retrieveKeyFile = retreiveKeyFileDummy
-		, retrieveKeyFileCheap = retrieveCheap buprepo
+		, retrieveKeyFile = retrieveKeyFileDummy
+		, retrieveKeyFileCheap = Nothing
 		-- Bup uses git, which cryptographically verifies content
 		-- (with SHA1, but sufficiently for this).
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
@@ -168,9 +168,6 @@ retrieve buprepo = byteRetriever $ \k sink -> do
 	(_, Just h, _, pid) <- liftIO $ createProcess $ p { std_out = CreatePipe }
 	liftIO (hClose h >> forceSuccessProcess p pid)
 		`after` (sink =<< liftIO (L.hGetContents h))
-
-retrieveCheap :: BupRepo -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap _ _ _ _ = return False
 
 {- Cannot revert having stored a key in bup, but at least the data for the
  - key will be used for deltaing data of other keys stored later.

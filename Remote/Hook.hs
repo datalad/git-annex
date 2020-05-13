@@ -59,8 +59,8 @@ gen r u rc gc rs = do
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
-			, retrieveKeyFile = retreiveKeyFileDummy
-			, retrieveKeyFileCheap = retrieveCheap hooktype
+			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileCheap = Nothing
 			-- A hook could use http and be vulnerable to
 			-- redirect to file:// attacks, etc.
 			, retrievalSecurityPolicy = mkRetrievalVerifiableKeysSecure gc
@@ -161,9 +161,6 @@ retrieve :: HookName -> Retriever
 retrieve h = fileRetriever $ \d k _p ->
 	unlessM (runHook' h "retrieve" k (Just d) $ return True) $
 		giveup "failed to retrieve content"
-
-retrieveCheap :: HookName -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap _ _ _ _ = return False
 
 remove :: HookName -> Remover
 remove h k = runHook' h "remove" k Nothing $ return True

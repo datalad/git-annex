@@ -64,7 +64,7 @@ gen r _ rc gc rs = do
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
 		, retrieveKeyFile = downloadKey
-		, retrieveKeyFileCheap = downloadKeyCheap
+		, retrieveKeyFileCheap = Nothing
 		-- Bittorrent does its own hash checks.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = dropKey
@@ -91,25 +91,23 @@ gen r _ rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
-downloadKey key _file dest p = unVerified $
+downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
+downloadKey key _file dest p = do
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
+	return UnVerified
   where
-	get [] = do
-		warning "could not download torrent"
-		return False
+	get [] = giveup "could not download torrent"
 	get urls = do
 		showOutput -- make way for download progress bar
-		untilTrue urls $ \(u, filenum) -> do
+		ok <- untilTrue urls $ \(u, filenum) -> do
 			registerTorrentCleanup u
 			checkDependencies
 			ifM (downloadTorrentFile u)
 				( downloadTorrentContent key u dest filenum p
 				, return False
 				)
-
-downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
-downloadKeyCheap _ _ _ = return False
+		unless ok $
+			get []
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to bittorrent not supported"

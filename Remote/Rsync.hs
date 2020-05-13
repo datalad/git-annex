@@ -89,8 +89,8 @@ gen r u rc gc rs = do
 			, cost = cst
 			, name = Git.repoDescribe r
 			, storeKey = storeKeyDummy
-			, retrieveKeyFile = retreiveKeyFileDummy
-			, retrieveKeyFileCheap = retrieveCheap o
+			, retrieveKeyFile = retrieveKeyFileDummy
+			, retrieveKeyFileCheap = Just (retrieveCheap o)
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = removeKeyDummy
 			, lockContent = Nothing
@@ -237,12 +237,13 @@ storeGeneric' o meterupdate basedest populatedest = withRsyncScratchDir $ \tmp -
 		else return False
 
 retrieve :: RsyncOpts -> FilePath -> Key -> MeterUpdate -> Annex ()
-retrieve o f k p = 
-	unlessM (rsyncRetrieveKey o k f (Just p)) $
-		giveup "rsync failed"
+retrieve o f k p = rsyncRetrieveKey o k f (Just p)
 
-retrieveCheap :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex Bool
-retrieveCheap o k _af f = ifM (preseedTmp k f) ( rsyncRetrieveKey o k f Nothing , return False )
+retrieveCheap :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex ()
+retrieveCheap o k _af f = ifM (preseedTmp k f)
+	( rsyncRetrieveKey o k f Nothing
+	, giveup "cannot preseed rsync with existing content"
+	)
 
 remove :: RsyncOpts -> Remover
 remove o k = removeGeneric o includes
@@ -358,8 +359,10 @@ rsyncRetrieve o rsyncurls dest meterupdate =
 		, File dest
 		]
 
-rsyncRetrieveKey :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
-rsyncRetrieveKey o k dest meterupdate = rsyncRetrieve o (rsyncUrls o k) dest meterupdate
+rsyncRetrieveKey :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex ()
+rsyncRetrieveKey o k dest meterupdate =
+	unlessM (rsyncRetrieve o (rsyncUrls o k) dest meterupdate) $
+		giveup "rsync failed"
 
 showResumable :: Annex Bool -> Annex Bool
 showResumable a = ifM a

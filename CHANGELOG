@@ -26,7 +26,7 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
     the current directory.
   * Display a warning message when asked to operate on a file inside a
     directory that's a symbolic link to elsewhere.
-  * When storing content on remote fails, always display a reason why.
+  * When accessing a remote fails, always display a reason why.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
 
