@@ -182,10 +182,10 @@ gen r u rc gc rs = do
 	return $ new c cst info hdl magic
   where
 	new c cst info hdl magic = Just $ specialRemote c
-		(simplyPrepare $ store hdl this info magic)
-		(simplyPrepare $ retrieve hdl this rs c info)
-		(simplyPrepare $ remove hdl this info)
-		(simplyPrepare $ checkKey hdl this rs c info)
+		(store hdl this info magic)
+		(retrieve hdl this rs c info)
+		(remove hdl this info)
+		(checkKey hdl this rs c info)
 		this
 	  where
 		this = Remote

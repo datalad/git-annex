@@ -88,11 +88,11 @@ store repotop chunksize finalizer k b p = storeHelper repotop finalizer k $ \des
  - Done very innefficiently, by writing to a temp file.
  - :/ This is legacy code..
  -}
-retrieve :: (FilePath -> Key -> [FilePath]) -> FilePath -> Preparer Retriever
-retrieve locations d basek a = withOtherTmp $ \tmpdir -> do
+retrieve :: (FilePath -> Key -> [FilePath]) -> FilePath -> Retriever
+retrieve locations d basek p c = withOtherTmp $ \tmpdir -> do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
 	let tmp = tmpdir </> fromRawFilePath (keyFile basek) ++ ".directorylegacy.tmp"
-	a $ Just $ byteRetriever $ \k sink -> do
+	let go = \k sink -> do
 		liftIO $ void $ withStoredFiles d locations k $ \fs -> do
 			forM_ fs $
 				S.appendFile tmp <=< S.readFile
@@ -100,6 +100,7 @@ retrieve locations d basek a = withOtherTmp $ \tmpdir -> do
 		b <- liftIO $ L.readFile tmp
 		liftIO $ nukeFile tmp
 		sink b
+	byteRetriever go basek p c
 
 checkKey :: FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> Annex Bool
 checkKey d locations k = liftIO $ withStoredFiles d locations k $

@@ -105,10 +105,10 @@ gen r u rc gc rs = do
 		{ chunkConfig = NoChunks
 		}
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ store this buprepo)
-		(simplyPrepare $ retrieve buprepo)
-		(simplyPrepare $ remove buprepo)
-		(simplyPrepare $ checkKey r bupr')
+		(store this buprepo)
+		(retrieve buprepo)
+		(remove buprepo)
+		(checkKey r bupr')
 		this
   where
 	buprepo = fromMaybe (giveup "missing buprepo") $ remoteAnnexBupRepo gc

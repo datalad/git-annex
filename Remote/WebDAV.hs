@@ -73,10 +73,10 @@ gen r u rc gc rs = do
 		<*> mkDavHandleVar c gc u
   where
 	new c cst hdl = Just $ specialRemote c
-		(simplyPrepare $ store hdl chunkconfig)
-		(simplyPrepare $ retrieve hdl chunkconfig)
-		(simplyPrepare $ remove hdl)
-		(simplyPrepare $ checkKey hdl this chunkconfig)
+		(store hdl chunkconfig)
+		(retrieve hdl chunkconfig)
+		(remove hdl)
+		(checkKey hdl this chunkconfig)
 		this
 	  where
 		this = Remote

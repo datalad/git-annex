@@ -108,10 +108,10 @@ gen r u rc gc rs = do
 		, remoteStateHandle = rs
 		}
 	return $ Just $ specialRemote c
-		(simplyPrepare $ store serial adir)
-		(simplyPrepare $ retrieve serial adir)
-		(simplyPrepare $ remove serial adir)
-		(simplyPrepare $ checkKey this serial adir)
+		(store serial adir)
+		(retrieve serial adir)
+		(remove serial adir)
+		(checkKey this serial adir)
 		this
   where
 	adir = maybe (giveup "missing androiddirectory") AndroidPath

@@ -80,10 +80,10 @@ gen r u rc gc rs = do
 		-- Rsync displays its own progress.
 		{ displayProgress = False }
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ fileStorer $ store o)
-		(simplyPrepare $ fileRetriever $ retrieve o)
-		(simplyPrepare $ remove o)
-		(simplyPrepare $ checkKey r o)
+		(fileStorer $ store o)
+		(fileRetriever $ retrieve o)
+		(remove o)
+		(checkKey r o)
 		Remote
 			{ uuid = u
 			, cost = cst

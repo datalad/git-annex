@@ -50,10 +50,10 @@ gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just $ specialRemote c
-		(simplyPrepare $ store hooktype)
-		(simplyPrepare $ retrieve hooktype)
-		(simplyPrepare $ remove hooktype)
-		(simplyPrepare $ checkKey r hooktype)
+		(store hooktype)
+		(retrieve hooktype)
+		(remove hooktype)
+		(checkKey r hooktype)
 		Remote
 			{ uuid = u
 			, cost = cst

@@ -60,10 +60,10 @@ gen r u rc gc rs = do
 		{ chunkConfig = NoChunks
 		}
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ store ddarrepo)
-		(simplyPrepare $ retrieve ddarrepo)
-		(simplyPrepare $ remove ddarrepo)
-		(simplyPrepare $ checkKey ddarrepo)
+		(store ddarrepo)
+		(retrieve ddarrepo)
+		(remove ddarrepo)
+		(checkKey ddarrepo)
 		(this c cst)
   where
 	this c cst = Remote

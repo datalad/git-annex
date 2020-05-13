@@ -60,10 +60,10 @@ gen r u rc gc rs = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
 	return $ Just $ specialRemote c
-		(prepareStore dir chunkconfig)
+		(storeKeyM dir chunkconfig)
 		(retrieveKeyFileM dir chunkconfig)
-		(simplyPrepare $ removeKeyM dir)
-		(simplyPrepare $ checkPresentM dir chunkconfig)
+		(removeKeyM dir)
+		(checkPresentM dir chunkconfig)
 		Remote
 			{ uuid = u
 			, cost = cst
@@ -154,10 +154,12 @@ storeDir d k = addTrailingPathSeparator $
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
-prepareStore :: FilePath -> ChunkConfig -> Preparer Storer
-prepareStore d chunkconfig = checkPrepare (checkDiskSpaceDirectory d)
-	(byteStorer $ store d chunkconfig)
-  where
+storeKeyM :: FilePath -> ChunkConfig -> Storer
+storeKeyM d chunkconfig k c m = 
+	ifM (checkDiskSpaceDirectory d k)
+		( byteStorer (store d chunkconfig) k c m
+		, giveup "Not enough free disk space."
+		)
 
 checkDiskSpaceDirectory :: FilePath -> Key -> Annex Bool
 checkDiskSpaceDirectory d k = do
@@ -198,9 +200,9 @@ finalizeStoreGeneric d tmp dest = do
 		mapM_ preventWrite =<< dirContents dest
 		preventWrite dest
 
-retrieveKeyFileM :: FilePath -> ChunkConfig -> Preparer Retriever
+retrieveKeyFileM :: FilePath -> ChunkConfig -> Retriever
 retrieveKeyFileM d (LegacyChunks _) = Legacy.retrieve locations d
-retrieveKeyFileM d _ = simplyPrepare $ byteRetriever $ \k sink ->
+retrieveKeyFileM d _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile =<< getLocation d k)
 
 retrieveKeyFileCheapM :: FilePath -> ChunkConfig -> Key -> AssociatedFile -> FilePath -> Annex Bool

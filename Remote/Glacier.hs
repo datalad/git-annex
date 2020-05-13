@@ -65,10 +65,10 @@ gen r u rc gc rs = new
 	<*> remoteCost gc veryExpensiveRemoteCost
   where
 	new c cst = Just $ specialRemote' specialcfg c
-		(prepareStore this)
-		(prepareRetrieve this)
-		(simplyPrepare $ remove this)
-		(simplyPrepare $ checkKey this)
+		(store this)
+		(retrieve this)
+		(remove this)
+		(checkKey this)
 		this
 	  where
 		this = Remote
@@ -136,18 +136,19 @@ glacierSetup' ss u mcreds c gc = do
 		, (vaultField, Proposed defvault)
 		]
 
-prepareStore :: Remote -> Preparer Storer
-prepareStore r = checkPrepare nonEmpty (byteStorer $ store r)
+store :: Remote -> Storer
+store r k b p = do
+	checkNonEmpty k
+	byteStorer (store' r) k b p
 
-nonEmpty :: Key -> Annex Bool
-nonEmpty k
-	| fromKey keySize k == Just 0 = do
-		warning "Cannot store empty files in Glacier."
-		return False
-	| otherwise = return True
+checkNonEmpty :: Key -> Annex ()
+checkNonEmpty k
+	| fromKey keySize k == Just 0 =
+		giveup "Cannot store empty files in Glacier."
+	| otherwise = return ()
 
-store :: Remote -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
-store r k b p = go =<< glacierEnv c gc u
+store' :: Remote -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
+store' r k b p = go =<< glacierEnv c gc u
   where
 	c = config r
 	gc = gitconfig r
@@ -167,11 +168,11 @@ store r k b p = go =<< glacierEnv c gc u
 				meteredWrite p h b
 				return True
 
-prepareRetrieve :: Remote -> Preparer Retriever
-prepareRetrieve = simplyPrepare . byteRetriever . retrieve
+retrieve :: Remote -> Retriever
+retrieve = byteRetriever . retrieve'
 
-retrieve :: Remote -> Key -> (L.ByteString -> Annex Bool) -> Annex Bool
-retrieve r k sink = go =<< glacierEnv c gc u
+retrieve' :: Remote -> Key -> (L.ByteString -> Annex Bool) -> Annex Bool
+retrieve' r k sink = go =<< glacierEnv c gc u
   where
 	c = config r
 	gc = gitconfig r

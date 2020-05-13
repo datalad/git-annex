@@ -11,15 +11,11 @@ module Remote.Helper.Special (
 	findSpecialRemotes,
 	gitConfigSpecialRemote,
 	mkRetrievalVerifiableKeysSecure,
-	Preparer,
 	Storer,
 	Retriever,
 	Remover,
 	CheckPresent,
-	simplyPrepare,
 	ContentSource,
-	checkPrepare,
-	resourcePrepare,
 	fileStorer,
 	byteStorer,
 	fileRetriever,
@@ -50,7 +46,6 @@ import Config.Cost
 import Utility.Metered
 import Remote.Helper.Chunked as X
 import Remote.Helper.Encryptable as X
-import Remote.Helper.Messages
 import Annex.Content
 import Messages.Progress
 import qualified Git
@@ -92,22 +87,6 @@ mkRetrievalVerifiableKeysSecure :: RemoteGitConfig -> RetrievalSecurityPolicy
 mkRetrievalVerifiableKeysSecure gc
 	| remoteAnnexAllowUnverifiedDownloads gc = RetrievalAllKeysSecure
 	| otherwise = RetrievalVerifiableKeysSecure
-
--- Use when nothing needs to be done to prepare a helper.
-simplyPrepare :: helper -> Preparer helper
-simplyPrepare helper _ a = a $ Just helper
-
--- Use to run a check when preparing a helper.
-checkPrepare :: (Key -> Annex Bool) -> helper -> Preparer helper
-checkPrepare checker helper k a = ifM (checker k)
-	( a (Just helper)
-	, a Nothing
-	)
-
--- Use to acquire a resource when preparing a helper.
-resourcePrepare :: (Key -> (r -> Annex Bool) -> Annex Bool) -> (r -> helper) -> Preparer helper
-resourcePrepare withr helper k a = withr k $ \r ->
-	a (Just (helper r))
 
 -- A Storer that expects to be provided with a file containing
 -- the content of the key to store.
@@ -152,10 +131,10 @@ checkPresentDummy _ = error "missing checkPresent implementation"
 
 type RemoteModifier
 	= ParsedRemoteConfig
-	-> Preparer Storer
-	-> Preparer Retriever
-	-> Preparer Remover
-	-> Preparer CheckPresent
+	-> Storer
+	-> Retriever
+	-> Remover
+	-> CheckPresent
 	-> Remote
 	-> Remote
 
@@ -185,7 +164,7 @@ specialRemote :: RemoteModifier
 specialRemote c = specialRemote' (specialRemoteCfg c) c
 
 specialRemote' :: SpecialRemoteCfg -> RemoteModifier
-specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckpresent baser = encr
+specialRemote' cfg c storer retriever remover checkpresent baser = encr
   where
 	encr = baser
 		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
@@ -229,21 +208,17 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc = safely $ preparestorer k $ safely . go
+	storeKeyGen k p enc = safely $ sendAnnex k rollback $ \src ->
+		displayprogress p k (Just src) $ \p' ->
+			storeChunks (uuid baser) chunkconfig enck k src p'
+				(storechunk enc)
+				checkpresent
 	  where
-		go (Just storer) = preparecheckpresent k $ safely . go' storer
-		go Nothing = return False
-		go' storer (Just checker) = sendAnnex k rollback $ \src ->
-			displayprogress p k (Just src) $ \p' ->
-				storeChunks (uuid baser) chunkconfig enck k src p'
-					(storechunk enc storer)
-					checker
-		go' _ Nothing = return False
 		rollback = void $ removeKey encr k
 		enck = maybe id snd enc
 
-	storechunk Nothing storer k content p = storer k content p
-	storechunk (Just (cipher, enck)) storer k content p = do
+	storechunk Nothing k content p = storer k content p
+	storechunk (Just (cipher, enck)) k content p = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		withBytes content $ \b ->
 			encrypt cmd encr cipher (feedBytes b) $
@@ -251,25 +226,21 @@ specialRemote' cfg c preparestorer prepareretriever prepareremover preparecheckp
 					storer (enck k) (ByteContent encb) p
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
-	retrieveKeyFileGen k dest p enc =
-		safely $ prepareretriever k $ safely . go
-	  where
-		go (Just retriever) = displayprogress p k Nothing $ \p' ->
+	retrieveKeyFileGen k dest p enc = safely $
+		displayprogress p k Nothing $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
 				enck k dest p' (sink dest enc encr)
-		go Nothing = return False
+	  where
 		enck = maybe id snd enc
 
-	removeKeyGen k enc = safely $ prepareremover k $ safely . go
+	removeKeyGen k enc = safely $
+		removeChunks remover (uuid baser) chunkconfig enck k
 	  where
-		go (Just remover) = removeChunks remover (uuid baser) chunkconfig enck k
-		go Nothing = return False
 		enck = maybe id snd enc
 
-	checkPresentGen k enc = preparecheckpresent k go
+	checkPresentGen k enc = 
+		checkPresentChunks checkpresent (uuid baser) chunkconfig enck k
 	  where
-		go (Just checker) = checkPresentChunks checker (uuid baser) chunkconfig enck k
-		go Nothing = cantCheck baser
 		enck = maybe id snd enc
 
 	chunkconfig = chunkConfig cfg

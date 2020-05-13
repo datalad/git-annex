@@ -159,10 +159,10 @@ gen' r u c gc rs = do
 		, remoteStateHandle = rs
 	}
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ store this rsyncopts)
-		(simplyPrepare $ retrieve this rsyncopts)
-		(simplyPrepare $ remove this rsyncopts)
-		(simplyPrepare $ checkKey this rsyncopts)
+		(store this rsyncopts)
+		(retrieve this rsyncopts)
+		(remove this rsyncopts)
+		(checkKey this rsyncopts)
 		this
   where
 	specialcfg

@@ -91,10 +91,10 @@ gen r u rc gc rs = do
 		{ chunkConfig = NoChunks
 		}
 	return $ Just $ specialRemote' specialcfg c
-		(simplyPrepare $ store rs h)
-		(simplyPrepare $ retrieve rs h)
-		(simplyPrepare $ remove h)
-		(simplyPrepare $ checkKey rs h)
+		(store rs h)
+		(retrieve rs h)
+		(remove h)
+		(checkKey rs h)
 		(this c cst)
   where
 	this c cst = Remote

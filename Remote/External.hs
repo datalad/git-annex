@@ -154,10 +154,10 @@ gen r u rc gc rs
 			, remoteStateHandle = rs
 			}
 		return $ Just $ specialRemote c
-			(simplyPrepare tostore)
-			(simplyPrepare toretrieve)
-			(simplyPrepare toremove)
-			(simplyPrepare tocheckkey)
+			tostore
+			toretrieve
+			toremove
+			tocheckkey
 			rmt
 	externaltype = fromMaybe (giveup "missing externaltype") (remoteAnnexExternalType gc)
 
