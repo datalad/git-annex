@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="Chymera"
+ avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
+ subject="comment 2"
+ date="2020-05-13T04:15:53Z"
+ content="""
+oh my, so yes, this elucidates the issue quite a bit: (1) my repo registry seems to contain a lot of cruft, (2) whereis does not find the file:
+
+```
+chymera@silenthost ~/data $ git annex whereis histology/sub-6532/sub-6532_slice-15gfp_zoom-5_scene-5_transmission.tif
+whereis histology/sub-6532/sub-6532_slice-15gfp_zoom-5_scene-5_transmission.tif (1 copy)
+  	9f775012-942e-4ea7-96be-3bec8e4fcbf4 -- chymera@localhost.localdomain:~/data
+ok
+chymera@silenthost ~/data $ git annex info
+repository mode: direct
+trusted repositories: 0
+semitrusted repositories: 23
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	0db2cda2-f637-41d4-a0d2-701b105e734f -- chymera@zenbookhost:/run/media/chymera/data0/NIdata
+ 	1b16e8b5-e8ca-457b-b55f-ecc8b80e8243 -- chymera@zenbookhost:/run/media/chymera/data0/data [data0]
+ 	21038418-d6ae-4115-a64b-2aa48c37f834 -- chymera@darkhost:~/data
+ 	37e50619-7871-4b52-bb0d-dbe68314818d -- chymera@quiethost:~/NIdata
+ 	3e63db63-e218-4b5b-8c27-9ace71133731 -- chymera@quiethost:/mnt/data/data
+ 	410ad0c4-62d4-4820-a3bc-55209e8493b0 -- chymera@zenbookhost:~/data
+ 	4a86a541-33a2-4584-8db3-5e65a164a2bc -- chymera@quiethost:/run/media/chymera/data1/NIdata
+ 	5316c8a8-5321-43f8-8c4c-da938b4b4f2f -- chymera@labhost:~/data
+ 	5f721022-54a8-4833-8d33-7d3e48c929e5 -- data2
+ 	5fa05d4c-320f-43bf-9b4b-aae548675119 -- chymera@zenbookhost:~/data
+ 	5fec9ad2-83bf-4e7f-abf2-6d981fb17b4a -- chymera@zenbookhost:~///home/chymera/NIdata
+ 	6ccf6850-40f3-4130-a8de-a6a7ded9817e -- chymera@silenthost:~/data [here]
+ 	9a48528e-1595-4a9a-8c47-501fbb6b74bf -- chymera@quiethost:~/data
+ 	9f775012-942e-4ea7-96be-3bec8e4fcbf4 -- chymera@localhost.localdomain:~/data
+ 	a88e4011-c0a2-4924-a44d-66b31c5de74f -- chymera@zenhost:~/data
+ 	aeb05710-87d5-45d5-8d62-2281973d2834 -- neurohost
+ 	dd11ee2f-9b6c-4393-bc9d-df3542be52b4 -- chymera@zenhost:/zenhost/home/chymera/data
+ 	de05302b-03e7-4d91-82f5-d58ae66f863d -- chymera@neurohost:/mnt/data9/data
+ 	e56c9d76-3483-4c14-8b2e-f1aab168a9a5 -- chymera@quiethost:/run/media/chymera/data1/data
+ 	f5044a77-e912-4829-a071-b39ad187804e -- gentoo@ofmhost:~/data [ofmhost]
+ 	fd1ddddb-6a4f-49c3-b8a2-bbd3e00b934c -- quiethost
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 480.21 gigabytes (+1 megabyte reserved)
+local annex keys: 13539
+local annex size: 214.72 gigabytes
+annexed files in working tree: 15680
+size of annexed files in working tree: 215.92 gigabytes
+bloom filter size: 32 mebibytes (2.7% full)
+backend usage:
+	SHA256E: 15680
+```
+
+What can I do to (1) clean up my repo index, and (2) make sure that data0 is correctly tracked?
+"""]]
