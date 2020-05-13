@@ -30,12 +30,14 @@ type ProtoConnRunner c = forall a. P2P.Proto a -> ClosableConnection c -> Annex 
 -- the pool when done.
 type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) -> Annex a
 
-store :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 store runner k af p = do
 	let sizer = KeySizer k (fmap fst <$> prepSendAnnex k)
-	metered (Just p) sizer $ \_ p' -> 
-		fromMaybe False
-			<$> runner p' (P2P.put k af p')
+	metered (Just p) sizer $ \_ p' ->
+		runner p' (P2P.put k af p') >>= \case
+			Just True -> return ()
+			Just False -> giveup "transfer failed"
+			Nothing -> giveup "can't connect to remote"
 
 retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retrieve runner k af dest p =

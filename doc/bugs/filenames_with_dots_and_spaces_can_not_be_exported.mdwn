@@ -13,3 +13,6 @@ I am not yet sure what exact combinations of dots, spaces and maybe dashes cause
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 8.20200309-05df404212, Debian testing
+
+[[!meta title="change exception handling of remotes to avoid ever failing
+without telling the reason why"]]

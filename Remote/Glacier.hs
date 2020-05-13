@@ -147,7 +147,7 @@ checkNonEmpty k
 		giveup "Cannot store empty files in Glacier."
 	| otherwise = return ()
 
-store' :: Remote -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
+store' :: Remote -> Key -> L.ByteString -> MeterUpdate -> Annex ()
 store' r k b p = go =<< glacierEnv c gc u
   where
 	c = config r
@@ -160,13 +160,11 @@ store' r k b p = go =<< glacierEnv c gc u
 		, Param $ getVault $ config r
 		, Param "-"
 		]
-	go Nothing = return False
-	go (Just e) = do
+	go Nothing = giveup "Glacier not usable."
+	go (Just e) = liftIO $ do
 		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
-		liftIO $ catchBoolIO $
-			withHandle StdinHandle createProcessSuccess cmd $ \h -> do
-				meteredWrite p h b
-				return True
+		withHandle StdinHandle createProcessSuccess cmd $ \h ->
+			meteredWrite p h b
 
 retrieve :: Remote -> Retriever
 retrieve = byteRetriever . retrieve'

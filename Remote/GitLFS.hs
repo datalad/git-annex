@@ -440,18 +440,15 @@ mkDownloadRequest rs k = case (extractKeySha256 k, extractKeySize k) of
 
 store :: RemoteStateHandle -> TVar LFSHandle -> Storer
 store rs h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \case
-	Nothing -> return False
-	Just endpoint -> flip catchNonAsync failederr $ do
+	Nothing -> giveup "unable to connect to git-lfs endpoint"
+	Just endpoint -> do
 		(req, sha256, size) <- mkUploadRequest rs k src
 		sendTransferRequest req endpoint >>= \case
-			Left err -> do
-				warning err
-				return False
 			Right resp -> do
 				body <- liftIO $ httpBodyStorer src p
 				forM_ (LFS.objects resp) $
 					send body sha256 size
-				return True
+			Left err -> giveup err
   where
 	send body sha256 size tro
 		| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size =
@@ -466,9 +463,6 @@ store rs h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \ca
 					Just [] -> noop -- server already has it
 					Just reqs -> forM_ reqs $
 						makeSmallAPIRequest . setRequestCheckStatus
-	failederr e = do
-		warning (show e)
-		return False
 
 retrieve :: RemoteStateHandle -> TVar LFSHandle -> Retriever
 retrieve rs h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h >>= \case

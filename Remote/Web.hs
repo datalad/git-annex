@@ -97,10 +97,8 @@ downloadKey key _af dest p = unVerified $ get =<< getWebUrls key
 downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 downloadKeyCheap _ _ _ = return False
 
-uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-uploadKey _ _ _ = do
-	warning "upload to web not supported"
-	return False
+uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
+uploadKey _ _ _ = giveup "upload to web not supported"
 
 dropKey :: Key -> Annex Bool
 dropKey k = do

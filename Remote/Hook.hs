@@ -133,8 +133,17 @@ lookupHook hookname action = do
 	hook = annexConfig $ encodeBS' $ hookname ++ "-" ++ action ++ "-hook"
 	hookfallback = annexConfig $ encodeBS' $ hookname ++ "-hook"
 
-runHook :: HookName -> Action -> Key -> Maybe FilePath -> Annex Bool -> Annex Bool
-runHook hook action k f a = maybe (return False) run =<< lookupHook hook action
+runHook :: HookName -> Action -> Key -> Maybe FilePath -> Annex ()
+runHook hook action k f = lookupHook hook action >>= \case
+	Just command -> do
+		showOutput -- make way for hook output
+		environ <- liftIO (hookEnv action k f)
+		unlessM (progressCommandEnv "sh" [Param "-c", Param command] environ) $
+			giveup $ hook ++ " hook exited nonzero!"
+	Nothing -> giveup $ action ++ " hook misconfigured"
+
+runHook' :: HookName -> Action -> Key -> Maybe FilePath -> Annex Bool -> Annex Bool
+runHook' hook action k f a = maybe (return False) run =<< lookupHook hook action
   where
 	run command = do
 		showOutput -- make way for hook output
@@ -146,19 +155,18 @@ runHook hook action k f a = maybe (return False) run =<< lookupHook hook action
 			)
 
 store :: HookName -> Storer
-store h = fileStorer $ \k src _p ->
-	runHook h "store" k (Just src) $ return True
+store h = fileStorer $ \k src _p -> runHook h "store" k (Just src)
 
 retrieve :: HookName -> Retriever
 retrieve h = fileRetriever $ \d k _p ->
-	unlessM (runHook h "retrieve" k (Just d) $ return True) $
+	unlessM (runHook' h "retrieve" k (Just d) $ return True) $
 		giveup "failed to retrieve content"
 
 retrieveCheap :: HookName -> Key -> AssociatedFile -> FilePath -> Annex Bool
 retrieveCheap _ _ _ _ = return False
 
 remove :: HookName -> Remover
-remove h k = runHook h "remove" k Nothing $ return True
+remove h k = runHook' h "remove" k Nothing $ return True
 
 checkKey :: Git.Repo -> HookName -> CheckPresent
 checkKey r h k = do

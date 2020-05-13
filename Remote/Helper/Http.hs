@@ -25,7 +25,7 @@ import Network.HTTP.Types
 --
 -- Implemented as a fileStorer, so that the content can be streamed
 -- from the file in constant space.
-httpStorer :: (Key -> RequestBody -> Annex Bool) -> Storer
+httpStorer :: (Key -> RequestBody -> Annex ()) -> Storer
 httpStorer a = fileStorer $ \k f m -> a k =<< liftIO (httpBodyStorer f m)
 
 -- Reads the file and generates a streaming request body, that will update

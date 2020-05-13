@@ -156,9 +156,7 @@ store r buprepo = byteStorer $ \k b p -> do
 	showOutput -- make way for bup output
 	let cmd = proc "bup" (toCommand params)
 	quiet <- commandProgressDisabled
-	let feeder = \h -> do
-		meteredWrite p h b
-		return True
+	let feeder = \h -> meteredWrite p h b
 	liftIO $ if quiet
 		then feedWithQuietOutput createProcessSuccess cmd feeder
 		else withHandle StdinHandle createProcessSuccess cmd feeder

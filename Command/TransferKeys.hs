@@ -38,10 +38,13 @@ start = do
 	runner (TransferRequest direction remote key file)
 		| direction == Upload = notifyTransfer direction file $
 			upload (Remote.uuid remote) key file stdRetry $ \p -> do
-				ok <- Remote.storeKey remote key file p
-				when ok $
-					Remote.logStatus remote key InfoPresent
-				return ok
+				tryNonAsync (Remote.storeKey remote key file p) >>= \case
+					Left e -> do
+						warning (show e)
+						return False
+					Right () -> do
+						Remote.logStatus remote key InfoPresent
+						return True
 		| otherwise = notifyTransfer direction file $
 			download (Remote.uuid remote) key file stdRetry $ \p ->
 				getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key $ \t -> do

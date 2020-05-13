@@ -90,7 +90,7 @@ mkRetrievalVerifiableKeysSecure gc
 
 -- A Storer that expects to be provided with a file containing
 -- the content of the key to store.
-fileStorer :: (Key -> FilePath -> MeterUpdate -> Annex Bool) -> Storer
+fileStorer :: (Key -> FilePath -> MeterUpdate -> Annex ()) -> Storer
 fileStorer a k (FileContent f) m = a k f m
 fileStorer a k (ByteContent b) m = withTmp k $ \f -> do
 	liftIO $ L.writeFile f b
@@ -98,7 +98,7 @@ fileStorer a k (ByteContent b) m = withTmp k $ \f -> do
 
 -- A Storer that expects to be provided with a L.ByteString of
 -- the content to store.
-byteStorer :: (Key -> L.ByteString -> MeterUpdate -> Annex Bool) -> Storer
+byteStorer :: (Key -> L.ByteString -> MeterUpdate -> Annex ()) -> Storer
 byteStorer a k c m = withBytes c $ \b -> a k b m
 
 -- A Retriever that writes the content of a Key to a provided file.
@@ -120,8 +120,8 @@ byteRetriever a k _m callback = a k (callback . ByteContent)
  - but they are never actually used (since specialRemote replaces them).
  - Here are some dummy ones.
  -}
-storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-storeKeyDummy _ _ _ = return False
+storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
+storeKeyDummy _ _ _ = error "missing storeKey implementation"
 retreiveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex (Bool, Verification)
 retreiveKeyFileDummy _ _ _ _ = unVerified (return False)
 removeKeyDummy :: Key -> Annex Bool
@@ -208,7 +208,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
 
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc = safely $ sendAnnex k rollback $ \src ->
+	storeKeyGen k p enc = sendAnnex k rollback $ \src ->
 		displayprogress p k (Just src) $ \p' ->
 			storeChunks (uuid baser) chunkconfig enck k src p'
 				(storechunk enc)

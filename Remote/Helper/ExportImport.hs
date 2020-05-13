@@ -188,9 +188,8 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		-- when another repository has already stored the
 		-- key, and the local repository does not know
 		-- about it. To avoid unnecessary costs, don't do it.
-		{ storeKey = \_ _ _ -> do
-			warning "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
-			return False
+		{ storeKey = \_ _ _ ->
+			giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
 		-- Keys can be retrieved using retrieveExport, 
 		-- but since that retrieves from a path in the
 		-- remote that another writer could have replaced

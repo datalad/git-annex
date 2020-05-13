@@ -40,6 +40,7 @@ import "crypto-api" Crypto.Random
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import Data.Either
 import Control.Concurrent.STM hiding (check)
 
 cmd :: Command
@@ -217,11 +218,11 @@ test runannex mkr mkk =
 	, check ("present " ++ show False) $ \r k ->
 		whenwritable r $ present r k False
 	, check "storeKey" $ \r k ->
-		whenwritable r $ store r k
+		whenwritable r $ isRight <$> tryNonAsync (store r k)
 	, check ("present " ++ show True) $ \r k ->
 		whenwritable r $ present r k True
 	, check "storeKey when already present" $ \r k ->
-		whenwritable r $ store r k
+		whenwritable r $ isRight <$> tryNonAsync (store r k)
 	, check ("present " ++ show True) $ \r k -> present r k True
 	, check "retrieveKeyFile" $ \r k -> do
 		lockContentForRemoval k removeAnnex
@@ -341,7 +342,7 @@ testUnavailable :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 testUnavailable runannex mkr mkk =
 	[ check (== Right False) "removeKey" $ \r k ->
 		Remote.removeKey r k
-	, check (== Right False) "storeKey" $ \r k -> 
+	, check isLeft "storeKey" $ \r k -> 
 		Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
 	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
 		Remote.checkPresent r k

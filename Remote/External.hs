@@ -222,14 +222,14 @@ checkExportSupported' external = go `catchNonAsync` (const (return False))
 		_ -> Nothing
 
 storeKeyM :: External -> Storer
-storeKeyM external = fileStorer $ \k f p ->
-	handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
+storeKeyM external = fileStorer $ \k f p -> either giveup return =<< go k f p
+  where
+	go k f p = handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
 		case resp of
-			TRANSFER_SUCCESS Upload k' | k == k' -> result True
+			TRANSFER_SUCCESS Upload k' | k == k' ->
+				result (Right ())
 			TRANSFER_FAILURE Upload k' errmsg | k == k' ->
-				Just $ do
-					warning $ respErrorMessage "TRANSFER" errmsg
-					return (Result False)
+				result (Left (respErrorMessage "TRANSFER" errmsg))
 			_ -> Nothing
 
 retrieveKeyFileM :: External -> Retriever

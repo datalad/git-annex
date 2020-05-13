@@ -322,7 +322,6 @@ store mh r info magic = fileStorer $ \k f p -> withS3HandleOrFail (uuid r) mh $ 
 	-- Store public URL to item in Internet Archive.
 	when (isIA info && not (isChunkKey k)) $
 		setUrlPresent k (iaPublicUrl info (bucketObject info k))
-	return True
 
 storeHelper :: S3Info -> S3Handle -> Maybe Magic -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
 storeHelper info h magic f object p = liftIO $ case partSize info of

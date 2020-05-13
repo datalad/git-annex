@@ -111,10 +111,8 @@ downloadKey key _file dest p = unVerified $
 downloadKeyCheap :: Key -> AssociatedFile -> FilePath -> Annex Bool
 downloadKeyCheap _ _ _ = return False
 
-uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-uploadKey _ _ _ = do
-	warning "upload to bittorrent not supported"
-	return False
+uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
+uploadKey _ _ _ = giveup "upload to bittorrent not supported"
 
 dropKey :: Key -> Annex Bool
 dropKey k = do

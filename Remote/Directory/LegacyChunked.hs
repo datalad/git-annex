@@ -70,7 +70,7 @@ storeLegacyChunked' meterupdate chunksize (d:dests) bs c = do
 				feed bytes' (sz - s) ls h
 			else return (l:ls)
 
-storeHelper :: FilePath -> (FilePath -> FilePath -> IO ()) -> Key -> ([FilePath] -> IO [FilePath]) -> FilePath -> FilePath -> IO Bool
+storeHelper :: FilePath -> (FilePath -> FilePath -> IO ()) -> Key -> ([FilePath] -> IO [FilePath]) -> FilePath -> FilePath -> IO ()
 storeHelper repotop finalizer key storer tmpdir destdir = do
 	void $ liftIO $ tryIO $ createDirectoryUnder repotop tmpdir
 	Legacy.storeChunks key tmpdir destdir storer recorder finalizer
@@ -80,7 +80,7 @@ storeHelper repotop finalizer key storer tmpdir destdir = do
 		writeFile f s
 		void $ tryIO $ preventWrite f
 
-store :: FilePath -> ChunkSize -> (FilePath -> FilePath -> IO ()) -> Key -> L.ByteString -> MeterUpdate -> FilePath -> FilePath -> IO Bool
+store :: FilePath -> ChunkSize -> (FilePath -> FilePath -> IO ()) -> Key -> L.ByteString -> MeterUpdate -> FilePath -> FilePath -> IO ()
 store repotop chunksize finalizer k b p = storeHelper repotop finalizer k $ \dests ->
 	storeLegacyChunked p chunksize dests b
 

@@ -127,7 +127,8 @@ store ddarrepo = fileStorer $ \k src _p -> do
 		, Param $ ddarRepoLocation ddarrepo
 		, File src
 		]
-	liftIO $ boolSystem "ddar" params
+	unlessM (liftIO $ boolSystem "ddar" params) $
+		giveup "ddar failed"
 
 {- Convert remote DdarRepo to host and path on remote end -}
 splitRemoteDdarRepo :: DdarRepo -> (SshHost, String)

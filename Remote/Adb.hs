@@ -160,7 +160,8 @@ adbSetup _ mu _ c gc = do
 store :: AndroidSerial -> AndroidPath -> Storer
 store serial adir = fileStorer $ \k src _p -> 
 	let dest = androidLocation adir k
-	in store' serial dest src
+	in unlessM (store' serial dest src) $
+		giveup "adb failed"
 
 store' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
 store' serial dest src = store'' serial dest src (return True)

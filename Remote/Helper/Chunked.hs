@@ -117,28 +117,22 @@ storeChunks
 	-> MeterUpdate
 	-> Storer
 	-> CheckPresent
-	-> Annex Bool
+	-> Annex ()
 storeChunks u chunkconfig encryptor k f p storer checker = 
 	case chunkconfig of
-		(UnpaddedChunks chunksize) | isStableKey k -> 
-			bracketIO open close (go chunksize)
+		(UnpaddedChunks chunksize) | isStableKey k -> do
+			h <- liftIO $ openBinaryFile f ReadMode
+			go chunksize h
+			liftIO $ hClose h
 		_ -> storer k (FileContent f) p
   where
-	open = tryIO $ openBinaryFile f ReadMode
-
-	close (Right h) = hClose h
-	close (Left _) = noop
-
-	go _ (Left e) = do
-		warning (show e)
-		return False
-	go chunksize (Right h) = do
+	go chunksize h = do
 		let chunkkeys = chunkKeyStream k chunksize
 		(chunkkeys', startpos) <- seekResume h encryptor chunkkeys checker
 		b <- liftIO $ L.hGetContents h
 		gochunks p startpos chunksize b chunkkeys'
 
-	gochunks :: MeterUpdate -> BytesProcessed -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex Bool
+	gochunks :: MeterUpdate -> BytesProcessed -> ChunkSize -> L.ByteString -> ChunkKeyStream -> Annex ()
 	gochunks meterupdate startpos chunksize = loop startpos . splitchunk
 	  where
 		splitchunk = L.splitAt chunksize
@@ -148,16 +142,12 @@ storeChunks u chunkconfig encryptor k f p storer checker =
 				-- Once all chunks are successfully
 				-- stored, update the chunk log.
 				chunksStored u k (FixedSizeChunks chunksize) numchunks
-				return True
 			| otherwise = do
 				liftIO $ meterupdate' zeroBytesProcessed
 				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
-				ifM (storer chunkkey (ByteContent chunk) meterupdate')
-					( do
-						let bytesprocessed' = addBytesProcessed bytesprocessed (L.length chunk)
-						loop bytesprocessed' (splitchunk bs) chunkkeys'
-					, return False
-					)
+				storer chunkkey (ByteContent chunk) meterupdate'
+				let bytesprocessed' = addBytesProcessed bytesprocessed (L.length chunk)
+				loop bytesprocessed' (splitchunk bs) chunkkeys'
 		  where
 			numchunks = numChunks chunkkeys
 			{- The MeterUpdate that is passed to the action

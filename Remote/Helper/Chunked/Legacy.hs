@@ -63,20 +63,15 @@ probeChunks basedest check = go [] $ map (basedest ++) chunkStream
  - finalizer is called to rename the tmp into the dest 
  - (and do any other cleanup).
  -}
-storeChunks :: Key -> FilePath -> FilePath -> ([FilePath] -> IO [FilePath]) -> (FilePath -> String -> IO ()) -> (FilePath -> FilePath -> IO ()) -> IO Bool
-storeChunks key tmp dest storer recorder finalizer = either onerr return
-	=<< (E.try go :: IO (Either E.SomeException Bool))
+storeChunks :: Key -> FilePath -> FilePath -> ([FilePath] -> IO [FilePath]) -> (FilePath -> String -> IO ()) -> (FilePath -> FilePath -> IO ()) -> IO ()
+storeChunks key tmp dest storer recorder finalizer = do
+	stored <- storer tmpdests
+	let chunkcount = basef ++ chunkCount
+	recorder chunkcount (show $ length stored)
+	finalizer tmp dest
+	when (null stored) $
+		giveup "no chunks were stored"
   where
-	go = do
-		stored <- storer tmpdests
-		let chunkcount = basef ++ chunkCount
-		recorder chunkcount (show $ length stored)
-		finalizer tmp dest
-		return (not $ null stored)
-	onerr e = do
-		warningIO (show e)
-		return False
-
 	basef = tmp ++ fromRawFilePath (keyFile key)
 	tmpdests = map (basef ++ ) chunkStream
 

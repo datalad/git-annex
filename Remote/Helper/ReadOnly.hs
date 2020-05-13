@@ -44,23 +44,23 @@ adjustReadOnly r
 		}
 	| otherwise = r
 
-readonlyStoreKey :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+readonlyStoreKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 readonlyStoreKey _ _ _ = readonlyFail
 
 readonlyRemoveKey :: Key -> Annex Bool
-readonlyRemoveKey _ = readonlyFail
+readonlyRemoveKey _ = readonlyFail'
 
 readonlyStorer :: Storer
 readonlyStorer _ _ _ = readonlyFail
 
 readonlyStoreExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-readonlyStoreExport _ _ _ _ = readonlyFail
+readonlyStoreExport _ _ _ _ = readonlyFail'
 
 readonlyRemoveExport :: Key -> ExportLocation -> Annex Bool
-readonlyRemoveExport _ _ = readonlyFail
+readonlyRemoveExport _ _ = readonlyFail'
 
 readonlyRemoveExportDirectory :: ExportDirectory -> Annex Bool
-readonlyRemoveExportDirectory _ = readonlyFail
+readonlyRemoveExportDirectory _ = readonlyFail'
 
 readonlyRenameExport :: Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
 readonlyRenameExport _ _ _ = return Nothing
@@ -70,10 +70,13 @@ readonlyStoreExportWithContentIdentifier _ _ _ _ _ =
 	return $ Left readonlyWarning
 
 readonlyRemoveExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
-readonlyRemoveExportWithContentIdentifier _ _ _ = readonlyFail
+readonlyRemoveExportWithContentIdentifier _ _ _ = readonlyFail'
 
-readonlyFail :: Annex Bool
-readonlyFail = do
+readonlyFail :: Annex ()
+readonlyFail = giveup readonlyWarning
+
+readonlyFail' :: Annex Bool
+readonlyFail' = do
 	warning readonlyWarning
 	return False
 

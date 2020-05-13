@@ -23,7 +23,7 @@ isByteContent (FileContent _) = False
 
 -- Action that stores a Key's content on a remote.
 -- Can throw exceptions.
-type Storer = Key -> ContentSource -> MeterUpdate -> Annex Bool
+type Storer = Key -> ContentSource -> MeterUpdate -> Annex ()
 
 -- Action that retrieves a Key's content from a remote, passing it to a
 -- callback, which will fully consume the content before returning.

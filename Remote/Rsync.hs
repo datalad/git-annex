@@ -201,7 +201,7 @@ rsyncSetup _ mu _ c gc = do
  - (When we have the right hash directory structure, we can just
  - pass --include=X --include=X/Y --include=X/Y/file --exclude=*)
  -}
-store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex Bool
+store :: RsyncOpts -> Key -> FilePath -> MeterUpdate -> Annex ()
 store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
   where
 	basedest = fromRawFilePath $ Prelude.head (keyPaths k)
@@ -216,8 +216,13 @@ store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
 	 - object file, and has to be copied or hard linked into place. -}
 	canrename = isEncKey k || isChunkKey k
 
-storeGeneric :: RsyncOpts -> MeterUpdate -> FilePath -> (FilePath -> Annex Bool) -> Annex Bool
-storeGeneric o meterupdate basedest populatedest = withRsyncScratchDir $ \tmp -> do
+storeGeneric :: RsyncOpts -> MeterUpdate -> FilePath -> (FilePath -> Annex Bool) -> Annex ()
+storeGeneric o meterupdate basedest populatedest = 
+	unlessM (storeGeneric' o meterupdate basedest populatedest) $
+		giveup "failed to rsync content"
+
+storeGeneric' :: RsyncOpts -> MeterUpdate -> FilePath -> (FilePath -> Annex Bool) -> Annex Bool
+storeGeneric' o meterupdate basedest populatedest = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> basedest
 	createAnnexDirectory (parentDir dest)
 	ok <- populatedest dest
@@ -287,7 +292,7 @@ checkPresentGeneric o rsyncurls = do
 
 storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportM o src _k loc meterupdate =
-	storeGeneric o meterupdate basedest populatedest
+	storeGeneric' o meterupdate basedest populatedest
   where
 	basedest = fromRawFilePath (fromExportLocation loc)
 	populatedest = liftIO . createLinkOrCopy src

@@ -584,21 +584,19 @@ unlinkAnnex key = do
 {- Runs an action to transfer an object's content.
  -
  - In some cases, it's possible for the file to change as it's being sent.
- - If this happens, runs the rollback action and returns False. The
- - rollback action should remove the data that was transferred.
+ - If this happens, runs the rollback action and throws an exception.
+ - The rollback action should remove the data that was transferred.
  -}
-sendAnnex :: Key -> Annex () -> (FilePath -> Annex Bool) -> Annex Bool
+sendAnnex :: Key -> Annex () -> (FilePath -> Annex a) -> Annex a
 sendAnnex key rollback sendobject = go =<< prepSendAnnex key
   where
-	go Nothing = return False
 	go (Just (f, checksuccess)) = do
 		r <- sendobject f
-		ifM checksuccess
-			( return r
-			, do
-				rollback
-				return False
-			)
+		unlessM checksuccess $ do
+			rollback
+			giveup "content changed while it was being sent"
+		return r
+	go Nothing = giveup "content not available to send"
 
 {- Returns a file that contains an object's content,
  - and a check to run after the transfer is complete.

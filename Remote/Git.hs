@@ -649,28 +649,26 @@ copyFromRemoteCheap' _ _ _ _ _ _ = return False
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
-copyToRemote :: Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+copyToRemote :: Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 copyToRemote r st key file meterupdate = do
 	repo <- getRepo r
 	copyToRemote' repo r st key file meterupdate
 
-copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 	| not $ Git.repoIsUrl repo = ifM duc
-		( guardUsable repo (return False) $ commitOnCleanup repo r st $
+		( guardUsable repo (giveup "cannot access remote") $ commitOnCleanup repo r st $
 			copylocal =<< Annex.Content.prepSendAnnex key
-		, return False
+		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo = commitOnCleanup repo r st $
 		P2PHelper.store
-			(\p -> Ssh.runProto r connpool (return False) (copyremotefallback p))
+			(Ssh.runProto r connpool (return False) . copyremotefallback)
 			key file meterupdate
 		
-	| otherwise = do
-		warning "copying to non-ssh repo not supported"
-		return False
+	| otherwise = giveup "copying to non-ssh repo not supported"
   where
-	copylocal Nothing = return False
+	copylocal Nothing = giveup "content not available"
 	copylocal (Just (object, checksuccess)) = do
 		-- The checksuccess action is going to be run in
 		-- the remote's Annex, but it needs access to the local
@@ -680,7 +678,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocalFast st $ ifM (Annex.Content.inAnnex key)
+		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, runTransfer (Transfer Download u (fromKey id key)) file stdRetry $ \p -> do
 				copier <- mkCopier hardlink st params
@@ -692,7 +690,11 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 				Annex.Content.saveState True
 				return res
 			)
-	copyremotefallback p = Annex.Content.sendAnnex key noop $ \object -> do
+		unless res $
+			giveup "failed to send content to remote"
+	copyremotefallback p = either (const False) id
+		<$> tryNonAsync (copyremotefallback' p)
+	copyremotefallback' p = Annex.Content.sendAnnex key noop $ \object -> do
 		-- This is too broad really, but recvkey normally
 		-- verifies content anyway, so avoid complicating
 		-- it with a local sendAnnex check and rollback.

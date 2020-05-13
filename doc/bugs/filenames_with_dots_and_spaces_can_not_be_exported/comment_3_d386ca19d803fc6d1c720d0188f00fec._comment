@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-13T17:58:49Z"
+ content="""
+Converted the storeKey method to throw exceptions. This was a 1000 line
+patch, 3 hours of work. Seems likely it will take 24 hours work to finish
+converting all the methods..
+
+There were quite a few places where it used to return False without
+displaying a reason for the failure, so the work seems worth it.
+"""]]

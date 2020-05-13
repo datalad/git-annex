@@ -139,18 +139,13 @@ webdavSetup _ mu mcreds c gc = do
 
 store :: DavHandleVar -> ChunkConfig -> Storer
 store hv (LegacyChunks chunksize) = fileStorer $ \k f p -> 
-	withDavHandle hv $ \case
-		Nothing -> return False
-		Just dav -> liftIO $
-			withMeteredFile f p $ storeLegacyChunked chunksize k dav
+	withDavHandle hv $ \dav -> liftIO $
+		withMeteredFile f p $ storeLegacyChunked chunksize k dav
 store hv _ = httpStorer $ \k reqbody -> 
-	withDavHandle hv $ \case
-		Nothing -> return False
-		Just dav -> liftIO $ goDAV dav $ do
-			let tmp = keyTmpLocation k
-			let dest = keyLocation k
-			storeHelper dav tmp dest reqbody
-			return True
+	withDavHandle hv $ \dav -> liftIO $ goDAV dav $ do
+		let tmp = keyTmpLocation k
+		let dest = keyLocation k
+		storeHelper dav tmp dest reqbody
 
 storeHelper :: DavHandle -> DavLocation -> DavLocation -> RequestBody -> DAVT IO ()
 storeHelper dav tmp dest reqbody = do
@@ -172,12 +167,10 @@ retrieveCheap _ _ _ = return False
 
 retrieve :: DavHandleVar -> ChunkConfig -> Retriever
 retrieve hv cc = fileRetriever $ \d k p ->
-	withDavHandle hv $ \case
-		Nothing -> giveup "unable to connect"
-		Just dav -> case cc of
-			LegacyChunks _ -> retrieveLegacyChunked d k p dav
-			_ -> liftIO $
-				goDAV dav $ retrieveHelper (keyLocation k) d p
+	withDavHandle hv $ \dav -> case cc of
+		LegacyChunks _ -> retrieveLegacyChunked d k p dav
+		_ -> liftIO $
+			goDAV dav $ retrieveHelper (keyLocation k) d p
 
 retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> DAVT IO ()
 retrieveHelper loc d p = do
@@ -186,9 +179,9 @@ retrieveHelper loc d p = do
 		withContentM $ httpBodyRetriever d p
 
 remove :: DavHandleVar -> Remover
-remove hv k = withDavHandle hv $ \case
-	Nothing -> return False
-	Just dav -> liftIO $ goDAV dav $
+remove hv k = withDavHandle' hv $ \case
+	Left _e -> return False
+	Right dav -> liftIO $ goDAV dav $
 		-- Delete the key's whole directory, including any
 		-- legacy chunked files, etc, in a single action.
 		removeHelper (keyDir k)
@@ -206,20 +199,18 @@ removeHelper d = do
 				_ -> return False
 
 checkKey :: DavHandleVar -> Remote -> ChunkConfig -> CheckPresent
-checkKey hv r chunkconfig k = withDavHandle hv $ \case
-	Nothing -> giveup $ name r ++ " not configured"
-	Just dav -> do
-		showChecking r
-		case chunkconfig of
-			LegacyChunks _ -> checkKeyLegacyChunked dav k
-			_ -> do
-				v <- liftIO $ goDAV dav $
-					existsDAV (keyLocation k)
-				either giveup return v
+checkKey hv r chunkconfig k = withDavHandle hv $ \dav -> do
+	showChecking r
+	case chunkconfig of
+		LegacyChunks _ -> checkKeyLegacyChunked dav k
+		_ -> do
+			v <- liftIO $ goDAV dav $
+				existsDAV (keyLocation k)
+			either giveup return v
 
 storeExportDav :: DavHandleVar -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
 storeExportDav hdl f k loc p = case exportLocation loc of
-	Right dest -> withDavHandle hdl $ \mh -> runExport mh $ \dav -> do
+	Right dest -> withDavHandle' hdl $ \mh -> runExport mh $ \dav -> do
 		reqbody <- liftIO $ httpBodyStorer f p
 		storeHelper dav (keyTmpLocation k) dest reqbody
 		return True
@@ -229,23 +220,23 @@ storeExportDav hdl f k loc p = case exportLocation loc of
 
 retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
 retrieveExportDav hdl  _k loc d p = case exportLocation loc of
-	Right src -> withDavHandle hdl $ \mh -> runExport mh $ \_dav -> do
+	Right src -> withDavHandle' hdl $ \mh -> runExport mh $ \_dav -> do
 		retrieveHelper src d p
 		return True
 	Left _err -> return False
 
 checkPresentExportDav :: DavHandleVar -> Remote -> Key -> ExportLocation -> Annex Bool
-checkPresentExportDav hdl r _k loc = case exportLocation loc of
-	Right p -> withDavHandle hdl $ \case
-		Nothing -> giveup $ name r ++ " not configured"
-		Just h -> liftIO $ do
+checkPresentExportDav hdl _ _k loc = case exportLocation loc of
+	Right p -> withDavHandle' hdl $ \case
+		Left e -> giveup e
+		Right h -> liftIO $ do
 			v <- goDAV h $ existsDAV p
 			either giveup return v
 	Left err -> giveup err
 
 removeExportDav :: DavHandleVar-> Key -> ExportLocation -> Annex Bool
 removeExportDav hdl _k loc = case exportLocation loc of
-	Right p -> withDavHandle hdl $ \mh -> runExport mh $ \_dav ->
+	Right p -> withDavHandle' hdl $ \mh -> runExport mh $ \_dav ->
 		removeHelper p
 	-- When the exportLocation is not legal for webdav,
 	-- the content is certianly not stored there, so it's ok for
@@ -255,7 +246,7 @@ removeExportDav hdl _k loc = case exportLocation loc of
 	Left _err -> return True
 
 removeExportDirectoryDav :: DavHandleVar -> ExportDirectory -> Annex Bool
-removeExportDirectoryDav hdl dir = withDavHandle hdl $ \mh -> runExport mh $ \_dav -> do
+removeExportDirectoryDav hdl dir = withDavHandle' hdl $ \mh -> runExport mh $ \_dav -> do
 	let d = fromRawFilePath $ fromExportDirectory dir
 	debugDav $ "delContent " ++ d
 	safely (inLocation d delContentM)
@@ -263,23 +254,23 @@ removeExportDirectoryDav hdl dir = withDavHandle hdl $ \mh -> runExport mh $ \_d
 
 renameExportDav :: DavHandleVar -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
 renameExportDav hdl _k src dest = case (exportLocation src, exportLocation dest) of
-	(Right srcl, Right destl) -> withDavHandle hdl $ \case
-		Just h
+	(Right srcl, Right destl) -> withDavHandle' hdl $ \case
+		Right h
 			-- box.com's DAV endpoint has buggy handling of renames,
 			-- so avoid renaming when using it.
 			| boxComUrl `isPrefixOf` baseURL h -> return Nothing
 			| otherwise -> do
-				v <- runExport (Just h) $ \dav -> do
+				v <- runExport (Right h) $ \dav -> do
 					maybe noop (void . mkColRecursive) (locationParent destl)
 					moveDAV (baseURL dav) srcl destl
 					return True
 				return (Just v)
-		Nothing -> return (Just False)
+		Left _e -> return (Just False)
 	_ -> return (Just False)
 
-runExport :: Maybe DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
-runExport Nothing _ = return False
-runExport (Just h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
+runExport :: Either String DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
+runExport (Left _e) _ = return False
+runExport (Right h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
 
 configUrl :: ParsedRemoteConfig -> Maybe URLString
 configUrl c = fixup <$> getRemoteConfigValue urlField c
@@ -418,7 +409,7 @@ choke f = do
 
 data DavHandle = DavHandle DAVContext DavUser DavPass URLString
 
-type DavHandleVar = TVar (Either (Annex (Maybe DavHandle)) (Maybe DavHandle))
+type DavHandleVar = TVar (Either (Annex (Either String DavHandle)) (Either String DavHandle))
 
 {- Prepares a DavHandle for later use. Does not connect to the server or do
  - anything else expensive. -}
@@ -429,11 +420,19 @@ mkDavHandleVar c gc u = liftIO $ newTVarIO $ Left $ do
 		(Just (user, pass), Just baseurl) -> do
 			ctx <- mkDAVContext baseurl
 			let h = DavHandle ctx (toDavUser user) (toDavPass pass) baseurl
-			return (Just h)
-		_ -> return Nothing
+			return (Right h)
+		_ -> return $ Left "webdav credentials not available"
 
-withDavHandle :: DavHandleVar -> (Maybe DavHandle -> Annex a) -> Annex a
+withDavHandle :: DavHandleVar -> (DavHandle -> Annex a) -> Annex a
 withDavHandle hv a = liftIO (readTVarIO hv) >>= \case
+	Right hdl -> either giveup a hdl
+	Left mkhdl -> do
+		hdl <- mkhdl
+		liftIO $ atomically $ writeTVar hv (Right hdl)
+		either giveup a hdl
+
+withDavHandle' :: DavHandleVar -> (Either String DavHandle -> Annex a) -> Annex a
+withDavHandle' hv a = liftIO (readTVarIO hv) >>= \case
 	Right hdl -> a hdl
 	Left mkhdl -> do
 		hdl <- mkhdl
@@ -472,7 +471,7 @@ prepDAV user pass = do
 -- Legacy chunking code, to be removed eventually.
 --
 
-storeLegacyChunked :: ChunkSize -> Key -> DavHandle -> L.ByteString -> IO Bool
+storeLegacyChunked :: ChunkSize -> Key -> DavHandle -> L.ByteString -> IO ()
 storeLegacyChunked chunksize k dav b =
 	Legacy.storeChunks k tmp dest storer recorder finalizer
   where

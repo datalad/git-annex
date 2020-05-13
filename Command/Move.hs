@@ -126,8 +126,12 @@ toPerform dest removewhen key afile fastcheck isthere =
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
-				upload (Remote.uuid dest) key afile stdRetry $
-					Remote.storeKey dest key afile
+				upload (Remote.uuid dest) key afile stdRetry $ \p ->
+					tryNonAsync (Remote.storeKey dest key afile p) >>= \case
+						Left e -> do
+							warning (show e)
+							return False
+						Right () -> return True
 			if ok
 				then finish False $
 					Remote.logStatus dest key InfoPresent

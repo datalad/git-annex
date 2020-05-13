@@ -367,20 +367,21 @@ store r rsyncopts k s p = do
 store' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Storer
 store' repo r rsyncopts
 	| not $ Git.repoIsUrl repo = 
-		byteStorer $ \k b p -> guardUsable repo (return False) $ liftIO $ do
+		byteStorer $ \k b p -> guardUsable repo (giveup "cannot access remote") $ liftIO $ do
 			let tmpdir = Git.repoLocation repo </> "tmp" </> fromRawFilePath (keyFile k)
 			void $ tryIO $ createDirectoryUnder (Git.repoLocation repo) tmpdir
 			let tmpf = tmpdir </> fromRawFilePath (keyFile k)
 			meteredWriteFile p tmpf b
 			let destdir = parentDir $ gCryptLocation repo k
 			Remote.Directory.finalizeStoreGeneric (Git.repoLocation repo) tmpdir destdir
-			return True
 	| Git.repoIsSsh repo = if accessShell r
 		then fileStorer $ \k f p -> do
 			oh <- mkOutputHandler
-			Ssh.rsyncHelper oh (Just p)
+			ok <- Ssh.rsyncHelper oh (Just p)
 				=<< Ssh.rsyncParamsRemote False r Upload k f
 					(AssociatedFile Nothing)
+			unless ok $
+				giveup "rsync failed"
 		else fileStorer $ Remote.Rsync.store rsyncopts
 	| otherwise = unsupportedUrl
 

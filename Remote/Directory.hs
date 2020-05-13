@@ -170,16 +170,16 @@ checkDiskSpaceDirectory d k = do
 			<*> getFileStatus annexdir
 	checkDiskSpace (Just d) k 0 samefilesystem
 
-store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex Bool
+store :: FilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex ()
 store d chunkconfig k b p = liftIO $ do
 	void $ tryIO $ createDirectoryUnder d tmpdir
 	case chunkconfig of
-		LegacyChunks chunksize -> Legacy.store d chunksize (finalizeStoreGeneric d) k b p tmpdir destdir
+		LegacyChunks chunksize -> 
+			Legacy.store d chunksize (finalizeStoreGeneric d) k b p tmpdir destdir
 		_ -> do
 			let tmpf = tmpdir </> kf
 			meteredWriteFile p tmpf b
 			finalizeStoreGeneric d tmpdir destdir
-			return True
   where
 	tmpdir = addTrailingPathSeparator $ d </> "tmp" </> kf
 	kf = fromRawFilePath (keyFile k)
