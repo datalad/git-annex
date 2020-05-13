@@ -1,0 +1,148 @@
+### Please describe the problem.
+git-annex failed to build with latest tasty 1.3
+
+### What steps will reproduce the problem?
+Build git-annex with tasty-1.3
+
+### What version of git-annex are you using? On what operating system?
+8.20200501 on Arch Linux.
+
+### Please provide any additional information below.
+    [545 of 638] Compiling Test             ( Test.hs, dist/build/git-annex/git-annex-tmp/Test.dyn_o )
+
+    Test.hs:98:13: error:
+        • Couldn't match type ‘(,) [String]’ with ‘Parser’
+          Expected type: Parser TestOptions
+            Actual type: ([String], TestOptions)
+        • In the expression:
+            TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)
+              <*>
+                switch
+                  (long "keep-failures"
+                    <> help "preserve repositories on test failure")
+              <*> switch (long "fakessh" <> internal)
+              <*> cmdParams "non-options are for internal use only"
+          In an equation for ‘optParser’:
+              optParser
+                = TestOptions
+                    <$> suiteOptionParser ingredients (tests False True mempty)
+                    <*>
+                      switch
+                        (long "keep-failures"
+                          <> help "preserve repositories on test failure")
+                    <*> switch (long "fakessh" <> internal)
+                    <*> cmdParams "non-options are for internal use only"
+      |
+    98 | optParser = TestOptions
+      |             ^^^^^^^^^^^...
+
+    Test.hs:99:13: error:
+        • Couldn't match type ‘Parser Test.Tasty.Options.OptionSet’
+                        with ‘Test.Tasty.Options.OptionSet’
+          Expected type: ([String], Test.Tasty.Options.OptionSet)
+            Actual type: ([String], Parser Test.Tasty.Options.OptionSet)
+        • In the second argument of ‘(<$>)’, namely
+            ‘suiteOptionParser ingredients (tests False True mempty)’
+          In the first argument of ‘(<*>)’, namely
+            ‘TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)’
+          In the first argument of ‘(<*>)’, namely
+            ‘TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)
+              <*>
+                switch
+                  (long "keep-failures"
+                      <> help "preserve repositories on test failure")’
+      |
+    99 |         <$> suiteOptionParser ingredients (tests False True mempty)
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Test.hs:100:13: error:
+        • Couldn't match type ‘Parser’ with ‘(,) [String]’
+          Expected type: ([String], Bool)
+            Actual type: Parser Bool
+        • In the second argument of ‘(<*>)’, namely
+            ‘switch
+              (long "keep-failures"
+                  <> help "preserve repositories on test failure")’
+          In the first argument of ‘(<*>)’, namely
+            ‘TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)
+              <*>
+                switch
+                  (long "keep-failures"
+                      <> help "preserve repositories on test failure")’
+          In the first argument of ‘(<*>)’, namely
+            ‘TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)
+              <*>
+                switch
+                  (long "keep-failures"
+                      <> help "preserve repositories on test failure")
+              <*> switch (long "fakessh" <> internal)’
+        |
+    100 |         <*> switch
+        |             ^^^^^^...
+
+    Test.hs:104:13: error:
+        • Couldn't match type ‘Parser’ with ‘(,) [String]’
+          Expected type: ([String], Bool)
+            Actual type: Parser Bool
+        • In the second argument of ‘(<*>)’, namely
+            ‘switch (long "fakessh" <> internal)’
+          In the first argument of ‘(<*>)’, namely
+            ‘TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)
+              <*>
+                switch
+                  (long "keep-failures"
+                      <> help "preserve repositories on test failure")
+              <*> switch (long "fakessh" <> internal)’
+          In the expression:
+            TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)
+              <*>
+                switch
+                  (long "keep-failures"
+                    <> help "preserve repositories on test failure")
+              <*> switch (long "fakessh" <> internal)
+              <*> cmdParams "non-options are for internal use only"
+        |
+    104 |         <*> switch
+        |             ^^^^^^...
+
+    Test.hs:108:13: error:
+        • Couldn't match type ‘Parser’ with ‘(,) [String]’
+          Expected type: ([String], Types.Command.CmdParams)
+            Actual type: Parser Types.Command.CmdParams
+        • In the second argument of ‘(<*>)’, namely
+            ‘cmdParams "non-options are for internal use only"’
+          In the expression:
+            TestOptions
+              <$> suiteOptionParser ingredients (tests False True mempty)
+              <*>
+                switch
+                  (long "keep-failures"
+                    <> help "preserve repositories on test failure")
+              <*> switch (long "fakessh" <> internal)
+              <*> cmdParams "non-options are for internal use only"
+          In an equation for ‘optParser’:
+              optParser
+                = TestOptions
+                    <$> suiteOptionParser ingredients (tests False True mempty)
+                    <*>
+                      switch
+                        (long "keep-failures"
+                          <> help "preserve repositories on test failure")
+                    <*> switch (long "fakessh" <> internal)
+                    <*> cmdParams "non-options are for internal use only"
+        |
+    108 |         <*> cmdParams "non-options are for internal use only"
+        |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes.
+
