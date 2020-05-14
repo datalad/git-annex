@@ -131,11 +131,7 @@ performRemote key afile numcopies remote = do
 				, "proof:"
 				, show proof
 				]
-			ok <- tryNonAsync (Remote.removeKey remote key) >>= \case
-				Right () -> return True
-				Left e -> do
-					warning (show e)
-					return False
+			ok <- Remote.action (Remote.removeKey remote key)
 			next $ cleanupRemote key remote ok
 		, stop
 		)

@@ -126,12 +126,8 @@ toPerform dest removewhen key afile fastcheck isthere =
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
-				upload (Remote.uuid dest) key afile stdRetry $ \p ->
-					tryNonAsync (Remote.storeKey dest key afile p) >>= \case
-						Left e -> do
-							warning (show e)
-							return False
-						Right () -> return True
+				upload (Remote.uuid dest) key afile stdRetry $
+					Remote.action . Remote.storeKey dest key afile
 			if ok
 				then finish False $
 					Remote.logStatus dest key InfoPresent
@@ -207,11 +203,7 @@ fromPerform src removewhen key afile = do
 	go = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile stdRetry $ \p ->
 			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
-				tryNonAsync (Remote.retrieveKeyFile src key afile t p) >>= \case
-					Right v -> return (True, v)
-					Left e -> do
-						warning (show e)
-						return (False, UnVerified)
+				Remote.verifiedAction $ Remote.retrieveKeyFile src key afile t p
 	dispatch _ _ False = stop -- failed
 	dispatch RemoveNever _ True = next $ return True -- copy complete
 	dispatch RemoveSafe deststartedwithcopy True = lockContentShared key $ \_lck -> do
@@ -232,11 +224,7 @@ fromPerform src removewhen key afile = do
 			, show src
 			, "(" ++ reason ++ ")"
 			]
-		ok <- tryNonAsync (Remote.removeKey src key) >>= \case
-			Right () -> return True
-			Left e -> do
-				warning (show e)
-				return False
+		ok <- Remote.action (Remote.removeKey src key)
 		next $ Command.Drop.cleanupRemote key src ok
 	faileddropremote = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"

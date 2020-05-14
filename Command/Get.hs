@@ -112,9 +112,5 @@ getKey' key afile = dispatch
 		download (Remote.uuid r) key afile stdRetry
 			(\p -> do
 				showAction $ "from " ++ Remote.name r
-				tryNonAsync (Remote.retrieveKeyFile r key afile dest p) >>= \case
-					Right v -> return (True, v)
-					Left e -> do
-						warning (show e)
-						return (False, UnVerified)
+				Remote.verifiedAction (Remote.retrieveKeyFile r key afile dest p)
 			) witness
