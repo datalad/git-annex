@@ -201,13 +201,15 @@ retrieve' r k sink = go =<< glacierEnv c gc u
 			sink =<< liftIO (L.hGetContents h)
 
 remove :: Remote -> Remover
-remove r k = glacierAction r
-	[ Param "archive"
-	
-	, Param "delete"
-	, Param $ getVault $ config r
-	, Param $ archive r k
-	]
+remove r k = unlessM go $
+	giveup "removal from glacier failed"
+  where
+	go = glacierAction r
+		[ Param "archive"
+		, Param "delete"
+		, Param $ getVault $ config r
+		, Param $ archive r k
+		]
 
 checkKey :: Remote -> CheckPresent
 checkKey r k = do

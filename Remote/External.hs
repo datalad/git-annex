@@ -222,7 +222,8 @@ checkExportSupported' external = go `catchNonAsync` (const (return False))
 		_ -> Nothing
 
 storeKeyM :: External -> Storer
-storeKeyM external = fileStorer $ \k f p -> either giveup return =<< go k f p
+storeKeyM external = fileStorer $ \k f p ->
+	either giveup return =<< go k f p
   where
 	go k f p = handleRequestKey external (\sk -> TRANSFER Upload sk f) k (Just p) $ \resp ->
 		case resp of
@@ -233,26 +234,28 @@ storeKeyM external = fileStorer $ \k f p -> either giveup return =<< go k f p
 			_ -> Nothing
 
 retrieveKeyFileM :: External -> Retriever
-retrieveKeyFileM external = fileRetriever $ \d k p -> 
-	handleRequestKey external (\sk -> TRANSFER Download sk d) k (Just p) $ \resp ->
+retrieveKeyFileM external = fileRetriever $ \d k p ->
+	either giveup return =<< go d k p
+  where
+	go d k p = handleRequestKey external (\sk -> TRANSFER Download sk d) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
-				| k == k' -> result ()
+				| k == k' -> result $ Right ()
 			TRANSFER_FAILURE Download k' errmsg
-				| k == k' -> Just $ giveup $
+				| k == k' -> result $ Left $
 					respErrorMessage "TRANSFER" errmsg
 			_ -> Nothing
 
 removeKeyM :: External -> Remover
-removeKeyM external k = safely $ 
-	handleRequestKey external REMOVE k Nothing $ \resp ->
+removeKeyM external k = either giveup return =<< go
+  where
+	go = handleRequestKey external REMOVE k Nothing $ \resp ->
 		case resp of
 			REMOVE_SUCCESS k'
-				| k == k' -> result True
+				| k == k' -> result $ Right ()
 			REMOVE_FAILURE k' errmsg
-				| k == k' -> Just $ do
-					warning $ respErrorMessage "REMOVE" errmsg
-					return (Result False)
+				| k == k' -> result $ Left $
+					respErrorMessage "REMOVE" errmsg
 			_ -> Nothing
 
 checkPresentM :: External -> CheckPresent

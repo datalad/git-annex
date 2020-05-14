@@ -413,7 +413,7 @@ remove r rsyncopts k = do
 
 remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Remover
 remove' repo r rsyncopts k
-	| not $ Git.repoIsUrl repo = guardUsable repo (return False) $
+	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $
 		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation repo) (parentDir (gCryptLocation repo k))
 	| Git.repoIsSsh repo = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl

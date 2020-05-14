@@ -539,14 +539,14 @@ badContentRemote remote localcopy key = do
 					)
 		)
 
-	dropped <- Remote.removeKey remote key
-	when dropped $
+	dropped <- tryNonAsync (Remote.removeKey remote key)
+	when (isRight dropped) $
 		Remote.logStatus remote key InfoMissing
 	return $ case (movedbad, dropped) of
-		(True, True) -> "moved from " ++ Remote.name remote ++
+		(True, Right ()) -> "moved from " ++ Remote.name remote ++
 			" to " ++ destbad
-		(False, True) -> "dropped from " ++ Remote.name remote
-		(_, False) -> "failed to drop from" ++ Remote.name remote
+		(False, Right ()) -> "dropped from " ++ Remote.name remote
+		(_, Left e) -> "failed to drop from" ++ Remote.name remote ++ ": " ++ show e
 
 runFsck :: Incremental -> ActionItem -> Key -> Annex Bool -> CommandStart
 runFsck inc ai key a = stopUnless (needFsck inc key) $

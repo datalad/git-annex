@@ -166,7 +166,8 @@ remove :: DdarRepo -> Remover
 remove ddarrepo key = do
 	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 'd'
 		[Param $ serializeKey key]
-	liftIO $ boolSystem cmd params
+	unlessM (liftIO $ boolSystem cmd params) $
+		giveup "ddar failed to remove"
 
 ddarDirectoryExists :: DdarRepo -> Annex (Either String Bool)
 ddarDirectoryExists ddarrepo

@@ -106,8 +106,12 @@ inAnnex r k = do
 	dispatch _ = cantCheck r
 
 {- Removes a key from a remote. -}
-dropKey :: Git.Repo -> Key -> Annex Bool
-dropKey r key = onRemote NoConsumeStdin r (\f p -> liftIO (boolSystem f p), return False) "dropkey"
+dropKey :: Git.Repo -> Key -> Annex ()
+dropKey r key = unlessM (dropKey' r key) $
+	giveup "unable to remove key from remote"
+
+dropKey' :: Git.Repo -> Key -> Annex Bool
+dropKey' r key = onRemote NoConsumeStdin r (\f p -> liftIO (boolSystem f p), return False) "dropkey"
 	[ Param "--quiet", Param "--force"
 	, Param $ serializeKey key
 	]

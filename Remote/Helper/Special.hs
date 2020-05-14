@@ -124,8 +124,8 @@ storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 storeKeyDummy _ _ _ = error "missing storeKey implementation"
 retrieveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 retrieveKeyFileDummy _ _ _ _ = error "missing retrieveKeyFile implementation"
-removeKeyDummy :: Key -> Annex Bool
-removeKeyDummy _ = return False
+removeKeyDummy :: Key -> Annex ()
+removeKeyDummy _ = error "missing removeKey implementation"
 checkPresentDummy :: Key -> Annex Bool
 checkPresentDummy _ = error "missing checkPresent implementation"
 
@@ -207,8 +207,6 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	cip = cipherKey c (gitconfig baser)
 	isencrypted = isEncrypted c
 
-	safely a = catchNonAsync a (\e -> warning (show e) >> return False)
-
 	-- chunk, then encrypt, then feed to the storer
 	storeKeyGen k p enc = sendAnnex k rollback $ \src ->
 		displayprogress p k (Just src) $ \p' ->
@@ -236,7 +234,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	  where
 		enck = maybe id snd enc
 
-	removeKeyGen k enc = safely $
+	removeKeyGen k enc = 
 		removeChunks remover (uuid baser) chunkconfig enck k
 	  where
 		enck = maybe id snd enc

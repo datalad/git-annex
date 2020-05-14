@@ -150,10 +150,8 @@ retrieve rs hdl k _f d _p = do
 	go (Just cap) = unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File d]) $
 		giveup "tahoe failed to reteieve content"
 
-remove :: Key -> Annex Bool
-remove _k = do
-	warning "content cannot be removed from tahoe remote"
-	return False
+remove :: Key -> Annex ()
+remove _k = giveup "content cannot be removed from tahoe remote"
 
 checkKey :: RemoteStateHandle -> TahoeHandle -> Key -> Annex Bool
 checkKey rs hdl k = go =<< getCapability rs k

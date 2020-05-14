@@ -97,12 +97,14 @@ data RemoteA a = Remote
 	, retrieveKeyFileCheap :: Maybe (Key -> AssociatedFile -> FilePath -> a ())
 	-- Security policy for reteiving keys from this remote.
 	, retrievalSecurityPolicy :: RetrievalSecurityPolicy
-	-- Removes a key's contents (succeeds if the contents are not present)
-	, removeKey :: Key -> a Bool
+	-- Removes a key's contents (succeeds even the contents are not present)
+	-- Can throw exception if unable to access remote, or if remote
+	-- refuses to remove the content.
+	, removeKey :: Key -> a ()
 	-- Uses locking to prevent removal of a key's contents,
 	-- thus producing a VerifiedCopy, which is passed to the callback.
 	-- If unable to lock, does not run the callback, and throws an
-	-- error.
+	-- exception.
 	-- This is optional; remotes do not have to support locking.
 	, lockContent :: forall r. Maybe (Key -> (VerifiedCopy -> a r) -> a r)
 	-- Checks if a key is present in the remote.

@@ -100,10 +100,8 @@ downloadKey key _af dest p = do
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to web not supported"
 
-dropKey :: Key -> Annex Bool
-dropKey k = do
-	mapM_ (setUrlMissing k) =<< getWebUrls k
-	return True
+dropKey :: Key -> Annex ()
+dropKey k = mapM_ (setUrlMissing k) =<< getWebUrls k
 
 checkKey :: Key -> Annex Bool
 checkKey key = do

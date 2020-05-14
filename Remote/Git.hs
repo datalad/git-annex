@@ -423,31 +423,26 @@ keyUrls gc repo r key = map tourl locs'
 #endif
 	remoteconfig = gitconfig r
 
-dropKey :: Remote -> State -> Key -> Annex Bool
+dropKey :: Remote -> State -> Key -> Annex ()
 dropKey r st key = do
 	repo <- getRepo r
-	catchNonAsync
-		(dropKey' repo r st key)
-		(\e -> warning (show e) >> return False)
+	dropKey' repo r st key
 
-dropKey' :: Git.Repo -> Remote -> State -> Key -> Annex Bool
+dropKey' :: Git.Repo -> Remote -> State -> Key -> Annex ()
 dropKey' repo r st@(State connpool duc _ _ _) key
 	| not $ Git.repoIsUrl repo = ifM duc
-		( guardUsable repo (return False) $
+		( guardUsable repo (giveup "cannot access remote") $
 			commitOnCleanup repo r st $ onLocalFast st $ do
 				whenM (Annex.Content.inAnnex key) $ do
 					Annex.Content.lockContentForRemoval key $ \lock -> do
 						Annex.Content.removeAnnex lock
 						logStatus key InfoMissing
 					Annex.Content.saveState True
-				return True
-		, return False
+		, giveup "remote does not have expected annex.uuid value"
 		)
-	| Git.repoIsHttp repo = do
-		warning "dropping from http remote not supported"
-		return False
+	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
 	| otherwise = commitOnCleanup repo r st $ do
-		let fallback = Ssh.dropKey repo key
+		let fallback = Ssh.dropKey' repo key
 		P2PHelper.remove (Ssh.runProto r connpool (return False) fallback) key
 
 lockKey :: Remote -> State -> Key -> (VerifiedCopy -> Annex r) -> Annex r

@@ -226,14 +226,14 @@ removeKeyM d k = liftIO $ removeDirGeneric d (storeDir d k)
 {- Removes the directory, which must be located under the topdir.
  -
  - Succeeds even on directories and contents that do not have write
- - permission.
+ - permission, if it's possible to turn the write bit on.
  -
  - If the directory does not exist, succeeds as long as the topdir does
  - exist. If the topdir does not exist, fails, because in this case the
  - remote is not currently accessible and probably still has the content
  - we were supposed to remove from it.
  -}
-removeDirGeneric :: FilePath -> FilePath -> IO Bool
+removeDirGeneric :: FilePath -> FilePath -> IO ()
 removeDirGeneric topdir dir = do
 	void $ tryIO $ allowWrite dir
 #ifdef mingw32_HOST_OS
@@ -241,12 +241,11 @@ removeDirGeneric topdir dir = do
 	 - before it can delete them. -}
 	void $ tryIO $ mapM_ allowWrite =<< dirContents dir
 #endif
-	ok <- catchBoolIO $ do
-		removeDirectoryRecursive dir
-		return True
-	if ok
-		then return ok
-		else doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)
+	tryNonAsync (removeDirectoryRecursive dir) >>= \case
+		Right () -> return ()
+		Left e ->
+			unlessM (doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)) $
+				throwM e
 
 checkPresentM :: FilePath -> ChunkConfig -> CheckPresent
 checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations k

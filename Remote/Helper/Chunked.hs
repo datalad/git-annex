@@ -199,19 +199,14 @@ seekResume h encryptor chunkkeys checker = do
 {- Removes all chunks of a key from a remote, by calling a remover
  - action on each.
  -
- - The remover action should succeed even if asked to
- - remove a key that is not present on the remote.
- -
  - This action may be called on a chunked key. It will simply remove it.
  -}
-removeChunks :: (Key -> Annex Bool) -> UUID -> ChunkConfig -> EncKey -> Key -> Annex Bool
+removeChunks :: Remover -> UUID -> ChunkConfig -> EncKey -> Key -> Annex ()
 removeChunks remover u chunkconfig encryptor k = do
 	ls <- chunkKeys u chunkconfig k
-	ok <- allM (remover . encryptor) (concat ls)
-	when ok $ do
-		let chunksizes = catMaybes $ map (fromKey keyChunkSize <=< headMaybe) ls
-		forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
-	return ok
+	mapM_ (remover . encryptor) (concat ls)
+	let chunksizes = catMaybes $ map (fromKey keyChunkSize <=< headMaybe) ls
+	forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
 
 {- Retrieves a key from a remote, using a retriever action.
  -

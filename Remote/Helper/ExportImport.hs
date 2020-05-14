@@ -214,9 +214,7 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		-- files would not be dealt with correctly.
 		-- There does not seem to be a good use case for
 		-- removing a key from an export in any case.
-		, removeKey = \_k -> do
-			warning "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
-			return False
+		, removeKey = \_k -> giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
 		-- Can't lock content on exports, since they're
 		-- not key/value stores, and someone else could
 		-- change what's exported to a file at any time.

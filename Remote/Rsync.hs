@@ -260,8 +260,25 @@ remove o k = removeGeneric o includes
  - except for the specified includes. Due to the way rsync traverses
  - directories, the includes must match both the file to be deleted, and
  - its parent directories, but not their other contents. -}
-removeGeneric :: RsyncOpts -> [String] -> Annex Bool
+removeGeneric :: RsyncOpts -> [String] -> Annex ()
 removeGeneric o includes = do
+	ps <- sendParams
+	opts <- rsyncOptions o
+	ok <- withRsyncScratchDir $ \tmp -> liftIO $ do
+		{- Send an empty directory to rysnc to make it delete. -}
+		rsync $ opts ++ ps ++
+			map (\s -> Param $ "--include=" ++ s) includes ++
+			[ Param "--exclude=*" -- exclude everything else
+			, Param "--quiet", Param "--delete", Param "--recursive"
+			] ++ partialParams ++ 
+			[ Param $ addTrailingPathSeparator tmp
+			, Param $ rsyncUrl o
+			]
+	unless ok $
+		giveup "rsync failed"
+
+removeGeneric' :: RsyncOpts -> [String] -> Annex Bool
+removeGeneric' o includes = do
 	ps <- sendParams
 	opts <- rsyncOptions o
 	withRsyncScratchDir $ \tmp -> liftIO $ do
@@ -310,14 +327,14 @@ checkPresentExportM o _k loc = checkPresentGeneric o [rsyncurl]
 
 removeExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
 removeExportM o _k loc =
-	removeGeneric o $ includes $ fromRawFilePath $ fromExportLocation loc
+	removeGeneric' o $ includes $ fromRawFilePath $ fromExportLocation loc
   where
 	includes f = f : case upFrom f of
 		Nothing -> []
 		Just f' -> includes f'
 
 removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex Bool
-removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
+removeExportDirectoryM o ed = removeGeneric' o (allbelow d : includes d)
   where
 	d = fromRawFilePath $ fromExportDirectory ed
 	allbelow f = f </> "***"

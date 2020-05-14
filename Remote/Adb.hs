@@ -199,7 +199,9 @@ retrieve' serial src dest = checkAdbInPath False $ do
 		]
 
 remove :: AndroidSerial -> AndroidPath -> Remover
-remove serial adir k = remove' serial (androidLocation adir k)
+remove serial adir k =
+	unlessM (remove' serial (androidLocation adir k)) $
+		giveup "adb failed"
 
 remove' :: AndroidSerial -> AndroidPath -> Annex Bool
 remove' serial aloc = adbShellBool serial

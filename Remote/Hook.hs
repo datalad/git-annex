@@ -163,7 +163,9 @@ retrieve h = fileRetriever $ \d k _p ->
 		giveup "failed to retrieve content"
 
 remove :: HookName -> Remover
-remove h k = runHook' h "remove" k Nothing $ return True
+remove h k = 
+	unlessM (runHook' h "remove" k Nothing $ return True) $
+		giveup "failed to remove content"
 
 checkKey :: Git.Repo -> HookName -> CheckPresent
 checkKey r h k = do

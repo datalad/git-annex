@@ -214,7 +214,7 @@ mkTestTrees runannex mkrs mkunavailr mkexportr mkks = concat $
 test :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 test runannex mkr mkk =
 	[ check "removeKey when not present" $ \r k ->
-		whenwritable r $ remove r k
+		whenwritable r $ isRight <$> tryNonAsync (remove r k)
 	, check ("present " ++ show False) $ \r k ->
 		whenwritable r $ present r k False
 	, check "storeKey" $ \r k ->
@@ -252,7 +252,7 @@ test runannex mkr mkk =
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "removeKey when present" $ \r k -> 
-		whenwritable r $ remove r k
+		whenwritable r $ isRight <$> tryNonAsync (remove r k)
 	, check ("present " ++ show False) $ \r k -> 
 		whenwritable r $ present r k False
 	]
@@ -341,7 +341,7 @@ testExportTree runannex mkr mkk1 mkk2 =
 
 testUnavailable :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 testUnavailable runannex mkr mkk =
-	[ check (== Right False) "removeKey" $ \r k ->
+	[ check isLeft "removeKey" $ \r k ->
 		Remote.removeKey r k
 	, check isLeft "storeKey" $ \r k -> 
 		Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate

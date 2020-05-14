@@ -526,6 +526,4 @@ checkKey rs h key = getLFSEndpoint LFS.RequestDownload h >>= \case
 				| otherwise -> return True
 
 remove :: TVar LFSHandle -> Remover
-remove _h _key = do
-	warning "git-lfs does not support removing content"
-	return False
+remove _h _key = giveup "git-lfs does not support removing content"

@@ -177,8 +177,7 @@ retrieve buprepo = byteRetriever $ \k sink -> do
 remove :: BupRepo -> Remover
 remove buprepo k = do
 	go =<< liftIO (bup2GitRemote buprepo)
-	warning "content cannot be completely removed from bup remote"
-	return True
+	giveup "content cannot be completely removed from bup remote"
   where
 	go r
 		| Git.repoIsUrl r = void $ onBupRemote r boolSystem "git" params

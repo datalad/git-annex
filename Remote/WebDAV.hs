@@ -177,11 +177,12 @@ retrieveHelper loc d p = do
 
 remove :: DavHandleVar -> Remover
 remove hv k = withDavHandle' hv $ \case
-	Left _e -> return False
 	Right dav -> liftIO $ goDAV dav $
 		-- Delete the key's whole directory, including any
 		-- legacy chunked files, etc, in a single action.
-		removeHelper (keyDir k)
+		unlessM (removeHelper (keyDir k)) $
+			giveup "failed to remove content from remote"
+	Left e -> giveup e
 
 removeHelper :: DavLocation -> DAVT IO Bool
 removeHelper d = do

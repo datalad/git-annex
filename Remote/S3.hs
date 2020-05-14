@@ -419,10 +419,10 @@ retrieveHelper' h f p req = liftIO $ runResourceT $ do
 	Url.sinkResponseFile p zeroBytesProcessed f WriteMode rsp
 
 remove :: S3HandleVar -> Remote -> S3Info -> Remover
-remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> liftIO $ runResourceT $ do
-	res <- tryNonAsync $ sendS3Handle h $
+remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> do
+	S3.DeleteObjectResponse <- liftIO $ runResourceT $ sendS3Handle h $
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
-	return $ either (const False) (const True) res
+	return ()
 
 checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> CheckPresent
 checkKey hv r rs c info k = withS3Handle hv $ \case

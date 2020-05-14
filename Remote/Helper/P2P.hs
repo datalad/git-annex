@@ -1,6 +1,6 @@
 {- Helpers for remotes using the git-annex P2P protocol.
  -
- - Copyright 2016-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,7 +37,7 @@ store runner k af p = do
 		runner p' (P2P.put k af p') >>= \case
 			Just True -> return ()
 			Just False -> giveup "transfer failed"
-			Nothing -> giveup "can't connect to remote"
+			Nothing -> remoteUnavail
 
 retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 retrieve runner k af dest p =
@@ -45,15 +45,16 @@ retrieve runner k af dest p =
 		runner p' (P2P.get dest k af m p') >>= \case
 			Just (True, v) -> return v
 			Just (False, _) -> giveup "transfer failed"
-			Nothing -> giveup "can't connec to remote"
+			Nothing -> remoteUnavail
 
-remove :: ProtoRunner Bool -> Key -> Annex Bool
-remove runner k = fromMaybe False <$> runner (P2P.remove k)
+remove :: ProtoRunner Bool -> Key -> Annex ()
+remove runner k = runner (P2P.remove k) >>= \case
+	Just True -> return ()
+	Just False -> giveup "removing content from remote failed"
+	Nothing -> remoteUnavail
 
 checkpresent :: ProtoRunner Bool -> Key -> Annex Bool
-checkpresent runner k = maybe unavail return =<< runner (P2P.checkPresent k)
-  where
-	unavail = giveup "can't connect to remote"
+checkpresent runner k = maybe remoteUnavail return =<< runner (P2P.checkPresent k)
 
 lock :: WithConn a c -> ProtoConnRunner c -> UUID -> Key -> (VerifiedCopy -> Annex a) -> Annex a
 lock withconn connrunner u k callback = withconn $ \conn -> do
@@ -69,3 +70,6 @@ lock withconn connrunner u k callback = withconn $ \conn -> do
   where
 	go False = giveup "can't lock content"
 	go True = withVerifiedCopy LockedCopy u (return True) callback
+
+remoteUnavail :: a
+remoteUnavail = giveup "can't connect to remote"

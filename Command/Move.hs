@@ -232,7 +232,11 @@ fromPerform src removewhen key afile = do
 			, show src
 			, "(" ++ reason ++ ")"
 			]
-		ok <- Remote.removeKey src key
+		ok <- tryNonAsync (Remote.removeKey src key) >>= \case
+			Right () -> return True
+			Left e -> do
+				warning (show e)
+				return False
 		next $ Command.Drop.cleanupRemote key src ok
 	faileddropremote = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"

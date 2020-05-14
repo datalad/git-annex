@@ -31,8 +31,9 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex ()
 type Retriever = Key -> MeterUpdate -> (ContentSource -> Annex ()) -> Annex ()
 
 -- Action that removes a Key's content from a remote.
--- Succeeds if key is already not present; never throws exceptions.
-type Remover = Key -> Annex Bool
+-- Succeeds if key is already not present.
+-- Throws an exception if the remote is not accessible.
+type Remover = Key -> Annex ()
 
 -- Checks if a Key's content is present on a remote.
 -- Throws an exception if the remote is not accessible.
