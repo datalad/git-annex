@@ -98,9 +98,16 @@ test: git-annex git-annex-shell
 retest: git-annex
 	./git-annex test --rerun-update --rerun-filter failures
 
+# https://github.com/luqui/hothasktags/issues/18
+HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports \
+-c --cpp -c -traditional -c --include=dist/build/git-annex/autogen/cabal_macros.h \
+
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
-	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -XLambdaCase -XPackageImports -c --cpp -c -traditional -c --include=dist/build/git-annex/autogen/cabal_macros.h $$f; done) 2>/dev/null | sort > tags
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} $$f; done) 2>/dev/null | sort > tags
+
+TAGS:
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} -e $$f; done) 2>/dev/null > TAGS
 
 mans: Build/MakeMans
 	./Build/MakeMans
@@ -148,13 +155,13 @@ Build/MakeMans: Build/MakeMans.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
-linuxstandalone: 
+linuxstandalone:
 	$(MAKE) git-annex Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
 	sed -i -e 's/^GIT_ANNEX_PACKAGE_INSTALL=/GIT_ANNEX_PACKAGE_INSTALL=$(GIT_ANNEX_PACKAGE_INSTALL)/' "$(LINUXSTANDALONE_DEST)/runshell"
-	
+
 	install -d "$(LINUXSTANDALONE_DEST)/bin"
 	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
@@ -165,13 +172,13 @@ linuxstandalone:
 	cp standalone/trustedkeys.gpg $(LINUXSTANDALONE_DEST)
 
 	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
-	
+
 	install -d "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
 	cp /usr/share/i18n -a "$(LINUXSTANDALONE_DEST)"
-	
+
 	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
-	
+
 	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 
 	sha1sum git-annex > "$(LINUXSTANDALONE_DEST)/buildid"
@@ -245,7 +252,7 @@ osxapp:
 	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
 	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/git-annex.MANIFEST
 	rm -f tmp/git-annex.dmg
-	
+
 	# hdiutil sometimes fails with "resource busy", so try a few times
 	ok=0; for x in 1 2 3 4 5; do \
 		if [ $$ok = 0 ]; then \
@@ -268,7 +275,7 @@ fast: dist/cabalbuild
 
 dist/cabalbuild: dist/caballog
 	grep 'ghc --make' dist/caballog | tail -n 1 > dist/cabalbuild
-	
+
 dist/caballog: git-annex.cabal
 	$(BUILDER) configure -f"-Production" -O0 --enable-executable-dynamic
 	$(BUILDER) build -v2 --ghc-options="-O0 -j" | tee dist/caballog
