@@ -206,19 +206,16 @@ checkKey hv r chunkconfig k = withDavHandle hv $ \dav -> do
 				existsDAV (keyLocation k)
 			either giveup return v
 
-storeExportDav :: DavHandleVar -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportDav :: DavHandleVar -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportDav hdl f k loc p = case exportLocation loc of
-	Right dest -> withDavHandle' hdl $ \mh -> runExport mh $ \dav -> do
+	Right dest -> withDavHandle hdl $ \h -> runExport h $ \dav -> do
 		reqbody <- liftIO $ httpBodyStorer f p
 		storeHelper dav (keyTmpLocation k) dest reqbody
-		return True
-	Left err -> do
-		warning err
-		return False
+	Left err -> giveup err
 
 retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
 retrieveExportDav hdl  _k loc d p = case exportLocation loc of
-	Right src -> withDavHandle' hdl $ \mh -> runExport mh $ \_dav -> do
+	Right src -> withDavHandle' hdl $ \mh -> runExport' mh $ \_dav -> do
 		retrieveHelper src d p
 		return True
 	Left _err -> return False
@@ -234,7 +231,7 @@ checkPresentExportDav hdl _ _k loc = case exportLocation loc of
 
 removeExportDav :: DavHandleVar-> Key -> ExportLocation -> Annex Bool
 removeExportDav hdl _k loc = case exportLocation loc of
-	Right p -> withDavHandle' hdl $ \mh -> runExport mh $ \_dav ->
+	Right p -> withDavHandle' hdl $ \mh -> runExport' mh $ \_dav ->
 		removeHelper p
 	-- When the exportLocation is not legal for webdav,
 	-- the content is certianly not stored there, so it's ok for
@@ -244,7 +241,7 @@ removeExportDav hdl _k loc = case exportLocation loc of
 	Left _err -> return True
 
 removeExportDirectoryDav :: DavHandleVar -> ExportDirectory -> Annex Bool
-removeExportDirectoryDav hdl dir = withDavHandle' hdl $ \mh -> runExport mh $ \_dav -> do
+removeExportDirectoryDav hdl dir = withDavHandle' hdl $ \mh -> runExport' mh $ \_dav -> do
 	let d = fromRawFilePath $ fromExportDirectory dir
 	debugDav $ "delContent " ++ d
 	safely (inLocation d delContentM)
@@ -258,7 +255,7 @@ renameExportDav hdl _k src dest = case (exportLocation src, exportLocation dest)
 			-- so avoid renaming when using it.
 			| boxComUrl `isPrefixOf` baseURL h -> return Nothing
 			| otherwise -> do
-				v <- runExport (Right h) $ \dav -> do
+				v <- runExport' (Right h) $ \dav -> do
 					maybe noop (void . mkColRecursive) (locationParent destl)
 					moveDAV (baseURL dav) srcl destl
 					return True
@@ -266,9 +263,12 @@ renameExportDav hdl _k src dest = case (exportLocation src, exportLocation dest)
 		Left _e -> return (Just False)
 	_ -> return (Just False)
 
-runExport :: Either String DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
-runExport (Left _e) _ = return False
-runExport (Right h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
+runExport' :: Either String DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
+runExport' (Left _e) _ = return False
+runExport' (Right h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
+
+runExport :: DavHandle -> (DavHandle -> DAVT IO a) -> Annex a
+runExport h a = liftIO (goDAV h (a h))
 
 configUrl :: ParsedRemoteConfig -> Maybe URLString
 configUrl c = fixup <$> getRemoteConfigValue urlField c

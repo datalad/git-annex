@@ -460,22 +460,19 @@ checkKeyHelper' info h o limit = liftIO $ runResourceT $ do
   where
 	req = limit $ S3.headObject (bucket info) o
 
-storeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportS3 hv r rs info magic f k loc p = fst
-	<$> storeExportS3' hv r rs info magic f k loc p
+storeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportS3 hv r rs info magic f k loc p = void $ storeExportS3' hv r rs info magic f k loc p
 
-storeExportS3' :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Bool, (Maybe S3Etag, Maybe S3VersionID))
+storeExportS3' :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
 storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
-	Just h -> catchNonAsync (go h) (\e -> warning (show e) >> return (False, (Nothing, Nothing)))
-	Nothing -> do
-		warning $ needS3Creds (uuid r)
-		return (False, (Nothing, Nothing))
+	Just h -> go h
+	Nothing -> giveup $ needS3Creds (uuid r)
   where
 	go h = do
 		let o = T.pack $ bucketExportLocation info loc
 		(metag, mvid) <- storeHelper info h magic f o p
 		setS3VersionID info rs k mvid
-		return (True, (metag, mvid))
+		return (metag, mvid)
 
 retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
 retrieveExportS3 hv r info _k loc f p =
@@ -671,7 +668,7 @@ rewritePreconditionException a = catchJust (Url.matchStatusCodeException want) a
 --
 -- When the bucket is not versioned, data loss can result.
 -- This is why that configuration requires --force to enable.
-storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
+storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierS3 hv r rs info magic src k loc _overwritablecids p
 	| versioning info = go
 	-- FIXME Actual aws version that supports getting Etag for a store
@@ -680,18 +677,16 @@ storeExportWithContentIdentifierS3 hv r rs info magic src k loc _overwritablecid
 #if MIN_VERSION_aws(0,99,0)
 	| otherwise = go
 #else
-	| otherwise = return $
-		Left "git-annex is built with too old a version of the aws library to support this operation"
+	| otherwise = giveup "git-annex is built with too old a version of the aws library to support this operation"
 #endif
   where
 	go = storeExportS3' hv r rs info magic src k loc p >>= \case
-		(False, _) -> return $ Left "failed to store content in S3 bucket"
-		(True, (_, Just vid)) -> return $ Right $
+		(_, Just vid) -> return $
 			mkS3VersionedContentIdentifier vid
-		(True, (Just etag, Nothing)) -> return $ Right $
+		(Just etag, Nothing) -> return $
 			mkS3UnversionedContentIdentifier etag
-		(True, (Nothing, Nothing)) -> 
-			return $ Left "did not get ETag for store to S3 bucket"
+		(Nothing, Nothing) -> 
+			giveup "did not get ETag for store to S3 bucket"
 
 -- Does not guarantee that the removed object has the content identifier,
 -- but when the bucket is versioned, the removed object content can still

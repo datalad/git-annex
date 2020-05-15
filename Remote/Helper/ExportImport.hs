@@ -36,15 +36,15 @@ instance HasExportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> Annex Bo
 
 instance HasExportUnsupported (ExportActions Annex) where
 	exportUnsupported = ExportActions
-		{ storeExport = \_ _ _ _ -> do
-			warning "store export is unsupported"
-			return False
+		{ storeExport = nope
 		, retrieveExport = \_ _ _ _ -> return False
 		, checkPresentExport = \_ _ -> return False
 		, removeExport = \_ _ -> return False
 		, removeExportDirectory = Just $ \_ -> return False
 		, renameExport = \_ _ _ -> return Nothing
 		}
+	 where
+	 	nope = giveup "export not supported"
 
 -- | Use for remotes that do not support imports.
 class HasImportUnsupported a where
@@ -57,11 +57,13 @@ instance HasImportUnsupported (ImportActions Annex) where
 	importUnsupported = ImportActions
 		{ listImportableContents = return Nothing
 		, retrieveExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
-		, storeExportWithContentIdentifier = \_ _ _ _ _ -> return (Left "import not supported")
+		, storeExportWithContentIdentifier = nope
 		, removeExportWithContentIdentifier = \_ _ _ -> return False
 		, removeExportDirectoryWhenEmpty = Just $ \_ -> return False
 		, checkPresentExportWithContentIdentifier = \_ _ _ -> return False
 		}
+	  where
+		nope = giveup "import not supported"
 
 exportIsSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
 exportIsSupported = \_ _ -> return True
@@ -151,16 +153,11 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
 					oldcids <- liftIO $ concat
 						<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
-					storeExportWithContentIdentifier (importActions r') f k loc oldcids p >>= \case
-						Left err -> do
-							warning err
-							return False
-						Right newcid -> do
-							withExclusiveLock gitAnnexContentIdentifierLock $ do
-								liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
-								liftIO $ ContentIdentifier.flushDbQueue db
-							recordContentIdentifier rs newcid k
-							return True
+					newcid <- storeExportWithContentIdentifier (importActions r') f k loc oldcids p
+					withExclusiveLock gitAnnexContentIdentifierLock $ do
+						liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
+						liftIO $ ContentIdentifier.flushDbQueue db
+					recordContentIdentifier rs newcid k
 				, removeExport = \k loc ->
 					removeExportWithContentIdentifier (importActions r') k loc
 						=<< keycids k

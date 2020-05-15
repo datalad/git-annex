@@ -234,8 +234,10 @@ androidHashDir adir k = AndroidPath $
   where
 	hdir = replace [pathSeparator] "/" (fromRawFilePath (hashDirLower def k))
 
-storeExportM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool 
-storeExportM serial adir src _k loc _p = store' serial dest src
+storeExportM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportM serial adir src _k loc _p = 
+	unlessM (store' serial dest src) $
+		giveup "adb failed"
   where
 	dest = androidExportLocation adir loc
 
@@ -317,19 +319,19 @@ retrieveExportWithContentIdentifierM serial adir loc cid dest mkkey _p = catchDe
   where
 	src = androidExportLocation adir loc
 
-storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
+storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
 	-- Check if overwrite is safe before sending, because sending the
 	-- file is expensive and don't want to do it unncessarily.
 	ifM checkcanoverwrite
 		( ifM (store'' serial dest src checkcanoverwrite)
-			( getExportContentIdentifier serial adir loc >>= return . \case
-				Right (Just cid) -> Right cid
-				Right Nothing -> Left "adb failed to store file"
-				Left _ -> Left "unable to get content identifier for file stored on adtb"
-			, return $ Left "adb failed to store file"
+			( getExportContentIdentifier serial adir loc >>= \case
+				Right (Just cid) -> return cid
+				Right Nothing -> giveup "adb failed to store file"
+				Left _ -> giveup "unable to get content identifier for file stored by adb"
+			, giveup "adb failed to store file"
 			)
-		, return $ Left "unsafe to overwrite file"
+		, giveup "unsafe to overwrite file"
 		)
   where
 	dest = androidExportLocation adir loc

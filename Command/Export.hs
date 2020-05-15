@@ -20,6 +20,7 @@ import qualified Git.Ref
 import Git.Types
 import Git.FilePath
 import Git.Sha
+import qualified Remote
 import Types.Remote
 import Types.Export
 import Annex.Export
@@ -280,7 +281,8 @@ performExport r db ek af contentsha loc allfilledvar = do
 					let rollback = void $
 						performUnexport r db [ek] loc
 					sendAnnex k rollback $ \f ->
-						storer f k loc pm
+						Remote.action $
+							storer f k loc pm
 			, do
 				showNote "not available"
 				return False
@@ -291,7 +293,8 @@ performExport r db ek af contentsha loc allfilledvar = do
 				b <- catObject contentsha
 				liftIO $ L.hPut h b
 				liftIO $ hClose h
-				storer tmp sha1k loc nullMeterUpdate
+				Remote.action $
+					storer tmp sha1k loc nullMeterUpdate
 	let failedsend = liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
 	case sent of
 		Right True -> next $ cleanupExport r db ek loc True

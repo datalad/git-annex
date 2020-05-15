@@ -231,7 +231,8 @@ data ExportActions a = ExportActions
 	-- Exports content to an ExportLocation.
 	-- The exported file should not appear to be present on the remote
 	-- until all of its contents have been transferred.
-	{ storeExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> a Bool
+	-- Throws exception on failure.
+	{ storeExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> a ()
 	-- Retrieves exported content to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
@@ -293,6 +294,8 @@ data ImportActions a = ImportActions
 	-- needs to make sure that the ContentIdentifier it returns
 	-- corresponds to what it wrote, not to what some other writer
 	-- wrote.
+	--
+	-- Throws exception on failure.
 	, storeExportWithContentIdentifier
 		:: FilePath
 		-> Key
@@ -300,7 +303,7 @@ data ImportActions a = ImportActions
 		-- old content that it's safe to overwrite
 		-> [ContentIdentifier]
 		-> MeterUpdate
-		-> a (Either String ContentIdentifier)
+		-> a ContentIdentifier
 	-- This is used rather than removeExport when a special remote
 	-- supports imports.
 	--

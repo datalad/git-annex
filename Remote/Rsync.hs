@@ -308,9 +308,9 @@ checkPresentGeneric o rsyncurls = do
 				proc "rsync" $ toCommand $ opts ++ [Param u]
 			return True
 
-storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
+storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportM o src _k loc meterupdate =
-	storeGeneric' o meterupdate basedest populatedest
+	storeGeneric o meterupdate basedest populatedest
   where
 	basedest = fromRawFilePath (fromExportLocation loc)
 	populatedest = liftIO . createLinkOrCopy src

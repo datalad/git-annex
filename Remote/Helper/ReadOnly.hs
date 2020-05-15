@@ -53,8 +53,8 @@ readonlyRemoveKey _ = readonlyFail
 readonlyStorer :: Storer
 readonlyStorer _ _ _ = readonlyFail
 
-readonlyStoreExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-readonlyStoreExport _ _ _ _ = readonlyFail'
+readonlyStoreExport :: FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+readonlyStoreExport _ _ _ _ = readonlyFail
 
 readonlyRemoveExport :: Key -> ExportLocation -> Annex Bool
 readonlyRemoveExport _ _ = readonlyFail'
@@ -65,14 +65,13 @@ readonlyRemoveExportDirectory _ = readonlyFail'
 readonlyRenameExport :: Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
 readonlyRenameExport _ _ _ = return Nothing
 
-readonlyStoreExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
-readonlyStoreExportWithContentIdentifier _ _ _ _ _ =
-	return $ Left readonlyWarning
+readonlyStoreExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+readonlyStoreExportWithContentIdentifier _ _ _ _ _ = readonlyFail
 
 readonlyRemoveExportWithContentIdentifier :: Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 readonlyRemoveExportWithContentIdentifier _ _ _ = readonlyFail'
 
-readonlyFail :: Annex ()
+readonlyFail :: Annex a
 readonlyFail = giveup readonlyWarning
 
 readonlyFail' :: Annex Bool

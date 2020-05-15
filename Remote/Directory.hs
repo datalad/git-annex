@@ -264,13 +264,12 @@ checkPresentGeneric' d check = ifM check
 		)
 	)
 
-storeExportM :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex Bool
-storeExportM d src _k loc p = liftIO $ catchBoolIO $ do
+storeExportM :: FilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportM d src _k loc p = liftIO $ do
 	createDirectoryUnder d (takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
 	viaTmp (\tmp () -> withMeteredFile src p (L.writeFile tmp)) dest ()
-	return True
   where
 	dest = exportPath d loc
 
@@ -407,37 +406,36 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 		| currcid == Just cid = cont
 		| otherwise = return Nothing
 
-storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex (Either String ContentIdentifier)
-storeExportWithContentIdentifierM dir src _k loc overwritablecids p =
-	catchNonAsync go (return . Left . show)
+storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do
+	liftIO $ createDirectoryUnder dir destdir
+	withTmpFileIn destdir template $ \tmpf tmph -> do
+		liftIO $ withMeteredFile src p (L.hPut tmph)
+		liftIO $ hFlush tmph
+		liftIO $ hClose tmph
+		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
+			Nothing -> giveup "unable to generate content identifier"
+			Just newcid -> do
+				checkExportContent dir loc
+					(newcid:overwritablecids)
+					(giveup "unsafe to overwrite file")
+					(const $ liftIO $ rename tmpf dest)
+				return newcid
   where
-	go = do
-		liftIO $ createDirectoryUnder dir destdir
-		withTmpFileIn destdir template $ \tmpf tmph -> do
-			liftIO $ withMeteredFile src p (L.hPut tmph)
-			liftIO $ hFlush tmph
-			liftIO $ hClose tmph
-			liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
-				Nothing -> 
-					return $ Left "unable to generate content identifier"
-				Just newcid ->
-					checkExportContent dir loc (newcid:overwritablecids) (Left "unsafe to overwrite file") $ const $ do
-						liftIO $ rename tmpf dest
-						return (Right newcid)
 	dest = exportPath dir loc
 	(destdir, base) = splitFileName dest
 	template = relatedTemplate (base ++ ".tmp")
 
 removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 removeExportWithContentIdentifierM dir k loc removeablecids =
-	checkExportContent dir loc removeablecids False $ \case
+	checkExportContent dir loc removeablecids (return False) $ \case
 		DoesNotExist -> return True
 		KnownContentIdentifier -> removeExportM dir k loc
 
 checkPresentExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 checkPresentExportWithContentIdentifierM dir _k loc knowncids =
 	checkPresentGeneric' dir $
-		checkExportContent dir loc knowncids False $ \case
+		checkExportContent dir loc knowncids (return False) $ \case
 			DoesNotExist -> return False
 			KnownContentIdentifier -> return True
 
@@ -458,18 +456,18 @@ data CheckResult = DoesNotExist | KnownContentIdentifier
 --
 -- So, it suffices to check if the destination file's current
 -- content is known, and immediately run the callback.
-checkExportContent :: FilePath -> ExportLocation -> [ContentIdentifier] -> a -> (CheckResult -> Annex a) -> Annex a
+checkExportContent :: FilePath -> ExportLocation -> [ContentIdentifier] -> Annex a -> (CheckResult -> Annex a) -> Annex a
 checkExportContent dir loc knowncids unsafe callback = 
 	tryWhenExists (liftIO $ getFileStatus dest) >>= \case
 		Just destst
-			| not (isRegularFile destst) -> return unsafe
+			| not (isRegularFile destst) -> unsafe
 			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier dest destst) >>= \case
 				Just destcid
 					| destcid `elem` knowncids -> callback KnownContentIdentifier
 					-- dest exists with other content
-					| otherwise -> return unsafe
+					| otherwise -> unsafe
 				-- should never happen
-				Nothing -> return unsafe
+				Nothing -> unsafe
 		-- dest does not exist
 		Nothing -> callback DoesNotExist
   where
