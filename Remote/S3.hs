@@ -474,20 +474,16 @@ storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 		setS3VersionID info rs k mvid
 		return (metag, mvid)
 
-retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportS3 hv r info _k loc f p =
-	catchNonAsync go (\e -> warning (show e) >> return False)
-  where
-	go = withS3Handle hv $ \case
-		Just h -> do
-			retrieveHelper info h (Left (T.pack exportloc)) f p
-			return True
+retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
+retrieveExportS3 hv r info _k loc f p = do
+	withS3Handle hv $ \case
+		Just h -> retrieveHelper info h (Left (T.pack exportloc)) f p
 		Nothing -> case getPublicUrlMaker info of
-			Nothing -> do
-				warning $ needS3Creds (uuid r)
-				return False
-			Just geturl -> Url.withUrlOptions $ 
-				Url.download p (geturl exportloc) f
+			Just geturl -> either giveup return =<<
+				Url.withUrlOptions
+					(Url.download' p (geturl exportloc) f)
+			Nothing -> giveup $ needS3Creds (uuid r)
+  where
 	exportloc = bucketExportLocation info loc
 
 removeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> Annex Bool
@@ -634,21 +630,18 @@ mkImportableContentsVersioned info = build . groupfiles
 		| otherwise =
 			i : removemostrecent mtime rest
 
-retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
+retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
 retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest mkkey p = withS3Handle hv $ \case
-	Nothing -> do
-		warning $ needS3Creds (uuid r)
-		return Nothing
-	Just h -> flip catchNonAsync (\e -> warning (show e) >> return Nothing) $ do
+	Just h -> do
 		rewritePreconditionException $ retrieveHelper' h dest p $
 			limitGetToContentIdentifier cid $
 				S3.getObject (bucket info) o
-		mk <- mkkey
-		case (mk, extractContentIdentifier cid o) of
-			(Just k, Right vid) -> 
-				setS3VersionID info rs k vid
-			_ -> noop
-		return mk
+		k <- mkkey
+		case extractContentIdentifier cid o of
+			Right vid -> setS3VersionID info rs k vid
+			Left _ -> noop
+		return k
+	Nothing -> giveup $ needS3Creds (uuid r)
   where
 	o = T.pack $ bucketExportLocation info loc
 

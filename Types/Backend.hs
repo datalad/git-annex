@@ -17,7 +17,7 @@ import Utility.FileSystemEncoding
 
 data BackendA a = Backend
 	{ backendVariety :: KeyVariety
-	, getKey :: KeySource -> MeterUpdate -> a (Maybe Key) 
+	, getKey :: Maybe (KeySource -> MeterUpdate -> a Key)
 	-- Verifies the content of a key.
 	, verifyKeyContent :: Maybe (Key -> FilePath -> a Bool)
 	-- Checks if a key can be upgraded to a better form.

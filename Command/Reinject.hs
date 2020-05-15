@@ -55,15 +55,13 @@ startSrcDest _ = giveup "specify a src file and a dest file"
 startKnown :: FilePath -> CommandStart
 startKnown src = notAnnexed src $
 	starting "reinject" (ActionItemOther (Just src)) $ do
-		mkb <- genKey ks nullMeterUpdate Nothing
-		case mkb of
-			Nothing -> error "Failed to generate key"
-			Just (key, _) -> ifM (isKnownKey key)
-				( perform src key
-				, do
-					warning "Not known content; skipping"
-					next $ return True
-				)
+		(key, _) <- genKey ks nullMeterUpdate Nothing
+		ifM (isKnownKey key)
+			( perform src key
+			, do
+				warning "Not known content; skipping"
+				next $ return True
+			)
   where
 	ks = KeySource src' src' Nothing
 	src' = toRawFilePath src

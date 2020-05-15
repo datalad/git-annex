@@ -89,10 +89,8 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 			, contentLocation = content
 			, inodeCache = Nothing
 			}
-		v <- genKey source nullMeterUpdate (Just newbackend)
-		return $ case v of
-			Just (newkey, _) -> Just (newkey, False)
-			_ -> Nothing
+		newkey <- fst <$> genKey source nullMeterUpdate (Just newbackend)
+		return $ Just (newkey, False)
 	genkey (Just fm) = fm oldkey newbackend afile >>= \case
 		Just newkey -> return (Just (newkey, True))
 		Nothing -> genkey Nothing

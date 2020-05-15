@@ -51,12 +51,15 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 	lookupname = lookupBackendVariety . parseKeyVariety . encodeBS
 
 {- Generates a key for a file. -}
-genKey :: KeySource -> MeterUpdate -> Maybe Backend -> Annex (Maybe (Key, Backend))
+genKey :: KeySource -> MeterUpdate -> Maybe Backend -> Annex (Key, Backend)
 genKey source meterupdate preferredbackend = do
 	b <- maybe defaultBackend return preferredbackend
-	B.getKey b source meterupdate >>= return . \case
-		Nothing -> Nothing
-		Just k -> Just (makesane k, b)
+	case B.getKey b of
+		Just a -> do
+			k <- a source meterupdate
+			return (makesane k, b)
+		Nothing -> giveup $ "Cannot generate a key for backend " ++
+			decodeBS (formatKeyVariety (B.backendVariety b))
   where
 	-- keyNames should not contain newline characters.
 	makesane k = alterKey k $ \d -> d

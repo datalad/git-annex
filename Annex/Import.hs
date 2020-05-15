@@ -349,16 +349,20 @@ downloadImport remote importtreeconfig importablecontents = do
 			return (Right job)
 	
 	download cidmap db (loc, (cid, sz)) = do
-		let rundownload tmpfile p = 
-			Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile) p >>= \case
-				Just k -> tryNonAsync (moveAnnex k tmpfile) >>= \case
-					Right True -> do
-						recordcidkey cidmap db cid k
-						logStatus k InfoPresent
-						logChange k (Remote.uuid remote) InfoPresent
-						return $ Just (loc, k)
-					_ -> return Nothing
-				Nothing -> return Nothing
+		let downloader tmpfile p = do
+			k <- Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile) p
+			ok <- moveAnnex k tmpfile
+			return (k, ok)
+		let rundownload tmpfile p = tryNonAsync (downloader tmpfile p) >>= \case
+			Right (k, True) -> do
+				recordcidkey cidmap db cid k
+				logStatus k InfoPresent
+				logChange k (Remote.uuid remote) InfoPresent
+				return $ Just (loc, k)
+			Right (_, False) -> return Nothing
+			Left e -> do
+				warning (show e)
+				return Nothing
 		checkDiskSpaceToGet tmpkey Nothing $
 			withTmp tmpkey $ \tmpfile ->
 				metered Nothing tmpkey $
@@ -375,7 +379,7 @@ downloadImport remote importtreeconfig importablecontents = do
 			, contentLocation = toRawFilePath tmpfile
 			, inodeCache = Nothing
 			}
-		fmap fst <$> genKey ks nullMeterUpdate backend
+		fst <$> genKey ks nullMeterUpdate backend
 
 	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
 		ImportTree -> fromImportLocation loc

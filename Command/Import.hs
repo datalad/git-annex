@@ -227,10 +227,8 @@ startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 		case v of
 			Just ld -> do
 				backend <- chooseBackend destfile
-				v' <- genKey (keySource ld) nullMeterUpdate backend
-				case v' of
-					Just (k, _) -> a (ld, k)
-					Nothing -> giveup "failed to generate a key"
+				k <- fst <$> genKey (keySource ld) nullMeterUpdate backend
+				a (ld, k)
 			Nothing -> stop
 	checkdup k dupa notdupa = ifM (isKnownKey k)
 		( dupa

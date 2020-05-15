@@ -159,8 +159,8 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 				(chooseBackend $ fromRawFilePath $ keyFilename source)
 				(return . Just)
 				preferredbackend
-			fmap fst <$> genKey source meterupdate backend
-		Just k -> return (Just k)
+			fst <$> genKey source meterupdate backend
+		Just k -> return k
 	let src = contentLocation source
 	ms <- liftIO $ catchMaybeIO $ R.getFileStatus src
 	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta (fromRawFilePath src)) ms
@@ -169,10 +169,9 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		(Just newc, Just c) | compareStrong c newc -> go k mcache ms
 		_ -> failure "changed while it was being added"
   where
-	go (Just key) mcache (Just s)
+	go key mcache (Just s)
 		| lockingFile cfg = golocked key mcache s
 		| otherwise = gounlocked key mcache s
-	go _ _ _ = failure "failed to generate a key"
 
 	golocked key mcache s =
 		tryNonAsync (moveAnnex key $ fromRawFilePath $ contentLocation source) >>= \case

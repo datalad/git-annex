@@ -273,10 +273,9 @@ storeExportM d src _k loc p = liftIO $ do
   where
 	dest = exportPath d loc
 
-retrieveExportM :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportM d _k loc dest p = liftIO $ catchBoolIO $ do
-	withMeteredFile src p (L.writeFile dest)
-	return True
+retrieveExportM :: FilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
+retrieveExportM d _k loc dest p = 
+	liftIO $ withMeteredFile src p (L.writeFile dest)
   where
 	src = exportPath d loc
 
@@ -346,9 +345,9 @@ mkContentIdentifier f st =
 	fmap (ContentIdentifier . encodeBS . showInodeCache)
 		<$> toInodeCache noTSDelta f st
 
-retrieveExportWithContentIdentifierM :: FilePath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
+retrieveExportWithContentIdentifierM :: FilePath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
 retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = 
-	catchDefaultIO Nothing $ precheck $ docopy postcheck
+	precheck $ docopy postcheck
   where
 	f = exportPath dir loc
 
@@ -404,7 +403,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 	
 	comparecid cont currcid
 		| currcid == Just cid = cont
-		| otherwise = return Nothing
+		| otherwise = giveup "file content has changed"
 
 storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do

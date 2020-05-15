@@ -186,17 +186,20 @@ store'' serial dest src canoverwrite = checkAdbInPath False $ do
 retrieve :: AndroidSerial -> AndroidPath -> Retriever
 retrieve serial adir = fileRetriever $ \dest k _p ->
 	let src = androidLocation adir k
-	in unlessM (retrieve' serial src dest) $
-		giveup "adb pull failed"
+	in retrieve' serial src dest
 
-retrieve' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
-retrieve' serial src dest = checkAdbInPath False $ do
-	showOutput -- make way for adb pull output
-	liftIO $ boolSystem "adb" $ mkAdbCommand serial
-		[ Param "pull"
-		, File $ fromAndroidPath src
-		, File dest
-		]
+retrieve' :: AndroidSerial -> AndroidPath -> FilePath -> Annex ()
+retrieve' serial src dest =
+	unlessM go $
+		giveup "adb pull failed"
+  where
+	go = checkAdbInPath False $ do
+		showOutput -- make way for adb pull output
+		liftIO $ boolSystem "adb" $ mkAdbCommand serial
+			[ Param "pull"
+			, File $ fromAndroidPath src
+			, File dest
+			]
 
 remove :: AndroidSerial -> AndroidPath -> Remover
 remove serial adir k =
@@ -241,7 +244,7 @@ storeExportM serial adir src _k loc _p =
   where
 	dest = androidExportLocation adir loc
 
-retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
 retrieveExportM serial adir _k loc dest _p = retrieve' serial src dest
   where
 	src = androidExportLocation adir loc
@@ -305,17 +308,14 @@ listImportableContentsM serial adir =
 -- connection is resonably fast, it's probably as good as
 -- git's handling of similar situations with files being modified while
 -- it's updating the working tree for a merge.
-retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex (Maybe Key) -> MeterUpdate -> Annex (Maybe Key)
-retrieveExportWithContentIdentifierM serial adir loc cid dest mkkey _p = catchDefaultIO Nothing $
-	ifM (retrieve' serial src dest)
-		( do
-			k <- mkkey
-			currcid <- getExportContentIdentifier serial adir loc
-			return $ if currcid == Right (Just cid)
-				then k
-				else Nothing
-		, return Nothing
-		)
+retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
+retrieveExportWithContentIdentifierM serial adir loc cid dest mkkey _p = do
+	retrieve' serial src dest
+	k <- mkkey
+	currcid <- getExportContentIdentifier serial adir loc
+	if currcid == Right (Just cid)
+		then return k
+		else giveup "the file on the android device has changed"
   where
 	src = androidExportLocation adir loc
 

@@ -291,20 +291,17 @@ storeExportM external f k loc p = either giveup return =<< go
 		_ -> Nothing
 	req sk = TRANSFEREXPORT Upload sk f
 
-retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
-retrieveExportM external k loc d p = safely $
-	handleRequestExport external loc req k (Just p) $ \resp -> case resp of
-		TRANSFER_SUCCESS Download k'
-			| k == k' -> result True
-		TRANSFER_FAILURE Download k' errmsg
-			| k == k' -> Just $ do
-				warning $ respErrorMessage "TRANSFER" errmsg
-				return (Result False)
-		UNSUPPORTED_REQUEST -> Just $ do
-			warning "TRANSFEREXPORT not implemented by external special remote"
-			return (Result False)
-		_ -> Nothing
+retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
+retrieveExportM external k loc d p = either giveup return =<< go
   where
+	go = handleRequestExport external loc req k (Just p) $ \resp -> case resp of
+		TRANSFER_SUCCESS Download k'
+			| k == k' -> result $ Right ()
+		TRANSFER_FAILURE Download k' errmsg
+			| k == k' -> result $ Left $ respErrorMessage "TRANSFER" errmsg
+		UNSUPPORTED_REQUEST ->
+			result $ Left "TRANSFEREXPORT not implemented by external special remote"
+		_ -> Nothing
 	req sk = TRANSFEREXPORT Download sk d
 
 checkPresentExportM :: External -> Key -> ExportLocation -> Annex Bool

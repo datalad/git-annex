@@ -21,7 +21,7 @@ backends = [backend]
 backend :: Backend
 backend = Backend
 	{ backendVariety = URLKey
-	, getKey = \_ _ -> return Nothing
+	, getKey = Nothing
 	, verifyKeyContent = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing

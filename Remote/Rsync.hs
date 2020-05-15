@@ -315,7 +315,7 @@ storeExportM o src _k loc meterupdate =
 	basedest = fromRawFilePath (fromExportLocation loc)
 	populatedest = liftIO . createLinkOrCopy src
 
-retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Bool
+retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
 retrieveExportM o _k loc dest p = rsyncRetrieve o [rsyncurl] dest (Just p)
   where
 	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
@@ -367,9 +367,12 @@ withRsyncScratchDir a = do
 	t <- fromRepo gitAnnexTmpObjectDir
 	withTmpDirIn t "rsynctmp" a
 
-rsyncRetrieve :: RsyncOpts -> [RsyncUrl] -> FilePath -> Maybe MeterUpdate -> Annex Bool
-rsyncRetrieve o rsyncurls dest meterupdate =
-	showResumable $ untilTrue rsyncurls $ \u -> rsyncRemote Download o meterupdate
+rsyncRetrieve :: RsyncOpts -> [RsyncUrl] -> FilePath -> Maybe MeterUpdate -> Annex ()
+rsyncRetrieve o rsyncurls dest meterupdate = 
+	unlessM go $
+		giveup "rsync failed"
+  where
+	go = showResumable $ untilTrue rsyncurls $ \u -> rsyncRemote Download o meterupdate
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
 		, Param u
@@ -378,8 +381,7 @@ rsyncRetrieve o rsyncurls dest meterupdate =
 
 rsyncRetrieveKey :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex ()
 rsyncRetrieveKey o k dest meterupdate =
-	unlessM (rsyncRetrieve o (rsyncUrls o k) dest meterupdate) $
-		giveup "rsync failed"
+	rsyncRetrieve o (rsyncUrls o k) dest meterupdate
 
 showResumable :: Annex Bool -> Annex Bool
 showResumable a = ifM a

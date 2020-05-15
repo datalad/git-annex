@@ -329,10 +329,9 @@ testExportTree runannex mkr mkk1 mkk2 =
 		Remote.storeExport ea loc k testexportlocation nullMeterUpdate
 	retrieveexport ea k = withTmpFile "exported" $ \tmp h -> do
 		liftIO $ hClose h
-		ifM (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate)
-			( verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified k tmp
-			, return False
-			)
+		tryNonAsync (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate) >>= \case
+			Left _ -> return False
+			Right () -> verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified k tmp
 	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
 	removeexport ea k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory ea = case Remote.removeExportDirectory ea of
@@ -405,7 +404,7 @@ randKey :: Int -> Annex Key
 randKey sz = withTmpFile "randkey" $ \f h -> do
 	gen <- liftIO (newGenIO :: IO SystemRandom)
 	case genBytes sz gen of
-		Left e -> error $ "failed to generate random key: " ++ show e
+		Left e -> giveup $ "failed to generate random key: " ++ show e
 		Right (rand, _) -> liftIO $ B.hPut h rand
 	liftIO $ hClose h
 	let ks = KeySource
@@ -413,8 +412,9 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		, contentLocation = toRawFilePath f
 		, inodeCache = Nothing
 		}
-	k <- fromMaybe (error "failed to generate random key")
-		<$> Backend.getKey Backend.Hash.testKeyBackend ks nullMeterUpdate
+	k <- case Backend.getKey Backend.Hash.testKeyBackend of
+		Just a -> a ks nullMeterUpdate
+		Nothing -> giveup "failed to generate random key (backend problem)"
 	_ <- moveAnnex k f
 	return k
 

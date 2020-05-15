@@ -14,6 +14,7 @@ module Annex.Url (
 	ipAddressesUnlimited,
 	checkBoth,
 	download,
+	download',
 	exists,
 	getUrlInfo,
 	U.downloadQuiet,
@@ -171,6 +172,10 @@ download meterupdate url file uo =
 	liftIO (U.download meterupdate url file uo) >>= \case
 		Right () -> return True
 		Left err -> warning err >> return False
+
+download' :: MeterUpdate -> U.URLString -> FilePath -> U.UrlOptions -> Annex (Either String ())
+download' meterupdate url file uo =
+	liftIO (U.download meterupdate url file uo)
 
 exists :: U.URLString -> U.UrlOptions -> Annex Bool
 exists url uo = liftIO (U.exists url uo) >>= \case

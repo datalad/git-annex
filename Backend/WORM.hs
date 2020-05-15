@@ -24,7 +24,7 @@ backends = [backend]
 backend :: Backend
 backend = Backend
 	{ backendVariety = WORMKey
-	, getKey = keyValue
+	, getKey = Just keyValue
 	, verifyKeyContent = Nothing
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just removeSpaces
@@ -34,14 +34,14 @@ backend = Backend
 {- The key includes the file size, modification time, and the
  - original filename relative to the top of the git repository.
  -}
-keyValue :: KeySource -> MeterUpdate -> Annex (Maybe Key)
+keyValue :: KeySource -> MeterUpdate -> Annex Key
 keyValue source _ = do
 	let f = contentLocation source
 	stat <- liftIO $ R.getFileStatus f
 	sz <- liftIO $ getFileSize' (fromRawFilePath f) stat
 	relf <- fromRawFilePath . getTopFilePath
 		<$> inRepo (toTopFilePath $ keyFilename source)
-	return $ Just $ mkKey $ \k -> k
+	return $ mkKey $ \k -> k
 		{ keyName = genKeyName relf
 		, keyVariety = WORMKey
 		, keySize = Just sz

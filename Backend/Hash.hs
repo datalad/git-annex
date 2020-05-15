@@ -63,7 +63,7 @@ backends = concatMap (\h -> [genBackendE h, genBackend h]) hashes
 genBackend :: Hash -> Backend
 genBackend hash = Backend
 	{ backendVariety = hashKeyVariety hash (HasExt False)
-	, getKey = keyValue hash
+	, getKey = Just (keyValue hash)
 	, verifyKeyContent = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
@@ -73,7 +73,7 @@ genBackend hash = Backend
 genBackendE :: Hash -> Backend
 genBackendE hash = (genBackend hash)
 	{ backendVariety = hashKeyVariety hash (HasExt True)
-	, getKey = keyValueE hash
+	, getKey = Just (keyValueE hash)
 	}
 
 hashKeyVariety :: Hash -> HasExt -> KeyVariety
@@ -88,26 +88,26 @@ hashKeyVariety (Blake2sHash size) he = Blake2sKey size he
 hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
 
 {- A key is a hash of its contents. -}
-keyValue :: Hash -> KeySource -> MeterUpdate -> Annex (Maybe Key)
+keyValue :: Hash -> KeySource -> MeterUpdate -> Annex Key
 keyValue hash source meterupdate = do
 	let file = fromRawFilePath (contentLocation source)
 	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file meterupdate
-	return $ Just $ mkKey $ \k -> k
+	return $ mkKey $ \k -> k
 		{ keyName = encodeBS s
 		, keyVariety = hashKeyVariety hash (HasExt False)
 		, keySize = Just filesize
 		}
 
 {- Extension preserving keys. -}
-keyValueE :: Hash -> KeySource -> MeterUpdate -> Annex (Maybe Key)
+keyValueE :: Hash -> KeySource -> MeterUpdate -> Annex Key
 keyValueE hash source meterupdate =
-	keyValue hash source meterupdate >>= maybe (return Nothing) addE
+	keyValue hash source meterupdate >>= addE
   where
 	addE k = do
 		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
 		let ext = selectExtension maxlen (keyFilename source)
-		return $ Just $ alterKey k $ \d -> d
+		return $ alterKey k $ \d -> d
 			{ keyName = keyName d <> ext
 			, keyVariety = hashKeyVariety hash (HasExt True)
 			}
@@ -296,7 +296,10 @@ md5Hasher = show . md5
 testKeyBackend :: Backend
 testKeyBackend = 
 	let b = genBackendE (SHA2Hash (HashSize 256))
-	in b { getKey = \ks p -> (fmap addE) <$> getKey b ks p } 
+	    gk = case getKey b of
+		Nothing -> Nothing
+		Just f -> Just (\ks p -> addE <$> f ks p)
+	in b { getKey = gk }
   where
 	addE k = alterKey k $ \d -> d
 		{ keyName = keyName d <> longext

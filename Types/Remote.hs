@@ -236,7 +236,8 @@ data ExportActions a = ExportActions
 	-- Retrieves exported content to a file.
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
-	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a Bool
+	-- Throws exception on failure.
+	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a ()
 	-- Removes an exported file (succeeds if the contents are not present)
 	, removeExport :: Key -> ExportLocation -> a Bool
 	-- Removes an exported directory. Typically the directory will be
@@ -269,15 +270,17 @@ data ImportActions a = ImportActions
 	-- This has to be used rather than retrieveExport
 	-- when a special remote supports imports, since files on such a
 	-- special remote can be changed at any time.
+	--
+	-- Throws exception on failure.
 	, retrieveExportWithContentIdentifier 
 		:: ExportLocation
 		-> ContentIdentifier
 		-- file to write content to
 		-> FilePath
 		-- callback that generates a key from the downloaded content
-		-> a (Maybe Key)
+		-> a Key
 		-> MeterUpdate
-		-> a (Maybe Key)
+		-> a Key
 	-- Exports content to an ExportLocation, and returns the
 	-- ContentIdentifier corresponding to the content it stored.
 	--

@@ -313,7 +313,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	normalfinish tmp = checkCanAdd file $ do
 		showDestinationFile file
 		createWorkTreeDirectory (parentDir file)
-		finishDownloadWith addunlockedmatcher tmp webUUID url file
+		Just <$> finishDownloadWith addunlockedmatcher tmp webUUID url file
 	tryyoutubedl tmp
 		-- Ask youtube-dl what filename it will download
 		-- first, and check if that is already an annexed file,
@@ -388,7 +388,7 @@ downloadWith addunlockedmatcher downloader dummykey u url file =
   where
 	afile = AssociatedFile (Just (toRawFilePath file))
 	go Nothing = return Nothing
-	go (Just tmp) = finishDownloadWith addunlockedmatcher tmp u url file
+	go (Just tmp) = Just <$> finishDownloadWith addunlockedmatcher tmp u url file
 
 {- Like downloadWith, but leaves the dummy key content in
  - the returned location. -}
@@ -404,7 +404,7 @@ downloadWith' downloader dummykey u url afile =
 			then return (Just tmp)
 			else return Nothing
 
-finishDownloadWith :: AddUnlockedMatcher -> FilePath -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
+finishDownloadWith :: AddUnlockedMatcher -> FilePath -> UUID -> URLString -> FilePath -> Annex Key
 finishDownloadWith addunlockedmatcher tmp u url file = do
 	backend <- chooseBackend file
 	let source = KeySource
@@ -412,11 +412,9 @@ finishDownloadWith addunlockedmatcher tmp u url file = do
 		, contentLocation = toRawFilePath tmp
 		, inodeCache = Nothing
 		}
-	genKey source nullMeterUpdate backend >>= \case
-		Nothing -> return Nothing
-		Just (key, _) -> do
-			addWorkTree addunlockedmatcher u url file key (Just tmp)
-			return (Just key)
+	key <- fst <$> genKey source nullMeterUpdate backend
+	addWorkTree addunlockedmatcher u url file key (Just tmp)
+	return key
 
 {- Adds the url size to the Key. -}
 addSizeUrlKey :: Url.UrlInfo -> Key -> Key

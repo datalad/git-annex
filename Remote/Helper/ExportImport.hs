@@ -37,7 +37,7 @@ instance HasExportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> Annex Bo
 instance HasExportUnsupported (ExportActions Annex) where
 	exportUnsupported = ExportActions
 		{ storeExport = nope
-		, retrieveExport = \_ _ _ _ -> return False
+		, retrieveExport = nope
 		, checkPresentExport = \_ _ -> return False
 		, removeExport = \_ _ -> return False
 		, removeExportDirectory = Just $ \_ -> return False
@@ -56,7 +56,7 @@ instance HasImportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> Annex Bo
 instance HasImportUnsupported (ImportActions Annex) where
 	importUnsupported = ImportActions
 		{ listImportableContents = return Nothing
-		, retrieveExportWithContentIdentifier = \_ _ _ _ _ -> return Nothing
+		, retrieveExportWithContentIdentifier = nope
 		, storeExportWithContentIdentifier = nope
 		, removeExportWithContentIdentifier = \_ _ _ -> return False
 		, removeExportDirectoryWhenEmpty = Just $ \_ -> return False
@@ -319,7 +319,6 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 					, giveup "unknown export location"
 					)
 				(l:_) -> do
-					unlessM (retrieveExport (exportActions r) k l dest p) $
-						giveup "retrieving from export failed"
+					retrieveExport (exportActions r) k l dest p
 					return UnVerified
 		| otherwise = giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"

@@ -582,9 +582,10 @@ backend_ :: String -> Types.Backend
 backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety . encodeBS
 
 getKey :: Types.Backend -> FilePath -> IO Types.Key
-getKey b f = fromJust <$> annexeval go
+getKey b f = case Types.Backend.getKey b of
+	Just a -> annexeval $ a ks Utility.Metered.nullMeterUpdate
+	Nothing -> error "internal"
   where
-	go = Types.Backend.getKey b ks Utility.Metered.nullMeterUpdate
 	ks = Types.KeySource.KeySource
 		{ Types.KeySource.keyFilename = toRawFilePath f
 		, Types.KeySource.contentLocation = toRawFilePath f
