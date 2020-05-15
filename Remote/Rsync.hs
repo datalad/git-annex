@@ -277,21 +277,6 @@ removeGeneric o includes = do
 	unless ok $
 		giveup "rsync failed"
 
-removeGeneric' :: RsyncOpts -> [String] -> Annex Bool
-removeGeneric' o includes = do
-	ps <- sendParams
-	opts <- rsyncOptions o
-	withRsyncScratchDir $ \tmp -> liftIO $ do
-		{- Send an empty directory to rysnc to make it delete. -}
-		rsync $ opts ++ ps ++
-			map (\s -> Param $ "--include=" ++ s) includes ++
-			[ Param "--exclude=*" -- exclude everything else
-			, Param "--quiet", Param "--delete", Param "--recursive"
-			] ++ partialParams ++ 
-			[ Param $ addTrailingPathSeparator tmp
-			, Param $ rsyncUrl o
-			]
-
 checkKey :: Git.Repo -> RsyncOpts -> CheckPresent
 checkKey r o k = do
 	showChecking r
@@ -333,8 +318,8 @@ removeExportM o _k loc =
 		Nothing -> []
 		Just f' -> includes f'
 
-removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex Bool
-removeExportDirectoryM o ed = removeGeneric' o (allbelow d : includes d)
+removeExportDirectoryM :: RsyncOpts -> ExportDirectory -> Annex ()
+removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
   where
 	d = fromRawFilePath $ fromExportDirectory ed
 	allbelow f = f </> "***"

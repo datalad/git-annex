@@ -238,12 +238,11 @@ removeExportDav hdl _k loc = case exportLocation loc of
 	-- this will be called to make sure it's gone.
 	Left _err -> return ()
 
-removeExportDirectoryDav :: DavHandleVar -> ExportDirectory -> Annex Bool
-removeExportDirectoryDav hdl dir = withDavHandle' hdl $ \mh -> runExport' mh $ \_dav -> do
+removeExportDirectoryDav :: DavHandleVar -> ExportDirectory -> Annex ()
+removeExportDirectoryDav hdl dir = withDavHandle hdl $ \h -> runExport h $ \_dav -> do
 	let d = fromRawFilePath $ fromExportDirectory dir
 	debugDav $ "delContent " ++ d
-	safely (inLocation d delContentM)
-		>>= maybe (return False) (const $ return True)
+	inLocation d delContentM
 
 renameExportDav :: DavHandleVar -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
 renameExportDav hdl _k src dest = case (exportLocation src, exportLocation dest) of

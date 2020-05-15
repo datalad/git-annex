@@ -331,18 +331,19 @@ removeExportM external k loc = either giveup return =<< go
 			Left $ "REMOVEEXPORT not implemented by external special remote"
 		_ -> Nothing
 
-removeExportDirectoryM :: External -> ExportDirectory -> Annex Bool
-removeExportDirectoryM external dir = safely $
-	handleRequest external req Nothing $ \resp -> case resp of
-		REMOVEEXPORTDIRECTORY_SUCCESS -> result True
-		REMOVEEXPORTDIRECTORY_FAILURE -> result False
-		UNSUPPORTED_REQUEST -> result True
-		_ -> Nothing
+removeExportDirectoryM :: External -> ExportDirectory -> Annex ()
+removeExportDirectoryM external dir = either giveup return =<< go
   where
+	go = handleRequest external req Nothing $ \resp -> case resp of
+		REMOVEEXPORTDIRECTORY_SUCCESS -> result $ Right ()
+		REMOVEEXPORTDIRECTORY_FAILURE -> result $
+			Left "failed to remove directory"
+		UNSUPPORTED_REQUEST -> result $ Right ()
+		_ -> Nothing
 	req = REMOVEEXPORTDIRECTORY dir
 
 renameExportM :: External -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
-renameExportM external k src dest = safely' (Just False) $
+renameExportM external k src dest = safely (Just False) $
 	handleRequestExport external src req k Nothing $ \resp -> case resp of
 		RENAMEEXPORT_SUCCESS k'
 			| k' == k -> result (Just True)
@@ -353,11 +354,8 @@ renameExportM external k src dest = safely' (Just False) $
   where
 	req sk = RENAMEEXPORT sk dest
 
-safely :: Annex Bool -> Annex Bool
-safely = safely' False
-
-safely' :: a -> Annex a -> Annex a
-safely' onerr a = go =<< tryNonAsync a
+safely :: a -> Annex a -> Annex a
+safely onerr a = go =<< tryNonAsync a
   where
 	go (Right r) = return r
 	go (Left e) = do

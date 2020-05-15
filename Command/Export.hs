@@ -437,7 +437,7 @@ removeEmptyDirectories r db loc ks
   where
 	go removeexportdirectory d = 
 		ifM (liftIO $ isExportDirectoryEmpty db d)
-			( removeexportdirectory d
+			( Remote.action $ removeexportdirectory d
 			, return True
 			)
 

@@ -256,10 +256,12 @@ removeExportM serial adir _k loc =
   where
 	aloc = androidExportLocation adir loc
 
-removeExportDirectoryM :: AndroidSerial -> AndroidPath -> ExportDirectory -> Annex Bool
-removeExportDirectoryM serial abase dir = adbShellBool serial
-	[Param "rm", Param "-rf", File (fromAndroidPath adir)]
+removeExportDirectoryM :: AndroidSerial -> AndroidPath -> ExportDirectory -> Annex ()
+removeExportDirectoryM serial abase dir =
+	unlessM go $
+		giveup "adb failed"
   where
+	go = adbShellBool serial [Param "rm", Param "-rf", File (fromAndroidPath adir)]
 	adir = androidExportLocation abase (mkExportLocation (fromExportDirectory dir))
 
 checkPresentExportM :: Remote -> AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex Bool

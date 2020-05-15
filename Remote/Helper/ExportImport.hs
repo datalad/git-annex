@@ -40,7 +40,7 @@ instance HasExportUnsupported (ExportActions Annex) where
 		, retrieveExport = nope
 		, checkPresentExport = \_ _ -> return False
 		, removeExport = nope
-		, removeExportDirectory = Just $ \_ -> return False
+		, removeExportDirectory = nope
 		, renameExport = \_ _ _ -> return Nothing
 		}
 	 where
@@ -59,7 +59,7 @@ instance HasImportUnsupported (ImportActions Annex) where
 		, retrieveExportWithContentIdentifier = nope
 		, storeExportWithContentIdentifier = nope
 		, removeExportWithContentIdentifier = nope
-		, removeExportDirectoryWhenEmpty = Just $ \_ -> return False
+		, removeExportDirectoryWhenEmpty = nope
 		, checkPresentExportWithContentIdentifier = \_ _ _ -> return False
 		}
 	  where

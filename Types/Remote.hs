@@ -247,8 +247,12 @@ data ExportActions a = ExportActions
 	-- and it's ok to delete those (but not required to). 
 	-- If the remote does not use directories, or automatically cleans
 	-- up empty directories, this can be Nothing.
+	--
 	-- Should not fail if the directory was already removed.
-	, removeExportDirectory :: Maybe (ExportDirectory -> a Bool)
+	--
+	-- Throws exception if unable to contact the remote, or perhaps if
+	-- the remote refuses to let the directory be removed.
+	, removeExportDirectory :: Maybe (ExportDirectory -> a ())
 	-- Checks if anything is exported to the remote at the specified
 	-- ExportLocation.
 	-- Throws an exception if the remote cannot be accessed.
@@ -329,7 +333,10 @@ data ImportActions a = ImportActions
 	-- supports imports.
 	--
 	-- If the directory is not empty, it should succeed.
-	, removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> a Bool)
+	--
+	-- Throws exception if unable to contact the remote, or perhaps if
+	-- the remote refuses to let the directory be removed.
+	, removeExportDirectoryWhenEmpty :: Maybe (ExportDirectory -> a ())
 	-- Checks if the specified ContentIdentifier is exported to the
 	-- remote at the specified ExportLocation.
 	-- Throws an exception if the remote cannot be accessed.

@@ -59,8 +59,8 @@ readonlyStoreExport _ _ _ _ = readonlyFail
 readonlyRemoveExport :: Key -> ExportLocation -> Annex ()
 readonlyRemoveExport _ _ = readonlyFail
 
-readonlyRemoveExportDirectory :: ExportDirectory -> Annex Bool
-readonlyRemoveExportDirectory _ = readonlyFail'
+readonlyRemoveExportDirectory :: ExportDirectory -> Annex ()
+readonlyRemoveExportDirectory _ = readonlyFail
 
 readonlyRenameExport :: Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
 readonlyRenameExport _ _ _ = return Nothing
@@ -73,11 +73,6 @@ readonlyRemoveExportWithContentIdentifier _ _ _ = readonlyFail
 
 readonlyFail :: Annex a
 readonlyFail = giveup readonlyWarning
-
-readonlyFail' :: Annex Bool
-readonlyFail' = do
-	warning readonlyWarning
-	return False
 
 readonlyWarning :: String
 readonlyWarning = "this remote is readonly"

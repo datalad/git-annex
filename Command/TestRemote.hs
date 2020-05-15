@@ -307,9 +307,9 @@ testExportTree runannex mkr mkk1 mkk2 =
 	, check "retrieve export fails after removal" $ \ea _k1 k2 ->
 		not <$> retrieveexport ea k2
 	, check "remove export directory" $ \ea _k1 _k2 ->
-		removeexportdirectory ea
+		isRight <$> tryNonAsync (removeexportdirectory ea)
 	, check "remove export directory that is already removed" $ \ea _k1 _k2 ->
-		removeexportdirectory ea
+		isRight <$> tryNonAsync (removeexportdirectory ea)
 	-- renames are not tested because remotes do not need to support them
 	]
   where
@@ -335,8 +335,8 @@ testExportTree runannex mkr mkk1 mkk2 =
 	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
 	removeexport ea k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory ea = case Remote.removeExportDirectory ea of
-		Nothing -> return True
 		Just a -> a (mkExportDirectory (toRawFilePath testexportdirectory))
+		Nothing -> noop
 
 testUnavailable :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 testUnavailable runannex mkr mkk =
