@@ -1,0 +1,14 @@
+git-annex development has been more or less back to normal for the past
+several weeks, including getting on top of most of the recent backlog.
+
+Today I'm finishing up a project that has taken half the week. The internal
+remote interface uses Bool extensively, and avoided throwing exceptions,
+and so it was not uncommon for access to a remote to fail and no reason be
+given. There have been a number of bugs about one thing or anther over the
+years, which have been fixed on an ad hoc basis without addressing the
+underlying problem. Now it's all been changed to throw exceptions, so the
+failure reason will always be displayed. Some tens of thousands of lines of
+diffs later, it's almost done.
+
+Today's work was sponsored by Graham Spencer
+[on Patreon](https://www.patreon.com/joeyh).
