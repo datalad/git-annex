@@ -279,11 +279,10 @@ retrieveExportM d _k loc dest p =
   where
 	src = exportPath d loc
 
-removeExportM :: FilePath -> Key -> ExportLocation -> Annex Bool
+removeExportM :: FilePath -> Key -> ExportLocation -> Annex ()
 removeExportM d _k loc = liftIO $ do
 	nukeFile src
 	removeExportLocation d loc
-	return True
   where
 	src = exportPath d loc
 
@@ -425,10 +424,10 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do
 	(destdir, base) = splitFileName dest
 	template = relatedTemplate (base ++ ".tmp")
 
-removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+removeExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()
 removeExportWithContentIdentifierM dir k loc removeablecids =
-	checkExportContent dir loc removeablecids (return False) $ \case
-		DoesNotExist -> return True
+	checkExportContent dir loc removeablecids (giveup "unsafe to remove modified file") $ \case
+		DoesNotExist -> return ()
 		KnownContentIdentifier -> removeExportM dir k loc
 
 checkPresentExportWithContentIdentifierM :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool

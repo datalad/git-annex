@@ -239,7 +239,9 @@ data ExportActions a = ExportActions
 	-- Throws exception on failure.
 	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a ()
 	-- Removes an exported file (succeeds if the contents are not present)
-	, removeExport :: Key -> ExportLocation -> a Bool
+	-- Can throw exception if unable to access remote, or if remote
+	-- refuses to remove the content.
+	, removeExport :: Key -> ExportLocation -> a ()
 	-- Removes an exported directory. Typically the directory will be
 	-- empty, but it could possibly contain files or other directories,
 	-- and it's ok to delete those (but not required to). 
@@ -315,11 +317,13 @@ data ImportActions a = ImportActions
 	-- can recover an overwritten file.
 	--
 	-- It needs to handle races similar to storeExportWithContentIdentifier.
+	--
+	-- Throws an exception when unable to remove.
 	, removeExportWithContentIdentifier
 		:: Key
 		-> ExportLocation
 		-> [ContentIdentifier]
-		-> a Bool
+		-> a ()
 	-- Removes a directory from the export, but only when it's empty.
 	-- Used instead of removeExportDirectory when a special remote
 	-- supports imports.

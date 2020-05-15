@@ -319,18 +319,16 @@ checkPresentExportM external k loc = either giveup id <$> go
 			Left "CHECKPRESENTEXPORT not implemented by external special remote"
 		_ -> Nothing
 
-removeExportM :: External -> Key -> ExportLocation -> Annex Bool
-removeExportM external k loc = safely $
-	handleRequestExport external loc REMOVEEXPORT k Nothing $ \resp -> case resp of
+removeExportM :: External -> Key -> ExportLocation -> Annex ()
+removeExportM external k loc = either giveup return =<< go
+  where
+	go = handleRequestExport external loc REMOVEEXPORT k Nothing $ \resp -> case resp of
 		REMOVE_SUCCESS k'
-			| k == k' -> result True
+			| k == k' -> result $ Right ()
 		REMOVE_FAILURE k' errmsg
-			| k == k' -> Just $ do
-				warning $ respErrorMessage "REMOVE" errmsg
-				return (Result False)
-		UNSUPPORTED_REQUEST -> Just $ do
-			warning "REMOVEEXPORT not implemented by external special remote"
-			return (Result False)
+			| k == k' -> result $ Left $ respErrorMessage "REMOVE" errmsg
+		UNSUPPORTED_REQUEST -> result $
+			Left $ "REMOVEEXPORT not implemented by external special remote"
 		_ -> Nothing
 
 removeExportDirectoryM :: External -> ExportDirectory -> Annex Bool

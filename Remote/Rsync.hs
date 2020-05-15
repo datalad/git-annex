@@ -325,9 +325,9 @@ checkPresentExportM o _k loc = checkPresentGeneric o [rsyncurl]
   where
 	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
 
-removeExportM :: RsyncOpts -> Key -> ExportLocation -> Annex Bool
+removeExportM :: RsyncOpts -> Key -> ExportLocation -> Annex ()
 removeExportM o _k loc =
-	removeGeneric' o $ includes $ fromRawFilePath $ fromExportLocation loc
+	removeGeneric o $ includes $ fromRawFilePath $ fromExportLocation loc
   where
 	includes f = f : case upFrom f of
 		Nothing -> []

@@ -39,7 +39,7 @@ instance HasExportUnsupported (ExportActions Annex) where
 		{ storeExport = nope
 		, retrieveExport = nope
 		, checkPresentExport = \_ _ -> return False
-		, removeExport = \_ _ -> return False
+		, removeExport = nope
 		, removeExportDirectory = Just $ \_ -> return False
 		, renameExport = \_ _ _ -> return Nothing
 		}
@@ -58,7 +58,7 @@ instance HasImportUnsupported (ImportActions Annex) where
 		{ listImportableContents = return Nothing
 		, retrieveExportWithContentIdentifier = nope
 		, storeExportWithContentIdentifier = nope
-		, removeExportWithContentIdentifier = \_ _ _ -> return False
+		, removeExportWithContentIdentifier = nope
 		, removeExportDirectoryWhenEmpty = Just $ \_ -> return False
 		, checkPresentExportWithContentIdentifier = \_ _ _ -> return False
 		}

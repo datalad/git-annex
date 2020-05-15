@@ -180,21 +180,20 @@ remove hv k = withDavHandle' hv $ \case
 	Right dav -> liftIO $ goDAV dav $
 		-- Delete the key's whole directory, including any
 		-- legacy chunked files, etc, in a single action.
-		unlessM (removeHelper (keyDir k)) $
-			giveup "failed to remove content from remote"
+		removeHelper (keyDir k)
 	Left e -> giveup e
 
-removeHelper :: DavLocation -> DAVT IO Bool
+removeHelper :: DavLocation -> DAVT IO ()
 removeHelper d = do
 	debugDav $ "delContent " ++ d
 	v <- safely $ inLocation d delContentM
 	case v of
-		Just _ -> return True
+		Just _ -> return ()
 		Nothing -> do
 			v' <- existsDAV d
 			case v' of
-				Right False -> return True
-				_ -> return False
+				Right False -> return ()
+				_ -> giveup "failed to remove content from remote"
 
 checkKey :: DavHandleVar -> Remote -> ChunkConfig -> CheckPresent
 checkKey hv r chunkconfig k = withDavHandle hv $ \dav -> do
@@ -228,16 +227,16 @@ checkPresentExportDav hdl _ _k loc = case exportLocation loc of
 			either giveup return v
 	Left err -> giveup err
 
-removeExportDav :: DavHandleVar-> Key -> ExportLocation -> Annex Bool
+removeExportDav :: DavHandleVar-> Key -> ExportLocation -> Annex ()
 removeExportDav hdl _k loc = case exportLocation loc of
-	Right p -> withDavHandle' hdl $ \mh -> runExport' mh $ \_dav ->
+	Right p -> withDavHandle hdl $ \h -> runExport h $ \_dav ->
 		removeHelper p
 	-- When the exportLocation is not legal for webdav,
 	-- the content is certianly not stored there, so it's ok for
 	-- removal to succeed. This allows recovery after failure to store
 	-- content there, as the user can rename the problem file and
 	-- this will be called to make sure it's gone.
-	Left _err -> return True
+	Left _err -> return ()
 
 removeExportDirectoryDav :: DavHandleVar -> ExportDirectory -> Annex Bool
 removeExportDirectoryDav hdl dir = withDavHandle' hdl $ \mh -> runExport' mh $ \_dav -> do

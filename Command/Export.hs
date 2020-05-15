@@ -337,10 +337,12 @@ startUnexport' r db f ek = starting ("unexport " ++ name r) (ActionItemOther (Ju
 -- not really remove the content, which must be accessible later on.
 performUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
 performUnexport r db eks loc = do
-	ifM (allM (\ek -> removeExport (exportActions r) (asKey ek) loc) eks)
+	ifM (allM rm eks)
 		( next $ cleanupUnexport r db eks loc
 		, stop
 		)
+  where
+	rm ek = Remote.action $ removeExport (exportActions r) (asKey ek) loc
 
 cleanupUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandCleanup
 cleanupUnexport r db eks loc = do

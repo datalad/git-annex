@@ -285,7 +285,7 @@ testExportTree runannex mkr mkk1 mkk2 =
 	[ check "check present export when not present" $ \ea k1 _k2 ->
 		not <$> checkpresentexport ea k1
 	, check "remove export when not present" $ \ea k1 _k2 -> 
-		removeexport ea k1
+		isRight <$> tryNonAsync (removeexport ea k1)
 	, check "store export" $ \ea k1 _k2 ->
 		isRight <$> tryNonAsync (storeexport ea k1)
 	, check "check present export after store" $ \ea k1 _k2 ->
@@ -301,7 +301,7 @@ testExportTree runannex mkr mkk1 mkk2 =
 	, check "retrieve export new content" $ \ea _k1 k2 ->
 		retrieveexport ea k2
 	, check "remove export" $ \ea _k1 k2 -> 
-		removeexport ea k2
+		isRight <$> tryNonAsync (removeexport ea k2)
 	, check "check present export after remove" $ \ea _k1 k2 ->
 		not <$> checkpresentexport ea k2
 	, check "retrieve export fails after removal" $ \ea _k1 k2 ->

@@ -249,8 +249,10 @@ retrieveExportM serial adir _k loc dest _p = retrieve' serial src dest
   where
 	src = androidExportLocation adir loc
 
-removeExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex Bool
-removeExportM serial adir _k loc = remove' serial aloc
+removeExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex ()
+removeExportM serial adir _k loc =
+	unlessM (remove' serial aloc) $
+		giveup "adb failed"
   where
 	aloc = androidExportLocation adir loc
 
@@ -341,13 +343,15 @@ storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
 			Right Nothing -> True
 			_ -> False
 
-removeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
-removeExportWithContentIdentifierM serial adir k loc removeablecids = catchBoolIO $
+removeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()
+removeExportWithContentIdentifierM serial adir k loc removeablecids =
 	getExportContentIdentifier serial adir loc >>= \case
-		Right Nothing -> return True
-		Right (Just cid) | cid `elem` removeablecids ->
-			removeExportM serial adir k loc
-		_ -> return False
+		Right Nothing -> return ()
+		Right (Just cid)
+			| cid `elem` removeablecids ->
+				removeExportM serial adir k loc
+			| otherwise -> giveup "file on Android device is modified, cannot remove"
+		Left _ -> giveup "unable to access Android device"
 
 checkPresentExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 checkPresentExportWithContentIdentifierM serial adir _k loc knowncids = 

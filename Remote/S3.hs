@@ -486,18 +486,16 @@ retrieveExportS3 hv r info _k loc f p = do
   where
 	exportloc = bucketExportLocation info loc
 
-removeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> Annex Bool
+removeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> Annex ()
 removeExportS3 hv r rs info k loc = withS3Handle hv $ \case
-	Just h -> checkVersioning info rs k $
-		catchNonAsync (go h) (\e -> warning (show e) >> return False)
-	Nothing -> do
-		warning $ needS3Creds (uuid r)
-		return False	
+	Just h -> do
+		checkVersioning info rs k
+		liftIO $ runResourceT $ do
+			S3.DeleteObjectResponse <- sendS3Handle h $
+				S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
+			return ()
+	Nothing -> giveup $ needS3Creds (uuid r)
   where
-	go h = liftIO $ runResourceT $ do
-		res <- tryNonAsync $ sendS3Handle h $
-			S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
-		return $ either (const False) (const True) res
 
 checkPresentExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
 checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
@@ -514,7 +512,7 @@ renameExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key ->
 renameExportS3 hv r rs info k src dest = Just <$> go
   where
 	go = withS3Handle hv $ \case
-		Just h -> checkVersioning info rs k $ 
+		Just h -> checkVersioning' info rs k $ 
 			catchNonAsync (go' h) (\_ -> return False)
 		Nothing -> do 
 			warning $ needS3Creds (uuid r)
@@ -687,7 +685,7 @@ storeExportWithContentIdentifierS3 hv r rs info magic src k loc _overwritablecid
 -- 
 -- When the bucket is not versioned, data loss can result.
 -- This is why that configuration requires --force to enable.
-removeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+removeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()
 removeExportWithContentIdentifierS3 hv r rs info k loc _removeablecids =
 	removeExportS3 hv r rs info k loc
 
@@ -1287,8 +1285,15 @@ enableBucketVersioning ss info _ _ _ = do
 -- were created without versioning, some unversioned files exported to
 -- them, and then versioning enabled, and this is to avoid data loss in
 -- those cases.
-checkVersioning :: S3Info -> RemoteStateHandle -> Key -> Annex Bool -> Annex Bool
-checkVersioning info rs k a
+checkVersioning :: S3Info -> RemoteStateHandle -> Key -> Annex ()
+checkVersioning info rs k
+	| versioning info = getS3VersionID rs k >>= \case
+		[] -> giveup "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
+		_ -> return ()
+	| otherwise = return ()
+
+checkVersioning' :: S3Info -> RemoteStateHandle -> Key -> Annex Bool -> Annex Bool
+checkVersioning' info rs k a
 	| versioning info = getS3VersionID rs k >>= \case
 		[] -> do
 			warning $ "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
