@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Re: Usefulness of batch key processing"
+ date="2020-05-15T09:33:22Z"
+ content="""
+Concerning the filtering, I'd find a note that \"--batch-keys is mutually exclusive with filtering\" perfectly acceptable if that makes implementation easier. (Or \"only with the filtering options that apply to keys\" -- as I found that `git annex whereis --in web --key=...` does work well with the key input).
+"""]]

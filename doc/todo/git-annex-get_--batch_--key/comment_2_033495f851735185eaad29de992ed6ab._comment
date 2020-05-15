@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Usefulness of batch key processing"
+ date="2020-05-15T09:21:15Z"
+ content="""
+This would be quite helpful to tools using git-annex (eg. [annex-to-web](https://gitlab.com/chrysn/annex-to-web), issue [2](https://gitlab.com/chrysn/annex-to-web/-/issues/2)), especially for short-running things like `whereis` where the launching time dominates over the processing time.
+"""]]

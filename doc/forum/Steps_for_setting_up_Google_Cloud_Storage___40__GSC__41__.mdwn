@@ -1,0 +1,1 @@
+Are the recommended steps for setting up an annex on Google Cloud Storage (GCS) documented anywhere? The info I'm able to find seems to be from years ago. I'm struggling to get the combination of the GCS configuration to allow access and picking which of the multiple ways to initialize the annex.

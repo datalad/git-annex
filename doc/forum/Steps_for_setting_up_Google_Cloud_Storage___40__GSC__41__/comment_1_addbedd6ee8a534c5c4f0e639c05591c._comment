@@ -1,0 +1,79 @@
+[[!comment format=sh
+ username="globallyunique@da2274b36ca296fe35912b9fd7387e3a5bd17c7c"
+ nickname="globallyunique"
+ avatar="http://cdn.libravatar.org/avatar/b25877ad636e36714dbe62f9d5d0fea1"
+ subject="GCS using S3: removeKey when not present: FAIL "
+ date="2020-05-14T20:39:21Z"
+ content="""
+I mostly got it to work but running: \"git annex testremote cloud\" is all green OKs except it produces one failure for each file of: fails with the message: removeKey when not present:                      FAIL (0.35s)
+
+Annex was setup by:
+git annex initremote --force cloud      type=S3      host=storage.googleapis.com protocol=https port=80 bucket=gitannex-datalad encryption=none
+git annex wanted cloud \"anything\"
+
+testremote cloud (generating test keys...) Remote Tests
+  unavailable remote
+    removeKey:                                       OK (0.16s)
+    storeKey:                                          HttpExceptionRequest Request {
+    host                 = \"gitannex-datalad.!dne!\"
+    port                 = 443
+    secure               = True
+    requestHeaders       = [(\"Date\",\"Thu, 14 May 2020 13:31:06 GMT\"),(\"Content-Type\",\"application/octet-stream\"),(\"Authorization\",\"<REDACTED>\"),(\"x-amz-storage-class\",\"STANDARD\")]
+    path                 = \"/SHA256E-s1048576--805e60b26375f68e670a266aee7698085d9eb8ddf56f6c5ec1497f1e667384fa.this-is-a-test-key\"
+    queryString          = \"\"
+    method               = \"PUT\"
+    proxy                = Nothing
+    rawBody              = False
+    redirectCount        = 10
+    responseTimeout      = ResponseTimeoutDefault
+    requestVersion       = HTTP/1.1
+  }
+   (ConnectionFailure Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [AI_ADDRCONFIG], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 6, addrAddress = <assumed to be undefined>, addrCanonName = <assumed to be undefined>}, host name: Just \"gitannex-datalad.!dne!\", service name: Just \"443\"): does not exist (nodename nor servname provided, or not known))
+OK (0.02s)
+    checkPresent:                                    OK
+    retrieveKeyFile:                                 OK
+    retrieveKeyFileCheap:                            OK
+  key size Just 1048576; NoChunks; encryption none
+    removeKey when not present:                      FAIL (0.35s)
+      ./Command/TestRemote.hs:206:
+      failed
+    present False:                                   OK (0.13s)
+    storeKey:                                        OK (1.63s)
+    present True:                                    OK (0.15s)
+    storeKey when already present:                   OK (1.65s)
+    present True:                                    OK (0.10s)
+    retrieveKeyFile:                                 OK (0.34s)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from 33%:                 OK (0.18s)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from 0:                   OK (0.17s)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from end:                 OK (0.16s)
+    fsck downloaded object:                          OK
+    removeKey when present:                          OK (0.11s)
+    present False:                                   OK (0.08s)
+  key size Just 1048576; NoChunks; encryption none
+    removeKey when not present:                      FAIL (0.30s)
+      ./Command/TestRemote.hs:206:
+      failed
+    present False:                                   OK (0.12s)
+    storeKey:                                        OK (1.60s)
+    present True:                                    OK (0.11s)
+    storeKey when already present:                   OK (2.08s)
+    present True:                                    OK (0.10s)
+    retrieveKeyFile:                                 OK (0.26s)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from 33%:                 OK (0.19s)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from 0:                   OK (0.16s)
+    fsck downloaded object:                          OK
+    retrieveKeyFile resume from end:                 OK (0.17s)
+    fsck downloaded object:                          OK
+    removeKey when present:                          OK (0.12s)
+    present False:                                   OK (0.12s)
+  key size Just 1048576; UnpaddedChunks 10485; encryption none
+    removeKey when not present:                      FAIL (0.33s)
+      ./Command/TestRemote.hs:206:
+      failed
+
+"""]]
