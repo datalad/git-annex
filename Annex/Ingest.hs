@@ -172,6 +172,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	go key mcache (Just s)
 		| lockingFile cfg = golocked key mcache s
 		| otherwise = gounlocked key mcache s
+	go _ _ Nothing = failure "failed to generate a key"
 
 	golocked key mcache s =
 		tryNonAsync (moveAnnex key $ fromRawFilePath $ contentLocation source) >>= \case
