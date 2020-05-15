@@ -396,13 +396,13 @@ startMoveFromTempName r db ek f = do
 
 performRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
 performRename r db ek src dest =
-	renameExport (exportActions r) (asKey ek) src dest >>= \case
-		Just True -> next $ cleanupRename r db ek src dest
-		Just False -> do
-			warning "rename failed; deleting instead"
+	tryNonAsync (renameExport (exportActions r) (asKey ek) src dest) >>= \case
+		Right (Just ()) -> next $ cleanupRename r db ek src dest
+		Left err -> do
+			warning $ "rename failed (" ++ show err ++ "); deleting instead"
 			fallbackdelete
-		-- Remote does not support renaming, so don't warn about it.
-		Nothing -> fallbackdelete
+		-- remote does not support renaming
+		Right Nothing -> fallbackdelete
   where
 	fallbackdelete = performUnexport r db [ek] src
 

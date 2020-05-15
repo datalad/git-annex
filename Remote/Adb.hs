@@ -269,8 +269,11 @@ checkPresentExportM r serial adir _k loc = checkKey' r serial aloc
   where
 	aloc = androidExportLocation adir loc
 
-renameExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
-renameExportM serial adir _k old new = Just <$> adbShellBool serial ps
+renameExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
+renameExportM serial adir _k old new = do
+	unlessM (adbShellBool serial ps) $
+		giveup "adb failed"
+	return (Just ())
   where
 	oldloc = fromAndroidPath $ androidExportLocation adir old
 	newloc = fromAndroidPath $ androidExportLocation adir new

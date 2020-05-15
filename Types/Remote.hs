@@ -258,9 +258,12 @@ data ExportActions a = ExportActions
 	-- Throws an exception if the remote cannot be accessed.
 	, checkPresentExport :: Key -> ExportLocation -> a Bool
 	-- Renames an already exported file.
-	-- This may fail with False, if the file doesn't exist.
+	--
 	-- If the remote does not support renames, it can return Nothing.
-	, renameExport :: Key -> ExportLocation -> ExportLocation -> a (Maybe Bool)
+	--
+	-- Throws an exception if the remote cannot be accessed, or
+	-- the file doesn't exist or cannot be renamed.
+	, renameExport :: Key -> ExportLocation -> ExportLocation -> a (Maybe ())
 	}
 
 data ImportActions a = ImportActions

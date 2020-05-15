@@ -62,7 +62,7 @@ readonlyRemoveExport _ _ = readonlyFail
 readonlyRemoveExportDirectory :: ExportDirectory -> Annex ()
 readonlyRemoveExportDirectory _ = readonlyFail
 
-readonlyRenameExport :: Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+readonlyRenameExport :: Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 readonlyRenameExport _ _ _ = return Nothing
 
 readonlyStoreExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier

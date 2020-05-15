@@ -176,12 +176,10 @@ retrieveHelper loc d p = do
 		withContentM $ httpBodyRetriever d p
 
 remove :: DavHandleVar -> Remover
-remove hv k = withDavHandle' hv $ \case
-	Right dav -> liftIO $ goDAV dav $
-		-- Delete the key's whole directory, including any
-		-- legacy chunked files, etc, in a single action.
-		removeHelper (keyDir k)
-	Left e -> giveup e
+remove hv k = withDavHandle hv $ \dav -> liftIO $ goDAV dav $
+	-- Delete the key's whole directory, including any
+	-- legacy chunked files, etc, in a single action.
+	removeHelper (keyDir k)
 
 removeHelper :: DavLocation -> DAVT IO ()
 removeHelper d = do
@@ -220,11 +218,9 @@ retrieveExportDav hdl  _k loc d p = case exportLocation loc of
 
 checkPresentExportDav :: DavHandleVar -> Remote -> Key -> ExportLocation -> Annex Bool
 checkPresentExportDav hdl _ _k loc = case exportLocation loc of
-	Right p -> withDavHandle' hdl $ \case
-		Left e -> giveup e
-		Right h -> liftIO $ do
-			v <- goDAV h $ existsDAV p
-			either giveup return v
+	Right p -> withDavHandle hdl $ \h -> liftIO $ do
+		v <- goDAV h $ existsDAV p
+		either giveup return v
 	Left err -> giveup err
 
 removeExportDav :: DavHandleVar-> Key -> ExportLocation -> Annex ()
@@ -244,25 +240,19 @@ removeExportDirectoryDav hdl dir = withDavHandle hdl $ \h -> runExport h $ \_dav
 	debugDav $ "delContent " ++ d
 	inLocation d delContentM
 
-renameExportDav :: DavHandleVar -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportDav :: DavHandleVar -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportDav hdl _k src dest = case (exportLocation src, exportLocation dest) of
-	(Right srcl, Right destl) -> withDavHandle' hdl $ \case
-		Right h
-			-- box.com's DAV endpoint has buggy handling of renames,
-			-- so avoid renaming when using it.
-			| boxComUrl `isPrefixOf` baseURL h -> return Nothing
-			| otherwise -> do
-				v <- runExport' (Right h) $ \dav -> do
-					maybe noop (void . mkColRecursive) (locationParent destl)
-					moveDAV (baseURL dav) srcl destl
-					return True
-				return (Just v)
-		Left _e -> return (Just False)
-	_ -> return (Just False)
-
-runExport' :: Either String DavHandle -> (DavHandle -> DAVT IO Bool) -> Annex Bool
-runExport' (Left _e) _ = return False
-runExport' (Right h) a = fromMaybe False <$> liftIO (goDAV h $ safely (a h))
+	(Right srcl, Right destl) -> withDavHandle hdl $ \h -> 
+		-- box.com's DAV endpoint has buggy handling of renames,
+		-- so avoid renaming when using it.
+		if boxComUrl `isPrefixOf` baseURL h 
+			then return Nothing
+			else runExport h $ \dav -> do
+				maybe noop (void . mkColRecursive) (locationParent destl)
+				moveDAV (baseURL dav) srcl destl
+				return (Just ())
+	(Left err, _) -> giveup err
+	(_, Left err) -> giveup err
 
 runExport :: DavHandle -> (DavHandle -> DAVT IO a) -> Annex a
 runExport h a = liftIO (goDAV h (a h))
@@ -425,14 +415,6 @@ withDavHandle hv a = liftIO (readTVarIO hv) >>= \case
 		hdl <- mkhdl
 		liftIO $ atomically $ writeTVar hv (Right hdl)
 		either giveup a hdl
-
-withDavHandle' :: DavHandleVar -> (Either String DavHandle -> Annex a) -> Annex a
-withDavHandle' hv a = liftIO (readTVarIO hv) >>= \case
-	Right hdl -> a hdl
-	Left mkhdl -> do
-		hdl <- mkhdl
-		liftIO $ atomically $ writeTVar hv (Right hdl)
-		a hdl
 
 goDAV :: DavHandle -> DAVT IO a -> IO a
 goDAV (DavHandle ctx user pass _) a = choke $ run $ prettifyExceptions $ do

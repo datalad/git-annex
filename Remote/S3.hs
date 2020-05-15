@@ -508,15 +508,14 @@ checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
 			giveup "No S3 credentials configured"
 
 -- S3 has no move primitive; copy and delete.
-renameExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe Bool)
+renameExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportS3 hv r rs info k src dest = Just <$> go
   where
 	go = withS3Handle hv $ \case
-		Just h -> checkVersioning' info rs k $ 
-			catchNonAsync (go' h) (\_ -> return False)
-		Nothing -> do 
-			warning $ needS3Creds (uuid r)
-			return False
+		Just h -> do
+			checkVersioning info rs k
+			go' h
+		Nothing -> giveup $ needS3Creds (uuid r)
 	
 	go' h = liftIO $ runResourceT $ do
 		let co = S3.copyObject (bucket info) dstobject
@@ -525,7 +524,6 @@ renameExportS3 hv r rs info k src dest = Just <$> go
 		-- ACL is not preserved by copy.
 		void $ sendS3Handle h $ co { S3.coAcl = acl info }
 		void $ sendS3Handle h $ S3.DeleteObject srcobject (bucket info)
-		return True
 	
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
@@ -1291,13 +1289,3 @@ checkVersioning info rs k
 		[] -> giveup "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
 		_ -> return ()
 	| otherwise = return ()
-
-checkVersioning' :: S3Info -> RemoteStateHandle -> Key -> Annex Bool -> Annex Bool
-checkVersioning' info rs k a
-	| versioning info = getS3VersionID rs k >>= \case
-		[] -> do
-			warning $ "Remote is configured to use versioning, but no S3 version ID is recorded for this key, so it cannot safely be modified."
-			return False
-		_ -> a
-	| otherwise = a
-

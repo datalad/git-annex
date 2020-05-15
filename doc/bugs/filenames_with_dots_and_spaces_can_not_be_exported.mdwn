@@ -16,3 +16,5 @@ git-annex version: 8.20200309-05df404212, Debian testing
 
 [[!meta title="change exception handling of remotes to avoid ever failing
 without telling the reason why"]]
+
+> [[done]] comprehensively --[[Joey]]
