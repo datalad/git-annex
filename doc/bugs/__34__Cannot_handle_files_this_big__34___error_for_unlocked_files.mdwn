@@ -9,6 +9,9 @@ So how should these unlocked pointer files be hidden technically to not be index
 
 
 ### What steps will reproduce the problem?
+$ git init
+
+Initialized empty Git repository in /volume1/homes/admin/git-annex/test3/.git/
 
 $ git annex init --version 8
 
