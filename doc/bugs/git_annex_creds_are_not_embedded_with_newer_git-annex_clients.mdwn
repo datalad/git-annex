@@ -1,0 +1,57 @@
+### Please describe the problem.
+With a newer version of git annex (8.20200226 vs 6.20170101) .git/annex/creds folder is not created after `git annex enableremote s3`
+With an older version 6.20170101 creds are embedded all-right.
+
+[[!format sh """
+git annex info s3:
+
+remote: s3
+type: S3
+creds: embedded in git repository (not encrypted)
+
+"""]]
+
+### What steps will reproduce the problem?
+
+This is a bit tricky, as the remote was setup long ago, god knows with which git-annex version, but after you have an S3 remote, with embedcreds=yes:
+
+run `git annex enableremote s3` with versions 8.20200226 and 6.20170101
+
+
+[[!format sh """
+# version 8.20200226
+$ git annex enableremote s3
+$ ls .git/annex/creds
+ls: cannot access '.git/annex/creds': No such file or directory
+
+# version 6.20170101
+$ git annex enableremote s3
+$ ls ../release-archive__/.git/annex/creds 
+<s3-UUID>
+
+$ git annex info s3:
+remote: s3
+type: S3
+creds: embedded in git repository (not encrypted)
+
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+8.20200226 and 6.20170101
+Linux, Ubuntu 20.04
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
