@@ -9,51 +9,29 @@ So how should these unlocked pointer files be hidden technically to not be index
 
 
 ### What steps will reproduce the problem?
-$ git init
-
-Initialized empty Git repository in /volume1/homes/admin/git-annex/test3/.git/
-
-$ git annex init --version 8
-
-init  (scanning for unlocked files...)
-
-ok
-
-(recording state in git...)
-
-$ ls -lah 
-
-total 12K
-
-drwxr-xr-x 3 admin users 4.0K May 16 17:00 .
-
-drwxr-xr-x 8 admin users 4.0K May 16 17:00 ..
-
-drwxr-xr-x 9 admin users 4.0K May 16 17:01 .git
-
--rw-r--r-- 1 admin users  20G May 16 17:00 output
-
-$ git annex add output
-
-add output 
-
-$ git annex sync
-
-$ git annex unlock output
-
-$ git annex status
-
-fatal: Cannot handle files this big
-
-git-annex: git status failed
-
-$ git status
-
-fatal: Cannot handle files this big
-
-$ git diff
-
-fatal: Cannot handle files this big
+    $ git init
+    Initialized empty Git repository in /volume1/homes/admin/git-annex/test3/.git/
+    $ git annex init --version 8
+    init  (scanning for unlocked files...)
+    ok
+    (recording state in git...)
+    $ ls -lah 
+    total 12K
+    drwxr-xr-x 3 admin users 4.0K May 16 17:00 .
+    drwxr-xr-x 8 admin users 4.0K May 16 17:00 ..
+    drwxr-xr-x 9 admin users 4.0K May 16 17:01 .git
+    -rw-r--r-- 1 admin users  20G May 16 17:00 output
+    $ git annex add output
+    add output 
+    $ git annex sync
+    $ git annex unlock output
+    $ git annex status
+    fatal: Cannot handle files this big
+    git-annex: git status failed
+    $ git status
+    fatal: Cannot handle files this big
+    $ git diff
+    fatal: Cannot handle files this big
 
 Why does git even feel responsible to load this file?
 
