@@ -1,6 +1,6 @@
 {- Formatted string handling.
  -
- - Copyright 2010, 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -9,6 +9,7 @@ module Utility.Format (
 	Format,
 	gen,
 	format,
+	formatContainsVar,
 	decode_c,
 	encode_c,
 	prop_encode_c_decode_c_roundtrip
@@ -29,9 +30,14 @@ type FormatString = String
 {- A format consists of a list of fragments. -}
 type Format = [Frag]
 
-{- A fragment is either a constant string,
- - or a variable, with a justification. -}
-data Frag = Const String | Var String Justify
+{- A fragment is either a constant string, or a variable. -}
+data Frag
+	= Const String 
+	| Var
+		{ varName :: String
+		, varJustify :: Justify
+		, varEscaped :: Bool
+		}
 	deriving (Show)
 
 data Justify = LeftJustified Int | RightJustified Int | UnJustified
@@ -45,10 +51,8 @@ format :: Format -> Variables -> String
 format f vars = concatMap expand f
   where
 	expand (Const s) = s
-	expand (Var name j)
-		| "escaped_" `isPrefixOf` name =
-			justify j $ encode_c_strict $
-				getvar $ drop (length "escaped_") name
+	expand (Var name j esc)
+		| esc = justify j $ encode_c_strict $ getvar name
 		| otherwise = justify j $ getvar name
 	getvar name = fromMaybe "" $ M.lookup name vars
 	justify UnJustified s        = s
@@ -61,6 +65,8 @@ format f vars = concatMap expand f
  - format string, such as "${foo} ${bar;10} ${baz;-10}\n"
  -
  - (This is the same type of format string used by dpkg-query.)
+ -
+ - Also, "${escaped_foo}" will apply encode_c to the value of variable foo.
  -}
 gen :: FormatString -> Format
 gen = filter (not . empty) . fuse [] . scan [] . decode_c
@@ -94,11 +100,23 @@ gen = filter (not . empty) . fuse [] . scan [] . decode_c
 		| i < 0 = LeftJustified (-1 * i)
 		| otherwise = RightJustified i
 	novar v = "${" ++ reverse v
-	foundvar f v p = scan (Var (reverse v) p : f)
+	foundvar f varname_r p = 
+		let varname = reverse varname_r
+		    var = if "escaped_" `isPrefixOf` varname
+			then Var (drop (length "escaped_") varname) p True
+			else Var varname p False
+		in scan (var : f)
 
 empty :: Frag -> Bool
 empty (Const "") = True
 empty _ = False
+
+{- Check if a Format contains a variable with a specified name. -}
+formatContainsVar :: String -> Format -> Bool
+formatContainsVar v = any go
+  where
+	go (Var v' _ _) | v' == v = True
+	go _ = False
 
 {- Decodes a C-style encoding, where \n is a newline (etc),
  - \NNN is an octal encoded character, and \xNN is a hex encoded character.
