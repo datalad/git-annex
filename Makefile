@@ -99,8 +99,7 @@ retest: git-annex
 	./git-annex test --rerun-update --rerun-filter failures
 
 # https://github.com/luqui/hothasktags/issues/18
-HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports \
--c --cpp -c -traditional -c --include=dist/build/git-annex/autogen/cabal_macros.h \
+HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports -c --cpp -c -traditional -c --include=dist/build/git-annex/autogen/cabal_macros.h
 
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
