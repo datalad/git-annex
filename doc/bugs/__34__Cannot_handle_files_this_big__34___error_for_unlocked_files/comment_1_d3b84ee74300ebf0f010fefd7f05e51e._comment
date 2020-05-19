@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-19T17:03:09Z"
+ content="""
+git is configured to filter the file through git-annex, so git does not
+need to deal with the large content of the file.
+
+But this error message seems to come from part of git that just stats the
+file, and looks at its size. So there's nothing git-annex is configuring
+wrong, and using git-lfs would likewise make git fail the same.
+
+I don't think this is a bug in git-annex. It should be reported to the git
+developers. The error comes from `xsize_t`, and according to git's commit 
+dc49cd769b5fa6b7e0114b051c34a849828a7603 it was intended to detect cases
+where git can't possibly malloc enough memory for a file, because `size_t`
+is not wide enough, compared with `off_t`.
+
+On linux amd64, both are 8. On linux i386 and arm, both are 4. So I don't
+think any usual linux systems are affected by this, only unusual systems
+that use different sizes for them.
+"""]]
