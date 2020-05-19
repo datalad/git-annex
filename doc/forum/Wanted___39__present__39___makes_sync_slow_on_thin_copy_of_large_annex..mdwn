@@ -1,0 +1,22 @@
+I have a large annex (~200k files) on a server with a thin checkout on my laptop.
+
+The scenario I was trying to achieve is to by default have:
+
+- All files always present on the server
+- Only files added locally/pulled manually on the laptop
+
+It seems this can be achieved by setting preferred content to `present` on the laptop, required `*` on the server and then regularly calling
+
+```
+$ git annex sync --content
+```
+
+However, this is very slow (compared to --no-content, which takes seconds), it seems to iterate the whole repository for presence.
+
+I'm not too familiar with git-annex's internals, but it seems finding a sparse set of present files is already implemented efficiently:
+
+```
+$ time git annex find --in=here
+```
+
+takes 5 seconds to complete on the laptop.

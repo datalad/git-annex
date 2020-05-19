@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jeanpmbox-456@7222359de8d1f37a7cf25a519e8faf90a9517b50"
+ nickname="jeanpmbox-456"
+ avatar="http://cdn.libravatar.org/avatar/164eb4254c5f83d95d3e0b810ff7aab9"
+ subject="comment 4"
+ date="2020-05-15T21:21:29Z"
+ content="""
+Is there an option for git-annex to recognize hard links inside a repository?
+
+I have a repository where I want a file to be in different places but when I git-annex this file I can't preserve the hard link structure.
+"""]]

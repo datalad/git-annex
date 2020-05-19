@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jeanpmbox-456@7222359de8d1f37a7cf25a519e8faf90a9517b50"
+ nickname="jeanpmbox-456"
+ avatar="http://cdn.libravatar.org/avatar/164eb4254c5f83d95d3e0b810ff7aab9"
+ subject="comment 3"
+ date="2020-05-15T21:14:53Z"
+ content="""
+It came when I installed git-annex, I did not ask nor tick a box to have this script loaded at startup. I installed git-annex in a different directory but the entry which was added to the start menu did not take that into account, and pointed to the default installation directory.
+"""]]

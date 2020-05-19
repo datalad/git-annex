@@ -1,0 +1,69 @@
+### Please describe the problem.
+Unlocking a large file on the Synology NAS results in "Cannot handle files this big" errors with every following other git command (git status, git diff, ... and hereby git annex status/sync etc.).
+
+Unfortunately I miss the technical understanding how the pointer files are hidden from git - I've seen the smudge/clean filters though.
+
+How does it work?
+After a file is unlocked, it is physically part of the working tree and also part of the git history, so a git status/diff will naturally try to index/check that file without running the annex filter, which then results in this error message, right?
+So how should these unlocked pointer files be hidden technically to not be indexed and checked by git?
+
+
+### What steps will reproduce the problem?
+    $ git init
+    Initialized empty Git repository in /volume1/homes/admin/git-annex/test3/.git/
+    $ git annex init --version 8
+    init  (scanning for unlocked files...)
+    ok
+    (recording state in git...)
+    $ ls -lah 
+    total 12K
+    drwxr-xr-x 3 admin users 4.0K May 16 17:00 .
+    drwxr-xr-x 8 admin users 4.0K May 16 17:00 ..
+    drwxr-xr-x 9 admin users 4.0K May 16 17:01 .git
+    -rw-r--r-- 1 admin users  20G May 16 17:00 output
+    $ git annex add output
+    add output 
+    $ git annex sync
+    $ git annex unlock output
+    $ git annex status
+    fatal: Cannot handle files this big
+    git-annex: git status failed
+    $ git status
+    fatal: Cannot handle files this big
+    $ git diff
+    fatal: Cannot handle files this big
+
+Why does git even feel responsible to load this file?
+
+
+### What version of git-annex are you using? On what operating system?
+
+Synology NAS
+
+    git-annex version: 8.20200331-g111b747be
+    build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+    dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+    operating system: linux arm
+    supported repository versions: 8
+    upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+    local repository version: 8
+
+    git version 2.26.1
+
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Unlocking files (with thin set to true) seems to be the perfect solution for me - I just have to understand what's going on under the hood ;)
