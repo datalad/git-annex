@@ -5,7 +5,7 @@ The scenario I was trying to achieve is to by default have:
 - All files always present on the server
 - Only files added locally/pulled manually on the laptop
 
-It seems this can be achieved by setting preferred content to `present` on the laptop and then regularly calling
+It seems this can be achieved by setting preferred content to `present` on the laptop, required `*` on the server and then regularly calling
 
 ```
 $ git annex sync --content
