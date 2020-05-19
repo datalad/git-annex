@@ -1,9 +1,11 @@
 {- git-annex command
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE TupleSections #-}
 
 module Command.Whereis where
 
@@ -13,6 +15,9 @@ import Logs.Trust
 import Logs.Web
 import Remote.Web (getWebUrls)
 import Annex.UUID
+import qualified Utility.Format
+import qualified Command.Find
+import Types.ActionItem
 
 import qualified Data.Map as M
 import qualified Data.Vector as V
@@ -27,6 +32,7 @@ data WhereisOptions = WhereisOptions
 	{ whereisFiles :: CmdParams
 	, keyOptions :: Maybe KeyOptions
 	, batchOption :: BatchMode
+	, formatOption :: Maybe Utility.Format.Format
 	}
 
 optParser :: CmdParamsDesc -> Parser WhereisOptions
@@ -34,40 +40,74 @@ optParser desc = WhereisOptions
 	<$> cmdParams desc
 	<*> optional parseKeyOptions
 	<*> parseBatchOption
+	<*> optional parseFormatOption
+
+parseFormatOption :: Parser Utility.Format.Format
+parseFormatOption = option (Utility.Format.gen <$> str)
+	( long "format" <> metavar paramFormat
+	<> help "control format of output"
+	)
 
 seek :: WhereisOptions -> CommandSeek
 seek o = do
 	m <- remoteMap id
-	let go = whenAnnexed $ start m
+	let go = whenAnnexed $ start o m
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> 
 			withKeyOptions (keyOptions o) False
-				(commandAction . startKeys m)
+				(commandAction . startKeys o m)
 				(withFilesInGit (commandAction . go))
 				=<< workTreeItems (whereisFiles o)
 
-start :: M.Map UUID Remote -> RawFilePath -> Key -> CommandStart
-start remotemap file key = startKeys remotemap (key, mkActionItem (key, afile))
+start :: WhereisOptions -> M.Map UUID Remote -> RawFilePath -> Key -> CommandStart
+start o remotemap file key = 
+	startKeys o remotemap (key, mkActionItem (key, afile))
   where
 	afile = AssociatedFile (Just file)
 
-startKeys :: M.Map UUID Remote -> (Key, ActionItem) -> CommandStart
-startKeys remotemap (key, ai) = starting "whereis" ai $ perform remotemap key
+startKeys :: WhereisOptions -> M.Map UUID Remote -> (Key, ActionItem) -> CommandStart
+startKeys o remotemap (key, ai)
+	| isJust (formatOption o) = startingCustomOutput ai go
+	| otherwise = starting "whereis" ai go
+  where
+	go = perform o remotemap key ai
 
-perform :: M.Map UUID Remote -> Key -> CommandPerform
-perform remotemap key = do
+perform :: WhereisOptions -> M.Map UUID Remote -> Key -> ActionItem -> CommandPerform
+perform o remotemap key ai = do
 	locations <- keyLocations key
 	urls <- getUUIDUrls key locations remotemap
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted locations
-	let num = length safelocations
-	showNote $ show num ++ " " ++ copiesplural num
-	pp <- ppwhereis "whereis" safelocations urls
-	unless (null safelocations) $ showLongNote pp
-	pp' <- ppwhereis "untrusted" untrustedlocations urls
-	unless (null untrustedlocations) $ showLongNote $ untrustedheader ++ pp'
-
-	mapM_ (showRemoteUrls remotemap) urls
+	case formatOption o of
+		Nothing -> do
+			let num = length safelocations
+			showNote $ show num ++ " " ++ copiesplural num
+			pp <- ppwhereis "whereis" safelocations urls
+			unless (null safelocations) $ showLongNote pp
+			pp' <- ppwhereis "untrusted" untrustedlocations urls
+			unless (null untrustedlocations) $ showLongNote $ untrustedheader ++ pp'
+		
+			mapM_ (showRemoteUrls remotemap) urls
+		Just formatter -> liftIO $ do
+			let vs = catMaybes
+				[ fmap (("file",) . fromRawFilePath)
+					(actionItemWorkTreeFile ai)
+				] ++ Command.Find.keyVars key
+			let showformatted muuid murl = putStr $
+				Utility.Format.format formatter $
+					M.fromList $ vs ++ catMaybes
+						[ fmap ("uuid",) muuid
+						, fmap ("url",) murl
+						]
+			let showformatted' muuid
+				| Utility.Format.formatContainsVar "url" formatter =
+					forM_ (concatMap snd urls) $ 
+						showformatted muuid . Just
+				| otherwise = showformatted muuid Nothing
+			if Utility.Format.formatContainsVar "uuid" formatter
+				then forM_ locations $
+					showformatted' . Just . fromUUID
+				else showformatted' Nothing
 
 	if null safelocations then stop else next $ return True
   where

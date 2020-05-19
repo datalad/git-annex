@@ -71,6 +71,32 @@ received from remotes.
   Messages that would normally be output to standard error are included in
   the json instead.
 
+* `--format=value`
+
+  Use custom output formatting.
+
+  The value is a format string, in which '${var}' is expanded to the
+  value of a variable. To right-justify a variable with whitespace,
+  use '${var;width}' ; to left-justify a variable, use '${var;-width}';
+  to escape unusual characters in a variable, use '${escaped_var}'
+
+  These variables are available for use in formats: file, key, uuid,
+  url, backend, bytesize, humansize, keyname, hashdirlower, hashdirmixed,
+  mtime (for the mtime field of a WORM key).
+
+  Also, '\\n' is a newline, '\\000' is a NULL, etc.
+
+  When the format contains the uuid variable, it will be expanded in turn
+  for each repository that contains the file content. For example,
+  with --format="${file} ${uuid}\\n", output will look like:
+  
+	foo 00000000-0000-0000-0000-000000000001
+	foo a7f7ddd0-9a08-11ea-ab66-8358e4209d30
+	bar a7f7ddd0-9a08-11ea-ab66-8358e4209d30
+
+  The same applies when the url variable is used and a file has multiple
+  recorded urls.
+
 # SEE ALSO
 
 [[git-annex]](1)
