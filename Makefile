@@ -101,10 +101,12 @@ retest: git-annex
 # https://github.com/luqui/hothasktags/issues/18
 HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports -c --cpp -c -traditional -c --include=dist/build/git-annex/autogen/cabal_macros.h
 
+# tags file for vim
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
 	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} $$f; done) 2>/dev/null | sort > tags
 
+# TAGS file for emacs
 TAGS:
 	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} -e $$f; done) 2>/dev/null > TAGS
 
