@@ -11,7 +11,7 @@ It seems this can be achieved by setting preferred content to `present` on the l
 $ git annex sync --content
 ```
 
-However, this is very slow (compared to --no-content, which is takes seconds), it seems to iterate the whole repository for presence.
+However, this is very slow (compared to --no-content, which takes seconds), it seems to iterate the whole repository for presence.
 
 I'm not too familiar with git-annex's internals, but it seems finding a sparse set of present files is already implemented efficiently:
 
