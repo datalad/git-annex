@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="braun.markus89@51b521a42cc994db864df308627bd6454f9c309d"
+ nickname="braun.markus89"
+ avatar="http://cdn.libravatar.org/avatar/c11d06a0d9db6a9472b05ee01c342ca4"
+ subject="comment 2"
+ date="2020-05-20T13:54:23Z"
+ content="""
+Thanks for your answer. 
+
+Short follow up question.
+When I do exactly the same for a 2G file, something similar happens:
+
+    $ git annex sync --debug
+    [2020-05-20 15:48:19.441795963] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+    [2020-05-20 15:48:19.459542967] process done ExitSuccess
+    [2020-05-20 15:48:19.460055539] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2020-05-20 15:48:19.47249456] process done ExitSuccess
+    [2020-05-20 15:48:19.473466546] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..9655aad25802451eb83141096fb9275aa36fe810\",\"--pretty=%H\",\"-n1\"]
+    [2020-05-20 15:48:19.487917815] process done ExitSuccess
+    [2020-05-20 15:48:19.489243941] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+    [2020-05-20 15:48:19.490737137] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+    commit 
+    [2020-05-20 15:48:19.506415618] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit\",\"-a\",\"-m\",\"git-annex in admin@Paintower:~/git-annex/test\"]
+    fatal: mmap failed: Cannot allocate memory
+
+So why does the \"git commit\" allocate so much memory? It seems like it tries to handle the file content itself? Or is it a malloc failure caused by git annex smudge?
+
+"""]]
