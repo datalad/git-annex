@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Ingredients.Rerun
+import Test.Tasty.Options
 import Options.Applicative (switch, long, help, internal)
 
 import qualified Data.Map as M
@@ -96,7 +97,7 @@ import qualified Types.Remote
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> suiteOptionParser ingredients (tests False True mempty)
+	<$> snd tastyParser
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -106,6 +107,15 @@ optParser = TestOptions
 		<> internal
 		)
 	<*> cmdParams "non-options are for internal use only"
+
+tastyParser :: ([String], Parser Test.Tasty.Options.OptionSet)
+#if MIN_VERSION_tasty(1,3,0)
+tastyParser = go
+#else
+tastyParser = ([], go)
+#endif
+  where
+ 	go = suiteOptionParser ingredients (tests False True mempty)
 
 runner :: TestOptions -> IO ()
 runner opts
@@ -118,6 +128,10 @@ runner opts
 	-- suite.
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
 	runsubprocesstests Nothing = do
+		let warnings = fst tastyParser
+		unless (null warnings) $ do
+			hPutStrLn stderr "warnings from tasty:"
+			mapM_ (hPutStrLn stderr) warnings
 		pp <- Annex.Path.programPath
 		Utility.Env.Set.setEnv subenv "1" True
 		ps <- getArgs
