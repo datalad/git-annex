@@ -365,9 +365,8 @@ handling a request.
   URL.  
   (git-annex does not send a reply to this message.)
 * `SETURIPRESENT Key Uri`  
-  Records an URI where the Key can be downloaded from.  
-  For example, "ipfs:ADDRESS" is used for the ipfs special remote;
-  its CLAIMURL handler checks for such URIS and claims them.  
+  Records an URI where the Key can be downloaded from. Use with uris
+  that cannot be downloaded with http.
   (git-annex does not send a reply to this message.)
 * `SETURIMISSING Key Uri`  
   Records that the key can no longer be downloaded from the specified
@@ -420,7 +419,38 @@ quite a long time, especially when the git-annex assistant is using it.
 The assistant will detect when the system connects to a network, and will
 start a new process the next time it needs to use a remote.
 
-## readonly mode
+## claiming custom uri schemes for use with git-annex addurl
+
+If a special remote has its own uri scheme, or some other way to identify a
+particular url as being content that is stored in the special remote,
+and can be downloaded by it, it can implement CLAIMURL and CHECKURL.
+This lets git-annex addurl be used with such urls.
+
+For example, the ipfs special remote implements CLAIMURL and CHECKURL
+for "ipfs:ADDRESS" uris. And the bittorrent special remote implements them
+for http urls ending in ".torrent".
+
+When a special remote has claimed an url, commands like git-annex addurl
+will use TRANSFER RETRIEVE to request it download the content of a key.
+To find out what url to download, the special remote can use GETURLS
+to find out what urls are recorded for the key.
+
+For example, the ipfs special remote sends "GETURLS $KEY ipfs:",
+in order to get only the "ipfs:" uris.
+
+The special remote can also use SETURIPRESENT or SETURLPRESENT,
+eg after transferring content to the remote it might know the uri or url
+that can be used to download it. And SETURIMISSING or SETURLMISSING
+can be used after removing content from the remote. This information can
+then be looked up using GETURLS. But it's not necessary to do this in order
+to simply claim an url, because git-annex addurl takes care of it.
+
+For example, the ipfs special remote sends "SETURIPRESENT $KEY ipfs:ADDRESS"
+after storing each key in ipfs. It can later look up that uri when
+downloading the key, and the ipfs uri is also displayed by git-annex
+whereis.
+
+## readonly mode for http downloads
 
 Some storage services allow downloading the content of a file using a
 regular http connection, with no authentication. An external special remote

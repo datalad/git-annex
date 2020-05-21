@@ -149,7 +149,10 @@ data RemoteA a = Remote
 	, mkUnavailable :: a (Maybe (RemoteA a))
 	-- Information about the remote, for git annex info to display.
 	, getInfo :: a [(String, String)]
-	-- Some remotes can download from an url (or uri).
+	-- Some remotes can download from an url (or uri). This asks the
+	-- remote if it can handle a particular url. The actual download
+	-- will be done using retrieveKeyFile, and the remote can look up
+	-- up the url to download for a key using Logs.Web.getUrls.
 	, claimUrl :: Maybe (URLString -> a Bool)
 	-- Checks that the url is accessible, and gets information about
 	-- its contents, without downloading the full content.
