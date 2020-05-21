@@ -239,17 +239,17 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		-- looking in the git-annex branch for chunk counts
 		-- that are likely not there.
 		getunchunked `catchNonAsync`
-			const (go =<< chunkKeysOnly u basek)
-	| otherwise = go =<< chunkKeys u chunkconfig basek
+			(\e -> go (Just e) =<< chunkKeysOnly u basek)
+	| otherwise = go Nothing =<< chunkKeys u chunkconfig basek
   where
-	go ls = do
+	go pe ls = do
 		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			then noop -- dest is already complete
-			else firstavail Nothing currsize ls'
+			else firstavail pe currsize ls'
 
-	firstavail Nothing _ [] = giveup "chunk retrieval failed"
+	firstavail Nothing _ [] = giveup "unable to determine the chunks to use for this remote"
 	firstavail (Just e) _ [] = throwM e
 	firstavail pe currsize ([]:ls) = firstavail pe currsize ls
 	firstavail _ currsize ((k:ks):ls)
