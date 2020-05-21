@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-21T16:17:55Z"
+ content="""
+As whereis shows, the content of your file is located only on the repository
+chymera@localhost.localdomain:~/data
+
+When you ran git-annex get in chymera@silenthost:~/data, it did not have any
+remote that connected it to that repository, so it had no way to get the content. Its only remote,
+/run/media/chymera/data0/data, did not contain the content.
+
+The data is being correctly tracked. I do not see any bug here.
+
+You need to track down the chymera@localhost.localdomain:~/data repository, add
+a remote pointing to it, and everything will work. Unfortunately, it seems
+whatever computer it's located on, git-annex was not able to get a better
+hostname for than "localhost", which is kind of unusual. git-annex simply runs
+"uname -n" to get the hostname, so whichever of your computers that outputs
+"localhost" on is probably the one.
+"""]]

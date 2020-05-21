@@ -45,3 +45,4 @@ commit 6f7b889c3487fb6dacbfd7a3a6fa8c55ea3ed274
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I keep coming back to it, it's given me a steady stream of frustration and satisfaction for over 5 years.
 
+> [[notabug|done]] --[[Joey]]
