@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="reverting metadata"
+ date="2020-05-21T13:39:37Z"
+ content="""
+If I revert to a previous commit, the metadata changes are not reverted to their previous state.
+Is there a way to revert metadata?
+If I understood that correctly, the metadata are stored in a single git-annex branch: so there is no way to have two regular branches with different metadata for the same file, right?
+Does any call to git-annex metadata creates a new commit in the git-annex branch?
+The commit message of the git-annex branch are not super informative: they all say \"update\".
+
+A related question: is there a way to get the git-annex branch commit that matches a regular/master branch commit?
+
+Thanks.
+"""]]

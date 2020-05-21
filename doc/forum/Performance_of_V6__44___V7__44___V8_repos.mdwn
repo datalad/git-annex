@@ -1,0 +1,8 @@
+Hey folks (and Joey), I am trying to understand the performance impact of changes in v6 -> v7 -> v8 mode. Apologies since I haven't kept up with the changes (was using older version for quite a bit) and some of these might already be well documented/known.
+
+Essentially, back in v6 and earlier, I was pretty happy with the design idea the git annex doesn't use smudge/clean filters since their performance is far from ideal. However, I see that in newer versions of repos, this has become more of a thing. I have read a few docs (https://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/, https://git-annex.branchable.com/todo/only_pass_unlocked_files_through_the_clean__47__smudge_filter/) but there's still a few thing I don't understand.
+
+1) Are smudge/clean filter used all the time now? Does this mean that we are taking a performance hit compared to older git annex versions?
+2) Can someone explain when smudge/clean filters get used? Is it only in repos that use unlock/adjust? I don't use either of them, and would love to know if these are being used unnecessarily.
+
+Thanks in advance!
