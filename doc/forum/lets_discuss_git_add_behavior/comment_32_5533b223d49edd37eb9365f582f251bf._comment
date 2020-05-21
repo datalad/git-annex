@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 32"""
- date="2019-10-24T18:17:05Z"
- content="""
-Futher, current master now only makes git add add to annex when
-annex.largefiles has been configured.
-"""]]

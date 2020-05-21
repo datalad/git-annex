@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="leej"
- avatar="http://cdn.libravatar.org/avatar/eb1c6bd57680f694fb4658388e6de4ed"
- subject="+1 to the comments above"
- date="2019-10-22T07:21:31Z"
- content="""
-Git Annex has been and is a terrific tool. And, I would, very respectfully, like to +1 the comments above.   I agree with spwhitton that v7 `git add` behavior would benefit from being off by default, with a way to turn it on as required.  Both from a migration safety/friction-reduction standpoint, but also from the least invasive integration with Git principle that amindfv and others have so well articulated.
-"""]]

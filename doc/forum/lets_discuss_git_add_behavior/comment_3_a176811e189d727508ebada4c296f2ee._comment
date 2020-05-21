@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 3"
- date="2019-09-19T20:39:21Z"
- content="""
-\"it's far preferable for the mistake to be adding the file content to the annex, vs adding the file content to git\" -- not always.  If you add content to the annex, you have to remember to separately sync it; just pushing the branch won't save it.  I've lost contents this way, when working with a temporary repo clone.
-"""]]

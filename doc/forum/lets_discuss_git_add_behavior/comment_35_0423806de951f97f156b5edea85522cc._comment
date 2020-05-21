@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://templeofcrom.duckdns.org/"
- nickname="Karl"
- avatar="http://cdn.libravatar.org/avatar/336975995d2c8652aa98284987d5987e90e1b4d137da415af18a8e04c29edbc3"
- subject="A warning in the docs about earlier v7 revisions would be nice"
- date="2019-11-08T04:59:43Z"
- content="""
-I started using git-annex for the first time today and ran head-first into this bug, so I'm glad to see a course correction here.  I just wish the update had been done a month earlier, as the version packaged with Fedora 30 has the 'git add' override behavior which cost me a few hours in figuring out how to get files out of the annex and into a git object.  The git-annex-add wiki page really could use a couple warnings to say that 'git add' may be overridden and that in earlier v7 revisions you are basically required to use annex.largefiles with a strict filter in order to make normal use of 'git add'.
-"""]]
