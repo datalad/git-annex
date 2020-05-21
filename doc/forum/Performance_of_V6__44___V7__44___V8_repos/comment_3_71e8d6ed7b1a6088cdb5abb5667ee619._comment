@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-21T19:27:40Z"
+ content="""
+`git annex add` does not result in the smudge filter being run.
+
+You could configure git not to run the filters ever (see git docs) but then
+git-annex features involving unlocked files will of course break.
+
+Could I suggest that, in general, you wait until you have actually
+seen git-annex behave badly before worrying about it? (This is in the
+context of also having seen some other comments you made elsewhere.)
+That also lets you file concrete bug reports, rather than posting worries
+that may be ungrounded.
+"""]]
