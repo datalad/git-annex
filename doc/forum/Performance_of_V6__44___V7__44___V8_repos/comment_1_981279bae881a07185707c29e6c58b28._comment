@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-21T18:50:00Z"
+ content="""
+There is no change at all for performance when annexed files are symlinks.
+
+If the annexed file is unlocked, it will use smudge/clean filters.
+
+If you have non-annexed files in the git repo, git will also run those
+through the smudge/clean filters.
+
+git calls the clean filter when it sees a file has been modified.
+Things like git status and git add. It caches the result until the file is
+modified again. The smudge filter is only called when git is checking out
+a file (git checkout or a change from a git pull etc).
+"""]]
