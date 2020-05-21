@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 3"
+ date="2020-05-21T17:06:12Z"
+ content="""
+> If I revert to a previous commit, the metadata changes are not
+> reverted to their previous state.
+
+Metadata is attached to keys, not files.  (See `man
+git-annex-metadata`.)  If the state you revert to has the same key, it
+will have the same associated metadata.
+
+> Is there a way to revert metadata?
+
+AFAIU not in a way that is tied to the HEAD commit.  You can run `git
+annex metadata --remove-all FILE`, but that will remove the metadata
+on the underlying key.
+
+> If I understood that correctly, the metadata are stored in a single
+> git-annex branch: so there is no way to have two regular branches with
+> different metadata for the same file, right?
+
+Correct.
+
+> Does any call to git-annex metadata creates a new commit in the
+> git-annex branch?
+
+I believe so, provided the caller hasn't overridden
+`annex.alwayscommit` to \"false\".
+
+> The commit message of the git-annex branch are not super
+> informative: they all say \"update\".
+
+In my view generic messages like \"update\" make a lot of sense in the
+context of the behind-the-scenes git-annex branch.  If you're
+inspecting it just because you're curious about what's happening
+underneath, you might find the output of `git log --stat git-annex`
+helpful.
+
+That being said, there is an `annex.commitmessage` config option if
+you want to override the message.
+
+https://git-annex.branchable.com/todo/be_able_to_specify_custom_commit_message_for_git-annex_branch_commit/
+
+> A related question: is there a way to get the git-annex branch commit
+> that matches a regular/master branch commit?
+
+I don't think there is any such mapping by design.
+
+
+"""]]
