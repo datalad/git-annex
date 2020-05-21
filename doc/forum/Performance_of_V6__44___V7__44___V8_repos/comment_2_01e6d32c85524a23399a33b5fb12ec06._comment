@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="codelix"
+ avatar="http://cdn.libravatar.org/avatar/667ff4d0387694f28236639bab0faf2c"
+ subject="comment 2"
+ date="2020-05-21T19:17:55Z"
+ content="""
+Thanks for the super quick response Joey.
+
+That then sounds like `git add` and `git annex add` do get a performance impact (since they run smudge/clean which is not mandatory, or is no-op) even if I don't use unlock or adjust. Is that right? Is there a repo setting that will make it not use them?
+
+My understanding is that git pre/post commit hooks are the ones that are useful for standard symlink approach and dont need smudge/clean at all. Please correct me if I am wrong.
+
+Also, just want to say I appreciate all the effort that you do for this. I have tons of data managed with this and should probably write up that story of how I manage my files.
+"""]]
