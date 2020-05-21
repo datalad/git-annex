@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-21T16:54:48Z"
+ content="""
+I don't think there's any reason why git should need to allocate memory for
+the whole file. All it's doing is reading the file and sending it over a
+pipe, and git-annex actually hangs up the pipe before reading anything.
+So git could read a few bytes, try to send them, and give up.
+
+The last time I looked at it, in [[!commit a96972015dd76271b46432151e15d5d38d7151ff]]
+having git-annex close the pipe immediately did avoid git overallocating
+memory. I don't know what else git-annex could do to avoid any bad behavior
+from git.
+
+If your git is older than 2.5, it would certainly explain it, since the
+above workaround needed git 2.5.
+"""]]
