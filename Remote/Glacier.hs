@@ -118,16 +118,17 @@ glacierSetup ss mu mcreds c gc = do
 	glacierSetup' ss u mcreds c gc
 glacierSetup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 glacierSetup' ss u mcreds c gc = do
-	(c', encsetup) <- encryptionSetup c gc
-	c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
-	let fullconfig = c'' `M.union` defaults
-	pc <- either giveup return . parseRemoteConfig fullconfig
-		=<< configParser remote fullconfig
+	(c', encsetup) <- encryptionSetup (c `M.union` defaults) gc
+	pc <- either giveup return . parseRemoteConfig c'
+		=<< configParser remote c'
+	c'' <- setRemoteCredPair encsetup pc gc (AWS.creds u) mcreds
+	pc' <- either giveup return . parseRemoteConfig c''
+		=<< configParser remote c''
 	case ss of
-		Init -> genVault pc gc u
+		Init -> genVault pc' gc u
 		_ -> return ()
-	gitConfigSpecialRemote u fullconfig [("glacier", "true")]
-	return (fullconfig, u)
+	gitConfigSpecialRemote u c'' [("glacier", "true")]
+	return (c'', u)
   where
 	remotename = fromJust (lookupName c)
 	defvault = remotename ++ "-" ++ fromUUID u

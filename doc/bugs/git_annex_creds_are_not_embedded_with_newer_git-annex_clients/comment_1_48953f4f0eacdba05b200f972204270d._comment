@@ -6,4 +6,6 @@
 I tried this and the result is that git-annex get from S3 fails. While I do
 think it should be writing the creds cache file, the failure to get is the
 actual bug symptom.
+
+Fixed this reversion.
 """]]

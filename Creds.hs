@@ -31,7 +31,7 @@ import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigField)
 import Types.ProposedAccepted
-import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher, parseEncryptionConfig)
+import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -56,10 +56,8 @@ data CredPairStorage = CredPairStorage
  - if that's going to be done, so that the creds can be encrypted using the
  - cipher. The EncryptionIsSetup is witness to that being the case.
  -}
-setRemoteCredPair :: EncryptionIsSetup -> RemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair = setRemoteCredPair' id go
-  where
-	go c = either (const (ParsedRemoteConfig mempty c)) id (parseEncryptionConfig c)
+setRemoteCredPair :: EncryptionIsSetup -> ParsedRemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
+setRemoteCredPair encsetup pc = setRemoteCredPair' id (const pc) encsetup (unparsedRemoteConfig pc)
 
 setRemoteCredPair'
 	:: (ProposedAccepted String -> a)
@@ -106,7 +104,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 	fromconfig = do
 		let key = credPairRemoteField storage
 		mcipher <- remoteCipher' c gc
-		case (fromProposedAccepted <$> getRemoteConfigValue key c, mcipher) of
+		case (getRemoteConfigValue key c, mcipher) of
 			(Nothing, _) -> return Nothing
 			(Just enccreds, Just (cipher, storablecipher)) ->
 				fromenccreds enccreds cipher storablecipher

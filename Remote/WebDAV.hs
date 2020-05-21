@@ -134,7 +134,7 @@ webdavSetup _ mu mcreds c gc = do
 	creds <- maybe (getCreds pc gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' [("webdav", "true")]
-	c'' <- setRemoteCredPair encsetup c' gc (davCreds u) creds
+	c'' <- setRemoteCredPair encsetup pc gc (davCreds u) creds
 	return (c'', u)
 
 store :: DavHandleVar -> ChunkConfig -> Storer

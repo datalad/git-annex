@@ -247,13 +247,14 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			then noop -- dest is already complete
-			else firstavail currsize ls'
+			else firstavail Nothing currsize ls'
 
-	firstavail _ [] = giveup "chunk retrieval failed"
-	firstavail currsize ([]:ls) = firstavail currsize ls
-	firstavail currsize ((k:ks):ls)
+	firstavail Nothing _ [] = giveup "chunk retrieval failed"
+	firstavail (Just e) _ [] = throwM e
+	firstavail pe currsize ([]:ls) = firstavail pe currsize ls
+	firstavail _ currsize ((k:ks):ls)
 		| k == basek = getunchunked
-			`catchNonAsync` (const $ firstavail currsize ls)
+			`catchNonAsync` (\e -> firstavail (Just e) currsize ls)
 		| otherwise = do
 			let offset = resumeOffset currsize k
 			let p = maybe basep
@@ -269,7 +270,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 			case v of
 				Left e
 					| null ls -> throwM e
-					| otherwise -> firstavail currsize ls
+					| otherwise -> firstavail (Just e) currsize ls
 				Right r -> return r
 
 	getrest _ _ _ _ [] = noop

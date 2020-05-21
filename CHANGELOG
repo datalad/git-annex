@@ -28,6 +28,9 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
     directory that's a symbolic link to elsewhere.
   * When accessing a remote fails, always display a reason why.
   * whereis: Added --format option.
+  * Fix bug that made enableremote of S3 and webdav remotes, that
+    have embedcreds=yes, fail to set up the embedded creds, so accessing
+    the remotes failed. (Regression introduced in version 7.20200202.7)
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
 

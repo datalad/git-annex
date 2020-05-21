@@ -243,7 +243,7 @@ s3Setup ss mu mcreds c gc = do
 	s3Setup' ss u mcreds c gc
 
 s3Setup' :: SetupStage -> UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-s3Setup' ss u mcreds c gc
+s3Setup'  ss u mcreds c gc
 	| maybe False (isIAHost . fromProposedAccepted) (M.lookup hostField c) = archiveorg
 	| otherwise = defaulthost
   where
@@ -263,21 +263,24 @@ s3Setup' ss u mcreds c gc
 		return (fullconfig, u)
 
 	defaulthost = do
-		(c', encsetup) <- encryptionSetup c gc
-		c'' <- setRemoteCredPair encsetup c' gc (AWS.creds u) mcreds
-		let fullconfig = c'' `M.union` defaults
-		pc <- either giveup return . parseRemoteConfig fullconfig
-			=<< configParser remote fullconfig
-		info <- extractS3Info pc
-		checkexportimportsafe pc info
+		(c', encsetup) <- encryptionSetup (c `M.union` defaults) gc
+		pc <- either giveup return . parseRemoteConfig c'
+			=<< configParser remote c'
+		c'' <- setRemoteCredPair encsetup pc gc (AWS.creds u) mcreds
+		pc' <- either giveup return . parseRemoteConfig c''
+			=<< configParser remote c''
+		info <- extractS3Info pc'
+		checkexportimportsafe pc' info
 		case ss of
-			Init -> genBucket pc gc u
+			Init -> genBucket pc' gc u
 			_ -> return ()
-		use fullconfig pc info
+		use c'' pc' info
 
 	archiveorg = do
 		showNote "Internet Archive mode"
-		c' <- setRemoteCredPair noEncryptionUsed c gc (AWS.creds u) mcreds
+		pc <- either giveup return . parseRemoteConfig c
+			=<< configParser remote c
+		c' <- setRemoteCredPair noEncryptionUsed pc gc (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let validbucket = replace " " "-" $ map toLower $
@@ -292,14 +295,14 @@ s3Setup' ss u mcreds c gc
 			M.union c' $
 			-- special constraints on key names
 			M.insert mungekeysField (Proposed "ia") defaults
-		pc <- either giveup return . parseRemoteConfig archiveconfig
+		pc' <- either giveup return . parseRemoteConfig archiveconfig
 			=<< configParser remote archiveconfig
-		info <- extractS3Info pc
-		checkexportimportsafe pc info
-		hdl <- mkS3HandleVar pc gc u
+		info <- extractS3Info pc'
+		checkexportimportsafe pc' info
+		hdl <- mkS3HandleVar pc' gc u
 		withS3HandleOrFail u hdl $
-			writeUUIDFile pc u info
-		use archiveconfig pc info
+			writeUUIDFile pc' u info
+		use archiveconfig pc' info
 	
 	checkexportimportsafe c' info =
 		unlessM (Annex.getState Annex.force) $
