@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="basile.pinsard@f1a7fae9f3bd9d5282fca11f62ad53b45a8eb317"
+ nickname="basile.pinsard"
+ avatar="http://cdn.libravatar.org/avatar/87e1f73acf277ad0337b90fc0253c62e"
+ subject="comment 4"
+ date="2020-05-22T13:24:19Z"
+ content="""
+Thanks for the detailed answer.
+
+So the only way to revert metadata changes is to reset the git-annex branch to a previous commit with `git update-ref refs/heads/git-annex <commit>`. 
+
+Thanks for the `git-log --stat` tip.
+
+I guess I could get an approximate match between the master and git-annex branches commits based on commit date.
+"""]]
