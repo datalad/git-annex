@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="arseni.lapunov@34f437c25a6a8c6d317dce0bb7c5b44d568fa595"
+ nickname="arseni.lapunov"
+ avatar="http://cdn.libravatar.org/avatar/ccbdceb84c46bf9af5f9162bbf982f0b"
+ subject="git-annex get fails"
+ date="2020-05-22T14:28:23Z"
+ content="""
+Thank you! Exactly git annex get failure was an actual problem, but I thought that it should not succeed without cached creds.
+
+Regards
+"""]]
