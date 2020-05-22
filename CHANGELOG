@@ -1,21 +1,8 @@
-git-annex (8.20200502) UNRELEASED; urgency=medium
+git-annex (8.20200522) upstream; urgency=medium
 
-  * Display a warning message when a remote uses a protocol, such as
-    git://, that git-annex does not support. Silently skipping such a
-    remote was confusing behavior.
-  * Also display a warning message when a remote, without a known uuid,
-    is located in a directory that does not currently exist, to avoid
-    silently skipping such a remote.
-  * repair: Improve fetching from a remote with an url in host:path format.
-  * sync: Avoid an ugly error message when nothing has been committed to
-    master yet and there is a synced master branch to merge from.
-  * upgrade: When upgrade fails due to an exception, display it.
-  * S3: Support signature=v4, to use S3 Signature Version 4.
-    Some S3 services seem to require v4, while others may only
-    support v2, which remains the default.
-  * git-lfs repos that encrypt the annexed content but not the git repo
-    only need --force passed to initremote, allow enableremote and
-    autoenable of such remotes without forcing again.
+  * Fix bug that made enableremote of S3 and webdav remotes, that
+    have embedcreds=yes, fail to set up the embedded creds, so accessing
+    the remotes failed. (Regression introduced in version 7.20200202.7)
   * addurl, importfeed: Avoid adding filenames with leading '.', instead
     it will be replaced with '_'.
   * addurl, importfeed: Allow '-' in filenames, as long as it's not the
@@ -24,16 +11,29 @@ git-annex (8.20200502) UNRELEASED; urgency=medium
     without any sanitization, but will fail if the filename has an obvious
     security problem like using an escape sequence or trying to escape
     the current directory.
+  * whereis: Added --format option.
+  * S3: Support signature=v4, to use S3 Signature Version 4.
+    Some S3 services seem to require v4, while others may only
+    support v2, which remains the default.
+  * upgrade: When upgrade fails due to an exception, display it.
+  * repair: Improve fetching from a remote with an url in host:path format.
+  * git-lfs repos that encrypt the annexed content but not the git repo
+    only need --force passed to initremote, allow enableremote and
+    autoenable of such remotes without forcing again.
+  * When accessing a remote fails, always display a reason why.
+  * Display a warning message when a remote uses a protocol, such as
+    git://, that git-annex does not support. Silently skipping such a
+    remote was confusing behavior.
+  * Also display a warning message when a remote, without a known uuid,
+    is located in a directory that does not currently exist, to avoid
+    silently skipping such a remote.
+  * sync: Avoid an ugly error message when nothing has been committed to
+    master yet and there is a synced master branch to merge from.
   * Display a warning message when asked to operate on a file inside a
     directory that's a symbolic link to elsewhere.
-  * When accessing a remote fails, always display a reason why.
-  * whereis: Added --format option.
-  * Fix bug that made enableremote of S3 and webdav remotes, that
-    have embedcreds=yes, fail to set up the embedded creds, so accessing
-    the remotes failed. (Regression introduced in version 7.20200202.7)
   * Support building with tasty-1.3.
 
- -- Joey Hess <id@joeyh.name>  Mon, 04 May 2020 12:46:11 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 22 May 2020 12:05:01 -0400
 
 git-annex (8.20200501) upstream; urgency=medium
 
