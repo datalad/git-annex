@@ -1,0 +1,180 @@
+### Please describe the problem.
+
+When a git-annex is cloned from one where git init was run with --separate-git-dir, it works fine under Linux, but fails under Windows
+
+[[!format sh """
+shaddy@JAZZ2-W10 C:\slaveproj
+> git annex get services
+get services
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+        615bdcd5-6a5e-4330-84a2-b6c30cb3e5e4 -- shaddy@jazz2-w10:C:\masterproj [origin]
+failed
+git-annex: get: 1 failed
+
+"""]]
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+shaddy@JAZZ2-W10 C:\
+> git init --separate-git-dir masterproj.git masterproj
+Initialized empty Git repository in C:/masterproj.git/
+
+shaddy@JAZZ2-W10 C:\
+> cd masterproj
+
+shaddy@JAZZ2-W10 C:\masterproj
+> git annex init
+init
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+(scanning for unlocked files...)
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+
+shaddy@JAZZ2-W10 C:\masterproj
+> copy c:\Windows\System32\drivers\etc\services .
+        1 file(s) copied.
+
+shaddy@JAZZ2-W10 C:\masterproj
+> git annex add services
+add services
+ok
+(recording state in git...)
+
+shaddy@JAZZ2-W10 C:\masterproj
+> git commit -m services
+[adjusted/master(unlocked) e9d5e15] services
+ 1 file changed, 1 insertion(+)
+ create mode 100644 services
+
+shaddy@JAZZ2-W10 C:\masterproj
+> cd \
+
+shaddy@JAZZ2-W10 C:\
+> git clone masterproj slaveproj
+Cloning into 'slaveproj'...
+done.
+
+shaddy@JAZZ2-W10 C:\
+> cd slaveproj
+
+shaddy@JAZZ2-W10 C:\slaveproj
+> git annex init
+init
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+ok
+(recording state in git...)
+
+shaddy@JAZZ2-W10 C:\slaveproj
+> dir
+ Volume in drive C has no label.
+ Volume Serial Number is DE6E-211A
+
+ Directory of C:\slaveproj
+
+22/05/2020  08:57 PM    <DIR>          .
+22/05/2020  08:57 PM    <DIR>          ..
+22/05/2020  08:57 PM                97 services
+               1 File(s)             97 bytes
+               2 Dir(s)  24,926,748,672 bytes free
+
+shaddy@JAZZ2-W10 C:\slaveproj
+> type services
+/annex/objects/SHA256E-s17463--b26309dfd89a9cc94481536b4d662941429df79873bb59620f53db939ff5ec29
+
+shaddy@JAZZ2-W10 C:\slaveproj
+> git annex get services
+get services
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+        615bdcd5-6a5e-4330-84a2-b6c30cb3e5e4 -- shaddy@jazz2-w10:C:\masterproj [origin]
+failed
+git-annex: get: 1 failed
+
+shaddy@JAZZ2-W10 C:\slaveproj
+>
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+shaddy@JAZZ2-W10 C:\slaveproj
+> git annex version
+git-annex version: 8.20200330-g971791563
+build flags: Assistant Webapp Pairing S3 WebDAV TorrentParser Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.4 feed-1.2.0.1 ghc-8.6.5 http-client-0.6.4 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: mingw32 x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 2 3 4 5 6 7
+local repository version: 8
+"""]]
+
+### Please provide any additional information below.
+
+Works fine under Linux:
+
+[[!format sh """
+shaddy@jazz-debian:~$ git init --separate-git-dir /var/tmp/masterproj.git masterproj
+Initialized empty Git repository in /var/tmp/masterproj.git/
+shaddy@jazz-debian:~$ for d in masterproj/ /var/tmp/masterproj.git/; do stat -f $d | head -2; done
+  File: "masterproj/"
+    ID: 4efe0be616b5a688 Namelen: 255     Type: ext2/ext3
+  File: "/var/tmp/masterproj.git/"
+    ID: 6736efe4caec433 Namelen: 255     Type: ext2/ext3
+shaddy@jazz-debian:~$ cd masterproj/
+shaddy@jazz-debian:~/masterproj$ git annex init
+init  ok
+(recording state in git...)
+shaddy@jazz-debian:~/masterproj$ cp /etc/services .
+shaddy@jazz-debian:~/masterproj$ git annex add services
+add services ok
+(recording state in git...)
+shaddy@jazz-debian:~/masterproj$ git commit -m services
+[master (root-commit) a42f63a] services
+ 1 file changed, 1 insertion(+)
+ create mode 120000 services
+shaddy@jazz-debian:~/masterproj$ cd ~/
+shaddy@jazz-debian:~$ git clone masterproj/ slaveproj/
+Cloning into 'slaveproj'...
+done.
+shaddy@jazz-debian:~$ cd slaveproj/
+shaddy@jazz-debian:~/slaveproj$ git annex init
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+shaddy@jazz-debian:~/slaveproj$ ls -lL services
+ls: cannot access 'services': No such file or directory
+shaddy@jazz-debian:~/slaveproj$ git annex get services
+get services (from origin...)
+SHA256E-s18774--60ef85f14cd630692bf91756e2e81351c54e2eace0310188eb4f6af4d9858c91
+         18,774 100%    0.00kB/s (checksum...)    0:00:00 (xfr#1, to-chk=0/1)
+ok
+(recording state in git...)
+shaddy@jazz-debian:~/slaveproj$ ls -lL services
+-r--r--r-- 1 shaddy shaddy 18774 May 22 20:53 services
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+This issue is not a show stopper. I otherwise love the concepts behind git-annex very much.
