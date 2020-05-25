@@ -1,0 +1,41 @@
+### Please describe the problem.
+
+The new `--preserve-filename` option does not have its described effect on torrent files.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ git annex addurl --preserve-filename \
+        http://downloads.endor.at/chaos-math_multi-language_1080p_mkv.ea15601881aa1be1.torrent
+"""]]
+
+(cancelling when at least a file has arrived)
+
+[[!format sh """
+$ tree
+└── downloads.endor.at_chaos-math_multi-language_1080p_mkv.ea15601881aa1be1.torrent/
+    └── 01._Motion_and_determinism_-_Panta_Rhei__1080p_.mkv 
+$ btcheck -l <(curl 'https://downloads.endor.at/chaos-math_multi-language_1080p_mkv.ea15601881aa1be1.torrent')
+Base directory : chaos-math_multi-language_1080p_mkv
+01. Motion and determinism - Panta Rhei [1080p].mkv     (409315188)
+"""]]
+
+Based on the description of `--preserve-filename`, given that nothing in the names is particularly malicious, I'd have expected the tree output to look like this:
+
+[[!format sh """
+$ tree
+└── chaos-math_multi-language_1080p_mkv/   (as per base directory)
+    └── 01. Motion and determinism - Panta Rhei [1080p].mkv 
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+8.20200522 (built using `gbp buildpackage` from current git master, 87dc9cd0)
+
+### Please provide any additional information below.
+
+This option, when working with torrents, would be a building block to [[todo/bittorrent: support offline operation and verification]], and resolve most of the suggestions from there.
+
+### Have you had any luck using git-annex before?
+
+Yes: It saved me from potential data loss when my backup cron jobs stopped working and the mails got lost -- `git annex drop` failing on the laptops was both the right thing to do given numcopies=2, and alerted me to the problem in due time.
