@@ -5,3 +5,8 @@ The mklink tool creates a symlink that works on windows.
 There would be some work required so that a linux symlink and a windows symlink are considered the same, a user has recommend 'git update-index --assume-unchanged' for this.
 
 There is a good write up of someone using this approach on vanilla git here: http://stackoverflow.com/questions/5917249/git-symlinks-in-windows
+
+> I think that with adjusted unlocked branches being used by default on
+> windows, instead of the old direct mode with its limitations, I don't
+> want to delve into the arcanea of windows's 57 different kinds of
+> symlink equivilants. So, [[done]] --[[Joey]]
