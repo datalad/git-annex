@@ -1,3 +1,10 @@
 Could you include the REPO and UUID information in the "automatic sync" commit message?
 
 This would make troubleshooting easier. (not there was much trouble with git-annex!)
+
+> This was [[done]] at some point, the message includes the hostname
+> and repo location.
+> 
+> Also git-annex sync --message can provide a custom message. There is also
+> even an annex.commitmessage that can be used to provide custom messages
+> to git-annex branch commits. --[[Joey]]
