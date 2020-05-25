@@ -35,3 +35,6 @@ The script:
     rm "$pipe"
 
 It would be nice if something like this was available as an option, since it's good way to get a quick overview of what the content is, and if it's safe to drop it.
+
+> There is an earlier todo, [[show_me_where_unused_file_was__44___i_can_wait]]
+> about the same thing, so closing this as dup [[done]] --[[Joey]]
