@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-05-25T15:33:29Z"
+ content="""
+Let's step back a second and think about why the extension is included at
+all: Some programs, particularly on OSX but also IIRC one or two on linux
+such as calibre, when presented with a symlink, follow the symlink and look
+at the extension of the file it points to in order to guess what type of
+file it is.
+
+That's the entire reason. Since people may end up using such a program
+or sharing a repo with someone who does, it defaults to SHA256E.
+
+If you are not in that situation, and are being bothered by the extension
+being preserved, you can just set annex.backend to SHA256.
+
+Also, if someone does have that problem with a repo using SHA256, they can 
+`git annex adjust --unlocked` and get around the problem that way.
+(Though there are enough caveats about unlocked files that is may not be
+a suitable solution for everyone.)
+
+And I still don't know if some program might care about a particular casing
+of a filename extension. It seems possible at least. There's also the
+problem that, if git-annex started lower-casing extensions when adding new
+files, it would *cause* exactly the problem that michael is complaining
+about above, who are in the opposite situation of having added filenames
+that have upper-case extensions and would see deduplication stop working
+for those after git-annex changed.
+
+(Most of which, on review, I said already in the IRC log at the top.)
+
+---
+
+My feeling at this point is, defaulting to SHA256E was probably a
+mistake, it makes git-annex worse for users who are
+not afflicted by stupid symlink-following software in an effort to cater
+to those who are. It would probably be better to swtich to SHA256 by default
+and let whatever users are bitten by that either manually enable SHA256E
+or use unlocked files.
+"""]]
