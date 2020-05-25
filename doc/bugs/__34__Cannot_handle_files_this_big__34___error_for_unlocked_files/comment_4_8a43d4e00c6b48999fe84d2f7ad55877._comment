@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="braun.markus89@51b521a42cc994db864df308627bd6454f9c309d"
+ nickname="braun.markus89"
+ avatar="http://cdn.libravatar.org/avatar/c11d06a0d9db6a9472b05ee01c342ca4"
+ subject="comment 4"
+ date="2020-05-25T11:06:05Z"
+ content="""
+git version is 2.26.1, so this should be fine.
+
+I guess, git-annex couldn't do it any better, still git tries to overallocate memory.
+My Synology NAS only got 1gb of memory (at least 600mb are used all the time), so I wonder why \"hanging up\" the pipe works when unlocking 1gb file but not for 2gb. But the Synology linux is a little bit weird, so I have to give up on debugging there. The 1gb memory spec of my NAS is ridiculously low (maybe too low for git anyways) and cannot be upgraded....
+
+For the sake of documentation for other synology users with a low-spec NAS
+
+Workaround that did work
+
+* create a user with uid/gid matching the NAS user and mount via NFSv3. On the client system the memory is sufficient to run every git-annex command.
+
+Workarounds that did not work out
+
+* NFSv4 with idmapping (configuring the Kerberos authentication would have taken a lot of time and not even sure if it would have worked out in the end)
+* SSHFS (the sshfs server provided by Synology seems to be broken, resulting in broken symlinks on my linux client system -> which is obviously a no go for git annex ;-) )
+
+
+"""]]
