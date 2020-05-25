@@ -4,3 +4,10 @@ As discussed on debconf, I have the following use case:
 * I have git-annex repo on a development server. The development server polls the webserver (ssh/ftp) once in an hour and synchronizes the state of the local git-annex repo with the state found on the webserver and commits that.
 * This is not meant to be backup facility. I just want to be able to have a state on my development machine that is very likely to the state on the webserver.
 
+> Closing because it's really not clear what the request is, I don't
+> remember the in person conversation.
+> 
+> Possibly [[import_tree_from_rsync_special_remote]] would cover the use
+> case.
+> 
+> [[done]] --[[Joey]]
