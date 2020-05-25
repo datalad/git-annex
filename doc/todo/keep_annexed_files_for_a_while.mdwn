@@ -6,3 +6,9 @@ This has similarities to the "trash" on a desktop. It might also be nice to
 * have a way to see the contents of the trash to easily recover deleted files
 
 Maybe it would make sense to just move dropped files to the desktops trash? "git annex trash" as an alternative to drop?
+
+> This seems likely to have been a misunderstanding of what drop does,
+> since dropping from the local repo would not remove the content from a
+> remote.
+> 
+> closing as there's no clear todo here. [[done]] --[[Joey]]
