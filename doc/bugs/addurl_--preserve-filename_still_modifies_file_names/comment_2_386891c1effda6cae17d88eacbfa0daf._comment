@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="comment 2"
+ date="2020-05-26T16:35:25Z"
+ content="""
+Thanks for the fast fix. I've run it with my test torrent and the files now all have their original names.
+
+
+As for the the directory name, there's the component that git-annex picks, and the one in the torrent.
+
+As git-annex has historically ignored the latter, so be it -- we could think up a configurable option, but I wouldn't bother. (And it wouldn't necessarily be a change in the remote protocol, the torrent remote could just prefix its paths with the `name` field if that gets configured.)
+
+The component that git-annex picks I would kind of have expected to be absent: If I'm in a directory and tell git-annex to --preserve-filename get a copy of whatever, I'd expect the server-provided name (or names) of that thing to pop up in that directory, the command was issued, not in a subdirectory.
+"""]]
