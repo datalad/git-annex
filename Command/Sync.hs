@@ -647,7 +647,7 @@ seekSyncContent o rs currbranch = do
 		(return (gokey mvar bloom))
 		(const noop)
 		[]
-	finishCommandActions
+	waitForAllRunningCommandActions
 	liftIO $ not <$> isEmptyMVar mvar
   where
 	seekworktree mvar l bloomfeeder = 
