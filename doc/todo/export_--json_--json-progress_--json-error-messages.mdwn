@@ -1,0 +1,4 @@
+Pretty much to mimic `copy` in terms of its interfaceability with external commands.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
