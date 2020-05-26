@@ -136,6 +136,7 @@ changeExport r db (PreferredFiltered new) = do
 			(Git.DiffTree.file diff)
 	forM_ (incompleteExportedTreeishes old) $ \incomplete ->
 		mapdiff recover incomplete new
+	waitForAllRunningCommandActions
 
 	-- Diff the old and new trees, and delete or rename to new name all
 	-- changed files in the export. After this, every file that remains
@@ -158,12 +159,14 @@ changeExport r db (PreferredFiltered new) = do
 					(Just oldf, Nothing) ->
 						startUnexport' r db oldf ek
 					_ -> stop
+			waitForAllRunningCommandActions
 			-- Rename from temp to new files.
 			seekdiffmap $ \(ek, (moldf, mnewf)) ->
 				case (moldf, mnewf) of
 					(Just _oldf, Just newf) ->
 						startMoveFromTempName r db ek newf
 					_ -> stop
+			waitForAllRunningCommandActions
 		ts -> do
 			warning "Resolving export conflict.."
 			forM_ ts $ \oldtreesha -> do
@@ -181,6 +184,7 @@ changeExport r db (PreferredFiltered new) = do
 					(\diff -> commandAction $ startUnexport r db (Git.DiffTree.file diff) (unexportboth diff))
 					oldtreesha new
 			updateExportTree db emptyTree new
+			waitForAllRunningCommandActions
 	liftIO $ recordExportTreeCurrent db new
 
 	-- Waiting until now to record the export guarantees that,
@@ -239,6 +243,7 @@ fillExport r db (PreferredFiltered newtree) mtbcommitsha = do
 	allfilledvar <- liftIO $ newMVar (AllFilled True)
 	commandActions $ map (startExport r db cvar allfilledvar) l
 	void $ liftIO $ cleanup
+	waitForAllRunningCommandActions
 
 	case mtbcommitsha of
 		Nothing -> noop
@@ -484,3 +489,4 @@ filterPreferredContent r tree = logExportExcluded (uuid r) $ \logwriter -> do
 					)
 			-- Always export non-annexed files.
 			Nothing -> return (Just ti)
+

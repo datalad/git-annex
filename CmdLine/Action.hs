@@ -1,6 +1,6 @@
 {- git-annex command-line actions and concurrency
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -135,6 +135,15 @@ finishCommandActions = Annex.getState Annex.workers >>= \case
 				then return (spareVals pool)
 				else retry
 		mapM_ mergeState sts
+
+{- Waits for all worker threads that have been started so far to finish. -}
+waitForAllRunningCommandActions :: Annex ()
+waitForAllRunningCommandActions = Annex.getState Annex.workers >>= \case
+	Nothing -> noop
+	Just tv -> liftIO $ atomically $ do
+		pool <- readTMVar tv
+		unless (allIdle pool)
+			retry
 
 {- Like commandAction, but without the concurrency. -}
 includeCommandAction :: CommandStart -> CommandCleanup

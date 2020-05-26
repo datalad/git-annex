@@ -1,13 +1,40 @@
-git annex sync exportremote -J2 --content
-
-git-annex: thread blocked indefinitely in an MVar operation
-failed
-git-annex: thread blocked indefinitely in an STM transaction
+	git annex sync exportremote -J2 --content
+	...
+	git-annex: thread blocked indefinitely in an MVar operation
+	failed
+	git-annex: thread blocked indefinitely in an STM transaction
 
 Also, git-annex export -J2 crashes the same way. I discovered this bug
 when adding -J to export, but then found sync had the same bug.
 
 To reproduce this, there may need there to be a tree of several annexed 
 files whose content is not locally available. In my case,
-there were 338 of them. It seems to export all, or all but 1
-before crashing. --[[Joey]]
+there were 338 of them. It seems to act on almost all before
+crashing. --[[Joey]]
+
+----
+
+It's crashing in finishCommandActions. DebugLocks does not show a backtrace.
+
+Dumping the worker pool inside the crashing STM action, it looks like this:
+
+WorkerPool UsedStages {initialStage = PerformStage, stageSet = fromList [PerformStage,CleanupStage]} [IdleWorker StartStage,ActiveWorker PerformStage,IdleWorker PerformStage,IdleWorker StartStage,IdleWorker PerformStage,IdleWorker StartStage,IdleWorker CleanupStage,IdleWorker CleanupStage,IdleWorker CleanupStage] 8
+
+Always ends with an ActiveWorker PerformStage. So a worker thread is
+apparently still running, but the retry blocks indefinitely, so
+somehow the worker thread never transitions back to idle.
+
+Also, the MVar crash is not from this code, so maybe the MVar crash is
+the real culprit and it just also leads to the STM crash.
+
+---
+
+Added debugLocks to the MVar uses in Command.Export, and it's
+the one in failedsend that is causing the MVar deadlock. So that must be
+the root cause. Looks like fillExport is starting threads with
+commandActions, but then assumes they'll all be done, so takes a MVar,
+before all the threads *are* done, so a thread tries to modify the MVar and
+deadlocks.
+
+Ok, [[fixed|done]] by using includeCommandAction instead, although that
+does reduce the actual concurrency. --[[Joey]]

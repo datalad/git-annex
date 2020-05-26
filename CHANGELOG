@@ -4,6 +4,8 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * import: Added --json-progress.
   * addurl: Make --preserve-filename also apply when eg a torrent contains
     multiple files.
+  * Fix a crash or potentially not all files being exported when 
+    sync -J --content is used with an export remote.
   * export: Let concurrent transfers be done with -J or annex.jobs.
   * move --to, copy --to, mirror --to: When concurrency is enabled, run
     cleanup actions in separate job pool from uploads.
