@@ -38,7 +38,7 @@ optParser desc = GetOptions
 	<*> parseBatchOption
 
 seek :: GetOptions -> CommandSeek
-seek o = startConcurrency transferStages $ do
+seek o = startConcurrency downloadStages $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
 	let go = whenAnnexed $ start o from
 	case batchOption o of

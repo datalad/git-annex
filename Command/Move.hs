@@ -54,7 +54,7 @@ data RemoveWhen = RemoveSafe | RemoveNever
 	deriving (Show, Eq)
 
 seek :: MoveOptions -> CommandSeek
-seek o = startConcurrency transferStages $ do
+seek o = startConcurrency stages $ do
 	let go = whenAnnexed $ start (fromToOptions o) (removeWhen o)
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
@@ -62,6 +62,11 @@ seek o = startConcurrency transferStages $ do
 			(commandAction . startKey (fromToOptions o) (removeWhen o))
 			(withFilesInGit (commandAction . go))
 			=<< workTreeItems (moveFiles o)
+  where
+	stages = case fromToOptions o of
+		Right (FromRemote _) -> downloadStages
+		Right (ToRemote _) -> commandStages
+		Left ToHere -> downloadStages
 
 start :: FromToHereOptions -> RemoveWhen -> RawFilePath -> Key -> CommandStart
 start fromto removewhen f k = start' fromto removewhen afile k ai

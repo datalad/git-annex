@@ -82,12 +82,13 @@ commandStages = UsedStages
 	, stageSet = S.fromList [PerformStage, CleanupStage]
 	}
 
--- | When a command is transferring content, it can use this instead.
--- Transfers are often bottlenecked on the network another disk than the one
--- containing the repository, while verification bottlenecks on
--- the disk containing the repository or on the CPU.
-transferStages :: UsedStages
-transferStages = UsedStages
+-- | When a command is downloading content, it can use this instead.
+-- Downloads are often bottlenecked on the network or another disk
+-- than the one containing the repository, while verification bottlenecks
+-- on the disk containing the repository or on the CPU. So, run the
+-- transfer and verify stage separately.
+downloadStages :: UsedStages
+downloadStages = UsedStages
 	{ initialStage = TransferStage
 	, stageSet = S.fromList [TransferStage, VerifyStage]
 	}

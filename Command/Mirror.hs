@@ -41,11 +41,15 @@ instance DeferredParseClass MirrorOptions where
 		<*> pure (keyOptions v)
 
 seek :: MirrorOptions -> CommandSeek
-seek o = startConcurrency transferStages $ 
+seek o = startConcurrency stages $ 
 	withKeyOptions (keyOptions o) False
 		(commandAction . startKey o (AssociatedFile Nothing))
 		(withFilesInGit (commandAction . (whenAnnexed $ start o)))
 		=<< workTreeItems (mirrorFiles o)
+  where
+	stages = case fromToOptions o of
+		FromRemote _ -> downloadStages
+		ToRemote _ -> commandStages
 
 start :: MirrorOptions -> RawFilePath -> Key -> CommandStart
 start o file k = startKey o afile (k, ai)

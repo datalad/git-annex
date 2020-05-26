@@ -5,6 +5,8 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * addurl: Make --preserve-filename also apply when eg a torrent contains
     multiple files.
   * export: Let concurrent transfers be done with -J or annex.jobs.
+  * move --to, copy --to, mirror --to: When concurrency is enabled, run
+    cleanup actions in separate job pool from uploads.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 
