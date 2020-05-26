@@ -144,7 +144,7 @@ checkUrl addunlockedmatcher r o u = do
 		Nothing ->
 			forM_ l $ \(u', sz, f) -> do
 				f' <- sanitizeOrPreserveFilePath o f
-				let f'' = adjustFile o (deffile </> sanitizeFilePath f')
+				let f'' = adjustFile o (deffile </> f')
 				void $ commandAction $ startRemote addunlockedmatcher r o f'' u' sz
 		Just f -> case l of
 			[] -> noop
