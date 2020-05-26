@@ -2,3 +2,5 @@ Pretty much to mimic `copy` in terms of its interfaceability with external comma
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> easy one.. [[done]] --[[Joey]]

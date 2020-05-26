@@ -1,3 +1,9 @@
+git-annex (8.20200523) UNRELEASED; urgency=medium
+
+  * export: Added options for json output.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
+
 git-annex (8.20200522) upstream; urgency=medium
 
   * Fix bug that made enableremote of S3 and webdav remotes, that

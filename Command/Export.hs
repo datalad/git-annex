@@ -44,9 +44,10 @@ import qualified Data.Map as M
 import Control.Concurrent
 
 cmd :: Command
-cmd = command "export" SectionCommon
-	"export content to a remote"
-	paramTreeish (seek <$$> optParser)
+cmd = withGlobalOptions [jsonOptions, jsonProgressOption] $
+	command "export" SectionCommon
+		"export content to a remote"
+		paramTreeish (seek <$$> optParser)
 
 data ExportOptions = ExportOptions
 	{ exportTreeish :: Git.Ref

@@ -86,6 +86,20 @@ so the overwritten modification is not lost.)
   the remote. You can later run `git annex sync --content` to upload
   the files to the export.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-progress`
+
+  Include progress objects in JSON output.
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the json instead.
+
 # EXAMPLE
 
 	git annex initremote myremote type=directory directory=/mnt/myremote \
