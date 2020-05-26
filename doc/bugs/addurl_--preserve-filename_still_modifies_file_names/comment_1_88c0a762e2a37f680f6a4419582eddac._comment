@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-26T14:37:42Z"
+ content="""
+It certianly should not be mangling the filenames inside the torrent
+directory, eg replacing space with underscore. I have fixed that now.
+
+As to the name of the directory used by the torrent file, the interface
+with remotes does not currently let the remote provide it, and would
+need to be changed, which would also involve changing the external
+special remote protocol.
+
+Hmm, I suppose if the remote returns a set of files all within a single
+subdirectory, it could use that subdirectory instead of the mangled url as
+the containing subdirectory. Then the bittorrent remote could just add
+the name as a prefix to the list of files in the torrent. (Or rather,
+stop removing the name prefix, which is what it actually does currently..)
+
+Then any external remotes that support CHECKURL and return multiple files all
+inside the same single subdirectory would change behavior with and without
+--preserve-filename. Without it, the single directory would be removed,
+and the files in it put inside the mangled url subdirectory. 
+With it, the single directory would be used without the containing 
+subdirectory. The behavior change without --preserve-filename is the
+possibly concerning one. Unfortunately I don't think this approach is a
+safe one because something might rely on the current behavior.
+
+I am not keen on complicating the remote interface, and especially the
+external special remote protocol with something that only supports
+this special case.
+"""]]
