@@ -62,6 +62,9 @@ buildFlags = filter (not . null)
 #ifdef WITH_MAGICMIME
 	, "MagicMime"
 #endif
+#ifdef DEBUGLOCKS
+	, "DebugLocks"
+#endif
 	-- Always enabled now, but users may be used to seeing these flags
 	-- listed.
 	, "Feeds"
@@ -89,7 +92,7 @@ dependencyVersions = map fmt $ sortBy (comparing (CI.mk . fst))
 #endif
 #ifdef WITH_WEBAPP
 	, ("yesod", VERSION_yesod)
-#endif 
+#endif
 #ifdef TOOL_VERSION_ghc
 	, ("ghc", TOOL_VERSION_ghc)
 #endif
