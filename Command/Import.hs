@@ -38,7 +38,7 @@ import Control.Concurrent.STM
 
 cmd :: Command
 cmd = notBareRepo $
-	withGlobalOptions [jobsOption, jsonOptions, fileMatchingOptions] $
+	withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, fileMatchingOptions] $
 		command "import" SectionCommon 
 			"add a tree of files to the repository"
 			(paramPaths ++ "|BRANCH[:SUBDIR]")
