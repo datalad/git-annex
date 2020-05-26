@@ -44,7 +44,7 @@ import qualified Data.Map as M
 import Control.Concurrent
 
 cmd :: Command
-cmd = withGlobalOptions [jsonOptions, jsonProgressOption] $
+cmd = withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption] $
 	command "export" SectionCommon
 		"export content to a remote"
 		paramTreeish (seek <$$> optParser)
@@ -77,7 +77,7 @@ exportTempName ek = mkExportLocation $ toRawFilePath $
 	".git-annex-tmp-content-" ++ serializeKey (asKey (ek))
 
 seek :: ExportOptions -> CommandSeek
-seek o = do
+seek o = startConcurrency commandStages $ do
 	r <- getParsed (exportRemote o)
 	unlessM (isExportSupported r) $
 		giveup "That remote does not support exports."

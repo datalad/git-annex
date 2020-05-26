@@ -1,0 +1,13 @@
+git annex sync exportremote -J2 --content
+
+git-annex: thread blocked indefinitely in an MVar operation
+failed
+git-annex: thread blocked indefinitely in an STM transaction
+
+Also, git-annex export -J2 crashes the same way. I discovered this bug
+when adding -J to export, but then found sync had the same bug.
+
+To reproduce this, there may need there to be a tree of several annexed 
+files whose content is not locally available. In my case,
+there were 338 of them. It seems to export all, or all but 1
+before crashing. --[[Joey]]

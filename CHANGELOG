@@ -4,6 +4,7 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * import: Added --json-progress.
   * addurl: Make --preserve-filename also apply when eg a torrent contains
     multiple files.
+  * export: Let concurrent transfers be done with -J or annex.jobs.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 
