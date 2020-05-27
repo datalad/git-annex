@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-05-27T18:27:26Z"
+ content="""
+What specifically are you seeing when it "iterates over all files in the
+annex"?
+
+sync --content necessarily has to look at each file in turn in order to
+determine if a) the file's content is present locally and b) if the file's
+content is present on the remote.
+"""]]
