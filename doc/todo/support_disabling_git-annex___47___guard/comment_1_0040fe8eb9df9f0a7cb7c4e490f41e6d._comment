@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-05-27T15:19:13Z"
+ content="""
+If you put a .noannex file in the top-level directory of a repo, `git
+annex init` will refuse to initialize the repo.
+"""]]
