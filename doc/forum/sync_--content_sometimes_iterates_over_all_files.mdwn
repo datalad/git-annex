@@ -9,3 +9,27 @@ When running git-annex in one of the USB drives and syncing with SSH, git-annex 
 I'd like to have the SSH behavior also for syncs between USB drives. Is that possible?
 
 Also, how does git-annex make the decision?
+
+UPDATE: adding the output of git-annex as requested by Joey
+
+```
+% git annex sync --content usb-sg2
+commit                                                                                                                                                                           
+Auto packing the repository in background for optimum performance.
+See "git help gc" for manual housekeeping.
+[master 3bREDACTED4b] git-annex in usb-sg1
+ 2619 files changed, 2619 insertions(+)
+ create mode 120000 import/REDACTED
+ ...REDACTED...
+ create mode 120000 import/REDACTED
+ok
+pull usb-sg2
+From /media/thk/thk-sg1/annex-sg1
+   7dREDACTED45..caREDACTEDfb  git-annex  -> usb-sg2/git-annex                                                                                                                
+   84REDACTED33..3bREDACTED4b  master     -> usb-sg2/master                                                                                                                   
+Auto packing the repository in background for optimum performance.                                                                                                            
+See "git help gc" for manual housekeeping.                                                                                                                                    
+ok                                                                                                                                                                            
+copy import/REDACTING ok
+[FROM here, the above line repeats for all files in the annex]
+```
