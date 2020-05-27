@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="thk"
+ avatar="http://cdn.libravatar.org/avatar/bfef10a428769701aeee1db978951461"
+ subject="comment 2"
+ date="2020-05-27T20:41:03Z"
+ content="""
+Actually I believe, the difference might just be that with an SSH remote, there is a remote process getting started on the remote that iterates over all files while with a directory remote, the iteration is done in the same process.
+Now when I actually look at it, the SSH remote sync seems to take a similar amount of time to sync, it only does not output all the files it iterates over.
+"""]]
