@@ -1,0 +1,11 @@
+`git annex sync --content` behaves differently for directory or SSH resources.
+
+I use the directory resource on two external hard drives to sync between them. They always get mounted to the same mount point.
+
+When syncing from one USB drive to another, git-annex iterates over all files in the annex. This takes a long time even if only one file got added.
+
+When running git-annex in one of the USB drives and syncing with SSH, git-annex only does the file transfer necessary and does not iterate over all files.
+
+I'd like to have the SSH behavior also for syncs between USB drives. Is that possible?
+
+Also, how does git-annex make the decision?
