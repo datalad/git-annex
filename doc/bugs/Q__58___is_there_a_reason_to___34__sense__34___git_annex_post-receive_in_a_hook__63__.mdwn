@@ -11,3 +11,5 @@ if git annex post-receive --help >/dev/null 2>&1; then git annex post-receive; f
 and wondered why it actually needs conditioning? `--help` runs for me longer (40-50ms) than actual `git annex post-receive` call (20ms) when there is nothing todo.  So I wondered why wasting time on `--help`?
 
 [[!meta author=yoh]]
+
+> [[done]], there does not seem to be a bug here. --[[Joey]]
