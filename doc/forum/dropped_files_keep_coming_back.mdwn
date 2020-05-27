@@ -1,0 +1,23 @@
+I have the following setup:
+
+A 'working' repo in the manual group, called WORKING
+2 'backup' repos in the backup group, called A & B
+A rclone/gdrive repo in the backup group, called GD
+numfiles has been set to 3.
+
+A and B can directly see each-other via SSH and both can contact GD
+WORKING can directly connect to A, B, and GD
+
+I work on a set of files, git annex add them and eventually do a
+$ git annex sync A --content
+
+At some point in time later (manual or chron) A does a git annex sync --content and the files end up in A, B and GD
+
+At some later point in time, I do a git annex drop of some of the files, and after the locks are done, the files are dropped.
+
+At yet some later point in time, after working on more files on WORKING, I do the git annex sync A --content again, and the files
+that were dropped are pulled back from A.  I would expect this if WORKING were a 'client' but it's manual, so it shouldn't be pulling it back
+
+I've checked and all three of A, B, and GD have the files in question.
+
+Thoughts?

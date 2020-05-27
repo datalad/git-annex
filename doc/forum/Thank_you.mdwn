@@ -1,0 +1,5 @@
+Dear Joey,
+
+Thank you very much for git-annex. This is an awesome software. I'm using it every day, for music, movies, softwares, photos... Using encryption with S3 is so convenient. Moreover, it seems you put a lot of effort in its documentation. Thank you for that, too.
+
+PS : even if I've been using gti-annex for a few years, I just discovered the --jobs parameter. It speeds up downloads and uploads **a lot**.
