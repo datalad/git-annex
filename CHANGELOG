@@ -1,5 +1,11 @@
 git-annex (8.20200523) UNRELEASED; urgency=medium
 
+  * Try to enable special remotes configured with autoenable=yes
+    when git-annex auto-initialization happens in a new clone of an
+    existing repo. Previously, git-annex init had to be explicitly run to
+    enable them. Special remotes cannot display anything when autoenabled
+    this way, to avoid interfering with the output of git-annex query
+    commands.
   * export: Added options for json output.
   * import: Added --json-progress.
   * addurl: Make --preserve-filename also apply when eg a torrent contains

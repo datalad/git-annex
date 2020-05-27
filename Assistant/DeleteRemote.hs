@@ -16,7 +16,7 @@ import Types.Transfer
 import Logs.Location
 import Assistant.DaemonStatus
 import qualified Remote
-import Remote.List
+import Remote.List.Util
 import qualified Git.Remote.Remove
 import Logs.Trust
 import qualified Annex
@@ -35,7 +35,7 @@ disableRemote uuid = do
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
 	liftAnnex $ do
 		inRepo $ Git.Remote.Remove.remove (Remote.name remote)
-		void $ remoteListRefresh
+		remotesChanged
 	updateSyncRemotes
 	return remote
 

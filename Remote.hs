@@ -74,6 +74,7 @@ import Logs.Trust
 import Logs.Location hiding (logStatus)
 import Logs.Web
 import Remote.List
+import Remote.List.Util
 import Config
 import Config.DynamicConfig
 import Git.Types (RemoteName, ConfigKey(..), fromConfigValue)
@@ -286,7 +287,7 @@ remoteFromUUID u = ifM ((==) u <$> getUUID)
 	findinmap = M.lookup u <$> remoteMap id
 	{- Re-read remote list in case a new remote has popped up. -}
 	tryharder = do
-		void remoteListRefresh
+		remotesChanged
 		findinmap
 
 {- Filters a list of remotes to ones that have the listed uuids. -}

@@ -25,7 +25,7 @@ import qualified Remote.S3 as S3
 #endif
 import qualified Remote
 import qualified Types.Remote as Remote
-import qualified Remote.List as Remote
+import Remote.List.Util
 import Logs.UUID
 import Logs.Group
 import Logs.PreferredContent
@@ -116,7 +116,7 @@ setRepoConfig uuid mremote oldc newc = do
 				, Param $ T.unpack $ repoName oldc
 				, Param name
 				]
-			void Remote.remoteListRefresh
+			remotesChanged
 		liftAssistant updateSyncRemotes
 	when associatedDirectoryChanged $ case repoAssociatedDirectory newc of
 		Nothing -> noop
@@ -309,7 +309,7 @@ getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
 			setConfig
 				(remoteAnnexConfig repo "ignore")
 				(Git.Config.boolConfig False)
-		liftAnnex $ void Remote.remoteListRefresh
+		liftAnnex remotesChanged
 		liftAssistant updateSyncRemotes
 		liftAssistant $ syncRemote rmt
 		redirect DashboardR

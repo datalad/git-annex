@@ -22,8 +22,8 @@ import qualified Git
 import qualified Git.Command
 import qualified Remote
 import qualified Types.Remote as Remote
-import qualified Remote.List as Remote
 import qualified Annex.Branch
+import Remote.List.Util
 import Annex.UUID
 import Annex.TaggedPush
 import Annex.Ssh
@@ -268,7 +268,7 @@ changeSyncFlag r enabled = do
 	repo <- Remote.getRepo r
 	let key = Config.remoteAnnexConfig repo "sync"
 	Config.setConfig key (boolConfig enabled)
-	void Remote.remoteListRefresh
+	remotesChanged
 
 updateExportTreeFromLogAll :: Assistant ()
 updateExportTreeFromLogAll = do

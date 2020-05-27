@@ -956,6 +956,7 @@ Executable git-annex
     Remote.Helper.Ssh
     Remote.Hook
     Remote.List
+    Remote.List.Util
     Remote.P2P
     Remote.Rsync
     Remote.Rsync.RsyncUrl

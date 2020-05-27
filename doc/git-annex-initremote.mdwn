@@ -93,10 +93,10 @@ want to use `git annex renameremote`.
 * `autoenable`
 
   To avoid `git annex enableremote` needing to be run,
-  you can pass "autoenable=true". Then when [[git-annex-init]](1)
-  is run in a new clone, it will attempt to enable the special remote. Of
-  course, this works best when the special remote does not need anything
-  special to be done to get it enabled.
+  you can pass "autoenable=true". Then when git-annex is run in a new clone,
+  it will attempt to enable the special remote. Of course, this works best
+  when the special remote does not need anything special to be done to get
+  it enabled.
 
 * `uuid`
 

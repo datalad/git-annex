@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -35,11 +35,13 @@ import Annex.Difference
 import Annex.UUID
 import Annex.WorkTree
 import Annex.Fixup
+import Annex.Path
 import Config
 import Config.Files
 import Config.Smudge
 import qualified Upgrade.V5.Direct as Direct
 import qualified Annex.AdjustedBranch as AdjustedBranch
+import Remote.List.Util (remotesChanged)
 import Annex.Environment
 import Annex.Hook
 import Annex.InodeSentinal
@@ -150,8 +152,10 @@ ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
-		( initialize Nothing Nothing
-		, giveup $ "First run: git-annex init"
+		( do
+			initialize Nothing Nothing
+			autoEnableSpecialRemotes
+		, giveup "First run: git-annex init"
 		)
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}
@@ -287,3 +291,25 @@ fixupUnusualReposAfterInit :: Annex ()
 fixupUnusualReposAfterInit = do
 	gc <- Annex.getGitConfig
 	void $ inRepo $ \r -> fixupUnusualRepos r gc
+
+{- Try to enable any special remotes that are configured to do so.
+ - 
+ - The enabling is done in a child process to avoid it using stdio.
+ -}
+autoEnableSpecialRemotes :: Annex ()
+autoEnableSpecialRemotes = do
+	rp <- fromRawFilePath <$> fromRepo Git.repoPath
+	cmd <- liftIO programPath
+	liftIO $ withNullHandle $ \nullh -> do
+		let p = proc cmd 
+			[ "init"
+			, "--autoenable"
+			]
+		(Nothing, Nothing, Nothing, pid) <- createProcess $ p
+			{ std_out = UseHandle nullh
+			, std_err = UseHandle nullh
+			, std_in = UseHandle nullh
+			, cwd = Just rp
+			}
+		void $ waitForProcess pid
+	remotesChanged

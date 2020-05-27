@@ -21,7 +21,6 @@ import Remote.Helper.Hooks
 import Remote.Helper.ReadOnly
 import Remote.Helper.ExportImport
 import qualified Git
-import qualified Git.Config
 
 import qualified Remote.Git
 import qualified Remote.GCrypt
@@ -89,17 +88,6 @@ remoteList' autoinit = do
 	process m t = enumerate t autoinit 
 		>>= mapM (remoteGen m t) 
 		>>= return . catMaybes
-
-{- Forces the remoteList to be re-generated, re-reading the git config. -}
-remoteListRefresh :: Annex [Remote]
-remoteListRefresh = do
-	newg <- inRepo Git.Config.reRead
-	Annex.changeState $ \s -> s 
-		{ Annex.remotes = []
-		, Annex.gitremotes = Nothing
-		, Annex.repo = newg
-		}
-	remoteList
 
 {- Generates a Remote. -}
 remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe Remote)

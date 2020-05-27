@@ -78,3 +78,5 @@ I am a little confused though since we do test for this scenario in datalad and 
 [[!tag projects/datalad]]
 
 [[!meta title="autoenable not done for implicit init"]]
+
+> [[done]], autoinit will now autoenable --[[Joey]]

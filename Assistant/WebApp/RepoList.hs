@@ -14,7 +14,7 @@ import Assistant.DaemonStatus
 import Assistant.WebApp.Notifications
 import qualified Remote
 import qualified Types.Remote as Remote
-import Remote.List (remoteListRefresh)
+import Remote.List.Util
 import Annex.UUID (getUUID)
 import Logs.Remote
 import Logs.Trust
@@ -242,7 +242,7 @@ getRepositoriesReorderR = do
 			when (Remote.cost r /= newcost) $ do
 				repo <- Remote.getRepo r
 				setRemoteCost repo newcost
-		void remoteListRefresh
+		remotesChanged
 	fromjs = fromMaybe (RepoUUID NoUUID) . readish . T.unpack
 
 reorderCosts :: Remote -> [Remote] -> [(Remote, Cost)]

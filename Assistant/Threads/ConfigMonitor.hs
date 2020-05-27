@@ -18,7 +18,7 @@ import Logs.Trust
 import Logs.PreferredContent
 import Logs.Group
 import Logs.NumCopies
-import Remote.List (remoteListRefresh)
+import Remote.List.Util
 import qualified Git.LsTree as LsTree
 import Git.Types
 import Git.FilePath
@@ -60,7 +60,7 @@ type Configs = S.Set (RawFilePath, Sha)
 configFilesActions :: [(RawFilePath, Assistant ())]
 configFilesActions =
 	[ (uuidLog, void $ liftAnnex uuidDescMapLoad)
-	, (remoteLog, void $ liftAnnex remoteListRefresh)
+	, (remoteLog, void $ liftAnnex remotesChanged)
 	, (trustLog, void $ liftAnnex trustMapLoad)
 	, (groupLog, void $ liftAnnex groupMapLoad)
 	, (numcopiesLog, void $ liftAnnex globalNumCopiesLoad)

@@ -13,7 +13,7 @@ import Assistant.Common
 import Assistant.Ssh
 import qualified Types.Remote as R
 import qualified Remote
-import Remote.List
+import Remote.List.Util
 import qualified Remote.Rsync as Rsync
 import qualified Remote.GCrypt as GCrypt
 import qualified Git
@@ -46,7 +46,7 @@ makeSshRemote sshdata = maker (sshRepoName sshdata) (genSshUrl sshdata)
 addRemote :: Annex RemoteName -> Annex Remote
 addRemote a = do
 	name <- a
-	void remoteListRefresh
+	remotesChanged
 	maybe (error "failed to add remote") return
 		=<< Remote.byName (Just name)
 
@@ -174,7 +174,9 @@ previouslyUsedCredPair
 	-> (Remote -> Bool)
 	-> Annex (Maybe CredPair)
 previouslyUsedCredPair getstorage remotetype criteria =
-	getM fromstorage =<< filter criteria . filter sametype <$> remoteList
+	getM fromstorage
+		=<< filter criteria . filter sametype 
+		<$> Remote.remoteList
   where
 	sametype r = R.typename (R.remotetype r) == R.typename remotetype
 	fromstorage r = do

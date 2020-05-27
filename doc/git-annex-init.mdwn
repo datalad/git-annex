@@ -48,6 +48,11 @@ to the user who tries to run git-annex init.
   When the version given is one that automatically upgrades to a newer
   version, it will automatically use the newer version instead.
 
+* --autoenable
+
+  Only enable any special remotes that were configured with
+  autoenable=true, do not otherwise initialize anything.
+
 # SEE ALSO
 
 [[git-annex]](1)
