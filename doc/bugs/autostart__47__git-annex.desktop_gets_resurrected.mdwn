@@ -8,3 +8,6 @@ Due to the very unstable kernel on my laptop atm I need to reboot quite frequent
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[closing|done]] as it's not been shown how to reproduce this and it
+> seems impossible as described. --[[Joey]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-05-28T15:29:45Z"
+ content="""
+/etc/xdg/autostart/git-annex.desktop is part of the git-annex Debian
+package, but it's a conffile, so if dpkg reinstalls it after it was deleted
+that would be a dpkg bug. Anyway, it's not a file written by git-annex
+except during make install with no PREFIX.
+
+I'm going to close this as it's very old and my earlier comment seems
+valid.
+"""]]
