@@ -34,3 +34,4 @@ P.S.  It might be a related observation that git-annex metadata does exit with n
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+[[!meta title="silently skipping files that are not in git or not annexed is sometimes surprising to some"]]
