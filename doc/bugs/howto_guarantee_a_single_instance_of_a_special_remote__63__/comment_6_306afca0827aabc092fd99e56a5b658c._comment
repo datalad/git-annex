@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-05-28T16:15:34Z"
+ content="""
+So the idea here is to add a PREPARE-NONCONCURRENT or whatever for the
+external to use to signal that it's not able to do anything because another
+one is already running concurrently.
+
+If the first instance that git-annex starts up responds that way, I suppose
+it would just be treated the same as PREPARE-FAILURE.
+
+So, if an external is being used for one git-annex command, another
+git-annex command that also needs to use it would just fail to start it,
+and so fail entirely.
+
+Just for example, git annex whereis needs to start up the external program
+to check WHEREIS, and would need to fail if it responded PREPARE-NONCONCURRENT.
+So a long-running git-annex copy (or even the assistant) would then prevent
+other git-annex commands from working.
+
+So, seem this is blocked on
+[[todo/external_remote_querying_transition]].
+
+I'm also not really sure it's worth implementing this, is it really going
+to be useful compared with external remote programs doing their own locking
+around whatever operations cannot be run concurrently?
+"""]]
