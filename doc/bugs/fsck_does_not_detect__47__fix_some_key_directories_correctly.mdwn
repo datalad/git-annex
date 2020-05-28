@@ -42,3 +42,5 @@ fsck sub003/anatomy/highres001.nii.gz
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[closing|done]], see my comments --[[Joey]]

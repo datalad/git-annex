@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-05-28T16:03:01Z"
+ content="""
+Making fsck use additional disk space by making a copy of an annexed file
+in an obscure corner case is the kind of thing that results in complaints.
+It violates least surprise.
+
+The error message seems good.
+"""]]
