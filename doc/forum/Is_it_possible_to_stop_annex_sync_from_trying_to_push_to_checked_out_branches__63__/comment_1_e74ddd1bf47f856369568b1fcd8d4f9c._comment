@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-05-28T17:55:10Z"
+ content="""
+I don't think there's a way to do that.  I think your main options are
+
+  * set `receive.denyCurrentBranch` to \"updateInstead\" or
+
+  * handle the pushing and fetching yourself.  Follow up with a `git
+    annex merge` or with a `git annex sync` invocation that prevents
+    it from pushing/pulling.
+
+    I haven't used it myself, but my understanding is that `sync`s
+    recently added `--only-annex` is intended to support this case and
+    frees you from worrying about managing git-annex branches.
+"""]]
