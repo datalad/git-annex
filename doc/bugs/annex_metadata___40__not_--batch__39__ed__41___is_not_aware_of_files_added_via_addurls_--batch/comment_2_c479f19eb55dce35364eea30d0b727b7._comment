@@ -1,0 +1,80 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-28T16:24:35Z"
+ content="""
+I think if there's a bug here, it's entirely about git-annex's behavior
+when passed a non-annexed file, or a file that is not checked into git,
+of silently skipping the file. 
+
+Users are fairly frequently surprised by that.
+
+(See also [bugs/unlock_should_warn_if_file_isn__39__t_in_repo]] and
+probably others that have been closed or handled in the forum.)
+
+What git commit does is, if a file/directory exists but is not in git:
+
+	error: pathspec 'foo' did not match any file(s) known to git
+
+On the other hand "git commit $dir" just ignores such files as it recurses
+the directory tree (as long as something in the directory tree is known to
+git).
+
+That would be fairly reasonable behavior for git-annex to have too.
+But it would be a behavior change. If someone is used to
+"git annex get foo*" getting all annexed files, but skipping the "foo~"
+temp file that is not in git, then they would have to change scripts
+and workflows.
+
+Implementing it may be as simple as passing --error-unmatch to git
+ls-files.
+
+It could be an option, but I don't really consider an option as fixing the
+surprising behavior. And once you know git-annex behaves this way, I think
+it's rarely surprising and so the benefit of having an option may not
+justify having an option. I'd rather remove surprising behavior, if
+possible, than add an option to paper over it.
+
+I think this would need a transition plan. Eg:
+
+* Add a git config option, defaulting to false, that can be set to true
+  to error out.
+* Document in NEWS that the config option will start defaulting to true in
+  some release (in say, 2022), so proactive users either set it to false
+  explicitly if they want to keep the current behavior, or can change their
+  workflows.
+* Ideally, display a warning in cases where the behavior is going to
+  change. But that would need some way to emulate --error-unmatch and
+  warn when it would error. And I think that would be hard to do and/or
+  slow it down.
+* After the 2022 release the option would need to remain, or there
+  could be a later transition to remove it, by first having git-annex
+  warn about it being deprecated when it's set to true.
+
+---
+
+Also, it would need to be decided what to do about files that are checked
+into git but are not annexed files. It seems to make sense for git-annex
+get and drop of "foo*" to ignore "foo.txt" that is not annexed. But what about
+git-annex metadata on the same file? Could be argued that is throwing away
+the provided metadata, so should error, the same as if the file was not
+checked into git at all. I don't like the behavior varying between
+subcommands, so if metadata should error, so should get and drop.
+
+There's code that currently skips those files and could error. It would
+need to remember the input list of files, and check if the non-annexed
+file was explicitly listed.
+
+Oh, but what about the case where the non-annexed file is in a directory
+and the directory is explicitly listed and contains no other annexed files?
+Seems it ought to error for consistency there, but not if the directory
+does contain another file that is annexed, in addition to the one that is
+not. Implementing an error there seems to need a hash containing all the
+passed filenames, and then files can be deleted from it as it finds annexed
+files they expanded to, and at the end it can error out about any others.
+Kind of ugly and the hash lookups for each file would slow things down
+some.
+
+I think that users are less frequently bitten by git-annex ignoring
+non-annexed files though.
+"""]]
