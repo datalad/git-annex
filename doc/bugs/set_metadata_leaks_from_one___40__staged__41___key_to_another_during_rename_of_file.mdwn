@@ -44,3 +44,7 @@ you can see in above taht 1 and 2 have different content/keys, but they both acq
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[closing|done]] because I added a warning about the metadata copying, 
+> and that seems sufficient for users to understand why this happens.
+> --[[Joey]]
