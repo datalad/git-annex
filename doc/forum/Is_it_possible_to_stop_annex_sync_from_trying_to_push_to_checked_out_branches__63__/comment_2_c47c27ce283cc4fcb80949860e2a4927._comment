@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-28T20:00:36Z"
+ content="""
+Usually, git-annex detects this situation and hides the error message
+from the git push of master.
+
+It only hides the error message if it mentions "denyCurrentBranch".
+The usual error message in this situation does. I think there must be
+something in the git configuration (on the remote) that does not.
+
+Perhaps something to do with receive.denyCurrentBranch? Yes, it seems that
+if it's set to "refuse", I get the same error.
+
+It would be nice if git-annex could recognize that error and hide it too,
+which I suppose would involve looking for
+"refusing to update checked out branch", and probably would need git to be
+run with localization disabled.
+
+If you can unset receive.denyCurrentBranch in the remote's git config, it will 
+avoid the problem for you..
+"""]]
