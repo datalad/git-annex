@@ -1,0 +1,11 @@
+I'm using git annex sync to keep the `master` branch of various remotes in sync.  Predictably, while the `synced/master` branch gets synced fine, the machine running git annex sync fails to push to the remote's `master` branch, since it's currently checked out:
+
+    ok
+    push indian
+     Everything up-to-date
+    remote: error: refusing to update checked out branch: refs/heads/master
+    To ssh://indian-wired/home/adam/org
+     ! [remote rejected] master -> master (branch is currently checked out)
+    error: failed to push some refs to 'ssh://adam@indian-wired/home/adam/org'
+
+Is there a way to get annex sync to only try to push to the remote's `synced/master` and not `master`?  I see the `--no-push` option, but presumably this would prevent pushing to both, which is obviously not what I want.
