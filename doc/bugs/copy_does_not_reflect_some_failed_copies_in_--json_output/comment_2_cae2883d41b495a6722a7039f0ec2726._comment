@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-05-28T15:39:53Z"
+ content="""
+Revisiting this old bug as it's still open. In the mean time,
+--json-error-messages was added. So at first I wondered if this file not
+found should be jsonified by that.
+
+Currently, the option adds a error-messages field to the json objects that
+are output for each file it acts on, so only messages specifically having
+to do with a specific thing it acts on get json error messages. As I
+mentioned before, it's not for capturing every possible error message, 
+and really cannot.
+
+In this case, there's at least a filename that coul be said to be
+being acted on, though of course it's not really acting on it since it DNE.
+What it could do is output a whole json object just for this file, eg:
+
+	{"command":"copy", "success":false, "file":"foo", "error-messages":"foo not found"}
+
+It would be rather hard to make that include the "command" field, because
+currently that is provided to showStart, and this error is happening
+in the seek stage instead. So the command name would have to be threaded
+through the seek actions to this error message.
+
+Even if that was done, the json object there is missing the "key" field
+too.
+
+So that would mean a special case that anything consuming the json could
+be broken by, if it expects to find a key field and does something with the
+key.
+
+I suppose maybe it could contain a key that somehow never exists and cannot
+exist? But this still seems likely to lead to some kind of breakage in some
+consumer of this. Just for example, maybe someone is consuming the json
+and building up a list of keys that failed to get copied. Later their
+program passes the keys to git-annex copy --key or something like that.
+If a key that will never exist gets emitted, it will gum up that program
+with something it will never succeed in copying, and it's easy to imagine
+that leading to undesirable behavior.
+
+So, the benefits seem outweighed by the drawbacks to me, unless there's a
+very good use case for really wanting the missing file in json output?
+"""]]
