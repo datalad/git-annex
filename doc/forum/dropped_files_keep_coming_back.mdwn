@@ -1,15 +1,17 @@
 I have the following setup:
 
-A 'working' repo in the manual group, called WORKING
-2 'backup' repos in the backup group, called A & B
-A rclone/gdrive repo in the backup group, called GD
-numfiles has been set to 3.
+* A 'working' repo in the manual group, called WORKING
+* 2 'backup' repos in the backup group, called A & B
+* A rclone/gdrive repo in the backup group, called GD
+* numfiles has been set to 3.
 
-A and B can directly see each-other via SSH and both can contact GD
-WORKING can directly connect to A, B, and GD
+A and B can directly see each-other via SSH and both can contact GD.
+WORKING can directly connect to A, B, and GD.
 
 I work on a set of files, git annex add them and eventually do a
+[[!format sh """
 $ git annex sync A --content
+"""]]
 
 At some point in time later (manual or chron) A does a git annex sync --content and the files end up in A, B and GD
 
