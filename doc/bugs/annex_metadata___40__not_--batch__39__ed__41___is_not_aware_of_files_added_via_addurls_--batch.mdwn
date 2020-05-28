@@ -35,3 +35,12 @@ P.S.  It might be a related observation that git-annex metadata does exit with n
 [[!tag projects/datalad]]
 
 [[!meta title="silently skipping files that are not in git or not annexed is sometimes surprising to some"]]
+
+> annex.skipunknown false will make git-annex error out in this situation.
+> That will become the default in a couple of years, but can be set already
+> by those who don't like the behavior of skipping. 
+> 
+> In the case of addurl --batch though, do see my first comment for a way to
+> avoid any errors.
+> 
+> [[done]] --[[Joey]]

@@ -136,7 +136,7 @@ startupScan scanner = do
 		-- Notice any files that were deleted before
 		-- watching was started.
 		top <- liftAnnex $ fromRepo Git.repoPath
-		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted [top]
+		(fs, cleanup) <- liftAnnex $ inRepo $ LsFiles.deleted [] [top]
 		forM_ fs $ \f -> do
 			let f' = fromRawFilePath f
 			liftAnnex $ onDel' f'
@@ -362,7 +362,7 @@ onDel' file = do
 onDelDir :: Handler
 onDelDir dir _ = do
 	debug ["directory deleted", dir]
-	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [toRawFilePath dir]
+	(fs, clean) <- liftAnnex $ inRepo $ LsFiles.deleted [] [toRawFilePath dir]
 	let fs' = map fromRawFilePath fs
 
 	liftAnnex $ mapM_ onDel' fs'

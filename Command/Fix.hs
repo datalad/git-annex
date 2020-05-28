@@ -32,9 +32,11 @@ cmd = noCommit $ withGlobalOptions [annexedMatchingOptions] $
 
 seek :: CmdParams -> CommandSeek
 seek ps = unlessM crippledFileSystem $ do 
-	withFilesInGit
+	withFilesInGit ww
 		(commandAction . (whenAnnexed $ start FixAll))
-		=<< workTreeItems ps
+		=<< workTreeItems ww ps
+  where
+	ww = WarnUnmatchLsFiles
 
 data FixWhat = FixSymlinks | FixAll
 

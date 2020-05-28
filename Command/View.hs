@@ -101,7 +101,7 @@ checkoutViewBranch view mkbranch = do
 		 - removed.) -}
 		top <- liftIO . absPath . fromRawFilePath =<< fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $
-			LsFiles.notInRepoIncludingEmptyDirectories False
+			LsFiles.notInRepoIncludingEmptyDirectories [] False
 				[toRawFilePath top]
 		forM_ l (removeemptydir top)
 		liftIO $ void cleanup

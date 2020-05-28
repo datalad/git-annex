@@ -45,8 +45,10 @@ seek o = startConcurrency downloadStages $ do
 		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys from)
-			(withFilesInGit (commandAction . go))
-			=<< workTreeItems (getFiles o)
+			(withFilesInGit ww (commandAction . go))
+			=<< workTreeItems ww (getFiles o)
+  where
+	ww = WarnUnmatchLsFiles
 
 start :: GetOptions -> Maybe Remote -> RawFilePath -> Key -> CommandStart
 start o from file key = start' expensivecheck from key afile ai

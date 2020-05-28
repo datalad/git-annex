@@ -31,7 +31,7 @@ run _ file = seekSingleGitFile file >>= \case
 -- But, this plumbing command does not recurse through directories.
 seekSingleGitFile :: FilePath -> Annex (Maybe RawFilePath)
 seekSingleGitFile file = do
-	(l, cleanup) <- inRepo (Git.LsFiles.inRepo [toRawFilePath file])
+	(l, cleanup) <- inRepo (Git.LsFiles.inRepo [] [toRawFilePath file])
 	r <- case l of
 		(f:[]) | takeFileName (fromRawFilePath f) == takeFileName file ->
 			return (Just f)

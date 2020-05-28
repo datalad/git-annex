@@ -57,8 +57,10 @@ seek o = do
 		NoBatch -> 
 			withKeyOptions (keyOptions o) False
 				(commandAction . startKeys o m)
-				(withFilesInGit (commandAction . go))
-				=<< workTreeItems (whereisFiles o)
+				(withFilesInGit ww (commandAction . go))
+				=<< workTreeItems ww (whereisFiles o)
+  where
+	ww = WarnUnmatchLsFiles
 
 start :: WhereisOptions -> M.Map UUID Remote -> RawFilePath -> Key -> CommandStart
 start o remotemap file key = 

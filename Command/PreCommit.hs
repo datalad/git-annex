@@ -32,7 +32,8 @@ cmd = command "pre-commit" SectionPlumbing
 
 seek :: CmdParams -> CommandSeek
 seek ps = do
-	l <- workTreeItems ps
+	let ww = WarnUnmatchWorkTreeItems
+	l <- workTreeItems ww ps
 	-- fix symlinks to files being committed
 	flip withFilesToBeCommitted l $ \f -> commandAction $
 		maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)

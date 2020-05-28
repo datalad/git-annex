@@ -51,3 +51,7 @@ It would be nice if git-annex could give an error to explain why the unlock fail
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex is amazing, I use it all the time. Thanks!
+
+> annex.skipunknown false will make git-annex error out in this situation.
+> That will become the default in a couple of years, but can be set already
+> by those who don't like the behavior of skipping. [[done]] --[[Joey]]

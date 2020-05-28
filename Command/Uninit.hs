@@ -41,11 +41,13 @@ check = do
 
 seek :: CmdParams -> CommandSeek
 seek ps = do
-	l <- workTreeItems ps
+	l <- workTreeItems ww ps
 	withFilesNotInGit (commandAction . whenAnnexed (startCheckIncomplete . fromRawFilePath)) l
 	Annex.changeState $ \s -> s { Annex.fast = True }
-	withFilesInGit (commandAction . whenAnnexed Command.Unannex.start) l
+	withFilesInGit ww (commandAction . whenAnnexed Command.Unannex.start) l
 	finish
+  where
+	ww = WarnUnmatchLsFiles
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}

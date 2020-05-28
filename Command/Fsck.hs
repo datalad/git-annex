@@ -94,10 +94,12 @@ seek o = startConcurrency commandStages $ do
 	i <- prepIncremental u (incrementalOpt o)
 	withKeyOptions (keyOptions o) False
 		(\kai -> commandAction . startKey from i kai =<< getNumCopies)
-		(withFilesInGit $ commandAction . (whenAnnexed (start from i)))
-		=<< workTreeItems (fsckFiles o)
+		(withFilesInGit ww $ commandAction . (whenAnnexed (start from i)))
+		=<< workTreeItems ww (fsckFiles o)
 	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
+  where
+	ww = WarnUnmatchLsFiles
 
 checkDeadRepo :: UUID -> Annex ()
 checkDeadRepo u =

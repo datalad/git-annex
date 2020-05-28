@@ -210,9 +210,9 @@ withKeysReferenced' mdir initial a = do
 			( return ([], return True)
 			, do
 				top <- fromRepo Git.repoPath
-				inRepo $ LsFiles.allFiles [top]
+				inRepo $ LsFiles.allFiles [] [top]
 			)
-		Just dir -> inRepo $ LsFiles.inRepo [toRawFilePath dir]
+		Just dir -> inRepo $ LsFiles.inRepo [] [toRawFilePath dir]
 	go v [] = return v
 	go v (f:fs) = do
 		mk <- lookupFile f

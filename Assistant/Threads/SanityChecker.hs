@@ -152,7 +152,7 @@ dailyCheck urlrenderer = do
 	batchmaker <- liftIO getBatchCommandMaker
 
 	-- Find old unstaged symlinks, and add them to git.
-	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo False ["."] g
+	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo [] False ["."] g
 	now <- liftIO getPOSIXTime
 	forM_ unstaged $ \file -> do
 		let file' = fromRawFilePath file

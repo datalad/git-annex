@@ -60,13 +60,14 @@ seek o = startConcurrency stages $ do
 		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) False
 			(commandAction . startKey (fromToOptions o) (removeWhen o))
-			(withFilesInGit (commandAction . go))
-			=<< workTreeItems (moveFiles o)
+			(withFilesInGit ww (commandAction . go))
+			=<< workTreeItems ww (moveFiles o)
   where
 	stages = case fromToOptions o of
 		Right (FromRemote _) -> downloadStages
 		Right (ToRemote _) -> commandStages
 		Left ToHere -> downloadStages
+	ww = WarnUnmatchLsFiles
 
 start :: FromToHereOptions -> RemoveWhen -> RawFilePath -> Key -> CommandStart
 start fromto removewhen f k = start' fromto removewhen afile k ai

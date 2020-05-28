@@ -120,7 +120,7 @@ resolveMerge us them inoverlay = do
 	void $ liftIO cleanup
 
 	unless inoverlay $ do
-		(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
+		(deleted, cleanup2) <- inRepo (LsFiles.deleted [] [top])
 		unless (null deleted) $
 			Annex.Queue.addCommand "rm"
 				[Param "--quiet", Param "-f", Param "--"]
@@ -130,7 +130,8 @@ resolveMerge us them inoverlay = do
 	when merged $ do
 		Annex.Queue.flush
 		unless inoverlay $ do
-			unstagedmap <- inodeMap $ inRepo $ LsFiles.notInRepo False [top]
+			unstagedmap <- inodeMap $ inRepo $
+				LsFiles.notInRepo [] False [top]
 			cleanConflictCruft mergedks' mergedfs' unstagedmap
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged

@@ -1,3 +1,14 @@
+git-annex (8.20200523) UNRELEASED; urgency=medium
+
+  Transition notice: Commands like `git-annex get foo*` silently skip over
+  files that are not checked into git. Since that can be surprising in many
+  cases, the behavior will change to erroring out when one of the listed
+  files is not checked into git. This change is planned for a git-annex
+  release in early 2022. If you would like to keep the current
+  behavior, use git config to set annex.skipunknown to true.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 28 May 2020 13:23:40 -0400
+
 git-annex (8.20200226) upstream; urgency=medium
   
   This version of git-annex uses repository version 8 for all repositories.

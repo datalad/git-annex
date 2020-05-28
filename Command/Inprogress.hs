@@ -38,9 +38,11 @@ seek o = do
 			| otherwise -> commandAction stop
 		_ -> do
 			let s = S.fromList ts
-			withFilesInGit
+			withFilesInGit ww
 				(commandAction . (whenAnnexed (start s)))
-				=<< workTreeItems (inprogressFiles o)
+				=<< workTreeItems ww (inprogressFiles o)
+  where
+	ww = WarnUnmatchLsFiles
 
 start :: S.Set Key -> RawFilePath -> Key -> CommandStart
 start s _file k

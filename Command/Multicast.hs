@@ -129,7 +129,9 @@ send ups fs = do
 	-- expensive.
 	starting "sending files" (ActionItemOther Nothing) $
 		withTmpFile "send" $ \t h -> do
-			fs' <- seekHelper LsFiles.inRepo =<< workTreeItems fs
+			let ww = WarnUnmatchLsFiles
+			fs' <- seekHelper ww LsFiles.inRepo
+				=<< workTreeItems ww fs
 			matcher <- Limit.getMatcher
 			let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
 				liftIO $ hPutStrLn h o

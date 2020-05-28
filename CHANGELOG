@@ -1,5 +1,12 @@
 git-annex (8.20200523) UNRELEASED; urgency=medium
 
+  * Added annex.skipunknown git config, that can be set to false to change
+    the behavior of commands like `git annex get foo*`, to not skip
+    over files/dirs that are not checked into git and are explicitly listed in
+    the command line.
+  * annex.skipunknown is planned to change to default to false in a
+    git-annex release in early 2022. If you prefer the current behavior,
+    you can explicitly set it to true.
   * Try to enable special remotes configured with autoenable=yes
     when git-annex auto-initialization happens in a new clone of an
     existing repo. Previously, git-annex init had to be explicitly run to
@@ -14,7 +21,7 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
     sync -J --content is used with an export remote.
   * export: Let concurrent transfers be done with -J or annex.jobs.
   * move --to, copy --to, mirror --to: When concurrency is enabled, run
-    cleanup actions in separate job pool from uploads.
+    cleanup actions in separate job pool from uploads. 
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 

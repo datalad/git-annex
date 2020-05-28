@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -35,13 +35,13 @@ import Annex.InodeSentinal
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 
-withFilesInGit :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesInGit a l = seekActions $ prepFiltered a $
-	seekHelper LsFiles.inRepo l
+withFilesInGit :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGit ww a l = seekActions $ prepFiltered a $
+	seekHelper ww LsFiles.inRepo l
 
-withFilesInGitNonRecursive :: String -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
-	( withFilesInGit a l
+withFilesInGitNonRecursive :: WarnUnmatchWhen -> String -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitNonRecursive ww needforce a l = ifM (Annex.getState Annex.force)
+	( withFilesInGit ww a l
 	, if null l
 		then giveup needforce
 		else seekActions $ prepFiltered a (getfiles [] l)
@@ -49,7 +49,8 @@ withFilesInGitNonRecursive needforce a l = ifM (Annex.getState Annex.force)
   where
 	getfiles c [] = return (reverse c)
 	getfiles c ((WorkTreeItem p):ps) = do
-		(fs, cleanup) <- inRepo $ LsFiles.inRepo [toRawFilePath p]
+		os <- seekOptions ww
+		(fs, cleanup) <- inRepo $ LsFiles.inRepo os [toRawFilePath p]
 		case fs of
 			[f] -> do
 				void $ liftIO $ cleanup
@@ -66,7 +67,7 @@ withFilesNotInGit  a l = go =<< seek
 		force <- Annex.getState Annex.force
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie
-			<$> LsFiles.notInRepo force (map (\(WorkTreeItem f) -> toRawFilePath f) l) g
+			<$> LsFiles.notInRepo [] force (map (\(WorkTreeItem f) -> toRawFilePath f) l) g
 	go fs = seekActions $ prepFiltered a $
 		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> toRawFilePath f) l) fs
 
@@ -104,7 +105,7 @@ withPairs a params = seekActions $ return $ map a $ pairs [] params
 
 withFilesToBeCommitted :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesToBeCommitted a l = seekActions $ prepFiltered a $
-	seekHelper LsFiles.stagedNotDeleted l
+	seekHelper WarnUnmatchWorkTreeItems (const LsFiles.stagedNotDeleted) l
 
 isOldUnlocked :: RawFilePath -> Annex Bool
 isOldUnlocked f = liftIO (notSymlink f) <&&> 
@@ -112,12 +113,12 @@ isOldUnlocked f = liftIO (notSymlink f) <&&>
 
 {- unlocked pointer files that are staged, and whose content has not been
  - modified-}
-withUnmodifiedUnlockedPointers :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withUnmodifiedUnlockedPointers a l = seekActions $
+withUnmodifiedUnlockedPointers :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withUnmodifiedUnlockedPointers ww a l = seekActions $
 	prepFiltered a unlockedfiles
   where
 	unlockedfiles = filterM isUnmodifiedUnlocked 
-		=<< seekHelper LsFiles.typeChangedStaged l
+		=<< seekHelper ww (const LsFiles.typeChangedStaged) l
 
 isUnmodifiedUnlocked :: RawFilePath -> Annex Bool
 isUnmodifiedUnlocked f = catKeyFile f >>= \case
@@ -125,9 +126,9 @@ isUnmodifiedUnlocked f = catKeyFile f >>= \case
 	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
-withFilesMaybeModified :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesMaybeModified a params = seekActions $
-	prepFiltered a $ seekHelper LsFiles.modified params
+withFilesMaybeModified :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesMaybeModified ww a params = seekActions $
+	prepFiltered a $ seekHelper ww LsFiles.modified params
 
 withKeys :: (Key -> CommandSeek) -> CmdParams -> CommandSeek
 withKeys a l = seekActions $ return $ map (a . parse) l
@@ -228,12 +229,24 @@ prepFiltered a fs = do
 seekActions :: Annex [CommandSeek] -> Annex ()
 seekActions gen = sequence_ =<< gen
 
-seekHelper :: ([RawFilePath] -> Git.Repo -> IO ([RawFilePath], IO Bool)) -> [WorkTreeItem] -> Annex [RawFilePath]
-seekHelper a l = inRepo $ \g ->
-	concat . concat <$> forM (segmentXargsOrdered l')
-		(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) . map toRawFilePath)
+seekHelper :: WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([RawFilePath], IO Bool)) -> [WorkTreeItem] -> Annex [RawFilePath]
+seekHelper ww a l = do
+	os <- seekOptions ww
+	inRepo $ \g ->
+		concat . concat <$> forM (segmentXargsOrdered l')
+			(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a os fs g) . map toRawFilePath)
   where
 	l' = map (\(WorkTreeItem f) -> f) l
+
+data WarnUnmatchWhen = WarnUnmatchLsFiles | WarnUnmatchWorkTreeItems
+
+seekOptions :: WarnUnmatchWhen -> Annex [LsFiles.Options]
+seekOptions WarnUnmatchLsFiles =
+	ifM (annexSkipUnknown <$> Annex.getGitConfig)
+		( return [] 
+		, return [LsFiles.ErrorUnmatch]
+		)
+seekOptions WarnUnmatchWorkTreeItems = return []
 
 -- An item in the work tree, which may be a file or a directory.
 newtype WorkTreeItem = WorkTreeItem FilePath
@@ -243,30 +256,42 @@ newtype WorkTreeItem = WorkTreeItem FilePath
 -- seeking for such files.
 newtype AllowHidden = AllowHidden Bool
 
--- Many git commands like ls-files seek work tree items matching some criteria,
--- and silently skip over anything that does not exist. But users expect
--- an error message when one of the files they provided as a command-line
--- parameter doesn't exist, so this checks that each exists.
---
+-- git ls-files without --error-unmatch seeks work tree items matching
+-- some criteria, and silently skips over anything that does not exist.
+
 -- Also, when two directories are symlinked, referring to a file
--- inside the symlinked directory will be silently skipped by git commands
--- like ls-files. But, the user would be surprised for it to be skipped, so
--- check if the parent directories are symlinks.
-workTreeItems :: CmdParams -> Annex [WorkTreeItem]
+-- inside the symlinked directory will be silently skipped by
+-- git ls-files without --error-unmatch. 
+--
+-- Sometimes a command needs to use git-lsfiles that way, perhaps repeatedly.
+-- But users expect an error message when one of the files they provided
+-- as a command-line parameter doesn't exist, so this checks that each
+-- exists when run with WarnUnmatchWorkTreeItems.
+--
+-- Note that, unlike --error-unmatch, using this does not warn
+-- about command-line parameters that exist, but are not checked into git.
+workTreeItems :: WarnUnmatchWhen -> CmdParams -> Annex [WorkTreeItem]
 workTreeItems = workTreeItems' (AllowHidden False)
 
-workTreeItems' :: AllowHidden -> CmdParams -> Annex [WorkTreeItem]
-workTreeItems' (AllowHidden allowhidden) ps = do
-	currbranch <- getCurrentBranch
-	forM_ ps $ \p -> do
-		relf <- liftIO $ relPathCwdToFile p
-		ifM (not <$> (exists p <||> hidden currbranch relf))
-			( prob (p ++ " not found")
-			, whenM (viasymlink (upFrom relf)) $
-				prob (p ++ " is beyond a symbolic link")
-			)
-	return (map (WorkTreeItem) ps)
+workTreeItems' :: AllowHidden -> WarnUnmatchWhen -> CmdParams -> Annex [WorkTreeItem]
+workTreeItems' (AllowHidden allowhidden) ww ps = do
+	case ww of
+		WarnUnmatchWorkTreeItems -> runcheck
+		WarnUnmatchLsFiles -> 
+			whenM (annexSkipUnknown <$> Annex.getGitConfig)
+				runcheck
+	return (map WorkTreeItem ps)
   where
+	runcheck = do
+		currbranch <- getCurrentBranch
+		forM_ ps $ \p -> do
+			relf <- liftIO $ relPathCwdToFile p
+			ifM (not <$> (exists p <||> hidden currbranch relf))
+				( prob (p ++ " not found")
+				, whenM (viasymlink (upFrom relf)) $
+					prob (p ++ " is beyond a symbolic link")
+				)
+	
 	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
 
 	viasymlink Nothing = return False

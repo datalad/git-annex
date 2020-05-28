@@ -880,6 +880,28 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   The default reserve is 1 megabyte.
 
+* `annex.skipunknown`
+
+  Set to true to make commands like "git-annex get" silently skip over
+  items that are listed in the command line, but are not checked into git.
+
+  Set to false to make it an error for commands like "git-annex get"
+  to be asked to operate on files that are not checked into git.
+
+  The default is currently true, but is planned to change to false in a
+  release in 2022.
+
+  Note that, when annex.skipunknown is false, a command like "git-annex get ."
+  will fail if no files in the current directory are checked into git,
+  but a command like "git-annex get" will not fail, because the current
+  directory is not listed, but is implicit. Commands like "git-annex get foo/"
+  will fail if no files in the directory are checked into git, but if
+  at least one file is, it will ignore other files that are not. This is
+  all the same as the behavior of "git-ls files --error-unmatch".
+  
+  Also note that git-annex skips files that are checked into git, but are
+  not annexed files, this setting does not affect that.
+
 * `annex.largefiles`
 
   Used to configure which files are large enough to be added to the annex.

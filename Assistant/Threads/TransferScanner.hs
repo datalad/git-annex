@@ -128,7 +128,7 @@ expensiveScan urlrenderer rs = batch <~> do
 		<$> filterM inUnwantedGroup us
 
 	g <- liftAnnex gitRepo
-	(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
+	(files, cleanup) <- liftIO $ LsFiles.inRepo [] [] g
 	removablers <- scan unwantedrs files
 	void $ liftIO cleanup
 

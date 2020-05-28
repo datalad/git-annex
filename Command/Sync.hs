@@ -636,11 +636,11 @@ seekSyncContent o rs currbranch = do
 		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
 		_ -> case currbranch of
                 	(Just origbranch, Just adj) | adjustmentHidesFiles adj -> do
-				l <- workTreeItems' (AllowHidden True) (contentOfOption o)
+				l <- workTreeItems' (AllowHidden True) ww (contentOfOption o)
 				seekincludinghidden origbranch mvar l (const noop)
 				pure Nothing
 			_ -> do
-				l <- workTreeItems (contentOfOption o)
+				l <- workTreeItems ww (contentOfOption o)
 				seekworktree mvar l (const noop)
 				pure Nothing
 	withKeyOptions' (keyOptions o) False
@@ -651,12 +651,14 @@ seekSyncContent o rs currbranch = do
 	liftIO $ not <$> isEmptyMVar mvar
   where
 	seekworktree mvar l bloomfeeder = 
-		seekHelper LsFiles.inRepo l
+		seekHelper ww LsFiles.inRepo l
 			>>= gofiles bloomfeeder mvar
 
 	seekincludinghidden origbranch mvar l bloomfeeder = 
-		seekHelper (LsFiles.inRepoOrBranch origbranch) l 
+		seekHelper ww (LsFiles.inRepoOrBranch origbranch) l 
 			>>= gofiles bloomfeeder mvar
+
+	ww = WarnUnmatchLsFiles
 
 	gofiles bloomfeeder mvar = mapM_ $ \f ->
 		ifAnnexed f

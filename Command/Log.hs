@@ -86,11 +86,13 @@ seek o = do
 	zone <- liftIO getCurrentTimeZone
 	let outputter = mkOutputter m zone o
 	case (logFiles o, allOption o) of
-		(fs, False) -> withFilesInGit
+		(fs, False) -> withFilesInGit ww
 			(commandAction . (whenAnnexed $ start o outputter)) 
-			=<< workTreeItems fs
+			=<< workTreeItems ww fs
 		([], True) -> commandAction (startAll o outputter)
 		(_, True) -> giveup "Cannot specify both files and --all"
+  where
+	ww = WarnUnmatchLsFiles
 
 start :: LogOptions -> (FilePath -> Outputter) -> RawFilePath -> Key -> CommandStart
 start o outputter file key = do

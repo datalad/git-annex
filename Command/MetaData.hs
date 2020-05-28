@@ -75,15 +75,16 @@ seek :: MetaDataOptions -> CommandSeek
 seek o = case batchOption o of
 	NoBatch -> do
 		c <- liftIO currentVectorClock
+		let ww = WarnUnmatchLsFiles
 		let seeker = case getSet o of
-			Get _ -> withFilesInGit
-			GetAll -> withFilesInGit
-			Set _ -> withFilesInGitNonRecursive
+			Get _ -> withFilesInGit ww
+			GetAll -> withFilesInGit ww
+			Set _ -> withFilesInGitNonRecursive ww
 				"Not recursively setting metadata. Use --force to do that."
 		withKeyOptions (keyOptions o) False
 			(commandAction . startKeys c o)
 			(seeker (commandAction . (whenAnnexed (start c o))))
-			=<< workTreeItems (forFiles o)
+			=<< workTreeItems ww (forFiles o)
 	Batch fmt -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> ifM limited
 			( giveup "combining --batch with file matching options is not currently supported"

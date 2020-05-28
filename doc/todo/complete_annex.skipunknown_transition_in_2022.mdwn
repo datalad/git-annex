@@ -1,0 +1,4 @@
+annex.skipunknown should be changed to default to false in early 2022.
+This transition was started in mid 2020 and there should have been plenty
+of time for people to learn about it and either set their preferred
+behavior or change workflows for the new behavior.

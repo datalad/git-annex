@@ -82,10 +82,15 @@ seek o = startConcurrency commandStages $ do
 				giveup "--update --batch is not supported"
 			| otherwise -> batchFilesMatching fmt (gofile . toRawFilePath)
 		NoBatch -> do
-			l <- workTreeItems (addThese o)
-			let go a = a (commandAction . gofile) l
+			-- Avoid git ls-files complaining about files that
+			-- are not known to git yet, since this will add
+			-- them. Instead, have workTreeItems warn about other
+			-- problems, like files that don't exist.
+			let ww = WarnUnmatchWorkTreeItems
+			l <- workTreeItems ww (addThese o)
+			let go a = a ww (commandAction . gofile) l
 			unless (updateOnly o) $
-				go withFilesNotInGit
+				go (const withFilesNotInGit)
 			go withFilesMaybeModified
 			go withUnmodifiedUnlockedPointers
 

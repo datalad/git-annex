@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-05-28T19:49:58Z"
+ content="""
+Implemented annex.skipunknown git config, that will make it error out when
+given a file that git doesn't know about.
+
+Not default yet, will be in a couple of years.
+[[todo/complete_annex.skipunknown_transition_in_2022]]
+
+As to git-annex skipping non-annexed files, I'm leaning toward keeping it
+the way it is, and it's not really the subject of this bug report, except
+maybe that it's not entirely consistent with the annex.skipunknown
+behavior for non-git files. If users complain about it, I'll consider it
+again.
+"""]]

@@ -123,6 +123,7 @@ data GitConfig = GitConfig
 	, annexCacheCreds :: Bool
 	, annexAutoUpgradeRepository :: Bool
 	, annexCommitMode :: CommitMode
+	, annexSkipUnknown :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -214,6 +215,7 @@ extractGitConfig configsource r = GitConfig
 	, annexCommitMode = if getbool (annexConfig "allowsign") False
 		then ManualCommit
 		else AutomaticCommit
+	, annexSkipUnknown = getbool (annexConfig "skipunknown") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

@@ -26,7 +26,10 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek = withFilesInGit (commandAction . (whenAnnexed start)) <=< workTreeItems
+seek = withFilesInGit ww (commandAction . (whenAnnexed start))
+	<=< workTreeItems ww
+  where
+	ww = WarnUnmatchLsFiles
 
 start :: RawFilePath -> Key -> CommandStart
 start file key = do

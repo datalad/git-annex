@@ -57,10 +57,11 @@ seek o = startConcurrency commandStages $
 		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys o)
-			(withFilesInGit (commandAction . go))
-			=<< workTreeItems (dropFiles o)
+			(withFilesInGit ww (commandAction . go))
+			=<< workTreeItems ww (dropFiles o)
   where
 	go = whenAnnexed $ start o
+	ww = WarnUnmatchLsFiles
 
 start :: DropOptions -> RawFilePath -> Key -> CommandStart
 start o file key = start' o key afile ai

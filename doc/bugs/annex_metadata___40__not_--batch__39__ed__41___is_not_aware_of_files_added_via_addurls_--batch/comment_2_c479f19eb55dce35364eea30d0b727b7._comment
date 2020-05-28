@@ -27,7 +27,8 @@ temp file that is not in git, then they would have to change scripts
 and workflows.
 
 Implementing it may be as simple as passing --error-unmatch to git
-ls-files.
+ls-files. (And disable git-annex's code that checks for parameters that are
+not existing files.)
 
 It could be an option, but I don't really consider an option as fixing the
 surprising behavior. And once you know git-annex behaves this way, I think

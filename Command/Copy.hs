@@ -51,8 +51,10 @@ seek o = startConcurrency commandStages $ do
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o)
 			(commandAction . Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
-			(withFilesInGit $ commandAction . go)
-			=<< workTreeItems (copyFiles o)
+			(withFilesInGit ww $ commandAction . go)
+			=<< workTreeItems ww (copyFiles o)
+  where
+	ww = WarnUnmatchLsFiles
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
