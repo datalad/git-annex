@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2020-05-28T23:53:58Z"
+ content="""
+The workaround I had mentioned above originally seems to work fine for us, so indeed no need for this feature from DataLad side ATM.
+"""]]
