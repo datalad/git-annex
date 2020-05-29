@@ -1,0 +1,28 @@
+Landed two behavior changes in the past two days, which I wanted to mention
+here.
+
+First, special remotes configured with autoenable=yes will be auto-enabed
+by the automatic git-annex initialization that it does in a clone of a
+git-annex repo. Before, `git annex init` had to be run to "auto-enable"
+them. Probably few people will notice this, unless a special remote somehow
+takes too long to enable. May later have to add a timeout.
+
+Second, a command like `git annex get foo` will complain if the specified
+file or directory is not known to git. Lots of users have gotten confused
+by why such a command would silently return without doing anything. 
+
+Commands like `git annex get dir` will not complain about files in the
+directory that are not under git's control, unless none of them are.
+(Same behavior as eg `git commit dir`.) Mostly this change affects using
+wildcards, or just being confused about a file not being checked into git.
+
+Due to the potential to break some workflows, new behavior will only be
+enabled for now annex.skipunknown is set to false. I plan to make that the
+default in early 2022. (About a year delay seemed right generally but I
+added some time due to the pandemic.) So if you prefer the original
+behavior, you can just set annex.skipunknown true.
+
+At least for now, git-annex will still skip over files that are checked
+into git but are not annexed files. May make sense to change that too,
+we'll see if users get confused by that like by the other skipping
+behavior.
