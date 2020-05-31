@@ -11,3 +11,7 @@ Where can I find more information on what happened here?
 How can I run the update-index command safely without listing hundreds of files? Can I just run it over the directories those files were copied to?
 
 Would you consider adding an option to run the update-index automatically where needed?
+
+UPDATE: I just notice that the assistant apparently deleted some files from the git repository. When I check the file path with `git log <file>` I see the initial addition (locked, on a different machine, not adjusted) and then a deletion of the symlink on the machine where I executed `git annex get`. This is rather terrifying!
+
+The file is still in the filesystem. The last commit to the annex happened over 30m ago, the last log in daemon.log over 20m ago. The assistant will probably not add these files back? But even if it would. It is dangerous that a simple `git annex get` leads to delete commits.
