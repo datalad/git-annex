@@ -1,0 +1,13 @@
+After running `git-annex get` in an unlocked (adjusted) v8 repo with git-annex 8.20200330, I see:
+
+> git status will show some files to be modified, since content availability has changed and git-annex was unable to update
+> the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git
+> status display, you can run: git update-index -q --refresh <file>
+
+And indeed, some of the files I just got show as new, others as modified.
+
+Where can I find more information on what happened here?
+
+How can I run the update-index command safely without listing hundreds of files? Can I just run it over the directories those files were copied to?
+
+Would you consider adding an option to run the update-index automatically where needed?
