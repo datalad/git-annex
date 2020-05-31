@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="comment 4"
+ date="2020-05-31T11:03:05Z"
+ content="""
+Thanks. Yes, I have it set to `refuse` globally in `~/.gitconfig`.  I definitely don't want to unset it since that could really screw up my working trees.  Your idea of disabling localization (`LANG=C` or similar, I guess?) and checking for \"refusing to update checked out branch\" sounds reasonable, but I would prefer a way to just stop it even *trying* to update anything other than `synced/$BRANCH`.
+"""]]
