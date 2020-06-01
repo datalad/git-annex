@@ -1,28 +1,12 @@
-A replacement for a web-browser's downloads menu that uses git-annex internally ([[`addurl`|tips/using the web as a special remote]] command for the download, and `drop` or `git rm` for the clean up) would be quite helpful:
+<b>Buy Affordable human hair wigs online and enliven your hairstyle</b>
+ 
+For those who are wearing human hair wigs for the first time in their life, especially women, it is natural to feel a bit uneasy and doubtful about the idea and that is why it is suggested to take the help of various online examples. Being one of the most available and practical solutions to your hair loss, these wigs play an important role in putting you out of your misery related to the issues of baldness. Nowadays, a lot of people are losing their hair in the early stages of life due to extreme stress and poor lifestyle and these wigs and hair extensions are what keep them going. 
 
-say, when working on a topic, writing a paper or similar things, I usually have a Git repo with my text, all relevant data and processing code, and possibly other background information. It's nice to store the literature you needed at the same place where you work. (So that it is easy to catch up with what I was doing and thinking over when I left this work aside for a while, perhaps after cloning the repo from another location.)
 
-When I find an interesting literature, I save the file to the directory with my work, and read it. Then I might return to it to re-read it. There might be references to this document from my work, so I'd like them to work as links (perhaps pointing at the local file, but also at the source URL for the case when my document is read by someone else not on my system).
 
-I need to keep track of the source URLs for the documents I have saved which I read and use.
+Hair loss is the struggle that you fight for at least once in your lifetime and to make sure that you do not lose it,wigs for white women are here at your service. Not only for women, but there are many hair loss solutions are also available out there in the market for men as well so that they can upgrade the way they look. So, this is high time for you to not take undue pressure of your hair loss and go for the most accessible solution for the same as soon as possible. Wigs are not only paneac remedy for hair loss but also the best thing you can still try out different styles every day and look young, beautiful and subtle always. You can also try out the best wigs for Caucasian hair while you are searching online. 
 
-That's a task that fits well git-annex.
 
-Note that doing the dull work of copying and pasting the URL and the downloading it and then opening it for reading is a pain to do every time I'm interested in a document I have found on the web. (Of course, I would need to fill out the bibliogrphic information for this document if I want to refer to it, but that can be done later. Initially, I wish I just don't lose the source URL of a document at the moment when I get interested in it and start reading.)
 
-So, I could be assisted by a replacement of the "downloads" menu of, say, Firefox: whenever I want to open a file for viewing (like a PDF), it should ask me where to save it, and I'd choose the directory with my work, then it should register it with git-annex (so that the source URL is saved, and perhaps it should also write down the referring page's URL somewhere nearby automatically), download it, and open with a viewer for reading.
 
-Then I'll have the interesting literature there when I'm offline; the source URLs would be saved, so that they can be put into the references. Also, if I distribute this work with Git, at another location git-annex can be used to easily get all the literature again.
-
-(Hmmm... probably, the browser that this will be simplest for me to implement for is emacs-w3m; simply, some functions calling git-annex...)
-
-> This seems fairly doable to implement since the git-annex [[design/assistant]]
-> already has a webapp. So a javascript toolbar thing could be made that
-> submits the current url (or maybe links dragged into it?) to the webapp
-> for adding to the annex.
-> 
-> The only wrinkle is that the webapp runs under a new url each time
-> it starts, due to using a high port and embedding some auth token in the
-> url. --[[Joey]]
-
-[[!tag /design/assistant]]
+You must always be broad-minded and prepared so as to choose the best women's hairpieces for yourself while keeping the budget factor in mind as well so as to avoid any last-minute issues. In order to purchase the most suitable hair care products for yourself, you should choose a reliable online portal. For more info click here - <a href="https://www.superhairpieces.com/womens_hairpiece/">hairpieces for women</a>.
