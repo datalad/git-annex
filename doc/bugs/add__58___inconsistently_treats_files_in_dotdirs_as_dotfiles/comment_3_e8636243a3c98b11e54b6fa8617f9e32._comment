@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="the13thletter"
+ avatar="http://cdn.libravatar.org/avatar/596520d6cdaa0709ae4413665b10ec7c"
+ subject="comment 3"
+ date="2020-06-02T14:26:52Z"
+ content="""
+OP here. Sorry for the radio silence.
+
+> I think it's quite likely that most people consider files in dotdirs to be dotfiles, most of the time. (.git/index is clearly not a dotfile, .git/config probably is) **The exact semantics of it are vague enough** that it's probably better to not consider them when it comes to this bug report.
+>
+> [...]
+>
+> I'm also reluctant to start another behavior change in this area, there has been more than enough drama around dotfile handling recently.
+>
+> [...]
+>
+> It would also be possible for users to get back the current behavior if desired by configuring annex.dotfiles and annex.largefiles.
+
+(Emphasis mine.) Given the points above, which I agree with (1) or accept (2 and 3), I'm perfectly fine with documenting the current behavior as correct and leaving it at that. My confusion stems from the fact that when I see `.foo/bar`, I say “no dotfile, because the file is actually named ‘bar’”, and git-annex says “dotfile, because the pathname expression begins with a dot” (or something like that) instead. Stating the exact rules git-annex uses to classify dotfiles as such, ideally alongside the documentation for `annex.dotfiles` and `annex.largefiles`, would avoid this confusion.
+"""]]
