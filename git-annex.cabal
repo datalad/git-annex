@@ -297,7 +297,7 @@ custom-setup
   Setup-Depends: base (>= 4.11.1.0), hslogger, split, unix-compat, 
     filepath, exceptions, bytestring, directory, IfElse, data-default,
     filepath-bytestring (>= 1.4.2.1.1),
-    process (>= 1.6),
+    process (>= 1.6.3),
     utf8-string, transformers, Cabal
 
 Executable git-annex
@@ -311,7 +311,7 @@ Executable git-annex
    stm (>= 2.3),
    mtl (>= 2),
    uuid (>= 1.2.6),
-   process (>= 1.6),
+   process (>= 1.6.3),
    data-default,
    case-insensitive,
    random,
