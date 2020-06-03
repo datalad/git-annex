@@ -50,6 +50,7 @@ import Utility.Exception
 import System.Exit
 import System.IO
 import System.Log.Logger
+import Control.Monad.IO.Class
 import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
@@ -207,8 +208,10 @@ withOEHandles creator p a = creator p' $ a . oeHandles
 		, std_err = CreatePipe
 		}
 
-withNullHandle :: (Handle -> IO a) -> IO a
-withNullHandle = withFile devNull WriteMode
+withNullHandle :: (MonadIO m, MonadMask m) => (Handle -> m a) -> m a
+withNullHandle = bracket
+	(liftIO $ openFile devNull WriteMode)
+	(liftIO . hClose)
 
 -- | Forces the CreateProcessRunner to run quietly;
 -- both stdout and stderr are discarded.
@@ -230,7 +233,7 @@ feedWithQuietOutput
 	-> CreateProcess
 	-> (Handle -> IO a)
 	-> IO a
-feedWithQuietOutput creator p a = withFile devNull WriteMode $ \nullh -> do
+feedWithQuietOutput creator p a = withNullHandle $ \nullh -> do
 	let p' = p
 		{ std_in = CreatePipe
 		, std_out = UseHandle nullh

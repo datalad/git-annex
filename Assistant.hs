@@ -100,18 +100,20 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		let flag = "GIT_ANNEX_OUTPUT_REDIR"
 		createAnnexDirectory (parentDir logfile)
 		ifM (liftIO $ isNothing <$> getEnv flag)
-			( liftIO $ withFile devNull WriteMode $ \nullh -> do
+			( liftIO $ withNullHandle $ \nullh -> do
 				loghandle <- openLog logfile
 				e <- getEnvironment
 				cmd <- programPath
 				ps <- getArgs
-				(_, _, _, pid) <- createProcess (proc cmd ps)
+				let p = (proc cmd ps)
 					{ env = Just (addEntry flag "1" e)
 					, std_in = UseHandle nullh
 					, std_out = UseHandle loghandle
 					, std_err = UseHandle loghandle
 					}
-				exitWith =<< waitForProcess pid
+				exitcode <- withCreateProcess p $ \_ _ _ pid ->
+					waitForProcess pid
+				exitWith exitcode
 			, start (Utility.Daemon.foreground (Just pidfile)) $
 				case startbrowser of
 					Nothing -> Nothing
