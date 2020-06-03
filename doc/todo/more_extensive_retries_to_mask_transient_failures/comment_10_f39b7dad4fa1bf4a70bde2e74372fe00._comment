@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2020-06-03T15:51:41Z"
+ content="""
+Just using async is not enough, if thread A asyncs thread B which asyncs
+thread C, and then A cancels B, that leaves C running.
+
+withAsync avoids that problem. So around 30 calls to `async` need to be
+converted. Also, any library that might use `async` would be a problem.
+
+(Seems that `concurrently` and `race` also avoid the problem, being built on
+withAsync.)
+
+(Some uses of `async` do avoid the problem because the async thread exits
+for some other reason when the outer thread is terminated. Eg,
+Database.Handle auto-terminates its worker thread when the handle gets
+garbage collected.)
+"""]]
