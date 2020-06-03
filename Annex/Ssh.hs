@@ -258,19 +258,19 @@ prepSocket socketfile sshhost sshparams = do
 	-- (Except there's an unlikely false positive where a forced
 	-- ssh command exits 255.)
 	tryssh extraps = liftIO $ withNullHandle $ \nullh -> do
-		let p = proc "ssh" $ concat
+		let p = (proc "ssh" $ concat
 			[ extraps
 			, toCommand sshparams
 			, [fromSshHost sshhost, "true"]
-			]
-		(Nothing, Nothing, Nothing, pid) <- createProcess $ p
+			])
 			{ std_out = UseHandle nullh
 			, std_err = UseHandle nullh
 			}
-		exitcode <- waitForProcess pid
-		return $ case exitcode of
-			ExitFailure 255 -> False
-			_ -> True
+		withCreateProcess p $ \_ _ _ pid -> do
+			exitcode <- waitForProcess pid
+			return $ case exitcode of
+				ExitFailure 255 -> False
+				_ -> True
 
 {- Find ssh socket files.
  -
@@ -458,7 +458,8 @@ runSshOptions :: [String] -> String -> IO ()
 runSshOptions args s = do
 	let args' = toCommand (fromSshOptionsEnv s) ++ args
 	let p = proc "ssh" args'
-	exitWith =<< waitForProcess . processHandle =<< createProcess p
+	exitcode <- withCreateProcess p $ \_ _ _ pid -> waitForProcess pid
+	exitWith exitcode
 
 {- When this env var is set, git-annex is being used as a ssh-askpass
  - program, and should read the password from the specified location,

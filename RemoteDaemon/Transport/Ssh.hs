@@ -37,14 +37,15 @@ transportUsingCmd cmd params rr@(RemoteRepo r gc) url h@(TransportHandle (LocalR
 
 transportUsingCmd' :: FilePath -> [CommandParam] -> Transport
 transportUsingCmd' cmd params (RemoteRepo r gc) url transporthandle ichan ochan =
-	robustConnection 1 $ do
-		(Just toh, Just fromh, Just errh, pid) <-
-			createProcess (proc cmd (toCommand params))
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = CreatePipe
-			}
-		
+	robustConnection 1 $ withCreateProcess p go
+  where
+	p = (proc cmd (toCommand params))
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+
+	go (Just toh) (Just fromh) (Just errh) pid = do
 		-- Run all threads until one finishes and get the status
 		-- of the first to finish. Cancel the rest.
 		status <- catchDefaultIO (Right ConnectionClosed) $
@@ -58,7 +59,8 @@ transportUsingCmd' cmd params (RemoteRepo r gc) url transporthandle ichan ochan 
 		void $ waitForProcess pid
 
 		return $ either (either id id) id status
-  where
+	go _ _ _ _ = error "internal"
+
 	send msg = atomically $ writeTChan ochan msg
 
 	fetch = do

@@ -135,8 +135,8 @@ runner opts
 		pp <- Annex.Path.programPath
 		Utility.Env.Set.setEnv subenv "1" True
 		ps <- getArgs
-		(Nothing, Nothing, Nothing, pid) <- createProcess (proc pp ps)
-		exitcode <- waitForProcess pid
+		exitcode <- withCreateProcess (proc pp ps) $
+			\_ _ _ pid -> waitForProcess pid
 		unless (keepFailuresOption opts) finalCleanup
 		exitWith exitcode
 	runsubprocesstests (Just _) = isolateGitConfig $ do

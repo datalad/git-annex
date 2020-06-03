@@ -50,19 +50,22 @@ data HistoryCommit = HistoryCommit
 {- Gets a History starting with the provided commit, and down to the
  - requested depth. -}
 getHistoryToDepth :: Integer -> Ref -> Repo -> IO (Maybe (History HistoryCommit))
-getHistoryToDepth n commit r = do
-	(_, Just inh, _, pid) <- createProcess (gitCreateProcess params r)
-		{ std_out = CreatePipe }
-	!h <- fmap (truncateHistoryToDepth n) 
-		. build Nothing 
-		. map parsehistorycommit
-		. map L.toStrict
-		. L8.lines
-		<$> L.hGetContents inh
-	hClose inh
-	void $ waitForProcess pid
-	return h
+getHistoryToDepth n commit r = withCreateProcess p go
   where
+	p = (gitCreateProcess params r)
+		{ std_out = CreatePipe }
+	go _ (Just inh) _ pid = do
+		!h <- fmap (truncateHistoryToDepth n) 
+			. build Nothing 
+			. map parsehistorycommit
+			. map L.toStrict
+			. L8.lines
+			<$> L.hGetContents inh
+		hClose inh
+		void $ waitForProcess pid
+		return h
+	go _ _ _ _ = error "internal"
+
 	build h [] = fmap (mapHistory fst) h
 	build _ (Nothing:_) = Nothing
 	build Nothing (Just v:rest) =

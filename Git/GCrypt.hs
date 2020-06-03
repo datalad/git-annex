@@ -66,12 +66,12 @@ probeRepo loc baserepo = do
 		, Param "--check"
 		, Param loc
 		] baserepo
-	(_, _, _, pid) <- createProcess p
-	code <- waitForProcess pid
-	return $ case code of
-		ExitSuccess -> Decryptable
-		ExitFailure 1 -> NotDecryptable
-		ExitFailure _ -> NotEncrypted
+	withCreateProcess p $ \_ _ _ pid -> do
+		code <- waitForProcess pid
+		return $ case code of
+			ExitSuccess -> Decryptable
+			ExitFailure 1 -> NotDecryptable
+			ExitFailure _ -> NotEncrypted
 
 type GCryptId = String
 

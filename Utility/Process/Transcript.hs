@@ -50,31 +50,28 @@ processTranscript'' cp input = do
 	System.Posix.IO.setFdOption writef System.Posix.IO.CloseOnExec True
 	readh <- System.Posix.IO.fdToHandle readf
 	writeh <- System.Posix.IO.fdToHandle writef
-	p@(_, _, _, pid) <- createProcess $ cp
-		{ std_in = if isJust input then CreatePipe else Inherit
-		, std_out = UseHandle writeh
-		, std_err = UseHandle writeh
-		}
-	hClose writeh
+	withCreateProcess cp $ \hin hout herr pid -> do
+		hClose writeh
 
-	get <- asyncreader readh
-	writeinput input p
-	transcript <- wait get
+		get <- asyncreader readh
+		writeinput input (hin, hout, herr, pid)
+		transcript <- wait get
 #else
 {- This implementation for Windows puts stderr after stdout. -}
-	p@(_, _, _, pid) <- createProcess $ cp
+	let cp' = cp 
 		{ std_in = if isJust input then CreatePipe else Inherit
 		, std_out = CreatePipe
 		, std_err = CreatePipe
 		}
-
-	getout <- asyncreader (stdoutHandle p)
-	geterr <- asyncreader (stderrHandle p)
-	writeinput input p
-	transcript <- (++) <$> wait getout <*> wait geterr
+	withCreateProcess cp' \hin hout herr pid -> do
+		let p = (hin, hout, herr, pid)
+		getout <- asyncreader (stdoutHandle p)
+		geterr <- asyncreader (stderrHandle p)
+		writeinput input p
+		transcript <- (++) <$> wait getout <*> wait geterr
 #endif
-	code <- waitForProcess pid
-	return (transcript, code)
+		code <- waitForProcess pid
+		return (transcript, code)
   where
 	asyncreader = async . hGetContentsStrict
 

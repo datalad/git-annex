@@ -301,15 +301,14 @@ autoEnableSpecialRemotes = do
 	rp <- fromRawFilePath <$> fromRepo Git.repoPath
 	cmd <- liftIO programPath
 	liftIO $ withNullHandle $ \nullh -> do
-		let p = proc cmd 
+		let p = (proc cmd 
 			[ "init"
 			, "--autoenable"
-			]
-		(Nothing, Nothing, Nothing, pid) <- createProcess $ p
+			])
 			{ std_out = UseHandle nullh
 			, std_err = UseHandle nullh
 			, std_in = UseHandle nullh
 			, cwd = Just rp
 			}
-		void $ waitForProcess pid
+		withCreateProcess p $ \_ _ _ pid -> void $ waitForProcess pid
 	remotesChanged

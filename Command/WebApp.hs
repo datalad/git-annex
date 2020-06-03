@@ -220,14 +220,15 @@ openBrowser' mcmd htmlshim realurl outh errh =
 		hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 		hFlush stdout
 		environ <- cleanEnvironment
-		(_, _, _, pid) <- createProcess p
+		let p' = p
 			{ env = environ
 			, std_out = maybe Inherit UseHandle outh
 			, std_err = maybe Inherit UseHandle errh
 			}
-		exitcode <- waitForProcess pid
-		unless (exitcode == ExitSuccess) $
-			hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
+		withCreateProcess p' $ \_ _ _ pid -> do
+			exitcode <- waitForProcess pid
+			unless (exitcode == ExitSuccess) $
+				hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath
