@@ -469,18 +469,18 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 		P2PHelper.lock withconn Ssh.runProtoConn (uuid r) key callback
 	| otherwise = failedlock
   where
-	fallback = do
+	fallback = withNullHandle $ \nullh -> do
 		Just (cmd, params) <- Ssh.git_annex_shell ConsumeStdin
 			repo "lockcontent"
 			[Param $ serializeKey key] []
-		(Just hin, Just hout, Nothing, p) <- liftIO $ 
-			withFile devNull WriteMode $ \nullh ->
-				createProcess $
-					 (proc cmd (toCommand params))
-						{ std_in = CreatePipe
-						, std_out = CreatePipe
-						, std_err = UseHandle nullh
-						}
+		let p = (proc cmd (toCommand params))
+			{ std_in = CreatePipe
+			, std_out = CreatePipe
+			, std_err = UseHandle nullh
+			}
+		bracketIO (createProcess p) cleanupProcess fallback'
+
+	fallback' (Just hin, Just hout, Nothing, p) = do
 		v <- liftIO $ tryIO $ getProtocolLine hout
 		let signaldone = void $ tryNonAsync $ liftIO $ mapM_ tryNonAsync
 			[ hPutStrLn hout ""
@@ -507,6 +507,8 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 					showNote "lockcontent failed"
 					signaldone
 					failedlock
+	fallback' _ = error "internal"
+
 	failedlock = giveup "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
@@ -587,7 +589,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 			repo "transferinfo" 
 			[Param $ serializeKey key] fields
 		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
-		pidv <- liftIO $ newEmptyMVar
+		pv <- liftIO $ newEmptyMVar
 		tid <- liftIO $ forkIO $ void $ tryIO $ do
 			bytes <- readSV v
 			p <- createProcess $
@@ -595,7 +597,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 					{ std_in = CreatePipe
 					, std_err = CreatePipe
 					}
-			putMVar pidv (processHandle p)
+			putMVar pv p
 			hClose $ stderrHandle p
 			let h = stdinHandle p
 			let send b = do
@@ -614,10 +616,18 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 		-- do it in the background.
 		let cleanup = forkIO $ do
 			void $ tryIO $ killThread tid
-			void $ tryNonAsync $
-				maybe noop (void . waitForProcess)
-					=<< tryTakeMVar pidv
+			void $ tryNonAsync $ 
+				maybe noop (void . waitForProcess . processHandle)
+					=<< tryTakeMVar pv
+
+		let forcestop = do
+			void $ tryIO $ killThread tid
+			void $ tryNonAsync $ 
+				maybe noop cleanupProcess
+					=<< tryTakeMVar pv
+
 		bracketIO noop (const cleanup) (const $ a feeder)
+			`onException` liftIO forcestop
 
 copyFromRemoteCheap :: Remote -> State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 copyFromRemoteCheap r st repo
