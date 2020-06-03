@@ -1,0 +1,72 @@
+Hi!
+
+I'm using git-annex version: 8.20200522-g01513da12.
+
+A file is present in 3 special remotes (one S3 and two rsync ones). I fsck-ed all theses repositories, no problem found. Numcopies is set to 2.
+
+Whenever I try do drop the file from one of these special remotes, I have an error message:
+
+      Unable to lock down 1 copy of file that is required to safely drop it.
+    
+      (This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)
+    
+      Rather than dropping this file, try using: git annex move
+    
+      (Note that these git remotes have annex-ignore set: origin)
+
+      (Use --force to override this check, or adjust numcopies.)
+    failed
+    git-annex: drop: 1 failed
+
+**Do you know why I can't delete this file safely?** I don't really want to move the file from repository_s3 to my computer before dropping it from my computer, but maybe it is the only way.
+
+Some debug here:
+
+    git annex drop --from=repository_s3 file
+    [2020-06-01 09:28:36.30172183] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+    [2020-06-01 09:28:36.302839128] process done ExitSuccess
+    [2020-06-01 09:28:36.302910826] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+    [2020-06-01 09:28:36.304674603] process done ExitSuccess
+    [2020-06-01 09:28:36.304870633] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--cached","-z","--","myfile"]
+    [2020-06-01 09:28:36.308566414] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+    [2020-06-01 09:28:36.310718234] process done ExitSuccess
+    [2020-06-01 09:28:36.310777259] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+    [2020-06-01 09:28:36.312706322] process done ExitSuccess
+    [2020-06-01 09:28:36.313462825] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..b855e6a77dbef6378695d43aca723d6586a5033d","--pretty=%H","-n1"]
+    [2020-06-01 09:28:36.315478283] process done ExitSuccess
+    [2020-06-01 09:28:36.315547977] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..225048506b610815513008d42e9b5d58d8024512","--pretty=%H","-n1"]
+    [2020-06-01 09:28:36.317466181] process done ExitSuccess
+    [2020-06-01 09:28:36.317524901] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..c517aa9598e8e7cd61f7ee4b8742d2d1b23eb4f3","--pretty=%H","-n1"]
+    [2020-06-01 09:28:36.319278416] process done ExitSuccess
+    [2020-06-01 09:28:36.319344343] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..5fce52950d6bf949ab90c07c7886410214c0fb78","--pretty=%H","-n1"]
+    [2020-06-01 09:28:36.320947418] process done ExitSuccess
+    [2020-06-01 09:28:36.324812884] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+    [2020-06-01 09:28:36.325182947] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+    [2020-06-01 09:28:36.330066795] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+    drop wasabi-s3 myfile [2020-06-01 09:28:36.340825449] chat: gpg ["--quiet","--trust-model","always","--decrypt"]
+    [2020-06-01 09:28:37.176503667] process done ExitSuccess
+    (checking repository1...) [2020-06-01 09:28:37.177417745] read: rsync ["-e","'ssh' '-S' '.git/annex/ssh/repository1' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T'","repository1:/home/troissinges/annex/ec8/502/'GPGHMACSHA1--982dee55ea35e4a6b123a0824084224c0d9d1855/GPGHMACSHA1--982dee55ea35e4a6b123a0824084224c0d9d1855'"]
+    [2020-06-01 09:28:38.544912886] process done ExitSuccess
+    [2020-06-01 09:28:38.545311227] chat: gpg ["--quiet","--trust-model","always","--decrypt"]
+    [2020-06-01 09:28:39.467364936] process done ExitSuccess
+    (checking repository2...) [2020-06-01 09:28:39.467946703] read: rsync ["-e","'ssh' '-S' '.git/annex/ssh/repository2' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T'","repository2:/home/troissinges/annex/ff1/3c2/'GPGHMACSHA1--4524287d59896f3257f7a5880d598bae2cccc3a9/GPGHMACSHA1--4524287d59896f3257f7a5880d598bae2cccc3a9'"]
+    [2020-06-01 09:28:41.165332387] process done ExitSuccess
+    (unsafe) 
+      Unable to lock down 1 copy of file that is required to safely drop it.
+    
+      (This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)
+    
+      Rather than dropping this file, try using: git annex move
+    
+      (Note that these git remotes have annex-ignore set: origin)
+    
+      (Use --force to override this check, or adjust numcopies.)
+    failed
+    [2020-06-01 09:28:41.170070605] read: ssh ["-O","stop","-S","repository2","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+    [2020-06-01 09:28:41.175742495] process done ExitSuccess
+    [2020-06-01 09:28:41.175982476] read: ssh ["-O","stop","-S","repository1","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+    [2020-06-01 09:28:41.179991665] process done ExitSuccess
+    [2020-06-01 09:28:41.180410006] process done ExitSuccess
+    [2020-06-01 09:28:41.180589281] process done ExitSuccess
+    [2020-06-01 09:28:41.180985889] process done ExitSuccess
+    git-annex: drop: 1 failed
