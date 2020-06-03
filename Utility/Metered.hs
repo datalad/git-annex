@@ -310,17 +310,21 @@ outputFilter
 	-> (Handle -> IO ())
 	-> (Handle -> IO ())
 	-> IO (Maybe ExitCode)
-outputFilter cmd params environ outfilter errfilter = catchMaybeIO $ do
-	(_, Just outh, Just errh, pid) <- createProcess p
-		{ std_out = CreatePipe
+outputFilter cmd params environ outfilter errfilter = 
+	catchMaybeIO $ withCreateProcess p go
+  where
+	go _ (Just outh) (Just errh) pid = do
+		void $ concurrently 
+			(tryIO (outfilter outh) >> hClose outh)
+			(tryIO (errfilter errh) >> hClose errh)
+		waitForProcess pid
+	go _ _ _ _ = error "internal"
+	
+	p = (proc cmd (toCommand params))
+		{ env = environ
+		, std_out = CreatePipe
 		, std_err = CreatePipe
 		}
-	void $ async $ tryIO (outfilter outh) >> hClose outh
-	void $ async $ tryIO (errfilter errh) >> hClose errh
-	waitForProcess pid
-  where
-	p = (proc cmd (toCommand params))
-		{ env = environ }
 
 -- | Limit a meter to only update once per unit of time.
 --
