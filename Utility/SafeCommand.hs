@@ -81,9 +81,9 @@ safeSystem :: FilePath -> [CommandParam] -> IO ExitCode
 safeSystem command params = safeSystem' command params id
 
 safeSystem' :: FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO ExitCode
-safeSystem' command params mkprocess = do
-	(_, _, _, pid) <- createProcess p
-	waitForProcess pid
+safeSystem' command params mkprocess = 
+	withCreateProcess p $ \_ _ _ pid ->
+		waitForProcess pid
   where
 	p = mkprocess $ proc command (toCommand params)
 

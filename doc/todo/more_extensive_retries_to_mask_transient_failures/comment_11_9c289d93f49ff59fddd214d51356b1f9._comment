@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2020-06-03T16:10:44Z"
+ content="""
+Ah, withCreateProcess is the bracketing version that's needed, it uses
+cleanupProcess. And readProcess already uses it. It was easy to make
+safeSystem use it, so I've already done so. Other calls to waitForProcess
+probably indicate places that need to use it.
+
+Reading its code, I found a couple of gotchas:
+
+* If another thread has a Handle for the process, and are "holding the
+  handle lock", and lead to deadlock when cleanupProcess tries to close
+  them. This would seem to involve something that uses withHandle and
+  blocks for some reason, maybe just reading/writing to the Handle?
+  I've tried a few things like passing the handle into another thread
+  started with async, that uses hGetLine, but could not produce a deadlock,
+  the process was always killed anyway.
+
+  Seems like using withAsync would help make sure any thread the handle
+  is passed to does get killed.
+
+* It sends SIGTERM, which doesn't necessarily kill every process. So
+  withCreateProcess might exit cleanly but leave the process hanging
+  around. 
+
+  I doubt this is really a problem in anything git-annex runs.
+  And if some program did ignore SIGTERM, wouldn't ctrl-c of git-annex
+  also leave that running? Never seen that happen which confirms my feeling
+  it's likely not a problem in something git-annex runs, but you never
+  know.
+"""]]
