@@ -30,12 +30,12 @@ import Utility.Monad
 import Utility.Misc
 import Utility.Env
 import Utility.Path
+import Utility.Exception
 
 import System.IO
 import System.Exit
 import Control.Concurrent
 import Control.Concurrent.Async
-import Control.Exception
 import Data.Char
 import Data.List
 import Control.Applicative
@@ -146,26 +146,22 @@ wormHoleProcess :: WormHoleParams -> CreateProcess
 wormHoleProcess = proc "wormhole" . toCommand
 
 runWormHoleProcess :: CreateProcess -> (Handle -> Handle -> Handle -> IO Bool) ->  IO Bool
-runWormHoleProcess p consumer = 
-	bracketOnError setup (\v -> cleanup v <&&> return False) go
+runWormHoleProcess p consumer =
+	withCreateProcess p' go `catchNonAsync` const (return False)
   where
-	setup = do
-		(Just hin, Just hout, Just herr, pid)
-			<- createProcess p
-				{ std_in = CreatePipe
-				, std_out = CreatePipe
-				, std_err = CreatePipe
-				}
-		return (hin, hout, herr, pid)
-	cleanup (hin, hout, herr, pid) = do
+	p' = p 
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+	go (Just hin) (Just hout) (Just herr) pid =
+		consumer hin hout herr <&&> waitbool pid
+	go _ _ _ _ = error "internal"
+	waitbool pid = do
 		r <- waitForProcess pid
-		hClose hin
-		hClose hout
-		hClose herr
 		return $ case r of
 			ExitSuccess -> True
 			ExitFailure _ -> False
-	go h@(hin, hout, herr, _) = consumer hin hout herr <&&> cleanup h
 
 isInstalled :: IO Bool
 isInstalled = inPath "wormhole"
