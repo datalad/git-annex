@@ -283,8 +283,8 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) =
 	go v = relayHelper runner v
 
 runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Either ProtoFailure ())
-runRelayService conn runner service = 
-	bracket setup cleanup go
+runRelayService conn runner service =
+	withCreateProcess serviceproc' go
 		`catchNonAsync` (return . Left . ProtoFailureException)
   where
 	cmd = case service of
@@ -295,30 +295,29 @@ runRelayService conn runner service =
 		[ Param cmd
 		, File (fromRawFilePath (repoPath (connRepo conn)))
 		] (connRepo conn)
+	serviceproc' = serviceproc 
+		{ std_out = CreatePipe
+		, std_in = CreatePipe
+		}
 
-	setup = do
-		(Just hin, Just hout, _, pid) <- createProcess serviceproc
-			{ std_out = CreatePipe
-			, std_in = CreatePipe
-			}
+	go (Just hin) (Just hout) _ pid = do
 		v <- newEmptyMVar
-		void $ async $ relayFeeder runner v hin
-		void $ async $ relayReader v hout
-		waiter <- async $ waitexit v pid
-		return (v, waiter, hin, hout, pid)
-
-	cleanup (_, waiter, hin, hout, pid) = do
-		hClose hin
-		hClose hout
-		cancel waiter
+		r <- withAsync (relayFeeder runner v hin) $ \_ ->
+			withAsync (relayReader v hout) $ \_ ->
+				withAsync (waitexit v pid) $ \_ -> do
+					r <- runrelay v
+					hClose hin
+					hClose hout
+					return r
 		void $ waitForProcess pid
-
-	go (v, _, _, _, _) = do
-		r <- relayHelper runner v
-		case r of
-			Left e -> return $ Left e
-			Right exitcode -> runner $ net $ relayToPeer (RelayDone exitcode)
+		return r
+	go _ _ _ _ = error "internal"
 	
+	runrelay v = relayHelper runner v >>= \case
+		Left e -> return $ Left e
+		Right exitcode -> runner $
+			net $ relayToPeer (RelayDone exitcode)
+
 	waitexit v pid = putMVar v . RelayDone =<< waitForProcess pid
 
 -- Processes RelayData as it is put into the MVar.
