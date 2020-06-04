@@ -347,14 +347,13 @@ applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
-	uh <- withViewIndex $ inRepo Git.UpdateIndex.startUpdateIndex
-	forM_ l $ \(f, sha, mode) -> do
-		topf <- inRepo (toTopFilePath f)
-		go uh topf sha (toTreeItemType =<< mode) =<< lookupFile f
-	liftIO $ do
-		void $ stopUpdateIndex uh
-		void clean
-	genViewBranch view
+	viewg <- withViewIndex gitRepo
+	withUpdateIndex viewg $ \uh -> do
+		forM_ l $ \(f, sha, mode) -> do
+			topf <- inRepo (toTopFilePath f)
+			go uh topf sha (toTreeItemType =<< mode) =<< lookupFile f
+		liftIO $ void clean
+		genViewBranch view
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 
