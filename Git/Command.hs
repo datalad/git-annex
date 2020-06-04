@@ -43,9 +43,13 @@ run params repo = assertLocal repo $
 
 {- Runs git and forces it to be quiet, throwing an error if it fails. -}
 runQuiet :: [CommandParam] -> Repo -> IO ()
-runQuiet params repo = withQuietOutput createProcessSuccess $
-	(proc "git" $ toCommand $ gitCommandLine (params) repo)
-		{ env = gitEnv repo }
+runQuiet params repo = withNullHandle $ \nullh ->
+	let p = (proc "git" $ toCommand $ gitCommandLine (params) repo)
+		{ env = gitEnv repo
+		, std_out = UseHandle nullh
+		, std_err = UseHandle nullh
+		}
+	in withCreateProcess p $ \_ _ _ -> forceSuccessProcess p
 
 {- Runs a git command and returns its output, lazily.
  -
@@ -99,9 +103,16 @@ pipeWriteRead params writer repo = assertLocal repo $
 
 {- Runs a git command, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
-pipeWrite params repo = assertLocal repo $ 
-	withHandle StdinHandle createProcessSuccess $
-		gitCreateProcess params repo
+pipeWrite params repo a = assertLocal repo $
+	let p = (gitCreateProcess params repo)
+		{ std_in = CreatePipe }
+	in withCreateProcess p (go p)
+  where
+	go p (Just hin) _ _ pid = 
+		forceSuccessProcess p pid
+			`after`
+		a hin
+	go _ _ _ _ _ = error "internal"
 
 {- Reads null terminated output of a git command (as enabled by the -z 
  - parameter), and splits it. -}

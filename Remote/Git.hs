@@ -834,7 +834,7 @@ commitOnCleanup repo r st a = go `after` a
 		| not $ Git.repoIsUrl repo = onLocalFast st $
 			doQuietSideAction $
 				Annex.Branch.commit =<< Annex.Branch.commitMessage
-		| otherwise = void $ do
+		| otherwise = do
 			Just (shellcmd, shellparams) <-
 				Ssh.git_annex_shell NoConsumeStdin
 					repo "commit" [] []
@@ -842,10 +842,13 @@ commitOnCleanup repo r st a = go `after` a
 			-- Throw away stderr, since the remote may not
 			-- have a new enough git-annex shell to
 			-- support committing.
-			liftIO $ catchMaybeIO $
-				withQuietOutput createProcessSuccess $
-					proc shellcmd $
-						toCommand shellparams
+			liftIO $ void $ catchMaybeIO $ withNullHandle $ \nullh ->
+				let p = (proc shellcmd (toCommand shellparams))
+					{ std_out = UseHandle nullh
+					, std_err = UseHandle nullh
+					}
+				in withCreateProcess p $ \_ _ _ ->
+					forceSuccessProcess p
 
 wantHardLink :: Annex Bool
 wantHardLink = (annexHardLink <$> Annex.getGitConfig)

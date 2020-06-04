@@ -20,20 +20,13 @@ module Utility.Process (
 	forceSuccessProcess,
 	forceSuccessProcess',
 	checkSuccessProcess,
-	createProcessSuccess,
-	withHandle,
-	withIOHandles,
-	withOEHandles,
 	withNullHandle,
-	withQuietOutput,
-	feedWithQuietOutput,
 	createProcess,
 	waitForProcess,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
-	ioHandles,
 	processHandle,
 	devNull,
 ) where
@@ -50,10 +43,7 @@ import System.IO
 import System.Log.Logger
 import Control.Monad.IO.Class
 import Control.Concurrent.Async
-import qualified Control.Exception as E
 import qualified Data.ByteString as S
-
-type CreateProcessRunner = forall a. CreateProcess -> ((Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO a) -> IO a
 
 data StdHandle = StdinHandle | StdoutHandle | StderrHandle
 	deriving (Eq)
@@ -61,21 +51,22 @@ data StdHandle = StdinHandle | StdoutHandle | StderrHandle
 -- | Normally, when reading from a process, it does not need to be fed any
 -- standard input.
 readProcess :: FilePath	-> [String] -> IO String
-readProcess cmd args = readProcessEnv cmd args Nothing
+readProcess cmd args = readProcess' (proc cmd args)
 
 readProcessEnv :: FilePath -> [String] -> Maybe [(String, String)] -> IO String
-readProcessEnv cmd args environ = readProcess' p
-  where
-	p = (proc cmd args)
-		{ std_out = CreatePipe
-		, env = environ
-		}
+readProcessEnv cmd args environ = 
+	readProcess' $ (proc cmd args) { env = environ }
 
 readProcess' :: CreateProcess -> IO String
-readProcess' p = withHandle StdoutHandle createProcessSuccess p $ \h -> do
-	output  <- hGetContentsStrict h
-	hClose h
-	return output
+readProcess' p = withCreateProcess p' go
+  where
+	p' = p { std_out = CreatePipe }
+	go _ (Just h) _ pid = do
+		output  <- hGetContentsStrict h
+		hClose h
+		forceSuccessProcess p' pid
+		return output
+	go _ _ _ _ = error "internal"
 
 -- | Runs an action to write to a process on its stdin, 
 -- returns its output, and also allows specifying the environment.
@@ -122,101 +113,10 @@ checkSuccessProcess pid = do
 	code <- waitForProcess pid
 	return $ code == ExitSuccess
 
--- | Runs createProcess, then an action on its handles, and then
--- forceSuccessProcess.
-createProcessSuccess :: CreateProcessRunner
-createProcessSuccess p a = createProcessChecked (forceSuccessProcess p) p a
-
--- | Runs createProcess, then an action on its handles, and then
--- a checker action on its exit code, which must wait for the process.
-createProcessChecked :: (ProcessHandle -> IO b) -> CreateProcessRunner
-createProcessChecked checker p a = do
-	t@(_, _, _, pid) <- createProcess p
-	r <- tryNonAsync $ a t
-	_ <- checker pid
-	either E.throw return r
-
--- | Runs a CreateProcessRunner, on a CreateProcess structure, that
--- is adjusted to pipe only from/to a single StdHandle, and passes
--- the resulting Handle to an action.
-withHandle
-	:: StdHandle
-	-> CreateProcessRunner
-	-> CreateProcess
-	-> (Handle -> IO a)
-	-> IO a
-withHandle h creator p a = creator p' $ a . select
-  where
-	base = p
-		{ std_in = Inherit
-		, std_out = Inherit
-		, std_err = Inherit
-		}
-	(select, p') = case h of
-		StdinHandle -> (stdinHandle, base { std_in = CreatePipe })
-		StdoutHandle -> (stdoutHandle, base { std_out = CreatePipe })
-		StderrHandle -> (stderrHandle, base { std_err = CreatePipe })
-
--- | Like withHandle, but passes (stdin, stdout) handles to the action.
-withIOHandles
-	:: CreateProcessRunner
-	-> CreateProcess
-	-> ((Handle, Handle) -> IO a)
-	-> IO a
-withIOHandles creator p a = creator p' $ a . ioHandles
-  where
-	p' = p
-		{ std_in = CreatePipe
-		, std_out = CreatePipe
-		, std_err = Inherit
-		}
-
--- | Like withHandle, but passes (stdout, stderr) handles to the action.
-withOEHandles
-	:: CreateProcessRunner
-	-> CreateProcess
-	-> ((Handle, Handle) -> IO a)
-	-> IO a
-withOEHandles creator p a = creator p' $ a . oeHandles
-  where
-	p' = p
-		{ std_in = Inherit
-		, std_out = CreatePipe
-		, std_err = CreatePipe
-		}
-
 withNullHandle :: (MonadIO m, MonadMask m) => (Handle -> m a) -> m a
 withNullHandle = bracket
 	(liftIO $ openFile devNull WriteMode)
 	(liftIO . hClose)
-
--- | Forces the CreateProcessRunner to run quietly;
--- both stdout and stderr are discarded.
-withQuietOutput
-	:: CreateProcessRunner
-	-> CreateProcess
-	-> IO ()
-withQuietOutput creator p = withNullHandle $ \nullh -> do
-	let p' = p
-		{ std_out = UseHandle nullh
-		, std_err = UseHandle nullh
-		}
-	creator p' $ const $ return ()
-
--- | Stdout and stderr are discarded, while the process is fed stdin
--- from the handle.
-feedWithQuietOutput
-	:: CreateProcessRunner
-	-> CreateProcess
-	-> (Handle -> IO a)
-	-> IO a
-feedWithQuietOutput creator p a = withNullHandle $ \nullh -> do
-	let p' = p
-		{ std_in = CreatePipe
-		, std_out = UseHandle nullh
-		, std_err = UseHandle nullh
-		}
-	creator p' $ a . stdinHandle
 
 devNull :: FilePath
 #ifndef mingw32_HOST_OS
@@ -232,6 +132,7 @@ devNull = "\\\\.\\NUL"
 -- Get it wrong and the runtime crash will always happen, so should be
 -- easily noticed.
 type HandleExtractor = (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> Handle
+
 stdinHandle :: HandleExtractor
 stdinHandle (Just h, _, _, _) = h
 stdinHandle _ = error "expected stdinHandle"
@@ -241,12 +142,6 @@ stdoutHandle _ = error "expected stdoutHandle"
 stderrHandle :: HandleExtractor
 stderrHandle (_, _, Just h, _) = h
 stderrHandle _ = error "expected stderrHandle"
-ioHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
-ioHandles (Just hin, Just hout, _, _) = (hin, hout)
-ioHandles _ = error "expected ioHandles"
-oeHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
-oeHandles (_, Just hout, Just herr, _) = (hout, herr)
-oeHandles _ = error "expected oeHandles"
 
 processHandle :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> ProcessHandle
 processHandle (_, _, _, pid) = pid

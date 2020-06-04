@@ -57,11 +57,12 @@ copyCoW meta src dest
 		void $ tryIO $ removeFile dest
 		-- When CoW is not supported, cp will complain to stderr,
 		-- so have to discard its stderr.
-		ok <- catchBoolIO $ do
-			withQuietOutput createProcessSuccess $
-				proc "cp" $ toCommand $
-					params ++ [File src, File dest]
-			return True
+		ok <- catchBoolIO $ withNullHandle $ \nullh ->
+			let p = (proc "cp" $ toCommand $ params ++ [File src, File dest])
+				{ std_out = UseHandle nullh
+				, std_err = UseHandle nullh
+				}
+			in withCreateProcess p $ \_ _ _ -> checkSuccessProcess
 		-- When CoW is not supported, cp creates the destination
 		-- file but leaves it empty.
 		unless ok $

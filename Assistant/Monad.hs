@@ -50,6 +50,9 @@ newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 		Monad,
 		MonadIO,
 		MonadReader AssistantData,
+		MonadCatch,
+		MonadThrow,
+		MonadMask,
 		Fail.MonadFail,
 		Functor,
 		Applicative

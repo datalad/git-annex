@@ -319,16 +319,19 @@ forceSshCleanup :: Annex ()
 forceSshCleanup = mapM_ forceStopSsh =<< enumSocketFiles
 
 forceStopSsh :: FilePath -> Annex ()
-forceStopSsh socketfile = do
+forceStopSsh socketfile = withNullHandle $ \nullh -> do
 	let (dir, base) = splitFileName socketfile
-	let params = sshConnectionCachingParams base
-	-- "ssh -O stop" is noisy on stderr even with -q
-	void $ liftIO $ catchMaybeIO $
-		withQuietOutput createProcessSuccess $
-			(proc "ssh" $ toCommand $
-				[ Param "-O", Param "stop" ] ++ 
-				params ++ [Param "localhost"])
-				{ cwd = Just dir }
+	let p = (proc "ssh" $ toCommand $
+		[ Param "-O", Param "stop" ] ++ 
+		sshConnectionCachingParams base ++ 
+		[Param "localhost"])
+		{ cwd = Just dir
+		-- "ssh -O stop" is noisy on stderr even with -q
+		, std_out = UseHandle nullh
+		, std_err = UseHandle nullh
+		}
+	void $ liftIO $ catchMaybeIO $ withCreateProcess p $ \_ _ _ pid ->
+		forceSuccessProcess p pid
 	liftIO $ nukeFile socketfile
 
 {- This needs to be as short as possible, due to limitations on the length

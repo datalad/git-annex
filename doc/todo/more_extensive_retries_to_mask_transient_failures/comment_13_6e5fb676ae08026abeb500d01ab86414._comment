@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2020-06-04T19:39:23Z"
+ content="""
+I've converted everything to withCreateProcess, except for process pools
+(P2P.IO, Assistant.TransferrerPool, Utility.CoProcess, and Remote.External),
+which need to be handled as discussed in comment 8.
+
+During this conversion, I did not watch out for interactive processes that
+might block on a password, so any timeout would also affect them. Really,
+I don't see a good way to avoid that. Any ssh may or may not need a
+password. I guess timeouts will need to affect things stuck on passwords
+too, which argues for no default timeout, but otherwise is probably ok
+as long as timeouts can be configured on a per-remote basis.
+"""]]

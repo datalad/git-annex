@@ -58,29 +58,37 @@ read' repo = go repo
 	go Repo { location = Local { gitdir = d } } = git_config d
 	go Repo { location = LocalUnknown d } = git_config d
 	go _ = assertLocal repo $ error "internal"
-	git_config d = withHandle StdoutHandle createProcessSuccess p $
-		hRead repo ConfigNullList
+	git_config d = withCreateProcess p (git_config' p)
 	  where
 		params = ["config", "--null", "--list"]
 		p = (proc "git" params)
 			{ cwd = Just (fromRawFilePath d)
 			, env = gitEnv repo
+			, std_out = CreatePipe 
 			}
+	git_config' p _ (Just hout) _ pid = 
+		forceSuccessProcess p pid
+			`after`
+		hRead repo ConfigNullList hout
+	git_config' _ _ _ _ _ = error "internal"
 
 {- Gets the global git config, returning a dummy Repo containing it. -}
 global :: IO (Maybe Repo)
 global = do
 	home <- myHomeDir
 	ifM (doesFileExist $ home </> ".gitconfig")
-		( do
-			repo <- withHandle StdoutHandle createProcessSuccess p $
-				hRead (Git.Construct.fromUnknown) ConfigNullList
-			return $ Just repo
+		( Just <$> withCreateProcess p go
 		, return Nothing
 		)
   where
 	params = ["config", "--null", "--list", "--global"]
 	p = (proc "git" params)
+		{ std_out = CreatePipe }
+	go _ (Just hout) _ pid = 
+		forceSuccessProcess p pid
+			`after`
+		hRead (Git.Construct.fromUnknown) ConfigNullList hout
+	go _ _ _ _ = error "internal"
 
 {- Reads git config from a handle and populates a repo with it. -}
 hRead :: Repo -> ConfigStyle -> Handle -> IO Repo
@@ -200,16 +208,20 @@ coreBare = "core.bare"
  - and returns a repo populated with the configuration, as well as the raw
  - output and any standard output of the command. -}
 fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
-fromPipe r cmd params st = try $
-	withOEHandles createProcessSuccess p $ \(hout, herr) -> do
-		geterr <- async $ S.hGetContents herr
-		getval <- async $ S.hGetContents hout
-		val <- wait getval
-		err <- wait geterr
+fromPipe r cmd params st = try $ withCreateProcess p go
+  where
+	p = (proc cmd $ toCommand params)
+		{ std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+	go _ (Just hout) (Just herr) pid = do
+		(val, err) <- concurrently 
+			(S.hGetContents hout)
+			(S.hGetContents herr)
+		forceSuccessProcess p pid
 		r' <- store val st r
 		return (r', val, err)
-  where
-	p = proc cmd $ toCommand params
+	go _ _ _ _ = error "internal"
 
 {- Reads git config from a specified file and returns the repo populated
  - with the configuration. -}

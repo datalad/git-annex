@@ -191,10 +191,11 @@ runAction repo (UpdateIndexAction streamers) =
 	liftIO $ Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
 runAction repo action@(CommandAction {}) = liftIO $ do
 #ifndef mingw32_HOST_OS
-	let p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
-	withHandle StdinHandle createProcessSuccess p $ \h -> do
-		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
-		hClose h
+	let p = (proc "xargs" $ "-0":"git":toCommand gitparams)
+		{ env = gitEnv repo
+		, std_in = CreatePipe
+		}
+	withCreateProcess p (go p)
 #else
 	-- Using xargs on Windows is problematic, so just run the command
 	-- once per file (not as efficient.)
@@ -206,6 +207,11 @@ runAction repo action@(CommandAction {}) = liftIO $ do
   where
 	gitparams = gitCommandLine
 		(Param (getSubcommand action):getParams action) repo
+	go p _ (Just h) _ pid = do
+		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
+		hClose h
+		forceSuccessProcess p pid
+	go _ _ _ _ _ = error "internal"
 runAction repo action@(InternalAction {}) =
 	let InternalActionRunner _ runner = getRunner action
 	in runner repo (getInternalFiles action)

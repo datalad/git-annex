@@ -162,10 +162,15 @@ store' r k b p = go =<< glacierEnv c gc u
 		, Param "-"
 		]
 	go Nothing = giveup "Glacier not usable."
-	go (Just e) = liftIO $ do
+	go (Just e) =
 		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
-		withHandle StdinHandle createProcessSuccess cmd $ \h ->
-			meteredWrite p h b
+			{ std_in = CreatePipe }
+		in liftIO $ withCreateProcess cmd (go' cmd)
+	go' cmd (Just hin) _ _ pid =
+		forceSuccessProcess cmd pid
+			`after`
+		meteredWrite p hin b
+	go' _ _ _ _ _ = error "internal"
 
 retrieve :: Remote -> Retriever
 retrieve = byteRetriever . retrieve'
@@ -353,5 +358,10 @@ checkSaneGlacierCommand =
 		giveup wrongcmd
   where
 	test = proc "glacier" ["--compatibility-test-git-annex"]
-	shouldfail = withQuietOutput createProcessSuccess test
+	shouldfail = withNullHandle $ \nullh ->
+		let p = test
+			{ std_out = UseHandle nullh
+			, std_err = UseHandle nullh
+			}
+		in withCreateProcess p $ \_ _ _ -> forceSuccessProcess p
 	wrongcmd = "The glacier program in PATH seems to be from boto, not glacier-cli. Cannot use this program."

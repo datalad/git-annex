@@ -288,10 +288,12 @@ checkPresentGeneric o rsyncurls = do
 	-- note: Does not currently differentiate between rsync failing
 	-- to connect, and the file not being present.
 	untilTrue rsyncurls $ \u -> 
-		liftIO $ catchBoolIO $ do
-			withQuietOutput createProcessSuccess $
-				proc "rsync" $ toCommand $ opts ++ [Param u]
-			return True
+		liftIO $ catchBoolIO $ withNullHandle $ \nullh ->
+			let p = (proc "rsync" $ toCommand $ opts ++ [Param u])
+				{ std_out = UseHandle nullh
+				, std_err = UseHandle nullh
+				}
+			in withCreateProcess p $ \_ _ _ -> checkSuccessProcess
 
 storeExportM :: RsyncOpts -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportM o src _k loc meterupdate =

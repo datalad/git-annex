@@ -112,21 +112,33 @@ stdEncryptionParams symmetric = enc symmetric ++
 readStrict :: GpgCmd -> [CommandParam] -> IO String
 readStrict (GpgCmd cmd) params = do
 	params' <- stdParams params
-	withHandle StdoutHandle createProcessSuccess (proc cmd params') $ \h -> do
-		hSetBinaryMode h True
-		hGetContentsStrict h
+	let p = (proc cmd params')
+		{ std_out = CreatePipe }
+	withCreateProcess p (go p)
+  where
+	go p _ (Just hout) _ pid = do
+		hSetBinaryMode hout True
+		forceSuccessProcess p pid `after` hGetContentsStrict hout
+	go _ _ _ _ _ = error "internal"
 
 {- Runs gpg, piping an input value to it, and returning its stdout,
  - strictly. -}
 pipeStrict :: GpgCmd -> [CommandParam] -> String -> IO String
 pipeStrict (GpgCmd cmd) params input = do
 	params' <- stdParams params
-	withIOHandles createProcessSuccess (proc cmd params') $ \(to, from) -> do
+	let p = (proc cmd params')
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		}
+	withCreateProcess p (go p)
+  where
+	go p (Just to) (Just from) _ pid = do
 		hSetBinaryMode to True
 		hSetBinaryMode from True
 		hPutStr to input
 		hClose to
-		hGetContentsStrict from
+		forceSuccessProcess p pid `after` hGetContentsStrict from
+	go _ _ _ _ _ = error "internal"
 
 {- Runs gpg with some parameters. First sends it a passphrase (unless it
  - is empty) via '--passphrase-fd'. Then runs a feeder action that is
@@ -244,10 +256,13 @@ maxRecommendedKeySize = 4096
  -}
 genSecretKey :: GpgCmd -> KeyType -> Passphrase -> UserId -> Size -> IO ()
 genSecretKey (GpgCmd cmd) keytype passphrase userid keysize =
-	withHandle StdinHandle createProcessSuccess (proc cmd params) feeder
+	let p = (proc cmd params)
+		{ std_in = CreatePipe }
+	in withCreateProcess p (go p)
   where
 	params = ["--batch", "--gen-key"]
-	feeder h = do
+
+	go p (Just h) _ _ pid = do
 		hPutStr h $ unlines $ catMaybes
 			[ Just $  "Key-Type: " ++ 
 				case keytype of
@@ -262,6 +277,8 @@ genSecretKey (GpgCmd cmd) keytype passphrase userid keysize =
 				else Just $ "Passphrase: " ++ passphrase
 			]
 		hClose h
+		forceSuccessProcess p pid
+	go _ _ _ _ _ = error "internal"
 
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the

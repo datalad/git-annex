@@ -152,14 +152,26 @@ bupSplitParams r buprepo k src =
 
 store :: Remote -> BupRepo -> Storer
 store r buprepo = byteStorer $ \k b p -> do
-	let params = bupSplitParams r buprepo k []
 	showOutput -- make way for bup output
-	let cmd = proc "bup" (toCommand params)
 	quiet <- commandProgressDisabled
-	let feeder = \h -> meteredWrite p h b
-	liftIO $ if quiet
-		then feedWithQuietOutput createProcessSuccess cmd feeder
-		else withHandle StdinHandle createProcessSuccess cmd feeder
+	liftIO $ withNullHandle $ \nullh ->
+		let params = bupSplitParams r buprepo k []
+		    cmd = (proc "bup" (toCommand params))
+			{ std_in = CreatePipe }
+		    cmd' = if quiet
+			then cmd 
+				{ std_out = UseHandle nullh
+				, std_err = UseHandle nullh
+				}
+			else cmd
+		    feeder = \h -> meteredWrite p h b
+		in withCreateProcess cmd' (go feeder cmd')
+  where
+	go feeder p (Just hin) _ _ pid =
+		forceSuccessProcess p pid
+			`after`
+		feeder hin
+	go _ _ _ _ _ _ = error "internal"
 
 retrieve :: BupRepo -> Retriever
 retrieve buprepo = byteRetriever $ \k sink -> do

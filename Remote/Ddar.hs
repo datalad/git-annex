@@ -1,10 +1,12 @@
 {- Using ddar as a remote. Based on bup and rsync remotes.
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  - Copyright 2014 Robie Basak <robie@justgohome.co.uk>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Remote.Ddar (remote) where
 
@@ -201,12 +203,18 @@ ddarDirectoryExists ddarrepo
 inDdarManifest :: DdarRepo -> Key -> Annex (Either String Bool)
 inDdarManifest ddarrepo k = do
 	(cmd, params) <- ddarRemoteCall NoConsumeStdin ddarrepo 't' []
-	let p = proc cmd $ toCommand params
-	liftIO $ catchMsgIO $ withHandle StdoutHandle createProcessSuccess p $ \h -> do
-		contents <- hGetContents h
-		return $ elem k' $ lines contents
+	let p = (proc cmd $ toCommand params)
+		{ std_out = CreatePipe }
+	liftIO $ catchMsgIO $ withCreateProcess p (go p)
   where
 	k' = serializeKey k
+	
+	go p _ (Just hout) _ pid = do
+		contents <- hGetContents hout
+		let !r = elem k' (lines contents)
+		forceSuccessProcess p pid
+		return r
+	go _ _ _ _ _ = error "internal"
 
 checkKey :: DdarRepo -> CheckPresent
 checkKey ddarrepo key = do

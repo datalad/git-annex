@@ -223,10 +223,16 @@ tryScan r
 	| otherwise = liftIO $ safely $ Git.Config.read r
   where
 	pipedconfig st pcmd params = liftIO $ safely $
-		withHandle StdoutHandle createProcessSuccess p $
-			Git.Config.hRead r st
+		withCreateProcess p (pipedconfig' st p)
 	  where
-		p = proc pcmd $ toCommand params
+		p = (proc pcmd $ toCommand params)
+			{ std_out = CreatePipe }
+
+	pipedconfig' st p _ (Just h) _ pid = 
+		forceSuccessProcess p pid
+			`after`
+		Git.Config.hRead r st h
+	pipedconfig' _ _ _ _ _ _ = error "internal"
 
 	configlist = Ssh.onRemote NoConsumeStdin r
 		(pipedconfig Git.Config.ConfigList, return Nothing) "configlist" [] []
