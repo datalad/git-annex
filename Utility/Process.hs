@@ -21,7 +21,6 @@ module Utility.Process (
 	forceSuccessProcess',
 	checkSuccessProcess,
 	createProcessSuccess,
-	createProcessChecked,
 	createBackgroundProcess,
 	withHandle,
 	withIOHandles,
@@ -125,9 +124,6 @@ forceSuccessProcess' p (ExitFailure n) = fail $
 	showCmd p ++ " exited " ++ show n
 
 -- | Waits for a ProcessHandle and returns True if it exited successfully.
--- Note that using this with createProcessChecked will throw away
--- the Bool, and is only useful to ignore the exit code of a process,
--- while still waiting for it. -}
 checkSuccessProcess :: ProcessHandle -> IO Bool
 checkSuccessProcess pid = do
 	code <- waitForProcess pid
