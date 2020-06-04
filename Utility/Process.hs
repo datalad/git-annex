@@ -21,7 +21,6 @@ module Utility.Process (
 	forceSuccessProcess',
 	checkSuccessProcess,
 	createProcessSuccess,
-	createBackgroundProcess,
 	withHandle,
 	withIOHandles,
 	withOEHandles,
@@ -142,11 +141,6 @@ createProcessChecked checker p a = do
 	r <- tryNonAsync $ a t
 	_ <- checker pid
 	either E.throw return r
-
--- | Leaves the process running, suitable for lazy streaming.
--- Note: Zombies will result, and must be waited on.
-createBackgroundProcess :: CreateProcessRunner
-createBackgroundProcess p a = a =<< createProcess p
 
 -- | Runs a CreateProcessRunner, on a CreateProcess structure, that
 -- is adjusted to pipe only from/to a single StdHandle, and passes
