@@ -5,7 +5,8 @@
  content="""
 I've converted everything to withCreateProcess, except for process pools
 (P2P.IO, Assistant.TransferrerPool, Utility.CoProcess, and Remote.External),
-which need to be handled as discussed in comment 8.
+which need to be handled as discussed in comment 8. And also
+Git.Command.pipeReadLazy may (or may not) need to be converted.
 
 During this conversion, I did not watch out for interactive processes that
 might block on a password, so any timeout would also affect them. Really,
