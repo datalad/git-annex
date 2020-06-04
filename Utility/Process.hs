@@ -43,12 +43,13 @@ import qualified Utility.Process.Shim as X hiding (CreateProcess(..), createProc
 import Utility.Process.Shim hiding (createProcess, readProcess, waitForProcess)
 import Utility.Misc
 import Utility.Exception
+import Utility.Monad
 
 import System.Exit
 import System.IO
 import System.Log.Logger
 import Control.Monad.IO.Class
-import Control.Concurrent
+import Control.Concurrent.Async
 import qualified Control.Exception as E
 import qualified Data.ByteString as S
 
@@ -84,26 +85,7 @@ writeReadProcessEnv
 	-> Maybe [(String, String)]
 	-> (Maybe (Handle -> IO ()))
 	-> IO S.ByteString
-writeReadProcessEnv cmd args environ writestdin = do
-	(Just inh, Just outh, _, pid) <- createProcess p
-
-	-- fork off a thread to start consuming the output
-	outMVar <- newEmptyMVar
-	_ <- forkIO $ putMVar outMVar =<< S.hGetContents outh
-
-	-- now write and flush any input
-	maybe (return ()) (\a -> a inh >> hFlush inh) writestdin
-	hClose inh -- done with stdin
-
-	-- wait on the output
-	output <- takeMVar outMVar
-	hClose outh
-
-	-- wait on the process
-	forceSuccessProcess p pid
-
-	return output
-
+writeReadProcessEnv cmd args environ writestdin = withCreateProcess p go
   where
 	p = (proc cmd args)
 		{ std_in = CreatePipe
@@ -111,6 +93,18 @@ writeReadProcessEnv cmd args environ writestdin = do
 		, std_err = Inherit
 		, env = environ
 		}
+	
+	go (Just inh) (Just outh) _ pid = do
+		let reader = hClose outh `after` S.hGetContents outh
+		let writer = do
+			maybe (return ()) (\a -> a inh >> hFlush inh) writestdin
+			hClose inh
+		(output, ()) <- concurrently reader writer
+
+		forceSuccessProcess p pid
+
+		return output
+	go _ _ _ _ = error "internal"
 
 -- | Waits for a ProcessHandle, and throws an IOError if the process
 -- did not exit successfully.
