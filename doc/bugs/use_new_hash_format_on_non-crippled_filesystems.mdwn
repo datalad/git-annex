@@ -1,0 +1,10 @@
+### Please describe the problem.
+
+I am wondering if there is an option to use the new 3-letter hash format in `.git/annex/objects` folder even if the file system is not crippled. The use case is that I have a git-annex repository in a Linux server that I sometimes mount with Samba, but then I can't open some locked annexed files because of the case-sensitiveness of the old 2-letter hash format.
+
+### What version of git-annex are you using? On what operating system?
+git-annex 8 on Linux
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Without Samba it's fine :-)
