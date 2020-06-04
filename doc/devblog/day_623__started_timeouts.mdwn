@@ -1,0 +1,17 @@
+Working this week on a long missing capability of git-annex: The ability to
+time out, and perhaps retry, a transfer that has gotten stuck.
+
+It's a lot harder than it sounds, because to get it right with no resource
+leaks, every process and child thread that git-annex runs has to be stopped
+by a timeout too, which the current code base was not designed for at all.
+[[gory details here|todo/more_extensive_retries_to_mask_transient_failures]]
+
+So far I have most processes being stopped, and that took 2 solid days.
+This may take a while to finish. I do think though, that once the basic
+operation of stopping a transfer is available, there will be other uses
+besides timeouts. 
+
+One I can think of already is, if a remote is being very slow, it might
+make sense to stop a transfer from it and switch to using a different
+remote. Another is that there could be a hotkey to skip the current
+transfer, moving on to the next file.
