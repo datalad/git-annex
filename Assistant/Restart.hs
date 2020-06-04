@@ -113,7 +113,5 @@ assistantListening url = catchBoolIO $ do
 startAssistant :: FilePath -> IO ()
 startAssistant repo = void $ forkIO $ do
 	program <- programPath
-	(_, _, _, pid) <- 
-		createProcess $
-			(proc program ["assistant"]) { cwd = Just repo }
-	void $ checkSuccessProcess pid
+	let p = (proc program ["assistant"]) { cwd = Just repo }
+	withCreateProcess p $ \_ _ _ pid -> void $ checkSuccessProcess pid

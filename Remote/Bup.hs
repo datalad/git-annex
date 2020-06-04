@@ -164,10 +164,16 @@ store r buprepo = byteStorer $ \k b p -> do
 retrieve :: BupRepo -> Retriever
 retrieve buprepo = byteRetriever $ \k sink -> do
 	let params = bupParams "join" buprepo [Param $ bupRef k]
-	let p = proc "bup" (toCommand params)
-	(_, Just h, _, pid) <- liftIO $ createProcess $ p { std_out = CreatePipe }
-	liftIO (hClose h >> forceSuccessProcess p pid)
-		`after` (sink =<< liftIO (L.hGetContents h))
+	let p = (proc "bup" (toCommand params))
+		{ std_out = CreatePipe }
+	bracketIO (createProcess p) cleanupProcess (go sink p)
+  where
+	go sink p (_, Just h, _, pid) = do
+		() <- sink =<< liftIO (L.hGetContents h)
+		liftIO $ do
+			hClose h
+			forceSuccessProcess p pid
+	go _ _ _ = error "internal"
 
 {- Cannot revert having stored a key in bup, but at least the data for the
  - key will be used for deltaing data of other keys stored later.

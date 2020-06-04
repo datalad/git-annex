@@ -20,7 +20,6 @@ module Utility.Process (
 	forceSuccessProcess,
 	forceSuccessProcess',
 	checkSuccessProcess,
-	ignoreFailureProcess,
 	createProcessSuccess,
 	createProcessChecked,
 	createBackgroundProcess,
@@ -53,7 +52,6 @@ import System.Log.Logger
 import Control.Monad.IO.Class
 import Control.Concurrent
 import qualified Control.Exception as E
-import Control.Monad
 import qualified Data.ByteString as S
 
 type CreateProcessRunner = forall a. CreateProcess -> ((Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO a) -> IO a
@@ -134,11 +132,6 @@ checkSuccessProcess :: ProcessHandle -> IO Bool
 checkSuccessProcess pid = do
 	code <- waitForProcess pid
 	return $ code == ExitSuccess
-
-ignoreFailureProcess :: ProcessHandle -> IO Bool
-ignoreFailureProcess pid = do
-	void $ waitForProcess pid
-	return True
 
 -- | Runs createProcess, then an action on its handles, and then
 -- forceSuccessProcess.

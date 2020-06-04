@@ -185,14 +185,15 @@ retrieve' r k sink = go =<< glacierEnv c gc u
 		]
 	go Nothing = giveup "cannot retrieve from glacier"
 	go (Just environ) = do
-		let cmd = (proc "glacier" (toCommand params))
+		let p = (proc "glacier" (toCommand params))
 			{ env = Just environ
 			, std_out = CreatePipe
 			}
-		(_, Just h, _, pid) <- liftIO $ createProcess cmd
+		bracketIO (createProcess p) cleanupProcess (go' p)
+	go' p (_, Just h, _, pid) = do
 		let cleanup = liftIO $ do
 			hClose h
-			forceSuccessProcess cmd pid
+			forceSuccessProcess p pid
 		flip finally cleanup $ do
 			-- Glacier cannot store empty files, so if
 			-- the output is empty, the content is not
@@ -200,6 +201,7 @@ retrieve' r k sink = go =<< glacierEnv c gc u
 			whenM (liftIO $ hIsEOF h) $
 				giveup "Content is not available from glacier yet. Recommend you wait up to 4 hours, and then run this command again."
 			sink =<< liftIO (L.hGetContents h)
+	go' _ _ = error "internal"
 
 remove :: Remote -> Remover
 remove r k = unlessM go $

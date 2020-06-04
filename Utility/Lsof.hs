@@ -49,11 +49,16 @@ queryDir path = query ["+d", path]
  - Note: If lsof is not available, this always returns [] !
  -}
 query :: [String] -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
-query opts =
-	withHandle StdoutHandle (createProcessChecked checkSuccessProcess) p $
-		parse <$$> hGetContentsStrict
+query opts = withCreateProcess p go
   where
-	p = proc "lsof" ("-F0can" : opts)
+	p = (proc "lsof" ("-F0can" : opts))
+		{ std_out = CreatePipe }
+	
+	go _ (Just outh) _ pid = do
+		r <- parse <$> hGetContentsStrict outh
+		void $ waitForProcess pid
+		return r
+	go _ _ _ _ = error "internal"
 
 type LsofParser = String -> [(FilePath, LsofOpenMode, ProcessInfo)]
 

@@ -157,10 +157,16 @@ ddarExtractRemoteCall cs ddarrepo k =
 retrieve :: DdarRepo -> Retriever
 retrieve ddarrepo = byteRetriever $ \k sink -> do
 	(cmd, params) <- ddarExtractRemoteCall NoConsumeStdin ddarrepo k
-	let p = (proc cmd $ toCommand params) { std_out = CreatePipe }
-	(_, Just h, _, pid) <- liftIO $ createProcess p
-	liftIO (hClose h >> forceSuccessProcess p pid)
-		`after` (sink =<< liftIO (L.hGetContents h))
+	let p = (proc cmd $ toCommand params)
+		{ std_out = CreatePipe }
+	bracketIO (createProcess p) cleanupProcess (go sink p)
+  where
+	go sink p (_, Just h, _, pid) = do
+		() <- sink =<< liftIO (L.hGetContents h)
+		liftIO $ do
+			hClose h
+			forceSuccessProcess p pid
+	go _ _ _ = error "internal"
 
 remove :: DdarRepo -> Remover
 remove ddarrepo key = do

@@ -1,6 +1,6 @@
 {- running git commands
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -70,13 +70,17 @@ pipeReadStrict = pipeReadStrict' S.hGetContents
 
 {- The reader action must be strict. -}
 pipeReadStrict' :: (Handle -> IO a) -> [CommandParam] -> Repo -> IO a
-pipeReadStrict' reader params repo = assertLocal repo $
-	withHandle StdoutHandle (createProcessChecked ignoreFailureProcess) p $ \h -> do
-		output <- reader h
-		hClose h
-		return output
+pipeReadStrict' reader params repo = assertLocal repo $ withCreateProcess p go
   where
-	p  = gitCreateProcess params repo
+	p  = (gitCreateProcess params repo)
+		{ std_out = CreatePipe }
+
+	go _ (Just outh) _ pid = do
+		output <- reader outh
+		hClose outh
+		void $ waitForProcess pid
+		return output
+	go _ _ _ _ = error "internal"
 
 {- Runs a git command, feeding it an input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory

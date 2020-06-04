@@ -136,15 +136,7 @@ indexPath = toInternalGitPath . getTopFilePath
 
 {- Refreshes the index, by checking file stat information.  -}
 refreshIndex :: Repo -> ((FilePath -> IO ()) -> IO ()) -> IO Bool
-refreshIndex repo feeder = do
-	(Just h, _, _, p) <- createProcess (gitCreateProcess params repo)
-		{ std_in = CreatePipe }
-	feeder $ \f -> do
-		hPutStr h f
-		hPutStr h "\0"
-	hFlush h
-	hClose h
-	checkSuccessProcess p
+refreshIndex repo feeder = withCreateProcess p go
   where
 	params = 
 		[ Param "update-index"
@@ -153,3 +145,15 @@ refreshIndex repo feeder = do
 		, Param "-z"
 		, Param "--stdin"
 		]
+	
+	p = (gitCreateProcess params repo)
+		{ std_in = CreatePipe }
+
+	go (Just h) _ _ pid = do
+		feeder $ \f -> do
+			hPutStr h f
+			hPutStr h "\0"
+		hFlush h
+		hClose h
+		checkSuccessProcess pid
+	go _ _ _ _ = error "internal"

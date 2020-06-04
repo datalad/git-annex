@@ -77,27 +77,31 @@ findBroken batchmode r = do
 		then toBatchCommand (command, params)
 		else return (command, params)
 	
-	p@(_, _, _, pid) <- createProcess $
-		(proc command' (toCommand params'))
-			{ std_out = CreatePipe
-			, std_err = CreatePipe
-			}
-	(o1, o2) <- concurrently
-		(parseFsckOutput maxobjs r (stdoutHandle p))
-		(parseFsckOutput maxobjs r (stderrHandle p))
-	fsckok <- checkSuccessProcess pid
-	case mappend o1 o2 of
-		FsckOutput badobjs truncated
-			| S.null badobjs && not fsckok -> return FsckFailed
-			| otherwise -> return $ FsckFoundMissing badobjs truncated
-		NoFsckOutput
-			| not fsckok -> return FsckFailed
-			| otherwise -> return noproblem
-		-- If all fsck output was duplicateEntries warnings,
-		-- the repository is not broken, it just has some unusual
-		-- tree objects in it. So ignore nonzero exit status.
-		AllDuplicateEntriesWarning -> return noproblem
+	let p = (proc command' (toCommand params'))
+		{ std_out = CreatePipe
+		, std_err = CreatePipe
+		}
+	withCreateProcess p go
   where
+	go _ (Just outh) (Just errh) pid = do
+		(o1, o2) <- concurrently
+			(parseFsckOutput maxobjs r outh)
+			(parseFsckOutput maxobjs r errh)
+		fsckok <- checkSuccessProcess pid
+		case mappend o1 o2 of
+			FsckOutput badobjs truncated
+				| S.null badobjs && not fsckok -> return FsckFailed
+				| otherwise -> return $ FsckFoundMissing badobjs truncated
+			NoFsckOutput
+				| not fsckok -> return FsckFailed
+				| otherwise -> return noproblem
+			-- If all fsck output was duplicateEntries warnings,
+			-- the repository is not broken, it just has some
+			-- unusual tree objects in it. So ignore nonzero
+			-- exit status.
+			AllDuplicateEntriesWarning -> return noproblem
+	go _ _ _ _ = error "internal"
+	
 	maxobjs = 10000
 	noproblem = FsckFoundMissing S.empty False
 

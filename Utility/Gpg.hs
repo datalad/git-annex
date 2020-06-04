@@ -171,16 +171,19 @@ pipeLazy (GpgCmd cmd) params feeder reader = do
 		, std_out = CreatePipe
 		, std_err = Inherit
 		}
-	bracket (setup p) (cleanup p) go
+	bracket (setup p) cleanup (go p)
   where
 	setup = liftIO . createProcess
-	cleanup p (_, _, _, pid) = liftIO $ forceSuccessProcess p pid
-	go p = do
-		let (to, from) = ioHandles p
+	cleanup = liftIO . cleanupProcess
+
+	go p (Just to, Just from, _, pid) = do
 		liftIO $ void $ forkIO $ do
 			feeder to
 			hClose to
-		reader from
+		r <- reader from
+		liftIO $ forceSuccessProcess p pid
+		return r
+	go _ _ = error "internal"
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of

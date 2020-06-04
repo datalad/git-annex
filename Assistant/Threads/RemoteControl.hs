@@ -32,20 +32,27 @@ remoteControlThread = namedThread "RemoteControl" $ do
 	(cmd, params) <- liftIO $ toBatchCommand
 		(program, [Param "remotedaemon", Param "--foreground"])
 	let p = proc cmd (toCommand params)
-	(Just toh, Just fromh, _, pid) <- liftIO $ createProcess p
+	bracket (setup p) cleanup (go p)
+  where
+	setup p = liftIO $ createProcess $ p
 		{ std_in = CreatePipe
 		, std_out = CreatePipe
 		}
-	
-	urimap <- liftIO . newMVar =<< liftAnnex getURIMap
+	cleanup = liftIO . cleanupProcess
 
-	controller <- asIO $ remoteControllerThread toh
-	responder <- asIO $ remoteResponderThread fromh urimap
+	go p (Just toh, Just fromh, _, pid) = do
+		urimap <- liftIO . newMVar =<< liftAnnex getURIMap
 
-	-- run controller and responder until the remotedaemon dies
-	liftIO $ void $ tryNonAsync $ controller `concurrently` responder
-	debug ["remotedaemon exited"]
-	liftIO $ forceSuccessProcess p pid
+		controller <- asIO $ remoteControllerThread toh
+		responder <- asIO $ remoteResponderThread fromh urimap
+
+		-- run controller and responder until the remotedaemon dies
+		liftIO $ void $ tryNonAsync $
+			controller `concurrently` responder
+		debug ["remotedaemon exited"]
+		liftIO $ forceSuccessProcess p pid	
+	go _ _ = error "internal"
+		
 
 -- feed from the remoteControl channel into the remotedaemon
 remoteControllerThread :: Handle -> Assistant ()

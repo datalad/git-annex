@@ -205,12 +205,14 @@ youtubeDlFileNameHtmlOnly' url uo
 			, Param "--no-warnings"
 			, Param "--no-playlist"
 			]
-		(Nothing, Just o, Just e, pid) <- liftIO $ createProcess
-			(proc "youtube-dl" (toCommand opts))
-				{ std_out = CreatePipe
-				, std_err = CreatePipe
-				}
-		output <- liftIO $ fmap fst $ 
+		let p = (proc "youtube-dl" (toCommand opts))
+			{ std_out = CreatePipe
+			, std_err = CreatePipe
+			}
+		liftIO $ withCreateProcess p waitproc
+	
+	waitproc Nothing (Just o) (Just e) pid = do
+		output <- fmap fst $ 
 			hGetContentsStrict o
 				`concurrently`
 			hGetContentsStrict e
@@ -218,6 +220,8 @@ youtubeDlFileNameHtmlOnly' url uo
 		return $ case (ok, lines output) of
 			(True, (f:_)) | not (null f) -> Right f
 			_ -> nomedia
+	waitproc _ _ _ _ = error "internal"
+
 	nomedia = Left "no media in url"
 
 youtubeDlOpts :: [CommandParam] -> Annex [CommandParam]

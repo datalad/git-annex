@@ -180,14 +180,16 @@ querySingle o r repo reader = assertLocal repo $
 			, std_in = Inherit
 			, std_out = CreatePipe
 			}
-		pid <- createProcess p'
-		let h = stdoutHandle pid
-		output <- reader h
-		hClose h
-		ifM (checkSuccessProcess (processHandle pid))
+		withCreateProcess p' go
+  where
+	go _ (Just outh) _ pid = do
+		output <- reader outh
+		hClose outh
+		ifM (checkSuccessProcess pid)
 			( return (Just output)
 			, return Nothing
 			)
+	go _ _ _ _ = error "internal"
 
 querySize :: Ref -> Repo -> IO (Maybe FileSize)
 querySize r repo = maybe Nothing (readMaybe . takeWhile (/= '\n'))
