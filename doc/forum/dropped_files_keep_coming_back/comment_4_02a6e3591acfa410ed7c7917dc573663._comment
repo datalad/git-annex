@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="git-annex@17927e6dc041ab425c14217a97a685adf3ecf44f"
+ nickname="git-annex"
+ avatar="http://cdn.libravatar.org/avatar/66e5c6e044d726597ce5a0ad68f86fe4"
+ subject="Actually they were not standard"
+ date="2020-06-04T21:05:48Z"
+ content="""
+The 'git annex wanted .' on the manual node returned nothing - so default.  I would have thought that that was 'standard'.  However, when setting it to standard, the files stopped rebounding.
+
+Christopher
+
+"""]]
