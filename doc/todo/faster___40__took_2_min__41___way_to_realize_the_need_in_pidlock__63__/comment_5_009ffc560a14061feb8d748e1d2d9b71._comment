@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-06-05T22:15:09Z"
+ content="""
+> I would assume it already does it since with globally set pidlock it proceeds fine
+
+SCRAP that!  I do not know what has changed since yesterday to my home directory (may be admin turned it into a POSIX one... I should have not let him know! ;)) since it works even without global pidlock set.  I will inquire.
+"""]]

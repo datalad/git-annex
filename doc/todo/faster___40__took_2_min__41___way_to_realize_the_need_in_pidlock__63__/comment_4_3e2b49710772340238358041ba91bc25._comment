@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reply to Joey's comments"
+ date="2020-06-05T22:11:47Z"
+ content="""
+> Also, it could check if annex.pidlock is already set globally, and skip the probe...
+
+<details>
+<summary>I would assume it already does it since with globally set pidlock it proceeds fine</summary> 
+
+```shell
+[d31548v@discovery7 tmp]$ git config annex.pidlock
+1
+[d31548v@discovery7 tmp]$ ( export PS4='[$(date)] > '; set -x ; mkdir test; cd test; git init; git annex  init; echo done; )
+[Fri Jun  5 18:04:28 EDT 2020] > mkdir test
+[Fri Jun  5 18:04:28 EDT 2020] > cd test
+[Fri Jun  5 18:04:28 EDT 2020] > git init
+Initialized empty Git repository in /dartfs-hpc/rc/home/v/d31548v/tmp/test/.git/
+[Fri Jun  5 18:04:28 EDT 2020] > git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+[Fri Jun  5 18:04:30 EDT 2020] > echo done
+done
+
+```
+</details>
+
+The problem somewhat that global pidlock is not generally needed - some partitions do have proper POSIX file systems, so setting it globally is \"suboptimal\", needs to be provisioned for every node (by an admin) and/or user.
+
+> I agree it could make sense to display a message, although that will also be a message the vast majority of users who are not in this situation would see
+
+Sure - that would be ideal, but if anything - debug message before sensing for the log would at least suffice to help with troubleshooting.
+
+> Is this related to your other bug about something seeming to hang/stall?
+
+It might depend to which one? ;-)  if [this one (upon enableremote)](https://git-annex.branchable.com/bugs/enableremote_stuck_with_a_recentish_git-annex/) - unlikely since that one happens I believe on non-crippled FS
+"""]]
