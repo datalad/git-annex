@@ -214,3 +214,6 @@ At least adding some debug message before running the detection could be of help
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> what I mentioned in the comments is [[done]] --[[Joey]]
+

@@ -264,10 +264,12 @@ probeFifoSupport = do
 #endif
 
 checkLockSupport :: Annex ()
-checkLockSupport = unlessM probeLockSupport $ do
-	warning "Detected a filesystem without POSIX fcntl lock support."
-	warning "Enabling annex.pidlock."
-	setConfig (annexConfig "pidlock") (Git.Config.boolConfig True)
+checkLockSupport =
+	unlessM (annexPidLock <$> Annex.getGitConfig) $
+		unlessM probeLockSupport $ do
+			warning "Detected a filesystem without POSIX fcntl lock support."
+			warning "Enabling annex.pidlock."
+			setConfig (annexConfig "pidlock") (Git.Config.boolConfig True)
 
 checkFifoSupport :: Annex ()
 checkFifoSupport = unlessM probeFifoSupport $ do

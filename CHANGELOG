@@ -24,6 +24,7 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
     cleanup actions in separate job pool from uploads. 
   * init: If lock probing stalls for a long time (eg a broken NFS server),
     display a message to let the user know what's taking so long.
+  * init: When annex.pidlock is set, skip lock probing.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 
