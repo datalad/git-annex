@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 14"
+ date="2020-06-05T14:51:07Z"
+ content="""
+Thanks @joeyh for working on this.  In my experience ssh password prompts aren't a big issue as you pretty much always want to use ssh-agent.
+"""]]
