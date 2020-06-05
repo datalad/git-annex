@@ -103,15 +103,15 @@ pipeWriteRead params writer repo = assertLocal repo $
 
 {- Runs a git command, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
-pipeWrite params repo a = assertLocal repo $
+pipeWrite params repo feeder = assertLocal repo $
 	let p = (gitCreateProcess params repo)
 		{ std_in = CreatePipe }
 	in withCreateProcess p (go p)
   where
-	go p (Just hin) _ _ pid = 
+	go p (Just hin) _ _ pid = do
+		feeder hin
+		hClose hin
 		forceSuccessProcess p pid
-			`after`
-		a hin
 	go _ _ _ _ _ = error "internal"
 
 {- Reads null terminated output of a git command (as enabled by the -z 

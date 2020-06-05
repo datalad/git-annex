@@ -166,10 +166,10 @@ store' r k b p = go =<< glacierEnv c gc u
 		let cmd = (proc "glacier" (toCommand params)) { env = Just e }
 			{ std_in = CreatePipe }
 		in liftIO $ withCreateProcess cmd (go' cmd)
-	go' cmd (Just hin) _ _ pid =
-		forceSuccessProcess cmd pid
-			`after`
+	go' cmd (Just hin) _ _ pid = do
 		meteredWrite p hin b
+		hClose hin
+		forceSuccessProcess cmd pid
 	go' _ _ _ _ _ = error "internal"
 
 retrieve :: Remote -> Retriever
