@@ -1,0 +1,216 @@
+<details>
+<summary>full log</summary> 
+
+```shell
+[yhalchen@discovery7 tmp]$ ( PS4='[$(date)] > '; set -x; mkdir test; cd test; git init; git annex --debug init; cat .git/config; )
+[Thu Jun  4 22:03:14 EDT 2020] > mkdir test
+[Thu Jun  4 22:03:14 EDT 2020] > cd test
+[Thu Jun  4 22:03:14 EDT 2020] > git init
+Initialized empty Git repository in /ihome/yhalchen/tmp/test/.git/
+[Thu Jun  4 22:03:15 EDT 2020] > git annex --debug init
+init  [2020-06-04 22:03:15.148337333] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-06-04 22:03:15.160519651] process done ExitFailure 1
+[2020-06-04 22:03:15.160710842] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","origin/git-annex"]
+[2020-06-04 22:03:15.170626699] process done ExitFailure 1
+[2020-06-04 22:03:15.173741089] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2020-06-04 22:03:15.193985902] process done ExitSuccess
+[2020-06-04 22:03:15.194151767] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904","--no-gpg-sign"]
+[2020-06-04 22:03:15.211084581] process done ExitSuccess
+[2020-06-04 22:03:15.211219476] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","c2a44ece57b7a7c9105efec702a3fcd5118c16a5"]
+[2020-06-04 22:03:15.251272209] process done ExitSuccess
+[2020-06-04 22:03:15.257790738] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.uuid","17782290-31aa-4bdf-a18d-7808ffe7c977"]
+[2020-06-04 22:03:15.272462579] process done ExitSuccess
+[2020-06-04 22:03:15.272624366] read: git ["config","--null","--list"]
+[2020-06-04 22:03:15.283187109] process done ExitSuccess
+
+  Detected a filesystem without POSIX fcntl lock support.
+
+  Enabling annex.pidlock.
+[2020-06-04 22:05:15.34524884] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.pidlock","true"]
+[2020-06-04 22:05:15.372408603] process done ExitSuccess
+[2020-06-04 22:05:15.372568858] read: git ["config","--null","--list"]
+[2020-06-04 22:05:15.382733867] process done ExitSuccess
+[2020-06-04 22:05:15.409269066] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-06-04 22:05:15.422429606] process done ExitSuccess
+[2020-06-04 22:05:15.422580683] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-06-04 22:05:15.433488294] process done ExitSuccess
+[2020-06-04 22:05:15.434294861] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..c2a44ece57b7a7c9105efec702a3fcd5118c16a5","--pretty=%H","-n1"]
+[2020-06-04 22:05:15.447151633] process done ExitSuccess
+[2020-06-04 22:05:15.448153606] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-06-04 22:05:15.449404288] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-06-04 22:05:15.45912651] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.version","8"]
+[2020-06-04 22:05:15.473144196] process done ExitSuccess
+[2020-06-04 22:05:15.473323633] read: git ["config","--null","--list"]
+[2020-06-04 22:05:15.484002445] process done ExitSuccess
+[2020-06-04 22:05:15.484194067] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","status","--porcelain"]
+[2020-06-04 22:05:15.500626848] process done ExitSuccess
+[2020-06-04 22:05:15.500774482] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","filter.annex.smudge","git-annex smudge -- %f"]
+[2020-06-04 22:05:15.514966575] process done ExitSuccess
+[2020-06-04 22:05:15.515111682] read: git ["config","--null","--list"]
+[2020-06-04 22:05:15.525620475] process done ExitSuccess
+[2020-06-04 22:05:15.526092889] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","filter.annex.clean","git-annex smudge --clean -- %f"]
+[2020-06-04 22:05:15.540331882] process done ExitSuccess
+[2020-06-04 22:05:15.540500706] read: git ["config","--null","--list"]
+[2020-06-04 22:05:15.550791736] process done ExitSuccess
+(scanning for unlocked files...)
+[2020-06-04 22:05:15.554116957] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--head"]
+[2020-06-04 22:05:15.564970531] process done ExitSuccess
+[2020-06-04 22:05:15.579478389] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-06-04 22:05:15.589809596] process done ExitSuccess
+[2020-06-04 22:05:15.589951516] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-06-04 22:05:15.601255052] process done ExitFailure 1
+[2020-06-04 22:05:15.601424674] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-06-04 22:05:15.611496747] process done ExitSuccess
+[2020-06-04 22:05:15.611639271] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2020-06-04 22:05:15.622536266] process done ExitFailure 1
+[2020-06-04 22:05:15.622929217] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","checkout","-q","-B","master"]
+[2020-06-04 22:05:15.638313905] process done ExitSuccess
+[2020-06-04 22:05:15.645385428] read: uname ["-n"]
+[2020-06-04 22:05:15.651959283] process done ExitSuccess
+ok
+[2020-06-04 22:05:15.704393232] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2020-06-04 22:05:15.705996303] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2020-06-04 22:05:15.72599264] process done ExitSuccess
+[2020-06-04 22:05:15.726142726] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-06-04 22:05:15.737436564] process done ExitSuccess
+(recording state in git...)
+[2020-06-04 22:05:15.737859056] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2020-06-04 22:05:15.758832639] process done ExitSuccess
+[2020-06-04 22:05:15.758982175] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","1767824d19ab44b9b0f2a156663e4f3bc37e902f","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2020-06-04 22:05:15.777364836] process done ExitSuccess
+[2020-06-04 22:05:15.777525965] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","6dc63f68c7036fbef7a4afeead658ab42433ad55"]
+[2020-06-04 22:05:15.797354413] process done ExitSuccess
+[2020-06-04 22:05:15.828091917] process done ExitSuccess
+[2020-06-04 22:05:15.828520537] process done ExitSuccess
+[2020-06-04 22:05:15.828968133] process done ExitSuccess
+[Thu Jun  4 22:05:15 EDT 2020] > cat .git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[annex]
+	uuid = 17782290-31aa-4bdf-a18d-7808ffe7c977
+	pidlock = true
+	version = 8
+[filter "annex"]
+	smudge = git-annex smudge -- %f
+	clean = git-annex smudge --clean -- %f
+[yhalchen@discovery7 tmp]$ git annex version
+git-annex version: 8.20200502-g55acb2e52
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+
+```
+</details>
+
+the excerpt for running `git-annex init` of 8.20200502-g55acb2e52 on an NFS mounted isilon volume:
+[[!format sh """
+[2020-06-04 22:03:15.283187109] process done ExitSuccess
+
+  Detected a filesystem without POSIX fcntl lock support.
+
+  Enabling annex.pidlock.
+[2020-06-04 22:05:15.34524884] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.pidlock","true"]
+"""]]
+
+so  - 2 minutes. Running with `strace -f` showed a long flood of `[pid  2890] read(4, "\1\0\0\0\0\0\0\0", 8) = 8`
+
+<details>
+<summary>here is an excerpt where it begins with timing stamps</summary> 
+
+```shell
+[pid  7661] 22:12:42.464620 futex(0x2abd17039ad0, FUTEX_WAKE_PRIVATE, 1) = 0
+[pid  7661] 22:12:42.464705 openat(AT_FDCWD, "./.noannex", O_RDONLY|O_NOCTTY|O_NONBLOCK) = -1 ENOENT (No such file or directory)
+[pid  7661] 22:12:42.464828 getcwd("/ihome/yhalchen/tmp/test", 4096) = 25
+[pid  7661] 22:12:42.464913 getcwd("/ihome/yhalchen/tmp/test", 4096) = 25
+[pid  7661] 22:12:42.465045 mkdir(".git/annex/misctmp", 0777) = 0
+[pid  7661] 22:12:42.466273 unlink(".git/annex/misctmp/lockprobe") = -1 ENOENT (No such file or directory)
+[pid  7661] 22:12:42.466699 openat(AT_FDCWD, ".git/annex/misctmp/lockprobe", O_RDWR|O_CREAT, 0666) = 11
+[pid  7661] 22:12:42.467692 fcntl(11, F_GETFD) = 0
+[pid  7661] 22:12:42.467768 fcntl(11, F_SETFD, FD_CLOEXEC) = 0
+[pid  7661] 22:12:42.467841 fcntl(11, F_SETLKW, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0} <unfinished ...>
+[pid  7703] 22:12:42.473082 <... read resumed>"\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.473137 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.483143 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.493202 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.503215 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.513202 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.523178 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.533202 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.543191 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.553186 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.563219 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.573212 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.583215 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.593206 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.603168 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.613209 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.623150 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.633193 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.643242 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.653170 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.663189 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.673182 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.683183 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.693190 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.703184 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.713203 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.723212 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.733202 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.743181 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.753220 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.763179 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.773207 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.783204 write(10, "\377\0\0\0\0\0\0\0", 8) = 8
+[pid  7705] 22:12:42.783323 <... poll resumed>) = 1 ([{fd=10, revents=POLLIN}])
+[pid  7703] 22:12:42.783367 read(4,  <unfinished ...>
+[pid  7705] 22:12:42.783441 futex(0x2abd17039cbc, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid  7703] 22:12:42.793162 <... read resumed>"\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.793241 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.803209 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.813218 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.823185 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.833206 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+[pid  7703] 22:12:42.843189 read(4, "\1\0\0\0\0\0\0\0", 8) = 8
+
+```
+</details>
+
+I wonder if there is a way to "speed up" pidlock detection?
+
+At least adding some debug message before running the detection could be of help, it could help troubleshoot what I thought was some "ssh" stall since it just got stuck at
+
+<details>
+<summary>with the last line just saying "process done ExitSuccess" for that long and I kept killing it impatiently</summary> 
+
+```shell
+*[yhalchen@discovery7 containers]$ git annex --debug get --from origin images/bids/bids-fmriprep--20.1.0.sing
+[2020-06-04 22:14:49.036738929] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-06-04 22:14:49.053892561] process done ExitSuccess
+[2020-06-04 22:14:49.054443458] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-06-04 22:14:49.066856316] process done ExitFailure 1
+[2020-06-04 22:14:49.06701345] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","origin/git-annex"]
+[2020-06-04 22:14:49.07703984] process done ExitFailure 1
+[2020-06-04 22:14:49.079889542] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2020-06-04 22:14:49.097069694] process done ExitSuccess
+[2020-06-04 22:14:49.097233049] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904","--no-gpg-sign"]
+[2020-06-04 22:14:49.131741755] process done ExitSuccess
+[2020-06-04 22:14:49.131910038] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","8cab5728da95189f68c785bd4bb59ca754e133fd"]
+[2020-06-04 22:14:49.153852043] process done ExitSuccess
+[2020-06-04 22:14:49.159730902] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.uuid","fd97689f-716d-4e82-87ce-5b96c2421dd6"]
+[2020-06-04 22:14:49.175319685] process done ExitSuccess
+[2020-06-04 22:14:49.175479616] read: git ["config","--null","--list"]
+[2020-06-04 22:14:49.184803048] process done ExitSuccess
+# here I kept killing it but then eventually it shows that it is enabling pidlock
+
+```
+</details>
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
