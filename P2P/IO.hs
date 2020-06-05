@@ -272,15 +272,17 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) =
   where
 	setup = do
 		v <- newEmptyMVar
-		void $ async $ relayFeeder runner v hin
-		void $ async $ relayReader v hout
-		return v
+		t1 <- async $ relayFeeder runner v hin
+		t2 <- async $ relayReader v hout
+		return (v, t1, t2)
 	
-	cleanup _ = do
+	cleanup (_, t1, t2) = do
 		hClose hin
 		hClose hout
+		cancel t1
+		cancel t2
 	
-	go v = relayHelper runner v
+	go (v, _, _) = relayHelper runner v
 
 runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Either ProtoFailure ())
 runRelayService conn runner service =
