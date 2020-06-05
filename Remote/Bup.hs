@@ -167,10 +167,10 @@ store r buprepo = byteStorer $ \k b p -> do
 		    feeder = \h -> meteredWrite p h b
 		in withCreateProcess cmd' (go feeder cmd')
   where
-	go feeder p (Just hin) _ _ pid =
+	go feeder p _ (Just h) _ pid =
 		forceSuccessProcess p pid
 			`after`
-		feeder hin
+		feeder h
 	go _ _ _ _ _ _ = error "internal"
 
 retrieve :: BupRepo -> Retriever
