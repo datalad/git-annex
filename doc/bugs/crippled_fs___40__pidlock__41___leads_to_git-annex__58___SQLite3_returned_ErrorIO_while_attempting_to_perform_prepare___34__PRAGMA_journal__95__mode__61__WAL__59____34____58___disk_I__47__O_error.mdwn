@@ -1,0 +1,115 @@
+### Please describe the problem.
+
+It was a long journey... ;-)  First I had ran `git annex test` which resulted in `437 out of 834 tests failed` and saw bunch of those failures - [full log](http://www.onerussian.com/tmp/git-annex-test-log-8.20200502-g55acb2e52-2.log) ... Then I got to "troubleshoot" too long of pidlock detection [filed separately](https://git-annex.branchable.com/todo/faster___40__took_2_min__41___way_to_realize_the_need_in_pidlock__63__/?updated), where a complete run of `annex get` finally crashed with
+
+[[!format sh """
+[2020-06-04 22:16:49.683393126] process done ExitSuccess
+git-annex: SQLite3 returned ErrorIO while attempting to perform prepare "PRAGMA journal_mode=WAL;": disk I/O error
+
+[yhalchen@discovery7 containers]$ echo $?
+1
+"""]]
+
+<details>
+<summary>A full log:</summary> 
+
+```shell
+*[yhalchen@discovery7 containers]$ git annex --debug get --from origin images/bids/bids-fmriprep--20.1.0.sing
+[2020-06-04 22:14:49.036738929] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-06-04 22:14:49.053892561] process done ExitSuccess
+[2020-06-04 22:14:49.054443458] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-06-04 22:14:49.066856316] process done ExitFailure 1
+[2020-06-04 22:14:49.06701345] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","origin/git-annex"]
+[2020-06-04 22:14:49.07703984] process done ExitFailure 1
+[2020-06-04 22:14:49.079889542] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2020-06-04 22:14:49.097069694] process done ExitSuccess
+[2020-06-04 22:14:49.097233049] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904","--no-gpg-sign"]
+[2020-06-04 22:14:49.131741755] process done ExitSuccess
+[2020-06-04 22:14:49.131910038] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","8cab5728da95189f68c785bd4bb59ca754e133fd"]
+[2020-06-04 22:14:49.153852043] process done ExitSuccess
+[2020-06-04 22:14:49.159730902] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.uuid","fd97689f-716d-4e82-87ce-5b96c2421dd6"]
+[2020-06-04 22:14:49.175319685] process done ExitSuccess
+[2020-06-04 22:14:49.175479616] read: git ["config","--null","--list"]
+[2020-06-04 22:14:49.184803048] process done ExitSuccess
+
+  Detected a filesystem without POSIX fcntl lock support.
+
+  Enabling annex.pidlock.
+[2020-06-04 22:16:49.25775881] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.pidlock","true"]
+[2020-06-04 22:16:49.28355608] process done ExitSuccess
+[2020-06-04 22:16:49.283718998] read: git ["config","--null","--list"]
+[2020-06-04 22:16:49.294520291] process done ExitSuccess
+[2020-06-04 22:16:49.319943516] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-06-04 22:16:49.337681756] process done ExitSuccess
+[2020-06-04 22:16:49.337851772] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-06-04 22:16:49.350699481] process done ExitSuccess
+[2020-06-04 22:16:49.351471951] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..8cab5728da95189f68c785bd4bb59ca754e133fd","--pretty=%H","-n1"]
+[2020-06-04 22:16:49.364911775] process done ExitSuccess
+[2020-06-04 22:16:49.365042588] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..e3361f4b81727323f8ea01f390de1013fc970fe0","--pretty=%H","-n1"]
+[2020-06-04 22:16:49.382315188] process done ExitSuccess
+[2020-06-04 22:16:49.39123874] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-06-04 22:16:49.392177285] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+(merging origin/git-annex into git-annex...)
+[2020-06-04 22:16:49.403384458] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--stdin-paths","--no-filters"]
+[2020-06-04 22:16:49.404525057] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2020-06-04 22:16:49.405361559] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","e3361f4b81727323f8ea01f390de1013fc970fe0","--"]
+[2020-06-04 22:16:49.419146962] process done ExitSuccess
+[2020-06-04 22:16:49.423309792] process done ExitSuccess
+[2020-06-04 22:16:49.424375953] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","e3361f4b81727323f8ea01f390de1013fc970fe0..refs/heads/git-annex","--pretty=%H","-n1"]
+[2020-06-04 22:16:49.437440657] process done ExitSuccess
+(recording state in git...)
+[2020-06-04 22:16:49.438388893] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2020-06-04 22:16:49.455648835] process done ExitSuccess
+[2020-06-04 22:16:49.455794606] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","1e2019e8261920b3331694be7582e576f48f98ce","--no-gpg-sign","-p","refs/heads/git-annex","-p","e3361f4b81727323f8ea01f390de1013fc970fe0"]
+[2020-06-04 22:16:49.474057462] process done ExitSuccess
+[2020-06-04 22:16:49.474203707] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","40ec653567414f60bb5a8fcecbf35e445329d19c"]
+[2020-06-04 22:16:49.496182398] process done ExitSuccess
+[2020-06-04 22:16:49.510323334] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","annex.version","8"]
+[2020-06-04 22:16:49.52428458] process done ExitSuccess
+[2020-06-04 22:16:49.524446647] read: git ["config","--null","--list"]
+[2020-06-04 22:16:49.53479347] process done ExitSuccess
+[2020-06-04 22:16:49.534979055] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","status","--porcelain"]
+[2020-06-04 22:16:49.616544919] process done ExitSuccess
+[2020-06-04 22:16:49.616691354] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","filter.annex.smudge","git-annex smudge -- %f"]
+[2020-06-04 22:16:49.631712464] process done ExitSuccess
+[2020-06-04 22:16:49.631878376] read: git ["config","--null","--list"]
+[2020-06-04 22:16:49.642378001] process done ExitSuccess
+[2020-06-04 22:16:49.642543068] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","filter.annex.clean","git-annex smudge --clean -- %f"]
+[2020-06-04 22:16:49.656618605] process done ExitSuccess
+[2020-06-04 22:16:49.65676469] read: git ["config","--null","--list"]
+[2020-06-04 22:16:49.667352993] process done ExitSuccess
+(scanning for unlocked files...)
+[2020-06-04 22:16:49.671201261] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--head"]
+[2020-06-04 22:16:49.683393126] process done ExitSuccess
+git-annex: SQLite3 returned ErrorIO while attempting to perform prepare "PRAGMA journal_mode=WAL;": disk I/O error
+
+```
+</details>
+
+
+File system details:
+
+[[!format sh """
+[yhalchen@discovery7 containers]$ df -h .
+Filesystem                          Type  Size  Used Avail Use% Mounted on
+isilon.hpcc.dartmouth.edu:/ifs/home nfs    51G   23G   28G  45% /ihome
+
+[yhalchen@discovery7 containers]$ mount | grep /ifs/home
+isilon.hpcc.dartmouth.edu:/ifs/home on /ihome type nfs (rw,relatime,vers=3,rsize=131072,wsize=524288,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.232.???.???,mountvers=3,mountport=300,mountproto=udp,local_lock=none,addr=10.232.???.???)
+"""]]
+
+
+[[!format sh """
+git-annex version: 8.20200502-g55acb2e52
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+
+"""]]
+
+I think I should look at some point to establish similar setup within https://github.com/datalad/datalad-extensions to run released and freshly built annex tests also on a crippled FS.
