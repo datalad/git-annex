@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="Get missing files in --hide-missing branch"
+ date="2020-06-05T19:14:26Z"
+ content="""
+When in an hide-missing adjusted branch, is there any way to \"git annex get\" a missing file without switching branches first. Respectively, is there any way to find/list missing files without switching branches?
+"""]]
