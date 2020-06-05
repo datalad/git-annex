@@ -23,6 +23,7 @@ module Utility.Process (
 	withNullHandle,
 	createProcess,
 	waitForProcess,
+	cleanupProcess,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
@@ -32,8 +33,8 @@ module Utility.Process (
 ) where
 
 import qualified Utility.Process.Shim
-import qualified Utility.Process.Shim as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
-import Utility.Process.Shim hiding (createProcess, readProcess, waitForProcess)
+import qualified Utility.Process.Shim as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess, cleanupProcess)
+import Utility.Process.Shim hiding (createProcess, readProcess, waitForProcess, cleanupProcess)
 import Utility.Misc
 import Utility.Exception
 import Utility.Monad
@@ -197,3 +198,21 @@ waitForProcess h = do
 	r <- Utility.Process.Shim.waitForProcess h
 	debugM "Utility.Process" ("process done " ++ show r)
 	return r
+
+cleanupProcess :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO () 
+#if MIN_VERSION_process(1,6,4)
+cleanupProcess = Utility.Process.Shim.cleanupProcess
+#else
+#warning building with process-1.6.3; some timeout features may not work well
+cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
+	-- Unlike the real cleanupProcess, this does not wait
+	-- for the process to finish in the background, so if
+	-- the process ignores SIGTERM, this can block until the process
+	-- gets around the exiting.
+	terminateProcess pid
+	let void _ = return ()
+	maybe (return ()) (void . tryNonAsync . hClose) mb_stdin
+	maybe (return ()) hClose mb_stdout
+	maybe (return ()) hClose mb_stderr
+	void $ waitForProcess pid
+#endif
