@@ -1,6 +1,6 @@
 {- Process transcript
  -
- - Copyright 2012-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -21,6 +21,7 @@ import System.IO
 import System.Exit
 import Control.Concurrent.Async
 import Control.Monad
+import Control.Exception
 #ifndef mingw32_HOST_OS
 import qualified System.Posix.IO
 #else
@@ -45,22 +46,28 @@ processTranscript'' cp input = do
 #ifndef mingw32_HOST_OS
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
-	(readf, writef) <- System.Posix.IO.createPipe
-	System.Posix.IO.setFdOption readf System.Posix.IO.CloseOnExec True
-	System.Posix.IO.setFdOption writef System.Posix.IO.CloseOnExec True
-	readh <- System.Posix.IO.fdToHandle readf
-	writeh <- System.Posix.IO.fdToHandle writef
-	let cp' = cp
-		{ std_in = if isJust input then CreatePipe else Inherit
-		, std_out = UseHandle writeh
-		, std_err = UseHandle writeh
-		}
-	withCreateProcess cp' $ \hin hout herr pid -> do
+ 	let setup = do
+		(readf, writef) <- System.Posix.IO.createPipe
+		System.Posix.IO.setFdOption readf System.Posix.IO.CloseOnExec True
+		System.Posix.IO.setFdOption writef System.Posix.IO.CloseOnExec True
+		readh <- System.Posix.IO.fdToHandle readf
+		writeh <- System.Posix.IO.fdToHandle writef
+		return (readh, writeh)
+	let cleanup (readh, writeh) = do
+		hClose readh
 		hClose writeh
-
-		get <- asyncreader readh
-		writeinput input (hin, hout, herr, pid)
-		transcript <- wait get
+	bracket setup cleanup $ \(readh, writeh) -> do
+		let cp' = cp
+			{ std_in = if isJust input then CreatePipe else Inherit
+			, std_out = UseHandle writeh
+			, std_err = UseHandle writeh
+			}
+		withCreateProcess cp' $ \hin hout herr pid -> do
+			get <- asyncreader readh
+			writeinput input (hin, hout, herr, pid)
+			transcript <- wait get
+			code <- waitForProcess pid
+			return (transcript, code)
 #else
 {- This implementation for Windows puts stderr after stdout. -}
 	let cp' = cp 
@@ -74,9 +81,9 @@ processTranscript'' cp input = do
 		geterr <- asyncreader (stderrHandle p)
 		writeinput input p
 		transcript <- (++) <$> wait getout <*> wait geterr
-#endif
 		code <- waitForProcess pid
 		return (transcript, code)
+#endif
   where
 	asyncreader = async . hGetContentsStrict
 
