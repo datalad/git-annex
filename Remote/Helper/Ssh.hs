@@ -198,11 +198,13 @@ data StderrHandlerState = DiscardStderr | DisplayStderr | EndStderrHandler
 
 closeP2PSshConnection :: P2PSshConnection -> IO (P2PSshConnection, Maybe ExitCode)
 closeP2PSshConnection P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
-closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid, stderrhandlerst)) = do
-	P2P.closeConnection conn
-	atomically $ writeTVar stderrhandlerst EndStderrHandler
-	exitcode <- waitForProcess pid
-	return (P2P.ClosedConnection, Just exitcode)
+closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid, stderrhandlerst)) =
+	-- mask async exceptions, avoid cleanup being interrupted
+	mask $ const $ do
+		P2P.closeConnection conn
+		atomically $ writeTVar stderrhandlerst EndStderrHandler
+		exitcode <- waitForProcess pid
+		return (P2P.ClosedConnection, Just exitcode)
 
 -- Pool of connections over ssh to git-annex-shell p2pstdio.
 type P2PSshConnectionPool = TVar (Maybe P2PSshConnectionPoolState)
