@@ -350,20 +350,28 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 
 	docopy cont = do
 #ifndef mingw32_HOST_OS
-		-- Need a duplicate fd for the post check, since
-		-- hGetContentsMetered closes its handle.
-		fd <- liftIO $ openFd f ReadOnly Nothing defaultFileFlags
-		dupfd <- liftIO $ dup fd
-		h <- liftIO $ fdToHandle fd
+		let open = do
+			-- Need a duplicate fd for the post check, since
+			-- hGetContentsMetered closes its handle.
+			fd <- openFd f ReadOnly Nothing defaultFileFlags
+			dupfd <- dup fd
+			h <- fdToHandle fd
+			return (h, dupfd)
+		let close (h, dupfd) = do
+			hClose h
+			closeFd dupfd
+		bracketIO open close $ \(h, dupfd) -> do
 #else
-		h <- liftIO $ openBinaryFile f ReadMode
+		let open = openBinaryFile f ReadMode
+		let close = hClose
+		bracketIO setup close $ \h -> do
 #endif
-		liftIO $ hGetContentsMetered h p >>= L.writeFile dest
-		k <- mkkey
+			liftIO $ hGetContentsMetered h p >>= L.writeFile dest
+			k <- mkkey
 #ifndef mingw32_HOST_OS
-		cont dupfd (return k)
+			cont dupfd (return k)
 #else
-		cont (return k)
+			cont (return k)
 #endif
 	
 	-- Check before copy, to avoid expensive copy of wrong file
