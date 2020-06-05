@@ -164,10 +164,12 @@ store r buprepo = byteStorer $ \k b p -> do
 				, std_err = UseHandle nullh
 				}
 			else cmd
-		    feeder = \h -> meteredWrite p h b
+		    feeder = \h -> do
+			meteredWrite p h b
+			hClose h
 		in withCreateProcess cmd' (go feeder cmd')
   where
-	go feeder p _ (Just h) _ pid =
+	go feeder p (Just h) _ _ pid =
 		forceSuccessProcess p pid
 			`after`
 		feeder h
