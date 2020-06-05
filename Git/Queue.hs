@@ -207,7 +207,7 @@ runAction repo action@(CommandAction {}) = liftIO $ do
   where
 	gitparams = gitCommandLine
 		(Param (getSubcommand action):getParams action) repo
-	go p _ (Just h) _ pid = do
+	go p (Just h) _ _ pid = do
 		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
 		hClose h
 		forceSuccessProcess p pid
