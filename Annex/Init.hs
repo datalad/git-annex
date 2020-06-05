@@ -48,6 +48,7 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Tmp
 import Utility.UserInfo
+import Utility.ThreadScheduler
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 import Utility.FileMode
@@ -57,6 +58,7 @@ import Data.Either
 #endif
 
 import qualified Data.Map as M
+import Control.Concurrent.Async
 
 checkCanInitialize :: Annex a -> Annex a
 checkCanInitialize a = inRepo (noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree) >>= \case
@@ -218,21 +220,27 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 			(Git.Config.boolConfig False)
 
 probeLockSupport :: Annex Bool
-probeLockSupport = do
 #ifdef mingw32_HOST_OS
-	return True
+probeLockSupport = return True
 #else
-	withEventuallyCleanedOtherTmp $ \tmp -> do
-		let f = tmp </> "lockprobe"
-		mode <- annexFileMode
-		liftIO $ do
-			nukeFile f
-			let locktest = 
-				Posix.lockExclusive (Just mode) f
-					>>= Posix.dropLock
-			ok <- isRight <$> tryNonAsync locktest
-			nukeFile f
-			return ok
+probeLockSupport = withEventuallyCleanedOtherTmp $ \tmp -> do
+	let f = tmp </> "lockprobe"
+	mode <- annexFileMode
+	liftIO $ withAsync warnstall (const (go f mode))
+  where
+	go f mode = do
+		nukeFile f
+		let locktest = 
+			Posix.lockExclusive (Just mode) f
+				>>= Posix.dropLock
+		ok <- isRight <$> tryNonAsync locktest
+		nukeFile f
+		return ok
+	
+	warnstall = do
+		threadDelaySeconds (Seconds 10)
+		warningIO "Probing the filesystem for POSIX fcntl lock support is taking a long time."
+		warningIO "(Setting annex.pidlock will avoid this probe.)"
 #endif
 
 probeFifoSupport :: Annex Bool

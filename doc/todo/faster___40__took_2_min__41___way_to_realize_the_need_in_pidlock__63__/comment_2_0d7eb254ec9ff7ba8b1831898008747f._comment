@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-05T14:54:31Z"
+ content="""
+Also, it could check if annex.pidlock is already set globally, and skip the
+probe. Which maybe would work for you? 
+
+I'm going to implement both the delayed message, and checking
+annex.pidlock.
+
+(Timing out the probe after some period of time less than 2 minutes would
+also be a possibility, but then there could be false positives on
+filesystems that are just legitimately very slow. Doesn't seem a good
+idea.)
+"""]]

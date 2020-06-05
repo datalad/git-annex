@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-05T14:43:13Z"
+ content="""
+So your nfs filesystem is making a posix lock operation block for 2 minutes
+before, I suppose, it makes it fail.
+
+Since git-annex has to do a posix lock operation, the only way to make it
+faster would be to fix the nfs filesystem to not do that. Perhaps by disabling
+posix locking altogether since it's apparently broken.
+
+But as far as what git-annex can do, I don't see any possible way to speed it up.
+
+I agree it could make sense to display a message, although that will also
+be a message the vast majority of users who are not in this situation would
+see. Maybe it could wait 1-10 seconds (probably 1000 times as long as it
+will take in most situations) and if the probe is still ongoing, display a
+message.
+"""]]
