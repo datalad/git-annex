@@ -208,7 +208,7 @@ coreBare = "core.bare"
  - and returns a repo populated with the configuration, as well as the raw
  - output and any standard output of the command. -}
 fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
-fromPipe r cmd params st = try $ withCreateProcess p go
+fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
   where
 	p = (proc cmd $ toCommand params)
 		{ std_out = CreatePipe

@@ -18,7 +18,6 @@ module Annex.Ingest (
 	addLink,
 	makeLink,
 	addUnlocked,
-	restoreFile,
 	forceParams,
 	addAnnexedFile,
 ) where

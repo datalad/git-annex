@@ -12,7 +12,6 @@ import Remote.Helper.Chunked
 import Utility.Metered
 
 import qualified Data.ByteString.Lazy as L
-import qualified Control.Exception as E
 
 {- This is an extension that's added to the usual file (or whatever)
  - where the remote stores a key. -}
@@ -87,8 +86,8 @@ storeChunks key tmp dest storer recorder finalizer = do
  - writes a whole L.ByteString at a time.
  -}
 storeChunked :: ChunkSize -> [FilePath] -> (FilePath -> L.ByteString -> IO ()) -> L.ByteString -> IO [FilePath]
-storeChunked chunksize dests storer content = either onerr return
-	=<< (E.try (go (Just chunksize) dests) :: IO (Either E.SomeException [FilePath]))
+storeChunked chunksize dests storer content = 
+	either onerr return =<< tryNonAsync (go (Just chunksize) dests)
   where
 	go _ [] = return [] -- no dests!?
 	go Nothing (d:_) = do

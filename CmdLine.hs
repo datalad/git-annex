@@ -14,7 +14,6 @@ module CmdLine (
 
 import qualified Options.Applicative as O
 import qualified Options.Applicative.Help as H
-import qualified Control.Exception as E
 import Control.Exception (throw)
 
 import Annex.Common
@@ -31,7 +30,7 @@ import Types.Messages
 dispatch :: Bool -> CmdParams -> [Command] -> [GlobalOption] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
 dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progdesc = do
 	setupConsole
-	go =<< (E.try getgitrepo :: IO (Either E.SomeException Git.Repo))
+	go =<< tryNonAsync getgitrepo
   where
 	go (Right g) = do
 		state <- Annex.new g
