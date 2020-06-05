@@ -94,4 +94,5 @@ tryPidLock m f posixlock = debugLocks $ liftIO . go =<< pidLockFile
 -- avoid complicating any code that might expect to be able to see that
 -- lock file. But, it's not locked.
 dummyPosixLock :: Maybe FileMode -> LockFile -> IO ()
-dummyPosixLock m f = closeFd =<< openLockFile ReadLock m f
+dummyPosixLock m f = mask $ const $
+	closeFd =<< openLockFile ReadLock m f

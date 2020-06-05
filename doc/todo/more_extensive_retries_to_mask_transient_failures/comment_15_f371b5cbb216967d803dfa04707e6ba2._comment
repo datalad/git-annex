@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2020-06-05T19:00:07Z"
+ content="""
+Some progress: All threads that `async` or `forkOS` starts are now
+confirmed to get shut down when an async exception reaches the code that
+uses them. All uses of SomeException are confirmed to not catch async
+exceptions. All file opening is confirmed to bracket and close (except for
+the lock pool).
+
+Still to do:
+
+* process things noted in comment #13
+* data structures that get modified while an action is running and need
+  to be cleaned up on an async exception (eg the lock pool)
+"""]]

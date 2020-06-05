@@ -230,7 +230,7 @@ probeLockSupport = withEventuallyCleanedOtherTmp $ \tmp -> do
   where
 	go f mode = do
 		nukeFile f
-		let locktest = 
+		let locktest = mask $ const $
 			Posix.lockExclusive (Just mode) f
 				>>= Posix.dropLock
 		ok <- isRight <$> tryNonAsync locktest

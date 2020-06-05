@@ -174,12 +174,13 @@ linkToLock (Just _) src dest = do
 				, return False
 				)
 		Left _ -> catchBoolIO $ do
-			fd <- openFd dest WriteOnly
-				(Just $ combineModes readModes)
-				(defaultFileFlags {exclusive = True})
-			h <- fdToHandle fd
-			readFile src >>= hPutStr h
-			hClose h
+			let setup = do
+				fd <- openFd dest WriteOnly
+					(Just $ combineModes readModes)
+					(defaultFileFlags {exclusive = True})
+				fdToHandle fd
+			let cleanup = hClose
+			bracket setup cleanup (\h -> readFile src >>= hPutStr h)
 			return True
   where
 	checklinked = do

@@ -58,7 +58,7 @@ lock lockreq mode lockfile = do
 
 -- Tries to take an lock, but does not block.
 tryLock :: LockRequest -> Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
-tryLock lockreq mode lockfile = do
+tryLock lockreq mode lockfile = mask $ const $ do
 	l <- openLockFile lockreq mode lockfile
 	v <- tryIO $ setLock l (lockreq, AbsoluteSeek, 0, 0)
 	case v of
@@ -92,14 +92,17 @@ getLockStatus lockfile = do
 		Just (Just pid) -> StatusLockedBy pid
 
 getLockStatus' :: LockFile -> IO (Maybe (Maybe ProcessID))
-getLockStatus' lockfile = go =<< catchMaybeIO open
+getLockStatus' lockfile = bracket open close go
   where
-	open = openLockFile ReadLock Nothing lockfile
-	go Nothing = return Nothing
+	open = catchMaybeIO $ openLockFile ReadLock Nothing lockfile
+
+	close (Just h) = closeFd h
+	close Nothing = return ()
+
 	go (Just h) = do
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
-		closeFd h
 		return (Just (fmap fst v))
+	go Nothing = return Nothing
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle fd) = closeFd fd
