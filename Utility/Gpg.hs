@@ -47,7 +47,7 @@ import Utility.Tmp
 #endif
 import Utility.Format (decode_c)
 
-import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Monad.IO.Class
 import qualified Data.Map as M
 import Data.Char
@@ -154,15 +154,22 @@ pipeStrict (GpgCmd cmd) params input = do
 feedRead :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 feedRead cmd params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
-	-- pipe the passphrase into gpg on a fd
-	(frompipe, topipe) <- liftIO System.Posix.IO.createPipe
-	liftIO $ void $ forkIO $ do
+	let setup = liftIO $ do
+		-- pipe the passphrase into gpg on a fd
+		(frompipe, topipe) <- System.Posix.IO.createPipe
 		toh <- fdToHandle topipe
-		hPutStrLn toh passphrase
+		t <- async $ do
+			hPutStrLn toh passphrase
+			hClose toh
+		let Fd pfd = frompipe
+		let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
+		return (passphrasefd, frompipe, toh, t)
+	let cleanup (_, frompipe, toh, t) = liftIO $ do
+		closeFd frompipe
 		hClose toh
-	let Fd pfd = frompipe
-	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
-	liftIO (closeFd frompipe) `after` go (passphrasefd ++ params)
+		cancel t
+	bracket setup cleanup $ \(passphrasefd, _, _, _) -> 
+		go (passphrasefd ++ params)
 #else
 	-- store the passphrase in a temp file for gpg
 	withTmpFile "gpg" $ \tmpfile h -> do
@@ -188,13 +195,14 @@ pipeLazy (GpgCmd cmd) params feeder reader = do
 	setup = liftIO . createProcess
 	cleanup = liftIO . cleanupProcess
 
-	go p (Just to, Just from, _, pid) = do
-		liftIO $ void $ forkIO $ do
+	go p (Just to, Just from, _, pid) =
+		let runfeeder = do
 			feeder to
 			hClose to
-		r <- reader from
-		liftIO $ forceSuccessProcess p pid
-		return r
+		in bracketIO (async runfeeder) cancel $ const $ do
+			r <- reader from
+			liftIO $ forceSuccessProcess p pid
+			return r
 	go _ _ = error "internal"
 
 {- Finds gpg public keys matching some string. (Could be an email address,
