@@ -298,7 +298,7 @@ custom-setup
     filepath, exceptions, bytestring, directory, IfElse, data-default,
     filepath-bytestring (>= 1.4.2.1.1),
     process (>= 1.6.3),
-    utf8-string, transformers, Cabal
+    async, utf8-string, transformers, Cabal
 
 Executable git-annex
   Main-Is: git-annex.hs
@@ -1085,7 +1085,6 @@ Executable git-annex
     Utility.NotificationBroadcaster
     Utility.OptParse
     Utility.PID
-    Utility.Parallel
     Utility.PartialPrelude
     Utility.Path
     Utility.Path.Max

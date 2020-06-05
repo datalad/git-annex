@@ -17,7 +17,6 @@ import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.RemoteControl
 import qualified Command.Sync
-import Utility.Parallel
 import qualified Git
 import qualified Git.Command
 import qualified Remote
@@ -43,6 +42,7 @@ import Database.Export
 import Data.Time.Clock
 import qualified Data.Map as M
 import Control.Concurrent
+import Control.Concurrent.Async
 
 {- Syncs with remotes that may have been disconnected for a while.
  - 
@@ -176,6 +176,11 @@ parallelPush g rs a = do
 		<$> pure r
 		<*> (Remote.getRepo r >>= \repo ->
 			sshOptionsTo repo (Remote.gitconfig r) g)
+
+inParallel :: (v -> IO Bool) -> [v] -> IO ([v], [v])
+inParallel a l = (\(t,f) -> (map fst t, map fst f)) 
+	. partition snd 
+	. zip l <$> mapConcurrently a l
 
 {- Displays an alert while running an action that syncs with some remotes,
  - and returns any remotes that it failed to sync with.
