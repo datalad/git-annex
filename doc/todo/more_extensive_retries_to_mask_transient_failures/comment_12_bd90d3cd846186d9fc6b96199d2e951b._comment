@@ -7,4 +7,11 @@ Also, anything that catches SomeException could catch an async exception
 that was intended to interrupt the thread. Probably need to make a specific
 exception for thread interrupts, and make everything that catches
 SomeException mask out that exception.
+
+And, there may be data structures that get filled with a value and need to
+be emptied again on an async exception. Things like the lock pool. Need
+to somehow audit for those.
+
+And for that matter, should audit for any code that opens file handles w/o
+bracketing, because I'm not really positive it's all bracketed.
 """]]
