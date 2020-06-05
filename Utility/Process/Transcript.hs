@@ -50,7 +50,12 @@ processTranscript'' cp input = do
 	System.Posix.IO.setFdOption writef System.Posix.IO.CloseOnExec True
 	readh <- System.Posix.IO.fdToHandle readf
 	writeh <- System.Posix.IO.fdToHandle writef
-	withCreateProcess cp $ \hin hout herr pid -> do
+	let cp' = cp
+		{ std_in = if isJust input then CreatePipe else Inherit
+		, std_out = UseHandle writeh
+		, std_err = UseHandle writeh
+		}
+	withCreateProcess cp' $ \hin hout herr pid -> do
 		hClose writeh
 
 		get <- asyncreader readh
