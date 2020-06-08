@@ -7,66 +7,116 @@ I am trying to copy files from my computer to an external drive, but git annex g
 - cd into externaldrive/Annex
 - git annex get file
 
-   get 8 Simple Rules - [02x01] - Premiere.mp4 (from origin...) 
-   (from origin...)                    
-                                   
-   Unable to access these remotes: origin
 
-   Try making some of these repositories available:
-         1cca049d-83f7-4a78-ad30-650621c8e6f9 -- amnesiac
-         3ae7e0b0-f87a-4f5c-9d37-a507273dde61 -- balrog [origin]
-         bafcea18-6642-4c43-8ae6-8477092c7d02 -- babadook
-   failed
-   git-annex: get: 1 failed
+        get 8 Simple Rules - [02x01] - Premiere.mp4 (from origin...) 
+        (from origin...)                    
+                                   
+        Unable to access these remotes: origin
+
+        Try making some of these repositories available:
+             1cca049d-83f7-4a78-ad30-650621c8e6f9 -- amnesiac
+             3ae7e0b0-f87a-4f5c-9d37-a507273dde61 -- balrog [origin]
+             bafcea18-6642-4c43-8ae6-8477092c7d02 -- babadook
+        failed
+        git-annex: get: 1 failed
 
 
 - The file then shows up in git annex unused.
 
 - Other commands like "git annex sync origin" work without issues, git annex copy --to origin also work.
 
-- I tried adding --verbose, --json etc to see if i could get some kind of debugging info out of it, but no luck.
+- I learned about the --debug flag from another post in the forum and here is the output:
+
+
+			[2020-06-08 10:02:19.510064296] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+			[2020-06-08 10:02:19.511925354] process done ExitSuccess
+			[2020-06-08 10:02:19.512027344] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","refs/heads/master"]
+			[2020-06-08 10:02:19.513918652] process done ExitSuccess
+			[2020-06-08 10:02:19.514026372] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","ls-files","--cached","-z","--","8 Simple Rules - [02x01] - Premiere.mp4"]
+			get 8 Simple Rules - [02x01] - Premiere.mp4 [2020-06-08 10:02:19.520306016] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","git-annex"]
+			[2020-06-08 10:02:19.523513403] process done ExitSuccess
+			[2020-06-08 10:02:19.523637203] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+			[2020-06-08 10:02:19.525420671] process done ExitSuccess
+			[2020-06-08 10:02:19.525726091] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","log","refs/heads/git-annex..3faae00aee063e3eafd34c9ad82a25a3455cd699","--pretty=%H","-
+			n1"]
+			[2020-06-08 10:02:19.527440579] process done ExitSuccess
+			[2020-06-08 10:02:19.527526039] read: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","log","refs/heads/git-annex..7a56b81cf0518b9ffefd8e077e15616fc809c0ee","--pretty=%H","-
+			n1"]
+			[2020-06-08 10:02:19.531118595] process done ExitSuccess
+			[2020-06-08 10:02:19.53722095] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch"]
+			[2020-06-08 10:02:19.537616269] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+			[2020-06-08 10:02:19.541227956] read: git ["config","--null","--list"]
+			[2020-06-08 10:02:19.542505395] process done ExitSuccess
+			(from origin...)
+			[2020-06-08 10:02:19.559535139] read: cp ["--reflink=always","--preserve=timestamps","../../../../../../../home/kanak/Annex/TV/.git/annex/objects/3P/zP/SHA256-s210775700--f9bd3bcd9d6d3c5b90
+			7605c049d6e00fa40734860e4aadcbc8009a175b37ab49/SHA256-s210775700--f9bd3bcd9d6d3c5b907605c049d6e00fa40734860e4aadcbc8009a175b37ab49","../.git/annex/tmp/SHA256-s210775700--f9bd3bcd9d6d3c5b907
+			605c049d6e00fa40734860e4aadcbc8009a175b37ab49"]
+			[2020-06-08 10:02:19.561441707] process done ExitFailure 1
+			[2020-06-08 10:02:19.561515157] read: rsync ["--progress","--inplace","--perms","../../../../../../../home/kanak/Annex/TV/.git/annex/objects/3P/zP/SHA256-s210775700--f9bd3bcd9d6d3c5b907605c
+			049d6e00fa40734860e4aadcbc8009a175b37ab49/SHA256-s210775700--f9bd3bcd9d6d3c5b907605c049d6e00fa40734860e4aadcbc8009a175b37ab49","../.git/annex/tmp/SHA256-s210775700--f9bd3bcd9d6d3c5b907605c0
+			49d6e00fa40734860e4aadcbc8009a175b37ab49"]
+			100%  201.01 MiB      428 MiB/s 0s   [2020-06-08 10:02:21.820358727] process done ExitSuccess
+			(from origin...)
+			[2020-06-08 10:02:21.881519879] read: rsync ["--progress","--inplace","--perms","../../../../../../../home/kanak/Annex/TV/.git/annex/objects/3P/zP/SHA256-s210775700--f9bd3bcd9d6d3c5b907605c
+			049d6e00fa40734860e4aadcbc8009a175b37ab49/SHA256-s210775700--f9bd3bcd9d6d3c5b907605c049d6e00fa40734860e4aadcbc8009a175b37ab49","../.git/annex/tmp/SHA256-s210775700--f9bd3bcd9d6d3c5b907605c0
+			49d6e00fa40734860e4aadcbc8009a175b37ab49"]
+			100%  201.01 MiB      425 MiB/s 0s [2020-06-08 10:02:22.358355859] process done ExitSuccess
+		
+			  Unable to access these remotes: origin
+		
+			  Try making some of these repositories available:
+			        1cca049d-83f7-4a78-ad30-650621c8e6f9 -- amnesiac
+			        3ae7e0b0-f87a-4f5c-9d37-a507273dde61 -- balrog [origin]
+			        bafcea18-6642-4c43-8ae6-8477092c7d02 -- babadook
+			failed
+			[2020-06-08 10:02:22.388873071] process done ExitSuccess
+			[2020-06-08 10:02:22.38926145] process done ExitSuccess
+			git-annex: get: 1 failed
+
 
 
 ### What version of git-annex are you using? On what operating system?
 
 git annex version
 
-git-annex version: 8.20200330
-build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
-dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.4 feed-1.1.0.0 ghc-8.6.5 http-client-0.6.4 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
-key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+
+        git-annex version: 8.20200330
+        build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+        dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.4 feed-1.1.0.0 ghc-8.6.5 http-client-0.6.4 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
+        key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
 remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
-operating system: linux x86_64
-supported repository versions: 8
-upgrade supported from repository versions: 0 1 2 3 4 5 6 7
-local repository version: 8
+        operating system: linux x86_64
+        supported repository versions: 8
+        upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+        local repository version: 8
 
 Operating System:
 
-cat /etc/fedora-release 
 
-Fedora release 32 (Thirty Two)
+        cat /etc/fedora-release 
+
+        Fedora release 32 (Thirty Two)
 
 
 ### Please provide any additional information below.
 
 git annex info --fast
 
-trusted repositories: 7
-        318863a2-d9eb-467f-8094-f6578e26bd9a -- Melange
-        33e44b4c-42f1-4383-90b3-5fcbdbbf3baf -- baldwin
-        43d346b9-3c60-4036-a654-4c31f2368206 -- thane
-        bafcea18-6642-4c43-8ae6-8477092c7d02 -- babadook
-        d0ad767c-9874-4a3e-8ced-5d6917b212b9 -- zuko
-        d3ba71fb-64fc-4f41-8e76-7de8af14cee1 -- erebus [here]
-        d6d1d08e-6ee5-4408-a515-adbc9bebf5b1 -- ocho
-semitrusted repositories: 1
-        3ae7e0b0-f87a-4f5c-9d37-a507273dde61 -- balrog [origin]
-untrusted repositories: 2
-        1cca049d-83f7-4a78-ad30-650621c8e6f9 -- amnesiac
-        b3407756-8beb-43c3-877d-ff4fd1061fa9 -- chandrian
-transfers in progress: none
-available local disk space: 977.01 gigabytes (+1 megabyte reserved)
+		trusted repositories: 7
+		        318863a2-d9eb-467f-8094-f6578e26bd9a -- Melange
+		        33e44b4c-42f1-4383-90b3-5fcbdbbf3baf -- baldwin
+		        43d346b9-3c60-4036-a654-4c31f2368206 -- thane
+		        bafcea18-6642-4c43-8ae6-8477092c7d02 -- babadook
+		        d0ad767c-9874-4a3e-8ced-5d6917b212b9 -- zuko
+		        d3ba71fb-64fc-4f41-8e76-7de8af14cee1 -- erebus [here]
+		        d6d1d08e-6ee5-4408-a515-adbc9bebf5b1 -- ocho
+		semitrusted repositories: 1
+		        3ae7e0b0-f87a-4f5c-9d37-a507273dde61 -- balrog [origin]
+		untrusted repositories: 2
+		        1cca049d-83f7-4a78-ad30-650621c8e6f9 -- amnesiac
+		        b3407756-8beb-43c3-877d-ff4fd1061fa9 -- chandrian
+		transfers in progress: none
+		available local disk space: 977.01 gigabytes (+1 megabyte reserved)
 
 
 
