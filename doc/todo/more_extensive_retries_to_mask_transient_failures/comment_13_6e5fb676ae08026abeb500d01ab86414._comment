@@ -4,7 +4,8 @@
  date="2020-06-04T19:39:23Z"
  content="""
 I've converted everything to withCreateProcess, except for process pools
-(P2P.IO, Assistant.TransferrerPool, Utility.CoProcess, Remote.External,
+(P2P.IO, Assistant.TransferrerPool, Utility.CoProcess (update: done),
+Remote.External (update: done),
 and P2PSshConnectionPool), which need to be handled as discussed in
 comment 8. And also Git.Command.pipeReadLazy may (or may not) need to be
 converted.
