@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2020-06-09T17:53:08Z"
+ content="""
+A possible problem is code like this:
+
+	bracket setup cleanup
+	  where
+		setup = blockingOperationFoo >>= blockingOperationBar
+
+The problem is that async exceptions are not fully
+masked by bracket. See Control.Exception's
+discussion of "Interruptible operations". 
+
+All the blocking operations in that example can still receive an async
+exception.
+
+If blockingOperationFoo opens a handle say, and then blockingOperationBar
+is hit by an async exception, then cleanup will never run! The handle
+will be left open.
+
+Solution is `uninterruptibleMask_ setup`. Although of course this means
+it will block until both operations finish, so they should not be long
+duration operations. Alternatively, untangle the two operations, and nest
+brackets.
+
+---
+
+Also, if the cleanup action of bracket is an interruptable operation, it too
+can receive an async exception.
+
+This doesn't result in withFile leaking file handles when it brackets hClose,
+but I think perhaps only because the GC closes them.
+But it looks like
+[withCreateProcess has a bug](https://github.com/haskell/process/issues/183).
+
+And it's easy to construct cases where a compound cleanup action leaks:
+
+	main = forever $ do
+	        let p = proc "cat" []
+       		a <- async $ bracket
+			(createProcess p)
+	                (\p -> threadDelay 10000 >> cleanupProcess p)
+        	        (\_ -> print "started process")
+	        threadDelay 1000
+       	 	cancel a
+
+---
+
+So, seems all uses of bracket and things like it (onException etc)
+will need to be audited for blocking operations, or just make 
+uninterruptibleMask_ be used everywhere. Ugh.
+"""]]
