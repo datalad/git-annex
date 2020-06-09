@@ -1,6 +1,6 @@
 {- Simple IO exception handling (and some more)
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -20,6 +20,7 @@ module Utility.Exception (
 	bracketIO,
 	catchNonAsync,
 	tryNonAsync,
+	catchAsync,
 	tryWhenExists,
 	catchIOErrorType,
 	IOErrorType(..),
@@ -85,6 +86,14 @@ catchNonAsync a onerr = a `catches`
 	[ M.Handler (\ (e :: AsyncException) -> throwM e)
 	, M.Handler (\ (e :: SomeAsyncException) -> throwM e)
 	, M.Handler (\ (e :: SomeException) -> onerr e)
+	]
+
+{- Catches only async exceptions. -}
+catchAsync :: MonadCatch m => m a -> (Either AsyncException SomeAsyncException -> m a) -> m a
+catchAsync a onerr = a `catches`
+	[ M.Handler (\ (e :: AsyncException) -> onerr (Left e))
+	, M.Handler (\ (e :: SomeAsyncException) -> onerr (Right e))
+	, M.Handler (\ (e :: SomeException) -> throwM e)
 	]
 
 tryNonAsync :: MonadCatch m => m a -> m (Either SomeException a)
