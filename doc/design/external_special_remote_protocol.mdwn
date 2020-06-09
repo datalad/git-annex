@@ -403,6 +403,13 @@ remote.
   git-annex will not talk to it any further. If the program receives
   an ERROR from git-annex, it can exit with its own ERROR.
 
+## signals
+
+The external special remote program should not block SIGINT, or SIGTERM.
+Doing so may cause git-annex to hang waiting on it to exit.
+Of course it's ok to catch those signals and do some necessary cleanup
+before exiting.
+
 ## long running network connections
 
 Since an external special remote is started only when git-annex needs to

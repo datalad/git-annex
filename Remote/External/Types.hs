@@ -77,7 +77,7 @@ type ExternalType = String
 data ExternalState = ExternalState
 	{ externalSend :: Handle
 	, externalReceive :: Handle
-	, externalShutdown :: IO ()
+	, externalShutdown :: Bool -> IO ()
 	, externalPid :: PID
 	, externalPrepared :: TVar PrepareStatus
 	, externalConfig :: TVar ParsedRemoteConfig

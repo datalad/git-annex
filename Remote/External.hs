@@ -560,13 +560,24 @@ protocolDebug external st sendto line = debugM "external" $ unwords
 {- While the action is running, the ExternalState provided to it will not
  - be available to any other calls.
  -
- - Starts up a new process if no ExternalStates are available. -}
+ - Starts up a new process if no ExternalStates are available.
+ -
+ - If the action is interrupted by an async exception, the external process
+ - is in an unknown state, and may eg be still performing a transfer. So it
+ - is killed. The action should not normally throw any exception itself,
+ - unless perhaps there's a problem communicating with the external
+ - process.
+ -}
 withExternalState :: External -> (ExternalState -> Annex a) -> Annex a
-withExternalState external = bracket alloc dealloc
+withExternalState external a = do
+	st <- get
+	r <- a st `onException` liftIO (externalShutdown st True)
+	put st -- only when no exception is thrown
+	return r
   where
 	v = externalState external
 
-	alloc = do
+	get = do
 		ms <- liftIO $ atomically $ do
 			l <- readTVar v
 			case l of
@@ -576,7 +587,7 @@ withExternalState external = bracket alloc dealloc
 					return (Just st)
 		maybe (startExternal external) return ms
 	
-	dealloc st = liftIO $ atomically $ modifyTVar' v (st:)
+	put st = liftIO $ atomically $ modifyTVar' v (st:)
 
 {- Starts an external remote process running, and checks VERSION and
  - exchanges EXTENSIONS. -}
@@ -611,7 +622,7 @@ startExternal external = do
 			, std_err = CreatePipe
 			}
 		p <- propgit g basep
-		(Just hin, Just hout, Just herr, ph) <- 
+		pall@(Just hin, Just hout, Just herr, ph) <- 
 			createProcess p `catchNonAsync` runerr cmdpath
 		stderrelay <- async $ errrelayer herr
 		cv <- newTVarIO $ externalDefaultConfig external
@@ -621,13 +632,20 @@ startExternal external = do
 			n <- succ <$> readTVar (externalLastPid external)
 			writeTVar (externalLastPid external) n
 			return n
+		let shutdown forcestop = do
+			cancel stderrelay
+			if forcestop
+				then cleanupProcess pall
+				else flip onException (cleanupProcess pall) $ do
+					hClose herr
+					hClose hin
+					hClose hout
+					void $ waitForProcess ph
 		return $ ExternalState
 			{ externalSend = hin
 			, externalReceive = hout
 			, externalPid = pid
-			, externalShutdown = do
-				cancel stderrelay
-				void $ waitForProcess ph
+			, externalShutdown = shutdown
 			, externalPrepared = pv
 			, externalConfig = cv
 			, externalConfigChanges = ccv
@@ -657,12 +675,7 @@ startExternal external = do
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
 	l <- atomically $ swapTVar (externalState external) []
-	mapM_ stop l
-  where
-	stop st = do
-		hClose $ externalSend st
-		hClose $ externalReceive st
-		externalShutdown st
+	mapM_ (flip externalShutdown False) l
 
 externalRemoteProgram :: ExternalType -> String
 externalRemoteProgram externaltype = "git-annex-remote-" ++ externaltype
