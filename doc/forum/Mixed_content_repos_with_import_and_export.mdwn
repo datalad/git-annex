@@ -1,0 +1,7 @@
+Is it possible to get mixed content repositories working in conjunction with a directory special remote using importtree/exporttree?
+
+`git annex add` adheres to the `annex.largefiles` setting (`mimetype=text/*`), but importing or syncing from the remote invariably adds text files to the annex, including if the file was originally added to git and then modified on the remote.
+
+I want `annex.synccontent` set to `true` but have tried it both ways.
+
+What am I missing?

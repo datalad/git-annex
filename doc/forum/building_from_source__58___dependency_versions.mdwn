@@ -1,0 +1,1 @@
+@joeyh, can you check that this [patch](https://github.com/conda-forge/git-annex-feedstock/blob/master/recipe/0001-extra-deps-01.patch) of `stack.yaml` is safe, in particular that git-annex should work ok with the newer versions of `aws and `hslogger`?

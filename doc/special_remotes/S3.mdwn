@@ -41,15 +41,15 @@ the S3 remote.
 
 * `storageclass` - Default is "STANDARD".  
   Consult S3 provider documentation for pricing details and available
-  storage classes.
-
-  When using Amazon S3, if you have configured git-annex to preserve
-  multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"
-  to save money. 
+  storage classes.  For example, the s3cmd(1) man page lists valid storage class names for Amazon S3.
   
-  Or, if the remote will be used for backup or archival,
-  and so its files are Infrequently Accessed, "STANDARD_IA" is also a
-  good choice to save money. (Requires a git-annex built with aws-0.13.0)
+  When using Amazon S3,
+  if the remote will be used for backup or archival,
+  and so its files are Infrequently Accessed, "STANDARD_IA" is a
+  good choice to save money (requires a git-annex built with aws-0.13.0).
+  If you have configured git-annex to preserve
+  multiple [[copies]], also consider setting this to "ONEZONE_IA"
+  to save even more money.
 
   When using Google Cloud Storage, to make a nearline bucket, set this to
   "NEARLINE". (Requires a git-annex built with aws-0.13.0)
