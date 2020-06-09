@@ -1,0 +1,13 @@
+Started out the day productively working through more async exception
+safety for timeouts. But then I realized there's a whole can of worms
+involving bracket not working like I expected it to. 
+
+Got a bit side tracked checking if other people expect bracket to work the
+way it actually does, and [seem to have found a
+bug](https://github.com/haskell/process/issues/183) in the `process`
+library. Which is especially concerning since it's just the first place I
+looked, so what other libraries might have similar problems?
+
+So the timeouts feature is seeming a lot less plasible than it did last
+week. I'll probably defer it until later. The work done on it so far is
+at least generally an improvement to the code.
