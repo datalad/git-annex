@@ -58,7 +58,7 @@ lock lockreq mode lockfile = do
 
 -- Tries to take an lock, but does not block.
 tryLock :: LockRequest -> Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
-tryLock lockreq mode lockfile = mask $ const $ do
+tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 	l <- openLockFile lockreq mode lockfile
 	v <- tryIO $ setLock l (lockreq, AbsoluteSeek, 0, 0)
 	case v of

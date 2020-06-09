@@ -200,7 +200,7 @@ closeP2PSshConnection :: P2PSshConnection -> IO (P2PSshConnection, Maybe ExitCod
 closeP2PSshConnection P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
 closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid, stderrhandlerst)) =
 	-- mask async exceptions, avoid cleanup being interrupted
-	mask $ const $ do
+	uninterruptibleMask_ $ do
 		P2P.closeConnection conn
 		atomically $ writeTVar stderrhandlerst EndStderrHandler
 		exitcode <- waitForProcess pid
