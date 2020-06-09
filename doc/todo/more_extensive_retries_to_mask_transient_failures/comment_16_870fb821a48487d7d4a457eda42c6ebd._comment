@@ -33,7 +33,8 @@ can receive an async exception.
 This doesn't result in withFile leaking file handles when it brackets hClose,
 but I think perhaps only because the GC closes them.
 But it looks like
-[withCreateProcess has a bug](https://github.com/haskell/process/issues/183).
+[withCreateProcess has a bug](https://github.com/haskell/process/issues/183),
+and maybe [http-client too](https://github.com/snoyberg/http-client/issues/436).
 
 And it's easy to construct cases where a compound cleanup action leaks:
 
