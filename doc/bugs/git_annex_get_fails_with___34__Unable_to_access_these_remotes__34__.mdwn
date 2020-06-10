@@ -2,6 +2,8 @@
 
 I am trying to copy files from my computer to an external drive, but git annex get in one annex repo on the drive, keeps failing with "Unable to access these remotes: origin" message. It seems to pull the data, compute a checksum and then give me the error message. The same file passes fsck on the computer, and I was able to "git annex get" it from a different computer without issues.
 
+Comparing the debug log with that of a different annex (on the same external drive), the part that's confusing is that git-annex spins up two rsync processes to copy the one file for some reason, and logs "failed" right before the checksum step?
+
 
 ### What steps will reproduce the problem?
 - cd into externaldrive/Annex
