@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="kanakkshetri@9ea0e7639162bddc7bf9f3bb94cc32e93c793b89"
+ nickname="kanakkshetri"
+ avatar="http://cdn.libravatar.org/avatar/3cf305b2854041f8441c8fd8f02e8a2a"
+ subject="git-annex-repair and git annex fsck: no errors found"
+ date="2020-06-10T14:39:44Z"
+ content="""
+I ran git annex repair on both the external drive and the desktop:
+
+    git annex repair
+    repair Running git fsck ...
+    No problems found.
+    ok
+
+I also fsck'd the files in the repository (on the desktop) and they all passed checksum checks.
+
+I'm kind of at a loss for what else to try. I also tried copy from desktop to external drive and it fails in the same way (including the two calls to rsync, both of which have ProcessExit Success, but then git annex just writes \"failed\").
+"""]]
