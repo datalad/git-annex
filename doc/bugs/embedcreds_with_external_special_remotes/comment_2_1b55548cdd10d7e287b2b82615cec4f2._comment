@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 2"
+ date="2020-06-11T22:51:09Z"
+ content="""
+I tried again with version 8.20200522-g01513da127 (which should have this commit, or am I wrong?) but to no avail. The credentials still aren't stored inside the repo.
+"""]]
