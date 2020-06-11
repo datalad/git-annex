@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-11T21:03:50Z"
+ content="""
+It is indeed strange that it runs it twice. That must be a significant
+clue.
+
+Since it also displays "(from origin)" twice, it seems that somehow
+git-annex thinks there are two different remotes, both somehow named
+"origin", and when the first doesn't work, it moves on to try the second.
+
+That should not be possible at all. Even if your .git/config
+had two origin stanzas, you would not see this behavior.
+
+Also, after operating on 2 "origin" remotes, it then only lists origin once
+in "Unable to access these remotes: origin", but if there are somehow two
+origin remotes, it would have to list them both there too.
+
+So none of this is making any sense, on multiple levels.
+
+There must be something in the configuration of your repo that explains
+this behavior, but I can't guess what it is. If you can show a transcript
+of creating new repos in a way that reproduces this behavior, it would
+help.
+"""]]
