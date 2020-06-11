@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+See "test-annex (crippled-home)" run on [datalad-extensions github actions](https://github.com/datalad/datalad-extensions/pull/15/checks?check_run_id=758524896). yes -- I really hate all those scrollbars etc, but you should be able also to click on "..." -> "View raw logs" which would lead to one [large log](https://pipelines.actions.githubusercontent.com/2UPlDxaVvvbkeFX4btxWorCjpJvj40zvWY5ogH2yZibhOMcU7O/_apis/pipelines/1/runs/745/signedlogcontent/14?urlExpires=2020-06-11T14%3A42%3A25.6501110Z&urlSigningMethod=HMACV1&urlSignature=Kmm%2BTBYZt5jzojQgrDTOgSrVjYq8VgUHLd3sUtFJd0c%3D)
+
+in which you can find
+
+[[!format sh """
+2020-06-10T16:02:40.4507392Z   Detected a filesystem without fifo support.
+2020-06-10T16:02:40.4508127Z   Disabling ssh connection caching.
+2020-06-10T16:02:40.4579131Z   Detected a crippled filesystem.
+2020-06-10T16:02:40.6831961Z     export_import:                                        [adjusted/master(unlocked) 4c3ac42] empty
+2020-06-10T16:02:40.7515700Z adjust ok
+2020-06-10T16:02:40.8085540Z initremote foo ok
+2020-06-10T16:02:40.8152161Z (recording state in git...)
+2020-06-10T16:02:40.8811878Z get foo (from origin...) 
+2020-06-10T16:02:40.9178237Z 
+2020-06-10T16:02:40.9190085Z 100%  20 B              548 B/s 0s
+2020-06-10T16:02:40.9201375Z                                   
+2020-06-10T16:02:40.9240907Z (checksum...) ok
+2020-06-10T16:02:40.9261455Z get sha1foo (from origin...) 
+2020-06-10T16:02:40.9325841Z 
+2020-06-10T16:02:40.9334418Z 100%  25 B              4 KiB/s 0s
+2020-06-10T16:02:40.9336072Z                                   
+2020-06-10T16:02:40.9405494Z (checksum...) ok
+2020-06-10T16:02:40.9406396Z (recording state in git...)
+2020-06-10T16:02:41.1056415Z commit 
+2020-06-10T16:02:41.2164981Z On branch adjusted/master(unlocked)
+2020-06-10T16:02:41.2165985Z Your branch is ahead of 'origin/adjusted/master(unlocked)' by 1 commit.
+2020-06-10T16:02:41.2166158Z   (use "git push" to publish your local commits)
+2020-06-10T16:02:41.2166244Z 
+2020-06-10T16:02:41.2166353Z nothing to commit, working tree clean
+2020-06-10T16:02:41.2166474Z ok
+2020-06-10T16:02:41.3970703Z export foo bar.c ok
+2020-06-10T16:02:41.4080765Z export foo foo ok
+2020-06-10T16:02:41.4123344Z export foo sha1foo ok
+2020-06-10T16:02:41.4301472Z (recording state in git...)
+2020-06-10T16:02:41.4804732Z list foo ok
+2020-06-10T16:02:41.4913408Z import foo import 
+2020-06-10T16:02:41.4915106Z 
+2020-06-10T16:02:41.4916599Z   .git/annex/tmp/CID-s16--24892 16 1591804960 : openBinaryFile: invalid argument (Invalid argument)
+2020-06-10T16:02:41.4916699Z 
+2020-06-10T16:02:41.4917067Z 
+2020-06-10T16:02:41.4917254Z ok
+2020-06-10T16:02:41.4924772Z 
+2020-06-10T16:02:41.4925784Z   Failed to import some files from foo. Re-run command to resume import.
+2020-06-10T16:02:41.5156287Z merge foo/master ok
+2020-06-10T16:02:41.5276712Z FAIL
+"""]]
+
+overall it seems to be only this test failing: 1 out of 702 tests failed (198.43s)
+
+git annex is 8.20200522+git142-g9102d3172-1~ndall and .deb available within the .zip within "Artifacts" drop down on the top.
+
+details of the setup are [in that PR](https://github.com/datalad/datalad-extensions/pull/15/files#diff-8364c688b76bfaf5df947cfd4d74eef7R76)
+
+PS determining the boundaries and names of the tests git annex had ran is a tricky business on its own -- I wondered if tests output formatting and annotation could have been improved as well. E.g. unlikely there is a point to print all output if test passes.  With `nose` in Python / datalad we get a summary of all failed tests (and what was output when they were ran) at the end of the full sweep. That helps to avoid needing to search the entire long list 
+
+

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="I've hacked an ugly daemon together for this"
+ date="2020-06-11T09:56:57Z"
+ content="""
+I've now written [a custom solution for myself which uses inotifywait to trigger `annex sync` when `master` or `synced/master` is updated](https://github.com/aspiers/pim/blob/master/bin/auto-sync-daemon).
+
+I'm running this on a mesh of remotes which all have the daemon running, so that a manual commit on any remote can be spotted and distributed throughout the network. 
+
+However from a synchronisation PoV, this is pretty ugly:
+
+- The remote where the manual commit is made spots the change to `master` and initiates an `annex sync` which updates at least `synced/master` on the other remotes, even if not `master` due to `receive.denyCurrentBranch` being set to `refuse`.
+- The daemons on the other remotes spot the changes to their `synced/master` and each initiate `annex sync`.
+- At this point a whole bunch of remotes are running `annex sync` at roughly the same time, and the window for weird race conditions is large.
+
+However even though the design is ugly, so far I haven't spotted any issues, which is presumably testament to the quality of the locking / synchronisation code within both `git` and `git-annex`.  Kudos!
+
+Of course I would prefer to ditch my custom hack and use the assistant, but that would require this feature to be added (as well as a solution to [[bugs/assistant_sometimes_removes_and_re-adds_whole_file]]).  I'd happily sponsor development of that but IIUC you aren't accepting sponsorship of individual features, so I'll live with my ugly hack for now until I get round to learning Haskell ;-)
+"""]]
