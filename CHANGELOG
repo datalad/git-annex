@@ -32,6 +32,7 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * Avoid creating the keys database during init when there are no unlocked
     files, to prevent init failing when sqlite does not work in the
     filesystem.
+  * import: Avoid using some strange names for temporary keys.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 

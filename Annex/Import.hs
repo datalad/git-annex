@@ -50,6 +50,7 @@ import Utility.Matcher (isEmpty)
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as CIDDb
 import qualified Logs.ContentIdentifier as CIDLog
+import Backend.Utilities
 
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
@@ -404,7 +405,7 @@ downloadImport remote importtreeconfig importablecontents = do
  - content, before generating its real key. -}
 importKey :: ContentIdentifier -> Integer -> Key
 importKey (ContentIdentifier cid) size = mkKey $ \k -> k
-	{ keyName = cid
+	{ keyName = genKeyName (decodeBS cid)
 	, keyVariety = OtherKey "CID"
 	, keySize = Just size
 	}

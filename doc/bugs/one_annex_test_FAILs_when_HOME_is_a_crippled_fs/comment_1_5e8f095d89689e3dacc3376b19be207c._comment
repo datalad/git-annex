@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-11T19:46:25Z"
+ content="""
+Is this about HOME being on the FS, or about git-annex test being run
+inside the FS?
+
+It looks to me to be the latter, since the file it fails
+on is in .git/annex/tmp
+
+	2020-06-10T16:02:41.4916599Z   .git/annex/tmp/CID-s16--24892 16 1591804960 : openBinaryFile: invalid argument (Invalid argument)
+
+Might this filesystem have trouble with filenames with spaces,
+particularly trailing spaces? That's kind of weird, and I've changed it so
+it won't contain those spaces.
+
+Also this line just after the FAIL seems relevant. (I suspect
+the log might not have every line in the right order, like maybe stdout and
+stderr are being read independantly and written to the log.)
+
+	2020-06-10T16:02:41.5278208Z       Exception: import: getSymbolicLinkStatus: does not exist (No such file or directory)
+"""]]
