@@ -1,6 +1,6 @@
 {- git-annex worktree files
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,8 @@ import qualified Database.Keys
 import qualified Database.Keys.SQL
 import Config
 import qualified Utility.RawFilePath as R
+
+import Control.Concurrent
 
 {- Looks up the key corresponding to an annexed file in the work tree,
  - by examining what the file links to.
@@ -77,12 +79,13 @@ ifAnnexed file yes no = maybe no yes =<< lookupFile file
  -}
 scanUnlockedFiles :: Annex ()
 scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
-	Database.Keys.runWriter $
-		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
+	dropold <- liftIO $ newMVar $ 
+		Database.Keys.runWriter $
+			liftIO . Database.Keys.SQL.dropAllAssociatedFiles
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive Git.Ref.headRef
 	forM_ l $ \i -> 
 		when (isregfile i) $
-			maybe noop (add i)
+			maybe noop (add dropold i)
 				=<< catKey (Git.LsTree.sha i)
 	liftIO $ void cleanup
   where
@@ -90,7 +93,8 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 		Just Git.Types.TreeFile -> True
 		Just Git.Types.TreeExecutable -> True
 		_ -> False
-	add i k = do
+	add dropold i k = do
+		join $ fromMaybe noop <$> liftIO (tryTakeMVar dropold)
 		let tf = Git.LsTree.file i
 		Database.Keys.runWriter $
 			liftIO . Database.Keys.SQL.addAssociatedFileFast k tf

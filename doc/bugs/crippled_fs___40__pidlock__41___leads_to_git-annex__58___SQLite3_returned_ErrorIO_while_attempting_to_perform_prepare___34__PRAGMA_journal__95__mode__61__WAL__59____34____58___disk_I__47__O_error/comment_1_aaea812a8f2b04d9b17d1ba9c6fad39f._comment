@@ -1,0 +1,60 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-11T18:13:05Z"
+ content="""
+This is sqlite failing to do its own internal locking which I'll bet is
+some elaborate and fine-grained locking indeed.
+
+Essentially the same problem as
+[[drop_blows_on_lustre__58___SQLite3_returned_ErrorIO]]
+(And also the main problem using git-annex on Windows in WSL.)
+
+Not a great deal I can do about this, because the locking is in sqlite.
+That other bug has some thoughts about avoiding unncessary use of sqlite
+or moving the databases to some other filesystem.
+
+It may be that not enabling WAL mode on the database would change sqlite's
+locking behavior to something that works better on the filesystem.
+I would normally not want to do that, but with pidlock enabled, only one
+git-annex is going to be running anyway, and so there's no need for WAL
+mode's concurrency support.
+
+Here's a patch to test. I would not use this in production, since it does
+not check for pidlock, but just always disables WAL.
+
+	diff --git a/Database/Handle.hs b/Database/Handle.hs
+	index 4422d9e75..790833d72 100644
+	--- a/Database/Handle.hs
+	+++ b/Database/Handle.hs
+	@@ -34,6 +34,7 @@ import qualified Data.Text as T
+	 import Control.Monad.Trans.Resource (runResourceT)
+	 import Control.Monad.Logger (runNoLoggingT)
+	 import System.IO
+	+import Lens.Micro
+	 
+	 {- A DbHandle is a reference to a worker thread that communicates with
+	  - the database. It has a MVar which Jobs are submitted to. -}
+	@@ -196,8 +197,9 @@ runSqliteRobustly tablename db a = do
+ 	rethrow msg e = throwIO $ userError $ show e ++ "(" ++ msg ++ ")"
+ 	
+	 	go conn retries = do
+	+		let i = over walEnabled (const False) (mkSqliteConnectionInfo db)
+	 		r <- try $ runResourceT $ runNoLoggingT $
+	-			withSqlConnRobustly (wrapConnection conn) $
+	+			withSqlConnRobustly (wrapConnectionInfo i conn) $
+	 				runSqlConn a
+	 		case r of
+	 			Right v -> return v
+	diff --git a/Database/Init.hs b/Database/Init.hs
+	index c66fe43ac..0c8478c7d 100644
+	--- a/Database/Init.hs
+	+++ b/Database/Init.hs
+	@@ -52,5 +52,5 @@ initDb db migration = do
+	  - Note that once WAL mode is enabled, it will persist whenever the
+	  - database is opened. -}
+	 enableWAL :: T.Text -> SqliteConnectionInfo
+	-enableWAL db = over walEnabled (const True) $ 
+	+enableWAL db = over walEnabled (const False) $ 
+	 	mkSqliteConnectionInfo db
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-11T19:26:05Z"
+ content="""
+This does seem to be an unncessary use of the database,
+git-annex init always creates the db in scanUnlockedFiles
+when the repo has a HEAD ref, but normally it will find no unlocked files
+and so it could just not create the database there.
+
+That should make git-annex usable, until a situation where it does
+need to use the database, like something to do with an unlocked file.
+
+Implemented that, which will fix the immediate problem reported here,
+but I'd like to pursue the WAL stuff still.
+"""]]
