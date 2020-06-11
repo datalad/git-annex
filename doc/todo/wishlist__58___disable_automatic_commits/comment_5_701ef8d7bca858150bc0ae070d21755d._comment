@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="I've hacked up a Python script for policy-based automatic commits"
+ date="2020-06-11T10:10:52Z"
+ content="""
+Since I haven't learnt Haskell yet (and even if I was able to hack a patch to git-annex I'm not sure whether it would be accepted), I've hacked up [a simple `git-auto-commit` Python script for automatically committing based on a simple policy](https://github.com/aspiers/pim/blob/master/bin/git-auto-commit), together with [a shell script which invokes it every `$n` seconds](https://github.com/aspiers/pim/blob/master/bin/auto-commit-daemon).
+
+Currently the policy is hardcoded to only stage and commit files ending in `.org` which have unstaged changes and an `mtime` over a minimum threshold, in order to throttle the rate at which automatic commits are made.  Maybe at some point I'll change it to honour `.gitattributes` such as
+
+    *.org annex.autocommit=(mtimebefore=5mins)
+
+but of course it would be far nicer if the assistant could do this natively, since that would also solve [forum/Can the assistant sync files if committed manually (autocommit=false)?](https://git-annex.branchable.com/forum/Can_the_assistant_sync_files_if_committed_manually___40__autocommit__61__false__41____63__/).
+"""]]
