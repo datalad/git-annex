@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-11T20:11:44Z"
+ content="""
+Based on the version number, this could be the same reversion fixed
+in [[!commit e63dcbf36c3dd19525641ce5fc3fa797243d07a5]].
+
+That was fixed in 8.20200522 so upgrade and see if it has the problem,
+please.
+"""]]
