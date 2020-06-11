@@ -3,9 +3,14 @@
  subject="""comment 1"""
  date="2020-06-11T20:11:44Z"
  content="""
-Based on the version number, this could be the same reversion fixed
-in [[!commit e63dcbf36c3dd19525641ce5fc3fa797243d07a5]].
+[[!commit e63dcbf36c3dd19525641ce5fc3fa797243d07a5]] fixed a similar
+reversion in other special remotes, but did not touch the external special
+remote.
 
-That was fixed in 8.20200522 so upgrade and see if it has the problem,
-please.
+But, I think that commit may have also fixed this in passing,
+because it also changes `setRemoteCredPair'`, which
+is what external is using, and the change IIRC fixed another bug
+that caused it to never embed creds.
+
+Your version predates that fix, so please try a newer version.
 """]]
