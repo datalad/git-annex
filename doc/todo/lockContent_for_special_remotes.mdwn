@@ -1,0 +1,18 @@
+Currently only Remote.Git implements lockContent. It seems like some other
+special remotes can lock content though:
+
+* bup and git-lfs and tahoe can't drop content, so content is implicitly locked
+* S3 has an object lock feature, I don't know if it would be usable for
+  this, but woth investigating.
+* web can't drop content, so content is also implicitly locked there
+  (of course web is often untrusted so git-annex won't count it as a copy
+  anyway then)
+* appendonly remotes can't drop content. This includes S3 repos configured
+  with versioning. It would be worth either giving all such remotes a
+  lockContent that succeeds noop, or just checking for appendonly the same
+  places lockContent is used.
+* directory could use fcntl locking
+* adb could use some shell trick perhaps
+* It might be possible for an external remote to lock content, but it would
+  be a tricky extension to the protocol, since lockContent needs to keep it
+  locked while running another action.

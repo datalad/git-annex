@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-11T17:36:54Z"
+ content="""
+The reason git-annex is preventing you from dropping a file in this
+situation can be understood if you imagine that you've given me and a
+friend access to your remotes.
+
+Each of the three of us runs git-annex drop --from one remote. We all
+picked a different remote. So each git-annex, running at the same time,
+see two copies of the file, so assume they can delete the third copy. 
+And so all 3 copies get deleted.
+
+Admittedly, this is more likely to happen if there are only 2 remotes and 2
+people involved, not 3 or more, and would be a big cooincidence even with
+2 people. But git-annex aims to avoid losing content even in unlikely cases.
+
+So it requires that, in order to drop the file, at least one of the other
+repos have a copy, and be able to lock it in place, preventing it from
+being dropped from that repo.
+
+Unfortunately, the only remote that can lock content currently is a
+git repository. (Maybe that [[could be improved|todo/lockContent_for_special_remotes]].)
+
+The solution for you it to either use --force like the message says
+(only if you're sure nobody else is dropping the files from the other remotes
+at the same time), or to also have a git remote somewhere that contains
+the file.
+"""]]
