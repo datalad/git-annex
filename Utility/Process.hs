@@ -22,6 +22,7 @@ module Utility.Process (
 	checkSuccessProcess,
 	withNullHandle,
 	createProcess,
+	withCreateProcess,
 	waitForProcess,
 	cleanupProcess,
 	startInteractiveProcess,
@@ -33,8 +34,8 @@ module Utility.Process (
 ) where
 
 import qualified Utility.Process.Shim
-import qualified Utility.Process.Shim as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess, cleanupProcess)
-import Utility.Process.Shim hiding (createProcess, readProcess, waitForProcess, cleanupProcess)
+import qualified Utility.Process.Shim as X hiding (CreateProcess(..), createProcess, withCreateProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess, cleanupProcess)
+import Utility.Process.Shim hiding (createProcess, withCreateProcess, readProcess, waitForProcess, cleanupProcess)
 import Utility.Misc
 import Utility.Exception
 import Utility.Monad
@@ -176,6 +177,11 @@ createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, 
 createProcess p = do
 	debugProcess p
 	Utility.Process.Shim.createProcess p
+
+-- | Wrapper around 'System.Process.withCreateProcess' that does debug logging.
+withCreateProcess :: CreateProcess -> (Maybe Handle -> Maybe Handle -> Maybe Handle -> ProcessHandle -> IO a) -> IO a
+withCreateProcess p action = bracket (createProcess p) cleanupProcess
+	(\(m_in, m_out, m_err, ph) -> action m_in m_out m_err ph)
 
 -- | Debugging trace for a CreateProcess.
 debugProcess :: CreateProcess -> IO ()
