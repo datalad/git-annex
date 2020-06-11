@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-06-11T21:13:38Z"
+ content="""
+> Is this about HOME being on the FS, or about git-annex test being run inside the FS?
+
+Both. In [that script](https://github.com/datalad/datalad-extensions/pull/15/files#diff-8364c688b76bfaf5df947cfd4d74eef7R76) I do
+
+[[!format sh \"\"\"
+export HOME=/crippledfs
+cd $HOME
+git annex test
+\"\"\"]]
+
+while TMPDIR was **not** set to point to `/crippledfs`
+"""]]
