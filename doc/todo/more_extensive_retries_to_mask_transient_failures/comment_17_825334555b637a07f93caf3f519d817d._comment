@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="separate processes for parallel transfers"
+ date="2020-06-12T15:47:28Z"
+ content="""
+\"separate processes for would of course work, it would add quite a lot of overhead. Especially in places like Annex.Queue\" -- would it be hard to measure how much that overhead is in practice?
+"""]]
