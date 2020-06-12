@@ -1,0 +1,72 @@
+I'm struggling to implement claimurl in git-annex-remote-googledrive. I want it to be able to download any https://drive.google.com URL. Is that how it's supposed to work? If so, how can the remote know where to download the key if it was never stored inside the remote but added via a claimed url? [[design/external_special_remote_protocol/#index9h2]] says that the remote can ask with GETURLS, but it doesn't get any reply to this request during addurl. What am I doing wrong?
+Is CLAIMURL only supposed to succeed when the file in question is actually known to the remote?
+
+[[!format sh """
+% git annex addurl "https://drive.google.com/uc?id=redacted&export=download" --debug
+[...]
+[2020-06-12 14:42:31.916627411] git-annex-remote-googledrive[1] --> PREPARE-SUCCESS
+[2020-06-12 14:42:31.916697951] git-annex-remote-googledrive[1] <-- CLAIMURL https://drive.google.com/uc?id=redacted&export=download
+[2020-06-12 14:42:31.916809797] git-annex-remote-googledrive[1] --> CLAIMURL-SUCCESS
+[2020-06-12 14:42:31.916911242] git-annex-remote-googledrive[1] <-- CHECKURL https://drive.google.com/uc?id=redacted&export=download
+[2020-06-12 14:42:31.91706263] git-annex-remote-googledrive[1] --> CHECKURL-MULTI https://drive.google.com/uc?id=redacted&export=download 55 test.txt
+addurl https://drive.google.com/uc?id=redacted&export=download (from g7) (to drive.google.com_uc_id_redacted_export_download/test.txt) [2020-06-12 14:42:31.917348019] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-06-12 14:42:31.918468762] process done ExitSuccess
+[2020-06-12 14:42:31.918507982] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-06-12 14:42:31.919448022] process done ExitFailure 1
+[2020-06-12 14:42:31.919500166] chat: git ["--git-dir=.git","--work-tree=.","check-ignore","-z","--stdin","--verbose","--non-matching"]
+
+[2020-06-12 14:42:31.92107506] git-annex-remote-googledrive[1] <-- TRANSFER RETRIEVE GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124 .git/annex/tmp/GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124
+[...]
+[2020-06-12 14:42:33.732491287] git-annex-remote-googledrive[1] --> GETURLS GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124 
+[2020-06-12 14:42:33.733764764] git-annex-remote-googledrive[1] <-- VALUE 
+[2020-06-12 14:42:33.734311763] git-annex-remote-googledrive[1] --> TRANSFER-FAILURE RETRIEVE GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124
+[...]
+"""]]
+
+I also tried different responses to CHECKURL:
+
+[[!format sh """
+% git annex addurl "https://drive.google.com/uc?id=redacted&export=download" --debug
+[...]
+[2020-06-12 14:50:09.461287507] git-annex-remote-googledrive[1] <-- CLAIMURL https://drive.google.com/uc?id=redacted&export=download
+[2020-06-12 14:50:09.461414232] git-annex-remote-googledrive[1] --> CLAIMURL-SUCCESS
+[2020-06-12 14:50:09.461506989] git-annex-remote-googledrive[1] <-- CHECKURL https://drive.google.com/uc?id=redacted&export=download
+[2020-06-12 14:50:09.461627892] git-annex-remote-googledrive[1] --> CHECKURL-CONTENTS 55 test.txt
+addurl https://drive.google.com/uc?id=redacted&export=download (from g7) (to test.txt) [2020-06-12 14:50:09.4617621] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-06-12 14:50:09.462835197] process done ExitSuccess
+[2020-06-12 14:50:09.46287404] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-06-12 14:50:09.463772174] process done ExitFailure 1
+[2020-06-12 14:50:09.463833405] chat: git ["--git-dir=.git","--work-tree=.","check-ignore","-z","--stdin","--verbose","--non-matching"]
+
+[2020-06-12 14:50:09.465420918] git-annex-remote-googledrive[1] <-- TRANSFER RETRIEVE GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124 .git/annex/tmp/GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124
+[...]
+[2020-06-12 14:50:11.459806952] git-annex-remote-googledrive[1] --> GETURLS GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124 
+[2020-06-12 14:50:11.461497729] git-annex-remote-googledrive[1] <-- VALUE 
+[2020-06-12 14:50:11.462233639] git-annex-remote-googledrive[1] --> TRANSFER-FAILURE RETRIEVE GPGHMACSHA1--d4acf722d74fd40ef280dacdefe9b6837d1ea124
+
+[...]
+"""]]
+and
+
+[[!format sh """
+% git annex addurl "https://drive.google.com/uc?id=redacted&export=download" --debug
+[...]
+[2020-06-12 14:53:47.976684453] git-annex-remote-googledrive[1] <-- CLAIMURL https://drive.google.com/uc?id=redacted&export=download
+[2020-06-12 14:53:47.976746033] git-annex-remote-googledrive[1] --> CLAIMURL-SUCCESS
+[2020-06-12 14:53:47.976847639] git-annex-remote-googledrive[1] <-- CHECKURL https://drive.google.com/uc?id=redacted&export=download
+[2020-06-12 14:53:47.976940533] git-annex-remote-googledrive[1] --> CHECKURL-CONTENTS UNKNOWN
+addurl https://drive.google.com/uc?id=redacted&export=download (from g7) (to drive.google.com_uc_id_redacted_export_download) [2020-06-12 14:53:47.977207094] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-06-12 14:53:47.978263358] process done ExitSuccess
+[2020-06-12 14:53:47.978300058] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-06-12 14:53:47.97922157] process done ExitFailure 1
+[2020-06-12 14:53:47.979278608] chat: git ["--git-dir=.git","--work-tree=.","check-ignore","-z","--stdin","--verbose","--non-matching"]
+
+[2020-06-12 14:53:47.980818573] git-annex-remote-googledrive[1] <-- TRANSFER RETRIEVE GPGHMACSHA1--b79f263a317c27c2b617b327e5a84bd4d05474ad .git/annex/tmp/GPGHMACSHA1--b79f263a317c27c2b617b327e5a84bd4d05474ad
+[...]
+[2020-06-12 14:53:50.271896938] git-annex-remote-googledrive[1] --> GETURLS GPGHMACSHA1--b79f263a317c27c2b617b327e5a84bd4d05474ad 
+[2020-06-12 14:53:50.27261623] git-annex-remote-googledrive[1] <-- VALUE 
+[2020-06-12 14:53:50.273016408] git-annex-remote-googledrive[1] --> TRANSFER-SUCCESS RETRIEVE GPGHMACSHA1--b79f263a317c27c2b617b327e5a84bd4d05474ad
+
+[...]
+"""]]
+ - Lykos153
