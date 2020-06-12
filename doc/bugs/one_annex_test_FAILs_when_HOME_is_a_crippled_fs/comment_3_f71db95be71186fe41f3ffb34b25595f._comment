@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="stalls"
+ date="2020-06-12T03:40:54Z"
+ content="""
+Testing 8.20200522+git156-gc8ff3e082-1~ndall+1 leads to a stall with HOME on crippled fs. Unfortunately I didn't store that log, restarted -- passed
+
+Downloaded and installed .deb from the artifacts of https://github.com/datalad/datalad-extensions/pull/15/checks?check_run_id=763826515, set crippled fs the same way as on github actions -- passed on the first try, and stalled on the next one: 
+
+[[!format sh \"\"\"
+pull origin 
+ok
+push origin 
+To /mnt/crippledfs/.t/main2
+   b9a7a37..4c439c8  git-annex -> synced/git-annex
+ok
+OK (4.24s)
+    concurrent get of dup key regression:                   Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+  Detected a crippled filesystem.
+[adjusted/master(unlocked) c8e63f5] empty
+adjust ok
+get foo (from origin...) (checksum...) ok
+(recording state in git...)
+
+\"\"\"]]
+"""]]
