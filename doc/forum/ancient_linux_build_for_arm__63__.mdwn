@@ -1,0 +1,5 @@
+Hello, 
+
+I have old Synology DS413j with ARM 32bit and Linux 2.6.32 version. I wanted to use some TB of my disk space for INTERNETARCHIVE.BAK project. Unfortunately, the "ancient linux" build is only for the i386 platform. Is there any chance for a custom build? 
+
+Rafal
