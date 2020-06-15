@@ -1,0 +1,47 @@
+### Please describe the problem.
+git annex checkpresentkey does not refuse to run in bare repos, as many commands do, but seems to report all keys as absent.
+
+
+### What steps will reproduce the problem?
+This is a simple example starting from nothing, but in every bare repo I test, regardless if I use batch or not, all keys are reported absent. Observe that the key can be cat'd directly out of the git annex directory in both bare and non-bare, was moved to the bare via git annex sync, yet shows 1 for present in the non-bare and 0 for the bare:
+
+[[!format sh """
+mkdir repro
+cd repro
+mkdir bare nonbare
+cd bare
+git init --bare
+cd ../nonbare
+git clone ../bare .
+git annex init
+echo hello > greeting
+git annex add greeting
+git commit -m update
+git annex sync --content
+git annex sync --content
+echo SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 | git annex checkpresentkey --batch
+cat .git/annex/objects/*/*/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+cd ../bare
+echo SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 | git annex checkpresentkey --batch
+cat annex/objects/*/*/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03/SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+"""]]
+
+
+
+### What version of git-annex are you using? On what operating system?
+Debian Testing, git annex version 8.20200330-1
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Oh it's great, especially the low level plumbing commands. I use it for all my backups by first backup up each machine into a Bup repo, and then storing the bup packs/indices in git-annex, which I use for sync'ing across machines.
