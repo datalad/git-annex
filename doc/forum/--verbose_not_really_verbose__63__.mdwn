@@ -1,0 +1,7 @@
+I am trying to set up android's "/sdcard" (which is not really an sd card) synchronization as described in https://git-annex.branchable.com/tips/android_sync_with_adb/
+
+The problem is that my "sdcard" is quite sizeable, 128Gb, and I don't seem to manage to get all the contents adb-pulled overnight, and I can't leave the phone copying for more than ~10 hours.
+
+When I am trying to resume the synchronization with `git annex  import --verbose master --from android_cable` , it does immediately produces a `git` process with a 99% I/O consumption, but displays no information, so I don't know what is it that it's actually doing.
+
+Is it possible to increase the verbosity of --verbose?
