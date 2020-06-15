@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="kanakkshetri@9ea0e7639162bddc7bf9f3bb94cc32e93c793b89"
+ nickname="kanakkshetri"
+ avatar="http://cdn.libravatar.org/avatar/3cf305b2854041f8441c8fd8f02e8a2a"
+ subject="comment 3"
+ date="2020-06-15T11:42:41Z"
+ content="""
+Hi Joey,
+
+Thank you so much for taking a look. Another weird thing I discovered was that only a certain set of files (which were all annexed at around the same time) were affected. 
+
+I ended up using cp manually to put then on external and used fsck --fast to fix location logs. 
+
+I'm not sure how those files ended up in a weird state, but I don't want to waste your time on this. I'll create a new annex if the problem shows up again. 
+"""]]
