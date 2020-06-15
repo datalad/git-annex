@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://dead-doomer.livejournal.com/"
+ subject="comment 2"
+ date="2020-06-15T05:23:31Z"
+ content="""
+--debug does add a bit of information, but still not much. 
+
+```
+lockywolf@delllaptop:~/Android_OnePlus_5t_sdcard_root$ time git annex --verbose --debug import --verbose --debug master --from android_cable
+[2020-06-15 12:55:38.412251405] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2020-06-15 12:55:38.440426228] process done ExitSuccess
+[2020-06-15 12:55:38.440584943] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-06-15 12:55:38.449779319] process done ExitSuccess
+[2020-06-15 12:55:38.450385777] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..5a8e10ac8b853f8ee810f2569267fdabd41dfc79\",\"--pretty=%H\",\"-n1\"]
+[2020-06-15 12:55:38.627505978] process done ExitSuccess
+[2020-06-15 12:55:38.706288754] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2020-06-15 12:55:38.707306945] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+
+
+```
+
+stays in this state \"forever\". 
+
+Is it possible to find out how much of the \"update-index\" has passed?
+
+git-annex seems to be the only bi-directional synchronization tool in the field. I mean, there is also `adb-sync`, but it, as all other tools, doesn't handle deletions properly. 
+
+"""]]
