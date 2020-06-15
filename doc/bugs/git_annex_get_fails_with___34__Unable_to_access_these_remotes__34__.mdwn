@@ -126,3 +126,5 @@ git annex info --fast
 
 YES. Git annex is one of my favorite software. I am managing around 15 terabytes of data in 5 annexes, with data on 3 computers, and around 8 external drives. This is the first time I've had any kind of issue with it. It has been rock solid and completely amazing. Thank you for your work on the software.
 
+
+[[done]]
