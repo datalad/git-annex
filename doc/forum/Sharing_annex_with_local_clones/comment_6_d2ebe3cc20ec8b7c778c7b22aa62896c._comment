@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="calmofthestorm"
+ avatar="http://cdn.libravatar.org/avatar/9d97e9bcb1cf7680309e37cd69fab408"
+ subject="Thanks, this does exactly what I want"
+ date="2020-06-15T07:25:30Z"
+ content="""
+I'm always impressed that when I Google for how to do some very specific thing with git-annex, there's typically already an easy to use option that does exactly that. The default behavior when a git repo is cloned with --shared is excellent user experience, and precisely matches my intuition for how it should behave.
+"""]]
