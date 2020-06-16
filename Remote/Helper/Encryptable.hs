@@ -242,7 +242,7 @@ embedCreds :: ParsedRemoteConfig -> Bool
 embedCreds c = case getRemoteConfigValue embedCredsField c of
 	Just v -> v
 	Nothing -> case (getRemoteConfigValue cipherkeysField c, getRemoteConfigValue cipherField c) of
-		(Just (_ :: ProposedAccepted String), Just (_ :: ProposedAccepted String)) -> True
+		(Just (_ :: String), Just (_ :: String)) -> True
 		_ -> False
 
 {- Gets encryption Cipher, and key encryptor. -}
