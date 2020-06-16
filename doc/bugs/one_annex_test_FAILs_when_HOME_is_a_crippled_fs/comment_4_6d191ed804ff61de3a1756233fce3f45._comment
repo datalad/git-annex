@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-06-16T18:05:31Z"
+ content="""
+By the time this stall happens, the test suite has gotten past the failing
+`export_import` test. It would be good to know if that test now succeeds.
+
+Did you wait on the stall long enough for annex.pidlocktimeout to expire?
+(Default 300 seconds.)
+
+I tried this to reproduce it, which did not here. Would be interesting to
+know if it does on the filesystem in question.
+
+	git init a
+	cd a
+	git annex init
+	git config annex.pidlock true
+	date > foo
+	git annex add
+	cp -a foo bar
+	git add bar
+	git commit -m add
+	cd ..
+	git clone a b
+	cd b
+	git annex init
+	git config annex.pidlock true
+	git annex get -J1 foo bar
+	git annex drop -J1
+	cp -a foo baz
+	git add baz
+	git annex get -J2 foo bar baz
+	git annex drop -J2
+
+That should be identical to what the test case does.
+"""]]
