@@ -66,3 +66,5 @@ I can see that gpg is called after SETCREDS and I would have expected there to b
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Of course ;) In fact. I've actually never used embedcreds. I just had an [issue](https://github.com/Lykos153/git-annex-remote-googledrive/issues/48) raised about it on github.
+
+> [[fixed|done]] --[[Joey]] 

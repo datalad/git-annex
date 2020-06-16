@@ -113,7 +113,12 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 	fromconfig = do
 		let key = credPairRemoteField storage
 		mcipher <- remoteCipher' c gc
-		case (getRemoteConfigValue key c, mcipher) of
+		-- The RemoteConfig value may be passed through.
+		-- Check for those first, because getRemoteConfigValue
+		-- will throw an error if it does not find it.
+		let getval = M.lookup key (getRemoteConfigPassedThrough c)
+			<|> getRemoteConfigValue key c			
+		case (getval, mcipher) of
 			(Nothing, _) -> return Nothing
 			(Just enccreds, Just (cipher, storablecipher)) ->
 				fromenccreds enccreds cipher storablecipher
