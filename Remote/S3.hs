@@ -84,7 +84,7 @@ remote = specialRemoteType $ RemoteType
 			, optionalStringParser partsizeField
 				(FieldDesc "part size for multipart upload (eg 1GiB)")
 			, optionalStringParser storageclassField
-				(FieldDesc "storage class, eg STANDARD or REDUCED_REDUNDANCY")
+				(FieldDesc "storage class, eg STANDARD or STANDARD_IA or ONEZONE_IA")
 			, optionalStringParser fileprefixField
 				(FieldDesc "prefix to add to filenames in the bucket")
 			, yesNoParser versioningField False
@@ -939,7 +939,6 @@ getBucketName = map toLower <$$> getRemoteConfigValue bucketField
 
 getStorageClass :: ParsedRemoteConfig -> S3.StorageClass
 getStorageClass c = case getRemoteConfigValue storageclassField c of
-	Just "REDUCED_REDUNDANCY" -> S3.ReducedRedundancy
 	Just s -> S3.OtherStorageClass (T.pack s)
 	_ -> S3.Standard
 

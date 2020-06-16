@@ -33,6 +33,8 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
     files, to prevent init failing when sqlite does not work in the
     filesystem.
   * import: Avoid using some strange names for temporary keys.
+  * S3: The REDUCED_REDUNDANCY storage class is no longer cheaper so
+    stop documenting it, and stop offering it as a choice in the assistant.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 
