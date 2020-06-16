@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-16T16:37:24Z"
+ content="""
+git-annex checkpresentkey checks if a key is present in remotes.
+
+Your bare repository does not have any remotes that contain the key
+(due to not having any remotes at all). This is why checkpresentkey is
+behaving like this.
+
+The same behavior happens if you remove the origin remote from the nonbare
+repo and run the command there.
+
+The documentation seems clear enough about this behavior, although there
+is the use of "somewhere" in this part:
+
+	When no remote is specified,  it  verifies  if  the  key's  content  is
+	present  somewhere, checking accessible remotes until it finds the con‐
+	tent.
+
+Which I suppose could be interpreted to mean, if the key
+is present in the local repo, it's "somewhere".
+"""]]

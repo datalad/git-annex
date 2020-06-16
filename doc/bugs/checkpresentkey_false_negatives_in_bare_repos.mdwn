@@ -45,3 +45,5 @@ Debian Testing, git annex version 8.20200330-1
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Oh it's great, especially the low level plumbing commands. I use it for all my backups by first backup up each machine into a Bup repo, and then storing the bup packs/indices in git-annex, which I use for sync'ing across machines.
+
+> [[notabug|done]] --[[Joey]]

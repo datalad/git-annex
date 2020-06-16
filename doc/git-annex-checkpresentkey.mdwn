@@ -12,11 +12,11 @@ This plumbing-level command verifies if the specified key's content
 is present in the specified remote.
 
 When no remote is specified, it verifies if the key's content is present
-somewhere, checking accessible remotes until it finds the content.
+in any accessible remotes.
 
-Exits 0 if the content is verified present, or 1 if it is verified to not
-be present. If there is a problem, the special exit code 100 is used,
-and an error message is output to stderr.
+Exits 0 if the content is verified present in the remote, or 1 if it is
+verified to not be present in the remote. If there is a problem, 
+the special exit code 100 is used, and an error message is output to stderr.
 
 # OPTIONS
 
