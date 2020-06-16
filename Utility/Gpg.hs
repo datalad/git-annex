@@ -17,7 +17,7 @@ module Utility.Gpg (
 	stdEncryptionParams,
 	pipeStrict,
 	feedRead,
-	pipeLazy,
+	feedRead',
 	findPubKeys,
 	UserId,
 	secretKeys,
@@ -149,8 +149,7 @@ pipeStrict (GpgCmd cmd) params input = do
  - Runs gpg in batch mode; this is necessary to avoid gpg 2.x prompting for
  - the passphrase.
  -
- - Note that to avoid deadlock with the cleanup stage,
- - the reader must fully consume gpg's input before returning. -}
+ - Note that the reader must fully consume gpg's input before returning. -}
 feedRead :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 feedRead cmd params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
@@ -179,11 +178,11 @@ feedRead cmd params passphrase feeder reader = do
 		go $ passphrasefile ++ params
 #endif
   where
-	go params' = pipeLazy cmd params' feeder reader
+	go params' = feedRead' cmd params' feeder reader
 
 {- Like feedRead, but without passphrase. -}
-pipeLazy :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> (Handle -> IO ()) -> (Handle -> m a) -> m a
-pipeLazy (GpgCmd cmd) params feeder reader = do
+feedRead' :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> (Handle -> IO ()) -> (Handle -> m a) -> m a
+feedRead' (GpgCmd cmd) params feeder reader = do
 	params' <- liftIO $ stdParams $ Param "--batch" : params
 	let p = (proc cmd params')
 		{ std_in = CreatePipe

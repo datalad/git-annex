@@ -28,6 +28,7 @@ module Crypto (
 	feedFile,
 	feedBytes,
 	readBytes,
+	readBytesStrictly,
 	encrypt,
 	decrypt,
 	LensGpgEncParams(..),
@@ -187,25 +188,35 @@ feedBytes = flip L.hPut
 readBytes :: (MonadIO m) => (L.ByteString -> m a) -> Reader m a
 readBytes a h = liftIO (L.hGetContents h) >>= a
 
+readBytesStrictly :: (MonadIO m) => (S.ByteString -> m a) -> Reader m a
+readBytesStrictly a h = liftIO (S.hGetContents h) >>= a
+
+
 {- Runs a Feeder action, that generates content that is symmetrically
  - encrypted with the Cipher (unless it is empty, in which case
  - public-key encryption is used) using the given gpg options, and then
- - read by the Reader action. -}
+ - read by the Reader action. 
+ -
+ - Note that the Reader must fully consume gpg's input before returning.
+ -}
 encrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
 encrypt cmd c cipher = case cipher of
 	Cipher{} -> Gpg.feedRead cmd (params ++ Gpg.stdEncryptionParams True) $
 			cipherPassphrase cipher
-	MacOnlyCipher{} -> Gpg.pipeLazy cmd $ params ++ Gpg.stdEncryptionParams False
+	MacOnlyCipher{} -> Gpg.feedRead' cmd $ params ++ Gpg.stdEncryptionParams False
   where
 	params = getGpgEncParams c
 
 {- Runs a Feeder action, that generates content that is decrypted with the
  - Cipher (or using a private key if the Cipher is empty), and read by the
- - Reader action. -}
+ - Reader action.
+ -
+ - Note that the Reader must fully consume gpg's input before returning.
+ - -}
 decrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
 decrypt cmd c cipher = case cipher of
 	Cipher{} -> Gpg.feedRead cmd params $ cipherPassphrase cipher
-	MacOnlyCipher{} -> Gpg.pipeLazy cmd params
+	MacOnlyCipher{} -> Gpg.feedRead' cmd params
   where
 	params = Param "--decrypt" : getGpgDecParams c
 

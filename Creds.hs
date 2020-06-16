@@ -35,6 +35,7 @@ import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, Encry
 import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Char8 as S
 import qualified Data.Map as M
 import Utility.Base64
 
@@ -86,7 +87,7 @@ setRemoteCredPair' mkval parseconfig encsetup c gc storage mcreds = case mcreds 
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		s <- liftIO $ encrypt cmd (pc, gc) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
-			(readBytes $ return . L.unpack)
+			(readBytesStrictly $ return . S.unpack)
 		return $ M.insert key (mkval (Accepted (toB64 s))) c
 	storeconfig creds key Nothing =
 		return $ M.insert key (mkval (Accepted (toB64 $ encodeCredPair creds))) c
@@ -114,7 +115,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd (c, gc) cipher
 			(feedBytes $ L.pack $ fromB64 enccreds)
-			(readBytes $ return . L.unpack)
+			(readBytesStrictly $ return . S.unpack)
 		case mcreds of
 			Just creds -> fromcreds creds
 			Nothing -> do
