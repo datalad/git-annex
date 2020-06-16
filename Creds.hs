@@ -75,7 +75,6 @@ setRemoteCredPair' mkval parseconfig encsetup c gc storage mcreds = case mcreds 
 		| embedCreds pc -> do
 			let key = credPairRemoteField storage
 			localcache creds
-			liftIO $ print ("set creds", key, creds)
 			storeconfig creds key =<< remoteCipher pc gc
 		| otherwise -> do
 			localcache creds
