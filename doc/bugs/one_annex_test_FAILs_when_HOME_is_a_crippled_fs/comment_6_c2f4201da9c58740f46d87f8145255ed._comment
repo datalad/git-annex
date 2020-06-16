@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-06-16T18:40:38Z"
+ content="""
+Ah, I missed that the script for this crippled FS is just making a vfat.
+
+git-annex test has definitely succeeded on vfat in the past.
+"""]]
