@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-06-16T18:30:07Z"
+ content="""
+<details>
+<summary>Example does hang for me when ran in that crippled fs, even without setting $HOME</summary> 
+
+```shell
+> git init a
+Initialized empty Git repository in /mnt/crippledfs/a/.git/
+> cd a
+> git annex init
+init  
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+(scanning for unlocked files...)
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+> git config annex.pidlock true
+> date
+> git annex add
+add foo 
+ok                                
+(recording state in git...)
+> cp -a foo bar
+> git add bar
+> git commit -m add
+[adjusted/master(unlocked) 8dc937d] add
+ 2 files changed, 2 insertions(+)
+ create mode 100644 bar
+ create mode 100755 foo
+> cd ..
+> git clone a b
+Cloning into 'b'...
+done.
+> cd b
+> git annex init
+init  
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+ok
+(recording state in git...)
+> git config annex.pidlock true
+> git annex get -J1 foo bar
+get foo (from origin...) (checksum...) ok
+(recording state in git...)
+
+```
+</details>
+
+> I tried this to reproduce it, which did not here.
+
+have you used the [script I use](https://github.com/datalad/datalad-extensions/pull/15/files#diff-0785403f62dbda964724769c173d0dc5)?
+"""]]
