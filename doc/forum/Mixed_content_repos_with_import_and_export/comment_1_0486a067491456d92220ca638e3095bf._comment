@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-16T18:17:19Z"
+ content="""
+This is one of the still open items in [[todo/import_tree]],
+namely "Need to support annex.largefiles when importing"
+
+I don't think there's any major issue implementing it, other than it being
+a bit of bother due to things like matching on mime type. I've lifted that
+todo out to [[todo/import_tree_should_honor_annex.largefiles]] so hopefully
+it'll be more of an action item on my todo list rather than buried away.
+"""]]

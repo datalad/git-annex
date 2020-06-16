@@ -1,0 +1,13 @@
+Need to support annex.largefiles when importing a tree from a special
+remote.
+
+Note that the legacy `git annex import` from a directory does honor
+annex.largefiles.
+
+The tricky bit might be that the largefiles matcher will need to run on
+the temporary annex key that's used to import, before calculating the real
+annex key; there's no corresponding file in the working tree. Also,
+a "branch:subdir" at the command line or in
+remote.name.annex-tracking-branch can change the path
+that the file is being imported to, which needs to be communicated to the
+largefiles matcher.

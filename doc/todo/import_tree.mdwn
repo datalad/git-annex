@@ -51,6 +51,7 @@ and `git annex sync --content` can be configured to use it.
   would thus benefit both uses cases.
 
 * Need to support annex.largefiles when importing.
+  [[todo/import_tree_should_honor_annex.largefiles]]
 
 * If a tree containing a non-annexed file is exported,
   and then an import is done from the remote, the new tree will have that
