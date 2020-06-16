@@ -420,7 +420,7 @@ handleRequest' st external req mp responsehandler
 					c
 				in ParsedRemoteConfig m' c'
 			modifyTVar' (externalConfigChanges st) $ \f ->
-				f . M.insert (Accepted setting) (Accepted value)
+				M.insert (Accepted setting) (Accepted value) . f
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- maybe "" fromProposedAccepted
 			. (M.lookup (Accepted setting))
@@ -430,11 +430,18 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (SETCREDS setting login password) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do
 			let v = externalConfig st
-			(ParsedRemoteConfig m c) <- liftIO $ atomically $ readTVar v
-			m' <- setRemoteCredPair' RemoteConfigValue (\m' -> ParsedRemoteConfig m' c) encryptionAlreadySetup m gc
+			pc <- liftIO $ atomically $ readTVar v
+			pc' <- setRemoteCredPair' pc encryptionAlreadySetup gc
 				(credstorage setting u)
 				(Just (login, password))
-			void $ liftIO $ atomically $ swapTVar v (ParsedRemoteConfig m' c)
+			let configchanges = M.differenceWithKey
+				(\_k a b -> if a == b then Nothing else Just a)
+				(unparsedRemoteConfig pc')
+				(unparsedRemoteConfig pc)
+			void $ liftIO $ atomically $ do
+				_ <- swapTVar v pc'
+				modifyTVar' (externalConfigChanges st) $ \f ->
+					M.union configchanges . f
 		_ -> senderror "cannot send SETCREDS here"
 	handleRemoteRequest (GETCREDS setting) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do

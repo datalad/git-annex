@@ -45,6 +45,11 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * Fix regression in external special remote handling: GETCONFIG did not
     return a value that was set with SETCONFIG immediately before.
     (Regression introduced in version 7.20200202.7)
+  * Fix bug that made initremote of extrnal special remotes with
+    embedcreds=yes or gpg encryption not store the creds in the git-annex
+    branch. git-annex-remote-googledrive one was special remote affected by
+    this bug.
+    (Regression introduced in version 7.20200202.7)
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 

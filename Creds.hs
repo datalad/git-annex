@@ -57,20 +57,25 @@ data CredPairStorage = CredPairStorage
  - if that's going to be done, so that the creds can be encrypted using the
  - cipher. The EncryptionIsSetup is witness to that being the case.
  -}
-setRemoteCredPair :: EncryptionIsSetup -> ParsedRemoteConfig -> RemoteGitConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
-setRemoteCredPair encsetup pc = setRemoteCredPair' id (const pc) encsetup (unparsedRemoteConfig pc)
-
-setRemoteCredPair'
-	:: (ProposedAccepted String -> a)
-	-> (M.Map RemoteConfigField a -> ParsedRemoteConfig)
-	-> EncryptionIsSetup
-	-> M.Map RemoteConfigField a
+setRemoteCredPair
+	:: EncryptionIsSetup
+	-> ParsedRemoteConfig
 	-> RemoteGitConfig
 	-> CredPairStorage
 	-> Maybe CredPair
-	-> Annex (M.Map RemoteConfigField a)
-setRemoteCredPair' mkval parseconfig encsetup c gc storage mcreds = case mcreds of
-	Nothing -> maybe (return c) (setRemoteCredPair' mkval parseconfig encsetup c gc storage . Just)
+	-> Annex RemoteConfig
+setRemoteCredPair encsetup pc gc storage mcreds = unparsedRemoteConfig <$>
+	setRemoteCredPair' pc encsetup gc storage mcreds
+
+setRemoteCredPair'
+	:: ParsedRemoteConfig
+	-> EncryptionIsSetup
+	-> RemoteGitConfig
+	-> CredPairStorage
+	-> Maybe CredPair
+	-> Annex ParsedRemoteConfig
+setRemoteCredPair' pc encsetup gc storage mcreds = case mcreds of
+	Nothing -> maybe (return pc) (setRemoteCredPair' pc encsetup gc storage . Just)
 		=<< getRemoteCredPair pc gc storage
 	Just creds
 		| embedCreds pc -> do
@@ -79,7 +84,7 @@ setRemoteCredPair' mkval parseconfig encsetup c gc storage mcreds = case mcreds 
 			storeconfig creds key =<< remoteCipher pc gc
 		| otherwise -> do
 			localcache creds
-			return c
+			return pc
   where
 	localcache creds = writeCacheCredPair creds storage
 
@@ -88,11 +93,14 @@ setRemoteCredPair' mkval parseconfig encsetup c gc storage mcreds = case mcreds 
 		s <- liftIO $ encrypt cmd (pc, gc) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytesStrictly $ return . S.unpack)
-		return $ M.insert key (mkval (Accepted (toB64 s))) c
+		storeconfig' key (Accepted (toB64 s))
 	storeconfig creds key Nothing =
-		return $ M.insert key (mkval (Accepted (toB64 $ encodeCredPair creds))) c
+		storeconfig' key (Accepted (toB64 $ encodeCredPair creds))
 	
-	pc = parseconfig c
+	storeconfig' key val = return $ pc
+		{ parsedRemoteConfigMap = M.insert key (RemoteConfigValue val) (parsedRemoteConfigMap pc)
+		, unparsedRemoteConfig = M.insert key val (unparsedRemoteConfig pc)
+		}
 
 {- Gets a remote's credpair, from the environment if set, otherwise
  - from the cache in gitAnnexCredsDir, or failing that, from the
