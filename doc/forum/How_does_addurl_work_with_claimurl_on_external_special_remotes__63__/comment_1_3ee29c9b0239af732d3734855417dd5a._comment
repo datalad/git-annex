@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-16T17:56:11Z"
+ content="""
+CLAIMURL needs to be able to determine, by looking at the url alone, if
+this is an url that the remote can claim.
+
+Once a remote responds with CLAIMURL-SUCCESS, git-annex will register the
+url, so GETURLS will work after that point. So in TRANSFER RETRIEVE
+you can use GETURLS to check if there's a recorded url for the key,
+and if the url is a google drive url that you recognise, you can download
+it.
+"""]]
