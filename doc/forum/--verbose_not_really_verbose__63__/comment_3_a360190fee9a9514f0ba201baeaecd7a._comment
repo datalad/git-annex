@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-06-16T16:12:57Z"
+ content="""
+What git-annex is working on doing here is adding all the data it had
+started recording when you interrupted it before to the git-annex branch.
+
+If it had imported a large number of files, that could take a while.
+The number of files in .git/annex/journal/ is a good indication of how much
+work it needs to do (but all the files will remain there until it's finished).
+
+Normally with a fairly large number of files like a thousand or so, this
+step takes less than 1 second..
+
+--verbose is the default verbosity level BTW.
+"""]]
