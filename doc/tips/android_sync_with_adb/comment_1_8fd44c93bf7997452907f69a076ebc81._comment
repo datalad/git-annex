@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://dead-doomer.livejournal.com/"
+ subject="How do I specify a merge command if I don't need separate branches?"
+ date="2020-06-16T16:11:30Z"
+ content="""
+>>If you want its files to not be in a subdirectory, set it to \"master\" instead.
+
+I did that. Than I issued:
+
+git annex import master --from android
+
+which downloaded a lot of files
+
+Then:
+
+git annex merge android/master
+merge android/master 
+merge: android/master - not something we can merge
+failed
+git-annex: merge: 1 failed
+
+I tried different combinations of android/master, ./master, master/. , but all seem to fail.
+
+plain git status shows a lot of non-added files for an \"initial commit\", and no files added.
+git annex status lists a lot of 
+
+? [sdcard/bla] 
+
+files.
+
+Any suggestions?
+
+"""]]
