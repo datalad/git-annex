@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-06-16T18:36:36Z"
+ content="""
+Confirmed this bug. This feels like it should trigger a release, as it
+could break existing workflows in a surprising way, and even maybe result
+in data loss if the user was relying on git-annex embedding the creds and
+didn't otherwise have a way to get them.
+"""]]
