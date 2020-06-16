@@ -10,6 +10,7 @@
 
 module Annex.Init (
 	ensureInitialized,
+	autoInitialize,
 	isInitialized,
 	initialize,
 	initialize',
@@ -61,13 +62,19 @@ import qualified Data.Map as M
 import Control.Concurrent.Async
 
 checkCanInitialize :: Annex a -> Annex a
-checkCanInitialize a = inRepo (noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree) >>= \case
+checkCanInitialize a = canInitialize' >>= \case
 	Nothing -> a
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
 		unless (null noannexmsg) $
 			warning noannexmsg
 		giveup "Not initialized."
+
+canInitialize :: Annex Bool
+canInitialize = isNothing <$> canInitialize'
+
+canInitialize' :: Annex (Maybe String)
+canInitialize' = inRepo (noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree)
 
 genDescription :: Maybe String -> Annex UUIDDesc
 genDescription (Just d) = return $ UUIDDesc $ encodeBS d
@@ -159,6 +166,17 @@ ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
 			autoEnableSpecialRemotes
 		, giveup "First run: git-annex init"
 		)
+
+{- Initialize if it can do so automatically.
+ -
+ - Checks repository version and handles upgrades too.
+ -}
+autoInitialize :: Annex ()
+autoInitialize = getVersion >>= maybe needsinit checkUpgrade
+  where
+	needsinit = whenM (canInitialize <&&> Annex.Branch.hasSibling) $ do
+			initialize Nothing Nothing
+			autoEnableSpecialRemotes
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}
 isInitialized :: Annex Bool

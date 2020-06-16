@@ -337,7 +337,9 @@ tryGitConfigRead autoinit r hasuuid
 	readlocalannexconfig = do
 		let check = do
 			Annex.BranchState.disableUpdate
-			catchNonAsync ensureInitialized (warning . show)
+			catchNonAsync autoInitialize $ \e ->
+				warning $ "remote " ++ Git.repoDescribe r ++
+					" :"  ++ show e
 			Annex.getState Annex.repo
 		s <- Annex.new r
 		Annex.eval s $ check `finally` stopCoProcesses

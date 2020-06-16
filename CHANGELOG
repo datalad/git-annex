@@ -35,6 +35,11 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * import: Avoid using some strange names for temporary keys.
   * S3: The REDUCED_REDUNDANCY storage class is no longer cheaper so
     stop documenting it, and stop offering it as a choice in the assistant.
+  * Improve display of problems auto-initializing or upgrading local git
+    remotes.
+  * When a local git remote cannot be initialized because it has no
+    git-annex branch or a .noannex file, avoid displaying a message about it.
+
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 
