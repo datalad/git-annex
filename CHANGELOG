@@ -42,6 +42,9 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * checkpresentkey: When no remote is specified, try all remotes, not
     only ones that the location log says contain the key. This is what
     the documentation has always said it did.
+  * Fix regression in external special remote handling: GETCONFIG did not
+    return a value that was set with SETCONFIG immediately before.
+    (Regression introduced in version 7.20200202.7)
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 

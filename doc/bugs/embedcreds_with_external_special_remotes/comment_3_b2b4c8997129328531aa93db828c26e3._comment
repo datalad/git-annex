@@ -7,4 +7,16 @@ Confirmed this bug. This feels like it should trigger a release, as it
 could break existing workflows in a surprising way, and even maybe result
 in data loss if the user was relying on git-annex embedding the creds and
 didn't otherwise have a way to get them.
+
+The cause is that there's a externalConfigChanges that SETCONFIG
+updates, but SETCREDS does not, instead it swap in a new externalConfig.
+But that externalConfig is not examined when extracting the config changes
+to store in remote.log, because the types don't match up any longer.
+
+So, SETCREDS needs to also update externalConfigChanges.
+
+Related reversion: When SETCONFIG is used, followed by GETCONFIG
+of the same value, it does not return the value. This doesn't affect
+SETCONFIG at init time followed by GETCONFIG later, so it's unlikely to
+affect anything, but it's still wrong, and so I've fixed it.
 """]]

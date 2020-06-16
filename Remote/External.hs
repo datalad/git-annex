@@ -414,7 +414,11 @@ handleRequest' st external req mp responsehandler
 					(Accepted setting)
 					(RemoteConfigValue (PassedThrough value))
 					m
-				in ParsedRemoteConfig m' c
+				    c' = M.insert
+				    	(Accepted setting)
+					(Accepted value)
+					c
+				in ParsedRemoteConfig m' c'
 			modifyTVar' (externalConfigChanges st) $ \f ->
 				f . M.insert (Accepted setting) (Accepted value)
 	handleRemoteRequest (GETCONFIG setting) = do
