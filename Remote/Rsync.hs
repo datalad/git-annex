@@ -128,8 +128,8 @@ gen r u rc gc rs = do
 -- Things used by genRsyncOpts
 rsyncRemoteConfigs :: [RemoteConfigFieldParser]
 rsyncRemoteConfigs = 
-	[ yesNoParser shellEscapeField True
-		(FieldDesc "avoid usual shell escaping (not recommended)")
+	[ yesNoParser shellEscapeField (Just True)
+		(FieldDesc "set to no to avoid usual shell escaping (not recommended)")
 	]
 
 genRsyncOpts :: ParsedRemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts

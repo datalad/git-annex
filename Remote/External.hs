@@ -835,7 +835,7 @@ baseRemoteConfigParser = RemoteConfigParser
 	{ remoteConfigFieldParsers =
 		[ optionalStringParser externaltypeField
 			(FieldDesc "type of external special remote to use")
-		, trueFalseParser readonlyField False
+		, trueFalseParser readonlyField (Just False)
 			(FieldDesc "enable readonly mode")
 		]
 	, remoteConfigRestPassthrough = Just

@@ -50,6 +50,10 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
     branch. git-annex-remote-googledrive one was special remote affected by
     this bug.
     (Regression introduced in version 7.20200202.7)
+  * Fix bug that made creds not be stored in git when a special remote
+    was initialized with gpg encryption, but without an explicit
+    embedcreds=yes.
+    (Regression introduced in version 7.20200202.7)
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 

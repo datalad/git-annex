@@ -59,7 +59,7 @@ encryptionConfigParsers =
 	, optionalStringParser cipherField HiddenField
 	, optionalStringParser cipherkeysField HiddenField
 	, optionalStringParser pubkeysField HiddenField
-	, yesNoParser embedCredsField False
+	, yesNoParser embedCredsField Nothing
 		(FieldDesc "embed credentials into git repository")
 	, macFieldParser
 	, optionalStringParser (Accepted "keyid")

@@ -8,15 +8,22 @@ could break existing workflows in a surprising way, and even maybe result
 in data loss if the user was relying on git-annex embedding the creds and
 didn't otherwise have a way to get them.
 
-The cause is that there's a externalConfigChanges that SETCONFIG
+It's (yet another) regression caused by 7.20200202.7's sweeping changes to
+remote configuration.
+
+Problem is, there's a externalConfigChanges that SETCONFIG
 updates, but SETCREDS does not, instead it swap in a new externalConfig.
 But that externalConfig is not examined when extracting the config changes
 to store in remote.log, because the types don't match up any longer.
 
 So, SETCREDS needs to also update externalConfigChanges.
 
-Related reversion: When SETCONFIG is used, followed by GETCONFIG
+Related regression: When SETCONFIG is used, followed by GETCONFIG
 of the same value, it does not return the value. This doesn't affect
 SETCONFIG at init time followed by GETCONFIG later, so it's unlikely to
 affect anything, but it's still wrong, and so I've fixed it.
+
+And they don't stop coming, yet another regression: Not setting embedcreds
+was treated as embedcreds=no, because the bool parser defaulted to False.
+So the implicit embedcreds when using encryption=pubkey broke.
 """]]

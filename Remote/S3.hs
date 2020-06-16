@@ -87,10 +87,10 @@ remote = specialRemoteType $ RemoteType
 				(FieldDesc "storage class, eg STANDARD or STANDARD_IA or ONEZONE_IA")
 			, optionalStringParser fileprefixField
 				(FieldDesc "prefix to add to filenames in the bucket")
-			, yesNoParser versioningField False
+			, yesNoParser versioningField (Just False)
 				(FieldDesc "enable versioning of bucket content")
-			, yesNoParser publicField False
-				(FieldDesc "allow public read access to the buckey")
+			, yesNoParser publicField (Just False)
+				(FieldDesc "allow public read access to the bucket")
 			, optionalStringParser publicurlField
 				(FieldDesc "url that can be used by public to download files")
 			, optionalStringParser protocolField
@@ -157,7 +157,7 @@ newtype SignatureVersion = SignatureVersion Int
 
 signatureVersionParser :: RemoteConfigField -> FieldDesc -> RemoteConfigFieldParser
 signatureVersionParser f fd =
-	genParser go f defver fd
+	genParser go f (Just defver) fd
 		(Just (ValueDesc "v2 or v4"))
   where
 	go "v2" = Just (SignatureVersion 2)
