@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-16T16:48:27Z"
+ content="""
+`git-annex import master --from android` should have created an
+android/master branch with the imported files in it. There is apparently no
+such branch in your case.
+
+But I see that you also posted [[forum/--verbose_not_really_verbose__63__]]
+where you talk about having interrupted the import before it was complete.
+Since the branch only gets created when the import is allowed to finish, I
+think that explains your problem.
+
+It's rarely a good idea to not fully explain what you actually did when
+reporting what seems like a problem. If I had not happened to read that
+forum post first, and noticed it was also from you, we would have embarked
+on a snipe hunt to find some bug that doesn't really exist.
+"""]]
