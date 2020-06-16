@@ -9,6 +9,7 @@ module Command.CheckPresentKey where
 
 import Command
 import qualified Remote
+import Remote.List
 
 cmd :: Command
 cmd = noCommit $ noMessages $
@@ -46,8 +47,13 @@ data Result = Present | NotPresent | CheckFailure String
 
 check :: String -> Maybe Remote -> Annex Result
 check ks mr = case mr of
-	Nothing -> go Nothing =<< Remote.keyPossibilities k
 	Just r -> go Nothing [r]
+	Nothing -> do
+		mostlikely <- Remote.keyPossibilities k
+		otherremotes <- flip Remote.remotesWithoutUUID 
+			(map Remote.uuid mostlikely)
+			<$> remoteList
+		go Nothing (mostlikely ++ otherremotes)
   where
 	k = toKey ks
 	go Nothing [] = return NotPresent

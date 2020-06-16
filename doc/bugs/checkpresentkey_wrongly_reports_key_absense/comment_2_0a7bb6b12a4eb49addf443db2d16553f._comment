@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-16T17:35:41Z"
+ content="""
+So I guess the problem description is:
+
+checkpresentkey with the uuid of a remote verifies the key is on the
+remote, return 1. But, with no uuid, it's supposed to check all remotes,
+and instead it seems to fail and return 0 without checking the remote
+whose uuid the earlier run of it showed does contain the key.
+
+And I think I see why it would do that. When no remote is given, it reads
+the location log, and checks each remote that the location log says
+contains the key. So, if the location log is out of date and a remote does
+contain the key, it will return 0 w/o checking it.
+
+It would probably make sense for it to actually try all accessible remotes,
+on the off chance one of them has the key. That's what the documentation
+says it does, although I don't think it ever has.
+
+The original use case for this was
+[[todo/checkpresentkey_without_explicit_remote]], and it does seem like
+that use case intended to check all remotes, not only ones the location log
+has it.
+"""]]

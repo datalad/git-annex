@@ -39,7 +39,9 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
     remotes.
   * When a local git remote cannot be initialized because it has no
     git-annex branch or a .noannex file, avoid displaying a message about it.
-
+  * checkpresentkey: When no remote is specified, try all remotes, not
+    only ones that the location log says contain the key. This is what
+    the documentation has always said it did.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 
