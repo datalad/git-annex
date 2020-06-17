@@ -12,7 +12,7 @@ I expect git-annex to never drop data unless specified as also mentioned [here](
 
 I would rather look at the corrupted file myself and figure out the best course of action instead of losing it completely.
 
-At this point, I'm no longer running fsck on remotes.
+At this point, I'm working around it by not running fsck on remotes, since local fsck seems to work as expected.
 
 
 ### What version of git-annex are you using? On what operating system?
