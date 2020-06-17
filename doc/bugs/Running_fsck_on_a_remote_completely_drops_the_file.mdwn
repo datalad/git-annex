@@ -8,7 +8,7 @@ Running fsck on a remote completely drops the file
 * Run `git-annex fsck`
 * git-annex will notice the corruption and completely drop the file from the remote
 
-I expect git-annex to never drop data unless specified as also mentioned in https://git-annex.branchable.com/walkthrough/fsck__58___when_things_go_wrong/
+I expect git-annex to never drop data unless specified as also mentioned [here](https://git-annex.branchable.com/walkthrough/fsck__58___when_things_go_wrong)
 
 I would rather look at the corrupted file myself and figure out the best course of action instead of losing it completely.
 
