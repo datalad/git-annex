@@ -15,6 +15,7 @@ import qualified Git
 import Config
 import Annex.Path
 import Annex.Version
+import Annex.GitOverlay
 import Types.RepoVersion
 #ifndef mingw32_HOST_OS
 import qualified Upgrade.V0
@@ -104,7 +105,7 @@ upgrade automatic destversion = do
 	upgraderemote = do
 		rp <- fromRawFilePath <$> fromRepo Git.repoPath
 		cmd <- liftIO programPath
-		liftIO $ boolSystem' cmd
+		runsGitAnnexChildProcess $ liftIO $ boolSystem' cmd
 			[ Param "upgrade"
 			, Param "--quiet"
 			, Param "--autoonly"

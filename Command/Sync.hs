@@ -65,6 +65,7 @@ import Annex.UpdateInstead
 import Annex.Export
 import Annex.TaggedPush
 import Annex.CurrentBranch
+import Annex.GitOverlay
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
@@ -513,7 +514,7 @@ pushRemote o remote (Just branch, _) = do
 	postpushupdate repo = case Git.repoWorkTree repo of
 		Nothing -> return True
 		Just wt -> ifM needemulation
-			( liftIO $ do
+			( runsGitAnnexChildProcess $ liftIO $ do
 				p <- programPath
 				boolSystem' p [Param "post-receive"]
 					(\cp -> cp { cwd = Just (fromRawFilePath wt) })
