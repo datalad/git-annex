@@ -1,4 +1,4 @@
-git-annex (8.20200523) UNRELEASED; urgency=medium
+git-annex (8.20200617) upstream; urgency=medium
 
   * Added annex.skipunknown git config, that can be set to false to change
     the behavior of commands like `git annex get foo*`, to not skip
@@ -59,7 +59,7 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * Fix a annex.pidlock issue that made eg git-annex get of an unlocked
     file hang until the annex.pidlocktimeout and then fail.
 
- -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 17 Jun 2020 15:58:59 -0400
 
 git-annex (8.20200522) upstream; urgency=medium
 
