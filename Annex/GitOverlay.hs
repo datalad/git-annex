@@ -20,6 +20,11 @@ import Git.Index
 import Git.Env
 import qualified Annex
 import qualified Annex.Queue
+import qualified Utility.LockFile.PidLock as PidF
+import qualified Utility.LockPool.PidLock as PidP
+import Utility.LockPool (dropLock)
+import Utility.Env
+import Annex.LockPool.PosixOrPid (pidLockFile)
 
 {- Runs an action using a different git index file. -}
 withIndexFile :: AltIndexFile -> (FilePath -> Annex a) -> Annex a
@@ -125,3 +130,57 @@ withAltRepo modrepo unmodrepo a = do
 		, Annex.repoqueue = Just q
 		}
 	either E.throw return v
+
+{- Wrap around actions that may run a git-annex child process.
+ -
+ - When pid locking is in use, this tries to take the pid lock, and if
+ - successful, holds it while running the child process. The action
+ - is run with the Annex monad modified so git commands are run with
+ - an env var set, which prevents child git annex processes from t
+ - rying to take the pid lock themselves.
+ -
+ - This way, any locking the parent does will not get in the way of
+ - the child. The child is assumed to not do any locking that conflicts
+ - with the parent, but if it did happen to do that, it would be noticed
+ - when git-annex is used without pid locking.
+ -}
+runsGitAnnexChildProcess :: Annex a -> Annex a
+runsGitAnnexChildProcess a = pidLockFile >>= \case
+	Nothing -> a
+	Just pidlock -> bracket (setup pidlock) cleanup (go pidlock)
+  where
+	setup pidlock = liftIO $ PidP.tryLock pidlock
+	
+	cleanup (Just h) = liftIO $ dropLock h
+	cleanup Nothing = return ()
+	
+	go _ Nothing = a
+	go pidlock (Just _h) = do
+		v <- liftIO $ PidF.pidLockEnv pidlock
+		let addenv g = do
+			g' <- liftIO $ addGitEnv g v "1"
+			return (g', ())
+		let rmenv oldg g
+			| any (\(k, _) -> k == v) (fromMaybe [] (Git.gitEnv oldg)) = g
+			| otherwise = 
+				let e' = case Git.gitEnv g of
+					Just e -> Just (delEntry v e)
+					Nothing -> Nothing
+				in g { Git.gitEnv = e' }
+		withAltRepo addenv rmenv (const a)
+
+runsGitAnnexChildProcess' :: Git.Repo -> (Git.Repo -> IO a) -> Annex a
+runsGitAnnexChildProcess' r a = pidLockFile >>= \case
+	Nothing -> liftIO $ a r
+	Just pidlock -> liftIO $ bracket (setup pidlock) cleanup (go pidlock)
+  where
+	setup pidlock = PidP.tryLock pidlock
+	
+	cleanup (Just h) = dropLock h
+	cleanup Nothing = return ()
+	
+	go _ Nothing = a r
+	go pidlock (Just _h) = do
+		v <- PidF.pidLockEnv pidlock
+		r' <- addGitEnv r v "1"
+		a r'

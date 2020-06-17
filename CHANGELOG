@@ -56,6 +56,8 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
     was initialized with gpg encryption, but without an explicit
     embedcreds=yes.
     (Regression introduced in version 7.20200202.7)
+  * Fix a annex.pidlock issue that made eg git-annex get of an unlocked
+    file hang until the annex.pidlocktimeout and then fail.
 
  -- Joey Hess <id@joeyh.name>  Tue, 26 May 2020 10:20:52 -0400
 

@@ -1,6 +1,6 @@
 {- pid-based lock files
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -14,6 +14,7 @@ module Utility.LockFile.PidLock (
 	getLockStatus,
 	checkLocked,
 	checkSaneLock,
+	pidLockEnv,
 ) where
 
 import Utility.PartialPrelude
@@ -27,10 +28,15 @@ import Utility.LockFile.LockStatus
 import Utility.ThreadScheduler
 import Utility.Hash
 import Utility.FileSystemEncoding
+import Utility.Env
+import Utility.Env.Set
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
-import System.Posix
+import System.Posix.IO
+import System.Posix.Types
+import System.Posix.Files
+import System.Posix.Process
 import Data.Maybe
 import Data.List
 import Network.BSD
@@ -40,7 +46,9 @@ import Prelude
 
 type LockFile = FilePath
 
-data LockHandle = LockHandle LockFile FileStatus SideLockHandle
+data LockHandle
+	= LockHandle LockFile FileStatus SideLockHandle
+	| ParentLocked
 
 type SideLockHandle = Maybe (LockFile, Posix.LockHandle)
 
@@ -115,40 +123,49 @@ sideLockFile lockfile = do
 -- However, if the lock file is on a networked file system, and was
 -- created on a different host than the current host (determined by hostname),
 -- this can't be done and stale locks may persist.
+--
+-- If a parent process is holding the lock, determined by a
+-- "PIDLOCK_lockfile" environment variable, does not block either.
 tryLock :: LockFile -> IO (Maybe LockHandle)
-tryLock lockfile = trySideLock lockfile $ \sidelock -> do
-	lockfile' <- absPath lockfile
-	(tmp, h) <- openTempFile (takeDirectory lockfile') "locktmp"
-	setFileMode tmp (combineModes readModes)
-	hPutStr h . show =<< mkPidLock
-	hClose h
-	let failedlock st = do
-		dropLock $ LockHandle tmp st sidelock
-		nukeFile tmp
-		return Nothing
-	let tooklock st = return $ Just $ LockHandle lockfile' st sidelock
-	ifM (linkToLock sidelock tmp lockfile')
-		( do
+tryLock lockfile = do
+	abslockfile <- absPath lockfile
+	lockenv <- pidLockEnv abslockfile
+	getEnv lockenv >>= \case
+		Nothing -> trySideLock lockfile (go abslockfile)
+		_ -> return (Just ParentLocked)
+  where
+	go abslockfile sidelock = do
+		(tmp, h) <- openTempFile (takeDirectory abslockfile) "locktmp"
+		setFileMode tmp (combineModes readModes)
+		hPutStr h . show =<< mkPidLock
+		hClose h
+		let failedlock st = do
+			dropLock $ LockHandle tmp st sidelock
 			nukeFile tmp
-			-- May not have made a hard link, so stat
-			-- the lockfile
-			lckst <- getFileStatus lockfile'
-			tooklock lckst
-		, do
-			v <- readPidLock lockfile'
-			hn <- getHostName
-			tmpst <- getFileStatus tmp
-			case v of
-				Just pl | isJust sidelock && hn == lockingHost pl -> do
-					-- Since we have the sidelock,
-					-- and are on the same host that
-					-- the pidlock was taken on,
-					-- we know that the pidlock is
-					-- stale, and can take it over.
-					rename tmp lockfile'
-					tooklock tmpst
-				_ -> failedlock tmpst
-		)
+			return Nothing
+		let tooklock st = return $ Just $ LockHandle abslockfile st sidelock
+		ifM (linkToLock sidelock tmp abslockfile)
+			( do
+				nukeFile tmp
+				-- May not have made a hard link, so stat
+				-- the lockfile
+				lckst <- getFileStatus abslockfile
+				tooklock lckst
+			, do
+				v <- readPidLock abslockfile
+				hn <- getHostName
+				tmpst <- getFileStatus tmp
+				case v of
+					Just pl | isJust sidelock && hn == lockingHost pl -> do
+						-- Since we have the sidelock,
+						-- and are on the same host that
+						-- the pidlock was taken on,
+						-- we know that the pidlock is
+						-- stale, and can take it over.
+						rename tmp abslockfile
+						tooklock tmpst
+					_ -> failedlock tmpst
+			)
 
 -- Linux's open(2) man page recommends linking a pid lock into place,
 -- as the most portable atomic operation that will fail if
@@ -242,6 +259,7 @@ dropLock (LockHandle lockfile _ sidelock) = do
 	-- considered stale.
 	dropSideLock sidelock
 	nukeFile lockfile
+dropLock ParentLocked = return ()
 
 getLockStatus :: LockFile -> IO LockStatus
 getLockStatus = maybe StatusUnLocked (StatusLockedBy . lockingPid) <$$> readPidLock
@@ -261,3 +279,17 @@ checkSaneLock lockfile (LockHandle _ st _) =
 	go Nothing = return False
 	go (Just st') = return $
 		deviceID st == deviceID st' && fileID st == fileID st'
+checkSaneLock _ ParentLocked = return True
+
+-- | A parent process that is using pid locking can set this to 1 before
+-- starting a child, to communicate to the child that it's holding the pid
+-- lock and that the child can skip trying to take it, and not block
+-- on the pid lock its parent is holding.
+--
+-- The parent process should keep running as long as the child
+-- process is running, since the child inherits the environment and will
+-- not see unsetLockEnv.
+pidLockEnv :: FilePath -> IO String
+pidLockEnv lockfile = do
+	abslockfile <- absPath lockfile
+	return $ "PIDLOCK_" ++ filter legalInEnvVar abslockfile

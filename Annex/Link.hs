@@ -30,6 +30,7 @@ import Git.FilePath
 import Git.Config
 import Annex.HashObject
 import Annex.InodeSentinal
+import Annex.GitOverlay
 import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
@@ -204,23 +205,24 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
 		    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
 			let tmpindex = tmpdir </> "index"
 			let updatetmpindex = do
-				r' <- Git.Env.addGitEnv r Git.Index.indexEnv 
+				r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv 
 					=<< Git.Index.indexEnvVal tmpindex
 				-- Avoid git warning about CRLF munging.
 				let r'' = r' { gitGlobalOpts = gitGlobalOpts r' ++
 					[ Param "-c"
 					, Param $ "core.safecrlf=" ++ boolConfig False
 					] }
-				Git.UpdateIndex.refreshIndex r'' $ \feed ->
-					forM_ l $ \(f', checkunmodified) ->
-						whenM checkunmodified $
-							feed f'
+				runsGitAnnexChildProcess' r'' $ \r''' ->
+					liftIO $ Git.UpdateIndex.refreshIndex r''' $ \feed ->
+						forM_ l $ \(f', checkunmodified) ->
+							whenM checkunmodified $
+								feed f'
 			let replaceindex = catchBoolIO $ do
 				moveFile tmpindex realindex
 				return True
-			ok <- liftIO $ createLinkOrCopy realindex tmpindex
+			ok <- liftIO (createLinkOrCopy realindex tmpindex)
 				<&&> updatetmpindex
-				<&&> replaceindex
+				<&&> liftIO replaceindex
 			unless ok showwarning
 		bracket lockindex unlockindex go
 

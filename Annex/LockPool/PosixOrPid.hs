@@ -18,6 +18,7 @@ module Annex.LockPool.PosixOrPid (
 	LockStatus(..),
 	getLockStatus,
 	checkSaneLock,
+	pidLockFile,
 ) where
 
 import Common

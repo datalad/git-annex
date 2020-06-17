@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-06-17T17:04:57Z"
+ content="""
+Oh this is tricky.. git-annex is taking the gitAnnexGitQueueLock
+while running the queued git update-index command. Which is the command
+that then runs git-annex.
+
+So dropping the pid lock before running the command won't work.
+
+If pid locks were fine grained, this would not be a problem because the
+child process is really locking a different resource than its grandparent.
+
+But, I think the reasons for not making them fine grained do make sense:
+Since git-annex sometimes takes a posix lock on a content file, it would
+need to use some other lock file for the pid lock. So every place that
+uses a lock file would have to specifiy the filename to use for pid
+locking. Which makes pid locking complicate the rest of the code base
+quite a lot, and every code path involving locking would have to be tested
+twice, in order to check that the pid lock file used by that lock works.
+Doubling the complexity of your file locking is a good thing to avoid.
+
+Hmm.. I said "the child process is really locking a different resource than
+its grandparent". And that generally has to be the case, or people using
+git-annex w/o pid locking would notice that hey, these child processes
+fail to take a lock and crash. 
+
+So.. If we assume that is the case, and that there are plenty of git-annex
+users not using pid locking, then there's no need for a child process
+to take the pid lock, if its parent currently has the pid lock held,
+and will keep it held.
+
+And this could be communicated via an env var. When the pid lock is taken
+set `ANNEX_PIDLOCKED`, and unset when it's dropped. Then, so long
+as childen inherit that env variable, they can skip taking the pid lock when
+it's set.
+
+To make sure that's safe, any time git-annex runs a child process
+(or a git command that runs git-annex), it ought to hold the pid lock
+while doing it. Holding any lock will do. The risk is, if one thread
+has some lock held for whatever reason, and another thread runs the child
+process, then the child process will rely on the unrelated thread keeping
+the lock held. Explicitly holding some lock avoids such a scenario.
+
+So, let's make it more explicit, add a runsGitAnnex that, when pid locking
+is enabled, holds the pid lock while running the action. Then that has to
+be wrapped around any places where a git-annex child process is run,
+which can be done broadly, or just as these issues come up.
+"""]]

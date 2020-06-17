@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-06-17T16:16:19Z"
+ content="""
+Minimal test case for the hang: 
+
+	git init a
+	cd a
+	git annex init
+	git annex adjust --unlock
+	git config annex.pidlock true
+	date > foo
+	git annex add --force
+	git commit -m add
+	cd ..
+	git clone a b
+	cd b
+	git annex init
+	git annex adjust --unlock
+	git config annex.pidlock true
+	git annex get foo --force
+
+That does not need vfat to hang. 
+
+	 364479 pts/2    Sl+    0:00          |           \_ /home/joey/bin/git-annex get foo
+	 364504 pts/2    Sl+    0:00          |               \_ git --git-dir=.git --work-tree=. --literal-pathspecs -c core.safecrlf=false update-index -q --refresh -z --stdin
+	 364506 pts/2    S+     0:00          |                   \_ /bin/sh -c git-annex smudge --clean -- 'foo' git-annex smudge --clean -- 'foo'
+	 364507 pts/2    Sl+    0:00          |                       \_ git-annex smudge --clean -- foo
+
+So is git-annex smudge waiting on the pidlock its parent has?
+
+Yes: After setting annex.pidlocktimeout 2:
+
+	2 second timeout exceeded while waiting for pid lock file .git/annex/pidlock
+	git-annex: Gave up waiting for possibly stale pid lock file .git/annex/pidlock
+	error: external filter 'git-annex smudge --clean -- %f' failed 1
+
+What I'm not sure about: annex.pidlock is not set by default on vfat,
+so why would the test suite have failed there, and intermittently?
+Maybe annex.pidlock does get set in some circumstances?
+
+Anyway, there's a clear problem that annex.pidlock prevents more than 1 git-annex
+process that uses locking from running, and here we have a parent git-annex
+that necessarily runs a child git-annex that does locking.
+
+Could the child process check if a parent/grandparent has the pid lock held
+and so safely skip taking it? Or do all places git-annex runs itself
+have to shut down pid locking?
+"""]]

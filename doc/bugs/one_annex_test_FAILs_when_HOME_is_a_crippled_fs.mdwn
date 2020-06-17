@@ -56,3 +56,5 @@ details of the setup are [in that PR](https://github.com/datalad/datalad-extensi
 PS determining the boundaries and names of the tests git annex had ran is a tricky business on its own -- I wondered if tests output formatting and annotation could have been improved as well. E.g. unlikely there is a point to print all output if test passes.  With `nose` in Python / datalad we get a summary of all failed tests (and what was output when they were ran) at the end of the full sweep. That helps to avoid needing to search the entire long list 
 
 
+> I've fixed two tests now, so [[done]]. (Also git-annex test succeeded
+> on vfat.) --[[Joey]]

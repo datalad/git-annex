@@ -10,6 +10,7 @@
 module Utility.Env.Set (
 	setEnv,
 	unsetEnv,
+	legalInEnvVar,
 ) where
 
 #ifdef mingw32_HOST_OS
@@ -18,6 +19,7 @@ import Utility.Env
 #else
 import qualified System.Posix.Env as PE
 #endif
+import Data.Char
 
 {- Sets an environment variable. To overwrite an existing variable,
  - overwrite must be True.
@@ -41,3 +43,7 @@ unsetEnv = PE.unsetEnv
 #else
 unsetEnv = System.SetEnv.unsetEnv
 #endif
+
+legalInEnvVar :: Char -> Bool
+legalInEnvVar '_' = True
+legalInEnvVar c = isAsciiLower c || isAsciiUpper c || (isNumber c && isAscii c)
