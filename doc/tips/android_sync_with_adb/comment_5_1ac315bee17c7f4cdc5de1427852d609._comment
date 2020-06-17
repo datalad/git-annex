@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://dead-doomer.livejournal.com/"
+ subject="comment 5"
+ date="2020-06-17T06:42:53Z"
+ content="""
+How do I manually create this android_cable/master remote branch?
+
+For the sake of testing, I created another remote on the same smartphone, and indeed, if \"import\" finishes in one try, there is a 
+
+```
+
+   $ cat refs/remotes/android_test_cable/master 
+   8d7ada85897ef7df05bcdf1f2464ca678e03bd3b
+
+```
+
+How do I find an object that corresponds to the original `android_cable` special remote?
+
+"""]]

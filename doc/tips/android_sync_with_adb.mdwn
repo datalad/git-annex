@@ -19,7 +19,7 @@ already.
 
 Then, in that repository, set up an adb special remote:
 
-	initremote android type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes
+	git-annex initremote android type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes
 
 The above example syncs with the /sdcard directory of the
 Android device. That can be a lot of files, so you may want a more

@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://dead-doomer.livejournal.com/"
+ subject="comment 4"
+ date="2020-06-17T01:13:46Z"
+ content="""
+Well, how would I know that that was significant? I resumed the import after interrupting it and let it run till it finished (several days actually). 
+
+In fact, I let \"import\" run several times till the end, the first time taking a lot of time, and the next ones taking ~10 minutes each.
+
+Indeed, there seems to be no android_cable/master branch
+
+```
+
+$ git --no-pager branch -ra
+  git-annex
+  synced/master
+
+```
+
+I tried to create the branch manually, but there seems to be no `git-annex branch`.
+
+In addition, this post is easily googleable, whereas \"forum\" is not. I believe that documenting a typical-of-the-typical issue that a user may encounter at the place which if the point of the first consultation is fairly useful.
+
+"""]]
