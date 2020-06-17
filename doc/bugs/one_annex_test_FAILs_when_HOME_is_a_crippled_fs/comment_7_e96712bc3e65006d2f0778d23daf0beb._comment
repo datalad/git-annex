@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-06-17T16:11:37Z"
+ content="""
+Confirmed that, on vfat, "foo " is not a legal filename. News to me.
+
+So, the original failing test case was indeed caused by that, and has
+been fixed.
+"""]]

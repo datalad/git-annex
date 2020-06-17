@@ -32,7 +32,9 @@ git-annex (8.20200523) UNRELEASED; urgency=medium
   * Avoid creating the keys database during init when there are no unlocked
     files, to prevent init failing when sqlite does not work in the
     filesystem.
-  * import: Avoid using some strange names for temporary keys.
+  * import: Avoid using some strange names for temporary keys,
+    which broke importing from a directory special remote onto a vfat
+    filesystem.
   * S3: The REDUCED_REDUNDANCY storage class is no longer cheaper so
     stop documenting it, and stop offering it as a choice in the assistant.
   * Improve display of problems auto-initializing or upgrading local git
