@@ -143,7 +143,7 @@ docs: mans
 
 clean:
 	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
-	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
+	rm -rf tmp dist dist-newstyle git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags TAGS Build/SysConfig Build/Version \
 		Setup Build/InstallDesktopFile \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
