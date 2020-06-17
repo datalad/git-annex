@@ -15,9 +15,9 @@ SHAREDIR?=share
 # this to /usr/share/zsh/vendor-completions
 ZSH_COMPLETIONS_PATH?=$(PREFIX)/$(SHAREDIR)/zsh/site-functions
 
-# Am I typing :make in vim? Do a fast build.
+# Am I typing :make in vim? Do a dev build.
 ifdef VIM
-all=fast
+all=dev
 endif
 
 build: $(all)
@@ -41,6 +41,16 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	fi
 	mkdir -p tmp
 	touch tmp/configure-stamp
+
+# Non-optimised build for development.
+#
+# This leaves cabal.project.local configured for a dev build,
+# so just running make will continue to do dev builds.
+dev:
+	$(BUILDER) configure -f"-Production" -O0 --enable-executable-dynamic
+	mkdir -p tmp
+	touch tmp/configure-stamp
+	$(MAKE) git-annex
 
 git-annex: tmp/configure-stamp
 	$(BUILDER) build $(BUILDERCOMMONOPTIONS) $(BUILDEROPTIONS)
@@ -99,16 +109,16 @@ retest: git-annex
 	./git-annex test --rerun-update --rerun-filter failures
 
 # https://github.com/luqui/hothasktags/issues/18
-HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports -c --cpp -c -traditional -c --include=dist/build/git-annex/autogen/cabal_macros.h
+HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports -c --cpp -c -traditional -c --include=$$(find dist-newstyle | grep cabal_macros.h | head -n1)
 
 # tags file for vim
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
-	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} $$f; done) 2>/dev/null | sort > tags
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} $$f; done) 2>/dev/null | sort > tags
 
 # TAGS file for emacs
 TAGS:
-	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} -e $$f; done) 2>/dev/null > TAGS
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} -e $$f; done) 2>/dev/null > TAGS
 
 mans: Build/MakeMans
 	./Build/MakeMans
@@ -266,28 +276,6 @@ osxapp:
 			fi \
 		fi \
 	done; if [ $$ok = 0 ]; then exit 1; fi
-
-# Bypass cabal, and only run the main ghc --make command for a
-# faster development build.
-fast: dist/cabalbuild
-	@sh dist/cabalbuild
-	@ln -sf dist/build/git-annex/git-annex git-annex
-	@$(MAKE) tags >/dev/null 2>&1 &
-
-dist/cabalbuild: dist/caballog
-	grep 'ghc --make' dist/caballog | tail -n 1 > dist/cabalbuild
-
-dist/caballog: git-annex.cabal
-	$(BUILDER) configure -f"-Production" -O0 --enable-executable-dynamic
-	$(BUILDER) build -v2 --ghc-options="-O0 -j" | tee dist/caballog
-
-# Hardcoded command line to make hdevtools start up and work.
-# You will need some memory. It's worth it.
-# Note: Don't include WebDAV or Webapp. TH use bloats memory > 500 mb!
-# TODO should be possible to derive this from caballog.
-hdevtools:
-	hdevtools --stop-server || true
-	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98 -g -XPackageImports -g -XLambdaCase
 
 distributionupdate:
 	git pull
