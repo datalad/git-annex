@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://dead-doomer.livejournal.com/"
+ subject="comment 4"
+ date="2020-06-17T02:41:51Z"
+ content="""
+>Normally with a fairly large number of files like a thousand or so, this step takes less than 1 second..
+
+Well, I wouldn't need any specialised synchronisation tool if I had 1000 files.
+
+My \"sdcard\", which is not really an SD card (Android lying as always), has ~400 000 files, out of which a huge load are garbage files created by poorly written apps which you cannot avoid, like a bank-client, which are unmanageable from a phone itself. 
+
+I hoped to pull them to the laptop, do the heavy lifting of sorting that out on the laptop, using fdupes, rdfind, find/grep, and such, delete the rubbish, and push it back. 
+
+It's not an \"exotic\" setup at all, I don't even have my phone rooted. In fact for about a year or two a phone with 128Gb of storage is fairly affordable. And it's not really possible to stop apps from being garbage.
+"""]]
