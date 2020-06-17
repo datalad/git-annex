@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2020-06-17T19:41:29Z"
+ content="""
+Hmm, implemented all that, it did fix my shell test case.
+
+But, the test suite is still hanging in the same place when run on vfat.
+
+stracing the git-annex smudge command that is hung:
+
+	fcntl(0, F_SETLKW, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0}
+
+fd 0 is .git/annex/gitqueue.lck
+
+So hmm, this seems like a different problem than the one I fixed.
+It's not involving pid locking.
+
+The parent git-annex also has the same lock file open, and presumably
+locked exclusively. So it makes sense it would deadlock, both the parent
+and child trying to lock the same lock. It's kind of odd that this only
+happens on vfat. I don't think this is because of vfat's limitations
+though. It's a legitimate deadlock.
+
+I get the feeling that gitAnnexGitQueueLock needs to be taken in a more
+fine-grained way. Or Annex.Link should not be using the git queue
+for what it does, which is not really a queue in the same way Git.Queue is
+usually used. If Annex.Link instead deferred the action until cleanup in
+some other way, it would not take gitAnnexGitQueueLock and so when it runs
+smudge it would not matter if that did take the lock.
+
+Unfortunately I'm out of time to fix it before today's planned release.
+"""]]
