@@ -25,6 +25,7 @@ html
 dist
 dist-newstyle
 cabal.project.local
+cabal.project.local~
 result
 # Sandboxed builds
 cabal-dev
