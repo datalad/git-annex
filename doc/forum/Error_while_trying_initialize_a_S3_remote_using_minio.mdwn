@@ -52,7 +52,7 @@ initremote minio1 (checking bucket...) [2020-06-18 15:34:32.131454] String to si
 [2020-06-18 15:34:32.145416] Host: "mybucket.localhost"
 [2020-06-18 15:34:32.145448] Path: "/"
 [2020-06-18 15:34:32.145491] Query string: ""
-[2020-06-18 15:34:32.145535] Header: [("Date","Thu, 18 Jun 2020 22:34:32 GMT"),("Authorization","AWS minioadmin:a7TFnEnBgtRW791jNvAyhC5fywI=")]
+[2020-06-18 15:34:32.145535] Header: [("Date","Thu, 18 Jun 2020 22:34:32 GMT"),("Authorization","AWS user:key3")]
 [2020-06-18 15:34:32.145614] Body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><LocationConstraint>us-east-1</LocationConstraint></CreateBucketConfiguration>"
 [2020-06-18 15:34:32.153701] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
 
