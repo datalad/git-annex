@@ -58,7 +58,7 @@ git-annex: tmp/configure-stamp
 		ln -sf $$(stack path $(BUILDERCOMMONOPTIONS) --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
 		if [ -d dist-newstyle ]; then \
-			ln -sf $$(find dist-newstyle/ -executable -type f | grep 'git-annex$$' | tail -n1) git-annex; \
+			ln -sf $$(cabal exec -- sh -c 'command -v git-annex') git-annex; \
 		else \
 			ln -sf dist/build/git-annex/git-annex git-annex; \
 		fi; \
@@ -108,17 +108,23 @@ test: git-annex git-annex-shell
 retest: git-annex
 	./git-annex test --rerun-update --rerun-filter failures
 
-# https://github.com/luqui/hothasktags/issues/18
-HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports -c --cpp -c -traditional -c --include=$$(find dist-newstyle | grep cabal_macros.h | head -n1)
-
 # tags file for vim
-# hothasktags chokes on some template haskell etc, so ignore errors
 tags:
-	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} $$f; done) 2>/dev/null | sort > tags
+	@$(MAKE) --quiet hothasktags HOTHASKTAGS_OPT= TAGFILE=tags
 
 # TAGS file for emacs
 TAGS:
-	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags ${HOTHASKTAGS_ARGS} -e $$f; done) 2>/dev/null > TAGS
+	@$(MAKE) --quiet hothasktags HOTHASKTAGS_OPT=-e TAGFILE=TAGS
+
+# https://github.com/luqui/hothasktags/issues/18
+HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports --cpp
+
+hothasktags:
+	@if ! cabal exec hothasktags -- $(HOTHASKTAGS_OPT) $(HOTHASKTAGS_ARGS) \
+		$$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v dist/ | grep -v /doc/ | egrep '\.hs$$') 2>/dev/null \
+			| sort > $(TAGFILE); then \
+		echo "** hothasktags failed"; \
+	fi
 
 mans: Build/MakeMans
 	./Build/MakeMans
@@ -283,4 +289,4 @@ distributionupdate:
 	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XLambdaCase -XPackageImports
 	./Build/DistributionUpdate
 
-.PHONY: git-annex git-union-merge tags
+.PHONY: git-annex git-union-merge tags TAGS
