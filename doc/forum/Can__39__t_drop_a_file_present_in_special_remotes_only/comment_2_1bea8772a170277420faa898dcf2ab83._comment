@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Franky"
+ avatar="http://cdn.libravatar.org/avatar/a428bea83c72676f7a79710fb5625849"
+ subject="comment 2"
+ date="2020-06-18T16:17:36Z"
+ content="""
+It is amazing that git-annex takes this much care. However, I don't really share with anybody else and `--force` scares the hell out of me. I have to double check everything a million times and still keep fingers crossed.
+
+Instead of that, can we have a `--no-lock` option that can be used to do this without needing to lock the repo? It will still do all the usual checks, just not fail on locking files. It'll obviously have the caveat that we can have data loss with simultaneous use, but so does `--force`.
+"""]]
