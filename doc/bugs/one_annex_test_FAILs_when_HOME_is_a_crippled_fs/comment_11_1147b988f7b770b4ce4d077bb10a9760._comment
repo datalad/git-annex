@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2020-06-18T15:52:10Z"
+ content="""
+git-annex smudge is locking the git queue in order to run
+restagePointerFile.
+
+And of course, restagePointerFile has run git update-index, which has run
+git-annex smudge.
+
+Normally git-annex smudge avoids this loop. In this case, 
+Database.Keys.reconcileStaged is what calls restagePointerFile
+(for reasons explained in [[!commit 50fa17aee64ae778eb071cc21d5be85ce969bd9b]]).
+So, there needs to be something to prevent restagePointerFile from running
+in git-annex smudge, no matter how it's called.
+
+Also, I suspect that vfat's timestamp granularity is exposing the problem.
+On other filesystems, I don't see git-annex smudge calling restagePointerFile.
+"""]]
