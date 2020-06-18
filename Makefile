@@ -58,7 +58,7 @@ git-annex: tmp/configure-stamp
 		ln -sf $$(stack path $(BUILDERCOMMONOPTIONS) --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
 		if [ -d dist-newstyle ]; then \
-			ln -sf $$(find dist-newstyle/ -executable -type f |grep 'git-annex$$') git-annex; \
+			ln -sf $$(find dist-newstyle/ -executable -type f | grep 'git-annex$$' | tail -n1) git-annex; \
 		else \
 			ln -sf dist/build/git-annex/git-annex git-annex; \
 		fi; \
