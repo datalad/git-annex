@@ -177,12 +177,18 @@ newtype Restage = Restage Bool
 restagePointerFile :: Restage -> RawFilePath -> InodeCache -> Annex ()
 restagePointerFile (Restage False) f _ =
 	toplevelWarning True $ unableToRestage $ Just $ fromRawFilePath f
-restagePointerFile (Restage True) f orig = withTSDelta $ \tsd -> do
-	-- update-index is documented as picky about "./file" and it
-	-- fails on "../../repo/path/file" when cwd is not in the repo 
-	-- being acted on. Avoid these problems with an absolute path.
-	absf <- liftIO $ absPath $ fromRawFilePath f
-	Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
+restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
+	-- Avoid refreshing the index if run by the
+	-- smudge clean filter, because git uses that when
+	-- it's already refreshing the index, probably because
+	-- this very action is running. Running it again would likely
+	-- deadlock.
+	unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
+		-- update-index is documented as picky about "./file" and it
+		-- fails on "../../repo/path/file" when cwd is not in the repo 
+		-- being acted on. Avoid these problems with an absolute path.
+		absf <- liftIO $ absPath $ fromRawFilePath f
+		Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
   where
 	isunmodified tsd = genInodeCache f tsd >>= return . \case
 		Nothing -> False

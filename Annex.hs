@@ -151,6 +151,7 @@ data AnnexState = AnnexState
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
 	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
+	, insmudgecleanfilter :: Bool
 	}
 
 newState :: GitConfig -> Git.Repo -> IO AnnexState
@@ -209,6 +210,7 @@ newState c r = do
 		, cachedcurrentbranch = Nothing
 		, cachedgitenv = Nothing
 		, urloptions = Nothing
+		, insmudgecleanfilter = False
 		}
 
 {- Makes an Annex state object for the specified git repo.

@@ -88,18 +88,23 @@ clean file = do
 	b <- liftIO $ L.hGetContents stdin
 	ifM fileoutsiderepo
 		( liftIO $ L.hPut stdout b
-		, case parseLinkTargetOrPointerLazy b of
-			Just k -> do
-				getMoveRaceRecovery k (toRawFilePath file)
-				liftIO $ L.hPut stdout b
-			Nothing -> do
-				let fileref = Git.Ref.fileRef (toRawFilePath file)
-				indexmeta <- catObjectMetaData fileref
-				go b indexmeta =<< catKey' fileref indexmeta
+		, do
+			-- Avoid a potential deadlock.
+			Annex.changeState $ \s -> s
+				{ Annex.insmudgecleanfilter = True }
+			go b
 		)
 	stop
   where
-	go b indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
+	go b = case parseLinkTargetOrPointerLazy b of
+		Just k -> do
+			getMoveRaceRecovery k (toRawFilePath file)
+			liftIO $ L.hPut stdout b
+		Nothing -> do
+			let fileref = Git.Ref.fileRef (toRawFilePath file)
+			indexmeta <- catObjectMetaData fileref
+			go' b indexmeta =<< catKey' fileref indexmeta
+	go' b indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
 		( do
 			-- Before git 2.5, failing to consume all stdin here
 			-- would cause a SIGPIPE and crash it.

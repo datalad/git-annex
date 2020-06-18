@@ -1,3 +1,11 @@
+git-annex (8.20200618) UNRELEASED; urgency=medium
+
+  * Fix a deadlock that could occur after git-annex got an unlocked
+    file, causing the command to hang indefinitely. Known to happen on 
+    vfat filesystems, possibly others.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
+
 git-annex (8.20200617) upstream; urgency=medium
 
   * Added annex.skipunknown git config, that can be set to false to change
