@@ -1,66 +1,65 @@
 I am trying to configure an S3 remote that uses minio. My minio installation seems to be working fine since aws cli seems to work well with it. However, when I try to enable git-annex, it seems to fail.
 
 ~~~
-$ ga initremote minio1 --debug type=S3 encryption=none host=localhost port=9000 type=S3 datacenter='us-east-1' bucket=mybucket
-[2020-06-18 15:34:31.885623] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
-[2020-06-18 15:34:31.903006] process done ExitSuccess
-[2020-06-18 15:34:31.903132] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
-[2020-06-18 15:34:31.910207] process done ExitSuccess
-[2020-06-18 15:34:31.913251] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..6c06bbc19665ed251ce580b99dcfc8a85f3381dc","--pretty=%H","-n1"]
-[2020-06-18 15:34:31.925076] process done ExitSuccess
-[2020-06-18 15:34:31.92517] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..116aa90151930ec19220a11be01392617206b84f","--pretty=%H","-n1"]
-[2020-06-18 15:34:31.936854] process done ExitSuccess
-[2020-06-18 15:34:31.942329] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
-[2020-06-18 15:34:31.943444] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
-[2020-06-18 15:34:32.010375] read: git ["config","--null","--list"]
-[2020-06-18 15:34:32.017277] process done ExitSuccess
-[2020-06-18 15:34:32.017437] read: git ["config","--null","--list"]
-[2020-06-18 15:34:32.024346] process done ExitSuccess
-initremote minio1 (checking bucket...) [2020-06-18 15:34:32.131454] String to sign: "GET\n\n\nThu, 18 Jun 2020 22:34:32 GMT\n/mybucket/annex-uuid"
-[2020-06-18 15:34:32.131524] Host: "mybucket.localhost"
-[2020-06-18 15:34:32.131555] Path: "/annex-uuid"
-[2020-06-18 15:34:32.131578] Query string: ""
-[2020-06-18 15:34:32.131602] Header: [("Date","Thu, 18 Jun 2020 22:34:32 GMT"),("Authorization","AWS user:key")]
-[2020-06-18 15:34:32.141977] Response status: Status {statusCode = 403, statusMessage = "Forbidden"}
-[2020-06-18 15:34:32.142062] Response header 'Accept-Ranges': 'bytes'
-[2020-06-18 15:34:32.142117] Response header 'Content-Length': '379'
-[2020-06-18 15:34:32.142158] Response header 'Content-Security-Policy': 'block-all-mixed-content'
-[2020-06-18 15:34:32.142195] Response header 'Content-Type': 'application/xml'
-[2020-06-18 15:34:32.142228] Response header 'Server': 'MinIO/RELEASE.2020-06-18T02-23-35Z'
-[2020-06-18 15:34:32.142262] Response header 'Vary': 'Origin'
-[2020-06-18 15:34:32.142316] Response header 'X-Amz-Request-Id': '1619C4344BCDB673'
-[2020-06-18 15:34:32.14235] Response header 'X-Xss-Protection': '1; mode=block'
-[2020-06-18 15:34:32.142373] Response header 'Date': 'Thu, 18 Jun 2020 22:34:32 GMT'
-[2020-06-18 15:34:32.142419] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
-[2020-06-18 15:34:32.142549] String to sign: "GET\n\n\nThu, 18 Jun 2020 22:34:32 GMT\n/mybucket/"
-[2020-06-18 15:34:32.142601] Host: "mybucket.localhost"
-[2020-06-18 15:34:32.142643] Path: "/"
-[2020-06-18 15:34:32.142665] Query string: ""
-[2020-06-18 15:34:32.142717] Header: [("Date","Thu, 18 Jun 2020 22:34:32 GMT"),("Authorization","AWS user:key2")]
-[2020-06-18 15:34:32.144475] Response status: Status {statusCode = 403, statusMessage = "Forbidden"}
-[2020-06-18 15:34:32.144559] Response header 'Accept-Ranges': 'bytes'
-[2020-06-18 15:34:32.144782] Response header 'Content-Length': '334'
-[2020-06-18 15:34:32.144854] Response header 'Content-Security-Policy': 'block-all-mixed-content'
-[2020-06-18 15:34:32.144887] Response header 'Content-Type': 'application/xml'
-[2020-06-18 15:34:32.144917] Response header 'Server': 'MinIO/RELEASE.2020-06-18T02-23-35Z'
-[2020-06-18 15:34:32.144965] Response header 'Vary': 'Origin'
-[2020-06-18 15:34:32.145004] Response header 'X-Amz-Request-Id': '1619C4344BF32D94'
-[2020-06-18 15:34:32.145039] Response header 'X-Xss-Protection': '1; mode=block'
-[2020-06-18 15:34:32.145073] Response header 'Date': 'Thu, 18 Jun 2020 22:34:32 GMT'
-[2020-06-18 15:34:32.145263] Response metadata: S3: request ID=1619C4344BF32D94, x-amz-id-2=<none>
-(creating bucket in us-east-1...) [2020-06-18 15:34:32.145379] String to sign: "PUT\n\n\nThu, 18 Jun 2020 22:34:32 GMT\n/mybucket/"
-[2020-06-18 15:34:32.145416] Host: "mybucket.localhost"
-[2020-06-18 15:34:32.145448] Path: "/"
-[2020-06-18 15:34:32.145491] Query string: ""
-[2020-06-18 15:34:32.145535] Header: [("Date","Thu, 18 Jun 2020 22:34:32 GMT"),("Authorization","AWS user:key3")]
-[2020-06-18 15:34:32.145614] Body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><LocationConstraint>us-east-1</LocationConstraint></CreateBucketConfiguration>"
-[2020-06-18 15:34:32.153701] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+$ git-annex initremote minio1 --debug type=S3 encryption=none host=localhost port=9000 type=S3 bucket=mybucket
+[2020-06-18 15:54:33.790603] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-06-18 15:54:33.809088] process done ExitSuccess
+[2020-06-18 15:54:33.809176] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-06-18 15:54:33.817935] process done ExitSuccess
+[2020-06-18 15:54:33.81966] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..6c06bbc19665ed251ce580b99dcfc8a85f3381dc","--pretty=%H","-n1"]
+[2020-06-18 15:54:33.831334] process done ExitSuccess
+[2020-06-18 15:54:33.831451] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..116aa90151930ec19220a11be01392617206b84f","--pretty=%H","-n1"]
+[2020-06-18 15:54:33.842421] process done ExitSuccess
+[2020-06-18 15:54:33.844598] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-06-18 15:54:33.845888] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-06-18 15:54:33.891102] read: git ["config","--null","--list"]
+[2020-06-18 15:54:33.896992] process done ExitSuccess
+[2020-06-18 15:54:33.89713] read: git ["config","--null","--list"]
+[2020-06-18 15:54:33.90295] process done ExitSuccess
+initremote minio1 (checking bucket...) [2020-06-18 15:54:33.990977] String to sign: "GET\n\n\nThu, 18 Jun 2020 22:54:33 GMT\n/mybucket/annex-uuid"
+[2020-06-18 15:54:33.991028] Host: "mybucket.localhost"
+[2020-06-18 15:54:33.991053] Path: "/annex-uuid"
+[2020-06-18 15:54:33.991074] Query string: ""
+[2020-06-18 15:54:33.991093] Header: [("Date","Thu, 18 Jun 2020 22:54:33 GMT"),("Authorization","AWS user:key1")]
+[2020-06-18 15:54:34.002157] Response status: Status {statusCode = 403, statusMessage = "Forbidden"}
+[2020-06-18 15:54:34.002225] Response header 'Accept-Ranges': 'bytes'
+[2020-06-18 15:54:34.00225] Response header 'Content-Length': '379'
+[2020-06-18 15:54:34.00227] Response header 'Content-Security-Policy': 'block-all-mixed-content'
+[2020-06-18 15:54:34.002289] Response header 'Content-Type': 'application/xml'
+[2020-06-18 15:54:34.002308] Response header 'Server': 'MinIO/RELEASE.2020-06-18T02-23-35Z'
+[2020-06-18 15:54:34.002327] Response header 'Vary': 'Origin'
+[2020-06-18 15:54:34.002345] Response header 'X-Amz-Request-Id': '1619C54C20441E6F'
+[2020-06-18 15:54:34.002363] Response header 'X-Xss-Protection': '1; mode=block'
+[2020-06-18 15:54:34.002382] Response header 'Date': 'Thu, 18 Jun 2020 22:54:34 GMT'
+[2020-06-18 15:54:34.002419] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+[2020-06-18 15:54:34.002483] String to sign: "GET\n\n\nThu, 18 Jun 2020 22:54:34 GMT\n/mybucket/"
+[2020-06-18 15:54:34.002509] Host: "mybucket.localhost"
+[2020-06-18 15:54:34.002529] Path: "/"
+[2020-06-18 15:54:34.002547] Query string: ""
+[2020-06-18 15:54:34.002567] Header: [("Date","Thu, 18 Jun 2020 22:54:34 GMT"),("Authorization","AWS user:key2")]
+[2020-06-18 15:54:34.003642] Response status: Status {statusCode = 403, statusMessage = "Forbidden"}
+[2020-06-18 15:54:34.0037] Response header 'Accept-Ranges': 'bytes'
+[2020-06-18 15:54:34.003733] Response header 'Content-Length': '334'
+[2020-06-18 15:54:34.003754] Response header 'Content-Security-Policy': 'block-all-mixed-content'
+[2020-06-18 15:54:34.003773] Response header 'Content-Type': 'application/xml'
+[2020-06-18 15:54:34.003905] Response header 'Server': 'MinIO/RELEASE.2020-06-18T02-23-35Z'
+[2020-06-18 15:54:34.003933] Response header 'Vary': 'Origin'
+[2020-06-18 15:54:34.003956] Response header 'X-Amz-Request-Id': '1619C54C205CA047'
+[2020-06-18 15:54:34.003978] Response header 'X-Xss-Protection': '1; mode=block'
+[2020-06-18 15:54:34.004] Response header 'Date': 'Thu, 18 Jun 2020 22:54:34 GMT'
+[2020-06-18 15:54:34.004133] Response metadata: S3: request ID=1619C54C205CA047, x-amz-id-2=<none>
+(creating bucket in US...) [2020-06-18 15:54:34.004225] String to sign: "PUT\n\n\nThu, 18 Jun 2020 22:54:34 GMT\n/mybucket/"
+[2020-06-18 15:54:34.004252] Host: "mybucket.localhost"
+[2020-06-18 15:54:34.004274] Path: "/"
+[2020-06-18 15:54:34.004293] Query string: ""
+[2020-06-18 15:54:34.004312] Header: [("Date","Thu, 18 Jun 2020 22:54:34 GMT"),("Authorization","AWS user:key3")]
+[2020-06-18 15:54:34.015873] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
 
 git-annex: HttpExceptionRequest Request {
   host                 = "mybucket.localhost"
   port                 = 9000
   secure               = False
-  requestHeaders       = [("Date","Thu, 18 Jun 2020 22:34:32 GMT"),("Authorization","<REDACTED>")]
+  requestHeaders       = [("Date","Thu, 18 Jun 2020 22:54:34 GMT"),("Authorization","<REDACTED>")]
   path                 = "/"
   queryString          = ""
   method               = "PUT"
@@ -72,18 +71,9 @@ git-annex: HttpExceptionRequest Request {
 }
  NoResponseDataReceived
 failed
-[2020-06-18 15:34:32.15492] process done ExitSuccess
-[2020-06-18 15:34:32.155377] process done ExitSuccess
-git-annex: initremote: 1 failed
 ~~~
 
-Any ideas on what this could be because of?
+Any ideas on what this could be because of? Creating buckets, listing content, everything seems to work well with aws cli. I am guessing it's some compatibility issue but no idea where to start looking.
 
-
-This part is interesting but I don't know what to make of it. Creating buckets seem to work well with aws cli as well.
-
-~~~
-[2020-06-18 15:34:32.145614] Body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><LocationConstraint>us-east-1</LocationConstraint></CreateBucketConfiguration>"
-[2020-06-18 15:34:32.153701] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
-~~~
+Are there more logs maybe?
 
