@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 13"
+ date="2020-06-18T19:17:26Z"
+ content="""
+awesome -- thanks!  I am confirming that all \"crippledfs\" tests pass on https://github.com/datalad/datalad-extensions/pull/15/checks?check_run_id=785585888 !  (datalad tests are still running ATM but I guess they will hang in datalad \"master\" as before anyways - unrelated to this issue)
+"""]]
