@@ -78,3 +78,12 @@ git-annex: initremote: 1 failed
 ~~~
 
 Any ideas on what this could be because of?
+
+
+This part is interesting but I don't know what to make of it. Creating buckets seem to work well with aws cli as well.
+
+~~~
+[2020-06-18 15:34:32.145614] Body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><LocationConstraint>us-east-1</LocationConstraint></CreateBucketConfiguration>"
+[2020-06-18 15:34:32.153701] Response metadata: S3: request ID=<none>, x-amz-id-2=<none>
+~~~
+
