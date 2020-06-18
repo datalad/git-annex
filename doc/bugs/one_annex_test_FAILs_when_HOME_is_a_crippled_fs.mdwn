@@ -54,3 +54,5 @@ git annex is 8.20200522+git142-g9102d3172-1~ndall and .deb available within the 
 details of the setup are [in that PR](https://github.com/datalad/datalad-extensions/pull/15/files#diff-8364c688b76bfaf5df947cfd4d74eef7R76)
 
 PS determining the boundaries and names of the tests git annex had ran is a tricky business on its own -- I wondered if tests output formatting and annotation could have been improved as well. E.g. unlikely there is a point to print all output if test passes.  With `nose` in Python / datalad we get a summary of all failed tests (and what was output when they were ran) at the end of the full sweep. That helps to avoid needing to search the entire long list 
+
+> [[done]] --[[Joey]]
