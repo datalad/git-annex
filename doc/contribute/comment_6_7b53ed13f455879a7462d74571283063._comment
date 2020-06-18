@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="mzimann"
+ avatar="http://cdn.libravatar.org/avatar/7fd54a1212458d60d3963c7fbb7ce294"
+ subject="push doc-only changes"
+ date="2020-06-18T15:54:49Z"
+ content="""
+First of all I just want to say that I'm really impressed by git-annex. I was
+looking for such a tool for a long time and I'm really happy that I finally
+found it. It really does the trick for me to handle all my data.
+
+My problem is now that I wanted to push some changes to doc/, this page says
+that it shouldn't be a problem even without authentication. But I get following
+error:
+
+```
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 460 bytes | 460.00 KiB/s, done.
+Total 4 (delta 3), reused 0 (delta 0), pack-reused 0
+remote: error: cannot lock ref 'HEAD': Unable to create '/home/b-git-annex/source.git/./HEAD.lock': Permission denied
+To git://git-annex.branchable.com/
+ ! [remote rejected]     master -> master (failed to update ref)
+error: failed to push some refs to 'git://git-annex.branchable.com/'
+```
+
+Seems to me that I'm not permitted, or am I doing something wrong? Or is the
+information on this page not up-to-date anymore?
+"""]]
