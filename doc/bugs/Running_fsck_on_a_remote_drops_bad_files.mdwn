@@ -1,0 +1,37 @@
+### Please describe the problem.
+Running fsck on a remote completely drops the file
+
+### What steps will reproduce the problem?
+* Create a standard git annex repo
+* Set up another remote (I used a standard git annex repo) in it
+* Corrupt a file in the remote repo. Changing one byte is sufficient for this
+* Run `git-annex fsck`
+* git-annex will notice the corruption and completely drop the file from the remote
+
+I expect git-annex to never drop data unless specified as also mentioned [here](https://git-annex.branchable.com/walkthrough/fsck__58___when_things_go_wrong)
+
+I would rather look at the corrupted file myself and figure out the best course of action instead of losing it completely.
+
+At this point, I'm working around it by not running fsck on remotes, since local fsck seems to work as expected.
+
+
+### What version of git-annex are you using? On what operating system?
+8.20200309, Mac
+
+
+### Please provide any additional information below.
+
+~~~
+$ git-annex fsck --from=origin
+fsck dir1/dir1_file1 (checksum...) ok
+fsck dir1/dir1_file2 (checksum...) ok
+fsck file1 (checksum...)
+  file1: Bad file content; dropped from origin
+failed
+fsck file2 (checksum...) ok
+(recording state in git...)
+git-annex: fsck: 1 failed
+~~~
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes it stores most of my data
