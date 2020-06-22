@@ -12,6 +12,7 @@ flags:
     debuglocks: false
     benchmark: false
     networkbsd: false
+    gitlfs: true
 packages:
 - '.'
 extra-deps:

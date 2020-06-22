@@ -289,6 +289,10 @@ Flag NetworkBSD
   Description: Build with network-3.0 which split out network-bsd
   Default: True
 
+Flag GitLfs
+  Description: Build with git-lfs library (rather than vendored copy)
+  Default: True
+
 source-repository head
   type: git
   location: git://git-annex.branchable.com/
@@ -407,6 +411,12 @@ Executable git-annex
   else
     Build-Depends: network (< 3.0.0.0), network (>= 2.6.3.0)
 
+  if flag(GitLfs)
+    Build-Depends: git-lfs (>= 1.1.0)
+    CPP-Options: -DWITH_GIT_LFS
+  else
+    Other-Modules: Utility.GitLFS
+
   if flag(S3)
     Build-Depends: aws (>= 0.20)
     CPP-Options: -DWITH_S3
@@ -418,6 +428,7 @@ Executable git-annex
     Other-Modules:
       Remote.WebDAV
       Remote.WebDAV.DavLocation
+
   if flag(S3) || flag(WebDAV)
     Other-Modules:
       Remote.Helper.Http
@@ -1059,7 +1070,6 @@ Executable git-annex
     Utility.FileSystemEncoding
     Utility.Format
     Utility.FreeDesktop
-    Utility.GitLFS
     Utility.Glob
     Utility.Gpg
     Utility.Hash

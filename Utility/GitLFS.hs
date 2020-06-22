@@ -21,6 +21,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 
+-- This is a vendored copy of Network.GitLFS from the git-lfs package,
+-- and will be removed once that package is available in all build
+-- environments.
 module Utility.GitLFS (
 	-- * Transfer requests
 	TransferRequest(..),
