@@ -337,7 +337,7 @@ Executable git-annex
    edit-distance,
    resourcet,
    connection (>= 0.2.6),
-   http-client (>= 0.5.0),
+   http-client (>= 0.5.3),
    http-client-tls,
    http-types (>= 0.7),
    http-conduit (>= 2.3.0),

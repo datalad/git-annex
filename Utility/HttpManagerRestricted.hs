@@ -21,8 +21,7 @@ module Utility.HttpManagerRestricted (
 ) where
 
 import Network.HTTP.Client
-import Network.HTTP.Client.Internal
-	(ManagerSettings(..), Connection, runProxyOverride, makeConnection)
+import Network.HTTP.Client.Internal (ManagerSettings(..), Connection, runProxyOverride)
 import Network.HTTP.Client.TLS (mkManagerSettingsContext)
 import Network.Socket
 import Network.BSD (getProtocolNumber)
