@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-22T18:38:33Z"
+ content="""
+If youtube-dl supports the web site, `git annex addurl` will automatically
+use it to download the video.
+
+Looks like youtube-dl does support twitter, so it should just work.
+
+If it didn't though, I'd punt it over to youtube-dl.
+
+(If you also wanted to archive the twitter
+page itself, you could use `git annex addurl --raw` to archive the html.
+Although there's a good chance the html alone is not enough, and so you
+might want to use other tools to archive javascript and other assets;
+this is beyond the scope of git-annex, although of course you can `git
+annex add` whatever files you end up downloading.)
+"""]]

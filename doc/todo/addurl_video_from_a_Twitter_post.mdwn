@@ -1,1 +1,4 @@
 Is there already a way to addurl video from a Twitter post. Question came up while proposing git annex  as a tech for archival in https://github.com/2020PB/police-brutality/issues/315#issuecomment-640163911
+
+> I don't think there's anything for git-annex to do here, so
+> [[closing|done]] --[[Joey]]
