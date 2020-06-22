@@ -6,6 +6,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Url (
 	withUrlOptions,
 	withUrlOptionsPromptingCreds,
@@ -34,7 +36,11 @@ import Annex.Common
 import qualified Annex
 import qualified Utility.Url as U
 import Utility.IPAddress
+#ifdef WITH_HTTP_CLIENT_RESTRICTED
+import Network.HTTP.Client.Restricted
+#else
 import Utility.HttpManagerRestricted
+#endif
 import Utility.Metered
 import Git.Credential
 import qualified BuildInfo

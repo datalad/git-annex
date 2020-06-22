@@ -9,6 +9,9 @@
 
 {-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable, LambdaCase, PatternGuards #-}
 
+-- This is a vendored copy of Network.HTTP.Client.Restricted from the
+-- http-client-restricted package, and will be removed once that package
+-- is available in all build environments.
 module Utility.HttpManagerRestricted (
 	Restriction,
 	checkAddressRestriction,

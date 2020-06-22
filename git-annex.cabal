@@ -293,6 +293,10 @@ Flag GitLfs
   Description: Build with git-lfs library (rather than vendored copy)
   Default: True
 
+Flag HttpClientRestricted
+  Description: Build with http-client-restricted library (rather than vendored copy)
+  Default: True
+
 source-repository head
   type: git
   location: git://git-annex.branchable.com/
@@ -416,6 +420,12 @@ Executable git-annex
     CPP-Options: -DWITH_GIT_LFS
   else
     Other-Modules: Utility.GitLFS
+  
+  if flag(HttpClientRestricted)
+    Build-Depends: http-client-restricted (>= 0.0.2)
+    CPP-Options: -DWITH_HTTP_CLIENT_RESTRICTED
+  else
+    Other-Modules: Utility.HttpManagerRestricted
 
   if flag(S3)
     Build-Depends: aws (>= 0.20)
@@ -1074,7 +1084,6 @@ Executable git-annex
     Utility.Gpg
     Utility.Hash
     Utility.HtmlDetect
-    Utility.HttpManagerRestricted
     Utility.HumanNumber
     Utility.HumanTime
     Utility.InodeCache

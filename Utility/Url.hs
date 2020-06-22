@@ -9,6 +9,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Url (
 	newManager,
@@ -44,7 +45,11 @@ module Utility.Url (
 
 import Common
 import Utility.Metered
+#ifdef WITH_HTTP_CLIENT_RESTRICTED
+import Network.HTTP.Client.Restricted
+#else
 import Utility.HttpManagerRestricted
+#endif
 import Utility.IPAddress
 
 import Network.URI
