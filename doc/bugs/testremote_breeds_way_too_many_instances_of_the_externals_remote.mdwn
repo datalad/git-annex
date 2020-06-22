@@ -216,4 +216,4 @@ c6bb2cce66bc08073e2770802707941f06270d03264e574b2b2c0d.this-is-a-test-key
 I also wonder if there could be some unittest added to test that annex stays "lean" (in terms of child processes) while using external remotes.
 
 [[!meta author=yoh]]
-[[!tag projects/yoh]]
+[[!tag projects/datalad]]
