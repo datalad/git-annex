@@ -257,22 +257,25 @@ testRemote remotetype config preinitremote =
 				@? "init failed"
 			r <- annexeval $ either error return 
 				=<< Remote.byName' remotename
+			cache <- Command.TestRemote.newRemoteVariantCache
 			unavailr <- annexeval $ Types.Remote.mkUnavailable r
-			exportr <- annexeval $ Command.TestRemote.exportTreeVariant r
+			exportr <- annexeval $ Command.TestRemote.exportTreeVariant cache r
 			ks <- annexeval $ mapM Command.TestRemote.randKey keysizes
 			v <- getv
+			cv <- annexeval cache
 			liftIO $ atomically $ putTMVar v
-				(r, (unavailr, (exportr, ks)))
+				(r, (unavailr, (exportr, (ks, cv))))
 	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailr mkexportr mkks
 	  where
 		runannex = inmainrepo . annexeval
-		mkrs = Command.TestRemote.remoteVariants mkr basesz False
+		mkrs = Command.TestRemote.remoteVariants cache mkr basesz False
 		mkr = descas (remotetype ++ " remote") (fst <$> v)
 		mkunavailr = fst . snd <$> v
 		mkexportr = fst . snd . snd <$> v
 		mkks = map (\(sz, n) -> desckeysize sz (getk n))
 			(zip keysizes [0..])
-		getk n = fmap (!! n) (snd . snd . snd <$> v)
+		getk n = fmap (!! n) (fst . snd . snd . snd <$> v)
+		cache = snd . snd . snd . snd <$> v
 		v = liftIO $ atomically . readTMVar =<< getv
 		descas = Command.TestRemote.Described
 		desckeysize sz = descas ("key size " ++ show sz)

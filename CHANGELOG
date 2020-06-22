@@ -5,6 +5,9 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
     vfat filesystems, possibly others.
   * Build with the http-client-restricted and git-lfs libraries when 
     available, otherwise use the vendored copy as before.
+  * testremote: Fix over-allocation of resources and bad caching,
+    including starting up a large number of external special remote processes.
+    (Regression introduced in version 8.20200501)
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
 

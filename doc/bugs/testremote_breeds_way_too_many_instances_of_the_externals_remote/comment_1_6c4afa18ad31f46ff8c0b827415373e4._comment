@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-22T16:24:53Z"
+ content="""
+There should be 4-8, because it does make that many remote
+variants, each with a different config.
+
+But, each individual test case is starting a process.
+
+This is a reversion from around [[!commit 9fa940569c7941ad794637017ae5296e657c7f8d]].
+To make git-annex test be able to use testremote, that deferred generating
+Remote objects to inside the TestTree.. So it generates them when running
+each test case.
+
+Other remotes that allocate other resources will also allocate too many,
+not cache http connections in testremote, etc.
+
+The test suite was also affected in its use of testremote, but only
+tested a directory special remote so I think avoided any bad behavior.
+
+Fixed.
+"""]]

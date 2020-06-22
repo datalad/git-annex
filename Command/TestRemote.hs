@@ -75,7 +75,9 @@ seek = commandAction . start
 start :: TestRemoteOptions -> CommandStart
 start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 	fast <- Annex.getState Annex.fast
-	r <- either giveup disableExportTree =<< Remote.byName' (testRemote o)
+	cache <- liftIO newRemoteVariantCache
+	r <- either giveup (disableExportTree cache)
+		=<< Remote.byName' (testRemote o)
 	ks <- case testReadonlyFile o of
 		[] -> if Remote.readonly r
 			then giveup "This remote is readonly, so you need to use the --test-readonly option."
@@ -88,11 +90,11 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 		else r { Remote.readonly = True }
 	let drs = if Remote.readonly r'
 		then [Described "remote" (pure (Just r'))]
-		else remoteVariants (Described "remote" (pure r')) basesz fast
+		else remoteVariants cache (Described "remote" (pure r')) basesz fast
 	unavailr  <- Remote.mkUnavailable r'
 	let exportr = if Remote.readonly r'
 		then return Nothing
-		else exportTreeVariant r'
+		else exportTreeVariant cache r'
 	perform drs unavailr exportr ks
   where
 	basesz = fromInteger $ sizeOption o
@@ -114,61 +116,79 @@ perform drs unavailr exportr ks = do
   where
 	desck k = unwords [ "key size", show (fromKey keySize k) ]
 
-remoteVariants :: Described (Annex Remote) -> Int -> Bool -> [Described (Annex (Maybe Remote))]
-remoteVariants dr basesz fast = 
-	concatMap encryptionVariants $
+remoteVariants :: RemoteVariantCache -> Described (Annex Remote) -> Int -> Bool -> [Described (Annex (Maybe Remote))]
+remoteVariants cache dr basesz fast = 
+	concatMap (encryptionVariants cache) $
 		map chunkvariant (chunkSizes basesz fast)
   where
 	chunkvariant sz = Described (getDesc dr ++ " chunksize=" ++ show sz) $ do
 		r <- getVal dr
-		adjustChunkSize r sz
+		adjustChunkSize cache r sz
 
-adjustChunkSize :: Remote -> Int -> Annex (Maybe Remote)
-adjustChunkSize r chunksize = adjustRemoteConfig r $
+adjustChunkSize :: RemoteVariantCache -> Remote -> Int -> Annex (Maybe Remote)
+adjustChunkSize cache r chunksize = adjustRemoteConfig cache r $
 	M.insert chunkField (Proposed (show chunksize))
 
 -- Variants of a remote with no encryption, and with simple shared
 -- encryption. Gpg key based encryption is not tested.
-encryptionVariants :: Described (Annex (Maybe Remote)) -> [Described (Annex (Maybe Remote))]
-encryptionVariants dr = [noenc, sharedenc]
+encryptionVariants :: RemoteVariantCache -> Described (Annex (Maybe Remote)) -> [Described (Annex (Maybe Remote))]
+encryptionVariants cache dr = [noenc, sharedenc]
   where
 	noenc = Described (getDesc dr ++ " encryption=none") $
 		getVal dr >>= \case
 			Nothing -> return Nothing
-			Just r -> adjustRemoteConfig r $
+			Just r -> adjustRemoteConfig cache r $
 				M.insert encryptionField (Proposed "none")
 	sharedenc = Described (getDesc dr ++ " encryption=shared") $
 		getVal dr >>= \case
 			Nothing -> return Nothing
-			Just r -> adjustRemoteConfig r $
+			Just r -> adjustRemoteConfig cache r $
 				M.insert encryptionField (Proposed "shared") .
 				M.insert highRandomQualityField (Proposed "false")
 
 -- Variant of a remote with exporttree disabled.
-disableExportTree :: Remote -> Annex Remote
-disableExportTree r = maybe (error "failed disabling exportree") return 
-		=<< adjustRemoteConfig r (M.delete exportTreeField)
+disableExportTree :: RemoteVariantCache -> Remote -> Annex Remote
+disableExportTree cache r = maybe (error "failed disabling exportree") return 
+		=<< adjustRemoteConfig cache r (M.delete exportTreeField)
 
 -- Variant of a remote with exporttree enabled.
-exportTreeVariant :: Remote -> Annex (Maybe Remote)
-exportTreeVariant r = ifM (Remote.isExportSupported r)
-	( adjustRemoteConfig r $
+exportTreeVariant :: RemoteVariantCache -> Remote -> Annex (Maybe Remote)
+exportTreeVariant cache r = ifM (Remote.isExportSupported r)
+	( adjustRemoteConfig cache r $
 		M.insert encryptionField (Proposed "none") . 
 		M.insert exportTreeField (Proposed "yes")
 	, return Nothing
 	)
 
+-- The Annex wrapper is used by Test; it should return the same TMVar
+-- each time run.
+type RemoteVariantCache = Annex (TVar (M.Map RemoteConfig Remote))
+
+newRemoteVariantCache :: IO RemoteVariantCache
+newRemoteVariantCache = newTVarIO M.empty >>= return . pure
+
 -- Regenerate a remote with a modified config.
-adjustRemoteConfig :: Remote -> (Remote.RemoteConfig -> Remote.RemoteConfig) -> Annex (Maybe Remote)
-adjustRemoteConfig r adjustconfig = do
-	repo <- Remote.getRepo r
+adjustRemoteConfig :: RemoteVariantCache -> Remote -> (Remote.RemoteConfig -> Remote.RemoteConfig) -> Annex (Maybe Remote)
+adjustRemoteConfig getcache r adjustconfig = do
+	cache <- getcache
+	m <- liftIO $ atomically $ readTVar cache
 	let ParsedRemoteConfig _ origc = Remote.config r
-	Remote.generate (Remote.remotetype r)
-		repo
-		(Remote.uuid r)
-		(adjustconfig origc)
-		(Remote.gitconfig r)
-		(Remote.remoteStateHandle r)
+	let newc = adjustconfig origc
+	case M.lookup newc m of
+		Just r' -> return (Just r')
+		Nothing -> do
+			repo <- Remote.getRepo r
+			v <- Remote.generate (Remote.remotetype r)
+				repo
+				(Remote.uuid r)
+				newc
+				(Remote.gitconfig r)
+				(Remote.remoteStateHandle r)
+			case v of
+				Just r' -> liftIO $ atomically $
+					modifyTVar' cache $ M.insert newc r'
+				Nothing -> return ()
+			return v
 
 data Described t = Described
 	{ getDesc :: String
