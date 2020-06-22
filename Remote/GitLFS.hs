@@ -16,7 +16,6 @@ import Types.Key
 import Types.Creds
 import Types.ProposedAccepted
 import qualified Annex
-import qualified Annex.SpecialRemote.Config
 import qualified Git
 import qualified Git.Types as Git
 import qualified Git.Url

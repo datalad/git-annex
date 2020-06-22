@@ -31,7 +31,7 @@ import Types.StandardGroups
 import Types.ScheduledActivity
 import Types.NumCopies
 import Remote
-import Git.Types (ConfigKey(..), fromConfigKey, fromConfigValue)
+import Git.Types (fromConfigKey, fromConfigValue)
 
 cmd :: Command
 cmd = command "vicfg" SectionSetup "edit configuration in git-annex branch"

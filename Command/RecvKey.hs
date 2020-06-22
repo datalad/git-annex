@@ -13,7 +13,6 @@ import Annex.Action
 import Annex
 import Utility.Rsync
 import Types.Transfer
-import Types.Remote (RetrievalSecurityPolicy(..))
 import Command.SendKey (fieldTransfer)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 

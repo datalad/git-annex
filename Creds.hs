@@ -29,7 +29,6 @@ import Annex.SpecialRemote.Config
 import Annex.Perms
 import Utility.FileMode
 import Crypto
-import Types.Remote (RemoteConfig, RemoteConfigField)
 import Types.ProposedAccepted
 import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)

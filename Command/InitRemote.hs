@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import Command
 import Annex.SpecialRemote
 import qualified Remote
-import qualified Logs.Remote
 import qualified Types.Remote as R
 import Types.RemoteConfig
 import Annex.UUID

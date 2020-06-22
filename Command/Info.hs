@@ -30,7 +30,6 @@ import Logs.UUID
 import Logs.Trust
 import Logs.Location
 import Annex.NumCopies
-import Remote
 import Git.Config (boolConfig)
 import qualified Git.LsTree as LsTree
 import Utility.Percentage
@@ -319,11 +318,11 @@ showStat s = maybe noop calc =<< s
 repo_list :: TrustLevel -> Stat
 repo_list level = stat n $ nojson $ lift $ do
 	us <- filter (/= NoUUID) . M.keys 
-		<$> (M.union <$> (M.map fromUUIDDesc <$> uuidDescMap) <*> remoteMap Remote.name)
+		<$> (M.union <$> (M.map fromUUIDDesc <$> uuidDescMap) <*> Remote.remoteMap Remote.name)
 	rs <- fst <$> trustPartition level us
 	countRepoList (length rs)
 		-- This also handles json display.
-		<$> prettyPrintUUIDs n rs
+		<$> Remote.prettyPrintUUIDs n rs
   where
 	n = showTrustLevel level ++ " repositories"
 
@@ -497,9 +496,9 @@ reposizes_stats = stat desc $ nojson $ do
 		. M.toList
 		<$> cachedRepoData
 	let maxlen = maximum (map (length . snd) l)
-	descm <- lift uuidDescriptions
+	descm <- lift Remote.uuidDescriptions
 	-- This also handles json display.
-	s <- lift $ prettyPrintUUIDsWith (Just "size") desc descm (Just . show) $
+	s <- lift $ Remote.prettyPrintUUIDsWith (Just "size") desc descm (Just . show) $
 		map (\(u, sz) -> (u, Just $ mkdisp sz maxlen)) l
 	return $ countRepoList (length l) s
   where

@@ -12,7 +12,6 @@ import Annex.Perms
 import Utility.FileMode
 
 import Database.Persist.Sqlite
-import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as T
 import Lens.Micro
 

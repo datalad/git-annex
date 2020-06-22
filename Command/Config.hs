@@ -13,7 +13,7 @@ import Command
 import Logs.Config
 import Config
 import Types.GitConfig (globalConfigs)
-import Git.Types (ConfigKey(..), fromConfigValue)
+import Git.Types (fromConfigValue)
 
 import qualified Data.ByteString.Char8 as S8
 

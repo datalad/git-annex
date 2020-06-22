@@ -14,7 +14,6 @@ module Annex.SpecialRemote (
 
 import Annex.Common
 import Annex.SpecialRemote.Config
-import Remote (remoteTypes)
 import Types.Remote (RemoteConfig, SetupStage(..), typename, setup)
 import Types.GitConfig
 import Types.ProposedAccepted

@@ -40,7 +40,6 @@ import Annex.ChangedRefs
 
 import Control.Monad.Free
 import Control.Monad.IO.Class
-import System.Exit (ExitCode(..))
 import System.IO.Error
 import Network.Socket
 import Control.Concurrent

@@ -11,7 +11,7 @@
 module Annex.SpecialRemote.Config where
 
 import Common
-import Types.Remote (RemoteConfigField, RemoteConfig, configParser)
+import Types.Remote (configParser)
 import Types
 import Types.UUID
 import Types.ProposedAccepted

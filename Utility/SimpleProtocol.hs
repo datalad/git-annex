@@ -25,7 +25,6 @@ module Utility.SimpleProtocol (
 
 import Data.Char
 import GHC.IO.Handle
-import System.Exit (ExitCode(..))
 
 import Common
 

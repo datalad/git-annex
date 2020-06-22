@@ -22,7 +22,6 @@ import P2P.Protocol
 import P2P.IO
 import Logs.Location
 import Types.NumCopies
-import Types.Remote (RetrievalSecurityPolicy(..))
 import Utility.Metered
 
 import Control.Monad.Free
