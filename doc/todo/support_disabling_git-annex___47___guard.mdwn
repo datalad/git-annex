@@ -1,3 +1,9 @@
 It would be nice if I could configure a git repository to be guarded against git-annex. Or even a global git config option to default to not use git-annex but only in specific repositories meant to be used with git-annex.
 
 We've had a source code repository added with git-annex branches (repeatedly) and the user had problems with unwanted git-annex hooks installed in his checkout. I suspect that this was a user error, i.e. running git-annex in the wrong directory, but I would like to put guards into place by disabling git-annex by default and only allowing it for certain specific repos.
+
+> Seems that .noannex was sufficient. I am doubtful about the utility
+> of a global git config option to prevent git-annex init from being used.
+> Seems like, if you had that config set, and were using git-annex,
+> you would have to override it, and once you're in the habit of overriding
+> it, you may as well not have the config at all... So [[done]] --[[Joey]]
