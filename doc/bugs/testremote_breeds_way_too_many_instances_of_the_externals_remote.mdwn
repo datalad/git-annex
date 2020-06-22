@@ -217,3 +217,5 @@ I also wonder if there could be some unittest added to test that annex stays "le
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

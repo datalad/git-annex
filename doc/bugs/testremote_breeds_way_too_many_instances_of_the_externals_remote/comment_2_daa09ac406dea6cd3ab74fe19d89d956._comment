@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-22T18:27:30Z"
+ content="""
+> I also wonder if there could be some unittest added to test that annex stays "lean" (in terms of child processes) while using external remotes.
+
+Normally it will only start one per thread, testremote is unique in
+generating variants of a remote.
+
+It would be good to somehow catch situations where a lot of child processes
+get spawned in general, like the earlier -J8 starting too many
+git helper processes. But I don't know how a test suite could detect or
+judge that.
+
+Some of the work done for
+[[todo/more_extensive_retries_to_mask_transient_failures]]
+avoids potential situations where part of git-annex could leak a process
+during exception handling. Continuing work on that will probably improve
+things further.
+"""]]
