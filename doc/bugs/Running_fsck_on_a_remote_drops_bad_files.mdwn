@@ -22,7 +22,7 @@ At this point, I'm working around it by not running fsck on remotes, since local
 ### Please provide any additional information below.
 
 ~~~
-$ ga fsck --from=origin
+$ git-annex fsck --from=origin
 fsck dir1/dir1_file1 (checksum...) ok
 fsck dir1/dir1_file2 (checksum...) ok
 fsck file1 (checksum...)
@@ -35,4 +35,3 @@ git-annex: fsck: 1 failed
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes it stores most of my data
-

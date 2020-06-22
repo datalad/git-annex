@@ -1,0 +1,219 @@
+### Please describe the problem.
+
+See more information and the initial cause (failing testing on travis with recent git annex) at [datalad/issues/4643](https://github.com/datalad/datalad/issues/4643)
+
+
+In brief, using git annex 8.20200617-g02765b8 resulted in the following pstree with a simple [custom special remote](https://github.com/datalad/datalad/pull/3727):
+
+```
+$>  pstree -l -a --compact-not -T -p 625823 | nl       
+     1	git,625823 annex testremote go
+     2	  `-git-annex,625824 testremote go
+     3	      |-git,625833 --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+     4	      |-git,625834 --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+     5	      |-(git-annex-remot,625841)
+     6	      |-(git-annex-remot,625847)
+     7	      |-git-annex-remot,625853 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+     8	      |-(git-annex-remot,625869)
+     9	      |-(git-annex-remot,625875)
+    10	      |-git-annex-remot,625881 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    11	      |-(git-annex-remot,625895)
+    12	      |-(git-annex-remot,625901)
+    13	      |-git-annex-remot,625908 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    14	      |-(git-annex-remot,625955)
+    15	      |-(git-annex-remot,625961)
+    16	      |-git-annex-remot,625967 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    17	      |-(git-annex-remot,625981)
+    18	      |-(git-annex-remot,625987)
+    19	      |-git-annex-remot,625993 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    20	      |-(git-annex-remot,626013)
+    21	      |-(git-annex-remot,626019)
+    22	      |-git-annex-remot,626025 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    23	      |-(git-annex-remot,626039)
+    24	      |-(git-annex-remot,626045)
+    25	      |-git-annex-remot,626053 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    26	      |-(git-annex-remot,626075)
+    27	      |-(git-annex-remot,626081)
+    28	      |-(git-annex-remot,626087)
+    29	      |-(git-annex-remot,626096)
+    30	      |-git-annex-remot,626102 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    31	      |-(git-annex-remot,626124)
+    32	      |-(git-annex-remot,626130)
+    33	      |-(git-annex-remot,626136)
+    34	      |-(git-annex-remot,626142)
+    35	      |-git-annex-remot,626148 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    36	      |-(git-annex-remot,626170)
+    37	      |-(git-annex-remot,626176)
+    38	      |-(git-annex-remot,626185)
+    39	      |-(git-annex-remot,626191)
+    40	      |-git-annex-remot,626198 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    41	      |-(git-annex-remot,626220)
+    42	      |-(git-annex-remot,626226)
+    43	      |-(git-annex-remot,626232)
+    44	      |-(git-annex-remot,626238)
+    45	      |-git-annex-remot,626244 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    46	      |-(git-annex-remot,626276)
+    47	      |-(git-annex-remot,626282)
+    48	      |-git-annex-remot,626288 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    49	      |-(git-annex-remot,626302)
+    50	      |-(git-annex-remot,626309)
+    51	      |-git-annex-remot,626315 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    52	      |-(git-annex-remot,626333)
+    53	      |-(git-annex-remot,626340)
+    54	      |-git-annex-remot,626346 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    55	      |-(git-annex-remot,626360)
+    56	      |-(git-annex-remot,626366)
+    57	      |-git-annex-remot,626372 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    58	      |-(git-annex-remot,626416)
+    59	      |-(git-annex-remot,626422)
+    60	      |-git-annex-remot,626428 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    61	      |-(git-annex-remot,626442)
+    62	      |-(git-annex-remot,626448)
+    63	      |-git-annex-remot,626454 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    64	      |-(git-annex-remot,626475)
+    65	      |-(git-annex-remot,626481)
+    66	      |-git-annex-remot,626487 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    67	      |-(git-annex-remot,626501)
+    68	      |-(git-annex-remot,626507)
+    69	      |-git-annex-remot,626513 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    70	      |-(git-annex-remot,626535)
+    71	      |-(git-annex-remot,626549)
+    72	      |-(git-annex-remot,626555)
+    73	      |-(git-annex-remot,626561)
+    74	      |-git-annex-remot,626567 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    75	      |-(git-annex-remot,626589)
+    76	      |-(git-annex-remot,626595)
+    77	      |-(git-annex-remot,626601)
+    78	      |-(git-annex-remot,626607)
+    79	      |-git-annex-remot,626613 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    80	      |-(git-annex-remot,626635)
+    81	      |-(git-annex-remot,626641)
+    82	      |-(git-annex-remot,626647)
+    83	      |-(git-annex-remot,626653)
+    84	      |-git-annex-remot,626660 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    85	      |-(git-annex-remot,626685)
+    86	      |-(git-annex-remot,626691)
+    87	      |-(git-annex-remot,626697)
+    88	      |-(git-annex-remot,626703)
+    89	      |-git-annex-remot,626709 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    90	      |-(git-annex-remot,626741)
+    91	      |-(git-annex-remot,626747)
+    92	      |-git-annex-remot,626753 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    93	      |-(git-annex-remot,626767)
+    94	      |-(git-annex-remot,626773)
+    95	      |-git-annex-remot,626779 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    96	      |-(git-annex-remot,626795)
+    97	      |-(git-annex-remot,626801)
+    98	      |-git-annex-remot,626807 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+    99	      |-(git-annex-remot,626821)
+   100	      |-(git-annex-remot,626828)
+   101	      |-git-annex-remot,626834 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   102	      |-(git-annex-remot,630376)
+   103	      |-(git-annex-remot,630382)
+   104	      |-git-annex-remot,630388 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   105	      |-(git-annex-remot,630813)
+   106	      |-(git-annex-remot,630819)
+   107	      |-git-annex-remot,630825 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   108	      |-(git-annex-remot,631249)
+   109	      |-(git-annex-remot,631255)
+   110	      |-git-annex-remot,631261 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   111	      |-(git-annex-remot,631679)
+   112	      |-(git-annex-remot,631685)
+   113	      |-git-annex-remot,631691 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   114	      |-(git-annex-remot,632944)
+   115	      |-(git-annex-remot,632950)
+   116	      |-(git-annex-remot,632956)
+   117	      |-(git-annex-remot,632962)
+   118	      |-git-annex-remot,632968 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   119	      |-(git-annex-remot,633804)
+   120	      |-(git-annex-remot,633810)
+   121	      |-(git-annex-remot,633816)
+   122	      |-(git-annex-remot,633822)
+   123	      |-git-annex-remot,633828 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   124	      |-(git-annex-remot,635086)
+   125	      |-(git-annex-remot,635092)
+   126	      |-(git-annex-remot,635098)
+   127	      |-(git-annex-remot,635104)
+   128	      |-git-annex-remot,635111 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   129	      |-(git-annex-remot,635133)
+   130	      |-(git-annex-remot,635139)
+   131	      |-(git-annex-remot,635145)
+   132	      |-(git-annex-remot,635151)
+   133	      |-git-annex-remot,635157 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   134	      |-(git-annex-remot,637445)
+   135	      |-(git-annex-remot,637451)
+   136	      |-git-annex-remot,637457 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   137	      |-(git-annex-remot,637471)
+   138	      |-(git-annex-remot,637477)
+   139	      |-git-annex-remot,637484 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   140	      |-(git-annex-remot,637500)
+   141	      |-(git-annex-remot,637506)
+   142	      |-git-annex-remot,637512 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   143	      |-(git-annex-remot,637526)
+   144	      |-(git-annex-remot,637532)
+   145	      |-git-annex-remot,637538 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   146	      |-git-annex-remot,641104 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   147	      |-(git-annex-remot,641110)
+   148	      |-git-annex-remot,641116 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   149	      |-git-annex-remot,641541 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   150	      |-(git-annex-remot,641547)
+   151	      |-git-annex-remot,641553 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   152	      |-(git-annex-remot,641971)
+   153	      |-(git-annex-remot,641977)
+   154	      |-git-annex-remot,641983 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   155	      |-git-annex-remot,642411 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   156	      |-(git-annex-remot,642417)
+   157	      |-git-annex-remot,642423 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   158	      |-git-annex-remot,643893 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   159	      |-(git-annex-remot,643899)
+   160	      |-(git-annex-remot,643905)
+   161	      |-(git-annex-remot,643911)
+   162	      |-git-annex-remot,643917 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   163	      |-git-annex-remot,644770 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   164	      |-(git-annex-remot,644776)
+   165	      |-(git-annex-remot,644782)
+   166	      |-(git-annex-remot,644788)
+   167	      `-git-annex-remot,644794 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+   168	          `-git,645597 -c gc.auto=0 fetch origin refs/annex-gitobjects/SHA256E-s1048576-S10485-C65--09bb4349a75edd87d52a9c0fa7c8962dd5f58b22e3a639924f9b625eda394e47.this-is-a-test-key:refs/annex-gitobjects/SHA256E-s1048576-S10485-C65--09bb4349a75edd87d52a9c0fa7c8962dd5f58b22e3a639924f9b625eda394e47.this-is-a-test-key
+```
+
+(pstree is taken at some point in time of `testremote` running)
+
+even with older version (7.20190819+git2-g908476a9b-1~ndall+1) it is not clear why some older instances linger around:
+
+```
+git,586534 annex testremote go
+  `-git-annex,586535 --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:/u
+sr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex testremote go
+      |-git,586558 --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:/usr
+/lib/git-annex.linux//usr/lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+      |-git,586559 --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:/usr
+/lib/git-annex.linux//usr/lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(obj
+ecttype) %(objectsize)
+      |-git-annex-remot,586561 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586575 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586589 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586603 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586617 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586631 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586645 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586659 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |-git-annex-remot,586674 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+      |   `-git,596315 --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:
+/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git -c gc.auto=0 push origin :refs/annex-gitobjects/SHA256E-s1048576-S10485-C55--f29f024602
+c6bb2cce66bc08073e2770802707941f06270d03264e574b2b2c0d.this-is-a-test-key
+      |       `-sh,596316 -c git-receive-pack '/home/yoh/.tmp/dl-XfXTJ3K/a' git-receive-pack '/home/yoh/.tmp/dl-XfXTJ3K/a'
+      |           `-git-receive-pac,596317 --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git
+-annex.linux//lib64:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-receive-pack/git-receive-pack /home/yoh/.tmp/dl-XfXTJ3K/a
+      |               `-post-receive,596321 hooks/post-receive
+      |-git-annex-remot,586691 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects                                                                                                                                  
+      |-git-annex-remot,586705 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects                                                                                    
+      |-git-annex-remot,586719 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects                                                                                                                                  
+      |-git-annex-remot,586733 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects                                                                                                    
+      `-git-annex-remot,586747 /home/yoh/proj/datalad/datalad/sandbox/git-annex-remote-gitobjects
+```
+
+I also wonder if there could be some unittest added to test that annex stays "lean" (in terms of child processes) while using external remotes.
+
+[[!meta author=yoh]]
+[[!tag projects/yoh]]
