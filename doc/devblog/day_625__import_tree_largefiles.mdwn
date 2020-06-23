@@ -1,0 +1,13 @@
+New feature today: Implemented [[todo/import_tree_should_honor_annex.largefiles]].
+
+This only took an hour to implement, but I had to think for several hours
+first to get a solid understanding of it. Particularly, what happens if
+a file on a remote has a name that makes it be treated as non-large, but
+then in a later import, it's renamed to a name that would be treated as
+large? (Or vice-versa.) My conclusion is that is equivilant to `git
+annex add` of a file with the first name followed by `git mv`, so it's
+ok for annex.largefiles to not take effect in such a case.
+
+----
+
+Today's work was sponsored by Martin D [on Patreon](https://patreon.com/joeyh).

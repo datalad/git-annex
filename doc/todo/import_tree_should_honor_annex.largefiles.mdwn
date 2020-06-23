@@ -69,3 +69,5 @@ annex.largefiles.
 > > 
 > > Still, this doesn't feel like a reason not to implement the feature,
 > > necessarily.
+
+[[done]]

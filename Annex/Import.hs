@@ -1,6 +1,6 @@
 {- git-annex import from remotes
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -34,6 +34,7 @@ import Annex.LockFile
 import Annex.Content
 import Annex.Export
 import Annex.RemoteTrackingBranch
+import Annex.HashObject
 import Command
 import Backend
 import Types.Key
@@ -93,7 +94,7 @@ buildImportCommit
 	:: Remote
 	-> ImportTreeConfig
 	-> ImportCommitConfig
-	-> ImportableContents Key
+	-> ImportableContents (Either Sha Key)
 	-> Annex (Maybe Ref)
 buildImportCommit remote importtreeconfig importcommitconfig importable =
 	case importCommitTracking importcommitconfig of
@@ -246,7 +247,7 @@ buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History t
 buildImportTrees
 	:: Ref
 	-> Maybe TopFilePath
-	-> ImportableContents Key
+	-> ImportableContents (Either Sha Key)
 	-> Annex (History Sha)
 buildImportTrees basetree msubdir importable = History
 	<$> (buildtree (importableContents importable) =<< Annex.gitRepo)
@@ -265,23 +266,31 @@ buildImportTrees basetree msubdir importable = History
 			Just subdir -> liftIO $ 
 				graftTree' importtree subdir basetree repo hdl
 	
-	mktreeitem (loc, k) = do
-		let lf = fromImportLocation loc
-		let treepath = asTopFilePath lf
-		let topf = asTopFilePath $
+	mktreeitem (loc, v) = case v of
+		Right k -> do
+			relf <- fromRepo $ fromTopFilePath topf
+			symlink <- calcRepo $ gitAnnexLink (fromRawFilePath relf) k
+			linksha <- hashSymlink symlink
+			return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
+		Left sha -> 
+			return $ TreeItem treepath (fromTreeItemType TreeFile) sha
+	  where
+		lf = fromImportLocation loc
+		treepath = asTopFilePath lf
+		topf = asTopFilePath $
 			maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
-		relf <- fromRepo $ fromTopFilePath topf
-		symlink <- calcRepo $ gitAnnexLink (fromRawFilePath relf) k
-		linksha <- hashSymlink symlink
-		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
 
-{- Downloads all new ContentIdentifiers as needed to generate Keys. 
- - Supports concurrency when enabled.
+{- Downloads all new ContentIdentifiers. Supports concurrency when enabled.
  -
  - If any download fails, the whole thing fails with Nothing, 
  - but it will resume where it left off.
+ -
+ - Generates either a Key or a git Sha, depending on annex.largefiles.
+ - Note that, when a ContentIdentifiers has been imported before,
+ - annex.largefiles is not reapplied, so will result in how ever that
+ - content was stored in the repo before.
  -}
-downloadImport :: Remote -> ImportTreeConfig -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (Maybe (ImportableContents Key))
+downloadImport :: Remote -> ImportTreeConfig -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (Maybe (ImportableContents (Either Sha Key)))
 downloadImport remote importtreeconfig importablecontents = do
 	-- This map is used to remember content identifiers that
 	-- were just downloaded, before they have necessarily been
@@ -300,8 +309,9 @@ downloadImport remote importtreeconfig importablecontents = do
 			go False cidmap downloading importablecontents db
   where
 	go oldversion cidmap downloading (ImportableContents l h) db = do
+		largematcher <- largeFilesMatcher
 		jobs <- forM l $ \i ->
-			startdownload cidmap downloading db i oldversion
+			startdownload cidmap downloading db i oldversion largematcher
 		l' <- liftIO $ forM jobs $
 			either pure (atomically . takeTMVar)
 		if any isNothing l'
@@ -325,15 +335,25 @@ downloadImport remote importtreeconfig importablecontents = do
 		s <- readTVar downloading
 		writeTVar downloading $ S.delete cid s
 	
-	startdownload cidmap downloading db i@(loc, (cid, _sz)) oldversion = getcidkey cidmap db cid >>= \case
-		(k:_) -> return $ Left $ Just (loc, k)
+	startdownload cidmap downloading db i@(loc, (cid, _sz)) oldversion largematcher = getcidkey cidmap db cid >>= \case
+		(k:ks) ->
+			-- If the same content was imported before
+			-- yeilding multiple different keys, it's not clear
+			-- which is best to use this time, so pick the
+			-- first in the list. But, if any of them is a
+			-- git sha, use it, because the content must
+			-- be included in the git repo then.
+			let v = case mapMaybe keyGitSha (k:ks) of
+				(sha:_) -> Left sha
+				[] -> Right k
+			in return $ Left $ Just (loc, v)
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
 			let ai = ActionItemOther (Just (fromRawFilePath (fromImportLocation loc)))
 			let downloadaction = starting ("import " ++ Remote.name remote) ai $ do
 				when oldversion $
 					showNote "old version"
-				tryNonAsync (download cidmap db i) >>= \case
+				tryNonAsync (download cidmap db i largematcher) >>= \case
 					Left e -> next $ do
 						warning (show e)
 						liftIO $ atomically $
@@ -349,17 +369,22 @@ downloadImport remote importtreeconfig importablecontents = do
 				downloadaction
 			return (Right job)
 	
-	download cidmap db (loc, (cid, sz)) = do
+	download cidmap db (loc, (cid, sz)) largematcher = do
 		let downloader tmpfile p = do
-			k <- Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile) p
-			ok <- moveAnnex k tmpfile
-			return (k, ok)
+			k <- Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile largematcher) p
+			case keyGitSha k of
+				Nothing -> do
+					ok <- moveAnnex k tmpfile
+					when ok $ do
+						recordcidkey cidmap db cid k
+						logStatus k InfoPresent
+						logChange k (Remote.uuid remote) InfoPresent
+					return (Right k, ok)
+				Just sha -> do
+					recordcidkey cidmap db cid k
+					return (Left sha, True)
 		let rundownload tmpfile p = tryNonAsync (downloader tmpfile p) >>= \case
-			Right (k, True) -> do
-				recordcidkey cidmap db cid k
-				logStatus k InfoPresent
-				logChange k (Remote.uuid remote) InfoPresent
-				return $ Just (loc, k)
+			Right (v, True) -> return $ Just (loc, v)
 			Right (_, False) -> return Nothing
 			Left e -> do
 				warning (show e)
@@ -372,15 +397,24 @@ downloadImport remote importtreeconfig importablecontents = do
 		ia = Remote.importActions remote
 		tmpkey = importKey cid sz
 	
-	mkkey loc tmpfile = do
+	mkkey loc tmpfile largematcher = do
 		f <- fromRepo $ fromTopFilePath $ locworktreefilename loc
-		backend <- chooseBackend (fromRawFilePath f)
-		let ks = KeySource
-			{ keyFilename = f
-			, contentLocation = toRawFilePath tmpfile
-			, inodeCache = Nothing
+		matcher <- largematcher (fromRawFilePath f)
+		let mi = MatchingFile FileInfo
+			{ matchFile = f
+			, currFile = toRawFilePath tmpfile
 			}
-		fst <$> genKey ks nullMeterUpdate backend
+		islargefile <- checkMatcher' matcher mi mempty
+		if islargefile
+			then do
+				backend <- chooseBackend (fromRawFilePath f)
+				let ks = KeySource
+					{ keyFilename = f
+					, contentLocation = toRawFilePath tmpfile
+					, inodeCache = Nothing
+					}
+				fst <$> genKey ks nullMeterUpdate backend
+			else gitShaKey <$> hashFile tmpfile
 
 	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
 		ImportTree -> fromImportLocation loc

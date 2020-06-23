@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-06-23T19:38:10Z"
+ content="""
+Good news, it's implemented, will be in the daily builds soon and the next
+release. 
+
+Also you sponsored the [[day's work on it|devblog/day_625__import_tree_largefiles]] --
+thanks for the Patreon support!
+"""]]

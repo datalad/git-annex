@@ -1,5 +1,6 @@
 git-annex (8.20200618) UNRELEASED; urgency=medium
 
+  * Honor annex.largefiles when importing a tree from a special remote.
   * Fix a deadlock that could occur after git-annex got an unlocked
     file, causing the command to hang indefinitely. Known to happen on 
     vfat filesystems, possibly others.

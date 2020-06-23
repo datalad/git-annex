@@ -307,7 +307,7 @@ listContents remote tvar = starting "list" (ActionItemOther (Just (Remote.name r
 				liftIO $ atomically $ writeTVar tvar (Just importable')
 				return True
 
-commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents Key -> CommandStart
+commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents (Either Sha Key) -> CommandStart
 commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable =
 	starting "update" (ActionItemOther (Just $ fromRef $ fromRemoteTrackingBranch tb)) $ do
 		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
