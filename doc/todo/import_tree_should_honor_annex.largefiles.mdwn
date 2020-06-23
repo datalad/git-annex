@@ -4,10 +4,57 @@ remote.
 Note that the legacy `git annex import` from a directory does honor
 annex.largefiles.
 
-The tricky bit might be that the largefiles matcher will need to run on
-the temporary annex key that's used to import, before calculating the real
-annex key; there's no corresponding file in the working tree. Also,
-a "branch:subdir" at the command line or in
-remote.name.annex-tracking-branch can change the path
-that the file is being imported to, which needs to be communicated to the
-largefiles matcher.
+> annex.largefiles will either need to be matched by downloadImport
+> (changing to return `Either Sha Key`, or by buildImportTrees).
+>
+> If it's done in downloadImport, to avoid re-download of non-large files,
+> the content identifier will
+> need to be recorded as using the git sha1. This needs a way to encode
+> a git sha1 as a key, that is distinct from annex sha1 keys.
+> 
+> Problem: In downloadImport, startdownload checks getcidkey
+> to see if the ContentIdentifier is already known, and if so, returns the
+> key used for it before. But, with annex.largefiles, the same content
+> might be annexed given one filename, and not annexed with another.
+> So, the key from getcidkey might not be the right one (or there could be
+> more than one, an annex key and a translated git key).
+> 
+> That argues against making downloadImport match annex.largefiles.
+
+> But, if instead buildImportTrees matches annex.largefiles,
+> then downloadImport has already run moveAnnex on the download,
+> so the content is in the annex. Moving it back out of the annex is
+> difficult (there may be other files in the repo using the same key).
+> So, downloadImport would then need to not moveAnnex, but move it to
+> somewhere temporary. Like the gitAnnexTmpObjectLocation, but using
+> that would be a problem if there was a file in the repo
+> and git-annex get was run on it at the same time. So an equivilant
+> but separate location.
+> 
+> Further problem: downloadImport might skip a download of a CID
+> that's already been seen. That CID might have generated a key
+> before. The key's content may not still be present in the local 
+> repo. Then, if buildImportTrees checks annex.largefiles and wants
+> to add it directly to git, it won't have the content available to add to
+> git. (Conversely, the CID may have been added to git before, but
+> annex.largefiles matches now, and so it would need to extract
+> the content from git only to store it in the annex, which is doable but
+> seems pointless as it's not going to save any space.)
+> 
+> Would it be acceptable for annex.largefiles to be ignored if the same
+> content was already imported from a remote earlier? I think maybe so.
+> 
+> Then all these problems are not a concern, and back to downloadImport
+> checking annex.largefiles being the simplest approach, since it avoids
+> needing the separate temp file location. 
+> 
+> From the user's perspective, the special remote contained a file,
+> it was already imported in the past, and the file has been renamed.
+> It makes no more sense for importing it again to change how it's
+> stored between git and annex than it makes sense for git mv of a file
+> to change how it's stored.
+> 
+> However... If two people can access the special remote, and import
+> from it at different times and get different trees as a result,
+> that might break some assumptions and would certainly lead to merge
+> conflicts. --[[Joey]]
