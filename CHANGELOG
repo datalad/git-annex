@@ -9,6 +9,7 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
   * testremote: Fix over-allocation of resources and bad caching,
     including starting up a large number of external special remote processes.
     (Regression introduced in version 8.20200501)
+  * test: Fix some test cases that assumed git's default branch name.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
 

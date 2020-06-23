@@ -25,7 +25,7 @@ data View = View
 	deriving (Eq, Read, Show)
 
 instance Arbitrary View where
-	arbitrary = View (Git.Ref "master")
+	arbitrary = View (Git.Ref "foo")
 		<$> resize 10 (listOf arbitrary)
 
 data ViewComponent = ViewComponent

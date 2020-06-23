@@ -37,6 +37,7 @@ import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.FilePath
+import qualified Git.Branch
 import qualified Annex.Locations
 #ifndef mingw32_HOST_OS
 import qualified Types.GitConfig
@@ -1502,6 +1503,8 @@ test_adjusted_branch_subtree_regression =
 	withtmpclonerepo $ \r -> whenM (adjustedbranchsupported r) $ do
 		indir r $ do
 			disconnectOrigin
+			origbranch <- maybe "foo" (Git.Types.fromRef . Git.Ref.base)
+				<$> annexeval (Annex.inRepo Git.Branch.current)
 			git_annex "upgrade" [] @? "upgrade failed"
 			git_annex "adjust" ["--unlock", "--force"] @? "adjust failed"
 			createDirectoryIfMissing True "a/b/c"
@@ -1512,7 +1515,7 @@ test_adjusted_branch_subtree_regression =
 			writecontent "a/b/x/y" "foo"
 			git_annex "add" ["a/b/x"] @? "add a/b/x failed"
 			git_annex "sync" [] @? "sync failed"
-			boolSystem "git" [Param "checkout", Param "master"] @? "git checkout master failed"
+			boolSystem "git" [Param "checkout", Param origbranch] @? "git checkout failed"
 			doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
 
 {- Set up repos as remotes of each other. -}
@@ -1771,19 +1774,21 @@ test_export_import = intmpclonerepo $ do
 	-- is in sync with the adjusted branch, which it may not be
 	-- depending on how the repository was set up.
 	commitchanges
-	git_annex "export" ["master", "--to", "foo"] @? "export to dir failed"
+	currbranch <- maybe "foo" (Git.Types.fromRef . Git.Ref.base)
+		<$> annexeval (Annex.inRepo Git.Branch.current)
+	git_annex "export" [currbranch, "--to", "foo"] @? "export to dir failed"
 	dircontains annexedfile (content annexedfile)
 
 	writedir "import" (content "import")
-	git_annex "import" ["master", "--from", "foo"] @? "import from dir failed"
-	git_annex "merge" ["foo/master"] @? "git annex merge foo/master failed"
+	git_annex "import" [currbranch, "--from", "foo"] @? "import from dir failed"
+	git_annex "merge" ["foo/" ++ currbranch] @? "git annex merge failed"
 	annexed_present_imported "import"
 
 	nukeFile "import"
 	writecontent "import" (content "newimport1")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges
-	git_annex "export" ["master", "--to", "foo"] @? "export modified file to dir failed"
+	git_annex "export" [currbranch, "--to", "foo"] @? "export modified file to dir failed"
 	dircontains "import" (content "newimport1")
 
 	-- verify that export refuses to overwrite modified file
@@ -1792,17 +1797,17 @@ test_export_import = intmpclonerepo $ do
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges
-	git_annex_shouldfail "export" ["master", "--to", "foo"] @? "export failed to fail in conflict"
+	git_annex_shouldfail "export" [currbranch, "--to", "foo"] @? "export failed to fail in conflict"
 	dircontains "import" (content "newimport2")
 
 	-- resolving import conflict
-	git_annex "import" ["master", "--from", "foo"] @? "import from dir failed"
+	git_annex "import" [currbranch, "--from", "foo"] @? "import from dir failed"
 	not <$> boolSystem "git" [Param "merge", Param "foo/master", Param "-mmerge"] @? "git merge of conflict failed to exit nonzero"
 	nukeFile "import"
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges
-	git_annex "export" ["master", "--to", "foo"] @? "export failed after import conflict"
+	git_annex "export" [currbranch, "--to", "foo"] @? "export failed after import conflict"
 	dircontains "import" (content "newimport3")
   where
 	dircontains f v = 
@@ -1850,11 +1855,15 @@ test_export_import_subdir = intmpclonerepo $ do
 	subannexedfile = "subdir" </> annexedfile
 	
 	testexport = do
-		git_annex "export" ["master:"++subdir, "--to", "foo"] @? "export of subdir failed"
+		currbranch <- maybe "foo" (Git.Types.fromRef . Git.Ref.base)
+			<$> annexeval (Annex.inRepo Git.Branch.current)
+		git_annex "export" [currbranch++":"++subdir, "--to", "foo"] @? "export of subdir failed"
 		dircontains annexedfile (content annexedfile)
 	
 	testimport = do
-		git_annex "import" ["master:"++subdir, "--from", "foo"] @? "import of subdir failed"
+		currbranch <- maybe "foo" (Git.Types.fromRef . Git.Ref.base)
+			<$> annexeval (Annex.inRepo Git.Branch.current)
+		git_annex "import" [currbranch++":"++subdir, "--from", "foo"] @? "import of subdir failed"
 		git_annex "merge" ["foo/master"] @? "git annex merge foo/master failed"
 
 		-- Make sure that import did not import the file to the top

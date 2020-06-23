@@ -293,7 +293,7 @@ prop_view_roundtrips f metadata visible = or
 	, all hasfields (viewedFiles view viewedFileFromReference f metadata)
 	]
   where
-	view = View (Git.Ref "master") $
+	view = View (Git.Ref "foo") $
 		map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . B.null . fromMetaValue) mv) visible)
 			(fromMetaData metadata)
 	visiblefields = sort (map viewField $ filter viewVisible (viewComponents view))
