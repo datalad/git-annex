@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-06-23T13:29:37Z"
+ content="""
+Take a look at the git-annex branch, in particular remote.log.
+
+    git cat-file -p git-annex:remote.log
+
+"""]]

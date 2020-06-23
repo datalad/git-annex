@@ -1,0 +1,15 @@
+I can't get content referenced in a dead repo to be considered unused.
+
+Setup:
+
+1. Make repo A and B, connect them
+2. Add file to A, copy to B, sync
+3. Sync B
+4. Mark A dead
+5. Delete symlink from B
+6. Run git-annex forget --drop-dead on B
+7. Run git-annex unused on B
+
+The file does not appear as unused. Am I doing something wrong or is this genuinely impossible?
+
+I can understand the reasons for not wanting it to work this way in case the dead repo had important files, but what this means is files I genuinely want to drop will never be considered unused if they existed in the dead repo. This could create an issue for me if I lose a repo in one of my very large annexes, because that could mean gigs of wasted space. I rely on unused to safely drop content because the drop command may remove files that are still referenced somewhere else (duplicate symlinks).

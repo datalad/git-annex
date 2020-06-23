@@ -1,0 +1,10 @@
+Some time ago I created an S3 remote that uses a Digital Ocean "space", which is S3 compatible. It works fine and I've copied some content there and can get it from there. Before I trust this remote though I want to understand where the configuration is that points it to digital ocean. When I look at .git/config there is this section:
+
+    [remote "cloud"]
+        annex-s3 = true
+        annex-uuid = <a UUID>
+        annex-ignore = false
+
+I've looked around and inside the annex subdirectory but haven't been able to find where the config is stored that I must have entered to create this remote. Is the annex-uuid a key to a database with the config? How do I view it?
+
+Thanks for git-annex BTW
