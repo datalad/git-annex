@@ -10,7 +10,8 @@ annex.largefiles.
 > If it's done in downloadImport, to avoid re-download of non-large files,
 > the content identifier will
 > need to be recorded as using the git sha1. This needs a way to encode
-> a git sha1 as a key, that is distinct from annex sha1 keys.
+> a git sha as a key, that's a bijective mapping (so distinct from annex
+> sha1 keys).
 > 
 > Problem: In downloadImport, startdownload checks getcidkey
 > to see if the ContentIdentifier is already known, and if so, returns the
@@ -46,7 +47,7 @@ annex.largefiles.
 > 
 > Then all these problems are not a concern, and back to downloadImport
 > checking annex.largefiles being the simplest approach, since it avoids
-> needing the separate temp file location. 
+> needing the separate temp file location.
 > 
 > From the user's perspective, the special remote contained a file,
 > it was already imported in the past, and the file has been renamed.
@@ -55,6 +56,16 @@ annex.largefiles.
 > to change how it's stored.
 > 
 > However... If two people can access the special remote, and import
-> from it at different times and get different trees as a result,
-> that might break some assumptions and would certainly lead to merge
+> from it at different times, and get different trees as a result,
+> that might break some assumptions, might also lead to merge
 > conflicts. --[[Joey]]
+>
+> > Importing updates export.log, to indicate the state of the remote
+> > (the log file could have been named better). So an annex.largefiles
+> > change would result in an export/import conflict. Such a conflict
+> > can be resolved by using git-annex export, but this could be a
+> > surprising situation for users to encounter, since there is no real
+> > conflict.
+> > 
+> > Still, this doesn't feel like a reason not to implement the feature,
+> > necessarily.
