@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-23T20:10:24Z"
+ content="""
+This is a good question, because where git-annex stores information needed
+to use a special remote varies depending on the special remote, and
+is not really documented very well. But, you can work it out, by thinking
+about the 4 ways git-annex can possibly store it.
+
+1. The git-annex branch's remote.log file is used for most configuration.
+   For a S3 special remote, it's almost all stored there, except for
+   credentials.
+
+2. Credentials, passwords, etc needed to access a special remote may be
+   cached in .git/annex/creds/. The S3 remote stores 
+   the `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID` there, so it will
+   work without the environment variables set.
+
+   (Sometimes this is also stored in remote.log, but only when you use
+   embedcreds=yes and only when the remote's [[encryption]] makes it safe
+   to do so.)
+
+3. .git/config is only used for configurations that it makes sense be local
+   to a given repository clone. For most special remotes, it does not make
+   sense to store stuff there, but eg, the directory special remote stores
+   the path there, because the path to the special remote can be relative
+   to the git repository.
+
+4. It can not store something, and rely on an environment variable being set,
+   or some program it's using having a config file elsewhere.
+"""]]
