@@ -1,0 +1,9 @@
+The test suite spits this out during the export import test:
+
+	unable to propigate merge commit Ref "4475560d4e3958521ad12e2715aeee244ea0cf78" back to Ref "refs/heads/master"
+
+It does not fail, but I think this is actually an indication of a bug.
+
+The ref is a merge commit, because it's imported a tree from a special remote,
+and merged it. Which is a reasonable thing to want to do, even when on an
+adjusted branch. So, this needs to be dealt with somehow. --[[Joey]]
