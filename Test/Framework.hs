@@ -1,6 +1,6 @@
 {- git-annex test suite framework
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,8 @@ import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Construct
 import qualified Git.Types
+import qualified Git.Branch
+import qualified Git.Ref
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types
@@ -591,3 +593,10 @@ getKey b f = case Types.Backend.getKey b of
 		, Types.KeySource.contentLocation = toRawFilePath f
 		, Types.KeySource.inodeCache = Nothing
 		}
+
+{- Get the name of the original branch, eg the current branch, or
+ - if in an adjusted branch, the parent branch. -}
+origBranch :: Types.Annex String
+origBranch = maybe "foo"
+	(Git.Types.fromRef . Git.Ref.base . Annex.AdjustedBranch.fromAdjustedBranch)
+	<$> Annex.inRepo Git.Branch.current
