@@ -30,3 +30,14 @@ BTW running move in our old now somewhat screwed up annex, results in a differen
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> Looks to me like I fixed the reported problem 3 years ago, in
+> [[!commit 1a8ba7eab4677be18fef5d6e1c2e59607594c446]].
+> 
+> That fix was never confirmed to work, but I see no reason why it
+> wouldn't, so if it didn't please reopen. [[done]]
+>
+> (As far as detecting nfs and enabling pidlock, 
+> there is
+> <https://git-annex.branchable.com/bugs/huge_multiple_copies_of___39__.nfs__42____39___and___39__.panfs__42____39___being_created/>)
+> --[[Joey]]
