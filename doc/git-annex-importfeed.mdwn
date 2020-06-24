@@ -22,11 +22,41 @@ in [[git-annex]](1) for details.)
 To make the import process add metadata to the imported files from the feed,
 `git config annex.genmetadata true`
 
+By default, the downloaded files are put in a directory with the title
+of the feed, and files are named based on the title of the item in the
+feed. This can be changed using the --template option.
+
+Existing files are not overwritten by this command. If "some feed/foo.mp3"
+already exists, it will instead write to "some feed/2\_foo.mp3"
+(or 3, 4, etc). Sometimes a feed will change an item's url,
+resulting in the new url being downloaded to such a filename.
+
 # OPTIONS
 
 * `--force`
 
   Force downloading items it's seen before.
+
+* `--relaxed`, `--fast`, `--raw`
+
+  These options behave the same as when using [[git-annex-addurl]](1).
+
+* `--fast`
+
+  Avoid immediately downloading urls. The url is still checked
+  (via HEAD) to verify that it exists, and to get its size if possible.
+
+* `--relaxed`
+
+  Don't immediately download urls, and avoid storing the size of the
+  url's content. This makes git-annex accept whatever content is there
+  at a future point.
+
+* `--raw`
+
+  Prevent special handling of urls by youtube-dl, bittorrent, and other
+  special remotes. This will for example, make importfeed
+  download a .torrent file and not the contents it points to.
 
 * `--template`
 
@@ -58,27 +88,6 @@ To make the import process add metadata to the imported files from the feed,
   value from the feed).
   
   (These use the UTC time zone, not the local time zone.)
-
-* `--relaxed`, `--fast`, `--raw`
-
-  These options behave the same as when using [[git-annex-addurl]](1).
-
-* `--fast`
-
-  Avoid immediately downloading urls. The url is still checked
-  (via HEAD) to verify that it exists, and to get its size if possible.
-
-* `--relaxed`
-
-  Don't immediately download urls, and avoid storing the size of the
-  url's content. This makes git-annex accept whatever content is there
-  at a future point.
-
-* `--raw`
-
-  Prevent special handling of urls by youtube-dl, bittorrent, and other
-  special remotes. This will for example, make importfeed
-  download a .torrent file and not the contents it points to.
 
 # SEE ALSO
 
