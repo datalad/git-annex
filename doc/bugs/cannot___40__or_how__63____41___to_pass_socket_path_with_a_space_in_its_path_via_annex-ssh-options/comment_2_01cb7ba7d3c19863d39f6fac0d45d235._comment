@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-24T16:24:29Z"
+ content="""
+Is this still something you need, or does `GIT_SSH_COMMAND` cover the use
+case?
+
+The missing case would be, if you need remote.name.annex-ssh-options,
+to pass the options only to that one remote and not others.
+
+I don't feel it would be a good idea for git-annex to try to parse quoted
+options, etc. It would need to expose the config to the shell, the same way
+it implements GIT_SSH_COMMAND`, by wrapping the original command in "sh
+-c".
+
+That would need to be a different config than ssh-options, because
+existing ssh-options might be broken by the change. Eg, if it is set to
+something containing a "$", that would not be exposed to the shell
+currently.
+
+So, while this is clearly a gap, I'd prefer to only implement a fix if it's
+actually needed. Since the bug report is 3 years old and I've not gotten a
+nudge, I'm guessing maybe not needed..
+"""]]
