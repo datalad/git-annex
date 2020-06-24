@@ -53,3 +53,5 @@ FAIL
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[dup|done]] --[[Joey]]

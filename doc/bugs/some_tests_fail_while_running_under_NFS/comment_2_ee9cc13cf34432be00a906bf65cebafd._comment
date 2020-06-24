@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-24T16:49:26Z"
+ content="""
+It seems to me that the only way this is going to be fixed 
+is if
+<<https://git-annex.branchable.com/bugs/huge_multiple_copies_of___39__.nfs__42____39___and___39__.panfs__42____39___being_created/>>
+is fixed, so let's close this bug as a dup of that one.
+"""]]
