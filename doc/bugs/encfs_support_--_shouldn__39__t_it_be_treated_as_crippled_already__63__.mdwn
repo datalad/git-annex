@@ -91,3 +91,8 @@ ok
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+> Since this was opened, git-annex init has started warning
+> in this situation, "Filesystem allows writing to files whose
+> write bit is not set."
+> 
+> Anyway, not seeing anything to do here, so [[done]]. --[[Joey]]
