@@ -34,7 +34,25 @@ To make the import process add metadata to the imported files from the feed,
 
   The default template is '${feedtitle}/${itemtitle}${extension}'
   
-  Other available variables for templates: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author
+  The available variables in the template include these that
+  are information about the feed: feedtitle, feedauthor
+
+  And these that are information about individual items in the feed:
+  itemtitle, itemauthor, itemsummary, itemdescription, itemrights,
+  itemid.
+
+  Also, title is itemtitle but falls back to feedtitle if the item has no
+  title, and author is itemauthor but falls back to feedauthor.
+
+  (All of the above are also added as metadata when annex.genmetadata is
+  set.)
+
+  The template also has some variables for when an item was published.
+  
+  itempubdate (YYY-MM-DD or if the feed's date cannot be parsed, the raw
+  value from the feed).
+  
+  (These use the UTC time zone, not the local time zone.)
 
 * `--relaxed`, `--fast`, `--raw`
 
