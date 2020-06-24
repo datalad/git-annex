@@ -45,3 +45,5 @@ so this one was a run from within singularity neurodebian environment on a cento
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+> It seems this was probably not a bug in git-annex, as explained in my 
+> comments, so [[done]] --[[Joey]]
