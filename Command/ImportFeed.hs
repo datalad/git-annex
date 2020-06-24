@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,8 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Format
+import Data.Time.Calendar
+import Data.Time.LocalTime
 import qualified Data.Text as T
 import System.Log.Logger
 
@@ -313,15 +315,43 @@ feedFile :: Utility.Format.Format -> ToDownload -> String -> FilePath
 feedFile tmpl i extension = Utility.Format.format tmpl $
 	M.map sanitizeFilePath $ M.fromList $ extractFields i ++
 		[ ("extension", extension)
-		, extractField "itempubdate" [pubdate $ item i]
+		, extractField "itempubdate" [itempubdate]
+		, extractField "itempubyear" [itempubyear]
+		, extractField "itempubmonth" [itempubmonth]
+		, extractField "itempubday" [itempubday]
+		, extractField "itempubhour" [itempubhour]
+		, extractField "itempubminute" [itempubminute]
+		, extractField "itempubsecond" [itempubsecond]
 		]
   where
-	pubdate itm = case getItemPublishDate itm :: Maybe (Maybe UTCTime) of
-		Just (Just d) -> Just $
-			formatTime defaultTimeLocale "%F" d
+	itm = item i
+
+	pubdate = case getItemPublishDate itm :: Maybe (Maybe UTCTime) of
+		Just (Just d) -> Just d
+		_ -> Nothing
+	
+	itempubdate = case pubdate of
+		Just pd -> Just $
+			formatTime defaultTimeLocale "%F" pd
 		-- if date cannot be parsed, use the raw string
-		_ -> replace "/" "-" . T.unpack
+		Nothing-> replace "/" "-" . T.unpack
 			<$> getItemPublishDateString itm
+	
+	(itempubyear, itempubmonth, itempubday) = case pubdate of
+		Nothing -> (Nothing, Nothing, Nothing)
+		Just pd -> 
+			let (y, m, d) = toGregorian (utctDay pd)
+			in (Just (show y), Just (show m), Just (show d))
+	
+	(itempubhour, itempubminute, itempubsecond) = case pubdate of
+		Nothing -> (Nothing, Nothing, Nothing)
+		Just pd -> 
+			let tod = timeToTimeOfDay (utctDayTime pd)
+			in ( Just (show (todHour tod))
+			   , Just (show (todMin tod))
+			   -- avoid fractional seconds
+			   , Just (takeWhile (/= '.') (show (todSec tod)))
+			   )
 
 extractMetaData :: ToDownload -> MetaData
 extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of

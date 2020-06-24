@@ -3,3 +3,7 @@ It would be great to be able to use the pubDate of the entries with the --templa
 Text.Feed.Query has a getItemPublishDate (and a getFeedPubDate, if we want some kind of ${feeddate}).
 
 The best would be to allow a reformating of the date(s) with (for example) %Y-%m-%D
+
+> itempubdate was added years ago and I forgot to close this,
+> but I've now also added itempubmonth, itempubday, etc. [[done]]
+> --[[Joey]]

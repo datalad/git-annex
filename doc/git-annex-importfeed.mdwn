@@ -47,9 +47,14 @@ To make the import process add metadata to the imported files from the feed,
   (All of the above are also added as metadata when annex.genmetadata is
   set.)
 
+  The extension variable is the extension of the file in the feed,
+  or sometimes ".m" if no extension can be determined.
+
   The template also has some variables for when an item was published.
   
-  itempubdate (YYY-MM-DD or if the feed's date cannot be parsed, the raw
+  itempubyear (YYYY), itempubmonth (MM), itempubday (DD), itempubhour (HH),
+  itempubminute (MM), itempubsecond (SS),
+  itempubdate (YYYY-MM-DD or if the feed's date cannot be parsed, the raw
   value from the feed).
   
   (These use the UTC time zone, not the local time zone.)
