@@ -16,6 +16,7 @@ import Annex.Url
 import Types.Key
 import Types.Creds
 import Types.ProposedAccepted
+import Types.NumCopies
 import qualified Annex
 import qualified Git
 import qualified Git.Types as Git
@@ -100,9 +101,9 @@ gen r u rc gc rs = do
 		(retrieve rs h)
 		(remove h)
 		(checkKey rs h)
-		(this c cst)
+		(this c cst h)
   where
-	this c cst = Remote
+	this c cst h = Remote
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
@@ -114,7 +115,7 @@ gen r u rc gc rs = do
 		-- is checked on download
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = removeKeyDummy
-		, lockContent = Nothing
+		, lockContent = Just $ lockKey (this c cst h) rs h
 		, checkPresent = checkPresentDummy
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
@@ -132,7 +133,7 @@ gen r u rc gc rs = do
 		-- content cannot be removed from a git-lfs repo
 		, appendonly = True
 		, mkUnavailable = return Nothing
-		, getInfo = gitRepoInfo (this c cst)
+		, getInfo = gitRepoInfo (this c cst h)
 		, claimUrl = Nothing
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
@@ -492,6 +493,16 @@ retrieve rs h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload 
 				Just req -> do
 					uo <- getUrlOptions
 					liftIO $ downloadConduit p req dest uo
+
+-- Since git-lfs does not support removing content, nothing needs to be
+-- done to lock content in the remote, except for checking that the content
+-- is actually present.
+lockKey :: Remote -> RemoteStateHandle -> TVar LFSHandle -> Key -> (VerifiedCopy -> Annex a) -> Annex a
+lockKey r rs h key callback = 
+	ifM (checkKey rs h key)
+		( withVerifiedCopy LockedCopy (uuid r) (return True) callback
+		, giveup $ "content seems to be missing from " ++ name r
+		)
 
 checkKey :: RemoteStateHandle -> TVar LFSHandle -> CheckPresent
 checkKey rs h key = getLFSEndpoint LFS.RequestDownload h >>= \case

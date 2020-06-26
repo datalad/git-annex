@@ -58,6 +58,7 @@ import Logs.Web
 import Logs.MetaData
 import Types.MetaData
 import Types.ProposedAccepted
+import Types.NumCopies
 import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
@@ -199,7 +200,7 @@ gen r u rc gc rs = do
 			-- secure.
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = removeKeyDummy
-			, lockContent = Nothing
+			, lockContent = lockContentS3 hdl this rs c info
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = False
 			, exportActions = ExportActions
@@ -426,6 +427,19 @@ remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> do
 	S3.DeleteObjectResponse <- liftIO $ runResourceT $ sendS3Handle h $
 		S3.DeleteObject (T.pack $ bucketObject info k) (bucket info)
 	return ()
+
+lockContentS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Maybe (Key -> (VerifiedCopy -> Annex a) -> Annex a)
+lockContentS3 hv r rs c info
+	-- When versioning is enabled, content is never removed from the
+	-- remote, so nothing needs to be done to lock the content there,
+	-- beyond a sanity check that the content is in fact present.
+	| versioning info = Just $ \k callback -> do
+		checkVersioning info rs k
+		ifM (checkKey hv r rs c info k)
+			( withVerifiedCopy LockedCopy (uuid r) (return True) callback
+			, giveup $ "content seems to be missing from " ++ name r ++ " despite S3 versioning being enabled"
+			)
+	| otherwise = Nothing
 
 checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> CheckPresent
 checkKey hv r rs c info k = withS3Handle hv $ \case

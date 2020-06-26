@@ -13,6 +13,10 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
   * importfeed: Added some additional --template variables:
     itempubyear, itempubmonth, itempubday, itempubhour,
     itempubminute, itempubsecond.
+  * Made several special remotes support locking content on them while
+    dropping, which allows dropping from another special remote when
+    the content will only remain on a special remote of these types:
+    S3 (with versioning=yes), git-lfs
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
 
