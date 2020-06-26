@@ -124,28 +124,29 @@ verifyEnoughCopiesToDrop
 	-> Annex a -- action to perform when unable to drop
 	-> Annex a
 verifyEnoughCopiesToDrop nolocmsg key removallock need skip preverified tocheck dropaction nodropaction = 
-	helper [] [] preverified (nub tocheck)
+	helper [] [] preverified (nub tocheck) []
   where
-	helper bad missing have [] =
+	helper bad missing have [] lockunsupported =
 		liftIO (mkSafeDropProof need have removallock) >>= \case
 			Right proof -> dropaction proof
 			Left stillhave -> do
-				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg
+				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg lockunsupported
 				nodropaction
-	helper bad missing have (c:cs)
+	helper bad missing have (c:cs) lockunsupported
 		| isSafeDrop need have removallock =
 			liftIO (mkSafeDropProof need have removallock) >>= \case
 				Right proof -> dropaction proof
-				Left stillhave -> helper bad missing stillhave (c:cs)
+				Left stillhave -> helper bad missing stillhave (c:cs) lockunsupported
 		| otherwise = case c of
 			UnVerifiedHere -> lockContentShared key contverified
 			UnVerifiedRemote r -> checkremote r contverified $
-				Remote.hasKey r key >>= \case
-					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs
-					Left _      -> helper (r:bad) missing have cs
-					Right False -> helper bad (Remote.uuid r:missing) have cs
+				let lockunsupported' = r : lockunsupported
+				in Remote.hasKey r key >>= \case
+					Right True  -> helper bad missing (mkVerifiedCopy RecentlyVerifiedCopy r : have) cs lockunsupported'
+					Left _      -> helper (r:bad) missing have cs lockunsupported'
+					Right False -> helper bad (Remote.uuid r:missing) have cs lockunsupported'
 		  where
-			contverified vc = helper bad missing (vc : have) cs
+			contverified vc = helper bad missing (vc : have) cs lockunsupported
 
 	checkremote r cont fallback = case Remote.lockContent r of
 		Just lockcontent -> do
@@ -176,8 +177,8 @@ data DropException = DropException SomeException
 
 instance Exception DropException
 
-notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> Annex ()
-notEnoughCopies key need have skip bad nolocmsg = do
+notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> [Remote] -> Annex ()
+notEnoughCopies key need have skip bad nolocmsg lockunsupported = do
 	showNote "unsafe"
 	if length have < fromNumCopies need
 		then showLongNote $
@@ -185,8 +186,12 @@ notEnoughCopies key need have skip bad nolocmsg = do
 			show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
 			" necessary copies"
 		else do
-			showLongNote "Unable to lock down 1 copy of file that is required to safely drop it."
-			showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
+			showLongNote $ "Unable to lock down 1 copy of file that is required to safely drop it."
+			if null lockunsupported
+				then showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
+				else showLongNote $ "These remotes do not support locking: "
+					++ Remote.listRemoteNames lockunsupported
+
 	Remote.showTriedRemotes bad
 	Remote.showLocations True key (map toUUID have++skip) nolocmsg
 

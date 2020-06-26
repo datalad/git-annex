@@ -52,6 +52,7 @@ module Remote (
 	nameToUUID,
 	nameToUUID',
 	showTriedRemotes,
+	listRemoteNames,
 	showLocations,
 	forceTrust,
 	logStatus,
@@ -365,8 +366,11 @@ showLocations separateuntrusted key exclude nolocmsg = do
 showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = noop
 showTriedRemotes remotes =
-	showLongNote $ "Unable to access these remotes: " ++
-		intercalate ", " (map name remotes)
+	showLongNote $ "Unable to access these remotes: "
+		++ listRemoteNames remotes
+
+listRemoteNames :: [Remote] -> String
+listRemoteNames remotes = intercalate ", " (map name remotes)
 
 forceTrust :: TrustLevel -> String -> Annex ()
 forceTrust level remotename = do
