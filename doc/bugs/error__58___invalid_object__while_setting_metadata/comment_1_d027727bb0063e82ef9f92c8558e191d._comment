@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-06-26T14:22:24Z"
+ content="""
+It is likely the side-effect from datalad's `install --reckless=ephemeral` where we symlink `.git/annex`
+"""]]
