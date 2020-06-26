@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="comment 10"
+ date="2020-06-26T20:29:26Z"
+ content="""
+... or even, more fancy:
+
+    git annex info --fast * --json | jq -j '.\"local annex size\", \"\t\", .directory, \"\t\", \"\n\"' | sort -h
+
+Downside: the json output doesn't give us something `sort` can really work with (it expects `M`, `G`, not `mebibytes`, `gibibytes`, which is arguably a bug...). But precision fanatics can also work around that with:
+
+    git annex info --fast * --json --bytes | jq -j '.\"local annex size\", \"\t\", .directory, \"\t\", \"\n\"' | sort -h
+
+Then you can go crazy trying to convert those numbers [back to something readable](https://unix.stackexchange.com/questions/346902/need-to-convert-bytes-to-gb-mb-kb-in-normal-decimal-format) in your own spare time... ;)
+"""]]
