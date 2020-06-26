@@ -7,12 +7,21 @@ special remotes can lock content though:
 * web can't drop content, so content is also implicitly locked there
   (of course web is often untrusted so git-annex won't count it as a copy
   anyway then)
-* appendonly remotes can't drop content. This includes S3 repos configured
-  with versioning. It would be worth either giving all such remotes a
-  lockContent that succeeds noop, or just checking for appendonly the same
-  places lockContent is used.
-* directory could use fcntl locking
 * adb could use some shell trick perhaps
 * It might be possible for an external remote to lock content, but it would
   be a tricky extension to the protocol, since lockContent needs to keep it
   locked while running another action.
+
+* directory could use fcntl locking
+
+  This would need a transition, because dropping from directory first needs
+  to support checking for locks. Only after we're sure that any git-annex
+  binaries that might be in use on a machine do that is it safe for
+  lockContent to take the lock. So git-annex would need to be released with
+  the first change, then wait several months or years before making the
+  second change.
+
+  Also, the directory might be on a filesystem that does not support
+  locking, with various failure modes. And unlike a git-annex repo,
+  there's nowhere in a directory special remote to record information about
+  locking problems with it. Getting this right seems hard..
