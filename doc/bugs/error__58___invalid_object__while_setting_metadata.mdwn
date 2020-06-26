@@ -1,0 +1,26 @@
+
+[[!format sh """
+(datalad-0.13) nastase@head2:/backup/tmp/sam-study-1021/containers/licenses$ git annex metadata freesurfer -s distribution-restrictions=sensitive
+metadata freesurfer 
+  distribution-restrictions=sensitive
+  distribution-restrictions-lastchanged=2020-06-26@14-15-10
+  lastchanged=2020-06-26@14-15-10
+ok
+(recording state in git...)
+error: invalid object 100644 13a548163abc38cac81810399bcf5a8792c56763 for 'group.log'
+fatal: git-write-tree: error building trees
+git-annex: failed to read sha from git write-tree
+CallStack (from HasCallStack):
+  error, called at ./Git/Sha.hs:23:15 in main:Git.Sha
+
+(datalad-0.13) nastase@head2:/backup/tmp/sam-study-1021/containers/licenses$ git annex version | head -n 1
+git-annex version: 8.20200617-g02765b8
+
+"""]]
+
+
+I think nothing odd was done besides trying to make this file saved unlocked for a while with datalad
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
