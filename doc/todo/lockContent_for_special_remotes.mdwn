@@ -4,9 +4,6 @@ special remotes can lock content though:
 * bup and git-lfs and tahoe can't drop content, so content is implicitly locked
 * S3 has an object lock feature, I don't know if it would be usable for
   this, but woth investigating.
-* web can't drop content, so content is also implicitly locked there
-  (of course web is often untrusted so git-annex won't count it as a copy
-  anyway then)
 * adb could use some shell trick perhaps
 * It might be possible for an external remote to lock content, but it would
   be a tricky extension to the protocol, since lockContent needs to keep it
