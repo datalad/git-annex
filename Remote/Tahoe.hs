@@ -13,7 +13,7 @@
  -
  - Tahoe has its own encryption, so git-annex's encryption is not used.
  -
- - Copyright 2014-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -31,6 +31,7 @@ import Annex.Common
 import Types.Remote
 import Types.Creds
 import Types.ProposedAccepted
+import Types.NumCopies
 import qualified Git
 import Config
 import Config.Cost
@@ -91,7 +92,7 @@ gen r u rc gc rs = do
 		-- Tahoe cryptographically verifies content.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove
-		, lockContent = Nothing
+		, lockContent = Just $ lockKey u rs hdl
 		, checkPresent = checkKey rs hdl
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
@@ -152,6 +153,16 @@ retrieve rs hdl k _f d _p = do
 
 remove :: Key -> Annex ()
 remove _k = giveup "content cannot be removed from tahoe remote"
+
+-- Since content cannot be removed from tahoe (by git-annex),
+-- nothing needs to be done to lock content there, except for checking that
+-- it is actually present.
+lockKey :: UUID -> RemoteStateHandle -> TahoeHandle -> Key -> (VerifiedCopy -> Annex a) -> Annex a
+lockKey u rs hrl k callback = 
+	ifM (checkKey rs hrl k)
+		( withVerifiedCopy LockedCopy u (return True) callback
+		, giveup $ "content seems to be missing from tahoe remote"
+		)
 
 checkKey :: RemoteStateHandle -> TahoeHandle -> Key -> Annex Bool
 checkKey rs hdl k = go =<< getCapability rs k
