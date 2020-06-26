@@ -1,13 +1,24 @@
-Currently only Remote.Git implements lockContent. It seems like some other
-special remotes can lock content though:
+Support lockContent in more special remotes. This allows dropping
+content from a special remote when the only copies are in other special
+remotes.
 
-* bup and git-lfs and tahoe can't drop content, so content is implicitly locked
-* S3 has an object lock feature, I don't know if it would be usable for
-  this, but woth investigating.
-* adb could use some shell trick perhaps
+(All the easy ones, eg read-only special remotes, are implemented already.)
+
 * It might be possible for an external remote to lock content, but it would
   be a tricky extension to the protocol, since lockContent needs to keep it
-  locked while running another action.
+  locked while running another action. There would need to be separate
+  actions for locking and unlocking.
+
+  If this were implemented in git-annex, and some special remote program
+  didn't used to support it, and implemented REMOVE w/o checking a lock,
+  then making that program support lockContent would run the risk
+  of a misture of the old and new version being in use for the same remote,
+  which could result in data loss.
+
+  To avoid that, the author of the special remote would need to either
+  a) always do lock checking from the beginning or
+  b) wait long enough or document well enough to be sure that situation
+  never happens.
 
 * directory could use fcntl locking
 
@@ -22,3 +33,16 @@ special remotes can lock content though:
   locking, with various failure modes. And unlike a git-annex repo,
   there's nowhere in a directory special remote to record information about
   locking problems with it. Getting this right seems hard..
+
+* S3 has an object lock feature, I don't know if it would be usable for
+  this.
+
+  It would need a transition, with dropKey first failing when the object
+  lock was in place, and then once that git-annex was in use everywhere,
+  lockContent setting the object lock.
+  
+  (S3 with versioning=yes already supports lockContent.)
+
+* adb could use some shell trick perhaps.. But it would depend on doing
+  locking in /sdcard, which seems likely to be a massive ball of POSIX
+  incompliance and pain.
