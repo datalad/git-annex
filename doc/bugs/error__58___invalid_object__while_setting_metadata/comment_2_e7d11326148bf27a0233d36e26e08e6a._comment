@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-26T16:13:43Z"
+ content="""
+Apparently .git/annex/index refers to a blob that is not in the git
+repository.
+
+I don't see a git-annex bug here.
+
+Making a shared clone rather than symlinking .git/annex would avoid this situation.
+"""]]
