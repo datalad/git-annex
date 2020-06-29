@@ -1,0 +1,35 @@
+### Please describe the problem.
+When building the openSUSE package of git-annex 8.20200522 or 8.20200617, every build has a different git-annex binary as result. 
+See https://reproducible-builds.org/ for why this matters.
+
+An underlying issue may be that Assistant/WebApp/Types.o varies in its ordering of various symbols (as seen through objdump -d):
+
+    -0000000000008ba8 <AssistantziWebAppziTypes_jszujqueryzuuizuwidgetzujs7_info>:
+    +0000000000008ba8 <AssistantziWebAppziTypes_jszujqueryzuuizumousezujs7_info>:
+    -0000000000008cf8 <AssistantziWebAppziTypes_jszulongpollingzujs7_info>:
+    +0000000000008cf8 <AssistantziWebAppziTypes_jszujqueryzuuizuwidgetzujs7_info>:
+    -000000000003a7c8 <AssistantziWebAppziTypes_csszubootstrapzuthemezucss4_info>:
+    +000000000003a7c8 <AssistantziWebAppziTypes_jszubootstrapzujs4_info>:
+
+I found, the build becomes reproducible, when using a filesystem with deterministic readdir order such as disorderfs with sort mode.
+
+https://github.com/bmwiedemann/openSUSE/blob/master/packages/g/git-annex/git-annex.spec#L173 just calls ./Setup build -v
+that in turn calls ghc that calls cc and as with a temporary .s file
+
+### What steps will reproduce the problem?
+
+    osc checkout openSUSE:Factory/git-annex && cd $_
+    osc build --vm-type=kvm --noservice
+
+### What version of git-annex are you using? On what operating system?
+8.20200522 on openSUSE-Tumbleweed-20200628
+
+### Please provide any additional information below.
+
+https://rb.zq1.de/compare.factory/git-annex-compare.out has output from our build-compare tool - might not be very readable here.
+
+I also saw order variations in Types.o around strings that included "activityicon.gif".
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sorry, not yet a user. Just looking into the openSUSE packaging.
