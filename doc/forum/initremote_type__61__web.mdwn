@@ -1,0 +1,5 @@
+Is there an easy way to setup a web remote with a URL to an existing annex such as the following?
+
+    git annex initremote my_annex type=web URL=http://my_server.net/path/to/annex
+
+I've created an annex mirror using an rsync special remote on a web server. I can browse the files via HTTP, but how do I tell git annex to fetch the files from there?
