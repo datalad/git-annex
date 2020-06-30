@@ -1,0 +1,7 @@
+I noticed a git-annex copy -J4 --to a local remote was opening and closing the
+keysdb of the remote repository repeatedly. This probably slows it down
+some.
+
+Not immediately clear why, Remote.Git.onLocal reuses the same Annex state, so
+should  keep the keysdbhandle open, unless something is closing it, but I
+can't see what might be. --[[Joey]]
