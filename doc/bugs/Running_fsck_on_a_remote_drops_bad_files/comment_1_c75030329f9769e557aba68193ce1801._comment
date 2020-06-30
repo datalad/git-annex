@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-30T14:33:08Z"
+ content="""
+The corrupted file is downloaded from the remote, and that copy of the file
+gets moved to .git/annex/bad/ when fsck determines it's corrupt. A message
+is displayed giving the path where the content is left.
+
+The only time that's not done is if the local repository has its own copy
+of the file. In that case, there's not much benefit to accumulating bad
+copies in .git/annex/bad since there's still a (presumably) good copy.
+
+If fsck left corrupted content on the remote, that would risk actual data
+loss. Consider if a second repository also had access to the remote, and
+in that repository you ran git-annex drop. It would see that the remote
+still contains the file, so assume the content is good, and so go ahead and
+drop the content from the second repository. That might be the only
+uncorrupted copy of the file it's lost. So once we know that the content is
+corrupt, the safe thing to do is move it out of the way.
+"""]]
