@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-30T15:18:37Z"
+ content="""
+It could look like this:
+
+	> EXTENSIONS INFO ASYNC
+	< EXTENSIONS ASYNC
+	> TRANSFER RETRIEVE Key1 file
+	< TRANSFER-ASYNC Key1
+	< PROGRESS-ASYNC Key1 10
+	> TRANSFER RETRIEVE Key2 file
+	< PROGRESS-ASYNC Key1 100
+	< TRANSFER-ASYNC Key1
+	< PROGRESS-ASYNC Key2 10
+	< TRANSFER-SUCCESS RETRIEVE Key1
+	< TRANSFER-SUCCESS RETRIEVE Key2
+
+Having separate job ids does not seem necessary since it has the key.
+
+When both negotiate the ASYNC extension, then the special remote, for simplicity,
+should always use this async protocol, not mix in the non-async protocol.
+
+From when git-annex sends TRANSFER until the special remote sends TRANSFER-ASYNC,
+the special remote can use send of the other special remote messages it
+needs to in order to handle the transfer, eg DIRHASH and GETCREDS.
+git-annex will avoid starting up any other transfers until after
+TRANSFER-ASYNC. This avoids what seems like it could
+be a lot of complexity in the special remote. (Imagine if git-annex sent
+another TRANSFER at the same time the special remote had sent DIRHASH;
+the special remote would need to defer handling that TRANSFER until it
+got the reply.) 
+And after the TRANSFER-ASYNC, the special remote should refrain from 
+sending anything further for that transfer except for PROGRESS-ASYNC
+and TRANSFER-SUCCESS/TRANSFER-FAILURE.
+
+I don't think implementation in git-annex would be very hard, basically
+make a worker thread that's used for async transfers, that takes an
+external process from the pool and keeps it for its use as long as any
+transfers are running.
+
+---
+
+Note: This would be a further road block to implementating
+[[todo/more_extensive_retries_to_mask_transient_failures]], because there
+would be this one external process that's handling multiple transfers and
+killing it would stop them all rather than just the one that is wanted to
+be stopped.. 
+
+Unless the protocol included a way to cancel a
+single transfer, eg "TRANSFER CANCEL Key1".
+But then the external program would need to support canceling a transfer,
+which it could be some protocols or libraries can't do cleanly, leading to
+the same kind of resource cleanup issues that are blocking that todo
+in git-annex.
+"""]]
