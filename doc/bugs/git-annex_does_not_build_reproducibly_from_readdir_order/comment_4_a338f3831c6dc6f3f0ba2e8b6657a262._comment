@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://bmwiedemann.zq1.de/"
+ avatar="http://cdn.libravatar.org/avatar/96f3cd71c3d677f31ed8f79ffb8fb343a8282c085731f405997ff3ef77a1a71b"
+ subject="comment 4"
+ date="2020-06-30T19:47:35Z"
+ content="""
+That is closer, but those diffs in Assistant/WebApp/Types.o seem to still be something different.
+
+Since strings in Types.o varied around the embedded static/activityicon.gif, I noticed that Assistant/WebApp/Types.hs had lines like
+
+```
+publicFiles \"static\"
+staticRoutes = $(embed \"static\")
+```
+
+Could it be, that those indirectly iterate over listings of the static/ dir without sorting to generate those lists of filenames embedded in Types.o?
+
+Maybe via <https://hackage.haskell.org/package/yesod-static> ?
+e.g. <https://github.com/yesodweb/yesod/blob/master/yesod-static/Yesod/Static.hs#L250> . That file has more occurrences of fs and none of sort.
+"""]]
