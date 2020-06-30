@@ -1,0 +1,7 @@
+Ran git-annex copy --to origin in a repo with 100k files. origin was a
+local git repo. 
+After all the files were transferred, it died with a fork resource
+exhausted, too many open files or something like that.
+
+.git/annex/journal/ had 76k files in it. git-annex merge dealt with it
+without a problem. --[[Joey]]
