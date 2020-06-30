@@ -1,0 +1,7 @@
+Hello Joeyh,
+Overall the performance of git-annex is good for me. However, one case where git-annex could improve is with "git annex sync --content --all", as it takes 20 minutes just to traverse all keys without uploading/downloading anything in my repo. I've looked at the code (learnig some haskell along the way) and I think it's due to getting the location logs via git cat-file. I see two ways how performance could be improved:
+
+1. Use "git cat-file --batch-all-objects --unordered" and traverse the keys in whatever order that outputs the location logs.
+2. Cache the location logs in the sqlite database
+
+Other than that, git-annex has really solved all my file syncing and archival needs and is just awesome!
