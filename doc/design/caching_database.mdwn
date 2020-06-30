@@ -1,7 +1,4 @@
 * [[metadata]] for views
-* [direct mode mappings scale badly with thousands of identical files](/bugs/__34__Adding_4923_files__34___is_really_slow)
-* [[bugs/incremental_fsck_should_not_use_sticky_bit]]
-* [[todo/wishlist:_pack_metadata_in_direct_mode]]
 * [[todo/cache_key_info]]
 * [[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
 
