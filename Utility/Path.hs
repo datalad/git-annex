@@ -34,6 +34,9 @@ module Utility.Path (
 import System.FilePath
 import Data.List
 import Data.Maybe
+#ifdef mingw32_HOST_OS
+import Data.Char
+#endif
 import Control.Applicative
 import Prelude
 
