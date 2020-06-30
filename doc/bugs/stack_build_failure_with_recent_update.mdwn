@@ -61,3 +61,5 @@ Version 2.3.1, Git revision de2a7b694f07de7e6cf17f8c92338c16286b2878 (8103 commi
 
 Locally, I've set `httpclientrestricted` and `gitlfs` flags to false
 to use the vendored version for now.
+
+> [[fixed|done]] --[[Joey]]
