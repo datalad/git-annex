@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-06-30T21:17:08Z"
+ content="""
+Yes, it's using yesod-static.
+
+I think a bug report on yesod-static to sort it would be the best approach.
+"""]]
