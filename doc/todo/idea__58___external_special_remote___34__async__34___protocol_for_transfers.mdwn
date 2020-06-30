@@ -1,0 +1,10 @@
+ATM parallel download/upload is implemented via running multiple external special remotes.  If such special remote is also hungry on file ids etc we had already cases for this approach to be prohibitive and otherwise requiring various locking etc mechanisms.
+
+Some external remotes can natively support transfer of multiple files in parallel.  My use case is globus.  With globus I can queue up multiple transfers which would start happening in parallel, and then only poll on their status once in a while to see which finished and provide overall progress.  Setting up transfer queue and initiating transfer has notable overhead with globus, so transfer of many small files "one at a time" would also be very slow
+
+That is why I thought it would have been quite cool if special remotes protocol supported "queuing up" of the transfers, while reporting back to annex some transfer-id per each file, and then reporting back whenever any transfer-id is finished and potentially progress reports per each ID and/or overall. That can remove any burden from parallel execution of external special remotes and establish very efficient transfer mechanisms in some cases.
+
+Just an idea ;)
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
