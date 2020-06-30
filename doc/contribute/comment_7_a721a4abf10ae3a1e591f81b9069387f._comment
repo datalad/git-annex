@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: push doc-only changes"""
+ date="2020-06-30T15:02:20Z"
+ content="""
+Turns out that anonymous git push had been broken for some time.
+
+I've fixed the permissions problem, but I'm not entirely sure what caused
+it in the first place, so not positive my fix will last.
+"""]]
