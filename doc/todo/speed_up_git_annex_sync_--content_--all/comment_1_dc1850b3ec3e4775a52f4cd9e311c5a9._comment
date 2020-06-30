@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-30T16:27:26Z"
+ content="""
+I am surprised by 30m, unless you have a very large number of files
+or keys. Benchmarking in a repo with 100k files and keys, git-annex
+sync --content took 7m, and with --all 14m. (both cold cache) 
+
+How many files and keys does git-annex info say are in your repository?
+
+--all is slower because it does two passes, first over all files in the
+current branch, and a second pass over all keys. (Necessary to handle
+preferred content filename matching correctly.)
+
+git cat-file --batch-all-objects --unordered would not work, because
+there would be no way to know if a particular blob was a current version of
+the location log for a key, or an old version.
+(For that matter, it doesn't even say what file the blob belongs to, so
+it would have no idea what it's a location log for.)
+
+[[design/caching_database]] talks about speedups by sqlite caching. But
+that's a hard road.
+"""]]

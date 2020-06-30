@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-06-30T18:53:52Z"
+ content="""
+I wonder if the second pass could avoid looking at the location log at all 
+for keys handled in the first pass. Currently it only checks the bloom
+filter to skip dropping those keys, but not to skip transferring the keys. If it
+also skipped transferring, it would not need to read the location log a second
+time for the same key.
+
+That would speed it up by around 2x, in fairly typical cases where there are a
+lot of files, but not a lot of old versions of each file.
+
+Problem with that is, it's a bloom filter, there can be false positives.
+Currently a false positive means it does not drop a key that it should want
+to, annoying maybe but unlikely to happen and not a big problem. But
+consulting the bloom filter for transfers would risk it not making as many
+copies of a key as it is configured to, which risks data loss, or at least not
+having all desired data available after sync.
+
+But, if it could use something other than a bloom filter to keep track
+of the keys processed in the first pass, that would be a good optimisation.
+Sqlite database maybe, have to consider the overhead of querying it. Just
+keeping the keys in memory w/o a bloom filter maybe, and only use the bloom
+filter if there are too many keys.
+
+The bloom filter used currently uses around 16 mb of ram. A typical key is
+80 bytes or so. So, up to around 200,000 keys in a set is probably the same
+ballpark amount of ram. (32 mb would be needed to construct the
+bloom filter from the set, probably.)
+"""]]
