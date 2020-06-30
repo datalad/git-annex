@@ -1,0 +1,47 @@
+When debugging some ssh-related datalad tests that hang with newer
+git-annex versions, I noticed that there was a regression in the
+treatment of annex-ssh-options in c8fec6ab0 (Fix a minor bug that
+caused options provided with -c to be passed multiple times to git,
+2020-03-16).
+
+Here's a demo script.  Pointing `SSHURL` to any ssh-accessible annex
+repo should do.  In the case below, the target is an annex repo with
+one commit and no files in the working tree.
+
+[[!format sh """
+SSHURL="smaug:/home/kyle/scratch/repo"
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/gx-ssh-opts-XXXXXXX)"
+git clone "$SSHURL" ./ >/dev/null 2>&1
+git annex init \
+    -c annex.sshcaching=false \
+    -c remote.origin.annex-ssh-options="-o ControlMaster=auto -S CACHE" \
+    --debug 2>&1 | grep 'read: ssh'
+"""]]
+
+With the parent of the above commit checked out (b166223d4), the
+script outputs
+
+```
+[2020-06-30 11:09:43.853918422] read: ssh ["smaug","-o","ControlMaster=auto","-S","CACHE","-n","-T","git-annex-shell 'configlist' '/home/kyle/scratch/repo' '--debug'"]
+```
+
+With c8fec6ab0 checked out, it outputs
+
+```
+[2020-06-30 11:11:03.833678263] read: ssh ["smaug","-S",".git/annex/ssh/smaug","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","git-annex-shell 'configlist' '/home/kyle/scratch/repo' '--debug'"]
+[2020-06-30 11:11:04.448046366] read: ssh ["-O","stop","-S","smaug","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+```
+
+It looks like the options specified via
+`remote.origin.annex-ssh-options` are dropped, and git-annex switches
+to using its built-in ssh caching.
+
+A recent commit on master (95b8b4a5a) shows the same behavior.
+
+I've tried to work through the config-related handling and understand
+why the condition from c8fec6ab0 results in the ssh options being
+dropped, but I haven't made any progress yet.
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
