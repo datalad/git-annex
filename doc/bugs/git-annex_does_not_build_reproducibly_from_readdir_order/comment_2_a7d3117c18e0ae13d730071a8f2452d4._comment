@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://bmwiedemann.zq1.de/"
+ nickname="bmwiedemann"
+ avatar="http://cdn.libravatar.org/avatar/96f3cd71c3d677f31ed8f79ffb8fb343a8282c085731f405997ff3ef77a1a71b"
+ subject="comment 2"
+ date="2020-06-30T15:26:10Z"
+ content="""
+We are already building openSUSE haskell packages sequentially since 2017-07-14 for that reason:
+<https://build.opensuse.org/package/rdiff/devel:languages:haskell/ghc-rpm-macros?linkrev=base&rev=79>
+
+Here, non-determinism from filesystem readdir order is another independent class of issue.
+"""]]
