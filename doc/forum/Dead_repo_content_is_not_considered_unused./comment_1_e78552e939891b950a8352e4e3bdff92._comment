@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-30T14:45:06Z"
+ content="""
+A file is not considered unused until there are no git branches that still
+refer to that file. 
+
+When you delete the symlink in step 5, you don't say
+you commit it, so the master branch still refers to the file; it's not
+unused.
+
+Also, you have A as a remote of B still. So git still has a tracking
+branch, remotes/A/master, that still contains the file. So the file
+is still considered in use because of that.
+
+I think you'll probably also have a synced/master branch that contains
+the file too, at least until you sync with some other repository, or delete
+the branch. Arguably that's an implementation detail of git-annex and perhaps
+it should not consider those branches when checking for branches
+that contain a file.
+"""]]
