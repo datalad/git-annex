@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-06-30T14:10:23Z"
+ content="""
+ghc builds with concurrency enabled by default, which is bad for
+reproducibility. Passing -j1 may help.
+
+<https://gitlab.haskell.org/ghc/ghc/-/issues/4012>
+
+As this is a compiler issue, there's really very little I can do about it.
+"""]]
