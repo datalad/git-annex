@@ -1,0 +1,3 @@
+Are the instructions for building the [[standalone|install/Linux_standalone]] distribution officially documented somewhere?  Do I understand correctly that this can't be done from the [tarballs on Hackage](https://hackage.haskell.org/package/git-annex), and requires [[checking out the full source tree|install/fromsource]]?  Can `stack` still be used, or does this only work with `cabal`?
+
+Related thread: [[forum/standalone_tarballs_for_specific_versions]].
