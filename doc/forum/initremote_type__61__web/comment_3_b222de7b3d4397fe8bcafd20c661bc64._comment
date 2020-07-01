@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-07-01T15:24:47Z"
+ content="""
+There is not currently a way to access files that were stored in a rsync
+special remote over http instead of rsync. That would need a new special
+remote, distinct from the web special remote.
+
+I suppose it's a reasonable request, since the rsync and directory special
+remotes are already [[cross_compatible|tips/multiple_remotes_accessing_the_same_data_store]].
+And it could probably also be used for anonymous access to webdav and S3
+special remotes.
+
+Anyway, the option that is available today, and works, is to mirror a git
+repository to the web server (running `git update-server-info` first) 
+and add a git remote with the http url.
+"""]]
