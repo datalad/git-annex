@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-07-01T19:05:44Z"
+ content="""
+This overlaps with [[publicurl_config_for_all_special_remotes]]
+but I think is a better approach, at least for most special remotes that is
+could support.
+"""]]

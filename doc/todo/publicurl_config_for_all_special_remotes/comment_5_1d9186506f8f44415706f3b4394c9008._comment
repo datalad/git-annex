@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-07-01T18:59:48Z"
+ content="""
+[[generic_readonly_http_remote]] if implemented would accomplish the same
+thing as this todo.
+
+The advantage to that idea is, it doesn't need modifications be made to every
+special remote that might end up exposed over http. As long as the special
+remote is not *too* special about how it mangles keys into paths, it
+can work for a lot of special remotes.
+
+The directory special remote is a good example.. It would be weird for that to
+have http-specific configuration and complications.
+
+And, that approach doesn't complicate the external special remote protocol,
+and avoids the problems discussed in comment #4.
+
+So, I'm inclined to that approach over this one.
+"""]]
