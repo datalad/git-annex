@@ -1,6 +1,7 @@
 * [[metadata]] for views
 * [[todo/cache_key_info]]
 * [[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
+* [[todo/speed_up_git_annex_sync_--content_--all]]
 
 What do all these have in common? They could all be improved by
 using some kind of database to locally store the information in an
@@ -11,9 +12,6 @@ generated and updated by looking at the git repository.
 
 * Metadata can be updated by looking at the git-annex branch,
   either its current state, or the diff between the old and new versions
-* Direct mode mappings can be updated by looking at the current branch,
-  to see which files map to which key. Or the diff between the old
-  and new versions of the branch.
 * Incremental fsck information is not stored in git, but can be
   "regenerated" by running fsck again.  
   (Perhaps doesn't quite fit, but let it slide..)

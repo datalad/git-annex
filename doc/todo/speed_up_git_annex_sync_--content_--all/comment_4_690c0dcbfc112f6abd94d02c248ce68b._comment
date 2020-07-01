@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-07-01T16:13:23Z"
+ content="""
+It's 80s in my big repo. But of course it would also have to be read back
+in and parsed, so seems it would take 160s or so. (It's going to be a dozen
+or so gb of data anywhere the speed of git-annex sync --all is a problem.)
+
+Cross-referencing it with `git ls-tree -r git-annex` to get filenames  
+would mean git-annex would take more memory the more keys are stored in it.
+Which is something I have been careful to avoid.
+
+An sqlite database could surely be faster, especially if it's designed so
+it can be queried for things like "all keys in repo A that are not in repo
+B". But a sqlite database shouldn't only benefit --all, so it also needs to
+be able to do queries like "all keys that have files in HEAD, that are in
+repo A and not in repo B". With that, `git annex get` etc could also get
+faster.
+
+Anyway, it seems like --all is not really the problem for you; I guess
+you would see similar runtime if you ran git-annex sync --content with the
+larger of your two branches checked out than you do with --all.
+"""]]
