@@ -13,7 +13,6 @@ module Config (
 	annexConfig,
 	remoteAnnexConfig,
 	remoteConfig,
-	pidLockFile,
 ) where
 
 import Annex.Common
@@ -25,7 +24,6 @@ import Config.Cost
 import Config.DynamicConfig
 import Types.Availability
 import Types.GitConfig
-import Annex.Locations
 import Git.Types
 
 {- Looks up a setting in git config. This is not as efficient as using the
