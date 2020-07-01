@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git pack files"
+ date="2020-07-01T17:32:45Z"
+ content="""
+\"git pack files are designed for fast random access\" -- but also for representing slow-changing source code files; git-annex branch contents seems quite different from the typical source code repo.
+"""]]
