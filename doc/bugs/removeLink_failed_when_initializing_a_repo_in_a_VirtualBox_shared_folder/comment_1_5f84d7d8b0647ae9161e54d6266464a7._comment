@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="adding files also fails"
+ date="2020-07-01T19:51:34Z"
+ content="""
+Trying to add a file also gives errors; posting here because cause is likely the same:
+
+[[!format sh \"\"\"
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+(newer3-gdrive-remote-env) [ilya@cg-router1 Backup 2020-06-30 043950]$ git annex add Esp.vhdx 
+add Esp.vhdx 
+100%  46 MiB           94 MiB/s 0s
+git-annex: failed to commit changes to sqlite database: Just user error (SQLite3 returned ErrorReadOnly while attempting to perform step: attempt to write a readonly database(after successful open))
+CallStack (from HasCallStack):
+  error, called at ./Database/Handle.hs:115:26 in main:Database.Handle
+failed
+git-annex: thread blocked indefinitely in an MVar operation
+(newer3-gdrive-remote-env) [ilya@cg-router1 Backup 2020-06-30 043950]$ echo $?
+
+(newer3-gdrive-remote-env) [ilya@cg-router1 WPAE9-305]$ git config -l
+core.repositoryformatversion=0
+core.filemode=false
+core.bare=false
+core.logallrefupdates=true
+core.symlinks=false
+core.ignorecase=true
+annex.uuid=9f2b6628-5921-47d2-a712-ac902a662d04
+annex.sshcaching=false
+annex.crippledfilesystem=true
+annex.version=8
+annex.addunlocked=true
+annex.thin=true
+filter.annex.smudge=git-annex smudge -- %f
+filter.annex.clean=git-annex smudge --clean -- %f
+(newer3-gdrive-remote-env) [ilya@cg-router1 WPAE9-305]$ 
+
+
+# End of transcript or log.
+\"\"\"]]
+"""]]
