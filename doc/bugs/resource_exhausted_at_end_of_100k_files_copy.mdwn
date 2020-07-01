@@ -1,7 +1,18 @@
-Ran git-annex copy --to origin in a repo with 100k files. origin was a
-local git repo. 
-After all the files were transferred, it died with a fork resource
-exhausted, too many open files or something like that.
+Ran git-annex copy --to origin -J4 in a repo with 100k files. origin was a
+local git repo. After all the files were transferred, it died:
+
+	copy bar (to origin...) (checksum...) ok
+	git-annex: git: createProcess: fork: resource exhausted (Resource temporarily unavailable)
+	-exit 1
 
 .git/annex/journal/ had 76k files in it. git-annex merge dealt with it
 without a problem. --[[Joey]]
+
+> This is reproducible, and the second time was with slightly fewer files,
+> probably around 60k. Some tries with around 10-20k files did not
+> show any problem, never more than 5-10 processes, let alone a full fork
+> bomb worth.
+> 
+> I did not see any evidence of processes building up shortly before it crashed,
+> while it was still copying files.
+> --[[Joey]]
