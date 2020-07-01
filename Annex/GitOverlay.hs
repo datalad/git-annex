@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.GitOverlay (
 	module Annex.GitOverlay,
 	AltIndexFile(..),
@@ -20,11 +22,13 @@ import Git.Index
 import Git.Env
 import qualified Annex
 import qualified Annex.Queue
-import qualified Utility.LockFile.PidLock as PidF
-import qualified Utility.LockPool.PidLock as PidP
 import Utility.LockPool (dropLock)
 import Utility.Env
 import Config
+#ifndef mingw32_HOST_OS
+import qualified Utility.LockFile.PidLock as PidF
+import qualified Utility.LockPool.PidLock as PidP
+#endif
 
 {- Runs an action using a different git index file. -}
 withIndexFile :: AltIndexFile -> (FilePath -> Annex a) -> Annex a
@@ -145,6 +149,7 @@ withAltRepo modrepo unmodrepo a = do
  - when git-annex is used without pid locking.
  -}
 runsGitAnnexChildProcess :: Annex a -> Annex a
+#ifndef mingw32_HOST_OS
 runsGitAnnexChildProcess a = pidLockFile >>= \case
 	Nothing -> a
 	Just pidlock -> bracket (setup pidlock) cleanup (go pidlock)
@@ -168,8 +173,12 @@ runsGitAnnexChildProcess a = pidLockFile >>= \case
 					Nothing -> Nothing
 				in g { Git.gitEnv = e' }
 		withAltRepo addenv rmenv (const a)
+#else
+runsGitAnnexChildProcess a = a
+#endif
 
 runsGitAnnexChildProcess' :: Git.Repo -> (Git.Repo -> IO a) -> Annex a
+#ifndef mingw32_HOST_OS
 runsGitAnnexChildProcess' r a = pidLockFile >>= \case
 	Nothing -> liftIO $ a r
 	Just pidlock -> liftIO $ bracket (setup pidlock) cleanup (go pidlock)
@@ -184,3 +193,6 @@ runsGitAnnexChildProcess' r a = pidLockFile >>= \case
 		v <- PidF.pidLockEnv pidlock
 		r' <- addGitEnv r v "1"
 		a r'
+#else
+runsGitAnnexChildProcess' r a = liftIO $ a r
+#endif
