@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://templeofcrom.duckdns.org/"
+ nickname="Karl"
+ avatar="http://cdn.libravatar.org/avatar/336975995d2c8652aa98284987d5987e90e1b4d137da415af18a8e04c29edbc3"
+ subject="comment 2"
+ date="2020-07-01T15:03:08Z"
+ content="""
+I already have a git repository but my large files are being stored on the webserver, not in git.  It's not clear at all how to tell git-annex to fetch from the web server.  My project is being hosted on SourceForge so I have little control over either the Git or HTTP servers and the URL is different for each.
+
+"""]]
