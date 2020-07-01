@@ -361,6 +361,7 @@ Executable git-annex
    vector,
    tagsoup,
    unordered-containers,
+   hashable,
    feed (>= 1.0.0),
    regex-tdfa,
    socks,

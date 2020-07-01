@@ -29,6 +29,7 @@ Build-Depends:
 	libghc-aeson-dev,
 	libghc-tagsoup-dev,
 	libghc-unordered-containers-dev,
+	libghc-hashable-dev,
 	libghc-ifelse-dev,
 	libghc-bloomfilter-dev,
 	libghc-edit-distance-dev,
