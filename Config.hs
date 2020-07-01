@@ -6,12 +6,14 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module Config (
 	module Config,
 	annexConfig,
 	remoteAnnexConfig,
 	remoteConfig,
+	pidLockFile,
 ) where
 
 import Annex.Common
@@ -23,6 +25,7 @@ import Config.Cost
 import Config.DynamicConfig
 import Types.Availability
 import Types.GitConfig
+import Annex.Locations
 import Git.Types
 
 {- Looks up a setting in git config. This is not as efficient as using the
@@ -83,3 +86,13 @@ crippledFileSystem = annexCrippledFileSystem <$> Annex.getGitConfig
 setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b =
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
+
+pidLockFile :: Annex (Maybe FilePath)
+#ifndef mingw32_HOST_OS
+pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)
+	( Just <$> Annex.fromRepo gitAnnexPidLockFile
+	, pure Nothing
+	)
+#else
+pidLockFile = pure Nothing
+#endif

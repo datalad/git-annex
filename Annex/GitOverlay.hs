@@ -24,7 +24,7 @@ import qualified Utility.LockFile.PidLock as PidF
 import qualified Utility.LockPool.PidLock as PidP
 import Utility.LockPool (dropLock)
 import Utility.Env
-import Annex.LockPool.PosixOrPid (pidLockFile)
+import Config
 
 {- Runs an action using a different git index file. -}
 withIndexFile :: AltIndexFile -> (FilePath -> Annex a) -> Annex a

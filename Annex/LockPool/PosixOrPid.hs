@@ -18,12 +18,10 @@ module Annex.LockPool.PosixOrPid (
 	LockStatus(..),
 	getLockStatus,
 	checkSaneLock,
-	pidLockFile,
 ) where
 
 import Common
 import Types
-import Annex.Locations
 import qualified Annex
 import qualified Utility.LockPool.Posix as Posix
 import qualified Utility.LockPool.PidLock as Pid
@@ -32,6 +30,7 @@ import Utility.LockPool.LockHandle (LockHandle, dropLock)
 import Utility.LockFile.Posix (openLockFile)
 import Utility.LockPool.STM (LockFile)
 import Utility.LockFile.LockStatus
+import Config (pidLockFile)
 
 import System.Posix
 
@@ -62,12 +61,6 @@ getLockStatus f = Posix.getLockStatus f
 checkSaneLock :: LockFile -> LockHandle -> Annex Bool
 checkSaneLock f h = H.checkSaneLock f h
 	`pidLockCheck` flip Pid.checkSaneLock h
-
-pidLockFile :: Annex (Maybe FilePath)
-pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)
-	( Just <$> Annex.fromRepo gitAnnexPidLockFile
-	, pure Nothing
-	)
 
 pidLockCheck :: IO a -> (LockFile -> IO a) -> Annex a
 pidLockCheck posixcheck pidcheck = debugLocks $
