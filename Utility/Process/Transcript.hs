@@ -75,7 +75,7 @@ processTranscript'' cp input = do
 		, std_out = CreatePipe
 		, std_err = CreatePipe
 		}
-	withCreateProcess cp' \hin hout herr pid -> do
+	withCreateProcess cp' $ \hin hout herr pid -> do
 		let p = (hin, hout, herr, pid)
 		getout <- asyncreader (stdoutHandle p)
 		geterr <- asyncreader (stderrHandle p)
