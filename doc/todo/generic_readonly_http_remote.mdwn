@@ -1,0 +1,17 @@
+Many special remotes can potentially end up exposed in public http. There
+is not currently a way to access them over http, without adding per-remote
+support (like S3 has).
+
+But generally the filenames used are the same, eg rsync and directory and
+webdav and S3. Or if there are differences, they are generally small and
+trying a couple of different urls is doable.
+
+And sameas allows for
+<https://git-annex.branchable.com/tips/multiple_remotes_accessing_the_same_data_store/>
+now.
+
+So, there could be a new special remote type, that allows generic readonly
+access of other special remotes whose data stores are exposed via http.
+
+Call it "http" maybe. (There may be some confusion between this and the web
+special remote by users looking for such a thing.) --[[Joey]]
