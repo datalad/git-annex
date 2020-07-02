@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-07-02T19:06:17Z"
+ content="""
+I see why you want this, but how is git-annex supposed to know when it has
+the right size batch of transfers ready?
+
+It could look at the -J number, and wait until it's sent that many
+TRANSFER requests, and call that a batch. But it could be that some jobs run
+transfers and other jobs do other things (eg CHECKPRESENT or checking
+that the content is locally present and skipping doing a download).
+Leading to either a deadlock or a long time stalled out before
+beginning any transfers.
+
+One strategy that would work for git-annex is to start the first transfer
+immediately. While that transfer is running, hold off on starting any more,
+batching up the requests. Send each batch of transfers after the last batch
+finishes. And with some messages for framing a batch of transfers for
+remotes that care.
+
+What that would naturally result in is, at -Jn, batches of size
+`[1, n-1, n-1, ..., m < n]` unless transfers were happening faster
+than git-annex was able to queue up new ones.
+
+So that's pretty good. But I don't know if it's ideal for every special
+remote.
+
+A special remote could implement the same strategy with no help from
+git-annex, and no changes to my proposed protocol. All you have to do is
+wait for that first TRANSFER request, call it a batch and start it, and
+gather the next batch, etc.
+
+Or, if you know your remote works well with a certian batch size of transfers,
+you could gather up TRANSFER requests until you have the optimal number,
+or until a timeout, and then start the batch.
+
+I don't know if that would work for globus, but it seems like a valid
+strategy for some hypothetical remotes. Since a remote can implement either
+strategy, maybe it's better to let them make use of remote-specific
+knowledge and not put the explicit batching in git-annex?
+"""]]
