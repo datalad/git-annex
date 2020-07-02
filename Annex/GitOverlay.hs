@@ -22,12 +22,12 @@ import Git.Index
 import Git.Env
 import qualified Annex
 import qualified Annex.Queue
-import Utility.LockPool (dropLock)
-import Utility.Env
-import Config
 #ifndef mingw32_HOST_OS
 import qualified Utility.LockFile.PidLock as PidF
 import qualified Utility.LockPool.PidLock as PidP
+import Utility.LockPool (dropLock)
+import Utility.Env
+import Config
 #endif
 
 {- Runs an action using a different git index file. -}
