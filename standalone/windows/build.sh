@@ -67,5 +67,5 @@ rm -rf .t
 
 # Currently the test fails in the autobuilder environment for reasons not
 # yet understood. Windows users are encouraged to run the test suite
-# themseves, so we'll ignore these failures for now.
-withcyg git-annex.exe test || true
+# themseves.
+#withcyg git-annex.exe test || true
