@@ -31,6 +31,7 @@ module Annex (
 	overrideGitConfig,
 	changeGitRepo,
 	adjustGitRepo,
+	addGitConfigOverride,
 	getRemoteGitConfig,
 	withCurrentState,
 	changeDirectory,
@@ -337,6 +338,21 @@ adjustGitRepo :: (Git.Repo -> IO Git.Repo) -> Annex ()
 adjustGitRepo a = do
 	changeState $ \s -> s { repoadjustment = \r -> repoadjustment s r >>= a }
 	changeGitRepo =<< gitRepo
+
+{- Adds git config setting, like "foo=bar". It will be passed with -c
+ - to git processes. The config setting is also recorded in the repo,
+ - and the GitConfig is updated. -}
+addGitConfigOverride :: String -> Annex ()
+addGitConfigOverride v = adjustGitRepo $ \r ->
+	Git.Config.store (encodeBS' v) Git.Config.ConfigList $
+		r { Git.gitGlobalOpts = go (Git.gitGlobalOpts r) }
+  where
+	-- Remove any prior occurrance of the setting to avoid
+	-- building up many of them when the adjustment is run repeatedly,
+	-- and add the setting to the end.
+	go [] = [Param "-c", Param v]
+	go (Param "-c": Param v':rest) | v' == v = go rest
+	go (c:rest) = c : go rest
 
 {- Changing the git Repo data also involves re-extracting its GitConfig. -}
 changeGitRepo :: Git.Repo -> Annex ()

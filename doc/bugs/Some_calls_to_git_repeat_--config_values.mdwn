@@ -51,3 +51,19 @@ worth filing in case there's a simple fix.
 > I don't currently understand why, but that prevented the value getting
 > added.
 > --[[Joey]]
+
+> > Huh, with that commit's patch, the option is passed to all calls to
+> > git.. But not to the call to ssh.
+> >
+> > Ah.. remoteAnnexSshOptions is populated by parsing the git config,
+> > and is what gets passed to ssh. The patch though made it not call
+> > Git.Config.Store, so when the git config has been reloaded, it loses
+> > the -c config.
+> >
+> > Also, I notice that c8fec6ab0 had a second bug: 
+> > If -c foo=1 -c foo=2 -c foo=1 were passed, it would 
+> > add the first and second, but not add the third.
+> > 
+> > I was really not at even 10% back in March. For obvious reasons.
+> > 
+> > Ok, all fixed, the right way this time. [[done]] --[[Joey]]

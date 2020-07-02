@@ -45,3 +45,6 @@ dropped, but I haven't made any progress yet.
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] (also re-fixed the original bug in a better way)
+> --[[Joey]]
