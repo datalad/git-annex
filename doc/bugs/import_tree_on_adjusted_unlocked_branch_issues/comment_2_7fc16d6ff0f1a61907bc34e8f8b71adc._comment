@@ -2,15 +2,22 @@
  username="joey"
  subject="""comment 2"""
  date="2020-07-02T18:36:55Z"
- content="""
-Only workaround would be to `git checkout master` before running the
-import, and then re-run `git annex adjust` to re-enter the adjusted branch.
+ content=""
+There's a simple workaround, in fact. Make a git commit, any git commit.
+An empty commit will do:
 
-But that may be problimatic depending on why you're using adjusted
-branches, or just expensive.
+	git commit --allow-empty -m "git-annex is a little bit buggy"
 
-git-annex merge is *supposed* to deal with this problem, it's supposed
-to adjust the branch before merging it. git-annex sync does too. 
-But the test suite is actually using git-annex merge, so it seems
-the bug is in git-annex merge/sync.
+git annex sync will be able to handle that commit, because it's not a
+merge commit.
+
+It looks to me like this bug does not happen when `git annex merge` or `git
+annex sync --content` are used. There needs to have been a manual
+`git merge`.
+
+In the test suite, it happens after a merge conflict occurs, and
+git add is run to resolve the conflict. When git-annex sync
+is then run, it results in the problem merge commit.
+
+Do you have another way to reproduce this bug?
 """]]
