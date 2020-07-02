@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-07-02T16:02:25Z"
+ content="""
+The code around the removeLink in question is this:
+
+	hClose jlogh
+	nukeFile jlogf
+
+So, git-annex actually closes the file handle before unlinking it.
+And the file is a temp file that only that process can access, and
+it's closed the only handle to it, so how can it possibly be busy after
+being closed?
+
+(Not that closing a handle before removing a file is necessary on unix in
+the first place. According to unlink(2), EBUSY only
+happens in situations involving mount points or some NFS hacks.)
+
+I googled "attempt to write a readonly database(after successful open)"
+and <https://techblog.dorogin.com/sqlite-error-8-attempt-to-write-a-readonly-database-62b80cc6c9db?gi=263161137ad9>
+suggests its something to do with file deletion as well. Other hits
+suggest it's permissions related. Perhaps sqlite is looking at the
+permissions of the database file and they seem to not allow it to write so
+it opens it readonly, but of course if the same user has created the
+database that would not usually happen.
+
+All of this points squarly at the filesystem being broken, and probably too
+broken to even thing about supporting. You might find that the directory
+special remote with exporttree=yes and importtree=yes works on 
+this filesystem, just because it's simpler and so has less probability of
+tickling its posix violations.
+"""]]
