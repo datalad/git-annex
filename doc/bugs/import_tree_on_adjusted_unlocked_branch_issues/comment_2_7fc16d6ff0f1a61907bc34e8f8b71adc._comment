@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-07-02T18:36:55Z"
+ content="""
+Only workaround would be to `git checkout master` before running the
+import, and then re-run `git annex adjust` to re-enter the adjusted branch.
+
+But that may be problimatic depending on why you're using adjusted
+branches, or just expensive.
+
+git-annex merge is *supposed* to deal with this problem, it's supposed
+to adjust the branch before merging it. git-annex sync does too. 
+But the test suite is actually using git-annex merge, so it seems
+the bug is in git-annex merge/sync.
+"""]]
