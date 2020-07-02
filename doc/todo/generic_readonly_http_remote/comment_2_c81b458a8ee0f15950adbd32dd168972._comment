@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-07-02T17:45:18Z"
+ content="""
+The publicurl config approach is more general; it lets almost any special
+remote whose data can be published over http be supported.
+
+So it can support a eg, a special remote that mangles key names in some way,
+or uses an unusual directory hashing structure. Or even a special remote like
+git-lfs that uses a different key than the annex key for storage and maps
+between them.
+
+By contrast, the generic special remote's approach can't support the
+extreme edge cases, and is more ad-hoc, trying a few common path forms
+that almost everything uses. But in its favor:
+
+* --sameas already relies on special remotes using the same path form, and so
+  it seems we're going to end up documenting which special remotes are
+  compatable. That information could even be encoded in the remotes and
+  git-annex sanity check uses of --sameas. 
+
+  Perhaps --sameas is a slippery slope and this should not continue down it,
+  but alternatively perhaps by encouraging compatability of path forms,
+  it's a good thing. Although there are good reasons for different path
+  forms. <https://github.com/DanielDent/git-annex-remote-rclone>
+  has a nice overview of the common paths forms.
+
+* If people start using some other protocol (ipfs, or ftp, or gopher, or ...),
+  special remotes could also have their data published over it. It's much
+  cleaner to just add a readonly generic ipfs special remote than, than
+  it is to add a ipfs config to every remote along with the publicurl config.
+
+  (Even if the implementation of the publicurl config and ipfs config
+  is a Remote -> Remote transformer, there's cognitive load in
+  having things like the directory special remote having a publicurl
+  config, and the prospect of lots of configs for different protocols
+  suggests this would be a slippery slope too.)
+
+* External special remotes could be published over http and be used by
+  this new special remote w/o needing a protocol extension and w/o
+  needing the external special remote program to be installed at all.
+  The latter especially is important if this is intended for publishing
+  git-annex repositories.
+
+Of course, nothing is stopping us from mixing the two. S3 and git-lfs
+already support anonymous http access.
+"""]]
