@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2020-07-02T20:14:20Z"
+ content="""
+> One strategy that would work for git-annex is to start the first transfer immediately...
+
+Might be not really useful if that transfer is tiny, so I would have not bothered with complicating logic for that
+
+> Or, if you know your remote works well with a certian batch size of transfers, you could gather up TRANSFER requests until you have the optimal number, or until a timeout, and then start the batch.
+
+yes, could be done this way I guess, but would complicate special remotes implementation (reasonable tradeoff IMHO iff no easier solution is found).
+
+May be if `async` remotes were not \"parallelizable\" (i.e. only a single such remote would start even in the case of -J > 1) - it would simplify it?
+
+> I see why you want this, but how is git-annex supposed to know when it has the right size batch of transfers ready?
+
+Isn't there some point in time when `annex` knows that it is done issuing all possible TRANSFER requests it knew to issue and could just send out \"initiate TRANSFER\" to those special remotes it knows are waiting for it?  
+
+
+"""]]
