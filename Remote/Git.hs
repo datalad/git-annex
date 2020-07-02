@@ -632,8 +632,8 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 			`onException` liftIO forcestop
 
 copyFromRemoteCheap :: Remote -> State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
-copyFromRemoteCheap r st repo
 #ifndef mingw32_HOST_OS
+copyFromRemoteCheap r st repo
 	| not $ Git.repoIsUrl repo = Just $ \key _af file -> guardUsable repo (giveup "cannot access remote") $ do
 		gc <- getGitConfigFromState st
 		loc <- liftIO $ gitAnnexLocation key repo gc
