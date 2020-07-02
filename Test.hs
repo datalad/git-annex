@@ -88,11 +88,11 @@ import qualified Utility.Tmp.Dir
 import qualified Utility.FileSystemEncoding
 import qualified Utility.Aeson
 import qualified Utility.CopyFile
+import qualified Types.Remote
 #ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
-import qualified Types.Remote
 #endif
 
 optParser :: Parser TestOptions
