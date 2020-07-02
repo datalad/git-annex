@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="map2url?"
+ date="2020-07-02T20:41:15Z"
+ content="""
+> readonly access of other special remotes whose data stores are exposed via http.
+...
+> It's much cleaner to just add a readonly generic ipfs special remote than, than it is to add a ipfs config to every remote along with the publicurl config.
+
+> The publicurl config approach is more general; it lets almost any special remote whose data can be published over http be supported.
+
+Even if currently may be only supports, http for the protocol, isn't it more general - i.e. \"map2url\" functionality which then could fetch data via any protocol (http, https, ftp, and potentially some URLs supported by external special remotes).  My point is that I do not see why it needs to be \"http\" special remote, and not some \"map2url\"?
+"""]]
