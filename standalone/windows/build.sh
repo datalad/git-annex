@@ -39,6 +39,9 @@ stack --version
 #stack upgrade --force-download
 #stack --version
 
+# temporary
+rm -rf .stack-work
+
 # Get stack build environment set up before trying to build any binaries.
 stack setup
 stack build --only-dependencies
