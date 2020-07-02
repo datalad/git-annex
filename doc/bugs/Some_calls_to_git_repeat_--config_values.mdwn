@@ -38,4 +38,16 @@ worth filing in case there's a simple fix.
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
 
-> [[fixed|done]] --[[Joey]]
+> Fix was attempted in [[!commit c8fec6ab0]] but that
+> caused [[annex-ssh-options_dropped_since_8.20200330]]
+> so it was reverted.
+> 
+> The cause of the problem is that the action passed to adjustGitRepo
+> gets run more than once in some cases where the Repo has changed
+> and the adjustment needs to be re-done, so if it appends a value,
+> the value may get appended to a Repo that already had it appended.
+> 
+> So that commit made it check if the value was present and not add it.
+> I don't currently understand why, but that prevented the value getting
+> added.
+> --[[Joey]]

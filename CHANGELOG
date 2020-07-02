@@ -17,6 +17,8 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
     which allows dropping from other special remotes in some situations
     where it was not possible before.
     S3 (with versioning=yes), git-lfs, tahoe
+  * Fix reversion that broke passing git configs with -c.
+    (Since version 8.20200330.)
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
 
