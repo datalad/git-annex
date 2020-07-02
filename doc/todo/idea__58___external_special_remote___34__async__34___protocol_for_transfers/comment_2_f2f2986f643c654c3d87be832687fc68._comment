@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="more ideas for async implementation"
+ date="2020-07-02T17:44:44Z"
+ content="""
+Thank you Joey for considering implementing this!  Some additional tune up might be desired for optimal \"performance\" if possible.  Having globus in mind: it is better to \"stage\" all the transfers TODO and then commence the transfer. So may be it could be something like this where if \"BATCH\" is appended to TRANSFER-ASYNC response from remote, at the end of \"scheduling\" all transfers for now, `git annex` would trigger actual transfer with an empty `TRANSFER-ASYNC`?:
+
+```
+> TRANSFER RETRIEVE Key1 file
+< TRANSFER-ASYNC Key1 BATCH
+> TRANSFER RETRIEVE Key2 file
+< TRANSFER-ASYNC Key2 BATCH
+> TRANSFER-ASYNC
+```
+
+Also per file progress might not be available (yet to check more details) -- there is a total progress for a job (multiple files). So may be `BATCH` could be the BATCH-ID of a kind and TRANSFER-PROGRESS be reported not for a key but for the BATCH-ID (absent overlap with KEYS values could be guaranteed by special remote by using UUIDs or alike)?
+
+Re retries and failures: may be if special remote would also return `TRANSFER-SUCCESS RETRIEVE BATCH-ID` at the end, annex could see if any KEY was not reported success on, and then retry only those?
+"""]]
