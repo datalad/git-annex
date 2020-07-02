@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 6"
+ date="2020-07-01T20:37:13Z"
+ content="""
+The memory consumption is indeed problematic.
+
+Digging further, I found a even better solution:
+\"time (git ls-tree -r git-annex | awk '/SHA256.*.log$/{print $3\" \"$4}' | git cat-file --batch='%(objectname) %(objecttype) %(objectsize) %(rest)' --buffer > /dev/null)\" takes just 7 seconds in my repo.
+Note the '%(rest)' in the batch format, awk feeds the objectname and the key (separated by space) to cat-file, which outputs the key in place of '%(rest)'. So a git-annex thread reading from cat-file has all the information (location log and key) readily available. This can be extended to also feed metadata at the same time by making the location log directly followed by metadata.
+"""]]
