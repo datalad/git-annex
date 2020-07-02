@@ -364,7 +364,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 #else
 		let open = openBinaryFile f ReadMode
 		let close = hClose
-		bracketIO setup close $ \h -> do
+		bracketIO open close $ \h -> do
 #endif
 			liftIO $ hGetContentsMetered h p >>= L.writeFile dest
 			k <- mkkey
