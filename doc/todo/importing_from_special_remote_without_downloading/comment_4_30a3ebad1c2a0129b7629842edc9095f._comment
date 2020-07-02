@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2020-07-02T20:22:25Z"
+ content="""
+Thanks -- this would solve (among other things) [[bugs/removeLink_failed_when_initializing_a_repo_in_a_VirtualBox_shared_folder]]: I could put the git-annex repo on the normal filesystem inside the VM, and only the directory special remote would then deal with the broken vboxsf filesystem.  import-tree *with* copying isn't possible as the files are too big.
+"""]]
