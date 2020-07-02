@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-07-01T18:36:17Z"
+ content="""
+Tried implementing avoiding the redundant location log lookups in the
+second pass of --all. But, a Set holding 100000 keys uses 60 mb of memory
+(mostly for the tree, not the elements). If it has to convert back to a
+bloom filter, add 32 mb memory more, and this is looking too memory hungry.
+
+The Set could be converted at a smaller size than 100000, eg 50000 keys
+needs 25mb. But git-annex sync --content --all with 50000 keys takes
+7 minutes w/o this optimisation, so it would probably only save a few
+minutes. So, abandoning this approach for now.
+
+([[!commit 7e2c4ed21622a4fefab58e709528a14866e0d133]] has a nice data
+type I built that starts off a Set and converts to a Bloom filter.)
+"""]]
