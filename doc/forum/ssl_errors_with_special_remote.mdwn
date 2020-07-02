@@ -1,0 +1,7 @@
+i recently have tried setting up my own webdav server to setup as a special remote for my git annex repositories.  This webdav server has been placed behind a reverse proxy.  At one point i ran into an issue with my reverse proxy and ended up having to get new sll certificates for it.  Now  whenever i try to push something to my webdav server i get this error 
+
+(InternalException (HandshakeFailed (Error_Protocol ("certificate has expired",True,CertificateExpired))))) failed
+
+i know my certificates are good because i am able to access the site normally and push from my other machine which had only gained access to the webdav server after the SSL certificate change.  
+
+is it possible to flush the known SSL certificates from git-annex?
