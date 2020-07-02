@@ -650,7 +650,7 @@ copyFromRemoteCheap r st repo
 			)
 	| otherwise = Nothing
 #else
-copyFromRemoteCheap' _ _ _ = Nothing
+copyFromRemoteCheap _ _ _ = Nothing
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
