@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-07-02T18:18:57Z"
+ content="""
+Yeah, a directory special remote special case would be good.
+It's kind of needed for [[remove_legacy_import_directory_interface]].
+
+It could just as well hash the file in place in the directory,
+and leave it there, not "downloading" it into the annex. Which avoids
+me having to think about whether hard linking to files in a
+special remote makes any kind of sense. (My gut feeling is it's not
+the same as hard linking inside a git-annex repo.)
+
+This approach needs this interface to be added.
+
+	importKey :: Maybe (ExportLocation -> ContentIdentifier -> ByteSize -> Annex Key)
+
+Then just use that, when it's available, rather than
+retrieveExportWithContentIdentifier. Easy enough.
+
+And other remotes could use this interface too.
+If some other remote has public urls, it could generate a URL key
+and return that. And if a remote has server-side checksums, it can generate
+a key from the checksum, as long as it's a checksum git-annex supports.
+So this interface seems sufficiently general.
+
+This would be easy to add to the special remote protocol too, although 
+some new plumbing command might be needed to help generate a key
+from information like the md5 and size. Eg,
+`git annex genkey --type=MD5 --size=100 --value=3939393` and `git annex genkey
+--type=URL value=http://example.com/foo`
+
+----
+
+User interface changes: `git-annex import --from remote --fast` and
+`git annex sync` without --content could import from a remote that
+way, if it supports importKey. (Currently sync only imports with
+--content so this is kind of a behavior change, but I think an ok one to
+make.)
+"""]]
