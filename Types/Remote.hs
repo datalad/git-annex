@@ -287,7 +287,7 @@ data ImportActions a = ImportActions
 	-- since the ContentIdentifier was generated.
 	--
 	-- Throws exception on failure.
-	, importKey :: Maybe (ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a Key)
+	, importKey :: Maybe (ExportLocation -> ContentIdentifier -> MeterUpdate -> a Key)
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has the requested ContentIdentifier.
 	--

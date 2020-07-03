@@ -391,7 +391,11 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 			Nothing -> error "internal" -- checked earlier
 			Just a -> do
 				let importer p = do
-					k <- a loc cid sz p
+					unsizedk <- a loc cid p
+					-- This avoids every remote needing
+					-- to add the size.
+					let k = alterKey unsizedk $ \kd -> kd
+						{ keySize = keySize kd <|> Just sz }
 					checkSecureHashes k >>= \case
 						Nothing -> do
 							recordcidkey cidmap db cid k

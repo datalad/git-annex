@@ -350,8 +350,8 @@ guardSameContentIdentifiers cont old new
 	| new == Just old = cont
 	| otherwise = giveup "file content has changed"
 
-importKeyM :: FilePath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex Key
-importKeyM dir loc cid sz p = do
+importKeyM :: FilePath -> ExportLocation -> ContentIdentifier -> MeterUpdate -> Annex Key
+importKeyM dir loc cid p = do
 	backend <- chooseBackend (fromRawFilePath f)
 	k <- fst <$> genKey ks p backend
 	currcid <- liftIO $ mkContentIdentifier absf =<< getFileStatus absf
