@@ -214,6 +214,7 @@ gen r u rc gc rs = do
 				}
 			, importActions = ImportActions
                                 { listImportableContents = listImportableContentsS3 hdl this info
+				, importKey = Nothing
                                 , retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierS3 hdl this rs info
                                 , storeExportWithContentIdentifier = storeExportWithContentIdentifierS3 hdl this rs info magic
                                 , removeExportWithContentIdentifier = removeExportWithContentIdentifierS3 hdl this rs info
