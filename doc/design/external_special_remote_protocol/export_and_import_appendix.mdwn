@@ -143,6 +143,13 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
     Indicates that it makes sense to import from this special remote.
   * `IMPORTSUPPORTED-FAILURE`  
     Indicates that it does not make sense to import from this special remote.
+* `IMPORTKEYSUPPORTED`
+  Used to check if a special remote supports `IMPORTKEY`.
+  Note that this request may be made before or after `PREPARE`.
+  * `IMPORTKEYSUPPORTED-SUCCESS`  
+    Indicates that `IMPORTKEY` can be used.
+  * `IMPORTKEYSUPPORTED-FAILURE`  
+    Indicates that `IMPORTKEY` cannot be used.
 * `LISTIMPORTABLECONTENTS`  
   Used to get a list of all the files that are stored in the special 
   remote. A block of responses
@@ -177,6 +184,20 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
 * `NOTHINGEXPECTED`  
   If no ContentIdentifier is expected to be present, this is sent
   rather than `EXPECTED`.
+* `IMPORTKEY File`
+  This only needs to be implemented if IMPORTKEYSUPPORTED indicates
+  it is supported.  
+  Generates a key by querying the remote for eg, a checksum.
+  Any kind of key can be generated, depending on what the remote
+  can support.  
+  The user expects this to be reasonably fast and not use a lot of disk
+  space. It should not download the whole content of the file from the
+  remote.  
+  Must take care to generate a key for the same content as the 
+  ContentIdentifier specified by `EXPECTED`, or otherwise fail.  
+  Replies:
+  * `IMPORTKEY-SUCCESS Key`
+  * `IMPORTKEY-FAILURE ErrorMsg`
 * `RETRIEVEEXPORTEXPECTED File`  
   Retrieves the content of a file from the special remote
   to the File on local disk. Must take care to only retrieve
