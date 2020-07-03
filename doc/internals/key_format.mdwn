@@ -11,7 +11,8 @@ For example:
 * The name field at the end has a format dependent on the backend. It is
   always the last field, and is prefixed with "--". Unlike other fields,
   it may contain "-" in its content. It should not contain newline
-  characters or "/"; otherwise nearly anything goes. 
+  characters or "/"; otherwise nearly anything goes. The "E" variants of
+  hash keys include a filename extension after the hash.
 * The "-s" field is optional, and is the size of the content in bytes.
 * The "-m" field is optional, and is the mtime of the file when it was
   added to git-annex, expressed as seconds from the epoch.
