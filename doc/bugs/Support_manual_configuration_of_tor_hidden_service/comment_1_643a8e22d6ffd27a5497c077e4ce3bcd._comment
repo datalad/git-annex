@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="petersjt014@c20995a2e26a13566cd49aef30a99a7dff732a4e"
+ nickname="petersjt014"
+ avatar="http://cdn.libravatar.org/avatar/3664265775c485eca0cf7c2e0028192b"
+ subject="tor remote"
+ date="2020-07-03T07:33:54Z"
+ content="""
+I have come across what I think is the 'right' way to do this: there seems to be [an option](https://nixos.org/nixos/options.html#services.tor.hiddenservices) where the service can be specified, which would eliminate the need for a manual configuration (note: you can also do `man configuration.nix` and /-search for it if you didn't know).
+
+Now comes the problem: I'm not sure what to actually _put_ in it. Ports seem like a good place to start, and I've done some digging to try and determine which ones to use
+
+After starting the remote manually, I think the answer might be apparent in `sudo netstat -leepnuta --wide | grep -E 'Proto|tor|annex'`, but I'm not sure--my networking knowledge is limited. 40449 could be relevant, since it appears so frequently. There's also _lots_ of random 5-digit ones. I thought they might be ephermeral, but not all of them are within [that range](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Dynamic,_private_or_ephemeral_ports).
+
+Also worth noting: After letting git-annex create the torrc file by changing a bunch of permissions I probably shouldn't, the line where the socket is specified starts with `HiddenServicePort 28913`, although that port is not found within netstat (suggesting that I haven't got the remote actually working).
+
+That's all I got so far. I will be messing with it more though.
+"""]]
