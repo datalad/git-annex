@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: map2url?"""
+ date="2020-07-03T00:07:25Z"
+ content="""
+[[publicurl_config_for_all_special_remotes]] talks about adding an API
+for querying a remote for such a mapping.
+
+But each protocol still would need its own configuration of the base url,
+etc.
+
+(Also potentially its own authentication information come to think of it.)
+"""]]
