@@ -2,7 +2,7 @@
  username="joey"
  subject="""comment 2"""
  date="2020-07-02T18:36:55Z"
- content=""
+ content="""
 There's a simple workaround, in fact. Make a git commit, any git commit.
 An empty commit will do:
 

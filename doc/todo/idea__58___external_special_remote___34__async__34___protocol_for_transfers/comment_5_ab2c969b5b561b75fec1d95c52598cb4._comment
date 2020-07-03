@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-07-03T00:02:07Z"
+ content="""
+> May be if async remotes were not "parallelizable" (i.e. only a single
+> such remote would start even in the case of -J > 1) - it would simplify
+> it?
+
+I'm assuming only 1 that is used for transfers, others could be used for
+other things.
+
+> Isn't there some point in time when annex knows that it is done issuing all possible TRANSFER requests it knew to issue and could just send out "initiate TRANSFER" to those special remotes it knows are waiting for it?
+
+Not really, it starts as many threads as it's allowed to as soon as it has
+some files to work on, and as each thread finishes it starts a new one.
+Only time it knows it's done is after it's checked the whole tree of files,
+but that could be much much later.
+"""]]
