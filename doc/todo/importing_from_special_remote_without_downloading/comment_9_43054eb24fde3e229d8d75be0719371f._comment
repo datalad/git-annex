@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-07-03T18:29:05Z"
+ content="""
+implemented, directory remote only, but it could be added to adb easily,
+and possibly to S3. Also added it to the proposed import extension to the 
+external special remote protocol.
+
+Still unsure what to do about git-annex sync without --content importing.
+For now, sync doesn't do content-less imports still, but that could be
+changed if the concerns in comment #6 are dealt with.
+"""]]

@@ -1,3 +1,5 @@
 The documentation for the new import remote command says, "Importing from a special remote first downloads all new content from it".  For many special remotes -- such as Google Cloud Storage or DNAnexus -- checksums and sizes of files can be determined without downloading the files.  For other special remotes, data files might have associated checksum files (e.g. md5) stored next to them in the remote.  In such cases, it would help to be able to import the files without downloading (which can be costly, especially from cloud provider egress charges), similar to addurl --fast .  
 
 [[!tag confirmed]]
+
+> [[done]] (only implemented for directory for now) --[[Joey]]
