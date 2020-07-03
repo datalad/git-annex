@@ -81,6 +81,7 @@ gen r u rc gc rs = do
 			}
 		, importActions = ImportActions
 			{ listImportableContents = listImportableContentsM serial adir
+			, importKey = Nothing
 			, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM serial adir
 			, storeExportWithContentIdentifier = storeExportWithContentIdentifierM serial adir
 			, removeExportWithContentIdentifier = removeExportWithContentIdentifierM serial adir
