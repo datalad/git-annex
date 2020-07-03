@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-07-03T01:46:46Z"
+ content="""
+Hmm, it would also be possible for a remote to generate a WORM key,
+as long as there was a way for it to get a timestamp for the file being
+imported.
+
+That might let it be implemented for several other special remotes.
+
+Although I'm wary about making git-annex ever use WORM without being
+explicitly asked to. annex.eatworms? ;)
+"""]]
