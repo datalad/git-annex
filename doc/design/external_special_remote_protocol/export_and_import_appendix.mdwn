@@ -188,6 +188,7 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   This only needs to be implemented if IMPORTKEYSUPPORTED indicates
   it is supported.  
   Generates a key by querying the remote for eg, a checksum.
+  (See [[internals/key_format]] for details of how to format a key.)
   Any kind of key can be generated, depending on what the remote
   can support.  
   The user expects this to be reasonably fast and not use a lot of disk
