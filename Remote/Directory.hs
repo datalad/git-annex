@@ -32,6 +32,8 @@ import Types.Import
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
 import Annex.UUID
+import Backend
+import Types.KeySource
 import Utility.Metered
 import Utility.Tmp
 import Utility.InodeCache
@@ -88,6 +90,7 @@ gen r u rc gc rs = do
 				}
 			, importActions = ImportActions
 				{ listImportableContents = listImportableContentsM dir
+				, importKey = Just (importKeyM dir)
 				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir
 				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
@@ -342,6 +345,26 @@ mkContentIdentifier f st =
 	fmap (ContentIdentifier . encodeBS . showInodeCache)
 		<$> toInodeCache noTSDelta f st
 
+guardSameContentIdentifiers :: a -> ContentIdentifier -> Maybe ContentIdentifier -> a
+guardSameContentIdentifiers cont old new
+	| new == Just old = cont
+	| otherwise = giveup "file content has changed"
+
+importKeyM :: FilePath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex Key
+importKeyM dir loc cid sz p = do
+	backend <- chooseBackend (fromRawFilePath f)
+	k <- fst <$> genKey ks p backend
+	currcid <- liftIO $ mkContentIdentifier absf =<< getFileStatus absf
+	guardSameContentIdentifiers (return k) cid currcid
+  where
+	f = fromExportLocation loc
+	absf = dir </> fromRawFilePath f
+	ks  = KeySource
+		{ keyFilename = f
+		, contentLocation = toRawFilePath absf
+		, inodeCache = Nothing
+		}
+
 retrieveExportWithContentIdentifierM :: FilePath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
 retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = 
 	precheck $ docopy postcheck
@@ -376,7 +399,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 	
 	-- Check before copy, to avoid expensive copy of wrong file
 	-- content.
-	precheck cont = comparecid cont
+	precheck cont = guardSameContentIdentifiers cont cid
 		=<< liftIO . mkContentIdentifier f
 		=<< liftIO (getFileStatus f)
 
@@ -404,11 +427,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 #else
 			=<< getFileStatus f
 #endif
-		comparecid cont currcid
-	
-	comparecid cont currcid
-		| currcid == Just cid = cont
-		| otherwise = giveup "file content has changed"
+		guardSameContentIdentifiers cont cid currcid
 
 storeExportWithContentIdentifierM :: FilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do

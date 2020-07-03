@@ -276,6 +276,18 @@ data ImportActions a = ImportActions
 	-- May also find old versions of files that are still stored in the
 	-- remote.
 	{ listImportableContents :: a (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+	-- Imports a file from the remote, without downloading it,
+	-- by generating a Key (of any type).
+	--
+	-- May update the progress meter if it needs to perform an
+	-- expensive operation, such as hashing a local file.
+	--
+	-- Ensures that the key corresponds to the ContentIdentifier,
+	-- bearing in mind that the file on the remote may have changed
+	-- since the ContentIdentifier was generated.
+	--
+	-- Throws exception on failure.
+	, importKey :: Maybe (ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a Key)
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has the requested ContentIdentifier.
 	--

@@ -14,11 +14,11 @@ or from a directory.
 
 # IMPORTING FROM A SPECIAL REMOTE
 
-Importing from a special remote first downloads all new content from it,
-and then constructs a git commit that reflects files that have changed on
-the special remote since the last time git-annex looked at it. Merging that
-commit into your repository will update it to reflect changes made on the
-special remote.
+Importing from a special remote first downloads or hashes all new content
+from it, and then constructs a git commit that reflects files that have
+changed on the special remote since the last time git-annex looked at it.
+Merging that commit into your repository will update it to reflect changes
+made on the special remote.
 
 This way, something can be using the special remote for file storage,
 adding files, modifying files, and deleting files, and you can track those
@@ -83,6 +83,38 @@ known. Importing will fail when such a preferred content expression is
 set. This includes expressions containing "copies=", "metadata=", and other
 things that depend on the key. Preferred content expressions containing
 "include=", "exclude=" "smallerthan=", "largerthan=" will work.
+
+# OPTIONS FOR IMPORTING FROM A SPECIAL REMOTE
+
+* `--content`, `--no-content`
+
+  Controls whether content is downloaded from the special remote.
+  The default is to download content into the git-annex repository.
+
+  With --no-content, git-annex keys are generated from information
+  provided by the special remote, without downloading it. Commands like
+  `git-annex get` can later be used to download files, as desired.
+
+  The --no-content option is not supported by all special remotes,
+  and the kind of git-annex key that is generated is left up to
+  each special remote. So while the directory special remote hashes
+  the file and generates the same key it usually would, other
+  special remotes may use unusual keys like SHA1, or WORM, depending
+  on the limitations of the special remote. 
+
+  The annex.securehashesonly configuration, if set, will prevent
+  --no-content importing from a special remote that uses insecure keys.
+
+  Using --no-content prevents annex.largefiles from being checked,
+  because the files are not downloaded. So, when using --no-content,
+  files that would usually be considered non-large will be added to the
+  annex, rather than adding them directly to the git repository.
+
+  Note that a different git tree will often be generated when using
+  --no-content than would be generated when using --content, because
+  the options cause different kinds of keys to be used when importing
+  new/changed files. So mixing uses of --content and --no-content can
+  lead to merge conflicts in some situations.
 
 # IMPORTING FROM A DIRECTORY
 

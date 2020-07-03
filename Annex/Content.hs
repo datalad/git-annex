@@ -20,6 +20,7 @@ module Annex.Content (
 	getViaTmp,
 	getViaTmpFromDisk,
 	checkDiskSpaceToGet,
+	checkSecureHashes,
 	prepTmp,
 	withTmp,
 	checkDiskSpace,
@@ -473,7 +474,7 @@ withTmp key action = do
  - case. May also throw exceptions in some cases.
  -}
 moveAnnex :: Key -> FilePath -> Annex Bool
-moveAnnex key src = ifM (checkSecureHashes key)
+moveAnnex key src = ifM (checkSecureHashes' key)
 	( do
 		withObjectLoc key storeobject
 		return True
@@ -496,22 +497,27 @@ moveAnnex key src = ifM (checkSecureHashes key)
 		dest' = fromRawFilePath dest
 	alreadyhave = liftIO $ removeFile src
 
-checkSecureHashes :: Key -> Annex Bool
+checkSecureHashes :: Key -> Annex (Maybe String)
 checkSecureHashes key
-	| cryptographicallySecure (fromKey keyVariety key) = return True
+	| cryptographicallySecure (fromKey keyVariety key) = return Nothing
 	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
-		( do
-			warning $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key to annex objects"
-			return False
-		, return True
+		( return $ Just $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"
+		, return Nothing
 		)
+
+checkSecureHashes' :: Key -> Annex Bool
+checkSecureHashes' key = checkSecureHashes key >>= \case
+	Nothing -> return True
+	Just msg -> do
+		warning $ msg ++ "to annex objects"
+		return False
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 
 {- Populates the annex object file by hard linking or copying a source
  - file to it. -}
 linkToAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
-linkToAnnex key src srcic = ifM (checkSecureHashes key)
+linkToAnnex key src srcic = ifM (checkSecureHashes' key)
 	( do
 		dest <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 		modifyContent dest $ linkAnnex To key src srcic dest Nothing

@@ -56,6 +56,7 @@ instance HasImportUnsupported (ParsedRemoteConfig -> RemoteGitConfig -> Annex Bo
 instance HasImportUnsupported (ImportActions Annex) where
 	importUnsupported = ImportActions
 		{ listImportableContents = return Nothing
+		, importKey = Nothing
 		, retrieveExportWithContentIdentifier = nope
 		, storeExportWithContentIdentifier = nope
 		, removeExportWithContentIdentifier = nope

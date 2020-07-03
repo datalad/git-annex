@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-07-03T17:39:19Z"
+ content="""
+Note that, since exporttree remotes are always untrusted, after importing
+--no-content from one, fsck is going to complain about it being the only
+location with the content.
+
+Which seems right.. That content could be overwritten at any time and the
+only copy lost. But still worth keeping in mind.
+"""]]

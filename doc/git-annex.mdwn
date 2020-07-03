@@ -856,8 +856,10 @@ Like other git commands, git-annex is configured via `.git/config`.
   When this is set, the contents of files using cryptographically
   insecure hashes will not be allowed to be added to the repository.
 
-  Also, git-annex fsck` will complain about any files present in
-  the repository that use insecure hashes.
+  Also, `git-annex fsck` will complain about any files present in
+  the repository that use insecure hashes. And, 
+  `git-annex import --no-content` will refuse to import files
+  from special remotes using insecure hashes.
 
   To configure the behavior in new clones of the repository,
   this can be set using [[git-annex-config]].

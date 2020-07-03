@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import qualified Command.Reinject
 import qualified Types.Remote as Remote
 import qualified Git.Ref
 import Utility.CopyFile
+import Utility.OptParse
 import Backend
 import Types.KeySource
 import Annex.CheckIgnore
@@ -53,12 +54,16 @@ data ImportOptions
 		{ importFromRemote :: DeferredParse Remote
 		, importToBranch :: Branch
 		, importToSubDir :: Maybe FilePath
+		, importContent :: Bool
 		}
 
 optParser :: CmdParamsDesc -> Parser ImportOptions
 optParser desc = do
 	ps <- cmdParams desc
 	mfromremote <- optional $ parseRemoteOption <$> parseFromOption
+	content <- invertableSwitch "content" True
+		( help "do not get contents of imported files"
+		)
 	dupmode <- fromMaybe Default <$> optional duplicateModeParser
 	return $ case mfromremote of
 		Nothing -> LocalImportOptions ps dupmode
@@ -68,6 +73,7 @@ optParser desc = do
 				in RemoteImportOptions r
 					(Ref (encodeBS' branch))
 					(if null subdir then Nothing else Just subdir)
+					content
 			_ -> giveup "expected BRANCH[:SUBDIR]"
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
@@ -114,7 +120,7 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		(pure Nothing)
 		(Just <$$> inRepo . toTopFilePath . toRawFilePath)
 		(importToSubDir o)
-	seekRemote r (importToBranch o) subdir
+	seekRemote r (importToBranch o) subdir (importContent o)
 
 startLocal :: AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
@@ -258,8 +264,8 @@ verifyExisting key destfile (yes, no) = do
 	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
 		(const yes) no
 
-seekRemote :: Remote -> Branch -> Maybe TopFilePath -> CommandSeek
-seekRemote remote branch msubdir = do
+seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CommandSeek
+seekRemote remote branch msubdir importcontent = do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir ->
@@ -279,7 +285,7 @@ seekRemote remote branch msubdir = do
 	void $ includeCommandAction (listContents remote importabletvar)
 	liftIO (atomically (readTVar importabletvar)) >>= \case
 		Nothing -> return ()
-		Just importable -> downloadImport remote importtreeconfig importable >>= \case
+		Just importable -> importKeys remote importtreeconfig importcontent importable >>= \case
 			Nothing -> warning $ concat
 				[ "Failed to import some files from "
 				, Remote.name remote

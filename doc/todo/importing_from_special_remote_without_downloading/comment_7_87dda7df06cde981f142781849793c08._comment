@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-07-03T16:27:10Z"
+ content="""
+Hmm, --fast is not very descriptive for this when it's used with a
+directory special remote, because hashing is almost as slow as copying.
+
+Probably better to use --no-content and --content, same as sync.
+(Though unfortunately with an opposite default though iirc there are plans
+somewhere to transition sync to default to --content).
+"""]]

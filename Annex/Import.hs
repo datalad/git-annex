@@ -12,7 +12,7 @@ module Annex.Import (
 	ImportCommitConfig(..),
 	buildImportCommit,
 	buildImportTrees,
-	downloadImport,
+	importKeys,
 	filterImportableContents,
 	makeImportMatcher,
 	listImportableContents,
@@ -280,44 +280,57 @@ buildImportTrees basetree msubdir importable = History
 		topf = asTopFilePath $
 			maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
 
-{- Downloads all new ContentIdentifiers. Supports concurrency when enabled.
- -
- - If any download fails, the whole thing fails with Nothing, 
- - but it will resume where it left off.
+{- Downloads all new ContentIdentifiers, or when importcontent is False,
+ - generates Keys without downloading.
  -
  - Generates either a Key or a git Sha, depending on annex.largefiles.
- - Note that, when a ContentIdentifiers has been imported before,
- - annex.largefiles is not reapplied, so will result in how ever that
- - content was stored in the repo before.
+ - But when importcontent is False, it cannot match on annex.largefiles
+ - (or generate a git Sha), so always generates Keys.
+ -
+ - Supports concurrency when enabled.
+ -
+ - If it fails on any file, the whole thing fails with Nothing, 
+ - but it will resume where it left off.
+ -
+ - Note that, when a ContentIdentifier has been imported before,
+ - generates the same thing that was imported before, so annex.largefiles
+ - is not reapplied.
  -}
-downloadImport :: Remote -> ImportTreeConfig -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (Maybe (ImportableContents (Either Sha Key)))
-downloadImport remote importtreeconfig importablecontents = do
+importKeys
+	:: Remote
+	-> ImportTreeConfig
+	-> Bool
+	-> ImportableContents (ContentIdentifier, ByteSize)
+	-> Annex (Maybe (ImportableContents (Either Sha Key)))
+importKeys remote importtreeconfig importcontent importablecontents = do
+	when (not importcontent && isNothing (Remote.importKey ia)) $
+		giveup "This remote does not support importing without downloading content."
 	-- This map is used to remember content identifiers that
-	-- were just downloaded, before they have necessarily been
+	-- were just imported, before they have necessarily been
 	-- stored in the database. This way, if the same content
 	-- identifier appears multiple times in the
 	-- importablecontents (eg when it has a history), 
-	-- they will only be downloaded once.
+	-- they will only be imported once.
 	cidmap <- liftIO $ newTVarIO M.empty
 	-- When concurrency is enabled, this set is needed to
-	-- avoid two threads both downloading the same content identifier.
-	downloading <- liftIO $ newTVarIO S.empty
+	-- avoid two threads both importing the same content identifier.
+	importing <- liftIO $ newTVarIO S.empty
 	withExclusiveLock gitAnnexContentIdentifierLock $
 		bracket CIDDb.openDb CIDDb.closeDb $ \db -> do
 			CIDDb.needsUpdateFromLog db
 				>>= maybe noop (CIDDb.updateFromLog db)
-			go False cidmap downloading importablecontents db
+			go False cidmap importing importablecontents db
   where
-	go oldversion cidmap downloading (ImportableContents l h) db = do
+	go oldversion cidmap importing (ImportableContents l h) db = do
 		largematcher <- largeFilesMatcher
 		jobs <- forM l $ \i ->
-			startdownload cidmap downloading db i oldversion largematcher
+			startimport cidmap importing db i oldversion largematcher
 		l' <- liftIO $ forM jobs $
 			either pure (atomically . takeTMVar)
 		if any isNothing l'
 			then return Nothing
 			else do
-				h' <- mapM (\ic -> go True cidmap downloading ic db) h
+				h' <- mapM (\ic -> go True cidmap importing ic db) h
 				if any isNothing h'
 					then return Nothing
 					else return $ Just $
@@ -325,17 +338,17 @@ downloadImport remote importtreeconfig importablecontents = do
 							(catMaybes l')
 							(catMaybes h')
 	
-	waitstart downloading cid = liftIO $ atomically $ do
-		s <- readTVar downloading
+	waitstart importing cid = liftIO $ atomically $ do
+		s <- readTVar importing
 		if S.member cid s
 			then retry
-			else writeTVar downloading $ S.insert cid s
+			else writeTVar importing $ S.insert cid s
 	
-	signaldone downloading cid = liftIO $ atomically $ do
-		s <- readTVar downloading
-		writeTVar downloading $ S.delete cid s
+	signaldone importing cid = liftIO $ atomically $ do
+		s <- readTVar importing
+		writeTVar importing $ S.delete cid s
 	
-	startdownload cidmap downloading db i@(loc, (cid, _sz)) oldversion largematcher = getcidkey cidmap db cid >>= \case
+	startimport cidmap importing db i@(loc, (cid, _sz)) oldversion largematcher = getcidkey cidmap db cid >>= \case
 		(k:ks) ->
 			-- If the same content was imported before
 			-- yeilding multiple different keys, it's not clear
@@ -350,10 +363,10 @@ downloadImport remote importtreeconfig importablecontents = do
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
 			let ai = ActionItemOther (Just (fromRawFilePath (fromImportLocation loc)))
-			let downloadaction = starting ("import " ++ Remote.name remote) ai $ do
+			let importaction = starting ("import " ++ Remote.name remote) ai $ do
 				when oldversion $
 					showNote "old version"
-				tryNonAsync (download cidmap db i largematcher) >>= \case
+				tryNonAsync (importordownload cidmap db i largematcher) >>= \case
 					Left e -> next $ do
 						warning (show e)
 						liftIO $ atomically $
@@ -364,12 +377,36 @@ downloadImport remote importtreeconfig importablecontents = do
 							putTMVar job r
 						return True
 			commandAction $ bracket_
-				(waitstart downloading cid)
-				(signaldone downloading cid)
-				downloadaction
+				(waitstart importing cid)
+				(signaldone importing cid)
+				importaction
 			return (Right job)
 	
-	download cidmap db (loc, (cid, sz)) largematcher = do
+	importordownload
+		| not importcontent = doimport
+		| otherwise = dodownload
+
+	doimport cidmap db (loc, (cid, sz)) _largematcher =
+		case Remote.importKey ia of
+			Nothing -> error "internal" -- checked earlier
+			Just a -> do
+				let importer p = do
+					k <- a loc cid sz p
+					checkSecureHashes k >>= \case
+						Nothing -> do
+							recordcidkey cidmap db cid k
+							logChange k (Remote.uuid remote) InfoPresent
+							return (Right k)
+						Just msg -> giveup (msg ++ " to import")
+				let runimport p = tryNonAsync (importer p) >>= \case
+					Right k -> return $ Just (loc, k)
+					Left e -> do
+						warning (show e)
+						return Nothing
+				metered Nothing	sz $
+					const runimport
+	
+	dodownload cidmap db (loc, (cid, sz)) largematcher = do
 		let downloader tmpfile p = do
 			k <- Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile largematcher) p
 			case keyGitSha k of
@@ -394,8 +431,9 @@ downloadImport remote importtreeconfig importablecontents = do
 				metered Nothing tmpkey $
 					const (rundownload tmpfile)
 	  where
-		ia = Remote.importActions remote
 		tmpkey = importKey cid sz
+		
+	ia = Remote.importActions remote
 	
 	mkkey loc tmpfile largematcher = do
 		f <- fromRepo $ fromTopFilePath $ locworktreefilename loc

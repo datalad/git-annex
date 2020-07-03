@@ -455,7 +455,7 @@ importRemote o mergeconfig remote currbranch
 			let subdir = if S.null p
 				then Nothing
 				else Just (asTopFilePath p)
-			Command.Import.seekRemote remote branch subdir
+			Command.Import.seekRemote remote branch subdir True
 			void $ mergeRemote remote currbranch mergeconfig o
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
