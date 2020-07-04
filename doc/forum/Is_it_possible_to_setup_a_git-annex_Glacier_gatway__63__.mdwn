@@ -1,0 +1,25 @@
+I have a server on a network (```SRV1```), several clients (```CLI-N```) on another and a ```archive``` repo on AWS Glacier. ```CLI```s can access ```SRV1```, but ```SRV1``` cannot access ```CLI```s network. I'd like to use git-annex to synchronize files between clients and archival on Glacier.
+
+My current setup:
+
+- ```SRV1``` contains:
+  - ```transfer``` repository (```T1```)
+  - glacier ```archive``` repo (```G1```)
+- ```CLI-01``` contains:
+  - ```user files``` repo (```U1```)
+  - ```transfer``` repository (```T1```)
+- ```CLI-02``` contains:
+  - ```user files``` repo (```U1```)
+  - ```transfer``` repository (```T1```)
+- ```CLI-N``` (...)
+
+- **OBS**:
+   - ```SRV1``` uses ```aws tools``` and ```glacier-cli``` to access Glacier
+   - *I would rather not to have to install ```aws tools``` & ```glacier-cli``` on client machines*
+   - ```CLI```s use *ssh/rsync* with secret key to access ```SRV1```
+
+I would like that ```T1```would serve as a gateway for *a)* synchronizing ```user files``` amongst clients; *a.1)* including moving and dropping files moved to ```archive``` by other clients; *b)* send ```archive``` files to ```G1```; and *c)* get files from ```G1``` and deliver to clients when content is moved out of ```archive```.
+
+As is seem close to working, but when a ```CLI``` pulls a file out of ```archive``` the recovery processes *(c)* fails. I expected ```transfer``` to fetch the file and then ```CLI``` would sync eventually, but does not seem to happen.
+
+Is this even possible with this setup? If not, what changes would you recommend for the scenario above to work?
