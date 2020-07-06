@@ -18,3 +18,14 @@ without a problem. --[[Joey]]
 > --[[Joey]]
 > 
 > > Saw it again, after copying 10k files. --[[Joey]]
+> >
+> > --debug shows a 8000+ git hash-object -w --stdin-paths --no-filters
+> > just before. Each process is logged as having exited successfully though,
+> > before the next starts, so how could this be a problem? However, it is
+> > surprising, it's supposed to write all the changes to just 1 process.
+> >
+> > Even getting only 1000 files shows these extra processes,
+> > though not enough to crash it. Utility.CoProcess
+> > is restarting git hash-object due to an IO exception:
+> > "fd:12: hPutStr: illegal operation (handle is closed)
+> > I can't see anything that would close the handle early.
