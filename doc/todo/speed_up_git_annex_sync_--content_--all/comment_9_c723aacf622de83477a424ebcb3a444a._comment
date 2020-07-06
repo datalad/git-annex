@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-07-06T16:23:07Z"
+ content="""
+Cache brought back in [[!commit e72ec8b9b23346c4b741a071e9edae4460b233c9]].
+
+Benchmarking git-annex sync --content (w/o --all) with 10k files, there
+was very little change, it's only 0.4% faster. With --all, it's 20% faster.
+
+That's kind of weird, because w/o --all it was doing 3 redundant queries,
+and --all only adds one more. The first result makes me think that a) git
+cat-file is doing its own caching or takes good advantage of disk cache and
+b) roundtrip time communicating with it does not seem significant so
+--buffer would not be much of an improvement. But the second result muddies
+the waters, and I guess it would still be worth trying the --buffer
+optimisation.
+"""]]
