@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="transfer repos"
+ date="2020-07-05T17:25:49Z"
+ content="""
+[Transfer](https://git-annex.branchable.com/preferred_content/standard_groups/) repositories unfortunately do not behave that way. You can setup G1 to get content sitting in T1 since T1 will store content until G1 has it. But, in terms of the other direction, doing a `git annex get` from T1 won't ask SRV1 to get a file from G1 (I don't think).
+
+The easiest way I can think of to achieve what you are looking for would be to create your own special remote on SRV1 (lets call it P1) that proxies the requests the way you need. Using [hook](https://git-annex.branchable.com/special_remotes/hook/) you could create a special remote that when asked for a file, ssh-es into SRV1 and then runs a script on SRV1 that does a `git annex get` on G1. Then, a few hours later, you can do a get again to get the file.
+
+I think a reasonable workaround, that ensures some measure of safety would be to just create some read-only credentials for your Glacier. Then add your Glacier repo to all the clients, so you can at least do gets from your clients.
+
+—Andrew
+"""]]
