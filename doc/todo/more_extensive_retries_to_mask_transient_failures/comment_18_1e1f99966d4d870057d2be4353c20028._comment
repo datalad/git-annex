@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2020-07-06T19:11:14Z"
+ content="""
+Changes to Utility.CoProcess for async exception safety
+introduced some very strange behavior and had to be reverted in
+[[!commit d66fc1a4646e354a8ae2514183b3d45a20ae8681]].
+"""]]
