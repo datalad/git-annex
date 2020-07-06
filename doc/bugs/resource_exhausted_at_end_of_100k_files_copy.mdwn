@@ -16,3 +16,5 @@ without a problem. --[[Joey]]
 > I did not see any evidence of processes building up shortly before it crashed,
 > while it was still copying files.
 > --[[Joey]]
+> 
+> > Saw it again, after copying 10k files. --[[Joey]]
