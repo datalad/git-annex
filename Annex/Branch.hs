@@ -230,6 +230,7 @@ updateTo' pairs = do
 					else commitIndex jl branchref merge_desc commitrefs
 			)
 		addMergedRefs tomerge
+		invalidateCache
 	stagejournalwhen dirty jl a
 		| dirty = stageJournal jl a
 		| otherwise = withIndex a
@@ -242,11 +243,15 @@ updateTo' pairs = do
  -
  - Returns an empty string if the file doesn't exist yet. -}
 get :: RawFilePath -> Annex L.ByteString
-get file = do
-	st <- update
-	if journalIgnorable st
-		then getRef fullname file
-		else getLocal file
+get file = getCache file >>= \case
+	Just content -> return content
+	Nothing -> do
+		st <- update
+		content <- if journalIgnorable st
+			then getRef fullname file
+			else getLocal file
+		setCache file content
+		return content
 
 {- Like get, but does not merge the branch, so the info returned may not
  - reflect changes in remotes.
@@ -301,6 +306,11 @@ set :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex (
 set jl f c = do
 	journalChanged
 	setJournalFile jl f c
+	-- Could cache the new content, but it would involve
+	-- evaluating a Journalable Builder twice, which is not very
+	-- efficient. Instead, assume that it's not common to need to read
+	-- a log file immediately after writing it.
+	invalidateCache
 
 {- Commit message used when making a commit of whatever data has changed
  - to the git-annex brach. -}

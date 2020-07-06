@@ -166,7 +166,7 @@ genTransportHandle = do
 	let h = TransportHandle (LocalRepo g) annexstate
 	liftAnnex h $ do
 		Annex.setOutput QuietOutput
-		enableInteractiveJournalAccess
+		enableInteractiveBranchAccess
 	return h
 
 updateTransportHandle :: TransportHandle -> IO TransportHandle

@@ -1,6 +1,6 @@
 {- git-annex branch state management
  -
- - Runtime state about the git-annex branch.
+ - Runtime state about the git-annex branch, and a small cache.
  -
  - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
@@ -12,6 +12,8 @@ module Annex.BranchState where
 import Annex.Common
 import Types.BranchState
 import qualified Annex
+
+import qualified Data.ByteString.Lazy as L
 
 getState :: Annex BranchState
 getState = Annex.getState Annex.branchstate
@@ -45,7 +47,7 @@ runUpdateOnce a = do
 			let stf = \st' -> st'
 				{ branchUpdated = True
 				, journalIgnorable = journalstaged 
-					&& not (journalNeverIgnorable st')
+					&& not (needInteractiveAccess st')
 				}
 			changeState stf
 			return (stf st)
@@ -76,7 +78,32 @@ journalChanged = do
  - and needs to always notice changes made to the journal by other
  - processes, this disables optimisations that avoid normally reading the
  - journal.
+ -
+ - It also avoids using the cache, so changes committed by other processes
+ - will be seen.
  -}
-enableInteractiveJournalAccess :: Annex ()
-enableInteractiveJournalAccess = changeState $
-	\s -> s { journalNeverIgnorable = True }
+enableInteractiveBranchAccess :: Annex ()
+enableInteractiveBranchAccess = changeState $
+	\s -> s { needInteractiveAccess = True }
+
+setCache :: RawFilePath -> L.ByteString -> Annex ()
+setCache file content = changeState $ \s -> s
+	{ cachedFile = Just file
+	, cachedContent = content
+	}
+
+getCache :: RawFilePath -> Annex (Maybe L.ByteString)
+getCache file = go <$> getState
+  where
+	go state
+		| cachedFile state == Just file 
+			&& not (needInteractiveAccess state) =
+				Just (cachedContent state)
+		| otherwise = Nothing
+
+invalidateCache :: Annex ()
+invalidateCache = changeState $ \s -> s
+	{ cachedFile = Nothing
+	, cachedContent = mempty
+	}
+

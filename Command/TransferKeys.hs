@@ -30,7 +30,7 @@ seek = withNothing (commandAction start)
 
 start :: CommandStart
 start = do
-	enableInteractiveJournalAccess
+	enableInteractiveBranchAccess
 	(readh, writeh) <- liftIO dupIoHandles
 	runRequests readh writeh runner
 	stop

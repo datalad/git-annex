@@ -72,7 +72,7 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
 startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
 startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
-	enableInteractiveJournalAccess
+	enableInteractiveBranchAccess
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
 	liftIO $ debugM desc $ "logging to " ++ logfile

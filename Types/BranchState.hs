@@ -1,11 +1,15 @@
 {- git-annex BranchState data type
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Types.BranchState where
+
+import Common
+
+import qualified Data.ByteString.Lazy as L
 
 data BranchState = BranchState
 	{ branchUpdated :: Bool
@@ -15,10 +19,16 @@ data BranchState = BranchState
 	, journalIgnorable :: Bool
 	-- ^ can reading the journal be skipped, while still getting
 	-- sufficiently up-to-date information from the branch?
-	, journalNeverIgnorable :: Bool
-	-- ^ should the journal always be read even if it would normally
-	-- be safe to skip it?
+	, cachedFile :: Maybe RawFilePath
+	-- ^ a file recently read from the branch
+	, cachedContent :: L.ByteString
+	-- ^ content of the cachedFile
+	, needInteractiveAccess :: Bool
+	-- ^ do new changes written to the journal or branch by another
+	-- process need to be noticed while the current process is running?
+	-- (This makes the journal always be read, and avoids using the
+	-- cache.)
 	}
 
 startBranchState :: BranchState
-startBranchState = BranchState False False False False
+startBranchState = BranchState False False False Nothing mempty False

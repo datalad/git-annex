@@ -80,7 +80,7 @@ batchInput fmt parser a = go =<< batchLines fmt
 
 batchLines :: BatchFormat -> Annex [String]
 batchLines fmt = do
-	enableInteractiveJournalAccess
+	enableInteractiveBranchAccess
 	liftIO $ splitter <$> getContents
   where
 	splitter = case fmt of

@@ -23,6 +23,8 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
     S3 (with versioning=yes), git-lfs, tahoe
   * Fix reversion that broke passing annex.* and remote.*.annex-*
     git configs with -c. (Since version 8.20200330.)
+  * Bring back git-annex branch read cache. This speeds up some operations;
+    git-annex sync --content gets up to 3x faster.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
 
