@@ -25,6 +25,8 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
     git configs with -c. (Since version 8.20200330.)
   * Bring back git-annex branch read cache. This speeds up some operations;
     git-annex sync --content --all gets 20% faster.
+  * Fix a recently introduced bug that could cause a "fork: resource exhausted"
+    after getting several thousand files.
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
 

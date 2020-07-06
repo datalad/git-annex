@@ -29,3 +29,12 @@ without a problem. --[[Joey]]
 > > is restarting git hash-object due to an IO exception:
 > > "fd:12: hPutStr: illegal operation (handle is closed)
 > > I can't see anything that would close the handle early.
+> > 
+> > Reverted [[!commit 7013798df5a161f00962985ffaea613a87cc4fe4]]
+> > on a hunch, and that seems to have fixed it. Which is very weird,
+> > because AFAICS it was not getting an async exception. Even 
+> > removing the `catchAsync forcerestart` is enough to avoid the problem
+> > though.
+> >
+> > [[fixed|done]] though without full understanding of what that commit
+> > did that caused such strange behavior. --[[Joey]]
