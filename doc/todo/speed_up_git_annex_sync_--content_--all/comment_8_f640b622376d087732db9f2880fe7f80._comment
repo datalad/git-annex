@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-07-06T14:51:24Z"
+ content="""
+Nice trick with the %rest!
+
+This looks like it could work. However, here the same command without
+--buffer is almost the same speed (0:2:16 vs 0:2:11, nearly lost in the
+noise). If there's any real benefit here, it seems it would be in keeping
+git cat-file more active, avoiding round trips in sending queries.
+
+I was thinking it would be hard to implement because all location log
+queries would need to be changed to use this different source of the
+information. But, I think it can be finessed by having a small cache of
+contents of annex branch files, and prepopulate that cache with information
+about each key as it's read in from git cat-file.
+
+Actually, there used to be a git-annex branch cache like that, caching just
+the most recently read file, but it was removed in
+[[!commit 3417c55189275d038bc445fe3ef71090d518e79e]].
+
+I had forgotten that was removed, and it also seems possible that bringing
+that cache back would improve perf generally, because I think there are
+probably situations where eg the location log is looked at repeatedly.
+
+.. In fact, loggedKeys calls checkDead on each key, so that's one extra
+location log lookup right there! Indeed, instrumenting getRef,
+I see sync --content getting the same location log 3x per key w/o --all,
+so probably 4x with --all!
+"""]]
