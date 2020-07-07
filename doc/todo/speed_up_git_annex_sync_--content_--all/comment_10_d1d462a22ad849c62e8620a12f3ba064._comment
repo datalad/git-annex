@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2020-07-07T17:13:46Z"
+ content="""
+Wow, I implemented your --buffer trick, and `get --all`
+is over 2x faster. `sync --content --all` somewhat less, but still
+another decent improvement there. (cold cache timings)
+
+And some warm cache times are *much* faster than my cold cache benchmarks.
+`get --all` is 17x faster in a 10k file repo, which makes it only 3x slower
+than `get` without --all.
+
+I think I will still leave this open because it's still worth considering
+sqlite caching or finding a way to speed up the second sync --all pass...
+but would be interested to know how your use case is improved now.
+
+Please feel free to find optimisations anytime, I really appreciate it.
+"""]]

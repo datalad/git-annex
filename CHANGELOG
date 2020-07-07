@@ -27,6 +27,12 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
     git-annex sync --content --all gets 20% faster.
   * Fix a recently introduced bug that could cause a "fork: resource exhausted"
     after getting several thousand files.
+  * Sped up the --all option by 2x to 16x by using git cat-file --buffer.
+    Thanks to Lukey for finding this optimisation.
+  * fsck: Detect if WORM keys contain a carriage return, and recommend
+    upgrading to fix the problem, because the --all optimisation above
+    skips any such keys that might exist (git-annex could have maybe 
+    created such keys back in 2013).
 
  -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
 

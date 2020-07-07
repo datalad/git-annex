@@ -19,6 +19,7 @@ module Git.CatFile (
 	catObject,
 	catObjectDetails,
 	catObjectMetaData,
+	catObjectStream,
 ) where
 
 import System.IO
@@ -33,6 +34,7 @@ import Data.Char
 import Numeric
 import System.Posix.Types
 import Text.Read
+import Control.Concurrent.Async
 
 import Common
 import Git
@@ -42,8 +44,10 @@ import Git.Command
 import Git.Types
 import Git.FilePath
 import Git.HashObject
+import qualified Git.LsTree as LsTree
 import qualified Utility.CoProcess as CoProcess
 import Utility.Tuple
+import Control.Monad.IO.Class (MonadIO)
 
 data CatFileHandle = CatFileHandle 
 	{ catFileProcess :: CoProcess.CoProcessHandle
@@ -57,13 +61,16 @@ catFileStart = catFileStart' True
 catFileStart' :: Bool -> Repo -> IO CatFileHandle
 catFileStart' restartable repo = CatFileHandle
 	<$> startp "--batch"
-	<*> startp "--batch-check=%(objectname) %(objecttype) %(objectsize)"
+	<*> startp ("--batch-check=" ++ batchFormat)
 	<*> pure repo
   where
 	startp p = gitCoProcessStart restartable
 		[ Param "cat-file"
 		, Param p
 		] repo
+
+batchFormat :: String
+batchFormat = "%(objectname) %(objecttype) %(objectsize)"
 
 catFileStop :: CatFileHandle -> IO ()
 catFileStop h = do
@@ -88,18 +95,12 @@ catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha, Object
 catObjectDetails h object = query (catFileProcess h) object newlinefallback $ \from -> do
 	header <- S8.hGetLine from
 	case parseResp object header of
-		Just (ParsedResp sha objtype size) -> do
-			content <- S.hGet from (fromIntegral size)
-			eatchar '\n' from
-			return $ Just (L.fromChunks [content], sha, objtype)
+		Just r@(ParsedResp sha objtype _size) -> do
+			content <- readObjectContent from r
+			return $ Just (content, sha, objtype)
 		Just DNE -> return Nothing
 		Nothing -> error $ "unknown response from git cat-file " ++ show (header, object)
   where
-	eatchar expected from = do
-		c <- hGetChar from
-		when (c /= expected) $
-			error $ "missing " ++ (show expected) ++ " from git cat-file"
-	
 	-- Slow fallback path for filenames containing newlines.
 	newlinefallback = queryObjectType object (gitRepo h) >>= \case
 		Nothing -> return Nothing
@@ -112,6 +113,18 @@ catObjectDetails h object = query (catFileProcess h) object newlinefallback $ \f
 					(flip L.hPut content)
 					(gitRepo h)
 				return (Just (content, sha, objtype))
+
+readObjectContent :: Handle -> ParsedResp -> IO L.ByteString
+readObjectContent h (ParsedResp _ _ size) = do
+	content <- S.hGet h (fromIntegral size)
+	eatchar '\n'
+	return (L.fromChunks [content])
+  where
+	eatchar expected = do
+		c <- hGetChar h
+		when (c /= expected) $
+			error $ "missing " ++ (show expected) ++ " from git cat-file"
+readObjectContent _ DNE = error "internal"
 
 {- Gets the size and type of an object, without reading its content. -}
 catObjectMetaData :: CatFileHandle -> Ref -> IO (Maybe (Sha, FileSize, ObjectType))
@@ -266,3 +279,69 @@ parseCommit b = Commit
 	sp = fromIntegral (ord ' ')
 	lt = fromIntegral (ord '<')
 	gt = fromIntegral (ord '>')
+
+{- Uses cat-file to stream the contents of the files listed by lstree
+ - as efficiently as possible. This is much faster than querying it
+ - repeatedly per file.
+ -
+ - Any files with a newline or carriage return in their name will be
+ - skipped, because the interface does not support them.
+ -}
+catObjectStream
+	:: (MonadMask m, MonadIO m)
+	=> [LsTree.TreeItem]
+	-> (LsTree.TreeItem -> Bool)
+	-> Repo
+	-> (IO (Maybe (TopFilePath, L.ByteString)) -> m ())
+	-> m ()
+catObjectStream l want repo a = assertLocal repo $ 
+	bracketIO start stop $ \(_, _, hout, _) -> a (reader hout)
+  where
+	feeder h = do
+		forM_ l $ \ti ->
+			when (want ti) $ do
+				let f = getTopFilePath (LsTree.file ti)
+				-- skip files with newlines or carriage returns
+				unless (any (`S8.elem` f) ['\n', '\r']) $
+					S8.hPutStrLn h $
+						fromRef' (LsTree.sha ti) <> " " <> f
+		hClose h
+
+	reader h = ifM (hIsEOF h)
+		( return Nothing
+		, do
+			resp <- S8.hGetLine h
+			case eitherToMaybe $ A.parseOnly respparser resp of
+				Nothing -> error $ "unknown response from git cat-file " ++ show resp
+				Just (r, f) -> do
+					content <- readObjectContent h r
+					return (Just (asTopFilePath f, content))
+		)
+
+	params = 
+		[ Param "cat-file"
+		-- %(rest) is used to feed the filename through
+		-- cat-file; it will be at the end of the response
+		, Param ("--batch=" ++ batchFormat ++ " %(rest)")
+		, Param "--buffer"
+		]
+	
+	respparser = (,)
+		<$> respParser
+		<* A8.char ' '
+		<*> A.takeByteString
+
+	start = do
+		let p = gitCreateProcess params repo
+		(Just hin, Just hout, _, pid) <- createProcess p
+			{ std_in = CreatePipe
+			, std_out = CreatePipe
+			}
+		f <- async (feeder hin)
+		return (f, hin, hout, pid)
+	
+	stop (f, hin, hout, pid) = do
+		cancel f
+		hClose hin
+		hClose hout
+		void $ checkSuccessProcess pid

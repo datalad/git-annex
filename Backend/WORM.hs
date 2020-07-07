@@ -27,7 +27,7 @@ backend = Backend
 	, getKey = Just keyValue
 	, verifyKeyContent = Nothing
 	, canUpgradeKey = Just needsUpgrade
-	, fastMigrate = Just removeSpaces
+	, fastMigrate = Just removeProblemChars
 	, isStableKey = const True
 	}
 
@@ -48,12 +48,13 @@ keyValue source _ = do
 		, keyMtime = Just $ modificationTime stat
 		}
 
-{- Old WORM keys could contain spaces, and can be upgraded to remove them. -}
+{- Old WORM keys could contain spaces and carriage returns, 
+ - and can be upgraded to remove them. -}
 needsUpgrade :: Key -> Bool
-needsUpgrade key = ' ' `S8.elem` fromKey keyName key
+needsUpgrade key = any (`S8.elem` fromKey keyName key) [' ', '\r']
 
-removeSpaces :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
-removeSpaces oldkey newbackend _
+removeProblemChars :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
+removeProblemChars oldkey newbackend _
 	| migratable = return $ Just $ alterKey oldkey $ \d -> d
 		{ keyName = encodeBS $ reSanitizeKeyName $ decodeBS $ keyName d }
 	| otherwise = return Nothing

@@ -22,16 +22,19 @@ import qualified Git.LsTree as LsTree
 import Git.FilePath
 import qualified Limit
 import CmdLine.GitAnnex.Options
-import Logs.Location
+import Logs
 import Logs.Unused
 import Types.Transfer
 import Logs.Transfer
 import Remote.List
 import qualified Remote
 import Annex.CatFile
+import Git.CatFile (catObjectStream)
 import Annex.CurrentBranch
 import Annex.Content
 import Annex.InodeSentinal
+import qualified Annex.Branch
+import qualified Annex.BranchState
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 
@@ -180,26 +183,55 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		giveup "Cannot use --auto in a bare repository"
 	case (null params, ko) of
 		(True, Nothing)
-			| bare -> noauto $ runkeyaction finishCheck loggedKeys 
+			| bare -> noauto runallkeys
 			| otherwise -> fallbackaction params
 		(False, Nothing) -> fallbackaction params
-		(True, Just WantAllKeys) -> noauto $ runkeyaction finishCheck loggedKeys
-		(True, Just WantUnusedKeys) -> noauto $ runkeyaction (pure . Just) unusedKeys'
+		(True, Just WantAllKeys) -> noauto runallkeys
+		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
 		(True, Just WantFailedTransfers) -> noauto runfailedtransfers
-		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (pure . Just) (return [k])
-		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction (pure . Just) incompletekeys
+		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
+		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
 		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
 		(False, Just _) -> giveup "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
   where
 	noauto a
 		| auto = giveup "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
 		| otherwise = a
+	
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
-	runkeyaction checker getks = do
+
+	-- List all location log files on the git-annex branch,
+	-- and use those to get keys. Pass through cat-file
+	-- to get the contents of the location logs, and pre-cache
+	-- those. This significantly speeds up typical operations
+	-- that need to look at the location log for each key.
+	runallkeys = do
+		keyaction <- mkkeyaction
+		config <- Annex.getGitConfig
+		g <- Annex.gitRepo
+		
+		void Annex.Branch.update
+		(l, cleanup) <- inRepo $ LsTree.lsTree
+			LsTree.LsTreeRecursive
+			Annex.Branch.fullname
+		let getk = locationLogFileKey config . getTopFilePath
+		let go reader = liftIO reader >>= \case
+			Nothing -> return ()
+			Just (f, content) -> do
+				case getk f of
+					Just k -> do
+						Annex.BranchState.setCache (getTopFilePath f) content
+						keyaction (k, mkActionItem k)
+					Nothing -> return ()
+				go reader
+		catObjectStream l (isJust . getk . LsTree.file) g go
+		liftIO $ void cleanup
+
+	runkeyaction getks = do
 		keyaction <- mkkeyaction
 		ks <- getks
-		forM_ ks $ checker >=> maybe noop 
-			(\k -> keyaction (k, mkActionItem k))
+		forM_ ks $ \k -> keyaction (k, mkActionItem k)
+	
 	runbranchkeys bs = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
@@ -211,6 +243,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 					in keyaction (k, bfp)
 			unlessM (liftIO cleanup) $
 				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
+	
 	runfailedtransfers = do
 		keyaction <- mkkeyaction
 		rs <- remoteList
