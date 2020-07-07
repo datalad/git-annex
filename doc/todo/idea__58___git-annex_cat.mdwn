@@ -12,9 +12,9 @@ It would look like this:
 ```
 git annex cat "someindex.ncdu" | ncdu -f -
 
-diff <(git annex cat "huge-data-dump1.tsv") <(git annex cat "huge-data-dump2.tsv")
+diff <(git annex cat "huge-data-dump1.tsv" -f mybupremote ) <(git annex cat "huge-data-dump2.tsv" -f mybupremote )
 
-git annex cat "myvideo.mp4" | vlc -
+git annex cat "myvideo.mp4" -f googledrive | vlc -
 ```
 
 I imagine that there might be issues with verification. But I really am ok with not verifying a video file I am streaming.
