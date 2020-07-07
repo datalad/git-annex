@@ -1,0 +1,20 @@
+I wanted to share some thoughts for an idea I had.
+
+There are times when I want to stream data from a remote -- I want to start processing it immediately, and do not want to keep it in my annex when I am done with it.
+
+I can give some examples:
+
+* I have several projects which have a large number of similar text files, and they compress really well with borg or bup. For example, I have a repo with many [ncdu](https://dev.yorhel.nl/ncdu) json index files. They total 60G, but in a bup special remote, they are ~3G. In another repo, I have large highly differential tsv files.
+* I have an annex with 5-10G video files that are stored in a variety of network special remotes. Most of them are in my Google Drive. I would like to be able to immediately start playing them with VLC rather than downloading and verifying them in their entirety.
+
+It would look like this:
+
+```
+git annex cat "someindex.ncdu" | ncdu -f -
+
+diff <(git annex cat "huge-data-dump1.tsv") <(git annex cat "huge-data-dump2.tsv")
+
+git annex cat "myvideo.mp4" | vlc -
+```
+
+I imagine that there might be issues with verification. But I really am ok with not verifying a video file I am streaming.
