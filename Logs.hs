@@ -205,11 +205,11 @@ isRemoteContentIdentifierLog path = remoteContentIdentifierExt `S.isSuffixOf` pa
 {- From an extension and a log filename, get the key that it's a log for. -}
 extLogFileKey :: S.ByteString -> RawFilePath -> Maybe Key
 extLogFileKey expectedext path
-	| encodeBS' ext == expectedext = fileKey (toRawFilePath base)
+	| ext == expectedext = fileKey base
 	| otherwise = Nothing
   where
-	file = takeFileName (fromRawFilePath path)
-	(base, ext) = splitAt (length file - extlen) file
+	file = P.takeFileName path
+	(base, ext) = S.splitAt (S.length file - extlen) file
 	extlen = S.length expectedext
 
 {- Converts a url log file into a key.
