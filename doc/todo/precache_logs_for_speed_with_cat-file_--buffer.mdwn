@@ -1,0 +1,27 @@
+Like --all was sped up 2x-16x in 
+[[!commit d010ab04be5a8d74fe85a2fa27a853784d1f9009]], commands
+that ls-files the worktree may be sped up by using cat-file --buffer
+to get location logs (and maybe other logs) more efficiently,
+and precache them.
+
+Unlike --all, each file's blob will need to be itself catted with cat-file
+to find the key, before passing that to cat-file --buffer. Currently that's
+done later by lookupFile, so things like withFilesInGit will need to be
+changed to pass the Key along. 
+
+Probably that extra round trip means the performance improvement will not
+be as good as --all's was, but it could still be significant.
+
+catObjectStream not supporting newline or carriage return needs to be dealt
+with somehow first, because worktree filenames can contain either.
+
+One odd edge case is, could there be a worktree file that refers to a key
+with no location log? In that case, catObjectStream would skip it. This
+doesn't usually happen, but it might be able to happen after a `git annex
+forget`.
+
+Perhaps both the newline and the missing location log could be dealt with
+together, by making catObjectStream not skip them, but return an item
+with no log file content.
+
+--[[Joey]]
