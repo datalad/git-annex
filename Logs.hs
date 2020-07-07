@@ -38,6 +38,26 @@ getLogVariety config f
 	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs config f)
 
+{- Typical number of log files that may be read while processing a single
+ - key. This is used to size a cache.
+ -
+ - The location log is generally read, and the metadata log is read when
+ - matching a preferred content expression that matches on metadata,
+ - or when using metadata options.
+ -
+ - When using a remote, the url log, chunk log, remote state log, remote
+ - metadata log, and remote content identifier log might each be used,
+ - but probably at most 3 out of the 6. However, caching too much slows
+ - down all operations because the cache is a linear list, so the cache
+ - is not currently sized to include these.
+ -
+ - The result is that when seeking for files to operate on,
+ - the location log will stay in the cache if the metadata log is also
+ - read.
+ -}
+logFilesToCache :: Int
+logFilesToCache = 2
+
 {- All the old-format uuid-based logs stored in the top of the git-annex branch. -}
 topLevelOldUUIDBasedLogs :: [RawFilePath]
 topLevelOldUUIDBasedLogs =
@@ -58,7 +78,6 @@ topLevelNewUUIDBasedLogs :: [RawFilePath]
 topLevelNewUUIDBasedLogs =
 	[ exportLog
 	]
-
 
 {- All the ways to get a key from a presence log file -}
 presenceLogs :: GitConfig -> RawFilePath -> [Maybe Key]

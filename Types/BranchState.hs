@@ -19,10 +19,8 @@ data BranchState = BranchState
 	, journalIgnorable :: Bool
 	-- ^ can reading the journal be skipped, while still getting
 	-- sufficiently up-to-date information from the branch?
-	, cachedFile :: Maybe RawFilePath
-	-- ^ a file recently read from the branch
-	, cachedContent :: L.ByteString
-	-- ^ content of the cachedFile
+	, cachedFileContents :: [(RawFilePath, L.ByteString)]
+	-- ^ contents of a few files recently read from the branch
 	, needInteractiveAccess :: Bool
 	-- ^ do new changes written to the journal or branch by another
 	-- process need to be noticed while the current process is running?
@@ -31,4 +29,4 @@ data BranchState = BranchState
 	}
 
 startBranchState :: BranchState
-startBranchState = BranchState False False False Nothing mempty False
+startBranchState = BranchState False False False [] False

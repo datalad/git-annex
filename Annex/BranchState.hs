@@ -12,6 +12,7 @@ module Annex.BranchState where
 import Annex.Common
 import Types.BranchState
 import qualified Annex
+import Logs
 
 import qualified Data.ByteString.Lazy as L
 
@@ -88,22 +89,19 @@ enableInteractiveBranchAccess = changeState $
 
 setCache :: RawFilePath -> L.ByteString -> Annex ()
 setCache file content = changeState $ \s -> s
-	{ cachedFile = Just file
-	, cachedContent = content
-	}
+	{ cachedFileContents = add (cachedFileContents s) }
+  where
+	add l
+		| length l < logFilesToCache = (file, content) : l
+		| otherwise = (file, content) : Prelude.init l
 
 getCache :: RawFilePath -> Annex (Maybe L.ByteString)
-getCache file = go <$> getState
+getCache file = (\st -> go (cachedFileContents st) st) <$> getState
   where
-	go state
-		| cachedFile state == Just file 
-			&& not (needInteractiveAccess state) =
-				Just (cachedContent state)
-		| otherwise = Nothing
+	go [] _ = Nothing
+	go ((f,c):rest) state
+		| f == file && not (needInteractiveAccess state) = Just c
+		| otherwise = go rest state
 
 invalidateCache :: Annex ()
-invalidateCache = changeState $ \s -> s
-	{ cachedFile = Nothing
-	, cachedContent = mempty
-	}
-
+invalidateCache = changeState $ \s -> s { cachedFileContents = [] }
