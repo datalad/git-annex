@@ -349,9 +349,9 @@ applyView' mkviewedfile getfilemetadata view = do
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
 	viewg <- withViewIndex gitRepo
 	withUpdateIndex viewg $ \uh -> do
-		forM_ l $ \(f, sha, mode) -> do
+		forM_ l $ \(f, sha, mode, _) -> do
 			topf <- inRepo (toTopFilePath f)
-			go uh topf sha (toTreeItemType =<< mode) =<< lookupFile f
+			go uh topf sha (toTreeItemType mode) =<< lookupFile f
 		liftIO $ void clean
 		genViewBranch view
   where
@@ -365,7 +365,7 @@ applyView' mkviewedfile getfilemetadata view = do
 			f' <- fromRawFilePath <$> 
 				fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
 			stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
-	go uh topf (Just sha) (Just treeitemtype) Nothing
+	go uh topf sha (Just treeitemtype) Nothing
 		| "." `B.isPrefixOf` getTopFilePath topf =
 			liftIO $ Git.UpdateIndex.streamUpdateIndex' uh $
 				pureStreamer $ updateIndexLine sha treeitemtype topf

@@ -38,7 +38,6 @@ import qualified Git.Branch as Branch
 import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
-import Utility.Tuple
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
@@ -379,9 +378,8 @@ missingIndex r = not <$> doesFileExist (fromRawFilePath (localGitDir r) </> "ind
 partitionIndex :: Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
 partitionIndex r = do
 	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
-	l <- forM indexcontents $ \i -> case i of
-		(_file, Just sha, Just _mode) -> (,) <$> isMissing sha r <*> pure i
-		_ -> pure (False, i)
+	l <- forM indexcontents $ \i@(_file, sha, _mode, _stagenum) -> 
+		(,) <$> isMissing sha r <*> pure i
 	let (bad, good) = partition fst l
 	return (map snd bad, map snd good, cleanup)
 
@@ -397,13 +395,12 @@ rewriteIndex r
 			UpdateIndex.streamUpdateIndex r
 				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
-		return $ map (fromRawFilePath . fst3) bad
+		return $ map (\(file,_, _, _) -> fromRawFilePath file) bad
   where
-	reinject (file, Just sha, Just mode) = case toTreeItemType mode of
+	reinject (file, sha, mode, _) = case toTreeItemType mode of
 		Nothing -> return Nothing
 		Just treeitemtype -> Just <$>
 			UpdateIndex.stageFile sha treeitemtype (fromRawFilePath file) r
-	reinject _ = return Nothing
 
 newtype GoodCommits = GoodCommits (S.Set Sha)
 

@@ -16,6 +16,8 @@ module Git.LsFiles (
 	modified,
 	staged,
 	stagedNotDeleted,
+	usualStageNum,
+	mergeConflictHeadStageNum,
 	stagedDetails,
 	typeChanged,
 	typeChangedStaged,
@@ -33,12 +35,13 @@ import Git.Types
 import Git.Sha
 import Utility.InodeCache
 import Utility.TimeStamp
+import Utility.Attoparsec
 
-import Numeric
-import Data.Char
 import System.Posix.Types
 import qualified Data.Map as M
 import qualified Data.ByteString as S
+import qualified Data.Attoparsec.ByteString as A
+import qualified Data.Attoparsec.ByteString.Char8 as A8
 
 {- It's only safe to use git ls-files on the current repo, not on a remote.
  -
@@ -136,12 +139,23 @@ staged' ps l repo = guardSafeForLsFiles repo $
 	prefix = [Param "diff", Param "--cached", Param "--name-only", Param "-z"]
 	suffix = Param "--" : map (File . fromRawFilePath) l
 
-type StagedDetails = (RawFilePath, Maybe Sha, Maybe FileMode)
+type StagedDetails = (RawFilePath, Sha, FileMode, StageNum)
+
+type StageNum = Int
+
+{- Used when not in a merge conflict. -}
+usualStageNum :: Int
+usualStageNum = 0
+
+{- WHen in a merge conflict, git uses stage number 2 for the local HEAD
+ - side of the merge conflict. -}
+mergeConflictHeadStageNum :: Int
+mergeConflictHeadStageNum = 2
 
 {- Returns details about all files that are staged in the index.
  -
  - Note that, during a conflict, a file will appear in the list
- - more than once.
+ - more than once with different stage numbers.
  -}
 stagedDetails :: [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails = stagedDetails' []
@@ -149,20 +163,25 @@ stagedDetails = stagedDetails' []
 stagedDetails' :: [CommandParam] -> [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails' ps l repo = guardSafeForLsFiles repo $ do
 	(ls, cleanup) <- pipeNullSplit' params repo
-	return (map parseStagedDetails ls, cleanup)
+	return (mapMaybe parseStagedDetails ls, cleanup)
   where
 	params = Param "ls-files" : Param "--stage" : Param "-z" : ps ++ 
 		Param "--" : map (File . fromRawFilePath) l
 
-parseStagedDetails :: S.ByteString -> StagedDetails
-parseStagedDetails s
-	| S.null file = (s, Nothing, Nothing)
-	| otherwise = (file, extractSha sha, readmode mode)
+parseStagedDetails :: S.ByteString -> Maybe StagedDetails
+parseStagedDetails = eitherToMaybe . A.parseOnly parser
   where
-	(metadata, file) = separate' (== fromIntegral (ord '\t')) s
-	(mode, metadata') = separate' (== fromIntegral (ord ' ')) metadata
-	(sha, _) = separate' (== fromIntegral (ord ' ')) metadata'
-	readmode = fst <$$> headMaybe . readOct . decodeBS'
+	parser = do
+		mode <- octal
+		void $ A8.char ' '
+		sha <- maybe (fail "bad sha") return . extractSha =<< nextword
+		void $ A8.char ' '
+		stagenum <- A8.decimal
+		void $ A8.char '\t'
+		file <- A.takeByteString
+		return (file, sha, mode, stagenum)
+	
+	nextword = A8.takeTill (== ' ')
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}

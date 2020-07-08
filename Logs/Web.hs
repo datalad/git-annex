@@ -99,11 +99,10 @@ knownUrls = do
 		void $ liftIO cleanup
 		return $ concat r
   where
-	getkeyurls (f, s, _) = case urlLogFileKey f of
+	getkeyurls (f, s, _, _) = case urlLogFileKey f of
 		Just k -> zip (repeat k) <$> geturls s
 		Nothing -> return []
-	geturls Nothing = return []
-	geturls (Just logsha) =
+	geturls logsha =
 		map (decodeBS . fromLogInfo) . getLog 
 			<$> catObject logsha
 
