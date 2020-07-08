@@ -138,12 +138,14 @@ staged' ps l repo = guardSafeForLsFiles repo $
 
 type StagedDetails = (RawFilePath, Maybe Sha, Maybe FileMode)
 
-{- Returns details about all files that are staged in the index. -}
+{- Returns details about all files that are staged in the index.
+ -
+ - Note that, during a conflict, a file will appear in the list
+ - more than once.
+ -}
 stagedDetails :: [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails = stagedDetails' []
 
-{- Gets details about staged files, including the Sha of their staged
- - contents. -}
 stagedDetails' :: [CommandParam] -> [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails' ps l repo = guardSafeForLsFiles repo $ do
 	(ls, cleanup) <- pipeNullSplit' params repo
