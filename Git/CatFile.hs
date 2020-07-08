@@ -295,7 +295,7 @@ catObjectStream
 	=> [LsTree.TreeItem]
 	-> (LsTree.TreeItem -> Bool)
 	-> Repo
-	-> (IO (Maybe (TopFilePath, L.ByteString)) -> m ())
+	-> (IO (Maybe (TopFilePath, Maybe L.ByteString)) -> m ())
 	-> m ()
 catObjectStream l want repo a = assertLocal repo $ do
 	bracketIO start stop $ \(mv, _, _, hout, _) -> a (reader mv hout)
@@ -304,19 +304,21 @@ catObjectStream l want repo a = assertLocal repo $ do
 		forM_ l $ \ti ->
 			when (want ti) $ do
 				let f = LsTree.file ti
-				liftIO $ atomically $ snocTList mv f
-				S8.hPutStrLn h (fromRef' (LsTree.sha ti))
+				let sha = LsTree.sha ti
+				liftIO $ atomically $ snocTList mv (sha, f)
+				S8.hPutStrLn h (fromRef' sha)
 		hClose h
 
 	reader mv h = ifM (hIsEOF h)
 		( return Nothing
 		, do
-			f <- liftIO $ atomically $ headTList mv
+			(sha, f) <- liftIO $ atomically $ headTList mv
 			resp <- S8.hGetLine h
-			case eitherToMaybe $ A.parseOnly respParser resp of
-				Just r -> do
+			case parseResp sha resp of
+				Just r@(ParsedResp {}) -> do
 					content <- readObjectContent h r
-					return (Just (f, content))
+					return (Just (f, Just content))
+				Just DNE -> return (Just (f, Nothing))
 				Nothing -> error $ "unknown response from git cat-file " ++ show resp
 		)
 

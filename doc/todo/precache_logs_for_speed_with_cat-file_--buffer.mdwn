@@ -16,14 +16,4 @@ be as good as --all's was, but it could still be significant.
 > to get file blob, through cat-file to get key, through cat-file to
 > precache logs.
 
-One odd edge case is, could there be a worktree file that refers to a key
-with no location log? In that case, catObjectStream would skip it. This
-doesn't usually happen. One case where it does happen is if the git-annex
-branch is not pulled, but master is.
-
-Perhaps make catObjectStream not skip them, but return an item
-with no log file content. It's important things not be reordered when doing
-that -- could a dummy item somehow be passed through cat-file to represent
-these problem cases?
-
 --[[Joey]]

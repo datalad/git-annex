@@ -220,7 +220,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 			Just (f, content) -> do
 				case getk f of
 					Just k -> do
-						Annex.BranchState.setCache (getTopFilePath f) content
+						maybe noop (Annex.BranchState.setCache (getTopFilePath f)) content
 						keyaction (k, mkActionItem k)
 					Nothing -> return ()
 				go reader
