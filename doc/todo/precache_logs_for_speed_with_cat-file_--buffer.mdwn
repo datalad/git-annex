@@ -13,10 +13,7 @@ Probably that extra round trip means the performance improvement will not
 be as good as --all's was, but it could still be significant.
 
 > Actually, the key lookup could use the same --buffer trick! 
-> Although this would need a way to use git ls-files to get the sha of each
-> file, and the only way I can find is --stage, which lists the file
-> repeatedly when there's a merge conflict. If that can be finessed somehow,
-> pass the file sha through cat-file to get key, and then pass the location
-> log for the key through cat-file to precache logs.
+> Use inRepoDetails to list files and shas, pass through cat-file to get keys,
+> and then pass the location log for each key through cat-file to precache logs.
 
 --[[Joey]]

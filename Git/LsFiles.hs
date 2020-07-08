@@ -8,6 +8,7 @@
 module Git.LsFiles (
 	Options(..),
 	inRepo,
+	inRepoDetails,
 	inRepoOrBranch,
 	notInRepo,
 	notInRepoIncludingEmptyDirectories,
@@ -67,6 +68,9 @@ guardSafeForLsFiles r a
 
 data Options = ErrorUnmatch
 
+opParam :: Options -> CommandParam
+opParam ErrorUnmatch = Param "--error-unmatch"
+
 {- Lists files that are checked into git's index at the specified paths.
  - With no paths, all files are listed.
  -}
@@ -79,9 +83,18 @@ inRepo' ps os l repo = guardSafeForLsFiles repo $ pipeNullSplit' params repo
 	params = 
 		Param "ls-files" :
 		Param "-z" :
-		map op os ++ ps ++
+		map opParam os ++ ps ++
 		(Param "--" : map (File . fromRawFilePath) l)
-	op ErrorUnmatch = Param "--error-unmatch" 
+
+{- Lists the same files inRepo does, but with sha and mode. -}
+inRepoDetails :: [Options] -> [RawFilePath] -> Repo -> IO ([(RawFilePath, Sha, FileMode)], IO Bool)
+inRepoDetails = stagedDetails' parser . map opParam
+  where
+	parser s = case parseStagedDetails s of
+		Just (file, sha, mode, stagenum)
+			| stagenum == usualStageNum || stagenum == mergeConflictHeadStageNum ->
+				Just (file, sha, mode)
+		_ -> Nothing
 
 {- Files that are checked into the index or have been committed to a
  - branch. -}
@@ -158,12 +171,12 @@ mergeConflictHeadStageNum = 2
  - more than once with different stage numbers.
  -}
 stagedDetails :: [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
-stagedDetails = stagedDetails' []
+stagedDetails = stagedDetails' parseStagedDetails []
 
-stagedDetails' :: [CommandParam] -> [RawFilePath] -> Repo -> IO ([StagedDetails], IO Bool)
-stagedDetails' ps l repo = guardSafeForLsFiles repo $ do
+stagedDetails' :: (S.ByteString -> Maybe t) -> [CommandParam] -> [RawFilePath] -> Repo -> IO ([t], IO Bool)
+stagedDetails' parser ps l repo = guardSafeForLsFiles repo $ do
 	(ls, cleanup) <- pipeNullSplit' params repo
-	return (mapMaybe parseStagedDetails ls, cleanup)
+	return (mapMaybe parser ls, cleanup)
   where
 	params = Param "ls-files" : Param "--stage" : Param "-z" : ps ++ 
 		Param "--" : map (File . fromRawFilePath) l

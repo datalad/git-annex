@@ -94,12 +94,12 @@ knownUrls = do
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	Annex.Branch.withIndex $ do
 		top <- fromRepo Git.repoPath
-		(l, cleanup) <- inRepo $ Git.LsFiles.stagedDetails [top]
+		(l, cleanup) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
 		r <- mapM getkeyurls l
 		void $ liftIO cleanup
 		return $ concat r
   where
-	getkeyurls (f, s, _, _) = case urlLogFileKey f of
+	getkeyurls (f, s, _) = case urlLogFileKey f of
 		Just k -> zip (repeat k) <$> geturls s
 		Nothing -> return []
 	geturls logsha =

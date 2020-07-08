@@ -110,11 +110,11 @@ convertDirect = do
 upgradeDirectWorkTree :: Annex ()
 upgradeDirectWorkTree = do
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
+	(l, clean) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
 	forM_ l go
 	void $ liftIO clean
   where
-	go (f, _sha, mode, _stagenum) | isSymLink mode = do
+	go (f, _sha, mode) | isSymLink mode = do
 		-- Cannot use lookupFile here, as we're in between direct
 		-- mode and v6.
 		mk <- catKeyFile f
