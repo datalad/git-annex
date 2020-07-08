@@ -12,16 +12,22 @@ changed to pass the Key along.
 Probably that extra round trip means the performance improvement will not
 be as good as --all's was, but it could still be significant.
 
+> Actually, the key lookup can use the same --buffer trick! So ls-tree
+> to get file blob, through cat-file to get key, through cat-file to
+> precache logs.
+
 catObjectStream not supporting newline or carriage return needs to be dealt
 with somehow first, because worktree filenames can contain either.
 
 One odd edge case is, could there be a worktree file that refers to a key
 with no location log? In that case, catObjectStream would skip it. This
-doesn't usually happen, but it might be able to happen after a `git annex
-forget`.
+doesn't usually happen. One case where it does happen is if the git-annex
+branch is not pulled, but master is.
 
 Perhaps both the newline and the missing location log could be dealt with
 together, by making catObjectStream not skip them, but return an item
-with no log file content.
+with no log file content. It's important things not be reordered when doing
+that -- could a dummy item somehow be passed through cat-file to represent
+these problem cases?
 
 --[[Joey]]
