@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Git.CatFile (
 	CatFileHandle,
@@ -28,13 +29,15 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import Data.String
 import Data.Char
 import Numeric
 import System.Posix.Types
 import Text.Read
 import Control.Concurrent.Async
+import Control.Concurrent.STM
+import Control.Monad.IO.Class (MonadIO)
 
 import Common
 import Git
@@ -47,7 +50,7 @@ import Git.HashObject
 import qualified Git.LsTree as LsTree
 import qualified Utility.CoProcess as CoProcess
 import Utility.Tuple
-import Control.Monad.IO.Class (MonadIO)
+import Utility.TList
 
 data CatFileHandle = CatFileHandle 
 	{ catFileProcess :: CoProcess.CoProcessHandle
@@ -284,8 +287,8 @@ parseCommit b = Commit
  - as efficiently as possible. This is much faster than querying it
  - repeatedly per file.
  -
- - Any files with a newline or carriage return in their name will be
- - skipped, because the interface does not support them.
+ - (Note that, while a more polymorphic version of this can be written,
+ - this version is faster, possibly due to being less polymorphic.)
  -}
 catObjectStream
 	:: (MonadMask m, MonadIO m)
@@ -294,53 +297,46 @@ catObjectStream
 	-> Repo
 	-> (IO (Maybe (TopFilePath, L.ByteString)) -> m ())
 	-> m ()
-catObjectStream l want repo a = assertLocal repo $ 
-	bracketIO start stop $ \(_, _, hout, _) -> a (reader hout)
+catObjectStream l want repo a = assertLocal repo $ do
+	bracketIO start stop $ \(mv, _, _, hout, _) -> a (reader mv hout)
   where
-	feeder h = do
+	feeder mv h = do
 		forM_ l $ \ti ->
 			when (want ti) $ do
-				let f = getTopFilePath (LsTree.file ti)
-				-- skip files with newlines or carriage returns
-				unless (any (`S8.elem` f) ['\n', '\r']) $
-					S8.hPutStrLn h $
-						fromRef' (LsTree.sha ti) <> " " <> f
+				let f = LsTree.file ti
+				liftIO $ atomically $ snocTList mv f
+				S8.hPutStrLn h (fromRef' (LsTree.sha ti))
 		hClose h
 
-	reader h = ifM (hIsEOF h)
+	reader mv h = ifM (hIsEOF h)
 		( return Nothing
 		, do
+			f <- liftIO $ atomically $ headTList mv
 			resp <- S8.hGetLine h
-			case eitherToMaybe $ A.parseOnly respparser resp of
-				Nothing -> error $ "unknown response from git cat-file " ++ show resp
-				Just (r, f) -> do
+			case eitherToMaybe $ A.parseOnly respParser resp of
+				Just r -> do
 					content <- readObjectContent h r
-					return (Just (asTopFilePath f, content))
+					return (Just (f, content))
+				Nothing -> error $ "unknown response from git cat-file " ++ show resp
 		)
 
 	params = 
 		[ Param "cat-file"
-		-- %(rest) is used to feed the filename through
-		-- cat-file; it will be at the end of the response
-		, Param ("--batch=" ++ batchFormat ++ " %(rest)")
+		, Param ("--batch=" ++ batchFormat)
 		, Param "--buffer"
 		]
-	
-	respparser = (,)
-		<$> respParser
-		<* A8.char ' '
-		<*> A.takeByteString
 
 	start = do
+		mv <- liftIO $ atomically newTList
 		let p = gitCreateProcess params repo
 		(Just hin, Just hout, _, pid) <- createProcess p
 			{ std_in = CreatePipe
 			, std_out = CreatePipe
 			}
-		f <- async (feeder hin)
-		return (f, hin, hout, pid)
+		f <- async (feeder mv hin)
+		return (mv, f, hin, hout, pid)
 	
-	stop (f, hin, hout, pid) = do
+	stop (_, f, hin, hout, pid) = do
 		cancel f
 		hClose hin
 		hClose hout

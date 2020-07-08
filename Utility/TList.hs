@@ -6,7 +6,9 @@
  - Unlike a TQueue, the entire contents of a TList can be efficiently
  - read without modifying it.
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ -
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE BangPatterns #-}
@@ -21,6 +23,7 @@ module Utility.TList (
 	consTList,
 	snocTList,
 	appendTList,
+	headTList,
 ) where
 
 import Common
@@ -77,3 +80,6 @@ snocTList tlist v = modifyTList tlist $ \dl -> D.snoc dl v
 
 appendTList :: TList a -> [a] -> STM ()
 appendTList tlist l = modifyTList tlist $ \dl -> D.append dl (D.fromList l)
+
+headTList :: TList a -> STM a
+headTList tlist = D.head <$> readTMVar tlist
