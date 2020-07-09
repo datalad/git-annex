@@ -16,4 +16,5 @@ be as good as --all's was, but it could still be significant.
 > Use inRepoDetails to list files and shas, pass through cat-file to get keys,
 > and then pass the location log for each key through cat-file to precache logs.
 
---[[Joey]]
+The streamkeys branch has a start at some work on this, but I got fairly
+lost in the weeds, so don't expect much from that attempt. --[[Joey]]
