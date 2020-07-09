@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="I've moved my auto-sync-daemon script"
+ date="2020-07-09T14:24:48Z"
+ content="""
+The script mentioned above now lives [here](https://github.com/aspiers/git-config/blob/master/bin/auto-sync-daemon).
+"""]]
