@@ -77,13 +77,13 @@ seek o = case batchOption o of
 		c <- liftIO currentVectorClock
 		let ww = WarnUnmatchLsFiles
 		let seeker = case getSet o of
-			Get _ -> withFilesInGit ww
-			GetAll -> withFilesInGit ww
-			Set _ -> withFilesInGitNonRecursive ww
+			Get _ -> withFilesInGitAnnex ww
+			GetAll -> withFilesInGitAnnex ww
+			Set _ -> withFilesInGitAnnexNonRecursive ww
 				"Not recursively setting metadata. Use --force to do that."
 		withKeyOptions (keyOptions o) False
 			(commandAction . startKeys c o)
-			(seeker (commandAction . (whenAnnexed (start c o))))
+			(seeker (commandAction' (start c o)))
 			=<< workTreeItems ww (forFiles o)
 	Batch fmt -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> ifM limited

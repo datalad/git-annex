@@ -8,7 +8,6 @@
 module Command.Lock where
 
 import Command
-import qualified Annex.Queue
 import qualified Annex
 import Annex.Content
 import Annex.Link
@@ -31,12 +30,12 @@ cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek ps = do
 	l <- workTreeItems ww ps
-	withFilesInGit ww (commandAction . (whenAnnexed startNew)) l
+	withFilesInGitAnnex ww (commandAction' start) l
   where
 	ww = WarnUnmatchLsFiles
 
-startNew :: RawFilePath -> Key -> CommandStart
-startNew file key = ifM (isJust <$> isAnnexLink file)
+start :: RawFilePath -> Key -> CommandStart
+start file key = ifM (isJust <$> isAnnexLink file)
 	( stop
 	, starting "lock" (mkActionItem (key, file)) $
 		go =<< liftIO (isPointerFile file)
@@ -53,14 +52,14 @@ startNew file key = ifM (isJust <$> isAnnexLink file)
 				, errorModified
 				)
 			)
-	cont = performNew file key
+	cont = perform file key
 
-performNew :: RawFilePath -> Key -> CommandPerform
-performNew file key = do
+perform :: RawFilePath -> Key -> CommandPerform
+perform file key = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
 	addLink (fromRawFilePath file) key
 		=<< withTSDelta (liftIO . genInodeCache file)
-	next $ cleanupNew file key
+	next $ cleanup file key
   where
 	lockdown obj = do
 		ifM (isUnmodified key obj)
@@ -96,22 +95,10 @@ performNew file key = do
 
 	lostcontent = logStatus key InfoMissing
 
-cleanupNew :: RawFilePath -> Key -> CommandCleanup
-cleanupNew file key = do
+cleanup :: RawFilePath -> Key -> CommandCleanup
+cleanup file key = do
 	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
 	return True
-
-startOld :: RawFilePath -> CommandStart
-startOld file = do
-	unlessM (Annex.getState Annex.force)
-		errorModified
-	starting "lock" (ActionItemWorkTreeFile file) $
-		performOld file
-
-performOld :: RawFilePath -> CommandPerform
-performOld file = do
-	Annex.Queue.addCommand "checkout" [Param "--"] [fromRawFilePath file]
-	next $ return True
 
 errorModified :: a
 errorModified =  giveup "Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)"

@@ -46,7 +46,7 @@ seek o = startConcurrency downloadStages $ do
 			(whenAnnexed go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys from)
-			(withFilesInGitAnnex ww (\f k -> commandAction (go f k)))
+			(withFilesInGitAnnex ww (commandAction' go))
 			=<< workTreeItems ww (getFiles o)
   where
 	ww = WarnUnmatchLsFiles

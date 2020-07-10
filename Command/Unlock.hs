@@ -27,7 +27,7 @@ mkcmd n d = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 	command n SectionCommon d paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = withFilesInGit ww (commandAction . whenAnnexed start)
+seek ps = withFilesInGitAnnex ww (commandAction' start)
 	=<< workTreeItems ww ps
   where
 	ww = WarnUnmatchLsFiles

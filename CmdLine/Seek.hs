@@ -53,18 +53,18 @@ withFilesInGitAnnex :: WarnUnmatchWhen -> (RawFilePath -> Key -> CommandSeek) ->
 withFilesInGitAnnex ww a l = seekFilteredKeys a $
 	seekHelper fst3 ww LsFiles.inRepoDetails l
 
-withFilesInGitNonRecursive :: WarnUnmatchWhen -> String -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesInGitNonRecursive ww needforce a l = ifM (Annex.getState Annex.force)
-	( withFilesInGit ww a l
+withFilesInGitAnnexNonRecursive :: WarnUnmatchWhen -> String -> (RawFilePath -> Key -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitAnnexNonRecursive ww needforce a l = ifM (Annex.getState Annex.force)
+	( withFilesInGitAnnex ww a l
 	, if null l
 		then giveup needforce
-		else seekFiltered a (getfiles [] l)
+		else seekFilteredKeys a (getfiles [] l)
 	)
   where
 	getfiles c [] = return (reverse c)
 	getfiles c ((WorkTreeItem p):ps) = do
 		os <- seekOptions ww
-		(fs, cleanup) <- inRepo $ LsFiles.inRepo os [toRawFilePath p]
+		(fs, cleanup) <- inRepo $ LsFiles.inRepoDetails os [toRawFilePath p]
 		case fs of
 			[f] -> do
 				void $ liftIO $ cleanup

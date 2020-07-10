@@ -57,11 +57,12 @@ seek :: FindOptions -> CommandSeek
 seek o = case batchOption o of
 	NoBatch -> withKeyOptions (keyOptions o) False
 		(commandAction . startKeys o)
-		(withFilesInGit ww (commandAction . go))
+		(withFilesInGitAnnex ww (commandAction' go))
 		=<< workTreeItems ww (findThese o)
-	Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
+	Batch fmt -> batchFilesMatching fmt
+		(whenAnnexed go . toRawFilePath)
   where
-	go = whenAnnexed $ start o
+	go = start o
 	ww = WarnUnmatchLsFiles
 
 -- only files inAnnex are shown, unless the user has requested
