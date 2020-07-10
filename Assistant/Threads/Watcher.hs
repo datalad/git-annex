@@ -289,7 +289,7 @@ onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkss
 onAddSymlink :: Handler
 onAddSymlink file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
-	kv <- liftAnnex (lookupFile (toRawFilePath file))
+	kv <- liftAnnex (lookupKey (toRawFilePath file))
 	onAddSymlink' linktarget kv file filestatus
 
 onAddSymlink' :: Maybe String -> Maybe Key -> Handler

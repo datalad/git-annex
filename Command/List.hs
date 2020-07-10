@@ -44,7 +44,7 @@ seek :: ListOptions -> CommandSeek
 seek o = do
 	list <- getList o
 	printHeader list
-	withFilesInGit ww (commandAction . (whenAnnexed $ start list))
+	withFilesInGitAnnex ww (commandAction' (start list))
 		=<< workTreeItems ww (listThese o)
   where
 	ww = WarnUnmatchLsFiles

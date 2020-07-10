@@ -44,7 +44,7 @@ seek ps = do
 	l <- workTreeItems ww ps
 	withFilesNotInGit (commandAction . whenAnnexed (startCheckIncomplete . fromRawFilePath)) l
 	Annex.changeState $ \s -> s { Annex.fast = True }
-	withFilesInGit ww (commandAction . whenAnnexed Command.Unannex.start) l
+	withFilesInGitAnnex ww (commandAction' Command.Unannex.start) l
 	finish
   where
 	ww = WarnUnmatchLsFiles

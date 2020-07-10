@@ -20,8 +20,9 @@ module Git.CatFile (
 	catObject,
 	catObjectDetails,
 	catObjectMetaData,
+	catObjectStreamLsTree,
 	catObjectStream,
-	catObjectStream',
+	catObjectMetaDataStream,
 ) where
 
 import System.IO
@@ -289,18 +290,18 @@ parseCommit b = Commit
  - While this could be made more polymorhpic, specialization is important
  - to its performance.
  -}
-catObjectStream
+catObjectStreamLsTree
 	:: (MonadMask m, MonadIO m)
 	=> [LsTree.TreeItem]
 	-> (LsTree.TreeItem -> Bool)
 	-> Repo
 	-> (IO (Maybe (TopFilePath, Maybe L.ByteString)) -> m ())
 	-> m ()
-catObjectStream l want repo reader = withCatObjectStream repo $
+catObjectStreamLsTree l want repo reader = withCatFileStream False repo $
 	\c hin hout -> bracketIO
 		(async $ feeder c hin)
 		cancel
-		(const (reader (catObjectReader c hout)))
+		(const (reader (catObjectReader readObjectContent c hout)))
   where
 	feeder c h = do
 		forM_ l $ \ti ->
@@ -311,7 +312,7 @@ catObjectStream l want repo reader = withCatObjectStream repo $
 				S8.hPutStrLn h (fromRef' sha)
 		hClose h
 
-catObjectStream'
+catObjectStream
 	:: (MonadMask m, MonadIO m)
 	=> Repo
 	-> (
@@ -321,41 +322,70 @@ catObjectStream'
 	    -> m ()
 	   )
 	-> m ()
-catObjectStream' repo a = withCatObjectStream repo go
+catObjectStream repo a = withCatFileStream False repo go
   where
 	go c hin hout = a
 		(feeder c hin)
 		(hClose hin)
-		(catObjectReader c hout)
+		(catObjectReader readObjectContent c hout)
 	feeder c h (v, ref) = do
 		liftIO $ writeChan c (ref, v)
 		S8.hPutStrLn h (fromRef' ref)
 
-catObjectReader :: Chan (Ref, a) -> Handle -> IO (Maybe (a, Maybe L.ByteString))
-catObjectReader c h = ifM (hIsEOF h)
+catObjectMetaDataStream
+	:: (MonadMask m, MonadIO m)
+	=> Repo
+	-> (
+	    ((v, Ref) -> IO ()) -- ^ call to feed values in
+	    -> IO () -- call once all values are fed in
+	    -> IO (Maybe (v, Maybe (Sha, FileSize, ObjectType))) -- call to read results
+	    -> m ()
+	   )
+	-> m ()
+catObjectMetaDataStream repo a = withCatFileStream True repo go
+  where
+	go c hin hout = a
+		(feeder c hin)
+		(hClose hin)
+		(catObjectReader (\_h r -> pure (conv r)) c hout)
+	
+	feeder c h (v, ref) = do
+		liftIO $ writeChan c (ref, v)
+		S8.hPutStrLn h (fromRef' ref)
+	
+	conv (ParsedResp sha ty sz) = (sha, sz, ty)
+	conv DNE = error "internal"
+
+catObjectReader
+	:: (Handle -> ParsedResp -> IO t)
+	-> Chan (Ref, a)
+	-> Handle
+	-> IO (Maybe (a, Maybe t))
+catObjectReader getv c h = ifM (hIsEOF h)
 	( return Nothing
 	, do
 		(ref, f) <- liftIO $ readChan c
 		resp <- S8.hGetLine h
 		case parseResp ref resp of
 			Just r@(ParsedResp {}) -> do
-				content <- readObjectContent h r
-				return (Just (f, Just content))
+				v <- getv h r
+				return (Just (f, Just v))
 			Just DNE -> return (Just (f, Nothing))
 			Nothing -> error $ "unknown response from git cat-file " ++ show resp
 	)
 
-withCatObjectStream
+withCatFileStream
 	:: (MonadMask m, MonadIO m)
-	=> Repo
+	=> Bool
+	-> Repo
 	-> (Chan a -> Handle -> Handle -> m ())
 	-> m ()
-withCatObjectStream repo reader = assertLocal repo $
+withCatFileStream check repo reader = assertLocal repo $
 	bracketIO start stop $ \(c, hin, hout, _) -> reader c hin hout
   where
 	params = 
 		[ Param "cat-file"
-		, Param ("--batch=" ++ batchFormat)
+		, Param ("--batch" ++ (if check then "-check" else "") ++ "=" ++ batchFormat)
 		, Param "--buffer"
 		]
 

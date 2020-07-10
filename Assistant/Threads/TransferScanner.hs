@@ -145,7 +145,7 @@ expensiveScan urlrenderer rs = batch <~> do
 		(unwanted', ts) <- maybe
 			(return (unwanted, []))
 			(findtransfers f unwanted)
-				=<< liftAnnex (lookupFile f)
+				=<< liftAnnex (lookupKey f)
 		mapM_ (enqueue f) ts
 
 		{- Delay for a short time to avoid using too much CPU. -}

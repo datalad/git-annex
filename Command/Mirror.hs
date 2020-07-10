@@ -44,7 +44,7 @@ seek :: MirrorOptions -> CommandSeek
 seek o = startConcurrency stages $ 
 	withKeyOptions (keyOptions o) False
 		(commandAction . startKey o (AssociatedFile Nothing))
-		(withFilesInGit ww (commandAction . (whenAnnexed $ start o)))
+		(withFilesInGitAnnex ww (commandAction' (start o)))
 		=<< workTreeItems ww (mirrorFiles o)
   where
 	stages = case fromToOptions o of

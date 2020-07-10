@@ -84,7 +84,7 @@ keyOpt s = case parseURI s of
 		Nothing -> giveup $ "bad key/url " ++ s
 
 perform :: Key -> FilePath -> CommandPerform
-perform key file = lookupFileNotHidden (toRawFilePath file) >>= \case
+perform key file = lookupKeyNotHidden (toRawFilePath file) >>= \case
 	Nothing -> ifM (liftIO $ doesFileExist file)
 		( hasothercontent
 		, do

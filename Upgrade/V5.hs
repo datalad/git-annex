@@ -115,7 +115,7 @@ upgradeDirectWorkTree = do
 	void $ liftIO clean
   where
 	go (f, _sha, mode) | isSymLink mode = do
-		-- Cannot use lookupFile here, as we're in between direct
+		-- Cannot use lookupKey here, as we're in between direct
 		-- mode and v6.
 		mk <- catKeyFile f
 		case mk of

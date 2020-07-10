@@ -54,13 +54,14 @@ parseDropFromOption = parseRemoteOption <$> strOption
 seek :: DropOptions -> CommandSeek
 seek o = startConcurrency commandStages $
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
+		Batch fmt -> batchFilesMatching fmt
+			(whenAnnexed go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys o)
-			(withFilesInGit ww (commandAction . go))
+			(withFilesInGitAnnex ww (commandAction' go))
 			=<< workTreeItems ww (dropFiles o)
   where
-	go = whenAnnexed $ start o
+	go = start o
 	ww = WarnUnmatchLsFiles
 
 start :: DropOptions -> RawFilePath -> Key -> CommandStart

@@ -55,12 +55,13 @@ data RemoveWhen = RemoveSafe | RemoveNever
 
 seek :: MoveOptions -> CommandSeek
 seek o = startConcurrency stages $ do
-	let go = whenAnnexed $ start (fromToOptions o) (removeWhen o)
+	let go = start (fromToOptions o) (removeWhen o)
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt (go . toRawFilePath)
+		Batch fmt -> batchFilesMatching fmt
+			(whenAnnexed go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) False
 			(commandAction . startKey (fromToOptions o) (removeWhen o))
-			(withFilesInGit ww (commandAction . go))
+			(withFilesInGitAnnex ww (commandAction' go))
 			=<< workTreeItems ww (moveFiles o)
   where
 	stages = case fromToOptions o of

@@ -90,7 +90,7 @@ updateSymlinks = do
 	void $ liftIO cleanup
   where
 	fixlink f = do
-		r <- lookupFile1 f
+		r <- lookupKey1 f
 		case r of
 			Nothing -> noop
 			Just (k, _) -> do
@@ -191,8 +191,8 @@ readLog1 :: FilePath -> IO [LogLine]
 readLog1 file = catchDefaultIO [] $
 	parseLog . encodeBL <$> readFileStrict file
 
-lookupFile1 :: FilePath -> Annex (Maybe (Key, Backend))
-lookupFile1 file = do
+lookupKey1 :: FilePath -> Annex (Maybe (Key, Backend))
+lookupKey1 file = do
 	tl <- liftIO $ tryIO getsymlink
 	case tl of
 		Left _ -> return Nothing

@@ -215,7 +215,7 @@ withKeysReferenced' mdir initial a = do
 		Just dir -> inRepo $ LsFiles.inRepo [] [toRawFilePath dir]
 	go v [] = return v
 	go v (f:fs) = do
-		mk <- lookupFile f
+		mk <- lookupKey f
 		case mk of
 			Nothing -> go v fs
 			Just k -> do
