@@ -1,0 +1,18 @@
+I've spent all week working on performance. It started when Lukey
+found a way to use git cat-file --buffer to make --all faster.
+Once implemented, that turned out to be a 2x to 16x speedup in seek time.
+
+I felt that same approach could probably also speed up other parts of
+git-annex that use git cat-file, so spent another 4 days finding ways to do
+that. Some of the ideas are not implemented yet, but I landed a 2x speedup
+today, to all git-annex commands that seek annexed files to work on.
+
+Oh and also there used to be a git-annex branch read cache, but it got
+removed many years ago, and I forgot it had been removed. Which does not
+lead to writing the fastest code. Bringing the cache back makes some things
+another 20% faster.
+
+----
+
+This work was sponsored by Mark Reidenbach, Jake Vosloo, and Graham Spencer 
+[on Patreon](https://patreon.com/joeyh).
