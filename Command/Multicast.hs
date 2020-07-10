@@ -136,7 +136,7 @@ send ups fs = do
 			let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
 				liftIO $ hPutStrLn h o
 			forM_ fs' $ \f -> do
-				mk <- lookupFile f
+				mk <- lookupKey f
 				case mk of
 					Nothing -> noop
 					Just k -> withObjectLoc k $

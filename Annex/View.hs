@@ -351,7 +351,7 @@ applyView' mkviewedfile getfilemetadata view = do
 	withUpdateIndex viewg $ \uh -> do
 		forM_ l $ \(f, sha, mode) -> do
 			topf <- inRepo (toTopFilePath f)
-			go uh topf sha (toTreeItemType mode) =<< lookupFile f
+			go uh topf sha (toTreeItemType mode) =<< lookupKey f
 		liftIO $ void clean
 		genViewBranch view
   where

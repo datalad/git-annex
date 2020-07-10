@@ -704,7 +704,7 @@ test_lock_force = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get of file failed"
 	git_annex "unlock" [annexedfile] @? "unlock failed"
 	annexeval $ do
-		Just k <- Annex.WorkTree.lookupFile (toRawFilePath annexedfile)
+		Just k <- Annex.WorkTree.lookupKey (toRawFilePath annexedfile)
 		Database.Keys.removeInodeCaches k
 		Database.Keys.closeDb
 		liftIO . nukeFile =<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
@@ -1680,7 +1680,7 @@ test_crypto = do
 			(c,k) <- annexeval $ do
 				uuid <- Remote.nameToUUID "foo"
 				rs <- Logs.Remote.readRemoteLog
-				Just k <- Annex.WorkTree.lookupFile (toRawFilePath annexedfile)
+				Just k <- Annex.WorkTree.lookupKey (toRawFilePath annexedfile)
 				return (fromJust $ M.lookup uuid rs, k)
 			let key = if scheme `elem` ["hybrid","pubkey"]
 					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]

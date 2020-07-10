@@ -35,8 +35,8 @@ import Control.Concurrent
  - When in an adjusted branch that may have hidden the file, looks for a
  - pointer to a key in the original branch.
  -}
-lookupFile :: RawFilePath -> Annex (Maybe Key)
-lookupFile = lookupFile' catkeyfile
+lookupKey :: RawFilePath -> Annex (Maybe Key)
+lookupKey = lookupKey' catkeyfile
   where
 	catkeyfile file =
 		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
@@ -44,8 +44,8 @@ lookupFile = lookupFile' catkeyfile
 			, catKeyFileHidden file =<< getCurrentBranch
 			)
 
-lookupFileNotHidden :: RawFilePath -> Annex (Maybe Key)
-lookupFileNotHidden = lookupFile' catkeyfile
+lookupKeyNotHidden :: RawFilePath -> Annex (Maybe Key)
+lookupKeyNotHidden = lookupKey' catkeyfile
   where
 	catkeyfile file =
 		ifM (liftIO $ doesFileExist $ fromRawFilePath file)
@@ -53,8 +53,8 @@ lookupFileNotHidden = lookupFile' catkeyfile
 			, return Nothing
 			)
 
-lookupFile' :: (RawFilePath -> Annex (Maybe Key)) -> RawFilePath -> Annex (Maybe Key)
-lookupFile' catkeyfile file = isAnnexLink file >>= \case
+lookupKey' :: (RawFilePath -> Annex (Maybe Key)) -> RawFilePath -> Annex (Maybe Key)
+lookupKey' catkeyfile file = isAnnexLink file >>= \case
 	Just key -> return (Just key)
 	Nothing -> catkeyfile file
 
@@ -64,7 +64,7 @@ whenAnnexed :: (RawFilePath -> Key -> Annex (Maybe a)) -> RawFilePath -> Annex (
 whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
 ifAnnexed :: RawFilePath -> (Key -> Annex a) -> Annex a -> Annex a
-ifAnnexed file yes no = maybe no yes =<< lookupFile file
+ifAnnexed file yes no = maybe no yes =<< lookupKey file
 
 {- Find all unlocked files and update the keys database for them. 
  - 

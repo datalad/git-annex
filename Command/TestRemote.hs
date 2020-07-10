@@ -439,7 +439,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 	return k
 
 getReadonlyKey :: Remote -> FilePath -> Annex Key
-getReadonlyKey r f = lookupFile (toRawFilePath f) >>= \case
+getReadonlyKey r f = lookupKey (toRawFilePath f) >>= \case
 	Nothing -> giveup $ f ++ " is not an annexed file"
 	Just k -> do
 		unlessM (inAnnex k) $

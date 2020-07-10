@@ -372,7 +372,7 @@ addAccessedWithin duration = do
 	secs = fromIntegral (durationSeconds duration)
 
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
-lookupFileKey = lookupFile . currFile
+lookupFileKey = lookupKey . currFile
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a

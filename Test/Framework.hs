@@ -316,7 +316,7 @@ checkdangling f = ifM (annexeval Config.crippledFileSystem)
 checklocationlog :: FilePath -> Bool -> Assertion
 checklocationlog f expected = do
 	thisuuid <- annexeval Annex.UUID.getUUID
-	r <- annexeval $ Annex.WorkTree.lookupFile (toRawFilePath f)
+	r <- annexeval $ Annex.WorkTree.lookupKey (toRawFilePath f)
 	case r of
 		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
@@ -327,7 +327,7 @@ checklocationlog f expected = do
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
 	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
-		=<< Annex.WorkTree.lookupFile (toRawFilePath file)
+		=<< Annex.WorkTree.lookupKey (toRawFilePath file)
 	assertEqual ("backend for " ++ file) (Just expected) b
 
 checkispointerfile :: FilePath -> Assertion

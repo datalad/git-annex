@@ -49,7 +49,7 @@ withFilesInGit ww a l = seekFiltered a $
 	seekHelper id ww LsFiles.inRepo l
 
 withFilesInGitAnnex :: WarnUnmatchWhen -> (RawFilePath -> Key -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesInGitAnnex ww a l = seekFiltered' a $
+withFilesInGitAnnex ww a l = seekFilteredKeys a $
 	seekHelper fst3 ww LsFiles.inRepoDetails l
 
 withFilesInGitNonRecursive :: WarnUnmatchWhen -> String -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
@@ -119,10 +119,6 @@ withPairs a params = sequence_ $ map a $ pairs [] params
 withFilesToBeCommitted :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesToBeCommitted a l = seekFiltered a $
 	seekHelper id WarnUnmatchWorkTreeItems (const LsFiles.stagedNotDeleted) l
-
-isOldUnlocked :: RawFilePath -> Annex Bool
-isOldUnlocked f = liftIO (notSymlink f) <&&> 
-	(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 
 {- unlocked pointer files that are staged, and whose content has not been
  - modified-}
@@ -268,8 +264,9 @@ seekFiltered a fs = do
 	process matcher f =
 		whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
 
-seekFiltered' :: (RawFilePath -> Key -> CommandSeek) -> Annex [(RawFilePath, Git.Sha, FileMode)] -> Annex ()
-seekFiltered' a fs = do
+-- This is siginificantly faster than using lookupKey after seekFiltered.
+seekFilteredKeys :: (RawFilePath -> Key -> CommandSeek) -> Annex [(RawFilePath, Git.Sha, FileMode)] -> Annex ()
+seekFilteredKeys a fs = do
 	g <- Annex.gitRepo
 	catObjectStream' g $ \feeder closer reader -> do
 		tid <- liftIO . async =<< forkState (gofeed feeder closer)

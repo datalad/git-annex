@@ -168,7 +168,7 @@ parseJSONInput i = case eitherDecode (BU.fromString i) of
 startBatch :: (Either RawFilePath Key, MetaData) -> CommandStart
 startBatch (i, (MetaData m)) = case i of
 	Left f -> do
-		mk <- lookupFile f
+		mk <- lookupKey f
 		case mk of
 			Just k -> go k (mkActionItem (k, AssociatedFile (Just f)))
 			Nothing -> giveup $ "not an annexed file: " ++ fromRawFilePath f
