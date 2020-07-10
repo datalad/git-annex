@@ -1,0 +1,113 @@
+First, this feels like it is probably the same underlying cause as the
+[report I recently opened][0].  However, it bisects to an earlier
+commit and doesn't involve rsync, so I'm erring on the side of a
+separate issue.  And this probably comes down to a bad interaction
+with an old openssh version, so like the other bug, it might not
+really be worth looking into or fixing.  On DataLad's end, we're
+running into it because our Travis tests run on Xenial, which is LTS
+until April 2021.
+
+[0]: https://git-annex.branchable.com/bugs/Recent_hang_with_rsync_remote_with_older_systems___40__Xenial__44___Jessie__41__/
+
+Here's a script that triggers the hang.  It creates a Xenial-based
+Docker image, pulling in the latest git-annex autobuild.
+
+[[!format sh """
+cd "$(mktemp -d ${TMPDIR:-/tmp}/ga-XXXXXXX)"
+
+cat >demo.sh <<'EOF'
+git annex version
+cd "$(mktemp -d /tmp/ga-XXXXXXX)"
+git init repo
+(
+    cd repo
+    git annex init
+    git commit -m'c0' --allow-empty
+)
+git clone localhost:"$(pwd)"/repo clone
+git -C clone annex init --debug
+EOF
+
+cat >Dockerfile <<'EOF'
+FROM ubuntu:xenial
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      curl openssh-client openssh-server ca-certificates && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN cd /root && curl -fSsL \
+  https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz \
+  | tar xz
+ENV PATH="/root/git-annex.linux:$PATH"
+# Make SSH see standalone's executables.
+RUN chsh -s /bin/bash
+RUN echo 'export PATH="/root/git-annex.linux:$PATH"' >/root/.bashrc.tmp && \
+    cat /root/.bashrc >>/root/.bashrc.tmp && \
+    mv /root/.bashrc.tmp /root/.bashrc
+
+RUN PATH="/root/git-annex.linux:$PATH" && \
+    git config --system user.name "u" && \
+    git config --system user.email "u@e"
+
+RUN mkdir -p /root/.ssh && \
+    mkdir -p /var/run/sshd && \
+    ssh-keygen -f /root/.ssh/id_rsa -N "" && \
+    cat /root/.ssh/id_rsa.pub >>/root/.ssh/authorized_keys && \
+    echo "Host localhost\nStrictHostKeyChecking no\n" >>/root/.ssh/config
+
+COPY demo.sh /root/demo.sh
+CMD /usr/sbin/sshd && sh /root/demo.sh
+EOF
+
+docker build -t ga-init-hang:latest .
+docker run -it --rm ga-init-hang:latest
+"""]]
+
+Here's the output.  The last line stalled.
+
+```
+[... 35 lines ...]
+git-annex version: 8.20200618-g59c90643c
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+[... 66 lines ...]
+(scanning for unlocked files...)
+[2020-07-10 20:38:16.279437348] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--head"]
+[2020-07-10 20:38:16.281916637] process done ExitSuccess
+[2020-07-10 20:38:16.282041242] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","-r","--","HEAD"]
+[2020-07-10 20:38:16.284631723] process done ExitSuccess
+[2020-07-10 20:38:16.285152392] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-07-10 20:38:16.287400177] process done ExitSuccess
+[2020-07-10 20:38:16.287504149] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-07-10 20:38:16.28987225] process done ExitSuccess
+[2020-07-10 20:38:16.289980932] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-07-10 20:38:16.292040629] process done ExitSuccess
+[2020-07-10 20:38:16.292160147] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2020-07-10 20:38:16.294629952] process done ExitSuccess
+[2020-07-10 20:38:16.294755223] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","checkout","-q","-B","master"]
+[2020-07-10 20:38:16.313153728] process done ExitSuccess
+[2020-07-10 20:38:16.315278334] read: uname ["-n"]
+[2020-07-10 20:38:16.316832707] process done ExitSuccess
+[2020-07-10 20:38:16.318892738] read: ssh ["localhost","-S",".git/annex/ssh/localhost","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","git-annex-shell 'configlist' '/tmp/ga-MwIuVzn/repo' '--debug'"]
+^C
+```
+
+The openssh version in that container is OpenSSH_7.2p2.  As with the
+other bug report, replacing "FROM ubuntu:xenial" with "FROM
+ubuntu:bionic" eliminates the stall.  debian:jessie-slim also shows
+the stall, but debian:stretch-slim doesn't, which places the
+problematic openssh version before OpenSSH_7.4p1.
+
+With the same demo.sh script in a Xenial VM, that bisects to 75059c9f3
+(better error message when git config fails to parse remote config,
+2020-01-22).
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
