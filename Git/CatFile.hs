@@ -37,7 +37,7 @@ import Numeric
 import System.Posix.Types
 import Text.Read
 import Control.Concurrent.Async
-import Control.Concurrent.STM
+import Control.Concurrent.Chan
 import Control.Monad.IO.Class (MonadIO)
 
 import Common
@@ -51,7 +51,6 @@ import Git.HashObject
 import qualified Git.LsTree as LsTree
 import qualified Utility.CoProcess as CoProcess
 import Utility.Tuple
-import Utility.TList
 
 data CatFileHandle = CatFileHandle 
 	{ catFileProcess :: CoProcess.CoProcessHandle
@@ -83,12 +82,12 @@ catFileStop h = do
 
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> RawFilePath -> IO L.ByteString
-catFile h branch file = catObject h $ Ref $
-	fromRef' branch <> ":" <> toInternalGitPath file
+catFile h branch file = catObject h $
+	Git.Ref.branchFileRef branch file
 
 catFileDetails :: CatFileHandle -> Branch -> RawFilePath -> IO (Maybe (L.ByteString, Sha, ObjectType))
-catFileDetails h branch file = catObjectDetails h $ Ref $
-	fromRef' branch <> ":" <> toInternalGitPath file
+catFileDetails h branch file = catObjectDetails h $ 
+	Git.Ref.branchFileRef branch file
 
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
@@ -286,6 +285,9 @@ parseCommit b = Commit
 
 {- Uses cat-file to stream the contents of the files as efficiently
  - as possible. This is much faster than querying it repeatedly per file.
+ - 
+ - While this could be made more polymorhpic, specialization is important
+ - to its performance.
  -}
 catObjectStream
 	:: (MonadMask m, MonadIO m)
@@ -294,43 +296,48 @@ catObjectStream
 	-> Repo
 	-> (IO (Maybe (TopFilePath, Maybe L.ByteString)) -> m ())
 	-> m ()
-catObjectStream l want repo a = withCatObjectStream repo feeder $
-	\mv hout -> a (catObjectReader mv hout)
+catObjectStream l want repo reader = withCatObjectStream repo $
+	\c hin hout -> bracketIO
+		(async $ feeder c hin)
+		cancel
+		(const (reader (catObjectReader c hout)))
   where
-	feeder mv h = do
+	feeder c h = do
 		forM_ l $ \ti ->
 			when (want ti) $ do
 				let f = LsTree.file ti
 				let sha = LsTree.sha ti
-				liftIO $ atomically $ snocTList mv (sha, f)
+				liftIO $ writeChan c (sha, f)
 				S8.hPutStrLn h (fromRef' sha)
 		hClose h
 
-{- While this variant could be combined with catObjectStream into a 
- - more polymorphic function, the specialization of both is important for
- - performance. -}
 catObjectStream'
 	:: (MonadMask m, MonadIO m)
-	=> [(RawFilePath, Sha, FileMode)]
-	-> Repo
-	-> (IO (Maybe (RawFilePath, Maybe L.ByteString)) -> m ())
+	=> Repo
+	-> (
+	    ((v, Ref) -> IO ()) -- ^ call to feed values in
+	    -> IO () -- call once all values are fed in
+	    -> IO (Maybe (v, Maybe L.ByteString)) -- call to read results
+	    -> m ()
+	   )
 	-> m ()
-catObjectStream' l repo a = withCatObjectStream repo feeder $
-	\mv hout -> a (catObjectReader mv hout)
+catObjectStream' repo a = withCatObjectStream repo go
   where
-	feeder mv h = do
-		forM_ l $ \(f, sha, _) -> do
-			liftIO $ atomically $ snocTList mv (sha, f)
-			S8.hPutStrLn h (fromRef' sha)
-		hClose h
+	go c hin hout = a
+		(feeder c hin)
+		(hClose hin)
+		(catObjectReader c hout)
+	feeder c h (v, ref) = do
+		liftIO $ writeChan c (ref, v)
+		S8.hPutStrLn h (fromRef' ref)
 
-catObjectReader :: TList (Ref, a) -> Handle -> IO (Maybe (a, Maybe L.ByteString))
-catObjectReader mv h = ifM (hIsEOF h)
+catObjectReader :: Chan (Ref, a) -> Handle -> IO (Maybe (a, Maybe L.ByteString))
+catObjectReader c h = ifM (hIsEOF h)
 	( return Nothing
 	, do
-		(sha, f) <- liftIO $ atomically $ headTList mv
+		(ref, f) <- liftIO $ readChan c
 		resp <- S8.hGetLine h
-		case parseResp sha resp of
+		case parseResp ref resp of
 			Just r@(ParsedResp {}) -> do
 				content <- readObjectContent h r
 				return (Just (f, Just content))
@@ -341,11 +348,10 @@ catObjectReader mv h = ifM (hIsEOF h)
 withCatObjectStream
 	:: (MonadMask m, MonadIO m)
 	=> Repo
-	-> (TList a -> Handle -> IO ())
-	-> (TList a -> Handle -> m ())
+	-> (Chan a -> Handle -> Handle -> m ())
 	-> m ()
-withCatObjectStream repo feeder reader = assertLocal repo $
-	bracketIO start stop $ \(mv, _, _, hout, _) -> reader mv hout
+withCatObjectStream repo reader = assertLocal repo $
+	bracketIO start stop $ \(c, hin, hout, _) -> reader c hin hout
   where
 	params = 
 		[ Param "cat-file"
@@ -354,17 +360,15 @@ withCatObjectStream repo feeder reader = assertLocal repo $
 		]
 
 	start = do
-		mv <- liftIO $ atomically newTList
 		let p = gitCreateProcess params repo
 		(Just hin, Just hout, _, pid) <- createProcess p
 			{ std_in = CreatePipe
 			, std_out = CreatePipe
 			}
-		f <- async (feeder mv hin)
-		return (mv, f, hin, hout, pid)
+		c <- newChan
+		return (c, hin, hout, pid)
 	
-	stop (_, f, hin, hout, pid) = do
-		cancel f
+	stop (_, hin, hout, pid) = do
 		hClose hin
 		hClose hout
 		void $ checkSuccessProcess pid
