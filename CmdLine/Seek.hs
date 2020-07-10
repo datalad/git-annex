@@ -19,6 +19,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
+import qualified Git.Types as Git
 import Git.FilePath
 import qualified Limit
 import CmdLine.GitAnnex.Options
@@ -229,7 +230,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 						keyaction (k, mkActionItem k)
 					Nothing -> return ()
 				go reader
-		catObjectStream l (isJust . getk . LsTree.file) g go
+		catObjectStreamLsTree l (isJust . getk . LsTree.file) g go
 		liftIO $ void cleanup
 
 	runkeyaction getks = do
@@ -264,37 +265,55 @@ seekFiltered a fs = do
 	process matcher f =
 		whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
 
--- This is siginificantly faster than using lookupKey after seekFiltered.
+-- This is significantly faster than using lookupKey after seekFiltered.
 seekFilteredKeys :: (RawFilePath -> Key -> CommandSeek) -> Annex [(RawFilePath, Git.Sha, FileMode)] -> Annex ()
 seekFilteredKeys a fs = do
 	g <- Annex.gitRepo
-	catObjectStream' g $ \feeder closer reader -> do
-		tid <- liftIO . async =<< forkState (gofeed feeder closer)
-		goread reader
-		join (liftIO (wait tid))
+	matcher <- Limit.getMatcher
+	catObjectMetaDataStream g $ \mdfeeder mdcloser mdreader ->
+		catObjectStream g $ \feeder closer reader -> do
+			processertid <- liftIO . async =<< forkState
+				(gofeed matcher feeder closer mdfeeder mdcloser)
+			mdprocessertid <- liftIO . async =<< forkState
+				(mdprocess matcher mdreader feeder)
+			goread reader
+			join (liftIO (wait mdprocessertid))
+			join (liftIO (wait processertid))
   where
-	gofeed feeder closer = do
-		matcher <- Limit.getMatcher
+	gofeed matcher feeder closer mdfeeder mdcloser = do
 		l <- fs
-		forM_ l $ process matcher feeder
-		liftIO closer
-	
-	process matcher feeder (f, sha, mode) =
-		-- TODO handle non-symlink separately to avoid
-		-- catting large files
-		-- If the matcher needs to look up a key, it should be run
-		-- in goread, not here, and the key passed in. OTOH, if
-		-- the matcher does not need to look up a key, it's more
-		-- efficient to put it here, to avoid catting files that
-		-- will not be matched.
-		whenM (matcher $ MatchingFile $ FileInfo f f) $
-			liftIO $ feeder (f, sha)
+		forM_ l $ process matcher feeder mdfeeder
+		liftIO $ void closer
+		liftIO $ void mdcloser
 
 	goread reader = liftIO reader >>= \case
 		Just (f, content) -> do
 			maybe noop (a f) (parseLinkTargetOrPointerLazy =<< content)
 			goread reader
-		_ -> return ()
+		Nothing -> return ()
+	
+	feedmatches matcher feeder f sha = 
+		whenM (matcher $ MatchingFile $ FileInfo f f) $
+			liftIO $ feeder (f, sha)
+
+	process matcher feeder mdfeeder (f, sha, mode) = case
+		Git.toTreeItemType mode of
+			Just Git.TreeSymlink -> 
+				feedmatches matcher feeder f sha
+			Just Git.TreeSubmodule -> return ()
+			-- Might be a pointer file, might be other
+			-- file in git, possibly large. Avoid catting
+			-- large files by first looking up the size.
+			Just _ -> liftIO $ mdfeeder (f, sha)
+			Nothing -> return ()
+
+	mdprocess matcher mdreader feeder = liftIO mdreader >>= \case
+		Just (f, Just (sha, size, _type))
+			| size < maxPointerSz -> do
+				feedmatches matcher feeder f sha
+				mdprocess matcher mdreader feeder
+		Just _ -> mdprocess matcher mdreader feeder
+		Nothing -> return ()
 
 seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> [WorkTreeItem] -> Annex [a]
 seekHelper c ww a l = do
