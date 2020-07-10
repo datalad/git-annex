@@ -43,7 +43,7 @@ To encrypt your git pushes, you can use
 [git-remote-gcrypt](https://spwhitton.name/tech/code/git-remote-gcrypt/)
 and prefix the repository url with "gcrypt::"
 
-To make git-annex encrypt the data it stores, you can use the encrption=
+To make git-annex encrypt the data it stores, you can use the encryption=
 configuration.
 
 An example of combining the two:

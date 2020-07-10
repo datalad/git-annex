@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="re: git-annex-cat"
+ date="2020-07-09T01:06:37Z"
+ content="""
+\"There would need to be a separate API for streaming, which some remotes will not have any hope of supporting\" -- there could be a default implementation using the current protocol (`TRANSFER RETRIEVE` to tempfile then `cat` and `rm`), which some remotes could override with a true streaming implementation.
+
+\"(1) some remotes would write to the named pipe; (2) some remotes would overwrite it with a file; (3) some remotes would open it, try to seek around as they do non-sequential recieves, and hang or something; (3) some remotes would maybe open and write to it, but would no longer be able to resume interrupted transfers, since they would I guess see its size as 0\" -- there could be a config flag to tell git-annex to assume that a given (legacy) remote does (1), at user's own risk.  Am I wrong to think (1) holds for most legacy remotes?
+ 
+"""]]

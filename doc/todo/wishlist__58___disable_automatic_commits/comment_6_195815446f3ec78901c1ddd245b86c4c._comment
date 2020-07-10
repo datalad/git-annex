@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="Update on my auto-commit / auto-sync scripts"
+ date="2020-07-09T14:23:14Z"
+ content="""
+I've moved the location of my [`git-auto-commit`](https://github.com/aspiers/git-config/blob/master/bin/git-auto-commit) and [`auto-commit-daemon` wrapper](https://github.com/aspiers/git-config/blob/master/bin/auto-commit-daemon), and [added support for autocommit policy](https://github.com/aspiers/git-config/commit/f1898f3c6476dd06b68ca35c79a0e95e4fb4b0cb) based an `autocommit` [git attribute](https://git-scm.com/docs/gitattributes).
+
+For example:
+
+    $ echo \"*.org autocommit=min-age=+5m\" > .gitattributes
+
+will ensure that all `.org` files last committed and modified more than 5 minutes ago will be automatically committed by the next `git auto-commit` run in this repo.
+
+In the future I can imagine adding support for more sophisticated auto-commit policies.
+
+Here's an example of the kind of systemd unit service file I put in `~/.config/systemd/user` so that I can control the daemon via `systemctl --user`:
+
+```  
+[Service]
+ExecStart=/bin/sh -c \"/home/adam/bin/auto-commit-daemon /home/adam/myrepo\"
+Restart=always
+NoNewPrivileges=true
+SyslogIdentifier=auto-commit-myrepo
+EnvironmentFile=/home/adam/myrepo/.autocommit
+
+[Install]
+WantedBy=multi-user.target
+```
+
+and `~/myrepo/.autocommit` contains `SLEEP=1m` so that the daemon wrapper runs `git auto-commit` every minute.
+
+I couple this with another simple [`auto-sync-daemon` script](https://github.com/aspiers/git-config/blob/master/bin/auto-sync-daemon) which uses `inotifywait` to trigger invocations of `git annex sync` whenever `master` or `synced/master` change.  Doing this across multiple remotes effectively achieves a poor man's [[assistant]].  (Incidentally, I use `mr`, one of Joey's other hacks, to [automatically set up and manage a systemd daemon for each repo](https://github.com/aspiers/mr-config/commit/80739c1e7f94423d588c4172e39508692d89f913)).
+
+... **BUT**, I really wish this was supported natively in `git-annex` instead.  I've kind of had to reinvent the base functionality of the assistant just to get this autocommit policy feature.  It was painful, but still easier than learning Haskell and the `git-annex` codebase.
+"""]]
