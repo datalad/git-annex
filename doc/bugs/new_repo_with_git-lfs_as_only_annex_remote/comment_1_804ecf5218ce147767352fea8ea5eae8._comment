@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-07-10T20:05:09Z"
+ content="""
+It seems to me there are two possible mistakes you could have made, both
+of which are much more likely than a bug in git-annex. They are:
+
+1. You forgot to push the git-annex branch to origin, so your clone was not
+   able to see it.
+
+2. When you say you "set up the same git-lfs special remote" again,
+   you mean you used `git-annex initremote` again. Which sets up a
+   *different* remote with a different uuid. The right thing to do would be
+   to use `git annex enableremote`. (Or indeed to get git-annex
+   auto-enable the git-lfs special remote when it sees you cloned the same
+   url that was used to set it up)
+
+If you still think you have a bug, you'll need to show me a list of
+commands that I can use to reproduce the bug.
+"""]]
