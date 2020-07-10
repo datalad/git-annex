@@ -30,7 +30,7 @@ import Logs.Transfer
 import Remote.List
 import qualified Remote
 import Annex.CatFile
-import Git.CatFile
+import Git.CatFile (catObjectStreamLsTree, catObjectStream)
 import Annex.CurrentBranch
 import Annex.Content
 import Annex.Link
@@ -270,21 +270,16 @@ seekFilteredKeys :: (RawFilePath -> Key -> CommandSeek) -> Annex [(RawFilePath, 
 seekFilteredKeys a fs = do
 	g <- Annex.gitRepo
 	matcher <- Limit.getMatcher
-	catObjectMetaDataStream g $ \mdfeeder mdcloser mdreader ->
-		catObjectStream g $ \feeder closer reader -> do
-			processertid <- liftIO . async =<< forkState
-				(gofeed matcher feeder closer mdfeeder mdcloser)
-			mdprocessertid <- liftIO . async =<< forkState
-				(mdprocess matcher mdreader feeder)
-			goread reader
-			join (liftIO (wait mdprocessertid))
-			join (liftIO (wait processertid))
+	catObjectStream g $ \feeder closer reader -> do
+		processertid <- liftIO . async =<< forkState
+			(gofeed matcher feeder closer)
+		goread reader
+		join (liftIO (wait processertid))
   where
-	gofeed matcher feeder closer mdfeeder mdcloser = do
+	gofeed matcher feeder closer = do
 		l <- fs
-		forM_ l $ process matcher feeder mdfeeder
-		liftIO $ void closer
-		liftIO $ void mdcloser
+		forM_ l $ process matcher feeder
+		liftIO closer
 
 	goread reader = liftIO reader >>= \case
 		Just (f, content) -> do
@@ -296,7 +291,7 @@ seekFilteredKeys a fs = do
 		whenM (matcher $ MatchingFile $ FileInfo f f) $
 			liftIO $ feeder (f, sha)
 
-	process matcher feeder mdfeeder (f, sha, mode) = case
+	process matcher feeder (f, sha, mode) = case
 		Git.toTreeItemType mode of
 			Just Git.TreeSymlink -> 
 				feedmatches matcher feeder f sha
@@ -304,16 +299,11 @@ seekFilteredKeys a fs = do
 			-- Might be a pointer file, might be other
 			-- file in git, possibly large. Avoid catting
 			-- large files by first looking up the size.
-			Just _ -> liftIO $ mdfeeder (f, sha)
+			Just _ -> catObjectMetaData sha >>= \case
+				Just (_, sz, _) | sz <= maxPointerSz -> 
+					feedmatches matcher feeder f sha
+				_ -> return ()
 			Nothing -> return ()
-
-	mdprocess matcher mdreader feeder = liftIO mdreader >>= \case
-		Just (f, Just (sha, size, _type))
-			| size < maxPointerSz -> do
-				feedmatches matcher feeder f sha
-				mdprocess matcher mdreader feeder
-		Just _ -> mdprocess matcher mdreader feeder
-		Nothing -> return ()
 
 seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> [WorkTreeItem] -> Annex [a]
 seekHelper c ww a l = do
