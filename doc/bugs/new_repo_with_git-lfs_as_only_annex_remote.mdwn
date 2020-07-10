@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+Setting up a new repo with an existing git-lfs as its only annex remote doesn't find the annex files.
+
+### What steps will reproduce the problem?
+
+This is all with encryption=none
+
+* set up repo w/ lfs-enabled origin.
+* annex a file, commit, push.
+* set up git-lfs special remote, and git annex copy --to it.
+
+Now
+
+* clone origin.
+* set up the same git-lfs special remote.
+* oops: git annex get says no available copies!
+
+### What version of git-annex are you using? On what operating system?
+
+* Debian GNU/Linux (testing)
+* git 1:2.27.0-1
+* git-annex 8.20200330-1
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use it all the time for lots of files, git-annex is great! Hoping to migrate off my own ancient server to a gitlab one maintained by somebody else, mainly because it's backed up. But would prefer to stick with git-annex instead of having to migrate to horrible git-lfs.
