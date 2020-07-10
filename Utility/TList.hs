@@ -36,6 +36,19 @@ type TList a = TMVar (D.DList a)
 newTList :: STM (TList a)
 newTList = newEmptyTMVar
 
+{- Takes the head of the TList, leaving the rest.
+ - Blocks when empty.
+ -
+ - O(n) due to use of D.tail
+ -}
+headTList :: TList a -> STM a
+headTList tlist = do
+	dl <- takeTMVar tlist
+	let !dl' = D.tail dl
+	unless (emptyDList dl') $
+		putTMVar tlist dl'
+	return (D.head dl)
+
 {- Gets the contents of the TList. Blocks when empty.
  - TList is left empty. -}
 getTList :: TList a -> STM [a]
@@ -60,7 +73,9 @@ takeTList tlist = maybe [] D.toList <$> tryTakeTMVar tlist
 readTList :: TList a -> STM [a]
 readTList tlist = maybe [] D.toList <$> tryReadTMVar tlist
 
-{- Mutates a TList. -}
+{- Mutates a TList.
+ -
+ - O(n) due to the use of emptyDList -}
 modifyTList :: TList a -> (D.DList a -> D.DList a) -> STM ()
 modifyTList tlist a = do
 	dl <- fromMaybe D.empty <$> tryTakeTMVar tlist
@@ -69,8 +84,9 @@ modifyTList tlist a = do
 	 - Thus attempts to read it automatically block. -}
 	unless (emptyDList dl') $
 		putTMVar tlist dl'
-  where
-	emptyDList = D.list True (\_ _ -> False)
+
+emptyDList :: D.DList a -> Bool
+emptyDList = D.list True (\_ _ -> False)
 
 consTList :: TList a -> a -> STM ()
 consTList tlist v = modifyTList tlist $ \dl -> D.cons v dl
@@ -80,6 +96,3 @@ snocTList tlist v = modifyTList tlist $ \dl -> D.snoc dl v
 
 appendTList :: TList a -> [a] -> STM ()
 appendTList tlist l = modifyTList tlist $ \dl -> D.append dl (D.fromList l)
-
-headTList :: TList a -> STM a
-headTList tlist = D.head <$> readTMVar tlist
