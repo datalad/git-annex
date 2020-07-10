@@ -22,9 +22,13 @@ only gets the size of the blob, not its content.
 
 > This was a win! Nearly 2x faster `git-annex get` seeking.
 
-Also, limits that look up keys still do, before the keys are looked up
-efficiently. Avoiding that would speed up --in etc, probably another
-1.5x-2x speedup when such limits are used. What that optimisation needs
-is a way to tell if the current limit needs the key or not.
-If it does, then match on it after getting the key, otherwise before
-getting the key.
+Some calls to ifAnnexed, whenAnnexed, lookupKey remain, and the above could
+be used to remove them and make it faster. In particular, Command.Sync has
+a ifAnnexed.
+
+Also, limits that look up keys still do a key lookup, before the key is
+looked up efficiently. (Before these changes, the same key lookup was done
+2x too..) Avoiding that would speed up --in etc, probably another 1.5x-2x
+speedup when such limits are used. What that optimisation needs is a way to
+tell if the current limit needs the key or not. If it does, then match on
+it after getting the key, otherwise before getting the key.
