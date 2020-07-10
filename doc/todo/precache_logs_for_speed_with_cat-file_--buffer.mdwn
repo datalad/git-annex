@@ -19,3 +19,16 @@ A complication is that, non-symlinks could be large files that are not
 annexed but in git; don't want to cat those when looking for annex links.
 That would probably need pre-filtering through a cat-file --buffer that
 only gets the size of the blob, not its content.
+
+> WIP implementation in the `streamkeys` branch is a win! Nearly 2x faster
+> `git-annex get` seeking. It needs more work, to avoid catting large
+> non-annexex files.
+> 
+> And, only `git-annex get` uses it, other commands need to be converted.
+> 
+> Also, limits that look up keys still do, before they're looked up
+> efficiently. Avoiding that would speed up --in etc, probably another
+> 1.5x-2x speedup when such limits are used. What that optimisation needs
+> is a way to tell if the current limit needs the key or not.
+> If it does, then match on it after getting the key, otherwise before
+> getting the key.
