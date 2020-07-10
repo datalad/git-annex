@@ -4,17 +4,18 @@ that ls-files the worktree may be sped up by using cat-file --buffer
 to get location logs (and maybe other logs) more efficiently,
 and precache them.
 
-Unlike --all, each file's blob will need to be itself catted with cat-file
-to find the key, before passing that to cat-file --buffer. Currently that's
-done later by lookupFile, so things like withFilesInGit will need to be
-changed to pass the Key along. 
+> The precachelog branch adds location log precaching for `git annex get`
+> only. But it benchmarks 4x *slower*. (Even if it were faster, it would
+> have needed more work, because limits are matched before location log
+> precaching, so if any limit like --in is used that uses the location
+> log, it will actually be read twice.) This is a surprising result,
+> and I don't understand why it's slower, but backburnered this
+> optimisation for now.
 
-Probably that extra round trip means the performance improvement will not
-be as good as --all's was, but it could still be significant.
-
-> Actually, the key lookup could use the same --buffer trick! 
-> Use inRepoDetails to list files and shas, pass through cat-file to get keys,
-> and then pass the location log for each key through cat-file to precache logs.
-
-The streamkeys branch has a start at some work on this, but I got fairly
-lost in the weeds, so don't expect much from that attempt. --[[Joey]]
+Another thing that the same cat-file --buffer approach could be used with
+is to cat the annex links. Git.LsFiles.inRepoDetails provides the Sha
+of file contents, which can be fed through cat-file --buffer to get keys.
+A complication is that, non-symlinks could be large files that are not
+annexed but in git; don't want to cat those when looking for annex links.
+That would probably need pre-filtering through a cat-file --buffer that
+only gets the size of the blob, not its content.
