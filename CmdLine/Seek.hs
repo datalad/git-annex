@@ -29,25 +29,35 @@ import Logs.Transfer
 import Remote.List
 import qualified Remote
 import Annex.CatFile
-import Git.CatFile (catObjectStream)
+import Git.CatFile
 import Annex.CurrentBranch
 import Annex.Content
+import Annex.Link
 import Annex.InodeSentinal
+import Annex.Concurrent
 import qualified Annex.Branch
 import qualified Annex.BranchState
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
+import Utility.Tuple
+
+import Control.Concurrent.Async
+import System.Posix.Types
 
 withFilesInGit :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesInGit ww a l = seekActions $ prepFiltered a $
-	seekHelper ww LsFiles.inRepo l
+withFilesInGit ww a l = seekFiltered a $
+	seekHelper id ww LsFiles.inRepo l
+
+withFilesInGitAnnex :: WarnUnmatchWhen -> (RawFilePath -> Key -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitAnnex ww a l = seekFiltered' a $
+	seekHelper fst3 ww LsFiles.inRepoDetails l
 
 withFilesInGitNonRecursive :: WarnUnmatchWhen -> String -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
 withFilesInGitNonRecursive ww needforce a l = ifM (Annex.getState Annex.force)
 	( withFilesInGit ww a l
 	, if null l
 		then giveup needforce
-		else seekActions $ prepFiltered a (getfiles [] l)
+		else seekFiltered a (getfiles [] l)
 	)
   where
 	getfiles c [] = return (reverse c)
@@ -71,8 +81,8 @@ withFilesNotInGit  a l = go =<< seek
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie
 			<$> LsFiles.notInRepo [] force (map (\(WorkTreeItem f) -> toRawFilePath f) l) g
-	go fs = seekActions $ prepFiltered a $
-		return $ concat $ segmentPaths (map (\(WorkTreeItem f) -> toRawFilePath f) l) fs
+	go fs = seekFiltered a $
+		return $ concat $ segmentPaths id (map (\(WorkTreeItem f) -> toRawFilePath f) l) fs
 
 withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
@@ -94,21 +104,21 @@ withPathContents a params = do
 		}
 
 withWords :: ([String] -> CommandSeek) -> CmdParams -> CommandSeek
-withWords a params = seekActions $ return [a params]
+withWords a params = a params
 
 withStrings :: (String -> CommandSeek) -> CmdParams -> CommandSeek
-withStrings a params = seekActions $ return $ map a params
+withStrings a params = sequence_ $ map a params
 
 withPairs :: ((String, String) -> CommandSeek) -> CmdParams -> CommandSeek
-withPairs a params = seekActions $ return $ map a $ pairs [] params
+withPairs a params = sequence_ $ map a $ pairs [] params
   where
 	pairs c [] = reverse c
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = giveup "expected pairs"
 
 withFilesToBeCommitted :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesToBeCommitted a l = seekActions $ prepFiltered a $
-	seekHelper WarnUnmatchWorkTreeItems (const LsFiles.stagedNotDeleted) l
+withFilesToBeCommitted a l = seekFiltered a $
+	seekHelper id WarnUnmatchWorkTreeItems (const LsFiles.stagedNotDeleted) l
 
 isOldUnlocked :: RawFilePath -> Annex Bool
 isOldUnlocked f = liftIO (notSymlink f) <&&> 
@@ -117,11 +127,10 @@ isOldUnlocked f = liftIO (notSymlink f) <&&>
 {- unlocked pointer files that are staged, and whose content has not been
  - modified-}
 withUnmodifiedUnlockedPointers :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withUnmodifiedUnlockedPointers ww a l = seekActions $
-	prepFiltered a unlockedfiles
+withUnmodifiedUnlockedPointers ww a l = seekFiltered a unlockedfiles
   where
 	unlockedfiles = filterM isUnmodifiedUnlocked 
-		=<< seekHelper ww (const LsFiles.typeChangedStaged) l
+		=<< seekHelper id ww (const LsFiles.typeChangedStaged) l
 
 isUnmodifiedUnlocked :: RawFilePath -> Annex Bool
 isUnmodifiedUnlocked f = catKeyFile f >>= \case
@@ -130,11 +139,11 @@ isUnmodifiedUnlocked f = catKeyFile f >>= \case
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesMaybeModified ww a params = seekActions $
-	prepFiltered a $ seekHelper ww LsFiles.modified params
+withFilesMaybeModified ww a params = seekFiltered a $
+	seekHelper id ww LsFiles.modified params
 
 withKeys :: (Key -> CommandSeek) -> CmdParams -> CommandSeek
-withKeys a l = seekActions $ return $ map (a . parse) l
+withKeys a l = sequence_ $ map (a . parse) l
   where
 	parse p = fromMaybe (giveup "bad key") $ deserializeKey p
 
@@ -251,23 +260,51 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		forM_ ts $ \(t, i) ->
 			keyaction (transferKey t, mkActionItem (t, i))
 
-prepFiltered :: (RawFilePath -> CommandSeek) -> Annex [RawFilePath] -> Annex [CommandSeek]
-prepFiltered a fs = do
+seekFiltered :: (RawFilePath -> CommandSeek) -> Annex [RawFilePath] -> Annex ()
+seekFiltered a fs = do
 	matcher <- Limit.getMatcher
-	map (process matcher) <$> fs
+	sequence_ =<< (map (process matcher) <$> fs)
   where
 	process matcher f =
 		whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
 
-seekActions :: Annex [CommandSeek] -> Annex ()
-seekActions gen = sequence_ =<< gen
+seekFiltered' :: (RawFilePath -> Key -> CommandSeek) -> Annex [(RawFilePath, Git.Sha, FileMode)] -> Annex ()
+seekFiltered' a fs = do
+	g <- Annex.gitRepo
+	catObjectStream' g $ \feeder closer reader -> do
+		tid <- liftIO . async =<< forkState (gofeed feeder closer)
+		goread reader
+		join (liftIO (wait tid))
+  where
+	gofeed feeder closer = do
+		matcher <- Limit.getMatcher
+		l <- fs
+		forM_ l $ process matcher feeder
+		liftIO closer
+	
+	process matcher feeder (f, sha, mode) =
+		-- TODO handle non-symlink separately to avoid
+		-- catting large files
+		-- If the matcher needs to look up a key, it should be run
+		-- in goread, not here, and the key passed in. OTOH, if
+		-- the matcher does not need to look up a key, it's more
+		-- efficient to put it here, to avoid catting files that
+		-- will not be matched.
+		whenM (matcher $ MatchingFile $ FileInfo f f) $
+			liftIO $ feeder (f, sha)
 
-seekHelper :: WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([RawFilePath], IO Bool)) -> [WorkTreeItem] -> Annex [RawFilePath]
-seekHelper ww a l = do
+	goread reader = liftIO reader >>= \case
+		Just (f, content) -> do
+			maybe noop (a f) (parseLinkTargetOrPointerLazy =<< content)
+			goread reader
+		_ -> return ()
+
+seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> [WorkTreeItem] -> Annex [a]
+seekHelper c ww a l = do
 	os <- seekOptions ww
 	inRepo $ \g ->
 		concat . concat <$> forM (segmentXargsOrdered l')
-			(runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a os fs g) . map toRawFilePath)
+			(runSegmentPaths c (\fs -> Git.Command.leaveZombie <$> a os fs g) . map toRawFilePath)
   where
 	l' = map (\(WorkTreeItem f) -> f) l
 
