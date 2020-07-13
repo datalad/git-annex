@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-07-13T21:15:46Z"
+ content="""
+If rsync is truely what's hanging, then commit 4c9ad1de4 can't have changed
+anything to do with that. Seems more likely that the hang did not actually
+involve rsync (but the debug output makes it seem like it is), 
+or that the hang is not fully deterministic.
+
+Whatever it's hanging on in the first patch is apparently not involving
+rsync, because rsync has exited. And it doesn't make sense that the first
+patch would hang while the second one doesn't, they're doing identical
+things except for extra background thread cleanup in the second patch.
+
+As this stands, I don't feel confident enough that the second patch really
+fixes this to close this. Also I'm a little bit doubtful it's really
+correct, it seems possible it might cancel one of the threads before all
+output is processed by them. The first patch actually seems better.
+"""]]
