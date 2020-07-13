@@ -30,7 +30,7 @@ import Logs.Transfer
 import Remote.List
 import qualified Remote
 import Annex.CatFile
-import Git.CatFile (catObjectStreamLsTree, catObjectStream)
+import Git.CatFile
 import Annex.CurrentBranch
 import Annex.Content
 import Annex.Link
@@ -273,16 +273,16 @@ seekFilteredKeys a listfs = do
 	-- Run here, not in the async, because it could throw an exception
 	-- The list should be built lazily.
 	l <- listfs
-	catObjectStream g $ \feeder closer reader -> do
-		processertid <- liftIO . async =<< forkState
-			(gofeed l matcher feeder closer)
-		goread reader
-		join (liftIO (wait processertid))
+	catObjectMetaDataStream g $ \mdfeeder mdcloser mdreader ->
+		catObjectStream g $ \feeder closer reader -> do
+			processertid <- liftIO . async =<< forkState
+				(process matcher feeder mdfeeder mdcloser False l)
+			mdprocessertid <- liftIO . async =<< forkState
+				(mdprocess matcher mdreader feeder closer)
+			goread reader
+			join (liftIO (wait mdprocessertid))
+			join (liftIO (wait processertid))
   where
-	gofeed l matcher feeder closer =
-		forM_ l (process matcher feeder)
-			`finally` liftIO closer
-
 	goread reader = liftIO reader >>= \case
 		Just (f, content) -> do
 			maybe noop (a f) (parseLinkTargetOrPointerLazy =<< content)
@@ -293,19 +293,37 @@ seekFilteredKeys a listfs = do
 		whenM (matcher $ MatchingFile $ FileInfo f f) $
 			liftIO $ feeder (f, sha)
 
-	process matcher feeder (f, sha, mode) = case
-		Git.toTreeItemType mode of
-			Just Git.TreeSymlink -> 
-				feedmatches matcher feeder f sha
-			Just Git.TreeSubmodule -> return ()
+	process matcher feeder mdfeeder mdcloser seenpointer ((f, sha, mode):rest) =
+		case Git.toTreeItemType mode of
+			Just Git.TreeSymlink -> do
+				-- Once a pointer file has been seen,
+				-- symlinks have to be sent via the 
+				-- metadata processor too. That is slightly
+				-- slower, but preserves the requested
+				-- file order.
+				if seenpointer
+					then liftIO $ mdfeeder (f, sha)
+					else feedmatches matcher feeder f sha
+				process matcher feeder mdfeeder mdcloser seenpointer rest
+			Just Git.TreeSubmodule ->
+				process matcher feeder mdfeeder mdcloser seenpointer rest
 			-- Might be a pointer file, might be other
 			-- file in git, possibly large. Avoid catting
 			-- large files by first looking up the size.
-			Just _ -> catObjectMetaData sha >>= \case
-				Just (_, sz, _) | sz <= maxPointerSz -> 
-					feedmatches matcher feeder f sha
-				_ -> return ()
-			Nothing -> return ()
+			Just _ -> do
+				liftIO $ mdfeeder (f, sha)
+				process matcher feeder mdfeeder mdcloser True rest
+			Nothing ->
+				process matcher feeder mdfeeder mdcloser seenpointer rest
+	process _ _ _ mdcloser _ [] = liftIO $ void mdcloser
+
+	mdprocess matcher mdreader feeder closer = liftIO mdreader >>= \case
+		Just (f, Just (sha, size, _type))
+			| size < maxPointerSz -> do
+				feedmatches matcher feeder f sha
+				mdprocess matcher mdreader feeder closer
+		Just _ -> mdprocess matcher mdreader feeder closer
+		Nothing -> liftIO $ void closer
 
 seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> [WorkTreeItem] -> Annex [a]
 seekHelper c ww a l = do
