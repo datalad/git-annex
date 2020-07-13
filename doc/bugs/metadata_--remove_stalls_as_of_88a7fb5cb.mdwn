@@ -1,0 +1,52 @@
+With 88a7fb5cb (convert all applicable commands to new 2x faster
+annexed file seeking, 2020-07-10), the following script hangs on the
+last command.
+
+[[!format sh """
+cd "$(mktemp -d ${TMPDIR:-/tmp}/ga-metadata-XXXXXXX)"
+git init
+git annex init
+echo 0 >f0
+echo 1 >f1
+git annex add f0 f1
+git commit -mc0
+git annex metadata --debug --remove a .
+"""]]
+
+Here's the output, where the git-ls-files call is the spot of the
+hang:
+
+```
+[... 13 lines ...]
+[2020-07-10 21:04:33.030754298] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-07-10 21:04:33.032022677] process done ExitSuccess
+[2020-07-10 21:04:33.032205649] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-07-10 21:04:33.033970479] process done ExitSuccess
+[2020-07-10 21:04:33.034308573] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2020-07-10 21:04:33.035040652] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-07-10 21:04:33.037070231] process done ExitSuccess
+[2020-07-10 21:04:33.037281793] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-07-10 21:04:33.038995286] process done ExitSuccess
+[2020-07-10 21:04:33.03938464] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..d39f6bdff82a20be7edf466ba572877de0db0daf","--pretty=%H","-n1"]
+[2020-07-10 21:04:33.041697801] process done ExitSuccess
+[2020-07-10 21:04:33.042060234] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-07-10 21:04:33.047868787] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-07-10 21:04:33.049298291] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--","."]
+[2020-07-10 21:04:42.432722123] process done ExitFailure (-2)
+```
+
+On the parent of the commit, this completes fine, with the expected
+"use --force" failure.
+
+```
+[... 13 lines ...]
+[2020-07-10 21:02:36.753459763] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-07-10 21:02:36.756144724] process done ExitSuccess
+[2020-07-10 21:02:36.756300697] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-07-10 21:02:36.758083727] process done ExitSuccess
+[2020-07-10 21:02:36.758319366] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","-z","--cached","--","."]
+git-annex: Not recursively setting metadata. Use --force to do that.
+```
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
