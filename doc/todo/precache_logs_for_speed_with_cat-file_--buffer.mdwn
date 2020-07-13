@@ -11,6 +11,11 @@ and precache them.
 > log, it will actually be read twice.) This is a surprising result,
 > and I don't understand why it's slower, but backburnered this
 > optimisation for now.
+>
+> > Hmm, but `git annex get` does not need location log access when
+> > the object is already present. So that was the wrong thing to benchmark
+> > this with. `copy --to` would be a better benchmark. To speed up get,
+> > it would need to check inAnnex before caching the location log.
 
 Another thing that the same cat-file --buffer approach could be used with
 is to cat the annex links. Git.LsFiles.inRepoDetails provides the Sha
