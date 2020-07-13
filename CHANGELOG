@@ -23,15 +23,15 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
     S3 (with versioning=yes), git-lfs, tahoe
   * Fix reversion that broke passing annex.* and remote.*.annex-*
     git configs with -c. (Since version 8.20200330.)
-  * Bring back git-annex branch read cache. This speeds up some operations;
-    git-annex sync --content --all gets 20% faster.
+  * Bring back git-annex branch read cache. This speeds up some operations,
+    eg git-annex sync --content --all gets 20% faster.
   * Fix a recently introduced bug that could cause a "fork: resource exhausted"
     after getting several thousand files.
   * Sped up the --all option by 2x to 16x by using git cat-file --buffer.
     Thanks to Lukey for finding this optimisation.
   * Sped up seeking for annexed files to operate on by a factor of nearly 2x.
-  * Sped up sync --content by 100% (without --all).
-  * Sped up some other commands like fsck --fast and whereis by around 50%.
+  * Sped up sync --content by 2x and other commands like fsck --fast and
+    whereis by around 50%, by using git cat-file --buffer.
   * fsck: Detect if WORM keys contain a carriage return, and recommend
     upgrading the key. (git-annex could have maybe created such keys back
     in 2013).
