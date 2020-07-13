@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-07-13T15:53:56Z"
+ content="""
+Hmm, my guess is that the significant and unmentioned change in that commit
+is, it waits for one of the stdout or stderr to be fully processed before
+waiting on the process to terminate. So if it somehow fails to detect EOF
+(maybe because old rsync and ssh somehow end up with the handle not being
+closed when rsync exits eg if a background ssh process inherited them?) it
+would block forever.
+
+If so, this patch would avoid the hang (and if this doesn't fix it, the
+problem must be somehow due to using with CreateProcess).
+
+	diff --git a/Utility/Metered.hs b/Utility/Metered.hs
+	index 1c35a9a05..8e363681d 100644
+	--- a/Utility/Metered.hs
+	+++ b/Utility/Metered.hs
+	@@ -314,9 +314,8 @@ outputFilter cmd params environ outfilter errfilter =
+	 	catchMaybeIO $ withCreateProcess p go
+	   where
+	 	go _ (Just outh) (Just errh) pid = do
+	-		void $ concurrently 
+	-			(tryIO (outfilter outh) >> hClose outh)
+	-			(tryIO (errfilter errh) >> hClose errh)
+	+		void $ async $ tryIO (outfilter outh) >> hClose outh
+	+		void $ async $ tryIO (errfilter errh) >> hClose errh
+	 		waitForProcess pid
+	 	go _ _ _ _ = error "internal"
+ 
+If that patch does avoid the hang, this one would be worth a try
+as it tries to accomplish the goal of the patch in a better way:
+
+	diff --git a/Utility/Metered.hs b/Utility/Metered.hs
+	index 1c35a9a05..bd265ae09 100644
+	--- a/Utility/Metered.hs
+	+++ b/Utility/Metered.hs
+	@@ -313,11 +313,10 @@ outputFilter
+	 outputFilter cmd params environ outfilter errfilter = 
+	 	catchMaybeIO $ withCreateProcess p go
+	   where
+	-	go _ (Just outh) (Just errh) pid = do
+	-		void $ concurrently 
+	-			(tryIO (outfilter outh) >> hClose outh)
+	-			(tryIO (errfilter errh) >> hClose errh)
+	-		waitForProcess pid
+	+	go _ (Just outh) (Just errh) pid =
+	+		withAsync (tryIO (outfilter outh) >> hClose outh) $ const $
+	+			withAsync (tryIO (errfilter errh) >> hClose errh) $ const $
+	+				waitForProcess pid
+	 	go _ _ _ _ = error "internal"
+	 	
+	 	p = (proc cmd (toCommand params))
+
+I can try these if necessary but don't have docker handy,
+so maybe you're in a better position to?
+"""]]
