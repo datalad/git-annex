@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 3"
+ date="2020-07-13T19:04:45Z"
+ content="""
+Okay, short summary:
+
+  * The demo script above no longer hangs as of 4c9ad1de4
+    (optimisation: stream keys through git cat-file --buffer,
+    2020-07-10).
+
+  * Going to the parent of 4c9ad1de4 (1df9e72), the hang is still
+    there.
+
+  * The first patch advances the output by one line but still hangs,
+    with the line at the time of the hang being \"process done
+    ExitSuccess\".
+
+  * The second patch removes the hang (again, this is from the parent
+    of 4c9ad1de4).
+
+---
+
+The above is all based on working in a Xenial VM, building from source
+with stack.  The Docker-based approach above provides a reproducer,
+but it depends on the autobuild downloads.  It'd need quite a bit more
+work to have the full stack setup there.  However, running the above
+script without Docker caching, I've confirmed the most recent
+autobuild, which has 4c9ad1de4, no longer hangs.
+
+It seems at least plausible that 4c9ad1de4 affected the stall because
+it looks to deal with git-annex-get.  However, perhaps that's just
+resolving the issue for this particular case, and it still makes sense
+to apply the second the patch?
+
+"""]]
