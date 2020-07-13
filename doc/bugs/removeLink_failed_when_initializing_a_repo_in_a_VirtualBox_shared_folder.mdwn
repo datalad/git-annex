@@ -53,3 +53,6 @@ git-annex: .git/annex/othertmp/jlog12400-5: removeLink: resource busy (Text file
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Certainly.  Right now trying to organize a new set of backups from multiple places, which without git-annex would be an organizational nightmare.
+
+> Closing this because the FS seems too buggy to try to support.
+> [[done]] --[[Joey]]
