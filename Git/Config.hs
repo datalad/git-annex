@@ -206,7 +206,7 @@ coreBare = "core.bare"
 
 {- Runs a command to get the configuration of a repo,
  - and returns a repo populated with the configuration, as well as the raw
- - output and any standard output of the command. -}
+ - output and any standard output and standard error of the command. -}
 fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
 fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
   where
