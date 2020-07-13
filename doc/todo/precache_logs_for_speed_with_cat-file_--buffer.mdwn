@@ -35,9 +35,9 @@ only gets the size of the blob, not its content.
 
 > This was a win! Nearly 2x faster `git-annex get` seeking.
 
-Some calls to ifAnnexed, whenAnnexed, lookupKey remain, and the above could
-be used to remove them and make it faster. In particular, Command.Sync has
-a ifAnnexed.
+Some calls to lookupKey remain, and the above could
+be used to remove them and make it faster. The ones in Annex.View and
+Command.Unused seem most likely to be able to be converted.
 
 Also, limits that look up keys still do a key lookup, before the key is
 looked up efficiently. (Before these changes, the same key lookup was done

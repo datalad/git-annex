@@ -70,6 +70,7 @@ import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
 import Utility.Process.Transcript
+import Utility.Tuple
 
 import Control.Concurrent.MVar
 import qualified Data.Map as M
@@ -652,21 +653,20 @@ seekSyncContent o rs currbranch = do
 	liftIO $ not <$> isEmptyMVar mvar
   where
 	seekworktree mvar l bloomfeeder = 
-		seekHelper id ww LsFiles.inRepo l
-			>>= gofiles bloomfeeder mvar
+		seekFilteredKeys (gofile bloomfeeder mvar) $
+			seekHelper fst3 ww LsFiles.inRepoDetails l
 
-	seekincludinghidden origbranch mvar l bloomfeeder = 
-		seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
-			>>= gofiles bloomfeeder mvar
+	seekincludinghidden origbranch mvar l bloomfeeder =
+		seekFiltered (\f -> ifAnnexed f (gofile bloomfeeder mvar f) noop) $
+			seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
 
 	ww = WarnUnmatchLsFiles
 
-	gofiles bloomfeeder mvar = mapM_ $ \f ->
-		ifAnnexed f
-			(go (Right bloomfeeder) mvar (AssociatedFile (Just f)))
-			noop
+	gofile bloom mvar f k = 
+		go (Right bloom) mvar (AssociatedFile (Just f)) k
 	
-	gokey mvar bloom (k, _) = go (Left bloom) mvar (AssociatedFile Nothing) k
+	gokey mvar bloom (k, _) =
+		go (Left bloom) mvar (AssociatedFile Nothing) k
 
 	go ebloom mvar af k = do
 		-- Run syncFile as a command action so file transfers run
