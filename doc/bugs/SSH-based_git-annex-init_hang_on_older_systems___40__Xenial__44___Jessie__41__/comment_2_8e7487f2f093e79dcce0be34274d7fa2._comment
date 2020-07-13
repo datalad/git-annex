@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 2"
+ date="2020-07-13T19:27:17Z"
+ content="""
+In a Xenial VM, I tested that patch on top of today's 4dd5cfa46, which
+still shows the hang.  The patch indeed resolves the hang.  Thanks!
+
+"""]]
