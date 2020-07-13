@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-07-13T16:48:04Z"
+ content="""
+Hmm, I do see similarities with this and the rsync hang. This one
+also has it waiting on threads that read from stdout and stderr.
+
+Since it was already reading stdout, it must not be the stdout handle
+that's not getting closed. If my guess about an unclosed handle
+for the rsync bug is right, it must be the stderr handle.
+
+And that kind of makes sense, ssh might start a daemon-like process
+(for connection caching), but that old version might have let it inherit
+stderr rather than fully daemonizing.
+
+If that's the case, this patch would solve it:
+
+	diff --git a/Git/Config.hs b/Git/Config.hs
+	index 9e2ac2bd8..45cf4aa8f 100644
+	--- a/Git/Config.hs
+	+++ b/Git/Config.hs
+	@@ -22,6 +22,7 @@ import Git.Types
+	 import qualified Git.Command
+	 import qualified Git.Construct
+	 import Utility.UserInfo
+	+import Utility.ThreadScheduler
+	 
+	 {- Returns a single git config setting, or a fallback value if not set. -}
+	 get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
+	@@ -214,13 +215,20 @@ fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
+	 		{ std_out = CreatePipe
+	 		, std_err = CreatePipe
+	 		}
+	-	go _ (Just hout) (Just herr) pid = do
+	-		(val, err) <- concurrently 
+	-			(S.hGetContents hout)
+	-			(S.hGetContents herr)
+	-		forceSuccessProcess p pid
+	-		r' <- store val st r
+	-		return (r', val, err)
+	+	go _ (Just hout) (Just herr) pid =
+	+		withAsync (S.hGetContents herr) $ \errreader -> do
+	+			val <- S.hGetContents hout
+	+			-- In case the process exits while something else,
+	+			-- like a background process, keeps the stderr handle
+	+			-- open, don't block forever waiting for stderr.
+	+			-- A few seconds after finishing reading stdout
+	+			-- should get any error message.
+	+			err <- either id id <$> 
+	+				wait errreader
+	+					`race` (threadDelaySeconds (Seconds 2) >> return mempty)
+	+			forceSuccessProcess p pid
+	+			r' <- store val st r
+	+			return (r', val, err)
+	 	go _ _ _ _ = error "internal"
+	 
+	 {- Reads git config from a specified file and returns the repo populated
+"""]]
