@@ -50,3 +50,5 @@ git-annex: Not recursively setting metadata. Use --force to do that.
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

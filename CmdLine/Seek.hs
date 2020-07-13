@@ -267,19 +267,21 @@ seekFiltered a fs = do
 
 -- This is significantly faster than using lookupKey after seekFiltered.
 seekFilteredKeys :: (RawFilePath -> Key -> CommandSeek) -> Annex [(RawFilePath, Git.Sha, FileMode)] -> Annex ()
-seekFilteredKeys a fs = do
+seekFilteredKeys a listfs = do
 	g <- Annex.gitRepo
 	matcher <- Limit.getMatcher
+	-- Run here, not in the async, because it could throw an exception
+	-- The list should be built lazily.
+	l <- listfs
 	catObjectStream g $ \feeder closer reader -> do
 		processertid <- liftIO . async =<< forkState
-			(gofeed matcher feeder closer)
+			(gofeed l matcher feeder closer)
 		goread reader
 		join (liftIO (wait processertid))
   where
-	gofeed matcher feeder closer = do
-		l <- fs
-		forM_ l $ process matcher feeder
-		liftIO closer
+	gofeed l matcher feeder closer =
+		forM_ l (process matcher feeder)
+			`finally` liftIO closer
 
 	goread reader = liftIO reader >>= \case
 		Just (f, content) -> do
