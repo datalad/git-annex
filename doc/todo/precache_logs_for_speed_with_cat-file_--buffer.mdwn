@@ -16,6 +16,14 @@ and precache them.
 > > the object is already present. So that was the wrong thing to benchmark
 > > this with. `copy --to` would be a better benchmark. To speed up get,
 > > it would need to check inAnnex before caching the location log.
+> > 
+> > Benchmarking `copy --fast --to`, precaching location logs 
+> > did yield a 30% speedup, in a 10k repo where all objects were present.
+> > But, in a 10k repo where no objects were present, it was over 14x slower,
+> > again because the inAnnex check really needs to come before the
+> > location log precaching.
+> >
+> > So, this needs some more work, but is promising.
 
 Another thing that the same cat-file --buffer approach could be used with
 is to cat the annex links. Git.LsFiles.inRepoDetails provides the Sha
