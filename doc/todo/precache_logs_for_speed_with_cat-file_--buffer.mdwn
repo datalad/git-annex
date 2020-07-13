@@ -25,6 +25,22 @@ and precache them.
 > >
 > > So, this needs some more work, but is promising.
 
+> > > Second try at this, results:
+> > > 
+> > > * `get` in a full repo is not any slower. And presumably in an
+> > >   empty repo, `get` is faster, but I didn't try it and the transfers
+> > >   will dominate that anyway
+> > > * `sync --content` 2x speedup!
+> > > * `fsck --fast` 1.5x speedup
+> > > * `whereis` 1.5x speedup
+> > >
+> > > Still todo:
+> > > 
+> > > * move, copy, drop, and mirror were left not using the location log caching yet
+> > > * get is left with an unncessary inAnnex check so could be sped up
+> > >   a little bit more
+> > > 
+
 Another thing that the same cat-file --buffer approach could be used with
 is to cat the annex links. Git.LsFiles.inRepoDetails provides the Sha
 of file contents, which can be fed through cat-file --buffer to get keys.

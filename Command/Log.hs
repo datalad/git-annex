@@ -85,9 +85,15 @@ seek o = do
 	m <- Remote.uuidDescriptions
 	zone <- liftIO getCurrentTimeZone
 	let outputter = mkOutputter m zone o
+	let seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' (start o outputter)
+		, checkContentPresent = Nothing
+		-- the way this uses the location log would not be helped
+		-- by precaching the current value
+		, usesLocationLog = False
+		}
 	case (logFiles o, allOption o) of
-		(fs, False) -> withFilesInGitAnnex ww
-			(commandAction' (start o outputter))
+		(fs, False) -> withFilesInGitAnnex ww seeker
 			=<< workTreeItems ww fs
 		([], True) -> commandAction (startAll o outputter)
 		(_, True) -> giveup "Cannot specify both files and --all"

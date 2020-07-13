@@ -58,11 +58,17 @@ seek o = startConcurrency commandStages $
 			(whenAnnexed go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys o)
-			(withFilesInGitAnnex ww (commandAction' go))
+			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (dropFiles o)
   where
 	go = start o
 	ww = WarnUnmatchLsFiles
+
+	seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' go
+		, checkContentPresent = Nothing
+		, usesLocationLog = False
+		}
 
 start :: DropOptions -> RawFilePath -> Key -> CommandStart
 start o file key = start' o key afile ai

@@ -41,12 +41,17 @@ seek :: GetOptions -> CommandSeek
 seek o = startConcurrency downloadStages $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
 	let go = start o from
+	let seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' go
+		, checkContentPresent = Just False
+		, usesLocationLog = True
+		}
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt
 			(whenAnnexed go . toRawFilePath)
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
 			(commandAction . startKeys from)
-			(withFilesInGitAnnex ww (commandAction' go))
+			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (getFiles o)
   where
 	ww = WarnUnmatchLsFiles

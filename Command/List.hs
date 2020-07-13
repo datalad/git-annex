@@ -44,8 +44,12 @@ seek :: ListOptions -> CommandSeek
 seek o = do
 	list <- getList o
 	printHeader list
-	withFilesInGitAnnex ww (commandAction' (start list))
-		=<< workTreeItems ww (listThese o)
+	let seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' (start list)
+		, checkContentPresent = Nothing
+		, usesLocationLog = True
+		}
+	withFilesInGitAnnex ww seeker =<< workTreeItems ww (listThese o)
   where
 	ww = WarnUnmatchLsFiles
 

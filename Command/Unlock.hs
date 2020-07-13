@@ -27,10 +27,14 @@ mkcmd n d = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 	command n SectionCommon d paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = withFilesInGitAnnex ww (commandAction' start)
-	=<< workTreeItems ww ps
+seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
   where
 	ww = WarnUnmatchLsFiles
+	seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' start
+		, checkContentPresent = Nothing
+		, usesLocationLog = False
+		}
 
 start :: RawFilePath -> Key -> CommandStart
 start file key = ifM (isJust <$> isAnnexLink file)

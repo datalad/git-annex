@@ -44,13 +44,18 @@ seek :: MirrorOptions -> CommandSeek
 seek o = startConcurrency stages $ 
 	withKeyOptions (keyOptions o) False
 		(commandAction . startKey o (AssociatedFile Nothing))
-		(withFilesInGitAnnex ww (commandAction' (start o)))
+		(withFilesInGitAnnex ww seeker)
 		=<< workTreeItems ww (mirrorFiles o)
   where
 	stages = case fromToOptions o of
 		FromRemote _ -> downloadStages
 		ToRemote _ -> commandStages
 	ww = WarnUnmatchLsFiles
+	seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' (start o)
+		, checkContentPresent = Nothing
+		, usesLocationLog = False
+		}
 
 start :: MirrorOptions -> RawFilePath -> Key -> CommandStart
 start o file k = startKey o afile (k, ai)

@@ -28,11 +28,14 @@ cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = do
-	l <- workTreeItems ww ps
-	withFilesInGitAnnex ww (commandAction' start) l
+seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
   where
 	ww = WarnUnmatchLsFiles
+	seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' start
+		, checkContentPresent = Nothing
+		, usesLocationLog = False
+		}
 
 start :: RawFilePath -> Key -> CommandStart
 start file key = ifM (isJust <$> isAnnexLink file)

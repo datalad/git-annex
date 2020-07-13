@@ -652,8 +652,13 @@ seekSyncContent o rs currbranch = do
 	waitForAllRunningCommandActions
 	liftIO $ not <$> isEmptyMVar mvar
   where
-	seekworktree mvar l bloomfeeder = 
-		seekFilteredKeys (gofile bloomfeeder mvar) $
+	seekworktree mvar l bloomfeeder = do
+		let seeker = AnnexedFileSeeker
+			{ seekAction = gofile bloomfeeder mvar
+			, checkContentPresent = Nothing
+			, usesLocationLog = True
+			}
+		seekFilteredKeys seeker $
 			seekHelper fst3 ww LsFiles.inRepoDetails l
 
 	seekincludinghidden origbranch mvar l bloomfeeder =

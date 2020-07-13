@@ -92,9 +92,14 @@ seek o = startConcurrency commandStages $ do
 	u <- maybe getUUID (pure . Remote.uuid) from
 	checkDeadRepo u
 	i <- prepIncremental u (incrementalOpt o)
+	let seeker = AnnexedFileSeeker
+		{ seekAction = commandAction' (start from i)
+		, checkContentPresent = Just True
+		, usesLocationLog = True
+		}
 	withKeyOptions (keyOptions o) False
 		(\kai -> commandAction . startKey from i kai =<< getNumCopies)
-		(withFilesInGit ww $ commandAction . (whenAnnexed (start from i)))
+		(withFilesInGitAnnex ww seeker)
 		=<< workTreeItems ww (fsckFiles o)
 	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u

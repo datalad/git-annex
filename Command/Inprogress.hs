@@ -38,8 +38,12 @@ seek o = do
 			| otherwise -> commandAction stop
 		_ -> do
 			let s = S.fromList ts
-			withFilesInGitAnnex ww
-				(commandAction' (start s))
+			let seeker = AnnexedFileSeeker
+				{ seekAction = commandAction' (start s)
+				, checkContentPresent = Nothing
+				, usesLocationLog = False
+				}
+			withFilesInGitAnnex ww seeker
 				=<< workTreeItems ww (inprogressFiles o)
   where
 	ww = WarnUnmatchLsFiles

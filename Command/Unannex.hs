@@ -23,13 +23,19 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = (withFilesInGitAnnex ww (commandAction' start))
-	=<< workTreeItems ww ps
+seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
   where
 	ww = WarnUnmatchLsFiles
 
+seeker :: AnnexedFileSeeker
+seeker = AnnexedFileSeeker
+	{ seekAction = commandAction' start
+	, checkContentPresent = Nothing
+	, usesLocationLog = False
+	}
+
 start :: RawFilePath -> Key -> CommandStart
-start file key = stopUnless (inAnnex key) $
+start file key = 
 	starting "unannex" (mkActionItem (key, file)) $
 		perform file key
 

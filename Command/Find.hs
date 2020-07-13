@@ -13,7 +13,6 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 
 import Command
-import Annex.Content
 import Limit
 import Types.Key
 import Git.FilePath
@@ -55,24 +54,31 @@ parseFormatOption =
 
 seek :: FindOptions -> CommandSeek
 seek o = case batchOption o of
-	NoBatch -> withKeyOptions (keyOptions o) False
-		(commandAction . startKeys o)
-		(withFilesInGitAnnex ww (commandAction' go))
-		=<< workTreeItems ww (findThese o)
+	NoBatch -> do
+		islimited <- limited
+		let seeker = AnnexedFileSeeker
+			{ seekAction = commandAction' go
+			-- only files with content present are shown, unless
+			-- the user has requested others via a limit
+			, checkContentPresent = if islimited
+				then Nothing
+				else Just True
+			, usesLocationLog = False
+			}
+		withKeyOptions (keyOptions o) False
+			(commandAction . startKeys o)
+			(withFilesInGitAnnex ww seeker)
+			=<< workTreeItems ww (findThese o)
 	Batch fmt -> batchFilesMatching fmt
 		(whenAnnexed go . toRawFilePath)
   where
 	go = start o
 	ww = WarnUnmatchLsFiles
 
--- only files inAnnex are shown, unless the user has requested
--- others via a limit
 start :: FindOptions -> RawFilePath -> Key -> CommandStart
-start o file key =
-	stopUnless (limited <||> inAnnex key) $
-		startingCustomOutput key $ do
-			showFormatted (formatOption o) file $ ("file", fromRawFilePath file) : keyVars key
-			next $ return True
+start o file key = startingCustomOutput key $ do
+	showFormatted (formatOption o) file $ ("file", fromRawFilePath file) : keyVars key
+	next $ return True
 
 startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
 startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 

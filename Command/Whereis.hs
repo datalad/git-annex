@@ -55,10 +55,15 @@ seek o = do
 	case batchOption o of
 		Batch fmt -> batchFilesMatching fmt
 			(whenAnnexed go . toRawFilePath)
-		NoBatch -> 
+		NoBatch -> do
+			let seeker = AnnexedFileSeeker
+				{ seekAction = commandAction' go
+				, checkContentPresent = Nothing
+				, usesLocationLog = True
+				}
 			withKeyOptions (keyOptions o) False
 				(commandAction . startKeys o m)
-				(withFilesInGitAnnex ww (commandAction' go))
+				(withFilesInGitAnnex ww seeker)
 				=<< workTreeItems ww (whereisFiles o)
   where
 	ww = WarnUnmatchLsFiles

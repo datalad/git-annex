@@ -20,6 +20,7 @@ import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
 import qualified Git.Types as Git
+import qualified Git.Ref
 import Git.FilePath
 import qualified Limit
 import CmdLine.GitAnnex.Options
@@ -49,11 +50,17 @@ withFilesInGit :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeIt
 withFilesInGit ww a l = seekFiltered a $
 	seekHelper id ww LsFiles.inRepo l
 
-withFilesInGitAnnex :: WarnUnmatchWhen -> (RawFilePath -> Key -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+data AnnexedFileSeeker = AnnexedFileSeeker
+	{ seekAction :: RawFilePath -> Key -> CommandSeek
+	, checkContentPresent :: Maybe Bool
+	, usesLocationLog :: Bool
+	}
+
+withFilesInGitAnnex :: WarnUnmatchWhen -> AnnexedFileSeeker -> [WorkTreeItem] -> CommandSeek
 withFilesInGitAnnex ww a l = seekFilteredKeys a $
 	seekHelper fst3 ww LsFiles.inRepoDetails l
 
-withFilesInGitAnnexNonRecursive :: WarnUnmatchWhen -> String -> (RawFilePath -> Key -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesInGitAnnexNonRecursive :: WarnUnmatchWhen -> String -> AnnexedFileSeeker -> [WorkTreeItem] -> CommandSeek
 withFilesInGitAnnexNonRecursive ww needforce a l = ifM (Annex.getState Annex.force)
 	( withFilesInGitAnnex ww a l
 	, if null l
@@ -265,35 +272,72 @@ seekFiltered a fs = do
 	process matcher f =
 		whenM (matcher $ MatchingFile $ FileInfo f f) $ a f
 
--- This is significantly faster than using lookupKey after seekFiltered.
-seekFilteredKeys :: (RawFilePath -> Key -> CommandSeek) -> Annex [(RawFilePath, Git.Sha, FileMode)] -> Annex ()
-seekFilteredKeys a listfs = do
+-- This is significantly faster than using lookupKey after seekFiltered,
+-- because of the way data is streamed through git cat-file.
+--
+-- It can also precache location logs using the same efficient streaming.
+seekFilteredKeys :: AnnexedFileSeeker -> Annex [(RawFilePath, Git.Sha, FileMode)] -> Annex ()
+seekFilteredKeys seeker listfs = do
 	g <- Annex.gitRepo
 	matcher <- Limit.getMatcher
+	config <- Annex.getGitConfig
 	-- Run here, not in the async, because it could throw an exception
 	-- The list should be built lazily.
 	l <- listfs
 	catObjectMetaDataStream g $ \mdfeeder mdcloser mdreader ->
-		catObjectStream g $ \feeder closer reader -> do
+		catObjectStream g $ \ofeeder ocloser oreader -> do
 			processertid <- liftIO . async =<< forkState
-				(process matcher feeder mdfeeder mdcloser False l)
+				(process matcher ofeeder mdfeeder mdcloser False l)
 			mdprocessertid <- liftIO . async =<< forkState
-				(mdprocess matcher mdreader feeder closer)
-			goread reader
+				(mdprocess matcher mdreader ofeeder ocloser)
+			if usesLocationLog seeker
+				then catObjectStream g $ \lfeeder lcloser lreader -> do
+					precachertid <- liftIO . async =<< forkState
+						(precacher config oreader lfeeder lcloser)
+					precachefinisher lreader
+					join (liftIO (wait precachertid))
+				else finisher oreader
 			join (liftIO (wait mdprocessertid))
 			join (liftIO (wait processertid))
   where
-	goread reader = liftIO reader >>= \case
+	checkpresence k cont = case checkContentPresent seeker of
+		Just v -> do
+			present <- inAnnex k
+			when (present == v) cont
+		Nothing -> cont
+
+	finisher oreader = liftIO oreader >>= \case
 		Just (f, content) -> do
-			maybe noop (a f) (parseLinkTargetOrPointerLazy =<< content)
-			goread reader
+			case parseLinkTargetOrPointerLazy =<< content of
+				Just k -> checkpresence k $
+					seekAction seeker f k
+				Nothing -> noop
+			finisher oreader
+		Nothing -> return ()
+
+	precachefinisher lreader = liftIO lreader >>= \case
+		Just ((logf, f, k), logcontent) -> do
+			maybe noop (Annex.BranchState.setCache logf) logcontent
+			seekAction seeker f k
+			precachefinisher lreader
 		Nothing -> return ()
 	
-	feedmatches matcher feeder f sha = 
+	precacher config oreader lfeeder lcloser = liftIO oreader >>= \case
+		Just (f, content) -> do
+			case parseLinkTargetOrPointerLazy =<< content of
+				Just k -> checkpresence k $
+					let logf = locationLogFile config k
+					    ref = Git.Ref.branchFileRef Annex.Branch.fullname logf
+					in liftIO $ lfeeder ((logf, f, k), ref)
+				Nothing -> noop
+			precacher config oreader lfeeder lcloser
+		Nothing -> liftIO $ void lcloser
+	
+	feedmatches matcher ofeeder f sha = 
 		whenM (matcher $ MatchingFile $ FileInfo f f) $
-			liftIO $ feeder (f, sha)
+			liftIO $ ofeeder (f, sha)
 
-	process matcher feeder mdfeeder mdcloser seenpointer ((f, sha, mode):rest) =
+	process matcher ofeeder mdfeeder mdcloser seenpointer ((f, sha, mode):rest) =
 		case Git.toTreeItemType mode of
 			Just Git.TreeSymlink -> do
 				-- Once a pointer file has been seen,
@@ -303,27 +347,27 @@ seekFilteredKeys a listfs = do
 				-- file order.
 				if seenpointer
 					then liftIO $ mdfeeder (f, sha)
-					else feedmatches matcher feeder f sha
-				process matcher feeder mdfeeder mdcloser seenpointer rest
+					else feedmatches matcher ofeeder f sha
+				process matcher ofeeder mdfeeder mdcloser seenpointer rest
 			Just Git.TreeSubmodule ->
-				process matcher feeder mdfeeder mdcloser seenpointer rest
+				process matcher ofeeder mdfeeder mdcloser seenpointer rest
 			-- Might be a pointer file, might be other
 			-- file in git, possibly large. Avoid catting
 			-- large files by first looking up the size.
 			Just _ -> do
 				liftIO $ mdfeeder (f, sha)
-				process matcher feeder mdfeeder mdcloser True rest
+				process matcher ofeeder mdfeeder mdcloser True rest
 			Nothing ->
-				process matcher feeder mdfeeder mdcloser seenpointer rest
+				process matcher ofeeder mdfeeder mdcloser seenpointer rest
 	process _ _ _ mdcloser _ [] = liftIO $ void mdcloser
 
-	mdprocess matcher mdreader feeder closer = liftIO mdreader >>= \case
+	mdprocess matcher mdreader ofeeder ocloser = liftIO mdreader >>= \case
 		Just (f, Just (sha, size, _type))
 			| size < maxPointerSz -> do
-				feedmatches matcher feeder f sha
-				mdprocess matcher mdreader feeder closer
-		Just _ -> mdprocess matcher mdreader feeder closer
-		Nothing -> liftIO $ void closer
+				feedmatches matcher ofeeder f sha
+				mdprocess matcher mdreader ofeeder ocloser
+		Just _ -> mdprocess matcher mdreader ofeeder ocloser
+		Nothing -> liftIO $ void ocloser
 
 seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> [WorkTreeItem] -> Annex [a]
 seekHelper c ww a l = do
