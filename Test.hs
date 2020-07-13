@@ -292,6 +292,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
+	, testCase "metadata" test_metadata
 	, testCase "export_import" test_export_import
 	, testCase "export_import_subdir" test_export_import_subdir
 	, testCase "shared clone" test_shared_clone
@@ -401,6 +402,24 @@ test_add_extras = intmpclonerepo $ do
 		git_annex "unlock" [wormannexedfile] @? "unlock failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
+
+test_metadata :: Assertion
+test_metadata = intmpclonerepo $ do
+	git_annex "metadata" ["-s", "foo=bar", annexedfile] @? "set metadata"
+	git_annex_expectoutput "find" ["--metadata", "foo=bar"] [annexedfile]
+	git_annex_expectoutput "find" ["--metadata", "foo=other"] []
+	writecontent annexedfiledup $ content annexedfiledup
+	add_annex annexedfiledup @? "add of second file with same content failed"
+	annexed_present annexedfiledup
+	git_annex_expectoutput "find" ["--metadata", "foo=bar"]
+		[annexedfile, annexedfiledup]
+	git_annex_shouldfail "metadata" ["--remove", "foo", "."]
+		@? "removing metadata from dir with multiple files failed to fail"
+	git_annex "metadata" ["--remove", "foo", annexedfile]
+		@? "removing metadata failed"
+	git_annex_expectoutput "find" ["--metadata", "foo=bar"] []
+	git_annex "metadata" ["--force", "-s", "foo=bar", "."]
+		@? "recursively set metadata force"
 
 test_shared_clone :: Assertion
 test_shared_clone = intmpsharedclonerepo $ do

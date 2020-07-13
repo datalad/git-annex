@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-07-13T16:43:35Z"
+ content="""
+Also the test case was not testing the metadata command at all, added some
+tests.
+"""]]
