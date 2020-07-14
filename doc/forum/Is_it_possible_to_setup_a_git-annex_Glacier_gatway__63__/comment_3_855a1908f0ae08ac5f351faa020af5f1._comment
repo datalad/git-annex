@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="flpgdt@f64318f00d9e1c9535e11f5d27c80c1d799cce00"
+ nickname="flpgdt"
+ avatar="http://cdn.libravatar.org/avatar/df837a3ae490227608cc38a7c9edfc7a"
+ subject="comment 3"
+ date="2020-07-14T22:40:55Z"
+ content="""
+Hi,
+
+If the repo on SRV1 was a normal \"client\" repo, if something was moved to archive on one of the clients shouldn't it upload to glacier, replace it with a shortcut and propagate it to other clients?
+
+The test I just ran SRV1 uploaded and replaced the file but the client copies were not removed. I understand the clients cannot check with glacier to know the file could be deleted, but maybe is there some \"numcopies\" hack to be used? :)
+"""]]
