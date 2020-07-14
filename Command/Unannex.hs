@@ -9,7 +9,6 @@ module Command.Unannex where
 
 import Command
 import qualified Annex
-import Annex.Content
 import Annex.Perms
 import qualified Git.Command
 import Utility.CopyFile
