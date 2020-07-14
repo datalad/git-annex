@@ -60,4 +60,5 @@ looked up efficiently. (Before these changes, the same key lookup was done
 2x too..) Avoiding that would speed up --in etc, probably another 1.5x-2x
 speedup when such limits are used. What that optimisation needs is a way to
 tell if the current limit needs the key or not. If it does, then match on
-it after getting the key, otherwise before getting the key.
+it after getting the key (and precaching the location log for limits that
+need that), otherwise before getting the key.
