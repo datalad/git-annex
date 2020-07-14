@@ -1,0 +1,11 @@
+git-annex tries to run in a constant amount of memory, however `knownUrls`
+loads all urls ever seen into a list, so the more urls there are, the more
+memory `git annex importfeed` will need.
+
+This is probably not a big problem in practice, but seems worth doing
+something about if somehow possible.
+
+Unfortunately, can't use a bloom filter, because a false positive would
+prevent importing an url that has not been imported before. A sqlite
+database would work, but would need to be updated whenever the git-annex
+branch is changed. --[[Joey]]

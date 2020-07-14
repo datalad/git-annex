@@ -32,6 +32,7 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
   * Sped up seeking for annexed files to operate on by a factor of nearly 2x.
   * Sped up sync --content by 2x and other commands like fsck --fast and
     whereis by around 50%, by using git cat-file --buffer.
+  * importfeed: Made checking known urls step around 10% faster.
   * fsck: Detect if WORM keys contain a carriage return, and recommend
     upgrading the key. (git-annex could have maybe created such keys back
     in 2013).

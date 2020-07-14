@@ -9,6 +9,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE TupleSections #-}
+
 module CmdLine.Seek where
 
 import Annex.Common
@@ -227,17 +229,14 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		(l, cleanup) <- inRepo $ LsTree.lsTree
 			LsTree.LsTreeRecursive
 			Annex.Branch.fullname
-		let getk = locationLogFileKey config . getTopFilePath
+		let getk f = fmap (,f) (locationLogFileKey config f)
 		let go reader = liftIO reader >>= \case
 			Nothing -> return ()
-			Just (f, content) -> do
-				case getk f of
-					Just k -> do
-						maybe noop (Annex.BranchState.setCache (getTopFilePath f)) content
-						keyaction (k, mkActionItem k)
-					Nothing -> return ()
+			Just ((k, f), content) -> do
+				maybe noop (Annex.BranchState.setCache f) content
+				keyaction (k, mkActionItem k)
 				go reader
-		catObjectStreamLsTree l (isJust . getk . LsTree.file) g go
+		catObjectStreamLsTree l (getk . getTopFilePath . LsTree.file) g go
 		liftIO $ void cleanup
 
 	runkeyaction getks = do

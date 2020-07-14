@@ -1,9 +1,11 @@
 {- Web url logs.
  -
- - Copyright 2011-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Logs.Web (
 	URLString,
@@ -28,9 +30,9 @@ import Logs
 import Logs.Presence
 import Logs.Location
 import qualified Annex.Branch
-import Annex.CatFile
-import qualified Git
-import qualified Git.LsFiles
+import qualified Git.LsTree
+import Git.CatFile (catObjectStreamLsTree)
+import Git.FilePath
 import Utility.Url
 import Annex.UUID
 import qualified Types.Remote as Remote
@@ -87,24 +89,26 @@ setUrlMissing key url = do
 {- Finds all known urls. -}
 knownUrls :: Annex [(Key, URLString)]
 knownUrls = do
-	{- Ensure the git-annex branch's index file is up-to-date and
-	 - any journaled changes are reflected in it, since we're going
-	 - to query its index directly. -}
+	{- Ensure any journalled changes are committed to the git-annex
+	 - branch, since we're going to look at its tree. -}
 	_ <- Annex.Branch.update
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
-	Annex.Branch.withIndex $ do
-		top <- fromRepo Git.repoPath
-		(l, cleanup) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
-		r <- mapM getkeyurls l
-		void $ liftIO cleanup
-		return $ concat r
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+		Git.LsTree.LsTreeRecursive
+		Annex.Branch.fullname
+	g <- Annex.gitRepo
+	let want = urlLogFileKey . getTopFilePath . Git.LsTree.file
+	catObjectStreamLsTree l want g (go [])
+		`finally` void (liftIO cleanup)
   where
-	getkeyurls (f, s, _) = case urlLogFileKey f of
-		Just k -> zip (repeat k) <$> geturls s
-		Nothing -> return []
-	geturls logsha =
-		map (decodeBS . fromLogInfo) . getLog 
-			<$> catObject logsha
+	go c reader = liftIO reader >>= \case
+		Just (k, Just content) -> 
+			let !c' = zip (repeat k) (geturls content) ++ c
+			in go c' reader
+		Just (_, Nothing) -> go c reader
+		Nothing -> return c
+	
+	geturls = map (decodeBS . fromLogInfo) . getLog
 
 setTempUrl :: Key -> URLString -> Annex ()
 setTempUrl key url = Annex.changeState $ \s ->

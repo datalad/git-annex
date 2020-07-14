@@ -286,17 +286,14 @@ parseCommit b = Commit
 
 {- Uses cat-file to stream the contents of the files as efficiently
  - as possible. This is much faster than querying it repeatedly per file.
- - 
- - While this could be made more polymorhpic, specialization is important
- - to its performance.
  -}
 catObjectStreamLsTree
 	:: (MonadMask m, MonadIO m)
 	=> [LsTree.TreeItem]
-	-> (LsTree.TreeItem -> Bool)
+	-> (LsTree.TreeItem -> Maybe v)
 	-> Repo
-	-> (IO (Maybe (TopFilePath, Maybe L.ByteString)) -> m ())
-	-> m ()
+	-> (IO (Maybe (v, Maybe L.ByteString)) -> m a)
+	-> m a
 catObjectStreamLsTree l want repo reader = withCatFileStream False repo $
 	\c hin hout -> bracketIO
 		(async $ feeder c hin)
@@ -304,11 +301,12 @@ catObjectStreamLsTree l want repo reader = withCatFileStream False repo $
 		(const (reader (catObjectReader readObjectContent c hout)))
   where
 	feeder c h = do
-		forM_ l $ \ti ->
-			when (want ti) $ do
+		forM_ l $ \ti -> case want ti of
+			Nothing -> return ()
+			Just v -> do
 				let f = LsTree.file ti
 				let sha = LsTree.sha ti
-				liftIO $ writeChan c (sha, f)
+				liftIO $ writeChan c (sha, v)
 				S8.hPutStrLn h (fromRef' sha)
 		hClose h
 
@@ -319,9 +317,9 @@ catObjectStream
 	    ((v, Ref) -> IO ()) -- ^ call to feed values in
 	    -> IO () -- call once all values are fed in
 	    -> IO (Maybe (v, Maybe L.ByteString)) -- call to read results
-	    -> m ()
+	    -> m a
 	   )
-	-> m ()
+	-> m a
 catObjectStream repo a = withCatFileStream False repo go
   where
 	go c hin hout = a
@@ -339,9 +337,9 @@ catObjectMetaDataStream
 	    ((v, Ref) -> IO ()) -- ^ call to feed values in
 	    -> IO () -- call once all values are fed in
 	    -> IO (Maybe (v, Maybe (Sha, FileSize, ObjectType))) -- call to read results
-	    -> m ()
+	    -> m a
 	   )
-	-> m ()
+	-> m a
 catObjectMetaDataStream repo a = withCatFileStream True repo go
   where
 	go c hin hout = a
@@ -378,8 +376,8 @@ withCatFileStream
 	:: (MonadMask m, MonadIO m)
 	=> Bool
 	-> Repo
-	-> (Chan a -> Handle -> Handle -> m ())
-	-> m ()
+	-> (Chan v -> Handle -> Handle -> m a)
+	-> m a
 withCatFileStream check repo reader = assertLocal repo $
 	bracketIO start stop $ \(c, hin, hout, _) -> reader c hin hout
   where
