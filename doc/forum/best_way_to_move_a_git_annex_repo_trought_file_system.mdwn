@@ -1,0 +1,6 @@
+Hi all,
+i'm looking for the right command to move a git annex repo througt filesystem without breaking all the symlink and so and without changing the id of the repo.
+My current hard drive have become to small to store all what i have so i have bought a new on and have mounted it in a directory named shared, now i want to
+move all my repo (repo1 repo2 etc...) too shared can anyone give me the best move option to do that ?
+
+best regards.
