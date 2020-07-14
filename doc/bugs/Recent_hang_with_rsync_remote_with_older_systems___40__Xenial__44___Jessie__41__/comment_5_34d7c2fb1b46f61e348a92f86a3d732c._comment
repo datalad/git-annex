@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 5"
+ date="2020-07-14T19:18:10Z"
+ content="""
+Fair enough.
+
+> or that the hang is not fully deterministic.
+
+Perhaps.  I haven't hit any divergent results yet, but that of course
+doesn't mean that much.
+
+In my view, it'd be okay to close this issue, as well as [the other
+Xenial/old system stall][0].  These are related to SSH-based stalls
+that DataLad is hitting on Travis, and it would of course be nice to
+resolve them, but it probably isn't worth investing much more time in.
+And on DataLad's end, we should probably upgrade our CI's distribution
+from Xenial to Bionic anyway.
+
+That being said, if you think of specific debugging information that
+might be useful for me to provide or if you want access to the Xenial
+qcow2 image (a bloated 25G :/), please let me know.
+
+Thanks for your feedback on this issue and the other one.
+
+[0]: https://git-annex.branchable.com/bugs/Recent_hang_with_rsync_remote_with_older_systems___40__Xenial__44___Jessie__41__/
+
+"""]]
