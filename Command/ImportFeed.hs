@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Command.ImportFeed where
 
@@ -20,6 +21,7 @@ import Data.Time.Calendar
 import Data.Time.LocalTime
 import qualified Data.Text as T
 import System.Log.Logger
+import Control.Concurrent.Async
 
 import Command
 import qualified Annex
@@ -43,6 +45,10 @@ import Annex.MetaData
 import Annex.FileMatcher
 import Command.AddUrl (addWorkTree)
 import Annex.UntrustedFilePath
+import qualified Git.Ref
+import qualified Annex.Branch
+import Logs
+import Git.CatFile (catObjectStream)
 
 cmd :: Command
 cmd = notBareRepo $
@@ -119,7 +125,7 @@ getCache opttemplate = ifM (Annex.getState Annex.force)
 	( ret S.empty S.empty
 	, do
 		showStart "importfeed" "checking known urls"
-		(is, us) <- unzip <$> (mapM knownItems =<< knownUrls)
+		(is, us) <- unzip <$> knownItems
 		showEndOk
 		ret (S.fromList us) (S.fromList (concat is))
 	)
@@ -127,13 +133,33 @@ getCache opttemplate = ifM (Annex.getState Annex.force)
 	tmpl = Utility.Format.gen $ fromMaybe defaultTemplate opttemplate
 	ret us is = return $ Cache us is tmpl
 
-knownItems :: (Key, URLString) -> Annex ([ItemId], URLString)
-knownItems (k, u) = do
-	itemids <- S.toList . S.filter (/= noneValue)
-		. S.map (decodeBS . fromMetaValue)
-		. currentMetaDataValues itemIdField 
-		<$> getCurrentMetaData k
-	return (itemids, u)
+knownItems :: Annex [([ItemId], URLString)]
+knownItems = do
+	g <- Annex.gitRepo
+	config <- Annex.getGitConfig
+	catObjectStream g $ \catfeeder catcloser catreader -> do
+		rt <- liftIO $ async $ reader catreader []
+		withKnownUrls (feeder config catfeeder catcloser)
+		liftIO (wait rt)
+  where
+	feeder config catfeeder catcloser urlreader = urlreader >>= \case
+		Just (k, us) -> do
+			forM_ us $ \u ->
+				let logf = metaDataLogFile config k
+				    ref = Git.Ref.branchFileRef Annex.Branch.fullname logf
+				in liftIO $ catfeeder (u, ref)
+			feeder config catfeeder catcloser urlreader
+		Nothing -> liftIO catcloser
+	
+	reader catreader c = catreader >>= \case
+		Just (u, Just mdc) ->
+			let !itemids = S.toList $ S.filter (/= noneValue) $
+				S.map (decodeBS . fromMetaValue) $
+					currentMetaDataValues itemIdField $
+						parseCurrentMetaData mdc
+			in reader catreader ((itemids,u):c)
+		Just (u, Nothing) -> reader catreader (([],u):c)
+		Nothing -> return c
 
 findDownloads :: URLString -> Feed -> [ToDownload]
 findDownloads u f = catMaybes $ map mk (feedItems f)
@@ -143,8 +169,8 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 			Just $ ToDownload f u i $ Enclosure $ 
 				T.unpack enclosureurl
 		Nothing -> case getItemLink i of
-			Just link -> Just $ ToDownload f u i $ 
-				MediaLink $ T.unpack link
+			Just l -> Just $ ToDownload f u i $ 
+				MediaLink $ T.unpack l
 			Nothing -> Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}

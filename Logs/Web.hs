@@ -13,7 +13,7 @@ module Logs.Web (
 	getUrlsWithPrefix,
 	setUrlPresent,
 	setUrlMissing,
-	knownUrls,
+	withKnownUrls,
 	Downloader(..),
 	getDownloader,
 	setDownloader,
@@ -87,8 +87,8 @@ setUrlMissing key url = do
 		_ -> True
 
 {- Finds all known urls. -}
-knownUrls :: Annex [(Key, URLString)]
-knownUrls = do
+withKnownUrls :: (Annex (Maybe (Key, [URLString])) -> Annex a) -> Annex a
+withKnownUrls a = do
 	{- Ensure any journalled changes are committed to the git-annex
 	 - branch, since we're going to look at its tree. -}
 	_ <- Annex.Branch.update
@@ -98,15 +98,16 @@ knownUrls = do
 		Annex.Branch.fullname
 	g <- Annex.gitRepo
 	let want = urlLogFileKey . getTopFilePath . Git.LsTree.file
-	catObjectStreamLsTree l want g (go [])
+	catObjectStreamLsTree l want g (\reader -> a (go reader))
 		`finally` void (liftIO cleanup)
   where
-	go c reader = liftIO reader >>= \case
-		Just (k, Just content) -> 
-			let !c' = zip (repeat k) (geturls content) ++ c
-			in go c' reader
-		Just (_, Nothing) -> go c reader
-		Nothing -> return c
+	go reader = liftIO reader >>= \case
+		Just (k, Just content) ->
+			case geturls content of
+				[] -> go reader
+				us -> return (Just (k, us))
+		Just (_, Nothing) -> go reader
+		Nothing -> return Nothing
 	
 	geturls = map (decodeBS . fromLogInfo) . getLog
 

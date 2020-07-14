@@ -61,6 +61,3 @@ looked up efficiently. (Before these changes, the same key lookup was done
 speedup when such limits are used. What that optimisation needs is a way to
 tell if the current limit needs the key or not. If it does, then match on
 it after getting the key, otherwise before getting the key.
-
-Also, importfeed could be sped up more, probably, if knownItems
-streamed through cat-file --buffer.

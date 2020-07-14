@@ -19,13 +19,14 @@
  - after the other remote redundantly set foo +x, it was unset,
  - and so foo currently has no value.
  -
- - Copyright 2014-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Logs.MetaData (
 	getCurrentMetaData,
+	parseCurrentMetaData,
 	getCurrentRemoteMetaData,
 	addMetaData,
 	addRemoteMetaData,
@@ -47,6 +48,7 @@ import Logs.MetaData.Pure
 
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 
 {- Go through the log from oldest to newest, and combine it all
  - into a single MetaData representing the current state.
@@ -60,9 +62,13 @@ getCurrentMetaData = getCurrentMetaData' metaDataLogFile
 getCurrentMetaData' :: (GitConfig -> Key -> RawFilePath) -> Key -> Annex MetaData
 getCurrentMetaData' getlogfile k = do
 	config <- Annex.getGitConfig
-	ls <- S.toAscList <$> readLog (getlogfile config k)
-	let loggedmeta = logToCurrentMetaData ls
-	return $ currentMetaData $ unionMetaData loggedmeta
+	parseCurrentMetaData <$> Annex.Branch.get (getlogfile config k)
+
+parseCurrentMetaData :: L.ByteString -> MetaData
+parseCurrentMetaData content =
+	let ls = S.toAscList $ parseLog content
+	    loggedmeta = logToCurrentMetaData ls
+	in currentMetaData $ unionMetaData loggedmeta
 		(lastchanged ls loggedmeta)
   where
 	lastchanged [] _ = emptyMetaData
