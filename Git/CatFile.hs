@@ -304,7 +304,6 @@ catObjectStreamLsTree l want repo reader = withCatFileStream False repo $
 		forM_ l $ \ti -> case want ti of
 			Nothing -> return ()
 			Just v -> do
-				let f = LsTree.file ti
 				let sha = LsTree.sha ti
 				liftIO $ writeChan c (sha, v)
 				S8.hPutStrLn h (fromRef' sha)
