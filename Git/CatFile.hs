@@ -47,7 +47,6 @@ import Git.Sha
 import qualified Git.Ref
 import Git.Command
 import Git.Types
-import Git.FilePath
 import Git.HashObject
 import qualified Git.LsTree as LsTree
 import qualified Utility.CoProcess as CoProcess
