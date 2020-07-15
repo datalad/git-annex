@@ -1,2 +1,14 @@
 Recent optimisation work has caused some test suite failures, involving
 unannex and fsck. --[[Joey]]
+
+Hmm, the unannex one is because it doesn't check if a file is present
+inAnnex anymore, so fails on unannexing a non-present file.
+
+The check was removed in 
+[[!commit 75aab72d23ebf8ef0d56d7dd74c121e33d64f1f6]], but that did have
+withFilesInGitAnnex doing an inAnnex check and not running the command if
+it failed. But later that got changed to only happen when
+checkContentPresent is set.
+
+Everything in that and related commits
+needs to be re-examined to make sure no other inAnnex checks were lost.
