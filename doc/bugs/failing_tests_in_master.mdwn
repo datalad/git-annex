@@ -1,0 +1,2 @@
+Recent optimisation work has caused some test suite failures, involving
+unannex and fsck. --[[Joey]]
