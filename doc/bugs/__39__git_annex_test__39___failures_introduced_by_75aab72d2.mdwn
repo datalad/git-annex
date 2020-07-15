@@ -134,3 +134,5 @@ FAIL (0.22s)
 
 ```
 
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
