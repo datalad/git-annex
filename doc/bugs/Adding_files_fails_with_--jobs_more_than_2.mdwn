@@ -1,0 +1,64 @@
+### Please describe the problem.
+
+I'm running into an issue where adding files to a git annex repository fails when I specify a number of jobs equal to the number of cores on my machine, resulting in the following message:
+
+`git-annex: getCurrentDirectory:getWorkingDirectory: resource exhausted (Too many open files)`
+
+
+### What steps will reproduce the problem?
+
+Running the command below on a directory with less than 1000 files.
+
+```
+git init
+git annex init
+git annex add --jobs 16 .
+```
+
+### What version of git-annex are you using? On what operating system?
+
+Mac OSX 10.15.5
+
+```
+# brew install git-annex
+20:16 $ git annex version
+git-annex version: 8.20200617
+build flags: Assistant Webapp Pairing S3 WebDAV FsEvents TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.6.5 http-client-0.7.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: darwin x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+### Please provide any additional information below.
+
+The log was empty, but here is a snippet of the stdout.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+add test-app/test/app.R
+git-annex: getCurrentDirectory:getWorkingDirectory: resource exhausted (Too many open files)
+failed
+add tool_args/d1b89bbf441df390a60d787af813817579d2b760
+git-annex: getCurrentDirectory:getWorkingDirectory: resource exhausted (Too many open files)
+failed
+...
+add CCLE_expression_full.csv
+git-annex: cp: createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
+failed
+add Achilles_20Q1/CCLE_expression_full.csv
+git-annex: cp: createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
+failed
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've been having quite a bit of fun revisiting git-annex and datalad after quite a while, and I'm really excited to see how far things have come. I'm pretty close to adopting these tools in my data science group after a pretty exhaustive search of related technologies like quilt, dvc, and attempts to role my own solution. Using Github + the S3 special remote w/versioning enabled is just about the best solution to dataset tracking I've come across.
