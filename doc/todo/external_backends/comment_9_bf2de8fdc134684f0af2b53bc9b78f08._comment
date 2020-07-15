@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-07-15T17:52:03Z"
+ content="""
+Seems that this has a naming problem. Each backend needs a unique name. The
+length of the name has to be short enough to not make the key length
+excessive. The longest backend name in git-annex is "BLAKE2SP256E" (12).
+A UUID seems too long, domain name probably too long.
+
+If two external backends picked the same name and the wrong one
+got installed, bad things could happen, like failing to verify content
+because it used an unexpected hash.
+
+Maybe just have a name registry on this site, first come first served and
+if you chose to overlap, you get to keep all 100 pieces?
+
+(Note that external special remote programs must have unique names too,
+which does not seem to have been a problem in practice.)
+"""]]
