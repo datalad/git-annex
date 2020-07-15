@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: verifying and external backends"""
+ date="2020-07-15T13:55:15Z"
+ content="""
+It seems reasonable to assume the user trusts the backend program as much
+as they do the git-annex program, when it comes to whether a hash is
+cryptographically secure. They're both programs the user has decided to
+use, which could do far more mischief than pretending that md5 is secure.
+
+The suggestion that this could be used for
+[[todo/option_to_add_user-specified_string_to_key]] raises its own security
+concerns. (Although git's sha1 collision hardening probably will survive
+until git sha256, so git-annex's attempts to prevent sha1 collisions via
+user-supplied data in the content of keys are probably unncessary.)
+"""]]
