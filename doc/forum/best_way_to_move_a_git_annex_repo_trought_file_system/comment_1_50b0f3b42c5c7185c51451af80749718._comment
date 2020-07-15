@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-07-14T20:13:22Z"
+ content="""
+> i'm looking for the right command to move a git annex repo througt filesystem without breaking all the symlink
+
+Can't you just `mv` the top-level directory?  Symlinks are relative:
+
+```
+one -> .git/annex/objects/0J/J1/SHA256E-s4--2c8b08da5ce60398e1f19af0e5dccc744df274b826abe585eaba68c525434806/SHA256E-s4--2c8b08da5ce60398e1f19af0e5dccc744df274b826abe585eaba68c525434806
+```
+"""]]
