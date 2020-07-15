@@ -51,6 +51,7 @@ import Git.FilePath
 import Git.HashObject
 import qualified Git.LsTree as LsTree
 import qualified Utility.CoProcess as CoProcess
+import qualified Git.BuildVersion as BuildVersion
 import Utility.Tuple
 
 data CatFileHandle = CatFileHandle 
@@ -381,10 +382,14 @@ withCatFileStream
 withCatFileStream check repo reader = assertLocal repo $
 	bracketIO start stop $ \(c, hin, hout, _) -> reader c hin hout
   where
-	params = 
-		[ Param "cat-file"
-		, Param ("--batch" ++ (if check then "-check" else "") ++ "=" ++ batchFormat)
-		, Param "--buffer"
+	params = catMaybes
+		[ Just $ Param "cat-file"
+		, Just $ Param ("--batch" ++ (if check then "-check" else "") ++ "=" ++ batchFormat)
+		-- This option makes it faster, but is not present in
+		-- older versions of git.
+		, if BuildVersion.older "2.4.3"
+			then Nothing
+			else Just $ Param "--buffer"
 		]
 
 	start = do
