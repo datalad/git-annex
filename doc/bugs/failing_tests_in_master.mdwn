@@ -12,3 +12,15 @@ checkContentPresent is set.
 
 Everything in that and related commits
 needs to be re-examined to make sure no other inAnnex checks were lost.
+
+> Well, I didn't find any others.
+
+The fsck failure is that it fails to fail when there are 0 copies of the
+file. Same basic cause, but the other direction, it was skipping files
+whose content is not present. Also introduced in [[!commit
+75aab72d23ebf8ef0d56d7dd74c121e33d64f1f6]].
+
+So, also need to audit everything with checkContentPresent = Just True
+etc to make sure it's right. Ok, done, there were not many using it yet.
+
+[[done]] --[[Joey]]

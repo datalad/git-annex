@@ -94,7 +94,7 @@ seek o = startConcurrency commandStages $ do
 	i <- prepIncremental u (incrementalOpt o)
 	let seeker = AnnexedFileSeeker
 		{ seekAction = commandAction' (start from i)
-		, checkContentPresent = Just True
+		, checkContentPresent = Nothing
 		, usesLocationLog = True
 		}
 	withKeyOptions (keyOptions o) False
