@@ -1,0 +1,138 @@
+Running `git annex test` with the current master (9a3b050) shows nine
+failures (on my end and on the CI runs at
+<https://github.com/datalad/datalad-extensions>).  These failures
+bisect to 75aab72d2 (mostly done with location log precaching,
+2020-07-13).
+
+I've tried to extract the failing tests below, adding horizontal
+separators for readability.
+
+```
+    unannex (no copy):                                    [adjusted/master(unlocked) 0acf147] empty
+adjust ok
+unannex foo cp: cannot stat '.git/annex/objects/Kj/0x/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77': No such file or directory
+
+git-annex: foo: getFileStatus: does not exist (No such file or directory)
+failed
+git-annex: unannex: 1 failed
+FAIL (0.48s)
+      Test.hs:504:
+      unannex failed with no copy
+
+----------------------------------------------------
+
+    unannex (with copy):                                  [adjusted/master(unlocked) 0acf147] empty
+adjust ok
+get foo (from origin...) 
+
+100%  20 B              7 KiB/s 0s
+                                  
+(checksum...) ok
+(recording state in git...)
+unannex foo ok
+unannex sha1foo cp: cannot stat '.git/annex/objects/3j/xV/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa': No such file or directory
+
+git-annex: sha1foo: getFileStatus: does not exist (No such file or directory)
+failed
+git-annex: unannex: 1 failed
+FAIL (0.63s)
+      Test.hs:511:
+      unannex failed
+
+----------------------------------------------------
+
+    fsck (basics):                                        [adjusted/master(unlocked) 8d7e450] empty
+adjust ok
+(recording state in git...)
+numcopies 2 ok
+(recording state in git...)
+FAIL (0.40s)
+      Test.hs:862:
+      fsck failed to fail with numcopies unsatisfied
+
+----------------------------------------------------
+
+    unannex (no copy):                                    unannex foo cp: cannot stat '.git/annex/objects/Kj/0x/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77': No such file or directory
+
+git-annex: foo: getFileStatus: does not exist (No such file or directory)
+failed
+git-annex: unannex: 1 failed
+FAIL (0.32s)
+      Test.hs:504:
+      unannex failed with no copy
+
+----------------------------------------------------
+
+    unannex (with copy):                                  get foo (from origin...) 
+
+100%  20 B              7 KiB/s 0s
+                                  
+(checksum...) ok
+(recording state in git...)
+unannex foo ok
+unannex sha1foo cp: cannot stat '.git/annex/objects/3j/xV/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa': No such file or directory
+
+git-annex: sha1foo: getFileStatus: does not exist (No such file or directory)
+failed
+git-annex: unannex: 1 failed
+FAIL (0.54s)
+      Test.hs:511:
+      unannex failed
+
+----------------------------------------------------
+
+    fsck (basics):                                        (recording state in git...)
+numcopies 2 ok
+(recording state in git...)
+FAIL (0.38s)
+      Test.hs:862:
+      fsck failed to fail with numcopies unsatisfied
+
+----------------------------------------------------
+
+    unannex (no copy):                                    unannex foo cp: cannot stat '.git/annex/objects/Kj/0x/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77': No such file or directory
+
+git-annex: foo: getFileStatus: does not exist (No such file or directory)
+failed
+git-annex: unannex: 1 failed
+FAIL (0.20s)
+      Test.hs:504:
+      unannex failed with no copy
+
+----------------------------------------------------
+
+    unannex (with copy):                                  get foo (from origin...) 
+
+100%  20 B              4 KiB/s 0s
+                                  
+(checksum...) ok
+(recording state in git...)
+unannex foo ok
+unannex sha1foo cp: cannot stat '.git/annex/objects/3j/xV/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa/SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa': No such file or directory
+
+git-annex: sha1foo: getFileStatus: does not exist (No such file or directory)
+failed
+git-annex: unannex: 1 failed
+FAIL (0.28s)
+      Test.hs:511:
+      unannex failed
+
+----------------------------------------------------
+
+    fsck (basics):                                        (recording state in git...)
+numcopies 2 ok
+(recording state in git...)
+FAIL (0.22s)
+      Test.hs:862:
+      fsck failed to fail with numcopies unsatisfied
+
+----------------------------------------------------
+
+9 out of 837 tests failed (244.85s)
+  (Failures above could be due to a bug in git-annex, or an incompatibility
+   with utilities, such as git, installed on this system.)
+
+```
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
