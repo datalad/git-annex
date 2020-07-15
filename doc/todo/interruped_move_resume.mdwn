@@ -1,0 +1,15 @@
+When a `git annex move` is interrupted at a point where the content has
+been transferred, but not yet dropped from the remote, resuming the move
+will often refuse to drop the content, because it would violate numcopies.
+
+Eg, if numcopies is 2, and there is only 1 extant copy, on a remote,
+git-annex move --from remote will normally ignore numcopies (since it's not
+getting any worse) and remove the content from the remote after
+transferring it. But, on resume, git-annex sees there are 2 copies and
+numcopies is 2, so it can't drop the copy from the remote.
+
+This happens to me often enough to be annoying.
+
+Perhaps some local state could avoid this problem?
+
+--[[Joey]]
