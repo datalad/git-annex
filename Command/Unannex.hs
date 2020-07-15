@@ -29,7 +29,7 @@ seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
 seeker :: AnnexedFileSeeker
 seeker = AnnexedFileSeeker
 	{ seekAction = commandAction' start
-	, checkContentPresent = Nothing
+	, checkContentPresent = Just True
 	, usesLocationLog = False
 	}
 
