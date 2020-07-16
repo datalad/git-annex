@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="Windows build of file (which includes libmagic)"
+ date="2020-07-16T22:01:17Z"
+ content="""
+- I have successfully cross-built (well -- it produced binaries, didn't test if they are usable) built `file` using/as shown in https://github.com/nscaife/file-windows/pull/9
+- There is https://github.com/julian-r/file-windows with a visual studio built `file`.  releases provide builds using difference VS versions, not sure if it needs any VS runtime
+- In conda apparently there is already `m2-file` package (a bit dated from 3 years ago) 
+
+so may be one of those ways could assist in establishing a built with MAGIC support on windows?
+"""]]
