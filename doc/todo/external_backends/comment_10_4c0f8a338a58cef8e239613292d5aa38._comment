@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="external backends"
+ date="2020-07-16T17:30:55Z"
+ content="""
+\"the user trusts the backend program as much as they do the git-annex program, when it comes to whether a hash is cryptographically secure\" -- I'd trust git-annex more because it has many more users than any one niche backend program, so gets more testing and scrutiny.
+
+\"just have a name registry on this site, first come first served\" -- seems fair; there may be more complex/robust solutions but doubt they're needed in practice.
+
+"""]]

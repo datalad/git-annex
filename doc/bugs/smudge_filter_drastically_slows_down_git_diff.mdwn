@@ -1,0 +1,116 @@
+### Please describe the problem.
+
+Running `git diff` on a small (v8) repo is extremely slow.
+
+I see [[todo/Long_Running_Filter_Process]] so this is maybe a known issue, but I thought I'd report just in case, and hopefully the extra data is useful.
+
+### What steps will reproduce the problem?
+
+Just run `git diff` with some unstaged changes:
+
+```
+$ diff --git a/README.md b/README.md
+index 6532edf..2edc620 100644
+--- a/README.md
++++ b/README.md
+@@ -42,3 +42,4 @@ General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++foo
+git diff  0.17s user 0.07s system 115% cpu 0.204 total
+
+```
+
+We can see that execve(2) is called 77 times, and there's a lot of I/O:
+
+```
+$ ( strace -c -w -f git diff 3>&1 >/dev/null 2>&3- ) | grep -v strace | head -n 15
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 42.18    3.777959        1397      2704        27 read
+ 19.27    1.725834       13697       126        50 wait4
+ 16.30    1.460262        3023       483        64 futex
+  8.24    0.737923       92240         8           poll
+  8.04    0.720108       11430        63           epoll_wait
+  1.36    0.122156          22      5387      3519 openat
+  0.87    0.078340          20      3812      2858 stat
+  0.60    0.053536          23      2243           mmap
+  0.52    0.046553          20      2319        16 close
+  0.42    0.037637          19      1890           fstat
+  0.41    0.037030         480        77           execve
+  0.26    0.023351          19      1207         4 rt_sigaction
+  0.17    0.014840          19       760           rt_sigprocmask
+```
+
+If I comment out the smudge filter in `.git/config`, it becomes instant:
+
+```
+git diff  0.00s user 0.00s system 108% cpu 0.005 total
+```
+
+and we see only one `execve(2)` and a lot less I/O:
+
+```
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 20.42    0.001402          18        75           lstat
+ 15.06    0.001034          19        53        15 openat
+ 11.25    0.000773          16        48           fstat
+ 11.16    0.000766          20        38           read
+  9.49    0.000652          16        39           close
+  8.40    0.000577          16        35           mmap
+  4.95    0.000340          18        18        11 access
+  4.49    0.000308         308         1           execve
+  2.70    0.000185          23         8           getdents64
+  2.62    0.000180          20         9           mprotect
+  2.62    0.000180          17        10           stat
+  1.11    0.000076          15         5           brk
+  1.08    0.000074          24         3           munmap
+```
+
+0.17s might not sound like a lot, but when there are many unstaged changes this becomes painful.  For example, it changes a git status operation in one of the popular git GUIs (magit) from being instant to taking 6 seconds just for a few one-line changes in a small repository.
+
+It's worth noting that this repo doesn't even have any annexed files - `annex init` was only run recently: 
+
+```
+$ git annex info
+trusted repositories: 0
+semitrusted repositories: 7
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        31167abf-8d32-4b40-96cf-4a3310fd1b10 -- arabian
+        6371770a-303e-474c-9209-2c1565b25608 -- adam@pacific:~/.config/mr [pacific]
+        da95efd3-09f9-432b-ae28-bc4c5891c062 -- adam@aegean:~/.config/mr [aegean]
+        e0112d70-c2b3-44df-9057-887eefe5d225 -- adam@ionian:~/.config/mr [here]
+        ec80d559-508f-445c-a1fd-48f2805315b0 -- my.personal.domain.org
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 1 terabyte (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 0
+size of annexed files in working tree: 0 bytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage: 
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 8.20200618-g4c44deb2c
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+Running on openSUSE Tumbleweed.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, mostly a happy user ;-)
