@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
+ nickname="branchable"
+ avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
+ subject="GIT_TRACE=1 debug shows smudge --clean is run twice per file"
+ date="2020-07-16T17:06:12Z"
+ content="""
+I just realised that `GIT_TRACE=1 git diff` gives much more useful debug, and reveals that `smudge --clean` is run twice per file, as shown below.
+
+Based on [[todo/Long_Running_Filter_Process]], running it once per file would be expected (although somewhat unfortunate), but twice seems more like a bug, especially given that it causes the exact same set of git commands to be run twice.  Or is there a good reason for that?
+
+```
+18:00:20.218359 git.c:442               trace: built-in: git diff
+18:00:20.219470 run-command.c:663       trace: run_command: unset GIT_PAGER_IN_USE; LV=-c 'less  -h100 -i -M -q -R -W -y100 -X -F -S'
+18:00:20.221554 run-command.c:663       trace: run_command: 'git-annex smudge --clean -- '\''README.md'\'''
+18:00:20.358194 git.c:442               trace: built-in: git config --null --list
+18:00:20.376580 git.c:442               trace: built-in: git cat-file --batch
+18:00:20.377090 git.c:442               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+18:00:20.395429 git.c:442               trace: built-in: git show-ref git-annex
+18:00:20.413485 git.c:442               trace: built-in: git show-ref --hash refs/heads/git-annex
+18:00:20.430842 git.c:442               trace: built-in: git log refs/heads/git-annex..f8cdef27e7fae6b3cc312130b86aa3c553d2ff3b '--pretty=%H' -n1
+18:00:20.451166 git.c:442               trace: built-in: git cat-file --batch
+18:00:20.456687 git.c:442               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+18:00:20.467209 git.c:442               trace: built-in: git check-attr -z --stdin annex.backend annex.numcopies annex.largefiles --
+18:00:20.474348 run-command.c:663       trace: run_command: 'git-annex smudge --clean -- '\''README.md'\'''
+18:00:20.607471 git.c:442               trace: built-in: git config --null --list
+18:00:20.620552 git.c:442               trace: built-in: git cat-file --batch
+18:00:20.626814 git.c:442               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+18:00:20.639210 git.c:442               trace: built-in: git show-ref git-annex
+18:00:20.656755 git.c:442               trace: built-in: git show-ref --hash refs/heads/git-annex
+18:00:20.675204 git.c:442               trace: built-in: git log refs/heads/git-annex..f8cdef27e7fae6b3cc312130b86aa3c553d2ff3b '--pretty=%H' -n1
+18:00:20.692108 git.c:442               trace: built-in: git cat-file --batch
+18:00:20.706338 git.c:442               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+18:00:20.708876 git.c:442               trace: built-in: git check-attr -z --stdin annex.backend annex.numcopies annex.largefiles --
+```
+"""]]
