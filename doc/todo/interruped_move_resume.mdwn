@@ -13,3 +13,15 @@ This happens to me often enough to be annoying.
 Perhaps some local state could avoid this problem?
 
 --[[Joey]]
+
+> One simple way would be to drop the content from the remote before moving
+> it to annex/objects/. Then if the move were interrupted before the drop,
+> it could resume the interrupted transfer, and numcopies would work the
+> same as it did when the move started. 
+> 
+> Or, move to annex/objects/ but delay updating the location tracking to
+> say it's in the local repo until after the drop.
+> 
+> Either way, a problem is that the only copy would appear missing until
+> the move was re-run. The latter approach at least lets fsck clean up
+> from that situation, but it could still be surprising.
