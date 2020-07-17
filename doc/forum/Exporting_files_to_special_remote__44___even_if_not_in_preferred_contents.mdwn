@@ -1,0 +1,3 @@
+I use my ereader as a special remote since its file system does not support symbolic links. My preferred contents expression for this remote includes everything in my library of books which is under 6 mb. However, I do occasionally want to export specific books above this size limit. Is there a good way of doing this besides explicitly adding the file to the preferred content expression?
+
+Many thanks
