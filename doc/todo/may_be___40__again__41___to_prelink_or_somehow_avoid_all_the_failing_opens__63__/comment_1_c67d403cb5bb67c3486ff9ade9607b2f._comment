@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-07-18T03:57:20Z"
+ content="""
+a test could be I guess as simple as
+
+```
+[ `strace -f git annex version 2>&1 1>/dev/null | grep open.*libpcre.*ENOENT | wc -l` -lt 2 ]
+```
+or some other number than the ideal `2` (i.e. a direct hit right away ;)) but something less than current 47
+"""]]
