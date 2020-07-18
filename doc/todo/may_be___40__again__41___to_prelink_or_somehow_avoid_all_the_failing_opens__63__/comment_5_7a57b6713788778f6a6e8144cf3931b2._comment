@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-07-18T04:50:12Z"
+ content="""
+and since debian standalone is a \"static\" installation, most likely all the dance in `runshell` could be avoided upon every invocation and paths could be computed/recorded at installation time and then shim could be as lean as what I get with
+
+```shell
+$> rm -rf /tmp/fastannex; mkdir /tmp/fastannex; for f in /usr/lib/git-annex.linux/bin/git-annex{,-shell}; do echo -e \"#\!/bin/sh\nGIT_ANNEX_DIR=/usr/lib/git-annex.linux/ GIT_ANNEX_LD_LIBRARY_PATH=/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu: $f \\"\$@\\"\" > /tmp/fastannex/$(basename $f); done; chmod a+x /tmp/fastannex/*
+```
+
+and speed up on a random sample test is already obvious:
+
+
+```
+$> time PATH=/tmp/fastannex:$PATH python -m nose datalad/support/tests/test_annexrepo.py:test_annex_version_handling_bad_git_annex
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.280s
+
+OK
+PATH=/tmp/fastannex:$PATH python -m nose   0.78s user 0.25s system 100% cpu 1.029 total
+```
+
+vs
+
+```
+$> time python -m nose datalad/support/tests/test_annexrepo.py:test_annex_version_handling_bad_git_annex      
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.498s
+
+OK
+python -m nose   0.98s user 0.29s system 101% cpu 1.254 total
+```
+
+"""]]
