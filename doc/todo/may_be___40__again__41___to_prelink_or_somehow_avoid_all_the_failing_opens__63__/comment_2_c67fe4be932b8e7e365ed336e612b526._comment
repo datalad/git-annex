@@ -1,0 +1,72 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-07-18T04:34:05Z"
+ content="""
+
+<details>
+<summary>also for some reason paths like `ld.so.conf.d` are consulted</summary> 
+
+```shell
+$> strace -f git annex version 2>&1 1>/dev/null | grep ld.so    
+access(\"/etc/ld.so.preload\", R_OK)      = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5629] access(\"/etc/ld.so.preload\", R_OK <unfinished ...>
+[pid  5629] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5631] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5631] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5632] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5632] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5629] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5636] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5636] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5637] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5637] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5641] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5641] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5642] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5642] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5643] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5643] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5629] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/etc/ld.so.cache\", O_RDONLY|O_CLOEXEC) = 3
+[pid  5629] access(\"/etc/ld.so.preload\", R_OK) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/x86_64/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/x86_64\", 0x7ffd99c76b60) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell\", 0x7ffd99c76b60) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/x86_64/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/x86_64\", 0x7ffd99c76b60) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls\", 0x7ffd99c76b60) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/x86_64/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/x86_64\", 0x7ffd99c76b60) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell\", 0x7ffd99c76b60) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/x86_64/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d/x86_64\", 0x7ffd99c76b60) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libm.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] stat(\"/usr/lib/git-annex.linux//etc/ld.so.conf.d\", {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libsqlite3.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libpthread.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libmagic.so.1\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libxml2.so.2\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libz.so.1\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  5629] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/librt.so.1\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+....
+```
+</details>
+
+I thought that somehow may be ld.so.conf could indeed be used to actually configure paths for libraries to index at debian package installation level... 
+
+interestingly, if I do directly what you are doing in the ld.so symlink shim, I get a \"direct hit\":
+
+```
+$> ( GIT_ANNEX_PROGRAMPATH=/usr/lib/git-annex.linux/bin/git-annex strace -f /usr/lib/git-annex.linux/exe/git-annex --library-path /usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/usr/lib/git-annex.linux//etc/ld.so.conf.d:/usr/lib/git-annex.linux//lib64:/usr/lib/git-annex.linux//lib/x86_64-linux-gnu:/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex version 2>&1 ; ) | grep pcre
+[pid  8539] openat(AT_FDCWD, \"/usr/lib/git-annex.linux/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC <unfinished ...>
+
+```
+but something I guess throws it off in the \"top level\" runshell (sorry -- dunno a better word) since I do observe all those numerous attempts stracing the `/usr/lib/git-annex.linux/git-annex`
+"""]]
