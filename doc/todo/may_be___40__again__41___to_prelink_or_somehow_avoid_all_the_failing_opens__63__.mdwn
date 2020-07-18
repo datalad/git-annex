@@ -1,0 +1,63 @@
+Original TODO issue was [reincarnated](https://git-annex.branchable.com/todo/could_standalone___39__fixed__39___git-annex_binaries_be_prelinked__63__/#comment-0a78eeecf21ae7778436e233f9df22c2) and (thank you `git log -S`)  and originally marked fixed by [6.20160613-81-gc4229be9a AKA 6.20160619~60](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=c4229be9a7a2318ef71b9ae433bc14bf604c9caf). Using standalone build of annex is notably (~30%) slower than any other.  I was stracing running of a sample datalad test and looked inside to see e.g.
+
+```
+4188353 1595043333.316032 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+4188353 1595043333.316089 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+4188353 1595043333.316524 openat(AT_FDCWD, "/usr/lib/git-annex.linux/bin/git", O_RDONLY) = 3
+4188353 1595043333.316818 openat(AT_FDCWD, "/usr/lib/git-annex.linux/shimmed/git/git", O_RDONLY|O_CLOEXEC) = 3
+4188353 1595043333.316992 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317022 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317049 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317079 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317106 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317133 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317160 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317187 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317216 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317248 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317278 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317306 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317336 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317367 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317395 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317426 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317455 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317482 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317509 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317536 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317562 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317589 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317615 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317642 openat(AT_FDCWD, "/usr/lib/git-annex.linux//etc/ld.so.conf.d/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317670 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317697 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317724 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317750 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317778 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317805 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317832 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317858 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317889 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317917 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317943 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317970 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.317997 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318024 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318051 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318077 openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318105 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318135 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318162 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318189 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318216 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/haswell/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318243 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/haswell/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318270 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+4188353 1595043333.318299 openat(AT_FDCWD, "/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3
+
+```
+so there is about 40 unsuccessful attempts to find/open libpcre2-8.so.0 . Other libraries might be less or more likely -- I didn't check... this one alone starts at 1595043333.316992 and finally succeeds at 1595043333.318299 -- so ~1.3 msec to just find this single library in a single invocation of git-annex (and we do many of them)... may be prelink or some other trick could be tried again?  or if that is the lost effect of the original patch -- could there be some regression test added ?
+
+git annex build: 8.20200617+git192-g5849bd634-1~ndall+1
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
