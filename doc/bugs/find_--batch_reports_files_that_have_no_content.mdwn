@@ -1,0 +1,63 @@
+As of 75aab72d2 (mostly done with location log precaching,
+2020-07-13), feeding `git annex find --batch` (no matching options)
+the name of a file whose content is not present locally outputs its
+name rather than an empty string.
+
+[[!format sh """
+cd "$(mktemp -d ${TMPDIR:-/tmp}/-XXXXXXX)"
+git init
+git annex init
+echo . >f1
+echo .. >f2
+git annex add f1 f2
+git commit -mfiles
+git annex drop --force f1
+echo "--- find, no batch"
+git annex find f1 f2
+echo "--- find, batch"
+echo "f1\nf2" | git annex find --batch
+git annex version
+"""]]
+
+Here's the output on the current tip of master (77299ae6e):
+
+```
+[...]
+--- find, no batch
+f2
+--- find, batch
+f1
+f2
+git-annex version: 8.20200618-g77299ae6e
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify TorrentParser Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.4 feed-1.2.0.1 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+And here's the expected output on the parent of 75aab72d2:
+
+```
+[...]
+--- find, no batch
+f2
+--- find, batch
+
+f2
+git-annex version: 8.20200618-gdf5860980
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify TorrentParser Feeds Testsuite
+dependency versions: aws-0.21.1 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.4 feed-1.2.0.1 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]

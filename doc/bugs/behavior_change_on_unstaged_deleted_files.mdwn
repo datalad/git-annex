@@ -1,0 +1,6 @@
+Files that have been deleted but not staged are being listed by git-annex
+commands. This is a recent reversion.
+
+Does not seem to be due to the changes to how ls-files is used, as the old
+way also listed deleted files -- how did they get filtered out before and
+why did it break? --[[Joey]]
