@@ -82,6 +82,8 @@ dupState = do
 	return $ st'
 		-- each thread has its own repoqueue
 		{ Annex.repoqueue = Nothing
+		-- no errors from this thread yet
+		, Annex.errcounter = 0
 		}
 
 {- Merges the passed AnnexState into the current Annex state.
