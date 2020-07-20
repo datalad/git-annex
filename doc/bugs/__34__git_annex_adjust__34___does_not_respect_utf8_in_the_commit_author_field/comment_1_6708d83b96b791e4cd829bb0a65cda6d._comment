@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="gueux"
+ avatar="http://cdn.libravatar.org/avatar/47e44a21505727b2d6bb5d88f0468f34"
+ subject="comment 1"
+ date="2020-07-20T06:45:25Z"
+ content="""
+Got bitten again by this bug. The author field and the description of the commit do not respect utf8.
+
+git-annex version: 8.20200330
+
+"""]]
