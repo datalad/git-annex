@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2020-07-20T18:06:54Z"
+ content="""
+Moved isCryptographicallySecure into the Backend data structure. And
+it looks at whether verifyKeyContent is Nothing to decide if a given key
+is verifiable.
+
+If an external backend is not installed at all (or fails to start up
+correctly or speaks an unknown protocol version), what can be done is make a
+Backend data structure where genKey is Nothing, verifyKeyContent is
+Nothing, isCryptographicallySecure is False, and isStableKey is False.
+When annex.verify=true, git-annex will refuse to download such keys,
+but that can be changed if necessary. (annex.securehashesonly too)
+
+The isStableKey False will prevent chunking the key when storing on special
+remotes, but it can still be stored on them in unchunked form, the
+same as is done for URL keys. So, this seems like a reasonable enough
+fallback mode, although something will need to be done to warn the user
+about it. (Alternatively, could require that external backends generate
+stable keys, but that seems like it might get in the way of some
+things people might want to do with them.)
+
+If an external backend is broken and replies to VERIFYKEYCONTENT
+with ERROR, or crashes, downloaded content would get thrown away when it
+fails to verify, as I discussed above.
+"""]]
