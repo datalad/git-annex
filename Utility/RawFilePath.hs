@@ -26,6 +26,8 @@ module Utility.RawFilePath (
 import Utility.FileSystemEncoding (RawFilePath)
 import System.Posix.Files.ByteString
 
+-- | Checks if a file or directoy exists. Note that a dangling symlink
+-- will be false.
 doesPathExist :: RawFilePath -> IO Bool
 doesPathExist = fileExist
 
