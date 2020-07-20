@@ -96,7 +96,7 @@ reply with one of the listed replies.
   longer. A program can change its answer to this question as the state of the
   art advances, and should aim to stay ahead of the state of the art by a
   reasonable amount of time.
-  * ISCRYPTOGRAPHICALLYSECURE-YES`
+  * `ISCRYPTOGRAPHICALLYSECURE-YES`
   * ISCRYPTOGRAPHICALLYSECURE-NO`
 
 ## main messages and replies
