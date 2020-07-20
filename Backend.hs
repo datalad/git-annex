@@ -56,7 +56,7 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 genKey :: KeySource -> MeterUpdate -> Maybe Backend -> Annex (Key, Backend)
 genKey source meterupdate preferredbackend = do
 	b <- maybe defaultBackend return preferredbackend
-	case B.getKey b of
+	case B.genKey b of
 		Just a -> do
 			k <- a source meterupdate
 			return (makesane k, b)

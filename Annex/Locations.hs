@@ -551,7 +551,7 @@ gitAnnexAssistantDefaultDir = "annex"
 {- Sanitizes a String that will be used as part of a Key's keyName,
  - dealing with characters that cause problems.
  -
- - This is used when a new Key is initially being generated, eg by getKey.
+ - This is used when a new Key is initially being generated, eg by genKey.
  - Unlike keyFile and fileKey, it does not need to be a reversable
  - escaping. Also, it's ok to change this to add more problematic
  - characters later. Unlike changing keyFile, which could result in the

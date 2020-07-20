@@ -17,7 +17,7 @@ import Utility.FileSystemEncoding
 
 data BackendA a = Backend
 	{ backendVariety :: KeyVariety
-	, getKey :: Maybe (KeySource -> MeterUpdate -> a Key)
+	, genKey :: Maybe (KeySource -> MeterUpdate -> a Key)
 	-- Verifies the content of a key using a hash. This does not need
 	-- to be cryptographically secure.
 	, verifyKeyContent :: Maybe (Key -> FilePath -> a Bool)

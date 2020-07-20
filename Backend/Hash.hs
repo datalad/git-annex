@@ -74,7 +74,7 @@ backends = concatMap (\h -> [genBackendE h, genBackend h]) hashes
 genBackend :: Hash -> Backend
 genBackend hash = Backend
 	{ backendVariety = hashKeyVariety hash (HasExt False)
-	, getKey = Just (keyValue hash)
+	, genKey = Just (keyValue hash)
 	, verifyKeyContent = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
@@ -85,7 +85,7 @@ genBackend hash = Backend
 genBackendE :: Hash -> Backend
 genBackendE hash = (genBackend hash)
 	{ backendVariety = hashKeyVariety hash (HasExt True)
-	, getKey = Just (keyValueE hash)
+	, genKey = Just (keyValueE hash)
 	}
 
 hashKeyVariety :: Hash -> HasExt -> KeyVariety
@@ -308,10 +308,10 @@ md5Hasher = show . md5
 testKeyBackend :: Backend
 testKeyBackend = 
 	let b = genBackendE (SHA2Hash (HashSize 256))
-	    gk = case getKey b of
+	    gk = case genKey b of
 		Nothing -> Nothing
 		Just f -> Just (\ks p -> addE <$> f ks p)
-	in b { getKey = gk }
+	in b { genKey = gk }
   where
 	addE k = alterKey k $ \d -> d
 		{ keyName = keyName d <> longext

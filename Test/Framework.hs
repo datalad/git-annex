@@ -584,7 +584,7 @@ backend_ :: String -> Types.Backend
 backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety . encodeBS
 
 getKey :: Types.Backend -> FilePath -> IO Types.Key
-getKey b f = case Types.Backend.getKey b of
+getKey b f = case Types.Backend.genKey b of
 	Just a -> annexeval $ a ks Utility.Metered.nullMeterUpdate
 	Nothing -> error "internal"
   where

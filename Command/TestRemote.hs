@@ -13,7 +13,7 @@ import Command
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
-import qualified Types.Backend as Backend
+import qualified Types.Backend
 import Types.KeySource
 import Annex.Content
 import Annex.WorkTree
@@ -290,7 +290,7 @@ test runannex mkr mkk =
 	present r k b = (== Right b) <$> Remote.hasKey r k
 	fsck _ k = case maybeLookupBackendVariety (fromKey keyVariety k) of
 		Nothing -> return True
-		Just b -> case Backend.verifyKeyContent b of
+		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k (serializeKey k)
 	get r k = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
@@ -432,7 +432,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 		, contentLocation = toRawFilePath f
 		, inodeCache = Nothing
 		}
-	k <- case Backend.getKey Backend.Hash.testKeyBackend of
+	k <- case Types.Backend.genKey Backend.Hash.testKeyBackend of
 		Just a -> a ks nullMeterUpdate
 		Nothing -> giveup "failed to generate random key (backend problem)"
 	_ <- moveAnnex k f

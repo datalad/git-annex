@@ -24,7 +24,7 @@ backends = [backend]
 backend :: Backend
 backend = Backend
 	{ backendVariety = WORMKey
-	, getKey = Just keyValue
+	, genKey = Just keyValue
 	, verifyKeyContent = Nothing
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just removeProblemChars
