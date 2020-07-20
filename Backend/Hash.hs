@@ -41,6 +41,17 @@ data Hash
 	| Blake2sHash HashSize
 	| Blake2spHash HashSize
 
+cryptographicallySecure :: Hash -> Bool
+cryptographicallySecure (SHA2Hash _) = True
+cryptographicallySecure (SHA3Hash _) = True
+cryptographicallySecure (SkeinHash _) = True
+cryptographicallySecure (Blake2bHash _) = True
+cryptographicallySecure (Blake2bpHash _) = True
+cryptographicallySecure (Blake2sHash _) = True
+cryptographicallySecure (Blake2spHash _) = True
+cryptographicallySecure SHA1Hash = False
+cryptographicallySecure MD5Hash = False
+
 {- Order is slightly significant; want SHA256 first, and more general
  - sizes earlier. -}
 hashes :: [Hash]
@@ -68,6 +79,7 @@ genBackend hash = Backend
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
 	, isStableKey = const True
+	, isCryptographicallySecure = const (cryptographicallySecure hash)
 	}
 
 genBackendE :: Hash -> Backend

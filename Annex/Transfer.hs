@@ -33,6 +33,7 @@ import qualified Types.Remote as Remote
 import Types.Concurrency
 import Types.WorkerPool
 import Annex.WorkerPool
+import Backend (isCryptographicallySecure)
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M
@@ -177,7 +178,7 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
  -}
 checkSecureHashes :: Observable v => Transfer -> Annex v -> Annex v
 checkSecureHashes t a
-	| cryptographicallySecure variety = a
+	| isCryptographicallySecure (transferKey t) = a
 	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( do
 			warning $ "annex.securehashesonly blocked transfer of " ++ decodeBS (formatKeyVariety variety) ++ " key"

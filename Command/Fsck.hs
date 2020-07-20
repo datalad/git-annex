@@ -261,7 +261,7 @@ verifyLocationLog key keystatus ai = do
 	 - insecure hash is present. This should only be able to happen
 	 - if the repository already contained the content before the
 	 - config was set. -}
-	when (present && not (cryptographicallySecure (fromKey keyVariety key))) $
+	when (present && not (Backend.isCryptographicallySecure key)) $
 		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
 			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"
 

@@ -34,6 +34,7 @@ import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
 import qualified Utility.RawFilePath as R
+import Backend
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
@@ -305,7 +306,7 @@ addSecureHash :: Annex ()
 addSecureHash = addLimit $ Right limitSecureHash
 
 limitSecureHash :: MatchFiles Annex
-limitSecureHash _ = checkKey $ pure . cryptographicallySecure . fromKey keyVariety
+limitSecureHash _ = checkKey $ pure . isCryptographicallySecure
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()

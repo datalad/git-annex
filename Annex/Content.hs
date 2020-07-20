@@ -336,7 +336,7 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 	checkallowed a = case rsp of
 		RetrievalAllKeysSecure -> a
 		RetrievalVerifiableKeysSecure
-			| isVerifiable (fromKey keyVariety key) -> a
+			| Backend.isVerifiable key -> a
 			| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
 				( a
 				, warnUnverifiableInsecure key >> return False
@@ -360,7 +360,7 @@ verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> K
 verifyKeyContent rsp v verification k f = case (rsp, verification) of
 	(_, Verified) -> return True
 	(RetrievalVerifiableKeysSecure, _)
-		| isVerifiable (fromKey keyVariety k) -> verify
+		| Backend.isVerifiable k -> verify
 		| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
 			( verify
 			, warnUnverifiableInsecure k >> return False
@@ -499,7 +499,7 @@ moveAnnex key src = ifM (checkSecureHashes' key)
 
 checkSecureHashes :: Key -> Annex (Maybe String)
 checkSecureHashes key
-	| cryptographicallySecure (fromKey keyVariety key) = return Nothing
+	| Backend.isCryptographicallySecure key = return Nothing
 	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( return $ Just $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"
 		, return Nothing

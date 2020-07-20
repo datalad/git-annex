@@ -1,6 +1,6 @@
 {- git-annex key/value backends
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,8 @@ module Backend (
 	lookupBackendVariety,
 	maybeLookupBackendVariety,
 	isStableKey,
+	isCryptographicallySecure,
+	isVerifiable,
 ) where
 
 import Annex.Common
@@ -100,4 +102,12 @@ varietyMap = M.fromList $ zip (map B.backendVariety list) list
 
 isStableKey :: Key -> Bool
 isStableKey k = maybe False (`B.isStableKey` k) 
+	(maybeLookupBackendVariety (fromKey keyVariety k))
+
+isCryptographicallySecure :: Key -> Bool
+isCryptographicallySecure k = maybe False (`B.isCryptographicallySecure` k)
+	(maybeLookupBackendVariety (fromKey keyVariety k))
+
+isVerifiable :: Key -> Bool
+isVerifiable k = maybe False (isJust . B.verifyKeyContent)
 	(maybeLookupBackendVariety (fromKey keyVariety k))
