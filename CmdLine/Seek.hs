@@ -48,10 +48,6 @@ import Utility.Tuple
 import Control.Concurrent.Async
 import System.Posix.Types
 
-withFilesInGit :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesInGit ww a l = seekFiltered a $
-	seekHelper id ww LsFiles.inRepo l
-
 data AnnexedFileSeeker = AnnexedFileSeeker
 	{ seekAction :: RawFilePath -> Key -> CommandSeek
 	, checkContentPresent :: Maybe Bool
