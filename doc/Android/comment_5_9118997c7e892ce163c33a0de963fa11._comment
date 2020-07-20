@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="mzimann"
+ avatar="http://cdn.libravatar.org/avatar/7fd54a1212458d60d3963c7fbb7ce294"
+ subject="Use curl instead of wget"
+ date="2020-07-18T22:44:20Z"
+ content="""
+It's not necessary to download `wget` in Termux since it already comes with
+`curl`.
+
+However the installation guide instructs to install `wget` in order to fetch
+the installation script `git-annex-install` from the internet. Also the script
+itself relies on `wget` and installs it as a dependency even though the
+preinstalled `curl` could be used just as well.
+
+I think we should use `curl` to reduce the amount of dependencies which have to
+be additionally installed.
+"""]]
