@@ -335,14 +335,15 @@ seekFilteredKeys seeker listfs = do
 	process matcher ofeeder mdfeeder mdcloser seenpointer ((f, sha, mode):rest) =
 		case Git.toTreeItemType mode of
 			Just Git.TreeSymlink -> do
-				-- Once a pointer file has been seen,
-				-- symlinks have to be sent via the 
-				-- metadata processor too. That is slightly
-				-- slower, but preserves the requested
-				-- file order.
-				if seenpointer
-					then liftIO $ mdfeeder (f, sha)
-					else feedmatches matcher ofeeder f sha
+				whenM (exists f) $
+					-- Once a pointer file has been seen,
+					-- symlinks have to be sent via the 
+					-- metadata processor too. That is slightly
+					-- slower, but preserves the requested
+					-- file order.
+					if seenpointer
+						then liftIO $ mdfeeder (f, sha)
+						else feedmatches matcher ofeeder f sha
 				process matcher ofeeder mdfeeder mdcloser seenpointer rest
 			Just Git.TreeSubmodule ->
 				process matcher ofeeder mdfeeder mdcloser seenpointer rest
@@ -350,11 +351,16 @@ seekFilteredKeys seeker listfs = do
 			-- file in git, possibly large. Avoid catting
 			-- large files by first looking up the size.
 			Just _ -> do
-				liftIO $ mdfeeder (f, sha)
+				whenM (exists f) $
+					liftIO $ mdfeeder (f, sha)
 				process matcher ofeeder mdfeeder mdcloser True rest
 			Nothing ->
 				process matcher ofeeder mdfeeder mdcloser seenpointer rest
 	process _ _ _ mdcloser _ [] = liftIO $ void mdcloser
+	
+	-- Check if files exist, because a deleted file will still be
+	-- listed by ls-tree, but should not be processed.
+	exists p = isJust <$> liftIO (catchMaybeIO $ R.getSymbolicLinkStatus p)
 
 	mdprocess matcher mdreader ofeeder ocloser = liftIO mdreader >>= \case
 		Just (f, Just (sha, size, _type))

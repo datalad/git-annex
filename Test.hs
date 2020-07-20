@@ -292,6 +292,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
+	, testCase "ignore deleted files" test_ignore_deleted_files
 	, testCase "metadata" test_metadata
 	, testCase "export_import" test_export_import
 	, testCase "export_import_subdir" test_export_import_subdir
@@ -402,6 +403,15 @@ test_add_extras = intmpclonerepo $ do
 		git_annex "unlock" [wormannexedfile] @? "unlock failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
+
+test_ignore_deleted_files :: Assertion
+test_ignore_deleted_files = intmpclonerepo $ do
+	git_annex "get" [annexedfile] @? "get failed"
+	git_annex_expectoutput "find" [] [annexedfile]
+	nukeFile annexedfile
+	-- A file that has been deleted, but the deletion not staged,
+	-- is a special case; make sure git-annex skips these.
+	git_annex_expectoutput "find" [] []
 
 test_metadata :: Assertion
 test_metadata = intmpclonerepo $ do
