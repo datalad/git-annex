@@ -1,0 +1,40 @@
+git-annex 8.20200720 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * import: Added --no-content option, which avoids downloading files
+     from a special remote. Currently only supported by the directory
+     special remote.
+   * Honor annex.largefiles when importing a tree from a special remote.
+     (Except for when --no-content is used.)
+   * Fix a deadlock that could occur after git-annex got an unlocked
+     file, causing the command to hang indefinitely. Known to happen on
+     vfat filesystems, possibly others.
+   * Build with the http-client-restricted and git-lfs libraries when
+     available, otherwise use the vendored copy as before.
+   * testremote: Fix over-allocation of resources and bad caching,
+     including starting up a large number of external special remote processes.
+     (Regression introduced in version 8.20200501)
+   * test: Fix some test cases that assumed git's default branch name.
+   * importfeed: Added some additional --template variables:
+     itempubyear, itempubmonth, itempubday, itempubhour,
+     itempubminute, itempubsecond.
+   * Made several special remotes support locking content on them,
+     which allows dropping from other special remotes in some situations
+     where it was not possible before. Supported special remotes:
+     S3 (with versioning=yes), git-lfs, tahoe
+   * Fix reversion that broke passing annex.* and remote.*.annex-*
+     git configs with -c. (Since version 8.20200330.)
+   * Bring back git-annex branch read cache. This speeds up some operations,
+     eg git-annex sync --content --all gets 20% faster.
+   * Fix a recently introduced bug that could cause a "fork: resource exhausted"
+     after getting several thousand files.
+   * Sped up the --all option by 2x to 16x by using git cat-file --buffer.
+     Thanks to Lukey for finding this optimisation.
+   * Sped up seeking for annexed files to operate on by a factor of nearly 2x.
+   * Sped up sync --content by 2x and other commands like fsck --fast and
+     whereis by around 50%, by using git cat-file --buffer.
+   * importfeed: Made checking known urls step around 15% faster.
+   * fsck: Detect if WORM keys contain a carriage return, and recommend
+     upgrading the key. (git-annex could have maybe created such keys back
+     in 2013).
+   * When on an adjust --hide-missing branch, fix handling of files that
+     have been deleted but the deletion is not yet staged."""]]
