@@ -33,8 +33,9 @@ while read line; do
 		GENKEY)
 			contentfile="$2"
 			hash=$(hashfile "$contentfile")
+			sz=$(wc -c "$contentfile" | cut -d ' ' -f 1)
 			if [ -n "$hash" ]; then
-				echo "GENKEY-SUCCESS" "XFOO--$hash"
+				echo "GENKEY-SUCCESS" "XFOO-s$sz--$hash"
 			else
 				echo "GENKEY-FAILURE" "md5sum failed"
 			fi

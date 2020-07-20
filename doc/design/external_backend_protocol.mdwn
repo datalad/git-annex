@@ -131,7 +131,8 @@ These messages can be sent at any time by either git-annex or the program.
 
 ## considerations for generating keys
 
-See [[internals/key_format]] for how to format a key.
+See [[internals/key_format]] for how to format a key and details about the
+parts of a key.
 
 The backend name should match the name of the program, eg if the program
 is git-annex-backend-XFOO, it should generate a key starting with "XFOO-".
@@ -158,6 +159,15 @@ mount a sha1 collision attack against git, by embedding colliding material
 in the key name, where users are unlikely to notice it. While git has
 several things that make sha1 collision attacks difficult, we don't want
 this chink in the armor.
+
+It's almost always a good idea to include the size field when generating a
+key. The size does not need to be checked when verifying content, as
+git-annex handles that for you. The only time it would make sense to omit
+the size field is if the content of a key is not stable and might have
+different sizes (like some URL keys do).
+
+There's generally no reason to include the mtime field, and it should
+never be verified when verifying content.
 
 ## program names must be unique
 
