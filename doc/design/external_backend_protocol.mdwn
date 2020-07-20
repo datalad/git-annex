@@ -131,7 +131,7 @@ These messages can be sent at any time by either git-annex or the program.
 
 ## considerations for generating keys
 
-See [[doc/internals/key_format]] for how to format a key.
+See [[internals/key_format]] for how to format a key.
 
 The backend name should match the name of the program, eg if the program
 is git-annex-backend-XFOO, it should generate a key starting with "XFOO-".
