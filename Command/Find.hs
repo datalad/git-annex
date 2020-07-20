@@ -18,6 +18,7 @@ import Types.Key
 import Git.FilePath
 import qualified Utility.Format
 import Utility.DataUnits
+import Annex.Content
 
 cmd :: Command
 cmd = notBareRepo $ withGlobalOptions [annexedMatchingOptions] $ mkCommand $
@@ -70,9 +71,10 @@ seek o = case batchOption o of
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (findThese o)
 	Batch fmt -> batchFilesMatching fmt
-		(whenAnnexed go . toRawFilePath)
+		(whenAnnexed gobatch . toRawFilePath)
   where
 	go = start o
+	gobatch f k = stopUnless (limited <||> inAnnex k) (go f k)
 	ww = WarnUnmatchLsFiles
 
 start :: FindOptions -> RawFilePath -> Key -> CommandStart

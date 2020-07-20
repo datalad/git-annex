@@ -1,3 +1,9 @@
+git-annex (8.20200720.1) UNRELEASED; urgency=medium
+
+  * Fix a bug in find --batch in the previous version.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 20 Jul 2020 19:37:40 -0400
+
 git-annex (8.20200720) upstream; urgency=medium
 
   * import: Added --no-content option, which avoids downloading files

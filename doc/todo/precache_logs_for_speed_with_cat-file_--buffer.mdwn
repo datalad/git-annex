@@ -37,8 +37,12 @@ and precache them.
 > > > Still todo:
 > > > 
 > > > * move, copy, drop, and mirror were left not using the location log caching yet
+> > > * find has a bit of ugliness around batch mode, and this shows it
+> > >   would be worth making the batch mode take the same AnnexedFileSeeker,
+> > >   to reunify the batch and non-batch code
 > > > * get is left with an unncessary inAnnex check so could be sped up
-> > >   a little bit more
+> > >   a little bit more. Above improvements to batch mode would allow
+> > >   fixing this.
 > > > 
 
 Another thing that the same cat-file --buffer approach could be used with

@@ -61,3 +61,8 @@ local repository version: 8
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]], and audited for any other similar reversions.
+> 
+> Unfortunately did not see this bug before the release,
+> so I should make a point release for it. --[[Joey]]
