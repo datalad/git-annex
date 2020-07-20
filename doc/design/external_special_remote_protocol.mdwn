@@ -194,7 +194,7 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
   (See Config/Cost.hs for some standard costs.)
   * `COST Int`  
     Indicates the cost of the remote.
-* `GETAVAILABILITY`
+* `GETAVAILABILITY`  
   Asks the remote if it is locally or globally available.
   (Ie stored in the cloud vs on a local disk.)  
   If the remote replies with `UNSUPPORTED-REQUEST`, its availability
@@ -227,7 +227,7 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     can contain spaces.
   * `CHECKURL-FAILURE`  
     Indicates that the requested url could not be accessed.
-* `WHEREIS Key`
+* `WHEREIS Key`  
   Asks the remote to provide additional information about ways to access
   the content of a key stored in it, such as eg, public urls.
   This will be displayed to the user by eg, `git annex whereis`.

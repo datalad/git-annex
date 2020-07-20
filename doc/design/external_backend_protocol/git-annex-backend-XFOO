@@ -1,0 +1,57 @@
+#!/bin/sh
+# Demo git-annex external backend program.
+# 
+# Install in PATH as git-annex-backend-XFOO
+#
+# Copyright 2020 Joey Hess; licenced under the GNU GPL version 3 or higher.
+
+set -e
+
+hashfile {
+	local contentfile="$1"
+	# could send PROGRESS while doing this, but it's
+	# hard to implement that in shell
+	return "$(md5sum "$contentfile" | cut -d ' ' -f 1 || echo '')"
+}
+
+while read line; do
+	set -- $line
+	case "$1" in
+		GETVERSION)
+			echo VERSION 1
+		;;
+		CANVERIFY)
+			echo CANVERIFY-YES
+		;;
+		ISSTABLE)
+			echo ISSTABLE-YES
+		;;
+		ISCRYPTOGRAPHICALLYSECURE)
+			# md5 is not cryptographically secure
+			echo ISCRYPTOGRAPHICALLYSECURE-NO
+		;;
+		GENKEY)
+			contentfile="$2"
+			hash=$(hashfile "$contentfile")
+			if [ -n "$hash" ]; then
+				echo "GENKEY-SUCCESS" "XFOO--$hash"
+			else
+				echo "GENKEY-FAILURE" "md5sum failed"
+			fi
+		;;
+		VERIFYKEYCONTENT)
+			key="$2"
+			contentfile="$3"
+			hash=$(hashfile "$contentfile")
+			khash=$(echo "$key" | sed 's/.*--//')
+			if [ "$hash" == "$khash" ]; then
+				echo "VERIFYKEYCONTENT-SUCCESS"
+			else
+				echo "VERIFYKEYCONTENT-FAILURE"
+			fi
+		;;
+		*)
+			echo ERROR protocol error
+		;;
+	esac
+done

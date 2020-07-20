@@ -1,0 +1,178 @@
+**Draft**
+
+Communication between git-annex and a program implementing an external
+[[backend|backends]] uses this protocol.
+
+[[!toc ]]
+
+## starting the program
+
+The external backend program has a name like `git-annex-backend-XFOO`.
+When git-annex is configured to use a backend starting with "X", 
+or encounters a key in a repository starting with "X", it
+looks for the corresponding external backend program in PATH.
+
+The program is started by git-annex when it needs to use it, and may be
+left running for a long period of time. Note that git-annex may choose to
+run multiple instances of the program.
+
+## protocol overview
+
+Communication is via stdin and stdout. While stderr is connected to the
+console and so visible to the user, the program should avoid using it
+except for in the most exceptional circumstances.
+
+The protocol is line based. git-annex sends a request, and the program
+responds with a reply.
+
+Each protocol line starts with a command, which is followed by the
+command's parameters (a fixed number per command), each separated by a
+single space. The last parameter may contain spaces. Parameters may be
+empty, but the separating spaces are still required in that case.
+
+## example session
+
+git-annex always starts by sending a message asking the program what protocol
+version it uses.
+
+	GETVERSION
+
+The program responds.
+
+	VERSION 1
+
+git-annex will next query the program about the properties of the keys it
+uses (CANVERIFY, ISSTABLE, ISCRYPTOGRAPHICALLYSECURE), and the program will
+respond to each query.
+
+Then git-annex may ask the program to generate a key.
+
+	GENKEY somefile
+
+The program will respond with the key it generated, but if it needs to do
+an expensive operation, such as hashing the file, it can first send
+progress messages, indicating the position in the file it has processed.
+
+	PROGRESS 1024
+	PROGRESS 2048
+	GENKEY-SUCCESS XFOO-s2048--dbd009
+
+git-annex can also ask the program to verify if the content of a file
+matches a key.
+
+	VERIFYKEYCONTENT XFOO-s2048--dbd009 somefile
+
+Again the program can send progress messages as it works, finishing
+with the result of the verification.
+
+	PROGRESS 1024
+	PROGRESS 2048
+	VERIFYKEYCONTENT-SUCCESS
+
+## startup messages and replies
+
+These messages are sent to the program soon after starting it, and it should
+reply with one of the listed replies.
+
+* `GETVERSION`  
+  Always the first message sent.  
+  Currently the only version of this protocol is version 1.
+  * `VERSION 1`  
+* `CANVERIFY`  
+  Asks if the program can verify the content of files match a key it generated.
+  The verification does not need to be cryptographically secure, but should
+  catch data corruption.
+  * `CANVERIFY-YES`
+  * `CANVERIFY-NO`
+* `ISSTABLE`  
+  Asks the program if a key it has generated will always have the same
+  content. The answer to this is almost always yes; URL keys are an example
+  of a type of key that may have different content at different times.
+  * `ISSTABLE-YES`
+  * `ISSTABLE-NO`
+* `ISCRYPTOGRAPHICALLYSECURE`  
+  Asks the program if keys it generates are verified using a cryptographically
+  secure hash. Note that sha1 is *not* a cryptographically secure hash any
+  longer. A program can change its answer to this question as the state of the
+  art advances, and should aim to stay ahead of the state of the art by a
+  reasonable amount of time.
+  * ISCRYPTOGRAPHICALLYSECURE-YES`
+  * ISCRYPTOGRAPHICALLYSECURE-NO`
+
+## main messages and replies
+
+This is where work happens.
+
+* `GENKEY Contentfile`  
+  The program should examine the ContentFile and from it generate a
+  key. While it is doing this, it can send any number of `PROGRESS`
+  messages indication the position in the file that it's gotten to.
+  * `GENKEY-SUCCESS Key`
+  * `GENKEY-FAILURE ErrorMsg`
+* `VERIFYKEYCONTENT Key ContentFile`  
+  The program should examine the ContentFile and verify that it has the
+  content it would expect for the Key. While it is doing this, it can
+  send any number of `PROGRESS` messages indication the position in the
+  file that it's gotten to. (If the program earlier sent CANVERIFY-NO,
+  it will not be asked to do this.)
+  * `VERIFYKEYCONTENT-SUCCESS`
+  * `VERIFYKEYCONTENT-FAILURE`
+
+## general messages
+
+These messages can be sent at any time by either git-annex or the program.
+
+* `ERROR ErrorMsg`  
+  Generic error. Can be sent at any time if things get too messed up to
+  continue. When possible, use a more specific reply.  
+  The program should exit after sending this, as git-annex will not talk to
+  it any further. If the program receives an ERROR from git-annex, it can
+  exit with its own ERROR.
+
+## considerations for generating keys
+
+See [[doc/internals/key_format]] for how to format a key.
+
+The backend name should match the name of the program, eg if the program
+is git-annex-backend-XFOO, it should generate a key starting with "XFOO-".
+
+The backend name (and program name) has to be all uppercase, and should be
+reasonably short (max 10 bytes or so), and should be entirely ascii
+alphanumerics. Eg, use similar names to other [[backends]].
+
+git-annex will automatically also support an "E" variant of the backend,
+which adds a filename extension to the end of the key. It does this
+entirely transparently to the program, so while the repository may be using
+XFOOE keys, the program will always generate and verify XFOO keys.
+
+The key name is typically some kind of hash, but is not limited to a hash.
+The length of it needs to be similar to the lengths of other git-annex
+keys. Too long a key name will make it annoying to work with repositories
+using them, or even cause problems due to filename length limits. 128 bytes
+maximum, but shorter is better.
+
+It's important that, if the program responds with
+ISCRYPTOGRAPHICALLYSECURE-YES, the key name contains only a hash, and not
+other data from some other source. That other data could be used to try to
+mount a sha1 collision attack against git, by embedding colliding material
+in the key name, where users are unlikely to notice it. While git has
+several things that make sha1 collision attacks difficult, we don't want
+this chink in the armor.
+
+## program names must be unique
+
+It's important that two different programs don't use the same name, because
+that would result in bad behavior if the wrong program were used with a
+repository with keys generated by the other program.
+
+Here is a list of programs, to avoid picking the same name. Edit this page
+to add yours to the list.
+
+* [[git-annex-backend-XFOO]] is a demo program implementing this protocol
+  with a shell script.
+
+## signals
+
+The program should not block SIGINT, or SIGTERM. Doing so may cause
+git-annex to hang waiting on it to exit. Of course it's ok to catch those
+signals and do some necessary cleanup before exiting.

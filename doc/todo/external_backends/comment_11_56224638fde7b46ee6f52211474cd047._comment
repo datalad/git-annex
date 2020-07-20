@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2020-07-20T18:01:27Z"
+ content="""
+Wrote a draft [[design/external_backend_protocol]].
+
+I wonder if it makes sense to require the programs to format and parse
+their own keys; git-annex could break up the key and send the peices in.
+The advantage though is that this lets a program decide whether or not to
+include information like the size and mtime fields in the key or not.
+And if more fields ever got added it would not need changes to the
+protocol. I guess it's simple enough for format and parse, as shown by the
+example shell program that does it.
+"""]]
