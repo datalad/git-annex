@@ -1,4 +1,4 @@
-git-annex (8.20200618) UNRELEASED; urgency=medium
+git-annex (8.20200720) upstream; urgency=medium
 
   * import: Added --no-content option, which avoids downloading files
     from a special remote. Currently only supported by the directory
@@ -39,7 +39,7 @@ git-annex (8.20200618) UNRELEASED; urgency=medium
   * When on an adjust --hide-missing branch, fix handling of files that
     have been deleted but the deletion is not yet staged.
 
- -- Joey Hess <id@joeyh.name>  Thu, 18 Jun 2020 12:21:14 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 20 Jul 2020 14:40:51 -0400
 
 git-annex (8.20200617) upstream; urgency=medium
 
