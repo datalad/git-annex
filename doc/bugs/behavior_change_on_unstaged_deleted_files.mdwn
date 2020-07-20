@@ -4,3 +4,12 @@ commands. This is a recent reversion.
 Does not seem to be due to the changes to how ls-files is used, as the old
 way also listed deleted files -- how did they get filtered out before and
 why did it break? --[[Joey]]
+
+> It's from [[!commit 88a7fb5cbb7358f8d395f6c306fb9e94e1f1a724]].
+> Things used to use whenAnnexed, which uses lookupKey, which checks
+> doesFileExist, so deleted files were filtered out there. So 
+> seekFilteredKeys should also check that.
+> 
+> Also, there should be a test case for this, IIRC there was one past case
+> of a bug involving this and it's a bit of an easy edge case to forget
+> about. --[[Joey]]
