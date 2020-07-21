@@ -13,7 +13,8 @@ those a lot), and the remaining 37 were event and timer stuff used by the
 RTS.
 
 The number of -J does not change that leak, same number with -J2. -J2 will
-open slightly less other files though.
+open slightly less other files though. Without -J, the FD leak does not
+happen.
 
 Also, git-annex 8.20200330 does not have this problem, it seems to be a
 recent bug.
