@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-07-21T14:09:48Z"
+ content="""
+It looks to me like git-annex add is leaking a FD to
+.git/annex/othertmp.lck
+
+I ran git-annex add -J16 in a repo with 1000 files, and around half way
+through it had 832 open FDs, and 737 of them were that lock file. 55 more
+were pipes (to and from git cat-file etc; recent work reduced the number of
+those a lot), and the remaining 37 were event and timer stuff used by the
+RTS.
+
+The number of -J does not change that leak, same number with -J2. -J2 will
+open slightly less other files though.
+
+Also, git-annex 8.20200330 does not have this problem, it seems to be a
+recent bug.
+
+[[!commit 3334130368829ad2041006560e578f1f876f68e4]] claimed to fix a leak
+in this same code path.
+"""]]
