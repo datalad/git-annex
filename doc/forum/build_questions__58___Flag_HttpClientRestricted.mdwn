@@ -1,0 +1,7 @@
+Some questions about building git-annex with `stack`:
+
+* What are the pros/cons of setting the new flags `HttpClientRestricted` and `GitLfs` to `True`/`False`?
+
+* `extra-deps` in [stack.yaml](https://git.joeyh.name/index.cgi/git-annex.git/tree/stack.yaml) specifies specific package versions, some of which are [older than the latest ones](https://hackage.haskell.org/package/http-client) on Hackage.  I find myself needing to [patch](https://github.com/notestaff/git-annex-feedstock/blob/is-update-to-8.20200720.1-new/recipe/0001-enable-magicmime-dbus.patch) some of these `extra-deps` to later ones; these still seem to meet the [git-annex.cabal constraints](https://git.joeyh.name/index.cgi/git-annex.git/tree/git-annex.cabal#n425), but I wanted to check if there's a specific reason the later versions aren't used in the standard `stack.yaml`.
+
+Thanks!
