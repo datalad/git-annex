@@ -86,7 +86,7 @@ modifyTList tlist a = do
 		putTMVar tlist dl'
 
 emptyDList :: D.DList a -> Bool
-emptyDList = D.list True (\_ _ -> False)
+emptyDList = null . D.toList
 
 consTList :: TList a -> a -> STM ()
 consTList tlist v = modifyTList tlist $ \dl -> D.cons v dl
