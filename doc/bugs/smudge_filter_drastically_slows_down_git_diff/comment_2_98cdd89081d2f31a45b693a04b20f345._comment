@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-07-21T14:00:05Z"
+ content="""
+This is exactly what that todo is about. I'm going to close this as a dup.
+
+I suppose git diff runs it twice because it's smudging both sides of the diff.
+
+Note that git status does not re-run the smudge filter on the same file
+repeatedly (at least most of the time), so the overhead there is only one
+run per modification of a file. Unfortunately git diff does not benefit from
+such caching. Still, it only runs once per modified file in the repo,
+not on unmodified files.
+"""]]
