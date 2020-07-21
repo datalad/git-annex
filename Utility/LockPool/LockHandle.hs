@@ -52,7 +52,7 @@ makeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
 	setup = debugLocks $ atomically (pa pool file)
 	cleanup ph = debugLocks $ P.releaseLock ph
-	go ph = mkLockHandle pool file ph =<< fa file
+	go ph = mkLockHandle ph =<< fa file
 
 tryMakeLockHandle :: P.LockPool -> LockFile -> (P.LockPool -> LockFile -> STM (Maybe P.LockHandle)) -> (LockFile -> IO (Maybe FileLockOps)) -> IO (Maybe LockHandle)
 tryMakeLockHandle pool file pa fa = bracketOnError setup cleanup go
@@ -67,10 +67,10 @@ tryMakeLockHandle pool file pa fa = bracketOnError setup cleanup go
 			Nothing -> do
 				cleanup (Just ph)
 				return Nothing
-			Just fo -> Just <$> mkLockHandle pool file ph fo
+			Just fo -> Just <$> mkLockHandle ph fo
 
-mkLockHandle :: P.LockPool -> LockFile -> P.LockHandle -> FileLockOps -> IO LockHandle
-mkLockHandle pool file ph fo = do
-	atomically $ P.registerCloseLockFile pool file (fDropLock fo)
+mkLockHandle :: P.LockHandle -> FileLockOps -> IO LockHandle
+mkLockHandle ph fo = do
+	atomically $ P.registerCloseLockFile ph (fDropLock fo)
 	return $ LockHandle ph fo
 	

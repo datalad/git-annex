@@ -62,3 +62,5 @@ failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've been having quite a bit of fun revisiting git-annex and datalad after quite a while, and I'm really excited to see how far things have come. I'm pretty close to adopting these tools in my data science group after a pretty exhaustive search of related technologies like quilt, dvc, and attempts to role my own solution. Using Github + the S3 special remote w/versioning enabled is just about the best solution to dataset tracking I've come across.
+
+> [[fixed|done]] --[[Joey]]

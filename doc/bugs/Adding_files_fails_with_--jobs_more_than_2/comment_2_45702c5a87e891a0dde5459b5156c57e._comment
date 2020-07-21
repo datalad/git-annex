@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""analysis"""
+ date="2020-07-21T18:35:08Z"
+ content="""
+Utility.LockPool.STM.releaseLock seems to be where the problem is.
+
+It waits to close a lock FD if some other thread is using the lock. 
+But, this means that, if enough threads are run that the lock is
+always in use by one thread, it will never close it. Meanwhile, each
+lockShared call opens the lock file anew, accumilating another FD.
+
+3334130368829ad2041006560e578f1f876f68e4 is at fault, indeed.
+
+That commit mentions that it would be better to have two calls to
+lockShared only open the file once, but that it would be difficult to do
+that atomically. Perhaps there is a way to do that... It didn't seem easy
+to do this time either.
+
+Alternatively, registerCloseLockFile currently takes an action that closes
+one lock FD, and just combines that to its existing close action with `>>`.
+So it builds up one big action that closes all the FDs. Instead, make each
+lock handle contain its close action, and have releaseLock only release the
+one it was called with. Implemented this, and it solved it.
+"""]]
