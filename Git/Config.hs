@@ -22,6 +22,7 @@ import Git.Types
 import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
+import Utility.ThreadScheduler
 
 {- Returns a single git config setting, or a fallback value if not set. -}
 get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
@@ -214,13 +215,20 @@ fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
 		{ std_out = CreatePipe
 		, std_err = CreatePipe
 		}
-	go _ (Just hout) (Just herr) pid = do
-		(val, err) <- concurrently 
-			(S.hGetContents hout)
-			(S.hGetContents herr)
-		forceSuccessProcess p pid
-		r' <- store val st r
-		return (r', val, err)
+	go _ (Just hout) (Just herr) pid =
+		withAsync (S.hGetContents herr) $ \errreader -> do
+			val <- S.hGetContents hout
+			-- In case the process exits while something else,
+			-- like a background process, keeps the stderr handle
+			-- open, don't block forever waiting for stderr.
+			-- A few seconds after finishing reading stdout
+			-- should get any error message.
+			err <- either id id <$> 
+				wait errreader
+					`race` (threadDelaySeconds (Seconds 2) >> return mempty)
+			forceSuccessProcess p pid
+			r' <- store val st r
+			return (r', val, err)
 	go _ _ _ _ = error "internal"
 
 {- Reads git config from a specified file and returns the repo populated

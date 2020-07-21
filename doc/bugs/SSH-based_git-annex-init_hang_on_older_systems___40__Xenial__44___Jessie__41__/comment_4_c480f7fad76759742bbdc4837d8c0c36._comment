@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-07-21T20:02:22Z"
+ content="""
+Reproduced this with the script.
+
+	1798550 pts/0    S+     0:00              |   \_ /root/git-annex.linux/exe/git --library-path /root/git-annex.linux//lib:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/root/git-annex.linux//etc/ld.so.conf.d:/root/git-annex.linux//lib64:/root/git-annex.linux//lib/x86_64-linux-gnu:/root/git-annex.linux//usr/lib/x86_64-linux-gnu: /root/git-annex.linux/shimmed/git/git -C clone annex init --debug
+	1798579 pts/0    Sl+    0:00              |       \_ /root/git-annex.linux/exe/git-annex --library-path /root/git-annex.linux//lib:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/root/git-annex.linux//etc/ld.so.conf.d:/root/git-annex.linux//lib64:/root/git-annex.linux//lib/x86_64-linux-gnu:/root/git-annex.linux//usr/lib/x86_64-linux-gnu: /root/git-annex.linux/shimmed/git-annex/git-annex init --debug
+	1798596 pts/0    S+     0:00              |           \_ /root/git-annex.linux/exe/git --library-path /root/git-annex.linux//lib:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/root/git-annex.linux//etc/ld.so.conf.d:/root/git-annex.linux//lib64:/root/git-annex.linux//lib/x86_64-linux-gnu:/root/git-annex.linux//usr/lib/x86_64-linux-gnu: /root/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+	1798597 pts/0    S+     0:00              |           \_ /root/git-annex.linux/exe/git --library-path /root/git-annex.linux//lib:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/root/git-annex.linux//etc/ld.so.conf.d:/root/git-annex.linux//lib64:/root/git-annex.linux//lib/x86_64-linux-gnu:/root/git-annex.linux//usr/lib/x86_64-linux-gnu: /root/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+	1798598 pts/0    S+     0:00              |           \_ /root/git-annex.linux/exe/git --library-path /root/git-annex.linux//lib:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/root/git-annex.linux//usr/lib/x86_64-linux-gnu/audit:/root/git-annex.linux//etc/ld.so.conf.d:/root/git-annex.linux//lib64:/root/git-annex.linux//lib/x86_64-linux-gnu:/root/git-annex.linux//usr/lib/x86_64-linux-gnu: /root/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+	1798628 pts/0    Z+     0:00              |           \_ [ssh] <defunct>
+	1798267 ?        Ss     0:00              \_ /usr/sbin/sshd
+	1798629 ?        Ss     0:00              |   \_ sshd: root@notty
+
+I killed 1798629 and git-annex stopped hanging. That seems to confirm my
+theory that sshd has inherited the stderr handle that git-annex is waiting
+for input on. That process had these FDs:
+
+	lrwx------ 1 root root 64 Jul 21 16:04 0 -> /dev/null
+	lrwx------ 1 root root 64 Jul 21 16:04 1 -> /dev/null
+	lrwx------ 1 root root 64 Jul 21 16:04 2 -> /dev/null
+	lrwx------ 1 root root 64 Jul 21 16:04 3 -> socket:[15959002]
+	lr-x------ 1 root root 64 Jul 21 16:04 4 -> pipe:[15956866]
+	l-wx------ 1 root root 64 Jul 21 16:04 5 -> pipe:[15956866]
+
+So probably 4 or 5 was connected to git-annex on the other end.
+
+I've applied my patch, to fix this one.
+"""]]

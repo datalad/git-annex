@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-07-21T19:59:40Z"
+ content="""
+Reproducer script did not work for me.
+
+But in the meantime, 4c9ad1de4 has gotten into the built that script uses,
+so whatever about that commit fixes or masks the problem, it seems.
+
+(The other stall's reproducer script did still work.)
+"""]]
