@@ -2,10 +2,10 @@ I am investigating how to create special remotes using the library  Lykos153 / A
 
 I get this:
 
-   git annex initremote foo type=external externaltype=precomp encryption=none folder=/z/old/1111   
-   initremote foo 
-   git-annex: Unexpected parameters: folder
-   failed
-   git-annex: initremote: 1 failed
+    git annex initremote foo type=external externaltype=precomp encryption=none folder=/z/old/1111   
+    initremote foo 
+    git-annex: Unexpected parameters: folder
+    failed
+    git-annex: initremote: 1 failed
 
 The order of the arguments make no difference. Do I need to somehow register parameters now, that was not required before? Or something else?
