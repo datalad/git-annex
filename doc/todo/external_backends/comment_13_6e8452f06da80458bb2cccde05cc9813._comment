@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="external backend protocol"
+ date="2020-07-21T17:43:27Z"
+ content="""
+1. What is the advantage of a separate `VERIFYCONTENT` request, vs calling `GENKEY` and comparing the result?
+2. Can the protocol specify that the file passed to `GENKEY` may be a named pipe?  Or, add a `CANPIPE` request where the external backend program tells git-annex that it can take pipes; if the program can't, git-annex can always drain the pipe to a tempfile before passing it to the program.
+3. \"While stderr is connected to the console and so visible to the user, the program should avoid using it\" -- then maybe add `DEBUG` and `INFO` requests as in the [[design/external_special_remote_protocol]]?
+"""]]
