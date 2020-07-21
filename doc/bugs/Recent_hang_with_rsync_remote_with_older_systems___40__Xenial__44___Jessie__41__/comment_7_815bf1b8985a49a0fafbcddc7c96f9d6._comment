@@ -8,5 +8,48 @@ Reproducer script did not work for me.
 But in the meantime, 4c9ad1de4 has gotten into the built that script uses,
 so whatever about that commit fixes or masks the problem, it seems.
 
-(The other stall's reproducer script did still work.)
+But, the other stall's reproducer script did still work. And I was able to
+confirm that git-annex was blocked while ssh was a
+zombie process.. and killing sshd got git-annex unstuck. So apparently sshd
+is inheriting a handle keeping it open... at least sometimes.
+
+It's really weird my first patch didn't work. The only difference between
+reverting commit 1f2e2d15e and my first patch is the use of
+withCreateProcess. So um.. withCreateProcess is somehow blocking on ssh to
+close stderr? Looking at its code, it calls cleanupProcess, which has
+this comment:
+
+	-- Note, it's important that other threads that might be reading/writing
+	-- these handles also get killed off, since otherwise they might be holding
+	-- the handle lock and prevent us from closing, leading to deadlock.
+
+Ok, that begins to make sense.. The threads are not killed off, so
+are accessing the handle, so closing the handle blocks. And this explains
+why it got to ExitSuccess and then hung.
+
+My second patch, by using withAsync, avoided that. But like I said, that
+patch could kill the threads before they have read and processed all the 
+output. For example, if the process output an error and exited,
+that could cause the error message to not get displayed to the user.
+
+So hmm, this is not reproducible, but we don't know why a recent change
+hid it, and the only patch I know of that fixes it is to revert commit 1f2e2d15e,
+which is part of the work being done for [[todo/more_extensive_retries_to_mask_transient_failures]].
+And while that todo is currently stalled and I may not use this work
+to resolve it at all, it seems a pity to revert that commit.
+
+Also, before 1f2e2d15e, it would have started a thread to read from stderr,
+and that thread could keep running after outputFilter returned.
+And nothing would ever stop that thread, which would block forever due to
+ssh's behavior. So, before that commit, I think there was also a bug,
+a FD leak (and small memory leak).
+
+This is getting kind of long, but the only way forward I see out of all
+this, aside from somehow determining how 4c9ad1de4 masks the problem,
+would be to make the stderr waiter thread only be allowed to run
+for a "little while" after the process exits. Similar to how cb74cefde78
+fixed the other hang.
+
+(Or well, git-annex could detect the ssh versions that have this
+behavior and refuse to use them..)
 """]]
