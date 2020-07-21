@@ -1,0 +1,13 @@
+Hi,
+
+My current setup is:
+
+  - "work" in my computer, client group
+  - "backup"  rsync.net also in client group
+  - glacier in full archive group
+
+My intention was to have rsync.net to be my live backup, from which I could pull the whole repo in case of disaster. I expected when I moved a file to "archive" in my computer this would be reflected in rsync.net and once it been archived on glacier both files (my computer and rsync) would be dropped.
+
+That did not happen, through the assistant. I watched the file uploaded to glacier but it never dropped my copy. Actually when I stopped the assistant ``git annex drop --auto`` it drops the file. But if I start the assistant again it starts downloading from rsync.net.
+
+Is there a way to accomplish what I'm trying? Maybe if rsync.net was in _trasfer_ group, but then again without being able to run ``git annex sync`` on rsync.net side (which actually supports ``git`` commands) I don't know if would work...
