@@ -1,6 +1,6 @@
 {- Metered IO and actions
  -
- - Copyright 2012-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -46,6 +46,7 @@ import Common
 import Utility.Percentage
 import Utility.DataUnits
 import Utility.HumanTime
+import Utility.ThreadScheduler
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -314,10 +315,22 @@ outputFilter cmd params environ outfilter errfilter =
 	catchMaybeIO $ withCreateProcess p go
   where
 	go _ (Just outh) (Just errh) pid = do
-		void $ concurrently 
-			(tryIO (outfilter outh) >> hClose outh)
-			(tryIO (errfilter errh) >> hClose errh)
-		waitForProcess pid
+		outt <- async $ tryIO (outfilter outh) >> hClose outh
+		errt <- async $ tryIO (errfilter errh) >> hClose errh
+		ret <- waitForProcess pid
+		-- Normally, now that the process has exited, the threads
+		-- will finish processing its output and terminate.
+		-- But, just in case the process did something evil like
+		-- forking to the background while inheriting stderr,
+		-- it's possible that the threads will not finish, which
+		-- would result in a deadlock. So, wait a few seconds
+		-- maximum for them to finish and then cancel them.
+		-- (One program that has behaved this way in the past is
+		-- openssh.)
+		race_
+			(wait outt >> wait errt)
+			(threadDelaySeconds (Seconds 2) >> cancel outt >> cancel errt)
+		return ret
 	go _ _ _ _ = error "internal"
 	
 	p = (proc cmd (toCommand params))

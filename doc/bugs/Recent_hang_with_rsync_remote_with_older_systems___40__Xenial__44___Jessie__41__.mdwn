@@ -161,3 +161,7 @@ in git-annex.
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] made it cancel the threads 2 seconds after the process
+> exited if still running. So there will be a bit of a slow down when using
+> that broken ssh version, but it will work. --[[Joey]]
