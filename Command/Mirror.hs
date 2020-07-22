@@ -75,7 +75,10 @@ startKey o afile (key, ai) = case fromToOptions o of
 		haskey <- flip Remote.hasKey key =<< getParsed r
 		case haskey of
 			Left _ -> stop
-			Right True -> Command.Get.start' (return True) Nothing key afile ai
+			Right True -> ifM (inAnnex key)
+				( stop
+				, Command.Get.start' (return True) Nothing key afile ai
+				)
 			Right False -> ifM (inAnnex key)
 				( do
 					numcopies <- getnumcopies

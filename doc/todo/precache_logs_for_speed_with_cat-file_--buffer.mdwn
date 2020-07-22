@@ -37,10 +37,6 @@ and precache them.
 > > > Still todo:
 > > > 
 > > > * move, copy, drop, and mirror were left not using the location log caching yet
-> > > * get is left with an unncessary inAnnex check so could be sped up
-> > >   a little bit more. Above improvements to batch mode would allow
-> > >   fixing this.
-> > > 
 
 Another thing that the same cat-file --buffer approach could be used with
 is to cat the annex links. Git.LsFiles.inRepoDetails provides the Sha

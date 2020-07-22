@@ -70,7 +70,7 @@ startKeys from (key, ai) = checkFailedTransferDirection ai Download $
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
 start' expensivecheck from key afile ai =
-	stopUnless (not <$> inAnnex key) $ stopUnless expensivecheck $
+	stopUnless expensivecheck $
 		case from of
 			Nothing -> go $ perform key afile
 			Just src ->
