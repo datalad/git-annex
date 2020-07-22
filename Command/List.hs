@@ -45,7 +45,7 @@ seek o = do
 	list <- getList o
 	printHeader list
 	let seeker = AnnexedFileSeeker
-		{ seekAction = commandAction' (start list)
+		{ startAction = start list
 		, checkContentPresent = Nothing
 		, usesLocationLog = True
 		}

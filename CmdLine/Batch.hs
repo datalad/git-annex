@@ -1,6 +1,6 @@
 {- git-annex batch commands
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,10 +11,13 @@ import Annex.Common
 import Types.Command
 import CmdLine.Action
 import CmdLine.GitAnnex.Options
+import CmdLine.Seek
 import Options.Applicative
 import Limit
 import Types.FileMatcher
 import Annex.BranchState
+import Annex.WorkTree
+import Annex.Content
 
 data BatchMode = Batch BatchFormat | NoBatch
 
@@ -110,12 +113,22 @@ batchStart fmt a = batchInput fmt (Right <$$> liftIO . relPathCwdToFile) $
 
 -- Like batchStart, but checks the file matching options
 -- and skips non-matching files.
-batchFilesMatching :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
+batchFilesMatching :: BatchFormat -> (RawFilePath -> CommandStart) -> Annex ()
 batchFilesMatching fmt a = do
 	matcher <- getMatcher
 	batchStart fmt $ \f ->
 		let f' = toRawFilePath f
 		in ifM (matcher $ MatchingFile $ FileInfo f' f')
-			( a f
+			( a f'
 			, return Nothing
 			)
+
+batchAnnexedFilesMatching :: BatchFormat -> AnnexedFileSeeker -> Annex ()
+batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $
+	whenAnnexed $ \f k -> case checkContentPresent seeker of
+		Just v -> do
+			present <- inAnnex k
+			if (present == v)
+				then startAction seeker f k
+				else return Nothing
+		Nothing -> startAction seeker f k

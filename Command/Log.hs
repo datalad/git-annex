@@ -86,7 +86,7 @@ seek o = do
 	zone <- liftIO getCurrentTimeZone
 	let outputter = mkOutputter m zone o
 	let seeker = AnnexedFileSeeker
-		{ seekAction = commandAction' (start o outputter)
+		{ startAction = start o outputter
 		, checkContentPresent = Nothing
 		-- the way this uses the location log would not be helped
 		-- by precaching the current value

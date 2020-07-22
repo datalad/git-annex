@@ -93,7 +93,7 @@ seek o = startConcurrency commandStages $ do
 	checkDeadRepo u
 	i <- prepIncremental u (incrementalOpt o)
 	let seeker = AnnexedFileSeeker
-		{ seekAction = commandAction' (start from i)
+		{ startAction = start from i
 		, checkContentPresent = Nothing
 		, usesLocationLog = True
 		}

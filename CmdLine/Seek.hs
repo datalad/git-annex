@@ -44,12 +44,13 @@ import qualified Annex.BranchState
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Utility.Tuple
+import CmdLine.Action
 
 import Control.Concurrent.Async
 import System.Posix.Types
 
 data AnnexedFileSeeker = AnnexedFileSeeker
-	{ seekAction :: RawFilePath -> Key -> CommandSeek
+	{ startAction :: RawFilePath -> Key -> CommandStart
 	, checkContentPresent :: Maybe Bool
 	, usesLocationLog :: Bool
 	}
@@ -305,7 +306,8 @@ seekFilteredKeys seeker listfs = do
 		Just (f, content) -> do
 			case parseLinkTargetOrPointerLazy =<< content of
 				Just k -> checkpresence k $
-					seekAction seeker f k
+					commandAction $
+						startAction seeker f k
 				Nothing -> noop
 			finisher oreader
 		Nothing -> return ()
@@ -313,7 +315,7 @@ seekFilteredKeys seeker listfs = do
 	precachefinisher lreader = liftIO lreader >>= \case
 		Just ((logf, f, k), logcontent) -> do
 			maybe noop (Annex.BranchState.setCache logf) logcontent
-			seekAction seeker f k
+			commandAction $ startAction seeker f k
 			precachefinisher lreader
 		Nothing -> return ()
 	

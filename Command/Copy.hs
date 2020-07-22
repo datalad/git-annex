@@ -45,22 +45,21 @@ instance DeferredParseClass CopyOptions where
 
 seek :: CopyOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
-	let go = start o
-	let seeker = AnnexedFileSeeker
-		{ seekAction = commandAction' go
-		, checkContentPresent = Nothing
-		, usesLocationLog = False
-		}
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt
-			(whenAnnexed go . toRawFilePath)
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o)
 			(commandAction . Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (copyFiles o)
+		Batch fmt -> batchAnnexedFilesMatching fmt seeker
   where
 	ww = WarnUnmatchLsFiles
+	
+	seeker = AnnexedFileSeeker
+		{ startAction = start o
+		, checkContentPresent = Nothing
+		, usesLocationLog = False
+		}
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or

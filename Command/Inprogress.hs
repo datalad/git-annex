@@ -39,7 +39,7 @@ seek o = do
 		_ -> do
 			let s = S.fromList ts
 			let seeker = AnnexedFileSeeker
-				{ seekAction = commandAction' (start s)
+				{ startAction = start s
 				, checkContentPresent = Nothing
 				, usesLocationLog = False
 				}

@@ -51,20 +51,18 @@ parseFormatOption = option (Utility.Format.gen <$> str)
 seek :: WhereisOptions -> CommandSeek
 seek o = do
 	m <- remoteMap id
-	let go = start o m
+	let seeker = AnnexedFileSeeker
+		{ startAction = start o m
+		, checkContentPresent = Nothing
+		, usesLocationLog = True
+		}
 	case batchOption o of
-		Batch fmt -> batchFilesMatching fmt
-			(whenAnnexed go . toRawFilePath)
 		NoBatch -> do
-			let seeker = AnnexedFileSeeker
-				{ seekAction = commandAction' go
-				, checkContentPresent = Nothing
-				, usesLocationLog = True
-				}
 			withKeyOptions (keyOptions o) False
 				(commandAction . startKeys o m)
 				(withFilesInGitAnnex ww seeker)
 				=<< workTreeItems ww (whereisFiles o)
+		Batch fmt -> batchAnnexedFilesMatching fmt seeker
   where
 	ww = WarnUnmatchLsFiles
 

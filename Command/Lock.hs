@@ -32,7 +32,7 @@ seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
   where
 	ww = WarnUnmatchLsFiles
 	seeker = AnnexedFileSeeker
-		{ seekAction = commandAction' start
+		{ startAction = start
 		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}

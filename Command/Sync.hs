@@ -646,7 +646,7 @@ seekSyncContent o rs currbranch = do
 				seekworktree mvar l (const noop)
 				pure Nothing
 	withKeyOptions' (keyOptions o) False
-		(return (gokey mvar bloom))
+		(return (commandAction . gokey mvar bloom))
 		(const noop)
 		[]
 	waitForAllRunningCommandActions
@@ -654,7 +654,7 @@ seekSyncContent o rs currbranch = do
   where
 	seekworktree mvar l bloomfeeder = do
 		let seeker = AnnexedFileSeeker
-			{ seekAction = gofile bloomfeeder mvar
+			{ startAction = gofile bloomfeeder mvar
 			, checkContentPresent = Nothing
 			, usesLocationLog = True
 			}
@@ -662,7 +662,7 @@ seekSyncContent o rs currbranch = do
 			seekHelper fst3 ww LsFiles.inRepoDetails l
 
 	seekincludinghidden origbranch mvar l bloomfeeder =
-		seekFiltered (\f -> ifAnnexed f (gofile bloomfeeder mvar f) noop) $
+		seekFiltered (\f -> ifAnnexed f (commandAction . gofile bloomfeeder mvar f) noop) $
 			seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
 
 	ww = WarnUnmatchLsFiles
@@ -677,7 +677,7 @@ seekSyncContent o rs currbranch = do
 		-- Run syncFile as a command action so file transfers run
 		-- concurrently.
 		let ai = OnlyActionOn k (ActionItemKey k)
-		commandAction $ startingNoMessage ai $ do
+		startingNoMessage ai $ do
 			whenM (syncFile ebloom rs af k) $
 				void $ liftIO $ tryPutMVar mvar ()
 			next $ return True

@@ -18,7 +18,6 @@ import Types.Key
 import Git.FilePath
 import qualified Utility.Format
 import Utility.DataUnits
-import Annex.Content
 
 cmd :: Command
 cmd = notBareRepo $ withGlobalOptions [annexedMatchingOptions] $ mkCommand $
@@ -54,27 +53,24 @@ parseFormatOption =
 		)
 
 seek :: FindOptions -> CommandSeek
-seek o = case batchOption o of
-	NoBatch -> do
-		islimited <- limited
-		let seeker = AnnexedFileSeeker
-			{ seekAction = commandAction' go
-			-- only files with content present are shown, unless
-			-- the user has requested others via a limit
-			, checkContentPresent = if islimited
-				then Nothing
-				else Just True
-			, usesLocationLog = False
-			}
-		withKeyOptions (keyOptions o) False
+seek o = do
+	islimited <- limited
+	let seeker = AnnexedFileSeeker
+		{ startAction = start o
+		-- only files with content present are shown, unless
+		-- the user has requested others via a limit
+		, checkContentPresent = if islimited
+			then Nothing
+			else Just True
+		, usesLocationLog = False
+		}
+	case batchOption o of
+		NoBatch -> withKeyOptions (keyOptions o) False
 			(commandAction . startKeys o)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (findThese o)
-	Batch fmt -> batchFilesMatching fmt
-		(whenAnnexed gobatch . toRawFilePath)
+		Batch fmt -> batchAnnexedFilesMatching fmt seeker
   where
-	go = start o
-	gobatch f k = stopUnless (limited <||> inAnnex k) (go f k)
 	ww = WarnUnmatchLsFiles
 
 start :: FindOptions -> RawFilePath -> Key -> CommandStart

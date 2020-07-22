@@ -77,7 +77,7 @@ seek o = case batchOption o of
 		c <- liftIO currentVectorClock
 		let ww = WarnUnmatchLsFiles
 		let seeker = AnnexedFileSeeker
-			{ seekAction = commandAction' (start c o)
+			{ startAction = start c o
 			, checkContentPresent = Nothing
 			, usesLocationLog = False
 			}

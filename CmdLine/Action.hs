@@ -43,9 +43,6 @@ performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
 commandActions :: [CommandStart] -> Annex ()
 commandActions = mapM_ commandAction
 
-commandAction' :: (a -> b -> CommandStart) -> a -> b -> Annex ()
-commandAction' start a b = commandAction $ start a b
-
 {- Runs one of the actions needed to perform a command.
  - Individual actions can fail without stopping the whole command,
  - including by throwing non-async exceptions.
