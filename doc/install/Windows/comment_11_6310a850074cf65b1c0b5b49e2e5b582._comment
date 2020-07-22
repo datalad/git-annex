@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mreiden"
+ avatar="http://cdn.libravatar.org/avatar/00e411c947bed82f673935f36f6be689"
+ subject="Autobuild permissions"
+ date="2020-07-22T16:07:20Z"
+ content="""
+It looks like the windows autobuild is updating based on the timestamps and the build-version contents (8.20200720.2-gd9ae6ab0b), but permission is denied on the exe file (https://downloads.kitenet.net/git-annex/autobuild/windows/git-annex-installer.exe).
+"""]]
