@@ -2,9 +2,9 @@ I am investigating how to create special remotes using the library  Lykos153 / A
 
 I get this:
 
-    git annex initremote foo type=external externaltype=precomp encryption=none folder=/z/old/1111   
+    git annex initremote foo type=external externaltype=precomp encryption=none directory=/z/old/1111   
     initremote foo 
-    git-annex: Unexpected parameters: folder
+    git-annex: Unexpected parameters: directory
     failed
     git-annex: initremote: 1 failed
 
