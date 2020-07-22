@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-07-22T15:07:06Z"
+ content="""
+This should only happen if your program is responding to LISTCONFIGS
+with a list that does not include that parameter.
+
+If it responds with UNSUPPORTED-REQUEST, all configs will be allowed.
+
+I'm not familiar with the python library, but I guess it is doing that, and
+probably has a way to specify what configs to list.
+"""]]
