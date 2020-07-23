@@ -1,0 +1,18 @@
+Hi everyone,
+
+first thanks for the great software and community support. I am a big fan of git-annex for the longest time, even participated the kickstarter back then. Throughout this time, I also have helping a few professional photographers to manage their files. I can very much relate to Joeys original story for the assistant, thus felt the potential for it to be very useful for them.
+
+However, even though I use git-annex personally and even tried a few projects with it, I did not manage to create the solution I envisioned for my friends. The use case is more about managing space, backing up and archiving. I will give more details below, but I am starting to lose hope. I tried a couple of approaches ([gateway][1], [rsync.net][2]) to no avail, but I still have the feeling it should be possible. Therefore, I bring forth my idea to put it out of its misery:
+
+  - The goal is to (a) use the glacier archive feature to get rid of closed projects, freeing up space and (b) to have a “cloud backup” of the worktree. The backup ideally would be something I could ``git clone`` in case of a disaster and still would be able to recover archived files from glacier (by moving it out of “archive” folder).
+
+  - Very importantly restriction, these users have no tech background, thus the whole process must be automated and as error free as possible. On the other hand, it does not need to be online, or even use the assistant at all.  It would be fine to have rules like “takes 24h to recover an archive” (because of ``cron`` or whatever). 
+
+One optional feature is finding a use for the tons of external hard drives they hoarded over the years. The biggest hope here is not to have to rely on cheap hardware to store a lifework as soon as possible. Even though I try to help them to catalog projects and maintain multiple copies, it is inevitable that now and then something fails. I was really hopping git-annex would help here.
+
+Thanks in advance and all the best!
+
+f.
+
+[1]: https://git-annex.branchable.com/forum/Is_it_possible_to_setup_a_git-annex_Glacier_gatway__63__/
+[2]: https://git-annex.branchable.com/forum/using_rsync.net_as_backup_and_glacier_as_archive/
