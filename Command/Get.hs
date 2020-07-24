@@ -66,7 +66,8 @@ start o from file key = start' expensivecheck from key afile ai
 
 startKeys :: Maybe Remote -> (Key, ActionItem) -> CommandStart
 startKeys from (key, ai) = checkFailedTransferDirection ai Download $
-	start' (return True) from key (AssociatedFile Nothing) ai
+	stopUnless (not <$> inAnnex key) $
+		start' (return True) from key (AssociatedFile Nothing) ai
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
 start' expensivecheck from key afile ai =
