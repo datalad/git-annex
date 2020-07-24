@@ -33,11 +33,9 @@ and precache them.
 > > > * `sync --content` 2x speedup!
 > > > * `fsck --fast` 1.5x speedup
 > > > * `whereis` 1.5x speedup
-> > > * `copy --to --fast` twenty-five percent or so speedup
-> > > * `copy --to` 2x speedup
-> > > * `copy --from` 2x speedup
-> > >
-> > > For copy benchmarks, note that both repos had all files.
+> > > 
+> > > move, copy, and drop probably are also faster, but the work will
+> > > dominate
 > > >
 > > > [[done]]
 

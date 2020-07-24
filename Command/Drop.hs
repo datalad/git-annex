@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -52,53 +52,55 @@ parseDropFromOption = parseRemoteOption <$> strOption
 	)
 
 seek :: DropOptions -> CommandSeek
-seek o = startConcurrency commandStages $
+seek o = startConcurrency commandStages $ do
+	from <- case dropFrom o of
+		Nothing -> pure Nothing
+		Just f -> getParsed f >>= \remote -> do
+			u <- getUUID
+			if Remote.uuid remote == u
+				then pure Nothing
+				else pure (Just remote)				
+	let seeker = AnnexedFileSeeker
+		{ startAction = start o from
+		, checkContentPresent = case from of
+			Nothing -> Just True
+			Just _ -> Nothing
+		, usesLocationLog = True
+		}
 	case batchOption o of
 		Batch fmt -> batchAnnexedFilesMatching fmt seeker
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o) seeker
-			(commandAction . startKeys o)
+			(commandAction . startKeys o from)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (dropFiles o)
   where
 	ww = WarnUnmatchLsFiles
 
-	seeker = AnnexedFileSeeker
-		{ startAction = start o
-		, checkContentPresent = Nothing
-		, usesLocationLog = False
-		}
-
-start :: DropOptions -> RawFilePath -> Key -> CommandStart
-start o file key = start' o key afile ai
+start :: DropOptions -> Maybe Remote -> RawFilePath -> Key -> CommandStart
+start o from file key = start' o from key afile ai
   where
 	afile = AssociatedFile (Just file)
 	ai = mkActionItem (key, afile)
 
-start' :: DropOptions -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' o key afile ai = do
-	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
+start' :: DropOptions -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
+start' o from key afile ai = 
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
-		stopUnless (want from) $
+		stopUnless want $
 			case from of
 				Nothing -> startLocal afile ai numcopies key []
-				Just remote -> do
-					u <- getUUID
-					if Remote.uuid remote == u
-						then startLocal afile ai numcopies key []
-						else startRemote afile ai numcopies key remote
-	  where
-		want from
-			| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
-			| otherwise = return True
+				Just remote -> startRemote afile ai numcopies key remote
+  where
+	want
+		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
+		| otherwise = return True
 
-startKeys :: DropOptions -> (Key, ActionItem) -> CommandStart
-startKeys o (key, ai) = start' o key (AssociatedFile Nothing) ai
+startKeys :: DropOptions -> Maybe Remote -> (Key, ActionItem) -> CommandStart
+startKeys o from (key, ai) = start' o from key (AssociatedFile Nothing) ai
 
 startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
 startLocal afile ai numcopies key preverified =
-	stopUnless (inAnnex key) $
-		starting "drop" (OnlyActionOn key ai) $
-			performLocal key afile numcopies preverified
+	starting "drop" (OnlyActionOn key ai) $
+		performLocal key afile numcopies preverified
 
 startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile ai numcopies key remote = 

@@ -17,6 +17,7 @@ import qualified Command.Drop
 import Command
 import Annex.Wanted
 import Annex.SpecialRemote.Config
+import Annex.Content
 import qualified Database.Keys
 import Git.FilePath
 
@@ -118,7 +119,8 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 			)
 
 	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
-		Command.Drop.startLocal afile ai numcopies key preverified
+		stopUnless (inAnnex key) $
+			Command.Drop.startLocal afile ai numcopies key preverified
 
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
 		Command.Drop.startRemote afile ai numcopies key r
