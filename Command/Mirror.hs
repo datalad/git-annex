@@ -42,7 +42,7 @@ instance DeferredParseClass MirrorOptions where
 
 seek :: MirrorOptions -> CommandSeek
 seek o = startConcurrency stages $ 
-	withKeyOptions (keyOptions o) False
+	withKeyOptions (keyOptions o) False seeker
 		(commandAction . startKey o (AssociatedFile Nothing))
 		(withFilesInGitAnnex ww seeker)
 		=<< workTreeItems ww (mirrorFiles o)

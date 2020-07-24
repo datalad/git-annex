@@ -86,7 +86,7 @@ seek o = case batchOption o of
 			GetAll -> withFilesInGitAnnex ww
 			Set _ -> withFilesInGitAnnexNonRecursive ww
 				"Not recursively setting metadata. Use --force to do that."
-		withKeyOptions (keyOptions o) False
+		withKeyOptions (keyOptions o) False seeker
 			(commandAction . startKeys c o)
 			(seekaction seeker)
 			=<< workTreeItems ww (forFiles o)

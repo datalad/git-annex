@@ -58,7 +58,7 @@ seek o = do
 		}
 	case batchOption o of
 		NoBatch -> do
-			withKeyOptions (keyOptions o) False
+			withKeyOptions (keyOptions o) False seeker
 				(commandAction . startKeys o m)
 				(withFilesInGitAnnex ww seeker)
 				=<< workTreeItems ww (whereisFiles o)

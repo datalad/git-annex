@@ -128,7 +128,7 @@ batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $
 	whenAnnexed $ \f k -> case checkContentPresent seeker of
 		Just v -> do
 			present <- inAnnex k
-			if (present == v)
+			if present == v
 				then startAction seeker f k
 				else return Nothing
 		Nothing -> startAction seeker f k

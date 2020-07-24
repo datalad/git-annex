@@ -166,21 +166,27 @@ withNothing _ _ = giveup "This command takes no parameters."
 withKeyOptions 
 	:: Maybe KeyOptions
 	-> Bool
+	-> AnnexedFileSeeker
 	-> ((Key, ActionItem) -> CommandSeek)
 	-> ([WorkTreeItem] -> CommandSeek)
 	-> [WorkTreeItem]
 	-> CommandSeek
-withKeyOptions ko auto keyaction = withKeyOptions' ko auto mkkeyaction
+withKeyOptions ko auto seeker keyaction = withKeyOptions' ko auto mkkeyaction
   where
 	mkkeyaction = do
 		matcher <- Limit.getMatcher
-		return $ \v@(k, ai) ->
+		return $ \v@(k, ai) -> checkseeker k $
 			let i = case ai of
 				ActionItemBranchFilePath (BranchFilePath _ topf) _ ->
 					MatchingKey k (AssociatedFile $ Just $ getTopFilePath topf)
 				_ -> MatchingKey k (AssociatedFile Nothing)
 			in whenM (matcher i) $
 				keyaction v
+	checkseeker k a = case checkContentPresent seeker of
+		Nothing -> a
+		Just v -> do
+			present <- inAnnex k
+			when (present == v) a
 
 withKeyOptions' 
 	:: Maybe KeyOptions

@@ -47,7 +47,7 @@ seek :: CopyOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
 	case batchOption o of
 		NoBatch -> withKeyOptions
-			(keyOptions o) (autoMode o)
+			(keyOptions o) (autoMode o) seeker
 			(commandAction . Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (copyFiles o)

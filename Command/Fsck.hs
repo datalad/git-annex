@@ -97,7 +97,7 @@ seek o = startConcurrency commandStages $ do
 		, checkContentPresent = Nothing
 		, usesLocationLog = True
 		}
-	withKeyOptions (keyOptions o) False
+	withKeyOptions (keyOptions o) False seeker
 		(\kai -> commandAction . startKey from i kai =<< getNumCopies)
 		(withFilesInGitAnnex ww seeker)
 		=<< workTreeItems ww (fsckFiles o)

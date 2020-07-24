@@ -55,7 +55,7 @@ seek :: DropOptions -> CommandSeek
 seek o = startConcurrency commandStages $
 	case batchOption o of
 		Batch fmt -> batchAnnexedFilesMatching fmt seeker
-		NoBatch -> withKeyOptions (keyOptions o) (autoMode o)
+		NoBatch -> withKeyOptions (keyOptions o) (autoMode o) seeker
 			(commandAction . startKeys o)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (dropFiles o)

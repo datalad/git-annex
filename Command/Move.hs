@@ -61,7 +61,7 @@ seek o = startConcurrency stages $ do
 		, usesLocationLog = False
 		}
 	case batchOption o of
-		NoBatch -> withKeyOptions (keyOptions o) False
+		NoBatch -> withKeyOptions (keyOptions o) False seeker
 			(commandAction . startKey (fromToOptions o) (removeWhen o))
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (moveFiles o)

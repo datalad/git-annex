@@ -65,7 +65,7 @@ seek o = do
 		, usesLocationLog = False
 		}
 	case batchOption o of
-		NoBatch -> withKeyOptions (keyOptions o) False
+		NoBatch -> withKeyOptions (keyOptions o) False seeker
 			(commandAction . startKeys o)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (findThese o)
