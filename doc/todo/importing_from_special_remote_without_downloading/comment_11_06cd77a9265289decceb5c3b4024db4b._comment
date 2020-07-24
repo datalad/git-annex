@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2020-07-24T17:50:03Z"
+ content="""
+Yes, it can also happen with addurl, but I think it's less likely that two
+users add the same url with and without --fast or --relaxed than that two
+users sync with the same remote with and without --content.
+
+Anyway, I opened [[sync_fast_import]].
+"""]]

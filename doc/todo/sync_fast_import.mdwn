@@ -1,0 +1,34 @@
+git-annex import --no-content from a directory special remote is
+implemented, but git-annex sync, when run without --content, does not
+operate on import/export special remotes. This is inconsistent, and it
+would be useful if it did.
+
+<https://git-annex.branchable.com/todo/importing_from_special_remote_without_downloading/#comment-e3db95e073f01a05b205e26f422f5bc5>
+describes a problem with doing that, involving merge conflicts. That
+should not actually happen with the directory special remote, because
+it generates the same key with importKey as git-annex import would.
+But other special remotes later using this interface might generate a key
+using a different hash than usual.
+
+The suggestion there is that there could be a separate config that controls
+whether sync does a fast import or an import with content. Then when sync
+is run without --content, it can do a fast import. And when run with
+--content, it can do a fast import, followed by getting the content.
+
+Or maybe that should just be what it always does, when a remote supports
+importKey? (If so, git-annex import should do the same.) Yeah, this seems
+better than a config. Look at it like this: The special remote makes pseudo
+"commits" when changes are made to it. And maybe it choses to use a
+different kind of key than the local repository would use. Same could
+happen when pulling from someone else's repo, if they've configured
+git-annex to use a different backend.
+
+Except.. --no-content means annex.largefiles is not checked, so non-large
+files get added as annexed files. That's done because annex.largefiles
+can contain expressions that need to examine the content of the file.
+In particulat for mimetype and mimeencoding.
+So there would still be a conflict potential.
+
+May be worth removing support for matching annex.largefiles when the
+expression needs the file content, when importing from a special remote.
+Or could detect when those are used, and only import with --content then.
