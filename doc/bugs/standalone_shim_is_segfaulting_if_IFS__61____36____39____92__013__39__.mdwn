@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+I did manage to reach the rabbit hole bottom in the troubleshooting of my unique inability to use argcomplete for shell completion in datalad: [datalad issue](https://github.com/datalad/datalad/issues/4538) [argcomplete issue](https://github.com/kislyuk/argcomplete/issues/303)
+
+And the bottom looked liked:
+
+```
+$> IFS=$'\013' /usr/lib/git-annex.linux/git-annex version
+[1]    1040489 segmentation fault (core dumped)  IFS=$'\013' /usr/lib/git-annex.linux/git-annex version
+
+$> IFS=$'\013' /usr/lib/git-annex.linux/git version      
+[1]    1040532 segmentation fault (core dumped)  IFS=$'\013' /usr/lib/git-annex.linux/git version
+
+```
+
+whenever stock git is ok
+
+```
+$> IFS=$'\013' /usr/bin/git version  
+git version 2.27.0
+```
+
+most likely it is just a matter of sanitizing this variable in `runshell` or alike.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="nix.zahlen@1211ac6c964ba2d68b70655f747bef1383032e77"
+ nickname="nix.zahlen"
+ avatar="http://cdn.libravatar.org/avatar/66cc45a05749fe8d4ca36d8c6071da51"
+ subject="It is really a pitty that the Windows port / version is unmaintained"
+ date="2020-07-24T17:48:07Z"
+ content="""
+Is there maybe a how-to somewhere which describes how we could compile the source on Windows to have more recent versions?!
+"""]]

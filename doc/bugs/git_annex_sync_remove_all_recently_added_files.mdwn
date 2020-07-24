@@ -1,0 +1,59 @@
+### Please describe the problem.
+
+
+
+since a bit of time i have a strange probleme. My git annex environement look like this :
+
+A E  
+|\ /  
+| C--D  
+|/ \  
+B F.....G  
+
+the dot point because G is an external drive and can be plug anywhere else. let's say my last comit is **db1a9a** If i add some file on the repo from G and sync point to point like : i'm in G : git annex sync F a new commit is created say **61dacd** go F git annex sync D go D git annex sync E ...etc
+
+at some point my commit **61dacd** becomme the parent of a new commit i dono the source ... let's say **4fcdae**
+
+in git log i found
+
+commit 4fcdae... (HEAD -> master, B/synced/ma ster, B/master, C/synced/master, C/master, synced/master)
+
+and that commit just undo all the change done by the previous one, indeed :
+
+git diff **4fcdae** **db1a9a** -> nothing
+
+this... force me to play with branch like every time and anoyed me alot. I don't understand what's happening here. Does any one have any clue/insight on what i can do to fix this/investigate ?
+
+All repo are at the commit **db1a9a** before i start...
+
+best regards
+
+
+### What steps will reproduce the problem?
+
+i'm not sur on how i can reproduce it. It happens time to time.
+
+### What version of git-annex are you using? On what operating system?
+
+Ubuntu 18.04.4 LTS -> git-annex version: 6.20180227  
+Ubuntu 14.04.6 LTS -> git-annex version: 5.20140412ubuntu1  
+freebsd 12.1-RELEASE-p3 -> git-annex version: 7.20190626    
+debian 10.4 -> git-annex version: 7.20190129  
+debian 8.11 -> git-annex version: 5.20141125+oops-1+deb8u2  
+Ubuntu 18.04.4 LTS -> git-annex version: 6.20180227  
+
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+nope allways have this weird bug who come to haunt me time to time.

@@ -1,0 +1,40 @@
+since a bit of time i have a strange probleme.
+My git annex environement look like this :
+
+A      E  
+|\    /  
+| C--D  
+|/    \  
+B      F.....G  
+
+the dot point because G is an external drive and can be plug anywhere else.
+let's say my last comit is **db1a9a**
+If i add some file on the repo from G and sync point to point like :
+i'm in G : 
+git annex sync F
+a new commit is created say **61dacd**
+go F
+git annex sync D
+go D
+git annex sync E ...etc
+
+at some point my commit 61dacd becomme the parent of a new commit i dono the source ... let's say **4fcdae**
+
+in git log i found 
+
+commit **4fcdae**... (HEAD -> master, B/synced/ma
+ster, B/master, C/synced/master, C/master, synced/master)
+
+and that commit just undo all the change done by the previous one, indeed : 
+
+git diff **4fcdae** **db1a9a**
+-> nothing
+
+this... force me to play with branch like every time and anoyed me alot. I don't understand what's happening here.
+Does any one have any clue/insight on what i can do to fix this/investigate ?
+
+All repo are at the commit db1a9a before i start...
+
+best regards
+
+

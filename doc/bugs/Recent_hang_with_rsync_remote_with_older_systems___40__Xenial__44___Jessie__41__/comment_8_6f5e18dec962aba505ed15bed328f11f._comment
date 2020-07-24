@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 8"
+ date="2020-07-22T16:12:23Z"
+ content="""
+> fixed made it cancel the threads 2 seconds after the process exited
+> if still running. So there will be a bit of a slow down when using
+> that broken ssh version, but it will work
+
+Just to see this in action, in the Xenial VM, I checked out the parent
+of 4c9ad1de4 (1df9e72a7) to get to a state that hangs with the demo
+script.  I then applied the fix (aa492bc65) on top.  The hang is
+avoided, and I see \"git-annex: AsyncCancelled\".
+
+Thanks.
+"""]]
