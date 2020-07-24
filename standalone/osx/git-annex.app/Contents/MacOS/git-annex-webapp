@@ -1,5 +1,4 @@
 #!/bin/sh
-unset IFS
 link="$(readlink "$0")" || true
 if [ -n "$link" ]; then
 	base="$(dirname "$link")"

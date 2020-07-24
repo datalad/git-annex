@@ -11,7 +11,6 @@ git-annex (8.20200720.2) UNRELEASED; urgency=medium
   * move, copy --to: Sped up seeking files by 2x.
   * drop: Sped up seeking files to drop by 2x, and also some performance
     improvements to checking numcopies.
-  * Unset IFS in shell scripts in the linux standalone build and OSX app.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Jul 2020 12:58:30 -0400
 
