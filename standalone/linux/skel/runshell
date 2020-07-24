@@ -3,6 +3,7 @@
 # libraries bundled with this app.
 
 set -e
+unset IFS
 
 os="$(uname -o 2>/dev/null || true)"
 base="$(dirname "$0")"

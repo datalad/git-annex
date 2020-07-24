@@ -3,6 +3,7 @@
 # bundled with this app.
 
 set -e
+unset IFS
 
 base="$(dirname "$0")"
 
