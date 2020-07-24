@@ -1,0 +1,16 @@
+One more day working on performance, as I had a few known improvements I had
+not had time to get to. Managed to double the speed of `move --to, `copy
+--to`, and `drop` when seeking files to act on and a few percent more in
+general.
+
+My laptop's keyboard is failing, with more and more keys not working --
+luckily so far only ones in the number row -- so I'm stopping early and
+hoping the fix arrives quickly on Monday. At some point I know
+that [[this_todo|todo/faster_key_lookup_for_limits]] will be able to speed
+up using things like `--in` and `--copies` by a similar amount as the recent
+performance improvements.
+
+--
+
+Today's work was sponsored by Jake Vosloo
+[on Patreon](https://patreon.com/joeyh).
