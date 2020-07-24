@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-07-24T18:43:32Z"
+ content="""
+Applied a version of the patch without the :- , although it seems the :- is
+not a bashism after all. It still makes no sense to me unless there's some
+other setting that might make the shell blow up when IFS isn't set.
+"""]]

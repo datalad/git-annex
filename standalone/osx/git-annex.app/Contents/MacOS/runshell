@@ -4,6 +4,9 @@
 
 set -e
 
+orig_IFS="${IFS}"
+unset IFS
+
 base="$(dirname "$0")"
 
 if [ ! -d "$base" ]; then
@@ -84,6 +87,11 @@ export GIT_ANNEX_DIR
 # when running non-bundled programs.
 GIT_ANNEX_STANDLONE_ENV="PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR"
 export GIT_ANNEX_STANDLONE_ENV
+
+if [ -n "${orig_IFS}" ]; then
+	IFS="${orig_IFS}"
+	export IFS
+fi
 
 if [ "$1" ]; then
 	cmd="$1"

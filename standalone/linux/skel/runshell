@@ -4,6 +4,9 @@
 
 set -e
 
+orig_IFS="${IFS}"
+unset IFS
+
 os="$(uname -o 2>/dev/null || true)"
 base="$(dirname "$0")"
 
@@ -236,6 +239,11 @@ if [ "$1" ]; then
 	shift 1
 else
 	cmd=sh
+fi
+
+if [ -n "${orig_IFS}" ]; then
+	IFS="${orig_IFS}"
+	export IFS
 fi
 
 if [ -z "$tbase" ]; then
