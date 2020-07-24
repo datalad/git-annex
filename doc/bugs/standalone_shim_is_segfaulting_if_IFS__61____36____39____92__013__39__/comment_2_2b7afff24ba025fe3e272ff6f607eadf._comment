@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-07-24T18:34:37Z"
+ content="""
+Hmm, that patch looks pretty good, but contains a bashism in the `${IFS:-}`
+and I don't actually understand what the point of that is, if seems to
+say it should expand to "" if IFS is not set, but it would expand to that
+anyway.
+"""]]
