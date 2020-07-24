@@ -8,6 +8,8 @@ git-annex (8.20200720.2) UNRELEASED; urgency=medium
     some weird inheriting of ssh FDs by sshd. Bug was introduced in
     git-annex version 7.20200202.7.
   * Fix a bug in find --branch in the previous version.
+  * move, copy: Sped up seeking for annexed files to operate on by a factor
+    of nearly 2x.
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Jul 2020 12:58:30 -0400
 

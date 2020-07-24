@@ -57,8 +57,11 @@ seek o = startConcurrency commandStages $ do
 	
 	seeker = AnnexedFileSeeker
 		{ startAction = start o
-		, checkContentPresent = Nothing
-		, usesLocationLog = False
+		, checkContentPresent = case fromToOptions o of
+			Right (FromRemote _) -> Just False
+			Right (ToRemote _) -> Just True
+			Left ToHere -> Just False
+		, usesLocationLog = True
 		}
 
 {- A copy is just a move that does not delete the source file.

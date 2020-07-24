@@ -55,11 +55,6 @@ data RemoveWhen = RemoveSafe | RemoveNever
 
 seek :: MoveOptions -> CommandSeek
 seek o = startConcurrency stages $ do
-	let seeker = AnnexedFileSeeker
-		{ startAction = start (fromToOptions o) (removeWhen o)
-		, checkContentPresent = Nothing
-		, usesLocationLog = False
-		}
 	case batchOption o of
 		NoBatch -> withKeyOptions (keyOptions o) False seeker
 			(commandAction . startKey (fromToOptions o) (removeWhen o))
@@ -67,6 +62,14 @@ seek o = startConcurrency stages $ do
 			=<< workTreeItems ww (moveFiles o)
 		Batch fmt -> batchAnnexedFilesMatching fmt seeker
   where
+	seeker = AnnexedFileSeeker
+		{ startAction = start (fromToOptions o) (removeWhen o)
+		, checkContentPresent = case fromToOptions o of
+			Right (FromRemote _) -> Nothing
+			Right (ToRemote _) -> Just True
+			Left ToHere -> Nothing
+		, usesLocationLog = True
+		}
 	stages = case fromToOptions o of
 		Right (FromRemote _) -> downloadStages
 		Right (ToRemote _) -> commandStages
@@ -103,9 +106,8 @@ describeMoveAction _ = "move"
 toStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
 toStart removewhen afile key ai dest = do
 	u <- getUUID
-	ishere <- inAnnex key
-	if not ishere || u == Remote.uuid dest
-		then stop -- not here, so nothing to do
+	if u == Remote.uuid dest
+		then stop
 		else toStart' dest removewhen afile key ai
 
 toStart' :: Remote -> RemoveWhen -> AssociatedFile -> Key -> ActionItem -> CommandStart
@@ -188,11 +190,8 @@ toPerform dest removewhen key afile fastcheck isthere =
 			return False
 
 fromStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
-fromStart removewhen afile key ai src = case removewhen of
-	RemoveNever -> stopUnless (not <$> inAnnex key) go
-	RemoveSafe -> go
-  where
-	go = stopUnless (fromOk src key) $
+fromStart removewhen afile key ai src = 
+	stopUnless (fromOk src key) $
 		starting (describeMoveAction removewhen) (OnlyActionOn key ai) $
 			fromPerform src removewhen key afile
 
@@ -247,11 +246,8 @@ fromPerform src removewhen key afile = do
  - When moving, the content is removed from all the reachable remotes that
  - it can safely be removed from. -}
 toHereStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> CommandStart
-toHereStart removewhen afile key ai = case removewhen of
-	RemoveNever -> stopUnless (not <$> inAnnex key) go
-	RemoveSafe -> go
-  where
-	go = startingNoMessage (OnlyActionOn key ai) $ do
+toHereStart removewhen afile key ai = 
+	startingNoMessage (OnlyActionOn key ai) $ do
 		rs <- Remote.keyPossibilities key
 		forM_ rs $ \r ->
 			includeCommandAction $

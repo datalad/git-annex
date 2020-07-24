@@ -1,0 +1,9 @@
+As part of the work in [[precache_logs_for_speed_with_cat-file_--buffer]],
+key lookups are now done twice as fast as before.
+
+But, limits that look up keys still do a key lookup, before the key
+is looked up efficiently. Avoiding that would speed up --in etc, probably
+another 1.5x-2x speedup when such limits are used. What that optimisation
+needs is a way to tell if the current limit needs the key or not. If it
+does, then match on it after getting the key (and precaching the location
+log for limits that need that), otherwise before getting the key.
