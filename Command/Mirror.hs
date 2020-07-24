@@ -54,7 +54,7 @@ seek o = startConcurrency stages $
 	seeker = AnnexedFileSeeker
 		{ startAction = start o
 		, checkContentPresent = Nothing
-		, usesLocationLog = False
+		, usesLocationLog = True
 		}
 
 start :: MirrorOptions -> RawFilePath -> Key -> CommandStart
