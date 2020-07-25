@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+*As of filing:* 
+
+* [downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg.info](https://downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg.info) contains: `distributionVersion = "8.20200618"` 
+* whereas:  git-annex 8.20200720.1 (and 8.20200720) are the only versions published since 8.20200617. (There was no release matching 8.20200618) 
+
+*Expected behavior:*
+
+* `distributionVersion` and included `git-annex`'s version matches an announced released version
+
+### What steps will reproduce the problem?
+
+1. On macOS, download and deploy the current [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.11_El_Capitan/git-annex.dmg)
+2. Open a terminal session and enter `git-annex version`
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 8.20200617-gd46490c17
+
+$/usr/bin/sw_vers
+ ProductName:	Mac OS X
+ ProductVersion: 10.12.6
+ BuildVersion:	16G2136
+"""]]
+
+### Please provide any additional information below.
+
+* Assuming this is the same problem with the autobuilder described in [kite net OSX/current/ distribution is 7.20190913 but 7.20191009 expected](https://git-annex.branchable.com/bugs/kite_net_OSX__47__current__47___distribution_is_7.20190913_but_7.20191009_expected/)
+* Please give it a look and let us know when we have a distributionVersion matching release notes.  Would like to pickup the fixes described in 8.20200720(.1) news.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Still rock solid maintaining the .dmgs and .pkgs for a 67GB [Munki](https://www.munki.org) repository.
