@@ -99,8 +99,13 @@ startKeys o from (key, ai) = start' o from key (AssociatedFile Nothing) ai
 
 startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
 startLocal afile ai numcopies key preverified =
-	starting "drop" (OnlyActionOn key ai) $
-		performLocal key afile numcopies preverified
+	-- This is a redundant check, because checkContentPresent was
+	-- enabled when seeking. However, when two files have the same key,
+	-- the content may have already been removed, which would cause
+	-- this to fail, so it has to be checked again.
+	stopUnless (inAnnex key) $
+		starting "drop" (OnlyActionOn key ai) $
+			performLocal key afile numcopies preverified
 
 startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile ai numcopies key remote = 
