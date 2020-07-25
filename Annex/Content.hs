@@ -194,13 +194,15 @@ contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
  - rather than running the action.
  -}
 lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
-lockContentShared key a = lockContentUsing lock key $ ifM (inAnnex key)
-	( do
-		u <- getUUID
-		withVerifiedCopy LockedCopy u (return True) a
-	, giveup $ "failed to lock content: not present"
-	)
+lockContentShared key a = lockContentUsing lock key notpresent $
+	ifM (inAnnex key)
+		( do
+			u <- getUUID
+			withVerifiedCopy LockedCopy u (return True) a
+		, notpresent
+		)
   where
+	notpresent = giveup $ "failed to lock content: not present"
 #ifndef mingw32_HOST_OS
 	lock contentfile Nothing = tryLockShared Nothing contentfile
 	lock _ (Just lockfile) = posixLocker tryLockShared lockfile
@@ -212,9 +214,12 @@ lockContentShared key a = lockContentUsing lock key $ ifM (inAnnex key)
  - might remove it.
  -
  - If locking fails, throws an exception rather than running the action.
+ -
+ - But, if locking fails because the the content is not present, runs the
+ - fallback action instead.
  -}
-lockContentForRemoval :: Key -> (ContentRemovalLock -> Annex a) -> Annex a
-lockContentForRemoval key a = lockContentUsing lock key $ 
+lockContentForRemoval :: Key -> Annex a -> (ContentRemovalLock -> Annex a) -> Annex a
+lockContentForRemoval key fallback a = lockContentUsing lock key fallback $ 
 	a (ContentRemovalLock key)
   where
 #ifndef mingw32_HOST_OS
@@ -251,22 +256,31 @@ winLocker takelock _ (Just lockfile) = do
 winLocker _ _ Nothing = return Nothing
 #endif
 
-lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a
-lockContentUsing locker key a = do
+{- The fallback action is run if the ContentLocker throws an IO exception
+ - and the content is not present. It's not guaranteed to always run when
+ - the content is not present, because the content file is not always
+ - the file that is locked eg on Windows a different file is locked. -}
+lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a -> Annex a
+lockContentUsing locker key fallback a = do
 	contentfile <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 	lockfile <- contentLockFile key
 	bracket
 		(lock contentfile lockfile)
-		(unlock lockfile)
-		(const a)
+		(either (const noop) (unlock lockfile))
+		go
   where
 	alreadylocked = giveup "content is locked"
 	failedtolock e = giveup $ "failed to lock content: " ++ show e
 
-	lock contentfile lockfile =
-		(maybe alreadylocked return 
-			=<< locker contentfile lockfile)
-		`catchIO` failedtolock
+	lock contentfile lockfile = tryIO $
+		maybe alreadylocked return 
+			=<< locker contentfile lockfile
+	
+	go (Right _) = a
+	go (Left e) = ifM (inAnnex key)
+		( failedtolock e
+		, fallback 
+		)
 
 #ifndef mingw32_HOST_OS
 	unlock mlockfile lck = do

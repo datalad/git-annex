@@ -99,13 +99,8 @@ startKeys o from (key, ai) = start' o from key (AssociatedFile Nothing) ai
 
 startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
 startLocal afile ai numcopies key preverified =
-	-- This is a redundant check, because checkContentPresent was
-	-- enabled when seeking. However, when two files have the same key,
-	-- the content may have already been removed, which would cause
-	-- this to fail, so it has to be checked again.
-	stopUnless (inAnnex key) $
-		starting "drop" (OnlyActionOn key ai) $
-			performLocal key afile numcopies preverified
+	starting "drop" (OnlyActionOn key ai) $
+		performLocal key afile numcopies preverified
 
 startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile ai numcopies key remote = 
@@ -113,7 +108,7 @@ startRemote afile ai numcopies key remote =
 		performRemote key afile numcopies remote
 
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
-performLocal key afile numcopies preverified = lockContentForRemoval key $ \contentlock -> do
+performLocal key afile numcopies preverified = lockContentForRemoval key fallback $ \contentlock -> do
 	u <- getUUID
 	(tocheck, verified) <- verifiableCopies key [u]
 	doDrop u (Just contentlock) key afile numcopies [] (preverified ++ verified) tocheck
@@ -130,6 +125,13 @@ performLocal key afile numcopies preverified = lockContentForRemoval key $ \cont
 			notifyDrop afile False
 			stop
 		)
+  where
+	-- This occurs when, for example, two files are being dropped
+	-- and have the same content. The seek stage checks if the content
+	-- is present, but due to buffering, may find it present for the
+	-- second file before the first is dropped. If so, nothing remains
+	-- to be done except for cleaning up.
+	fallback = next $ cleanupLocal key
 
 performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> CommandPerform
 performRemote key afile numcopies remote = do

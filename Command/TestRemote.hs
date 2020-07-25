@@ -245,7 +245,7 @@ test runannex mkr mkk =
 		whenwritable r $ isRight <$> tryNonAsync (store r k)
 	, check ("present " ++ show True) $ \r k -> present r k True
 	, check "retrieveKeyFile" $ \r k -> do
-		lockContentForRemoval k removeAnnex
+		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ \r k -> do
@@ -255,20 +255,20 @@ test runannex mkr mkk =
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
 		liftIO $ L.writeFile tmp partial
-		lockContentForRemoval k removeAnnex
+		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ \r k -> do
 		tmp <- prepTmp k
 		liftIO $ writeFile tmp ""
-		lockContentForRemoval k removeAnnex
+		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from end" $ \r k -> do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		tmp <- prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
-		lockContentForRemoval k removeAnnex
+		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "removeKey when present" $ \r k -> 
@@ -393,7 +393,7 @@ cleanup rs ks ok
 	| all Remote.readonly rs = return ok
 	| otherwise = do
 		forM_ rs $ \r -> forM_ ks (Remote.removeKey r)
-		forM_ ks $ \k -> lockContentForRemoval k removeAnnex
+		forM_ ks $ \k -> lockContentForRemoval k noop removeAnnex
 		return ok
 
 chunkSizes :: Int -> Bool -> [Int]

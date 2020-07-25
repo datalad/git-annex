@@ -436,9 +436,10 @@ dropKey' repo r st@(State connpool duc _ _ _) key
 		( guardUsable repo (giveup "cannot access remote") $
 			commitOnCleanup repo r st $ onLocalFast st $ do
 				whenM (Annex.Content.inAnnex key) $ do
-					Annex.Content.lockContentForRemoval key $ \lock -> do
+					let cleanup = logStatus key InfoMissing
+					Annex.Content.lockContentForRemoval key cleanup $ \lock -> do
 						Annex.Content.removeAnnex lock
-						logStatus key InfoMissing
+						cleanup
 					Annex.Content.saveState True
 		, giveup "remote does not have expected annex.uuid value"
 		)

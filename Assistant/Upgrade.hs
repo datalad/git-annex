@@ -99,7 +99,7 @@ startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO ol
 		, transferKeyData = fromKey id k
 		}
 	cleanup = liftAnnex $ do
-		lockContentForRemoval k removeAnnex
+		lockContentForRemoval k noop removeAnnex
 		setUrlMissing k u
 		logStatus k InfoMissing
 

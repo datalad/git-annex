@@ -47,7 +47,7 @@ start key = starting "dropkey" (mkActionItem key) $
 
 perform :: Key -> CommandPerform
 perform key = ifM (inAnnex key)
-	( lockContentForRemoval key $ \contentlock -> do
+	( lockContentForRemoval key (next $ cleanup key) $ \contentlock -> do
 		removeAnnex contentlock
 		next $ cleanup key
 	, next $ return True

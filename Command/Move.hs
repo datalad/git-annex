@@ -155,7 +155,7 @@ toPerform dest removewhen key afile fastcheck isthere =
 		RemoveNever -> do
 			setpresentremote
 			next $ return True
-		RemoveSafe -> lockContentForRemoval key $ \contentlock -> do
+		RemoveSafe -> lockContentForRemoval key lockfailed $ \contentlock -> do
 			srcuuid <- getUUID
 			let destuuid = Remote.uuid dest
 			willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
@@ -188,6 +188,13 @@ toPerform dest removewhen key afile fastcheck isthere =
 		next $ do
 			() <- setpresentremote
 			return False
+	
+	-- This occurs when, for example, two files are being dropped
+	-- and have the same content. The seek stage checks if the content
+	-- is present, but due to buffering, may find it present for the
+	-- second file before the first is dropped. If so, nothing remains
+	-- to be done except for cleaning up.
+	lockfailed = next $ Command.Drop.cleanupLocal key
 
 fromStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
 fromStart removewhen afile key ai src = 
