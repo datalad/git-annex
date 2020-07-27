@@ -1,0 +1,180 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2020-07-27T21:40:53Z"
+ content="""
+quick comment:
+
+>  The rest of the seeking seems reasonable.
+
+note that some directories seems to be considered twice, e.g.
+
+```
+[pid 481279] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid 481279] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+```
+
+and
+
+```
+[pid 481279] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid 481279] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+```
+
+I guess some paths get listed multiple times.
+
+> I guess these extra 14 seeks are not a major performance hit. ... 2 shell scripts have around 0.030s overhead themsevles
+
+sure not major but still wasteful if could be avoided.   
+
+> The way you run the shim does not put the bundled git in PATH. That kind of throws off your results, because git, not git-annex is what links to pcre.
+
+I do not think I did anything special, and here is my reproduced full example:
+
+<details>
+<summary>installing bleeding edge build (8.20200720.1+git52-gf5e65d680-1~ndall+1) from datalad-extensions</summary> 
+
+```shell
+(git)lena:~datalad/datalad[maint]
+$> tools/ci/install-annex.sh datalad-extensions-build
+I: top directory /home/yoh/.tmp/ga-4b1Aue7
+Using curl as \"curl --silent\"
+Getting artifacts_url from https://api.github.com/repos/datalad/datalad-extensions/actions/workflows/build-git-annex-debianstandalone.yaml/runs?status=success&branch=master into '/home/yoh/.tmp/tmp.n7XrEmCr3L'
+Getting archive download url from https://api.github.com/repos/datalad/datalad-extensions/actions/runs/183638203/artifacts
+Getting download url from https://api.github.com/repos/datalad/datalad-extensions/actions/artifacts/12229676/zip
+Downloading artifact package from https://pipelines.actions.githubusercontent.com/2UPlDxaVvvbkeFX4btxWorCjpJvj40zvWY5ogH2yZibhOMcU7O/_apis/pipelines/1/runs/1100/signedartifactscontent?artifactName=git-annex-debianstandalone-packages&urlExpires=2020-07-27T21%3A31%3A09.8843916Z&urlSigningMethod=HMACV1&urlSignature=K83aXlzZZoZcxFrz2diweljTVcdOsNv101ISfiNMcwk%3D
+Archive:  .artifact.zip
+  inflating: git-annex-build.log     
+  inflating: git-annex-standalone_8.20200720.1+git52-gf5e65d680-1~ndall+1_amd64.deb  
+  inflating: git-annex_8.20200720.1+git52-gf5e65d680-1~ndall+1.dsc  
+  inflating: git-annex_8.20200720.1+git52-gf5e65d680-1~ndall+1.tar.gz  
+  inflating: git-annex_8.20200720.1+git52-gf5e65d680-1~ndall+1_amd64.buildinfo  
+  inflating: git-annex_8.20200720.1+git52-gf5e65d680-1~ndall+1_amd64.changes  
+  inflating: git-annex_8.20200720.1+git52-gf5e65d680-1~ndall+1_source.buildinfo  
+  inflating: git-annex_8.20200720.1+git52-gf5e65d680-1~ndall+1_source.changes  
+[sudo] password for yoh: 
+(Reading database ... 760196 files and directories currently installed.)
+Preparing to unpack .../git-annex-standalone_8.20200720.1+git52-gf5e65d680-1~ndall+1_amd64.deb ...
+Unpacking git-annex-standalone (8.20200720.1+git52-gf5e65d680-1~ndall+1) over (8.20200617+git192-g5849bd634-1~ndall+1) ...
+Setting up git-annex-standalone (8.20200720.1+git52-gf5e65d680-1~ndall+1) ...
+Processing triggers for gnome-menus (3.36.0-1) ...
+Processing triggers for desktop-file-utils (0.24-1) ...
+Processing triggers for mime-support (3.64) ...
+Processing triggers for hicolor-icon-theme (0.17-2) ...
+Processing triggers for man-db (2.9.1-1) ...
+I: git-annex is available under '/usr/bin'
+
+$> grep GIT_ANNEX_PACK /usr/lib/git-annex.linux/runshell
+GIT_ANNEX_PACKAGE_INSTALL=1
+
+```
+</details>
+
+and it does not matter how I invoke (via outside git or directly through git-annex bundle)
+
+<details>
+<summary>I get those 46 failed lookups</summary> 
+
+```shell
+$> strace -f git annex version  2>&1 | grep 'libpcre2-8.*ENOENT' | nl
+     1	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     2	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     3	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     4	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     5	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     6	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     7	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     8	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     9	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    10	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    11	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    12	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    13	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    14	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    15	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    16	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    17	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    18	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    19	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    20	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    21	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    22	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    23	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    24	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    25	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    26	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    27	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    28	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    29	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    30	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    31	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    32	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    33	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    34	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    35	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    36	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    37	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    38	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    39	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    40	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    41	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    42	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    43	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    44	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    45	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    46	[pid 3664792] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+
+$> strace -f /usr/lib/git-annex.linux/git-annex version 2>&1 | grep 'libpcre2-8.*ENOENT' | nl 
+     1	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     2	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     3	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     4	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     5	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     6	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     7	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     8	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+     9	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    10	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    11	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    12	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    13	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    14	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    15	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    16	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/audit/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    17	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    18	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    19	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    20	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    21	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    22	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    23	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    24	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//etc/ld.so.conf.d/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    25	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    26	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    27	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    28	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    29	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    30	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    31	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    32	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    33	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    34	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    35	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    36	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    37	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    38	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    39	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    40	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    41	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    42	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    43	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    44	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/haswell/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    45	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+    46	[pid 3665083] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/x86_64/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+
+```
+</details>
+
+
+"""]]
