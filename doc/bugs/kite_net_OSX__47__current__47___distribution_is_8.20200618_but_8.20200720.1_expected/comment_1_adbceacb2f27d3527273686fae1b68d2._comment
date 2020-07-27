@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-07-25T16:09:17Z"
+ content="""
+This is a near duplicate of a bug you filed before. I'm dubious about the
+value of these bug reports. As I said before:
+
+The build version being a little behind is not uncommon when the
+autobuilder has not been keeping up for whatever reason. I generally don't
+block releases on autobuilds if it's the fault of the autobuilder and not
+a bug in git-annex's build process or test suite, and just ship the latest
+available build.
+
+But maybe I'm missing something about how problimatic the build being
+slightly behind until the next release is for you?
+
+The autobuilder has since caught up again, so the daily
+build is current.
+"""]]

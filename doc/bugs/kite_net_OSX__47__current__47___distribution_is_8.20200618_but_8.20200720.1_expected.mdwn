@@ -34,3 +34,5 @@ $/usr/bin/sw_vers
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Still rock solid maintaining the .dmgs and .pkgs for a 67GB [Munki](https://www.munki.org) repository.
+
+> [[done]] --[[Joey]]
