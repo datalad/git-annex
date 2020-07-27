@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-07-27T15:38:22Z"
+ content="""
+Yeah, this is not really a problem. Do note that, when a git-annex repo is
+moved to a new drive, this does change some of the internal details that
+git-annex keeps track of (inode numbers). If the repository has unlocked
+files in it, this can make git-annex's handling of those a little slow at
+first, until it learns the new details.
+"""]]
