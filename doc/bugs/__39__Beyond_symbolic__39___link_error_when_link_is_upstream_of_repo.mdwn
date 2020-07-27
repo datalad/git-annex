@@ -1,0 +1,79 @@
+2a8fdfc7d (Display a warning message when asked to operate on a file
+inside a directory that's a symbolic link to elsewhere, 2020-05-11)
+made `git annex add` error like `git add` does rather than silently
+doing nothing in a scenario like below.
+
+[[!format sh """
+# <repo>
+# |-- a
+# |   `-- f0
+# `-- alink -> a
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/gx-link-XXXXXXX)"
+git init && git annex init
+mkdir a
+ln -sT a alink
+echo 0 >alink/f0
+git annex add alink/f0
+"""]]
+
+Unlike git, however, git-annex's warning also applies when the
+symbolic link is upstream of the repository and git-annex is passed an
+absolute path.
+
+[[!format sh """
+# .
+# |-- a
+# |   `-- repo
+# |       `-- f0
+# `-- alink -> a
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/gx-link-XXXXXXX)"
+mkdir a
+ln -sT a alink
+git init alink/repo
+(
+    cd alink/repo
+    git annex init
+    echo 0 >f0
+    git annex add "$(pwd)"/f0
+)
+"""]]
+
+```
+[...]
+git-annex: /tmp/gx-link-Wxqnzo8/alink/repo/f0 is beyond a symbolic link
+add f0
+ok
+(recording state in git...)
+```
+
+The file does appear to be annexed and added to the index despite the
+warning:
+
+```
+$ git diff --cached
+diff --git a/f0 b/f0
+new file mode 120000
+index 0000000..7a725b9
+--- /dev/null
++++ b/f0
+@@ -0,0 +1 @@
++.git/annex/objects/Xj/V5/SHA256E-s2--9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa/SHA256E-s2--9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa
+\ No newline at end of file
+```
+
+Looking at `Seek.workTreeItems'`, my first thought was that the above
+scenario should not error: `relPathCwdToFile` should turn the absolute
+path into `f0` when it compares it against the current working
+directory, `/tmp/gx-link-Wxqnzo8/alink/repo/`.  However, it looks like
+`System.Directory.getCurrentDirectory` returns a resolved path for the
+current working directory, so `relPathCwdToFile` turns the absolute
+path into `../../alink/repo/f0`, which gets flagged by the
+`viasymlink` check.
+
+This error message is of course easy enough to work around on the
+caller's side, but since it looks like an unintended consequence of
+2a8fdfc7d, the change in behavior seems worth mentioning.
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
