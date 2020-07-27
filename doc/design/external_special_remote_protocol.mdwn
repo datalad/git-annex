@@ -378,7 +378,7 @@ handling a request.
   may be empty to get all urls.
   (git-annex replies one or more times with VALUE for each url.
   The final VALUE has an empty value, indicating the end of the url list.)
-* `DEBUG message`
+* `DEBUG message`  
   Tells git-annex to display the message if --debug is enabled.  
   (git-annex does not send a reply to this message.)
 

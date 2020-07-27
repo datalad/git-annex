@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2020-07-27T15:20:00Z"
+ content="""
+> What is the advantage of a separate VERIFYCONTENT request, vs calling
+> GENKEY and comparing the result?
+
+Nothing for remotes using a hash. However, if the remote is using something
+other than a hash, or a hash combined with something else, it might not be
+able to regenerate the same key. It may still be able to detect
+corrupted content, eg using the hash part of the key.
+
+> Can the protocol specify that the file passed to GENKEY may be a named pipe
+
+I can't think of any situation where git-annex would GENKEY before
+it has the full content of a file available.
+
+> add DEBUG and INFO requests
+
+For INFO I'd rather wait for a use case. None of the current backends ever
+need to display any messages, except for in the case of an exceptional error,
+eg a hardware faulure where hashing. And ERROR would be fine for that.
+
+DEBUG sure.
+"""]]

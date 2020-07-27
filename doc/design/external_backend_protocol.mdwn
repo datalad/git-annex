@@ -122,6 +122,9 @@ This is where work happens.
 
 These messages can be sent at any time by either git-annex or the program.
 
+* `DEBUG message`  
+  Tells git-annex to display the message if --debug is enabled.  
+  (git-annex does not send a reply to this message.)
 * `ERROR ErrorMsg`  
   Generic error. Can be sent at any time if things get too messed up to
   continue. When possible, use a more specific reply.  
