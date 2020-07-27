@@ -1,0 +1,72 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-07-27T15:44:39Z"
+ content="""
+For details of the older todo, including some timings with and without
+prelinking, see [[!commit c4229be9a7a2318ef71b9ae433bc14bf604c9caf]].
+
+A ghc bug, since fixed, was causing it to look in IIRC, thousands of
+unncessary directories per library. This todo, by contrast, complains about
+less than 100 extra lookups total.
+
+The way you run the shim does not put the bundled git in PATH. That kind of
+throws off your results, because git, not git-annex is what links to pcre.
+I was not actually able to reproduce your result of it finding pcre without
+any failed seeks, but perhaps it ran a different git binary than the ones I
+have access to. Anyway, that all seems like a bit of a red herring due to
+that problem and puts your timings in doubt too.
+
+Simply moving all the libraries to a single directory would cut down on the
+failed seeking a lot:
+
+	strace -f ./git-annex version 2>&1 | grep ENOENT | grep openat
+	openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/x86_64/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/x86_64/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 481279] openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/x86_64/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 481279] openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 481279] openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 481279] openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 481279] openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/x86_64/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 481279] openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 481279] openat(AT_FDCWD, "/usr/lib/git-annex.linux//lib64/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+
+The /lib64/tls/x86_64/x86_64/ seems like kind of weird behavior from
+ld-linux.so, I wonder if that's a bug on its part. The rest of the seeking
+seems reasonable. I guess these extra 14 seeks are not a major performance hit.
+
+But, that library consolidation does not seem to speed it up appreciably at
+all. Timings were almost identical before and after. 100 failed opens, when
+cache is hot, is just not that much overhead compared with the script's
+overhead. I don't think it's even worth implementing the library
+consolidiation based on this.
+
+Running `git-annex.linux/git-annex version`
+takes 0.060s. Compare with around 0.030s to run `/usr/bin/git-annex version`.
+(Sometimes it runs in more like 0.020s, but not often.. Probably have to
+catch the cache in the right mood.) 
+So, runshell and the other 2 shell scripts have around
+0.030s overhead themsevles.
+
+(This is with runshell modified so `GIT_ANNEX_PACKAGE_INSTALL` is set.
+IIRC the way the git-annex-standalone deb is built sets that. Otherwise,
+runshell does an additional 0.060s of locale setup stuff.)
+
+I tried putting set -x in all 3 levels of shell scripts and time stamping
+the output to see what was expensive. This was a bit surprising,
+because other than the abovementioned locale setup stuff, all the rest
+of the set -x output happened within 0.000965s. Which is 30 times faster
+than the timings above say it should be. Could be that the time stamping,
+which used `ts`, is not accurate enough.
+
+Anyway, runshell uses several unix utilities (and at least dirname is run
+redundantly between the git-annex script and runshell), 
+and there are 3 levels of shell scripts for the shell to parse and run.
+Combining them into a single shell script would eliminate some redundant work.
+Probably rewriting in C would be a bigger win.
+"""]]
