@@ -1,0 +1,3 @@
+I'm using importfeed with some podcasts, but I only want the most recent items. Importfeed seems to import all items in the feed, so I'm ending up with hundreds of them going back into last year and beyond. There doesn't seem to be a way to limit this.
+
+A switch to define the oldest file to download would be nice. Perhaps something with this format (for Jan 1st 2020): --oldest 20200101
