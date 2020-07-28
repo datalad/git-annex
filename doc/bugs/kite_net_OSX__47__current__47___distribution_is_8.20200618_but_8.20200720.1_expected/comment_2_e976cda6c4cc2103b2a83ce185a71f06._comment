@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="leej"
+ avatar="http://cdn.libravatar.org/avatar/eb1c6bd57680f694fb4658388e6de4ed"
+ subject="comment 2"
+ date="2020-07-28T14:57:58Z"
+ content="""
+Yes, I've, too, had the feeling that I'm not getting something about your process.  Thank you for your continued patience.  Here’s a bit more about the assumptions under which I’ve been operating: 
+
+So far, in 2020, my Autopkg instance has pulled down these builds and imported them into Munki for testing and internal distribution to clients.  
+
+* 7.20191231 -> (build)
+* 7.20200205 -> (build)
+* 8.20200226 -> (documented git-annex release)
+* 8.20200309 -> (documented git-annex release)
+* 8.20200310 -> (build)
+* 8.20200331 -> (build)
+* 8.20200502 -> (build)
+* 8.20200617 -> (documented git-annex release)
+* 8.20200618 -> (build)
+
+If your intermediate builds that appear on kitenet (e.g.,  20200618 between the announced releases 20200617 and 20200720) are, in fact, ship quality.  And, there are no behavioral surprises introduced in these builds between public releases, then I would be happy to just accept the undocumented, intermediate build that Autopkg is finding whenever the version is incremented on the dmg on kitenet.   
+
+However, if they are more works-in-progress, as I have been assuming, and have the potential for introducing yet undocumented changes, then out of caution, I would (continue to) wait for a build matching one of your public releases that you document with a news entry.
+
+Let me know your thoughts as to the quality of these intermediate builds.  
+
+And, also, if there's a better way of letting you, or someone else, know simply that the macOS auto builder needs a nudge, other than cutting a bug, please let me know.  
+
+Note finally: I’m still seeing distributionVersion = \"8.20200618\", distributionReleasedate = 2020-07-20 18:49:32.302161119 UTC up on downloads.kitenet
+
+As always, thank you for your help and the value you’ve put into this incredibly useful program. 
+"""]]
