@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 11"
+ date="2020-07-28T15:26:41Z"
+ content="""
+that was with a bit dated (8.20200501+git61-g64e081d58-1~ndall+1) version, with 8.20200720.1-1~ndall+1 it looks a bit better:
+
+```
+$> strace -f git-annex version 2>&1 | awk '/libpcre.*so.*ENOENT/{print}' | wc -l
+39
+```
+
+but still a more pertinent test/demonstration of current situation would be
+
+```shell
+$> strace -f git-annex init 2>&1 | awk '/libpcre.*so.*ENOENT/{print}' | wc -l   
+651
+```
+"""]]
