@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 10"
+ date="2020-07-28T15:18:40Z"
+ content="""
+WOW -- a random discovery and possible note to myself:  I am getting all those libpcre misses when I run `git annex version` within a git repository and not otherwise:
+
+```
+$> strace -f git-annex version 2>&1 | awk '/libpcre.*so.*/{print}' | nl | tail -n 1
+     1	[pid 3702554] openat(AT_FDCWD, \"/lib/x86_64-linux-gnu/libpcre.so.3\", O_RDONLY|O_CLOEXEC) = 3
+
+$> mkdir repo; cd repo; git init
+Initialized empty Git repository in /tmp/repo/.git/
+
+$> strace -f git-annex version 2>&1 | awk '/libpcre.*so.*/{print}' | nl | tail -n 1
+    41	[pid 3702907] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//usr/lib/x86_64-linux-gnu/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = 3
+```
+
+Not sure why `git annex version` needs to run `git` when inside a git repo for its `version`. (same happens for `git annex --help`)
+"""]]
