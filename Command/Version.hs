@@ -59,7 +59,8 @@ showPackageVersion = do
 	vinfo "build flags" $ unwords buildFlags
 	vinfo "dependency versions" $ unwords dependencyVersions
 	vinfo "key/value backends" $ unwords $
-		map (decodeBS . formatKeyVariety . B.backendVariety) Backend.list
+		map (decodeBS . formatKeyVariety . B.backendVariety) Backend.builtinList
+		++ ["X*"]
 	vinfo "remote types" $ unwords $ map R.typename Remote.remoteTypes
 	vinfo "operating system" $ unwords [os, arch]
 	vinfo "supported repository versions" $

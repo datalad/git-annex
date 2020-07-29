@@ -120,10 +120,13 @@ storeChunks
 	-> Annex ()
 storeChunks u chunkconfig encryptor k f p storer checker = 
 	case chunkconfig of
-		(UnpaddedChunks chunksize) | isStableKey k -> do
-			h <- liftIO $ openBinaryFile f ReadMode
-			go chunksize h
-			liftIO $ hClose h
+		(UnpaddedChunks chunksize) -> ifM (isStableKey k)
+			( do
+				h <- liftIO $ openBinaryFile f ReadMode
+				go chunksize h
+				liftIO $ hClose h
+			, storer k (FileContent f) p
+			)
 		_ -> storer k (FileContent f) p
   where
 	go chunksize h = do

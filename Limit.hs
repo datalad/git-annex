@@ -306,7 +306,7 @@ addSecureHash :: Annex ()
 addSecureHash = addLimit $ Right limitSecureHash
 
 limitSecureHash :: MatchFiles Annex
-limitSecureHash _ = checkKey $ pure . isCryptographicallySecure
+limitSecureHash _ = checkKey isCryptographicallySecure
 
 {- Adds a limit to skip files that are too large or too small -}
 addLargerThan :: String -> Annex ()

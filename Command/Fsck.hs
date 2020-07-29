@@ -199,7 +199,7 @@ performRemote key afile backend numcopies remote =
 
 startKey :: Maybe Remote -> Incremental -> (Key, ActionItem) -> NumCopies -> CommandStart
 startKey from inc (key, ai) numcopies =
-	case Backend.maybeLookupBackendVariety (fromKey keyVariety key) of
+	Backend.maybeLookupBackendVariety (fromKey keyVariety key) >>= \case
 		Nothing -> stop
 		Just backend -> runFsck inc ai key $
 			case from of
@@ -261,7 +261,7 @@ verifyLocationLog key keystatus ai = do
 	 - insecure hash is present. This should only be able to happen
 	 - if the repository already contained the content before the
 	 - config was set. -}
-	when (present && not (Backend.isCryptographicallySecure key)) $
+	whenM (pure present <&&> (not <$> Backend.isCryptographicallySecure key)) $
 		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
 			warning $ "** Despite annex.securehashesonly being set, " ++ obj ++ " has content present in the annex using an insecure " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"
 

@@ -7,7 +7,7 @@
 
 set -e
 
-hashfile {
+hashfile () {
 	local contentfile="$1"
 	# could send PROGRESS while doing this, but it's
 	# hard to implement that in shell

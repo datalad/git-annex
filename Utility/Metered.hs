@@ -47,6 +47,7 @@ import Utility.Percentage
 import Utility.DataUnits
 import Utility.HumanTime
 import Utility.ThreadScheduler
+import Utility.SimpleProtocol as Proto
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -439,3 +440,7 @@ bandwidthMeter mtotalsize (BytesProcessed old, before) (BytesProcessed new, now)
 				Just $ fromDuration $ Duration $
 					(totalsize - new) `div` bytespersecond
 		_ -> Nothing
+
+instance Proto.Serializable BytesProcessed where
+	serialize (BytesProcessed n) = show n
+	deserialize = BytesProcessed <$$> readish

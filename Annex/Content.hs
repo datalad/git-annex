@@ -349,12 +349,13 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 	-- RetrievalSecurityPolicy would cause verification to always fail.
 	checkallowed a = case rsp of
 		RetrievalAllKeysSecure -> a
-		RetrievalVerifiableKeysSecure
-			| Backend.isVerifiable key -> a
-			| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
+		RetrievalVerifiableKeysSecure -> ifM (Backend.isVerifiable key)
+			( a
+			, ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
 				( a
 				, warnUnverifiableInsecure key >> return False
 				)
+			)
 
 {- Verifies that a file is the expected content of a key.
  -
@@ -373,12 +374,13 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> FilePath -> Annex Bool
 verifyKeyContent rsp v verification k f = case (rsp, verification) of
 	(_, Verified) -> return True
-	(RetrievalVerifiableKeysSecure, _)
-		| Backend.isVerifiable k -> verify
-		| otherwise -> ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
+	(RetrievalVerifiableKeysSecure, _) -> ifM (Backend.isVerifiable k)
+		( verify
+		, ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
 			( verify
 			, warnUnverifiableInsecure k >> return False
 			)
+		)
 	(_, UnVerified) -> ifM (shouldVerify v)
 		( verify
 		, return True
@@ -391,9 +393,11 @@ verifyKeyContent rsp v verification k f = case (rsp, verification) of
 		Just size -> do
 			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
 			return (size' == size)
-	verifycontent = case Types.Backend.verifyKeyContent =<< Backend.maybeLookupBackendVariety (fromKey keyVariety k) of
+	verifycontent = Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> return True
-		Just verifier -> verifier k f
+		Just b -> case Types.Backend.verifyKeyContent b of
+			Nothing -> return True
+			Just verifier -> verifier k f
 
 warnUnverifiableInsecure :: Key -> Annex ()
 warnUnverifiableInsecure k = warning $ unwords
@@ -512,12 +516,13 @@ moveAnnex key src = ifM (checkSecureHashes' key)
 	alreadyhave = liftIO $ removeFile src
 
 checkSecureHashes :: Key -> Annex (Maybe String)
-checkSecureHashes key
-	| Backend.isCryptographicallySecure key = return Nothing
-	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
+checkSecureHashes key = ifM (Backend.isCryptographicallySecure key)
+	( return Nothing
+	, ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( return $ Just $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"
 		, return Nothing
 		)
+	)
 
 checkSecureHashes' :: Key -> Annex Bool
 checkSecureHashes' key = checkSecureHashes key >>= \case

@@ -375,10 +375,6 @@ instance Proto.Serializable Availability where
 	deserialize "LOCAL" = Just LocallyAvailable
 	deserialize _ = Nothing
 
-instance Proto.Serializable BytesProcessed where
-	serialize (BytesProcessed n) = show n
-	deserialize = BytesProcessed <$$> readish
-
 instance Proto.Serializable [(URLString, Size, FilePath)] where
 	serialize = unwords . map go
 	  where

@@ -13,8 +13,8 @@ import Git.Env
 import Utility.Shell
 import Messages.Progress
 
-import Control.Concurrent.STM
 import Control.Concurrent.Async
+import System.Log.Logger (debugM)
 
 data ExternalAddonProcess = ExternalAddonProcess
 	{ externalSend :: Handle
@@ -23,6 +23,7 @@ data ExternalAddonProcess = ExternalAddonProcess
 	-- immediately.
 	, externalShutdown :: Bool -> IO ()
 	, externalPid :: ExternalAddonPID
+	, externalProgram :: String
 	}
 
 type ExternalAddonPID = Int
@@ -31,8 +32,8 @@ data ExternalAddonStartError
 	= ProgramNotInstalled String
 	| ProgramFailure String
 
-startExternalAddonProcess :: String -> TVar ExternalAddonPID-> Annex (Either ExternalAddonStartError ExternalAddonProcess)
-startExternalAddonProcess basecmd pidvar = do
+startExternalAddonProcess :: String -> ExternalAddonPID -> Annex (Either ExternalAddonStartError ExternalAddonProcess)
+startExternalAddonProcess basecmd pid = do
 	errrelayer <- mkStderrRelayer
 	g <- Annex.gitRepo
 	cmdpath <- liftIO $ searchPath basecmd
@@ -47,16 +48,12 @@ startExternalAddonProcess basecmd pidvar = do
 			}
 		p <- propgit g basep
 		tryNonAsync (createProcess p) >>= \case
-			Right v -> (Right <$> started errrelayer v)
+			Right v -> (Right <$> started cmd errrelayer v)
 				`catchNonAsync` const (runerr cmdpath)
 			Left _ -> runerr cmdpath
 	
-	started errrelayer pall@(Just hin, Just hout, Just herr, ph) = do
+	started cmd errrelayer pall@(Just hin, Just hout, Just herr, ph) = do
 		stderrelay <- async $ errrelayer herr
-		pid <- atomically $ do
-			n <- succ <$> readTVar pidvar
-			writeTVar pidvar n
-			return n
 		let shutdown forcestop = do
 			cancel stderrelay
 			if forcestop
@@ -71,8 +68,9 @@ startExternalAddonProcess basecmd pidvar = do
 			, externalReceive = hout
 			, externalPid = pid
 			, externalShutdown = shutdown
+			, externalProgram = cmd
 			}
-	started _ _ = giveup "internal"
+	started _ _ _ = giveup "internal"
 
 	propgit g p = do
 		environ <- propGitEnv g
@@ -85,3 +83,11 @@ startExternalAddonProcess basecmd pidvar = do
 		path <- intercalate ":" <$> getSearchPath
 		return $ Left $ ProgramNotInstalled $
 			"Cannot run " ++ basecmd ++ " -- It is not installed in PATH (" ++ path ++ ")"
+
+protocolDebug :: ExternalAddonProcess -> Bool -> String -> IO ()
+protocolDebug external sendto line = debugM "external" $ unwords
+	[ externalProgram external ++ 
+		"[" ++ show (externalPid external) ++ "]"
+	, if sendto then "<--" else "-->"
+	, line
+	]

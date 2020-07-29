@@ -288,7 +288,7 @@ test runannex mkr mkk =
 			Nothing -> return True
 		runannex a' @? "failed"
 	present r k b = (== Right b) <$> Remote.hasKey r k
-	fsck _ k = case maybeLookupBackendVariety (fromKey keyVariety k) of
+	fsck _ k = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> return True
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return True

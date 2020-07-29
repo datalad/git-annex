@@ -581,7 +581,7 @@ backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
-backend_ = Backend.lookupBackendVariety . Types.Key.parseKeyVariety . encodeBS
+backend_ = Backend.lookupBuiltinBackendVariety . Types.Key.parseKeyVariety . encodeBS
 
 getKey :: Types.Backend -> FilePath -> IO Types.Key
 getKey b f = case Types.Backend.genKey b of

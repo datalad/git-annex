@@ -177,14 +177,15 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
  - tend to be configured to reject it, so Upload is also prevented.
  -}
 checkSecureHashes :: Observable v => Transfer -> Annex v -> Annex v
-checkSecureHashes t a
-	| isCryptographicallySecure (transferKey t) = a
-	| otherwise = ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
+checkSecureHashes t a = ifM (isCryptographicallySecure (transferKey t))
+	( a
+	, ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( do
 			warning $ "annex.securehashesonly blocked transfer of " ++ decodeBS (formatKeyVariety variety) ++ " key"
 			return observeFailure
 		, a
 		)
+	)
   where
 	variety = fromKey keyVariety (transferKey t)
 

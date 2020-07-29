@@ -185,7 +185,7 @@ externalSetup _ mu _ c gc = do
 			-- error out if the user provided an unexpected config.
 			_ <- either giveup return . parseRemoteConfig c' 
 				=<< strictRemoteConfigParser external
-			handleRequest external INITREMOTE Nothing $ \resp -> case resp of
+			handleRequest external INITREMOTE Nothing $ \case
 				INITREMOTE_SUCCESS -> result ()
 				INITREMOTE_FAILURE errmsg -> Just $ giveup $
 					respErrorMessage "INITREMOTE" errmsg
@@ -381,7 +381,7 @@ handleRequestExport :: External -> ExportLocation -> (SafeKey -> Request) -> Key
 handleRequestExport external loc mkreq k mp responsehandler = do
 	withExternalState external $ \st -> do
 		checkPrepared st external
-		sendMessage st external (EXPORT loc)
+		sendMessage st (EXPORT loc)
 	handleRequestKey external mkreq k mp responsehandler
 
 handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
@@ -392,7 +392,7 @@ handleRequest' st external req mp responsehandler
 	| otherwise = go
   where
 	go = do
-		sendMessage st external req
+		sendMessage st req
 		loop
 	loop = receiveMessage st external responsehandler
 		(\rreq -> Just $ handleRemoteRequest rreq >> loop)
@@ -489,8 +489,8 @@ handleRequest' st external req mp responsehandler
 
 	handleAsyncMessage (ERROR err) = giveup $ "external special remote error: " ++ err
 
-	send = sendMessage st external
-	senderror = sendMessage st external . ERROR 
+	send = sendMessage st
+	senderror = sendMessage st . ERROR 
 
 	credstorage setting u = CredPairStorage
 		{ credPairFile = base
@@ -503,9 +503,9 @@ handleRequest' st external req mp responsehandler
 	withurl mk uri = handleRemoteRequest $ mk $
 		setDownloader (show uri) OtherDownloader
 
-sendMessage :: Sendable m => ExternalState -> External -> m -> Annex ()
-sendMessage st external m = liftIO $ do
-	protocolDebug external st True line
+sendMessage :: Sendable m => ExternalState -> m -> Annex ()
+sendMessage st m = liftIO $ do
+	protocolDebug (externalAddonProcess st) True line
 	hPutStrLn h line
 	hFlush h
   where
@@ -513,7 +513,7 @@ sendMessage st external m = liftIO $ do
 	h = externalSend (externalAddonProcess st)
 
 {- A response handler can yeild a result, or it can request that another
- - message be consumed from the external result. -}
+ - message be consumed from the external. -}
 data ResponseHandlerResult a
 	= Result a
 	| GetNextMessage (ResponseHandler a)
@@ -539,7 +539,7 @@ receiveMessage st external handleresponse handlerequest handleasync =
   where
 	go Nothing = protocolError False ""
 	go (Just s) = do
-		liftIO $ protocolDebug external st False s
+		liftIO $ protocolDebug (externalAddonProcess st) False s
 		case parseMessage s :: Maybe Response of
 			Just resp -> case handleresponse resp of
 				Nothing -> protocolError True s
@@ -556,14 +556,6 @@ receiveMessage st external handleresponse handlerequest handleasync =
 		if parsed
 			then "(command not allowed at this time)"
 			else "(unable to parse command)"
-
-protocolDebug :: External -> ExternalState -> Bool -> String -> IO ()
-protocolDebug external st sendto line = debugM "external" $ unwords
-	[ externalRemoteProgram (externalType external) ++ 
-		"[" ++ show (externalPid (externalAddonProcess st)) ++ "]"
-	, if sendto then "<--" else "-->"
-	, line
-	]
 
 {- While the action is running, the ExternalState provided to it will not
  - be available to any other calls.
@@ -600,8 +592,12 @@ withExternalState external a = do
 {- Starts an external remote process running, and checks VERSION and
  - exchanges EXTENSIONS. -}
 startExternal :: External -> Annex ExternalState
-startExternal external =
-	startExternalAddonProcess basecmd (externalLastPid external) >>= \case
+startExternal external = do
+	pid <- liftIO $ atomically $ do
+		n <- succ <$> readTVar (externalLastPid external)
+		writeTVar (externalLastPid external) n
+		return n
+	startExternalAddonProcess basecmd pid >>= \case
 		Left (ProgramFailure err) -> giveup err
 		Left (ProgramNotInstalled err) ->
 			case (lookupName (unparsedRemoteConfig (externalDefaultConfig external)), remoteAnnexReadOnly <$> externalGitConfig external) of
@@ -626,13 +622,13 @@ startExternal external =
 			startproto st
 			return st
   where
-	basecmd = externalRemoteProgram $ externalType external
+	basecmd = "git-annex-remote-" ++ externalType external
 	startproto st = do
 		receiveMessage st external
 			(const Nothing)
-			(checkVersion st external)
+			(checkVersion st)
 			(const Nothing)
-		sendMessage st external (EXTENSIONS supportedExtensionList)
+		sendMessage st (EXTENSIONS supportedExtensionList)
 		-- It responds with a EXTENSIONS_RESPONSE; that extensions
 		-- list is reserved for future expansion. UNSUPPORTED_REQUEST
 		-- is also accepted.
@@ -650,15 +646,12 @@ stopExternal external = liftIO $ do
 	l <- atomically $ swapTVar (externalState external) []
 	mapM_ (flip (externalShutdown . externalAddonProcess) False) l
 
-externalRemoteProgram :: ExternalType -> String
-externalRemoteProgram externaltype = "git-annex-remote-" ++ externaltype
-
-checkVersion :: ExternalState -> External -> RemoteRequest -> Maybe (Annex ())
-checkVersion st external (VERSION v) = Just $
+checkVersion :: ExternalState -> RemoteRequest -> Maybe (Annex ())
+checkVersion st (VERSION v) = Just $
 	if v `elem` supportedProtocolVersions
 		then noop
-		else sendMessage st external (ERROR "unsupported VERSION")
-checkVersion _ _ _ = Nothing
+		else sendMessage st (ERROR "unsupported VERSION")
+checkVersion _ _ = Nothing
 
 {- If repo has not been prepared, sends PREPARE.
  -

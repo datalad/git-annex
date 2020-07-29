@@ -199,7 +199,7 @@ lookupKey1 file = do
 		Right l -> makekey l
   where
 	getsymlink = takeFileName <$> readSymbolicLink file
-	makekey l = case maybeLookupBackendVariety (fromKey keyVariety k) of
+	makekey l = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> do
 			unless (null kname || null bname ||
 			        not (isLinkToAnnex (toRawFilePath l))) $

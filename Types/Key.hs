@@ -1,6 +1,6 @@
 {- git-annex Key data type
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -36,6 +36,7 @@ import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Utility.FileSystemEncoding
 import Data.List
+import Data.Char
 import System.Posix.Types
 import Foreign.C.Types
 import Data.Monoid
@@ -215,6 +216,8 @@ data KeyVariety
 	| MD5Key HasExt
 	| WORMKey
 	| URLKey
+	-- A key that is handled by some external backend.
+	| ExternalKey S.ByteString HasExt
  	-- Some repositories may contain keys of other varieties,
 	-- which can still be processed to some extent.
 	| OtherKey S.ByteString
@@ -246,6 +249,7 @@ hasExt (SHA1Key (HasExt b)) = b
 hasExt (MD5Key (HasExt b)) = b
 hasExt WORMKey = False
 hasExt URLKey = False
+hasExt (ExternalKey _ (HasExt b)) = b
 hasExt (OtherKey s) = (snd <$> S8.unsnoc s) == Just 'E'
 
 sameExceptExt :: KeyVariety -> KeyVariety -> Bool
@@ -273,6 +277,7 @@ formatKeyVariety v = case v of
 	MD5Key e -> adde e "MD5"
 	WORMKey -> "WORM"
 	URLKey -> "URL"
+	ExternalKey s e -> adde e ("X" <> s)
 	OtherKey s -> s
   where
 	adde (HasExt False) s = s
@@ -330,10 +335,16 @@ parseKeyVariety "BLAKE2SP224"  = Blake2spKey (HashSize 224) (HasExt False)
 parseKeyVariety "BLAKE2SP224E" = Blake2spKey (HashSize 224) (HasExt True)
 parseKeyVariety "BLAKE2SP256"  = Blake2spKey (HashSize 256) (HasExt False)
 parseKeyVariety "BLAKE2SP256E" = Blake2spKey (HashSize 256) (HasExt True)
-parseKeyVariety "SHA1"        = SHA1Key (HasExt False)
-parseKeyVariety "SHA1E"       = SHA1Key (HasExt True)
-parseKeyVariety "MD5"         = MD5Key (HasExt False)
-parseKeyVariety "MD5E"        = MD5Key (HasExt True)
-parseKeyVariety "WORM"        = WORMKey
-parseKeyVariety "URL"         = URLKey
-parseKeyVariety b             = OtherKey b
+parseKeyVariety "SHA1"         = SHA1Key (HasExt False)
+parseKeyVariety "SHA1E"        = SHA1Key (HasExt True)
+parseKeyVariety "MD5"          = MD5Key (HasExt False)
+parseKeyVariety "MD5E"         = MD5Key (HasExt True)
+parseKeyVariety "WORM"         = WORMKey
+parseKeyVariety "URL"          = URLKey
+parseKeyVariety b
+	| "X" `S.isPrefixOf` b = 
+		let b' = S.tail b
+		in if S.last b' == fromIntegral (ord 'E')
+			then ExternalKey (S.init b') (HasExt True)
+			else ExternalKey b' (HasExt False)
+	| otherwise = OtherKey b

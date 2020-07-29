@@ -117,7 +117,7 @@ distributionDownloadComplete d dest cleanup t
 	| otherwise = cleanup
   where
 	k = mkKey $ const $ distributionKey d
-	fsckit f = case Backend.maybeLookupBackendVariety (fromKey keyVariety k) of
+	fsckit f = Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> return $ Just f
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return $ Just f

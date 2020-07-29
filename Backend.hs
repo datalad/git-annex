@@ -6,12 +6,13 @@
  -}
 
 module Backend (
-	list,
+	builtinList,
 	defaultBackend,
 	genKey,
 	getBackend,
 	chooseBackend,
 	lookupBackendVariety,
+	lookupBuiltinBackendVariety,
 	maybeLookupBackendVariety,
 	isStableKey,
 	isCryptographicallySecure,
@@ -26,16 +27,18 @@ import Types.KeySource
 import qualified Types.Backend as B
 import Utility.Metered
 
--- When adding a new backend, import it here and add it to the list.
+-- When adding a new backend, import it here and add it to the builtinList.
 import qualified Backend.Hash
 import qualified Backend.WORM
 import qualified Backend.URL
+import qualified Backend.External
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Char8 as S8
 
-list :: [Backend]
-list = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
+{- Build-in backends. Does not include externals. -}
+builtinList :: [Backend]
+builtinList = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 
 {- Backend to use by default when generating a new key. -}
 defaultBackend :: Annex Backend
@@ -44,9 +47,9 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 	cache = do
 		n <- maybe (annexBackend <$> Annex.getGitConfig) (return . Just)
 			=<< Annex.getState Annex.forcebackend
-		let b = case n of
+		b <- case n of
 			Just name | valid name -> lookupname name
-			_ -> Prelude.head list
+			_ -> pure (Prelude.head builtinList)
 		Annex.changeState $ \s -> s { Annex.backend = Just b }
 		return b
 	valid name = not (null name)
@@ -72,11 +75,15 @@ genKey source meterupdate preferredbackend = do
 		| otherwise = c
 
 getBackend :: FilePath -> Key -> Annex (Maybe Backend)
-getBackend file k = case maybeLookupBackendVariety (fromKey keyVariety k) of
+getBackend file k = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 	Just backend -> return $ Just backend
 	Nothing -> do
-		warning $ "skipping " ++ file ++ " (unknown backend " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ ")"
+		warning $ "skipping " ++ file ++ " (" ++ unknownBackendVarietyMessage (fromKey keyVariety k) ++ ")"
 		return Nothing
+
+unknownBackendVarietyMessage :: KeyVariety -> String
+unknownBackendVarietyMessage v =
+	"unknown backend " ++ decodeBS (formatKeyVariety v)
 
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file,
@@ -85,29 +92,38 @@ chooseBackend :: FilePath -> Annex (Maybe Backend)
 chooseBackend f = Annex.getState Annex.forcebackend >>= go
   where
 	go Nothing = maybeLookupBackendVariety . parseKeyVariety . encodeBS
-		<$> checkAttr "annex.backend" f
+		=<< checkAttr "annex.backend" f
 	go (Just _) = Just <$> defaultBackend
 
 {- Looks up a backend by variety. May fail if unsupported or disabled. -}
-lookupBackendVariety :: KeyVariety -> Backend
-lookupBackendVariety v = fromMaybe unknown $ maybeLookupBackendVariety v
-  where
-	unknown = giveup $ "unknown backend " ++ decodeBS (formatKeyVariety v)
+lookupBackendVariety :: KeyVariety -> Annex Backend
+lookupBackendVariety v = fromMaybe (giveup (unknownBackendVarietyMessage v))
+	<$> maybeLookupBackendVariety v
 
-maybeLookupBackendVariety :: KeyVariety -> Maybe Backend
-maybeLookupBackendVariety v = M.lookup v varietyMap
+lookupBuiltinBackendVariety :: KeyVariety -> Backend
+lookupBuiltinBackendVariety v = fromMaybe (giveup (unknownBackendVarietyMessage v)) $
+	maybeLookupBuiltinBackendVariety v
+
+maybeLookupBackendVariety :: KeyVariety -> Annex (Maybe Backend)
+maybeLookupBackendVariety (ExternalKey s hasext) =
+	Just <$> Backend.External.makeBackend s hasext
+maybeLookupBackendVariety v = 
+	pure $ M.lookup v varietyMap
+
+maybeLookupBuiltinBackendVariety :: KeyVariety -> Maybe Backend
+maybeLookupBuiltinBackendVariety v = M.lookup v varietyMap
 
 varietyMap :: M.Map KeyVariety Backend
-varietyMap = M.fromList $ zip (map B.backendVariety list) list
+varietyMap = M.fromList $ zip (map B.backendVariety builtinList) builtinList
 
-isStableKey :: Key -> Bool
+isStableKey :: Key -> Annex Bool
 isStableKey k = maybe False (`B.isStableKey` k) 
-	(maybeLookupBackendVariety (fromKey keyVariety k))
+	<$> maybeLookupBackendVariety (fromKey keyVariety k)
 
-isCryptographicallySecure :: Key -> Bool
+isCryptographicallySecure :: Key -> Annex Bool
 isCryptographicallySecure k = maybe False (`B.isCryptographicallySecure` k)
-	(maybeLookupBackendVariety (fromKey keyVariety k))
+	<$> maybeLookupBackendVariety (fromKey keyVariety k)
 
-isVerifiable :: Key -> Bool
-isVerifiable k = maybe False (isJust . B.verifyKeyContent)
-	(maybeLookupBackendVariety (fromKey keyVariety k))
+isVerifiable :: Key -> Annex Bool
+isVerifiable k = maybe False (isJust . B.verifyKeyContent) 
+	<$> maybeLookupBackendVariety (fromKey keyVariety k)

@@ -698,7 +698,7 @@ Executable git-annex
     Annex.WorkTree
     Annex.YoutubeDl
     Backend
-    -- Backend.External
+    Backend.External
     Backend.Hash
     Backend.URL
     Backend.Utilities

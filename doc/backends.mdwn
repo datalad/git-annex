@@ -1,11 +1,30 @@
-When a file is annexed, a [[key|internals/key_format]] is generated from its content and/or filesystem
-metadata. The file checked into git symlinks to the key. This key can later
-be used to retrieve the file's content (its value).
+When a file is annexed, a [[key|internals/key_format]] is generated from
+its content and/or filesystem metadata. The file checked into git symlinks
+to the key. This key can later be used to retrieve the file's content (its
+value).
 
-Multiple pluggable key-value backends are supported, and a single repository
+Multiple key-value backends are supported, and a single repository
 can use different ones for different files. 
 
-These are the recommended backends to use.
+## configuring which backend to use
+
+The `annex.backend` git-config setting can be used to configure the
+default backend to use when adding new files.
+
+For finer control of what backend is used when adding different types of
+files, the `.gitattributes` file can be used. The `annex.backend`
+attribute can be set to the name of the backend to use for matching files.
+
+For example, to use the SHA256E backend for sound files, which tend to be
+smallish and might be modified or copied over time,
+while using the WORM backend for everything else, you could set
+in `.gitattributes`:
+
+	* annex.backend=WORM
+	*.mp3 annex.backend=SHA256E
+	*.ogg annex.backend=SHA256E
+
+## recommended backends to use
 
 * `SHA256E` -- The default backend for new files, combines a 256 bit SHA-2
   hash of the file's content with the file's extension. This allows
@@ -38,6 +57,8 @@ These are the recommended backends to use.
   -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 
   8-way CPUs.
 
+## non-cryptograpgically secure backends
+
 The backends below do not guarantee cryptographically that the
 content of an annexed file remains unchanged.
 
@@ -56,9 +77,23 @@ content of an annexed file remains unchanged.
   that may be attached to a key (from any backend) indicating the key's location
   on the web or in one of [[special_remotes]].
 
+## external backends
+
+While most backends are built into git-annex, it also supports external
+backends. These are programs with names like `git-annex-backend-XFOO`,
+which can be provided by others. See [[design/external_backend_protocol]]
+for details about how to write them.
+
+Here's a list of external backends. Edit this page to add yours to the list.
+
+* [[design/external_backend_protocol/git-annex-backend-XFOO]]
+  is a demo program implementing the protocol with a shell script.
+
+## notes
+
 If you want to be able to prove that you're working with the same file
 contents that were checked into a repository earlier, you should avoid
-using the non-cryptographically-secure backends, and will need to use
+using non-cryptographically-secure backends, and will need to use
 signed git commits. See [[tips/using_signed_git_commits]] for details.
 
 Retrieval of WORM and URL from many [[special_remotes]] is prohibited
@@ -67,21 +102,5 @@ for [[security_reasons|security/CVE-2018-10857_and_CVE-2018-10859]].
 Note that the various 512 and 384 length hashes result in long paths,
 which are known to not work on Windows. If interoperability on Windows is a
 concern, avoid those.
-
-The `annex.backend` git-config setting can be used to configure the
-default backend to use when adding new files.
-
-For finer control of what backend is used when adding different types of
-files, the `.gitattributes` file can be used. The `annex.backend`
-attribute can be set to the name of the backend to use for matching files.
-
-For example, to use the SHA256E backend for sound files, which tend to be
-smallish and might be modified or copied over time,
-while using the WORM backend for everything else, you could set
-in `.gitattributes`:
-
-	* annex.backend=WORM
-	*.mp3 annex.backend=SHA256E
-	*.ogg annex.backend=SHA256E
 
 See also: [[git-annex-examinekey]]

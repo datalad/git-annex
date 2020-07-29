@@ -11,7 +11,6 @@ module Remote.Helper.ExportImport where
 
 import Annex.Common
 import Types.Remote
-import Types.Backend
 import Types.Key
 import Types.ProposedAccepted
 import Backend
@@ -311,8 +310,8 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		db <- getexportdb dbv
 		liftIO $ Export.getExportTree db k
 
-	retrieveKeyFileFromExport dbv k _af dest p
-		| maybe False (isJust . verifyKeyContent) (maybeLookupBackendVariety (fromKey keyVariety k)) = do
+	retrieveKeyFileFromExport dbv k _af dest p = ifM (isVerifiable k)
+		( do
 			locs <- getexportlocs dbv k
 			case locs of
 				[] -> ifM (liftIO $ atomically $ readTVar $ getexportinconflict dbv)
@@ -322,4 +321,5 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 				(l:_) -> do
 					retrieveExport (exportActions r) k l dest p
 					return UnVerified
-		| otherwise = giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
+		, giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
+		)
