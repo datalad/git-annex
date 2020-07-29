@@ -20,13 +20,11 @@ import Types.Backend
 import Types.KeySource
 import Utility.Hash
 import Utility.Metered
+import Backend.Utilities
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
-import qualified System.FilePath.ByteString as P
-import Data.Char
-import Data.Word
 import Control.DeepSeq
 import Control.Exception (evaluate)
 
@@ -114,29 +112,8 @@ keyValue hash source meterupdate = do
 {- Extension preserving keys. -}
 keyValueE :: Hash -> KeySource -> MeterUpdate -> Annex Key
 keyValueE hash source meterupdate =
-	keyValue hash source meterupdate >>= addE
-  where
-	addE k = do
-		maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
-		let ext = selectExtension maxlen (keyFilename source)
-		return $ alterKey k $ \d -> d
-			{ keyName = keyName d <> ext
-			, keyVariety = hashKeyVariety hash (HasExt True)
-			}
-
-selectExtension :: Maybe Int -> RawFilePath -> S.ByteString
-selectExtension maxlen f
-	| null es = ""
-	| otherwise = S.intercalate "." ("":es)
-  where
-	es = filter (not . S.null) $ reverse $
-		take 2 $ filter (S.all validInExtension) $
-		takeWhile shortenough $
-		reverse $ S.split (fromIntegral (ord '.')) (P.takeExtensions f)
-	shortenough e = S.length e <= fromMaybe maxExtensionLen maxlen
-
-maxExtensionLen :: Int
-maxExtensionLen = 4 -- long enough for "jpeg"
+	keyValue hash source meterupdate
+		>>= addE source (const $ hashKeyVariety hash (HasExt True))
 
 {- A key's checksum is checked during fsck when it's content is present
  - except for in fast mode. -}
@@ -165,13 +142,6 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 
 keyHash :: Key -> S.ByteString
 keyHash = fst . splitKeyNameExtension
-
-validInExtension :: Word8 -> Bool
-validInExtension c
-	| isAlphaNum (chr (fromIntegral c)) = True
-	| fromIntegral c == ord '.' = True
-	| c <= 127 = False -- other ascii: spaces, punctuation, control chars
-	| otherwise = True -- utf8 is allowed, also other encodings
 
 {- Upgrade keys that have the \ prefix on their hash due to a bug, or
  - that contain non-alphanumeric characters in their extension.
@@ -310,10 +280,10 @@ testKeyBackend =
 	let b = genBackendE (SHA2Hash (HashSize 256))
 	    gk = case genKey b of
 		Nothing -> Nothing
-		Just f -> Just (\ks p -> addE <$> f ks p)
+		Just f -> Just (\ks p -> addTestE <$> f ks p)
 	in b { genKey = gk }
   where
-	addE k = alterKey k $ \d -> d
+	addTestE k = alterKey k $ \d -> d
 		{ keyName = keyName d <> longext
 		}
 	longext = ".this-is-a-test-key"

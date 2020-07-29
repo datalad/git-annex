@@ -11,6 +11,7 @@ module Backend.External (makeBackend) where
 
 import Annex.Common
 import Annex.ExternalAddonProcess
+import Backend.Utilities
 import Types.Key
 import Types.Backend
 import Types.KeySource
@@ -19,6 +20,7 @@ import qualified Utility.SimpleProtocol as Proto
 
 import qualified Data.ByteString as S
 import qualified Data.Map.Strict as M
+import Data.Char
 import Control.Concurrent
 import System.IO.Unsafe (unsafePerformIO)
 import System.Log.Logger (debugM)
@@ -92,8 +94,7 @@ genKeyExternal ebname hasext ks meterupdate =
 	req = GENKEY (fromRawFilePath (contentLocation ks))
 	notavail = giveup $ "Cannot generate a key, since " ++ externalBackendProgram ebname ++ " is not available."
 	
-	-- TODO hasExt handling
-	go (GENKEY_SUCCESS (ProtoKey k)) = result k
+	go (GENKEY_SUCCESS pk) = Just $ Result <$> fromProtoKey pk hasext ks
 	go (GENKEY_FAILURE msg) = Just $ giveup $
 		"External backend program failed to generate a key: " ++ msg
 	go (PROGRESS bytesprocessed) = Just $ do
@@ -106,8 +107,7 @@ verifyKeyContentExternal ebname hasext meterupdate k f =
 	withExternalState ebname hasext $ \st ->
 		handleRequest st req notavail go
   where
-  	-- TODO hasExt handling
-	req = VERIFYKEYCONTENT (ProtoKey k) f
+	req = VERIFYKEYCONTENT (toProtoKey k) f
 
 	-- This should not be able to happen, because CANVERIFY is checked
 	-- before this function is enable, and so the external program 
@@ -272,6 +272,26 @@ withExternalState bname hasext a = do
 -- such things.
 newtype ProtoKey = ProtoKey Key
 	deriving (Show)
+
+fromProtoKey :: ProtoKey -> HasExt -> KeySource -> Annex Key
+fromProtoKey (ProtoKey k) (HasExt False) _ = pure k
+fromProtoKey (ProtoKey k) hasext@(HasExt True) source =
+	addE source (setHasExt hasext) k
+
+toProtoKey :: Key -> ProtoKey
+toProtoKey k = ProtoKey $ alterKey k $ \d -> d
+	-- The extension can be easily removed, because the protocol
+	-- documentation does not allow '.' to be used in the keyName,
+	-- so the first one is the extension.
+	{ keyName = S.takeWhile (/= dot) (keyName d)
+	, keyVariety = setHasExt (HasExt False) (keyVariety d)
+	}
+  where
+	dot = fromIntegral (ord '.')
+
+setHasExt :: HasExt -> KeyVariety -> KeyVariety
+setHasExt hasext (ExternalKey name _) = ExternalKey name hasext
+setHasExt _ v = v
 
 instance Proto.Serializable ProtoKey where
 	serialize (ProtoKey k) = Proto.serialize k

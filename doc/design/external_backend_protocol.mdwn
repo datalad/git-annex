@@ -154,7 +154,8 @@ The key name is typically some kind of hash, but is not limited to a hash.
 The length of it needs to be similar to the lengths of other git-annex
 keys. Too long a key name will make it annoying to work with repositories
 using them, or even cause problems due to filename length limits. 128 bytes
-maximum, but shorter is better.
+maximum, but shorter is better. It should be entirely ascii characters
+in the set `A-Za-z0-9` and `-` is allowed, but other punctuation is not.
 
 It's important that, if the program responds with
 `ISCRYPTOGRAPHICALLYSECURE-YES`, the key name contains only a hash, and not

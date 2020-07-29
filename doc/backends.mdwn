@@ -89,6 +89,10 @@ Here's a list of external backends. Edit this page to add yours to the list.
 * [[design/external_backend_protocol/git-annex-backend-XFOO]]
   is a demo program implementing the protocol with a shell script.
 
+Like with git-annex's builtin backends, you can add "E" to the end of the
+name of an external backend, to get a version that includes the file
+extension in the key.
+
 ## notes
 
 If you want to be able to prove that you're working with the same file
