@@ -42,7 +42,7 @@ The program responds.
 	VERSION 1
 
 git-annex will next query the program about the properties of the keys it
-uses (CANVERIFY, ISSTABLE, ISCRYPTOGRAPHICALLYSECURE), and the program will
+uses (`CANVERIFY`, `ISSTABLE`, `ISCRYPTOGRAPHICALLYSECURE`), and the program will
 respond to each query.
 
 Then git-annex may ask the program to generate a key.
@@ -97,7 +97,7 @@ reply with one of the listed replies.
   art advances, and should aim to stay ahead of the state of the art by a
   reasonable amount of time.
   * `ISCRYPTOGRAPHICALLYSECURE-YES`
-  * ISCRYPTOGRAPHICALLYSECURE-NO`
+  * `ISCRYPTOGRAPHICALLYSECURE-NO`
 
 ## main messages and replies
 
@@ -113,7 +113,7 @@ This is where work happens.
   The program should examine the ContentFile and verify that it has the
   content it would expect for the Key. While it is doing this, it can
   send any number of `PROGRESS` messages indication the position in the
-  file that it's gotten to. (If the program earlier sent CANVERIFY-NO,
+  file that it's gotten to. (If the program earlier sent `CANVERIFY-NO`,
   it will not be asked to do this.)
   * `VERIFYKEYCONTENT-SUCCESS`
   * `VERIFYKEYCONTENT-FAILURE`
@@ -129,8 +129,8 @@ These messages can be sent at any time by either git-annex or the program.
   Generic error. Can be sent at any time if things get too messed up to
   continue. When possible, use a more specific reply.  
   The program should exit after sending this, as git-annex will not talk to
-  it any further. If the program receives an ERROR from git-annex, it can
-  exit with its own ERROR.
+  it any further. If the program receives an `ERROR` from git-annex, it can
+  exit with its own `ERROR`.
 
 ## considerations for generating keys
 
@@ -142,7 +142,8 @@ is git-annex-backend-XFOO, it should generate a key starting with "XFOO-".
 
 The backend name (and program name) has to be all uppercase, and should be
 reasonably short (max 10 bytes or so), and should be entirely ascii
-alphanumerics. Eg, use similar names to other [[backends]].
+alphanumerics. Eg, use similar names to other [[backends]]. It must not end
+with "E" (see next paragraph for why).
 
 git-annex will automatically also support an "E" variant of the backend,
 which adds a filename extension to the end of the key. It does this
@@ -156,7 +157,7 @@ using them, or even cause problems due to filename length limits. 128 bytes
 maximum, but shorter is better.
 
 It's important that, if the program responds with
-ISCRYPTOGRAPHICALLYSECURE-YES, the key name contains only a hash, and not
+`ISCRYPTOGRAPHICALLYSECURE-YES`, the key name contains only a hash, and not
 other data from some other source. That other data could be used to try to
 mount a sha1 collision attack against git, by embedding colliding material
 in the key name, where users are unlikely to notice it. While git has
