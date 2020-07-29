@@ -21,6 +21,7 @@ import qualified Data.ByteString as S
 import qualified Data.Map.Strict as M
 import Control.Concurrent
 import System.IO.Unsafe (unsafePerformIO)
+import System.Log.Logger (debugM)
 
 newtype ExternalBackendName = ExternalBackendName S.ByteString
 	deriving (Show, Eq, Ord)
@@ -30,34 +31,50 @@ newtype ExternalBackendName = ExternalBackendName S.ByteString
 -- that cannot generate or verify keys, but that still lets the keys be
 -- basically used.
 makeBackend :: S.ByteString -> HasExt -> Annex Backend
-makeBackend bname hasext = withExternalState ebname $ \st -> do
-	withExternalAddon st (pure unavailbackend) $ \_ext -> do
-		canverify <- handleRequest st CANVERIFY (pure False) $ \case
-			CANVERIFY_YES -> result True
-			CANVERIFY_NO -> result False
-			_ -> Nothing
-		isstable <- handleRequest st ISSTABLE (pure False) $ \case
-			ISSTABLE_YES -> result True
-			ISSTABLE_NO -> result False
-			_ -> Nothing
-		iscryptographicallysecure <- handleRequest st ISCRYPTOGRAPHICALLYSECURE (pure False) $ \case
-			ISCRYPTOGRAPHICALLYSECURE_YES -> result True
-			ISCRYPTOGRAPHICALLYSECURE_NO -> result False
-			_ -> Nothing
-		return $ Backend
-			{ backendVariety = ExternalKey bname hasext
-			, genKey = Just $ genKeyExternal ebname
-			, verifyKeyContent = if canverify
-				then Just $ verifyKeyContentExternal ebname
-				else Nothing
-			, canUpgradeKey = Nothing
-			, fastMigrate = Nothing
-			, isStableKey = const isstable
-			, isCryptographicallySecure = const iscryptographicallysecure
-			}
+makeBackend bname hasext =
+	withExternalState ebname hasext (return . externalBackend)
   where
 	ebname = ExternalBackendName bname
-	unavailbackend = Backend
+
+makeBackend' :: ExternalBackendName -> HasExt -> Either ExternalAddonStartError ExternalAddonProcess -> Annex Backend
+makeBackend' ebname@(ExternalBackendName bname) hasext (Right p) = do
+	let st = ExternalState
+		{ externalAddonProcess = Right p
+		, externalBackend = unavailBackend ebname hasext
+		}
+	canverify <- handleRequest st CANVERIFY (pure False) $ \case
+		CANVERIFY_YES -> result True
+		CANVERIFY_NO -> result False
+		_ -> Nothing
+	isstable <- handleRequest st ISSTABLE (pure False) $ \case
+		ISSTABLE_YES -> result True
+		ISSTABLE_NO -> result False
+		_ -> Nothing
+	iscryptographicallysecure <- handleRequest st ISCRYPTOGRAPHICALLYSECURE (pure False) $ \case
+		ISCRYPTOGRAPHICALLYSECURE_YES -> result True
+		ISCRYPTOGRAPHICALLYSECURE_NO -> result False
+		_ -> Nothing
+	return $ Backend
+		{ backendVariety = ExternalKey bname hasext
+		, genKey = Just $ genKeyExternal ebname hasext
+		, verifyKeyContent = if canverify
+			then Just $ verifyKeyContentExternal ebname hasext
+				-- The protocol supports PROGRESS here,
+				-- but it's not actually used. It was put
+				-- in to avoid needing a protocol version
+				-- bump if progress handling is later added.
+				nullMeterUpdate
+			else Nothing
+		, canUpgradeKey = Nothing
+		, fastMigrate = Nothing
+		, isStableKey = const isstable
+		, isCryptographicallySecure = const iscryptographicallysecure
+		}
+makeBackend' ebname hasext (Left _) = return $ unavailBackend ebname hasext
+
+unavailBackend :: ExternalBackendName -> HasExt -> Backend
+unavailBackend (ExternalBackendName bname) hasext = 
+	Backend
 		{ backendVariety = ExternalKey bname hasext
 		, genKey = Nothing
 		, verifyKeyContent = Nothing
@@ -67,26 +84,63 @@ makeBackend bname hasext = withExternalState ebname $ \st -> do
 		, isCryptographicallySecure = const False
 		}
 
-genKeyExternal :: ExternalBackendName -> KeySource -> MeterUpdate -> Annex Key
-genKeyExternal bname ks p = error "TODO"
+genKeyExternal :: ExternalBackendName -> HasExt -> KeySource -> MeterUpdate -> Annex Key
+genKeyExternal ebname hasext ks meterupdate = 
+	withExternalState ebname hasext $ \st ->
+		handleRequest st req notavail go
+  where
+	req = GENKEY (fromRawFilePath (contentLocation ks))
+	notavail = giveup $ "Cannot generate a key, since " ++ externalBackendProgram ebname ++ " is not available."
+	
+	-- TODO hasExt handling
+	go (GENKEY_SUCCESS (ProtoKey k)) = result k
+	go (GENKEY_FAILURE msg) = Just $ giveup $
+		"External backend program failed to generate a key: " ++ msg
+	go (PROGRESS bytesprocessed) = Just $ do
+		liftIO $ meterupdate bytesprocessed
+		return $ GetNextMessage go
+	go _ = Nothing
 
-verifyKeyContentExternal :: ExternalBackendName -> Key -> FilePath -> Annex Bool
-verifyKeyContentExternal bname k f = error "TODO"
+verifyKeyContentExternal :: ExternalBackendName -> HasExt -> MeterUpdate -> Key -> FilePath -> Annex Bool
+verifyKeyContentExternal ebname hasext meterupdate k f = 
+	withExternalState ebname hasext $ \st ->
+		handleRequest st req notavail go
+  where
+  	-- TODO hasExt handling
+	req = VERIFYKEYCONTENT (ProtoKey k) f
+
+	-- This should not be able to happen, because CANVERIFY is checked
+	-- before this function is enable, and so the external program 
+	-- is available. But if it does, fail the verification.
+	notavail = return False
+
+	go VERIFYKEYCONTENT_SUCCESS = result True
+	go VERIFYKEYCONTENT_FAILURE = result False
+	go (PROGRESS bytesprocessed) = Just $ do
+		liftIO $ meterupdate bytesprocessed
+		return $ GetNextMessage go
+	go _ = Nothing
 
 -- State about a running external backend program.
 data ExternalState = ExternalState
 	{ externalAddonProcess :: Either ExternalAddonStartError ExternalAddonProcess
+	, externalBackend :: Backend
 	}
 
 handleRequest :: ExternalState -> Request -> Annex a -> ResponseHandler a -> Annex a
 handleRequest st req whenunavail responsehandler =
 	withExternalAddon st whenunavail $ \p -> do
 		sendMessage p req
-		receiveResponse p responsehandler (Just . handleAsyncMessage)
+		let loop = receiveResponse p responsehandler
+			(Just . handleAsyncMessage loop)
+		loop
   where
-	handleAsyncMessage (ERROR err) = do
+	handleAsyncMessage _ (ERROR err) = do
 		warning ("external special remote error: " ++ err)
 		whenunavail
+	handleAsyncMessage loop (DEBUG msg) = do
+		liftIO $ debugM "external" msg
+		loop
 
 withExternalAddon :: ExternalState -> a -> (ExternalAddonProcess -> a) -> a
 withExternalAddon st whenunavail a = case externalAddonProcess st of
@@ -153,8 +207,8 @@ poolVar = unsafePerformIO $ newMVar M.empty
 -- Starts a new instance of an external backend.
 -- Does not add it to the poolVar; caller should add it once it's done
 -- using it.
-newExternalState :: ExternalBackendName -> ExternalAddonPID -> Annex ExternalState
-newExternalState (ExternalBackendName name) pid = do
+newExternalState :: ExternalBackendName -> HasExt -> ExternalAddonPID -> Annex ExternalState
+newExternalState ebname hasext pid = do
 	st <- startExternalAddonProcess basecmd pid
 	st' <- case st of
 		Left (ProgramNotInstalled msg) -> warnonce msg >> return st
@@ -172,17 +226,24 @@ newExternalState (ExternalBackendName name) pid = do
 					warnonce (basecmd ++ " uses an unsupported version of the external backend protocol")
 					return $ Left (ProgramFailure "bad protocol version")
 				else return (Right p)
-	return $ ExternalState { externalAddonProcess = st' }
+	backend <- makeBackend' ebname hasext st'
+	return $ ExternalState
+		{ externalAddonProcess = st'
+		, externalBackend = backend
+		}
   where
-	basecmd = "git-annex-backend-X" ++ decodeBS' name
+	basecmd = externalBackendProgram ebname
 	warnonce msg = when (pid == 1) $
 		warning msg
+
+externalBackendProgram :: ExternalBackendName -> String
+externalBackendProgram (ExternalBackendName bname) = "git-annex-backend-X" ++ decodeBS' bname
 
 -- Runs an action with an ExternalState, starting a new external backend
 -- process if necessary. It is returned to the pool once the action
 -- finishes successfully. On exception, it's shut down.
-withExternalState :: ExternalBackendName -> (ExternalState -> Annex a) -> Annex a
-withExternalState bname a = do
+withExternalState :: ExternalBackendName -> HasExt -> (ExternalState -> Annex a) -> Annex a
+withExternalState bname hasext a = do
 	st <- get
 	r <- a st `onException` shutdown st
 	put st -- only when no exception is thrown
@@ -194,7 +255,7 @@ withExternalState bname a = do
 			(pid, []) -> do
 				let m' = M.insert bname (succ pid, []) m
 				liftIO $ putMVar poolVar m'
-				newExternalState bname pid
+				newExternalState bname hasext pid
 			(pid, (st:rest)) -> do
 				let m' = M.insert bname (pid, rest) m
 				liftIO $ putMVar poolVar m'
@@ -238,11 +299,11 @@ data Response
 	| VERIFYKEYCONTENT_SUCCESS
 	| VERIFYKEYCONTENT_FAILURE
 	| PROGRESS BytesProcessed
-	| DEBUG String
 	deriving (Show)
 
 data AsyncMessage
 	= ERROR ErrorMsg
+	| DEBUG String
 	deriving (Show)
 
 type ErrorMsg = String
@@ -258,10 +319,12 @@ instance Proto.Serializable ProtocolVersion where
 	deserialize = ProtocolVersion <$$> readish
 
 instance Proto.Sendable AsyncMessage where
-	formatMessage (ERROR err) = [ "ERROR", Proto.serialize err ]
+	formatMessage (ERROR err) = ["ERROR", Proto.serialize err]
+	formatMessage (DEBUG msg) = ["DEBUG", Proto.serialize msg]
 
 instance Proto.Receivable AsyncMessage where
 	parseCommand "ERROR" = Proto.parse1 ERROR
+	parseCommand "DEBUG" = Proto.parse1 DEBUG
 	parseCommand _ = Proto.parseFail
 
 instance Proto.Sendable Request where
@@ -286,5 +349,4 @@ instance Proto.Receivable Response where
 	parseCommand "VERIFYKEYCONTENT-SUCCESS" = Proto.parse0 VERIFYKEYCONTENT_SUCCESS
 	parseCommand "VERIFYKEYCONTENT-FAILURE" = Proto.parse0 VERIFYKEYCONTENT_FAILURE
 	parseCommand "PROGRESS" = Proto.parse1 PROGRESS
-	parseCommand "DEBUG" = Proto.parse1 DEBUG
 	parseCommand _ = Proto.parseFail

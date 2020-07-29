@@ -11,7 +11,7 @@ hashfile () {
 	local contentfile="$1"
 	# could send PROGRESS while doing this, but it's
 	# hard to implement that in shell
-	return "$(md5sum "$contentfile" | cut -d ' ' -f 1 || echo '')"
+	md5sum "$contentfile" | cut -d ' ' -f 1 || echo ''
 }
 
 while read line; do
@@ -45,7 +45,7 @@ while read line; do
 			contentfile="$3"
 			hash=$(hashfile "$contentfile")
 			khash=$(echo "$key" | sed 's/.*--//')
-			if [ "$hash" == "$khash" ]; then
+			if [ "$hash" = "$khash" ]; then
 				echo "VERIFYKEYCONTENT-SUCCESS"
 			else
 				echo "VERIFYKEYCONTENT-FAILURE"
