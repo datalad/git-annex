@@ -1,0 +1,10 @@
+Today I implemented [[external backends|design/external_backend_protocol]]
+for keys. So unusual new hashes can be used by writing a small program.
+
+Probably lots of other uses for this too; I don't know if I'll like
+them all. It has the potential to warp git-annex in some directions I don't
+want to deal with. Still, it's good to have this feature.
+
+I was able to reuse a lot of the external special remote code for this,
+and only had to write around 400 lines of new code. Dunno how that all
+happened in 8 hours, but it did!
