@@ -12,6 +12,7 @@ module Remote.External (remote) where
 import Remote.External.Types
 import qualified Annex
 import Annex.Common
+import Annex.ExternalAddonProcess
 import Types.Remote
 import Types.Export
 import Types.CleanupActions
@@ -20,15 +21,12 @@ import Types.ProposedAccepted
 import qualified Git
 import Config
 import Git.Config (boolConfig)
-import Git.Env
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.ReadOnly
 import Remote.Helper.Messages
 import Utility.Metered
-import Utility.Shell
-import Messages.Progress
 import Types.Transfer
 import Logs.PreferredContent.Raw
 import Logs.RemoteState
@@ -40,7 +38,6 @@ import Annex.UUID
 import Creds
 
 import Control.Concurrent.STM
-import Control.Concurrent.Async
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -513,7 +510,7 @@ sendMessage st external m = liftIO $ do
 	hFlush h
   where
 	line = unwords $ formatMessage m
-	h = externalSend st
+	h = externalSend (externalAddonProcess st)
 
 {- A response handler can yeild a result, or it can request that another
  - message be consumed from the external result. -}
@@ -538,7 +535,7 @@ receiveMessage
 	-> (AsyncMessage -> Maybe (Annex a))
 	-> Annex a
 receiveMessage st external handleresponse handlerequest handleasync =
-	go =<< liftIO (catchMaybeIO $ hGetLine $ externalReceive st)
+	go =<< liftIO (catchMaybeIO $ hGetLine $ externalReceive $ externalAddonProcess st)
   where
 	go Nothing = protocolError False ""
 	go (Just s) = do
@@ -563,7 +560,7 @@ receiveMessage st external handleresponse handlerequest handleasync =
 protocolDebug :: External -> ExternalState -> Bool -> String -> IO ()
 protocolDebug external st sendto line = debugM "external" $ unwords
 	[ externalRemoteProgram (externalType external) ++ 
-		"[" ++ show (externalPid st) ++ "]"
+		"[" ++ show (externalPid (externalAddonProcess st)) ++ "]"
 	, if sendto then "<--" else "-->"
 	, line
 	]
@@ -582,7 +579,7 @@ protocolDebug external st sendto line = debugM "external" $ unwords
 withExternalState :: External -> (ExternalState -> Annex a) -> Annex a
 withExternalState external a = do
 	st <- get
-	r <- a st `onException` liftIO (externalShutdown st True)
+	r <- a st `onException` liftIO (externalShutdown (externalAddonProcess st) True)
 	put st -- only when no exception is thrown
 	return r
   where
@@ -603,90 +600,55 @@ withExternalState external a = do
 {- Starts an external remote process running, and checks VERSION and
  - exchanges EXTENSIONS. -}
 startExternal :: External -> Annex ExternalState
-startExternal external = do
-	errrelayer <- mkStderrRelayer
-	st <- start errrelayer =<< Annex.gitRepo
-	receiveMessage st external
-		(const Nothing)
-		(checkVersion st external)
-		(const Nothing)
-	sendMessage st external (EXTENSIONS supportedExtensionList)
-	-- It responds with a EXTENSIONS_RESPONSE; that extensions list
-	-- is reserved for future expansion. UNSUPPORTED_REQUEST is also
-	-- accepted.
-	receiveMessage st external
-		(\resp -> case resp of
-			EXTENSIONS_RESPONSE _ -> result ()
-			UNSUPPORTED_REQUEST -> result ()
-			_ -> Nothing
-		)
-		(const Nothing)
-		(const Nothing)
-	return st
+startExternal external =
+	startExternalAddonProcess basecmd (externalLastPid external) >>= \case
+		Left (ProgramFailure err) -> giveup err
+		Left (ProgramNotInstalled err) ->
+			case (lookupName (unparsedRemoteConfig (externalDefaultConfig external)), remoteAnnexReadOnly <$> externalGitConfig external) of
+				(Just rname, Just True) -> giveup $ unlines
+					[ err
+					, "This remote has annex-readonly=true, and previous versions of"
+					, "git-annex would tried to download from it without"
+					, "installing " ++ basecmd ++ ". If you want that, you need to set:"
+					, "git config remote." ++ rname ++ ".annex-externaltype readonly"
+					]
+				_ -> giveup err
+		Right p -> do
+			cv <- liftIO $ newTVarIO $ externalDefaultConfig external
+			ccv <- liftIO $ newTVarIO id
+			pv <- liftIO $ newTVarIO Unprepared
+			let st = ExternalState
+				{ externalAddonProcess = p
+				, externalPrepared = pv
+				, externalConfig = cv
+				, externalConfigChanges = ccv
+				}
+			startproto st
+			return st
   where
-	start errrelayer g = liftIO $ do
-		cmdpath <- searchPath basecmd
-		(cmd, ps) <- maybe (pure (basecmd, [])) findShellCommand cmdpath
-		let basep = (proc cmd (toCommand ps))
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = CreatePipe
-			}
-		p <- propgit g basep
-		pall@(Just hin, Just hout, Just herr, ph) <- 
-			createProcess p `catchNonAsync` runerr cmdpath
-		stderrelay <- async $ errrelayer herr
-		cv <- newTVarIO $ externalDefaultConfig external
-		ccv <- newTVarIO id
-		pv <- newTVarIO Unprepared
-		pid <- atomically $ do
-			n <- succ <$> readTVar (externalLastPid external)
-			writeTVar (externalLastPid external) n
-			return n
-		let shutdown forcestop = do
-			cancel stderrelay
-			if forcestop
-				then cleanupProcess pall
-				else flip onException (cleanupProcess pall) $ do
-					hClose herr
-					hClose hin
-					hClose hout
-					void $ waitForProcess ph
-		return $ ExternalState
-			{ externalSend = hin
-			, externalReceive = hout
-			, externalPid = pid
-			, externalShutdown = shutdown
-			, externalPrepared = pv
-			, externalConfig = cv
-			, externalConfigChanges = ccv
-			}
-	
 	basecmd = externalRemoteProgram $ externalType external
-
-	propgit g p = do
-		environ <- propGitEnv g
-		return $ p { env = Just environ }
-
-	runerr (Just cmd) _ =
-		giveup $ "Cannot run " ++ cmd ++ " -- Make sure it's executable and that its dependencies are installed."
-	runerr Nothing _ = do
-		path <- intercalate ":" <$> getSearchPath
-		let err = "Cannot run " ++ basecmd ++ " -- It is not installed in PATH (" ++ path ++ ")"
-		case (lookupName (unparsedRemoteConfig (externalDefaultConfig external)), remoteAnnexReadOnly <$> externalGitConfig external) of
-			(Just rname, Just True) -> giveup $ unlines
-				[ err
-				, "This remote has annex-readonly=true, and previous versions of"
-				, "git-annex would tried to download from it without"
-				, "installing " ++ basecmd ++ ". If you want that, you need to set:"
-				, "git config remote." ++ rname ++ ".annex-externaltype readonly"
-				]
-			_ -> giveup err
+	startproto st = do
+		receiveMessage st external
+			(const Nothing)
+			(checkVersion st external)
+			(const Nothing)
+		sendMessage st external (EXTENSIONS supportedExtensionList)
+		-- It responds with a EXTENSIONS_RESPONSE; that extensions
+		-- list is reserved for future expansion. UNSUPPORTED_REQUEST
+		-- is also accepted.
+		receiveMessage st external
+			(\resp -> case resp of
+				EXTENSIONS_RESPONSE _ -> result ()
+				UNSUPPORTED_REQUEST -> result ()
+				_ -> Nothing
+			)
+			(const Nothing)
+			(const Nothing)
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
 	l <- atomically $ swapTVar (externalState external) []
-	mapM_ (flip externalShutdown False) l
+	mapM_ (flip (externalShutdown . externalAddonProcess) False) l
 
 externalRemoteProgram :: ExternalType -> String
 externalRemoteProgram externaltype = "git-annex-remote-" ++ externaltype

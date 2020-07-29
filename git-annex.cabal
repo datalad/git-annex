@@ -652,6 +652,7 @@ Executable git-annex
     Annex.Drop
     Annex.Environment
     Annex.Export
+    Annex.ExternalAddonProcess
     Annex.FileMatcher
     Annex.Fixup
     Annex.GitOverlay
@@ -697,6 +698,7 @@ Executable git-annex
     Annex.WorkTree
     Annex.YoutubeDl
     Backend
+    -- Backend.External
     Backend.Hash
     Backend.URL
     Backend.Utilities
