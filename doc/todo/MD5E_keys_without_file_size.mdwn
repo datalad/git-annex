@@ -2,4 +2,7 @@ Would it be hard to support MD5E keys that omit the -sSIZE part, the way this is
 
 Another (and more generally useful) solution would be [[todo/alternate_keys_for_same_content/]].  Then can start with a URL-based key but then attach an MD5 to it as metadata, and have the key treated as a checksum-containing key, without needing to migrate the contents to a new key.
 
-[[!tag moreinfo]]
+> Closing, because [[external_backends]] is implemented, so you should be
+> able to roll your own backend for your use case here. Assuming you can't
+> just use regular MD5E and omit the file size field, which will work too.
+> --[[Joey]]

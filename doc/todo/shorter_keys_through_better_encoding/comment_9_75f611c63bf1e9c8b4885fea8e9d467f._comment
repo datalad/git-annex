@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-07-29T21:22:42Z"
+ content="""
+[[external_backends]] is now implemented, so you can write a program that
+makes keys use some other, shorter hash encoding.
+
+I don't know if that's really sufficient to close this.
+"""]]

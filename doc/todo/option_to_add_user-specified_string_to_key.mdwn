@@ -12,4 +12,9 @@ This enables attaching metadata not to file contents, but to the file itself; or
 deduplication.  This loss may be acceptable.  The loss can be mitigated for local repo and non-special remotes: after storing an object with e.g. MD5 d41d8cd98f00b204e9800998ecf8427e under .git/annex/objects, check if there is a symlink .git/annex/contenthash/d41d8cd98f00b204e9800998ecf8427e ; if not, make this a symlink to the object just stored; if yes,
 erase the object just stored, and hardlink the symlink's target instead.
 
-[[!tag unlikely moreinfo]]
+> Closing since [[external_backends]] is implemented, and you could do this
+> using it. Whether that's a good idea, I'm fairly doubtful about. Be sure
+> to read "considerations for generating keys" in 
+> <https://git-annex.branchable.com/design/external_backend_protocol/#index7h2>
+>  
+> [[done]] --[[Joey]]
