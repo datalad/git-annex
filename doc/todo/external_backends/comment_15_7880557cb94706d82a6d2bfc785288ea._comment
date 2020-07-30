@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="streaming data and external backends"
+ date="2020-07-30T15:58:21Z"
+ content="""
+\"I can't think of any situation where git-annex would GENKEY before it has the full content of a file available\" -- if [[todo/git-annex-cat]] were implemented, could then e.g. `git fsck --from REMOTE` without the data ever touching the disk.
+"""]]
