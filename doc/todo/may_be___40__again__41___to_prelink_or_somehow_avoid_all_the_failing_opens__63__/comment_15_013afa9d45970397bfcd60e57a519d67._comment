@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 15"
+ date="2020-07-31T21:23:55Z"
+ content="""
+Just a brief one:
+
+> It is premature optimisation to try to reduce these seeks when they have not been shown to reduce performance ...
+
+Have a look at the original issue description.  They introduced 1.3ms to seek a single library... We saved about 30% of runtime switching Travis CI from standalone to conda build of annex. So performance reduction is obvious IMHO.
+
+>  Implemented that.
+
+Awesome!  I have restarted [gh workflows job](https://github.com/datalad/datalad-extensions/pull/25/checks?check_run_id=919624426) which runs perspectively [added test](https://github.com/datalad/datalad-extensions/pull/25/files#diff-8364c688b76bfaf5df947cfd4d74eef7R111) running `annex init` and counting missing seeks for libpcre (was over 90)... unfortunately regular `git annex test` failed before it tried added \"custom\" ones (I should isolate them I guess), so dunno what is the status on that github action.  
+FTR: testing of git annex started to show some failures 2 days ago : https://github.com/datalad/datalad-extensions/actions/runs/187943962 (although only in crippled fs runs, although might be just the sign of lakiness)  so not necessarily a fresh one.  yet to download a fresh built package and see what it brings locally
+"""]]
