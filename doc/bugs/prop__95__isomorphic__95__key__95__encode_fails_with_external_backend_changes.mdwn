@@ -33,3 +33,5 @@ Thanks in advance.
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] and rest of test suite passing --[[Joey]]

@@ -344,7 +344,7 @@ parseKeyVariety "URL"          = URLKey
 parseKeyVariety b
 	| "X" `S.isPrefixOf` b = 
 		let b' = S.tail b
-		in if S.last b' == fromIntegral (ord 'E')
+		in if not (S.null b') && S.last b' == fromIntegral (ord 'E')
 			then ExternalKey (S.init b') (HasExt True)
 			else ExternalKey b' (HasExt False)
 	| otherwise = OtherKey b
