@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2020-07-31T17:41:55Z"
+ content="""
+`git-annex init` runs git something like 30 times, so it's close to the worst
+case for a single git-annex command, other than when smudge filters are run.
+
+I tried inlining runshell into both git and git-annex scripts, thinking
+that the overhead of starting the second shell script might be measurable.
+It was not; I saw `git-annex init` taking 0.10-0.14s before and after.
+
+I also tried trimming out some parts of the script that normally
+don't run, like the android support, but that didn't speed it up.
+
+With the consolidated lib dirs, I did see `git-annex init` drop to 0.07-0.10s.
+
+Ok, I found a way to consolidate the directories that will not include
+directories for optimised libs. Implemented that.
+"""]]

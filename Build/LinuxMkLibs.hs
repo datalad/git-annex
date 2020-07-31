@@ -36,18 +36,51 @@ mklibs top = do
 	fs <- dirContentsRecursive top
 	exes <- filterM checkExe fs
 	libs <- parseLdd <$> readProcess "ldd" exes
+	
 	glibclibs <- glibcLibs
 	let libs' = nub $ libs ++ glibclibs
-	libdirs <- nub . catMaybes <$> mapM (installLib installFile top) libs'
+	let (linkers, otherlibs) = partition ("ld-linux" `isInfixOf`) libs'
+	libdirs <- nub . catMaybes <$> mapM (installLib installFile top) otherlibs
+	libdirs' <- consolidateUsrLib top libdirs
+
+	gconvlibs <- gconvLibs
+	mapM_ (installLib installFile top) gconvlibs
 
 	-- Various files used by runshell to set up env vars used by the
 	-- linker shims.
-	writeFile (top </> "libdirs") (unlines libdirs)
-	writeFile (top </> "gconvdir")
-		(parentDir $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
+	writeFile (top </> "libdirs") (unlines libdirs')
+	writeFile (top </> "gconvdir") (parentDir $ Prelude.head gconvlibs)
 	
-	let linker = Prelude.head $ filter ("ld-linux" `isInfixOf`) libs'
+	mapM_ (installLib installFile top) linkers
+	let linker = Prelude.head linkers
 	mapM_ (installLinkerShim top linker) exes
+	
+{- If there are two libdirs that are the same except one is in
+ - usr/lib and the other is in lib/, move the contents of the usr/lib one
+ - into the lib/ one. This reduces the number of directories the linker
+ - needs to look in, and so reduces the number of failed stats
+ - and improves startup time.
+ -}
+consolidateUsrLib :: FilePath -> [FilePath] -> IO [FilePath]
+consolidateUsrLib top libdirs = map reverse <$> go [] (map reverse libdirs)
+  where
+	go c [] = return c
+	go c (x:[]) = return (x:c)
+	go c (x:y:rest)
+		| x == y ++ reverse ("/usr") = do
+			let x' = reverse x
+			let y' = reverse y
+			fs <- getDirectoryContents (inTop top x')
+			forM_ fs $ \f -> do
+				print f
+				unless (dirCruft f) $
+					renameFile 
+						(inTop top (x' </> f))
+						(inTop top (y' </> f))
+			go (y:c) rest
+		| otherwise = do
+			print (x,y)
+			go (x:c) (y:rest)
 
 {- Installs a linker shim script around a binary.
  -

@@ -1,6 +1,6 @@
 {- Linux library copier and binary shimmer
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -9,6 +9,7 @@ module Utility.LinuxMkLibs (
 	installLib,
 	parseLdd,
 	glibcLibs,
+	gconvLibs,
 	inTop,
 ) where
 
@@ -59,9 +60,15 @@ parseLdd = mapMaybe (getlib . dropWhile isSpace) . lines
   where
 	getlib l = headMaybe . words =<< lastMaybe (split " => " l)
 
-{- Get all glibc libs and other support files, including gconv files
+{- Get all glibc libs.
  -
  - XXX Debian specific. -}
 glibcLibs :: IO [FilePath]
 glibcLibs = lines <$> readProcess "sh"
-	["-c", "dpkg -L libc6:$(dpkg --print-architecture) libgcc1:$(dpkg --print-architecture) | egrep '\\.so|gconv'"]
+	["-c", "dpkg -L libc6:$(dpkg --print-architecture) libgcc1:$(dpkg --print-architecture) | egrep '\\.so' | grep -v /gconv/ | grep -v ld.so.conf | grep -v sotruss-lib"]
+
+{- Get gblibc's gconv libs, which are handled specially.. -}
+gconvLibs :: IO [FilePath]
+gconvLibs = lines <$> readProcess "sh"
+	["-c", "dpkg -L libc6:$(dpkg --print-architecture) | grep /gconv/"]
+
