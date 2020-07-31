@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2020-07-31T17:10:08Z"
+ content="""
+It is premature optimisation to try to reduce these seeks when they have
+not been shown to reduce performance, and at least in my tests, have been
+shown to not affect it to the limits I can measure.
+
+I don't think it would be safe to consolidate all the libs into one
+directory, as I did in my test. Because it seems possible that there could
+be two versions of a .so file with the same name, in eg lib64/tls
+and lib64/x86_64. Installing only one of them would either lose actual
+optimisations in the other .so file, or cause breakage. I don't know when
+those optimised .so files exist, but implementating this consolidation
+would make the build more fragile.
+
+I don't know if `prelink(8)` is able to prelink things such that they can
+be relocated, as git-annex.linux can. I think it hardcodes a fixed path in
+the binary. Similarly, ld.so.cache (which is why this seeking doesn't
+happen on Debian AFAICS, not preliking) contains a list of directories and
+the libraries in them, so unless it were created by runshell the first
+time, it would not work. And creating it by runshell the first time would
+make the thing more complicated, and thus more fragile. (Also
+/sbin/ldconfig is 1mb in size so would increase the bundle rather a lot.)
+Also, I benchmarked prelinking back in 
+[[!commit c4229be9a7a2318ef71b9ae433bc14bf604c9caf]] and the speedup was not
+measurable.
+
+So these are not appealing with the information I have. It's a very
+different situation than the ghc bug that was adding one directory
+to rpath for every haskell library, which had an easily measurable
+performance impact because there are hundreds of those libraries and 30000
+seeks did add up to a measurable time.
+"""]]
