@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 17"
+ date="2020-07-31T21:37:45Z"
+ content="""
+> ... that there are no hwcap optimised libs being included in the bundle, otherwise it would probably be a pessimisation.
+
+Kyle, get ready for me to use a new word I just have learned! ;)
+
+as for \"... included in the bundle\".  For neurodebian git-annex-standalone ideally any check of such kinda should be done at package build time since it is when it could check just once and avoid any checks later when installed.
+"""]]
