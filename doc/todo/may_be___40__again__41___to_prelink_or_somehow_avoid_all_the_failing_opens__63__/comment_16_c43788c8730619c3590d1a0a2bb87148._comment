@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 16"
+ date="2020-07-31T21:30:31Z"
+ content="""
+> FTR: testing of git annex started to show some failures 2 days ago
+
+Already reported [here] and fixed by Joey with 5a5873e05 (fix bug
+caught by test suite, 2020-07-31).
+
+[here]: https://git-annex.branchable.com/bugs/prop__95__isomorphic__95__key__95__encode_fails_with_external_backend_changes/
+
+"""]]
