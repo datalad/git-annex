@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="thanks"
+ date="2020-07-30T15:51:13Z"
+ content="""
+Thanks a lot Joey for implementing this.
+
+\"only had to write around 400 lines of new code\" -- sign of good design.  At some point I'll learn enough Haskell to understand/learn from git-annex's design.
+
+"""]]

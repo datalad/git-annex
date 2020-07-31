@@ -1,0 +1,35 @@
+Just a heads up that `prop_isomorphic_key_encode` is failing on master
+(for me locally and at <https://github.com/datalad/datalad-extensions>):
+
+```
+$ git show --no-patch --format=reference
+85e57d826 (Added a comment: streaming data and external backends, 2020-07-30)
+
+$ stack exec -- git annex test -p prop_isomorphic_key_encode
+Tests                     
+  QuickCheck
+    prop_isomorphic_key_encode: FAIL (0.03s)
+      *** Failed! (after 601 tests):
+      Exception:
+        Data.ByteString.last: empty ByteString
+        CallStack (from HasCallStack):
+          error, called at libraries/bytestring/Data/ByteString.hs:1877:23 in bytestring-0.10.8.2:Data.ByteString
+      Exception thrown while showing test case:
+        Data.ByteString.last: empty ByteString
+        CallStack (from HasCallStack):
+          error, called at libraries/bytestring/Data/ByteString.hs:1877:23 in bytestring-0.10.8.2:Data.ByteString
+      
+      Use --quickcheck-replay=896100 to reproduce.
+
+1 out of 1 tests failed (0.03s)
+  (Failures above could be due to a bug in git-annex, or an incompatibility
+   with utilities, such as git, installed on this system.)
+```
+
+I do not see this failure before f75be3216 (external backends wip,
+2020-07-29).
+
+Thanks in advance.
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
