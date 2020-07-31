@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-07-31T20:05:42Z"
+ content="""
+SHA512 backend has 128 bytes key name, that's where I got that suggestion
+from. Some filesystems have limits around 255 bytes for the name of a file,
+so that leaves plenty for extension, and the rest of the parts of the key.
+Realistically, the length of a SHA256 is a better goal.
+
+Of course, if you had a crazy 1025 byte hash and wanted to use it on IDK,
+GNU Hurd or something, you could do it, but your repo
+would not be portable to eg Linux with its 1024 byte filename limit.
+git-annex itself does not care though, and I *think* git would also not
+care.
+"""]]
