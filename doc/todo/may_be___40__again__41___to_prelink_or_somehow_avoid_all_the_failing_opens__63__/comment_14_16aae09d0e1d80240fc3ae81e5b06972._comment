@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2020-07-31T20:25:01Z"
+ content="""
+Setting `LD_HWCAP_MASK=0` prevents the linker from looking for hardware
+optimised libraries. I compared with and without it, and there was a
+savings of 280 failed seeks across `git-annex init`.
+
+In particular ones with a double `x86_64` like this one:
+
+	git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/x86_64/libm.so.6
+
+While it still does ones like this, which I would have thought would also
+be disabled:
+
+	git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/libm.so.6
+
+And, it eliminates looking for libpcre twice in the same place
+(git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/libpcre2-8.so.0)
+that it otherwise does while linking git.
+
+This is some weird behavior from the linker. I get the impression
+that it's looking in `x86_64` for two different reasons, hwcap and
+something else. And tls is not being filtered either.
+Found this message that I think explains why:
+<https://sourceware.org/pipermail/libc-alpha/2020-May/113878.html>
+
+> Two fake hwcap bits and corresponding subdirectory are added by the loader: the TLS
+> bit with the directory name "tls", and the platform bit, with the
+> AT_PLATFROM string provided by the kernel as the directory name.
+
+So, the kernel provides hwcaps, which we can filter, but then these
+fake ones are added on top of it.
+
+It seems likely that's a bug... What if I actually had a good
+reason to want to mask out those libraries from being used, and the linker
+used them anyway?
+
+Anyway, that reduces the runtime to 0.08-0.09s from 0.10-0.11s.
+
+Enabling this would need some way to detect that there are no hwcap
+optimised libs being included in the bundle, otherwise it would probably
+be a pessimisation. 
+"""]]
