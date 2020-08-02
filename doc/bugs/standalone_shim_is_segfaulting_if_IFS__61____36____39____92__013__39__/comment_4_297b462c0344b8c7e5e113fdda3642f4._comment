@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2020-08-02T01:31:52Z"
+ content="""
+Oh, I see the reason for confusion: I usually as `set -u` to my scripts, so they would fail if variable is undefined. Indeed in the default mode of operation it isn't needed.
+"""]]
