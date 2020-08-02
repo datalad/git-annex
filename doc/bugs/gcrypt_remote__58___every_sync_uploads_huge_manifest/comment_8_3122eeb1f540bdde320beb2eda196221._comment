@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="git-annex.branchable.com@79d6855760f61f7fbe0a401b45d8c791ef49b500"
+ nickname="git-annex.branchable.com"
+ avatar="http://cdn.libravatar.org/avatar/4bf61f9feda20e8b4fc09d52ee48af39"
+ subject="comment 8"
+ date="2020-08-02T23:41:32Z"
+ content="""
+Is it possible to convert an existing `gcrypt::ssh://host/path` gcrypt special remote to one on top of rsync transport protocol to work around these performance issues?  The existing remote is obviously quite large, and re-uploading the content would take a very long time.
+"""]]
