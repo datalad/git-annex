@@ -24,7 +24,7 @@ import Utility.Path
 import Utility.FileMode
 import Utility.CopyFile
 
-mklibs :: FilePath -> a -> IO ()
+mklibs :: FilePath -> a -> IO Bool
 mklibs top _installedbins = do
 	fs <- dirContentsRecursive top
 	exes <- filterM checkExe fs
@@ -48,6 +48,19 @@ mklibs top _installedbins = do
 	let linker = Prelude.head linkers
 	mapM_ (installLinkerShim top linker) exes
 	
+	return (any hwcaplibdir libdirs)
+  where
+	-- hwcap lib dirs are things like foo/tls and foo/x86.
+	-- Hard to know if a directory is, so this is a heuristic
+	-- looking for things that are certianly not. If this heuristic
+	-- fails, a minor optimisation will not happen, but there will be
+	-- no bad results.
+	hwcaplibdir d = not $ or
+		[ "lib" == takeFileName d
+		-- eg, "lib/x86_64-linux-gnu"
+		, "-linux-" `isInfixOf` takeFileName d
+		]
+
 {- If there are two libdirs that are the same except one is in
  - usr/lib and the other is in lib/, move the contents of the usr/lib one
  - into the lib/ one. This reduces the number of directories the linker

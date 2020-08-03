@@ -61,3 +61,5 @@ git annex build: 8.20200617+git192-g5849bd634-1~ndall+1
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]

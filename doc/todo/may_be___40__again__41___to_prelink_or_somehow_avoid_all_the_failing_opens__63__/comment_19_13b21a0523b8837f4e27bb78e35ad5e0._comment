@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2020-08-03T18:16:50Z"
+ content="""
+Implemented the `LD_HWCAP_MASK=0` optimisation, which left only these:
+
+	strace -f ./git-annex version 2>&1 | grep ENOENT | grep openat
+	openat(AT_FDCWD, "/home/joey/src/git-annex/tmp/git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/home/joey/src/git-annex/tmp/git-annex.linux//lib/x86_64-linux-gnu/tls/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	openat(AT_FDCWD, "/home/joey/src/git-annex/tmp/git-annex.linux//lib/x86_64-linux-gnu/x86_64/libm.so.6", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 697752] openat(AT_FDCWD, "/home/joey/src/git-annex/tmp/git-annex.linux//lib/x86_64-linux-gnu/tls/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 697752] openat(AT_FDCWD, "/home/joey/src/git-annex/tmp/git-annex.linux//lib/x86_64-linux-gnu/tls/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+	[pid 697752] openat(AT_FDCWD, "/home/joey/src/git-annex/tmp/git-annex.linux//lib/x86_64-linux-gnu/x86_64/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+
+There are more failed opens now for locale files for commands like
+grep when running it than there are for libraries. So, no need to
+consider further prelinking.
+
+I think that rewriting runshell in C would be the
+logical next choice, but dunno if it would speed it up by enough to be 
+worth the effort. So I'm going to close this now.
+"""]]

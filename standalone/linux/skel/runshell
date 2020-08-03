@@ -241,6 +241,9 @@ else
 	cmd=sh
 fi
 
+LD_HWCAP_MASK=
+export LD_HWCAP_MASK
+
 if [ -n "${orig_IFS}" ]; then
 	IFS="${orig_IFS}"
 	export IFS

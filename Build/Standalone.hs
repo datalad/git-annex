@@ -152,13 +152,22 @@ installLocales _ = return ()
 installLocales topdir = cp "/usr/share/i18n" (topdir </> "i18n")
 #endif
 
-installWrapper :: FilePath -> FilePath -> IO ()
+installSkel :: FilePath -> FilePath -> IO ()
 #ifdef darwin_HOST_OS
-installWrapper topdir basedir = do
+installSkel topdir basedir = do
 	removeDirectoryRecursive basedir
-	createDirectoryIfMissing True (takeDirectory basedir)
 	unlessM (boolSystem "cp" [Param "-R", File "standalone/osx/git-annex.app", File basedir]) $
 		error "cp failed"
+#else
+installSkel topdir _basedir = do
+	removeDirectoryRecursive topdir
+	unlessM (boolSystem "cp" [Param "-R", File "standalone/linux/skel", File topdir]) $
+		error "cp failed"
+#endif
+
+installSkelRest :: FilePath -> FilePath -> Bool -> IO ()
+#ifdef darwin_HOST_OS
+installSkelRest topdir basedir _hwcaplibs = do
 	plist <- lines <$> readFile "standalone/osx/Info.plist.template"
 	version <- getVersion
 	writeFile (basedir </> "Contents" </> "Info.plist")
@@ -166,11 +175,7 @@ installWrapper topdir basedir = do
   where
 	expandversion v l = replace "GIT_ANNEX_VERSION" v l
 #else
-installWrapper topdir _basedir = do
-	removeDirectoryRecursive topdir
-	createDirectoryIfMissing True (takeDirectory topdir)
-	unlessM (boolSystem "cp" [Param "-R", File "standalone/linux/skel", File topdir]) $
-		error "cp failed"
+installSkelRest topdir _basedir hwcaplibs = do
 	runshell <- lines <$> readFile "standalone/linux/skel/runshell"
 	-- GIT_ANNEX_PACKAGE_INSTALL can be set by a distributor and
 	-- runshell will be modified
@@ -180,6 +185,12 @@ installWrapper topdir _basedir = do
 	modifyFileMode (topdir </> "runshell") (addModes executeModes)
   where
 	expandrunshell (Just gapi) l@"GIT_ANNEX_PACKAGE_INSTALL=" = l ++ gapi
+	-- This is an optimisation, that avoids the linker looking in
+	-- several directories for hwcap optimised libs, when there are
+	-- none.
+	expandrunshell _ l@"LD_HWCAP_MASK=" = l ++ if not hwcaplibs
+		then "0"
+		else ""
 	expandrunshell _ l = l
 #endif
 
@@ -203,11 +214,12 @@ main :: IO ()
 main = getArgs >>= go
   where
 	go (topdir:basedir:[]) = do
-		installWrapper topdir basedir
+		installSkel topdir basedir
 		installGitAnnex topdir
 		installedbins <- installBundledPrograms topdir
 		installGitLibs topdir
 		installMagic topdir
 		installLocales topdir
-		mklibs topdir installedbins
+		hwcaplibs <- mklibs topdir installedbins
+		installSkelRest topdir basedir hwcaplibs
 	go _ = error "specify topdir and basedir"

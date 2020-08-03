@@ -31,8 +31,10 @@ import qualified Data.Set as S
 
 type LibMap = M.Map FilePath String
 
-mklibs :: FilePath -> M.Map FilePath FilePath -> IO ()
-mklibs appbase installedbins = mklibs' appbase installedbins [] [] M.empty
+mklibs :: FilePath -> M.Map FilePath FilePath -> IO Bool
+mklibs appbase installedbins = do
+	mklibs' appbase installedbins [] [] M.empty
+	return True
 
 {- Recursively find and install libs, until nothing new to install is found. -}
 mklibs' :: FilePath -> M.Map FilePath FilePath -> [FilePath] -> [(FilePath, FilePath)] -> LibMap -> IO ()
