@@ -1,26 +1,37 @@
 {- Makes standalone bundle.
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
+import System.Environment (getArgs)
 import Control.Monad.IfElse
-import System.Environment
 import System.FilePath
 import System.Posix.Files
 import Control.Monad
-import Build.BundledPrograms
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Map as M
 
 import Utility.SafeCommand
 import Utility.Process
 import Utility.Path
 import Utility.Directory
+import Utility.Env
+import Build.BundledPrograms
+#ifdef darwin_HOST_OS
+import Build.OSXMkLibs (mklibs)
+import Build.Version
+import Utility.Split
+#else
+import Build.LinuxMkLibs (mklibs)
+import Utility.FileMode
+#endif
 
 progDir :: FilePath -> FilePath
 #ifdef darwin_HOST_OS
@@ -41,6 +52,16 @@ installProg dir prog = searchPath prog >>= go
 		unlessM (boolSystem "install" [File f, File dest]) $
 			error $ "install failed for " ++ prog
 		return (dest, f)
+
+installBundledPrograms :: FilePath -> IO (M.Map FilePath FilePath)
+installBundledPrograms topdir = M.fromList . concat <$> mapM go
+	[ (progDir topdir, preferredBundledPrograms)
+	, (extraProgDir topdir, extraBundledPrograms)
+	]
+  where
+	go (dir, progs) = do
+		createDirectoryIfMissing True dir
+		forM progs $ installProg dir
 
 installGitLibs :: FilePath -> IO ()
 installGitLibs topdir = do
@@ -100,21 +121,93 @@ installGitLibs topdir = do
 		case ls of
 			[] -> error $ "git " ++ opt ++ "did not output a location"
 			(p:_) -> return p
-	
-	cp src dest = do
-		nukeFile dest
-		unlessM (boolSystem "cp" [Param "-a", File src, File dest]) $
+
+cp :: FilePath -> FilePath -> IO ()
+cp src dest = do
+	nukeFile dest
+	unlessM (boolSystem "cp" [Param "-a", File src, File dest]) $
+		error "cp failed"
+
+installMagic :: FilePath -> IO ()
+#ifdef darwin_HOST_OS
+installMagic topdir = getEnv "OSX_MAGIC_FILE" >>= \case
+	Nothing -> hputStrLn stderr "OSX_MAGIC_FILE not set; not including it"
+	Just f -> do
+		let mdir = topdir </> "magic"
+		createDirectoryIfMissing True mdir
+		unlessM (boolSystem "cp" [File f, File mdir </> "magic.mgc") $
 			error "cp failed"
+#else
+installMagic topdir = do
+	let mdir = topdir </> "magic"
+	createDirectoryIfMissing True mdir
+	unlessM (boolSystem "cp" [File "/usr/share/file/magic.mgc", File (mdir </> "magic.mgc")]) $
+		error "cp failed"
+#endif
+
+installLocales :: FilePath -> IO ()
+#ifdef darwin_HOST_OS
+installLocales _ = return ()
+#else
+installLocales topdir = cp "/usr/share/i18n" (topdir </> "i18n")
+#endif
+
+installWrapper :: FilePath -> FilePath -> IO ()
+#ifdef darwin_HOST_OS
+installWrapper topdir basedir = do
+	removeDirectoryRecursive basedir
+	createDirectoryIfMissing True (takeDirectory basedir)
+	unlessM (boolSystem "cp" [Param "-R", File "standalone/osx/git-annex.app", File basedir]) $
+		error "cp failed"
+	plist <- lines <$> readFile "standalone/osx/Info.plist.template"
+	version <- getVersion
+	writeFile (basedir </> "Contents" </> "Info.plist")
+		(unlines (map (expandversion version) plist))
+  where
+	expandversion v l = replace "GIT_ANNEX_VERSION" v l
+#else
+installWrapper topdir _basedir = do
+	removeDirectoryRecursive topdir
+	createDirectoryIfMissing True (takeDirectory topdir)
+	unlessM (boolSystem "cp" [Param "-R", File "standalone/linux/skel", File topdir]) $
+		error "cp failed"
+	runshell <- lines <$> readFile "standalone/linux/skel/runshell"
+	-- GIT_ANNEX_PACKAGE_INSTALL can be set by a distributor and
+	-- runshell will be modified
+	gapi <- getEnv "GIT_ANNEX_PACKAGE_INSTALL"
+	writeFile (topdir </> "runshell")
+		(unlines (map (expandrunshell gapi) runshell))
+	modifyFileMode (topdir </> "runshell") (addModes executeModes)
+  where
+	expandrunshell (Just gapi) l@"GIT_ANNEX_PACKAGE_INSTALL=" = l ++ gapi
+	expandrunshell _ l = l
+#endif
+
+installGitAnnex :: FilePath -> IO ()
+#ifdef darwin_HOST_OS
+installGitAnnex topdir = go topdir
+#else
+installGitAnnex topdir = go (topdir </> "bin")
+#endif
+  where
+	go bindir = do
+		createDirectoryIfMissing True bindir
+		unlessM (boolSystem "cp" [File "git-annex", File bindir]) $
+			error "cp failed"
+		unlessM (boolSystem "strip" [File (bindir </> "git-annex")]) $
+			error "strip failed"
+		createLink "git-annex" (bindir </> "git-annex-shell")
+		createLink "git-annex" (bindir </> "git-remote-tor-annex")
 
 main :: IO ()
 main = getArgs >>= go
   where
-	go [] = error "specify topdir"
-	go (topdir:_) = do
-		installed <- forM
-			[ (progDir topdir, preferredBundledPrograms)
-			, (extraProgDir topdir, extraBundledPrograms) ] $ \(dir, progs) -> do
-			createDirectoryIfMissing True dir
-			forM progs $ installProg dir
-		writeFile "tmp/standalone-installed" (show (concat installed))
+	go (topdir:basedir:[]) = do
+		installWrapper topdir basedir
+		installGitAnnex topdir
+		installedbins <- installBundledPrograms topdir
 		installGitLibs topdir
+		installMagic topdir
+		installLocales topdir
+		mklibs topdir installedbins
+	go _ = error "specify topdir and basedir"

@@ -151,8 +151,7 @@ clean:
 	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
 	rm -rf tmp dist dist-newstyle git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags TAGS Build/SysConfig Build/Version \
-		Setup Build/InstallDesktopFile \
-		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
+		Setup Build/InstallDesktopFile Build/Standalone \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
 		git-annex-shell git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
@@ -164,39 +163,18 @@ Build/Standalone: Build/Standalone.hs tmp/configure-stamp
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/BuildVersion: Build/BuildVersion.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
-Build/OSXMkLibs: Build/OSXMkLibs.hs
-	$(GHC) --make $@ -Wall -fno-warn-tabs
-Build/LinuxMkLibs: Build/LinuxMkLibs.hs
-	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/MakeMans: Build/MakeMans.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone:
-	$(MAKE) git-annex Build/Standalone Build/LinuxMkLibs
-	rm -rf "$(LINUXSTANDALONE_DEST)"
-	mkdir -p tmp
-	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
-	sed -i -e 's/^GIT_ANNEX_PACKAGE_INSTALL=/GIT_ANNEX_PACKAGE_INSTALL=$(GIT_ANNEX_PACKAGE_INSTALL)/' "$(LINUXSTANDALONE_DEST)/runshell"
+	$(MAKE) git-annex Build/Standalone
+	./Build/Standalone "$(LINUXSTANDALONE_DEST)" "$(LINUXSTANDALONE_DEST)"
 
-	install -d "$(LINUXSTANDALONE_DEST)/bin"
-	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
-	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
-	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
-	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-remote-tor-annex"
+	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 	cp doc/logo_16x16.png doc/logo.svg $(LINUXSTANDALONE_DEST)
 	cp standalone/trustedkeys.gpg $(LINUXSTANDALONE_DEST)
-
-	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
-
-	install -d "$(LINUXSTANDALONE_DEST)/magic"
-	cp /usr/share/file/magic.mgc "$(LINUXSTANDALONE_DEST)/magic"
-	cp /usr/share/i18n -a "$(LINUXSTANDALONE_DEST)"
-
-	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
-
-	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 
 	sha1sum git-annex > "$(LINUXSTANDALONE_DEST)/buildid"
 	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
@@ -226,10 +204,8 @@ dpkg-buildpackage%: prep-standalone
 	$(MAKE) undo-standalone
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
-OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
+OSXAPP_TOP=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp:
-	$(MAKE) git-annex Build/Standalone Build/OSXMkLibs Build/BuildVersion
-
 	# Remove all RPATHs, both because this overloads the linker on
 	# OSX Sierra, and to avoid the binary looking in someone's home
 	# directory.
@@ -237,35 +213,16 @@ osxapp:
 		eval install_name_tool $$(otool -l git-annex | grep "path " | sed 's/.*path /-delete_rpath /' | sed 's/ (.*//') git-annex; \
 	fi
 
-	rm -rf "$(OSXAPP_DEST)" "$(OSXAPP_BASE)"
-	install -d tmp/build-dmg
-	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
-	sed -e 's/GIT_ANNEX_VERSION/$(shell Build/BuildVersion)/' \
-		< standalone/osx/Info.plist.template \
-		> "$(OSXAPP_DEST)"/Contents/Info.plist
+	$(MAKE) git-annex Build/Standalone
+	./Build/Standalone $(OSXAPP_TOP) $(OSXAPP_DEST)
 
-	install -d "$(OSXAPP_BASE)"
-	cp git-annex "$(OSXAPP_BASE)"
-	strip "$(OSXAPP_BASE)/git-annex"
-	ln -sf git-annex "$(OSXAPP_BASE)/git-annex-shell"
-	ln -sf git-annex "$(OSXAPP_BASE)/git-remote-tor-annex"
-	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
-	cp $(OSXAPP_BASE)/LICENSE tmp/build-dmg/LICENSE.txt
+	gzcat standalone/licences.gz > $(OSXAPP_TOP)/LICENSE
+	cp $(OSXAPP_TOP)/LICENSE tmp/build-dmg/LICENSE.txt
 	cp standalone/trustedkeys.gpg $(OSXAPP_DEST)/Contents/MacOS
 
-	./Build/Standalone $(OSXAPP_BASE)
-
-	install -d "$(OSXAPP_BASE)/magic"
-	if [ -e "$(OSX_MAGIC_FILE)" ]; then \
-		cp "$(OSX_MAGIC_FILE)" "$(OSXAPP_BASE)/magic/magic.mgc"; \
-	else \
-		echo "** OSX_MAGIC_FILE not set; not including it" >&2; \
-	fi
-
 	# OSX looks in man dir nearby the bin
-	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
+	$(MAKE) install-mans DESTDIR="$(OSXAPP_TOP)/.." SHAREDIR="" PREFIX=""
 
-	./Build/OSXMkLibs $(OSXAPP_BASE)
 	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
 	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/git-annex.MANIFEST
 	rm -f tmp/git-annex.dmg

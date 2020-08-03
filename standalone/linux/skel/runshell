@@ -2,6 +2,11 @@
 # Runs a shell command (or interactive shell) using the binaries and
 # libraries bundled with this app.
 
+# Set this variable when using this script inside a package of git-annex,
+# which arranges for git-annex, git-annex-shell, and git to all be in the
+# standard PATH. This also makes the system locales be used.
+GIT_ANNEX_PACKAGE_INSTALL=
+
 set -e
 
 orig_IFS="${IFS}"
@@ -44,10 +49,6 @@ else
 	tbase=""
 fi
 
-# Set this variable when using this script inside a package of git-annex,
-# which arranges for git-annex, git-annex-shell, and git to all be in the
-# standard PATH. 
-GIT_ANNEX_PACKAGE_INSTALL=
 if [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 	# Install shim that's used to run git-annex-shell from ssh authorized
 	# keys. The assistant also does this when run, but the user may not
@@ -126,8 +127,7 @@ export MANPATH
 unset LD_PRELOAD
 
 # Avoid using system locales, which may interact badly with bundled libc.
-# (But if LOCPATH is set, don't override it, and if GIT_ANNEX_PACKAGE_INSTALL
-# is set, use the system locales.)
+# (But if LOCPATH is set, don't override it.
 ORIG_LOCPATH="$LOCPATH"
 export ORIG_LOCPATH
 if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then

@@ -5,9 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Main where
+module Build.LinuxMkLibs (mklibs) where
 
-import System.Environment
 import Data.Maybe
 import System.FilePath
 import Control.Monad
@@ -25,14 +24,8 @@ import Utility.Path
 import Utility.FileMode
 import Utility.CopyFile
 
-main :: IO ()
-main = getArgs >>= go
-  where
-	go [] = error "specify LINUXSTANDALONE_DIST"
-	go (top:_) = mklibs top
-
-mklibs :: FilePath -> IO ()
-mklibs top = do
+mklibs :: FilePath -> a -> IO ()
+mklibs top _installedbins = do
 	fs <- dirContentsRecursive top
 	exes <- filterM checkExe fs
 	libs <- parseLdd <$> readProcess "ldd" exes
@@ -71,8 +64,7 @@ consolidateUsrLib top libdirs = map reverse <$> go [] (map reverse libdirs)
 			let x' = reverse x
 			let y' = reverse y
 			fs <- getDirectoryContents (inTop top x')
-			forM_ fs $ \f -> do
-				print f
+			forM_ fs $ \f ->
 				unless (dirCruft f) $
 					renameFile 
 						(inTop top (x' </> f))

@@ -9,8 +9,6 @@ Build/SysConfig
 Build/Version
 Build/InstallDesktopFile
 Build/Standalone
-Build/OSXMkLibs
-Build/LinuxMkLibs
 Build/BuildVersion
 Build/MakeMans
 git-annex

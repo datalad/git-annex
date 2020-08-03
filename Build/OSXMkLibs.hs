@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Main where
+module Build.OSXMkLibs (mkLibs) where
 
 import System.Environment (getArgs)
 import Data.Maybe
@@ -31,17 +31,20 @@ import qualified Data.Set as S
 
 type LibMap = M.Map FilePath String
 
+mklibs :: FilePath -> M.Map FilePath FilePath -> IO ()
+mklibs appbase installedbins = mklibs' appbase installedbins [] [] M.empty
+
 {- Recursively find and install libs, until nothing new to install is found. -}
-mklibs :: FilePath -> [FilePath] -> [(FilePath, FilePath)] -> LibMap -> IO ()
-mklibs appbase libdirs replacement_libs libmap = do
-	(new, replacement_libs', libmap') <- installLibs appbase replacement_libs libmap
+mklibs' :: FilePath -> M.Map FilePath FilePath -> [FilePath] -> [(FilePath, FilePath)] -> LibMap -> IO ()
+mklibs' appbase installedbins libdirs replacement_libs libmap = do
+	(new, replacement_libs', libmap') <- installLibs appbase installedbins replacement_libs libmap
 	unless (null new) $
-		mklibs appbase (libdirs++new) replacement_libs' libmap'
+		mklibs' appbase installedbins (libdirs++new) replacement_libs' libmap'
 
 {- Returns directories into which new libs were installed. -}
-installLibs :: FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
+installLibs :: FilePath -> M.Map FilePath FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
 installLibs appbase replacement_libs libmap = do
-	(needlibs, replacement_libs', libmap') <- otool appbase replacement_libs libmap
+	(needlibs, replacement_libs', libmap') <- otool appbase installedbins replacement_libs libmap
 	libs <- forM needlibs $ \lib -> do
 		pathlib <- findLibPath lib
 		let shortlib = fromMaybe (error "internal") (M.lookup lib libmap')
@@ -78,8 +81,8 @@ installLibs appbase replacement_libs libmap = do
  - library files returned may need to be run through findLibPath
  - to find the actual libraries to install.
  -}
-otool :: FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
-otool appbase replacement_libs libmap = do
+otool :: FilePath -> M.Map FilePath FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
+otool appbase installedbins replacement_libs libmap = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
 	process [] files replacement_libs libmap
   where
@@ -99,7 +102,7 @@ otool appbase replacement_libs libmap = do
 		_ <- boolSystem "chmod" [Param "755", File file]
 		libs <- filter want . parseOtool
 			<$> readProcess "otool" ["-L", file]
-		expanded_libs <- expand_rpath libs replacement_libs file
+		expanded_libs <- expand_rpath installedbins libs replacement_libs file
 		let rls' = nub $ rls ++ (zip libs expanded_libs)
 		m' <- install_name_tool file libs expanded_libs m
 		process (expanded_libs:c) rest rls' m'
@@ -118,12 +121,10 @@ findLibPath l = go =<< getEnv "DYLD_LIBRARY_PATH"
  - option (so it doesn't do anything.. hopefully!) and asking the dynamic
  - linker to print expanded rpaths.
  -}
-expand_rpath :: [String] -> [(FilePath, FilePath)] -> FilePath -> IO [String]
-expand_rpath libs replacement_libs cmd
+expand_rpath :: M.Map FilePath FilePath -> [String] -> [(FilePath, FilePath)] -> FilePath -> IO [String]
+expand_rpath installedbins libs replacement_libs cmd
 	| any ("@rpath" `isInfixOf`) libs = do
-		installed <- M.fromList . Prelude.read
-			<$> readFile "tmp/standalone-installed"
-		let origcmd = case M.lookup cmd installed of
+		let origcmd = case M.lookup cmd installedbins of
 			Nothing -> cmd
 			Just cmd' -> cmd'
 		s <- catchDefaultIO "" $ readProcess "sh" ["-c", probe origcmd]
@@ -185,9 +186,3 @@ getLibName lib libmap = case M.lookup lib libmap of
 	used = S.fromList $ M.elems libmap
 	nextfreename = fromMaybe (error "ran out of short library names!") $ 
 		headMaybe $ dropWhile (`S.member` used) names
-
-main :: IO ()
-main = getArgs >>= go
-  where
-	go [] = error "specify OSXAPP_BASE"
-	go (appbase:_) = mklibs appbase [] [] M.empty
