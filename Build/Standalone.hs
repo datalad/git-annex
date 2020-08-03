@@ -155,12 +155,14 @@ installLocales topdir = cp "/usr/share/i18n" (topdir </> "i18n")
 installSkel :: FilePath -> FilePath -> IO ()
 #ifdef darwin_HOST_OS
 installSkel topdir basedir = do
-	removeDirectoryRecursive basedir
+	whenM (doesDirectoryExist basedir) $
+		removeDirectoryRecursive basedir
 	unlessM (boolSystem "cp" [Param "-R", File "standalone/osx/git-annex.app", File basedir]) $
 		error "cp failed"
 #else
 installSkel topdir _basedir = do
-	removeDirectoryRecursive topdir
+	whenM (doesDirectoryExist topdir) $
+		removeDirectoryRecursive topdir
 	unlessM (boolSystem "cp" [Param "-R", File "standalone/linux/skel", File topdir]) $
 		error "cp failed"
 #endif
