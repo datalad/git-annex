@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 12"
+ date="2020-08-04T14:10:32Z"
+ content="""
+I finally got around to test this and it is a lot faster. Interestingly it now -J2 is slower than without jobs.
+Benchmark with warm cache:
+
+    git annex sync --content --all
+    
+    8.20200330:
+    real    23m48.059s
+    user    20m23.320s
+    sys     3m20.854s
+    
+    8.20200720.2-g465842f3f
+    real    3m41.064s
+    user    3m23.319s
+    sys     0m49.159s
+
+
+    git annex sync --content --all -J2
+    
+    8.20200330:
+    real    10m47.484s
+    user    16m3.024s
+    sys     1m49.373s
+    
+    8.20200720.2-g465842f3f
+    real    8m55.808s
+    user    12m44.766s
+    sys     1m25.181s
+
+Thanks!
+"""]]
