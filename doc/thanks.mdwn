@@ -31,7 +31,7 @@ tips, user support, etc. Two names that come to mind are Anarcat and
 CandyAngel. John Lawrence made the logo. And many others have
 contributed good bug reports and great ideas.
 
-## financial support, 2019
+## financial support, 2019-2020
 
 <img alt="McGill logo" src="https://mcgill.ca/hbhl/sites/all/themes/moriarty/images/logo-red.svg" width=100>
 <img alt="Neurohub" src="https://joeyh.name/blog/pics/neurohub.png" width=100>
@@ -52,7 +52,7 @@ Thanks also to these folks for their support:
 
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
-git-annex development is partially supported by the
+git-annex development was partially supported by the
 [NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
 [DataLad project](http://datalad.org/) and NICEMAN (ReproNim TR&D3).
 
