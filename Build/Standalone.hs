@@ -157,12 +157,14 @@ installSkel :: FilePath -> FilePath -> IO ()
 installSkel topdir basedir = do
 	whenM (doesDirectoryExist basedir) $
 		removeDirectoryRecursive basedir
+	createDirectoryIfMissing True (takeDirectory basedir)
 	unlessM (boolSystem "cp" [Param "-R", File "standalone/osx/git-annex.app", File basedir]) $
 		error "cp failed"
 #else
 installSkel topdir _basedir = do
 	whenM (doesDirectoryExist topdir) $
 		removeDirectoryRecursive topdir
+	createDirectoryIfMissing True (takeDirectory topdir)
 	unlessM (boolSystem "cp" [Param "-R", File "standalone/linux/skel", File topdir]) $
 		error "cp failed"
 #endif
