@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+Beginning with 8.20200522, importfeed replaces all dot (".") characters in filenames with "_". As an example, before that release, the TWIT Security Now podcast had filenames that looked like this:
+
+SN_767__WiFi_6.mp3
+
+After the release, the filenames look like this:
+
+SN_769__Zoom_s_E2EE_Design_mp3
+
+This change occurred across all my downloaded podcasts. 
+
+I suspect the bug has something to do with the following changes described in the news for 8.20200522:
+
+- addurl, importfeed: Avoid adding filenames with leading '.', instead it will be replaced with '_'.
+- addurl, importfeed: Allow '-' in filenames, as long as it's not the first character.
+
+
+### What steps will reproduce the problem?
+
+git-annex importfeed --fast http://leoville.tv/podcasts/sn.xml
+
+### What version of git-annex are you using? On what operating system?
+
+Arch Linux
+
+git annex version 8.20200720.1-g1ccb6699a1
+
+
+
