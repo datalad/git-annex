@@ -18,6 +18,8 @@ git-annex (8.20200720.2) UNRELEASED; urgency=medium
     standalone and OSX app.
     Thanks, Yaroslav Halchenko
   * Slightly sped up the linux standalone bundle.
+  * importfeed: Fix reversion that caused some '.' in filenames to be
+    replaced with '_'
 
  -- Joey Hess <id@joeyh.name>  Tue, 21 Jul 2020 12:58:30 -0400
 

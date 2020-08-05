@@ -338,17 +338,18 @@ defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
 {- Generates a filename to use for a feed item by filling out the template.
  - The filename may not be unique. -}
 feedFile :: Utility.Format.Format -> ToDownload -> String -> FilePath
-feedFile tmpl i extension = Utility.Format.format tmpl $
-	M.map sanitizeFilePath $ M.fromList $ extractFields i ++
-		[ ("extension", extension)
-		, extractField "itempubdate" [itempubdate]
-		, extractField "itempubyear" [itempubyear]
-		, extractField "itempubmonth" [itempubmonth]
-		, extractField "itempubday" [itempubday]
-		, extractField "itempubhour" [itempubhour]
-		, extractField "itempubminute" [itempubminute]
-		, extractField "itempubsecond" [itempubsecond]
-		]
+feedFile tmpl i extension = sanitizeLeadingFilePathCharacter $ 
+	Utility.Format.format tmpl $
+		M.map sanitizeFilePathComponent $ M.fromList $ extractFields i ++
+			[ ("extension", extension)
+			, extractField "itempubdate" [itempubdate]
+			, extractField "itempubyear" [itempubyear]
+			, extractField "itempubmonth" [itempubmonth]
+			, extractField "itempubday" [itempubday]
+			, extractField "itempubhour" [itempubhour]
+			, extractField "itempubminute" [itempubminute]
+			, extractField "itempubsecond" [itempubsecond]
+			]
   where
 	itm = item i
 

@@ -31,17 +31,26 @@ import System.FilePath
  - that case.
  -}
 sanitizeFilePath :: String -> FilePath
-sanitizeFilePath [] = "file"
-sanitizeFilePath f = leading (map sanitize f)
+sanitizeFilePath = sanitizeLeadingFilePathCharacter . sanitizeFilePathComponent
+
+{- For when the filepath is being built up out of components that should be
+ - individually sanitized, this can be used for each component, followed by
+ - sanitizeLeadingFilePathCharacter for the whole thing.
+ -}
+sanitizeFilePathComponent :: String -> String
+sanitizeFilePathComponent = map sanitize
   where
 	sanitize c
 		| c == '.' || c == '-' = c
 		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
 		| otherwise = c
 
-	leading ('.':s) = '_':s
-	leading ('-':s) = '_':s
-	leading s = s
+sanitizeLeadingFilePathCharacter :: String -> FilePath
+sanitizeLeadingFilePathCharacter [] = "file"
+sanitizeLeadingFilePathCharacter ('.':s) = '_':s
+sanitizeLeadingFilePathCharacter ('-':s) = '_':s
+sanitizeLeadingFilePathCharacter ('/':s) = '_':s
+sanitizeLeadingFilePathCharacter s = s
 
 escapeSequenceInFilePath :: FilePath -> Bool
 escapeSequenceInFilePath f = '\ESC' `elem` f
