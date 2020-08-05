@@ -211,8 +211,8 @@ installGitAnnex topdir = go (topdir </> "bin")
 			error "cp failed"
 		unlessM (boolSystem "strip" [File (bindir </> "git-annex")]) $
 			error "strip failed"
-		createLink "git-annex" (bindir </> "git-annex-shell")
-		createLink "git-annex" (bindir </> "git-remote-tor-annex")
+		createSymbolicLink "git-annex" (bindir </> "git-annex-shell")
+		createSymbolicLink "git-annex" (bindir </> "git-remote-tor-annex")
 
 main :: IO ()
 main = getArgs >>= go
