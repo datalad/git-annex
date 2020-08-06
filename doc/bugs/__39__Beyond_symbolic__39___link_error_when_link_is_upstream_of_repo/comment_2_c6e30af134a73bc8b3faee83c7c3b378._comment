@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-08-06T17:46:11Z"
+ content="""
+I've made it skip processing the file in this case.
+
+Remain unsure if I want to close it now that the behavior is at least not
+weird, or try to more closely replicate git's behavior of what symlinks
+it's ok to be behind and which not.
+"""]]

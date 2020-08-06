@@ -635,7 +635,7 @@ seekSyncContent _ [] _ = return False
 seekSyncContent o rs currbranch = do
 	mvar <- liftIO newEmptyMVar
 	bloom <- case keyOptions o of
-		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar [])
+		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar (WorkTreeItems []))
 		_ -> case currbranch of
                 	(Just origbranch, Just adj) | adjustmentHidesFiles adj -> do
 				l <- workTreeItems' (AllowHidden True) ww (contentOfOption o)
@@ -648,7 +648,7 @@ seekSyncContent o rs currbranch = do
 	withKeyOptions' (keyOptions o) False
 		(return (commandAction . gokey mvar bloom))
 		(const noop)
-		[]
+		(WorkTreeItems [])
 	waitForAllRunningCommandActions
 	liftIO $ not <$> isEmptyMVar mvar
   where

@@ -55,20 +55,20 @@ data AnnexedFileSeeker = AnnexedFileSeeker
 	, usesLocationLog :: Bool
 	}
 
-withFilesInGitAnnex :: WarnUnmatchWhen -> AnnexedFileSeeker -> [WorkTreeItem] -> CommandSeek
+withFilesInGitAnnex :: WarnUnmatchWhen -> AnnexedFileSeeker -> WorkTreeItems -> CommandSeek
 withFilesInGitAnnex ww a l = seekFilteredKeys a $
 	seekHelper fst3 ww LsFiles.inRepoDetails l
 
-withFilesInGitAnnexNonRecursive :: WarnUnmatchWhen -> String -> AnnexedFileSeeker -> [WorkTreeItem] -> CommandSeek
-withFilesInGitAnnexNonRecursive ww needforce a l = ifM (Annex.getState Annex.force)
-	( withFilesInGitAnnex ww a l
+withFilesInGitAnnexNonRecursive :: WarnUnmatchWhen -> String -> AnnexedFileSeeker -> WorkTreeItems -> CommandSeek
+withFilesInGitAnnexNonRecursive ww needforce a (WorkTreeItems l) = ifM (Annex.getState Annex.force)
+	( withFilesInGitAnnex ww a (WorkTreeItems l)
 	, if null l
 		then giveup needforce
 		else seekFilteredKeys a (getfiles [] l)
 	)
   where
 	getfiles c [] = return (reverse c)
-	getfiles c ((WorkTreeItem p):ps) = do
+	getfiles c (p:ps) = do
 		os <- seekOptions ww
 		(fs, cleanup) <- inRepo $ LsFiles.inRepoDetails os [toRawFilePath p]
 		case fs of
@@ -79,17 +79,20 @@ withFilesInGitAnnexNonRecursive ww needforce a l = ifM (Annex.getState Annex.for
 				void $ liftIO $ cleanup
 				getfiles c ps
 			_ -> giveup needforce
+withFilesInGitAnnexNonRecursive _ _ _ NoWorkTreeItems = noop
 
-withFilesNotInGit :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
-withFilesNotInGit  a l = go =<< seek
+withFilesNotInGit :: (RawFilePath -> CommandSeek) -> WorkTreeItems -> CommandSeek
+withFilesNotInGit a (WorkTreeItems l) = go =<< seek
   where
 	seek = do
 		force <- Annex.getState Annex.force
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie
-			<$> LsFiles.notInRepo [] force (map (\(WorkTreeItem f) -> toRawFilePath f) l) g
+			<$> LsFiles.notInRepo [] force l' g
 	go fs = seekFiltered a $
-		return $ concat $ segmentPaths id (map (\(WorkTreeItem f) -> toRawFilePath f) l) fs
+		return $ concat $ segmentPaths id l' fs
+	l' = map toRawFilePath l
+withFilesNotInGit _ NoWorkTreeItems = noop 
 
 withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
@@ -123,13 +126,13 @@ withPairs a params = sequence_ $ map a $ pairs [] params
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = giveup "expected pairs"
 
-withFilesToBeCommitted :: (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesToBeCommitted :: (RawFilePath -> CommandSeek) -> WorkTreeItems -> CommandSeek
 withFilesToBeCommitted a l = seekFiltered a $
 	seekHelper id WarnUnmatchWorkTreeItems (const LsFiles.stagedNotDeleted) l
 
 {- unlocked pointer files that are staged, and whose content has not been
  - modified-}
-withUnmodifiedUnlockedPointers :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withUnmodifiedUnlockedPointers :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> WorkTreeItems -> CommandSeek
 withUnmodifiedUnlockedPointers ww a l = seekFiltered a unlockedfiles
   where
 	unlockedfiles = filterM isUnmodifiedUnlocked 
@@ -141,7 +144,7 @@ isUnmodifiedUnlocked f = catKeyFile f >>= \case
 	Just k -> sameInodeCache f =<< Database.Keys.getInodeCaches k
 
 {- Finds files that may be modified. -}
-withFilesMaybeModified :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> [WorkTreeItem] -> CommandSeek
+withFilesMaybeModified :: WarnUnmatchWhen -> (RawFilePath -> CommandSeek) -> WorkTreeItems -> CommandSeek
 withFilesMaybeModified ww a params = seekFiltered a $
 	seekHelper id ww LsFiles.modified params
 
@@ -168,8 +171,8 @@ withKeyOptions
 	-> Bool
 	-> AnnexedFileSeeker
 	-> ((Key, ActionItem) -> CommandSeek)
-	-> ([WorkTreeItem] -> CommandSeek)
-	-> [WorkTreeItem]
+	-> (WorkTreeItems -> CommandSeek)
+	-> WorkTreeItems
 	-> CommandSeek
 withKeyOptions ko auto seeker keyaction = withKeyOptions' ko auto mkkeyaction
   where
@@ -192,18 +195,18 @@ withKeyOptions'
 	:: Maybe KeyOptions
 	-> Bool
 	-> Annex ((Key, ActionItem) -> Annex ())
-	-> ([WorkTreeItem] -> CommandSeek)
-	-> [WorkTreeItem]
+	-> (WorkTreeItems -> CommandSeek)
+	-> WorkTreeItems
 	-> CommandSeek
-withKeyOptions' ko auto mkkeyaction fallbackaction params = do
+withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 	bare <- fromRepo Git.repoIsLocalBare
 	when (auto && bare) $
 		giveup "Cannot use --auto in a bare repository"
-	case (null params, ko) of
+	case (noworktreeitems, ko) of
 		(True, Nothing)
 			| bare -> noauto runallkeys
-			| otherwise -> fallbackaction params
-		(False, Nothing) -> fallbackaction params
+			| otherwise -> fallbackaction worktreeitems
+		(False, Nothing) -> fallbackaction worktreeitems
 		(True, Just WantAllKeys) -> noauto runallkeys
 		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
 		(True, Just WantFailedTransfers) -> noauto runfailedtransfers
@@ -216,6 +219,11 @@ withKeyOptions' ko auto mkkeyaction fallbackaction params = do
 		| auto = giveup "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
 		| otherwise = a
 	
+	noworktreeitems = case worktreeitems of
+		WorkTreeItems [] -> True
+		WorkTreeItems _ -> False
+		NoWorkTreeItems -> False
+
 	incompletekeys = staleKeysPrune gitAnnexTmpObjectDir True
 
 	-- List all location log files on the git-annex branch,
@@ -378,14 +386,13 @@ seekFilteredKeys seeker listfs = do
 		Just _ -> mdprocess matcher mdreader ofeeder ocloser
 		Nothing -> liftIO $ void ocloser
 
-seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> [WorkTreeItem] -> Annex [a]
-seekHelper c ww a l = do
+seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> WorkTreeItems -> Annex [a]
+seekHelper c ww a (WorkTreeItems l) = do
 	os <- seekOptions ww
 	inRepo $ \g ->
-		concat . concat <$> forM (segmentXargsOrdered l')
+		concat . concat <$> forM (segmentXargsOrdered l)
 			(runSegmentPaths c (\fs -> Git.Command.leaveZombie <$> a os fs g) . map toRawFilePath)
-  where
-	l' = map (\(WorkTreeItem f) -> f) l
+seekHelper _ _ _ NoWorkTreeItems = return []
 
 data WarnUnmatchWhen = WarnUnmatchLsFiles | WarnUnmatchWorkTreeItems
 
@@ -397,8 +404,13 @@ seekOptions WarnUnmatchLsFiles =
 		)
 seekOptions WarnUnmatchWorkTreeItems = return []
 
--- An item in the work tree, which may be a file or a directory.
-newtype WorkTreeItem = WorkTreeItem FilePath
+-- Items in the work tree, which may be files or directories.
+data WorkTreeItems
+	= WorkTreeItems [FilePath]
+	-- ^ An empty list often means all files.
+	| NoWorkTreeItems
+	-- ^ Used when no work tree items should be operated on.
+	deriving (Show)
 
 -- When in an adjusted branch that hides some files, it may not exist
 -- in the current work tree, but in the original branch. This allows
@@ -419,27 +431,32 @@ newtype AllowHidden = AllowHidden Bool
 --
 -- Note that, unlike --error-unmatch, using this does not warn
 -- about command-line parameters that exist, but are not checked into git.
-workTreeItems :: WarnUnmatchWhen -> CmdParams -> Annex [WorkTreeItem]
+workTreeItems :: WarnUnmatchWhen -> CmdParams -> Annex WorkTreeItems
 workTreeItems = workTreeItems' (AllowHidden False)
 
-workTreeItems' :: AllowHidden -> WarnUnmatchWhen -> CmdParams -> Annex [WorkTreeItem]
-workTreeItems' (AllowHidden allowhidden) ww ps = do
-	case ww of
-		WarnUnmatchWorkTreeItems -> runcheck
-		WarnUnmatchLsFiles -> 
-			whenM (annexSkipUnknown <$> Annex.getGitConfig)
-				runcheck
-	return (map WorkTreeItem ps)
+workTreeItems' :: AllowHidden -> WarnUnmatchWhen -> CmdParams -> Annex WorkTreeItems
+workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
+	WarnUnmatchWorkTreeItems -> runcheck
+	WarnUnmatchLsFiles -> 
+		ifM (annexSkipUnknown <$> Annex.getGitConfig)
+			( runcheck
+			, return $ WorkTreeItems ps
+			)
   where
 	runcheck = do
 		currbranch <- getCurrentBranch
-		forM_ ps $ \p -> do
+		ps' <- flip filterM ps $ \p -> do
 			relf <- liftIO $ relPathCwdToFile p
 			ifM (not <$> (exists p <||> hidden currbranch relf))
 				( prob (p ++ " not found")
-				, whenM (viasymlink (upFrom relf)) $
-					prob (p ++ " is beyond a symbolic link")
+				, ifM (viasymlink (upFrom relf))
+					( prob (p ++ " is beyond a symbolic link")
+					, return True
+					)
 				)
+		if null ps' && not (null ps)
+			then return NoWorkTreeItems
+			else return (WorkTreeItems ps')
 	
 	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
 
@@ -458,6 +475,7 @@ workTreeItems' (AllowHidden allowhidden) ww ps = do
 	prob msg = do
 		toplevelWarning False msg
 		Annex.incError
+		return False
 	
 notSymlink :: RawFilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> R.getSymbolicLinkStatus f
