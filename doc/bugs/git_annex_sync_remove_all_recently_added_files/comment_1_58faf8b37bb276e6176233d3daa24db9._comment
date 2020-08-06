@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-08-06T15:23:48Z"
+ content="""
+Is this repository using an adjusted branch?
+
+Does the problem commit have a commit message like "git-annex automatic
+merge conflict fix"?
+
+I'm asking, because other than those two things, `git annex sync` is 
+really the same as `git merge`, in fact that's what it does.
+
+(It's also a bit of a red flag to me that you're using a mix of git-annex
+versions going back to 6 years old! So some bug fixed in those
+6 years could be affecting you.)
+"""]]

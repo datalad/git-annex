@@ -57,3 +57,5 @@ Ubuntu 18.04.4 LTS -> git-annex version: 6.20180227
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 nope allways have this weird bug who come to haunt me time to time.
+
+[[!tag moreinfo]]
