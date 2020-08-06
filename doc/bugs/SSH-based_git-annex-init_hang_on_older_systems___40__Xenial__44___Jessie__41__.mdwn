@@ -111,3 +111,5 @@ With the same demo.sh script in a Xenial VM, that bisects to 75059c9f3
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]
