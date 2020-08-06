@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="Improperly documented code."
+ date="2020-08-06T02:52:50Z"
+ content="""
+I found out how to do it after reading his source code for the [Google Drive remote](github.com/Lykos153/git-annex-remote-gdrive).
+
+Feel free to have a look around my remotes <github.com/cardoso-neto/git-annex-remote-manytars> <github.com/cardoso-neto/git-annex-remote-manyzips> which use his [helper module](github.com/Lykos153/AnnexRemote).
+
+To summarize it, you should override __init__ and list your configs there.
+"""]]
