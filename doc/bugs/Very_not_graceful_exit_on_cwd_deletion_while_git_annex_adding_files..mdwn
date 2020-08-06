@@ -1,0 +1,56 @@
+I was git-annex-adding a folder of big files.
+I ran the command while inside a folder I didn't need anymore.
+I deleted the folder with nautilus (moved it to trash) which caused the cwd to change and that really confused git-annex.
+
+Root of repo is audio-recordings/
+
+While inside audio-recordings/a I ran `git annex add ../audio-files`
+
+Then I deleted audio-recordings/a with Nautilus which caused its path to change to /.Trash-1000/files/a
+
+As soon as git-annex finished hashing the file it was hashing, this happened:
+
+```
+add ../audio-files/moto-maxx/2018.04.17 1438.wav 
+100%  579.95 MiB      160 MiB/s 0s
+  ../audio-files/moto-maxx/2018.04.17 1438.wav changed while it was being added
+failed                            
+fatal: not a git repository: '../.git'
+error: unknown option `cached'
+usage: git diff --no-index [<options>] <path> <path>
+...
+[the entire help message]
+...
+--find-object <object-id>
+                          look for differences that change the number of occurrences of the specified object
+    --diff-filter [(A|C|D|M|R|T|U|X|B)...[*]]
+                          select files by diff type
+    --output <file>       Output to a specific file
+
+(recording state in git...)
+fatal: not a git repository: '../.git'
+^Ceral-pathspecs","add","--"] exited 123)
+
+```
+
+The file that was being added was left like this:
+
+ll "audio-files/moto-maxx/2018.04.17 1438.wav"
+
+-r--r--r-- 2 ### ### 608121644 abr 17  2018 'audio-files/moto-maxx/2018.04.17 1438.wav'
+
+It appears git-annex just chmoded it, but didn't symlinkify it.
+
+### What version of git-annex are you using? On what operating system?
+
+Ubuntu 20.04 focal
+
+Linux 5.8.0-050800-generic #202008022230 SMP Sun Aug 2 22:33:21 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+
+git-annex version: 8.20200226
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I am absolutely in love with it. I even built a special remote for it and I'm now building another because that one was stupid.
+
+Seriously, git-annex is amazing.
