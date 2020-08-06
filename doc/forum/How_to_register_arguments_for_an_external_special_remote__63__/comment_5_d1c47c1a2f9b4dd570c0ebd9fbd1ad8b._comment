@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-08-06T17:53:39Z"
+ content="""
+These are some interesting special remotes. I don't know how general the
+use case for them is (and I wonder if something like bup or ddar meets the
+same basic use case), but it seems perhaps worth including them in the big
+list of special remotes. What do you think?
+"""]]
