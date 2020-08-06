@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-08-06T18:01:23Z"
+ content="""
+Thanks, I was able to reproduce this easily:
+
+	git init r
+	cd r
+	mkdir a
+	mkdir b
+	dd if=/dev/zero of=a/big bs=1M count=1000
+	cd b
+	git annex add ../a & (sleep 1; mv ../b ~/trash)
+
+By moving the directory the process is running in, all relative path
+accesses it does after the move are relative to the new location. This is
+super unsafe, but I don't know if it's super unsafe in a way that's unique to
+git-annex. If a process does any relative path accesses with ../ in them, 
+it's going to be vulnerable to being flung around in this way and will start
+to do unexpected things.
+
+git seems to avoid this being a problem by starting with a chdir to the top
+of the repo, and then uses relative paths without ../. (Mostly.. --git-dir
+with ../ in it will make git use such paths.)
+
+Other commands.. not so much. `rm -rf ../foo` ends by unlinking "../foo"
+so if it's flung around it will delete the wrong thing. (Though its
+directory tree traversal uses openat() and so avoids deleting a whole wrong
+directory tree.) And `vim ../foo` overwrote an existing file after being
+moved, bypassing its usual protections about overwriting a modified file.
+
+So, I think the super unsafe thing is generally moving directories around
+when they have processes running in them. Unfortunately, the file manager
+has a good reason to want to do it to handle deletions too.. Well, my
+opinion of unix's safety was already not great, but it's now gone down some
+more.
+
+(Fun thing to consider: What if you have the ability to move a directory
+that a root-owned process is running in, and the root-owned process does
+relative paths accesses? This seems like it could be a fertile source of
+security holes.)
+
+----
+
+The git error message about the cached option happen when "git diff
+--cached" is run outside a git repository. Why is it outside a git
+repository? See above. So I don't think it can be avoided.
+
+Only improvement that seems feasible is, to keep an open handle to the
+file, so it can fchmod the fix the permissions back.
+"""]]
