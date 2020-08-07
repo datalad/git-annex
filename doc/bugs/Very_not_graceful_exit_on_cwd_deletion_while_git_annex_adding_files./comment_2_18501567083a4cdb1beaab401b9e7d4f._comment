@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="Understood."
+ date="2020-08-07T02:24:43Z"
+ content="""
+Thank you for the detailed and timely response.
+
+That was some good thinking there with this being a possible attack vector. Food for thought right there.
+
+Btw, I'm sorry for explaining what I did instead of providing you with commands to reproduce the bug. I don't know what I was thinking. Git-annex has been a very big part of my life these last few years and I got a little nervous while writing the bug report. lol
+
+I shall be more careful with from where I run my commands henceforth. 
+"""]]
