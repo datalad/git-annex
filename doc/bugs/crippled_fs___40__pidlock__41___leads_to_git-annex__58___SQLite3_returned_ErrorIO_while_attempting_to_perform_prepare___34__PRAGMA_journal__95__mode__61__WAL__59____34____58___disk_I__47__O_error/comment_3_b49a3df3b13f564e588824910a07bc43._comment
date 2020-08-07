@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="hdclark@be373988ada6dc692f87a8eefdd600432e54f7d4"
+ nickname="hdclark"
+ avatar="http://cdn.libravatar.org/avatar/55f92a50f2617099e2dc7509130ce158"
+ subject="This occurs on 9P filesystem too"
+ date="2020-08-07T20:41:06Z"
+ content="""
+Just thought I would chime in that I experienced sqlite errors for about 2 months before realizing it was due to 9P filesystem + virtio in a Qemu VM. Prior to (roughly) 2 months back I did not encounter this error, but it now appears in all recent versions of git-annex (Arch Linux package, most recent standalone version, and git build).
+
+Is there any way to alter the sqlite config (e.g., through .git/config or a dotfile) to workaround the issue? It renders my current setup, in which several VMs share the same hardware but have exclusive access to storage devices, completely inoperable.
+"""]]
