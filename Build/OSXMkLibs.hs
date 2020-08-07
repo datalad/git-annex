@@ -45,7 +45,7 @@ mklibs' appbase installedbins libdirs replacement_libs libmap = do
 
 {- Returns directories into which new libs were installed. -}
 installLibs :: FilePath -> M.Map FilePath FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
-installLibs appbase replacement_libs libmap = do
+installLibs appbase installedbins replacement_libs libmap = do
 	(needlibs, replacement_libs', libmap') <- otool appbase installedbins replacement_libs libmap
 	libs <- forM needlibs $ \lib -> do
 		pathlib <- findLibPath lib
