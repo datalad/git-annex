@@ -7,7 +7,6 @@
 
 module Build.OSXMkLibs (mklibs) where
 
-import System.Environment (getArgs)
 import Data.Maybe
 import System.FilePath
 import Control.Monad
