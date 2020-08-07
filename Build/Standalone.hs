@@ -136,7 +136,7 @@ installMagic topdir = getEnv "OSX_MAGIC_FILE" >>= \case
 	Just f -> do
 		let mdir = topdir </> "magic"
 		createDirectoryIfMissing True mdir
-		unlessM (boolSystem "cp" [File f, File mdir </> "magic.mgc"]) $
+		unlessM (boolSystem "cp" [File f, File (mdir </> "magic.mgc")]) $
 			error "cp failed"
 #else
 installMagic topdir = do
