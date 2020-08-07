@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 3"
+ date="2020-08-06T20:58:17Z"
+ content="""
+> Really, the shell is the only thing that knows cd has been used with a symlink,
+> the real cwd is what getCurrentDirectory returns, same as getcwd(3).
+
+Doh, indeed.  Thanks.
+
+> But how does it know where inside working tree part begins when
+> there are symlinks involved? Probably I'm missing something simple
+> which git does to deal with this.
+
+It looks like git handles this in `setup.c:abspath_part_inside_repo`.
+That function takes the absolute, unresolved path that was given as an
+argument (`/tmp/gx-link-Wxqnzo8/alink/repo/f0`, to continue with the
+original example).  Then it compares that to the working tree path
+(`/tmp/gx-link-Wxqnzo8/a/repo`).
+
+If the path doesn't already have the working tree as a prefix, the
+core logic seems to be:
+
+  * Take the realpath of the leftmost directory in the received path
+    (`/tmp`).
+
+  * If that fully matches the path for the working tree, chop those
+    leading components off of the received path, returning what
+    remains.
+
+  * If not, tack on the next directory component
+    (`/tmp/gx-link-Wxqnzo8/`) and repeat.
+
+For this specific case, that'd go until
+`/tmp/gx-link-Wxqnzo8/alink/repo/`, whose realpath would match the
+working tree, and then return `f0`.
+
+That of course may not be worth the overhead.
+
+"""]]
