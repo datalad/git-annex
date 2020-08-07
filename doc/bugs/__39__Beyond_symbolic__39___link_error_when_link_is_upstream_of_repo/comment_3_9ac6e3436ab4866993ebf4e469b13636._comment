@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-08-06T22:29:49Z"
+ content="""
+AFAICS, git does something like cache the stat of the directory at the top
+of the working tree, and uses that to know which part to check for symlinks. 
+There's a lstat cache in the relevant code anyway.
+
+Ok, implemented it that way in git-annex, which I was able to do w/o doing
+any more work per file than comparing a dev and an inode.
+"""]]

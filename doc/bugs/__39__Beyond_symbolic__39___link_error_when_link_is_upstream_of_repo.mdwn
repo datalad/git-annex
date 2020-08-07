@@ -77,3 +77,5 @@ caller's side, but since it looks like an unintended consequence of
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

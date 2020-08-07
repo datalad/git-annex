@@ -445,11 +445,12 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
   where
 	runcheck = do
 		currbranch <- getCurrentBranch
+		stopattop <- prepviasymlink
 		ps' <- flip filterM ps $ \p -> do
 			relf <- liftIO $ relPathCwdToFile p
 			ifM (not <$> (exists p <||> hidden currbranch relf))
 				( prob (p ++ " not found")
-				, ifM (viasymlink (upFrom relf))
+				, ifM (viasymlink stopattop (upFrom relf))
 					( prob (p ++ " is beyond a symbolic link")
 					, return True
 					)
@@ -460,12 +461,25 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 	
 	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
 
-	viasymlink Nothing = return False
-	viasymlink (Just p) =
-		ifM (liftIO $ isSymbolicLink <$> getSymbolicLinkStatus p)
-			( return True
-			, viasymlink (upFrom p)
-			)
+	prepviasymlink = do
+		repotopst <- inRepo $ 
+			maybe
+				(pure Nothing)
+				(catchMaybeIO . R.getSymbolicLinkStatus) 
+			. Git.repoWorkTree
+		return $ \st -> case repotopst of
+			Nothing -> False
+			Just tst -> fileID st == fileID tst
+				&& deviceID st == deviceID tst
+
+	viasymlink _ Nothing = return False
+	viasymlink stopattop (Just p) = do
+		st <- liftIO $ getSymbolicLinkStatus p
+		if stopattop st
+			then return False
+			else if isSymbolicLink st
+				then return True
+				else viasymlink stopattop (upFrom p)
 
 	hidden currbranch f
 		| allowhidden = isJust
