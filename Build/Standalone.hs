@@ -25,6 +25,7 @@ import Utility.Directory
 import Utility.Env
 import Build.BundledPrograms
 #ifdef darwin_HOST_OS
+import System.IO
 import Build.OSXMkLibs (mklibs)
 import Build.Version
 import Utility.Split
@@ -131,7 +132,7 @@ cp src dest = do
 installMagic :: FilePath -> IO ()
 #ifdef darwin_HOST_OS
 installMagic topdir = getEnv "OSX_MAGIC_FILE" >>= \case
-	Nothing -> hputStrLn stderr "OSX_MAGIC_FILE not set; not including it"
+	Nothing -> hPutStrLn stderr "OSX_MAGIC_FILE not set; not including it"
 	Just f -> do
 		let mdir = topdir </> "magic"
 		createDirectoryIfMissing True mdir
