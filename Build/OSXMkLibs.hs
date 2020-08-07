@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Build.OSXMkLibs (mkLibs) where
+module Build.OSXMkLibs (mklibs) where
 
 import System.Environment (getArgs)
 import Data.Maybe
