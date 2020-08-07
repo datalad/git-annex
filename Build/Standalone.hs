@@ -155,7 +155,7 @@ installLocales topdir = cp "/usr/share/i18n" (topdir </> "i18n")
 
 installSkel :: FilePath -> FilePath -> IO ()
 #ifdef darwin_HOST_OS
-installSkel topdir basedir = do
+installSkel _topdir basedir = do
 	whenM (doesDirectoryExist basedir) $
 		removeDirectoryRecursive basedir
 	createDirectoryIfMissing True (takeDirectory basedir)
@@ -172,7 +172,7 @@ installSkel topdir _basedir = do
 
 installSkelRest :: FilePath -> FilePath -> Bool -> IO ()
 #ifdef darwin_HOST_OS
-installSkelRest topdir basedir _hwcaplibs = do
+installSkelRest _topdir basedir _hwcaplibs = do
 	plist <- lines <$> readFile "standalone/osx/Info.plist.template"
 	version <- getVersion
 	writeFile (basedir </> "Contents" </> "Info.plist")
