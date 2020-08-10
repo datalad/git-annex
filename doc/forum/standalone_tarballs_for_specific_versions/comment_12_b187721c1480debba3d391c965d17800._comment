@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2020-08-10T17:23:28Z"
+ content="""
+The build process is "make linuxstandalone" or "make osxapp"
+
+The builds will be updated with today's release.
+"""]]
