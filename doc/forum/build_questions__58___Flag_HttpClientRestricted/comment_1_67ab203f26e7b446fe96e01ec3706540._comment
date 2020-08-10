@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-08-10T17:53:04Z"
+ content="""
+These flags avoid pulling in some new external dependencies, which might
+not be available in a particular set of haskell packages
+or might fail to build (probably not). Since git-annex vendors a copy of
+those libraries, disabling them won't change the result. (But I'm going to
+drop those vendored libraries from it eventually.)
+
+The way the stack.yaml works is it pins every single dependency at a
+particular known-working version. That's the only reason to use it rather
+than cabal. Cabal is generally the easiest way to get a build with all the
+bleeding edge versions.
+
+I update the stack.yaml to more or less current versions periodically.
+(Specifically the versions chosen in a particular LTS release, which can
+be behind bleeding edge in some cases when there's breakage being sorted
+out there.) But my past several tries with newer lts versions have failed
+because the debian packages are too old to use them.
+"""]]
