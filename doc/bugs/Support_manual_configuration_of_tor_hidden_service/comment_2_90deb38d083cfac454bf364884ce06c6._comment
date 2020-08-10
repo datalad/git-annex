@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-08-10T18:17:29Z"
+ content="""
+The port can be any otherwise unused port of the system.
+
+The service's unix socket file has to have a name that ends
+with the uuid of the git-annex repository that's going to use it,
+because git-annex parses torrc to find that.
+
+And git-annex has to know what the port and onion address are
+to construct the base p2p address ("tor-annex:$onionaddr:$port").
+That gets stored in `.git/annex/p2paddrs`.
+
+Otherwise, you can use more or less whatever tor configuration you want to.
+"""]]
