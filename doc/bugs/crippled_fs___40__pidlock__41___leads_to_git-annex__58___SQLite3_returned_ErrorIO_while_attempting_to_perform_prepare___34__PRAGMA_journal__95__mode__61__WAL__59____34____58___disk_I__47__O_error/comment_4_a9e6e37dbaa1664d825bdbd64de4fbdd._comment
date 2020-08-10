@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-08-10T16:41:23Z"
+ content="""
+@hdclark it would be worth trying to disable WAL mode for the sqlite
+database and see if that fixes the problem. The patch I posted earlier
+can do it.
+"""]]
