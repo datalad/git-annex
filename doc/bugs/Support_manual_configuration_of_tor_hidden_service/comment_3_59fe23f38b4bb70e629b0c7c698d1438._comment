@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-08-10T18:37:49Z"
+ content="""
+If you write up a [[tip|tips]] documenting how to manually set one up
+(nix specific would be fine), then it might make sense to simplify that
+documentation with a command like:
+
+	git-annex-enable-tor --already-configured --onion-address=... --hidden-service-port=...
+
+To avoid needing to manually write data into .git/annex/
+
+I think that and documentation is all that's needed, and that command
+on its own is not very useful w/o documentation of the full manual setup,
+which is why I suggest you write the documentation first.
+"""]]
