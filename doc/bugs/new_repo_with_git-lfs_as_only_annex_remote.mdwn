@@ -35,3 +35,5 @@ Now
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use it all the time for lots of files, git-annex is great! Hoping to migrate off my own ancient server to a gitlab one maintained by somebody else, mainly because it's backed up. But would prefer to stick with git-annex instead of having to migrate to horrible git-lfs.
+
+[[!tag moreinfo]]
