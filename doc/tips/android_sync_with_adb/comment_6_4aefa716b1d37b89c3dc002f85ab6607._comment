@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-08-10T18:53:15Z"
+ content="""
+
+This tip seems to work just fine when I try it. After `git annex sync
+--content android`, it had merged the remotes/android/master branch
+in. So I don't think there's a general problem with this tip that needs
+to be discussed here.
+
+The remote tracking branch is created or updated every time git-annex
+imports from the android remote, eg every time that sync command is run.
+
+If it's not creating it for you, you might have run into a bug, but if
+so you'll need to work out how others can reproduce it, and file a bug
+report.
+"""]]
