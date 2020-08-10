@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="arnaud@c1d1cc612a3921dc06a417301be08a3e125478c4"
+ nickname="arnaud"
+ avatar="http://cdn.libravatar.org/avatar/c0defbf54541c499f6c0464588fc2ad0"
+ subject="comment 2"
+ date="2020-08-10T17:25:09Z"
+ content="""
+May I suggest then that by default, no files be considered \"small\" ? In my beginnings with git-annex, I have been confused several times by small files. If they don't behave the same as other files, I don't think they should happen by default.
+"""]]
