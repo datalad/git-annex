@@ -24,7 +24,11 @@ other treeish accepted by git, including eg master:subdir to only export a
 subdirectory from a branch.
 
 When the remote has a preferred content setting, the treeish is filtered
-through it, excluding files it does not want from being exported to it.
+through it, excluding annexed files it does not want from being exported
+to it.
+
+Any files in the treeish that are stored on git will also be exported to
+the special remote.
 
 Repeated exports are done efficiently, by diffing the old and new tree,
 and transferring only the changed files, and renaming files as necessary.

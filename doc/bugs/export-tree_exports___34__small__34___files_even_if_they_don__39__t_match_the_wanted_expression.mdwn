@@ -18,3 +18,4 @@ Export-tree to it -> all small files in tree end up on the remote
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I'm very impressed with git-annex overall :P
 
+> [[wontfix|done]] --[[Joey]]

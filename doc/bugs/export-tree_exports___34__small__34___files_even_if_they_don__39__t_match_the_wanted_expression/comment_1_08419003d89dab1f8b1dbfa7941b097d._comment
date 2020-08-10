@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-08-10T16:22:15Z"
+ content="""
+Preferred content expressions can have a number of terms that require a
+git-annex key to evaluate. Files not managed by git-annex do not have such
+keys, so it's not possible to evaluate preferred content expressions
+against them.
+
+Another way to look at it is that the export remote is equivilant to a git
+remote. Pushing a git tree to a git remote necessarily stores all the files
+managed by git onto that remote and so it makes sense for exporting to do
+the same. (importing also always gets new versions of these small files w/o
+checking the preferred content setting, equivilant to git pull.)
+
+So, even if it were possible to match some preferred content expressions
+against non-annexed files (eg ones that use only the filename or size),
+I don't think it would be good for that to be done for exports.
+
+I have improved the documentation of git-annex export to mention that
+it exports all git files.
+"""]]
