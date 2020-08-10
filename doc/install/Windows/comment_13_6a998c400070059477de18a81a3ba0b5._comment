@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""permissions fixed"""
+ date="2020-08-10T17:07:29Z"
+ content="""
+If you had filed a bug report about this permissions problem, I would have
+fixed it immediately. Instead I had to read all comments on the web site 
+before I noticed it weeks later.
+
+This build is being maintained, but you have to file bug reports when there
+are problems with it.
+"""]]

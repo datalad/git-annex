@@ -1,4 +1,4 @@
-git-annex (8.20200720.2) UNRELEASED; urgency=medium
+git-annex (8.20200810) upstream; urgency=medium
 
   * Added support for external backend programs. So if you want a hash
     that git-annex doesn't support, or something stranger, you can write a
@@ -24,7 +24,7 @@ git-annex (8.20200720.2) UNRELEASED; urgency=medium
     when the filepath is absolute and the symlink in question is not
     actually inside the git repository.
 
- -- Joey Hess <id@joeyh.name>  Tue, 21 Jul 2020 12:58:30 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 10 Aug 2020 13:04:04 -0400
 
 git-annex (8.20200720.1) upstream; urgency=medium
 

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-08-10T17:01:31Z"
+ content="""
+Autobuilds may contain changes that are not release quality yet.
+
+Anyway, the release OSX build will be caught up by the release today.
+"""]]
