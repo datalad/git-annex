@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2020-08-10T19:54:26Z"
+ content="""
+Well, I ran the reproducer script, substituting a git-annex tarball with
+the fix (and adding an output of the exit code and dropping the --debug),
+and the end was:
+
+	get f0 (from r...) 
+	SHA256E-s2--9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa2 
+	100%    1.95kB/s    0:00:00 (xfr#1, to-chk=0/1)
+	(checksum...) ok
+	(recording state in git...)
+	0
+
+So, I guess this patch is ok, at least with the git-annex I've built.
+(Using haskell from debian unstable.) It seems possible that some older
+ghc, async, etc might have handled that AsyncCancelled differently and
+resulted in the behavior you're seeing.
+
+Also tried with https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/git-annex-standalone-i386-ancient.tar.gz
+and it's ok too.
+"""]]
