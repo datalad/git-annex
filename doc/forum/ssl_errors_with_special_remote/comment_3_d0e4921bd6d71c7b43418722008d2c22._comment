@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-08-10T18:13:07Z"
+ content="""
+For the record: git-annex does not cache ssl certs, and it uses the
+system's ssl cert information. If you have a problem like this it's almost
+certainly a problem with your ssl cert or web server, or some caching in
+between git-annex and it.
+"""]]
