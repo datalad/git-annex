@@ -328,7 +328,7 @@ outputFilter cmd params environ outfilter errfilter =
 		-- maximum for them to finish and then cancel them.
 		-- (One program that has behaved this way in the past is
 		-- openssh.)
-		race_
+		void $ tryNonAsync $ race_
 			(wait outt >> wait errt)
 			(threadDelaySeconds (Seconds 2) >> cancel outt >> cancel errt)
 		return ret

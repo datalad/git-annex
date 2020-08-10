@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2020-08-10T20:06:28Z"
+ content="""
+Hmm, come to think of it, `wait errt` is racing 
+`cancel errt`, so what if cancel kills the errt thread,
+and before `race` noticed cancel is done, the wait thread 
+sees errt,  died of an an AsyncCancelled exception and rethrows that?
+Result could be the exception leaking out, perhaps.
+
+It might be that async now avoids that, and some other version didn't, or
+you could be getting unlucky with the race.
+
+So, I've added something to catch that exception in case it leaks.
+"""]]
