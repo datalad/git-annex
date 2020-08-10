@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="arnaud@c1d1cc612a3921dc06a417301be08a3e125478c4"
+ nickname="arnaud"
+ avatar="http://cdn.libravatar.org/avatar/c0defbf54541c499f6c0464588fc2ad0"
+ subject="comment 4"
+ date="2020-08-10T18:42:13Z"
+ content="""
+Oh, indeed, I was confused because this is one of the directories that ended up as a small file : \"Genesis/...And\ Then\ There\ Were\ Three\" !  it's indeed a dotfile, kind of.
+
+Sorry !
+
+Also, I was surprised to find that include= expressions were relative to the part of the tree I was exporting and not the git-annex root ?
+"""]]
