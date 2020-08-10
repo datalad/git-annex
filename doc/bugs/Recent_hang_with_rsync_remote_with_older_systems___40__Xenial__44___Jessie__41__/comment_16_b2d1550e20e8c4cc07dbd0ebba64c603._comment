@@ -1,0 +1,78 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 16"
+ date="2020-08-10T21:34:43Z"
+ content="""
+I applied the change from c59a51a0651b and 4466c1001d88.  Now I don't
+see \"git-annex: AsyncCancelled\", f0 is transferred, and the exit
+status is 0, so it looks to be working as intended.  Thank you.
+
+As described in comment 8, this is all in the Xenial VM on top of
+1df9e72a7829, because the hang goes away with the next commit
+(4c9ad1de46dd).  For posterity, here is a diff of the changes on top
+1df9e72a7829, applied from aa492bc65904, c59a51a0651b, and
+4466c1001d88.
+
+<details>
+<summary>diff</summary>
+
+[[!format diff \"\"\"
+diff --git a/Utility/Metered.hs b/Utility/Metered.hs
+index 1c35a9a05..c4063c90b 100644
+--- a/Utility/Metered.hs
++++ b/Utility/Metered.hs
+@@ -1,6 +1,6 @@
+ {- Metered IO and actions
+  -
+- - Copyright 2012-2018 Joey Hess <id@joeyh.name>
++ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+  -
+  - License: BSD-2-clause
+  -}
+@@ -46,6 +46,7 @@ import Common
+ import Utility.Percentage
+ import Utility.DataUnits
+ import Utility.HumanTime
++import Utility.ThreadScheduler
+ 
+ import qualified Data.ByteString.Lazy as L
+ import qualified Data.ByteString as S
+@@ -314,10 +315,26 @@ outputFilter cmd params environ outfilter errfilter =
+ 	catchMaybeIO $ withCreateProcess p go
+   where
+ 	go _ (Just outh) (Just errh) pid = do
+-		void $ concurrently 
+-			(tryIO (outfilter outh) >> hClose outh)
+-			(tryIO (errfilter errh) >> hClose errh)
+-		waitForProcess pid
++		outt <- async $ tryIO (outfilter outh) >> hClose outh
++		errt <- async $ tryIO (errfilter errh) >> hClose errh
++		ret <- waitForProcess pid
++
++		-- Normally, now that the process has exited, the threads
++		-- will finish processing its output and terminate.
++		-- But, just in case the process did something evil like
++		-- forking to the background while inheriting stderr,
++		-- it's possible that the threads will not finish, which
++		-- would result in a deadlock. So, wait a few seconds
++		-- maximum for them to finish and then cancel them.
++		-- (One program that has behaved this way in the past is
++		-- openssh.)
++		void $ tryNonAsync $ race_
++			(wait outt >> wait errt)
++			(threadDelaySeconds (Seconds 2))
++		cancel outt
++		cancel errt
++
++		return ret
+ 	go _ _ _ _ = error \"internal\"
+ 	
+ 	p = (proc cmd (toCommand params))
+\"\"\"]]
+
+</details>
+
+
+
+"""]]

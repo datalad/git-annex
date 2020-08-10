@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="full source tarballs for specific releases?"
+ date="2020-08-10T21:14:04Z"
+ content="""
+Thanks a lot!  Do I understand correctly that this can't be done from the [tarballs on Hackage](https://hackage.haskell.org/package/git-annex), and requires [[checking out the full source tree|install/fromsource]]?  (And that there is URL from which the full source repo tarball for a given released version can be downloaded?)
+"""]]
