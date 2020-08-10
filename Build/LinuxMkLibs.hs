@@ -68,24 +68,19 @@ mklibs top _installedbins = do
  - and improves startup time.
  -}
 consolidateUsrLib :: FilePath -> [FilePath] -> IO [FilePath]
-consolidateUsrLib top libdirs = map reverse <$> go [] (map reverse libdirs)
+consolidateUsrLib top libdirs = go [] libdirs
   where
 	go c [] = return c
-	go c (x:[]) = return (x:c)
-	go c (x:y:rest)
-		| x == y ++ reverse ("/usr") = do
-			let x' = reverse x
-			let y' = reverse y
-			fs <- getDirectoryContents (inTop top x')
+	go c (x:rest) = case filter (\d -> ("/usr" ++ d) == x) libdirs of
+		(d:_) -> do
+			fs <- getDirectoryContents (inTop top x)
 			forM_ fs $ \f ->
 				unless (dirCruft f) $
 					renameFile 
-						(inTop top (x' </> f))
-						(inTop top (y' </> f))
-			go (y:c) rest
-		| otherwise = do
-			print (x,y)
-			go (x:c) (y:rest)
+						(inTop top (x </> f))
+						(inTop top (d </> f))
+			go c rest
+		_ -> go (x:c) rest
 
 {- Installs a linker shim script around a binary.
  -
