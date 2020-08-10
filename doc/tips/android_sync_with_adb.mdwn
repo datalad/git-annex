@@ -67,7 +67,7 @@ these to only import from or export to the android device:
 Set up the remote to use the /sdcard/DCIM directory where the phone's
 camera stores them.
 
-	initremote android type=adb androiddirectory=/sdcard/DCIM encryption=none exporttree=yes importtree=yes
+	git-annex initremote android type=adb androiddirectory=/sdcard/DCIM encryption=none exporttree=yes importtree=yes
        
 The annex-tracking-branch can be the same as before, to limit
 the files that are synced to those in an android directory:
@@ -87,7 +87,7 @@ You could set up the remote to use the /sdcard/Music directory.
 But, I sometimes download music to other locations, and perhaps you do too.
 Let's instead limit the remote to mp3 and ogg files:
 
-	initremote android type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes
+	git-annex initremote android type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes
 	git annex wanted android 'include=*.mp3 or include=*.ogg'
 
 The annex-tracking-branch can be the same as before, to limit
