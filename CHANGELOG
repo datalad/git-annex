@@ -3,26 +3,26 @@ git-annex (8.20200810) upstream; urgency=medium
   * Added support for external backend programs. So if you want a hash
     that git-annex doesn't support, or something stranger, you can write a
     small program to implement it.
+  * Fix a bug in find --branch in the previous version.
+  * importfeed: Fix reversion that caused some '.' in filenames to be
+    replaced with '_'
   * Fix a lock file descriptor leak that could occur when running commands
     like git-annex add with -J. Bug was introduced as part of a different FD
     leak fix in version 6.20160318.
-  * Support building with dlist-1.0
   * Fix a hang when using git-annex with an old openssh 7.2p2, which had
     some weird inheriting of ssh FDs by sshd. Bug was introduced in
     git-annex version 7.20200202.7.
-  * Fix a bug in find --branch in the previous version.
   * move, copy --to: Sped up seeking files by 2x.
   * drop: Sped up seeking files to drop by 2x, and also some performance
     improvements to checking numcopies.
   * Deal with unusual IFS settings in the shell scripts for linux
     standalone and OSX app.
     Thanks, Yaroslav Halchenko
-  * Slightly sped up the linux standalone bundle.
-  * importfeed: Fix reversion that caused some '.' in filenames to be
-    replaced with '_'
   * Avoid complaining that a file with "is beyond a symbolic link"
     when the filepath is absolute and the symlink in question is not
     actually inside the git repository.
+  * Slightly sped up the linux standalone bundle.
+  * Support building with dlist-1.0
 
  -- Joey Hess <id@joeyh.name>  Mon, 10 Aug 2020 13:04:04 -0400
 
