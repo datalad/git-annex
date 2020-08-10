@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+Export-tree exports "small" files even if they don't match the wanted expression for the remote
+
+### What steps will reproduce the problem?
+
+Create a special remote with export-tree=yes
+
+Set wanted expression for remote
+
+Export-tree to it -> all small files in tree end up on the remote
+
+
+### What version of git-annex are you using? On what operating system?
+
+8.20200330 on linux i386
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I'm very impressed with git-annex overall :P
+
