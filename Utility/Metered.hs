@@ -319,6 +319,7 @@ outputFilter cmd params environ outfilter errfilter =
 		outt <- async $ tryIO (outfilter outh) >> hClose outh
 		errt <- async $ tryIO (errfilter errh) >> hClose errh
 		ret <- waitForProcess pid
+
 		-- Normally, now that the process has exited, the threads
 		-- will finish processing its output and terminate.
 		-- But, just in case the process did something evil like
@@ -330,7 +331,10 @@ outputFilter cmd params environ outfilter errfilter =
 		-- openssh.)
 		void $ tryNonAsync $ race_
 			(wait outt >> wait errt)
-			(threadDelaySeconds (Seconds 2) >> cancel outt >> cancel errt)
+			(threadDelaySeconds (Seconds 2))
+		cancel outt
+		cancel errt
+
 		return ret
 	go _ _ _ _ = error "internal"
 	
