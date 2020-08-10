@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-08-10T17:49:34Z"
+ content="""
+Only dotfiles are considered small by default, and there are good reasons
+to do so, which are well outside the scope of this bug report.
+
+If you have any other small files, it's because you've added them to git
+and not to git-annex in some way, by setting annex.largefiles or using
+command line options or whatever.
+"""]]

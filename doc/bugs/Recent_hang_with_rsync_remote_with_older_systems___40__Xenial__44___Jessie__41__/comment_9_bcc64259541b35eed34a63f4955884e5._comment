@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-08-10T17:26:13Z"
+ content="""
+I'm a bit surprised that the AsyncCancelled exception gets displayed.
+
+Something in git-annex must be catching that, and displaying it. The
+"git-annex:" says it's displayed with topLevelWarning, and the only thing
+that calls that to display an exception is accountCommandAction, but that uses
+tryNonAsync so it's supposed to not catch async exceptions like this one.
+
+(Also why would canceling a worker thread throw an exception all the way
+out to accountCommandAction? And if it did, the overall command would then
+fail.)
+"""]]
