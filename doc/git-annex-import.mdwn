@@ -72,10 +72,10 @@ to tell it what branch to track. For example:
 	git config remote.myremote.annex-tracking-branch master
 	git annex sync --content
 
-If a preferred content expression is configured for the special remote,
-it will be honored when importing from it. Files that are not preferred
-content of the remote will not be imported from it, but will be left on the
-remote. 
+When the special remote has a preferred content expression set by
+[[git-annex-wanted]](1), it will be honored when importing from it.
+Files that are not preferred content of the remote will not be
+imported from it, but will be left on the remote.
 
 However, preferred content expressions that relate to the key
 can't be matched when importing, because the content of the file is not
@@ -83,6 +83,9 @@ known. Importing will fail when such a preferred content expression is
 set. This includes expressions containing "copies=", "metadata=", and other
 things that depend on the key. Preferred content expressions containing
 "include=", "exclude=" "smallerthan=", "largerthan=" will work.
+
+Things in the expression like "include=" match relative to the top of
+the tree of files on the remote, even when importing into a subdirectory.
 
 # OPTIONS FOR IMPORTING FROM A SPECIAL REMOTE
 

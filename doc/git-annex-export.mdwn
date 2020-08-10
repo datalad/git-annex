@@ -23,9 +23,11 @@ The treeish to export can be the name of a git branch, or a tag, or any
 other treeish accepted by git, including eg master:subdir to only export a
 subdirectory from a branch.
 
-When the remote has a preferred content setting, the treeish is filtered
-through it, excluding annexed files it does not want from being exported
-to it.
+When the remote has a preferred content expression set by
+[[git-annex-wanted]](1), the treeish is
+filtered through it, excluding annexed files it does not want from
+being exported to it. (Note that things in the expression like
+"include=" match relative to the top of the treeish being exported.)
 
 Any files in the treeish that are stored on git will also be exported to
 the special remote.

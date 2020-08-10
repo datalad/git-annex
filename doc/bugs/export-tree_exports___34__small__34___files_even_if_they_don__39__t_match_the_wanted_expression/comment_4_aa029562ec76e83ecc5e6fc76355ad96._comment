@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-08-10T19:18:13Z"
+ content="""
+Understandable mistake. If you might have more such files,
+you can `git config annex.dotfiles true`
+
+> Also, I was surprised to find that include= expressions were relative to
+> the part of the tree I was exporting and not the git-annex root ?
+
+Well, if you run `git annex export somesha --to remote`, all it knows is
+the tree for that sha, so it has to match relative to the top of that tree,
+and not whatever other tree it might be embedded in on master or wherever.
+
+When you run `git annex export master:subdir --to remote`, it has enough
+information that it could match relative to the top of master, but that
+would be inconsistent.
+
+And the same with a config setting annex-tracking-branch to master:subdir.
+
+Import does also do the same thing, it has to also for consistency of
+course.
+
+I have mentioned this in the docs now.
+"""]]
