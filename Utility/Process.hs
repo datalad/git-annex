@@ -11,7 +11,6 @@
 
 module Utility.Process (
 	module X,
-	CreateProcess(..),
 	StdHandle(..),
 	readProcess,
 	readProcess',
@@ -34,8 +33,7 @@ module Utility.Process (
 ) where
 
 import qualified Utility.Process.Shim
-import qualified Utility.Process.Shim as X hiding (CreateProcess(..), createProcess, withCreateProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess, cleanupProcess)
-import Utility.Process.Shim hiding (createProcess, withCreateProcess, readProcess, waitForProcess, cleanupProcess)
+import Utility.Process.Shim as X (CreateProcess(..), ProcessHandle, StdStream(..), CmdSpec(..), proc)
 import Utility.Misc
 import Utility.Exception
 import Utility.Monad
