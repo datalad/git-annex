@@ -74,11 +74,12 @@ consolidateUsrLib top libdirs = go [] libdirs
 	go c (x:rest) = case filter (\d -> ("/usr" ++ d) == x) libdirs of
 		(d:_) -> do
 			fs <- getDirectoryContents (inTop top x)
-			forM_ fs $ \f ->
+			forM_ fs $ \f -> do
+				let src = inTop top (x </> f)
+				let dst = inTop top (d </> f)
 				unless (dirCruft f) $
-					renameFile 
-						(inTop top (x </> f))
-						(inTop top (d </> f))
+					unlessM (doesDirectoryExist src) $
+						renameFile src dst
 			go c rest
 		_ -> go (x:c) rest
 
