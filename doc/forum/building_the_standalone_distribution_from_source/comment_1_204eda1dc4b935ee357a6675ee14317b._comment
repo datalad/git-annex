@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-08-10T19:08:20Z"
+ content="""
+I've added some docs to the page about how to build it.
+
+BUILDER=stack will build it with stack.
+"""]]

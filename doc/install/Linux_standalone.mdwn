@@ -46,6 +46,18 @@ The arm64 autobuilder runs only intermittently. [[Better hosting needed.|todo/ar
 
 * arm64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-arm64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/arm64/))
 
+## building it yourself
+
+This entails building git-annex from source, so you will first
+need to get that working, see [[fromsource]] for some of the details.
+
+In git-annex's source tree, run `make linuxstandalone`. This will build
+git-annex from source, and then build the tarball bundle, into eg
+`tmp/git-annex-standalone-amd64.tar.gz`
+
+This build process is done on a Debian system, and it needs to use
+`dpkg` to examine the host system.
+
 ## technical details
 
-The way those tarballs are built is described in [joeyh's blog](http://joeyh.name/blog/entry/completely_linux_distribution-independent_packaging/).
+The way those tarballs work is described in [joeyh's blog](http://joeyh.name/blog/entry/completely_linux_distribution-independent_packaging/).
