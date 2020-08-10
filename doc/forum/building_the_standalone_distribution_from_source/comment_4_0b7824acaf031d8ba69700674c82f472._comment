@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-08-10T22:43:19Z"
+ content="""
+Right, the hackage tarball is only useful for cabal, it would not be
+practical to include everything else in it. Arguably there's small enough
+value in publishing it there that I ought to just drop it.
+
+I don't release other tarballs, but it is possible to get a stable tarball
+from git, eg 
+<https://git.joeyh.name/index.cgi/git-annex.git/snapshot/git-annex-8.20200720.1.tar.gz>
+"""]]
