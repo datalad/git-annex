@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-08-10T16:55:36Z"
+ content="""
+You can just change the url of the remote in .git/config. And `git-annex
+enableremote` can be used to change the gitrepo parameter stored there.
+
+But, git-annex will not be able to use the remote once you switch it to
+rsync, since it does not yet support gcrypt over rsync. That is what this
+bug report is open waiting to be implemented.
+"""]]
