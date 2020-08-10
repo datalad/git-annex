@@ -206,6 +206,7 @@ dpkg-buildpackage%: prep-standalone
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_TOP=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp:
+	$(MAKE) git-annex
 	# Remove all RPATHs, both because this overloads the linker on
 	# OSX Sierra, and to avoid the binary looking in someone's home
 	# directory.
@@ -213,7 +214,7 @@ osxapp:
 		eval install_name_tool $$(otool -l git-annex | grep "path " | sed 's/.*path /-delete_rpath /' | sed 's/ (.*//') git-annex; \
 	fi
 
-	$(MAKE) git-annex Build/Standalone
+	$(MAKE) Build/Standalone
 	./Build/Standalone $(OSXAPP_TOP) $(OSXAPP_DEST)
 
 	gzcat standalone/licences.gz > $(OSXAPP_TOP)/LICENSE
