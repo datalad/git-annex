@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="checking the conda-forge recipe"
+ date="2020-08-11T15:51:27Z"
+ content="""
+@cardoso-neto \"v8.20200810-g693f2093a was installed\" -- for the purpose of checking that the conda-forge installation worked correctly, can you tell me which exact package got installed, i.e. what is output by running
+
+`conda list --explicit | grep git-annex`
+
+?
+Thanks!
+"""]]
