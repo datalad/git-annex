@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="strange conda install behavior"
+ date="2020-08-11T20:19:46Z"
+ content="""
+What happens if you request the installation of the standard package with
+
+`conda install -c conda-forge git-annex=*=alldep*`
+
+?
+
+"""]]
