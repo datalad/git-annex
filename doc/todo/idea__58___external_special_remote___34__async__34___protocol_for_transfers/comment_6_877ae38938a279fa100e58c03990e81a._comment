@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-08-11T18:34:03Z"
+ content="""
+[[design/external_special_remote_protocol/async_appendix]] has a draft
+protocol extension.
+
+I improved on the design, so any and all requests can be handled async,
+or  sequentially, as the external special remote prefers. Had to add async
+job ids, but the protocol simplicity was worth it.
+
+(Implementation will be something like, a thread relaying to and from the
+special remote, with requests sent to it when it's not blocked, and with
+its async replies sent back to the corresponding requester based on the
+JobId.)
+"""]]

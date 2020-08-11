@@ -43,12 +43,12 @@ the version of the protocol it is using.
 
 Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
-git-annex do not send this message. 
+git-annex do not send this message.
 
-	EXTENSIONS INFO
+	EXTENSIONS INFO ASYNC
 
-The special remote can respond to that with its own EXTENSIONS message, which
-could have its own protocol extension details, but none are currently used.
+The special remote can respond to that with its own EXTENSIONS message, listing
+any extensions it wants to use. 
 (It's also fine to reply with UNSUPPORTED-REQUEST.)
 
 	EXTENSIONS 
@@ -132,8 +132,9 @@ The following requests *must* all be supported by the special remote.
   It's important that, while a Key is being stored, `CHECKPRESENT`
   not indicate it's present until all the data has been transferred.  
   While the transfer is running, the remote can send any number of
-  `PROGRESS` messages. Once the transfer is done, it finishes by sending
-  one of these replies:
+  `PROGRESS` messages to indicate its progress. It can also send any of the
+  other special remote messages. Once the transfer is done, it finishes by
+  sending one of these replies:
   * `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
     Indicates the transfer completed successfully.
   * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
@@ -170,10 +171,10 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
   Sent to indicate protocol extensions which git-annex is capable
   of using. The list is a space-delimited list of protocol extension
   keywords. The remote can reply to this with its own EXTENSIONS list.
+  See the section on extensions below for details.
   * `EXTENSIONS List`  
-    Sent in response to a EXTENSIONS request, the List could be used to indicate
-    protocol extensions that the special remote uses, but there are currently
-    no such extensions.
+    Sent in response to a EXTENSIONS request, to indicate the protocol
+    extensions that the special remote is using.
 * `LISTCONFIGS`  
   Requests the remote to return a list of settings it uses (with
   `GETCONFIG` and `SETCONFIG`). Providing a list makes `git annex initremote`
@@ -381,14 +382,12 @@ handling a request.
 * `DEBUG message`  
   Tells git-annex to display the message if --debug is enabled.  
   (git-annex does not send a reply to this message.)
-
-These messages are protocol extensions; it's only safe to send them to
-git-annex after it sent a EXTENSIONS that included the name of the message.
-
 * `INFO message`
   Tells git-annex to display the message to the user.  
   When git-annex is in --json mode, the message will be emitted immediately
   in its own json object, with an "info" field.  
+  This message is a protocol extension; it's only safe to send it to
+  git-annex after it sent an EXTENSIONS that included INFO.  
   (git-annex does not send a reply to this message.)  
 
 ## general messages
@@ -402,6 +401,17 @@ remote.
   The special remote program should exit after sending this, as
   git-annex will not talk to it any further. If the program receives
   an ERROR from git-annex, it can exit with its own ERROR.
+
+## extensions
+
+These protocol extensions are currently supported.
+
+* `INFO`  
+  This makes the `INFO` message available to use.
+* `ASYNC`  
+  This lets multiple actions be performed at the same time by
+  a single external special remote program, rather than starting multiple
+  programs. See the [[async_appendix]] for details.
 
 ## signals
 
