@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="Great tip about conda."
+ date="2020-08-11T13:22:58Z"
+ content="""
+I had no idea git-annex was on a conda channel even though it is clearly stated on the [install page](https://git-annex.branchable.com/install/).
+
+I just installed it with `conda install git-annex -c conda-forge` and, to my amazement, instead of `v8.20200226` (which was available on my focal fossa standard apt repos) being installed, `v8.20200810-g693f2093a` was installed.
+
+It was so easy to install and it is a version that was built just yesterday. I loved it.
+
+Please keep the plumbing that made this possible alive. 
+"""]]
