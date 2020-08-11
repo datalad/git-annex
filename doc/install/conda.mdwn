@@ -7,3 +7,9 @@ After [installing conda](https://docs.conda.io/en/latest/miniconda.html), run:
 	conda install -c conda-forge git-annex
 
 Note that this installation method does not need root permissions.
+
+If there are [package conflicts](https://docs.conda.io/projects/conda/en/latest/user-guide/troubleshooting.html#unsatisfiablespecifications-error) between git-annex's dependencies and packages already installed in the environment, conda may fall back on installing the [[standalone|install/Linux_standalone]] git-annex distribution.  This distribution may work slower or have other [[issues|todo/restore_original_environment_when_running_external_special_remotes_from_standalone_git-annex__63__]].  To require installation of the standard package, use
+
+	conda install -c conda-forge git-annex=*=alldep*
+
+This, however, could result in installing an older git-annex version to avoid package conflicts.
