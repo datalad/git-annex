@@ -1,0 +1,98 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="comment 10"
+ date="2020-08-11T22:10:25Z"
+ content="""
+After running the command you request this was the package plan conda came up with:
+
+```
+  added / updated specs:
+    - git-annex[build=alldep*]
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    c-ares-1.16.1              |       h516909a_0         108 KB  conda-forge
+    curl-7.71.1                |       he644dc0_4         139 KB  conda-forge
+    dbus-1.13.6                |       he372182_0         602 KB  conda-forge
+    expat-2.2.9                |       he1b5a44_2         191 KB  conda-forge
+    gettext-0.19.8.1           |    hc5be6a0_1002         3.6 MB  conda-forge
+    git-2.28.0                 |  pl526h5e3e691_1        15.9 MB  conda-forge
+    git-annex-8.20200810       |alldep_h988281c_100        12.2 MB  conda-forge
+    glib-2.65.0                |       h6f030ca_0         3.5 MB  conda-forge
+    gmp-6.2.0                  |       he1b5a44_2         811 KB  conda-forge
+    krb5-1.17.1                |       hfafb76e_2         1.5 MB  conda-forge
+    ld_impl_linux-64-2.34      |       hc38a660_9         612 KB  conda-forge
+    libcurl-7.71.1             |       hcdd3856_4         312 KB  conda-forge
+    libev-4.33                 |       h516909a_0         105 KB  conda-forge
+    libffi-3.2.1               |    he1b5a44_1007          47 KB  conda-forge
+    libiconv-1.15              |    h516909a_1006         2.0 MB  conda-forge
+    libmagic-5.39              |       hed695b0_0         280 KB  conda-forge
+    libnghttp2-1.41.0          |       hab1572f_1         709 KB  conda-forge
+    libssh2-1.9.0              |       hab1572f_5         225 KB  conda-forge
+    lsof-4.89                  |                0          84 KB  conda-forge
+    openssh-8.3p1              |       h5957347_0         1.3 MB  conda-forge
+    pcre-8.44                  |       he1b5a44_0         261 KB  conda-forge
+    perl-5.26.2                |    h516909a_1006        15.4 MB  conda-forge
+    popt-1.16                  |    h299ea2f_2002         184 KB  conda-forge
+    python-3.8.5               |h4d41432_2_cpython        71.0 MB  conda-forge
+    rsync-3.1.3                |    hed695b0_1002         287 KB  conda-forge
+    ------------------------------------------------------------
+                                           Total:       131.4 MB
+
+The following NEW packages will be INSTALLED:
+
+  c-ares             conda-forge/linux-64::c-ares-1.16.1-h516909a_0
+  curl               conda-forge/linux-64::curl-7.71.1-he644dc0_4
+  dbus               conda-forge/linux-64::dbus-1.13.6-he372182_0
+  expat              conda-forge/linux-64::expat-2.2.9-he1b5a44_2
+  gettext            conda-forge/linux-64::gettext-0.19.8.1-hc5be6a0_1002
+  git                conda-forge/linux-64::git-2.28.0-pl526h5e3e691_1
+  git-annex          conda-forge/linux-64::git-annex-8.20200810-alldep_h988281c_100
+  glib               conda-forge/linux-64::glib-2.65.0-h6f030ca_0
+  gmp                conda-forge/linux-64::gmp-6.2.0-he1b5a44_2
+  krb5               conda-forge/linux-64::krb5-1.17.1-hfafb76e_2
+  libcurl            conda-forge/linux-64::libcurl-7.71.1-hcdd3856_4
+  libev              conda-forge/linux-64::libev-4.33-h516909a_0
+  libiconv           conda-forge/linux-64::libiconv-1.15-h516909a_1006
+  libmagic           conda-forge/linux-64::libmagic-5.39-hed695b0_0
+  libnghttp2         conda-forge/linux-64::libnghttp2-1.41.0-hab1572f_1
+  libssh2            conda-forge/linux-64::libssh2-1.9.0-hab1572f_5
+  lsof               conda-forge/linux-64::lsof-4.89-0
+  openssh            conda-forge/linux-64::openssh-8.3p1-h5957347_0
+  pcre               conda-forge/linux-64::pcre-8.44-he1b5a44_0
+  perl               conda-forge/linux-64::perl-5.26.2-h516909a_1006
+  popt               conda-forge/linux-64::popt-1.16-h299ea2f_2002
+  python_abi         conda-forge/linux-64::python_abi-3.8-1_cp38
+  rsync              conda-forge/linux-64::rsync-3.1.3-hed695b0_1002
+
+The following packages will be UPDATED:
+
+  ld_impl_linux-64   pkgs/main::ld_impl_linux-64-2.33.1-h5~ --> conda-forge::ld_impl_linux-64-2.34-hc38a660_9
+  openssl              pkgs/main::openssl-1.1.1g-h7b6447c_0 --> conda-forge::openssl-1.1.1g-h516909a_1
+  python                 pkgs/main::python-3.8.5-hcff3b4d_0 --> conda-forge::python-3.8.5-h4d41432_2_cpython
+
+The following packages will be SUPERSEDED by a higher-priority channel:
+
+  ca-certificates    pkgs/main::ca-certificates-2020.6.24-0 --> conda-forge::ca-certificates-2020.6.20-hecda079_0
+  certifi               pkgs/main::certifi-2020.6.20-py38_0 --> conda-forge::certifi-2020.6.20-py38h32f6830_0
+  libffi                   pkgs/main::libffi-3.3-he6710b0_2 --> conda-forge::libffi-3.2.1-he1b5a44_1007
+```
+
+As a user, there were no noticeable differences.
+
+After running `git annex version` on this env, I noticed I got slightly older dependencies compared to the normal installation (`conda install -c conda-forge git-annex`).
+
+```
+$ diff git-annex git-annex=*=alldep*
+-git-annex version: 8.20200810-g693f2093a
++git-annex version: 8.20200810-g8b113bc
+-dependency versions: cryptonite-0.26 feed-1.3.0.1 ghc-8.8.3 persistent-sqlite-2.10.6.2
++dependency versions: cryptonite-0.25 feed-1.2.0.1 ghc-8.6.5 persistent-sqlite-2.9.3
+```
+
+If the dependencies were as up-to-date as the normal installation, I think I'd actually prefer this method, since it keeps things more contained and independent.
+"""]]
