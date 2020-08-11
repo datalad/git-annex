@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="please keep the hackage tarballs"
+ date="2020-08-11T00:43:46Z"
+ content="""
+\" Arguably there's small enough value in publishing it there that I ought to just drop it\" -- the [conda-forge recipe](https://github.com/conda-forge/git-annex-feedstock/blob/master/recipe/meta.yaml#L48) is based on the hackage tarballs, as is the [homebrew formula](https://github.com/Homebrew/homebrew-core/blob/master/Formula/git-annex.rb#L4).
+"""]]
