@@ -5,3 +5,5 @@ Overall the performance of git-annex is good for me. However, one case where git
 2. Cache the location logs in the sqlite database
 
 Other than that, git-annex has really solved all my file syncing and archival needs and is just awesome!
+
+> [[done]] --[[Joey]]
