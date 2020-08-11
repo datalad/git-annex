@@ -35,22 +35,34 @@ fatal: not a git repository: '../.git'
 
 The file that was being added was left like this:
 
+```
 ll "audio-files/moto-maxx/2018.04.17 1438.wav"
 
 -r--r--r-- 2 ### ### 608121644 abr 17  2018 'audio-files/moto-maxx/2018.04.17 1438.wav'
+```
 
 It appears git-annex just chmoded it, but didn't symlinkify it.
 
 ### What version of git-annex are you using? On what operating system?
 
-Ubuntu 20.04 focal
+`Ubuntu 20.04 focal`
 
-Linux 5.8.0-050800-generic #202008022230 SMP Sun Aug 2 22:33:21 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux
+`Linux 5.8.0-050800-generic`
 
-git-annex version: 8.20200226
+`git-annex version: 8.20200226`
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I am absolutely in love with it. I even built a special remote for it and I'm now building another because that one was stupid.
 
 Seriously, git-annex is amazing.
+
+***
+
+## edit:
+
+Turns out this "bug" affects pretty much everything.
+
+TL;DR: relative path access will be made relative to the new location if you move a directory that's got something running in it, so don't.
+
+ [[done]] 
