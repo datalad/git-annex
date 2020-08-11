@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="comment 8"
+ date="2020-08-11T19:57:03Z"
+ content="""
+This was the tarball conda used:
+
+`https://conda.anaconda.org/conda-forge/linux-64/git-annex-8.20200810-nodep_h1234567_0.tar.bz2`
+
+I noticed you updated the (/install/conda)[https://git-annex.branchable.com/install/conda/] with possible package conflict tips.
+
+The only dependency that was installed when I conda-installed git-annex was this:
+
+`python_abi conda-forge/linux-64::python_abi-3.8-1_cp38`
+
+Which struck me as odd, because I'm running python 3.8.5, not 3.8.1.
+Maybe they just have perfectly compatible ABIs, or maybe it's related to the problem you mentioned.
+I don't know.
+
+If there's any other test you want me to run, no problem.
+"""]]
