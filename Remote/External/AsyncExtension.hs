@@ -9,7 +9,7 @@
 
 module Remote.External.AsyncExtension where
 
-import Common.Annex
+import Common
 import Remote.External.Types
 
 import Control.Concurrent.Async
@@ -22,18 +22,18 @@ import qualified Data.Map.Strict as M
 relayToExternalAsync :: ExternalAsyncRelay -> IO ExternalState
 relayToExternalAsync relay = do
 	n <- liftIO $ atomically $ do
-		v <- readTVar (asyncRelayLast relay)
+		v <- readTVar (asyncRelayLastId relay)
 		let !n = succ v
-		writeTVar (asyncRelayLast relay) n
+		writeTVar (asyncRelayLastId relay) n
 		return n
-	return $ asyncRelayExternalState n
+	asyncRelayExternalState relay n
 
 -- | Starts a thread that will handle all communication with the external
 -- process. The input ExternalState communicates directly with the external
 -- process.
-runRelayToExternalAsync :: ExternalState -> IO ExternalAsyncRelay
-runRelayToExternalAsync st = do
-	startcomm <- runRelayToExternalAsync' st
+runRelayToExternalAsync :: External -> ExternalState -> IO ExternalAsyncRelay
+runRelayToExternalAsync external st = do
+	startcomm <- runRelayToExternalAsync' external st
 	pv <- atomically $ newTVar 1
 	return $ ExternalAsyncRelay
 		{ asyncRelayLastId = pv
@@ -41,10 +41,10 @@ runRelayToExternalAsync st = do
 		}
   where
 	relaystate startcomm n = do
-		(sendh, receiveh, shutdownh) <- startcomm n
-		ExternalState
+		(sendh, receiveh, shutdownh) <- startcomm (ClientId n)
+		return $ ExternalState
 			{ externalSend = atomically . writeTBMChan sendh
-			, externalReceive = atomically . readTBMChan receiveh
+			, externalReceive = fmap join $ atomically $ readTBMChan receiveh
 			, externalShutdown = atomically . writeTBMChan shutdownh
 			-- These three TVars are shared amoung all
 			-- ExternalStates that use this relay; they're
@@ -60,51 +60,71 @@ newtype ClientId = ClientId Int
 	deriving (Show, Eq, Ord)
 
 runRelayToExternalAsync'
-	:: ExternalState
+	:: External
+	-> ExternalState
 	-> IO (ClientId -> IO (TBMChan String, TBMChan (Maybe String), TBMChan Bool))
-runRelayToExternalAsync' st = do
-	let startcomm n = 
+runRelayToExternalAsync' external st = do
+	let startcomm n = error "TODO"
 	sendt <- async sendloop
-	void $ async (receiveloop [] Nothing sendt)
+	newreqs <- newTVarIO []
+	void $ async (receiveloop newreqs M.empty sendt)
 	return startcomm
   where
-	receiveloop newreqs currjid sendt = externalReceive st >>= \case
+	receiveloop newreqs jidmap sendt = externalReceive st >>= \case
 		Just l -> case parseMessage l :: Maybe AsyncMessage of
-			Just (START_ASYNC jid) -> case newreqs of
-				[] -> giveup "async special remote protocol error: unexpected START-ASYNC"
-				(c:newreqs') -> do
-					let !receiverjids' = M.insert jid c receiverjids
-					receiveloop newreqs' Nothing receiverjids' sendt
-			Just (END_ASYNC jid) -> do
-				let !receiverjids' = M.delete jid receiverjids
-				receiveloop newreqs (Just jid) receiverjids' sendt
-			Just (UPDATE_ASYNC jid) ->
-				receiveloop newreqs (Just jid) receiverjids sendt
-			Nothing -> case currjid of
-				Just jid -> 
-				-- 
-				Nothing -> case newreqs of
-					[] -> giveup "async special remote protocol error: unexpected non-async message"
-					(c:_) -> do
-						case M.lookup c receivers of
-							Just c -> atomically $ writeTBMChan c l
-							Nothing -> return ()
-						receiveloop newreqs Nothing sendt
+			Just (RESULT_ASYNC msg) -> getnext newreqs >>= \case
+				Just c -> do
+					relayto c msg
+					receiveloop newreqs jidmap sendt
+				Nothing -> protoerr "unexpected RESULT-ASYNC"
+			Just (START_ASYNC jid msg) -> getnext newreqs >>= \case
+				Just c -> do
+					relayto c msg
+					let !jidmap' = M.insert jid c jidmap
+					receiveloop newreqs jidmap' sendt
+				Nothing -> protoerr "unexpected START-ASYNC"
+			Just (END_ASYNC jid msg) -> case M.lookup jid jidmap of
+				Just c -> do
+					relayto c msg
+					closerelayto c
+					let !jidmap' = M.delete jid jidmap
+					receiveloop newreqs jidmap' sendt
+				Nothing -> protoerr "END-ASYNC with unknown jobid"
+			Just (ASYNC jid msg) -> case M.lookup jid jidmap of
+				Just c -> do
+					relayto c msg
+					let !jidmap' = M.delete jid jidmap
+					receiveloop newreqs jidmap' sendt
+				Nothing -> protoerr "ASYNC with unknown jobid"
+			_ -> protoerr "unexpected non-async message"
 		Nothing -> do
 			-- Unable to receive anything more from the
 			-- process, so it's not usable any longer.
 			-- So close all chans, stop the process,
 			-- and avoid any new ExternalStates from being
 			-- created using it.
+			cancel sendt
 			atomically $ do
 				void $ tryTakeTMVar (externalAsync external) 
 				putTMVar (externalAsync external)
 					UncheckedExternalAsync
-			forM_ (M.toList receivers) $
-				atomically . closeTBMChan
-			forM_ (M.toList senders) $
-				atomically . closeTBMChan
+			forM_ (M.elems jidmap) closerelayto
 			externalShutdown st True
-			cancel sendt
 
 	sendloop = do
+		error "TODO"
+
+	relayto (toq, _fromq) msg = atomically $ writeTBMChan toq msg
+
+	closerelayto (toq, fromq) = do
+		atomically $ closeTBMChan toq
+		atomically $ closeTBMChan fromq
+
+	getnext l = atomically $ readTVar l >>= \case
+		[] -> return Nothing
+		(c:rest) -> do
+			writeTVar l rest
+			return (Just c)
+	
+	protoerr s = giveup ("async special remote protocol error: " ++ s)
+

@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Remote.External.Types (
@@ -14,8 +15,11 @@ module Remote.External.Types (
 	ExternalType,
 	ExternalState(..),
 	PrepareStatus(..),
+	ExtensionList(..),
 	supportedExtensionList,
 	asyncExtensionEnabled,
+	ExternalAsync(..),
+	ExternalAsyncRelay(..),
 	Proto.parseMessage,
 	Proto.Sendable(..),
 	Proto.Receivable(..),
@@ -27,6 +31,7 @@ module Remote.External.Types (
 	RemoteRequest(..),
 	RemoteResponse(..),
 	ExceptionalMessage(..),
+	AsyncMessage(..),
 	ErrorMsg,
 	Setting,
 	Description,
@@ -91,7 +96,7 @@ type PID = Int
 
 -- List of extensions to the protocol.
 newtype ExtensionList = ExtensionList { fromExtensionList :: [String] }
-	deriving (Show)
+	deriving (Show, Monoid, Semigroup)
 
 supportedExtensionList :: ExtensionList
 supportedExtensionList = ExtensionList ["INFO", asyncExtension]

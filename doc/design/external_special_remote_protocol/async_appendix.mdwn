@@ -111,7 +111,9 @@ Here's the details about the additions to the protocol.
 * `END-ASYNC JobId ReplyMsg`  
   Indicates that an async job is complete. The ReplyMsg indicates the result
   of the job, and is anything that would be sent as a protocol reply in the
-  non-async protocol.
+  non-async protocol.  
+  After this, the JobId is not in use, an indeed the same value could be
+  reused by a new `START-ASYNC` if desired.
 * `RESULT-ASYNC ReplyMsg`  
   This is the same as sending `START-ASYNC` immediately followed by
   `END-ASYNC`. This is often used to respond to `PREPARE`, `LISTCONFIGS`,

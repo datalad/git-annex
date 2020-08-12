@@ -615,7 +615,7 @@ startExternal external =
 			(st, extensions) <- startExternal' external
 			if asyncExtensionEnabled extensions
 				then do
-					v <- liftIO $ runRelayToExternalAsync st
+					v <- liftIO $ runRelayToExternalAsync external st
 					st' <- liftIO $ relayToExternalAsync v
 					store (ExternalAsync v)
 					return st'
@@ -625,9 +625,9 @@ startExternal external =
 		v@NoExternalAsync -> do
 			store v
 			fst <$> startExternal' external
-		v@(ExternalAsync ExternalAsyncRelay) -> do
+		v@(ExternalAsync relay) -> do
 			store v
-			liftIO $ relayToExternalAsync v
+			liftIO $ relayToExternalAsync relay
   where
 	store = liftIO . atomically . putTMVar (externalAsync external)
 
@@ -677,7 +677,7 @@ startExternal' external = do
 		exwanted <- receiveMessage st external
 			(\resp -> case resp of
 				EXTENSIONS_RESPONSE l -> result l
-				UNSUPPORTED_REQUEST -> result []
+				UNSUPPORTED_REQUEST -> result mempty
 				_ -> Nothing
 			)
 			(const Nothing)
