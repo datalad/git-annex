@@ -12,7 +12,7 @@ module Remote.External (remote) where
 import Remote.External.Types
 import qualified Annex
 import Annex.Common
-import Annex.ExternalAddonProcess
+import qualified Annex.ExternalAddonProcess as AddonProcess
 import Types.Remote
 import Types.Export
 import Types.CleanupActions
@@ -504,13 +504,26 @@ handleRequest' st external req mp responsehandler
 		setDownloader (show uri) OtherDownloader
 
 sendMessage :: Sendable m => ExternalState -> m -> Annex ()
-sendMessage st m = liftIO $ do
-	protocolDebug (externalAddonProcess st) True line
+sendMessage st m = liftIO $ externalSend st line
+  where
+	line = unwords $ formatMessage m
+
+sendMessageAddonProcess :: AddonProcess.ExternalAddonProcess -> String -> IO ()
+sendMessageAddonProcess p line = do
+	AddonProcess.protocolDebug p True line
 	hPutStrLn h line
 	hFlush h
   where
-	line = unwords $ formatMessage m
-	h = externalSend (externalAddonProcess st)
+	h = AddonProcess.externalSend p
+
+receiveMessageAddonProcess :: AddonProcess.ExternalAddonProcess -> IO (Maybe String)
+receiveMessageAddonProcess p = do
+	v <- catchMaybeIO $ hGetLine $ AddonProcess.externalReceive p
+	maybe noop (AddonProcess.protocolDebug p False) v
+	return v
+
+shutdownAddonProcess :: AddonProcess.ExternalAddonProcess -> Bool -> IO ()
+shutdownAddonProcess = AddonProcess.externalShutdown 
 
 {- A response handler can yeild a result, or it can request that another
  - message be consumed from the external. -}
@@ -535,23 +548,21 @@ receiveMessage
 	-> (ExceptionalMessage -> Maybe (Annex a))
 	-> Annex a
 receiveMessage st external handleresponse handlerequest handleexceptional =
-	go =<< liftIO (catchMaybeIO $ hGetLine $ externalReceive $ externalAddonProcess st)
+	go =<< liftIO (externalReceive st)
   where
 	go Nothing = protocolError False ""
-	go (Just s) = do
-		liftIO $ protocolDebug (externalAddonProcess st) False s
-		case parseMessage s :: Maybe Response of
-			Just resp -> case handleresponse resp of
-				Nothing -> protocolError True s
-				Just callback -> callback >>= \case
-					Result a -> return a
-					GetNextMessage handleresponse' ->
-						receiveMessage st external handleresponse' handlerequest handleexceptional
-			Nothing -> case parseMessage s :: Maybe RemoteRequest of
-				Just req -> maybe (protocolError True s) id (handlerequest req)
-				Nothing -> case parseMessage s :: Maybe ExceptionalMessage of
-					Just msg -> maybe (protocolError True s) id (handleexceptional msg)
-					Nothing -> protocolError False s
+	go (Just s) = case parseMessage s :: Maybe Response of
+		Just resp -> case handleresponse resp of
+			Nothing -> protocolError True s
+			Just callback -> callback >>= \case
+				Result a -> return a
+				GetNextMessage handleresponse' ->
+					receiveMessage st external handleresponse' handlerequest handleexceptional
+		Nothing -> case parseMessage s :: Maybe RemoteRequest of
+			Just req -> maybe (protocolError True s) id (handlerequest req)
+			Nothing -> case parseMessage s :: Maybe ExceptionalMessage of
+				Just msg -> maybe (protocolError True s) id (handleexceptional msg)
+				Nothing -> protocolError False s
 	protocolError parsed s = giveup $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
 		if parsed
 			then "(command not allowed at this time)"
@@ -571,7 +582,7 @@ receiveMessage st external handleresponse handlerequest handleexceptional =
 withExternalState :: External -> (ExternalState -> Annex a) -> Annex a
 withExternalState external a = do
 	st <- get
-	r <- a st `onException` liftIO (externalShutdown (externalAddonProcess st) True)
+	r <- a st `onException` liftIO (externalShutdown st True)
 	put st -- only when no exception is thrown
 	return r
   where
@@ -597,9 +608,9 @@ startExternal external = do
 		n <- succ <$> readTVar (externalLastPid external)
 		writeTVar (externalLastPid external) n
 		return n
-	startExternalAddonProcess basecmd pid >>= \case
-		Left (ProgramFailure err) -> giveup err
-		Left (ProgramNotInstalled err) ->
+	AddonProcess.startExternalAddonProcess basecmd pid >>= \case
+		Left (AddonProcess.ProgramFailure err) -> giveup err
+		Left (AddonProcess.ProgramNotInstalled err) ->
 			case (lookupName (unparsedRemoteConfig (externalDefaultConfig external)), remoteAnnexReadOnly <$> externalGitConfig external) of
 				(Just rname, Just True) -> giveup $ unlines
 					[ err
@@ -614,7 +625,9 @@ startExternal external = do
 			ccv <- liftIO $ newTVarIO id
 			pv <- liftIO $ newTVarIO Unprepared
 			let st = ExternalState
-				{ externalAddonProcess = p
+				{ externalSend = sendMessageAddonProcess p
+				, externalReceive = receiveMessageAddonProcess p
+				, externalShutdown = shutdownAddonProcess p
 				, externalPrepared = pv
 				, externalConfig = cv
 				, externalConfigChanges = ccv
@@ -644,7 +657,7 @@ startExternal external = do
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
 	l <- atomically $ swapTVar (externalState external) []
-	mapM_ (flip (externalShutdown . externalAddonProcess) False) l
+	mapM_ (flip externalShutdown False) l
 
 checkVersion :: ExternalState -> RemoteRequest -> Maybe (Annex ())
 checkVersion st (VERSION v) = Just $

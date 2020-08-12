@@ -34,7 +34,6 @@ module Remote.External.Types (
 ) where
 
 import Annex.Common
-import Annex.ExternalAddonProcess
 import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Types.Transfer (Direction(..))
@@ -75,12 +74,15 @@ newExternal externaltype u c gc rs = liftIO $ External
 
 type ExternalType = String
 
-data ExternalState = ExternalState
-	{ externalAddonProcess :: ExternalAddonProcess
-	, externalPrepared :: TVar PrepareStatus
-	, externalConfig :: TVar ParsedRemoteConfig
-	, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
-	}
+data ExternalState
+	= ExternalState
+		{ externalSend :: String -> IO ()
+		, externalReceive :: IO (Maybe String)
+		, externalShutdown :: Bool -> IO ()
+		, externalPrepared :: TVar PrepareStatus
+		, externalConfig :: TVar ParsedRemoteConfig
+		, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
+		}
 
 type PID = Int
 
