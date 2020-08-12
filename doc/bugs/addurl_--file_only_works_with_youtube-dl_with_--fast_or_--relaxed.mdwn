@@ -1,0 +1,52 @@
+### Please describe the problem.
+
+The `--file` option doesn't work with youtube-dl downloaded content unless --fast or --relaxed are passed.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ git annex addurl --file out.m4a https://www.bbc.co.uk/programmes/p08jsctb
+addurl https://www.bbc.co.uk/programmes/p08jsctb
+... (cut most youtube-dl output)
+[download] Destination: Bloodsport, Introducing Bloodsport-p08jscdd.m4a
+[download] 100% of 909.06KiB in 00:03
+[ffmpeg] Correcting container in "Bloodsport, Introducing Bloodsport-p08jscdd.m4a"
+(to Bloodsport, Introducing Bloodsport-p08jscdd.m4a) ok
+(recording state in git...)
+$ ls
+'Bloodsport, Introducing Bloodsport-p08jscdd.m4a'
+"""]]
+
+Whereas I expected the created file to be 'out.m4a'.
+
+However it works correctly when using --fast or --relaxed to set the URL, and then using git annex get separately:
+
+[[!format sh """
+$ git annex addurl --relaxed --file out.m4a https://www.bbc.co.uk/programmes/p08jsctb
+addurl https://www.bbc.co.uk/programmes/p08jsctb (to out.m4a) ok
+(recording state in git...)
+$ ls
+out.m4a
+$ git annex get out.m4a
+get out.m4a (from web...)
+... (cut most youtube-dl output)
+[download] Destination: Bloodsport, Introducing Bloodsport-p08jscdd.m4a
+[download] 100% of 909.06KiB in 00:01
+[ffmpeg] Correcting container in "Bloodsport, Introducing Bloodsport-p08jscdd.m4a"
+ok
+(recording state in git...)
+$ ls
+out.m4a
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+8.20200330 (Debian sid)
+
+### Please provide any additional information below.
+
+I only recently started using the web special remote stuff, and really like it; thanks!
+
+### Have you had any luck using git-annex before?
+
+Yes, I've used it for several years for all sorts of things, and it just gets better and better.
