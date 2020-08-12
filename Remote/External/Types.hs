@@ -115,8 +115,7 @@ data ExternalAsync
 	| UncheckedExternalAsync
 
 data ExternalAsyncRelay = ExternalAsyncRelay
-	{ asyncRelayLastId :: TVar Int
-	, asyncRelayExternalState :: Int -> IO ExternalState
+	{ asyncRelayExternalState :: IO ExternalState
 	}
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
