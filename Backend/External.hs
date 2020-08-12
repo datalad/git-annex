@@ -132,13 +132,13 @@ handleRequest st req whenunavail responsehandler =
 	withExternalAddon st whenunavail $ \p -> do
 		sendMessage p req
 		let loop = receiveResponse p responsehandler
-			(Just . handleAsyncMessage loop)
+			(Just . handleExceptionalMessage loop)
 		loop
   where
-	handleAsyncMessage _ (ERROR err) = do
+	handleExceptionalMessage _ (ERROR err) = do
 		warning ("external special remote error: " ++ err)
 		whenunavail
-	handleAsyncMessage loop (DEBUG msg) = do
+	handleExceptionalMessage loop (DEBUG msg) = do
 		liftIO $ debugM "external" msg
 		loop
 
@@ -174,9 +174,9 @@ result = Just . return . Result
 receiveResponse
 	:: ExternalAddonProcess
 	-> ResponseHandler a
-	-> (AsyncMessage -> Maybe (Annex a))
+	-> (ExceptionalMessage -> Maybe (Annex a))
 	-> Annex a
-receiveResponse p handleresponse handleasync =
+receiveResponse p handleresponse handleexceptional =
 	go =<< liftIO (catchMaybeIO $ hGetLine $ externalReceive p)
   where
 	go Nothing = protocolError False ""
@@ -188,9 +188,9 @@ receiveResponse p handleresponse handleasync =
 				Just callback -> callback >>= \case
 					Result a -> return a
 					GetNextMessage handleresponse' ->
-						receiveResponse p handleresponse' handleasync
-			Nothing -> case Proto.parseMessage s :: Maybe AsyncMessage of
-				Just msg -> maybe (protocolError True s) id (handleasync msg)
+						receiveResponse p handleresponse' handleexceptional
+			Nothing -> case Proto.parseMessage s :: Maybe ExceptionalMessage of
+				Just msg -> maybe (protocolError True s) id (handleexceptional msg)
 				Nothing -> protocolError False s
 
 	protocolError parsed s = giveup $ "external backend protocol error, unexpectedly received \"" ++ s ++ "\" " ++
@@ -321,7 +321,7 @@ data Response
 	| PROGRESS BytesProcessed
 	deriving (Show)
 
-data AsyncMessage
+data ExceptionalMessage
 	= ERROR ErrorMsg
 	| DEBUG String
 	deriving (Show)
@@ -338,11 +338,11 @@ instance Proto.Serializable ProtocolVersion where
 	serialize (ProtocolVersion n) = show n
 	deserialize = ProtocolVersion <$$> readish
 
-instance Proto.Sendable AsyncMessage where
+instance Proto.Sendable ExceptionalMessage where
 	formatMessage (ERROR err) = ["ERROR", Proto.serialize err]
 	formatMessage (DEBUG msg) = ["DEBUG", Proto.serialize msg]
 
-instance Proto.Receivable AsyncMessage where
+instance Proto.Receivable ExceptionalMessage where
 	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand "DEBUG" = Proto.parse1 DEBUG
 	parseCommand _ = Proto.parseFail

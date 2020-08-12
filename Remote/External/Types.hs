@@ -25,7 +25,7 @@ module Remote.External.Types (
 	Response(..),
 	RemoteRequest(..),
 	RemoteResponse(..),
-	AsyncMessage(..),
+	ExceptionalMessage(..),
 	ErrorMsg,
 	Setting,
 	Description,
@@ -88,9 +88,8 @@ type PID = Int
 newtype ExtensionList = ExtensionList [String]
 	deriving (Show)
 
--- When adding a new RemoteRequest, also add it to the list here.
 supportedExtensionList :: ExtensionList
-supportedExtensionList = ExtensionList ["INFO"]
+supportedExtensionList = ExtensionList ["INFO", "ASYNC"]
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
 
@@ -323,15 +322,27 @@ instance Proto.Sendable RemoteResponse where
 	formatMessage (CREDS login password) = [ "CREDS", Proto.serialize login, Proto.serialize password ]
 
 -- Messages that can be sent at any time by either git-annex or the remote.
-data AsyncMessage
+data ExceptionalMessage
 	= ERROR ErrorMsg
 	deriving (Show)
 
-instance Proto.Sendable AsyncMessage where
+instance Proto.Sendable ExceptionalMessage where
 	formatMessage (ERROR err) = [ "ERROR", Proto.serialize err ]
 
-instance Proto.Receivable AsyncMessage where
+instance Proto.Receivable ExceptionalMessage where
 	parseCommand "ERROR" = Proto.parse1 ERROR
+	parseCommand _ = Proto.parseFail
+
+-- Messages used by the async protocol extension.
+data AsyncMessage
+	= START_ASYNC JobId
+	| END_ASYNC JobId
+	| UPDATE_ASYNC JobId
+
+instance Proto.Receivable AsyncMessage where
+	parseCommand "START-ASYNC" = Proto.parse1 START_ASYNC
+	parseCommand "END-ASYNC" = Proto.parse1 END_ASYNC
+	parseCommand "UPDATE-ASYNC" = Proto.parse1 UPDATE_ASYNC
 	parseCommand _ = Proto.parseFail
 
 -- Data types used for parameters when communicating with the remote.
@@ -341,6 +352,7 @@ type Setting = String
 type Description = String
 type ProtocolVersion = Int
 type Size = Maybe Integer
+type JobId = String
 
 supportedProtocolVersions :: [ProtocolVersion]
 supportedProtocolVersions = [1]

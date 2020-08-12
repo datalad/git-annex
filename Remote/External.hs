@@ -396,7 +396,7 @@ handleRequest' st external req mp responsehandler
 		loop
 	loop = receiveMessage st external responsehandler
 		(\rreq -> Just $ handleRemoteRequest rreq >> loop)
-		(\msg -> Just $ handleAsyncMessage msg >> loop)
+		(\msg -> Just $ handleExceptionalMessage msg >> loop)
 
 	handleRemoteRequest (PROGRESS bytesprocessed) =
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
@@ -487,7 +487,7 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (INFO msg) = showInfo msg
 	handleRemoteRequest (VERSION _) = senderror "too late to send VERSION"
 
-	handleAsyncMessage (ERROR err) = giveup $ "external special remote error: " ++ err
+	handleExceptionalMessage (ERROR err) = giveup $ "external special remote error: " ++ err
 
 	send = sendMessage st
 	senderror = sendMessage st . ERROR 
@@ -532,9 +532,9 @@ receiveMessage
 	-> External 
 	-> ResponseHandler a
 	-> (RemoteRequest -> Maybe (Annex a))
-	-> (AsyncMessage -> Maybe (Annex a))
+	-> (ExceptionalMessage -> Maybe (Annex a))
 	-> Annex a
-receiveMessage st external handleresponse handlerequest handleasync =
+receiveMessage st external handleresponse handlerequest handleexceptional =
 	go =<< liftIO (catchMaybeIO $ hGetLine $ externalReceive $ externalAddonProcess st)
   where
 	go Nothing = protocolError False ""
@@ -546,11 +546,11 @@ receiveMessage st external handleresponse handlerequest handleasync =
 				Just callback -> callback >>= \case
 					Result a -> return a
 					GetNextMessage handleresponse' ->
-						receiveMessage st external handleresponse' handlerequest handleasync
+						receiveMessage st external handleresponse' handlerequest handleexceptional
 			Nothing -> case parseMessage s :: Maybe RemoteRequest of
 				Just req -> maybe (protocolError True s) id (handlerequest req)
-				Nothing -> case parseMessage s :: Maybe AsyncMessage of
-					Just msg -> maybe (protocolError True s) id (handleasync msg)
+				Nothing -> case parseMessage s :: Maybe ExceptionalMessage of
+					Just msg -> maybe (protocolError True s) id (handleexceptional msg)
 					Nothing -> protocolError False s
 	protocolError parsed s = giveup $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
 		if parsed
