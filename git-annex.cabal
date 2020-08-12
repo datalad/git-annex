@@ -961,6 +961,7 @@ Executable git-annex
     Remote.Directory
     Remote.Directory.LegacyChunked
     Remote.External
+    Remote.External.AsyncExtension
     Remote.External.Types
     Remote.GCrypt
     Remote.Git

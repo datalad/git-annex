@@ -15,6 +15,7 @@ module Remote.External.Types (
 	ExternalState(..),
 	PrepareStatus(..),
 	supportedExtensionList,
+	asyncExtensionEnabled,
 	Proto.parseMessage,
 	Proto.Sendable(..),
 	Proto.Receivable(..),
@@ -60,6 +61,7 @@ data External = External
 	, externalDefaultConfig :: ParsedRemoteConfig
 	, externalGitConfig :: Maybe RemoteGitConfig
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
+	, externalAsync :: TMVar ExternalAsync
 	}
 
 newExternal :: ExternalType -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
@@ -71,6 +73,7 @@ newExternal externaltype u c gc rs = liftIO $ External
 	<*> pure c
 	<*> pure gc
 	<*> pure rs
+	<*> atomically (newTMVar UncheckedExternalAsync)
 
 type ExternalType = String
 
@@ -87,11 +90,29 @@ data ExternalState
 type PID = Int
 
 -- List of extensions to the protocol.
-newtype ExtensionList = ExtensionList [String]
+newtype ExtensionList = ExtensionList { fromExtensionList :: [String] }
 	deriving (Show)
 
 supportedExtensionList :: ExtensionList
-supportedExtensionList = ExtensionList ["INFO", "ASYNC"]
+supportedExtensionList = ExtensionList ["INFO", asyncExtension]
+
+asyncExtension :: String
+asyncExtension = "ASYNC"
+
+asyncExtensionEnabled :: ExtensionList -> Bool
+asyncExtensionEnabled l = asyncExtension `elem` fromExtensionList l
+
+-- When the async extension is in use, a single external process
+-- is started and used for all requests.
+data ExternalAsync
+	= ExternalAsync ExternalAsyncRelay
+	| NoExternalAsync
+	| UncheckedExternalAsync
+
+data ExternalAsyncRelay = ExternalAsyncRelay
+	{ asyncRelayLastId :: TVar Int
+	, asyncRelayExternalState :: Int -> IO ExternalState
+	}
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
 
@@ -337,14 +358,18 @@ instance Proto.Receivable ExceptionalMessage where
 
 -- Messages used by the async protocol extension.
 data AsyncMessage
-	= START_ASYNC JobId
-	| END_ASYNC JobId
-	| UPDATE_ASYNC JobId
+	= START_ASYNC JobId WrappedMsg
+	| END_ASYNC JobId WrappedMsg
+	| RESULT_ASYNC WrappedMsg
+	| ASYNC JobId WrappedMsg
+	| REPLY_ASYNC JobId WrappedMsg
 
 instance Proto.Receivable AsyncMessage where
-	parseCommand "START-ASYNC" = Proto.parse1 START_ASYNC
-	parseCommand "END-ASYNC" = Proto.parse1 END_ASYNC
-	parseCommand "UPDATE-ASYNC" = Proto.parse1 UPDATE_ASYNC
+	parseCommand "START-ASYNC" = Proto.parse2 START_ASYNC
+	parseCommand "END-ASYNC" = Proto.parse2 END_ASYNC
+	parseCommand "RESULT-ASYNC" = Proto.parse1 RESULT_ASYNC
+	parseCommand "ASYNC" = Proto.parse2 ASYNC
+	parseCommand "REPLY-ASYNC" = Proto.parse2 REPLY_ASYNC
 	parseCommand _ = Proto.parseFail
 
 -- Data types used for parameters when communicating with the remote.
@@ -355,6 +380,7 @@ type Description = String
 type ProtocolVersion = Int
 type Size = Maybe Integer
 type JobId = String
+type WrappedMsg = String
 
 supportedProtocolVersions :: [ProtocolVersion]
 supportedProtocolVersions = [1]

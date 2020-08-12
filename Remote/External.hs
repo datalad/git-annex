@@ -10,6 +10,7 @@
 module Remote.External (remote) where
 
 import Remote.External.Types
+import Remote.External.AsyncExtension
 import qualified Annex
 import Annex.Common
 import qualified Annex.ExternalAddonProcess as AddonProcess
@@ -601,9 +602,37 @@ withExternalState external a = do
 	put st = liftIO $ atomically $ modifyTVar' v (st:)
 
 {- Starts an external remote process running, and checks VERSION and
- - exchanges EXTENSIONS. -}
+ - exchanges EXTENSIONS.
+ -
+ - When the ASYNC extension is negotiated, a single process is used,
+ - and this constructs a external state that communicates with a thread
+ - that relays to it.
+ -}
 startExternal :: External -> Annex ExternalState
-startExternal external = do
+startExternal external =
+	liftIO (atomically $ takeTMVar (externalAsync external)) >>= \case
+		UncheckedExternalAsync -> do
+			(st, extensions) <- startExternal' external
+			if asyncExtensionEnabled extensions
+				then do
+					v <- liftIO $ runRelayToExternalAsync st
+					st' <- liftIO $ relayToExternalAsync v
+					store (ExternalAsync v)
+					return st'
+				else do
+					store NoExternalAsync
+					return st
+		v@NoExternalAsync -> do
+			store v
+			fst <$> startExternal' external
+		v@(ExternalAsync ExternalAsyncRelay) -> do
+			store v
+			liftIO $ relayToExternalAsync v
+  where
+	store = liftIO . atomically . putTMVar (externalAsync external)
+
+startExternal' :: External -> Annex (ExternalState, ExtensionList)
+startExternal' external = do
 	pid <- liftIO $ atomically $ do
 		n <- succ <$> readTVar (externalLastPid external)
 		writeTVar (externalLastPid external) n
@@ -632,8 +661,8 @@ startExternal external = do
 				, externalConfig = cv
 				, externalConfigChanges = ccv
 				}
-			startproto st
-			return st
+			extensions <- startproto st
+			return (st, extensions)
   where
 	basecmd = "git-annex-remote-" ++ externalType external
 	startproto st = do
@@ -645,14 +674,20 @@ startExternal external = do
 		-- It responds with a EXTENSIONS_RESPONSE; that extensions
 		-- list is reserved for future expansion. UNSUPPORTED_REQUEST
 		-- is also accepted.
-		receiveMessage st external
+		exwanted <- receiveMessage st external
 			(\resp -> case resp of
-				EXTENSIONS_RESPONSE _ -> result ()
-				UNSUPPORTED_REQUEST -> result ()
+				EXTENSIONS_RESPONSE l -> result l
+				UNSUPPORTED_REQUEST -> result []
 				_ -> Nothing
 			)
 			(const Nothing)
 			(const Nothing)
+		case filter (`notElem` fromExtensionList supportedExtensionList) (fromExtensionList exwanted) of
+			[] -> return exwanted
+			exrest -> giveup $ unwords $
+				[ basecmd
+				, "requested extensions that this version of git-annex does not support:"
+				] ++ exrest
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
