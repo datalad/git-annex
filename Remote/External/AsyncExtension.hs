@@ -85,26 +85,21 @@ receiveloop external st newconns jidmap mapjid sendq = externalReceive st >>= \c
 			Just (_n, c) -> do
 				relayto c msg
 				loop
-			Nothing -> abort "unexpected RESULT-ASYNC"
+			Nothing -> protoerr "unexpected RESULT-ASYNC"
 		Just (START_ASYNC jid) -> getnext newconns >>= \case
 			Just v@(n, _c) -> do
 				atomically $ do
 					modifyTVar' jidmap $ M.insert jid v
 					modifyTVar' mapjid $ M.insert n jid
 				loop
-			Nothing -> abort "unexpected START-ASYNC"
+			Nothing -> protoerr "unexpected START-ASYNC"
 		Just (ASYNC jid msg) -> getjid jid >>= \case
 			Just (_n, c) -> do
 				relayto c msg
 				loop
-			Nothing -> abort "ASYNC with unknown jobid"
-		_ -> abort "unexpected non-async message"
-	Nothing -> do
-		-- Unable to receive anything more from the
-		-- process, so it's not usable any longer.
-		m <- readTVarIO jidmap
-		forM_ (M.elems m) (closerelayto . snd)
-		shutdown external st sendq True
+			Nothing -> protoerr "ASYNC with unknown jobid"
+		_ -> protoerr "unexpected non-async message"
+	Nothing -> closeandshutdown
   where
 	loop = receiveloop external st newconns jidmap mapjid sendq
 
@@ -120,9 +115,16 @@ receiveloop external st newconns jidmap mapjid sendq = externalReceive st >>= \c
 	
 	getjid jid = M.lookup jid <$> readTVarIO jidmap
 
-	abort s = do
-		warningIO (protoerr s)
+	protoerr s = do
+		warningIO $ "async external special remote protocol error: " ++ s
+		closeandshutdown
+	
+	closeandshutdown = do
 		shutdown external st sendq True
+		(m, l) <- atomically $ (,) 
+			<$> readTVar jidmap
+			<*> readTVar newconns
+		forM_ (M.elems m ++ l) (closerelayto . snd)
 
 sendloop :: ExternalState -> NewConns -> MapJid -> JidMap -> SendQueue -> IO ()
 sendloop st newconns mapjid jidmap sendq = atomically (readTBMChan sendq) >>= \case
@@ -168,6 +170,3 @@ shutdown external st sendq b = do
 		Just (ExternalAsync _) -> externalShutdown st b
 		_ -> noop
 	atomically $ closeTBMChan sendq
-
-protoerr :: String -> String
-protoerr s = "async external special remote protocol error: " ++ s
