@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances, RankNTypes #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -32,6 +32,10 @@ module Remote.External.Types (
 	RemoteResponse(..),
 	ExceptionalMessage(..),
 	AsyncMessage(..),
+	AsyncReply(..),
+	AsyncWrapped(..),
+	ToAsyncWrapped(..),
+	JobId,
 	ErrorMsg,
 	Setting,
 	Description,
@@ -82,15 +86,14 @@ newExternal externaltype u c gc rs = liftIO $ External
 
 type ExternalType = String
 
-data ExternalState
-	= ExternalState
-		{ externalSend :: String -> IO ()
-		, externalReceive :: IO (Maybe String)
-		, externalShutdown :: Bool -> IO ()
-		, externalPrepared :: TVar PrepareStatus
-		, externalConfig :: TVar ParsedRemoteConfig
-		, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
-		}
+data ExternalState = ExternalState
+	{ externalSend :: forall t. (Proto.Sendable t, ToAsyncWrapped t) => t -> IO ()
+	, externalReceive :: IO (Maybe String)
+	, externalShutdown :: Bool -> IO ()
+	, externalPrepared :: TVar PrepareStatus
+	, externalConfig :: TVar ParsedRemoteConfig
+	, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
+	}
 
 type PID = Int
 
@@ -360,21 +363,46 @@ instance Proto.Receivable ExceptionalMessage where
 	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand _ = Proto.parseFail
 
--- Messages used by the async protocol extension.
+-- Messages sent by the special remote in the async protocol extension.
 data AsyncMessage
-	= START_ASYNC JobId WrappedMsg
-	| END_ASYNC JobId WrappedMsg
-	| RESULT_ASYNC WrappedMsg
+	= START_ASYNC JobId
 	| ASYNC JobId WrappedMsg
-	| REPLY_ASYNC JobId WrappedMsg
+	| RESULT_ASYNC WrappedMsg
+
+-- Reply sent in the async protocol extension.
+data AsyncReply
+	= REPLY_ASYNC JobId WrappedMsg
 
 instance Proto.Receivable AsyncMessage where
-	parseCommand "START-ASYNC" = Proto.parse2 START_ASYNC
-	parseCommand "END-ASYNC" = Proto.parse2 END_ASYNC
-	parseCommand "RESULT-ASYNC" = Proto.parse1 RESULT_ASYNC
+	parseCommand "START-ASYNC" = Proto.parse1 START_ASYNC
 	parseCommand "ASYNC" = Proto.parse2 ASYNC
-	parseCommand "REPLY-ASYNC" = Proto.parse2 REPLY_ASYNC
+	parseCommand "RESULT-ASYNC" = Proto.parse1 RESULT_ASYNC
 	parseCommand _ = Proto.parseFail
+
+instance Proto.Sendable AsyncReply where
+	formatMessage (REPLY_ASYNC jid msg) = ["REPLY-ASYNC", jid, msg]
+
+data AsyncWrapped
+	= AsyncWrappedRemoteResponse RemoteResponse
+	| AsyncWrappedRequest Request
+	| AsyncWrappedExceptionalMessage ExceptionalMessage
+	| AsyncWrappedAsyncReply AsyncReply
+
+class ToAsyncWrapped t where
+	toAsyncWrapped :: t -> AsyncWrapped
+
+-- | RemoteResponse is sent wrapped in an async message.
+instance ToAsyncWrapped RemoteResponse where
+	toAsyncWrapped = AsyncWrappedRemoteResponse
+
+instance ToAsyncWrapped Request where
+	toAsyncWrapped = AsyncWrappedRequest
+
+instance ToAsyncWrapped ExceptionalMessage where
+	toAsyncWrapped = AsyncWrappedExceptionalMessage
+
+instance ToAsyncWrapped AsyncReply where
+	toAsyncWrapped = AsyncWrappedAsyncReply
 
 -- Data types used for parameters when communicating with the remote.
 -- All are serializable.

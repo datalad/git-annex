@@ -504,18 +504,17 @@ handleRequest' st external req mp responsehandler
 	withurl mk uri = handleRemoteRequest $ mk $
 		setDownloader (show uri) OtherDownloader
 
-sendMessage :: Sendable m => ExternalState -> m -> Annex ()
-sendMessage st m = liftIO $ externalSend st line
-  where
-	line = unwords $ formatMessage m
+sendMessage :: (Sendable m, ToAsyncWrapped m) => ExternalState -> m -> Annex ()
+sendMessage st m = liftIO $ externalSend st m
 
-sendMessageAddonProcess :: AddonProcess.ExternalAddonProcess -> String -> IO ()
-sendMessageAddonProcess p line = do
+sendMessageAddonProcess :: Sendable m => AddonProcess.ExternalAddonProcess -> m -> IO ()
+sendMessageAddonProcess p m = do
 	AddonProcess.protocolDebug p True line
 	hPutStrLn h line
 	hFlush h
   where
 	h = AddonProcess.externalSend p
+	line = unwords $ formatMessage m
 
 receiveMessageAddonProcess :: AddonProcess.ExternalAddonProcess -> IO (Maybe String)
 receiveMessageAddonProcess p = do
@@ -551,7 +550,7 @@ receiveMessage
 receiveMessage st external handleresponse handlerequest handleexceptional =
 	go =<< liftIO (externalReceive st)
   where
-	go Nothing = protocolError False ""
+	go Nothing = protocolError False "<EOF>"
 	go (Just s) = case parseMessage s :: Maybe Response of
 		Just resp -> case handleresponse resp of
 			Nothing -> protocolError True s
