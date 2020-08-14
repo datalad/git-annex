@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Remote.External (remote) where
 
@@ -195,7 +196,7 @@ externalSetup _ mu _ c gc = do
 			-- responding to INITREMOTE need to be applied to
 			-- the RemoteConfig.
 			changes <- withExternalState external $
-				liftIO . atomically . readTVar . externalConfigChanges
+				liftIO . atomically . readTMVar . externalConfigChanges
 			return (changes c')
 
 	gitConfigSpecialRemote u c'' [("externaltype", externaltype)]
@@ -407,28 +408,28 @@ handleRequest' st external req mp responsehandler
 		send $ VALUE $ fromRawFilePath $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
-			modifyTVar' (externalConfig st) $ \(ParsedRemoteConfig m c) ->
-				let m' = M.insert
-					(Accepted setting)
-					(RemoteConfigValue (PassedThrough value))
-					m
-				    c' = M.insert
-				    	(Accepted setting)
-					(Accepted value)
-					c
-				in ParsedRemoteConfig m' c'
-			modifyTVar' (externalConfigChanges st) $ \f ->
-				M.insert (Accepted setting) (Accepted value) . f
+			ParsedRemoteConfig m c <- takeTMVar (externalConfig st)
+			let !m' = M.insert
+				(Accepted setting)
+				(RemoteConfigValue (PassedThrough value))
+				m
+			let !c' = M.insert
+			    	(Accepted setting)
+				(Accepted value)
+				c
+			putTMVar (externalConfig st) (ParsedRemoteConfig m' c')
+			f <- takeTMVar (externalConfigChanges st)
+			let !f' = M.insert (Accepted setting) (Accepted value) . f
+			putTMVar (externalConfigChanges st) f'
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- maybe "" fromProposedAccepted
 			. (M.lookup (Accepted setting))
 			. unparsedRemoteConfig
-			<$> liftIO (atomically $ readTVar $ externalConfig st)
+			<$> liftIO (atomically $ readTMVar $ externalConfig st)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do
-			let v = externalConfig st
-			pc <- liftIO $ atomically $ readTVar v
+			pc <- liftIO $ atomically $ takeTMVar (externalConfig st)
 			pc' <- setRemoteCredPair' pc encryptionAlreadySetup gc
 				(credstorage setting u)
 				(Just (login, password))
@@ -437,13 +438,14 @@ handleRequest' st external req mp responsehandler
 				(unparsedRemoteConfig pc')
 				(unparsedRemoteConfig pc)
 			void $ liftIO $ atomically $ do
-				_ <- swapTVar v pc'
-				modifyTVar' (externalConfigChanges st) $ \f ->
-					M.union configchanges . f
+				putTMVar (externalConfig st) pc'
+				f <- takeTMVar (externalConfigChanges st)
+				let !f' = M.union configchanges . f
+				putTMVar (externalConfigChanges st) f'
 		_ -> senderror "cannot send SETCREDS here"
 	handleRemoteRequest (GETCREDS setting) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do
-			c <- liftIO $ atomically $ readTVar $ externalConfig st
+			c <- liftIO $ atomically $ readTMVar $ externalConfig st
 			creds <- fromMaybe ("", "") <$> 
 				getRemoteCredPair c gc (credstorage setting u)
 			send $ CREDS (fst creds) (snd creds)
@@ -649,9 +651,9 @@ startExternal' external = do
 					]
 				_ -> giveup err
 		Right p -> do
-			cv <- liftIO $ newTVarIO $ externalDefaultConfig external
-			ccv <- liftIO $ newTVarIO id
-			pv <- liftIO $ newTVarIO Unprepared
+			cv <- liftIO $ newTMVarIO $ externalDefaultConfig external
+			ccv <- liftIO $ newTMVarIO id
+			pv <- liftIO $ newTMVarIO Unprepared
 			let st = ExternalState
 				{ externalSend = sendMessageAddonProcess p
 				, externalReceive = receiveMessageAddonProcess p
@@ -706,10 +708,12 @@ checkVersion _ _ = Nothing
  - the error message. -}
 checkPrepared :: ExternalState -> External -> Annex ()
 checkPrepared st external = do
-	v <- liftIO $ atomically $ readTVar $ externalPrepared st
+	v <- liftIO $ atomically $ takeTMVar $ externalPrepared st
 	case v of
-		Prepared -> noop
-		FailedPrepare errmsg -> giveup errmsg
+		Prepared -> setprepared Prepared
+		FailedPrepare errmsg -> do
+			setprepared (FailedPrepare errmsg)
+			giveup errmsg
 		Unprepared ->
 			handleRequest' st external PREPARE Nothing $ \resp ->
 				case resp of
@@ -722,8 +726,8 @@ checkPrepared st external = do
 						giveup errmsg'
 					_ -> Nothing
   where
-	setprepared status = liftIO $ atomically $ void $
-		swapTVar (externalPrepared st) status
+	setprepared status = liftIO $ atomically $
+		putTMVar (externalPrepared st) status
 
 respErrorMessage :: String -> String -> String
 respErrorMessage req err

@@ -45,11 +45,9 @@ runRelayToExternalAsync external st = do
 			, externalReceive = atomically (readTBMChan receiveq)
 			-- This shuts down the whole relay.
 			, externalShutdown = shutdown external st sendq
-			-- These three TVars are shared amoung all
+			-- These three TMVars are shared amoung all
 			-- ExternalStates that use this relay; they're
 			-- common state about the external process.
-			-- TODO: ALL code using these in Remote.External
-			-- has to be made async-safe.
 			, externalPrepared = externalPrepared st
 			, externalConfig = externalConfig st
 			, externalConfigChanges = externalConfigChanges st

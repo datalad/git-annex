@@ -87,7 +87,7 @@ An example of sending multiple replies to a request is `LISTCONFIGS`, eg:
 
 ## notes
 
-There will generally be one job for each thread that git-annex runs
+There will be one job number for each thread that git-annex runs
 concurrently, so around the same number as the -J value, although in some
 cases git-annex does more concurrent operations than the -J value.
 

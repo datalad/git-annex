@@ -90,9 +90,9 @@ data ExternalState = ExternalState
 	{ externalSend :: forall t. (Proto.Sendable t, ToAsyncWrapped t) => t -> IO ()
 	, externalReceive :: IO (Maybe String)
 	, externalShutdown :: Bool -> IO ()
-	, externalPrepared :: TVar PrepareStatus
-	, externalConfig :: TVar ParsedRemoteConfig
-	, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
+	, externalPrepared :: TMVar PrepareStatus
+	, externalConfig :: TMVar ParsedRemoteConfig
+	, externalConfigChanges :: TMVar (RemoteConfig -> RemoteConfig)
 	}
 
 type PID = Int
