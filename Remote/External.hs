@@ -565,10 +565,12 @@ receiveMessage st external handleresponse handlerequest handleexceptional =
 			Nothing -> case parseMessage s :: Maybe ExceptionalMessage of
 				Just msg -> maybe (protocolError True s) id (handleexceptional msg)
 				Nothing -> protocolError False s
-	protocolError parsed s = giveup $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
-		if parsed
-			then "(command not allowed at this time)"
-			else "(unable to parse command)"
+	protocolError parsed s = do
+		warning $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
+			if parsed
+				then "(command not allowed at this time)"
+				else "(unable to parse command)"
+		giveup "unable to use special remote due to protocol error"
 
 {- While the action is running, the ExternalState provided to it will not
  - be available to any other calls.
@@ -639,17 +641,18 @@ startExternal' external = do
 		writeTVar (externalLastPid external) n
 		return n
 	AddonProcess.startExternalAddonProcess basecmd pid >>= \case
-		Left (AddonProcess.ProgramFailure err) -> giveup err
+		Left (AddonProcess.ProgramFailure err) -> do
+			unusable err
 		Left (AddonProcess.ProgramNotInstalled err) ->
 			case (lookupName (unparsedRemoteConfig (externalDefaultConfig external)), remoteAnnexReadOnly <$> externalGitConfig external) of
-				(Just rname, Just True) -> giveup $ unlines
+				(Just rname, Just True) -> unusable $ unlines
 					[ err
 					, "This remote has annex-readonly=true, and previous versions of"
 					, "git-annex would tried to download from it without"
 					, "installing " ++ basecmd ++ ". If you want that, you need to set:"
 					, "git config remote." ++ rname ++ ".annex-externaltype readonly"
 					]
-				_ -> giveup err
+				_ -> unusable err
 		Right p -> do
 			cv <- liftIO $ newTMVarIO $ externalDefaultConfig external
 			ccv <- liftIO $ newTMVarIO id
@@ -685,10 +688,14 @@ startExternal' external = do
 			(const Nothing)
 		case filter (`notElem` fromExtensionList supportedExtensionList) (fromExtensionList exwanted) of
 			[] -> return exwanted
-			exrest -> giveup $ unwords $
+			exrest -> unusable $ unwords $
 				[ basecmd
 				, "requested extensions that this version of git-annex does not support:"
 				] ++ exrest
+
+	unusable msg = do
+		warning msg
+		giveup ("unable to use external special remote " ++ basecmd)
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do

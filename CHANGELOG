@@ -4,6 +4,8 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     This can be used by an external special remote to let a single process
     perform concurrent actions, rather than multiple processes being
     started, when that is more efficient.
+  * Display warning when external special remote does not start up
+    properly, or is not usable.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 
