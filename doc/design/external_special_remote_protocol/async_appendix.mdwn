@@ -1,5 +1,3 @@
-(This is a draft and not implemented yet.)
-
 This is an appendix to the [[external_special_remote_protocol]].
 
 [[!toc]]
@@ -10,7 +8,7 @@ Normally, an external special remote can only be used to do one thing at a
 time, and when git-annex has concurrency enabled, it will start up multiple
 processes for the same external special remote. 
 
-This extension lets a single external special remote process handle
+The `ASYNC` extension lets a single external special remote process handle
 multiple concurrent jobs, which can be useful if multiple processes
 would use too many resources, or if it can be better coordinated using a
 single process.
@@ -28,10 +26,15 @@ that includes `ASYNC`, and the external special remote responding in kind.
 	EXTENSIONS INFO ASYNC
 	EXTENSIONS ASYNC
 
-From this point forward, every message in the protocol is tagged with a job
-number, by prefixing it with "J n".
+(Older versions of git-annex will not include `ASYNC` in their extensions
+list. To support them, it's a good idea for the external special remote to
+fall back to using the regular protocol.)
 
-As usual, the first message git-annex sends is generally PREPARE:
+Once the extension is negotiated, messages in the protocol are
+tagged with a job number, by prefixing them with "J n".
+
+As usual, the first message git-annex sends is generally PREPARE,
+which gets tagged with a job number:
 
 	J 1 PREPARE
 
@@ -48,7 +51,7 @@ at the same time, using different job numbers:
 
 The special remote can now perform both transfers at the same time.
 If it sends PROGRESS messages for these transfers, they have to be tagged
-with the job number:
+with the job numbers:
 	
 	J 1 PROGRESS 10
 	J 2 PROGRESS 500
@@ -73,17 +76,10 @@ Lots of different jobs can be requested at the same time.
 
 	J 4 CHECKPRESENT Key3
 	J 5 CHECKPRESENT Key4
-	J 6 REMOVE Key3
+	J 6 REMOVE Key5
 	J 4 CHECKPRESENT-SUCCESS Key3
-	J 6 REMOVE-SUCCESS Key3
+	J 6 REMOVE-SUCCESS Key5
 	J 5 CHECKPRESENT-FAILURE Key4
-
-An example of sending multiple replies to a request is `LISTCONFIGS`, eg:
-
-	J 7 LISTCONFIGS
-	J 7 CONFIG foo some config
-	J 7 CONFIG bar other config
-	J 7 CONFIGEND
 
 ## notes
 
@@ -97,3 +93,6 @@ special remote to run that and any other jobs.
 
 `ERROR` should not be tagged with a job number if either git-annex
 or the special remote needs to send it.
+
+`VERSION`, `EXTENSIONS` and `ERROR` are the only protocol messages
+that do not get tagged with a job number.

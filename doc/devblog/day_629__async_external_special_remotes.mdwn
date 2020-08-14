@@ -1,0 +1,25 @@
+After a release on Monday, I've spent the week working on
+[[async extension to external special remote protocol|design/external_special_remote_protocol/async_appendix]].
+This is lets a single external special remote process handle multiple
+requests at the same time, when it's more efficient to use one process
+than for git-annex to run several processes.
+
+It's a good thing I added support for extensions a couple of years back.
+I never imagined at the time using it for something like this, that
+radically changes the whole protocol! It could have just been protocol
+version 2, but then special remotes would be pushed towards using this by
+default, which I don't want. It's probably overkill for most of them.
+
+          J 4 CHECKPRESENT Key3
+          J 5 CHECKPRESENT Key4
+          J 6 REMOVE Key5
+          J 4 CHECKPRESENT-SUCCESS Key3
+          J 6 REMOVE-SUCCESS Key5
+          J 5 CHECKPRESENT-FAILURE Key4
+
+The protocol extension went through a bunch of iterations, ending up with
+probably the simplest possible way to do it, a simple framing layer around
+the main protocol. I started with rather a lot of rather hairy code and it
+kind of all melted away as I refined the protocol down to that, which was
+nice, although I also kind of wish I had been able to jump right to
+the clean and simple end result.

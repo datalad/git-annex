@@ -1,4 +1,13 @@
-git-annex (8.20200810) upstream; urgency=medium
+git-annex (8.20200815) UNRELEASED; urgency=medium
+
+  * The external special remote protocol got an ASYNC extension.
+    This can be used by an external special remote to let a single process
+    perform concurrent actions, rather than multiple processes being
+    started, when that is more efficient.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
+
+git-annex (8.20200814) upstream; urgency=medium
 
   * Added support for external backend programs. So if you want a hash
     that git-annex doesn't support, or something stranger, you can write a
