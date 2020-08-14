@@ -5,7 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances, RankNTypes #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Remote.External.Types (
@@ -14,7 +15,11 @@ module Remote.External.Types (
 	ExternalType,
 	ExternalState(..),
 	PrepareStatus(..),
+	ExtensionList(..),
 	supportedExtensionList,
+	asyncExtensionEnabled,
+	ExternalAsync(..),
+	ExternalAsyncRelay(..),
 	Proto.parseMessage,
 	Proto.Sendable(..),
 	Proto.Receivable(..),
@@ -26,6 +31,10 @@ module Remote.External.Types (
 	RemoteRequest(..),
 	RemoteResponse(..),
 	ExceptionalMessage(..),
+	AsyncMessage(..),
+	AsyncWrapped(..),
+	ToAsyncWrapped(..),
+	JobId(..),
 	ErrorMsg,
 	Setting,
 	Description,
@@ -49,6 +58,7 @@ import qualified Utility.SimpleProtocol as Proto
 import Control.Concurrent.STM
 import Network.URI
 import Data.Char
+import Text.Read
 
 data External = External
 	{ externalType :: ExternalType
@@ -60,6 +70,7 @@ data External = External
 	, externalDefaultConfig :: ParsedRemoteConfig
 	, externalGitConfig :: Maybe RemoteGitConfig
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
+	, externalAsync :: TMVar ExternalAsync
 	}
 
 newExternal :: ExternalType -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
@@ -71,27 +82,44 @@ newExternal externaltype u c gc rs = liftIO $ External
 	<*> pure c
 	<*> pure gc
 	<*> pure rs
+	<*> atomically (newTMVar UncheckedExternalAsync)
 
 type ExternalType = String
 
-data ExternalState
-	= ExternalState
-		{ externalSend :: String -> IO ()
-		, externalReceive :: IO (Maybe String)
-		, externalShutdown :: Bool -> IO ()
-		, externalPrepared :: TVar PrepareStatus
-		, externalConfig :: TVar ParsedRemoteConfig
-		, externalConfigChanges :: TVar (RemoteConfig -> RemoteConfig)
-		}
+data ExternalState = ExternalState
+	{ externalSend :: forall t. (Proto.Sendable t, ToAsyncWrapped t) => t -> IO ()
+	, externalReceive :: IO (Maybe String)
+	, externalShutdown :: Bool -> IO ()
+	, externalPrepared :: TMVar PrepareStatus
+	, externalConfig :: TMVar ParsedRemoteConfig
+	, externalConfigChanges :: TMVar (RemoteConfig -> RemoteConfig)
+	}
 
 type PID = Int
 
 -- List of extensions to the protocol.
-newtype ExtensionList = ExtensionList [String]
-	deriving (Show)
+newtype ExtensionList = ExtensionList { fromExtensionList :: [String] }
+	deriving (Show, Monoid, Semigroup)
 
 supportedExtensionList :: ExtensionList
-supportedExtensionList = ExtensionList ["INFO", "ASYNC"]
+supportedExtensionList = ExtensionList ["INFO", asyncExtension]
+
+asyncExtension :: String
+asyncExtension = "ASYNC"
+
+asyncExtensionEnabled :: ExtensionList -> Bool
+asyncExtensionEnabled l = asyncExtension `elem` fromExtensionList l
+
+-- When the async extension is in use, a single external process
+-- is started and used for all requests.
+data ExternalAsync
+	= ExternalAsync ExternalAsyncRelay
+	| NoExternalAsync
+	| UncheckedExternalAsync
+
+data ExternalAsyncRelay = ExternalAsyncRelay
+	{ asyncRelayExternalState :: IO ExternalState
+	}
 
 data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
 
@@ -335,17 +363,35 @@ instance Proto.Receivable ExceptionalMessage where
 	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand _ = Proto.parseFail
 
--- Messages used by the async protocol extension.
-data AsyncMessage
-	= START_ASYNC JobId
-	| END_ASYNC JobId
-	| UPDATE_ASYNC JobId
+data AsyncMessage = AsyncMessage JobId WrappedMsg
 
 instance Proto.Receivable AsyncMessage where
-	parseCommand "START-ASYNC" = Proto.parse1 START_ASYNC
-	parseCommand "END-ASYNC" = Proto.parse1 END_ASYNC
-	parseCommand "UPDATE-ASYNC" = Proto.parse1 UPDATE_ASYNC
+	parseCommand "J" = Proto.parse2 AsyncMessage
 	parseCommand _ = Proto.parseFail
+
+instance Proto.Sendable AsyncMessage where
+	formatMessage (AsyncMessage jid msg) = ["J", Proto.serialize jid, msg]
+
+data AsyncWrapped
+	= AsyncWrappedRemoteResponse RemoteResponse
+	| AsyncWrappedRequest Request
+	| AsyncWrappedExceptionalMessage ExceptionalMessage
+	| AsyncWrappedAsyncMessage AsyncMessage
+
+class ToAsyncWrapped t where
+	toAsyncWrapped :: t -> AsyncWrapped
+
+instance ToAsyncWrapped RemoteResponse where
+	toAsyncWrapped = AsyncWrappedRemoteResponse
+
+instance ToAsyncWrapped Request where
+	toAsyncWrapped = AsyncWrappedRequest
+
+instance ToAsyncWrapped ExceptionalMessage where
+	toAsyncWrapped = AsyncWrappedExceptionalMessage
+
+instance ToAsyncWrapped AsyncMessage where
+	toAsyncWrapped = AsyncWrappedAsyncMessage
 
 -- Data types used for parameters when communicating with the remote.
 -- All are serializable.
@@ -354,10 +400,16 @@ type Setting = String
 type Description = String
 type ProtocolVersion = Int
 type Size = Maybe Integer
-type JobId = String
+type WrappedMsg = String
+newtype JobId = JobId Integer
+	deriving (Eq, Ord, Show)
 
 supportedProtocolVersions :: [ProtocolVersion]
 supportedProtocolVersions = [1]
+
+instance Proto.Serializable JobId where
+	serialize (JobId n) = show n
+	deserialize = JobId <$$> readMaybe
 
 instance Proto.Serializable Direction where
 	serialize Upload = "STORE"

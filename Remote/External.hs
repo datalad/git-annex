@@ -6,10 +6,12 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Remote.External (remote) where
 
 import Remote.External.Types
+import Remote.External.AsyncExtension
 import qualified Annex
 import Annex.Common
 import qualified Annex.ExternalAddonProcess as AddonProcess
@@ -194,7 +196,7 @@ externalSetup _ mu _ c gc = do
 			-- responding to INITREMOTE need to be applied to
 			-- the RemoteConfig.
 			changes <- withExternalState external $
-				liftIO . atomically . readTVar . externalConfigChanges
+				liftIO . atomically . readTMVar . externalConfigChanges
 			return (changes c')
 
 	gitConfigSpecialRemote u c'' [("externaltype", externaltype)]
@@ -406,28 +408,28 @@ handleRequest' st external req mp responsehandler
 		send $ VALUE $ fromRawFilePath $ hashDirLower def k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
-			modifyTVar' (externalConfig st) $ \(ParsedRemoteConfig m c) ->
-				let m' = M.insert
-					(Accepted setting)
-					(RemoteConfigValue (PassedThrough value))
-					m
-				    c' = M.insert
-				    	(Accepted setting)
-					(Accepted value)
-					c
-				in ParsedRemoteConfig m' c'
-			modifyTVar' (externalConfigChanges st) $ \f ->
-				M.insert (Accepted setting) (Accepted value) . f
+			ParsedRemoteConfig m c <- takeTMVar (externalConfig st)
+			let !m' = M.insert
+				(Accepted setting)
+				(RemoteConfigValue (PassedThrough value))
+				m
+			let !c' = M.insert
+			    	(Accepted setting)
+				(Accepted value)
+				c
+			putTMVar (externalConfig st) (ParsedRemoteConfig m' c')
+			f <- takeTMVar (externalConfigChanges st)
+			let !f' = M.insert (Accepted setting) (Accepted value) . f
+			putTMVar (externalConfigChanges st) f'
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- maybe "" fromProposedAccepted
 			. (M.lookup (Accepted setting))
 			. unparsedRemoteConfig
-			<$> liftIO (atomically $ readTVar $ externalConfig st)
+			<$> liftIO (atomically $ readTMVar $ externalConfig st)
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do
-			let v = externalConfig st
-			pc <- liftIO $ atomically $ readTVar v
+			pc <- liftIO $ atomically $ takeTMVar (externalConfig st)
 			pc' <- setRemoteCredPair' pc encryptionAlreadySetup gc
 				(credstorage setting u)
 				(Just (login, password))
@@ -436,13 +438,14 @@ handleRequest' st external req mp responsehandler
 				(unparsedRemoteConfig pc')
 				(unparsedRemoteConfig pc)
 			void $ liftIO $ atomically $ do
-				_ <- swapTVar v pc'
-				modifyTVar' (externalConfigChanges st) $ \f ->
-					M.union configchanges . f
+				putTMVar (externalConfig st) pc'
+				f <- takeTMVar (externalConfigChanges st)
+				let !f' = M.union configchanges . f
+				putTMVar (externalConfigChanges st) f'
 		_ -> senderror "cannot send SETCREDS here"
 	handleRemoteRequest (GETCREDS setting) = case (externalUUID external, externalGitConfig external) of
 		(Just u, Just gc) -> do
-			c <- liftIO $ atomically $ readTVar $ externalConfig st
+			c <- liftIO $ atomically $ readTMVar $ externalConfig st
 			creds <- fromMaybe ("", "") <$> 
 				getRemoteCredPair c gc (credstorage setting u)
 			send $ CREDS (fst creds) (snd creds)
@@ -503,18 +506,17 @@ handleRequest' st external req mp responsehandler
 	withurl mk uri = handleRemoteRequest $ mk $
 		setDownloader (show uri) OtherDownloader
 
-sendMessage :: Sendable m => ExternalState -> m -> Annex ()
-sendMessage st m = liftIO $ externalSend st line
-  where
-	line = unwords $ formatMessage m
+sendMessage :: (Sendable m, ToAsyncWrapped m) => ExternalState -> m -> Annex ()
+sendMessage st m = liftIO $ externalSend st m
 
-sendMessageAddonProcess :: AddonProcess.ExternalAddonProcess -> String -> IO ()
-sendMessageAddonProcess p line = do
+sendMessageAddonProcess :: Sendable m => AddonProcess.ExternalAddonProcess -> m -> IO ()
+sendMessageAddonProcess p m = do
 	AddonProcess.protocolDebug p True line
 	hPutStrLn h line
 	hFlush h
   where
 	h = AddonProcess.externalSend p
+	line = unwords $ formatMessage m
 
 receiveMessageAddonProcess :: AddonProcess.ExternalAddonProcess -> IO (Maybe String)
 receiveMessageAddonProcess p = do
@@ -550,7 +552,7 @@ receiveMessage
 receiveMessage st external handleresponse handlerequest handleexceptional =
 	go =<< liftIO (externalReceive st)
   where
-	go Nothing = protocolError False ""
+	go Nothing = protocolError False "<EOF>"
 	go (Just s) = case parseMessage s :: Maybe Response of
 		Just resp -> case handleresponse resp of
 			Nothing -> protocolError True s
@@ -563,10 +565,12 @@ receiveMessage st external handleresponse handlerequest handleexceptional =
 			Nothing -> case parseMessage s :: Maybe ExceptionalMessage of
 				Just msg -> maybe (protocolError True s) id (handleexceptional msg)
 				Nothing -> protocolError False s
-	protocolError parsed s = giveup $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
-		if parsed
-			then "(command not allowed at this time)"
-			else "(unable to parse command)"
+	protocolError parsed s = do
+		warning $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
+			if parsed
+				then "(command not allowed at this time)"
+				else "(unable to parse command)"
+		giveup "unable to use special remote due to protocol error"
 
 {- While the action is running, the ExternalState provided to it will not
  - be available to any other calls.
@@ -601,29 +605,58 @@ withExternalState external a = do
 	put st = liftIO $ atomically $ modifyTVar' v (st:)
 
 {- Starts an external remote process running, and checks VERSION and
- - exchanges EXTENSIONS. -}
+ - exchanges EXTENSIONS.
+ -
+ - When the ASYNC extension is negotiated, a single process is used,
+ - and this constructs a external state that communicates with a thread
+ - that relays to it.
+ -}
 startExternal :: External -> Annex ExternalState
-startExternal external = do
+startExternal external =
+	liftIO (atomically $ takeTMVar (externalAsync external)) >>= \case
+		UncheckedExternalAsync -> do
+			(st, extensions) <- startExternal' external
+			if asyncExtensionEnabled extensions
+				then do
+					relay <- liftIO $ runRelayToExternalAsync external st
+					st' <- liftIO $ asyncRelayExternalState relay
+					store (ExternalAsync relay)
+					return st'
+				else do
+					store NoExternalAsync
+					return st
+		v@NoExternalAsync -> do
+			store v
+			fst <$> startExternal' external
+		v@(ExternalAsync relay) -> do
+			store v
+			liftIO $ asyncRelayExternalState relay
+  where
+	store = liftIO . atomically . putTMVar (externalAsync external)
+
+startExternal' :: External -> Annex (ExternalState, ExtensionList)
+startExternal' external = do
 	pid <- liftIO $ atomically $ do
 		n <- succ <$> readTVar (externalLastPid external)
 		writeTVar (externalLastPid external) n
 		return n
 	AddonProcess.startExternalAddonProcess basecmd pid >>= \case
-		Left (AddonProcess.ProgramFailure err) -> giveup err
+		Left (AddonProcess.ProgramFailure err) -> do
+			unusable err
 		Left (AddonProcess.ProgramNotInstalled err) ->
 			case (lookupName (unparsedRemoteConfig (externalDefaultConfig external)), remoteAnnexReadOnly <$> externalGitConfig external) of
-				(Just rname, Just True) -> giveup $ unlines
+				(Just rname, Just True) -> unusable $ unlines
 					[ err
 					, "This remote has annex-readonly=true, and previous versions of"
 					, "git-annex would tried to download from it without"
 					, "installing " ++ basecmd ++ ". If you want that, you need to set:"
 					, "git config remote." ++ rname ++ ".annex-externaltype readonly"
 					]
-				_ -> giveup err
+				_ -> unusable err
 		Right p -> do
-			cv <- liftIO $ newTVarIO $ externalDefaultConfig external
-			ccv <- liftIO $ newTVarIO id
-			pv <- liftIO $ newTVarIO Unprepared
+			cv <- liftIO $ newTMVarIO $ externalDefaultConfig external
+			ccv <- liftIO $ newTMVarIO id
+			pv <- liftIO $ newTMVarIO Unprepared
 			let st = ExternalState
 				{ externalSend = sendMessageAddonProcess p
 				, externalReceive = receiveMessageAddonProcess p
@@ -632,8 +665,8 @@ startExternal external = do
 				, externalConfig = cv
 				, externalConfigChanges = ccv
 				}
-			startproto st
-			return st
+			extensions <- startproto st
+			return (st, extensions)
   where
 	basecmd = "git-annex-remote-" ++ externalType external
 	startproto st = do
@@ -645,14 +678,24 @@ startExternal external = do
 		-- It responds with a EXTENSIONS_RESPONSE; that extensions
 		-- list is reserved for future expansion. UNSUPPORTED_REQUEST
 		-- is also accepted.
-		receiveMessage st external
+		exwanted <- receiveMessage st external
 			(\resp -> case resp of
-				EXTENSIONS_RESPONSE _ -> result ()
-				UNSUPPORTED_REQUEST -> result ()
+				EXTENSIONS_RESPONSE l -> result l
+				UNSUPPORTED_REQUEST -> result mempty
 				_ -> Nothing
 			)
 			(const Nothing)
 			(const Nothing)
+		case filter (`notElem` fromExtensionList supportedExtensionList) (fromExtensionList exwanted) of
+			[] -> return exwanted
+			exrest -> unusable $ unwords $
+				[ basecmd
+				, "requested extensions that this version of git-annex does not support:"
+				] ++ exrest
+
+	unusable msg = do
+		warning msg
+		giveup ("unable to use external special remote " ++ basecmd)
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
@@ -672,10 +715,12 @@ checkVersion _ _ = Nothing
  - the error message. -}
 checkPrepared :: ExternalState -> External -> Annex ()
 checkPrepared st external = do
-	v <- liftIO $ atomically $ readTVar $ externalPrepared st
+	v <- liftIO $ atomically $ takeTMVar $ externalPrepared st
 	case v of
-		Prepared -> noop
-		FailedPrepare errmsg -> giveup errmsg
+		Prepared -> setprepared Prepared
+		FailedPrepare errmsg -> do
+			setprepared (FailedPrepare errmsg)
+			giveup errmsg
 		Unprepared ->
 			handleRequest' st external PREPARE Nothing $ \resp ->
 				case resp of
@@ -688,8 +733,8 @@ checkPrepared st external = do
 						giveup errmsg'
 					_ -> Nothing
   where
-	setprepared status = liftIO $ atomically $ void $
-		swapTVar (externalPrepared st) status
+	setprepared status = liftIO $ atomically $
+		putTMVar (externalPrepared st) status
 
 respErrorMessage :: String -> String -> String
 respErrorMessage req err

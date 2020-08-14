@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-08-14T18:59:37Z"
+ content="""
+ASYNC extension is implemented. The protocol went through several
+iterations and ended up at about the simplest and cleanest possible way to
+do it.
+"""]]
