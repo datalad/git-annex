@@ -32,10 +32,9 @@ module Remote.External.Types (
 	RemoteResponse(..),
 	ExceptionalMessage(..),
 	AsyncMessage(..),
-	AsyncReply(..),
 	AsyncWrapped(..),
 	ToAsyncWrapped(..),
-	JobId,
+	JobId(..),
 	ErrorMsg,
 	Setting,
 	Description,
@@ -59,6 +58,7 @@ import qualified Utility.SimpleProtocol as Proto
 import Control.Concurrent.STM
 import Network.URI
 import Data.Char
+import Text.Read
 
 data External = External
 	{ externalType :: ExternalType
@@ -363,35 +363,24 @@ instance Proto.Receivable ExceptionalMessage where
 	parseCommand "ERROR" = Proto.parse1 ERROR
 	parseCommand _ = Proto.parseFail
 
--- Messages sent by the special remote in the async protocol extension.
-data AsyncMessage
-	= START_ASYNC JobId
-	| ASYNC JobId WrappedMsg
-	| RESULT_ASYNC WrappedMsg
-
--- Reply sent in the async protocol extension.
-data AsyncReply
-	= REPLY_ASYNC JobId WrappedMsg
+data AsyncMessage = AsyncMessage JobId WrappedMsg
 
 instance Proto.Receivable AsyncMessage where
-	parseCommand "START-ASYNC" = Proto.parse1 START_ASYNC
-	parseCommand "ASYNC" = Proto.parse2 ASYNC
-	parseCommand "RESULT-ASYNC" = Proto.parse1 RESULT_ASYNC
+	parseCommand "J" = Proto.parse2 AsyncMessage
 	parseCommand _ = Proto.parseFail
 
-instance Proto.Sendable AsyncReply where
-	formatMessage (REPLY_ASYNC jid msg) = ["REPLY-ASYNC", jid, msg]
+instance Proto.Sendable AsyncMessage where
+	formatMessage (AsyncMessage jid msg) = ["J", Proto.serialize jid, msg]
 
 data AsyncWrapped
 	= AsyncWrappedRemoteResponse RemoteResponse
 	| AsyncWrappedRequest Request
 	| AsyncWrappedExceptionalMessage ExceptionalMessage
-	| AsyncWrappedAsyncReply AsyncReply
+	| AsyncWrappedAsyncMessage AsyncMessage
 
 class ToAsyncWrapped t where
 	toAsyncWrapped :: t -> AsyncWrapped
 
--- | RemoteResponse is sent wrapped in an async message.
 instance ToAsyncWrapped RemoteResponse where
 	toAsyncWrapped = AsyncWrappedRemoteResponse
 
@@ -401,8 +390,8 @@ instance ToAsyncWrapped Request where
 instance ToAsyncWrapped ExceptionalMessage where
 	toAsyncWrapped = AsyncWrappedExceptionalMessage
 
-instance ToAsyncWrapped AsyncReply where
-	toAsyncWrapped = AsyncWrappedAsyncReply
+instance ToAsyncWrapped AsyncMessage where
+	toAsyncWrapped = AsyncWrappedAsyncMessage
 
 -- Data types used for parameters when communicating with the remote.
 -- All are serializable.
@@ -411,11 +400,16 @@ type Setting = String
 type Description = String
 type ProtocolVersion = Int
 type Size = Maybe Integer
-type JobId = String
 type WrappedMsg = String
+newtype JobId = JobId Integer
+	deriving (Eq, Ord, Show)
 
 supportedProtocolVersions :: [ProtocolVersion]
 supportedProtocolVersions = [1]
+
+instance Proto.Serializable JobId where
+	serialize (JobId n) = show n
+	deserialize = JobId <$$> readMaybe
 
 instance Proto.Serializable Direction where
 	serialize Upload = "STORE"

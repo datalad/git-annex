@@ -7,11 +7,11 @@ This is an appendix to the [[external_special_remote_protocol]].
 ## introduction
 
 Normally, an external special remote can only be used to do one thing at a
-time. When git-annex has concurrency enabled, it will start up multiple
+time, and when git-annex has concurrency enabled, it will start up multiple
 processes for the same external special remote. 
 
 This extension lets a single external special remote process handle
-multiple concurrent requests, which can be useful if multiple processes
+multiple concurrent jobs, which can be useful if multiple processes
 would use too many resources, or if it can be better coordinated using a
 single process.
 
@@ -28,96 +28,70 @@ that includes `ASYNC`, and the external special remote responding in kind.
 	EXTENSIONS INFO ASYNC
 	EXTENSIONS ASYNC
 
-From this point forward, *everything* that the external special remote
-has to be wrapped in the async protocol. Messages git-annex sends are
-unchanged.
+From this point forward, every message in the protocol is tagged with a job
+number, by prefixing it with "J n". 
 
-Generally the first message git-annex sends will be PREPARE.
+As usual, the first message git-annex sends is generally PREPARE:
 
-	PREPARE
+	J 1 PREPARE
 
-Rather than just responding PREPARE-SUCCESS, it has to be wrapped
-in the async protocol:
+Rather than just responding PREPARE-SUCCESS, the job number has to be
+included in the reply:
 
-	RESULT-ASYNC PREPARE-SUCCESS
+	J 1 PREPARE-SUCCESS
 
-Suppose git-annex wants to make some transfers. So it sends:
+Suppose git-annex wants to make some transfers. It can request several
+at the same time, using different job numbers:
 
-	TRANSFER RETRIEVE Key1 file1
+	J 2 TRANSFER RETRIEVE Key1 file1
+	J 3 TRANSFER RETRIEVE Key2 file2
 
-The special remote should respond with an unique identifier for this
-async job that it's going to start. The identifier can
-be anything you want to use, but an incrementing number is a
-reasonable choice. (The Key itself is not a good choice, because git-annex
-could make different requests involving the same Key.)
-
-	START-ASYNC 1
-
-Once that's sent, git-annex can send its next request immediately,
-while that transfer is still running. For example, it might request a
-second transfer, and the special remote can reply when it's started that
-transfer too:
-
-	TRANSFER RETRIEVE 2 file2
-	START-ASYNC 2
-
-When the special remote sends a message, such as PROGRESS, it has to
-wrap it in ASYNC, to specify the job identifier.
+The special remote can now perform both transfers at the same time.
+If it sends PROGRESS messages for these transfers, they have to be tagged
+with the job number:
 	
-	ASYNC 1 PROGRESS 10
-	ASYNC 2 PROGRESS 500
-	ASYNC 1 PROGRESS 20
+	J 2 PROGRESS 10
+	J 3 PROGRESS 500
+	J 2 PROGRESS 20
 
-This can also be used to query git-annex for some information.
-The reply to a query is eventually sent back wrapped in `REPLY-ASYNC`.
+The special remote can also send messages that query git-annex for some
+information. These messages and the reply will also be tagged with a job
+number.
 
-	ASYNC 1 GETCONFIG url
-	TRANSFER RETRIEVE 3 file3
-	REPLY-ASYNC 1 VALUE http://example.com/
+	J 2 GETCONFIG url
+	J 4 RETRIEVE Key3 file3
+	J 2 VALUE http://example.com/
 
-Once a transfer is done, the special remote indicates this by 
-wrapping the usual `TRANSFER-SUCCESS` or
-`TRANSFER-FAILURE` message in `ASYNC`.
+One transfers are done, the special remote sends `TRANSFER-SUCCESS` tagged
+with the job number.
 
-	ASYNC 2 TRANSFER-SUCCESS RETRIEVE Key2
-	ASYNC Key1 PROGRESS 100
-	ASYNC 1 TRANSFER-SUCCESS RETRIEVE Key1
+	J 3 TRANSFER-SUCCESS RETRIEVE Key2
+	J 2 PROGRESS 100
+	J 2 TRANSFER-SUCCESS RETRIEVE Key1
 
-Not only transfers, but everything the special remote sends to git-annex
-has to be wrapped in the async protocol.
+Lots of different jobs can be requested at the same time.
 
-	CHECKPRESENT Key3
-	START-ASYNC 3
-	CHECKPRESENT Key4
-	START-ASYNC 4
-	ASYNC 3 CHECKPRESENT-SUCCESS Key3
-	REMOVE Key3
-	ASYNC 4 CHECKPRESENT-FAILURE Key4
-	START-ASYNC 5
-	ASYNC 5 REMOVE-SUCCESS Key3
+	J 4 CHECKPRESENT Key3
+	J 5 CHECKPRESENT Key4
+	J 6 REMOVE Key3
+	J 4 CHECKPRESENT-SUCCESS Key3
+	J 6 REMOVE-SUCCESS Key3
+	J 5 CHECKPRESENT-FAILURE Key4
 
-## added messages
+A job always starts with a request by git-annex, and once the special
+remote sends a reply -- or replies -- to that request, the job is done.
 
-Here's the details about the additions to the protocol.
+An example of sending multiple replies to a request is `LISTCONFIGS`, eg:
 
-* `START-ASYNC JobId`  
-  This (or `RESULT-ASYNC` must be sent in response to all requests
-   git-annex sends after `EXTENSIONS` has been used to negotiate the
-   async protocol.  
-  The JobId is a unique value, typically an incrementing number.
-  This does not need to be sent immediately after git-annex sends a request;
-  other messages can be sent in between. But the next START-ASYNC git-annex sees
-  after sending a request tells it the JobId that will be used for that request.
-* `ASYNC JobId Msg`  
-  All the usual protocol messages that are sent by the external special
-  remote must be wrapped in this, to specify which job the message relates
-  to.
-* `RESULT-ASYNC ResultMsg`  
-  This is the same as sending `START-ASYNC` immediately followed by
-  `ASYNC` with a result message. This is often used to respond to
-  `PREPARE` other things that are trivial or just don't need to be handled
-  async.
-* `REPLY-ASYNC JobId Reply`
-  Sent by git-annex when an `ASYNC` requested a reply. 
-  Note that this may not be the next message received from
-  git-annex immediately after sending an `ASYNC` request.
+	J 7 LISTCONFIGS
+	J 7 CONFIG foo some config
+	J 7 CONFIG bar other config
+	J 7 CONFIGEND
+
+Job numbers are not reused within a given run of a special remote,
+but once git-annex has seen the last message it expects for a job,
+sending other messages tagged with that job number will be rejected
+as a protocol error.
+
+To avoid overflow, job numbers should be treated as at least 64 bit
+values (or as strings) by the special remote.
