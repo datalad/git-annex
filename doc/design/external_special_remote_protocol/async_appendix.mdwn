@@ -29,7 +29,7 @@ that includes `ASYNC`, and the external special remote responding in kind.
 	EXTENSIONS ASYNC
 
 From this point forward, every message in the protocol is tagged with a job
-number, by prefixing it with "J n". 
+number, by prefixing it with "J n".
 
 As usual, the first message git-annex sends is generally PREPARE:
 
@@ -43,31 +43,31 @@ included in the reply:
 Suppose git-annex wants to make some transfers. It can request several
 at the same time, using different job numbers:
 
-	J 2 TRANSFER RETRIEVE Key1 file1
-	J 3 TRANSFER RETRIEVE Key2 file2
+	J 1 TRANSFER RETRIEVE Key1 file1
+	J 2 TRANSFER RETRIEVE Key2 file2
 
 The special remote can now perform both transfers at the same time.
 If it sends PROGRESS messages for these transfers, they have to be tagged
 with the job number:
 	
-	J 2 PROGRESS 10
-	J 3 PROGRESS 500
-	J 2 PROGRESS 20
+	J 1 PROGRESS 10
+	J 2 PROGRESS 500
+	J 1 PROGRESS 20
 
 The special remote can also send messages that query git-annex for some
 information. These messages and the reply will also be tagged with a job
 number.
 
-	J 2 GETCONFIG url
-	J 4 RETRIEVE Key3 file3
-	J 2 VALUE http://example.com/
+	J 1 GETCONFIG url
+	J 3 RETRIEVE Key3 file3
+	J 1 VALUE http://example.com/
 
 One transfers are done, the special remote sends `TRANSFER-SUCCESS` tagged
 with the job number.
 
-	J 3 TRANSFER-SUCCESS RETRIEVE Key2
-	J 2 PROGRESS 100
-	J 2 TRANSFER-SUCCESS RETRIEVE Key1
+	J 2 TRANSFER-SUCCESS RETRIEVE Key2
+	J 1 PROGRESS 100
+	J 1 TRANSFER-SUCCESS RETRIEVE Key1
 
 Lots of different jobs can be requested at the same time.
 
@@ -78,9 +78,6 @@ Lots of different jobs can be requested at the same time.
 	J 6 REMOVE-SUCCESS Key3
 	J 5 CHECKPRESENT-FAILURE Key4
 
-A job always starts with a request by git-annex, and once the special
-remote sends a reply -- or replies -- to that request, the job is done.
-
 An example of sending multiple replies to a request is `LISTCONFIGS`, eg:
 
 	J 7 LISTCONFIGS
@@ -88,10 +85,15 @@ An example of sending multiple replies to a request is `LISTCONFIGS`, eg:
 	J 7 CONFIG bar other config
 	J 7 CONFIGEND
 
-Job numbers are not reused within a given run of a special remote,
-but once git-annex has seen the last message it expects for a job,
-sending other messages tagged with that job number will be rejected
-as a protocol error.
+## notes
 
-To avoid overflow, job numbers should be treated as at least 64 bit
-values (or as strings) by the special remote.
+There will generally be one job for each thread that git-annex runs
+concurrently, so around the same number as the -J value, although in some
+cases git-annex does more concurrent operations than the -J value.
+
+`PREPARE` is sent only once per run of a special remote
+program, and despite being tagged with a job number, it should prepare the
+special remote to run that and any other jobs.
+
+`ERROR` should not be tagged with a job number if either git-annex
+or the special remote needs to send it.

@@ -28,15 +28,20 @@ runRelayToExternalAsync external st = do
 	jidmap <- newTVarIO M.empty
 	sendq <- newSendQueue
 	nextjid <- newTVarIO (JobId 1)
-	void $ async $ sendloop st nextjid jidmap sendq
+	void $ async $ sendloop st sendq
 	void $ async $ receiveloop external st jidmap sendq
 	return $ ExternalAsyncRelay $ do
-		jidv <- newTVarIO Nothing
 		receiveq <- newReceiveQueue
+		jid <- atomically $ do
+			jid@(JobId n) <- readTVar nextjid
+			let !jid' = JobId (succ n)
+			writeTVar nextjid jid'
+			modifyTVar' jidmap $ M.insert jid receiveq
+			return jid
 		return $ ExternalState
 			{ externalSend = \msg -> 
 				atomically $ writeTBMChan sendq
-					(toAsyncWrapped msg, (jidv, receiveq))
+					(toAsyncWrapped msg, jid)
 			, externalReceive = atomically (readTBMChan receiveq)
 			-- This shuts down the whole relay.
 			, externalShutdown = shutdown external st sendq
@@ -52,13 +57,9 @@ runRelayToExternalAsync external st = do
 
 type ReceiveQueue = TBMChan String
 
-type SendQueue = TBMChan (AsyncWrapped, Conn)
+type SendQueue = TBMChan (AsyncWrapped, JobId)
 
-type Conn = (TVar (Maybe JobId), ReceiveQueue)
-
-type JidMap = TVar (M.Map JobId Conn)
-
-type NextJid = TVar JobId
+type JidMap = TVar (M.Map JobId ReceiveQueue)
 
 newReceiveQueue :: IO ReceiveQueue
 newReceiveQueue = newTBMChanIO 10
@@ -71,11 +72,18 @@ receiveloop external st jidmap sendq = externalReceive st >>= \case
 	Just l -> case parseMessage l :: Maybe AsyncMessage of
 		Just (AsyncMessage jid msg) ->
 			M.lookup jid <$> readTVarIO jidmap >>= \case
-				Just (_jidv, c) -> do
+				Just c -> do
 					atomically $ writeTBMChan c msg
 					receiveloop external st jidmap sendq
 				Nothing -> protoerr "unknown job number"
-		_ -> protoerr "unexpected non-async message"
+		Nothing -> case parseMessage l :: Maybe ExceptionalMessage of
+			Just msg -> do
+				-- ERROR is relayed to all listeners
+				m <- readTVarIO jidmap
+				forM (M.elems m) $ \c ->
+					atomically  $ writeTBMChan c l
+				receiveloop external st jidmap sendq
+			Nothing -> protoerr "unexpected non-async message"
 	Nothing -> closeandshutdown
   where
 	protoerr s = do
@@ -85,30 +93,21 @@ receiveloop external st jidmap sendq = externalReceive st >>= \case
 	closeandshutdown = do
 		shutdown external st sendq True
 		m <- atomically $ readTVar jidmap
-		forM_ (M.elems m) (atomically . closeTBMChan . snd)
+		forM_ (M.elems m) (atomically . closeTBMChan)
 
-sendloop :: ExternalState -> NextJid -> JidMap -> SendQueue -> IO ()
-sendloop st nextjid jidmap sendq = atomically (readTBMChan sendq) >>= \case
-	Just (wrappedmsg, conn@(jidv, _)) -> do
+sendloop :: ExternalState -> SendQueue -> IO ()
+sendloop st sendq = atomically (readTBMChan sendq) >>= \case
+	Just (wrappedmsg, jid) -> do
 		case wrappedmsg of
-			AsyncWrappedRequest msg -> do
-				jid <- atomically $ do
-					jid@(JobId n) <- readTVar nextjid
-					let !jid' = JobId (succ n)
-					writeTVar nextjid jid'
-					writeTVar jidv (Just jid)
-					modifyTVar' jidmap $ M.insert jid conn
-					return jid
-				externalSend st $ wrapjid msg jid
 			AsyncWrappedRemoteResponse msg ->
-				readTVarIO jidv >>= \case
-					Just jid -> externalSend st $ wrapjid msg jid
-					Nothing -> error "failed to find jid"
-			AsyncWrappedExceptionalMessage msg ->
+				externalSend st $ wrapjid msg jid
+			AsyncWrappedRequest msg ->
+				externalSend st $ wrapjid msg jid
+			AsyncWrappedExceptionalMessage msg -> 
 				externalSend st msg
 			AsyncWrappedAsyncMessage msg ->
 				externalSend st msg
-		sendloop st nextjid jidmap sendq
+		sendloop st sendq
 	Nothing -> return ()
   where
 	wrapjid msg jid = AsyncMessage jid $ unwords $ Proto.formatMessage msg
