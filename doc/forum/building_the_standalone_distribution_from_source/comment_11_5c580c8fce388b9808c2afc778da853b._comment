@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="Having cutting edge packages with conda is not that straighforward."
+ date="2020-08-14T18:55:17Z"
+ content="""
+I am always inclined to \"contain\" my dependencies inside separate environments, so I want to do what you recommended and use `git-annex=*=alldep*`. 
+But when I install it, I get outdated versions of really important programs (although only slightly outdated).
+
+```
+perl; 5.26.2; 5.30.0
+git;  2.23.0; 2.28.0
+```
+
+I also got some downgrades of stuff that was already inside the env:
+
+```
+The following packages will be SUPERSEDED by a higher-priority channel:
+
+  ca-certificates    pkgs/main::ca-certificates-2020.6.24-0 --> conda-forge::ca-certificates-2020.6.20-hecda079_0
+  libffi                   pkgs/main::libffi-3.3-he6710b0_2 --> conda-forge::libffi-3.2.1-he1b5a44_1007
+  python                 pkgs/main::python-3.8.5-hcff3b4d_0 --> conda-forge::python-3.8.3-cpython_he5300dc_0
+```
+
+Some googling later and I found this [github/conda-forge/git-annex-feedstock/.ci_support/linux_64_nodepFalse.yaml](https://github.com/conda-forge/git-annex-feedstock/blob/master/.ci_support/linux_64_nodepFalse.yaml), which does have `perl: - 5.26.2` *hard-coded*.
+However I also found the [README](https://github.com/conda-forge/git-annex-feedstock/blob/master/.ci_support/README) saying that file was auto-generated based on this one [feedstock/recipe/meta.yaml](https://github.com/conda-forge/git-annex-feedstock/blob/master/recipe/meta.yaml), which furthers the mystery as this `meta.yaml` does not have any specified version for `perl` and git only has a minimum version (`git >=2.22`).
+So it seems `conda` is grabbing older (than the most recent) versions, because those are the latest it has.
+
+`git 2.28.0` is available on `conda-forge`, though. So I'm using that now. And since `conda-forge` is overall more up-to-date...
+
+## This is how I decided to create my env:
+
+`conda create --name main --channel conda-forge python=3.8 git=2.28 git-annex=*=alldep*`
+
+Still no idea on how to update the *outdated* dependencies I stated on my previous post, though. They (cryptonite, feed, ghc, and persistent-sqlite) aren't even mentioned in the `git-annex-feedstock` repo.
+ 
+
+"""]]
