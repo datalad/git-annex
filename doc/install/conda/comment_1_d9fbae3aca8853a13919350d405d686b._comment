@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="Ugly message when installing git-annex through conda"
+ date="2020-08-14T00:08:25Z"
+ content="""
+Whenever I install git-annex through conda, this message haunts me:
+
+```
+Downloading and Extracting Packages
+certifi-2020.6.20    | 151 KB    | ############################################################################################################################################################## | 100% 
+conda-4.8.4          | 3.1 MB    | ############################################################################################################################################################## | 100% 
+python_abi-3.7       | 4 KB      | ############################################################################################################################################################## | 100% 
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: \ b'\n##############################################################################\n#                                                                            #\n# Standalone distribution of git-annex was installed, instead of the         #\n# standard distribution, likely due to package conflicts in the target       #\n# environment.  The standalone distribution may have issues (e.g. be slower, #\n# or not pass the expected environment to some external programs);           #\n# the standard distribution should be used when possible.                    #\n# You can force installation of the standard version by adding =alldep* to   #\n# the build string, e.g.                                                     #\n# conda install git-annex=*=alldep*                                          #\n#                                                                            #\n# For more info on the standalone git-annex distribution see                 #\n# https://git-annex.branchable.com/install/Linux_standalone/                 #\n#                                                                            #\n##############################################################################\n'
+done
+```
+
+I couldn't help, but notice this sounds like what @Ilya_Shlyakhter said earlier.
+
+I'm not a packaging expert, but I don't think this message is really supposed to be here. 
+"""]]

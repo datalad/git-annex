@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2020-08-14T02:59:08Z"
+ content="""
+\"this sounds like what @Ilya_Shlyakhter said earlier\" because I maintain the conda package :)  I need to figure out why the `nodep*` version gets chosen even though the `alldep*` version has a higher build number -- will ask conda people and get back.  If you prefer not to be haunted just install with `git-annex=*=alldep*` to force the standard version.
+
+"""]]
