@@ -103,8 +103,8 @@ parseExpire ps = do
 			return (Just r, parsetime now t)
 	parsetime _ "never" = Nothing
 	parsetime now s = case parseDuration s of
-		Nothing -> giveup $ "bad expire time: " ++ s
-		Just d -> Just (now - durationToPOSIXTime d)
+		Right d -> Just (now - durationToPOSIXTime d)
+		Left e -> giveup $ "bad expire time: " ++ e
 
 parseActivity :: MonadFail m => String -> m Activity
 parseActivity s = case readish s of

@@ -19,7 +19,6 @@ module Utility.HumanTime (
 import Utility.PartialPrelude
 import Utility.QuickCheck
 
-import Control.Monad.Fail as Fail (MonadFail(..))
 import qualified Data.Map as M
 import Data.Time.Clock
 import Data.Time.Clock.POSIX (POSIXTime)
@@ -45,8 +44,8 @@ daysToDuration :: Integer -> Duration
 daysToDuration i = Duration $ i * dsecs
 
 {- Parses a human-input time duration, of the form "5h", "1m", "5h1m", etc -}
-parseDuration :: MonadFail m => String -> m Duration
-parseDuration = maybe parsefail (return . Duration) . go 0
+parseDuration :: String -> Either String Duration
+parseDuration d = maybe parsefail (Right . Duration) $ go 0 d
   where
 	go n [] = return n
 	go n s = do
@@ -56,7 +55,7 @@ parseDuration = maybe parsefail (return . Duration) . go 0
 				u <- M.lookup c unitmap
 				go (n + num * u) rest
 			_ -> return $ n + num
-	parsefail = Fail.fail "duration parse error; expected eg \"5m\" or \"1h5m\""
+	parsefail = Left $ "failed to parse duration \"" ++ d ++ "\" (expected eg \"5m\" or \"1h5m\")"
 
 fromDuration :: Duration -> String
 fromDuration Duration { durationSeconds = d }
@@ -102,4 +101,4 @@ instance Arbitrary Duration where
 	arbitrary = Duration <$> nonNegative arbitrary
 
 prop_duration_roundtrips :: Duration -> Bool
-prop_duration_roundtrips d = parseDuration (fromDuration d) == Just d
+prop_duration_roundtrips d = parseDuration (fromDuration d) == Right d

@@ -286,7 +286,7 @@ keyMatchingOptions' =
 		<> help "match files the repository wants to drop"
 		<> hidden
 		)
-	, globalSetter Limit.addAccessedWithin $ option (str >>= parseDuration)
+	, globalSetter Limit.addAccessedWithin $ option (eitherReader parseDuration)
 		( long "accessedwithin"
 		<> metavar paramTime
 		<> help "match files accessed within a time interval"
@@ -403,7 +403,7 @@ jobsOption =
 
 timeLimitOption :: [GlobalOption]
 timeLimitOption = 
-	[ globalSetter Limit.addTimeLimit $ option (str >>= parseDuration)
+	[ globalSetter Limit.addTimeLimit $ option (eitherReader parseDuration)
 		( long "time-limit" <> short 'T' <> metavar paramTime
 		<> help "stop after the specified amount of time"
 		<> hidden

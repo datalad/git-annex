@@ -81,7 +81,7 @@ optParser desc = FsckOptions
 			( long "more" <> short 'm'
 			<> help "continue an incremental fsck"
 			)
-		<|> (ScheduleIncrementalO <$> option (str >>= parseDuration)
+		<|> (ScheduleIncrementalO <$> option (eitherReader parseDuration)
 			( long "incremental-schedule" <> metavar paramTime
 			<> help "schedule incremental fscking"
 			))

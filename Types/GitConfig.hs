@@ -177,7 +177,7 @@ extractGitConfig configsource r = GitConfig
 	, annexFsckNudge = getbool (annexConfig "fscknudge") True
 	, annexAutoUpgrade = toAutoUpgrade $
 		getmaybe (annexConfig "autoupgrade")
-	, annexExpireUnused = maybe Nothing Just . parseDuration
+	, annexExpireUnused = either (const Nothing) Just . parseDuration
 		<$> getmaybe (annexConfig "expireunused")
 	, annexSecureEraseCommand = getmaybe (annexConfig "secure-erase-command")
 	, annexGenMetaData = getbool (annexConfig "genmetadata") False

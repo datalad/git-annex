@@ -39,7 +39,7 @@ optParser _ = AssistantOptions
 		( long "autostart"
 		<> help "start in known repositories"
 		)
-	<*> optional (option (str >>= parseDuration)
+	<*> optional (option (eitherReader parseDuration)
 		( long "startdelay" <> metavar paramNumber
 		<> help "delay before running startup scan"
 		))

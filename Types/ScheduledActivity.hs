@@ -46,16 +46,15 @@ parseScheduledActivity :: String -> Either String ScheduledActivity
 parseScheduledActivity s = case words s of
 	("fsck":"self":d:rest) -> qualified $ ScheduledSelfFsck
 		<$> parseSchedule (unwords rest)
-		<*> getduration d
+		<*> parseDuration d
 	("fsck":u:d:rest) -> qualified $ ScheduledRemoteFsck
 		<$> pure (toUUID u)
 		<*> parseSchedule (unwords rest)
-		<*> getduration d
+		<*> parseDuration d
 	_ -> qualified $ Left "unknown activity"
   where
 	qualified (Left e) = Left $ e ++ " in \"" ++ s ++ "\""
 	qualified v = v
-	getduration d = maybe (Left $ "failed to parse duration \""++d++"\"") Right (parseDuration d)
 
 fromScheduledActivities :: [ScheduledActivity] -> String
 fromScheduledActivities = intercalate "; " . map fromScheduledActivity
