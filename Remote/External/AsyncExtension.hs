@@ -75,10 +75,10 @@ receiveloop external st jidmap sendq = externalReceive st >>= \case
 					receiveloop external st jidmap sendq
 				Nothing -> protoerr "unknown job number"
 		Nothing -> case parseMessage l :: Maybe ExceptionalMessage of
-			Just msg -> do
+			Just _ -> do
 				-- ERROR is relayed to all listeners
 				m <- readTVarIO jidmap
-				forM (M.elems m) $ \c ->
+				forM_ (M.elems m) $ \c ->
 					atomically  $ writeTBMChan c l
 				receiveloop external st jidmap sendq
 			Nothing -> protoerr "unexpected non-async message"
