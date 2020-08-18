@@ -1,0 +1,6 @@
+Maybe someone here can help me with this. I'm trying out git-annex as a way to handle my photo collection. My case is as follows.
+I have a laptop running Manjaro. I have my photo collection on a USB drive formatted NTFS so I can also use it on Windows systems. I'd like to use git-annex to selectively check out files from that drive to my laptop. The files are (immutable) .NEF raw files and .xmp text files that I could track with regular git.
+
+The problem is that NTFS mounted on Linux does not seem to honour the write bit, so git-annex detects a crippled file system and defaults to unlocked mode. Effectively this halves the storage capacity of my external drive (with every file in both the annex and the working directory), which is of course less than ideal.
+
+Is there a way to handle this? Did I configure my mounting options incorrectly, or is git-annex not the right tool for this job and should I just use rsync?
