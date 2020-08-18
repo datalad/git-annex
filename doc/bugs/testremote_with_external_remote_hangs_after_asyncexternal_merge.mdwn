@@ -1,0 +1,58 @@
+The DataLad tests run one of our custom special remotes through `git
+annex testremote`.  As mentioned in a recent [DataLad issue][1], this
+test has started to fail.  When I run the test locally, it hangs.
+This starts with the recent merge of the asyncexternal branch
+(95d9a3cf8).
+
+Here's a reproducer that takes DataLad out of the equation.  It uses
+the example external remote.
+
+[[!format sh """
+#!/bin/sh
+
+set -eu
+
+ga_srcdir="$(realpath "${1?requires git-annex source directory as argument}")"
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/gx-testremote-XXXXXXX)"
+top="$PWD"
+
+mkdir bin
+git -C "$ga_srcdir" cat-file -p \
+    1740c4ef650dd2bf3b1d91322d55aace7667b822:doc/special_remotes/external/example.sh \
+    >bin/git-annex-remote-foo
+chmod +x bin/git-annex-remote-foo
+export PATH="$top/bin:$PATH"
+
+export MYPASSWORD="x"
+export MYLOGIN="x"
+mkdir d
+
+git init a
+(
+    cd a
+    git annex init main
+    git annex initremote d \
+        type=external externaltype=foo directory="$top/d" encryption=none
+    git annex testremote --fast d
+)
+"""]]
+
+With the latest commit on master checked out (67cad93f8), the above
+script stalls on my end at
+
+```
+testremote d (generating test keys...)
+  Cannot run git-annex-remote-!dne! -- It is not installed in PATH (/home/kyle/src/c/git-bin:/home/kyle/src/c/git-bin/bin-wrappers:/tmp/gx-testremote-aiS5Ztm/bin:/home/kyle/src/haskell/git-annex/.stack-work/install/x86_64-linux-tinfo6/5bf51f244130923958226fa250ede392c8c3d23ac815c7b4b9d65910222773d4/8.6.5/bin:/home/kyle/.stack/snapshots/x86_64-linux-tinfo6/5bf51f244130923958226fa250ede392c8c3d23ac815c7b4b9d65910222773d4/8.6.5/bin:/home/kyle/.stack/compiler-tools/x86_64-linux-tinfo6/ghc-8.6.5/bin:/home/kyle/.stack/programs/x86_64-linux/ghc-tinfo6-8.6.5/bin:/home/kyle/src/python/venvs/datalad//bin:/home/kyle/src/c/git-bin/bin-wrappers:/home/kyle/.guix-profile/bin:/home/kyle/.config/guix/current/bin:/home/kyle/.cabal/bin:/usr/lib/ccache/bin:/home/kyle/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games)
+Remote Tests
+  unavailable remote
+    removeKey:
+```
+
+With the first commit before the merge checked out (0900bb2ca), the
+`testremote` call completes successfully.
+
+[1]: https://github.com/datalad/datalad/issues/4825
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
