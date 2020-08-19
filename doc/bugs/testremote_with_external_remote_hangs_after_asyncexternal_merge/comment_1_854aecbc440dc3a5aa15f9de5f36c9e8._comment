@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="thanks"
+ date="2020-08-19T17:54:08Z"
+ content="""
+Great, thank you.  I've confirmed that this resolves the original
+datalad test failures for me locally.
+"""]]
