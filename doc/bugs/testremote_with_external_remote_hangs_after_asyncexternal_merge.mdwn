@@ -56,3 +56,5 @@ With the first commit before the merge checked out (0900bb2ca), the
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] thanks for reporting --[[Joey]]

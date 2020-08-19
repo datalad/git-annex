@@ -616,6 +616,7 @@ startExternal external =
 	liftIO (atomically $ takeTMVar (externalAsync external)) >>= \case
 		UncheckedExternalAsync -> do
 			(st, extensions) <- startExternal' external
+				`onException` store UncheckedExternalAsync
 			if asyncExtensionEnabled extensions
 				then do
 					relay <- liftIO $ runRelayToExternalAsync external st
