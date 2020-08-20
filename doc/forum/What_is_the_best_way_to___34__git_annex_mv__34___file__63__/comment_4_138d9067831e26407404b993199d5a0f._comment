@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 4"
+ date="2020-08-20T20:34:23Z"
+ content="""
+Git tracks the symlink.  After your first commit, here's what is
+tracked for protein/milk:
+
+```
+$ git show HEAD:protein/milk
+../.git/annex/objects/M4/kf/SHA256E-s5--ccfd6ff816d055a64ff4421370d71bc5cdb2a1e0a8afa62b69bb52dd0781f00c/SHA256E-s5--ccfd6ff816d055a64ff4421370d71bc5cdb2a1e0a8afa62b69bb52dd0781f00c
+```
+
+And after your second commit:
+
+```
+$ git show HEAD:amino-acids/milk
+../.git/annex/objects/M4/kf/SHA256E-s5--ccfd6ff816d055a64ff4421370d71bc5cdb2a1e0a8afa62b69bb52dd0781f00c/SHA256E-s5--ccfd6ff816d055a64ff4421370d71bc5cdb2a1e0a8afa62b69bb52dd0781f00c
+```
+
+Note that it's exactly the same content, and Git will (by default)
+present it as a rename.
+
+In your final commit, the link that Git tracks changes:
+
+```
+$ git show HEAD:atoms
+.git/annex/objects/M4/kf/SHA256E-s5--ccfd6ff816d055a64ff4421370d71bc5cdb2a1e0a8afa62b69bb52dd0781f00c/SHA256E-s5--ccfd6ff816d055a64ff4421370d71bc5cdb2a1e0a8afa62b69bb52dd0781f00c
+```
+
+Notice that the leading part of the link changed, corresponding to the
+movement out of the subdirectory.
+
+"""]]
