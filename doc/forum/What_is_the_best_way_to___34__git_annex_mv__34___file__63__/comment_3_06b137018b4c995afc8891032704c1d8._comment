@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="comment 3"
+ date="2020-08-20T20:08:05Z"
+ content="""
+Correction:
+
+Why do moves that require changes to the symlinks to change result in a delete+add combo?
+
+Code to reproduce just for the sake of completion:
+
+```bash
+mkdir protein
+echo whey > protein/milk
+
+git init
+git annex init
+git annex add
+git commit -m \"asd\"
+
+# perfectly normal rename
+git mv protein amino-acids
+git commit -m changed
+# rename {protein => amino-acids}/milk (100%)
+
+# behavior I don't get
+git mv amino-acids/milk atoms
+git commit -m hmmm
+# delete mode 120000 amino-acids/milk
+# create mode 120000 atoms
+```
+
+I'm sorry if this has been already explained previously.
+I couldn't find it.
+"""]]
