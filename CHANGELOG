@@ -6,6 +6,7 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     started, when that is more efficient.
   * Display warning when external special remote does not start up
     properly, or is not usable.
+  * stack.yaml: Updated to lts-16.10.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 

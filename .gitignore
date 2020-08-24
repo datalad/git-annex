@@ -30,6 +30,7 @@ cabal-dev
 .cabal-sandbox
 cabal.sandbox.config
 .stack-work
+stack.yaml.lock
 # Project-local emacs configuration
 .dir-locals.el
 # OSX related

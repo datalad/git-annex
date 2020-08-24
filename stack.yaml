@@ -11,22 +11,23 @@ flags:
     dbus: false
     debuglocks: false
     benchmark: false
-    networkbsd: false
+    networkbsd: true
     gitlfs: true
     httpclientrestricted: true
 packages:
 - '.'
 extra-deps:
- - IfElse-0.85
- - aws-0.21.1
- - bloomfilter-2.0.1.0
- - filepath-bytestring-1.4.2.1.6
- - sandi-0.5
- - tasty-rerun-1.1.17
- - torrent-10000.1.1
- - git-lfs-1.1.0
- - http-client-restricted-0.0.2
- - http-client-0.5.14
+- IfElse-0.85
+- aws-0.22
+- bloomfilter-2.0.1.0
+- filepath-bytestring-1.4.2.1.6
+- git-lfs-1.1.0
+- http-client-restricted-0.0.3
+- network-multicast-0.3.2
+- sandi-0.5
+- torrent-10000.1.1
+- bencode-0.6.1.1
+- network-3.1.0.1
 explicit-setup-deps:
   git-annex: true
-resolver: lts-14.27
+resolver: lts-16.10
