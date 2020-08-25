@@ -140,8 +140,8 @@ withAltRepo modrepo unmodrepo a = do
  - When pid locking is in use, this tries to take the pid lock, and if
  - successful, holds it while running the child process. The action
  - is run with the Annex monad modified so git commands are run with
- - an env var set, which prevents child git annex processes from t
- - rying to take the pid lock themselves.
+ - an env var set, which prevents child git annex processes from
+ - trying to take the pid lock themselves.
  -
  - This way, any locking the parent does will not get in the way of
  - the child. The child is assumed to not do any locking that conflicts
