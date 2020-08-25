@@ -15,6 +15,7 @@ module Utility.LockFile.PidLock (
 	checkLocked,
 	checkSaneLock,
 	pidLockEnv,
+	pidLockEnvValue,
 ) where
 
 import Utility.PartialPrelude
@@ -293,3 +294,6 @@ pidLockEnv :: FilePath -> IO String
 pidLockEnv lockfile = do
 	abslockfile <- absPath lockfile
 	return $ "PIDLOCK_" ++ filter legalInEnvVar abslockfile
+
+pidLockEnvValue :: String
+pidLockEnvValue = "1"

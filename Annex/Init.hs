@@ -37,7 +37,6 @@ import Annex.UUID
 import Annex.WorkTree
 import Annex.Fixup
 import Annex.Path
-import Annex.GitOverlay
 import Config
 import Config.Files
 import Config.Smudge
@@ -327,18 +326,18 @@ fixupUnusualReposAfterInit = do
  - The enabling is done in a child process to avoid it using stdio.
  -}
 autoEnableSpecialRemotes :: Annex ()
-autoEnableSpecialRemotes = runsGitAnnexChildProcess $ do
+autoEnableSpecialRemotes = do
 	rp <- fromRawFilePath <$> fromRepo Git.repoPath
-	cmd <- liftIO programPath
-	liftIO $ withNullHandle $ \nullh -> do
-		let p = (proc cmd 
-			[ "init"
-			, "--autoenable"
-			])
+	withNullHandle $ \nullh -> gitAnnexChildProcess
+		[ "init"
+		, "--autoenable"
+		]
+		(\p -> p
 			{ std_out = UseHandle nullh
 			, std_err = UseHandle nullh
 			, std_in = UseHandle nullh
 			, cwd = Just rp
 			}
-		withCreateProcess p $ \_ _ _ pid -> void $ waitForProcess pid
+		)
+		(\_ _ _ pid -> void $ waitForProcess pid)
 	remotesChanged

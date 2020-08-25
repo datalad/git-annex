@@ -218,7 +218,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 					[ Param "-c"
 					, Param $ "core.safecrlf=" ++ boolConfig False
 					] }
-				runsGitAnnexChildProcess' r'' $ \r''' ->
+				runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
 					liftIO $ Git.UpdateIndex.refreshIndex r''' $ \feed ->
 						forM_ l $ \(f', checkunmodified) ->
 							whenM checkunmodified $

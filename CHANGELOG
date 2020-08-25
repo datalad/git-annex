@@ -9,6 +9,9 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
   * stack.yaml: Updated to lts-16.10.
   * Fix reversion in 7.20190322 that made addurl --file not be honored
     when youtube-dl was used to download media.
+  * Fix reversion in 8.20200617 that made annex.pidlock being enabled
+    result in some commands stalling, particularly those needing to
+    autoinit.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 
