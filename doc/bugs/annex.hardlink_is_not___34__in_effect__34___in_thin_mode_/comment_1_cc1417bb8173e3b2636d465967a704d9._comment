@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-08-25T15:20:45Z"
+ content="""
+I believe this is by design.  See ecd0684bf (avoid hard linking object
+from other repository when annex.thin is set, 2016-01-13).
+"""]]

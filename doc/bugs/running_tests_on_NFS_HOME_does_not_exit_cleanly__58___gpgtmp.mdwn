@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+I am establishing running daily tests on annex on NFS mounted partition (one run with NFS as TMPDIR -- passes, another with NFS for HOME).
+
+### What version of git-annex are you using? On what operating system?
+
+as of now  git-annex-standalone_8.20200810+git47-g27329f0bb-1~ndall+1_amd64.deb 
+
+### Please provide any additional information below.
+
+[full build/log](https://github.com/datalad/datalad-extensions/pull/29/checks?check_run_id=1024502537)
+
+[[!format sh """
+...
+All 840 tests passed (707.87s)
+.t/gpgtmp/7: removePathForcibly:removePathForcibly:removePathForcibly:removeDirectory: unsatisfied constraints (Directory not empty)
+sleeping 10 seconds and will retry directory cleanup
+git-annex: .t/gpgtmp/7/.nfs0000000000669ff400000a6b: removePathForcibly:removePathForcibly:removePathForcibly:removePathForcibly:removeLink: resource busy (Device or resource busy)
+##[error]Process completed with exit code 1.
+"""]]
+
+so it seems to relate to gpg, and not unlikely to be out of git-annex control, but I wondered if it could potentially be some non-clean termination of underlying gpg process or alike which could/should actually be addressed on git-annex side?
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
