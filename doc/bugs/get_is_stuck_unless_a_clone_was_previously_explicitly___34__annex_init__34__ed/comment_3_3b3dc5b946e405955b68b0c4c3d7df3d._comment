@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="pidlock to blame!"
+ date="2020-08-25T16:27:08Z"
+ content="""
+Thank you Kyle!  your comment reminded me that yesterday while I was trying to reproduce [stalling issue on NFS (not yet reported here)]() I have set globally pidlock=true!  
+
+<details>
+<summary>Here is an adjusted script which sets it in the clone and causes the stall (also changed to use git annex add instead of git add)</summary> 
+
+```shell
+#!/bin/bash
+
+export PS4='> '
+set -x
+set -eu
+cd \"$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)\"
+
+(
+mkdir src
+cd src
+git init
+git annex init
+
+
+touch 123
+git annex add 123
+git commit -m 123 123
+)
+
+#git clone --shared src dest
+git clone src dest
+
+(
+cd dest
+#git annex init
+# would stall unless we git annex init above with 8.20200810+git5-gb41f77445-1~ndall+1
+git config annex.pidlock true
+git annex get 123
+)
+
+ls -lLi {dest,src}/123
+
+```
+</details>
+"""]]
