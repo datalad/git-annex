@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment: works on my end"
+ date="2020-08-25T15:02:43Z"
+ content="""
+Your script doesn't stall on my end.  I tried with the last git-annex
+release 8.20200810 and the commit you report (27329f0bb).
+"""]]
