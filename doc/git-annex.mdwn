@@ -1102,6 +1102,8 @@ Like other git commands, git-annex is configured via `.git/config`.
   will automatically set annex.hardlink and mark the repository as
   untrusted.
 
+  When `annex.thin` is also set, setting `annex.hardlink` has no effect.
+
 * `annex.thin`
 
   Set this to `true` to make unlocked files be a hard link to their content

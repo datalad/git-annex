@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-08-25T17:01:55Z"
+ content="""
+That is the relevant commit indeed.
+
+We have two different things that want to hard link a file for different
+purposes. The purposes are not compatible. So one of them has to win out.
+
+If both annex.hardlink and annex.thin were both allowed to hard link the
+same file, then a file could get a link count of more than 2. That would
+prevent using the method that annex.thin relies on to avoid two unlocked
+files with the same content ending up hard linked together. With the very
+undesirable result that an edit to one file would also edit the other file.
+
+Now, I could imagine using some other thing than link count to avoid that
+situation, eg keep track of when two files have the same content. But
+there's a second similar problem: If a file were unlocked in one repo and
+that repos's annex/objects also hard linked to its remote's annex/objects,
+then editing the file in the first repo would corrupt the object content in
+the other repo.
+
+So I think the only other possible way for it to work would be for which
+ever of the two caused a hard link to be made first to win, rather than
+annex.thin always winning as it does now. So, after a `git annex get` in
+the clone hard linked the file (annex.hardlink wins), `git annex unlock`
+would copy the file (annex.thin loses). While a `git add` would hard link
+the file to annex/objects (annex.thin wins), resulting in `git annex copy
+--to origin` having to copy the file (annex.hardlink loses).
+
+But that would not change the behavior in your test case,
+since it needs to get the file (annex.hardlink wins) before unlocking
+it (annex.thin loses).
+
+So the benefit of making that change seems small to nonexistent as far as
+this bug report goes. Behavior becomes less consistent, it has to work
+harder to enforce the link count invariant, and it doesn't actually change
+the test case. The only real benefit would be when some files are not
+unlocked, but annex.thin is set, since then the locked files could be
+hardlinked.
+
+----
+
+I added a note to the annex.hardlink docs about annex.thin winning and am
+inclined to only do that.
+"""]]
