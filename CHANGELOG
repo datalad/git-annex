@@ -7,7 +7,7 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
   * Display warning when external special remote does not start up
     properly, or is not usable.
   * stack.yaml: Updated to lts-16.10.
-  * addurl: Fix reversion in 7.20190322 that made --file not be honored
+  * Fix reversion in 7.20190322 that made addurl --file not be honored
     when youtube-dl was used to download media.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
