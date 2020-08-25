@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 4"
+ date="2020-08-25T17:51:41Z"
+ content="""
+I can trigger it with annex.pidlock=true.  It looks like the hang
+starts with 96f6aa39d (add runsGitAnnexChildProcess calls,
+2020-06-17).
+"""]]
