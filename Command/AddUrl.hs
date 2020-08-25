@@ -304,8 +304,6 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
 	downloader f p = Url.withUrlOptions $ downloadUrl urlkey p [url] f
 	go Nothing = return Nothing
-	-- If we downloaded a html file, try to use youtube-dl to
-	-- extract embedded media.
 	go (Just tmp) = ifM (pure (not (rawOption o)) <&&> liftIO (isHtml <$> readFile tmp))
 		( tryyoutubedl tmp
 		, normalfinish tmp
@@ -314,21 +312,15 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 		showDestinationFile file
 		createWorkTreeDirectory (parentDir file)
 		Just <$> finishDownloadWith addunlockedmatcher tmp webUUID url file
-	tryyoutubedl tmp
-		-- Ask youtube-dl what filename it will download
-		-- first, and check if that is already an annexed file,
-		-- to avoid unnecessary work in that case.
-		| otherwise = youtubeDlFileNameHtmlOnly url >>= \case
-			Right dest -> ifAnnexed (toRawFilePath dest)
-				(alreadyannexed dest)
-				(dl dest)
-			Left _ -> normalfinish tmp
-		-- Ask youtube-dl what filename it will download
-		-- fist, so it's only used when the file contains embedded
-		-- media.
-		| isJust (fileOption o) = youtubeDlFileNameHtmlOnly url >>= \case
-			Right _ -> dl file
-			Left _ -> normalfinish tmp
+	-- Ask youtube-dl what filename it will download first, 
+	-- so it's only used when the file contains embedded media.
+	tryyoutubedl tmp = youtubeDlFileNameHtmlOnly url >>= \case
+		Right mediafile -> 
+			let f = youtubeDlDestFile o file mediafile
+			in ifAnnexed (toRawFilePath f)
+				(alreadyannexed f)
+				(dl f)
+		Left _ -> normalfinish tmp
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
@@ -467,12 +459,15 @@ nodownloadWeb addunlockedmatcher o url urlinfo file
 		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
 		nodownloadWeb' addunlockedmatcher url key file
 	usemedia mediafile = do
-		let dest = if isJust (fileOption o)
-			then file
-			else takeFileName mediafile
+		let dest = youtubeDlDestFile o file mediafile
 		let mediaurl = setDownloader url YoutubeDownloader
 		let mediakey = Backend.URL.fromUrl mediaurl Nothing
 		nodownloadWeb' addunlockedmatcher mediaurl mediakey dest
+
+youtubeDlDestFile :: DownloadOptions -> FilePath -> FilePath -> FilePath
+youtubeDlDestFile o destfile mediafile
+	| isJust (fileOption o) = destfile
+	| otherwise = takeFileName mediafile
 
 nodownloadWeb' :: AddUnlockedMatcher -> URLString -> Key -> FilePath -> Annex (Maybe Key)
 nodownloadWeb' addunlockedmatcher url key file = checkCanAdd file $ do

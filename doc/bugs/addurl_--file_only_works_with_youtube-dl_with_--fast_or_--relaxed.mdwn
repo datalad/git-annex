@@ -50,3 +50,5 @@ I only recently started using the web special remote stuff, and really like it; 
 ### Have you had any luck using git-annex before?
 
 Yes, I've used it for several years for all sorts of things, and it just gets better and better.
+
+> [[fixed|done]] --[[Joey]]
