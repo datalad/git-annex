@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-08-25T21:35:15Z"
+ content="""
+While fixed, this shows that annex.pidlock blocking for a long time should
+display a message. Perhaps it could first try to take the lock, and only
+display the message if it needs to wait on it.
+"""]]
