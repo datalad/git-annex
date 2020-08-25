@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-08-25T17:44:43Z"
+ content="""
+This is the same class of bug as
+[[!commit 82448bdf39bbe2b4fb6e0bac0735b845d52e189a]] fixed.
+
+Subsequent to that fix, I audited for other bugs in this class
+and tried to fix them too 
+in [[!commit 96f6aa39dda335bf9aa25ed8a67756e31bd307c2]].
+What that commit missed was that runsGitAnnexChildProcess only
+affects running git commands, while actually in all 3 places touched by
+that commit, git-annex runs other, non-git commands that result in git-annex
+being run. So all 3 of those can still deadlock like this, and actually
+that commit made it worse by making them always deadlock, rather than only
+theoretically deadlock in some case where some other part of git-annex
+happened to have taken the pid lock at the same time.
+
+(Not really deadlock, I think, but wait for the annex.pidlocktimeout 
+and then fail after 5 minutes.)
+"""]]
