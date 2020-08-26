@@ -675,6 +675,7 @@ Executable git-annex
     Annex.NumCopies
     Annex.Path
     Annex.Perms
+    Annex.PidLock
     Annex.Queue
     Annex.ReplaceFile
     Annex.RemoteTrackingBranch

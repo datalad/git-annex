@@ -30,7 +30,7 @@ import Git.FilePath
 import Git.Config
 import Annex.HashObject
 import Annex.InodeSentinal
-import Annex.GitOverlay
+import Annex.PidLock
 import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
