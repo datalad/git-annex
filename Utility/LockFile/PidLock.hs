@@ -38,6 +38,8 @@ import System.Posix.IO
 import System.Posix.Types
 import System.Posix.Files
 import System.Posix.Process
+import Control.Monad
+import Control.Monad.IO.Class (liftIO, MonadIO)
 import Data.Maybe
 import Data.List
 import Network.BSD
@@ -240,19 +242,24 @@ checkInsaneLustre dest = do
 
 -- | Waits as necessary to take a lock.
 --
--- Uses a 1 second wait-loop.
+-- Uses a 1 second wait-loop, retrying until a timeout.
 --
--- May wait until timeout if the lock file is stale and is on a network file
--- system, or on a system where the side lock cannot be taken.
-waitLock :: Seconds -> LockFile -> IO LockHandle
-waitLock (Seconds timeout) lockfile = go timeout
+-- After the first second waiting, runs the callback to display a message,
+-- so the user knows why it's stalled.
+waitLock :: MonadIO m => Seconds -> LockFile -> (String -> m ()) -> m LockHandle
+waitLock (Seconds timeout) lockfile displaymessage = go timeout
   where
 	go n
-		| n > 0 = maybe (threadDelaySeconds (Seconds 1) >> go (pred n)) return
-			=<< tryLock lockfile
+		| n > 0 = liftIO (tryLock lockfile) >>= \case
+			Nothing -> do
+				when (n == pred timeout) $
+					displaymessage $ "waiting for pid lock file " ++ lockfile ++ " which is held by another process (or may be stale)"
+				liftIO $ threadDelaySeconds (Seconds 1)
+				go (pred n)
+			Just lckh -> return lckh
 		| otherwise = do
-			hPutStrLn stderr $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ lockfile
-			giveup $ "Gave up waiting for possibly stale pid lock file " ++ lockfile
+			displaymessage $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ lockfile
+			giveup $ "Gave up waiting for pid lock file " ++ lockfile
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle lockfile _ sidelock) = do

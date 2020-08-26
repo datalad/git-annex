@@ -1186,14 +1186,15 @@ Like other git commands, git-annex is configured via `.git/config`.
   the other node is holding a pid lock. Caveat emptor.
 
 * `annex.pidlocktimeout`
+  
+  git-annex will wait up to this many seconds for the pid lock
+  file to go away, and will then abort if it cannot continue. Default: 300
 
   When using pid lock files, it's possible for a stale lock file to get
   left behind by previous run of git-annex that crashed or was interrupted.
   This is mostly avoided, but can occur especially when using a network
-  file system.
-
-  git-annex will wait up to this many seconds for the pid lock
-  file to go away, and will then abort if it cannot continue. Default: 300
+  file system. This timeout prevents git-annex waiting forever in such a
+  situation.
 
 * `annex.cachecreds`
 

@@ -1,6 +1,6 @@
 {- Pid locks, using lock pools.
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -27,16 +27,23 @@ import Utility.ThreadScheduler
 import System.IO
 import System.Posix
 import Data.Maybe
+import Control.Monad.Catch
+import Control.Monad.IO.Class
 import Control.Applicative
 import Prelude
 
 -- Takes a pid lock, blocking until the lock is available or the timeout.
-waitLock :: Seconds -> LockFile -> IO LockHandle
-waitLock timeout file = makeLockHandle P.lockPool file
+waitLock
+	:: (MonadIO m, MonadMask m)
+	=> Seconds
+	-> LockFile
+	-> (String -> m ())
+	-> m LockHandle
+waitLock timeout file displaymessage = makeLockHandle P.lockPool file
 	-- LockShared for STM lock, because a pid lock can be the top-level
 	-- lock with various other STM level locks gated behind it.
 	(\p f -> P.waitTakeLock p f LockShared)
-	(\f -> mk <$> F.waitLock timeout f)
+	(\f -> mk <$> F.waitLock timeout f displaymessage)
 
 -- Tries to take a pid lock, but does not block.
 tryLock :: LockFile -> IO (Maybe LockHandle)

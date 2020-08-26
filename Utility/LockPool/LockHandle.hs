@@ -1,6 +1,6 @@
 {- Handles for lock pools.
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -23,7 +23,8 @@ import Utility.LockPool.STM (LockFile)
 import Utility.DebugLocks
 
 import Control.Concurrent.STM
-import Control.Exception
+import Control.Monad.Catch
+import Control.Monad.IO.Class (liftIO, MonadIO)
 import Control.Applicative
 import Prelude
 
@@ -47,27 +48,39 @@ checkSaneLock lockfile (LockHandle _ flo) = fCheckSaneLock flo lockfile
 -- Take a lock, by first updating the lock pool, and then taking the file
 -- lock. If taking the file lock fails for any reason, take care to
 -- release the lock in the lock pool.
-makeLockHandle :: P.LockPool -> LockFile -> (P.LockPool -> LockFile -> STM P.LockHandle) -> (LockFile -> IO FileLockOps) -> IO LockHandle
+makeLockHandle
+	:: (MonadIO m, MonadMask m)
+	=> P.LockPool
+	-> LockFile
+	-> (P.LockPool -> LockFile -> STM P.LockHandle)
+	-> (LockFile -> m FileLockOps)
+	-> m LockHandle
 makeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
-	setup = debugLocks $ atomically (pa pool file)
-	cleanup ph = debugLocks $ P.releaseLock ph
-	go ph = mkLockHandle ph =<< fa file
+	setup = debugLocks $ liftIO $ atomically (pa pool file)
+	cleanup ph = debugLocks $ liftIO $ P.releaseLock ph
+	go ph = liftIO . mkLockHandle ph =<< fa file
 
-tryMakeLockHandle :: P.LockPool -> LockFile -> (P.LockPool -> LockFile -> STM (Maybe P.LockHandle)) -> (LockFile -> IO (Maybe FileLockOps)) -> IO (Maybe LockHandle)
+tryMakeLockHandle
+	:: (MonadIO m, MonadMask m)
+	=> P.LockPool
+	-> LockFile
+	-> (P.LockPool -> LockFile -> STM (Maybe P.LockHandle))
+	-> (LockFile -> m (Maybe FileLockOps))
+	-> m (Maybe LockHandle)
 tryMakeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
-	setup = atomically (pa pool file)
+	setup = liftIO $ atomically (pa pool file)
 	cleanup Nothing = return ()
-	cleanup (Just ph) = P.releaseLock ph
+	cleanup (Just ph) = liftIO $ P.releaseLock ph
 	go Nothing = return Nothing
 	go (Just ph) = do
 		mfo <- fa file
 		case mfo of
 			Nothing -> do
-				cleanup (Just ph)
+				liftIO $ cleanup (Just ph)
 				return Nothing
-			Just fo -> Just <$> mkLockHandle ph fo
+			Just fo -> liftIO $ Just <$> mkLockHandle ph fo
 
 mkLockHandle :: P.LockHandle -> FileLockOps -> IO LockHandle
 mkLockHandle ph fo = do

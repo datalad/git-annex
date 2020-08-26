@@ -1,7 +1,7 @@
 {- Wraps Utility.LockPool, making pid locks be used when git-annex is so
  - configured.
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -31,6 +31,7 @@ import Utility.LockFile.Posix (openLockFile)
 import Utility.LockPool.STM (LockFile)
 import Utility.LockFile.LockStatus
 import Config (pidLockFile)
+import Messages (warning)
 
 import System.Posix
 
@@ -72,9 +73,8 @@ pidLock m f posixlock = debugLocks $ go =<< pidLockFile
 	go Nothing = liftIO posixlock
 	go (Just pidlock) = do
 		timeout <- annexPidLockTimeout <$> Annex.getGitConfig
-		liftIO $ do
-			dummyPosixLock m f
-			Pid.waitLock timeout pidlock
+		liftIO $ dummyPosixLock m f
+		Pid.waitLock timeout pidlock warning
 
 tryPidLock :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle) -> Annex (Maybe LockHandle)
 tryPidLock m f posixlock = debugLocks $ liftIO . go =<< pidLockFile

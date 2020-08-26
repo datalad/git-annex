@@ -12,6 +12,8 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
   * Fix reversion in 8.20200617 that made annex.pidlock being enabled
     result in some commands stalling, particularly those needing to
     autoinit.
+  * Display a message when git-annex has to wait for a pid lock file
+    held by another process.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 
