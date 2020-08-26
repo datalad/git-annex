@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="dreaming of everyone using CoW FSs"
+ date="2020-08-26T01:26:28Z"
+ content="""
+Thank you Joey for looking into it!  I only wish that all file systems were CoW so we could quickly \"clone/get\" any amount of data without jeopardizing data as is the case with hardlinks and also that software did not follow symlinks all the way into the .git/annex/objects (which remains the issue even with browsers etc).  
+But unfortunately it is not the case and that is why we breed all the workarounds to fulfill the use-cases.
+For a \"consumer\" who is not intending to modify any of the original hardlinked files -- do you see any other way to get a \"quick\" clone of a heavy in GBs (or TBs) repository without somehow \"marrying\" shared+thin?
+May be for data protection there could be some \"read-only-thin\" mode which would make all annexed files read-only (thus in the original and clone) repositories thus making it \"safe\" (somewhat) to have inodes with more than 2 hardlinks? 
+"""]]
