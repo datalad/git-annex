@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-08-26T17:07:49Z"
+ content="""
+`git annex adjust --lock` seems like it would accomplish that.
+
+Unless symlinks don't work for some reason on this filesystem, but I don't
+think there are any where hard links work and symlinks don't.
+"""]]
