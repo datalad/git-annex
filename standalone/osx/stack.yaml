@@ -17,17 +17,16 @@ flags:
 packages:
 - '.'
 extra-deps:
- - IfElse-0.85
- - aws-0.21.1
- - bloomfilter-2.0.1.0
- - filepath-bytestring-1.4.2.1.6
- - sandi-0.5
- - tasty-rerun-1.1.17
- - torrent-10000.1.1
- - git-lfs-1.1.0
- - http-client-restricted-0.0.2
- - http-client-0.5.14
- - magic-1.1
+- IfElse-0.85
+- aws-0.21.1
+- bloomfilter-2.0.1.0
+- filepath-bytestring-1.4.2.1.6
+- sandi-0.5
+- tasty-rerun-1.1.17
+- torrent-10000.1.1
+- git-lfs-1.1.0
+- http-client-restricted-0.0.2
+- http-client-0.5.14
 explicit-setup-deps:
   git-annex: true
 resolver: lts-13.11
