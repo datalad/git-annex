@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2020-08-28T17:48:47Z"
+ content="""
+Seems likely this was the same hang as 
+<https://git-annex.branchable.com/bugs/Recent_hang_with_rsync_remote_with_older_systems___40__Xenial__44___Jessie__41__/>
+
+* Xeniel
+* hang involving ssh
+* started close to 7.20200202
+
+If you can still reproduce this let me know,  but I'm closing it on that
+basis.
+"""]]
