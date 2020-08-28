@@ -8,3 +8,7 @@ git-annex 8 on Linux
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Without Samba it's fine :-)
+
+> This does not seem to be an actionable bug. git-annex has to consistently
+> use the same hash format, unless all files are unlocked. So, [[done]] I
+> suppose. --[[Joey]]
