@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 14"
+ date="2020-08-28T01:02:48Z"
+ content="""
+Thanks for point out the channel omission in the message.
+
+I was able to reproduce the issue, but only with `conda create --override-channels -c defaults -n new-test-env-03 python=3.8 ` .  When I instead create the initial environment with `-c conda-forge`, the issue doesn't recur.  I guess it makes sense: packages in conda-forge are pinned to be more compatible with each other, but not necessarily with packages in `defaults`.
+"""]]
