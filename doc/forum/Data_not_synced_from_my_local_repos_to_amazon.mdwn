@@ -16,6 +16,7 @@ Note: I wanted to do `git annex sync --content amazon` after the commit, accordi
 So I went ahead, and opened the PRs on Github, and then rebased+merged them on master.
 
 After merging, I went back to another local copy of the repos (on compute canada cluster), and did the following:
+
 ~~~
 git pull
 git annex get
