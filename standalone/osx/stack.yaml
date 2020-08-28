@@ -7,7 +7,7 @@ flags:
     webdav: true
     torrentparser: true
     webapp: true
-    magicmime: false
+    magicmime: true
     dbus: false
     debuglocks: false
     benchmark: false
@@ -27,6 +27,7 @@ extra-deps:
 - git-lfs-1.1.0
 - http-client-restricted-0.0.2
 - http-client-0.5.14
+- magic-1.1
 explicit-setup-deps:
   git-annex: true
-resolver: lts-13.11
+resolver: lts-14.27
