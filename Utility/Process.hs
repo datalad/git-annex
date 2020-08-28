@@ -207,7 +207,6 @@ cleanupProcess :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> I
 #if MIN_VERSION_process(1,6,4)
 cleanupProcess = Utility.Process.Shim.cleanupProcess
 #else
-#warning building with process-1.6.3; some timeout features may not work well
 cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
 	-- Unlike the real cleanupProcess, this does not wait
 	-- for the process to finish in the background, so if
