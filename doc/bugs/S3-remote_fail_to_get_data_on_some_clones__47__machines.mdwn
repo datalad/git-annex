@@ -65,3 +65,5 @@ latest package in conda-forge on ubuntu
 
 Yes.
 
+> [[closing|done]] since bug reporter says it works for them now after some
+> change, and is not responding to my followups. --[[Joey]]
