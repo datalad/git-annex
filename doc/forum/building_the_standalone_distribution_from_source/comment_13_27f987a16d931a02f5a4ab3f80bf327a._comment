@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="cardoso-neto"
+ avatar="http://cdn.libravatar.org/avatar/d90a656df072f3a29da54302c190c696"
+ subject="comment 13"
+ date="2020-08-28T00:20:30Z"
+ content="""
+I checked my .bash_history and it was `conda create -n $myname python=3.8` the command used.
+
+I just reran that and got the same result when I installed git-annex with `conda install -c conda-forge git-annex`.
+
+I also noticed you made the standalone dist warning message much prettier. Thanks for that. However, you forgot the `--channel` argument in your suggested install script. Here is a copypasta of your current message:
+
+```
+Executing transaction: / 
+##############################################################################
+#                                                                            #
+# Standalone distribution of git-annex was installed, instead of the         #
+# standard distribution, likely due to package conflicts in the target       #
+# environment.  The standalone distribution may have issues (e.g. be slower, #
+# or not pass the expected environment to some external programs);           #
+# the standard distribution should be used when possible.                    #
+# You can force installation of the standard version by adding =alldep* to   #
+# the build string, e.g.                                                     #
+# conda install git-annex=*=alldep*                                          #
+#                                                                            #
+# For more info on the standalone git-annex distribution see                 #
+# https://git-annex.branchable.com/install/Linux_standalone/                 #
+#                                                                            #
+##############################################################################
+
+done
+```   
+"""]]
