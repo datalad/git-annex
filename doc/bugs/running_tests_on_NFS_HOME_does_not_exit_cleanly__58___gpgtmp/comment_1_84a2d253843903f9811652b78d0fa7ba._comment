@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-08-28T17:17:07Z"
+ content="""
+This may depend on the version of gpg in use. With latest version, I see:
+
+	 374404 ?        Ss     0:00 gpg-agent --homedir /home/joey/src/git-annex/.t/tmprepo85/../gpgtmp/1 --use-standard-socket --daemon
+	 374411 ?        Ss     0:01 gpg-agent --homedir /home/joey/src/git-annex/.t/tmprepo85/../gpgtmp/2 --use-standard-socket --daemon
+
+12 of these build up by the end of the test suite. But here when the test suite
+exits, they all terminate.
+
+Presumably they have a deleted file they're holding open, which causes NFS to
+break in the ususal NFS way. Here they have an inotify handle, and some kind of
+socket. Based on the .nfs filename, which I think usually includes the name of
+the deleted file but here does not, I suspect it might be for the directory
+itself, and so due to the inotify handle.
+
+Ah, I think I see.. When I delete the directory, gpg-agent notices
+and exits.
+
+`gpgconf --kill all` can be used to stop them, so I've made the test
+suide do that after using gpg.
+"""]]

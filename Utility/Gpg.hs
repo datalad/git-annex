@@ -416,7 +416,7 @@ testHarness tmpdir cmd a = ifM (inPath (unGpgCmd cmd))
 	, return Nothing
 	)
   where
-	var = "GNUPGHOME"		
+	var = "GNUPGHOME"
 
 	setup = do
 		orig <- getEnv var
@@ -431,9 +431,16 @@ testHarness tmpdir cmd a = ifM (inPath (unGpgCmd cmd))
 			[testSecretKey, testKey]
 		return orig
 		
-	cleanup (Just (Just v)) = setEnv var v True
-	cleanup (Just Nothing) = unsetEnv var
-	cleanup Nothing = return ()
+	cleanup (Just (Just v)) = stopgpgagent >> setEnv var v True
+	cleanup (Just Nothing) = stopgpgagent >> unsetEnv var
+	cleanup Nothing = stopgpgagent
+
+	-- Recent versions of gpg automatically start gpg-agent, or perhaps
+	-- other daemons. Stop them when done. This only affects
+	-- daemons started for the GNUPGHOME that was used.
+	-- Older gpg may not support this, so ignore failure.
+	stopgpgagent = void $ boolSystem "gpgconf"
+		[Param "--kill", Param "all"]
 
 	go (Just _) = Just <$> a
 	go Nothing = return Nothing

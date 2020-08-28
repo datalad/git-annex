@@ -14,6 +14,8 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     autoinit.
   * Display a message when git-annex has to wait for a pid lock file
     held by another process.
+  * test: Stop gpg-agent daemons that are started for the test framework's
+    gpg key.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 

@@ -24,3 +24,4 @@ so it seems to relate to gpg, and not unlikely to be out of git-annex control, b
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+> [[fixed|done]] --[[Joey]]
