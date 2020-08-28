@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="understanding why standalone conda package gets preferred"
+ date="2020-08-27T15:32:05Z"
+ content="""
+@cardoso-neto \"The only dependency that was installed when I conda-installed git-annex was this\" -- do you by chance remember the exact commands used to create that conda environment, before you tried installing git-annex into it?  (Or if you have the environment, can you do `conda list --explicit` in it?) I'd like to better understand why `conda install` prefers the standalone package [so often](https://anaconda.org/conda-forge/git-annex/files). I'll ask conda gurus, but first need a reproducible case where that happens seemingly unnecessarily.
+"""]]

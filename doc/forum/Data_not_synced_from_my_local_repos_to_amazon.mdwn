@@ -1,0 +1,45 @@
+Disclaimer: I am not an expert in git-annex.
+
+Hi,
+
+I have cloned the git-annex repos on my laptop, and use it to push on amazon s3. So far, everything was working fine.
+
+Recently, I made some changes on my local repos, and synced it (or I _thought_ I did) to Amazon, by doing the following procedure:
+
+~~~
+git commit
+git annex sync
+~~~
+
+Note: I wanted to do `git annex sync --content amazon` after the commit, according to our [procedure](https://github.com/spine-generic/data-multi-subject/blob/95ae0f390b4d9220760d733a3d6c6b560cc6502e/CONTRIBUTING.md), but it failed (see https://github.com/spine-generic/data-multi-subject/issues/18).
+
+So I went ahead, and opened the PRs on Github, and then rebased+merged them on master.
+
+After merging, I went back to another local copy of the repos (on compute canada cluster), and did the following:
+
+~~~
+git pull
+git annex get
+~~~
+
+But I was not able to retrieve the data that were recently pushed (or that I _thought_ I pushed) from my laptop. For example, I get the following error message:
+
+~~~
+[jcohen@gra-login3 data-multi-subject]$ git-annex get sub-cmrra02/anat/sub-cmrra02_T2w.nii.gz 
+get sub-cmrra02/anat/sub-cmrra02_T2w.nii.gz (not available) 
+  Try making some of these repositories available:
+  	5cdba4fc-8d50-4e89-bb0c-a3a4f9449666 -- julien@julien-macbook.local:~/code/spine-generic/data-multi-subject
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+git-annex: get: 1 failed
+[jcohen@gra-login3 data-multi-subject]$ git remote
+amazon
+origin
+~~~
+
+If it could be of any help, the full context is available in this [Github issue](https://github.com/spine-generic/data-multi-subject/issues/24).
+
+Thank you for any help you might provide,
+
+Julien
