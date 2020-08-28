@@ -1,6 +1,6 @@
 {- Construction of Git Repo objects
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -73,7 +73,7 @@ fromAbsPath dir
 				, ret (takeDirectory canondir)
 				)
 		| otherwise = ifM (doesDirectoryExist dir)
-			( ret dir
+			( gitDirFile dir >>= maybe (ret dir) (pure . newFrom)
 			-- git falls back to dir.git when dir doesn't
 			-- exist, as long as dir didn't end with a
 			-- path separator
@@ -198,7 +198,7 @@ expandTilde = expandt True
 checkForRepo :: FilePath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
 	check isRepo $
-		check gitDirFile $
+		check (gitDirFile dir) $
 			check isBareRepo $
 				return Nothing
   where
@@ -217,21 +217,25 @@ checkForRepo dir =
 		gitSignature (".git" </> "gitdir")
 	isBareRepo = checkdir $ gitSignature "config"
 		<&&> doesDirectoryExist (dir </> "objects")
-	gitDirFile = do
-		-- git-submodule, git-worktree, and --separate-git-dir
-		-- make .git be a file pointing to the real git directory.
-		c <- firstLine <$>
-			catchDefaultIO "" (readFile $ dir </> ".git")
-		return $ if gitdirprefix `isPrefixOf` c
-			then Just $ Local 
-				{ gitdir = toRawFilePath $ absPathFrom dir $
-					drop (length gitdirprefix) c
-				, worktree = Just (toRawFilePath dir)
-				}
-			else Nothing
-	  where
-		gitdirprefix = "gitdir: "
 	gitSignature file = doesFileExist $ dir </> file
+
+-- git-submodule, git-worktree, and --separate-git-dir
+-- make .git be a file pointing to the real git directory.
+-- Detect that, and return a RepoLocation with gitdir pointing 
+-- to the real git directory.
+gitDirFile :: FilePath -> IO (Maybe RepoLocation)
+gitDirFile dir = do
+	c <- firstLine <$>
+		catchDefaultIO "" (readFile $ dir </> ".git")
+	return $ if gitdirprefix `isPrefixOf` c
+		then Just $ Local 
+			{ gitdir = toRawFilePath $ absPathFrom dir $
+				drop (length gitdirprefix) c
+			, worktree = Just (toRawFilePath dir)
+			}
+		else Nothing
+ where
+	gitdirprefix = "gitdir: "
 
 newFrom :: RepoLocation -> Repo
 newFrom l = Repo

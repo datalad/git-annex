@@ -178,3 +178,5 @@ shaddy@jazz-debian:~/slaveproj$ ls -lL services
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 This issue is not a show stopper. I otherwise love the concepts behind git-annex very much.
+
+> [[fixed|done]] --[[Joey]]

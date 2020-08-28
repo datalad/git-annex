@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-08-28T18:03:46Z"
+ content="""
+--separate-git-dir makes eg, masterproj/.git be a file that contains the
+path to the git dir.
+
+git-annex init converts such a .git file to a symlink. That is necessary
+for git-annex symlinks to be resolved, since they always link to files
+inside .git, and if it's a file, the symlinks won't point to the object
+files.
+
+On windows, since core.symlinks is false, it does not make that change.
+
+So, I think the problem might be that, when .git is a file rather
+than a symlink, git-annex in the clone doesn't read the .git file to determine
+the real git repo location, and so can't find annexed files in its remote.
+
+Seem to have found a way to produce the same problem on linux:
+
+* git init --separate-git-dir masterproj.git masterproj
+* cd masterproj; git config core.symlinks false
+* git-annex init
+* add file, commit, make clone
+
+git-annex get in the clone then fails
+
+	openat(AT_FDCWD, "../masterproj/.git/annex/objects/3f/3K/SHA256E-s30--32a7ec5a2905bbeda54a699ed797c96c1fea7b5bc31a6cc104b2ddefe65a95bb/SHA256E-s30--32a7ec5a2905bbeda54a699ed797c96c1fea7b5bc31a6cc104b2ddefe65a95bb", O_RDONLY) = -1 ENOTDIR (Not a directory)
+
+So, I think it would make sense for git-annex to notice when
+a remote's .git is a file rather than a directory, and adjust the remote
+accordingly, so it uses its actual git directory. That will solve
+this situation.
+"""]]
