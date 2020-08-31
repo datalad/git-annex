@@ -1,6 +1,6 @@
-Would it be possible to make `thin` work in locked mode? In other words, could locked mode use **hardlinks** instead symlinks then `thin` is set?
+Would it be possible to make `thin` work in locked mode? In other words, could locked mode use **hardlinks** instead of symlinks then `thin` is set?
 
-Such a combined mode would have all the benefits of locked mode (protection, easy-to-stop missing files) and of direct mode (no duplication of files). It would also (partially) solve the problems discussed in [[devblog/day_601__v7_default/]] and [[todo/symlinks_for_not-present_unlocked_files/]].
+Such a combined mode would have all the benefits of locked mode (protection, easy-to-spot missing files) and of direct mode (no duplication of files). It would also (partially) solve the problems discussed in [[devblog/day_601__v7_default/]] and [[todo/symlinks_for_not-present_unlocked_files/]].
 
 Here is an example of how this could work from the user prospective:
 
