@@ -32,3 +32,8 @@ So there would still be a conflict potential.
 May be worth removing support for matching annex.largefiles when the
 expression needs the file content, when importing from a special remote.
 Or could detect when those are used, and only import with --content then.
+
+> So this needs a way to introspect a preferred content expression
+> to see if the terms used in it
+> match some criteria. Another todo that also needs that is
+> [[faster_key_lookup_for_limits]] --[[Joey]]

@@ -7,3 +7,7 @@ another 1.5x-2x speedup when such limits are used. What that optimisation
 needs is a way to tell if the current limit needs the key or not. If it
 does, then match on it after getting the key (and precaching the location
 log for limits that need that), otherwise before getting the key.
+
+> So this needs a way to introspect a limit to see if the terms used in it
+> match some criteria. Another todo that also needs that is
+> [[sync_fast_import]] --[[Joey]]
