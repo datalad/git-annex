@@ -8,3 +8,10 @@ bytes being sent. Worst case.
 
 So I think forwardRetry should cap after some amount of automatic retrying.
 Ie, it could give up after 5 retries. --[[Joey]]
+
+Of course, the real use case for forwardRetry is remotes that use eg, rsync
+and can really resume at the last byte. But, forwardRetry can't tell
+if a remote is doing that (unless some timing heuristics were used). Around
+5 retries seems fairly reasonable for that case too, it would be unlikely
+for a rsync transfer to keep failing so many times while still making
+forward progess. --[[Joey]]
