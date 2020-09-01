@@ -1,0 +1,10 @@
+The forwardRetry RetryDecider keeps retrying a transfer as long as at least
+one more byte got transferred than in the previous, failed try.
+
+Suppose that a transfer was restarting from the beginning each time, and it
+just so happened that each try got a tiny little bit further before
+failing. Then transferring an `N` byte object could result in `sum [1..N]` 
+bytes being sent. Worst case.
+
+So I think forwardRetry should cap after some amount of automatic retrying.
+Ie, it could give up after 5 retries. --[[Joey]]
