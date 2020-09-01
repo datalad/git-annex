@@ -36,7 +36,6 @@ data EncryptionMethod
 
 -- XXX ideally, this would be a locked memory region
 data Cipher = Cipher String | MacOnlyCipher String
-	deriving (Show) -- XXXDO NOT COMMIT
 
 data StorableCipher
 	= EncryptedCipher String EncryptedCipherVariant KeyIds
