@@ -33,5 +33,6 @@ At first glance, this may be all that's needed:
 
 
 (stdRetry might be ok too, just a question of whether forwardRetry would
-retry excessively in some cases.)
+retry excessively in some cases. Now that I think about it, need
+to [[limit_forwardRetry]].)
 """]]
