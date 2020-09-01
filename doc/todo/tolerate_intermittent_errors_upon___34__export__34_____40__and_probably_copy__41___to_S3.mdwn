@@ -1,0 +1,6 @@
+it might already be the case but I still cannot read haskel and don't know how to simulate quickly.  But I am following up [on a statement from openneuro folks](https://github.com/OpenNeuroOrg/openneuro/issues/1791#issuecomment-685024674) that they observed some exports failing due to 500 errors and thus needing to re-export.  Since 500 could be very intermittent, I expect git-annex be resilient to them and sleep-a-little/retry at least for some reasonable amount of time.
+
+If git-annex already does that, please pardon my noise and close this TODO.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
