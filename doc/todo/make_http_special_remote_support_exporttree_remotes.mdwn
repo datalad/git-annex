@@ -1,0 +1,4 @@
+The http special remote doesn't currently support being used with a
+--sameas remote that uses exporttree=yes.
+
+It seems like this should be fairly easy to implement. --[[Joey]]

@@ -55,4 +55,7 @@ If you find combinations that work, please edit this page to list them.
 ## known working combinations
 
 * directory and rsync
+* http and directory
+* http and rsync
+* http and rclone (any layout except for frankencase)
 

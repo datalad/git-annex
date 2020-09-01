@@ -3,3 +3,6 @@
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 [[!tag needsthought]]
+
+> [[done]] by implementing another design, not the one suggested here
+> --[[Joey]]

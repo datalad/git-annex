@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-09-01T19:00:05Z"
+ content="""
+I'm implementing this with an automatic learning of the layout that a
+special remote uses. 
+
+It looks like it will probably be sufficiently fast
+for it to remember only for the duration of the command, although it would
+be possible to cache what it's learned in .git/config or something.
+
+Usually, the learning will add 6 extra http requests to learn 
+the most unlikely layout (hashDirMixed with 1 hash level, which I doubt
+anything actually uses). Since the first file it tries to access is almost
+certainly present in the special remote, it will then learn the layout and
+keep using it with no added overhead.
+
+The unusual case would be if a lot of files are not present in the
+remote any longer. Then it will fail to learn, on each file, and so will
+always make 6 extra http requests per file processed. (Reusing the same
+http connection at least.) This seems unusual enough to not worry about
+remembering what it's learned for longer than a single run, or making the
+layout explicitly configurable. Content would have to be dropped from the
+other special remote and the git-annex branch not be synced up for it to
+happen.
+"""]]

@@ -1547,6 +1547,11 @@ Remotes are configured using these settings in `.git/config`.
 
   It is set to "true" if this is a git-lfs remote.
 
+* `remote.<name>.annex-http`
+
+  Used to identify http special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
 * `remote.<name>.annex-externaltype`
 
   Used external special remotes to record the type of the remote.

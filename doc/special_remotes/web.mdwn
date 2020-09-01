@@ -1,4 +1,5 @@
-git-annex can use the WWW as a special remote, downloading urls to files.
+git-annex can use the WWW as a special remote, associating an url with an
+annexed file, and downloading the file content from the web.
 See [[tips/using_the_web_as_a_special_remote]] for usage examples.
 
 ## notes
@@ -7,5 +8,6 @@ Currently git-annex only supports downloading content from the web;
 it cannot upload to it or remove content.
 
 This special remote uses urls on the web as the source for content.
-git-annex can also download content from a normal git remote, accessible by
-http.
+There are several other ways http can be used to download annexed objects,
+including a git remote accessible by http, S3 with a `publicurl` configured,
+and the [[http]] special remote.

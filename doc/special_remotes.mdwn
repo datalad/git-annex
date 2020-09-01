@@ -21,7 +21,7 @@ the git history is not stored in them.
 * [[S3]] (Amazon S3, and other compatible services)
 * [[tahoe]]
 * [[tor]]
-* [[web]]
+* [[web]] and [[http]]
 * [[webdav]]
 * [[git]]
 * [[xmpp]]

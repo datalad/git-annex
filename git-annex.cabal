@@ -980,6 +980,7 @@ Executable git-annex
     Remote.Helper.ReadOnly
     Remote.Helper.Special
     Remote.Helper.Ssh
+    Remote.Http
     Remote.Hook
     Remote.List
     Remote.List.Util

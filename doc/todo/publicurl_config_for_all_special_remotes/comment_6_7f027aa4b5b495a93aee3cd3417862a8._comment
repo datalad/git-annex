@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-09-01T19:09:30Z"
+ content="""
+I've implemented the http special remote, that can be combined with other
+special remotes to access them using anonymous http.
+
+I think that probably addresses this todo well enough to close it.
+(Although I didn't get around to
+[[todo/make_http_special_remote_support_exporttree_remotes]] yet, and this
+todo mentions supporting exporttree. Should be easy to add later though.)
+
+There are probably some special remotes that are unusual enough that the
+http special remote can't support them, which it would make sense to add a
+publicurl= config to, like S3 has. (Although I think S3 itself could now be
+used with the http special remote so its option is vestigal now.)
+
+I guess that publicurl= config would best be added to the individual
+special remote, so it doesn't need any particular support in git-annex to
+add it.
+"""]]

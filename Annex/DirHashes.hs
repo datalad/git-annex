@@ -59,7 +59,7 @@ branchHashDir = hashDirLower . branchHashLevels
  - which do not allow using a directory "XX" when "xx" already exists.
  - To support that, some git-annex repositories use the lower case-hash.
  - All special remotes use the lower-case hash for new data, but old data
- - may still used the mixed case hash. -}
+ - may still use the mixed case hash. -}
 dirHashes :: [HashLevels -> Hasher]
 dirHashes = [hashDirLower, hashDirMixed]
 
