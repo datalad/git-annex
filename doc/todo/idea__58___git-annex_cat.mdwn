@@ -18,3 +18,5 @@ git annex cat "myvideo.mp4" -f googledrive | vlc -
 ```
 
 I imagine that there might be issues with verification. But I really am ok with not verifying a video file I am streaming.
+
+> [[dup|done]] --[[Joey]]
