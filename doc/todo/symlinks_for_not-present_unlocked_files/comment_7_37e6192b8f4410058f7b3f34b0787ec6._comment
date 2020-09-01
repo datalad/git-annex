@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-09-01T19:32:13Z"
+ content="""
+annex.thin could be combined with this. Imagine a `git annex adjust` mode
+that represents present files as annex pointer files to git, and that makes
+them hardlinks to the object files, but with the write bit removed, so
+they're still effectively locked. And non-present files are represented as
+dangling symlinks.
+"""]]

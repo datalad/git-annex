@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-01T19:20:07Z"
+ content="""
+It would have to be represented to git the same as unlocked files are (as
+annex pointer files) because representing as symlinks would cause eg
+`git add` to do the wrong thing.
+
+So the git tree would be the same as `git annex adjust --unlock` sets up.
+The only difference then seems like it would be the mode of the files,
+which would all have their write bits removed.
+
+Unofortunately, that means no easy spotting of removed files via broken
+symlinks.
+
+And it seems all the files in the tree would need to be locked in this way,
+because there's no way to differentiate at the git level between an
+unlocked file and a file locked in this way (since git does not track write
+bits).
+
+If [[todo/symlinks_for_not-present_unlocked_files]] got implemented, it
+could work though. Ie, have a `git annex adjust` mode that represents
+present files as unlocked, but with the write bits unset, and that
+represents missing files as symlinks. Added a note to that todo about the
+idea.
+"""]]
