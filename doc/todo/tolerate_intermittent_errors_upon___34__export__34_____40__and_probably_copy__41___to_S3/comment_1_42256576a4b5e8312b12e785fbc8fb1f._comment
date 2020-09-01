@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-01T19:38:00Z"
+ content="""
+It doesn't, but what it is supposed to do is resume a failed export
+efficiently. It remembers which files it has already exported, and
+should jump right to the one that failed. Necessarily starting from the
+beginning in uploading it because the API does not allow resuming at the
+byte it left off.
+
+So I'd like to first check that works, because it seems more important that
+work well.
+
+That said, seems like if annex.retry is configured, it should honor it.
+At first glance, this may be all that's needed:
+
+	diff --git a/Command/Export.hs b/Command/Export.hs
+	index d1fde25d1..db52609a7 100644
+	--- a/Command/Export.hs
+	+++ b/Command/Export.hs
+	@@ -281,9 +281,7 @@ performExport r db ek af contentsha loc allfilledvar = do
+	 	sent <- tryNonAsync $ case ek of
+	 		AnnexKey k -> ifM (inAnnex k)
+	 			( notifyTransfer Upload af $
+	-				-- Using noRetry here because interrupted
+	-				-- exports cannot be resumed.
+	-				upload (uuid r) k af noRetry $ \pm -> do
+	+				upload (uuid r) k af configuredRetry $ \pm -> do
+	 					let rollback = void $
+	 						performUnexport r db [ek] loc
+	 					sendAnnex k rollback $ \f ->
+
+
+(stdRetry might be ok too, just a question of whether forwardRetry would
+retry excessively in some cases.)
+"""]]
