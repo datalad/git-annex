@@ -159,8 +159,10 @@ removeAuthorizedKeys gitannexshellonly dir pubkey = do
 	let keyline = authorizedKeysLine gitannexshellonly dir pubkey
 	sshdir <- sshDir
 	let keyfile = sshdir </> "authorized_keys"
-	ls <- lines <$> readFileStrict keyfile
-	viaTmp writeSshConfig keyfile $ unlines $ filter (/= keyline) ls
+	tryWhenExists (lines <$> readFileStrict keyfile) >>= \case
+		Just ls -> viaTmp writeSshConfig keyfile $
+			unlines $ filter (/= keyline) ls
+		Nothing -> noop
 
 {- Implemented as a shell command, so it can be run on remote servers over
  - ssh.
