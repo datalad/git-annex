@@ -1,0 +1,15 @@
+When exporting a tree to a directory special remote, files are written mode
+600. This prevents eg, publishing them by http, and then accessing them
+with httpalso special remote.
+
+`viaTmp` creates a temp file, with temp file perms. Either it should use
+umask perms, or all callers that don't explicitly set perms should.
+
+This also affects some other things, eg hook files written by git-annex
+init, and some stuff in ~/.config/git-annex like autostart.
+
+`withTmpFileIn` also uses openTempFile, and probably its callers do need to
+adjust perms if desired since it could be used with a real temp directory.
+
+There are also a couple of other uses of openTempFile, which need to be
+audited for this problem. --[[Joey]]
