@@ -31,6 +31,7 @@ import Remote.Helper.ExportImport
 import Types.Import
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.Content
+import Annex.Perms
 import Annex.UUID
 import Backend
 import Types.KeySource
@@ -436,6 +437,7 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do
 		liftIO $ withMeteredFile src p (L.hPut tmph)
 		liftIO $ hFlush tmph
 		liftIO $ hClose tmph
+		resetAnnexFilePerm tmpf
 		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
 			Nothing -> giveup "unable to generate content identifier"
 			Just newcid -> do

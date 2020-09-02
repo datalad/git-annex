@@ -11,5 +11,11 @@ init, and some stuff in ~/.config/git-annex like autostart.
 `withTmpFileIn` also uses openTempFile, and probably its callers do need to
 adjust perms if desired since it could be used with a real temp directory.
 
+> Audited and fixed these. It affected only directory special remote and
+> bittorrent special remote if a download from it were interrupted and then
+> resumed by a different user than the one who started it. --[[Joey]]
+
 There are also a couple of other uses of openTempFile, which need to be
 audited for this problem. --[[Joey]]
+
+> Checked, all were ok. --[[Joey]]

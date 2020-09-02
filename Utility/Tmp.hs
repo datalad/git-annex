@@ -30,6 +30,10 @@ type Template = String
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames.
+ -
+ - Note that the tmp file will have a file mode that only allows the
+ - current user to access it. The write action can change the mode
+ - to whatever is desired.
  -}
 viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> v -> m ()) -> FilePath -> v -> m ()
 viaTmp a file content = bracketIO setup cleanup use
@@ -55,7 +59,11 @@ withTmpFile template a = do
 	withTmpFileIn tmpdir template a
 
 {- Runs an action with a tmp file located in the specified directory,
- - then removes the file. -}
+ - then removes the file.
+ -
+ - Note that the tmp file will have a file mode that only allows the
+ - current user to access it.
+ -}
 withTmpFileIn :: (MonadIO m, MonadMask m) => FilePath -> Template -> (FilePath -> Handle -> m a) -> m a
 withTmpFileIn tmpdir template a = bracket create remove use
   where

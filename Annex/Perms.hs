@@ -9,6 +9,7 @@ module Annex.Perms (
 	FileMode,
 	setAnnexFilePerm,
 	setAnnexDirPerm,
+	resetAnnexFilePerm,
 	annexFileMode,
 	createAnnexDirectory,
 	createWorkTreeDirectory,
@@ -42,23 +43,49 @@ setAnnexDirPerm = setAnnexPerm True
 
 {- Sets appropriate file mode for a file or directory in the annex,
  - other than the content files and content directory. Normally,
- - use the default mode, but with core.sharedRepository set,
+ - don't change the mode, but with core.sharedRepository set,
  - allow the group to write, etc. -}
 setAnnexPerm :: Bool -> FilePath -> Annex ()
-setAnnexPerm isdir file = unlessM crippledFileSystem $
+setAnnexPerm = setAnnexPerm' Nothing
+
+setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> FilePath -> Annex ()
+setAnnexPerm' modef isdir file = unlessM crippledFileSystem $
 	withShared $ liftIO . go
   where
-	go GroupShared = void $ tryIO $ modifyFileMode file $ addModes $
+	go GroupShared = void $ tryIO $ modifyFileMode file $ modef' $
 		groupSharedModes ++
 		if isdir then [ ownerExecuteMode, groupExecuteMode ] else []
-	go AllShared = void $ tryIO $ modifyFileMode file $ addModes $
+	go AllShared = void $ tryIO $ modifyFileMode file $ modef' $
 		readModes ++
 		[ ownerWriteMode, groupWriteMode ] ++
 		if isdir then executeModes else []
-	go _ = noop
+	go _ = case modef of
+		Nothing -> noop
+		Just f -> void $ tryIO $
+			modifyFileMode file $ f []
+	modef' = fromMaybe addModes modef
+
+resetAnnexFilePerm :: FilePath -> Annex ()
+resetAnnexFilePerm = resetAnnexPerm False
+
+{- Like setAnnexPerm, but ignores the current mode of the file entirely,
+ - and sets the same mode that the umask would result in when creating a
+ - new file.
+ -
+ - Useful eg, after creating a temporary file with locked down modes,
+ - which is going to be moved to a non-temporary location and needs
+ - usual modes.
+ -}
+resetAnnexPerm :: Bool -> FilePath -> Annex ()
+resetAnnexPerm isdir file = unlessM crippledFileSystem $ do
+	defmode <- liftIO defaultFileMode
+	let modef moremodes _oldmode = addModes moremodes defmode
+	setAnnexPerm' (Just modef) isdir file
 
 {- Gets the appropriate mode to use for creating a file in the annex
- - (other than content files, which are locked down more). -}
+ - (other than content files, which are locked down more). The umask is not
+ - taken into account; this is for use with actions that create the file
+ - and apply the umask automatically. -}
 annexFileMode :: Annex FileMode
 annexFileMode = withShared $ return . go
   where
