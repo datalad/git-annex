@@ -6,7 +6,7 @@
 ```touch foo
 chmod 755 foo
 git-annex add foo
-./foo
+ls -lL foo
 ```
 
 ### What version of git-annex are you using? On what operating system?
@@ -25,6 +25,7 @@ local repository version: 5
 
 ### Please provide any additional information below.
 
+```
 $ touch foo
 $ chmod 755 foo
 $ ls -l foo
@@ -34,6 +35,7 @@ add foo ok
 (recording state in git...)
 $ ls -lL foo
 -rw-rw-rw- 1 hans hans 65 jul 24  2015 foo
+```
 
 NB: the date is now jul 24 2015, but I created foo 2 sep, so what happened here? (This annex is old, so I might have created a file foo in 2015, but that should not intere with this new file).
 
