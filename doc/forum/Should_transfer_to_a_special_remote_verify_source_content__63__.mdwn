@@ -46,17 +46,28 @@ git init a
 
     git annex initremote d type=directory directory="$PWD"/../d encryption=none
     git annex copy --to=d
-
-    git annex drop --force one
+    git annex drop one
     git annex get one
 )
 """]]
 
 ```
 [...]
-copy one (to d...)
-ok
+copy one (to d...) 
+ok                              
 (recording state in git...)
+drop one ok
+(recording state in git...)
+get one (from d...) 
+                                
+  verification of content failed
+
+  Unable to access these remotes: d
+
+  Try making some of these repositories available:
+  	e6878750-3a21-4ae9-b9ae-a241f17176a4 -- [d]
+failed
+git-annex: get: 1 failed
 ```
 
 [[!meta author=kyle]]
