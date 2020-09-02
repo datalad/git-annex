@@ -15,15 +15,16 @@ import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Remote.Helper.Special
 import qualified Git
-import Annex.Content
 import Config.Cost
 import Config
 import Logs.Web
 import Creds
+import Messages.Progress
 import Utility.Metered
 import qualified Annex.Url as Url
 import Annex.SpecialRemote.Config
 
+import Data.Either
 import qualified Data.Map as M
 import System.FilePath.Posix as P
 import Control.Concurrent.STM
@@ -110,18 +111,21 @@ httpAlsoSetup _ (Just u) _ c gc = do
 
 downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 downloadKey baseurl ll key _af dest p = do
-	unlessM (keyUrlAction baseurl ll key (downloadKey' key dest p)) $
-		giveup "download failed"
+	downloadAction dest p key (keyUrlAction baseurl ll key)
 	return UnVerified
-
-downloadKey' :: Key -> FilePath -> MeterUpdate -> URLString -> Annex Bool
-downloadKey' key dest p url =
-	Url.withUrlOptions $ downloadUrl key p [url] dest
 
 retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
 retriveExportHttpAlso baseurl key loc dest p = 
-	unlessM (exportLocationUrlAction baseurl loc (downloadKey' key dest p)) $
-		giveup "download failed"
+	downloadAction dest p key (exportLocationUrlAction baseurl loc)
+
+downloadAction :: FilePath -> MeterUpdate -> Key -> ((URLString -> Annex Bool) -> Annex Bool) -> Annex ()
+downloadAction dest p key run =
+	meteredFile dest (Just p) key $
+		unlessM (run downloader) $
+			giveup "download failed"
+  where
+	downloader url = isRight
+		<$> Url.withUrlOptions (Url.download' p url dest)
 
 checkKey :: Maybe URLString -> LearnedLayout -> Remote -> Key -> Annex Bool
 checkKey baseurl ll r key = do
