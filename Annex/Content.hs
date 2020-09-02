@@ -807,8 +807,15 @@ downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Url.UrlOptio
 downloadUrl k p urls file uo = 
 	-- Poll the file to handle configurations where an external
 	-- download command is used.
-	meteredFile file (Just p) k $
-		anyM (\u -> Url.download p u file uo) urls
+	meteredFile file (Just p) k (go urls Nothing)
+  where
+  	-- Display only one error message, if all the urls fail to
+	-- download.
+	go [] (Just err) = warning err >> return False
+	go [] Nothing = return False
+	go (u:us) _ = Url.download' p u file uo >>= \case
+		Right () -> return True
+		Left err -> go us (Just err)
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}
