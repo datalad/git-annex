@@ -37,7 +37,7 @@ $ ls -lL foo
 -rw-rw-rw- 1 hans hans 65 jul 24  2015 foo
 ```
 
-NB: the date is now jul 24 2015, but I created foo 2 sep, so what happened here? (This annex is old, so I might have created a file foo in 2015, but that should not intere with this new file).
+NB: the date of the file is now jul 24 2015, but I created foo 2 sep, so what happened here? (This annex is old, so I might have created a file foo in 2015, but that should not intere with this new file).
 
 I have my private binaries in ~/annex/bin and this has worked well for many years, but recently it stopped working.
 
