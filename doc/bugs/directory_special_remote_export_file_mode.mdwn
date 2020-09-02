@@ -8,6 +8,8 @@ umask perms, or all callers that don't explicitly set perms should.
 This also affects some other things, eg hook files written by git-annex
 init, and some stuff in ~/.config/git-annex like autostart.
 
+> [[fixed|done]] --[[Joey]]
+
 `withTmpFileIn` also uses openTempFile, and probably its callers do need to
 adjust perms if desired since it could be used with a real temp directory.
 

@@ -8,6 +8,10 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     started, when that is more efficient.
   * Display warning when external special remote does not start up
     properly, or is not usable.
+  * Fixed several cases where files were created without file mode bits
+    that the umask would usually set. This included exports to the
+    directory special remote, torrent files used by the bittorrent special
+    remote, hooks written by git-annex init, and some log files in .git/annex/
   * stack.yaml: Updated to lts-16.10.
   * Fix reversion in 7.20190322 that made addurl --file not be honored
     when youtube-dl was used to download media.

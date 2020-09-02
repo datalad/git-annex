@@ -1,6 +1,6 @@
 {- Temporary files.
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -24,12 +24,17 @@ import System.PosixCompat.Files
 
 import Utility.Exception
 import Utility.FileSystemEncoding
+import Utility.FileMode
 
 type Template = String
 
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames.
+ -
+ - While this uses a temp file, the file will end up with the same
+ - mode as it would when using writeFile, unless the writer action changes
+ - it.
  -}
 viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> v -> m ()) -> FilePath -> v -> m ()
 viaTmp a file content = bracketIO setup cleanup use
@@ -43,6 +48,11 @@ viaTmp a file content = bracketIO setup cleanup use
 		_ <- tryIO $ hClose h
 		tryIO $ removeFile tmpfile
 	use (tmpfile, h) = do
+		-- Make mode the same as if the file were created usually,
+		-- not as a temp file. (This may fail on some filesystems
+		-- that don't support file modes well, so ignore
+		-- exceptions.)
+		void $ tryIO $ setFileMode tmpfile =<< defaultFileMode
 		liftIO $ hClose h
 		a tmpfile content
 		liftIO $ rename tmpfile file
