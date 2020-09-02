@@ -10,6 +10,7 @@ module Remote.HttpAlso (remote) where
 import Annex.Common
 import Types.Remote
 import Types.ProposedAccepted
+import Types.Export
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Remote.Helper.Special
@@ -37,7 +38,7 @@ remote = RemoteType
 			(FieldDesc "(required) url to the remote content")
 		]
 	, setup = httpAlsoSetup
-	, exportSupported = exportUnsupported
+	, exportSupported = exportIsSupported
 	, importSupported = importUnsupported
 	}
 
@@ -56,17 +57,24 @@ gen r u rc gc rs = do
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
-		, storeKey = uploadKey
+		, storeKey = cannotModify
 		, retrieveKeyFile = downloadKey url ll
 		, retrieveKeyFileCheap = Nothing
 		-- HttpManagerRestricted is used here, so this is
 		-- secure.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
-		, removeKey = dropKey
+		, removeKey = cannotModify
 		, lockContent = Nothing
 		, checkPresent = checkKey url ll (this url ll c cst)
 		, checkPresentCheap = False
-		, exportActions = exportUnsupported
+		, exportActions = ExportActions
+			{ storeExport = cannotModify
+			, retrieveExport = retriveExportHttpAlso url
+			, removeExport = cannotModify
+			, checkPresentExport = checkPresentExportHttpAlso url
+			, removeExportDirectory = Nothing
+			, renameExport = cannotModify
+			}
 		, importActions = importUnsupported
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
@@ -86,6 +94,9 @@ gen r u rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
+cannotModify :: a
+cannotModify = giveup "httpalso special remote is read only"
+
 httpAlsoSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 httpAlsoSetup _ Nothing _ _ _ =
 	error "Must use --sameas when initializing a httpalso remote."
@@ -99,23 +110,30 @@ httpAlsoSetup _ (Just u) _ c gc = do
 
 downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 downloadKey baseurl ll key _af dest p = do
-	unlessM (urlAction baseurl ll key go) $
+	unlessM (keyUrlAction baseurl ll key (downloadKey' key dest p)) $
 		giveup "download failed"
 	return UnVerified
-  where
-	go url = Url.withUrlOptions $ downloadUrl key p [url] dest
 
-uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
-uploadKey _ _ _ = giveup "upload to httpalso special remote not supported"
+downloadKey' :: Key -> FilePath -> MeterUpdate -> URLString -> Annex Bool
+downloadKey' key dest p url =
+	Url.withUrlOptions $ downloadUrl key p [url] dest
 
-dropKey :: Key -> Annex ()
-dropKey _ = giveup "removal from httpalso special remote not supported"
+retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
+retriveExportHttpAlso baseurl key loc dest p = 
+	unlessM (exportLocationUrlAction baseurl loc (downloadKey' key dest p)) $
+		giveup "download failed"
 
 checkKey :: Maybe URLString -> LearnedLayout -> Remote -> Key -> Annex Bool
 checkKey baseurl ll r key = do
 	showChecking r
-	urlAction baseurl ll key $ \url -> 
-		Url.withUrlOptions $ Url.checkBoth url (fromKey keySize key)
+	keyUrlAction baseurl ll key (checkKey' key)
+
+checkKey' :: Key -> URLString -> Annex Bool
+checkKey' key url = Url.withUrlOptions $ Url.checkBoth url (fromKey keySize key)
+
+checkPresentExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> Annex Bool
+checkPresentExportHttpAlso baseurl key loc =
+	exportLocationUrlAction baseurl loc (checkKey' key)
 
 type LearnedLayout = TVar (Maybe [Key -> URLString])
 
@@ -125,8 +143,8 @@ newLearnedLayout = newTVarIO Nothing
 -- Learns which layout the special remote uses, so the once any
 -- action on an url succeeds, subsequent calls will continue to use that
 -- layout (or related layouts).
-urlAction :: Maybe URLString -> LearnedLayout -> Key -> (URLString -> Annex Bool) -> Annex Bool
-urlAction (Just baseurl) ll key a = liftIO (readTVarIO ll) >>= \case
+keyUrlAction :: Maybe URLString -> LearnedLayout -> Key -> (URLString -> Annex Bool) -> Annex Bool
+keyUrlAction (Just baseurl) ll key a = liftIO (readTVarIO ll) >>= \case
 	Just learned -> go False [learned]
 	Nothing -> go True (supportedLayouts baseurl)
   where
@@ -144,9 +162,16 @@ urlAction (Just baseurl) ll key a = liftIO (readTVarIO ll) >>= \case
 				return True
 			, go' learn rest (layout:prevs)
 			)
-			
+keyUrlAction Nothing _ _ _ = noBaseUrlError
+
+exportLocationUrlAction :: Maybe URLString -> ExportLocation -> (URLString -> Annex Bool) -> Annex Bool
+exportLocationUrlAction (Just baseurl) loc a =
+	a (baseurl P.</> fromRawFilePath (fromExportLocation loc))
+exportLocationUrlAction Nothing _ _ = noBaseUrlError
+
 -- cannot normally happen
-urlAction Nothing _ _ _ = giveup "no url configured for httpalso special remote"
+noBaseUrlError :: Annex a
+noBaseUrlError = giveup "no url configured for httpalso special remote"
 
 -- Different ways that keys can be laid out in the special remote,
 -- with the more common first.

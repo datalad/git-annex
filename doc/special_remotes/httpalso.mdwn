@@ -26,3 +26,8 @@ for a list of known working combinations.
 
 * `url` - The http or https url to where the content is stored by the
   other special remote.
+* `exporttree` - If the other special remote has `exporttree=yes` set,
+  it also needs to be set when initializing the httpalso remote.
+  Setting this does not allow trees to be exported to the httpalso remote,
+  because it's read-only. But it does let exported files be downloaded
+  from it.

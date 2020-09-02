@@ -29,7 +29,8 @@ type Template = String
 
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
- - directory as the final file to avoid cross-device renames. -}
+ - directory as the final file to avoid cross-device renames.
+ -}
 viaTmp :: (MonadMask m, MonadIO m) => (FilePath -> v -> m ()) -> FilePath -> v -> m ()
 viaTmp a file content = bracketIO setup cleanup use
   where
