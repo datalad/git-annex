@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="verifying source contents"
+ date="2020-09-02T15:35:18Z"
+ content="""
+This would especially make sense when sending files to a trusted special remote, where the file may be the only copy.
+Maybe, set the mtime of all files (and directories) in .git/annex/objects to some sentinel value after they're written, then check if the mtime still has that value before sending the file elsewhere?
+
+If a special remote [[supports named pipes|todo/let_external_remotes_declare_support_for_named_pipes]], the verification could be done on-the-fly as the file is streamed to the remote.
+
+
+"""]]
