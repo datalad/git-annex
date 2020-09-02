@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-09-02T02:53:21Z"
+ content="""
+yep, would have been nice if git-annex either asked youtube-dl or just figured out itself to map URL to `https://www.youtube.com/feeds/videos.xml?playlist_id=ID` to get a feed for a copy/pasted playlist URL.
+"""]]
