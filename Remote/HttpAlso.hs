@@ -118,26 +118,27 @@ retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath ->
 retriveExportHttpAlso baseurl key loc dest p = 
 	downloadAction dest p key (exportLocationUrlAction baseurl loc)
 
-downloadAction :: FilePath -> MeterUpdate -> Key -> ((URLString -> Annex Bool) -> Annex Bool) -> Annex ()
+downloadAction :: FilePath -> MeterUpdate -> Key -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
 downloadAction dest p key run =
-	meteredFile dest (Just p) key $
-		unlessM (run downloader) $
-			giveup "download failed"
-  where
-	downloader url = isRight
-		<$> Url.withUrlOptions (Url.download' p url dest)
+	Url.withUrlOptions $ \uo ->
+		meteredFile dest (Just p) key $
+			run (\url -> Url.download' p url dest uo)
+				>>= either giveup (const (return ()))
 
 checkKey :: Maybe URLString -> LearnedLayout -> Remote -> Key -> Annex Bool
 checkKey baseurl ll r key = do
 	showChecking r
-	keyUrlAction baseurl ll key (checkKey' key)
+	isRight <$> keyUrlAction baseurl ll key (checkKey' key)
 
-checkKey' :: Key -> URLString -> Annex Bool
-checkKey' key url = Url.withUrlOptions $ Url.checkBoth url (fromKey keySize key)
+checkKey' :: Key -> URLString -> Annex (Either String ())
+checkKey' key url = ifM (Url.withUrlOptions $ Url.checkBoth url (fromKey keySize key))
+	( return (Right ())
+	, return (Left "content not found")
+	)
 
 checkPresentExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> Annex Bool
 checkPresentExportHttpAlso baseurl key loc =
-	exportLocationUrlAction baseurl loc (checkKey' key)
+	isRight <$> exportLocationUrlAction baseurl loc (checkKey' key)
 
 type LearnedLayout = TVar (Maybe [Key -> URLString])
 
@@ -147,28 +148,40 @@ newLearnedLayout = newTVarIO Nothing
 -- Learns which layout the special remote uses, so the once any
 -- action on an url succeeds, subsequent calls will continue to use that
 -- layout (or related layouts).
-keyUrlAction :: Maybe URLString -> LearnedLayout -> Key -> (URLString -> Annex Bool) -> Annex Bool
-keyUrlAction (Just baseurl) ll key a = liftIO (readTVarIO ll) >>= \case
-	Just learned -> go False [learned]
-	Nothing -> go True (supportedLayouts baseurl)
+keyUrlAction
+	:: Maybe URLString
+	-> LearnedLayout
+	-> Key
+	-> (URLString -> Annex (Either String ()))
+	-> Annex (Either String ())
+keyUrlAction (Just baseurl) ll key downloader =
+	liftIO (readTVarIO ll) >>= \case
+		Just learned -> go Nothing False [learned]
+		Nothing -> go Nothing True (supportedLayouts baseurl)
   where
-	go _learn [] = return False
-	go learn (layouts:rest) = go' learn layouts [] <||> go learn rest
+	go err learn [] = go' err learn [] []
+	go err learn (layouts:rest) = go' err learn layouts [] >>= \case
+		Right () -> return (Right ())
+		Left err' -> go (Just err') learn rest
 	
-	go' _ [] _ = return False
-	go' learn (layout:rest) prevs = 
-		ifM (a (layout key))
-			( do
+	go' (Just err) _ [] _ = pure (Left err)
+	go' Nothing _ [] _ = error "internal"
+	go' _err learn (layout:rest) prevs = 
+		downloader (layout key) >>= \case
+			Right () -> do
 				when learn $ do
 					let learned = layout:prevs++rest
 					liftIO $ atomically $
 						writeTVar ll (Just learned)
-				return True
-			, go' learn rest (layout:prevs)
-			)
+				return (Right ())
+			Left err -> go' (Just err) learn rest (layout:prevs)
 keyUrlAction Nothing _ _ _ = noBaseUrlError
 
-exportLocationUrlAction :: Maybe URLString -> ExportLocation -> (URLString -> Annex Bool) -> Annex Bool
+exportLocationUrlAction
+	:: Maybe URLString
+	-> ExportLocation
+	-> (URLString -> Annex (Either String ()))
+	-> Annex (Either String ())
 exportLocationUrlAction (Just baseurl) loc a =
 	a (baseurl P.</> fromRawFilePath (fromExportLocation loc))
 exportLocationUrlAction Nothing _ _ = noBaseUrlError
