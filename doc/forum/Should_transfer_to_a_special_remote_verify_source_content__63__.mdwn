@@ -1,0 +1,74 @@
+A [DataLad issue](https://github.com/datalad/datalad/issues/4795) was
+raised about users inadvertently corrupting locked files.  That led to
+an example where a user could copy corrupted content over to a special
+remote, and the content isn't flagged until a `get` call.  (A slightly
+different example, based on a directory remote and without
+`exporttree=yes`, is included below.)
+
+In the case of a regular remote, the `copy` call would fail earlier
+with
+
+```
+  verification of content failed
+
+  failed to send content to remote
+
+
+  verification of content failed
+
+  failed to send content to remote
+failed
+git-annex: copy: 1 failed
+```
+
+Should something similar happen when copying or exporting to a special
+remote?  Perhaps verification before transfer to a special remote
+isn't worth it, but the successful transfer surprised me given the
+behavior when transferring to regular remotes.
+
+[[!format sh """
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/dl-XXXXXXX)"
+
+mkdir d
+git init a
+(
+    cd a
+    git annex init
+
+    echo one >one
+    git annex add one
+    git commit -mone
+
+    one_resolved=$(readlink -f one)
+    chmod +w $one_resolved
+    echo more >>$one_resolved
+    chmod -w $one_resolved
+
+    git annex initremote d type=directory directory="$PWD"/../d encryption=none
+    git annex copy --to=d
+    git annex drop one
+    git annex get one
+)
+"""]]
+
+```
+[...]
+copy one (to d...) 
+ok                              
+(recording state in git...)
+drop one ok
+(recording state in git...)
+get one (from d...) 
+                                
+  verification of content failed
+
+  Unable to access these remotes: d
+
+  Try making some of these repositories available:
+  	e6878750-3a21-4ae9-b9ae-a241f17176a4 -- [d]
+failed
+git-annex: get: 1 failed
+```
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]

@@ -1,0 +1,49 @@
+### Please describe the problem.
+
+
+### What steps will reproduce the problem?
+
+```touch foo
+chmod 755 foo
+git-annex add foo
+ls -lL foo
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 7.20190129
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+```
+
+### Please provide any additional information below.
+
+```
+$ touch foo
+$ chmod 755 foo
+$ ls -l foo
+-rwxr-xr-x 1 hans hans 0 sep  2 15:00 foo
+$ git-annex add foo
+add foo ok
+(recording state in git...)
+$ ls -lL foo
+-rw-rw-rw- 1 hans hans 65 jul 24  2015 foo
+```
+
+NB: the date of the file is now jul 24 2015, but I created foo 2 sep, so what happened here? (This annex is old, so I might have created a file foo in 2015, but that should not intere with this new file).
+
+I have my private binaries in ~/annex/bin and this has worked well for many years, but recently it stopped working.
+
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've used git-annex since summer 2012, it's great :-)
+

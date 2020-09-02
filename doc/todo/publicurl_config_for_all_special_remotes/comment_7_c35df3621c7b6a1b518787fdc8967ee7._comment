@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2020-09-01T20:49:59Z"
+ content="""
+Awesome, Thank you!  I [still](https://git-annex.branchable.com/todo/generic_readonly_http_remote/#comment-f6e076370814fcfab3a4d203a1adf326) think that it could be named more generically than `http` (e.g. probably could remap to public `rsync://`, `ftp://` or `s3://` to which git-annex knows how to \"talk to\") even if ATM supporting only `http/https`, but I guess time will show if that would be needed.
+"""]]
