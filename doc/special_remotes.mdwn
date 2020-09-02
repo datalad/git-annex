@@ -21,9 +21,10 @@ the git history is not stored in them.
 * [[S3]] (Amazon S3, and other compatible services)
 * [[tahoe]]
 * [[tor]]
-* [[web]] and [[http]]
+* [[web]]
 * [[webdav]]
 * [[git]]
+* [[httpalso]]
 * [[xmpp]]
 
 The above special remotes are built into git-annex, and can be used

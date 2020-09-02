@@ -1,5 +1,5 @@
 This special remote allows downloading annexed objects from other remotes
-that expose their content by http. Not to be confused with the [[web]]
+that also publish their content by http. Not to be confused with the [[web]]
 special remote, this one is only useful in combination with some other
 special remote.
 
@@ -7,14 +7,14 @@ Suppose, for example, that you have a [[directory]] special remote. And the
 directory happens to be published by a web server. (Or it could be a
 [[rsync]] special remote, or many other kinds.) To let git-annex know that
 the content of this special remote can also be accessed over http, set up
-a http special remote.
+a httpalso special remote.
 
-	git annex initremote --sameas=foo foo-http type=http url=http://example.com/foo
+	git annex initremote --sameas=foo foo-http type=httpalso url=http://example.com/foo
 
-The --sameas parameter tells git-annex what other special remote this http
+The --sameas parameter tells git-annex what other special remote this httpalso
 remote is accessing. (See [[tips/multiple_remotes_accessing_the_same_data_store]].)
-Since the http remote is read-only, it can only be used to download content
-that is stored in that other remote.
+Since the httpalso remote is read-only, it can only be used to download
+content that is stored in that other remote.
 
 This special remote is compatible with many, but not all, other special
 remotes. If the special remote does something unusual with the name

@@ -10,4 +10,4 @@ it cannot upload to it or remove content.
 This special remote uses urls on the web as the source for content.
 There are several other ways http can be used to download annexed objects,
 including a git remote accessible by http, S3 with a `publicurl` configured,
-and the [[http]] special remote.
+and the [[httpalso]] special remote.

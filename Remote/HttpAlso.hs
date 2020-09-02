@@ -1,11 +1,11 @@
-{- Http remote (readonly).
+{- HttpAlso remote (readonly).
  -
  - Copyright 2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Remote.Http (remote) where
+module Remote.HttpAlso (remote) where
 
 import Annex.Common
 import Types.Remote
@@ -29,14 +29,14 @@ import Control.Concurrent.STM
 
 remote :: RemoteType
 remote = RemoteType
-	{ typename = "http"
-	, enumerate = const (findSpecialRemotes "http")
+	{ typename = "httpalso"
+	, enumerate = const (findSpecialRemotes "httpalso")
 	, generate = gen
 	, configParser = mkRemoteConfigParser 
 		[ optionalStringParser urlField
 			(FieldDesc "(required) url to the remote content")
 		]
-	, setup = httpSetup
+	, setup = httpAlsoSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	}
@@ -86,15 +86,15 @@ gen r u rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-httpSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-httpSetup _ Nothing _ _ _ =
-	error "Must use --sameas when initializing a http remote."
-httpSetup _ (Just u) _ c gc = do
+httpAlsoSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+httpAlsoSetup _ Nothing _ _ _ =
+	error "Must use --sameas when initializing a httpalso remote."
+httpAlsoSetup _ (Just u) _ c gc = do
 	_url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)
 		(M.lookup urlField c)
 	(c', _encsetup) <- encryptionSetup c gc
-	gitConfigSpecialRemote u c' [("http", "true")]
+	gitConfigSpecialRemote u c' [("httpalso", "true")]
 	return (c', u)
 
 downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
@@ -106,10 +106,10 @@ downloadKey baseurl ll key _af dest p = do
 	go url = Url.withUrlOptions $ downloadUrl key p [url] dest
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
-uploadKey _ _ _ = giveup "upload to http special remote not supported"
+uploadKey _ _ _ = giveup "upload to httpalso special remote not supported"
 
 dropKey :: Key -> Annex ()
-dropKey _ = giveup "removal from http special remote not supported"
+dropKey _ = giveup "removal from httpalso special remote not supported"
 
 checkKey :: Maybe URLString -> LearnedLayout -> Remote -> Key -> Annex Bool
 checkKey baseurl ll r key = do
@@ -146,7 +146,7 @@ urlAction (Just baseurl) ll key a = liftIO (readTVarIO ll) >>= \case
 			)
 			
 -- cannot normally happen
-urlAction Nothing _ _ _ = giveup "no url configured for http special remote"
+urlAction Nothing _ _ _ = giveup "no url configured for httpalso special remote"
 
 -- Different ways that keys can be laid out in the special remote,
 -- with the more common first.

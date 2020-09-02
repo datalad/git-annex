@@ -16,4 +16,4 @@ access of other special remotes whose data stores are exposed via http.
 Call it "http" maybe. (There may be some confusion between this and the web
 special remote by users looking for such a thing.) --[[Joey]]
 
-> http special remote implemented, [[done]] --[[Joey]]
+> httpalso special remote implemented, [[done]] --[[Joey]]

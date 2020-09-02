@@ -1,7 +1,7 @@
 git-annex (8.20200815) UNRELEASED; urgency=medium
 
-  * Added http special remote, which is useful for accessing other remotes
-    that publish content stored in them via http/https.
+  * Added httpalso special remote, which is useful for accessing 
+    content stored on other remotes that is published by http.
   * The external special remote protocol got an ASYNC extension.
     This can be used by an external special remote to let a single process
     perform concurrent actions, rather than multiple processes being
