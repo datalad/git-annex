@@ -52,7 +52,7 @@ viaTmp a file content = bracketIO setup cleanup use
 		-- not as a temp file. (This may fail on some filesystems
 		-- that don't support file modes well, so ignore
 		-- exceptions.)
-		void $ tryIO $ setFileMode tmpfile =<< defaultFileMode
+		_ <- liftIO $ tryIO $ setFileMode tmpfile =<< defaultFileMode
 		liftIO $ hClose h
 		a tmpfile content
 		liftIO $ rename tmpfile file
