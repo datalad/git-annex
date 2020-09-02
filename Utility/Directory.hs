@@ -110,16 +110,16 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 	onrename (Left e)
 		| isPermissionError e = rethrow
 		| isDoesNotExistError e = rethrow
-		| otherwise = viaTmp mv dest ""
+		| otherwise = viaTmp mv dest ()
 	  where
 		rethrow = throwM e
 
-		mv tmp _ = do
-		-- copyFile is likely not as optimised as
-		-- the mv command, so we'll use the command.
-		--
-		-- But, while Windows has a "mv", it does not seem very
-		-- reliable, so use copyFile there.
+		mv tmp () = do
+			-- copyFile is likely not as optimised as
+			-- the mv command, so we'll use the command.
+			--
+			-- But, while Windows has a "mv", it does not seem very
+			-- reliable, so use copyFile there.
 #ifndef mingw32_HOST_OS	
 			-- If dest is a directory, mv would move the file
 			-- into it, which is not desired.
