@@ -1,6 +1,6 @@
 {- File mode utilities.
  -
- - Copyright 2010-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -16,11 +16,7 @@ import System.IO
 import Control.Monad
 import System.PosixCompat.Types
 import System.PosixCompat.Files
-#ifndef mingw32_HOST_OS
-import System.Posix.Files (symbolicLinkMode)
-import Control.Monad.IO.Class (liftIO)
-#endif
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class
 import Foreign (complement)
 import Control.Monad.Catch
 
@@ -96,14 +92,6 @@ groupWriteRead f = modifyFileMode f $ addModes groupSharedModes
 
 checkMode :: FileMode -> FileMode -> Bool
 checkMode checkfor mode = checkfor `intersectFileModes` mode == checkfor
-
-{- Checks if a file mode indicates it's a symlink. -}
-isSymLink :: FileMode -> Bool
-#ifdef mingw32_HOST_OS
-isSymLink _ = False
-#else
-isSymLink = checkMode symbolicLinkMode
-#endif
 
 {- Checks if a file has any executable bits set. -}
 isExecutable :: FileMode -> Bool
