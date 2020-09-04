@@ -196,10 +196,13 @@ type NumRetries = Integer
 
 type RetryDecider = NumRetries -> TransferInfo -> TransferInfo -> Annex Bool
 
-{- The first RetryDecider will be checked first; only if it says not to
- - retry will the second one be checked. -}
+{- Both retry deciders are checked together, so if one chooses to delay,
+ - it will always take effect. -}
 combineRetryDeciders :: RetryDecider -> RetryDecider -> RetryDecider
-combineRetryDeciders a b = \n old new -> a n old new <||> b n old new
+combineRetryDeciders a b = \n old new -> do
+	ar <- a n old new
+	br <- b n old new
+	return (ar || br)
 
 noRetry :: RetryDecider
 noRetry _ _ _ = pure False
@@ -225,7 +228,7 @@ forwardRetry = \numretries old new -> pure $ and
 {- Retries a number of times with growing delays in between when enabled
  - by git configuration. -}
 configuredRetry :: RetryDecider
-configuredRetry numretries old new = do
+configuredRetry numretries _old new = do
 	(maxretries, Seconds initretrydelay) <- getcfg $ 
 		Remote.gitconfig <$> transferRemote new
 	if numretries < maxretries
