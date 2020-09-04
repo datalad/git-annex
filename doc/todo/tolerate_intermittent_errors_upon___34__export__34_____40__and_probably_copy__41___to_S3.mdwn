@@ -4,3 +4,5 @@ If git-annex already does that, please pardon my noise and close this TODO.
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+[[fixed|done]] --[[Joey]]

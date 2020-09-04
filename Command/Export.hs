@@ -281,9 +281,7 @@ performExport r db ek af contentsha loc allfilledvar = do
 	sent <- tryNonAsync $ case ek of
 		AnnexKey k -> ifM (inAnnex k)
 			( notifyTransfer Upload af $
-				-- Using noRetry here because interrupted
-				-- exports cannot be resumed.
-				upload (uuid r) k af noRetry $ \pm -> do
+				upload (uuid r) k af stdRetry $ \pm -> do
 					let rollback = void $
 						performUnexport r db [ek] loc
 					sendAnnex k rollback $ \f ->

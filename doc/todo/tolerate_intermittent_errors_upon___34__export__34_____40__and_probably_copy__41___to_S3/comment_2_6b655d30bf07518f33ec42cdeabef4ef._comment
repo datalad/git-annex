@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-09-04T17:00:11Z"
+ content="""
+What about the other side of export, import? Looks to me that does not
+retry either.
+"""]]

@@ -27,6 +27,7 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
   * Limit retrying of failed transfers when forward progress is being made
     to 5, to avoid some unusual edge cases where too much retrying could
     result in far more data transfer than makes sense.
+  * Retry transfers to exporttree=yes remotes same as for other remotes.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 
