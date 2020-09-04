@@ -35,6 +35,7 @@ import Annex.Content
 import Annex.Export
 import Annex.RemoteTrackingBranch
 import Annex.HashObject
+import Annex.Transfer
 import Command
 import Backend
 import Types.Key
@@ -411,8 +412,13 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 					const runimport
 	
 	dodownload cidmap db (loc, (cid, sz)) largematcher = do
+		f <- locworktreefile loc
+		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
-			k <- Remote.retrieveExportWithContentIdentifier ia loc cid tmpfile (mkkey loc tmpfile largematcher) p
+			k <- Remote.retrieveExportWithContentIdentifier
+				ia loc cid tmpfile 
+				(mkkey f tmpfile largematcher)
+				p
 			case keyGitSha k of
 				Nothing -> do
 					ok <- moveAnnex k tmpfile
@@ -431,16 +437,17 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				warning (show e)
 				return Nothing
 		checkDiskSpaceToGet tmpkey Nothing $
-			withTmp tmpkey $ \tmpfile ->
-				metered Nothing tmpkey $
-					const (rundownload tmpfile)
+			notifyTransfer Download af $
+				download (Remote.uuid remote) tmpkey af stdRetry $ \p ->
+					withTmp tmpkey $ \tmpfile ->
+						metered (Just p) tmpkey $
+							const (rundownload tmpfile)
 	  where
 		tmpkey = importKey cid sz
-		
+	
 	ia = Remote.importActions remote
 	
-	mkkey loc tmpfile largematcher = do
-		f <- fromRepo $ fromTopFilePath $ locworktreefilename loc
+	mkkey f tmpfile largematcher = do
 		matcher <- largematcher (fromRawFilePath f)
 		let mi = MatchingFile FileInfo
 			{ matchFile = f
@@ -458,10 +465,11 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				fst <$> genKey ks nullMeterUpdate backend
 			else gitShaKey <$> hashFile tmpfile
 
-	locworktreefilename loc = asTopFilePath $ case importtreeconfig of
-		ImportTree -> fromImportLocation loc
-		ImportSubTree subdir _ ->
-			getTopFilePath subdir P.</> fromImportLocation loc
+	locworktreefile loc = fromRepo $ fromTopFilePath $ asTopFilePath $
+		case importtreeconfig of
+			ImportTree -> fromImportLocation loc
+			ImportSubTree subdir _ ->
+				getTopFilePath subdir P.</> fromImportLocation loc
 
 	getcidkey cidmap db cid = liftIO $
 		CIDDb.getContentIdentifierKeys db rs cid >>= \case

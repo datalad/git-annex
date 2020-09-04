@@ -28,6 +28,7 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     to 5, to avoid some unusual edge cases where too much retrying could
     result in far more data transfer than makes sense.
   * Retry transfers to exporttree=yes remotes same as for other remotes.
+  * import: Retry downloads that fail, same as is done for downloads generally.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 
