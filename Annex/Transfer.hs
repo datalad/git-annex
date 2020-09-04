@@ -217,13 +217,18 @@ stdRetry = combineRetryDeciders forwardRetry configuredRetry
  - transfer left off, and so it would make sense to keep retrying forever,
  - other remotes restart each transfer from the beginning, and so even if
  - forward progress is being made, it's not real progress. So, retry a
- - maximum of 5 times
+ - maximum of 5 times by default.
  -}
 forwardRetry :: RetryDecider
-forwardRetry = \numretries old new -> pure $ and
-	[ fromMaybe 0 (bytesComplete old) < fromMaybe 0 (bytesComplete new)
-	, numretries <= 5
-	]
+forwardRetry numretries old new
+	| fromMaybe 0 (bytesComplete old) < fromMaybe 0 (bytesComplete new) =
+		(numretries <=) <$> maybe globalretrycfg pure remoteretrycfg
+	| otherwise = return False
+  where
+	globalretrycfg = fromMaybe 5 . annexForwardRetry
+		<$> Annex.getGitConfig
+	remoteretrycfg = remoteAnnexRetry =<<
+		(Remote.gitconfig <$> transferRemote new)
 
 {- Retries a number of times with growing delays in between when enabled
  - by git configuration. -}

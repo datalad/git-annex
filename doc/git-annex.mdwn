@@ -1356,9 +1356,16 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-retry`, `annex.retry`
 
-  Configure retries of failed transfers on a per-remote and general
-  basis, respectively. The value is the number of retries that can be
-  made of the same transfer. (default 0)
+  Number of times a transfer that fails can be retried. (default 0)
+
+* `remote.<name>.annex-forward-retry`, `annex.forward-retry`
+
+  If a transfer made some forward progress before failing,
+  this allows it to be retried even when `annex.retry` does not.
+  The value is the maximum number of times to do that. (default 5)
+
+  When both `annex.retry` and this are set, the maximum number of
+  retries is the larger of the two.
 
 * `remote.<name>.annex-retry-delay`, `annex.retry-delay`
 

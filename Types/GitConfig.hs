@@ -114,6 +114,7 @@ data GitConfig = GitConfig
 	, annexAddUnlocked :: Configurable (Maybe String)
 	, annexSecureHashesOnly :: Bool
 	, annexRetry :: Maybe Integer
+	, annexForwardRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedIPAddresses :: String
@@ -196,6 +197,7 @@ extractGitConfig configsource r = GitConfig
 		fmap Just $ getmaybe (annexConfig "addunlocked")
 	, annexSecureHashesOnly = getbool (annexConfig "securehashesonly") False
 	, annexRetry = getmayberead (annexConfig "retry")
+	, annexForwardRetry = getmayberead (annexConfig "forward-retry")
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annexConfig "retrydelay")
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
@@ -295,6 +297,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexSpeculatePresent :: Bool
 	, remoteAnnexBare :: Maybe Bool
 	, remoteAnnexRetry :: Maybe Integer
+	, remoteAnnexForwardRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
@@ -356,6 +359,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexSpeculatePresent = getbool "speculate-present" False
 		, remoteAnnexBare = getmaybebool "bare"
 		, remoteAnnexRetry = getmayberead "retry"
+		, remoteAnnexForwardRetry = getmayberead "forward-retry"
 		, remoteAnnexRetryDelay = Seconds
 			<$> getmayberead "retrydelay"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
