@@ -4,7 +4,8 @@ one more byte got transferred than in the previous, failed try.
 Suppose that a transfer was restarting from the beginning each time, and it
 just so happened that each try got a tiny little bit further before
 failing. Then transferring an `N` byte object could result in `sum [1..N]` 
-bytes being sent. Worst case.
+bytes being sent. Worst case. (Real world it involves the size of chunks
+sent in a failing operation, so probably `sum [1..N/1024]` or so.)
 
 So I think forwardRetry should cap after some amount of automatic retrying.
 Ie, it could give up after 5 retries. --[[Joey]]
@@ -15,3 +16,14 @@ if a remote is doing that (unless some timing heuristics were used). Around
 5 retries seems fairly reasonable for that case too, it would be unlikely
 for a rsync transfer to keep failing so many times while still making
 forward progess. --[[Joey]]
+
+> Or could add data to remotes about this, but it would need to be added
+> for external special remotes too, and this does not really seem worth the
+> complication.
+> 
+> I think, even if a remote does not support resuming like
+> rsync, it makes sense to retry a few failed transfers if it's getting
+> closer to success each time, because forward progress suggests whatever
+> made it fail is becoming less of a problem.
+
+[[done]] --[[Joey]]

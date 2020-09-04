@@ -24,6 +24,9 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     gpg key.
   * Support git remotes where .git is a file, not a directory,
     eg when --separate-git-dir was used.
+  * Limit retrying of failed transfers when forward progress is being made
+    to 5, to avoid some unusual edge cases where too much retrying could
+    result in far more data transfer than makes sense.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 

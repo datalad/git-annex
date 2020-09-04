@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -81,7 +81,6 @@ alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer' ignorelock t afile retrydecider transferaction = enteringStage TransferStage $ debugLocks $ checkSecureHashes t $ do
-	shouldretry <- retrydecider
 	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
@@ -91,7 +90,7 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 			showNote "transfer already in progress, or unable to take transfer lock"
 			return observeFailure
 		else do
-			v <- retry shouldretry info metervar $ transferaction meter
+			v <- retry 0 info metervar (transferaction meter)
 			liftIO $ cleanup tfile lck
 			if observeBool v
 				then removeFailedTransfer t
@@ -142,21 +141,25 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 		dropLock lockhandle
 		void $ tryIO $ removeFile lck
 #endif
-	retry shouldretry oldinfo metervar run = tryNonAsync run >>= \case
-		Right v
-			| observeBool v -> return v
-			| otherwise -> checkretry
-		Left e -> do
-			warning (show e)
-			checkretry
+
+	retry numretries oldinfo metervar run =
+		tryNonAsync run >>= \case
+			Right v
+				| observeBool v -> return v
+				| otherwise -> checkretry
+			Left e -> do
+				warning (show e)
+				checkretry
 	  where
 		checkretry = do
 			b <- getbytescomplete metervar
 			let newinfo = oldinfo { bytesComplete = Just b }
-			ifM (shouldretry oldinfo newinfo)
-				( retry shouldretry newinfo metervar run
+			let !numretries' = succ numretries
+			ifM (retrydecider numretries' oldinfo newinfo)
+				( retry numretries' newinfo metervar run
 				, return observeFailure
 				)
+
 	getbytescomplete metervar
 		| transferDirection t == Upload =
 			liftIO $ readMVar metervar
@@ -189,45 +192,49 @@ checkSecureHashes t a = ifM (isCryptographicallySecure (transferKey t))
   where
 	variety = fromKey keyVariety (transferKey t)
 
-type RetryDecider = Annex (TransferInfo -> TransferInfo -> Annex Bool)
+type NumRetries = Integer
+
+type RetryDecider = NumRetries -> TransferInfo -> TransferInfo -> Annex Bool
 
 {- The first RetryDecider will be checked first; only if it says not to
  - retry will the second one be checked. -}
 combineRetryDeciders :: RetryDecider -> RetryDecider -> RetryDecider
-combineRetryDeciders a b = do
-	ar <- a
-	br <- b
-	return $ \old new -> ar old new <||> br old new
+combineRetryDeciders a b = \n old new -> a n old new <||> b n old new
 
 noRetry :: RetryDecider
-noRetry = pure $ \_ _ -> pure False
+noRetry _ _ _ = pure False
 
 stdRetry :: RetryDecider
 stdRetry = combineRetryDeciders forwardRetry configuredRetry
 
-{- Retries a transfer when it fails, as long as the failed transfer managed
- - to send some data. -}
+{- Keep retrying failed transfers, as long as forward progress is being
+ - made.
+ -
+ - Up to a point -- while some remotes can resume where the previous
+ - transfer left off, and so it would make sense to keep retrying forever,
+ - other remotes restart each transfer from the beginning, and so even if
+ - forward progress is being made, it's not real progress. So, retry a
+ - maximum of 5 times
+ -}
 forwardRetry :: RetryDecider
-forwardRetry = pure $ \old new -> pure $
-	fromMaybe 0 (bytesComplete old) < fromMaybe 0 (bytesComplete new)
+forwardRetry = \numretries old new -> pure $ and
+	[ fromMaybe 0 (bytesComplete old) < fromMaybe 0 (bytesComplete new)
+	, numretries <= 5
+	]
 
 {- Retries a number of times with growing delays in between when enabled
  - by git configuration. -}
 configuredRetry :: RetryDecider
-configuredRetry = debugLocks $ do
-	retrycounter <- liftIO $ newMVar 0
-	return $ \_old new -> do
-		(maxretries, Seconds initretrydelay) <- getcfg $ 
-			Remote.gitconfig <$> transferRemote new
-		retries <- liftIO $ modifyMVar retrycounter $
-			\n -> return (n + 1, n + 1)
-		if retries < maxretries
-			then do
-				let retrydelay = Seconds (initretrydelay * 2^(retries-1))
-				showSideAction $ "Delaying " ++ show (fromSeconds retrydelay) ++ "s before retrying."
-				liftIO $ threadDelaySeconds retrydelay
-				return True
-			else return False
+configuredRetry numretries old new = do
+	(maxretries, Seconds initretrydelay) <- getcfg $ 
+		Remote.gitconfig <$> transferRemote new
+	if numretries < maxretries
+		then do
+			let retrydelay = Seconds (initretrydelay * 2^(numretries-1))
+			showSideAction $ "Delaying " ++ show (fromSeconds retrydelay) ++ "s before retrying."
+			liftIO $ threadDelaySeconds retrydelay
+			return True
+		else return False
   where
 	globalretrycfg = fromMaybe 0 . annexRetry
 		<$> Annex.getGitConfig
