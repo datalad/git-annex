@@ -1,0 +1,31 @@
+git has a new feature:
+
+	CONFLICT (file location): x/foo/bar.ext added in refs/remotes/whatever/master inside a directory that was renamed in HEAD, suggesting it should perhaps be moved to y/bar.ext.
+
+When this happens during a git-annex sync, the result is:
+
+	y/bar.variant-nnnn.ext
+	y/bar.ext
+
+With the .variant file checked in, but the other one not checked in.
+
+Which is problimatic both because the file does not get checked in, and because
+if this is a merge conflict at all (I disagree with git that it should be,
+didn't used to be), it's a conflict between x/foo/bar.ext and y/bar.ext and so
+git-annex sync should presumably make those two into .variant files, not 2
+files in the same directory.
+
+Although, it might be better for git-annex not to make variant files at all in
+this situation, since both files have the same content.
+
+This new git feature does have a config (after not for a while),
+set merge.directoryRenames=false to disable it. One option would be for sync to
+just set that. But if the user has enabled that option, sync should probably
+deal with the consequences, if at all possible.
+
+Based on git commit 8c8e5bd6eb331d055aa7fa6345f6dcdadd658979,
+it uses a higher than usual stage level in the index in this case,
+so it might be possible for git-annex to use that to detect it and handle it
+ specially.
+
+--[[Joey]]
