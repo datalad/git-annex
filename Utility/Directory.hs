@@ -145,11 +145,10 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			(Right s) -> return $ isDirectory s
 #endif
 
-{- Removes a file, which may or may not exist, and does not have to
- - be a regular file.
+{- Removes a file (or symlink), which may or may not exist.
  -
  - Note that an exception is thrown if the file exists but
- - cannot be removed. -}
+ - cannot be removed, or if its a directory. -}
 nukeFile :: FilePath -> IO ()
 nukeFile file = void $ tryWhenExists go
   where
