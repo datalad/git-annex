@@ -167,7 +167,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	kthem <- getkey LsFiles.valThem
 	case (kus, kthem) of
 		-- Both sides of conflict are annexed files
-		(Right (Just keyUs), Right (Just keyThem))
+		(Just keyUs, Just keyThem)
 			| keyUs /= keyThem -> resolveby [keyUs, keyThem] $ do
 				makevariantannexlink keyUs LsFiles.valUs
 				makevariantannexlink keyThem LsFiles.valThem
@@ -187,44 +187,23 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				return ([keyUs, keyThem], Just file)
 		-- Our side is annexed file, other side is not.
 		-- Make the annexed file into a variant file and graft in the
-		-- other file as it was.
-		(Right (Just keyUs), Right Nothing) -> resolveby [keyUs] $ do
+		-- other file/directory as it was.
+		(Just keyUs, Nothing) -> resolveby [keyUs] $ do
 			graftin them file LsFiles.valThem LsFiles.valThem LsFiles.valUs
 			makevariantannexlink keyUs LsFiles.valUs 
 		-- Our side is not annexed file, other side is.
-		(Right Nothing, Right (Just keyThem)) -> resolveby [keyThem] $ do
+		(Nothing, Just keyThem) -> resolveby [keyThem] $ do
 			graftin us file LsFiles.valUs LsFiles.valUs LsFiles.valThem
 			makevariantannexlink keyThem LsFiles.valThem
 		-- Neither side is annexed file; cannot resolve.
-		(Right Nothing, Right Nothing) -> cannotresolve
-		-- Other side deleted the file, our side is an annexed
-		-- file. Make it a variant.
-		(Right (Just keyUs), Left ()) -> resolveby [keyUs] $ do
-			unless inoverlay $
-				liftIO $ nukeFile file
-			makevariantannexlink keyUs LsFiles.valThem
-		-- Our side deleted the file, other side is an annexed
-		-- file. Make it a variant.
-		(Left (), Right (Just keyThem)) -> resolveby [keyThem] $ do
-			unless inoverlay $
-				liftIO $ nukeFile file
-			makevariantannexlink keyThem LsFiles.valThem
-		-- One side deleted the file, other side is not an annexed
-		-- file; cannot resolve.
-		(Left (), Right Nothing) -> cannotresolve
-		(Right Nothing, Left()) -> cannotresolve
-		-- Both deleted, so it's not really a conflict. Probably
-		-- impossible for this to happen.
-		(Left (), Left ()) -> cannotresolve
+		(Nothing, Nothing) -> return ([], Nothing)
   where
 	file = fromRawFilePath $ LsFiles.unmergedFile u
 
-	cannotresolve = return ([], Nothing)
-
 	getkey select = 
 		case select (LsFiles.unmergedSha u) of
-			Just sha -> Right <$> catKey sha
-			Nothing -> return (Left ())
+			Just sha -> catKey sha
+			Nothing -> pure Nothing
 	
 	islocked select = select (LsFiles.unmergedTreeItemType u) == Just TreeSymlink
 

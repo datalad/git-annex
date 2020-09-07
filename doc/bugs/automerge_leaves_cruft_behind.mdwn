@@ -1,0 +1,6 @@
+Seeing `git-annex sync` after resolving a merge conflict between a
+directory and an annexed file leave behind
+files like `foo~refs_remotes_origin_master`, which are not checked into
+git. 
+
+Also happens with merge.directoryRenames=conflict --[[Joey]]
