@@ -38,6 +38,7 @@ import Utility.FileMode
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
+import qualified Utility.RawFilePath as R
 
 {- Merges from a branch into the current branch (which may not exist yet),
  - with automatic merge conflict resolution.
@@ -315,7 +316,7 @@ cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 	inks = maybe False (flip S.member ks)
 	matchesresolved is i f
 		| S.member f fs || S.member (conflictCruftBase f) fs = anyM id
-			[ pure (S.member i is)
+			[ pure $ either (const False) (`S.member` is) i
 			, inks <$> isAnnexLink (toRawFilePath f)
 			, inks <$> liftIO (isPointerFile (toRawFilePath f))
 			]
@@ -332,7 +333,7 @@ reuseOldFile :: InodeMap -> Key -> FilePath -> FilePath -> Annex Bool
 reuseOldFile srcmap key origfile destfile = do
 	is <- map (inodeCacheToKey Strongly)
 		<$> Database.Keys.getInodeCaches key
-	liftIO $ go $ mapMaybe (\i -> M.lookup i srcmap) is
+	liftIO $ go $ mapMaybe (\i -> M.lookup (Right i) srcmap) is
   where
 	go [] = return False
 	go (f:fs)
@@ -352,15 +353,19 @@ commitResolvedMerge commitmode = inRepo $ Git.Branch.commitCommand commitmode
 	, Param "git-annex automatic merge conflict fix"
 	]
 
-type InodeMap = M.Map InodeCacheKey FilePath
+type InodeMap = M.Map (Either FilePath InodeCacheKey) FilePath
 
 inodeMap :: Annex ([RawFilePath], IO Bool) -> Annex InodeMap
 inodeMap getfiles = do
 	(fs, cleanup) <- getfiles
 	fsis <- forM fs $ \f -> do
-		mi <- withTSDelta (liftIO . genInodeCache f)
-		return $ case mi of
-			Nothing -> Nothing
-			Just i -> Just (inodeCacheToKey Strongly i, fromRawFilePath f)
+		s <- liftIO $ R.getSymbolicLinkStatus f
+		let f' = fromRawFilePath f
+		if isSymbolicLink s
+			then pure $ Just (Left f', f')
+			else withTSDelta (\d -> liftIO $ toInodeCache d f' s)
+				>>= return . \case
+					Just i -> Just (Right (inodeCacheToKey Strongly i), f')
+					Nothing -> Nothing
 	void $ liftIO cleanup
 	return $ M.fromList $ catMaybes fsis

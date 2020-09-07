@@ -3,4 +3,13 @@ directory and an annexed file leave behind
 files like `foo~refs_remotes_origin_master`, which are not checked into
 git. 
 
-Also happens with merge.directoryRenames=conflict --[[Joey]]
+Also happens with merge.directoryRenames=conflict
+
+Seems to only happen sometimes, unsure why.. Maybe git doesn't always
+write those files, or sometimes something done with git deletes them?
+
+Root cause seems to be that it's making an InodeCache, but that can't
+be done of a broken symlink. So, it's probably a reversion introduced with
+v7 unlocked files or so.
+
+> [[fixed|done]] --[[Joey]]
