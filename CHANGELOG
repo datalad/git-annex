@@ -31,6 +31,8 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     behavior that git-annex has had for a long time.
   * Retry transfers to exporttree=yes remotes same as for other remotes.
   * import: Retry downloads that fail, same as is done for downloads generally.
+  * resolvemerge: Improve cleanup of files that were deleted by one side of
+    a conflicted merge, and modified by the other side.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 

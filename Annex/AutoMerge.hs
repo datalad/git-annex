@@ -175,11 +175,15 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		(Right Nothing, Right Nothing) -> cannotresolve
 		-- Other side deleted the file, our side is an annexed
 		-- file. Make it a variant.
-		(Right (Just keyUs), Left ()) -> resolveby [keyUs] $
+		(Right (Just keyUs), Left ()) -> resolveby [keyUs] $ do
+			unless inoverlay $
+				liftIO $ nukeFile file
 			makevariantannexlink keyUs LsFiles.valThem
 		-- Our side deleted the file, other side is an annexed
 		-- file. Make it a variant.
-		(Left (), Right (Just keyThem)) -> resolveby [keyThem] $
+		(Left (), Right (Just keyThem)) -> resolveby [keyThem] $ do
+			unless inoverlay $
+				liftIO $ nukeFile file
 			makevariantannexlink keyThem LsFiles.valThem
 		-- One side deleted the file, other side is not an annexed
 		-- file; cannot resolve.

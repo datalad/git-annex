@@ -39,3 +39,10 @@ produced by case, so it might be possible for git-annex to use that
 to detect it and handle it specially.
 
 --[[Joey]]
+
+> Fixed the file not being checked in. In fact, it needed to be cleaned up.
+> 
+> That avoids part of the problem. To avoid the surprising rename,
+> git-annex sync should set merge.directoryRenames=false when
+> merge.directoryRenames is not configured, unless automatic merge conflict
+> resolution is disabled. --[[Joey]]
