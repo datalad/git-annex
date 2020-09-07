@@ -1,0 +1,42 @@
+A stressful thing about maintaining git-annex is that sometimes changes to
+git break it in some way. Since git has a high development velocity, it can
+be hard to keep up with all changes and catch such problems. The git devs
+are good about backwards compatibility, but can still make mistakes. Worse
+is when there's an assumption about how people will use git, when git-annex
+lets people use it in a rather different way. I've been dealing with one of
+those today.
+
+    CONFLICT (file location): x/foo added in refs/remotes/origin/master
+    inside a directory that was renamed in HEAD, suggesting it should
+    perhaps be moved to y/foo.
+
+This was a interesting new git feature when it was added back in 2.18,
+especially since git doesn't really track directories, so is here
+somewhat guessing if a directory was renamed.
+
+An example of a way git-annex is used that this does not play well with
+is managing media files for consumption, where you might have an incoming
+directory, and then rename files to somewhere else once they're processed.
+If you renamed the last file in your incoming directory, and then a new
+file was later added to it in some other clone of the repository, this git
+feature could result in that new file being moved to an unexpected
+location when you `git-annex sync`.
+
+Normally it wouldn't matter much if git guessed wrong like that about a
+rename, since the merge conflict forces the user to look at it.
+But, git-annex sync and the assistant automatically resolve merge
+conflicts, so the user can easily not notice this happening.
+
+If you're worried that might have happened to you, look for files in your
+repository with ".variant" in the name. If there are two with the same
+base name, that's a normal merge conflict, but if there's only a single
+variant file by itself, it could have been created by this rename
+conflict scenario.
+
+git-annex will now avoid this problem, by setting merge.directoryRenames=false
+when running a merge (unless you've manually configured it yourself).
+
+----
+
+Today's work was sponsored by Martin D
+[on Patreon](https://www.patreon.com/joeyh)
