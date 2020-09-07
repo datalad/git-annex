@@ -234,8 +234,8 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		dest' <- toRawFilePath <$> stagefile dest
 		stageSymlink dest' =<< hashSymlink l
 
-	replacewithsymlink dest link = withworktree dest $ \f ->
-		replaceWorkTreeFile f $ makeGitLink link . toRawFilePath
+	replacewithsymlink dest link = replaceWorkTreeFile dest $
+		makeGitLink link . toRawFilePath
 
 	makepointer key dest destmode = do
 		unless inoverlay $ 
@@ -249,8 +249,6 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		unless inoverlay $
 			Database.Keys.addAssociatedFile key
 				=<< inRepo (toTopFilePath (toRawFilePath dest))
-
-	withworktree f a = a f
 
 	{- Stage a graft of a directory or file from a branch
 	 - and update the work tree. -}
@@ -272,7 +270,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			-- And when grafting in anything else vs a symlink,
 			-- the work tree already contains what we want.
 			(_, Just TreeSymlink) -> noop
-			_ -> ifM (withworktree item (liftIO . doesDirectoryExist))
+			_ -> ifM (liftIO $ doesDirectoryExist item)
 				-- a conflict between a file and a directory
 				-- leaves the directory, so since a directory
 				-- is there, it must be what was wanted
@@ -282,10 +280,9 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				-- file content
 				, case selectwant' (LsFiles.unmergedSha u) of
 					Nothing -> noop
-					Just sha -> withworktree item $ \f -> 
-						replaceWorkTreeFile f $ \tmp -> do
-							c <- catObject sha
-							liftIO $ L.writeFile tmp c
+					Just sha -> replaceWorkTreeFile item $ \tmp -> do
+						c <- catObject sha
+						liftIO $ L.writeFile tmp c
 				)
 	
 	resolveby ks a = do
