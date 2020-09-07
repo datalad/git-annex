@@ -341,7 +341,7 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. Note that the provided branch should be a non-adjusted
  - branch. -}
-mergeToAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> [Git.Merge.MergeConfig] -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
+mergeToAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> [Git.Merge.MergeConfig] -> Bool -> Git.Branch.CommitMode -> Annex Bool
 mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge commitmode = catchBoolIO $
 	join $ preventCommits go
   where
@@ -402,8 +402,8 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 				-- http://thread.gmane.org/gmane.comp.version-control.git/297237
 				inRepo $ Git.Command.run [Param "reset", Param "HEAD", Param "--quiet"]
 				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
-				merged <- inRepo (Git.Merge.merge' [] tomerge mergeconfig commitmode)
-					<||> (resolveMerge (Just updatedorig) tomerge True <&&> commitResolvedMerge commitmode)
+				merged <- autoMergeFrom' tomerge Nothing mergeconfig commitmode
+					(const $ resolveMerge (Just updatedorig) tomerge True)
 				if merged
 					then do
 						!mergecommit <- liftIO $ extractSha
@@ -439,7 +439,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 		-- this commit will be a fast-forward.
 		adjmergecommitff <- commitAdjustedTree' adjtree (BasisBranch mergecommit) [currbranch]
 		showAction "Merging into adjusted branch"
-		ifM (autoMergeFrom adjmergecommitff (Just currbranch) mergeconfig canresolvemerge commitmode)
+		ifM (autoMergeFrom adjmergecommitff (Just currbranch) mergeconfig commitmode canresolvemerge)
 			( reparent adjtree adjmergecommit =<< getcurrentcommit
 			, return False
 			)

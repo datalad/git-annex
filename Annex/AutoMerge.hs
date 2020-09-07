@@ -1,6 +1,6 @@
 {- git-annex automatic merge conflict resolution
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@
 
 module Annex.AutoMerge
 	( autoMergeFrom
+	, autoMergeFrom'
 	, resolveMerge
 	, commitResolvedMerge
 	) where
@@ -43,8 +44,16 @@ import qualified Data.ByteString.Lazy as L
  - Callers should use Git.Branch.changed first, to make sure that
  - there are changes from the current branch to the branch being merged in.
  -}
-autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
-autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
+autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Bool -> Annex Bool
+autoMergeFrom branch currbranch mergeconfig commitmode canresolvemerge =
+	autoMergeFrom' branch currbranch mergeconfig commitmode resolvemerge
+  where
+	resolvemerge old
+		| canresolvemerge = resolveMerge old branch False
+		| otherwise = return False 
+
+autoMergeFrom' :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> (Maybe Git.Ref -> Annex Bool) -> Annex Bool
+autoMergeFrom' branch currbranch mergeconfig commitmode resolvemerge = do
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
@@ -52,18 +61,13 @@ autoMergeFrom branch currbranch mergeconfig canresolvemerge commitmode = do
   where
 	go old = do
 			r <- inRepo (Git.Merge.merge branch mergeconfig commitmode)
-				<||> (resolvemerge <&&> commitResolvedMerge commitmode)
+				<||> (resolvemerge old <&&> commitResolvedMerge commitmode)
 			-- Merging can cause new associated files to appear
 			-- and the smudge filter will add them to the database.
 			-- To ensure that this process sees those changes,
 			-- close the database if it was open.
 			Database.Keys.closeDb
 			return r
-	  where
-		resolvemerge = ifM canresolvemerge
-			( resolveMerge old branch False
-			, return False 
-			)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since

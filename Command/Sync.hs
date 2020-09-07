@@ -268,13 +268,13 @@ mergeConfig =
 	]
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
-merge currbranch mergeconfig o commitmode tomerge = case currbranch of
-	(Just b, Just adj) -> mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
-	(b, _) -> autoMergeFrom tomerge b mergeconfig canresolvemerge commitmode
-  where
-	canresolvemerge = if resolveMergeOverride o
+merge currbranch mergeconfig o commitmode tomerge = do
+	canresolvemerge <- if resolveMergeOverride o
 		then getGitConfigVal annexResolveMerge
 		else return False
+	case currbranch of
+		(Just b, Just adj) -> mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
+		(b, _) -> autoMergeFrom tomerge b mergeconfig commitmode canresolvemerge
 
 syncBranch :: Git.Branch -> Git.Branch
 syncBranch = Git.Ref.underBase "refs/heads/synced" . fromAdjustedBranch
