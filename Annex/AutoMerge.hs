@@ -143,10 +143,10 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	kthem <- getkey LsFiles.valThem
 	case (kus, kthem) of
 		-- Both sides of conflict are annexed files
-		(Just keyUs, Just keyThem)
+		(Right (Just keyUs), Right (Just keyThem))
 			| keyUs /= keyThem -> resolveby [keyUs, keyThem] $ do
-				makeannexlink keyUs LsFiles.valUs
-				makeannexlink keyThem LsFiles.valThem
+				makevariantannexlink keyUs LsFiles.valUs
+				makevariantannexlink keyThem LsFiles.valThem
 				-- cleanConflictCruft can't handle unlocked
 				-- files, so delete here.
 				unless inoverlay $
@@ -162,22 +162,41 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 					else makepointer keyUs file (combinedmodes)
 				return ([keyUs, keyThem], Just file)
 		-- Our side is annexed file, other side is not.
-		(Just keyUs, Nothing) -> resolveby [keyUs] $ do
+		-- Make the annexed file into a variant file and graft in the
+		-- other file as it was.
+		(Right (Just keyUs), Right Nothing) -> resolveby [keyUs] $ do
 			graftin them file LsFiles.valThem LsFiles.valThem LsFiles.valUs
-			makeannexlink keyUs LsFiles.valUs 
+			makevariantannexlink keyUs LsFiles.valUs 
 		-- Our side is not annexed file, other side is.
-		(Nothing, Just keyThem) -> resolveby [keyThem] $ do
+		(Right Nothing, Right (Just keyThem)) -> resolveby [keyThem] $ do
 			graftin us file LsFiles.valUs LsFiles.valUs LsFiles.valThem
-			makeannexlink keyThem LsFiles.valThem
+			makevariantannexlink keyThem LsFiles.valThem
 		-- Neither side is annexed file; cannot resolve.
-		(Nothing, Nothing) -> return ([], Nothing)
+		(Right Nothing, Right Nothing) -> cannotresolve
+		-- Other side deleted the file, our side is an annexed
+		-- file. Make it a variant.
+		(Right (Just keyUs), Left ()) -> resolveby [keyUs] $
+			makevariantannexlink keyUs LsFiles.valThem
+		-- Our side deleted the file, other side is an annexed
+		-- file. Make it a variant.
+		(Left (), Right (Just keyThem)) -> resolveby [keyThem] $
+			makevariantannexlink keyThem LsFiles.valThem
+		-- One side deleted the file, other side is not an annexed
+		-- file; cannot resolve.
+		(Left (), Right Nothing) -> cannotresolve
+		(Right Nothing, Left()) -> cannotresolve
+		-- Both deleted, so it's not really a conflict. Probably
+		-- impossible for this to happen.
+		(Left (), Left ()) -> cannotresolve
   where
 	file = fromRawFilePath $ LsFiles.unmergedFile u
 
+	cannotresolve = return ([], Nothing)
+
 	getkey select = 
 		case select (LsFiles.unmergedSha u) of
-			Just sha -> catKey sha
-			Nothing -> return Nothing
+			Just sha -> Right <$> catKey sha
+			Nothing -> return (Left ())
 	
 	islocked select = select (LsFiles.unmergedTreeItemType u) == Just TreeSymlink
 
@@ -190,7 +209,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		theirmode = fromTreeItemType
 			<$> LsFiles.valThem (LsFiles.unmergedTreeItemType u)
 
-	makeannexlink key select
+	makevariantannexlink key select
 		| islocked select = makesymlink key dest
 		| otherwise = makepointer key dest destmode
 	  where

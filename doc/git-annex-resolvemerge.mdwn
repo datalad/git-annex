@@ -8,15 +8,27 @@ git annex resolvemerge
 
 # DESCRIPTION
 
-Resolves a conflicted merge, by adding both conflicting versions of the
-file to the tree, using variants of their filename. This is done
+Automatically resolves a conflicted merge. This is done
 automatically when using `git annex sync` or `git annex merge`.
+
+When two trees being merged contain conflicting versions of an annexed
+file, the merge conflict will be resolved by adding both versions to the
+tree, using variants of the filename.
+
+When one tree modified the file, and the other tree deleted the file,
+the merge conflict will be resolved by adding the modified file using a
+variant of the filename, leaving the original filename deleted.
+
+When the merge conflict involves a file that is annexed in one
+tree, but is not annexed in the other tree, it is
+resolved by keeping the non-annexed file as-is, and adding the annexed
+version using a variant of the filename.
 
 Note that only merge conflicts that involve one or more annexed files
 are resolved. Merge conflicts between two files that are not annexed
 will not be automatically resolved.
 
-# EXAMPLE
+# EXAMPLES
 
 Suppose Alice commits a change to annexed file `foo`, and Bob commits
 a different change to the same file `foo`. 
@@ -34,6 +46,14 @@ that Alice committed, and the other has the content that Bob committed.
 The user can then examine the two variants of the file, and either merge
 the two changes into a single file, or rename one of them back to `foo`
 and delete the other.
+
+Now suppose Alice commits a change to annexed file `bar`, while Bob commits
+a deletion of the same file `bar`. Merging will fail. Running 
+`git annex resolvemerge` in this situation will resolve the merge conflict
+by making a file with a name like `bar.variant-421f` containing Alice's
+version. The `bar` file remains deleted. The user can later examine the
+variant of the file and either rename it back to `bar`, or decide to delete
+it too.
 
 # SEE ALSO
 
