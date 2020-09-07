@@ -22,9 +22,9 @@ import Git.Branch (CommitMode(..))
 
 data MergeConfig
 	= MergeNonInteractive
-	-- ^ avoids recent git's interactive merge
+	-- ^ avoids interactive merge
 	| MergeUnrelatedHistories
-	-- ^ avoids recent git's prevention of merging unrelated histories
+	-- ^ avoids git's prevention of merging unrelated histories
 	deriving (Eq)
 
 merge :: Ref -> [MergeConfig] -> CommitMode -> Repo -> IO Bool
