@@ -402,7 +402,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 				-- http://thread.gmane.org/gmane.comp.version-control.git/297237
 				inRepo $ Git.Command.run [Param "reset", Param "HEAD", Param "--quiet"]
 				showAction $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
-				merged <- autoMergeFrom' tomerge Nothing mergeconfig commitmode
+				merged <- autoMergeFrom' tomerge Nothing mergeconfig commitmode True
 					(const $ resolveMerge (Just updatedorig) tomerge True)
 				if merged
 					then do

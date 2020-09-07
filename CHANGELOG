@@ -33,6 +33,10 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
   * import: Retry downloads that fail, same as is done for downloads generally.
   * resolvemerge: Improve cleanup of files that were deleted by one side of
     a conflicted merge, and modified by the other side.
+  * sync, assistant, merge: When merge.directoryRenames is not set,
+    default it it to "false", which works better with automatic merge
+    conflict resolution than git's ususual default of "conflict".
+    (This is not done when automatic merge conflict resolution is disabled.)
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 

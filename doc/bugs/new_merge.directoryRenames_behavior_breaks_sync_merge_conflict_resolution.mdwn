@@ -46,3 +46,5 @@ to detect it and handle it specially.
 > git-annex sync should set merge.directoryRenames=false when
 > merge.directoryRenames is not configured, unless automatic merge conflict
 > resolution is disabled. --[[Joey]]
+>
+> > [[done]] --[[Joey]]

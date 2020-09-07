@@ -15,6 +15,7 @@ module Annex.AutoMerge
 	) where
 
 import Annex.Common
+import qualified Annex
 import qualified Annex.Queue
 import Annex.CatFile
 import Annex.Link
@@ -46,22 +47,41 @@ import qualified Data.ByteString.Lazy as L
  -}
 autoMergeFrom :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Bool -> Annex Bool
 autoMergeFrom branch currbranch mergeconfig commitmode canresolvemerge =
-	autoMergeFrom' branch currbranch mergeconfig commitmode resolvemerge
+	autoMergeFrom' branch currbranch mergeconfig commitmode canresolvemerge resolvemerge
   where
 	resolvemerge old
 		| canresolvemerge = resolveMerge old branch False
 		| otherwise = return False 
 
-autoMergeFrom' :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> (Maybe Git.Ref -> Annex Bool) -> Annex Bool
-autoMergeFrom' branch currbranch mergeconfig commitmode resolvemerge = do
+autoMergeFrom' :: Git.Ref -> Maybe Git.Ref -> [Git.Merge.MergeConfig] -> Git.Branch.CommitMode -> Bool -> (Maybe Git.Ref -> Annex Bool) -> Annex Bool
+autoMergeFrom' branch currbranch mergeconfig commitmode willresolvemerge toresolvemerge = do
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
 	go old = do
-			r <- inRepo (Git.Merge.merge branch mergeconfig commitmode)
-				<||> (resolvemerge old <&&> commitResolvedMerge commitmode)
+			-- merge.directoryRenames=conflict plus automatic
+			-- merge conflict resolution results in files in a
+			-- "renamed" directory getting variant names,
+			-- so is not a great combination. If the user has
+			-- explicitly set it, use it, but otherwise when
+			-- merge conflicts will be resolved, override
+			-- to merge.directoryRenames=false.
+			overridedirectoryrenames <- if willresolvemerge
+				then isNothing . mergeDirectoryRenames
+					<$> Annex.getGitConfig
+				else pure False
+			let f r 
+				| overridedirectoryrenames = r
+					{ Git.gitGlobalOpts = 
+						Param "-c"
+						: Param "merge.directoryRenames=false" 
+						: Git.gitGlobalOpts r
+					}
+				| otherwise = r
+			r <- inRepo (Git.Merge.merge branch mergeconfig commitmode . f)
+				<||> (toresolvemerge old <&&> commitResolvedMerge commitmode)
 			-- Merging can cause new associated files to appear
 			-- and the smudge filter will add them to the database.
 			-- To ensure that this process sees those changes,
