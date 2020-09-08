@@ -10,4 +10,7 @@ can be turned on automatically by the dependency resolver.
 Probably guix needs to package the [DAV library](http://hackage.haskell.org/package/DAV)
 or add it to the dependencies of the package such that it's available
 to build with.
+
+Actually, I've gone ahead and removed the build flag in the next git-annex
+version, so it will always be required to build.
 """]]

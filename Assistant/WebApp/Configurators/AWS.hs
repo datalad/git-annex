@@ -5,18 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.AWS where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.MakeRemote
-#ifdef WITH_S3
 import qualified Remote.S3 as S3
 import Logs.Remote
 import qualified Remote
 import qualified Types.Remote as Remote
-#endif
 import qualified Remote.Glacier as Glacier
 import qualified Remote.Helper.AWS as AWS
 import Types.Remote (RemoteConfig)
@@ -120,7 +118,6 @@ getAddS3R :: Handler Html
 getAddS3R = postAddS3R
 
 postAddS3R :: Handler Html
-#ifdef WITH_S3
 postAddS3R = awsConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
@@ -136,15 +133,11 @@ postAddS3R = awsConfigurator $ do
 				, (Proposed "chunk", Proposed "1MiB")
 				]
 		_ -> $(widgetFile "configurators/adds3")
-#else
-postAddS3R = giveup "S3 not supported by this build"
-#endif
 
 getAddGlacierR :: Handler Html
 getAddGlacierR = postAddGlacierR
 
 postAddGlacierR :: Handler Html
-#ifdef WITH_S3
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
@@ -158,12 +151,8 @@ postAddGlacierR = glacierConfigurator $ do
 				, (Proposed "datacenter", Proposed $ T.unpack $ datacenter input)
 				]
 		_ -> $(widgetFile "configurators/addglacier")
-#else
-postAddGlacierR = giveup "S3 not supported by this build"
-#endif
 
 getEnableS3R :: UUID -> Handler Html
-#ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
 	isia <- case M.lookup uuid m of
@@ -174,16 +163,9 @@ getEnableS3R uuid = do
 	if isia
 		then redirect $ EnableIAR uuid
 		else postEnableS3R uuid
-#else
-getEnableS3R = postEnableS3R
-#endif
 
 postEnableS3R :: UUID -> Handler Html
-#ifdef WITH_S3
 postEnableS3R uuid = awsConfigurator $ enableAWSRemote S3.remote uuid
-#else
-postEnableS3R _ = giveup "S3 not supported by this build"
-#endif
 
 getEnableGlacierR :: UUID -> Handler Html
 getEnableGlacierR = postEnableGlacierR
@@ -192,7 +174,6 @@ postEnableGlacierR :: UUID -> Handler Html
 postEnableGlacierR = glacierConfigurator . enableAWSRemote Glacier.remote
 
 enableAWSRemote :: RemoteType -> UUID -> Widget
-#ifdef WITH_S3
 enableAWSRemote remotetype uuid = do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
@@ -207,9 +188,6 @@ enableAWSRemote remotetype uuid = do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableaws")
-#else
-enableAWSRemote _ _ = giveup "S3 not supported by this build"
-#endif
 
 makeAWSRemote :: SpecialRemoteMaker -> RemoteType -> StandardGroup -> AWSCreds -> RemoteName -> RemoteConfig -> Handler ()
 makeAWSRemote maker remotetype defaultgroup (AWSCreds ak sk) name config = 
@@ -228,10 +206,8 @@ getRepoInfo c = [whamlet|S3 remote using bucket: #{bucket}|]
   where
 	bucket = maybe "" fromProposedAccepted $ M.lookup (Accepted "bucket") c
 
-#ifdef WITH_S3
 previouslyUsedAWSCreds :: Annex (Maybe CredPair)
 previouslyUsedAWSCreds = getM gettype [S3.remote, Glacier.remote]
   where
 	gettype t = previouslyUsedCredPair AWS.creds t $
 		not . S3.configIA . Remote.config
-#endif

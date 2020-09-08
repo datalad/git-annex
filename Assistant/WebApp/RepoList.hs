@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings, CPP #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.RepoList where
 
@@ -179,13 +179,9 @@ repoList reposelector
 	findinfo m g u = case fromProposedAccepted <$> getconfig (Accepted "type") of
 		Just "rsync" -> val True EnableRsyncR
 		Just "directory" -> val False EnableDirectoryR
-#ifdef WITH_S3
 		Just "S3" -> val True EnableS3R
-#endif
 		Just "glacier" -> val True EnableGlacierR
-#ifdef WITH_WEBDAV
 		Just "webdav" -> val True EnableWebDAVR
-#endif
 		Just "gcrypt" ->
 			-- Skip gcrypt repos on removable drives;
 			-- handled separately.

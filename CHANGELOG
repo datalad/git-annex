@@ -37,6 +37,8 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     (This is not done when automatic merge conflict resolution is disabled.)
   * resolvemerge: Improve cleanup of cruft left in the working tree 
     by a conflicted merge.
+  * Removed the S3 and WebDAV build flags so these special remotes are
+    always supported.
 
  -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
 

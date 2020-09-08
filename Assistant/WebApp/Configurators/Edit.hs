@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Assistant.WebApp.Configurators.Edit where
@@ -19,10 +19,8 @@ import Assistant.ScanRemotes
 import Assistant.Sync
 import Assistant.Alert
 import qualified Assistant.WebApp.Configurators.AWS as AWS
-#ifdef WITH_S3
 import qualified Assistant.WebApp.Configurators.IA as IA
 import qualified Remote.S3 as S3
-#endif
 import qualified Remote
 import qualified Types.Remote as Remote
 import Remote.List.Util
@@ -256,14 +254,10 @@ checkAssociatedDirectory cfg (Just r) = do
 getRepoInfo :: Maybe Remote.Remote -> Remote.RemoteConfig -> Widget
 getRepoInfo (Just r) c = case fromProposedAccepted <$> M.lookup typeField c of
 	Just "S3" -> do
-#ifdef WITH_S3
 		pc <- liftAnnex $ parsedRemoteConfig S3.remote c
 		if S3.configIA pc
 			then IA.getRepoInfo c
 			else AWS.getRepoInfo c
-#else
-		AWS.getRepoInfo c
-#endif
 	Just t
 		| t /= "git" -> [whamlet|#{t} remote|]
 	_ -> getGitRepoInfo =<< liftAnnex (Remote.getRepo r)

@@ -5,13 +5,12 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.IA where
 
 import Assistant.WebApp.Common
 import qualified Assistant.WebApp.Configurators.AWS as AWS
-#ifdef WITH_S3
 import qualified Remote.S3 as S3
 import qualified Remote.Helper.AWS as AWS
 import Assistant.WebApp.MakeRemote
@@ -20,7 +19,6 @@ import qualified Types.Remote as Remote
 import Types.StandardGroups
 import Logs.Remote
 import Assistant.Gpg
-#endif
 import Types.Remote (RemoteConfig)
 import qualified Annex.Url as Url
 import Creds
@@ -106,11 +104,9 @@ iaCredsAForm defcreds = AWS.AWSCreds
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
 
-#ifdef WITH_S3
 previouslyUsedIACreds :: Annex (Maybe CredPair)
 previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
 	S3.configIA . Remote.config
-#endif
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
 accessKeyIDFieldWithHelp = AWS.accessKeyIDField help
@@ -124,7 +120,6 @@ getAddIAR :: Handler Html
 getAddIAR = postAddIAR
 
 postAddIAR :: Handler Html
-#ifdef WITH_S3
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
@@ -149,21 +144,13 @@ postAddIAR = iaConfigurator $ do
 			AWS.makeAWSRemote initSpecialRemote S3.remote PublicGroup (extractCreds input) name $
 				M.fromList $ configureEncryption NoEncryption : c
 		_ -> $(widgetFile "configurators/addia")
-#else
-postAddIAR = giveup "S3 not supported by this build"
-#endif
 
 getEnableIAR :: UUID -> Handler Html
 getEnableIAR = postEnableIAR
 
 postEnableIAR :: UUID -> Handler Html
-#ifdef WITH_S3
 postEnableIAR = iaConfigurator . enableIARemote
-#else
-postEnableIAR _ = giveup "S3 not supported by this build"
-#endif
 
-#ifdef WITH_S3
 enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
@@ -179,7 +166,6 @@ enableIARemote uuid = do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid
 			$(widgetFile "configurators/enableia")
-#endif
 
 {- Convert a description into a bucket item name, which will also be
  - used as the repository name, and the preferreddir.
@@ -205,9 +191,4 @@ $if (not exists)
 |]
   where
 	bucket = maybe "" fromProposedAccepted $ M.lookup (Accepted "bucket") c
-#ifdef WITH_S3
 	url = S3.iaItemUrl bucket
-#else
-	url = case bucket of
-		_ -> ""
-#endif

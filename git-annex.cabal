@@ -250,12 +250,6 @@ Extra-Source-Files:
   templates/controlmenu.hamlet
   templates/notifications/longpolling.julius
 
-Flag S3
-  Description: Enable S3 support
-
-Flag WebDAV
-  Description: Enable WebDAV support
-
 Flag Assistant
   Description: Enable git-annex assistant and watch command
 
@@ -378,7 +372,9 @@ Executable git-annex
    tasty (>= 0.7),
    tasty-hunit,
    tasty-quickcheck,
-   tasty-rerun
+   tasty-rerun,
+   aws (>= 0.20),
+   DAV (>= 1.0)
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell98
@@ -426,22 +422,6 @@ Executable git-annex
     CPP-Options: -DWITH_HTTP_CLIENT_RESTRICTED
   else
     Other-Modules: Utility.HttpManagerRestricted
-
-  if flag(S3)
-    Build-Depends: aws (>= 0.20)
-    CPP-Options: -DWITH_S3
-    Other-Modules: Remote.S3
-
-  if flag(WebDAV)
-    Build-Depends: DAV (>= 1.0)
-    CPP-Options: -DWITH_WEBDAV
-    Other-Modules:
-      Remote.WebDAV
-      Remote.WebDAV.DavLocation
-
-  if flag(S3) || flag(WebDAV)
-    Other-Modules:
-      Remote.Helper.Http
 
   if flag(Assistant) && ! os(solaris) && ! os(gnu)
     Build-Depends: mountpoints
@@ -975,6 +955,7 @@ Executable git-annex
     Remote.Helper.ExportImport
     Remote.Helper.Git
     Remote.Helper.Hooks
+    Remote.Helper.Http
     Remote.Helper.Messages
     Remote.Helper.P2P
     Remote.Helper.ReadOnly
@@ -987,8 +968,11 @@ Executable git-annex
     Remote.P2P
     Remote.Rsync
     Remote.Rsync.RsyncUrl
+    Remote.S3
     Remote.Tahoe
     Remote.Web
+    Remote.WebDAV
+    Remote.WebDAV.DavLocation
     RemoteDaemon.Common
     RemoteDaemon.Core
     RemoteDaemon.Transport

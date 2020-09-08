@@ -5,13 +5,12 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.WebDAV where
 
 import Assistant.WebApp.Common
 import Creds
-#ifdef WITH_WEBDAV
 import qualified Remote.WebDAV as WebDAV
 import Assistant.WebApp.MakeRemote
 import qualified Remote
@@ -25,7 +24,6 @@ import Annex.SpecialRemote.Config
 import Types.ProposedAccepted
 
 import qualified Data.Map as M
-#endif
 import qualified Data.Text as T
 import Network.URI
 
@@ -54,7 +52,6 @@ webDAVCredsAForm defcreds = WebDAVInput
 getEnableWebDAVR :: UUID -> Handler Html
 getEnableWebDAVR = postEnableWebDAVR
 postEnableWebDAVR :: UUID -> Handler Html
-#ifdef WITH_WEBDAV
 postEnableWebDAVR uuid = do
 	m <- liftAnnex readRemoteLog
 	let c = fromJust $ M.lookup uuid m
@@ -83,11 +80,7 @@ postEnableWebDAVR uuid = do
 				description <- liftAnnex $
 					T.pack <$> Remote.prettyUUID uuid
 				$(widgetFile "configurators/enablewebdav")
-#else
-postEnableWebDAVR _ = giveup "WebDAV not supported by this build"
-#endif
 
-#ifdef WITH_WEBDAV
 makeWebDavRemote :: SpecialRemoteMaker -> RemoteName -> CredPair -> RemoteConfig -> Handler ()
 makeWebDavRemote maker name creds c = 
 	setupCloudRemote TransferGroup Nothing $
@@ -101,7 +94,6 @@ previouslyUsedWebDAVCreds hostname =
 	samehost r = case urlHost =<< WebDAV.configUrl (config r) of
 		Nothing -> False
 		Just h -> h == hostname
-#endif
 
 urlHost :: String -> Maybe String
 urlHost url = uriRegName <$> (uriAuthority =<< parseURI url)

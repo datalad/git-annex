@@ -3,8 +3,6 @@ flags:
     production: true
     assistant: true
     pairing: true
-    s3: true
-    webdav: true
     torrentparser: true
     webapp: true
     magicmime: false

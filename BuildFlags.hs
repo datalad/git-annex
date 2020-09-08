@@ -31,16 +31,6 @@ buildFlags = filter (not . null)
 #else
 #warning Building without local pairing.
 #endif
-#ifdef WITH_S3
-	, "S3"
-#else
-#warning Building without S3.
-#endif
-#ifdef WITH_WEBDAV
-	, "WebDAV"
-#else
-#warning Building without WebDAV.
-#endif
 #ifdef WITH_INOTIFY
 	, "Inotify"
 #endif
@@ -69,6 +59,8 @@ buildFlags = filter (not . null)
 	-- listed.
 	, "Feeds"
 	, "Testsuite"
+	, "S3"
+	, "WebDAV"
 	]
 
 -- Not a complete list, let alone a listing transitive deps, but only
@@ -81,12 +73,8 @@ dependencyVersions = map fmt $ sortBy (comparing (CI.mk . fst))
 	, ("http-client", VERSION_http_client)
 	, ("persistent-sqlite", VERSION_persistent_sqlite)
 	, ("cryptonite", VERSION_cryptonite)
-#ifdef WITH_S3
 	, ("aws", VERSION_aws)
-#endif
-#ifdef WITH_WEBDAV
 	, ("DAV", VERSION_DAV)
-#endif
 #ifdef WITH_TORRENTPARSER
 	, ("torrent", VERSION_torrent)
 #endif

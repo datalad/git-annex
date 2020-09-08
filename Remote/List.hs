@@ -5,8 +5,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Remote.List where
 
 import qualified Data.Map as M
@@ -25,17 +23,13 @@ import qualified Git
 import qualified Remote.Git
 import qualified Remote.GCrypt
 import qualified Remote.P2P
-#ifdef WITH_S3
 import qualified Remote.S3
-#endif
 import qualified Remote.Bup
 import qualified Remote.Directory
 import qualified Remote.Rsync
 import qualified Remote.Web
 import qualified Remote.BitTorrent
-#ifdef WITH_WEBDAV
 import qualified Remote.WebDAV
-#endif
 import qualified Remote.Adb
 import qualified Remote.Tahoe
 import qualified Remote.Glacier
@@ -50,17 +44,13 @@ remoteTypes = map adjustExportImportRemoteType
 	[ Remote.Git.remote
 	, Remote.GCrypt.remote
 	, Remote.P2P.remote
-#ifdef WITH_S3
 	, Remote.S3.remote
-#endif
 	, Remote.Bup.remote
 	, Remote.Directory.remote
 	, Remote.Rsync.remote
 	, Remote.Web.remote
 	, Remote.BitTorrent.remote
-#ifdef WITH_WEBDAV
 	, Remote.WebDAV.remote
-#endif
 	, Remote.Adb.remote
 	, Remote.Tahoe.remote
 	, Remote.Glacier.remote
