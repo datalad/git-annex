@@ -1,4 +1,4 @@
-git-annex (8.20200815) UNRELEASED; urgency=medium
+git-annex (8.20200908) upstream; urgency=medium
 
   * Added httpalso special remote, which is useful for accessing 
     content stored on other remotes that is published by http.
@@ -40,7 +40,7 @@ git-annex (8.20200815) UNRELEASED; urgency=medium
     always supported.
   * stack.yaml: Updated to lts-16.10.
 
- -- Joey Hess <id@joeyh.name>  Fri, 14 Aug 2020 14:57:45 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 08 Sep 2020 14:20:11 -0400
 
 git-annex (8.20200814) upstream; urgency=medium
 
