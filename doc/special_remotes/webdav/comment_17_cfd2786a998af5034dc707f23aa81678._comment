@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="git@3af0a87771c4b55bee8a599b934914cd98d4bc0b"
+ nickname="git"
+ avatar="http://cdn.libravatar.org/avatar/6e2a7e8679033ad4a5df260c0ac721f5"
+ subject="Unknown remote type webdav"
+ date="2020-09-08T13:19:47Z"
+ content="""
+When I try to use a WebDAV server as remote storage, \"git annex initremote\" stops with the error message
+
+```
+git-annex: Unknown remote type webdav (pick from: git gcrypt p2p S3 bup directory rsync web bittorrent adb tahoe glacier ddar git-lfs hook external)
+```
+
+This looks like I need to explicitly add WebDAV support, but then this page says that it is built in.
+
+I installed git-annex via Guix, so I checked the Guix package definition where I found the configuration flag \"-WebDAV\". I didn't find any documentation on this flag, nor configuration flags in general, so I don't know if this asks for including or excluding WebDAV support (or maybe even something completely different). So I compiled git-annex under Guix both with and without this flag. In both cases, the build log includes the lines
+
+```
+   BuildFlags.hs:42:2: error:
+        warning: #warning Building without WebDAV. [-Wcpp]
+        #warning Building without WebDAV.
+         ^~~~~~~
+      |
+   42 | #warning Building without WebDAV.
+      |  ^
+```
+
+There is no further explanation, so I have no idea why WebDAV was excluded. Any suggestions? I am completely unfamiliar with Haskell and its build system, so I don't even know how to explore this any further.
+"""]]
