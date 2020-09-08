@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-08T16:11:01Z"
+ content="""
+Appears that you already had an empty file in the repository. Since
+git-annex deduplicates content, it used the content of that empty file
+for the new file you added. The empty file was created in 2015 is a
+giveaway.
+
+Do note that many git-annex special remotes cannot preserve modes or
+other metadata of files anyway, so after moving a file to a remote and
+getting it back, the mode can be reset to default. 
+
+The mode is not version controlled when you check a symlink into git,
+because symlinks do not have
+modes.. If you want to preserve execute bits, the only way to guarantee it
+will happen is to add the file unlocked. Then git tracks the execute bit.
+"""]]

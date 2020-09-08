@@ -47,3 +47,4 @@ I have my private binaries in ~/annex/bin and this has worked well for many year
 
 I've used git-annex since summer 2012, it's great :-)
 
+> [[notabug|done]] --[[Joey]]
