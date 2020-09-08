@@ -61,6 +61,8 @@ toCommand' (File s) = s
 
 -- | Run a system command, and returns True or False if it succeeded or failed.
 --
+-- (Throws an exception if the command is not found.)
+--
 -- This and other command running functions in this module log the commands
 -- run at debug level, using System.Log.Logger.
 boolSystem :: FilePath -> [CommandParam] -> IO Bool

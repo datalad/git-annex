@@ -439,8 +439,8 @@ testHarness tmpdir cmd a = ifM (inPath (unGpgCmd cmd))
 	-- other daemons. Stop them when done. This only affects
 	-- daemons started for the GNUPGHOME that was used.
 	-- Older gpg may not support this, so ignore failure.
-	stopgpgagent = void $ boolSystem "gpgconf"
-		[Param "--kill", Param "all"]
+	stopgpgagent = whenM (inPath "gpgconf") $
+		void $ boolSystem "gpgconf" [Param "--kill", Param "all"]
 
 	go (Just _) = Just <$> a
 	go Nothing = return Nothing
