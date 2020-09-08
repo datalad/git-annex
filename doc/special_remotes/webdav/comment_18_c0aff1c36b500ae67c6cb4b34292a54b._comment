@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Unknown remote type webdav"""
+ date="2020-09-08T16:26:41Z"
+ content="""
+Yes, that flag disables building with webdav. And if the build environment
+is limited in some way that the DAV dependency is not available, that flag
+can be turned on automatically by the dependency resolver.
+
+Probably guix needs to package the [DAV library](http://hackage.haskell.org/package/DAV)
+or add it to the dependencies of the package such that it's available
+to build with.
+"""]]
