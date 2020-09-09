@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="git@3af0a87771c4b55bee8a599b934914cd98d4bc0b"
+ nickname="git"
+ avatar="http://cdn.libravatar.org/avatar/6e2a7e8679033ad4a5df260c0ac721f5"
+ subject="Re: Unknown remote type webdav"
+ date="2020-09-09T09:48:15Z"
+ content="""
+Thanks a lot for those explanations! I managed to package DAV for Guix, and after rebuilding git-annex, webdav support seems to work as promised. I will clean up my packages and submit them for inclusion in Guix.
+
+"""]]
