@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="git@3af0a87771c4b55bee8a599b934914cd98d4bc0b"
+ nickname="git"
+ avatar="http://cdn.libravatar.org/avatar/6e2a7e8679033ad4a5df260c0ac721f5"
+ subject="Re: Unknown remote type webdav"
+ date="2020-09-09T10:19:21Z"
+ content="""
+Well... someone beat me to it! git-annex in Guix got WebDAV support eight hours ago!
+"""]]
