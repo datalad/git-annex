@@ -1,0 +1,42 @@
+Make --batch -J run multiple jobs at the same time, so big batch operations
+can potentially run faster.
+
+Currently, it does not, but it still accepts the combination of options.
+
+Hmm, probably most users of this will use --json too, and then the output
+for at least some commands already contains enough information so they can
+keep different async jobs straight:
+
+	(echo foo; echo bar) | git-annex add --batch --json
+	{"command":"add","success":true,"key":"SHA256E-s30--ce0c29e173009d77fa8803fae163b7c85920248add208bc378d465cae3087962","file":"foo"}
+	{"command":"add","success":true,"key":"SHA256E-s30--ce0c29e173009d77fa8803fae163b7c85920248add208bc378d465cae3087962","file":"bar"}
+
+Other commands not though; addurl does not include the url in its --json
+output (though it could be made to without breaking back-compat).
+
+And some --batch commands like lookupkey do not support --json 
+(though could be made to).
+
+And, when they fail, `git-annex add --batch --json` and others currently
+indicate failure with a blank line, which is a problem. It would need to be
+changed to eg:
+
+	{"command":"add","success":false,"file":"foo","error":"File does not exist"}
+
+Would that be a backwards compatibility problem?
+
+Hmm, also the filename in --json output may get normalized to something
+other than the input. Eg, git-annex add, for "./foo" outputs "foo". 
+(Due to passing through git ls-files --others IIRC.)
+
+Maybe the json output should include a field that mirrors the actual
+input:
+	
+	{"command":"add","success":false,"input":"./foo","file":"foo","error":"File does not exist"}
+
+Still, making the changes to --json output to address the above feels
+cleaner than wrapping input and output with a job id like the ASYNC
+extension does. Those changes would also generally be an improvement to
+json output in non-async mode.
+
+[[!tag projects/datalad]]
