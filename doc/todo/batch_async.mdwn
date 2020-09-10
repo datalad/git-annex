@@ -14,29 +14,49 @@ keep different async jobs straight:
 Other commands not though; addurl does not include the url in its --json
 output (though it could be made to without breaking back-compat).
 
+Also the filename in --json output may get normalized to something
+other than the input. Eg, git-annex add, for "./foo" outputs "foo".
+(Due to relPathCwdToFile in batchStart, which is there to handle
+absolute filepaths. So even if that case were changed, it would need to
+normalize absolute filepaths.)
+
+Maybe the json output should include a field that mirrors the input that
+resulted in this line, be it a filename or an url, or a directory, or
+whatever.
+	
+	{"command":"add","input":"./foo","success":true,"key":"SHA256E-s30--ce0c29e173009d77fa8803fae163b7c85920248add208bc378d465cae3087962","file":"foo"}
+
+(Note that, --batch currently does not operate on directories.
+Because of the one line or reply per line of input rule.
+Adding such a field would go a long way toward allowing that, 
+if it were wanted later.)
+
 And some --batch commands like lookupkey do not support --json 
 (though could be made to).
 
-And, when they fail, `git-annex add --batch --json` and others currently
-indicate failure with a blank line, which is a problem. It would need to be
-changed to eg:
+Some subcommands in --batch mode ouput a blank line instead of
+json when they don't need to do anything to handle the thing they were told
+to act on (eg, getting a file that is already present). (copy, drop, get,
+move, add, find, whereis). That's a bit of a problem since when it's async
+there would be no indication what thing they skipped,
+except for their other output about the things they didn't skip.
 
-	{"command":"add","success":false,"file":"foo","error":"File does not exist"}
+> I looked at datalad's handling of this as an example, and it currently
+> ignores the blank line, not caring when nothing needs to be done.
+> Which seems about what you'd expect.. The only real reason the blank
+> line is there currently is so a program can write one batch line
+> and read one batch line in reply and keep things straight.
+> 
+> Would any program really care if git-annex didn't need to get a file
+> that was already present or skipped over a file that other options
+> told it not to operate on? Probably not. So, can probably get away with
+> leaving the blank line as-is.
 
-Would that be a backwards compatibility problem?
+---
 
-Hmm, also the filename in --json output may get normalized to something
-other than the input. Eg, git-annex add, for "./foo" outputs "foo". 
-(Due to passing through git ls-files --others IIRC.)
-
-Maybe the json output should include a field that mirrors the actual
-input:
-	
-	{"command":"add","success":false,"input":"./foo","file":"foo","error":"File does not exist"}
-
-Still, making the changes to --json output to address the above feels
-cleaner than wrapping input and output with a job id like the ASYNC
-extension does. Those changes would also generally be an improvement to
-json output in non-async mode.
+Making the changes to --json output to address the above stuff, if
+possible, feels cleaner than wrapping input and output with a job id like
+the ASYNC extension does. Those changes would also generally be an
+improvement to json output in non-async mode.
 
 [[!tag projects/datalad]]
