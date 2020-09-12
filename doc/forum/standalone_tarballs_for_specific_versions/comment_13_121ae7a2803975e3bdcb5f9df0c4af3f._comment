@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="updating the standalone distribution to 8.20200908"
+ date="2020-09-12T15:20:18Z"
+ content="""
+Building the standalone distribution on conda-forge doesn't seem possible, unfortunately, since the build environment there is CentOS not Debian.
+
+@joey, when you get a chance, could you update the [https://downloads.kitenet.net/git-annex/linux/current/](https://downloads.kitenet.net/git-annex/linux/current/) and [http://archive.org/download/git-annex-builds](http://archive.org/download/git-annex-builds) version to 8.20200908 ?  [Current version there](http://archive.org/download/git-annex-builds/SHA256E-s55287727--50bd5f4673fe85859b0a2c1cc4b68c93ace4ba3fca1b4eeeedeb0f3f243b9bad.tar.gz) is 8.20200815 , which is not an official release.
+Thanks!
+
+"""]]
