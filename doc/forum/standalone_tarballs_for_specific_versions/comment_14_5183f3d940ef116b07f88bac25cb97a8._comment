@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="standalone build version oddity"
+ date="2020-09-12T19:07:55Z"
+ content="""
+Oddly, the mtime of the files at [https://downloads.kitenet.net/git-annex/linux/current](https://downloads.kitenet.net/git-annex/linux/current) is 2020-09-08, which does correspond to the latest git-annex release; but when run, it prints \"git-annex version: 8.20200815-g6ea511beb\".
+"""]]
