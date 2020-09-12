@@ -7,6 +7,7 @@ I'm trying to give all my repositories the same requirements by putting them in 
     $ git annex groupwanted common_requirements
     include=dump/angel-openbsd/* and not copies=not_angel-openbsd:3
     $ git annex fsck --quiet
+    [no output]
 
 The `fsck` should be complaining that some files are not present. If I set the `required` expression directly instead of using `groupwanted`, I get the behaviour I expected:
 
