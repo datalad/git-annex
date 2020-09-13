@@ -1,0 +1,16 @@
+I am trying annex for the first time.
+I am trying it on windows (installed the beta).
+My understanding from reading the docs is that it uses the repo in fully unlocked mode because windows does not support symlinks (or so git / git-annex believes).
+
+I currently have about 55K files and 220GB... mostly pictures.
+
+I have sidecar XMP files (text) next to each jpeg.
+When I git add the XMP files, it is very very slow (about 1s per file).
+When I do git status after adding them it takes minutes (refreshing index...).
+
+I have a pretty powerful machine:
+Processor	Intel(R) Core(TM) i9-7940X CPU @ 3.10GHz, 3096 Mhz, 14 Core(s), 28 Logical Processor(s)
+128GB RAM
+2TB NVMe SSD (~3GB/s symmetric transfer rate).
+
+My gut feel is that it is because all the jpgs remain in the worktree as opposed to symlinked, but wanted to hear an expert opinion?
