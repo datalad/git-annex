@@ -1,1 +1,4 @@
 I'm seeing various failures with the latest git-annex when doing multi-threaded copy --to S3 .  Using -J1 fixes the problem.
+
+> Assuming this is a [[dup|done]] of
+> [[concurrent_git-annex-copy_to_s3_special_remote_fails]]. --[[Joey]]
