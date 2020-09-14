@@ -1,4 +1,4 @@
-git-annex (8.20200523) UNRELEASED; urgency=medium
+git-annex (8.20200523) upstream; urgency=medium
 
   Transition notice: Commands like `git-annex get foo*` silently skip over
   files that are not checked into git. Since that can be surprising in many
