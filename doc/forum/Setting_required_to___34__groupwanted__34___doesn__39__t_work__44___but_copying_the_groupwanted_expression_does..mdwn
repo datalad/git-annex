@@ -1,0 +1,27 @@
+I'm trying to give all my repositories the same requirements by putting them in a group "`common_requirements`" with a `groupwanted` expression. However, it looks like the requirement is not actually being applied:
+
+    $ git annex required .
+    groupwanted
+    $ git annex group .
+    common_requirements
+    $ git annex groupwanted common_requirements
+    include=dump/angel-openbsd/* and not copies=not_angel-openbsd:3
+    $ git annex fsck --quiet
+    [no output]
+
+The `fsck` should be complaining that some files are not present. If I set the `required` expression directly instead of using `groupwanted`, I get the behaviour I expected:
+
+    $ git annex fsck --quiet
+      ** Required content dump/angel-openbsd/2020-09-12T01:20:52Z_level_0/_.bzip2 is missing from these repositories:
+            91c090a3-a8fc-4540-83ec-57493967c708 -- em [here]
+      ** Required content dump/angel-openbsd/2020-09-12T01:20:52Z_level_0/_home.bzip2 is missing from these repositories:
+            91c090a3-a8fc-4540-83ec-57493967c708 -- em [here]
+    ... (some output omitted)
+    git-annex: fsck: 10 failed
+
+Any idea what could cause `git annex required groupwanted` to behave differently from just copying the groupwanted expression in this case? Note that the repo is not in any other groups (see output of `git annex group .` above). I tried to reproduce this with some fresh toy repositories but wasn't able to --- in my controlled setting, `git annex required groupwanted` did what I wanted.
+
+A couple notes about the context here:
+
+* `dump/angel-openbsd` contains dumps of my host "`angel-openbsd`", and I want them to be stored in at last two repos other than `angel-openbsd` (no point in storing backups on the same computer). This repo should really be in the `not_angel-openbsd` group but I took it out of that group to make sure the issue isn't multiple conflicting `groupwanted` expressions.
+* I would really like to have a global "requirements" setting that generalizes `numcopies`. My `common_requirements` group is a hack to try to achieve this, but I think I will run into trouble if I want to actually use git-annex's `groupwanted` functionality for anything else.

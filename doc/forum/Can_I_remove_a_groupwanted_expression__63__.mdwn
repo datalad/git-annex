@@ -1,0 +1,7 @@
+I associated a groupwanted expression with a group I called "common", but I don't want it any more. Can I remove it, so the group doesn't have any groupwanted expression?
+
+I tried to remove it with `git annex groupwanted common ''`, but when I run `git annex vicfg`, I just end up with `groupwanted common =`. Similarly, if I run `git annex vicfg` and delete that line, it seems to have no effect.
+
+I'm assuming (but haven't verified) that means I won't be able to use `groupwanted` properly with repos that are in `common` and also in a group that has a real expression associated with it.
+
+How can I make it so `common` no longer has an associated expression?
