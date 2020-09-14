@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-09-14T23:43:03Z"
+ content="""
+git-annex copy --to S3 -J40 hangs reproductibly for phibs (on irc).
+
+When it hangs, at least one job is stuck at 100%, and often several,
+though some other jobs are hung at smaller percent.
+
+Without -J, it did not seem to hang. It also may have not been hung with
+-J2 (was interrupted before finishing).
+
+One attempt (with --json) had two other interesting messages:
+
+	magicFile: got error code but no error message
+
+	Missing root element
+
+The latter just before the hang, one file transferred successfully after
+that and then it hung. That message coes from Text.XML apparently,
+which I think points to this being the same bug.
+
+phibs tried a similar copy to a directory special remote, did not hang.
+
+phibs tried the ResourceT strictness patch there and it did not help.
+I think that pretty much rules out any problem in git-annex's code,
+the problem is probably in the aws library or the http stack.
+
+The S3 remote has chunking (10 mb) and no encryption, and is on AWS.
+"""]]
