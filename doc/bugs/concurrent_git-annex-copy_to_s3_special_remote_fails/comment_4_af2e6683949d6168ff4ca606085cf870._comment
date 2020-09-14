@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-09-14T21:32:05Z"
+ content="""
+Thinking about this, one thing in git-annex that might somehow involve
+unsafe memory access would be if Remote.S3's use of runResourceT returns
+a value that depends on a resource that then gets freed.
+
+[[!commit ddf963d0194acf9f6f059fa37f3e89e59d682de9]] should avoid all ways that might possibly have happened,
+so if anyone has a way to reproduce this reliably, it would be good to know
+if it still happens after that fix.
+"""]]
