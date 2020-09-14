@@ -1,3 +1,10 @@
+git-annex (8.20200909) UNRELEASED; urgency=medium
+
+  * aws-0.22 improved its support for setting etags, which improves
+    support for versioned S3 buckets.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
+
 git-annex (8.20200908) upstream; urgency=medium
 
   * Added httpalso special remote, which is useful for accessing 

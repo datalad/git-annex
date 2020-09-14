@@ -347,10 +347,7 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 		resp <- sendS3Handle h req
 		vid <- mkS3VersionID object
 			<$> extractFromResourceT (S3.porVersionId resp)
-		-- FIXME Actual aws version that supports this is not known,
-		-- patch not merged yet.
-		-- https://github.com/aristidb/aws/issues/258
-#if MIN_VERSION_aws(0,99,0)
+#if MIN_VERSION_aws(0,22,0)
 		etag <- extractFromResourceT (Just (S3.porETag resp))
 		return (etag, vid)
 #else
@@ -685,10 +682,7 @@ rewritePreconditionException a = catchJust (Url.matchStatusCodeException want) a
 storeExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierS3 hv r rs info magic src k loc _overwritablecids p
 	| versioning info = go
-	-- FIXME Actual aws version that supports getting Etag for a store
-	-- is not known; patch not merged yet.
-	-- https://github.com/aristidb/aws/issues/258
-#if MIN_VERSION_aws(0,99,0)
+#if MIN_VERSION_aws(0,22,0)
 	| otherwise = go
 #else
 	| otherwise = giveup "git-annex is built with too old a version of the aws library to support this operation"
