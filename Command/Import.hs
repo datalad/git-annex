@@ -125,11 +125,13 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 startLocal :: AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
-		( starting "import" (ActionItemWorkTreeFile destfile')
-			pickaction
+		( starting "import" ai si pickaction
 		, stop
 		)
   where
+ 	ai = ActionItemWorkTreeFile destfile'
+	si = SeekInput []
+
 	destfile' = toRawFilePath destfile
 
 	deletedup k = do
@@ -302,7 +304,7 @@ seekRemote remote branch msubdir importcontent = do
 	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
 
 listContents :: Remote -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
-listContents remote tvar = starting "list" (ActionItemOther (Just (Remote.name remote))) $
+listContents remote tvar = starting "list" ai si $
 	listImportableContents remote >>= \case
 		Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
 		Just importable -> do
@@ -312,14 +314,18 @@ listContents remote tvar = starting "list" (ActionItemOther (Just (Remote.name r
 			next $ do
 				liftIO $ atomically $ writeTVar tvar (Just importable')
 				return True
+  where
+	ai = ActionItemOther (Just (Remote.name remote))
+	si = SeekInput []
 
 commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents (Either Sha Key) -> CommandStart
 commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable =
-	starting "update" (ActionItemOther (Just $ fromRef $ fromRemoteTrackingBranch tb)) $ do
+	starting "update" ai si $ do
 		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
 		next $ updateremotetrackingbranch importcommit
-		
   where
+	ai = ActionItemOther (Just $ fromRef $ fromRemoteTrackingBranch tb)
+	si = SeekInput []
 	-- Update the tracking branch. Done even when there
 	-- is nothing new to import, to make sure it exists.
 	updateremotetrackingbranch importcommit =

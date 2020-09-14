@@ -42,7 +42,7 @@ parseBatchOption = go
 -- In batch mode, one line at a time is read, parsed, and a reply output to
 -- stdout. In non batch mode, the command's parameters are parsed and
 -- a reply output for each.
-batchable :: (opts -> String -> Annex Bool) -> Parser opts -> CmdParamsDesc -> CommandParser
+batchable :: (opts -> SeekInput -> String -> Annex Bool) -> Parser opts -> CmdParamsDesc -> CommandParser
 batchable handler parser paramdesc = batchseeker <$> batchparser
   where
 	batchparser = (,,)
@@ -51,12 +51,12 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 		<*> cmdParams paramdesc
 	
 	batchseeker (opts, NoBatch, params) =
-		mapM_ (go NoBatch opts) params
+		mapM_ (\p -> go NoBatch opts (SeekInput [p], p)) params
 	batchseeker (opts, batchmode@(Batch fmt), _) = 
 		batchInput fmt (pure . Right) (go batchmode opts)
 
-	go batchmode opts p =
-		unlessM (handler opts p) $
+	go batchmode opts (si, p) =
+		unlessM (handler opts si p) $
 			batchBadInput batchmode
 
 -- bad input is indicated by an empty line in batch mode. In non batch
@@ -72,12 +72,12 @@ batchBadInput (Batch _) = liftIO $ putStrLn ""
 -- be converted to relative. Normally, filename parameters are passed
 -- through git ls-files, which makes them relative, but batch mode does
 -- not use that, and absolute worktree files are likely to cause breakage.
-batchInput :: BatchFormat -> (String -> Annex (Either String a)) -> (a -> Annex ()) -> Annex ()
+batchInput :: BatchFormat -> (String -> Annex (Either String v)) -> ((SeekInput, v) -> Annex ()) -> Annex ()
 batchInput fmt parser a = go =<< batchLines fmt
   where
 	go [] = return ()
 	go (l:rest) = do
-		either parseerr a =<< parser l
+		either parseerr (\v -> a (SeekInput [l], v)) =<< parser l
 		go rest
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
@@ -107,28 +107,29 @@ batchCommandAction a = maybe (batchBadInput (Batch BatchLine)) (const noop)
 -- Absolute filepaths are converted to relative.
 --
 -- File matching options are not checked.
-batchStart :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
+batchStart :: BatchFormat -> (SeekInput -> FilePath -> CommandStart) -> Annex ()
 batchStart fmt a = batchInput fmt (Right <$$> liftIO . relPathCwdToFile) $
-	batchCommandAction . a
+	batchCommandAction . uncurry a
 
 -- Like batchStart, but checks the file matching options
 -- and skips non-matching files.
-batchFilesMatching :: BatchFormat -> (RawFilePath -> CommandStart) -> Annex ()
+batchFilesMatching :: BatchFormat -> ((SeekInput, RawFilePath) -> CommandStart) -> Annex ()
 batchFilesMatching fmt a = do
 	matcher <- getMatcher
-	batchStart fmt $ \f ->
+	batchStart fmt $ \si f ->
 		let f' = toRawFilePath f
 		in ifM (matcher $ MatchingFile $ FileInfo f' f')
-			( a f'
+			( a (si, f')
 			, return Nothing
 			)
 
 batchAnnexedFilesMatching :: BatchFormat -> AnnexedFileSeeker -> Annex ()
-batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $
-	whenAnnexed $ \f k -> case checkContentPresent seeker of
-		Just v -> do
-			present <- inAnnex k
-			if present == v
-				then startAction seeker f k
-				else return Nothing
-		Nothing -> startAction seeker f k
+batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $ \(si, bf) ->
+	flip whenAnnexed bf $ \f k -> 
+		case checkContentPresent seeker of
+			Just v -> do
+				present <- inAnnex k
+				if present == v
+					then startAction seeker si f k
+					else return Nothing
+			Nothing -> startAction seeker si f k

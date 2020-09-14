@@ -24,8 +24,8 @@ cmd = noCommit $ command "recvkey" SectionPlumbing
 seek :: CmdParams -> CommandSeek
 seek = withKeys (commandAction . start)
 
-start :: Key -> CommandStart
-start key = fieldTransfer Download key $ \_p -> do
+start :: (SeekInput, Key) -> CommandStart
+start (_, key) = fieldTransfer Download key $ \_p -> do
 	-- Always verify content when a repo is sending an unlocked file,
 	-- as the file could change while being transferred.
 	fromunlocked <- (isJust <$> Fields.getField Fields.unlocked)

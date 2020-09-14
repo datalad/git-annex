@@ -93,24 +93,24 @@ seek o = case batchOption o of
 	Batch fmt -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> ifM limited
 			( giveup "combining --batch with file matching options is not currently supported"
-			, batchInput fmt parseJSONInput $
-				commandAction . startBatch
+			, batchInput fmt parseJSONInput 
+				(commandAction . startBatch)
 			)
 		_ -> giveup "--batch is currently only supported in --json mode"
 
-start :: VectorClock -> MetaDataOptions -> RawFilePath -> Key -> CommandStart
-start c o file k = startKeys c o (k, mkActionItem (k, afile))
+start :: VectorClock -> MetaDataOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start c o si file k = startKeys c o (si, k, mkActionItem (k, afile))
   where
 	afile = AssociatedFile (Just file)
 
-startKeys :: VectorClock -> MetaDataOptions -> (Key, ActionItem) -> CommandStart
-startKeys c o (k, ai) = case getSet o of
+startKeys :: VectorClock -> MetaDataOptions -> (SeekInput, Key, ActionItem) -> CommandStart
+startKeys c o (si, k, ai) = case getSet o of
 	Get f -> startingCustomOutput k $ do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
 			B8.putStrLn . fromMetaValue
 		next $ return True
-	_ -> starting "metadata" ai $
+	_ -> starting "metadata" ai si $
 		perform c o k
 
 perform :: VectorClock -> MetaDataOptions -> Key -> CommandPerform
@@ -170,8 +170,8 @@ parseJSONInput i = case eitherDecode (BU.fromString i) of
 			(Nothing, Nothing) -> return $ 
 				Left "JSON input is missing either file or key"
 
-startBatch :: (Either RawFilePath Key, MetaData) -> CommandStart
-startBatch (i, (MetaData m)) = case i of
+startBatch :: (SeekInput, (Either RawFilePath Key, MetaData)) -> CommandStart
+startBatch (si, (i, (MetaData m))) = case i of
 	Left f -> do
 		mk <- lookupKey f
 		case mk of
@@ -179,7 +179,7 @@ startBatch (i, (MetaData m)) = case i of
 			Nothing -> giveup $ "not an annexed file: " ++ fromRawFilePath f
 	Right k -> go k (mkActionItem k)
   where
-	go k ai = starting "metadata" ai $ do
+	go k ai = starting "metadata" ai si $ do
 		let o = MetaDataOptions
 			{ forFiles = []
 			, getSet = if MetaData m == emptyMetaData

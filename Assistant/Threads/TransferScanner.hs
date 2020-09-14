@@ -30,6 +30,7 @@ import Annex.WorkTree
 import Annex.Content
 import Annex.Wanted
 import CmdLine.Action
+import Types.Command
 
 import qualified Data.Set as S
 import Control.Concurrent
@@ -168,7 +169,7 @@ expensiveScan urlrenderer rs = batch <~> do
 
 		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
-			present key af [] callCommandAction
+			present key af (SeekInput []) [] callCommandAction
 		ts <- if present
 			then liftAnnex . filterM (wantSend True (Just key) af . Remote.uuid . fst)
 				=<< use syncDataRemotes (genTransfer Upload False)

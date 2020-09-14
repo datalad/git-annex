@@ -42,7 +42,7 @@ check = do
 seek :: CmdParams -> CommandSeek
 seek ps = do
 	l <- workTreeItems ww ps
-	withFilesNotInGit (commandAction . whenAnnexed (startCheckIncomplete . fromRawFilePath)) l
+	withFilesNotInGit WarnUnmatchWorkTreeItems (\(_, f) -> commandAction $ whenAnnexed (startCheckIncomplete . fromRawFilePath) f) l
 	Annex.changeState $ \s -> s { Annex.fast = True }
 	withFilesInGitAnnex ww Command.Unannex.seeker l
 	finish

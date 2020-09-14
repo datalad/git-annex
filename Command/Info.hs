@@ -125,7 +125,7 @@ start o [] = do
 	globalInfo o
 	stop
 start o ps = do
-	mapM_ (itemInfo o) ps
+	mapM_ (\p -> itemInfo o (SeekInput [p], p)) ps
 	stop
 
 globalInfo :: InfoOptions -> Annex ()
@@ -139,8 +139,8 @@ globalInfo o = do
 		evalStateT (mapM_ showStat stats) (emptyStatInfo o)
 		return True
 
-itemInfo :: InfoOptions -> String -> Annex ()
-itemInfo o p = ifM (isdir p)
+itemInfo :: InfoOptions -> (SeekInput, String) -> Annex ()
+itemInfo o (_, p) = ifM (isdir p)
 	( dirInfo o p
 	, do
 		disallowMatchingOptions

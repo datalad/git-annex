@@ -41,8 +41,8 @@ seek o = do
   where
 	parsekey = maybe (Left "bad key") Right . deserializeKey
 
-start :: Key -> CommandStart
-start key = starting "dropkey" (mkActionItem key) $
+start :: (SeekInput, Key) -> CommandStart
+start (si, key) = starting "dropkey" (mkActionItem key) si $
 	perform key
 
 perform :: Key -> CommandPerform

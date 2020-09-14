@@ -73,7 +73,7 @@ seek :: TestRemoteOptions -> CommandSeek
 seek = commandAction . start 
 
 start :: TestRemoteOptions -> CommandStart
-start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
+start o = starting "testremote" (ActionItemOther (Just (testRemote o))) si $ do
 	fast <- Annex.getState Annex.fast
 	cache <- liftIO newRemoteVariantCache
 	r <- either giveup (disableExportTree cache)
@@ -98,6 +98,7 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) $ do
 	perform drs unavailr exportr ks
   where
 	basesz = fromInteger $ sizeOption o
+	si = SeekInput [testRemote o]
 
 perform :: [Described (Annex (Maybe Remote))] -> Maybe Remote -> Annex (Maybe Remote) -> [Key] -> CommandPerform
 perform drs unavailr exportr ks = do

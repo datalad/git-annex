@@ -60,13 +60,13 @@ start :: Expire -> Bool -> Log Activity -> UUIDDescMap -> UUID -> CommandStart
 start (Expire expire) noact actlog descs u =
 	case lastact of
 		Just ent | notexpired ent -> checktrust (== DeadTrusted) $
-			starting "unexpire" (ActionItemOther (Just desc)) $ do
+			starting "unexpire" ai si $ do
 				showNote =<< whenactive
 				unless noact $
 					trustSet u SemiTrusted
 				next $ return True
 		_ -> checktrust (/= DeadTrusted) $
-			starting "expire" (ActionItemOther (Just desc)) $ do
+			starting "expire" ai si $ do
 				showNote =<< whenactive
 				unless noact $
 					trustSet u DeadTrusted
@@ -79,6 +79,8 @@ start (Expire expire) noact actlog descs u =
 			return $ "last active: " ++ fromDuration d ++ " ago"
 		_  -> return "no activity"
 	desc = fromUUID u ++ " " ++ fromUUIDDesc (fromMaybe mempty (M.lookup u descs))
+	ai = ActionItemOther (Just desc)
+	si = SeekInput []
 	notexpired ent = case ent of
 		Unknown -> False
 		VectorClock c -> case lookupexpire of

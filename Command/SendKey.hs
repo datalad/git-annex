@@ -26,8 +26,8 @@ cmd = noCommit $
 seek :: CmdParams -> CommandSeek
 seek = withKeys (commandAction . start)
 
-start :: Key -> CommandStart
-start key = do
+start :: (SeekInput, Key) -> CommandStart
+start (_, key) = do
 	opts <- filterRsyncSafeOptions . maybe [] words
 		<$> getField "RsyncOptions"
 	ifM (inAnnex key)

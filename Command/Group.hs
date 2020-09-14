@@ -22,10 +22,13 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start (name:g:[]) = do
+start ps@(name:g:[]) = do
 	u <- Remote.nameToUUID name
-	startingUsualMessages "group" (ActionItemOther (Just name)) $
+	startingUsualMessages "group" ai si $
 		setGroup u (toGroup g)
+  where
+	ai = ActionItemOther (Just name)
+	si = SeekInput ps
 start (name:[]) = do
 	u <- Remote.nameToUUID name
 	startingCustomOutput (ActionItemOther Nothing) $ do

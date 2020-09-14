@@ -36,7 +36,9 @@ start ps = ifM safeToEnterView
 	, giveup "Not safe to enter view."
 	)
   where
-	go view Nothing = starting "view" (ActionItemOther Nothing) $
+	ai = ActionItemOther Nothing
+	si = SeekInput ps
+	go view Nothing = starting "view" ai si $
 		perform view
 	go view (Just v)
 		| v == view = stop

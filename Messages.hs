@@ -90,19 +90,19 @@ showStartKey command key i = outputMessage json $
 	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
 
 showStartMessage :: StartMessage -> Annex ()
-showStartMessage (StartMessage command ai) = case ai of
+showStartMessage (StartMessage command ai si) = case ai of
 	ActionItemAssociatedFile _ k -> showStartKey command k ai
 	ActionItemKey k -> showStartKey command k ai
 	ActionItemBranchFilePath _ k -> showStartKey command k ai
 	ActionItemFailedTransfer t _ -> showStartKey command (transferKey t) ai
 	ActionItemWorkTreeFile file -> showStart command file
 	ActionItemOther msg -> showStart' command msg
-	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai')
-showStartMessage (StartUsualMessages command ai) = do
+	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai' si)
+showStartMessage (StartUsualMessages command ai si) = do
 	outputType <$> Annex.getState Annex.output >>= \case
 		QuietOutput -> Annex.setOutput NormalOutput
 		_ -> noop
-	showStartMessage (StartMessage command ai)
+	showStartMessage (StartMessage command ai si)
 showStartMessage (StartNoMessage _) = noop
 showStartMessage (CustomOutput _) =
 	outputType <$> Annex.getState Annex.output >>= \case
@@ -111,8 +111,8 @@ showStartMessage (CustomOutput _) =
 
 -- Only show end result if the StartMessage is one that gets displayed.
 showEndMessage :: StartMessage -> Bool -> Annex ()
-showEndMessage (StartMessage _ _) = showEndResult
-showEndMessage (StartUsualMessages _ _) = showEndResult
+showEndMessage (StartMessage _ _ _) = showEndResult
+showEndMessage (StartUsualMessages _ _ _) = showEndResult
 showEndMessage (StartNoMessage _) = const noop
 showEndMessage (CustomOutput _) = const noop
 

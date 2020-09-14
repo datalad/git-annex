@@ -36,12 +36,13 @@ seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
 		, usesLocationLog = False
 		}
 
-start :: RawFilePath -> Key -> CommandStart
-start file key = ifM (isJust <$> isAnnexLink file)
-	( starting "unlock" (mkActionItem (key, AssociatedFile (Just file))) $
-		perform file key
+start :: SeekInput -> RawFilePath -> Key -> CommandStart
+start si file key = ifM (isJust <$> isAnnexLink file)
+	( starting "unlock" ai si $ perform file key
 	, stop
 	)
+  where
+	ai = mkActionItem (key, AssociatedFile (Just file))
 
 perform :: RawFilePath -> Key -> CommandPerform
 perform dest key = do

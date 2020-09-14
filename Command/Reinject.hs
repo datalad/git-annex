@@ -41,20 +41,22 @@ seek os
 	| otherwise = withWords (commandAction . startSrcDest) (params os)
 
 startSrcDest :: [FilePath] -> CommandStart
-startSrcDest (src:dest:[])
+startSrcDest ps@(src:dest:[])
 	| src == dest = stop
 	| otherwise = notAnnexed src $ ifAnnexed (toRawFilePath dest) go stop
   where
-	go key = starting "reinject" (ActionItemOther (Just src)) $
+	go key = starting "reinject" ai si $
 		ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src)
 			( perform src key
 			, giveup $ src ++ " does not have expected content of " ++ dest
 			)
+	ai = ActionItemOther (Just src)
+	si = SeekInput ps
 startSrcDest _ = giveup "specify a src file and a dest file"
 
 startKnown :: FilePath -> CommandStart
 startKnown src = notAnnexed src $
-	starting "reinject" (ActionItemOther (Just src)) $ do
+	starting "reinject" ai si $ do
 		(key, _) <- genKey ks nullMeterUpdate Nothing
 		ifM (isKnownKey key)
 			( perform src key
@@ -65,6 +67,8 @@ startKnown src = notAnnexed src $
   where
 	ks = KeySource src' src' Nothing
 	src' = toRawFilePath src
+	ai = ActionItemOther (Just src)
+	si = SeekInput [src]
 
 notAnnexed :: FilePath -> CommandStart -> CommandStart
 notAnnexed src a = 

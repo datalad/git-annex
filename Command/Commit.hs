@@ -20,7 +20,7 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing (commandAction start)
 
 start :: CommandStart
-start = starting "commit" (ActionItemOther (Just "git-annex")) $ do
+start = starting "commit" (ActionItemOther (Just "git-annex")) (SeekInput []) $ do
 		Annex.Branch.commit =<< Annex.Branch.commitMessage
 		_ <- runhook <=< inRepo $ Git.hookPath "annex-content"
 		next $ return True

@@ -364,7 +364,8 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
 			let ai = ActionItemOther (Just (fromRawFilePath (fromImportLocation loc)))
-			let importaction = starting ("import " ++ Remote.name remote) ai $ do
+			let si = SeekInput []
+			let importaction = starting ("import " ++ Remote.name remote) ai si $ do
 				when oldversion $
 					showNote "old version"
 				tryNonAsync (importordownload cidmap db i largematcher) >>= \case

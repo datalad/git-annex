@@ -33,13 +33,16 @@ seek :: ForgetOptions -> CommandSeek
 seek = commandAction . start
 
 start :: ForgetOptions -> CommandStart
-start o = starting "forget" (ActionItemOther (Just "git-annex")) $ do
+start o = starting "forget" ai si $ do
 	c <- liftIO currentVectorClock
 	let basets = addTransition c ForgetGitHistory noTransitions
 	let ts = if dropDead o
 		then addTransition c ForgetDeadRemotes basets
 		else basets
 	perform ts =<< Annex.getState Annex.force
+  where
+	ai = ActionItemOther (Just "git-annex")
+	si = SeekInput []
 
 perform :: Transitions -> Bool -> CommandPerform
 perform ts True = do

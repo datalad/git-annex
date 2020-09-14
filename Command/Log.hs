@@ -100,8 +100,8 @@ seek o = do
   where
 	ww = WarnUnmatchLsFiles
 
-start :: LogOptions -> (FilePath -> Outputter) -> RawFilePath -> Key -> CommandStart
-start o outputter file key = do
+start :: LogOptions -> (FilePath -> Outputter) -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o outputter _ file key = do
 	(changes, cleanup) <- getKeyLog key (passthruOptions o)
 	showLogIncremental (outputter (fromRawFilePath file)) changes
 	void $ liftIO cleanup

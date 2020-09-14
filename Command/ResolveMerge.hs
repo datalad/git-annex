@@ -24,7 +24,7 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing (commandAction start)
 
 start :: CommandStart
-start = starting "resolvemerge" (ActionItemOther Nothing) $ do
+start = starting "resolvemerge" (ActionItemOther Nothing) (SeekInput []) $ do
 	us <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	d <- fromRawFilePath <$> fromRepo Git.localGitDir
 	let merge_head = d </> "MERGE_HEAD"

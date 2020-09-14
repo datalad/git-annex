@@ -26,7 +26,7 @@ start ::CommandStart
 start = go =<< currentView
   where
 	go Nothing = giveup "Not in a view."
-	go (Just v) = starting "vcycle" (ActionItemOther Nothing) $ do
+	go (Just v) = starting "vcycle" (ActionItemOther Nothing) (SeekInput [])$ do
 		let v' = v { viewComponents = vcycle [] (viewComponents v) }
 		if v == v'
 			then do

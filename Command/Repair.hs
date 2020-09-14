@@ -25,7 +25,7 @@ seek :: CmdParams -> CommandSeek
 seek = withNothing (commandAction start)
 
 start :: CommandStart
-start = starting "repair" (ActionItemOther Nothing) $ 
+start = starting "repair" (ActionItemOther Nothing) (SeekInput []) $ 
 	next $ runRepair =<< Annex.getState Annex.force
 
 runRepair :: Bool -> Annex Bool

@@ -76,42 +76,42 @@ seek o = startConcurrency stages $ do
 		Left ToHere -> downloadStages
 	ww = WarnUnmatchLsFiles
 
-start :: FromToHereOptions -> RemoveWhen -> RawFilePath -> Key -> CommandStart
-start fromto removewhen f k = start' fromto removewhen afile k ai
+start :: FromToHereOptions -> RemoveWhen -> SeekInput -> RawFilePath -> Key -> CommandStart
+start fromto removewhen si f k = start' fromto removewhen afile si k ai
   where
 	afile = AssociatedFile (Just f)
 	ai = mkActionItem (k, afile)
 
-startKey :: FromToHereOptions -> RemoveWhen -> (Key, ActionItem) -> CommandStart
-startKey fromto removewhen = 
-	uncurry $ start' fromto removewhen (AssociatedFile Nothing)
+startKey :: FromToHereOptions -> RemoveWhen -> (SeekInput, Key, ActionItem) -> CommandStart
+startKey fromto removewhen (si, k, ai) = 
+	start' fromto removewhen (AssociatedFile Nothing) si k ai
 
-start' :: FromToHereOptions -> RemoveWhen -> AssociatedFile -> Key -> ActionItem -> CommandStart
-start' fromto removewhen afile key ai =
+start' :: FromToHereOptions -> RemoveWhen -> AssociatedFile -> SeekInput -> Key -> ActionItem -> CommandStart
+start' fromto removewhen afile si key ai =
 	case fromto of
 		Right (FromRemote src) ->
 			checkFailedTransferDirection ai Download $
-				fromStart removewhen afile key ai =<< getParsed src
+				fromStart removewhen afile key ai si =<< getParsed src
 		Right (ToRemote dest) ->
 			checkFailedTransferDirection ai Upload $
-				toStart removewhen afile key ai =<< getParsed dest
+				toStart removewhen afile key ai si =<< getParsed dest
 		Left ToHere ->
 			checkFailedTransferDirection ai Download $
-				toHereStart removewhen afile key ai
+				toHereStart removewhen afile key ai si
 
 describeMoveAction :: RemoveWhen -> String
 describeMoveAction RemoveNever = "copy"
 describeMoveAction _ = "move"
 
-toStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
-toStart removewhen afile key ai dest = do
+toStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> Remote -> CommandStart
+toStart removewhen afile key ai si dest = do
 	u <- getUUID
 	if u == Remote.uuid dest
 		then stop
-		else toStart' dest removewhen afile key ai
+		else toStart' dest removewhen afile key ai si
 
-toStart' :: Remote -> RemoveWhen -> AssociatedFile -> Key -> ActionItem -> CommandStart
-toStart' dest removewhen afile key ai = do
+toStart' :: Remote -> RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> CommandStart
+toStart' dest removewhen afile key ai si = do
 	fast <- Annex.getState Annex.fast
 	if fast && removewhen == RemoveNever
 		then ifM (expectedPresent dest key)
@@ -121,7 +121,7 @@ toStart' dest removewhen afile key ai = do
 		else go False (Remote.hasKey dest key)
   where
 	go fastcheck isthere =
-		starting (describeMoveAction removewhen) (OnlyActionOn key ai) $
+		starting (describeMoveAction removewhen) (OnlyActionOn key ai) si $
 			toPerform dest removewhen key afile fastcheck =<< isthere
 
 expectedPresent :: Remote -> Key -> Annex Bool
@@ -196,10 +196,10 @@ toPerform dest removewhen key afile fastcheck isthere =
 	-- to be done except for cleaning up.
 	lockfailed = next $ Command.Drop.cleanupLocal key
 
-fromStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> Remote -> CommandStart
-fromStart removewhen afile key ai src = 
+fromStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> Remote -> CommandStart
+fromStart removewhen afile key ai si src = 
 	stopUnless (fromOk src key) $
-		starting (describeMoveAction removewhen) (OnlyActionOn key ai) $
+		starting (describeMoveAction removewhen) (OnlyActionOn key ai) si $
 			fromPerform src removewhen key afile
 
 fromOk :: Remote -> Key -> Annex Bool
@@ -252,13 +252,13 @@ fromPerform src removewhen key afile = do
  -
  - When moving, the content is removed from all the reachable remotes that
  - it can safely be removed from. -}
-toHereStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> CommandStart
-toHereStart removewhen afile key ai = 
+toHereStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> CommandStart
+toHereStart removewhen afile key ai si = 
 	startingNoMessage (OnlyActionOn key ai) $ do
 		rs <- Remote.keyPossibilities key
 		forM_ rs $ \r ->
 			includeCommandAction $
-				starting (describeMoveAction removewhen) ai $
+				starting (describeMoveAction removewhen) ai si $
 					fromPerform r removewhen key afile
 		next $ return True
 

@@ -52,20 +52,24 @@ batchParser s = case separate (== ' ') (reverse s) of
 
 seek :: ReKeyOptions -> CommandSeek
 seek o = case batchOption o of
-	Batch fmt -> batchInput fmt batchParser $
-		batchCommandAction . start
-	NoBatch -> withPairs (commandAction . start . parsekey) (reKeyThese o)
+	Batch fmt -> batchInput fmt batchParser
+		(batchCommandAction . uncurry start)
+	NoBatch -> withPairs 
+		(\(si, p) -> commandAction (start si (parsekey p))) 
+		(reKeyThese o)
   where
 	parsekey (file, skey) =
 		(toRawFilePath file, fromMaybe (giveup "bad key") (deserializeKey skey))
 
-start :: (RawFilePath, Key) -> CommandStart
-start (file, newkey) = ifAnnexed file go stop
+start :: SeekInput -> (RawFilePath, Key) -> CommandStart
+start si (file, newkey) = ifAnnexed file go stop
   where
 	go oldkey
 		| oldkey == newkey = stop
-		| otherwise = starting "rekey" (ActionItemWorkTreeFile file) $
+		| otherwise = starting "rekey" ai si $
 			perform file oldkey newkey
+
+	ai = ActionItemWorkTreeFile file
 
 perform :: RawFilePath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do

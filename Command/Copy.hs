@@ -67,9 +67,9 @@ seek o = startConcurrency commandStages $ do
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
-start :: CopyOptions -> RawFilePath -> Key -> CommandStart
-start o file key = stopUnless shouldCopy $ 
-	Command.Move.start (fromToOptions o) Command.Move.RemoveNever file key
+start :: CopyOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o si file key = stopUnless shouldCopy $ 
+	Command.Move.start (fromToOptions o) Command.Move.RemoveNever si file key
   where
 	shouldCopy
 		| autoMode o = want <||> numCopiesCheck (fromRawFilePath file) key (<)

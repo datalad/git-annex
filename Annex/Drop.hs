@@ -47,8 +47,8 @@ type Reason = String
  - The runner is used to run CommandStart sequentially, it's typically 
  - callCommandAction.
  -}
-handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
-handleDropsFrom locs rs reason fromhere key afile preverified runner = do
+handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> SeekInput -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
+handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 	g <- Annex.gitRepo
 	l <- map (`fromTopFilePath` g)
 		<$> Database.Keys.getAssociatedFiles key
@@ -120,10 +120,10 @@ handleDropsFrom locs rs reason fromhere key afile preverified runner = do
 
 	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
 		stopUnless (inAnnex key) $
-			Command.Drop.startLocal afile ai numcopies key preverified
+			Command.Drop.startLocal afile ai si numcopies key preverified
 
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
-		Command.Drop.startRemote afile ai numcopies key r
+		Command.Drop.startRemote afile ai si numcopies key r
 
 	ai = mkActionItem (key, afile)
 

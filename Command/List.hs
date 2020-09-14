@@ -77,8 +77,8 @@ getList o
 printHeader :: [(UUID, RemoteName, TrustLevel)] -> Annex ()
 printHeader l = liftIO $ putStrLn $ lheader $ map (\(_, n, t) -> (n, t)) l
 
-start :: [(UUID, RemoteName, TrustLevel)] -> RawFilePath -> Key -> CommandStart
-start l file key = do
+start :: [(UUID, RemoteName, TrustLevel)] -> SeekInput -> RawFilePath -> Key -> CommandStart
+start l si file key = do
 	ls <- S.fromList <$> keyLocations key
 	liftIO $ putStrLn $ format (map (\(u, _, t) -> (t, S.member u ls)) l) file
 	stop

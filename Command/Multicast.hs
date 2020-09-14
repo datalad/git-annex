@@ -78,7 +78,7 @@ seek (MultiCastOptions Receive ups []) = commandAction $ receive ups
 seek (MultiCastOptions Receive _ _) = giveup "Cannot specify list of files with --receive; this receives whatever files the sender chooses to send."
 
 genAddress :: CommandStart
-genAddress = starting "gen-address" (ActionItemOther Nothing) $ do
+genAddress = starting "gen-address" (ActionItemOther Nothing) (SeekInput []) $ do
 	k <- uftpKey
 	(s, ok) <- case k of
 		KeyContainer s -> liftIO $ genkey (Param s)
@@ -127,7 +127,7 @@ send ups fs = do
 	-- In a direct mode repository, the annex objects do not have
 	-- the names of keys, and would have to be copied, which is too
 	-- expensive.
-	starting "sending files" (ActionItemOther Nothing) $
+	starting "sending files" (ActionItemOther Nothing) (SeekInput []) $
 		withTmpFile "send" $ \t h -> do
 			let ww = WarnUnmatchLsFiles
 			fs' <- seekHelper id ww LsFiles.inRepo
@@ -135,7 +135,7 @@ send ups fs = do
 			matcher <- Limit.getMatcher
 			let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
 				liftIO $ hPutStrLn h o
-			forM_ fs' $ \f -> do
+			forM_ fs' $ \(_, f) -> do
 				mk <- lookupKey f
 				case mk of
 					Nothing -> noop
@@ -166,7 +166,7 @@ send ups fs = do
 			next $ return True
 
 receive :: [CommandParam] -> CommandStart
-receive ups = starting "receiving multicast files" (ActionItemOther Nothing) $ do
+receive ups = starting "receiving multicast files" ai si $ do
 	showNote "Will continue to run until stopped by ctrl-c"
 	
 	showOutput
@@ -200,6 +200,9 @@ receive ups = starting "receiving multicast files" (ActionItemOther Nothing) $ d
 		mapM_ storeReceived . lines =<< liftIO (hGetContents statush)
 		showEndResult =<< liftIO (wait runner)
 	next $ return True
+  where
+	ai = ActionItemOther Nothing
+	si = SeekInput []
 
 storeReceived :: FilePath -> Annex ()
 storeReceived f = do

@@ -35,8 +35,8 @@ seek ps = do
 	let ww = WarnUnmatchWorkTreeItems
 	l <- workTreeItems ww ps
 	-- fix symlinks to files being committed
-	flip withFilesToBeCommitted l $ \f -> commandAction $
-		maybe stop (Command.Fix.start Command.Fix.FixSymlinks f)
+	flip withFilesToBeCommitted l $ \(si, f) -> commandAction $
+		maybe stop (Command.Fix.start Command.Fix.FixSymlinks si f)
 			=<< isAnnexLink f
 	-- after a merge conflict or git cherry-pick or stash, pointer
 	-- files in the worktree won't be populated, so populate them here
@@ -53,12 +53,18 @@ seek ps = do
 			(removeViewMetaData v)
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
-addViewMetaData v f k = starting "metadata" (mkActionItem (k, toRawFilePath f)) $
+addViewMetaData v f k = starting "metadata" ai si $
 	next $ changeMetaData k $ fromView v f
+  where
+	ai = mkActionItem (k, toRawFilePath f)
+	si = SeekInput []
 
 removeViewMetaData :: View -> ViewedFile -> Key -> CommandStart
-removeViewMetaData v f k = starting "metadata" (mkActionItem (k, toRawFilePath f)) $
+removeViewMetaData v f k = starting "metadata" ai si $
 	next $ changeMetaData k $ unsetMetaData $ fromView v f
+  where
+	ai = mkActionItem (k, toRawFilePath f)
+	si = SeekInput []
 
 changeMetaData :: Key -> MetaData -> CommandCleanup
 changeMetaData k metadata = do

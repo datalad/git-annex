@@ -62,25 +62,26 @@ start _ [] = giveup "Specify a name for the remote."
 start o (name:ws) = ifM (isJust <$> findExisting name)
 	( giveup $ "There is already a special remote named \"" ++ name ++
 		"\". (Use enableremote to enable an existing special remote.)"
-	, do
-		ifM (isJust <$> Remote.byNameOnly name)
-			( giveup $ "There is already a remote named \"" ++ name ++ "\""
-			, do
-				sameasuuid <- maybe
-					(pure Nothing)
-					(Just . Sameas <$$> getParsed)
-					(sameas o) 
-				c <- newConfig name sameasuuid
-					(Logs.Remote.keyValToConfig Proposed ws)
-					<$> readRemoteLog
-				t <- either giveup return (findType c)
-				if whatElse o
-					then startingCustomOutput (ActionItemOther Nothing) $
-						describeOtherParamsFor c t
-					else starting "initremote" (ActionItemOther (Just name)) $
-						perform t name c o
-			)
+	, ifM (isJust <$> Remote.byNameOnly name)
+		( giveup $ "There is already a remote named \"" ++ name ++ "\""
+		, do
+			sameasuuid <- maybe
+				(pure Nothing)
+				(Just . Sameas <$$> getParsed)
+				(sameas o) 
+			c <- newConfig name sameasuuid
+				(Logs.Remote.keyValToConfig Proposed ws)
+				<$> readRemoteLog
+			t <- either giveup return (findType c)
+			if whatElse o
+				then startingCustomOutput (ActionItemOther Nothing) $
+					describeOtherParamsFor c t
+				else starting "initremote" (ActionItemOther (Just name)) si $
+					perform t name c o
+		)
 	)
+  where
+	si = SeekInput [name]
 
 perform :: RemoteType -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
 perform t name c o = do

@@ -19,7 +19,9 @@ module Utility.Path (
 	relPathDirToFile,
 	relPathDirToFileAbs,
 	segmentPaths,
+	segmentPaths',
 	runSegmentPaths,
+	runSegmentPaths',
 	relHome,
 	inPath,
 	searchPath,
@@ -215,15 +217,19 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
  - that many paths in doesn't care too much about order of the later ones.
  -}
 segmentPaths :: (a -> RawFilePath) -> [RawFilePath] -> [a] -> [[a]]
-segmentPaths _ [] new = [new]
-segmentPaths _ [_] new = [new] -- optimisation
-segmentPaths c (l:ls) new = found : segmentPaths c ls rest
+segmentPaths = segmentPaths' (\_ r -> r)
+
+segmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> [RawFilePath] -> [a] -> [[r]]
+segmentPaths' f _ [] new = [map (f Nothing) new]
+segmentPaths' f _ [i] new = [map (f (Just i)) new] -- optimisation
+segmentPaths' f c (i:is) new = 
+	map (f (Just i)) found : segmentPaths' f c is rest
   where
-	(found, rest) = if length ls < 100
-		then partition inl new
-		else break (not . inl) new
-	inl f = l' `dirContains` fromRawFilePath (c f)
-	l' = fromRawFilePath l
+	(found, rest) = if length is < 100
+		then partition ini new
+		else break (not . ini) new
+	ini f = i' `dirContains` fromRawFilePath (c f)
+	i' = fromRawFilePath i
 
 {- This assumes that it's cheaper to call segmentPaths on the result,
  - than it would be to run the action separately with each path. In
@@ -231,6 +237,9 @@ segmentPaths c (l:ls) new = found : segmentPaths c ls rest
  -}
 runSegmentPaths :: (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[a]]
 runSegmentPaths c a paths = segmentPaths c paths <$> a paths
+
+runSegmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[r]]
+runSegmentPaths' si c a paths = segmentPaths' si c paths <$> a paths
 
 {- Converts paths in the home directory to use ~/ -}
 relHome :: FilePath -> IO String

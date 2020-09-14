@@ -41,8 +41,11 @@ seek ps = do
 	withStrings (commandAction . start) ps
 
 start :: FilePath -> CommandStart
-start p = starting "undo" (ActionItemOther (Just p)) $
+start p = starting "undo" ai si $
 	perform p
+  where
+	ai = ActionItemOther (Just p)
+	si = SeekInput [p]
 
 perform :: FilePath -> CommandPerform
 perform p = do

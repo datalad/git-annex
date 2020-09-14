@@ -32,11 +32,11 @@ seek (DeadRemotes rs) = trustCommand "dead" DeadTrusted rs
 seek (DeadKeys ks) = commandActions $ map startKey ks
 
 startKey :: Key -> CommandStart
-startKey key = starting "dead" (mkActionItem key) $
+startKey key = starting "dead" (mkActionItem key) (SeekInput []) $
 	keyLocations key >>= \case
 		[] -> performKey key
 		_ -> giveup "This key is still known to be present in some locations; not marking as dead."
-		
+
 performKey :: Key -> CommandPerform
 performKey key = do
 	setDead key

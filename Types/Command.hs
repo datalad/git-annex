@@ -38,13 +38,18 @@ type CommandPerform = Annex (Maybe CommandCleanup)
  -    returns the overall success/fail of the command. -}
 type CommandCleanup = Annex Bool
 
+{- Input that was seeked on to make an ActionItem. Eg, the input filename,
+ - or directory name. -}
+newtype SeekInput = SeekInput [String]
+	deriving (Show)
+
 {- Message that is displayed when starting to perform an action on
  - something. The String is typically the name of the command or action
  - being performed.
  -}
 data StartMessage
-	= StartMessage String ActionItem
-	| StartUsualMessages String ActionItem
+	= StartMessage String ActionItem SeekInput
+	| StartUsualMessages String ActionItem SeekInput
 	-- ^ Like StartMessage, but makes sure to enable usual message
 	-- display in case it was disabled by cmdnomessages.
 	| StartNoMessage ActionItem
@@ -56,8 +61,8 @@ data StartMessage
 	deriving (Show)
 
 instance MkActionItem StartMessage where
-	mkActionItem (StartMessage _ ai) = ai
-	mkActionItem (StartUsualMessages _ ai) = ai
+	mkActionItem (StartMessage _ ai _) = ai
+	mkActionItem (StartUsualMessages _ ai _) = ai
 	mkActionItem (StartNoMessage ai) = ai
 	mkActionItem (CustomOutput ai) = ai
 

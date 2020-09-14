@@ -308,7 +308,7 @@ syncRemotes' ps available =
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: SyncOptions -> CommandStart
-commit o = stopUnless shouldcommit $ starting "commit" (ActionItemOther Nothing) $ do
+commit o = stopUnless shouldcommit $ starting "commit" ai si $ do
 	commitmessage <- maybe commitMsg return (messageOption o)
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	next $ do
@@ -324,6 +324,8 @@ commit o = stopUnless shouldcommit $ starting "commit" (ActionItemOther Nothing)
 		( pure (commitOption o)
 		<||> (pure (not (noCommitOption o)) <&&> getGitConfigVal annexAutoCommit)
 		)
+	ai = ActionItemOther Nothing
+	si = SeekInput []
 
 commitMsg :: Annex String
 commitMsg = do
@@ -350,14 +352,18 @@ mergeLocal' :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandSt
 mergeLocal' mergeconfig o currbranch@(Just branch, _) =
 	needMerge currbranch branch >>= \case
 		Nothing -> stop
-		Just syncbranch ->
-			starting "merge" (ActionItemOther (Just $ Git.Ref.describe syncbranch)) $
+		Just syncbranch -> do
+			let ai = ActionItemOther (Just $ Git.Ref.describe syncbranch)
+			let si = SeekInput []
+			starting "merge" ai si $
 				next $ merge currbranch mergeconfig o Git.Branch.ManualCommit syncbranch
 mergeLocal' _ _ currbranch@(Nothing, _) = inRepo Git.Branch.currentUnsafe >>= \case
 	Just branch -> needMerge currbranch branch >>= \case
 		Nothing -> stop
-		Just syncbranch ->
-			starting "merge" (ActionItemOther (Just $ Git.Ref.describe syncbranch)) $ do
+		Just syncbranch -> do
+			let ai = ActionItemOther (Just $ Git.Ref.describe syncbranch)
+			let si = SeekInput []
+			starting "merge" ai si $ do
 				warning $ "There are no commits yet to branch " ++ Git.fromRef branch ++ ", so cannot merge " ++ Git.fromRef syncbranch ++ " into it."
 				next $ return False
 	Nothing -> stop
@@ -421,7 +427,7 @@ updateBranch syncbranch updateto g =
 
 pullRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandStart
 pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && wantpull) $
-	starting "pull" (ActionItemOther (Just (Remote.name remote))) $ do
+	starting "pull" ai si $ do
 		showOutput
 		ifM (onlyAnnex o)
 			( do
@@ -443,6 +449,8 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 				[Param "fetch", Param $ Remote.name remote]
 					++ map Param bs
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
+	ai = ActionItemOther (Just (Remote.name remote))
+	si = SeekInput []
 
 importRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
 importRemote o mergeconfig remote currbranch
@@ -489,7 +497,7 @@ pushRemote o remote (Just branch, _) = do
 	onlyannex <- onlyAnnex o
 	let mainbranch = if onlyannex then Nothing else Just branch
 	stopUnless (pure (pushOption o) <&&> needpush mainbranch) $
-		starting "push" (ActionItemOther (Just (Remote.name remote))) $ next $ do
+		starting "push" ai si $ next $ do
 			repo <- Remote.getRepo remote
 			showOutput
 			ok <- inRepoWithSshOptionsTo repo gc $
@@ -500,6 +508,8 @@ pushRemote o remote (Just branch, _) = do
 					warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
 					return ok
   where
+	ai = ActionItemOther (Just (Remote.name remote))
+	si = SeekInput []
 	gc = Remote.gitconfig remote
 	needpush mainbranch
 		| remoteAnnexReadOnly gc = return False
@@ -663,15 +673,15 @@ seekSyncContent o rs currbranch = do
 			seekHelper fst3 ww LsFiles.inRepoDetails l
 
 	seekincludinghidden origbranch mvar l bloomfeeder =
-		seekFiltered (\f -> ifAnnexed f (commandAction . gofile bloomfeeder mvar f) noop) $
+		seekFiltered (\(si, f) -> ifAnnexed f (commandAction . gofile bloomfeeder mvar si f) noop) $
 			seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
 
 	ww = WarnUnmatchLsFiles
 
-	gofile bloom mvar f k = 
+	gofile bloom mvar _ f k = 
 		go (Right bloom) mvar (AssociatedFile (Just f)) k
 	
-	gokey mvar bloom (k, _) =
+	gokey mvar bloom (_, k, _) =
 		go (Left bloom) mvar (AssociatedFile Nothing) k
 
 	go ebloom mvar af k = do
@@ -725,7 +735,7 @@ syncFile ebloom rs af k = do
 		-- includeCommandAction for drops,
 		-- because a failure to drop does not mean
 		-- the sync failed.
-		handleDropsFrom locs' rs "unwanted" True k af []
+		handleDropsFrom locs' rs "unwanted" True k af si []
 			callCommandAction
 	
 	return (got || not (null putrs))
@@ -739,7 +749,7 @@ syncFile ebloom rs af k = do
 		( return [ get have ]
 		, return []
 		)
-	get have = includeCommandAction $ starting "get" ai $
+	get have = includeCommandAction $ starting "get" ai si $
 		stopUnless (getKey' k af have) $
 			next $ return True
 
@@ -755,9 +765,10 @@ syncFile ebloom rs af k = do
 		, return []
 		)
 	put dest = includeCommandAction $ 
-		Command.Move.toStart' dest Command.Move.RemoveNever af k ai
+		Command.Move.toStart' dest Command.Move.RemoveNever af k ai si
 
 	ai = mkActionItem (k, af)
+	si = SeekInput []
 
 {- When a remote has an annex-tracking-branch configuration, change the export
  - to contain the current content of the branch. Otherwise, transfer any files
@@ -814,22 +825,21 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 
 cleanupLocal :: CurrBranch -> CommandStart
 cleanupLocal (Nothing, _) = stop
-cleanupLocal (Just currb, _) = 
-	starting "cleanup" (ActionItemOther (Just "local")) $ 
-		next $ do
-			delbranch $ syncBranch currb
-			delbranch $ syncBranch $ Git.Ref.base $ Annex.Branch.name
-			mapM_ (\(s,r) -> inRepo $ Git.Ref.delete s r)
-				=<< listTaggedBranches
-			return True
+cleanupLocal (Just currb, _) = starting "cleanup" ai si $ next $ do
+	delbranch $ syncBranch currb
+	delbranch $ syncBranch $ Git.Ref.base $ Annex.Branch.name
+	mapM_ (\(s,r) -> inRepo $ Git.Ref.delete s r) =<< listTaggedBranches
+	return True
   where
 	delbranch b = whenM (inRepo $ Git.Ref.exists $ Git.Ref.branchRef b) $
 		inRepo $ Git.Branch.delete b
+	ai = ActionItemOther (Just "local")
+	si = SeekInput []
 
 cleanupRemote :: Remote -> CurrBranch -> CommandStart
 cleanupRemote _ (Nothing, _) = stop
 cleanupRemote remote (Just b, _) =
-	starting "cleanup" (ActionItemOther (Just (Remote.name remote))) $
+	starting "cleanup" ai si $
 		next $ inRepo $ Git.Command.runBool
 			[ Param "push"
 			, Param "--quiet"
@@ -839,7 +849,10 @@ cleanupRemote remote (Just b, _) =
 			, Param $ Git.fromRef $ syncBranch $
 				Git.Ref.base $ Annex.Branch.name
 			]
-  
+  where
+	ai = ActionItemOther (Just (Remote.name remote))
+	si = SeekInput []
+
 shouldSyncContent :: SyncOptions -> Annex Bool
 shouldSyncContent o
 	| noContentOption o = pure False

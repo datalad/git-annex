@@ -48,8 +48,8 @@ seek o = do
   where
 	ww = WarnUnmatchLsFiles
 
-start :: S.Set Key -> RawFilePath -> Key -> CommandStart
-start s _file k
+start :: S.Set Key -> SeekInput -> RawFilePath -> Key -> CommandStart
+start s _si _file k
 	| S.member k s = start' k
 	| otherwise = stop
 

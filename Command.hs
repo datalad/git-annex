@@ -74,13 +74,15 @@ withGlobalOptions :: [[GlobalOption]] -> Command -> Command
 withGlobalOptions os c = c { cmdglobaloptions = cmdglobaloptions c ++ concat os }
 
 {- For start stage to indicate what will be done. -}
-starting:: MkActionItem t => String -> t -> CommandPerform -> CommandStart
-starting msg t a = next (StartMessage msg (mkActionItem t), a)
+starting:: MkActionItem actionitem => String -> actionitem -> SeekInput -> CommandPerform -> CommandStart
+starting msg ai si a = next
+	(StartMessage msg (mkActionItem ai) si, a)
 
 {- Use when noMessages was used but the command is going to output
  - usual messages after all. -}
-startingUsualMessages :: MkActionItem t => String -> t -> CommandPerform -> CommandStart
-startingUsualMessages msg t a = next (StartUsualMessages msg (mkActionItem t), a)
+startingUsualMessages :: MkActionItem t => String -> t -> SeekInput -> CommandPerform -> CommandStart
+startingUsualMessages msg t si a = next 
+	(StartUsualMessages msg (mkActionItem t) si, a)
 
 {- When no message should be displayed at start/end, but messages can still 
  - be displayed when using eg includeCommandAction. -}
