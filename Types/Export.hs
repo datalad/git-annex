@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE DeriveGeneric #-}
+
 module Types.Export (
 	ExportLocation,
 	mkExportLocation,
@@ -20,12 +22,16 @@ import Utility.Split
 import Utility.FileSystemEncoding
 
 import qualified System.FilePath.Posix as Posix
+import GHC.Generics
+import Control.DeepSeq
 
 -- A location on a remote that a key can be exported to.
 -- The RawFilePath will be relative to the top of the remote,
 -- and uses unix-style path separators.
 newtype ExportLocation = ExportLocation RawFilePath
-	deriving (Show, Eq)
+	deriving (Show, Eq, Generic)
+
+instance NFData ExportLocation
 
 mkExportLocation :: RawFilePath -> ExportLocation
 mkExportLocation = ExportLocation . toInternalGitPath

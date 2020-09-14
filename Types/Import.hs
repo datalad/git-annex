@@ -5,10 +5,14 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE DeriveGeneric #-}
+
 module Types.Import where
 
 import qualified Data.ByteString as S
 import Data.Char
+import Control.DeepSeq
+import GHC.Generics
 
 import Types.Export
 import Utility.QuickCheck
@@ -29,7 +33,9 @@ fromImportLocation = fromExportLocation
  - the repository. It should be reasonably short since it is stored in the
  - git-annex branch. -}
 newtype ContentIdentifier = ContentIdentifier S.ByteString
-	deriving (Eq, Ord, Show)
+	deriving (Eq, Ord, Show, Generic)
+
+instance NFData ContentIdentifier
 
 instance Arbitrary ContentIdentifier where
 	-- Avoid non-ascii ContentIdentifiers because fully arbitrary
@@ -47,4 +53,6 @@ data ImportableContents info = ImportableContents
 	-- files that are stored in them. This is equivilant to a git
 	-- commit history.
 	}
-	deriving (Show)
+	deriving (Show, Generic)
+
+instance NFData info => NFData (ImportableContents info)

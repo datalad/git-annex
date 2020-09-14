@@ -41,6 +41,7 @@ module Utility.Url (
 	GetBasicAuth,
 	noBasicAuth,
 	applyBasicAuth',
+	extractFromResourceT,
 ) where
 
 import Common
@@ -60,8 +61,10 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
-import Control.Exception (throwIO)
+import Control.Exception (throwIO, evaluate)
 import Control.Monad.Trans.Resource
+import Control.Monad.IO.Class (MonadIO)
+import Control.DeepSeq
 import Network.HTTP.Conduit
 import Network.HTTP.Client
 import Network.HTTP.Simple (getResponseHeader)
@@ -269,12 +272,10 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		debugM "url" (show req')
 		join $ runResourceT $ do
 			resp <- http req' (httpManager uo)
-			-- forces processing the response while
-			-- within the runResourceT
-			liftIO $ if responseStatus resp == ok200
+			if responseStatus resp == ok200
 				then do
-					let !len = extractlen resp
-					let !fn = extractfilename resp
+					len <- extractFromResourceT (extractlen resp)
+					fn <- extractFromResourceT (extractfilename resp)
 					return $ found len fn
 				else if responseStatus resp == unauthorized401
 					then return $ getBasicAuth uo' (show (getUri req)) >>= \case
@@ -463,11 +464,13 @@ downloadConduit meterupdate req file uo =
 				then do
 					store zeroBytesProcessed WriteMode resp
 					return (return ())
-				else if responseStatus resp == unauthorized401
-					then return $ getBasicAuth uo (show (getUri req')) >>= \case
-						Nothing -> respfailure resp
-						Just ba -> retryauthed ba
-					else return $ respfailure resp
+				else do
+					rf <- extractFromResourceT (respfailure resp)
+					if responseStatus resp == unauthorized401
+						then return $ getBasicAuth uo (show (getUri req')) >>= \case
+							Nothing -> giveup rf
+							Just ba -> retryauthed ba
+						else return $ giveup rf
   where
 	req' = applyRequest uo $ req
 		-- Override http-client's default decompression of gzip
@@ -498,11 +501,13 @@ downloadConduit meterupdate req file uo =
 					then do
 						store zeroBytesProcessed WriteMode resp
 						return (return ())
-					else if responseStatus resp == unauthorized401
-						then return $ getBasicAuth uo (show (getUri req'')) >>= \case
-							Nothing -> respfailure resp
-							Just ba -> retryauthed ba
-						else return $ respfailure resp
+					else do
+						rf <- extractFromResourceT (respfailure resp)
+						if responseStatus resp == unauthorized401
+							then return $ getBasicAuth uo (show (getUri req'')) >>= \case
+								Nothing -> giveup rf
+								Just ba -> retryauthed ba
+							else return $ giveup rf
 	
 	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
 		&& case lookup hContentRange h of
@@ -521,7 +526,7 @@ downloadConduit meterupdate req file uo =
 	store initialp mode resp =
 		sinkResponseFile meterupdate initialp file mode resp
 	
-	respfailure = giveup . B8.toString . statusMessage . responseStatus
+	respfailure = B8.toString . statusMessage . responseStatus
 	
 	retryauthed (ba, signalsuccess) = do
 		r <- tryNonAsync $ downloadConduit
@@ -710,3 +715,11 @@ applyBasicAuth' :: BasicAuth -> Request -> Request
 applyBasicAuth' ba = applyBasicAuth
 	(encodeBS (basicAuthUser ba))
 	(encodeBS (basicAuthPassword ba))
+
+{- Make sure whatever is returned is fully evaluated. Avoids any possible
+ - issues with laziness deferring processing until a time when the resource
+ - has been freed. -}
+extractFromResourceT :: (MonadIO m, NFData a) => a -> ResourceT m a
+extractFromResourceT v = do
+	liftIO $ evaluate (rnf v)
+	return v

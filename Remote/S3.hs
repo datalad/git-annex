@@ -36,6 +36,7 @@ import Data.IORef
 import System.Log.Logger
 import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.TVar
+import Data.Maybe
 
 import Annex.Common
 import Types.Remote
@@ -63,6 +64,7 @@ import Utility.Metered
 import Utility.DataUnits
 import Annex.Content
 import qualified Annex.Url as Url
+import Utility.Url (extractFromResourceT)
 import Annex.Url (getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
 
@@ -343,12 +345,14 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 		let req = (putObject info object rbody)
 			{ S3.poContentType = encodeBS <$> contenttype }
 		resp <- sendS3Handle h req
-		let vid = mkS3VersionID object (S3.porVersionId resp)
+		vid <- mkS3VersionID object
+			<$> extractFromResourceT (S3.porVersionId resp)
 		-- FIXME Actual aws version that supports this is not known,
 		-- patch not merged yet.
 		-- https://github.com/aristidb/aws/issues/258
 #if MIN_VERSION_aws(0,99,0)
-		return (Just (S3.porETag resp), vid)
+		etag <- extractFromResourceT (Just (S3.porETag resp))
+		return (etag, vid)
 #else
 		return (Nothing, vid)
 #endif
@@ -389,7 +393,9 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
 
 		resp <- sendS3Handle h $ S3.postCompleteMultipartUpload
 			(bucket info) object uploadid (zip [1..] etags)
-		return (Just (S3.cmurETag resp), mkS3VersionID object (S3.cmurVersionId resp))
+		etag <- extractFromResourceT (Just (S3.cmurETag resp))
+		vid <- extractFromResourceT (S3.cmurVersionId resp)
+		return (etag, mkS3VersionID object vid)
 	getcontenttype = maybe (pure Nothing) (flip getMagicMimeType f) magic
 
 {- Implemented as a fileRetriever, that uses conduit to stream the chunks
@@ -474,7 +480,7 @@ checkKeyHelper info h loc = checkKeyHelper' info h o limit
 checkKeyHelper' :: S3Info -> S3Handle -> S3.Object -> (S3.HeadObject -> S3.HeadObject) -> Annex Bool
 checkKeyHelper' info h o limit = liftIO $ runResourceT $ do
 	rsp <- sendS3Handle h req
-	return (isJust $ S3.horMetadata rsp)
+	extractFromResourceT (isJust $ S3.horMetadata rsp)
   where
 	req = limit $ S3.headObject (bucket info) o
 
@@ -552,7 +558,8 @@ listImportableContentsS3 hv r info =
 		Nothing -> do
 			warning $ needS3Creds (uuid r)
 			return Nothing
-		Just h -> catchMaybeIO $ liftIO $ runResourceT $ startlist h
+		Just h -> catchMaybeIO $ liftIO $ runResourceT $
+			extractFromResourceT =<< startlist h
   where
 	startlist h
 		| versioning info = do
@@ -733,11 +740,12 @@ genBucket c gc u = do
   where
 	go _ _ (Right True) = noop
 	go info h _ = do
-		v <- liftIO $ tryNonAsync $ runResourceT $
-			sendS3Handle h (S3.getBucket $ bucket info)
-		case v of
-			Right _ -> noop
-			Left _ -> do
+		r <- liftIO $ tryNonAsync $ runResourceT $ do
+			void $ sendS3Handle h (S3.getBucket $ bucket info)
+			return True
+		case r of
+			Right True -> noop
+			_ -> do
 				showAction $ "creating bucket in " ++ datacenter
 				void $ liftIO $ runResourceT $ sendS3Handle h $ 
 					(S3.putBucket (bucket info))
@@ -787,8 +795,7 @@ checkUUIDFile c u info h = tryNonAsync $ liftIO $ runResourceT $ do
 		Left _ -> return False
 		Right r -> do
 			v <- AWS.loadToMemory r
-			let !ok = check v
-			return ok
+			extractFromResourceT (check v)
   where
 	check (S3.GetObjectMemoryResponse _meta rsp) =
 		responseStatus rsp == ok200 && responseBody rsp == uuidb
