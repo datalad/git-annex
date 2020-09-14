@@ -77,3 +77,6 @@ riants/v1.23.0-rc29'}) SUCCEEDED in 5.586166620254517s: git annex copy . --to=vi
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> Assuming this is a [[dup|done]] of
+> [[concurrent_git-annex-copy_to_s3_special_remote_fails]]. --[[Joey]]
+
