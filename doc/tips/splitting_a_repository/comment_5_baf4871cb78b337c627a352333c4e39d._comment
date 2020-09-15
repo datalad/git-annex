@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-09-15T20:32:13Z"
+ content="""
+@jochen.keil, your use of drop --force risks data loss if a file is not
+backed up to a remote. I don't think the --force is necessary. And it
+should be possible to use `git annex dropunused` instead, after the
+filtering.
+
+If you are doing this in several copies of the repo, you will end up with
+multiple git-annex repos that all have the same annex.uuid. While you
+intend to keep these repos separate, that's still somewhat asking for
+trouble.
+
+You have not filtered the git-annex branch at all, so it still has
+information about files that you have filtered out of the git history
+otherwise.
+
+To solve both, I think you could `git-annex reinit` with a new uuid
+you make up, `git annex fsck --fast` to update its location tracking
+to use the new uuid, and then `git-annex dead` the old uuid,
+and all remotes (such as bkp). Then `git annex forget` will clean out the
+data in the git-annex branch about the files you've filtered out.
+"""]]
