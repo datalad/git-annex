@@ -40,7 +40,7 @@ type CommandCleanup = Annex Bool
 
 {- Input that was seeked on to make an ActionItem. Eg, the input filename,
  - or directory name. -}
-newtype SeekInput = SeekInput [String]
+newtype SeekInput = SeekInput { fromSeekInput :: [String] }
 	deriving (Show)
 
 {- Message that is displayed when starting to perform an action on

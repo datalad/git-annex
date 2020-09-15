@@ -1,7 +1,7 @@
 git-annex (8.20200909) UNRELEASED; urgency=medium
 
   * --json output now includes a new field "input" which is the input
-    (filename, url, etc) that caused that json to be output.
+    value (filename, url, etc) that caused a json object to be output.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 13:13:10 -0400
 

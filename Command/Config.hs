@@ -72,7 +72,7 @@ seek (UnsetConfig ck@(ConfigKey name)) = checkIsGlobalConfig ck $ commandAction 
   where
 	ai = ActionItemOther (Just "unset")
 	si = SeekInput [decodeBS' name]
-seek (GetConfig ck@(ConfigKey name)) = checkIsGlobalConfig ck $ commandAction $
+seek (GetConfig ck) = checkIsGlobalConfig ck $ commandAction $
 	startingCustomOutput ai $ do
 		getGlobalConfig ck >>= \case
 			Just (ConfigValue v) -> liftIO $ S8.putStrLn v

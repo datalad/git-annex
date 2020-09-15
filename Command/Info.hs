@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -135,34 +135,34 @@ globalInfo o = do
 	whenM ((==) DeadTrusted <$> lookupTrust u) $
 		earlyWarning "Warning: This repository is currently marked as dead."
 	stats <- selStats global_fast_stats global_slow_stats
-	showCustom "info" $ do
+	showCustom "info" (SeekInput []) $ do
 		evalStateT (mapM_ showStat stats) (emptyStatInfo o)
 		return True
 
 itemInfo :: InfoOptions -> (SeekInput, String) -> Annex ()
-itemInfo o (_, p) = ifM (isdir p)
-	( dirInfo o p
+itemInfo o (si, p) = ifM (isdir p)
+	( dirInfo o p si
 	, do
 		disallowMatchingOptions
 		v <- Remote.byName' p
 		case v of
-			Right r -> remoteInfo o r
+			Right r -> remoteInfo o r si
 			Left _ -> do
 				v' <- Remote.nameToUUID' p
 				case v' of
-					Right u -> uuidInfo o u
+					Right u -> uuidInfo o u si
 					Left _ -> do
 						relp <- liftIO $ relPathCwdToFile p
 						ifAnnexed (toRawFilePath relp)
-							(fileInfo o relp)
-							(treeishInfo o p)
+							(fileInfo o relp si)
+							(treeishInfo o p si)
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
 
-noInfo :: String -> Annex ()
-noInfo s = do
-	showStart "info" (encodeBS' s)
+noInfo :: String -> SeekInput -> Annex ()
+noInfo s si = do
+	showStart "info" (encodeBS' s) si
 	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
 	showEndFail
 
@@ -170,8 +170,8 @@ disallowMatchingOptions :: Annex ()
 disallowMatchingOptions = whenM Limit.limited $
 	giveup "File matching options can only be used when getting info on a directory."
 
-dirInfo :: InfoOptions -> FilePath -> Annex ()
-dirInfo o dir = showCustom (unwords ["info", dir]) $ do
+dirInfo :: InfoOptions -> FilePath -> SeekInput -> Annex ()
+dirInfo o dir si = showCustom (unwords ["info", dir]) si $ do
 	stats <- selStats
 		(tostats (dir_name:tree_fast_stats True))
 		(tostats tree_slow_stats)
@@ -180,12 +180,12 @@ dirInfo o dir = showCustom (unwords ["info", dir]) $ do
   where
 	tostats = map (\s -> s dir)
 
-treeishInfo :: InfoOptions -> String -> Annex ()
-treeishInfo o t = do
+treeishInfo :: InfoOptions -> String -> SeekInput -> Annex ()
+treeishInfo o t si = do
 	mi <- getTreeStatInfo o (Git.Ref (encodeBS' t))
 	case mi of
-		Nothing -> noInfo t
-		Just i -> showCustom (unwords ["info", t]) $ do
+		Nothing -> noInfo t si
+		Just i -> showCustom (unwords ["info", t]) si $ do
 			stats <- selStats 
 				(tostats (tree_name:tree_fast_stats False)) 
 				(tostats tree_slow_stats)
@@ -194,13 +194,13 @@ treeishInfo o t = do
   where
 	tostats = map (\s -> s t)
 
-fileInfo :: InfoOptions -> FilePath -> Key -> Annex ()
-fileInfo o file k = showCustom (unwords ["info", file]) $ do
+fileInfo :: InfoOptions -> FilePath -> SeekInput -> Key -> Annex ()
+fileInfo o file si k = showCustom (unwords ["info", file]) si $ do
 	evalStateT (mapM_ showStat (file_stats file k)) (emptyStatInfo o)
 	return True
 
-remoteInfo :: InfoOptions -> Remote -> Annex ()
-remoteInfo o r = showCustom (unwords ["info", Remote.name r]) $ do
+remoteInfo :: InfoOptions -> Remote -> SeekInput -> Annex ()
+remoteInfo o r si = showCustom (unwords ["info", Remote.name r]) si $ do
 	i <- map (\(k, v) -> simpleStat k (pure v)) <$> Remote.getInfo r
 	let u = Remote.uuid r
 	l <- selStats 
@@ -209,8 +209,8 @@ remoteInfo o r = showCustom (unwords ["info", Remote.name r]) $ do
 	evalStateT (mapM_ showStat l) (emptyStatInfo o)
 	return True
 
-uuidInfo :: InfoOptions -> UUID -> Annex ()
-uuidInfo o u = showCustom (unwords ["info", fromUUID u]) $ do
+uuidInfo :: InfoOptions -> UUID -> SeekInput -> Annex ()
+uuidInfo o u si = showCustom (unwords ["info", fromUUID u]) si $ do
 	l <- selStats (uuid_fast_stats u) (uuid_slow_stats u)
 	evalStateT (mapM_ showStat l) (emptyStatInfo o)
 	return True

@@ -24,6 +24,7 @@ import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
 import Types.KeySource
+import Types.Command
 import Config
 import Annex.Content
 import Annex.Ingest
@@ -286,7 +287,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	  	ks = keySource ld
 		doadd = sanitycheck ks $ do
 			(mkey, _mcache) <- liftAnnex $ do
-				showStart "add" $ keyFilename ks
+				showStart "add" (keyFilename ks) (SeekInput [])
 				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
 			maybe (failedingest change) (done change $ fromRawFilePath $ keyFilename ks) mkey
 	add _ _ = return Nothing

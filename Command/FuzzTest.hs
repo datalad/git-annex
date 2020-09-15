@@ -36,7 +36,7 @@ start :: CommandStart
 start = do
 	guardTest
 	logf <- fromRepo gitAnnexFuzzTestLogFile
-	showStart "fuzztest" (toRawFilePath logf)
+	showStart "fuzztest" (toRawFilePath logf) (SeekInput [])
 	logh <- liftIO $ openFile logf WriteMode
 	void $ forever $ fuzz logh
 	stop
