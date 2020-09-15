@@ -24,7 +24,10 @@ Maybe the json output should include a field that mirrors the input that
 resulted in this line, be it a filename or an url, or a directory, or
 whatever.
 	
-	{"command":"add","input":"./foo","success":true,"key":"SHA256E-s30--ce0c29e173009d77fa8803fae163b7c85920248add208bc378d465cae3087962","file":"foo"}
+	{"command":"add","input":["./foo"],"success":true,"key":"SHA256E-s30--ce0c29e173009d77fa8803fae163b7c85920248add208bc378d465cae3087962","file":"foo"}
+
+> This is now implemented on the batchasync branch, for all commands
+> that support json output.
 
 (Note that, --batch currently does not operate on directories.
 Because of the one line or reply per line of input rule.
@@ -58,5 +61,10 @@ Making the changes to --json output to address the above stuff, if
 possible, feels cleaner than wrapping input and output with a job id like
 the ASYNC extension does. Those changes would also generally be an
 improvement to json output in non-async mode.
+
+> Ok, the input field is implemented, and it seems we can probably
+> ignore the complication of the blank line for skipped input.
+> So, it should be possible to actually implement the concurrent
+> batch mode now. --[[Joey]]
 
 [[!tag projects/datalad]]
