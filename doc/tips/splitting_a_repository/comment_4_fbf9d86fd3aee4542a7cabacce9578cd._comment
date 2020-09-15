@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="jochen.keil@38b1f86ab65128dab3e62e726403ceee4f5141bf"
+ nickname="jochen.keil"
+ avatar="http://cdn.libravatar.org/avatar/a1329c0b3a262017553cc5497aa12c18"
+ subject="comment 4"
+ date="2020-09-15T13:34:47Z"
+ content="""
+I have my repositories set up like this:
+
+local repository (local) <-> bare backup repository (bkp)
+
+My repository has several subfolders dir1, dir2, dir3, .., that I want to split up in separate repositories.
+
+What I did was this:
+
+    cd ${local}
+    git annex drop --force dir1 dir2 dir3 ..
+    git filter-branch -f --index-filter 'git rm -f --cached -r --ignore-unmatch dir1 dir2 dir3 ..' --prune-empty -- --all
+    git reflog expire --expire=now --all && git gc --prune=now --aggressive
+
+Now I'm left with the only directory that I want to keep. My plan would be to run
+
+    git annex get --from=bkp dirK
+    git annex copy --to=bkpK dirK
+
+Repeat for dir1 .. dirN.
+
+I know it's a lot of back and forth copying but apart from that are there any downsides with this approach?
+
+Thank you!
+"""]]
