@@ -13,6 +13,7 @@ import qualified Git
 import qualified Git.Branch
 import Annex.CurrentBranch
 import Command.Sync (prepMerge, mergeLocal, mergeConfig, merge, SyncOptions(..))
+import Git.Types
 
 cmd :: Command
 cmd = command "merge" SectionMaintenance
@@ -35,7 +36,7 @@ mergeAnnexBranch = starting "merge" ai si $ do
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	next $ return True
   where
-	ai = ActionItemOther (Just "git-annex")
+	ai = ActionItemOther (Just (fromRef Annex.Branch.name))
 	si = SeekInput []
 
 mergeSyncedBranch :: CommandStart

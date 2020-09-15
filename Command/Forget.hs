@@ -12,6 +12,7 @@ import qualified Annex.Branch as Branch
 import Logs.Transitions
 import qualified Annex
 import Annex.VectorClock
+import Git.Types
 
 cmd :: Command
 cmd = command "forget" SectionMaintenance 
@@ -41,7 +42,7 @@ start o = starting "forget" ai si $ do
 		else basets
 	perform ts =<< Annex.getState Annex.force
   where
-	ai = ActionItemOther (Just "git-annex")
+	ai = ActionItemOther (Just (fromRef Branch.name))
 	si = SeekInput []
 
 perform :: Transitions -> Bool -> CommandPerform
