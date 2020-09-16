@@ -33,9 +33,9 @@ seeker = AnnexedFileSeeker
 	, usesLocationLog = False
 	}
 
-start :: RawFilePath -> Key -> CommandStart
-start file key = 
-	starting "unannex" (mkActionItem (key, file)) $
+start :: SeekInput -> RawFilePath -> Key -> CommandStart
+start si file key = 
+	starting "unannex" (mkActionItem (key, file)) si $
 		perform file key
 
 perform :: RawFilePath -> Key -> CommandPerform

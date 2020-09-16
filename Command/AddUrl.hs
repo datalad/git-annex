@@ -104,12 +104,13 @@ parseDownloadOptions withfileoptions = DownloadOptions
 seek :: AddUrlOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
 	addunlockedmatcher <- addUnlockedMatcher
-	let go (o', u) = do
+	let go (si, (o', u)) = do
 		r <- Remote.claimingUrl u
 		if Remote.uuid r == webUUID || rawOption (downloadOptions o')
-			then void $ commandAction $ startWeb addunlockedmatcher o' u
-			else checkUrl addunlockedmatcher r o' u
-	forM_ (addUrls o) (\u -> go (o, u))
+			then void $ commandAction $
+				startWeb addunlockedmatcher o' si u
+			else checkUrl addunlockedmatcher r o' si u
+	forM_ (addUrls o) (\u -> go (SeekInput [u], (o, u)))
 	case batchOption o of
 		Batch fmt -> batchInput fmt (pure . parseBatchInput o) go
 		NoBatch -> noop
@@ -123,8 +124,8 @@ parseBatchInput o s
 			else Right (o { downloadOptions = (downloadOptions o) { fileOption = Just f } }, u)
 	| otherwise = Right (o, s)
 
-checkUrl :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> URLString -> Annex ()
-checkUrl addunlockedmatcher r o u = do
+checkUrl :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> SeekInput -> URLString -> Annex ()
+checkUrl addunlockedmatcher r o si u = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let deffile = fromMaybe (urlString2file u (pathdepthOption o) pathmax) (fileOption (downloadOptions o))
 	go deffile =<< maybe
@@ -133,35 +134,35 @@ checkUrl addunlockedmatcher r o u = do
 		(Remote.checkUrl r)
   where
 
-	go _ (Left e) = void $ commandAction $ startingAddUrl u o $ do
+	go _ (Left e) = void $ commandAction $ startingAddUrl si u o $ do
 		warning (show e)
 		next $ return False
 	go deffile (Right (UrlContents sz mf)) = do
 		f <- maybe (pure deffile) (sanitizeOrPreserveFilePath o) mf
 		let f' = adjustFile o (fromMaybe f (fileOption (downloadOptions o)))
-		void $ commandAction $ startRemote addunlockedmatcher r o f' u sz
+		void $ commandAction $ startRemote addunlockedmatcher r o si f' u sz
 	go deffile (Right (UrlMulti l)) = case fileOption (downloadOptions o) of
 		Nothing ->
 			forM_ l $ \(u', sz, f) -> do
 				f' <- sanitizeOrPreserveFilePath o f
 				let f'' = adjustFile o (deffile </> f')
-				void $ commandAction $ startRemote addunlockedmatcher r o f'' u' sz
+				void $ commandAction $ startRemote addunlockedmatcher r o si f'' u' sz
 		Just f -> case l of
 			[] -> noop
 			((u',sz,_):[]) -> do
 				let f' = adjustFile o f
-				void $ commandAction $ startRemote addunlockedmatcher r o f' u' sz
+				void $ commandAction $ startRemote addunlockedmatcher r o si f' u' sz
 			_ -> giveup $ unwords
 				[ "That url contains multiple files according to the"
 				, Remote.name r
 				, " remote; cannot add it to a single file."
 				]
 
-startRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> FilePath -> URLString -> Maybe Integer -> CommandStart
-startRemote addunlockedmatcher r o file uri sz = do
+startRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> SeekInput -> FilePath -> URLString -> Maybe Integer -> CommandStart
+startRemote addunlockedmatcher r o si file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let file' = joinPath $ map (truncateFilePath pathmax) $ splitDirectories file
-	startingAddUrl uri o $ do
+	startingAddUrl si uri o $ do
 		showNote $ "from " ++ Remote.name r 
 		showDestinationFile file'
 		performRemote addunlockedmatcher r o uri file' sz
@@ -199,12 +200,12 @@ downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd file $ do
 	loguri = setDownloader uri OtherDownloader
 	af = AssociatedFile (Just (toRawFilePath file))
 
-startWeb :: AddUnlockedMatcher -> AddUrlOptions -> URLString -> CommandStart
-startWeb addunlockedmatcher o urlstring = go $ fromMaybe bad $ parseURI urlstring
+startWeb :: AddUnlockedMatcher -> AddUrlOptions -> SeekInput -> URLString -> CommandStart
+startWeb addunlockedmatcher o si urlstring = go $ fromMaybe bad $ parseURI urlstring
   where
 	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring
-	go url = startingAddUrl urlstring o $
+	go url = startingAddUrl si urlstring o $
 		if relaxedOption (downloadOptions o)
 			then go' url Url.assumeUrlExists
 			else Url.withUrlOptions (Url.getUrlInfo urlstring) >>= \case
@@ -353,8 +354,8 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 {- The destination file is not known at start time unless the user provided
  - a filename. It's not displayed then for output consistency, 
  - but is added to the json when available. -}
-startingAddUrl :: URLString -> AddUrlOptions -> CommandPerform -> CommandStart
-startingAddUrl url o p = starting "addurl" (ActionItemOther (Just url)) $ do
+startingAddUrl :: SeekInput -> URLString -> AddUrlOptions -> CommandPerform -> CommandStart
+startingAddUrl si url o p = starting "addurl" (ActionItemOther (Just url)) si $ do
 	case fileOption (downloadOptions o) of
 		Nothing -> noop
 		Just file -> maybeShowJSON $ JSONChunk [("file", file)]

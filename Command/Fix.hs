@@ -43,8 +43,8 @@ seek ps = unlessM crippledFileSystem $
 
 data FixWhat = FixSymlinks | FixAll
 
-start :: FixWhat -> RawFilePath -> Key -> CommandStart
-start fixwhat file key = do
+start :: FixWhat -> SeekInput -> RawFilePath -> Key -> CommandStart
+start fixwhat si file key = do
 	currlink <- liftIO $ catchMaybeIO $ R.readSymbolicLink file
 	wantlink <- calcRepo $ gitAnnexLink (fromRawFilePath file) key
 	case currlink of
@@ -56,7 +56,7 @@ start fixwhat file key = do
 			FixAll -> fixthin
 			FixSymlinks -> stop
   where
-	fixby = starting "fix" (mkActionItem (key, file))
+	fixby = starting "fix" (mkActionItem (key, file)) si
 	fixthin = do
 		obj <- calcRepo (gitAnnexLocation key)
 		stopUnless (isUnmodified key file <&&> isUnmodified key obj) $ do

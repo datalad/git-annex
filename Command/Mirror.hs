@@ -57,19 +57,19 @@ seek o = startConcurrency stages $
 		, usesLocationLog = True
 		}
 
-start :: MirrorOptions -> RawFilePath -> Key -> CommandStart
-start o file k = startKey o afile (k, ai)
+start :: MirrorOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o si file k = startKey o afile (si, k, ai)
   where
 	afile = AssociatedFile (Just file)
 	ai = mkActionItem (k, afile)
 
-startKey :: MirrorOptions -> AssociatedFile -> (Key, ActionItem) -> CommandStart
-startKey o afile (key, ai) = case fromToOptions o of
+startKey :: MirrorOptions -> AssociatedFile -> (SeekInput, Key, ActionItem) -> CommandStart
+startKey o afile (si, key, ai) = case fromToOptions o of
 	ToRemote r -> checkFailedTransferDirection ai Upload $ ifM (inAnnex key)
-		( Command.Move.toStart Command.Move.RemoveNever afile key ai =<< getParsed r
+		( Command.Move.toStart Command.Move.RemoveNever afile key ai si =<< getParsed r
 		, do
 			numcopies <- getnumcopies
-			Command.Drop.startRemote afile ai numcopies key =<< getParsed r
+			Command.Drop.startRemote afile ai si numcopies key =<< getParsed r
 		)
 	FromRemote r -> checkFailedTransferDirection ai Download $ do
 		haskey <- flip Remote.hasKey key =<< getParsed r
@@ -77,12 +77,12 @@ startKey o afile (key, ai) = case fromToOptions o of
 			Left _ -> stop
 			Right True -> ifM (inAnnex key)
 				( stop
-				, Command.Get.start' (return True) Nothing key afile ai
+				, Command.Get.start' (return True) Nothing key afile ai si
 				)
 			Right False -> ifM (inAnnex key)
 				( do
 					numcopies <- getnumcopies
-					Command.Drop.startLocal afile ai numcopies key []
+					Command.Drop.startLocal afile ai si numcopies key []
 				, stop
 				)
   where

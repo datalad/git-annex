@@ -5,10 +5,14 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.Concurrent where
+module Annex.Concurrent (
+	module Annex.Concurrent,
+	module Annex.Concurrent.Utility
+) where
 
 import Annex
 import Annex.Common
+import Annex.Concurrent.Utility
 import qualified Annex.Queue
 import Annex.Action
 import Types.Concurrency
@@ -22,19 +26,24 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import qualified Data.Map as M
 
-setConcurrency :: Concurrency -> Annex ()
-setConcurrency NonConcurrent = Annex.changeState $ \s -> s 
-	{ Annex.concurrency = NonConcurrent
-	}
-setConcurrency c = do
-	cfh <- Annex.getState Annex.catfilehandles
+setConcurrency :: ConcurrencySetting -> Annex ()
+setConcurrency (ConcurrencyCmdLine s) = setConcurrency' s ConcurrencyCmdLine
+setConcurrency (ConcurrencyGitConfig s) = setConcurrency' s ConcurrencyGitConfig
+
+setConcurrency' :: Concurrency -> (Concurrency -> ConcurrencySetting) -> Annex ()
+setConcurrency' NonConcurrent f = 
+	Annex.changeState $ \s -> s 
+		{ Annex.concurrency = f NonConcurrent
+		}
+setConcurrency' c f = do
+	cfh <- getState Annex.catfilehandles
 	cfh' <- case cfh of
 		CatFileHandlesNonConcurrent _ -> liftIO catFileHandlesPool
 		CatFileHandlesPool _ -> pure cfh
 	cah <- mkConcurrentCheckAttrHandle c
 	cih <- mkConcurrentCheckIgnoreHandle c
 	Annex.changeState $ \s -> s
-		{ Annex.concurrency = c
+		{ Annex.concurrency = f c
 		, Annex.catfilehandles = cfh'
 		, Annex.checkattrhandle = Just cah
 		, Annex.checkignorehandle = Just cih
@@ -74,9 +83,9 @@ dupState = do
 	st <- Annex.getState id
 	-- Make sure that concurrency is enabled, if it was not already,
 	-- so the concurrency-safe resource pools are set up.
-	st' <- case Annex.concurrency st of
+	st' <- case getConcurrency' (Annex.concurrency st) of
 		NonConcurrent -> do
-			setConcurrency (Concurrent 1)
+			setConcurrency (ConcurrencyCmdLine (Concurrent 1))
 			Annex.getState id
 		_ -> return st
 	return $ st'

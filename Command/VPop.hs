@@ -27,7 +27,7 @@ start :: [String] -> CommandStart
 start ps = go =<< currentView
   where
 	go Nothing = giveup "Not in a view."
-	go (Just v) = starting "vpop" (ActionItemOther (Just $ show num)) $ do
+	go (Just v) = starting "vpop" ai si $ do
 		removeView v
 		(oldvs, vs) <- splitAt (num - 1) . filter (sameparentbranch v)
 			<$> recentViews
@@ -46,3 +46,7 @@ start ps = go =<< currentView
 	sameparentbranch a b = viewParentBranch a == viewParentBranch b
 
 	num = fromMaybe 1 $ readish =<< headMaybe ps 
+	
+	ai = ActionItemOther (Just $ show num)
+	
+	si = SeekInput ps

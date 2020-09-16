@@ -18,8 +18,8 @@ cmd = notBareRepo $ noCommit $ noMessages $
 		(paramRepeating paramFile)
 		(batchable run (pure ()))
 
-run :: () -> String -> Annex Bool
-run _ file = seekSingleGitFile file >>= \case
+run :: () -> SeekInput -> String -> Annex Bool
+run _ _ file = seekSingleGitFile file >>= \case
 	Nothing -> return False
 	Just file' -> catKeyFile file' >>= \case
 		Just k  -> do

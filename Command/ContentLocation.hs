@@ -20,8 +20,8 @@ cmd = noCommit $ noMessages $
 		(paramRepeating paramKey)
 		(batchable run (pure ()))
 
-run :: () -> String -> Annex Bool
-run _ p = do
+run :: () -> SeekInput -> String -> Annex Bool
+run _ _ p = do
 	let k = fromMaybe (giveup "bad key") $ deserializeKey p
 	maybe (return False) (\f -> liftIO (B8.putStrLn f) >> return True)
 		=<< inAnnex' (pure True) Nothing check k

@@ -1014,6 +1014,8 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   Setting this to "cpus" will run one job per CPU core.
 
+  When the `--batch` option is used, this configuration is ignored.
+
 * `annex.queuesize`
 
   git-annex builds a queue of git commands, in order to combine similar

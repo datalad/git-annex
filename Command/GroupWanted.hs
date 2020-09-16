@@ -24,6 +24,9 @@ seek = withWords (commandAction . start)
 start :: [String] -> CommandStart
 start (g:[]) = startingCustomOutput (ActionItemOther Nothing) $
 	performGet groupPreferredContentMapRaw (toGroup g)
-start (g:expr:[]) = startingUsualMessages "groupwanted" (ActionItemOther (Just g)) $
+start ps@(g:expr:[]) = startingUsualMessages "groupwanted" ai si $
 	performSet groupPreferredContentSet expr (toGroup g)
+  where
+	ai = ActionItemOther (Just g)
+	si = SeekInput ps
 start _ = giveup "Specify a group."

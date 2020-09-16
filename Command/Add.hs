@@ -64,18 +64,18 @@ seek o = startConcurrency commandStages $ do
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
 	annexdotfiles <- getGitConfigVal annexDotFiles 
-	let gofile file = case largeFilesOverride o of
+	let gofile (si, file) = case largeFilesOverride o of
 		Nothing -> 
 			let file' = fromRawFilePath file
 			in ifM (pure (annexdotfiles || not (dotfile file')) <&&> (checkFileMatcher largematcher file' <||> Annex.getState Annex.force))
-				( start file addunlockedmatcher
+				( start si file addunlockedmatcher
 				, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-					( startSmall file
+					( startSmall si file
 					, stop
 					)
 				)
-		Just True -> start file addunlockedmatcher
-		Just False -> startSmallOverridden file
+		Just True -> start si file addunlockedmatcher
+		Just False -> startSmallOverridden si file
 	case batchOption o of
 		Batch fmt
 			| updateOnly o ->
@@ -90,13 +90,13 @@ seek o = startConcurrency commandStages $ do
 			l <- workTreeItems ww (addThese o)
 			let go a = a ww (commandAction . gofile) l
 			unless (updateOnly o) $
-				go (const withFilesNotInGit)
+				go withFilesNotInGit
 			go withFilesMaybeModified
 			go withUnmodifiedUnlockedPointers
 
 {- Pass file off to git-add. -}
-startSmall :: RawFilePath -> CommandStart
-startSmall file = starting "add" (ActionItemWorkTreeFile file) $
+startSmall :: SeekInput -> RawFilePath -> CommandStart
+startSmall si file = starting "add" (ActionItemWorkTreeFile file) si $
 	next $ addSmall file
 
 addSmall :: RawFilePath -> Annex Bool
@@ -104,8 +104,8 @@ addSmall file = do
 	showNote "non-large file; adding content to git repository"
 	addFile file
 
-startSmallOverridden :: RawFilePath -> CommandStart
-startSmallOverridden file = starting "add" (ActionItemWorkTreeFile file) $
+startSmallOverridden :: SeekInput -> RawFilePath -> CommandStart
+startSmallOverridden si file = starting "add" (ActionItemWorkTreeFile file) si $
 	next $ addSmallOverridden file
 
 addSmallOverridden :: RawFilePath -> Annex Bool
@@ -133,8 +133,8 @@ addFile file = do
 	Annex.Queue.addCommand "add" (ps++[Param "--"]) [fromRawFilePath file]
 	return True
 
-start :: RawFilePath -> AddUnlockedMatcher -> CommandStart
-start file addunlockedmatcher = do
+start :: SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
+start si file addunlockedmatcher = do
 	mk <- liftIO $ isPointerFile file
 	maybe go fixuppointer mk
   where
@@ -144,7 +144,7 @@ start file addunlockedmatcher = do
 		Just s 
 			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
 			| otherwise -> 
-				starting "add" (ActionItemWorkTreeFile file) $
+				starting "add" (ActionItemWorkTreeFile file) si $
 					if isSymbolicLink s
 						then next $ addFile file
 						else perform file addunlockedmatcher
@@ -152,13 +152,13 @@ start file addunlockedmatcher = do
 		liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
 			_ -> add
-	fixuplink key = starting "add" (ActionItemWorkTreeFile file) $ do
+	fixuplink key = starting "add" (ActionItemWorkTreeFile file) si $ do
 		-- the annexed symlink is present but not yet added to git
 		liftIO $ removeFile (fromRawFilePath file)
 		addLink (fromRawFilePath file) key Nothing
 		next $
 			cleanup key =<< inAnnex key
-	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) $ do
+	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) si $ do
 		-- the pointer file is present, but not yet added to git
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		next $ addFile file

@@ -111,8 +111,8 @@ checkDeadRepo u =
 	whenM ((==) DeadTrusted <$> lookupTrust u) $
 		earlyWarning "Warning: Fscking a repository that is currently marked as dead."
 
-start :: Maybe Remote -> Incremental -> RawFilePath -> Key -> CommandStart
-start from inc file key = Backend.getBackend (fromRawFilePath file) key >>= \case
+start :: Maybe Remote -> Incremental -> SeekInput -> RawFilePath -> Key -> CommandStart
+start from inc si file key = Backend.getBackend (fromRawFilePath file) key >>= \case
 	Nothing -> stop
 	Just backend -> do
 		numcopies <- getFileNumCopies (fromRawFilePath file)
@@ -120,7 +120,7 @@ start from inc file key = Backend.getBackend (fromRawFilePath file) key >>= \cas
 			Nothing -> go $ perform key file backend numcopies
 			Just r -> go $ performRemote key afile backend numcopies r
   where
-	go = runFsck inc (mkActionItem (key, afile)) key
+	go = runFsck inc si (mkActionItem (key, afile)) key
 	afile = AssociatedFile (Just file)
 
 perform :: Key -> RawFilePath -> Backend -> NumCopies -> Annex Bool
@@ -197,11 +197,11 @@ performRemote key afile backend numcopies remote =
 		Just a -> isRight <$> tryNonAsync (a key afile tmp)
 		Nothing -> return False
 
-startKey :: Maybe Remote -> Incremental -> (Key, ActionItem) -> NumCopies -> CommandStart
-startKey from inc (key, ai) numcopies =
+startKey :: Maybe Remote -> Incremental -> (SeekInput, Key, ActionItem) -> NumCopies -> CommandStart
+startKey from inc (si, key, ai) numcopies =
 	Backend.maybeLookupBackendVariety (fromKey keyVariety key) >>= \case
 		Nothing -> stop
-		Just backend -> runFsck inc ai key $
+		Just backend -> runFsck inc si ai key $
 			case from of
 				Nothing -> performKey key backend numcopies
 				Just r -> performRemote key (AssociatedFile Nothing) backend numcopies r
@@ -555,9 +555,9 @@ badContentRemote remote localcopy key = do
 		(False, Right ()) -> "dropped from " ++ Remote.name remote
 		(_, Left e) -> "failed to drop from" ++ Remote.name remote ++ ": " ++ show e
 
-runFsck :: Incremental -> ActionItem -> Key -> Annex Bool -> CommandStart
-runFsck inc ai key a = stopUnless (needFsck inc key) $
-	starting "fsck" (OnlyActionOn key ai) $ do
+runFsck :: Incremental -> SeekInput -> ActionItem -> Key -> Annex Bool -> CommandStart
+runFsck inc si ai key a = stopUnless (needFsck inc key) $
+	starting "fsck" (OnlyActionOn key ai) si $ do
 		ok <- a
 		when ok $
 			recordFsckTime inc key

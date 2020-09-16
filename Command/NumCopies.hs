@@ -46,6 +46,9 @@ startGet = startingCustomOutput (ActionItemOther Nothing) $ next $ do
 	return True
 
 startSet :: Int -> CommandStart
-startSet n = startingUsualMessages "numcopies" (ActionItemOther (Just $ show n)) $ do
+startSet n = startingUsualMessages "numcopies" ai si $ do
 	setGlobalNumCopies $ NumCopies n
 	next $ return True
+  where
+	ai = ActionItemOther (Just $ show n)
+	si = SeekInput [show n]

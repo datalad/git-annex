@@ -45,27 +45,30 @@ seek o = case (batchOption o, keyFilePairs o) of
 		withPairs (commandAction . start force) ps
 
 seekBatch :: BatchFormat -> CommandSeek
-seekBatch fmt = batchInput fmt parse commandAction
+seekBatch fmt = batchInput fmt parse (commandAction . go)
   where
 	parse s = do
 		let (keyname, file) = separate (== ' ') s
 		if not (null keyname) && not (null file)
 			then do
 				file' <- liftIO $ relPathCwdToFile file
-				return $ Right $ go file' (keyOpt keyname)
+				return $ Right (file', keyOpt keyname)
 			else return $
 				Left "Expected pairs of key and filename"
-	go file key = starting "fromkey" (mkActionItem (key, toRawFilePath file)) $
-		perform key file
+	go (si, (file, key)) = 
+		let ai = mkActionItem (key, toRawFilePath file)
+		in starting "fromkey" ai si $
+			perform key file
 
-start :: Bool -> (String, FilePath) -> CommandStart
-start force (keyname, file) = do
+start :: Bool -> (SeekInput, (String, FilePath)) -> CommandStart
+start force (si, (keyname, file)) = do
 	let key = keyOpt keyname
 	unless force $ do
 		inbackend <- inAnnex key
 		unless inbackend $ giveup $
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
-	starting "fromkey" (mkActionItem (key, toRawFilePath file)) $
+	let ai = mkActionItem (key, toRawFilePath file)
+	starting "fromkey" ai si $
 		perform key file
 
 -- From user input to a Key.

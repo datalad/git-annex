@@ -31,6 +31,7 @@ import Annex.LockPool
 import Types.Key
 import qualified Types.Remote as Remote
 import Types.Concurrency
+import Annex.Concurrent.Utility
 import Types.WorkerPool
 import Annex.WorkerPool
 import Backend (isCryptographicallySecure)
@@ -262,7 +263,7 @@ configuredRetry numretries _old new = do
  - increase total transfer speed.
  -}
 pickRemote :: Observable v => [Remote] -> (Remote -> Annex v) -> Annex v
-pickRemote l a = debugLocks $ go l =<< Annex.getState Annex.concurrency
+pickRemote l a = debugLocks $ go l =<< getConcurrency
   where
 	go [] _ = return observeFailure
 	go (r:[]) _ = a r

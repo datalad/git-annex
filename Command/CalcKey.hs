@@ -19,8 +19,8 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 		(paramRepeating paramFile)
 		(batchable run (pure ()))
 
-run :: () -> String -> Annex Bool
-run _ file = tryNonAsync (genKey ks nullMeterUpdate Nothing) >>= \case
+run :: () -> SeekInput -> String -> Annex Bool
+run _ _ file = tryNonAsync (genKey ks nullMeterUpdate Nothing) >>= \case
 	Right (k, _) -> do
 		liftIO $ putStrLn $ serializeKey k
 		return True

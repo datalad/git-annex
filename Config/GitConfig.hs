@@ -20,13 +20,13 @@ import Logs.Config
  - Note: Be sure to add the config to mergeGitConfig and to
  - globalConfigs.
  -}
-getGitConfigVal :: (GitConfig -> Configurable a) -> Annex a
+getGitConfigVal :: (GitConfig -> GlobalConfigurable a) -> Annex a
 getGitConfigVal f = getGitConfigVal' f >>= \case
 	HasGlobalConfig c -> return c
 	DefaultConfig d -> return d
 	HasGitConfig c -> return c
 
-getGitConfigVal' :: (GitConfig -> Configurable a) -> Annex (Configurable a)
+getGitConfigVal' :: (GitConfig -> GlobalConfigurable a) -> Annex (GlobalConfigurable a)
 getGitConfigVal' f = (f <$> Annex.getGitConfig) >>= \case
 	DefaultConfig _ -> do
 		r <- Annex.gitRepo

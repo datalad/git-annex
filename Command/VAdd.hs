@@ -22,7 +22,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start params = starting "vadd" (ActionItemOther Nothing) $ 
+start params = starting "vadd" (ActionItemOther Nothing) (SeekInput params) $ 
 	withCurrentView $ \view -> do
 		let (view', change) = refineView view $
 			map parseViewParam $ reverse params

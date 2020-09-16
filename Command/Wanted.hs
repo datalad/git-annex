@@ -36,9 +36,11 @@ cmd' name desc getter setter = noMessages $
 		u <- Remote.nameToUUID rname
 		startingCustomOutput (ActionItemOther Nothing) $
 			performGet getter u
-	start (rname:expr:[]) = do
+	start ps@(rname:expr:[]) = do
 		u <- Remote.nameToUUID rname
-		startingUsualMessages name (ActionItemOther (Just rname)) $
+		let si = SeekInput ps
+		let ai = ActionItemOther (Just rname)
+		startingUsualMessages name ai si $
 			performSet setter expr u
 	start _ = giveup "Specify a repository."
 

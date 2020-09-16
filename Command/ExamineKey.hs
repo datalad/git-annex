@@ -19,8 +19,8 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 			(paramRepeating paramKey)
 			(batchable run (optional parseFormatOption))
 
-run :: Maybe Utility.Format.Format -> String -> Annex Bool
-run format p = do
+run :: Maybe Utility.Format.Format -> SeekInput -> String -> Annex Bool
+run format _ p = do
 	let k = fromMaybe (giveup "bad key") $ deserializeKey p
 	showFormatted format (serializeKey' k) (keyVars k)
 	return True

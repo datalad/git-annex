@@ -53,10 +53,14 @@ seek = commandAction . start
 
 start :: InitOptions -> CommandStart
 start os
-	| autoEnableOnly os = starting "init" (ActionItemOther (Just "autoenable")) $
-		performAutoEnableOnly
-	| otherwise = starting "init" (ActionItemOther (Just $ initDesc os)) $
-		perform os
+	| autoEnableOnly os = 
+		starting "init" (ActionItemOther (Just "autoenable")) si $
+			performAutoEnableOnly
+	| otherwise = 
+		starting "init" (ActionItemOther (Just $ initDesc os)) si $
+			perform os
+  where
+	si = SeekInput []
 
 perform :: InitOptions -> CommandPerform
 perform os = do

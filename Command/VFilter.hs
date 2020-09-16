@@ -20,7 +20,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start params = starting "vfilter" (ActionItemOther Nothing) $
+start params = starting "vfilter" (ActionItemOther Nothing) (SeekInput params) $
 	withCurrentView $ \view -> do
 		let view' = filterView view $
 			map parseViewParam $ reverse params

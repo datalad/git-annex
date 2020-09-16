@@ -8,6 +8,7 @@
 module CmdLine.Batch where
 
 import Annex.Common
+import qualified Annex
 import Types.Command
 import CmdLine.Action
 import CmdLine.GitAnnex.Options
@@ -18,6 +19,8 @@ import Types.FileMatcher
 import Annex.BranchState
 import Annex.WorkTree
 import Annex.Content
+import Annex.Concurrent
+import Types.Concurrency
 
 data BatchMode = Batch BatchFormat | NoBatch
 
@@ -42,7 +45,9 @@ parseBatchOption = go
 -- In batch mode, one line at a time is read, parsed, and a reply output to
 -- stdout. In non batch mode, the command's parameters are parsed and
 -- a reply output for each.
-batchable :: (opts -> String -> Annex Bool) -> Parser opts -> CmdParamsDesc -> CommandParser
+--
+-- Note that the actions are not run concurrently.
+batchable :: (opts -> SeekInput -> String -> Annex Bool) -> Parser opts -> CmdParamsDesc -> CommandParser
 batchable handler parser paramdesc = batchseeker <$> batchparser
   where
 	batchparser = (,,)
@@ -51,12 +56,12 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 		<*> cmdParams paramdesc
 	
 	batchseeker (opts, NoBatch, params) =
-		mapM_ (go NoBatch opts) params
+		mapM_ (\p -> go NoBatch opts (SeekInput [p], p)) params
 	batchseeker (opts, batchmode@(Batch fmt), _) = 
 		batchInput fmt (pure . Right) (go batchmode opts)
 
-	go batchmode opts p =
-		unlessM (handler opts p) $
+	go batchmode opts (si, p) =
+		unlessM (handler opts si p) $
 			batchBadInput batchmode
 
 -- bad input is indicated by an empty line in batch mode. In non batch
@@ -72,17 +77,18 @@ batchBadInput (Batch _) = liftIO $ putStrLn ""
 -- be converted to relative. Normally, filename parameters are passed
 -- through git ls-files, which makes them relative, but batch mode does
 -- not use that, and absolute worktree files are likely to cause breakage.
-batchInput :: BatchFormat -> (String -> Annex (Either String a)) -> (a -> Annex ()) -> Annex ()
+batchInput :: BatchFormat -> (String -> Annex (Either String v)) -> ((SeekInput, v) -> Annex ()) -> Annex ()
 batchInput fmt parser a = go =<< batchLines fmt
   where
 	go [] = return ()
 	go (l:rest) = do
-		either parseerr a =<< parser l
+		either parseerr (\v -> a (SeekInput [l], v)) =<< parser l
 		go rest
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
 batchLines :: BatchFormat -> Annex [String]
 batchLines fmt = do
+	checkBatchConcurrency
 	enableInteractiveBranchAccess
 	liftIO $ splitter <$> getContents
   where
@@ -90,45 +96,57 @@ batchLines fmt = do
 		BatchLine -> lines
 		BatchNull -> splitc '\0'
 
--- Runs a CommandStart in batch mode.
---
+-- When concurrency is enabled at the command line, it is used in batch
+-- mode. But, if it's only set in git config, don't use it, because the
+-- program using batch mode may not expect interleaved output.
+checkBatchConcurrency :: Annex ()
+checkBatchConcurrency = Annex.getState Annex.concurrency >>= \case
+	ConcurrencyCmdLine _ -> noop
+	ConcurrencyGitConfig _ -> 
+		setConcurrency (ConcurrencyGitConfig (Concurrent 1))
+
+batchCommandAction :: CommandStart -> Annex ()
+batchCommandAction = commandAction . batchCommandStart
+
 -- The batch mode user expects to read a line of output, and it's up to the
 -- CommandStart to generate that output as it succeeds or fails to do its
 -- job. However, if it stops without doing anything, it won't generate
--- any output, so in that case, batchBadInput is used to provide the caller
--- with an empty line.
-batchCommandAction :: CommandStart -> Annex ()
-batchCommandAction a = maybe (batchBadInput (Batch BatchLine)) (const noop)
-	=<< callCommandAction' a
+-- any output. This modifies it so in that case, an empty line is printed.
+batchCommandStart :: CommandStart -> CommandStart
+batchCommandStart a = a >>= \case
+	Just v -> return (Just v)
+	Nothing -> do
+		batchBadInput (Batch BatchLine)
+		return Nothing
 
 -- Reads lines of batch input and passes the filepaths to a CommandStart
 -- to handle them.
 --
--- Absolute filepaths are converted to relative.
+-- Absolute filepaths are converted to relative, because in non-batch
+-- mode, that is done when CmdLine.Seek uses git ls-files.
 --
--- File matching options are not checked.
-batchStart :: BatchFormat -> (FilePath -> CommandStart) -> Annex ()
-batchStart fmt a = batchInput fmt (Right <$$> liftIO . relPathCwdToFile) $
-	batchCommandAction . a
-
--- Like batchStart, but checks the file matching options
--- and skips non-matching files.
-batchFilesMatching :: BatchFormat -> (RawFilePath -> CommandStart) -> Annex ()
+-- File matching options are checked, and non-matching files skipped.
+batchFilesMatching :: BatchFormat -> ((SeekInput, RawFilePath) -> CommandStart) -> Annex ()
 batchFilesMatching fmt a = do
 	matcher <- getMatcher
-	batchStart fmt $ \f ->
+	go $ \si f ->
 		let f' = toRawFilePath f
 		in ifM (matcher $ MatchingFile $ FileInfo f' f')
-			( a f'
+			( a (si, f')
 			, return Nothing
 			)
+  where
+	go a' = batchInput fmt 
+		(Right <$$> liftIO . relPathCwdToFile)
+		(batchCommandAction . uncurry a')
 
 batchAnnexedFilesMatching :: BatchFormat -> AnnexedFileSeeker -> Annex ()
-batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $
-	whenAnnexed $ \f k -> case checkContentPresent seeker of
-		Just v -> do
-			present <- inAnnex k
-			if present == v
-				then startAction seeker f k
-				else return Nothing
-		Nothing -> startAction seeker f k
+batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $ \(si, bf) ->
+	flip whenAnnexed bf $ \f k -> 
+		case checkContentPresent seeker of
+			Just v -> do
+				present <- inAnnex k
+				if present == v
+					then startAction seeker si f k
+					else return Nothing
+			Nothing -> startAction seeker si f k

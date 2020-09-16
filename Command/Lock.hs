@@ -37,10 +37,10 @@ seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
 		, usesLocationLog = False
 		}
 
-start :: RawFilePath -> Key -> CommandStart
-start file key = ifM (isJust <$> isAnnexLink file)
+start :: SeekInput -> RawFilePath -> Key -> CommandStart
+start si file key = ifM (isJust <$> isAnnexLink file)
 	( stop
-	, starting "lock" (mkActionItem (key, file)) $
+	, starting "lock" (mkActionItem (key, file)) si $
 		go =<< liftIO (isPointerFile file)
 	)
   where

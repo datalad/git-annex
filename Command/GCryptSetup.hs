@@ -22,7 +22,7 @@ seek :: CmdParams -> CommandSeek
 seek = withStrings (commandAction . start)
 
 start :: String -> CommandStart
-start gcryptid = starting "gcryptsetup" (ActionItemOther Nothing) $ do
+start gcryptid = starting "gcryptsetup" (ActionItemOther Nothing) (SeekInput [gcryptid]) $ do
 	u <- getUUID
 	when (u /= NoUUID) $
 		giveup "gcryptsetup refusing to run; this repository already has a git-annex uuid!"

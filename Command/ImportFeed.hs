@@ -78,7 +78,7 @@ seek o = do
 
 getFeed :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> URLString -> CommandSeek
 getFeed addunlockedmatcher opts cache url = do
-	showStart' "importfeed" (Just url)
+	showStartOther "importfeed" (Just url) (SeekInput [])
 	downloadFeed url >>= \case
 		Nothing -> showEndResult =<< feedProblem url
 			"downloading the feed failed"
@@ -124,7 +124,7 @@ getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getState Annex.force)
 	( ret S.empty S.empty
 	, do
-		showStart "importfeed" "checking known urls"
+		showStart "importfeed" "checking known urls" (SeekInput [])
 		(is, us) <- unzip <$> knownItems
 		showEndOk
 		ret (S.fromList us) (S.fromList (concat is))
@@ -256,7 +256,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 		case dest of
 			Nothing -> return True
 			Just f -> do
-				showStart' "addurl" (Just url)
+				showStartOther "addurl" (Just url) (SeekInput [])
 				ks <- getter f
 				if null ks
 					then do

@@ -27,7 +27,7 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start (oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
+start ps@(oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
 	Just (u, cfg, mcu) -> Annex.SpecialRemote.findExisting newname >>= \case
 		Just _ -> giveup $ "The name " ++ newname ++ " is already used by a special remote."
 		Nothing -> go u cfg mcu
@@ -42,8 +42,9 @@ start (oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
 				Nothing -> giveup "That is not a special remote."
 				Just cfg -> go u cfg Nothing
   where
-	go u cfg mcu = starting "rename" (ActionItemOther Nothing) $
-		perform u cfg mcu newname
+	ai = ActionItemOther Nothing
+	si = SeekInput ps
+	go u cfg mcu = starting "rename" ai si $ perform u cfg mcu newname
 start _ = giveup "Specify an old name (or uuid or description) and a new name."
 
 perform :: UUID -> R.RemoteConfig -> Maybe (Annex.SpecialRemote.ConfigFrom UUID) -> String -> CommandPerform

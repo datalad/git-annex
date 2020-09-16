@@ -35,8 +35,8 @@ seek = withFilesInGitAnnex ww seeker <=< workTreeItems ww
 		, usesLocationLog = False
 		}
 
-start :: RawFilePath -> Key -> CommandStart
-start file key = do
+start :: SeekInput -> RawFilePath -> Key -> CommandStart
+start si file key = do
 	forced <- Annex.getState Annex.force
 	v <- Backend.getBackend (fromRawFilePath file) key
 	case v of
@@ -46,7 +46,7 @@ start file key = do
 			newbackend <- maybe defaultBackend return 
 				=<< chooseBackend (fromRawFilePath file)
 			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
-				then starting "migrate" (mkActionItem (key, file)) $
+				then starting "migrate" (mkActionItem (key, file)) si $
 					perform file key oldbackend newbackend
 				else stop
 

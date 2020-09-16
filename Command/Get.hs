@@ -54,8 +54,8 @@ seek o = startConcurrency downloadStages $ do
   where
 	ww = WarnUnmatchLsFiles
 
-start :: GetOptions -> Maybe Remote -> RawFilePath -> Key -> CommandStart
-start o from file key = start' expensivecheck from key afile ai
+start :: GetOptions -> Maybe Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o from si file key = start' expensivecheck from key afile ai si
   where
 	afile = AssociatedFile (Just file)
 	ai = mkActionItem (key, afile)
@@ -64,12 +64,12 @@ start o from file key = start' expensivecheck from key afile ai
 			<||> wantGet False (Just key) afile
 		| otherwise = return True
 
-startKeys :: Maybe Remote -> (Key, ActionItem) -> CommandStart
-startKeys from (key, ai) = checkFailedTransferDirection ai Download $
-	start' (return True) from key (AssociatedFile Nothing) ai
+startKeys :: Maybe Remote -> (SeekInput, Key, ActionItem) -> CommandStart
+startKeys from (si, key, ai) = checkFailedTransferDirection ai Download $
+	start' (return True) from key (AssociatedFile Nothing) ai si
 
-start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' expensivecheck from key afile ai =
+start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> SeekInput -> CommandStart
+start' expensivecheck from key afile ai si =
 	stopUnless expensivecheck $
 		case from of
 			Nothing -> go $ perform key afile
@@ -77,7 +77,7 @@ start' expensivecheck from key afile ai =
 				stopUnless (Command.Move.fromOk src key) $
 					go $ Command.Move.fromPerform src Command.Move.RemoveNever key afile
   where
-	go = starting "get" (OnlyActionOn key ai)
+	go = starting "get" (OnlyActionOn key ai) si
 
 perform :: Key -> AssociatedFile -> CommandPerform
 perform key afile = stopUnless (getKey key afile) $

@@ -53,9 +53,11 @@ commandActions = mapM_ commandAction
  - This should only be run in the seek stage.
  -}
 commandAction :: CommandStart -> Annex ()
-commandAction start = Annex.getState Annex.concurrency >>= \case
+commandAction start = getConcurrency >>= \case
 	NonConcurrent -> runnonconcurrent
-	Concurrent _ -> runconcurrent
+	Concurrent n
+		| n > 1 -> runconcurrent
+		| otherwise -> runnonconcurrent
 	ConcurrentPerCpu -> runconcurrent
   where
 	runnonconcurrent = void $ includeCommandAction start
@@ -174,17 +176,11 @@ accountCommandAction startmsg cleanup = tryNonAsync cleanup >>= \case
  - stages, without catching errors and without incrementing error counter.
  - Useful if one command wants to run part of another command. -}
 callCommandAction :: CommandStart -> CommandCleanup
-callCommandAction = fromMaybe True <$$> callCommandAction' 
-
-{- Like callCommandAction, but returns Nothing when the command did not
- - perform any action. -}
-callCommandAction' :: CommandStart -> Annex (Maybe Bool)
-callCommandAction' start = 
-	start >>= \case
-		Nothing -> return Nothing
-		Just (startmsg, perform) -> do
-			showStartMessage startmsg
-			Just <$> performCommandAction' startmsg perform
+callCommandAction start = start >>= \case
+	Just (startmsg, perform) -> do
+		showStartMessage startmsg
+		performCommandAction' startmsg perform
+	Nothing -> return True
 
 performCommandAction' :: StartMessage -> CommandPerform -> CommandCleanup
 performCommandAction' startmsg perform = 
@@ -206,9 +202,9 @@ performCommandAction' startmsg perform =
  -}
 startConcurrency :: UsedStages -> Annex a -> Annex a
 startConcurrency usedstages a = do
-	fromcmdline <- Annex.getState Annex.concurrency
+	fromcmdline <- getConcurrency
 	fromgitcfg <- annexJobs <$> Annex.getGitConfig
-	let usegitcfg = setConcurrency fromgitcfg
+	let usegitcfg = setConcurrency (ConcurrencyGitConfig fromgitcfg)
 	case (fromcmdline, fromgitcfg) of
 		(NonConcurrent, NonConcurrent) -> a
 		(Concurrent n, _) ->
@@ -264,7 +260,7 @@ startConcurrency usedstages a = do
  - May be called repeatedly by the same thread without blocking. -}
 ensureOnlyActionOn :: Key -> Annex a -> Annex a
 ensureOnlyActionOn k a = debugLocks $
-	go =<< Annex.getState Annex.concurrency
+	go =<< getConcurrency
   where
 	go NonConcurrent = a
 	go (Concurrent _) = goconcurrent

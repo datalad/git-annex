@@ -34,6 +34,7 @@ import Annex.Path
 import Utility.Env
 import Utility.Hash
 import Types.CleanupActions
+import Annex.Concurrent.Utility
 import Types.Concurrency
 import Git.Env
 import Git.Ssh
@@ -107,7 +108,7 @@ sshCachingInfo (host, port) = go =<< sshCacheDir'
 	-- No connection caching with concurrency is not a good
 	-- combination, so warn the user.
 	go (Left whynocaching) = do
-		Annex.getState Annex.concurrency >>= \case
+		getConcurrency >>= \case
                 	NonConcurrent -> return ()
 			Concurrent {} -> warnnocaching whynocaching
 			ConcurrentPerCpu -> warnnocaching whynocaching
@@ -229,7 +230,7 @@ prepSocket socketfile sshhost sshparams = do
 	
 	let socketlock = socket2lock socketfile
 
-	Annex.getState Annex.concurrency >>= \case
+	getConcurrency >>= \case
 		NonConcurrent -> return ()
 		Concurrent {} -> makeconnection socketlock
 		ConcurrentPerCpu -> makeconnection socketlock

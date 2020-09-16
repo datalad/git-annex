@@ -58,13 +58,16 @@ start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
 -- the remote uuid.
 startNormalRemote :: Git.RemoteName -> [String] -> Git.Repo -> CommandStart
 startNormalRemote name restparams r
-	| null restparams = starting "enableremote" (ActionItemOther (Just name)) $ do
+	| null restparams = starting "enableremote" ai si $ do
 		setRemoteIgnore r False
 		r' <- Remote.Git.configRead False r
 		u <- getRepoUUID r'
 		next $ return $ u /= NoUUID
 	| otherwise = giveup $
 		"That is a normal git remote; passing these parameters does not make sense: " ++ unwords restparams
+  where
+	ai = ActionItemOther (Just name)
+	si = SeekInput [name]
 
 startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID)) -> CommandStart
 startSpecialRemote name config Nothing = do
@@ -76,13 +79,16 @@ startSpecialRemote name config Nothing = do
 				Just (u, fromMaybe M.empty (M.lookup u confm), Nothing)
 		_ -> unknownNameError "Unknown remote name."
 startSpecialRemote name config (Just (u, c, mcu)) =
-	starting "enableremote" (ActionItemOther (Just name)) $ do
+	starting "enableremote" ai si $ do
 		let fullconfig = config `M.union` c	
 		t <- either giveup return (SpecialRemote.findType fullconfig)
 		gc <- maybe (liftIO dummyRemoteGitConfig) 
 			(return . Remote.gitconfig)
 			=<< Remote.byUUID u
 		performSpecialRemote t u c fullconfig gc mcu
+  where
+	ai = ActionItemOther (Just name)
+	si = SeekInput [name]
 
 performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
 performSpecialRemote t u oldc c gc mcu = do

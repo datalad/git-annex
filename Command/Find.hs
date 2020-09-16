@@ -73,14 +73,14 @@ seek o = do
   where
 	ww = WarnUnmatchLsFiles
 
-start :: FindOptions -> RawFilePath -> Key -> CommandStart
-start o file key = startingCustomOutput key $ do
+start :: FindOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o _ file key = startingCustomOutput key $ do
 	showFormatted (formatOption o) file $ ("file", fromRawFilePath file) : keyVars key
 	next $ return True
 
-startKeys :: FindOptions -> (Key, ActionItem) -> CommandStart
-startKeys o (key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 
-	start o (getTopFilePath topf) key
+startKeys :: FindOptions -> (SeekInput, Key, ActionItem) -> CommandStart
+startKeys o (si, key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 
+	start o si (getTopFilePath topf) key
 startKeys _ _ = stop
 
 showFormatted :: Maybe Utility.Format.Format -> S.ByteString -> [(String, String)] -> Annex ()

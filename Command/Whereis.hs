@@ -66,16 +66,16 @@ seek o = do
   where
 	ww = WarnUnmatchLsFiles
 
-start :: WhereisOptions -> M.Map UUID Remote -> RawFilePath -> Key -> CommandStart
-start o remotemap file key = 
-	startKeys o remotemap (key, mkActionItem (key, afile))
+start :: WhereisOptions -> M.Map UUID Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o remotemap si file key = 
+	startKeys o remotemap (si, key, mkActionItem (key, afile))
   where
 	afile = AssociatedFile (Just file)
 
-startKeys :: WhereisOptions -> M.Map UUID Remote -> (Key, ActionItem) -> CommandStart
-startKeys o remotemap (key, ai)
+startKeys :: WhereisOptions -> M.Map UUID Remote -> (SeekInput, Key, ActionItem) -> CommandStart
+startKeys o remotemap (si, key, ai)
 	| isJust (formatOption o) = startingCustomOutput ai go
-	| otherwise = starting "whereis" ai go
+	| otherwise = starting "whereis" ai si go
   where
 	go = perform o remotemap key ai
 

@@ -9,7 +9,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Types.GitConfig ( 
-	Configurable(..),
+	GlobalConfigurable(..),
 	ConfigSource(..),
 	GitConfig(..),
 	extractGitConfig,
@@ -53,7 +53,7 @@ import qualified Data.ByteString as B
 
 -- | A configurable value, that may not be fully determined yet because
 -- the global git config has not yet been loaded.
-data Configurable a
+data GlobalConfigurable a
 	= HasGitConfig a
 	-- ^ The git config has a value.
 	| HasGlobalConfig a
@@ -84,17 +84,17 @@ data GitConfig = GitConfig
 	, annexDelayAdd :: Maybe Int
 	, annexHttpHeaders :: [String]
 	, annexHttpHeadersCommand :: Maybe String
-	, annexAutoCommit :: Configurable Bool
-	, annexResolveMerge :: Configurable Bool
-	, annexSyncContent :: Configurable Bool
-	, annexSyncOnlyAnnex :: Configurable Bool
+	, annexAutoCommit :: GlobalConfigurable Bool
+	, annexResolveMerge :: GlobalConfigurable Bool
+	, annexSyncContent :: GlobalConfigurable Bool
+	, annexSyncOnlyAnnex :: GlobalConfigurable Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
 	, annexYoutubeDlOptions :: [String]
 	, annexAriaTorrentOptions :: [String]
 	, annexCrippledFileSystem :: Bool
-	, annexLargeFiles :: Configurable (Maybe String)
-	, annexDotFiles :: Configurable Bool
+	, annexLargeFiles :: GlobalConfigurable (Maybe String)
+	, annexDotFiles :: GlobalConfigurable Bool
 	, annexGitAddToAnnex :: Bool
 	, annexAddSmallFiles :: Bool
 	, annexFsckNudge :: Bool
@@ -111,7 +111,7 @@ data GitConfig = GitConfig
 	, annexVerify :: Bool
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
-	, annexAddUnlocked :: Configurable (Maybe String)
+	, annexAddUnlocked :: GlobalConfigurable (Maybe String)
 	, annexSecureHashesOnly :: Bool
 	, annexRetry :: Maybe Integer
 	, annexForwardRetry :: Maybe Integer

@@ -112,7 +112,7 @@ data AnnexState = AnnexState
 	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, output :: MessageState
-	, concurrency :: Concurrency
+	, concurrency :: ConcurrencySetting
 	, force :: Bool
 	, fast :: Bool
 	, daemon :: Bool
@@ -171,7 +171,7 @@ newState c r = do
 		, backend = Nothing
 		, remotes = []
 		, output = o
-		, concurrency = NonConcurrent
+		, concurrency = ConcurrencyCmdLine NonConcurrent
 		, force = False
 		, fast = False
 		, daemon = False

@@ -76,35 +76,35 @@ seek o = startConcurrency commandStages $ do
   where
 	ww = WarnUnmatchLsFiles
 
-start :: DropOptions -> Maybe Remote -> RawFilePath -> Key -> CommandStart
-start o from file key = start' o from key afile ai
+start :: DropOptions -> Maybe Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o from si file key = start' o from key afile ai si
   where
 	afile = AssociatedFile (Just file)
 	ai = mkActionItem (key, afile)
 
-start' :: DropOptions -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> CommandStart
-start' o from key afile ai = 
+start' :: DropOptions -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> SeekInput -> CommandStart
+start' o from key afile ai si = 
 	checkDropAuto (autoMode o) from afile key $ \numcopies ->
 		stopUnless want $
 			case from of
-				Nothing -> startLocal afile ai numcopies key []
-				Just remote -> startRemote afile ai numcopies key remote
+				Nothing -> startLocal afile ai si numcopies key []
+				Just remote -> startRemote afile ai si numcopies key remote
   where
 	want
 		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
 		| otherwise = return True
 
-startKeys :: DropOptions -> Maybe Remote -> (Key, ActionItem) -> CommandStart
-startKeys o from (key, ai) = start' o from key (AssociatedFile Nothing) ai
+startKeys :: DropOptions -> Maybe Remote -> (SeekInput, Key, ActionItem) -> CommandStart
+startKeys o from (si, key, ai) = start' o from key (AssociatedFile Nothing) ai si
 
-startLocal :: AssociatedFile -> ActionItem -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
-startLocal afile ai numcopies key preverified =
-	starting "drop" (OnlyActionOn key ai) $
+startLocal :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
+startLocal afile ai si numcopies key preverified =
+	starting "drop" (OnlyActionOn key ai) si $
 		performLocal key afile numcopies preverified
 
-startRemote :: AssociatedFile -> ActionItem -> NumCopies -> Key -> Remote -> CommandStart
-startRemote afile ai numcopies key remote = 
-	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) $
+startRemote :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> Key -> Remote -> CommandStart
+startRemote afile ai si numcopies key remote = 
+	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) si $
 		performRemote key afile numcopies remote
 
 performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform

@@ -32,8 +32,8 @@ seek :: SetPresentKeyOptions -> CommandSeek
 seek o = case batchOption o of
 	Batch fmt -> batchInput fmt
 		(pure . parseKeyStatus . words)
-		(batchCommandAction . start)
-	NoBatch -> either giveup (commandAction . start)
+		(batchCommandAction . uncurry start)
+	NoBatch -> either giveup (commandAction . start (SeekInput (params o)))
 		(parseKeyStatus $ params o)
 
 data KeyStatus = KeyStatus Key UUID LogStatus
@@ -46,9 +46,10 @@ parseKeyStatus (ks:us:vs:[]) = do
 	return $ KeyStatus k u s
 parseKeyStatus _ = Left "Bad input. Expected: key uuid value"
 
-start :: KeyStatus -> CommandStart
-start (KeyStatus k u s) = starting "setpresentkey" (mkActionItem k) $
-	perform k u s
+start :: SeekInput -> KeyStatus -> CommandStart
+start si (KeyStatus k u s) = starting "setpresentkey" ai si $ perform k u s
+  where
+	ai = mkActionItem k
 
 perform :: Key -> UUID -> LogStatus -> CommandPerform
 perform k u s = next $ do

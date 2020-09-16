@@ -29,9 +29,11 @@ start = parse
 		u <- Remote.nameToUUID name
 		startingCustomOutput (ActionItemOther Nothing) $
 			performGet u
-	parse (name:expr:[]) = do
+	parse ps@(name:expr:[]) = do
 		u <- Remote.nameToUUID name
-		startingUsualMessages "schedule" (ActionItemOther (Just name)) $
+		let ai = ActionItemOther (Just name)
+		let si = SeekInput ps
+		startingUsualMessages "schedule" ai si $
 			performSet expr u
 	parse _ = giveup "Specify a repository."
 

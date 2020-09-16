@@ -44,8 +44,8 @@ instance DeferredParseClass TransferKeyOptions where
 seek :: TransferKeyOptions -> CommandSeek
 seek o = withKeys (commandAction . start o) (keyOptions o)
 
-start :: TransferKeyOptions -> Key -> CommandStart
-start o key = startingCustomOutput key $ case fromToOptions o of
+start :: TransferKeyOptions -> (SeekInput, Key) -> CommandStart
+start o (_, key) = startingCustomOutput key $ case fromToOptions o of
 	ToRemote dest -> toPerform key (fileOption o) =<< getParsed dest
 	FromRemote src -> fromPerform key (fileOption o) =<< getParsed src
 

@@ -47,12 +47,14 @@ start os = do
 start _os = do
 #endif
 #ifndef mingw32_HOST_OS
+	let ai = ActionItemOther Nothing
+	let si = SeekInput []
 	curruserid <- liftIO getEffectiveUserID
 	if curruserid == 0
 		then case readish =<< headMaybe os of
 			Nothing -> giveup "Need user-id parameter."
 			Just userid -> go userid
-		else starting "enable-tor" (ActionItemOther Nothing) $ do
+		else starting "enable-tor" ai si $ do
 			gitannex <- liftIO programPath
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps

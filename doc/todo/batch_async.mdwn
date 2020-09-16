@@ -68,3 +68,8 @@ improvement to json output in non-async mode.
 > batch mode now. --[[Joey]]
 
 [[!tag projects/datalad]]
+
+> [[implemented|done]]. 
+
+> See <https://git-annex/bramchable.com/tips/using_git-annex_from_your_program/>
+> for some docs. --[[Joey]]

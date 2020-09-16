@@ -40,14 +40,16 @@ seek o = case (batchOption o, keyUrlPairs o) of
 
 start :: [String] -> CommandStart
 start (keyname:url:[]) = 
-	starting "registerurl" (ActionItemOther (Just url)) $ do
-		let key = keyOpt keyname
-		perform key url
+	starting "registerurl" ai si $
+		perform (keyOpt keyname) url
+  where
+	ai = ActionItemOther (Just url)
+	si = SeekInput [keyname, url]
 start _ = giveup "specify a key and an url"
 
 startMass :: BatchFormat -> CommandStart
 startMass fmt = 
-	starting "registerurl" (ActionItemOther (Just "stdin")) $
+	starting "registerurl" (ActionItemOther (Just "stdin")) (SeekInput []) $
 		massAdd fmt
 
 massAdd :: BatchFormat -> CommandPerform

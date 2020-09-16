@@ -20,8 +20,8 @@ cmd = noCommit $
 seek :: CmdParams -> CommandSeek
 seek = withKeys (commandAction . start)
 
-start :: Key -> CommandStart
-start key = inAnnexSafe key >>= dispatch
+start :: (SeekInput, Key) -> CommandStart
+start (_, key) = inAnnexSafe key >>= dispatch
   where
 	dispatch (Just True) = stop
 	dispatch (Just False) = exit 1

@@ -9,7 +9,7 @@
 
 module Messages (
 	showStart,
-	showStart',
+	showStartOther,
 	showStartMessage,
 	showEndMessage,
 	StartMessage(..),
@@ -64,45 +64,46 @@ import Types
 import Types.Messages
 import Types.ActionItem
 import Types.Concurrency
-import Types.Command (StartMessage(..))
+import Types.Command (StartMessage(..), SeekInput)
 import Types.Transfer (transferKey)
 import Messages.Internal
 import Messages.Concurrent
+import Annex.Concurrent.Utility
 import qualified Messages.JSON as JSON
 import qualified Annex
 
-showStart :: String -> RawFilePath -> Annex ()
-showStart command file = outputMessage json $
+showStart :: String -> RawFilePath -> SeekInput -> Annex ()
+showStart command file si = outputMessage json $
 	encodeBS' command <> " " <> file <> " "
   where
-	json = JSON.start command (Just file) Nothing
+	json = JSON.start command (Just file) Nothing si
 
-showStart' :: String -> Maybe String -> Annex ()
-showStart' command mdesc = outputMessage json $ encodeBS' $
+showStartKey :: String -> Key -> ActionItem -> SeekInput -> Annex ()
+showStartKey command key ai si = outputMessage json $
+	encodeBS' command <> " " <> actionItemDesc ai <> " "
+  where
+	json = JSON.start command (actionItemWorkTreeFile ai) (Just key) si
+
+showStartOther :: String -> Maybe String -> SeekInput -> Annex ()
+showStartOther command mdesc si = outputMessage json $ encodeBS' $
 	command ++ (maybe "" (" " ++) mdesc) ++ " "
   where
-	json = JSON.start command Nothing Nothing
-
-showStartKey :: String -> Key -> ActionItem -> Annex ()
-showStartKey command key i = outputMessage json $
-	encodeBS' command <> " " <> actionItemDesc i <> " "
-  where
-	json = JSON.start command (actionItemWorkTreeFile i) (Just key)
+	json = JSON.start command Nothing Nothing si
 
 showStartMessage :: StartMessage -> Annex ()
-showStartMessage (StartMessage command ai) = case ai of
-	ActionItemAssociatedFile _ k -> showStartKey command k ai
-	ActionItemKey k -> showStartKey command k ai
-	ActionItemBranchFilePath _ k -> showStartKey command k ai
-	ActionItemFailedTransfer t _ -> showStartKey command (transferKey t) ai
-	ActionItemWorkTreeFile file -> showStart command file
-	ActionItemOther msg -> showStart' command msg
-	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai')
-showStartMessage (StartUsualMessages command ai) = do
+showStartMessage (StartMessage command ai si) = case ai of
+	ActionItemAssociatedFile _ k -> showStartKey command k ai si
+	ActionItemKey k -> showStartKey command k ai si
+	ActionItemBranchFilePath _ k -> showStartKey command k ai si
+	ActionItemFailedTransfer t _ -> showStartKey command (transferKey t) ai si
+	ActionItemWorkTreeFile file -> showStart command file si
+	ActionItemOther msg -> showStartOther command msg si
+	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai' si)
+showStartMessage (StartUsualMessages command ai si) = do
 	outputType <$> Annex.getState Annex.output >>= \case
 		QuietOutput -> Annex.setOutput NormalOutput
 		_ -> noop
-	showStartMessage (StartMessage command ai)
+	showStartMessage (StartMessage command ai si)
 showStartMessage (StartNoMessage _) = noop
 showStartMessage (CustomOutput _) =
 	outputType <$> Annex.getState Annex.output >>= \case
@@ -111,8 +112,8 @@ showStartMessage (CustomOutput _) =
 
 -- Only show end result if the StartMessage is one that gets displayed.
 showEndMessage :: StartMessage -> Bool -> Annex ()
-showEndMessage (StartMessage _ _) = showEndResult
-showEndMessage (StartUsualMessages _ _) = showEndResult
+showEndMessage (StartMessage _ _ _) = showEndResult
+showEndMessage (StartUsualMessages _ _ _) = showEndResult
 showEndMessage (StartNoMessage _) = const noop
 showEndMessage (CustomOutput _) = const noop
 
@@ -238,9 +239,9 @@ showFullJSON v = withMessageState $ bufferJSON (JSON.complete v)
  - a complete JSON document.
  - This is only needed when showStart and showEndOk is not used.
  -}
-showCustom :: String -> Annex Bool -> Annex ()
-showCustom command a = do
-	outputMessage (JSON.start command Nothing Nothing) ""
+showCustom :: String -> SeekInput -> Annex Bool -> Annex ()
+showCustom command si a = do
+	outputMessage (JSON.start command Nothing Nothing si) ""
 	r <- a
 	outputMessage (JSON.end r) ""
 
@@ -298,7 +299,7 @@ prompt a = do
 
 {- Like prompt, but for a non-annex action that prompts. -}
 mkPrompter :: (MonadMask m, MonadIO m) => Annex (m a -> m a)
-mkPrompter = Annex.getState Annex.concurrency >>= \case
+mkPrompter = getConcurrency >>= \case
 	NonConcurrent -> return id
 	(Concurrent _) -> goconcurrent
 	ConcurrentPerCpu -> goconcurrent
