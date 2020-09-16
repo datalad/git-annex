@@ -8,6 +8,7 @@
 module CmdLine.Batch where
 
 import Annex.Common
+import qualified Annex
 import Types.Command
 import CmdLine.Action
 import CmdLine.GitAnnex.Options
@@ -18,6 +19,8 @@ import Types.FileMatcher
 import Annex.BranchState
 import Annex.WorkTree
 import Annex.Content
+import Annex.Concurrent
+import Types.Concurrency
 
 data BatchMode = Batch BatchFormat | NoBatch
 
@@ -85,6 +88,7 @@ batchInput fmt parser a = go =<< batchLines fmt
 
 batchLines :: BatchFormat -> Annex [String]
 batchLines fmt = do
+	checkBatchConcurrency
 	enableInteractiveBranchAccess
 	liftIO $ splitter <$> getContents
   where
@@ -92,8 +96,17 @@ batchLines fmt = do
 		BatchLine -> lines
 		BatchNull -> splitc '\0'
 
+-- When concurrency is enabled at the command line, it is used in batch
+-- mode. But, if it's only set in git config, don't use it, because the
+-- program using batch mode may not expect interleaved output.
+checkBatchConcurrency :: Annex ()
+checkBatchConcurrency = Annex.getState Annex.concurrency >>= \case
+	ConcurrencyCmdLine _ -> noop
+	ConcurrencyGitConfig _ -> 
+		setConcurrency (ConcurrencyGitConfig (Concurrent 1))
+
 batchCommandAction :: CommandStart -> Annex ()
-batchCommandAction = void . callCommandAction . batchCommandStart
+batchCommandAction = commandAction . batchCommandStart
 
 -- The batch mode user expects to read a line of output, and it's up to the
 -- CommandStart to generate that output as it succeeds or fails to do its
