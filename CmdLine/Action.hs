@@ -55,7 +55,9 @@ commandActions = mapM_ commandAction
 commandAction :: CommandStart -> Annex ()
 commandAction start = getConcurrency >>= \case
 	NonConcurrent -> runnonconcurrent
-	Concurrent _ -> runconcurrent
+	Concurrent n
+		| n > 1 -> runconcurrent
+		| otherwise -> runnonconcurrent
 	ConcurrentPerCpu -> runconcurrent
   where
 	runnonconcurrent = void $ includeCommandAction start
