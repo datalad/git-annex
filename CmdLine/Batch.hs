@@ -42,6 +42,8 @@ parseBatchOption = go
 -- In batch mode, one line at a time is read, parsed, and a reply output to
 -- stdout. In non batch mode, the command's parameters are parsed and
 -- a reply output for each.
+--
+-- Note that the actions are not run concurrently.
 batchable :: (opts -> SeekInput -> String -> Annex Bool) -> Parser opts -> CmdParamsDesc -> CommandParser
 batchable handler parser paramdesc = batchseeker <$> batchparser
   where
@@ -104,24 +106,23 @@ batchCommandAction a = maybe (batchBadInput (Batch BatchLine)) (const noop)
 -- Reads lines of batch input and passes the filepaths to a CommandStart
 -- to handle them.
 --
--- Absolute filepaths are converted to relative.
+-- Absolute filepaths are converted to relative, because in non-batch
+-- mode, that is done when CmdLine.Seek uses git ls-files.
 --
--- File matching options are not checked.
-batchStart :: BatchFormat -> (SeekInput -> FilePath -> CommandStart) -> Annex ()
-batchStart fmt a = batchInput fmt (Right <$$> liftIO . relPathCwdToFile) $
-	batchCommandAction . uncurry a
-
--- Like batchStart, but checks the file matching options
--- and skips non-matching files.
+-- File matching options are checked, and non-matching files skipped.
 batchFilesMatching :: BatchFormat -> ((SeekInput, RawFilePath) -> CommandStart) -> Annex ()
 batchFilesMatching fmt a = do
 	matcher <- getMatcher
-	batchStart fmt $ \si f ->
+	go $ \si f ->
 		let f' = toRawFilePath f
 		in ifM (matcher $ MatchingFile $ FileInfo f' f')
 			( a (si, f')
 			, return Nothing
 			)
+  where
+	go a' = batchInput fmt 
+		(Right <$$> liftIO . relPathCwdToFile)
+		(batchCommandAction . uncurry a')
 
 batchAnnexedFilesMatching :: BatchFormat -> AnnexedFileSeeker -> Annex ()
 batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $ \(si, bf) ->
