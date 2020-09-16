@@ -392,7 +392,7 @@ jsonProgressOption =
 -- action in `allowConcurrentOutput`.
 jobsOption :: [GlobalOption]
 jobsOption = 
-	[ globalSetter setConcurrency $ 
+	[ globalSetter (setConcurrency . ConcurrencyCmdLine) $ 
 		option (maybeReader parseConcurrency)
 			( long "jobs" <> short 'J' 
 			<> metavar (paramNumber `paramOr` "cpus")

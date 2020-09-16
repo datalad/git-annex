@@ -68,6 +68,7 @@ import Types.Command (StartMessage(..), SeekInput)
 import Types.Transfer (transferKey)
 import Messages.Internal
 import Messages.Concurrent
+import Annex.Concurrent.Utility
 import qualified Messages.JSON as JSON
 import qualified Annex
 
@@ -298,7 +299,7 @@ prompt a = do
 
 {- Like prompt, but for a non-annex action that prompts. -}
 mkPrompter :: (MonadMask m, MonadIO m) => Annex (m a -> m a)
-mkPrompter = Annex.getState Annex.concurrency >>= \case
+mkPrompter = getConcurrency >>= \case
 	NonConcurrent -> return id
 	(Concurrent _) -> goconcurrent
 	ConcurrentPerCpu -> goconcurrent

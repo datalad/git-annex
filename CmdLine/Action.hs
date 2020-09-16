@@ -53,7 +53,7 @@ commandActions = mapM_ commandAction
  - This should only be run in the seek stage.
  -}
 commandAction :: CommandStart -> Annex ()
-commandAction start = Annex.getState Annex.concurrency >>= \case
+commandAction start = getConcurrency >>= \case
 	NonConcurrent -> runnonconcurrent
 	Concurrent _ -> runconcurrent
 	ConcurrentPerCpu -> runconcurrent
@@ -200,9 +200,9 @@ performCommandAction' startmsg perform =
  -}
 startConcurrency :: UsedStages -> Annex a -> Annex a
 startConcurrency usedstages a = do
-	fromcmdline <- Annex.getState Annex.concurrency
+	fromcmdline <- getConcurrency
 	fromgitcfg <- annexJobs <$> Annex.getGitConfig
-	let usegitcfg = setConcurrency fromgitcfg
+	let usegitcfg = setConcurrency (ConcurrencyGitConfig fromgitcfg)
 	case (fromcmdline, fromgitcfg) of
 		(NonConcurrent, NonConcurrent) -> a
 		(Concurrent n, _) ->
@@ -258,7 +258,7 @@ startConcurrency usedstages a = do
  - May be called repeatedly by the same thread without blocking. -}
 ensureOnlyActionOn :: Key -> Annex a -> Annex a
 ensureOnlyActionOn k a = debugLocks $
-	go =<< Annex.getState Annex.concurrency
+	go =<< getConcurrency
   where
 	go NonConcurrent = a
 	go (Concurrent _) = goconcurrent

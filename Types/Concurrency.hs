@@ -17,3 +17,8 @@ parseConcurrency :: String -> Maybe Concurrency
 parseConcurrency "cpus" = Just ConcurrentPerCpu
 parseConcurrency "cpu" = Just ConcurrentPerCpu
 parseConcurrency s = Concurrent <$> readish s
+
+-- Concurrency can be configured at the command line or by git config.
+data ConcurrencySetting
+	= ConcurrencyCmdLine Concurrency
+	| ConcurrencyGitConfig Concurrency
