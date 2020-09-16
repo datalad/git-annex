@@ -174,17 +174,11 @@ accountCommandAction startmsg cleanup = tryNonAsync cleanup >>= \case
  - stages, without catching errors and without incrementing error counter.
  - Useful if one command wants to run part of another command. -}
 callCommandAction :: CommandStart -> CommandCleanup
-callCommandAction = fromMaybe True <$$> callCommandAction' 
-
-{- Like callCommandAction, but returns Nothing when the command did not
- - perform any action. -}
-callCommandAction' :: CommandStart -> Annex (Maybe Bool)
-callCommandAction' start = 
-	start >>= \case
-		Nothing -> return Nothing
-		Just (startmsg, perform) -> do
-			showStartMessage startmsg
-			Just <$> performCommandAction' startmsg perform
+callCommandAction start = start >>= \case
+	Just (startmsg, perform) -> do
+		showStartMessage startmsg
+		performCommandAction' startmsg perform
+	Nothing -> return True
 
 performCommandAction' :: StartMessage -> CommandPerform -> CommandCleanup
 performCommandAction' startmsg perform = 

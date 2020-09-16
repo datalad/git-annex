@@ -92,16 +92,19 @@ batchLines fmt = do
 		BatchLine -> lines
 		BatchNull -> splitc '\0'
 
--- Runs a CommandStart in batch mode.
---
+batchCommandAction :: CommandStart -> Annex ()
+batchCommandAction = void . callCommandAction . batchCommandStart
+
 -- The batch mode user expects to read a line of output, and it's up to the
 -- CommandStart to generate that output as it succeeds or fails to do its
 -- job. However, if it stops without doing anything, it won't generate
--- any output, so in that case, batchBadInput is used to provide the caller
--- with an empty line.
-batchCommandAction :: CommandStart -> Annex ()
-batchCommandAction a = maybe (batchBadInput (Batch BatchLine)) (const noop)
-	=<< callCommandAction' a
+-- any output. This modifies it so in that case, an empty line is printed.
+batchCommandStart :: CommandStart -> CommandStart
+batchCommandStart a = a >>= \case
+	Just v -> return (Just v)
+	Nothing -> do
+		batchBadInput (Batch BatchLine)
+		return Nothing
 
 -- Reads lines of batch input and passes the filepaths to a CommandStart
 -- to handle them.
