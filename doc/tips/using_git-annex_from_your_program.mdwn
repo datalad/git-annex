@@ -1,0 +1,100 @@
+Want to write a program that uses git-annex? Lots of people have, see
+[[related_software]] for a list. This tip is an overview of ways git-annex
+facilitates being used by other programs.
+
+## batch mode communication
+
+Many git-annex commands have a --batch option. This is handy if your
+program is operating on a lot of files; rather than running git-annex once
+per file, you can construct batch pipelines and probably it will run a lot
+faster.
+
+The way the --batch option typically works is, it makes the command read
+lines from standard input. Each line is a filename or whatever other thing
+the command operates on. It will reply with whatever output it usually
+outputs.
+
+For example:
+
+	git-annex get --batch
+	foo
+	get foo (from origin...)
+	(checksum...) ok
+	bar
+
+	baz
+	get baz (from origin...)
+	(checksum...) ok
+
+Notice the blank line it replies in response to "bar"? That's because,
+in this example, the file "bar" is already present, and it does not need to
+do anything to get it. Normally, git-annex silently skips files it does not
+need to operate on, but in batch mode, it will reply with a blank line when
+there's nothing to do for a given input line.
+
+## JSON output
+
+Notice that git-annex happened to output 2 lines per file in the example
+above. But it could output any number of lines. How can your program know
+when the output for one batch item is complete? Let alone parse it to
+determine if it succeeded or failed? Some git-annex commands don't have
+this problem, and are documented to output exactly one line, in a specific
+format, in batch mode.
+
+For the rest, the answer is `--json`. Use it with `--batch` and now each
+batch mode request results in a json object being output:
+
+	git-annex get --batch --json
+	foo
+	{"command":"get","note":"from origin...\nchecksum...","success":true,"input":["foo"],"key":"SHA256E-s30--f888da7dd6c0d6f37e3847f390d848c9a8e1e2d876865a91aca7e5a6a83715e0","file":"foo"}
+	bar
+
+	baz
+	{"command":"get","note":"from origin...\nchecksum...","success":true,"input":["baz"],"key":"SHA256E-s1048576000--da87281c9f9ab6cef8f9362935f4fc864db94606d52212614894f1253461a762","file":"baz"}
+
+Notice that it still outputs a blank line when there is nothing to do
+for a request, so be prepared for that in your JSON parser.
+
+There are also `--json-progress`, which adds more JSON messages giving
+progress of transfers, and `--json-error-messages` which makes some error
+messages be included in JSON objects instead of going to stderr.
+
+The format of git-annex's JSON output is not documented in full,
+because it varies from command to command. The shape is typically the same,
+but a few commands have a more custom JSON. Try a command and see
+what JSON it outputs and go from there. Fields won't be removed or renamed,
+but new ones might be added from time to time.
+
+## concurrency and batch mode
+
+If you use `-J` with `--batch`, some git-annex commands do support that,
+and will handle multiple batch requests concurrently.
+
+Suppose you want to get files concurrently in batch mode as the user clicks
+on them, and display to the user in your GUI when each file transfer is
+complete. But a problem: How to know which file a JSON reply corresponds
+to, now that they are not always in the same order as you sent the
+requests?
+
+	git-annex get --batch -J3 --json
+	./foo
+	bar
+	baz
+
+	{"command":"get","note":"from origin...\nchecksum...","success":true,"input":["baz"],"key":"SHA256E-s1048576000--da87281c9f9ab6cef8f9362935f4fc864db94606d52212614894f1253461a762","file":"baz"}
+	{"command":"get","note":"from origin...\nchecksum...","success":true,"input":["./foo"],"key":"SHA256E-s30--f888da7dd6c0d6f37e3847f390d848c9a8e1e2d876865a91aca7e5a6a83715e0","file":"foo"}
+
+You might think the "file" field is the thing to look at. And it can work.
+But, the example above shows a way it can fail to work. `./foo` was
+requested, but that got normalized internally, and the response has 
+`"file":"foo"`
+
+And looking at the "file" field won't help with other git-annex commands,
+such as addurl, where you don't request filenames.
+
+What will always work is to look at the "input" field. This is
+always the exact input that git-annex was operating on when it output a
+JSON object. (Older versions of git-annex don't include that field, but 
+those old versions don't run `--batch` concurrently either,
+so if it's omitted, you can assume the JSON objects are in the same order
+as you made requests.)
