@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="Re: comment 1"
+ date="2020-09-17T20:42:10Z"
+ content="""
+In my use case, I'd actually declare access the regular remotes with exporttree=true -- because the HTTP server serves only the checkout, and does not even give access to the .git repository. For this case, I don't see how declaring a regular git HTTP remote would help.
+
+Apart from that, a declared httpalso remote on exporttree=no would also make the HTTP server available using enableremote. That is especially beneficial because git-annex on its own seems to be unable to derive the git-annex UUID for an HTTP git remote on a dumb server. (Serving only the files and running `git update-server-info`, I could do a `git fetch`, but an annex sync would always give \"Remote origin-via-http not usable by git-annex; setting annex-ignore\" until I set remote.origin-via-http.annex-uuid manually, and then fetching did work.)
+"""]]
