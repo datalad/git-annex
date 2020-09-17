@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-17T18:20:49Z"
+ content="""
+This only affects using with regular git remotes.
+All special remotes have an encryption config, which it inherits, but
+regular git remotes do not have that config.
+
+Note that, regular git remotes can be accessed via git-annex over http just
+fine without using httpalso.
+
+It might make sense for httpalso to reject trying to be used with a regular
+git remote. 
+
+Or it could force the equivilant of encryption=none in that
+case. I would expect it to work then, if the url pointed to the
+.git/annex/objects directory.
+"""]]
