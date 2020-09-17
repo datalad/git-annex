@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="update"
+ date="2020-09-17T14:57:52Z"
+ content="""
+There's been a slight change in the behavior since this was originally reported (or I missed that before): The worktree is still removed, but it shows a
+
+```
+warning: unable to convert submodule to form that will work with git-annex
+```
+
+when annex-init'ing the inner. Contrary to what it says, everything on git-annex's *does* appear to work fine in the `outer-with-annex/inner` -- only the libgit access there fails.
+"""]]
