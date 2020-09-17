@@ -1,0 +1,112 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-09-17T19:00:00Z"
+ content="""
+Have not reproduced a hang or segfault, but I did easily
+reproduce the "Missing root element"
+
+	joey@kite:~/tmp/awstest>git annex copy -A --to s3test2 -J40
+	copy SHA256E-s6952--21f7b50313b7f85bbd97c1625b74559094c81be25223cd54ee692c063c5eebd7 (checking s3test2...) (to s3test2...) ok
+	copy SHA256E-s3872792--6fe6dc74f1388a5ffef061f0b16d167584de9dbe02f037892a36348703edddda (checking s3test2...) (to s3test2...) 
+	  Missing root element
+	
+	  Missing root element
+	failed
+	copy SHA256E-s3772792--835b658d79060395049f50dfba8a7795e07ce90357bd5ae13abd593301b210c5 (checking s3test2...) (to s3test2...) ok
+	copy SHA256E-s2072792--f687b87a28d8ddbb4fc6492ca88f65cccd493409590cb0faab508fe1968c74b3 (checking s3test2...) (to s3test2...) ok
+	copy SHA256E-s2272792--c3d185d7ef57ac2846021d995578a22645b4cd4ad00b54b86fb6608b440e4f83 (checking s3test2...) (to s3test2...) ok
+	copy SHA256E-s72792--8a923aceb4279623450186f52571010999f94915e98ef9d149aeab0023647ab5 (checking s3test2...) (to s3test2...) 
+	  Missing root element
+	ok
+	copy SHA256E-s3572792--761d388643772967499796e0114f526908582fd173aacd136e3541fb5683fbb0 (checking s3test2...) (to s3test2...) ok
+	copy SHA256E-s2172792--b1ce7d642d1d8d3285a1718f2227def468b439d522f2a05d9cc47026d4a57743 (checking s3test2...) (to s3test2...) 
+	  Missing root element
+	
+	  Missing root element
+	ok
+	[...]
+	(recording state in git...)
+	git-annex: copy: 1 failed
+
+Interesting that only 1 actually failed. And fsck confirms that the others did
+get stored, despite the messages. Mostly the checkpresent test (headObject) is
+failing, so it thinks it's not present and stores it, but in the 1 failure
+above, both checkpresent and the upload failed with that message.
+
+-J4 is enough to reproduce it, although maybe less frequently.
+Chunking is not needed to reproduce it.
+
+Interestingly, `git-annex fsck --fast -J40 --from remote` does not reproduce
+it, despite doing the same head operaton. Seems to maybe need a combination of
+simulantaneous storeObject and headObject, or something wrong about the timing
+when using fsck.
+
+--debug shows this occuring once per "Missing Root Element"
+
+	[2020-09-17 15:25:32.604667504] Response status: Status {statusCode = 400, statusMessage = "Bad Request"}
+
+So, this "Mising Root Element" may be a red herring, it seems S3 is for
+whatever reason rejecting a request, but its response didn't get corrupted,
+it's just lacking the usual XML body. If something is getting corrupted
+here, it must be the request.
+
+Took a tcpdump of this happening, and found the "Bad Request" packet in wireshark.
+When I ask wireshark to "Follow HTTP stream" from that packet, it displays this.
+(I've added direction markers.)
+
+	>HEAD /SHA256E-s2572792--f21227f8528b538d500c734e3434f5bb9a4f88b352616d806df76912955f5547 HTTP/1.1
+	>Host: s3test2-da497c39-25b8-4b4e-ae49-349364e440fd.s3.amazonaws.com
+	>Accept-Encoding: gzip
+	>Date: Thu, 17 Sep 2020 19:42:49 GMT
+	>Authorization: AWS <redacted>
+	>
+	<HTTP/1.1 404 Not Found
+	<x-amz-request-id: C43A5FCDA3D3B2B7
+	<x-amz-id-2: <redacted>
+	<Content-Type: application/xml
+	<Transfer-Encoding: chunked
+	<Date: Thu, 17 Sep 2020 19:42:48 GMT
+	<Server: AmazonS3
+	<
+	<HTTP/1.1 400 Bad Request
+	<Date: Thu, 17 Sep 20 19:42:49 GMT
+	<Connection: close
+	<x-amz-request-id: 3BAE3A23E4CFB711
+	<Content-Length: 0
+
+So hmm, S3 is responding with a 404, but then it appears it
+sends a *second* HTTP request, "400 Bad Request". 2 HTTP responses to 
+a single HTTP request. Is that in spec? Note that each of the 2 HTTP
+responses is in its own packet.
+
+Looking at another one, I asked wireshark to "Follow TCP stream",
+and saw this:
+
+	>PUT /SHA256E-s3072792--827469d4593f92db48dc23c557bafc200ece505ed2b0d0c4a8b07a5f752af9bb HTTP/1.1
+	>Host: s3test2-da497c39-25b8-4b4e-ae49-349364e440fd.s3.amazonaws.com
+	>Accept-Encoding: gzip
+	>Content-Length: 3072792
+	>Date: Thu, 17 Sep 2020 19:42:49 GMT
+	>Content-Type: p.....p.....t-stream
+	>Authorization: AWS <redacted>
+	>x-amz-storage-class: STANDARD
+	>
+	>a.y.|.Iz..:..G....s..~v........S.......D.......:B1.D....O{.@{`O.o..p....g...m.Y......^.oZK..K...L13...#S....w..6.O....4.;0./;Q.oVJ.....w..5.^....GdT..I7I}t.L...E\..(.........{pZ.K....r...8......~...cc.#6.......a.g....l..
+	>[snip object being sent]
+	>.....
+	>..NZ.3..m"..N..~.....b.....k..........MZF..).....M.['....e....EJ..n...E..c...~.?.
+        <HTTP/1.1 400 Bad Request
+	<Date: Thu, 17 Sep 20 19:42:49 GMT
+	<Connection: close
+	<x-amz-request-id: BA0B258AE5A5AAD1
+	<Content-Length: 0
+
+Notice the "Content-Type: p.....p.....t-stream" (where dot is NUL).
+One of the other bad requests had
+"Content-Type: f......................V........@.....E........@.....R........@....."
+
+Those look like memory corruption, but the doubled http response does not?
+
+(I have archived a copy of the tcpdump in `~/lib/big/git-annex-data-from-users/s3-tcpdump-http`)
+"""]]
