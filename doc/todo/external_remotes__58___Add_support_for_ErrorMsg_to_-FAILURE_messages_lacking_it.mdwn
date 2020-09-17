@@ -1,0 +1,30 @@
+ATM
+
+[[!format sh """
+$> grep -e -FAILURE doc/design/external_special_remote_protocol.mdwn
+  * `INITREMOTE-FAILURE ErrorMsg`  
+  * `PREPARE-FAILURE ErrorMsg`  
+  * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
+  * `CHECKPRESENT-FAILURE Key`  
+  * `REMOVE-FAILURE Key ErrorMsg`  
+  * `CLAIMURL-FAILURE`  
+  * `CHECKURL-FAILURE`  
+  * `WHEREIS-FAILURE` 
+"""]]
+
+so some commands have a way to report why action failed and some do not.
+
+I have been running into an error message `CHECKURL failed with no reason given` and I thought our special remote is just not letting know details but apparently I just followed the spec and thus did not provide description of the reason why CHECKURL has failed.  That complicates debugging/fixing.
+
+Unfortunately it seems that adding such support would not be backward compatible, ie older versions of git annex would puke if external remote starts to provide error message, so I guess it would be up to the remote to check annex version (or protocol features?) on either it can report an error:
+
+[[!format sh """
+  external special remote protocol error, unexpectedly received "CLAIMURL-FAILURE IT IS FAILURE" (unable to parse command)
+git-annex: unable to use special remote due to protocol error
+
+$> git annex version
+git-annex version: 8.20200810+git143-gdee38c54d-1~ndall+1
+"""]]
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
