@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-09-17T20:54:02Z"
+ content="""
+httpalso automatically enables exporttree=yes when the --sameas remote is
+such a remote. The working tree of a regular git repository is not such
+a remote, and that cannot possibly work. Use a directory special remote
+with exporttree=yes and then httpalso will be able to access it, as is
+documented.
+
+To access a git remote over http, git-annex needs to be able to download and
+parse its .git/config to determine its annex.uuid. When the http server 
+and url are configured properly, that does work.
+<https://git-annex.branchable.com/tips/setup_a_public_repository_on_a_web_site/>
+"""]]
