@@ -30,58 +30,30 @@ reproduce the "Missing root element"
 	git-annex: copy: 1 failed
 
 Interesting that only 1 actually failed. And fsck confirms that the others did
-get stored, despite the messages. Mostly the checkpresent test (headObject) is
-failing, so it thinks it's not present and stores it, but in the 1 failure
-above, both checkpresent and the upload failed with that message.
+get stored, despite the messages. So it seems that mostly the checkpresent
+test (HEAD) is failing, so it thinks it's not present and stores it,
+but in the 1 failur above, both checkpresent and the upload failed with that message.
 
 -J4 is enough to reproduce it, although maybe less frequently.
 Chunking is not needed to reproduce it.
 
-Interestingly, `git-annex fsck --fast -J40 --from remote` does not reproduce
-it, despite doing the same head operaton. Seems to maybe need a combination of
-simulantaneous storeObject and headObject, or something wrong about the timing
-when using fsck.
+But `git-annex fsck --fast -J40 --from remote` does not reproduce it,
+despite doing the same head operaton. Seems to maybe need a combination of
+simulantaneous storeObject and headObject, or something wrong about the
+timing when using fsck. This makes it harder to isolate a test case..
 
 --debug shows this occuring once per "Missing Root Element"
 
 	[2020-09-17 15:25:32.604667504] Response status: Status {statusCode = 400, statusMessage = "Bad Request"}
 
-So, this "Mising Root Element" may be a red herring, it seems S3 is for
-whatever reason rejecting a request, but its response didn't get corrupted,
-it's just lacking the usual XML body. If something is getting corrupted
-here, it must be the request.
+So, S3 is for whatever reason rejecting a request, but its response didn't
+get corrupted, it's just lacking the usual XML body, and 400 is not handled
+like 404 is so it tries to parse it as XML. 
+If something is getting corrupted here, it must be the request.
 
-Took a tcpdump of this happening, and found the "Bad Request" packet in wireshark.
-When I ask wireshark to "Follow HTTP stream" from that packet, it displays this.
-(I've added direction markers.)
-
-	>HEAD /SHA256E-s2572792--f21227f8528b538d500c734e3434f5bb9a4f88b352616d806df76912955f5547 HTTP/1.1
-	>Host: s3test2-da497c39-25b8-4b4e-ae49-349364e440fd.s3.amazonaws.com
-	>Accept-Encoding: gzip
-	>Date: Thu, 17 Sep 2020 19:42:49 GMT
-	>Authorization: AWS <redacted>
-	>
-	<HTTP/1.1 404 Not Found
-	<x-amz-request-id: C43A5FCDA3D3B2B7
-	<x-amz-id-2: <redacted>
-	<Content-Type: application/xml
-	<Transfer-Encoding: chunked
-	<Date: Thu, 17 Sep 2020 19:42:48 GMT
-	<Server: AmazonS3
-	<
-	<HTTP/1.1 400 Bad Request
-	<Date: Thu, 17 Sep 20 19:42:49 GMT
-	<Connection: close
-	<x-amz-request-id: 3BAE3A23E4CFB711
-	<Content-Length: 0
-
-So hmm, S3 is responding with a 404, but then it appears it
-sends a *second* HTTP request, "400 Bad Request". 2 HTTP responses to 
-a single HTTP request. Is that in spec? Note that each of the 2 HTTP
-responses is in its own packet.
-
-Looking at another one, I asked wireshark to "Follow TCP stream",
-and saw this:
+Took a tcpdump of this happening, and found the "Bad Request" packets in wireshark.
+I asked wireshark to "Follow TCP stream", and saw this (I added directional
+markers):
 
 	>PUT /SHA256E-s3072792--827469d4593f92db48dc23c557bafc200ece505ed2b0d0c4a8b07a5f752af9bb HTTP/1.1
 	>Host: s3test2-da497c39-25b8-4b4e-ae49-349364e440fd.s3.amazonaws.com
@@ -93,7 +65,7 @@ and saw this:
 	>x-amz-storage-class: STANDARD
 	>
 	>a.y.|.Iz..:..G....s..~v........S.......D.......:B1.D....O{.@{`O.o..p....g...m.Y......^.oZK..K...L13...#S....w..6.O....4.;0./;Q.oVJ.....w..5.^....GdT..I7I}t.L...E\..(.........{pZ.K....r...8......~...cc.#6.......a.g....l..
-	>[snip object being sent]
+	>[snip rest of object being sent]
 	>.....
 	>..NZ.3..m"..N..~.....b.....k..........MZF..).....M.['....e....EJ..n...E..c...~.?.
         <HTTP/1.1 400 Bad Request
@@ -105,8 +77,14 @@ and saw this:
 Notice the "Content-Type: p.....p.....t-stream" (where dot is NUL).
 One of the other bad requests had
 "Content-Type: f......................V........@.....E........@.....R........@....."
+All of the tcp streams with a "Bad Request" followed this pattern.
+That confirms memory corruption somewhere!
 
-Those look like memory corruption, but the doubled http response does not?
+Interesting that it's only the http PUTs that are failing, but based on
+git-annex behavior, it is seeing HEAD fail (instrumenting
+confirms it is). Note that some of the tcp
+streams contain a HEAD followed by a 404 response (expected)
+followed by a PUT, so maybe the http pipelining is somehow involved.
 
 (I have archived a copy of the tcpdump in `~/lib/big/git-annex-data-from-users/s3-tcpdump-http`)
 """]]
