@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-09-17T21:03:27Z"
+ content="""
+I instrumented git-annex to output the content-type it's sending,
+and it IS corrupted before hitting the http stack. It seems that libmagic
+is returning garbage.
+
+Perhaps it's not thread safe? If so, it might be *writing* to the wrong
+location too in some cases, so could explain all this weird behavior.
+And S3 remote is almost the only part of git-annex that uses libmagic, and the
+only part that uses it concurrently...
+
+So, I added a mutex around uses of it. Problem went away. Bug sent to
+library maintainer, and for now I hope this fixes the problem.
+
+If you were seeing hangs, crashes, etc, please try with a git-annex
+autobuild made after this comment..
+"""]]
