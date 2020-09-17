@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+Initializing a httpalso remote fails by requesting an encryption mode (but then rejecting it).
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+git init test1
+cd test1
+dd if=/dev/urandom count=1000 of=testfile
+git annex init
+git annex add testfile
+git commit -m "initial checkin"
+cd ..
+git clone test1 test2
+cd test2
+git annex init
+git annex initremote --sameas=origin origin-http type=httpalso url=http://example.com/foo
+"""]]
+
+That is the minimal example as I understand the [httpalso documentation](special_remotes/httpalso/).
+
+This gives an error message:
+
+```
+initremote origin-http 
+git-annex: Specify encryption=hybrid or encryption=none or encryption=pubkey or encryption=shared or encryption=sharedpubkey.
+failed
+git-annex: initremote: 1 failed
+```
+
+Adding `encryption=none` (or any other) gives `Unexpected parameters: encryption`.
+
+### What version of git-annex are you using? On what operating system?
+
+git annex 8.20200908 on current Debian sid (as packaged)
+
+### Have you had any luck using git-annex before?
+
+My first git-annex repository dates back 2010-12-21 ... so: yes.
+
+The introduction of httpalso simplifies the setup in the [annex-to-web](https://gitlab.com/chrysn/annex-to-web)  server, which on one hand consumes them in order to pass out redirects, and on the other hand .
