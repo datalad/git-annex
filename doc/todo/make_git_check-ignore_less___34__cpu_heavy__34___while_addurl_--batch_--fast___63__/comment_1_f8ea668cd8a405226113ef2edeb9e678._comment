@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-18T16:01:59Z"
+ content="""
+You can use --force to disable the ignores check.
+
+It might be a good idea to have an explict option to do it, since --force
+might also have other effects.
+
+With -J, git-annex will run more check-ignore processes, and so won't
+bottleneck on one, but IDK how much if any that actually speeds it up.
+Since batch async is implemented already, you can try and find out now!
+"""]]
