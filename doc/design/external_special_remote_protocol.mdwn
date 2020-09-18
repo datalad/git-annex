@@ -226,7 +226,7 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
     one after the other.
     Note that since a list is returned, neither the Url nor the Filename
     can contain spaces.
-  * `CHECKURL-FAILURE`  
+  * `CHECKURL-FAILURE ErrorMsg`  
     Indicates that the requested url could not be accessed.
 * `WHEREIS Key`  
   Asks the remote to provide additional information about ways to access

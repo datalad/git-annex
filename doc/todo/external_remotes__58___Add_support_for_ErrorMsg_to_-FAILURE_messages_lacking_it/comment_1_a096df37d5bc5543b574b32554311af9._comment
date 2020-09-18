@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-18T15:50:11Z"
+ content="""
+CHECKURL-FAILURE actually supports an error message,
+always has. The docs were just wrong.
+
+CHECKPRESENT-FAILURE is not for an exceptional case,
+but a usual case. CHECKPRESENT-UNKNOWN is for the exceptional case and
+includes an error message.
+
+CLAIMURL-FAILURE means the remote does not claim the url, so there is no
+need for an error message since git-annex will use web as usual.
+
+WHEREIS-FAILURE means the remote does not have information for whereis,
+it's not an exceptional case. Especially since WHEREIS is not supposed to
+use network access or anything.
+"""]]
