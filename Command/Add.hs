@@ -98,7 +98,7 @@ seek o = startConcurrency commandStages $ do
 			l <- workTreeItems ww (addThese o)
 			let go a = a ww (commandAction . gofile) l
 			unless (updateOnly o) $
-				go withFilesNotInGit
+				go (withFilesNotInGit (checkGitIgnoreOption o))
 			go withFilesMaybeModified
 			go withUnmodifiedUnlockedPointers
 

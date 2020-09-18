@@ -39,6 +39,7 @@ import Annex.Content
 import Annex.Link
 import Annex.InodeSentinal
 import Annex.Concurrent
+import Annex.CheckIgnore
 import qualified Annex.Branch
 import qualified Annex.BranchState
 import qualified Database.Keys
@@ -81,11 +82,12 @@ withFilesInGitAnnexNonRecursive ww needforce a (WorkTreeItems l) = ifM (Annex.ge
 			_ -> giveup needforce
 withFilesInGitAnnexNonRecursive _ _ _ NoWorkTreeItems = noop
 
-withFilesNotInGit :: WarnUnmatchWhen -> ((SeekInput, RawFilePath) -> CommandSeek) -> WorkTreeItems -> CommandSeek
-withFilesNotInGit ww a l = do
+withFilesNotInGit :: CheckGitIgnore -> WarnUnmatchWhen -> ((SeekInput, RawFilePath) -> CommandSeek) -> WorkTreeItems -> CommandSeek
+withFilesNotInGit (CheckGitIgnore ci) ww a l = do
 	force <- Annex.getState Annex.force
+	let include_ignored = force || not ci
 	seekFiltered a $
-		seekHelper id ww (const $ LsFiles.notInRepo [] force) l
+		seekHelper id ww (const $ LsFiles.notInRepo [] include_ignored) l
 
 withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do

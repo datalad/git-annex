@@ -16,6 +16,7 @@ import qualified Annex.Branch
 import qualified Database.Keys
 import Annex.Content
 import Annex.Init
+import Annex.CheckIgnore
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
 
@@ -42,7 +43,11 @@ check = do
 seek :: CmdParams -> CommandSeek
 seek ps = do
 	l <- workTreeItems ww ps
-	withFilesNotInGit WarnUnmatchWorkTreeItems (\(_, f) -> commandAction $ whenAnnexed (startCheckIncomplete . fromRawFilePath) f) l
+	withFilesNotInGit
+		(CheckGitIgnore False)
+		WarnUnmatchWorkTreeItems 
+		(\(_, f) -> commandAction $ whenAnnexed (startCheckIncomplete . fromRawFilePath) f)
+		l
 	Annex.changeState $ \s -> s { Annex.fast = True }
 	withFilesInGitAnnex ww Command.Unannex.seeker l
 	finish
