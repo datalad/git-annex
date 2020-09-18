@@ -49,6 +49,7 @@ data ImportOptions
 	= LocalImportOptions
 		{ importFiles :: CmdParams
 		, duplicateMode :: DuplicateMode
+		, checkGitIgnoreOption :: CheckGitIgnore
 		}
 	| RemoteImportOptions
 		{ importFromRemote :: DeferredParse Remote
@@ -65,8 +66,9 @@ optParser desc = do
 		( help "do not get contents of imported files"
 		)
 	dupmode <- fromMaybe Default <$> optional duplicateModeParser
+	ic <- Command.Add.checkGitIgnoreSwitch
 	return $ case mfromremote of
-		Nothing -> LocalImportOptions ps dupmode
+		Nothing -> LocalImportOptions ps dupmode ic
 		Just r -> case ps of
 			[bs] -> 
 				let (branch, subdir) = separate (== ':') bs
@@ -110,7 +112,7 @@ seek o@(LocalImportOptions {}) = startConcurrency commandStages $ do
 		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
-	(commandAction . startLocal addunlockedmatcher largematcher (duplicateMode o))
+	(commandAction . startLocal o addunlockedmatcher largematcher (duplicateMode o))
 		`withPathContents` importFiles o
 seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 	r <- getParsed (importFromRemote o)
@@ -122,8 +124,8 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		(importToSubDir o)
 	seekRemote r (importToBranch o) subdir (importContent o)
 
-startLocal :: AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
-startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
+startLocal :: ImportOptions -> AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
+startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( starting "import" ai si pickaction
 		, stop
@@ -148,10 +150,10 @@ startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 		showNote "reinjecting"
 		Command.Reinject.perform srcfile k
 	importfile ld k = checkdestdir $ do
-		ignored <- not <$> Annex.getState Annex.force <&&> checkIgnored destfile
+		ignored <- checkIgnored (checkGitIgnoreOption o) destfile
 		if ignored
 			then do
-				warning $ "not importing " ++ destfile ++ " which is .gitignored (use --force to override)"
+				warning $ "not importing " ++ destfile ++ " which is .gitignored (use --no-check-gitignore to override)"
 				stop
 			else do
 				existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
@@ -210,11 +212,11 @@ startLocal addunlockedmatcher largematcher mode (srcfile, destfile) =
 				}
 			}
 		ifM (checkFileMatcher largematcher destfile)
-			( ingestAdd' nullMeterUpdate (Just ld') (Just k)
+			( ingestAdd' (checkGitIgnoreOption o) nullMeterUpdate (Just ld') (Just k)
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)
-			, next $ Command.Add.addSmall destfile'
+			, next $ Command.Add.addSmall (checkGitIgnoreOption o) destfile'
 			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ destfile ++ " " ++ why

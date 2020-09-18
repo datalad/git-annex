@@ -7,6 +7,7 @@
  -}
 
 module Annex.CheckIgnore (
+	CheckGitIgnore(..),
 	checkIgnored,
 	checkIgnoreStop,
 	mkConcurrentCheckIgnoreHandle,
@@ -19,9 +20,15 @@ import Utility.ResourcePool
 import Types.Concurrency
 import Annex.Concurrent.Utility
 
-checkIgnored :: FilePath -> Annex Bool
-checkIgnored file = withCheckIgnoreHandle $ \h ->
-	liftIO $ Git.checkIgnored h file
+newtype CheckGitIgnore = CheckGitIgnore Bool
+
+checkIgnored :: CheckGitIgnore -> FilePath -> Annex Bool
+checkIgnored (CheckGitIgnore False) _ = pure False
+checkIgnored (CheckGitIgnore True) file =
+	ifM (not <$> Annex.getState Annex.force)
+		( pure False
+		, withCheckIgnoreHandle $ \h -> liftIO $ Git.checkIgnored h file
+		)
 
 withCheckIgnoreHandle :: (Git.CheckIgnoreHandle -> Annex a) -> Annex a
 withCheckIgnoreHandle a =

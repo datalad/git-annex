@@ -307,7 +307,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 							[] -> ".m"
 							s -> s
 						ok <- rundownload linkurl ext $ \f -> do
-							addWorkTree addunlockedmatcher webUUID mediaurl f mediakey (Just mediafile)
+							addWorkTree (downloadOptions opts) addunlockedmatcher webUUID mediaurl f mediakey (Just mediafile)
 							return [mediakey]
 						return (Just ok)
 					-- youtude-dl didn't support it, so
@@ -326,7 +326,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 		ifM (pure (not (rawOption (downloadOptions opts)))
 		     <&&> youtubeDlSupported linkurl)
 			( rundownload linkurl ".m" $ \f -> do
-				addWorkTree addunlockedmatcher webUUID mediaurl f mediakey Nothing
+				addWorkTree (downloadOptions opts) addunlockedmatcher webUUID mediaurl f mediakey Nothing
 				return [mediakey]
 			, performDownload addunlockedmatcher opts cache todownload
 				{ location = Enclosure linkurl }

@@ -38,7 +38,7 @@ annexed content, and other symlinks.
 
 # OPTIONS
 
-* `--force`
+* `--no-check-gitignore`
 
   Add gitignored files.
 

@@ -169,7 +169,7 @@ ignored = ig . takeFileName
 	ig _ = False
 
 unlessIgnored :: FilePath -> Assistant (Maybe Change) -> Assistant (Maybe Change)
-unlessIgnored file a = ifM (liftAnnex $ checkIgnored file)
+unlessIgnored file a = ifM (liftAnnex $ checkIgnored (CheckGitIgnore True) file)
 	( noChange
 	, a
 	)

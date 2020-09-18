@@ -11,6 +11,9 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
     support for versioned S3 buckets.
   * Serialize use of C magic library, which is not thread safe.
     This fixes failures uploading to S3 when using -J.
+  * add, addurl, importfeed, import: Added --no-check-gitignore option
+    for finer grained control than using --force.
+  * addunused: Don't check .gitignores when adding files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 

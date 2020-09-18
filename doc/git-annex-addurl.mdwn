@@ -85,6 +85,12 @@ be used to get better filenames.
   Use to adjust the filenames that are created by addurl. For example,
   `--suffix=.mp3` can be used to add an extension to the file.
 
+* `--no-check-gitignore`
+
+  By default, gitignores are honored and it will refuse to download an
+  url to a file that would be ignored. This makes such files be added
+  despite any ignores.
+
 * `--jobs=N` `-JN`
 
   Enables parallel downloads when multiple urls are being added.

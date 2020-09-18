@@ -185,6 +185,10 @@ and `--reinject-duplicates` documentation below.
 
   Also, causes .gitignore to not take effect when adding files.
 
+* `--no-check-gitignore`
+
+  Add gitignored files.
+
 * file matching options
 
   Many of the [[git-annex-matching-options]](1)

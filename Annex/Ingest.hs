@@ -1,6 +1,6 @@
 {- git-annex content ingestion
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,7 +18,8 @@ module Annex.Ingest (
 	addLink,
 	makeLink,
 	addUnlocked,
-	forceParams,
+	CheckGitIgnore(..),
+	gitAddParams,
 	addAnnexedFile,
 ) where
 
@@ -31,6 +32,7 @@ import Annex.Perms
 import Annex.Link
 import Annex.MetaData
 import Annex.CurrentBranch
+import Annex.CheckIgnore
 import Logs.Location
 import qualified Annex
 import qualified Annex.Queue
@@ -125,19 +127,19 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 
 {- Ingests a locked down file into the annex. Updates the work tree and
  - index. -}
-ingestAdd :: MeterUpdate -> Maybe LockedDown -> Annex (Maybe Key)
-ingestAdd meterupdate ld = ingestAdd' meterupdate ld Nothing
+ingestAdd :: CheckGitIgnore -> MeterUpdate -> Maybe LockedDown -> Annex (Maybe Key)
+ingestAdd ci meterupdate ld = ingestAdd' ci meterupdate ld Nothing
 
-ingestAdd' :: MeterUpdate -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
-ingestAdd' _ Nothing _ = return Nothing
-ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
+ingestAdd' :: CheckGitIgnore -> MeterUpdate -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
+ingestAdd' _ _ Nothing _ = return Nothing
+ingestAdd' ci meterupdate ld@(Just (LockedDown cfg source)) mk = do
 	(mk', mic) <- ingest meterupdate ld mk
 	case mk' of
 		Nothing -> return Nothing
 		Just k -> do
 			let f = keyFilename source
 			if lockingFile cfg
-				then addLink (fromRawFilePath f) k mic
+				then addLink ci (fromRawFilePath f) k mic
 				else do
 					mode <- liftIO $ catchMaybeIO $
 						fileMode <$> R.getFileStatus (contentLocation source)
@@ -292,23 +294,28 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
  - Also, using git add allows it to skip gitignored files, unless forced
  - to include them.
  -}
-addLink :: FilePath -> Key -> Maybe InodeCache -> Annex ()
-addLink file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
+addLink :: CheckGitIgnore -> FilePath -> Key -> Maybe InodeCache -> Annex ()
+addLink ci file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( do
 		_ <- makeLink file key mcache
-		ps <- forceParams
+		ps <- gitAddParams ci
 		Annex.Queue.addCommand "add" (ps++[Param "--"]) [file]
 	, do
 		l <- makeLink file key mcache
 		addAnnexLink l (toRawFilePath file)
 	)
 
-{- Parameters to pass to git add, forcing addition of ignored files. -}
-forceParams :: Annex [CommandParam]
-forceParams = ifM (Annex.getState Annex.force)
+{- Parameters to pass to git add, forcing addition of ignored files.
+ -
+ - Note that, when git add is being run on an ignored file that is already
+ - checked in, CheckGitIgnore True has no effect.
+ -}
+gitAddParams :: CheckGitIgnore -> Annex [CommandParam]
+gitAddParams (CheckGitIgnore True) = ifM (Annex.getState Annex.force)
 	( return [Param "-f"]
 	, return []
 	)
+gitAddParams (CheckGitIgnore False) = return [Param "-f"]
 
 {- Whether a file should be added unlocked or not. Default is to not,
  - unless symlinks are not supported. annex.addunlocked can override that.
@@ -332,8 +339,8 @@ addUnlocked matcher mi =
  -
  - When the content of the key is not accepted into the annex, returns False.
  -}
-addAnnexedFile :: AddUnlockedMatcher -> FilePath -> Key -> Maybe FilePath -> Annex Bool
-addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi)
+addAnnexedFile :: CheckGitIgnore -> AddUnlockedMatcher -> FilePath -> Key -> Maybe FilePath -> Annex Bool
+addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 	( do
 		mode <- maybe
 			(pure Nothing)
@@ -351,7 +358,7 @@ addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi)
 				, writepointer mode >> return True
 				)
 	, do
-		addLink file key Nothing
+		addLink ci file key Nothing
 		case mtmp of
 			Just tmp -> moveAnnex key tmp
 			Nothing -> return True

@@ -54,6 +54,7 @@ data DownloadOptions = DownloadOptions
 	, rawOption :: Bool
 	, fileOption :: Maybe FilePath
 	, preserveFilenameOption :: Bool
+	, checkGitIgnoreOption :: CheckGitIgnore
 	}
 
 optParser :: CmdParamsDesc -> Parser AddUrlOptions
@@ -100,6 +101,7 @@ parseDownloadOptions withfileoptions = DownloadOptions
 			<> help "use filename provided by server as-is"
 			)
 		else pure False)
+	<*> Command.Add.checkGitIgnoreSwitch
 
 seek :: AddUrlOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
@@ -178,12 +180,12 @@ performRemote addunlockedmatcher r o uri file sz = ifAnnexed (toRawFilePath file
 	geturi = next $ isJust <$> downloadRemoteFile addunlockedmatcher r (downloadOptions o) uri file sz
 
 downloadRemoteFile :: AddUnlockedMatcher -> Remote -> DownloadOptions -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
-downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd file $ do
+downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd o file $ do
 	let urlkey = Backend.URL.fromUrl uri sz
 	createWorkTreeDirectory (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
 		( do
-			addWorkTree addunlockedmatcher (Remote.uuid r) loguri file urlkey Nothing
+			addWorkTree o addunlockedmatcher (Remote.uuid r) loguri file urlkey Nothing
 			return (Just urlkey)
 		, do
 			-- Set temporary url for the urlkey
@@ -192,7 +194,7 @@ downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd file $ do
 			setTempUrl urlkey loguri
 			let downloader = \dest p ->
 				fst <$> Remote.verifiedAction (Remote.retrieveKeyFile r urlkey af dest p)
-			ret <- downloadWith addunlockedmatcher downloader urlkey (Remote.uuid r) loguri file
+			ret <- downloadWith o addunlockedmatcher downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
 			return ret
 		)
@@ -309,10 +311,10 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 		( tryyoutubedl tmp
 		, normalfinish tmp
 		)
-	normalfinish tmp = checkCanAdd file $ do
+	normalfinish tmp = checkCanAdd o file $ do
 		showDestinationFile file
 		createWorkTreeDirectory (parentDir file)
-		Just <$> finishDownloadWith addunlockedmatcher tmp webUUID url file
+		Just <$> finishDownloadWith o addunlockedmatcher tmp webUUID url file
 	-- Ask youtube-dl what filename it will download first, 
 	-- so it's only used when the file contains embedded media.
 	tryyoutubedl tmp = youtubeDlFileNameHtmlOnly url >>= \case
@@ -330,9 +332,9 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 					youtubeDl url workdir >>= \case
 						Right (Just mediafile) -> do
 							cleanuptmp
-							checkCanAdd dest $ do
+							checkCanAdd o dest $ do
 								showDestinationFile dest
-								addWorkTree addunlockedmatcher webUUID mediaurl dest mediakey (Just mediafile)
+								addWorkTree o addunlockedmatcher webUUID mediaurl dest mediakey (Just mediafile)
 								return $ Just mediakey
 						Right Nothing -> normalfinish tmp
 						Left msg -> do
@@ -375,13 +377,13 @@ showDestinationFile file = do
  - Downloads the url, sets up the worktree file, and returns the
  - real key.
  -}
-downloadWith :: AddUnlockedMatcher -> (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
-downloadWith addunlockedmatcher downloader dummykey u url file =
+downloadWith :: DownloadOptions -> AddUnlockedMatcher -> (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
+downloadWith o addunlockedmatcher downloader dummykey u url file =
 	go =<< downloadWith' downloader dummykey u url afile
   where
 	afile = AssociatedFile (Just (toRawFilePath file))
 	go Nothing = return Nothing
-	go (Just tmp) = Just <$> finishDownloadWith addunlockedmatcher tmp u url file
+	go (Just tmp) = Just <$> finishDownloadWith o addunlockedmatcher tmp u url file
 
 {- Like downloadWith, but leaves the dummy key content in
  - the returned location. -}
@@ -397,8 +399,8 @@ downloadWith' downloader dummykey u url afile =
 			then return (Just tmp)
 			else return Nothing
 
-finishDownloadWith :: AddUnlockedMatcher -> FilePath -> UUID -> URLString -> FilePath -> Annex Key
-finishDownloadWith addunlockedmatcher tmp u url file = do
+finishDownloadWith :: DownloadOptions -> AddUnlockedMatcher -> FilePath -> UUID -> URLString -> FilePath -> Annex Key
+finishDownloadWith o addunlockedmatcher tmp u url file = do
 	backend <- chooseBackend file
 	let source = KeySource
 		{ keyFilename = toRawFilePath file
@@ -406,7 +408,7 @@ finishDownloadWith addunlockedmatcher tmp u url file = do
 		, inodeCache = Nothing
 		}
 	key <- fst <$> genKey source nullMeterUpdate backend
-	addWorkTree addunlockedmatcher u url file key (Just tmp)
+	addWorkTree o addunlockedmatcher u url file key (Just tmp)
 	return key
 
 {- Adds the url size to the Key. -}
@@ -416,8 +418,8 @@ addSizeUrlKey urlinfo key = alterKey key $ \d -> d
 	}
 
 {- Adds worktree file to the repository. -}
-addWorkTree :: AddUnlockedMatcher -> UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
-addWorkTree addunlockedmatcher u url file key mtmp = case mtmp of
+addWorkTree :: DownloadOptions -> AddUnlockedMatcher -> UUID -> URLString -> FilePath -> Key -> Maybe FilePath -> Annex ()
+addWorkTree o addunlockedmatcher u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
 		-- Move to final location for large file check.
@@ -433,13 +435,15 @@ addWorkTree addunlockedmatcher u url file key mtmp = case mtmp of
 				-- than the work tree file.
 				liftIO $ renameFile file tmp
 				go
-			else void $ Command.Add.addSmall (toRawFilePath file)
+			else void $ Command.Add.addSmall
+				(checkGitIgnoreOption o)
+				(toRawFilePath file)
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", serializeKey key)]
 		setUrlPresent key url
 		logChange key u InfoPresent
-		ifM (addAnnexedFile addunlockedmatcher file key mtmp)
+		ifM (addAnnexedFile (checkGitIgnoreOption o) addunlockedmatcher file key mtmp)
 			( do
 				when (isJust mtmp) $
 					logStatus key InfoPresent
@@ -458,23 +462,23 @@ nodownloadWeb addunlockedmatcher o url urlinfo file
   where
 	nomedia = do
 		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
-		nodownloadWeb' addunlockedmatcher url key file
+		nodownloadWeb' o addunlockedmatcher url key file
 	usemedia mediafile = do
 		let dest = youtubeDlDestFile o file mediafile
 		let mediaurl = setDownloader url YoutubeDownloader
 		let mediakey = Backend.URL.fromUrl mediaurl Nothing
-		nodownloadWeb' addunlockedmatcher mediaurl mediakey dest
+		nodownloadWeb' o addunlockedmatcher mediaurl mediakey dest
 
 youtubeDlDestFile :: DownloadOptions -> FilePath -> FilePath -> FilePath
 youtubeDlDestFile o destfile mediafile
 	| isJust (fileOption o) = destfile
 	| otherwise = takeFileName mediafile
 
-nodownloadWeb' :: AddUnlockedMatcher -> URLString -> Key -> FilePath -> Annex (Maybe Key)
-nodownloadWeb' addunlockedmatcher url key file = checkCanAdd file $ do
+nodownloadWeb' :: DownloadOptions -> AddUnlockedMatcher -> URLString -> Key -> FilePath -> Annex (Maybe Key)
+nodownloadWeb' o addunlockedmatcher url key file = checkCanAdd o file $ do
 	showDestinationFile file
 	createWorkTreeDirectory (parentDir file)
-	addWorkTree addunlockedmatcher webUUID url file key Nothing
+	addWorkTree o addunlockedmatcher webUUID url file key Nothing
 	return (Just key)
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
@@ -506,14 +510,14 @@ adjustFile o = addprefix . addsuffix
 	addprefix f = maybe f (++ f) (prefixOption o)
 	addsuffix f = maybe f (f ++) (suffixOption o)
 
-checkCanAdd :: FilePath -> Annex (Maybe a) -> Annex (Maybe a)
-checkCanAdd file a = ifM (isJust <$> (liftIO $ catchMaybeIO $ getSymbolicLinkStatus file))
+checkCanAdd :: DownloadOptions -> FilePath -> Annex (Maybe a) -> Annex (Maybe a)
+checkCanAdd o file a = ifM (isJust <$> (liftIO $ catchMaybeIO $ getSymbolicLinkStatus file))
 	( do
 		warning $ file ++ " already exists; not overwriting"
 		return Nothing
-	, ifM ((not <$> Annex.getState Annex.force) <&&> checkIgnored file)
+	, ifM (checkIgnored (checkGitIgnoreOption o) file)
 		( do
-			warning $ "not adding " ++ file ++ " which is .gitignored (use --force to override)"
+			warning $ "not adding " ++ file ++ " which is .gitignored (use --no-check-gitignore to override)"
 			return Nothing
 		, a
 		)

@@ -28,7 +28,9 @@ start = startUnused "addunused" perform
 perform :: Key -> CommandPerform
 perform key = next $ do
 	logStatus key InfoPresent
-	addLink file key Nothing
+	-- Ignore the usual git ignores because the user has explictly
+	-- asked to add these files.
+	addLink (CheckGitIgnore False) file key Nothing
 	return True
   where
 	file = "unused." ++ fromRawFilePath (keyFile key)

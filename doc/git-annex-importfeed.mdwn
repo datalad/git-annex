@@ -89,6 +89,12 @@ resulting in the new url being downloaded to such a filename.
   
   (These use the UTC time zone, not the local time zone.)
 
+* `--no-check-gitignore`
+
+  By default, gitignores are honored and it will refuse to download an
+  url to a file that would be ignored. This makes such files be added
+  despite any ignores.
+
 # SEE ALSO
 
 [[git-annex]](1)
