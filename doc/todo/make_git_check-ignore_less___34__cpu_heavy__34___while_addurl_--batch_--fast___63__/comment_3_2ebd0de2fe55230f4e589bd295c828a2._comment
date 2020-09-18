@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2020-09-18T20:11:25Z"
+ content="""
+thanks Joey.  I am yet to digest though if I would like (would be safe) to avoid `git check-ignore` call in general in my use-cases.  Originally I was wondering more about some kind of \"optimization\" ;) async --batch could help indeed, we just might need to change our code to support it (have not yet looked into the code)
+"""]]
