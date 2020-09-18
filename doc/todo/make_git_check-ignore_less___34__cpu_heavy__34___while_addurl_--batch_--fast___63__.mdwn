@@ -29,3 +29,5 @@ If annex does wait, since it is a --batch operation, I wonder if somehow invocat
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> I think my comments address this, so [[done]].. --[[Joey]]
