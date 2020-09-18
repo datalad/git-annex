@@ -1,0 +1,31 @@
+I am running addurl (via `datalad addurls`) on a quite heavy in number of files git/annex repo.
+
+Here is the htop I see (git annex is `8.20200908-gcfc74c2f4` I believe ;))
+
+
+[[!format sh """
+ CPU% MEM%   TIME+  Command                                                                                                                                                                                                                                                                                                               
+  0.0  0.0  0:12.62 │  └─ zsh
+  2.0  3.1  0:59.03 │     ├─ python3 datalad-nda/scripts/datalad-nda --pdb add2datalad -i /proc/self/fd/15 -d testds-fast-full2 --fast
+  0.0  0.0  0:00.09 │     │  ├─ git --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git/git annex addurl --fast --with-files --json --json-error-messages --batch
+  4.6  0.1  0:40.33 │     │  │  └─ git-annex --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+ 45.2  0.2 10:27.06 │     │  │     ├─ git --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. check-ignore -z --stdin --verbose --non-matching                                                                         
+  3.3  0.0  0:27.42 │     │  │     ├─ python3 /mnt/scrap/tmp/abcd/datalad/venvs/dev3/bin/git-annex-remote-datalad
+  0.0  0.0  0:00.00 │     │  │     ├─ git --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+  2.0  0.1  0:24.46 │     │  │     ├─ git --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+  0.0  0.1  0:02.17 │     │  │     ├─ git-annex --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+  0.0  0.1  0:00.00 │     │  │     ├─ git-annex --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+  0.0  0.1  0:04.55 │     │  │     ├─ git-annex --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+  0.0  0.1  0:02.35 │     │  │     └─ git-annex --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+  0.0  0.0  0:00.08 │     │  ├─ git --library-path /home/yoh/.tmp/ga-RIFzW89/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-RIFzW89/git-annex.linux/shimmed/git/git annex addurl --fast --with-files --json --json-error-messages --batch
+
+"""]]
+
+so -- `git check-ignore --batch` is the busiest in cpu process (30-60%). 
+I do not mind it to be CPU heavy, but I am afraid that its use is not `async` so while it is "processing", annex is waiting before proceeding to the next entry.
+If it is not so -- please just close this.
+
+If annex does wait, since it is a --batch operation, I wonder if somehow invocation of `git check-ignore` could be delayed to be done in a single shot at the end of the batched process or something like that? or may be it relates to [batch_async](https://git-annex.branchable.com/todo/batch_async/) WiP TODO, i.e. internally annex would make it an async call.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
