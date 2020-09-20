@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="NicholasLee"
+ avatar="http://cdn.libravatar.org/avatar/55f6909e71271c68a220adbdf2e0fac7"
+ subject="comment 3"
+ date="2020-09-20T02:28:08Z"
+ content="""
+Is there a way to see the history of a file in annex?   git annex log just shows the status of the current file.  
+
+git log just shows the meta data, not the actual file history.
+"""]]
