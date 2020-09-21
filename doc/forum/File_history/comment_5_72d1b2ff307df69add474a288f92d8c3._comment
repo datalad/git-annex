@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="NicholasLee"
+ avatar="http://cdn.libravatar.org/avatar/55f6909e71271c68a220adbdf2e0fac7"
+ subject="comment 5"
+ date="2020-09-21T00:24:28Z"
+ content="""
+By file history, I mean old versions of a file. So, if I do something like this:
+
+touch file.txt
+sleep 5
+echo -n \"1\" > file.txt
+sleep 5
+echo -n \"2\" >> file.txt
+
+How do I find copies of the initial and 2nd version (with only \"1\n\") of file.txt?
+
+Diffs could be done (if meaningful) via command line pipes or whatever.
+
+"""]]
