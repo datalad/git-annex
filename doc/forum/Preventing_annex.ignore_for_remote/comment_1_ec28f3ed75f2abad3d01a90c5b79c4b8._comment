@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-09-21T14:38:24Z"
+ content="""
+> If I set annex.ignore explicitly to false for a remote, will that
+> prevent git-annex from setting it to true in these situations?
+
+Based on light testing and grepping, I think `annex.ignore` will still
+be set to true in that case
+"""]]
