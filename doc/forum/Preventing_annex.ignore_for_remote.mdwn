@@ -1,0 +1,3 @@
+Sometimes through misconfiguration I have situations where the git server is reachable but annex fails to reach the annex-shell.  If I set `annex.ignore` explicitly to `false` for a remote, will that prevent git-annex from setting it to true in these situations?
+
+I want to be able to set it so that even if a remote is detected to not support annex, it should still regard it as an annex remote.
