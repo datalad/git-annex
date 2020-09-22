@@ -11,13 +11,15 @@ that have a remote and those without one. Eg:
 	  Try making some of these remotes accessible:
 	    2370e576-fcef-11ea-a46e-7fce4739e70f -- joey@localhost:/media/usb [usbdrive]
 	    346cad24-fcef-11ea-a275-d3951b734346 -- joey@server:repo [origin]
-
-	  Or enable some of these repositories:
-	    2cca1320-6f51-4acf-a778-efdc79f87ab3 -- smaug:/mnt/btrfs/datasets/datalad/crawl/labs/churchland/najafi-2018-nwb
-              (git remote add ...)
+	    9808c3da-fcf0-11ea-b47f-cfa6e90a9d4a -- amazon S3
+	  Maybe enable some of these special remotes (git annex initremote):
 	    e513795e-1311-431d-8106-917d9528cfbd -- datasets.datalad.org
-              (git annex enableremote datalad-data ...)
+	  Maybe add some of these git remotes (git remote add):
+	    2cca1320-6f51-4acf-a778-efdc79f87ab3 -- smaug:/mnt/btrfs/datasets/datalad/crawl/labs/churchland/najafi-2018-nwb
 
-@yoh, does that separation, and the suggested commands in parens address
-your use case?
+So only 2 lines longer at most.
+
+(The "Maybe" wording is because "And/or" is so ugly, and yet
+the user may need to only do one, or more than one, depending on what
+they're doing.)
 """]]
