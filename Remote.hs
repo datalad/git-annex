@@ -1,6 +1,6 @@
 {- git-annex remotes
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -73,6 +73,7 @@ import Annex.UUID
 import Logs.UUID
 import Logs.Trust
 import Logs.Location hiding (logStatus)
+import Logs.Remote
 import Logs.Web
 import Remote.List
 import Remote.List.Util
@@ -337,31 +338,53 @@ remoteLocations locations trusted = do
 
 	return (sortBy (comparing cost) validremotes, validtrustedlocations)
 
-{- Displays known locations of a key. -}
+{- Displays known locations of a key and helps the user take action
+ - to make them accessible. -}
 showLocations :: Bool -> Key -> [UUID] -> String -> Annex ()
 showLocations separateuntrusted key exclude nolocmsg = do
 	u <- getUUID
+	remotes <- remoteList
 	uuids <- keyLocations key
 	untrusteduuids <- if separateuntrusted
 		then trustGet UnTrusted
 		else pure []
-	let uuidswanted = filteruuids uuids (u:exclude++untrusteduuids) 
+	let uuidswanted = filteruuids uuids (u:exclude++untrusteduuids)
 	let uuidsskipped = filteruuids uuids (u:exclude++uuidswanted)
-	ppuuidswanted <- prettyPrintUUIDs "wanted" uuidswanted
-	ppuuidsskipped <- prettyPrintUUIDs "skipped" uuidsskipped
-	let msg = message ppuuidswanted ppuuidsskipped
-	unless (null msg) $
-		showLongNote msg
-	ignored <- remoteList
-		>>= filterM (liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig)
+	let remoteuuids = map uuid remotes
+	let isremoteuuid x = elem x remoteuuids
+	let (remotesmakeavailable, uuidsothers) = 
+		partition isremoteuuid uuidswanted
+	isspecialremote <- flip M.member <$> remoteConfigMap
+	let (enablespecialremotes, addgitremotes) = 
+		partition isspecialremote uuidsothers
+	
+	-- Add "wanted" field to the JSON. While it's since been split
+	-- up more, this avoids breaking any JSON parsers that expect it.
+	ifM jsonOutputEnabled
+		( void $ prettyPrintUUIDs "wanted" uuidswanted
+		, do
+			ppremotesmakeavailable <- pp "remotes" remotesmakeavailable
+				"Try making some of these remotes available"
+			ppenablespecialremotes <- pp "enableremote" enablespecialremotes
+				"Maybe enable some of these special remotes (git annex initremote ...)"
+			ppaddgitremotes <- pp "repos" addgitremotes
+				"Maybe add some of these git remotes (git remote add ...)"
+			ppuuidsskipped <- pp "skipped" uuidsskipped
+				"Also these untrusted repositories may contain the file"
+			showLongNote $ case ppremotesmakeavailable ++ ppenablespecialremotes ++ ppaddgitremotes ++ ppuuidsskipped of
+				[] -> nolocmsg
+				s -> s
+		)
+	ignored <- filterM (liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig) remotes
 	unless (null ignored) $
 		showLongNote $ "(Note that these git remotes have annex-ignore set: " ++ unwords (map name ignored) ++ ")"
   where
 	filteruuids l x = filter (`notElem` x) l
-	message [] [] = nolocmsg
-	message rs [] = "Try making some of these repositories available:\n" ++ rs
-	message [] us = "Also these untrusted repositories may contain the file:\n" ++ us
-	message rs us = message rs [] ++ message [] us
+
+	pp jh l h = addheader h <$> prettyPrintUUIDs jh l
+
+	addheader _ [] = []
+	addheader h l = h ++ ":\n" ++ l
 
 showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = noop

@@ -29,5 +29,5 @@ although those remote descriptions/names give an idea for an informed user, they
 """]]
 
 [[!meta author=yoh]]
-[[!tag projects/dandi]]
-[[!tag needsthought]]
+
+> implemented as shown. [[done]] --[[Joey]]

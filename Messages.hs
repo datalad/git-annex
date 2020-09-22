@@ -45,6 +45,7 @@ module Messages (
 	disableDebugOutput,
 	debugEnabled,
 	commandProgressDisabled,
+	jsonOutputEnabled,
 	outputMessage,
 	withMessageState,
 	prompt,
@@ -287,6 +288,12 @@ commandProgressDisabled = withMessageState $ \s -> return $
 		QuietOutput -> True
 		JSONOutput _ -> True
 		NormalOutput -> concurrentOutputEnabled s
+
+jsonOutputEnabled :: Annex Bool
+jsonOutputEnabled = withMessageState $ \s -> return $
+	case outputType s of
+		JSONOutput _ -> True
+		_ -> False
 
 {- Prevents any concurrent console access while running an action, so
  - that the action is the only thing using the console, and can eg prompt
