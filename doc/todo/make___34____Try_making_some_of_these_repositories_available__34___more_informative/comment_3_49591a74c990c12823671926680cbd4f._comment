@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-09-22T16:15:49Z"
+ content="""
+Yes, it knows which remotes are configured, and every configured remote
+that it's going to list will have been tried and not been accessible
+when there's such a message. So, the list can be split into repos
+that have a remote and those without one. Eg:
+
+	  Try making some of these remotes accessible:
+	    2370e576-fcef-11ea-a46e-7fce4739e70f -- joey@localhost:/media/usb [usbdrive]
+	    346cad24-fcef-11ea-a275-d3951b734346 -- joey@server:repo [origin]
+
+	  Or enable some of these repositories:
+	    2cca1320-6f51-4acf-a778-efdc79f87ab3 -- smaug:/mnt/btrfs/datasets/datalad/crawl/labs/churchland/najafi-2018-nwb
+              (git remote add ...)
+	    e513795e-1311-431d-8106-917d9528cfbd -- datasets.datalad.org
+              (git annex enableremote datalad-data ...)
+
+@yoh, does that separation, and the suggested commands in parens address
+your use case?
+"""]]
