@@ -37,7 +37,7 @@ start ps@(oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \ca
 	Nothing -> Remote.nameToUUID' oldname >>= \case
 		Left e -> giveup e
 		Right u -> do
-			m <- Logs.Remote.readRemoteLog
+			m <- Logs.Remote.remoteConfigMap
 			case M.lookup u m of
 				Nothing -> giveup "That is not a special remote."
 				Just cfg -> go u cfg Nothing

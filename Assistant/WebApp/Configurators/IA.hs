@@ -158,7 +158,7 @@ enableIARemote uuid = do
 		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ iaCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
-			m <- liftAnnex readRemoteLog
+			m <- liftAnnex remoteConfigMap
 			let name = fromJust $ lookupName $
 				fromJust $ M.lookup uuid m
 			AWS.makeAWSRemote enableSpecialRemote S3.remote PublicGroup creds name M.empty

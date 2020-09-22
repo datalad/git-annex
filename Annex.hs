@@ -69,6 +69,7 @@ import Types.AdjustedBranch
 import Types.WorkerPool
 import Types.IndexFiles
 import Types.CatFileHandles
+import Types.RemoteConfig
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
@@ -129,6 +130,7 @@ data AnnexState = AnnexState
 	, uuiddescmap :: Maybe UUIDDescMap
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
+	, remoteconfigmap :: Maybe (M.Map UUID RemoteConfig)
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
@@ -188,6 +190,7 @@ newState c r = do
 		, uuiddescmap = Nothing
 		, preferredcontentmap = Nothing
 		, requiredcontentmap = Nothing
+		, remoteconfigmap = Nothing
 		, forcetrust = M.empty
 		, trustmap = Nothing
 		, groupmap = Nothing

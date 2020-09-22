@@ -86,7 +86,7 @@ preferredRequiredMapsLoad mktokens = do
 preferredRequiredMapsLoad' :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (M.Map UUID (Either String (FileMatcher Annex)), M.Map UUID (Either String (FileMatcher Annex)))
 preferredRequiredMapsLoad' mktokens = do
 	groupmap <- groupMap
-	configmap <- readRemoteLog
+	configmap <- remoteConfigMap
 	let genmap l gm = 
 		let mk u = makeMatcher groupmap configmap gm u mktokens
 		in simpleMap

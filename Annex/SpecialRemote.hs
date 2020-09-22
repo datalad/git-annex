@@ -36,7 +36,7 @@ findExisting name = do
 	headMaybe
 		. sortBy (comparing $ \(u, _, _) -> Down $ M.lookup u t)
 		. findByRemoteConfig (\c -> lookupName c == Just name)
-		<$> Logs.Remote.readRemoteLog
+		<$> Logs.Remote.remoteConfigMap
 
 newConfig
 	:: RemoteName
@@ -56,7 +56,7 @@ newConfig name sameas fromuser m = case sameas of
 
 specialRemoteMap :: Annex (M.Map UUID RemoteName)
 specialRemoteMap = do
-	m <- Logs.Remote.readRemoteLog
+	m <- Logs.Remote.remoteConfigMap
 	return $ M.fromList $ mapMaybe go (M.toList m)
   where
 	go (u, c) = case lookupName c of
@@ -79,7 +79,7 @@ findType config = maybe unspecified (specified . fromProposedAccepted) $
 
 autoEnable :: Annex ()
 autoEnable = do
-	remotemap <- M.filter configured <$> readRemoteLog
+	remotemap <- M.filter configured <$> remoteConfigMap
 	enabled <- getenabledremotes
 	forM_ (M.toList remotemap) $ \(cu, c) -> unless (cu `M.member` enabled) $ do
 		let u = case findSameasUUID c of

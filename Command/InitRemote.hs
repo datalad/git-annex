@@ -71,7 +71,7 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 				(sameas o) 
 			c <- newConfig name sameasuuid
 				(Logs.Remote.keyValToConfig Proposed ws)
-				<$> readRemoteLog
+				<$> remoteConfigMap
 			t <- either giveup return (findType c)
 			if whatElse o
 				then startingCustomOutput (ActionItemOther Nothing) $

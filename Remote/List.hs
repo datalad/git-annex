@@ -72,7 +72,7 @@ remoteList = do
 
 remoteList' :: Bool -> Annex [Remote]
 remoteList' autoinit = do
-	m <- readRemoteLog
+	m <- remoteConfigMap
 	rs <- concat <$> mapM (process m) remoteTypes
 	Annex.changeState $ \s -> s { Annex.remotes = rs }
 	return rs
@@ -96,7 +96,7 @@ remoteGen m t g = do
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex (Maybe Remote)
 updateRemote remote = do
-	m <- readRemoteLog
+	m <- remoteConfigMap
 	remote' <- updaterepo =<< getRepo remote
 	remoteGen m (remotetype remote) remote'
   where

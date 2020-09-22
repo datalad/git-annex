@@ -154,7 +154,7 @@ postAddGlacierR = glacierConfigurator $ do
 
 getEnableS3R :: UUID -> Handler Html
 getEnableS3R uuid = do
-	m <- liftAnnex readRemoteLog
+	m <- liftAnnex remoteConfigMap
 	isia <- case M.lookup uuid m of
 		Just c -> liftAnnex $ do
 			pc <- parsedRemoteConfig S3.remote c
@@ -180,7 +180,7 @@ enableAWSRemote remotetype uuid = do
 		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ awsCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
-			m <- liftAnnex readRemoteLog
+			m <- liftAnnex remoteConfigMap
 			let name = fromJust $ lookupName $
 				fromJust $ M.lookup uuid m
 			makeAWSRemote enableSpecialRemote remotetype SmallArchiveGroup creds name M.empty

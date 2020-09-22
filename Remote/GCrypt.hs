@@ -109,7 +109,7 @@ gen baser u rc gc rs = do
 	-- correctly.
 	resetup gcryptid r = do
 		let u' = genUUIDInNameSpace gCryptNameSpace gcryptid
-		v <- M.lookup u' <$> readRemoteLog
+		v <- M.lookup u' <$> remoteConfigMap
 		case (Git.remoteName baser, v) of
 			(Just remotename, Just rc') -> do
 				pc <- parsedRemoteConfig remote rc'

@@ -53,7 +53,7 @@ getEnableWebDAVR :: UUID -> Handler Html
 getEnableWebDAVR = postEnableWebDAVR
 postEnableWebDAVR :: UUID -> Handler Html
 postEnableWebDAVR uuid = do
-	m <- liftAnnex readRemoteLog
+	m <- liftAnnex remoteConfigMap
 	let c = fromJust $ M.lookup uuid m
 	let name = fromJust $ lookupName c
 	let url = fromProposedAccepted $ fromJust $ M.lookup (Accepted "url") c

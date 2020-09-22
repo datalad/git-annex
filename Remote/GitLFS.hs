@@ -187,9 +187,9 @@ mySetup ss mu _ c gc = do
 configKnownUrl :: Git.Repo -> Annex (Maybe Git.Repo)
 configKnownUrl r
 	| Git.repoIsUrl r = do
-		l <- readRemoteLog
+		m <- remoteConfigMap
 		g <- Annex.gitRepo
-		case Annex.SpecialRemote.Config.findByRemoteConfig (match g) l of
+		case Annex.SpecialRemote.Config.findByRemoteConfig (match g) m of
 			((u, _, mcu):[]) -> Just <$> go u mcu
 			_ -> return Nothing
 	| otherwise = return Nothing

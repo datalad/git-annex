@@ -72,7 +72,7 @@ startNormalRemote name restparams r
 startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID)) -> CommandStart
 startSpecialRemote name config Nothing = do
 	m <- SpecialRemote.specialRemoteMap
-	confm <- Logs.Remote.readRemoteLog
+	confm <- Logs.Remote.remoteConfigMap
 	Remote.nameToUUID' name >>= \case
 		Right u | u `M.member` m ->
 			startSpecialRemote name config $

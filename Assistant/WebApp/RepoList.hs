@@ -162,7 +162,7 @@ repoList reposelector
 					return $ here : l
 				else return l
 	unconfigured = liftAnnex $ do
-		m <- readRemoteLog
+		m <- remoteConfigMap
 		g <- gitRepo
 		map snd . catMaybes . filter selectedremote 
 			. map (findinfo m g)

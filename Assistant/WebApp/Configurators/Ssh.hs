@@ -209,7 +209,7 @@ postEnableSshGitRemoteR = enableSshRemote getsshinput enableRsyncNet enablesshgi
  -}
 enableSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
 enableSshRemote getsshdata rsyncnetsetup genericsetup u = do
-	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
+	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex remoteConfigMap
 	case (unmangle <$> getsshdata m, lookupName m) of
 		(Just sshdata, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
@@ -424,7 +424,7 @@ getConfirmSshR sshdata u
 		-- Not a UUID we know, so prompt about combining.
 		$(widgetFile "configurators/ssh/combine")
 	handleexisting (Just _) = prepSsh False sshdata $ \sshdata' -> do
-		m <- liftAnnex readRemoteLog
+		m <- liftAnnex remoteConfigMap
 		case fromProposedAccepted <$> (M.lookup typeField =<< M.lookup u m) of
 			Just "gcrypt" -> combineExistingGCrypt sshdata' u
 			_ -> makeSshRepo ExistingRepo sshdata'
@@ -545,7 +545,7 @@ makeSshRepo rs sshdata
 	-- Record the location of the ssh remote in the remote log, so it
 	-- can easily be enabled elsewhere using the webapp.
 	setup r = do
-		m <- readRemoteLog
+		m <- remoteConfigMap
 		let c = fromMaybe M.empty (M.lookup (Remote.uuid r) m)
 		let c' = M.insert (Proposed "location") (Proposed (genSshUrl sshdata)) $
 			M.insert typeField (Proposed "git") $

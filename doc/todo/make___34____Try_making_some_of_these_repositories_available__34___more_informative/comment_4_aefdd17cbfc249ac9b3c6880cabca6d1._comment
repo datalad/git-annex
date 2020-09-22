@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-09-22T16:45:19Z"
+ content="""
+This risks changing the --json output. Eg currently it has:
+
+	{"command":"get","wanted":[{"here":false,"uuid":"7f03b57d-5923-489a-be26-1ab254d0620d","description":"archive-13 [house]"}],"note":"from house...\nrsync failed -- run git annex again to resume file transfer\nUnable to access these remotes: house\nTry making some of these repositories available:\n\t7f03b57d-5923-489a-be26-1ab254d0620d -- archive-13 [house]\n","skipped":[]
+
+The "wanted" list comes from the display of the list of
+uuids, but now there would be up to 3 lists displayed.
+
+I doubt anything uses that, but I don't want to change the json,
+so I suppose it would need to keep the current behavior when json is
+enabled, ugh.
+"""]]

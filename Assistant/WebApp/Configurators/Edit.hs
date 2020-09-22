@@ -71,7 +71,7 @@ getRepoConfig uuid mremote = do
 	void uuidDescMapLoad
 
 	groups <- lookupGroups uuid
-	remoteconfig <- M.lookup uuid <$> readRemoteLog
+	remoteconfig <- M.lookup uuid <$> remoteConfigMap
 	let (repogroup, associateddirectory) = case getStandardGroup groups of
 		Nothing -> (RepoGroupCustom $ unwords $ map fromGroup $ S.toList groups, Nothing)
 		Just g -> (RepoGroupStandard g, associatedDirectory remoteconfig g)
@@ -122,7 +122,7 @@ setRepoConfig uuid mremote oldc newc = do
 			| T.null t -> noop
 			| otherwise -> liftAnnex $ do
 				let dir = takeBaseName $ T.unpack t
-				m <- readRemoteLog
+				m <- remoteConfigMap
 				case M.lookup uuid m of
 					Nothing -> noop
 					Just remoteconfig -> configSet uuid $
@@ -220,7 +220,7 @@ editForm new (RepoUUID uuid)
 				let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
 				config <- liftAnnex $ fromMaybe mempty 
 					. M.lookup uuid
-					<$> readRemoteLog
+					<$> remoteConfigMap
 				let repoInfo = getRepoInfo mremote config
 				let repoEncryption = getRepoEncryption mremote (Just config)
 				$(widgetFile "configurators/edit/repository")
@@ -230,7 +230,7 @@ editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 		Just rmt -> do
 			config <- liftAnnex $ fromMaybe mempty
 				. M.lookup (Remote.uuid rmt)
-				<$> readRemoteLog
+				<$> remoteConfigMap
 			getRepoInfo mr config
 		Nothing -> getRepoInfo Nothing mempty
 	g <- liftAnnex gitRepo
@@ -242,7 +242,7 @@ editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 checkAssociatedDirectory :: RepoConfig -> Maybe Remote -> Annex ()
 checkAssociatedDirectory _ Nothing = noop
 checkAssociatedDirectory cfg (Just r) = do
-	repoconfig <- M.lookup (Remote.uuid r) <$> readRemoteLog
+	repoconfig <- M.lookup (Remote.uuid r) <$> remoteConfigMap
 	case repoGroup cfg of
 		RepoGroupStandard gr -> case associatedDirectory repoconfig gr of
 			Just d -> do

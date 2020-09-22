@@ -59,7 +59,7 @@ getFinishDeleteRepositoryR uuid = deletionPage $ do
 
 	reponame <- liftAnnex $ Remote.prettyUUID uuid
 	{- If it's not listed in the remote log, it must be a git repo. -}
-	gitrepo <- liftAnnex $ M.notMember uuid <$> readRemoteLog
+	gitrepo <- liftAnnex $ M.notMember uuid <$> remoteConfigMap
 	$(widgetFile "configurators/delete/finished")	
 
 getDeleteCurrentRepositoryR :: Handler Html

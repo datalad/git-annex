@@ -80,7 +80,7 @@ getGCryptRemoteName u repoloc = do
 	mname <- ifM (inRepo $ Git.Command.runBool [Param "fetch", Param tmpremote])
 		( do
 			void Annex.Branch.forceUpdate
-			(lookupName <=< M.lookup u) <$> readRemoteLog
+			(lookupName <=< M.lookup u) <$> remoteConfigMap
 		, return Nothing
 		)
 	void $ inRepo $ Git.Remote.Remove.remove tmpremote
