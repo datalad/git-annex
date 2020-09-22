@@ -12,7 +12,7 @@ that have a remote and those without one. Eg:
 	    2370e576-fcef-11ea-a46e-7fce4739e70f -- joey@localhost:/media/usb [usbdrive]
 	    346cad24-fcef-11ea-a275-d3951b734346 -- joey@server:repo [origin]
 	    9808c3da-fcf0-11ea-b47f-cfa6e90a9d4a -- amazon S3
-	  Maybe enable some of these special remotes (git annex initremote):
+	  Maybe enable some of these special remotes (git annex enableremote):
 	    e513795e-1311-431d-8106-917d9528cfbd -- datasets.datalad.org
 	  Maybe add some of these git remotes (git remote add):
 	    2cca1320-6f51-4acf-a778-efdc79f87ab3 -- smaug:/mnt/btrfs/datasets/datalad/crawl/labs/churchland/najafi-2018-nwb
