@@ -1,0 +1,47 @@
+With a recent [overhaul of config management in datalad](https://github.com/datalad/datalad/pull/4829) we got some weird inability to properly finish batched `annex addurl` processes... We tried but could not figure it out, and neither had come up with a minimal reproducer so it was not reported against git-annex yet.  We just decided to let those annex processes be and not wait for them to finish, and they eventually do.
+
+While using that code and debugging other issues, I looked into stderr output (redirected to a file) which collects debug output from that git-annex and underlying datalad external special remote, and it reports at the end (`| ` prefix is added by our logger; copy pasting from GNU screen, some oddities with formatting etc might be present):
+
+```
+| [2020-09-23 08:25:27.029200973] Claiming url 's3://NDAR_Central_3/submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii'
+| [2020-09-23 08:25:27.029300065] /mnt/scrap/tmp/abcd/datalad/venvs/dev3/bin/git-annex-remote-datalad[1] --> CLAIMURL-SUCCESS
+| [2020-09-23 08:25:27.029415237] /mnt/scrap/tmp/abcd/datalad/venvs/dev3/bin/git-annex-remote-datalad[1] <-- CHECKURL s3://NDAR_Central_3/submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii
+| Level 4:datalad.customremotes:Received ['CHECKURL', 's3://NDAR_Central_3/submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii']
+| DEBUG:datalad.downloaders.providers:Returning provider Provider(authenticator=<<S3Authenticato++56 chars++com)>>, credential=<<NDA_S3(name='N++40 chars++'>>)>>, name='NDA', url_res=<<['s3://(ndar_c++27 chars++*)']>>) for url s3://NDAR_Central_3/submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii
+| DEBUG:datalad.downloaders:Acquiring a currently existing lock to establish download session. If stalls - check which process holds b'/home/yoh/.cache/datalad/locks/downloader-auth.lck'
+| DEBUG:datalad.downloaders.credentials:Credential NDA:1 will expire in 11.58h
+| DEBUG:datalad.s3:S3 session: Reusing previous connection to bucket NDAR_Central_3
+| Level 5:datalad.downloaders:Calling out into <bound method BaseDownloader._get_status of S3Downloader(authenticator=<<S3Authenticato++56 chars++com)>>, credential=<<NDA_S3(name='N++40 chars++'>>)>>)> for s3://NDAR_Central_3/submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii
+| Level 3:datalad.downloaders:_fetch('s3://NDAR_Central_3/submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii', cache=False, size=0, allow_redirects=True)
+| DEBUG:datalad.downloaders.credentials:Credential NDA:1 will expire in 11.58h
+| Level 4:datalad.customremotes:Sending 'CHECKURL-CONTENTS 583456 submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii'
+| [2020-09-23 08:25:27.075528502] /mnt/scrap/tmp/abcd/datalad/venvs/dev3/bin/git-annex-remote-datalad[1] --> CHECKURL-CONTENTS 583456 submission_23318/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii
+| [2020-09-23 08:25:45.175701347] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--"]
+| [2020-09-23 08:25:59.100380237] process done ExitSuccess
+| [2020-09-23 08:25:59.230028383] process done ExitFailure 120
+| [2020-09-23 08:25:59.856175419] process done ExitSuccess
+| [2020-09-23 08:25:59.857000087] process done ExitSuccess
+| [2020-09-23 08:25:59.876480876] process done ExitFailure 1
+```
+
+<details>
+<summary>and just FTR here is log from the top level datalad process which invoked that addurls --batch process</summary>
+
+```
+2020-09-23 08:25:44,106 datalad.plugin.addurls {3367135}[DEBUG] from datalad; to sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii [addurl(/mnt/scrap/tmp/abcd/testds-fast-full2/derivatives/abcd-hcp-pipeline/sub-SENSORED/ses-baselineYear1Arm1/anat/sub-SENSORED_ses-baselineYear1Arm1_space-fsLR32k_myelinmap.dscalar.nii)]
+2020-09-23 08:25:44,610 datalad.cmd     {3367135}[DEBUG] Closing stderr of <subprocess.Popen object at 0x7f3a5e597c18>
+2020-09-23 08:25:44,611 datalad.cmd     {3367135}[DEBUG] Closing stdin of <subprocess.Popen object at 0x7f3a5e597c18> and waiting process to finish
+2020-09-23 08:25:47,656 datalad.utils   {3367135}[WARNING] Caught Command '['git', 'annex', 'addurl', '--fast', '--with-files', '--json', '--json-error-messages', '--batch', '--debug']' timed out after 3.0 seconds [subprocess.py:_wait:1616] on trial #1. Sleeping 1.000000 and retrying
+2020-09-23 08:25:51,657 datalad.utils   {3367135}[WARNING] Caught Command '['git', 'annex', 'addurl', '--fast', '--with-files', '--json', '--json-error-messages', '--batch', '--debug']' timed out after 3.0 seconds [subprocess.py:_wait:1616] on trial #2. Sleeping 1.000000 and retrying
+2020-09-23 08:25:55,659 datalad.cmd     {3367135}[WARNING] Batched process <subprocess.Popen object at 0x7f3a5e597c18> did not finish, abandoning it without killing it
+2020-09-23 08:25:55,659 datalad.cmd     {3367135}[DEBUG] Process <subprocess.Popen object at 0x7f3a5e597c18> has finished
+2020-09-23 08:25:59,159 datalad.customremotes {3368204}[Level 4] Received []
+2020-09-23 08:25:59,160 datalad.customremotes {3368204}[DEBUG] Stopping communications of <datalad.customremotes.datalad.DataladAnnexCustomRemote object at 0x7f9d580fd5c0>
+2020-09-23 08:25:59,161 datalad         {3368204}[Level 5] Exiting
+```
+</details>
+
+so I wondered if those `process done ExitFailure ERR` could be made a bit more informative -- what process (PID? command?) has failed and if any information present -- why/how?  That might help to debug what process might have potentially caused a trouble.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
