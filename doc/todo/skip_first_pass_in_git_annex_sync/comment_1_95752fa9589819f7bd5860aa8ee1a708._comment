@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-24T16:42:36Z"
+ content="""
+Yes. That would need a way to introspect a preferred content expression
+to see if the terms used in it match that criteria.
+
+There are some other todos that also are blocked by the ability to do that,
+so I've created a new todo for it.
+[[todo/introspect_preferred_content_expressions]]
+"""]]

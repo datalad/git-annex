@@ -1,0 +1,19 @@
+Several todos need to examine preferred content expressions to see if
+any of the terms in them match some criteria. 
+
+That includes:
+
+* [[todo/sync_fast_import]]
+* [[todo/faster_key_lookup_for_limits]]
+* [[todo/skip_first_pass_in_git_annex_sync]]
+
+Internally, preferred content expressions are compiled
+into a `Matcher (AssumeNotPresent -> MatchInfo -> Annex Bool)`
+
+The presence of the function there is a problem, because haskell does not
+allow comparing functions for equality. So probably what is needed is
+something that contains that function but also indicates which preferred
+content term it's for. 
+
+Or, perhaps, not the term, but the specific criteria needed by each such
+todo.
