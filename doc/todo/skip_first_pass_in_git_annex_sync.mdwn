@@ -1,0 +1,21 @@
+Hello Joey,
+So I have another idea to speed up git annex sync --content --all. As far as I understand, the first pass with --all (walking the worktree) is just to make preferred content expressions which include paths (and lackingcopies=) happy. Now, if the preferred content expression of the local repo and of none of the remotes contain paths, that first pass can be skipped. 
+
+I did some benchmarking by replacing the following in seekSyncContent:
+
+    Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar (WorkTreeItems []))
+
+with:
+
+    Just WantAllKeys -> pure Nothing
+
+and it led to a 2x speedup (with warm cache):
+
+    before:
+    real    0m41.186s
+
+    after:
+    real    0m22.182s
+
+
+This repo has 25641 keys and all of them are in the worktree too.
