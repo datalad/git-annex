@@ -66,6 +66,11 @@ getMatcher' = go =<< Annex.getState Annex.limit
 			s { Annex.limit = CompleteMatcher matcher }
 		return matcher
 
+{- Checks if the user-specified limits contains anything that meets the
+ - condition. -}
+introspect :: (MatchFiles Annex -> Bool) -> Annex Bool
+introspect c = any c <$> getMatcher'
+
 {- Adds something to the limit list, which is built up reversed. -}
 add :: Utility.Matcher.Token (MatchFiles Annex) -> Annex ()
 add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
@@ -138,7 +143,7 @@ matchMagic :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (Provided
 matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = 
 	Right $ MatchFiles
 		{ matchAction = const go
-		, matchNeedsFileName = False
+		, matchNeedsFileName = True
 		, matchNeedsFileContent = True
 		}
   where
@@ -303,7 +308,7 @@ limitLackingCopies approx want = case readish want of
 limitUnused :: MatchFiles Annex
 limitUnused = MatchFiles
 	{ matchAction = go
-	, matchNeedsFileName = False
+	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	}
   where
@@ -390,7 +395,9 @@ limitSize lb vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ MatchFiles
 		{ matchAction = go sz
-		, matchNeedsFileName = False
+		, matchNeedsFileName = case lb of
+			LimitAnnexFiles -> False
+			LimitDiskFiles -> True
 		, matchNeedsFileContent = False
 		}
   where
