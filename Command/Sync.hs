@@ -685,8 +685,6 @@ seekSyncContent o rs currbranch = do
 		go (Left bloom) mvar (AssociatedFile Nothing) k
 
 	go ebloom mvar af k = do
-		-- Run syncFile as a command action so file transfers run
-		-- concurrently.
 		let ai = OnlyActionOn k (ActionItemKey k)
 		startingNoMessage ai $ do
 			whenM (syncFile ebloom rs af k) $
