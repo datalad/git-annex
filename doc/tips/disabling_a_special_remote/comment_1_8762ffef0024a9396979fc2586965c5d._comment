@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-09-24T18:49:02Z"
+ content="""
+Indeed -- I think having `disableremote` (to complement `initremote` and `enableremote`) would make sense.  E.g. I failed to \"disable\" it via config.
+```shell
+(git)lena:/tmp/ds000001[master]
+$> git config remote.datalad.annex-ignore true
+
+$> time SCHEMES=\"datalad-archives\" PATH=~datalad/trash/speedyannex2:$PATH git annex fsck --from datalad --fast --debug sub-01/anat/sub-01_inplaneT2.nii.gz
+[2020-09-24 14:45:48.868954] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2020-09-24 14:45:48.876348] process done ExitSuccess
+[2020-09-24 14:45:48.877109] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-09-24 14:45:48.892383] process done ExitSuccess
+[2020-09-24 14:45:48.893294] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..cdad4332bce8deff94e89ae35e6378ab1b87e4df\",\"--pretty=%H\",\"-n1\"]
+[2020-09-24 14:45:48.899769] process done ExitSuccess
+[2020-09-24 14:45:48.901763] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-09-24 14:45:48.928262] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+git-annex: there is no available git remote named \"datalad\"
+SCHEMES=\"datalad-archives\" PATH=~datalad/trash/speedyannex2:$PATH git annex    0.03s user 0.08s system 87% cpu 0.126 total
+
+$> git annex version | head
+git-annex version: 8.20200309-g07fcace
+
+```
+"""]]
