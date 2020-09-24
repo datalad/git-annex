@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -88,6 +88,7 @@ addInclude = addLimit . limitInclude
 limitInclude :: MkLimit Annex
 limitInclude glob = Right $ MatchFiles
 	{ matchAction = const $ matchGlobFile glob
+	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	}
 
@@ -98,6 +99,7 @@ addExclude = addLimit . limitExclude
 limitExclude :: MkLimit Annex
 limitExclude glob = Right $ MatchFiles
 	{ matchAction = const $ not <$$> matchGlobFile glob
+	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	}
 
@@ -136,6 +138,7 @@ matchMagic :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (Provided
 matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = 
 	Right $ MatchFiles
 		{ matchAction = const go
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = True
 		}
   where
@@ -152,12 +155,14 @@ matchMagic limitname _ _ Nothing _ =
 addUnlocked :: Annex ()
 addUnlocked = addLimit $ Right $ MatchFiles
 	{ matchAction = const $ matchLockStatus False
+	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	}
 
 addLocked :: Annex ()
 addLocked = addLimit $ Right $ MatchFiles
 	{ matchAction = const $ matchLockStatus True
+	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	}
 
@@ -184,6 +189,7 @@ addIn s = do
 	(name, date) = separate (== '@') s
 	use a = Right $ MatchFiles
 		{ matchAction = checkKey . a
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		}
 	inuuid u notpresent key
@@ -211,6 +217,7 @@ limitPresent u = MatchFiles
 			else do
 				us <- Remote.keyLocations key
 				return $ maybe False (`elem` us) u
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
 
@@ -218,6 +225,7 @@ limitPresent u = MatchFiles
 limitInDir :: FilePath -> MatchFiles Annex
 limitInDir dir = MatchFiles 
 	{ matchAction = const go
+	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
 	}
   where
@@ -247,6 +255,7 @@ limitCopies want = case splitc ':' want of
 		Just n -> Right $ MatchFiles
 			{ matchAction = \notpresent -> checkKey $
 				go' n good notpresent
+			, matchNeedsFileName = False
 			, matchNeedsFileContent = False
 			}
 	go' n good notpresent key = do
@@ -268,6 +277,7 @@ limitLackingCopies approx want = case readish want of
 	Just needed -> Right $ MatchFiles
 		{ matchAction = \notpresent mi -> flip checkKey mi $
 			go mi needed notpresent
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		}
 	Nothing -> Left "bad value for number of lacking copies"
@@ -293,6 +303,7 @@ limitLackingCopies approx want = case readish want of
 limitUnused :: MatchFiles Annex
 limitUnused = MatchFiles
 	{ matchAction = go
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
   where
@@ -306,6 +317,7 @@ limitUnused = MatchFiles
 limitAnything :: MatchFiles Annex
 limitAnything = MatchFiles
 	{ matchAction = \_ _ -> return True
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
 
@@ -313,6 +325,7 @@ limitAnything = MatchFiles
 limitNothing :: MatchFiles Annex
 limitNothing = MatchFiles 
 	{ matchAction = \_ _ -> return False
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
 
@@ -332,6 +345,7 @@ limitInAllGroup getgroupmap groupname = Right $ MatchFiles
 			else if not (S.null (S.intersection want notpresent))
 				then return False
 				else checkKey (check want) mi
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
   where
@@ -346,6 +360,7 @@ addInBackend = addLimit . limitInBackend
 limitInBackend :: MkLimit Annex
 limitInBackend name = Right $ MatchFiles
 	{ matchAction = const $ checkKey check
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
   where
@@ -359,6 +374,7 @@ addSecureHash = addLimit $ Right limitSecureHash
 limitSecureHash :: MatchFiles Annex
 limitSecureHash = MatchFiles
 	{ matchAction = const $ checkKey isCryptographicallySecure
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
 
@@ -374,6 +390,7 @@ limitSize lb vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ MatchFiles
 		{ matchAction = go sz
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		}
   where
@@ -399,6 +416,7 @@ limitMetaData s = case parseMetaDataMatcher s of
 	Left e -> Left e
 	Right (f, matching) -> Right $ MatchFiles
 		{ matchAction = const $ checkKey (check f matching)
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		}
   where
@@ -419,6 +437,7 @@ addTimeLimit duration = do
 					shutdown True
 					liftIO $ exitWith $ ExitFailure 101
 				else return True
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		}
 
@@ -427,6 +446,7 @@ addAccessedWithin duration = do
 	now <- liftIO getPOSIXTime
 	addLimit $ Right $ MatchFiles
 		{ matchAction = const $ checkKey $ check now
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
 		}
   where

@@ -267,6 +267,7 @@ call :: Either String (FileMatcher Annex) -> ParseResult (MatchFiles Annex)
 call (Right sub) = Right $ Operation $ MatchFiles
 	{ matchAction = \notpresent mi ->
 		matchMrun sub $ \o -> matchAction o notpresent mi
+	, matchNeedsFileName = any matchNeedsFileName sub
 	, matchNeedsFileContent = any matchNeedsFileContent sub
 	}
 call (Left err) = Left err

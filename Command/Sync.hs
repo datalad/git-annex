@@ -57,6 +57,7 @@ import Annex.Drop
 import Annex.UUID
 import Logs.UUID
 import Logs.Export
+import Logs.PreferredContent
 import Annex.AutoMerge
 import Annex.AdjustedBranch
 import Annex.Ssh
@@ -65,6 +66,7 @@ import Annex.UpdateInstead
 import Annex.Export
 import Annex.TaggedPush
 import Annex.CurrentBranch
+import Types.FileMatcher
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
@@ -633,9 +635,11 @@ newer remote b = do
  - (Or, when in an ajusted branch where some files are hidden, at files in
  - the original branch.)
  -
- - With --all, makes a second pass over all keys.
- - This ensures that preferred content expressions that match on
- - filenames work, even when in --all mode.
+ - With --all, when preferred content expressions look at filenames,
+ - makes a first pass over the files in the work tree so those preferred
+ - content expressions will match. The second pass is over all keys,
+ - and only preferred content expressions that don't look at filenames
+ - will match.
  -
  - Returns true if any file transfers were made.
  -
@@ -646,7 +650,12 @@ seekSyncContent _ [] _ = return False
 seekSyncContent o rs currbranch = do
 	mvar <- liftIO newEmptyMVar
 	bloom <- case keyOptions o of
-		Just WantAllKeys -> Just <$> genBloomFilter (seekworktree mvar (WorkTreeItems []))
+		Just WantAllKeys -> ifM preferredcontentmatchesfilenames
+			( Just <$> genBloomFilter (seekworktree mvar (WorkTreeItems []))
+			, do
+				liftIO $ print "skipped first pass"
+				pure Nothing
+			)
 		_ -> case currbranch of
                 	(Just origbranch, Just adj) | adjustmentHidesFiles adj -> do
 				l <- workTreeItems' (AllowHidden True) ww (contentOfOption o)
@@ -692,6 +701,12 @@ seekSyncContent o rs currbranch = do
 				void $ liftIO $ tryPutMVar mvar ()
 			next $ return True
 
+	preferredcontentmatchesfilenames =
+		preferredcontentmatchesfilenames' Nothing
+		<||> anyM (preferredcontentmatchesfilenames' . Just . Remote.uuid) rs
+	preferredcontentmatchesfilenames' =
+		introspectPreferredRequiredContent matchNeedsFileName
+
 {- If it's preferred content, and we don't have it, get it from one of the
  - listed remotes (preferring the cheaper earlier ones).
  -
@@ -717,11 +732,13 @@ syncFile ebloom rs af k = do
 	u <- getUUID
 	let locs' = concat [if inhere || got then [u] else [], putrs, locs]
 
-	-- A bloom filter is populated with all the keys in the first pass.
-	-- On the second pass, avoid dropping keys that were seen in the
-	-- first pass, which would happen otherwise when preferred content
-	-- matches on the filename, which is not available in the second
-	-- pass.
+	-- To handle --all, a bloom filter is populated with all the keys
+	-- of files in the working tree in the first pass. On the second
+	-- pass, avoid dropping keys that were seen in the first pass, which
+	-- would happen otherwise when preferred content matches on the
+	-- filename, which is not available in the second pass.
+	-- (When the preferred content expressions do not match on
+	-- filenames, the first pass is skipped for speed.)
 	--
 	-- When there's a false positive in the bloom filter, the result
 	-- is keeping a key that preferred content doesn't really want.

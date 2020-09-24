@@ -18,6 +18,9 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
     message, with some hints for the user for what to do.
   * Improve --debug output to show pid of processes that are started and
     stopped.
+  * sync --all: Sped up seeking to around twice as fast, by avoiding a
+    pass over the worktree files when preferred content expressions of the
+    local repo and remotes don't use include=/exclude=.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 

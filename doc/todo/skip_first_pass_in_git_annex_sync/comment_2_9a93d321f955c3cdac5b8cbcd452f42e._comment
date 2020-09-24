@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-09-24T19:04:32Z"
+ content="""
+One side effect of this optimisation is that, while sync --all used to
+tell the filenames it was getting or dropping, when operating on files
+in the working tree, when the optimsation is enabled it will only
+display the keys. So, its behavior in 2 different repos might seem
+inconsistent to a user, who doesn't know about all these gory 2 pass details.
+
+I think, if that became a problem, the best fix would be to only display
+the keys, and never the worktree filenames, even when running the first
+pass. But I'll wait and see if that needs to be done, I suppose.
+"""]]

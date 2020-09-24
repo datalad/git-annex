@@ -1,6 +1,6 @@
 {- git-annex preferred content matcher configuration
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ module Logs.PreferredContent (
 	defaultStandardGroup,
 	preferredRequiredMapsLoad,
 	preferredRequiredMapsLoad',
+	introspectPreferredRequiredContent,
 	prop_standardGroups_parse,
 ) where
 
@@ -60,6 +61,16 @@ checkMap getmap mu notpresent mkey afile d = do
 	case M.lookup u m of
 		Nothing -> return d
 		Just matcher -> checkMatcher matcher mkey afile notpresent (return d) (return d)
+
+{- Checks if the preferred or required content for the specified repository
+ - (or the current repository if none is specified) contains any terms
+ - that meet the condition. -}
+introspectPreferredRequiredContent :: (MatchFiles Annex -> Bool) -> Maybe UUID -> Annex Bool
+introspectPreferredRequiredContent c mu = do
+	u <- maybe getUUID return mu
+	check u preferredContentMap <||> check u requiredContentMap
+  where
+	check u mk = mk >>= return . maybe False (any c) . M.lookup u
 
 preferredContentMap :: Annex (FileMatcherMap Annex)
 preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad preferredContentTokens) return

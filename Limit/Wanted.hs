@@ -15,12 +15,14 @@ import Types.FileMatcher
 addWantGet :: Annex ()
 addWantGet = addLimit $ Right $ MatchFiles
 	{ matchAction = const $ checkWant $ wantGet False Nothing
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
 
 addWantDrop :: Annex ()
 addWantDrop = addLimit $ Right $ MatchFiles
 	{ matchAction = const $ checkWant $ wantDrop False Nothing Nothing
+	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	}
 

@@ -57,8 +57,11 @@ type AssumeNotPresent = S.Set UUID
 
 data MatchFiles a = MatchFiles 
 	{ matchAction :: AssumeNotPresent -> MatchInfo -> a Bool
+	, matchNeedsFileName :: Bool
+	-- ^ does the matchAction need a filename in order to match?
 	, matchNeedsFileContent :: Bool
-	-- ^ does the matchAction need the file content to be present?
+	-- ^ does the matchAction need the file content to be present in
+	-- order to succeed?
 	}
 
 type FileMatcher a = Matcher (MatchFiles a)

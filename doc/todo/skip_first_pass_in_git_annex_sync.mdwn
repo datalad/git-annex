@@ -19,3 +19,5 @@ and it led to a 2x speedup (with warm cache):
 
 
 This repo has 25641 keys and all of them are in the worktree too.
+
+> [[done]]! --[[Joey]]
