@@ -21,6 +21,8 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
   * sync --all: Sped up seeking to around twice as fast, by avoiding a
     pass over the worktree files when preferred content expressions of the
     local repo and remotes don't use include=/exclude=.
+  * Sped up seeking for files to operate on, when using options like
+    --copies or --in, by around 20%
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 

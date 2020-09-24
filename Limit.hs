@@ -95,6 +95,8 @@ limitInclude glob = Right $ MatchFiles
 	{ matchAction = const $ matchGlobFile glob
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
 	}
 
 {- Add a limit to skip files that match the glob. -}
@@ -106,6 +108,8 @@ limitExclude glob = Right $ MatchFiles
 	{ matchAction = const $ not <$$> matchGlobFile glob
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
 	}
 
 matchGlobFile :: String -> MatchInfo -> Annex Bool
@@ -145,6 +149,8 @@ matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob =
 		{ matchAction = const go
 		, matchNeedsFileName = True
 		, matchNeedsFileContent = True
+		, matchNeedsKey = False
+		, matchNeedsLocationLog = False
 		}
   where
  	cglob = compileGlob glob CaseSensative -- memoized
@@ -162,6 +168,8 @@ addUnlocked = addLimit $ Right $ MatchFiles
 	{ matchAction = const $ matchLockStatus False
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
 	}
 
 addLocked :: Annex ()
@@ -169,6 +177,8 @@ addLocked = addLimit $ Right $ MatchFiles
 	{ matchAction = const $ matchLockStatus True
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
 	}
 
 matchLockStatus :: Bool -> MatchInfo -> Annex Bool
@@ -188,14 +198,16 @@ addIn s = do
 	u <- Remote.nameToUUID name
 	hereu <- getUUID
 	addLimit $ if u == hereu && null date
-		then use inhere
-		else use (inuuid u)
+		then use True inhere
+		else use False (inuuid u)
   where
 	(name, date) = separate (== '@') s
-	use a = Right $ MatchFiles
+	use inhere a = Right $ MatchFiles
 		{ matchAction = checkKey . a
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
+		, matchNeedsKey = True
+		, matchNeedsLocationLog = not inhere
 		}
 	inuuid u notpresent key
 		| null date = do
@@ -224,6 +236,8 @@ limitPresent u = MatchFiles
 				return $ maybe False (`elem` us) u
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
+	, matchNeedsKey = True
+	, matchNeedsLocationLog = not (isNothing u)
 	}
 
 {- Limit to content that is in a directory, anywhere in the repository tree -}
@@ -232,6 +246,8 @@ limitInDir dir = MatchFiles
 	{ matchAction = const go
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
 	}
   where
 	go (MatchingFile fi) = checkf $ fromRawFilePath $ matchFile fi
@@ -262,6 +278,8 @@ limitCopies want = case splitc ':' want of
 				go' n good notpresent
 			, matchNeedsFileName = False
 			, matchNeedsFileContent = False
+			, matchNeedsKey = True
+			, matchNeedsLocationLog = True
 			}
 	go' n good notpresent key = do
 		us <- filter (`S.notMember` notpresent)
@@ -284,6 +302,8 @@ limitLackingCopies approx want = case readish want of
 			go mi needed notpresent
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
+		, matchNeedsKey = True
+		, matchNeedsLocationLog = True
 		}
 	Nothing -> Left "bad value for number of lacking copies"
   where
@@ -310,6 +330,8 @@ limitUnused = MatchFiles
 	{ matchAction = go
 	, matchNeedsFileName = True
 	, matchNeedsFileContent = False
+	, matchNeedsKey = True
+	, matchNeedsLocationLog = False
 	}
   where
  	go _ (MatchingFile _) = return False
@@ -324,6 +346,8 @@ limitAnything = MatchFiles
 	{ matchAction = \_ _ -> return True
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
 	}
 
 {- Limit that never matches. -}
@@ -332,6 +356,8 @@ limitNothing = MatchFiles
 	{ matchAction = \_ _ -> return False
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
 	}
 
 {- Adds a limit to skip files not believed to be present in all
@@ -352,6 +378,8 @@ limitInAllGroup getgroupmap groupname = Right $ MatchFiles
 				else checkKey (check want) mi
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
+	, matchNeedsKey = True
+	, matchNeedsLocationLog = True
 	}
   where
 	check want key = do
@@ -367,6 +395,8 @@ limitInBackend name = Right $ MatchFiles
 	{ matchAction = const $ checkKey check
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
+	, matchNeedsKey = True
+	, matchNeedsLocationLog = False
 	}
   where
 	check key = pure $ fromKey keyVariety key == variety
@@ -381,6 +411,8 @@ limitSecureHash = MatchFiles
 	{ matchAction = const $ checkKey isCryptographicallySecure
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
+	, matchNeedsKey = True
+	, matchNeedsLocationLog = False
 	}
 
 {- Adds a limit to skip files that are too large or too small -}
@@ -399,6 +431,8 @@ limitSize lb vs s = case readSize dataUnits s of
 			LimitAnnexFiles -> False
 			LimitDiskFiles -> True
 		, matchNeedsFileContent = False
+		, matchNeedsKey = False
+		, matchNeedsLocationLog = False
 		}
   where
 	go sz _ (MatchingFile fi) = case lb of
@@ -425,6 +459,8 @@ limitMetaData s = case parseMetaDataMatcher s of
 		{ matchAction = const $ checkKey (check f matching)
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
+		, matchNeedsKey = True
+		, matchNeedsLocationLog = False
 		}
   where
 	check f matching k = not . S.null 
@@ -446,6 +482,8 @@ addTimeLimit duration = do
 				else return True
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
+		, matchNeedsKey = False
+		, matchNeedsLocationLog = False
 		}
 
 addAccessedWithin :: Duration -> Annex ()
@@ -455,6 +493,8 @@ addAccessedWithin duration = do
 		{ matchAction = const $ checkKey $ check now
 		, matchNeedsFileName = False
 		, matchNeedsFileContent = False
+		, matchNeedsKey = False
+		, matchNeedsLocationLog = False
 		}
   where
 	check now k = inAnnexCheck k $ \f ->

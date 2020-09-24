@@ -11,3 +11,5 @@ log for limits that need that), otherwise before getting the key.
 > So this needs a way to introspect a limit to see if the terms used in it
 > match some criteria. Another todo that also needs that is
 > [[sync_fast_import]] --[[Joey]]
+
+[[done]] --[[Joey]]

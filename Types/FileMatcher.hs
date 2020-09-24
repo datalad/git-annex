@@ -62,6 +62,10 @@ data MatchFiles a = MatchFiles
 	, matchNeedsFileContent :: Bool
 	-- ^ does the matchAction need the file content to be present in
 	-- order to succeed?
+	, matchNeedsKey :: Bool
+	-- ^ does the matchAction look at information about the key?
+	, matchNeedsLocationLog :: Bool
+	-- ^ does the matchAction look at the location log?
 	}
 
 type FileMatcher a = Matcher (MatchFiles a)

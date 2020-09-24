@@ -278,6 +278,18 @@ seekFiltered a fs = do
 	process matcher v@(_si, f) =
 		whenM (matcher $ MatchingFile $ FileInfo f f) (a v)
 
+data MatcherInfo = MatcherInfo
+	{ matcherAction :: MatchInfo -> Annex Bool
+	, matcherNeedsFileName :: Bool
+	, matcherNeedsKey :: Bool
+	, matcherNeedsLocationLog :: Bool
+	}
+
+checkMatcherWhen :: MatcherInfo -> Bool -> MatchInfo -> Annex () -> Annex ()
+checkMatcherWhen mi c i a
+	| c = whenM (matcherAction mi i) a
+	| otherwise = a
+
 -- This is significantly faster than using lookupKey after seekFiltered,
 -- because of the way data is streamed through git cat-file.
 --
@@ -285,7 +297,11 @@ seekFiltered a fs = do
 seekFilteredKeys :: AnnexedFileSeeker -> Annex [(SeekInput, (RawFilePath, Git.Sha, FileMode))] -> Annex ()
 seekFilteredKeys seeker listfs = do
 	g <- Annex.gitRepo
-	matcher <- Limit.getMatcher
+	mi <- MatcherInfo
+		<$> Limit.getMatcher
+		<*> Limit.introspect matchNeedsFileName
+		<*> Limit.introspect matchNeedsKey
+		<*> Limit.introspect matchNeedsLocationLog
 	config <- Annex.getGitConfig
 	-- Run here, not in the async, because it could throw an exception
 	-- The list should be built lazily.
@@ -293,93 +309,104 @@ seekFilteredKeys seeker listfs = do
 	catObjectMetaDataStream g $ \mdfeeder mdcloser mdreader ->
 		catObjectStream g $ \ofeeder ocloser oreader -> do
 			processertid <- liftIO . async =<< forkState
-				(process matcher ofeeder mdfeeder mdcloser False l)
+				(process mi ofeeder mdfeeder mdcloser False l)
 			mdprocessertid <- liftIO . async =<< forkState
-				(mdprocess matcher mdreader ofeeder ocloser)
-			if usesLocationLog seeker
+				(mdprocess mi mdreader ofeeder ocloser)
+			if usesLocationLog seeker || matcherNeedsLocationLog mi
 				then catObjectStream g $ \lfeeder lcloser lreader -> do
 					precachertid <- liftIO . async =<< forkState
-						(precacher config oreader lfeeder lcloser)
-					precachefinisher lreader
+						(precacher mi config oreader lfeeder lcloser)
+					precachefinisher mi lreader
 					join (liftIO (wait precachertid))
-				else finisher oreader
+				else finisher mi oreader
 			join (liftIO (wait mdprocessertid))
 			join (liftIO (wait processertid))
   where
+	finisher mi oreader = liftIO oreader >>= \case
+		Just ((si, f), content) -> do
+			keyaction f mi content $ 
+				commandAction . startAction seeker si f
+			finisher mi oreader
+		Nothing -> return ()
+
+	precachefinisher mi lreader = liftIO lreader >>= \case
+		Just ((logf, (si, f), k), logcontent) -> do
+			maybe noop (Annex.BranchState.setCache logf) logcontent
+			checkMatcherWhen mi
+				(matcherNeedsLocationLog mi && not (matcherNeedsFileName mi))
+				(MatchingKey k (AssociatedFile (Just f)))
+				(commandAction $ startAction seeker si f k)
+			precachefinisher mi lreader
+		Nothing -> return ()
+	
+	precacher mi config oreader lfeeder lcloser = liftIO oreader >>= \case
+		Just ((si, f), content) -> do
+			keyaction f mi content $ \k -> 
+				let logf = locationLogFile config k
+				    ref = Git.Ref.branchFileRef Annex.Branch.fullname logf
+				in liftIO $ lfeeder ((logf, (si, f), k), ref)
+			precacher mi config oreader lfeeder lcloser
+		Nothing -> liftIO $ void lcloser
+	
+	feedmatches mi ofeeder si f sha = checkMatcherWhen mi
+		-- When the matcher needs a key or location log 
+		-- (and does not need a worktree filename), it will be
+		-- checked later, to avoid a slow lookup here.
+		(not ((matcherNeedsKey mi || matcherNeedsLocationLog mi) 
+			&& not (matcherNeedsFileName mi)))
+		(MatchingFile $ FileInfo f f)
+		(liftIO $ ofeeder ((si, f), sha))
+
+	keyaction f mi content a = 
+		case parseLinkTargetOrPointerLazy =<< content of
+			Just k -> checkMatcherWhen mi
+				(matcherNeedsKey mi && not (matcherNeedsFileName mi || matcherNeedsLocationLog mi))
+				(MatchingKey k (AssociatedFile (Just f)))
+				(checkpresence k (a k))
+			Nothing -> noop
+	
 	checkpresence k cont = case checkContentPresent seeker of
 		Just v -> do
 			present <- inAnnex k
 			when (present == v) cont
 		Nothing -> cont
 
-	finisher oreader = liftIO oreader >>= \case
-		Just ((si, f), content) -> do
-			case parseLinkTargetOrPointerLazy =<< content of
-				Just k -> checkpresence k $
-					commandAction $
-						startAction seeker si f k
-				Nothing -> noop
-			finisher oreader
-		Nothing -> return ()
-
-	precachefinisher lreader = liftIO lreader >>= \case
-		Just ((logf, (si, f), k), logcontent) -> do
-			maybe noop (Annex.BranchState.setCache logf) logcontent
-			commandAction $ startAction seeker si f k
-			precachefinisher lreader
-		Nothing -> return ()
-	
-	precacher config oreader lfeeder lcloser = liftIO oreader >>= \case
-		Just ((si, f), content) -> do
-			case parseLinkTargetOrPointerLazy =<< content of
-				Just k -> checkpresence k $
-					let logf = locationLogFile config k
-					    ref = Git.Ref.branchFileRef Annex.Branch.fullname logf
-					in liftIO $ lfeeder ((logf, (si, f), k), ref)
-				Nothing -> noop
-			precacher config oreader lfeeder lcloser
-		Nothing -> liftIO $ void lcloser
-	
-	feedmatches matcher ofeeder si f sha = 
-		whenM (matcher $ MatchingFile $ FileInfo f f) $
-			liftIO $ ofeeder ((si, f), sha)
-
-	process matcher ofeeder mdfeeder mdcloser seenpointer ((si, (f, sha, mode)):rest) =
+	process mi ofeeder mdfeeder mdcloser seenpointer ((si, (f, sha, mode)):rest) =
 		case Git.toTreeItemType mode of
 			Just Git.TreeSymlink -> do
 				whenM (exists f) $
 					-- Once a pointer file has been seen,
 					-- symlinks have to be sent via the 
-					-- metadata processor too. That is slightly
-					-- slower, but preserves the requested
-					-- file order.
+					-- metadata processor too. That is
+					-- slightly slower, but preserves the
+					-- requested file order.
 					if seenpointer
 						then liftIO $ mdfeeder ((si, f), sha)
-						else feedmatches matcher ofeeder si f sha
-				process matcher ofeeder mdfeeder mdcloser seenpointer rest
+						else feedmatches mi ofeeder si f sha
+				process mi ofeeder mdfeeder mdcloser seenpointer rest
 			Just Git.TreeSubmodule ->
-				process matcher ofeeder mdfeeder mdcloser seenpointer rest
+				process mi ofeeder mdfeeder mdcloser seenpointer rest
 			-- Might be a pointer file, might be other
 			-- file in git, possibly large. Avoid catting
 			-- large files by first looking up the size.
 			Just _ -> do
 				whenM (exists f) $
 					liftIO $ mdfeeder ((si, f), sha)
-				process matcher ofeeder mdfeeder mdcloser True rest
+				process mi ofeeder mdfeeder mdcloser True rest
 			Nothing ->
-				process matcher ofeeder mdfeeder mdcloser seenpointer rest
+				process mi ofeeder mdfeeder mdcloser seenpointer rest
 	process _ _ _ mdcloser _ [] = liftIO $ void mdcloser
 	
 	-- Check if files exist, because a deleted file will still be
 	-- listed by ls-tree, but should not be processed.
 	exists p = isJust <$> liftIO (catchMaybeIO $ R.getSymbolicLinkStatus p)
 
-	mdprocess matcher mdreader ofeeder ocloser = liftIO mdreader >>= \case
+	mdprocess mi mdreader ofeeder ocloser = liftIO mdreader >>= \case
 		Just ((si, f), Just (sha, size, _type))
 			| size < maxPointerSz -> do
-				feedmatches matcher ofeeder si f sha
-				mdprocess matcher mdreader ofeeder ocloser
-		Just _ -> mdprocess matcher mdreader ofeeder ocloser
+				feedmatches mi ofeeder si f sha
+				mdprocess mi mdreader ofeeder ocloser
+		Just _ -> mdprocess mi mdreader ofeeder ocloser
 		Nothing -> liftIO $ void ocloser
 
 seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> WorkTreeItems -> Annex [(SeekInput, a)]

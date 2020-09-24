@@ -269,5 +269,6 @@ call (Right sub) = Right $ Operation $ MatchFiles
 		matchMrun sub $ \o -> matchAction o notpresent mi
 	, matchNeedsFileName = any matchNeedsFileName sub
 	, matchNeedsFileContent = any matchNeedsFileContent sub
+	, matchNeedsKey = any matchNeedsKey sub
 	}
 call (Left err) = Left err
