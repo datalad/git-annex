@@ -652,9 +652,7 @@ seekSyncContent o rs currbranch = do
 	bloom <- case keyOptions o of
 		Just WantAllKeys -> ifM preferredcontentmatchesfilenames
 			( Just <$> genBloomFilter (seekworktree mvar (WorkTreeItems []))
-			, do
-				liftIO $ print "skipped first pass"
-				pure Nothing
+			, pure Nothing
 			)
 		_ -> case currbranch of
                 	(Just origbranch, Just adj) | adjustmentHidesFiles adj -> do
