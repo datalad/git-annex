@@ -59,3 +59,7 @@ error: git-annex died of signal 6
 
 
 I'm a new git-annex user and besides these occasional issues with concurrent with git-annex-copy I found it really easy to get going with git-annex and to manage my imported files. In particular I really appreciate the extensive documentation!
+
+> [[done]], at least the parts of this that I was able to reproduce are
+> fixed and it seems quite likely the same underlying problem could cause
+> other strange behavior. --[[Joey]]
