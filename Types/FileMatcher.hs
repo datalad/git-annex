@@ -55,12 +55,16 @@ type MkLimit a = String -> Either String (MatchFiles a)
 
 type AssumeNotPresent = S.Set UUID
 
-type MatchFiles a = AssumeNotPresent -> MatchInfo -> a Bool
+data MatchFiles a = MatchFiles 
+	{ matchAction :: AssumeNotPresent -> MatchInfo -> a Bool
+	, matchNeedsFileContent :: Bool
+	-- ^ does the matchAction need the file content to be present?
+	}
 
 type FileMatcher a = Matcher (MatchFiles a)
 
 -- This is a matcher that can have tokens added to it while it's being
 -- built, and once complete is compiled to an unchangable matcher.
 data ExpandableMatcher a
-	= BuildingMatcher [Token (MatchInfo -> a Bool)]
-	| CompleteMatcher (Matcher (MatchInfo -> a Bool))
+	= BuildingMatcher [Token (MatchFiles a)]
+	| CompleteMatcher (Matcher (MatchFiles a))

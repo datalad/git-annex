@@ -10,12 +10,12 @@
  - Is forgiving about misplaced closing parens, so "foo and (bar or baz"
  - will be handled, as will "foo and ( bar or baz ) )"
  -
- - Copyright 2011-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE Rank2Types, KindSignatures #-}
+{-# LANGUAGE Rank2Types, KindSignatures, DeriveFoldable #-}
 
 module Utility.Matcher (
 	Token(..),
@@ -43,7 +43,7 @@ data Matcher op = MAny
 	| MOr (Matcher op) (Matcher op)
 	| MNot (Matcher op)
 	| MOp op
-	deriving (Show, Eq)
+	deriving (Show, Eq, Foldable)
 
 {- Converts a word of syntax into a token. Doesn't handle operations. -}
 syntaxToken :: String -> Either String (Token op)

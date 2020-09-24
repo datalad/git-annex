@@ -91,7 +91,8 @@ seek o = do
 			, liftIO exitFailure
 			)
   where
-	checkmatcher matcher = matchMrun matcher $ \a -> a S.empty (matchinfo o)
+	checkmatcher matcher = matchMrun matcher $ \op ->
+		matchAction op S.empty (matchinfo o)
 
 bail :: String -> IO a
 bail s = do

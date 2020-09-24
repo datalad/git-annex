@@ -78,7 +78,7 @@ checkMatcher matcher mkey afile notpresent notconfigured d
 
 checkMatcher' :: FileMatcher Annex -> MatchInfo -> AssumeNotPresent -> Annex Bool
 checkMatcher' matcher mi notpresent =
-	matchMrun matcher $ \a -> a notpresent mi
+	matchMrun matcher $ \o -> matchAction o notpresent mi
 
 fileMatchInfo :: RawFilePath -> Annex MatchInfo
 fileMatchInfo file = do
@@ -264,6 +264,9 @@ usev :: MkLimit Annex -> String -> ParseResult (MatchFiles Annex)
 usev a v = Operation <$> a v
 
 call :: Either String (FileMatcher Annex) -> ParseResult (MatchFiles Annex)
-call (Right sub) = Right $ Operation $ \notpresent mi ->
-	matchMrun sub $ \a -> a notpresent mi
+call (Right sub) = Right $ Operation $ MatchFiles
+	{ matchAction = \notpresent mi ->
+		matchMrun sub $ \o -> matchAction o notpresent mi
+	, matchNeedsFileContent = any matchNeedsFileContent sub
+	}
 call (Left err) = Left err
