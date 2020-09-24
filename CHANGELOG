@@ -16,6 +16,8 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
   * addunused: Don't check .gitignores when adding files.
   * Improve the "Try making some of these repositories available"
     message, with some hints for the user for what to do.
+  * Improve --debug output to show pid of processes that are started and
+    stopped.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 

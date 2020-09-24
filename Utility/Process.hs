@@ -173,8 +173,9 @@ startInteractiveProcess cmd args environ = do
 -- | Wrapper around 'System.Process.createProcess' that does debug logging.
 createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
 createProcess p = do
-	debugProcess p
-	Utility.Process.Shim.createProcess p
+	r@(_, _, _, h) <- Utility.Process.Shim.createProcess p
+	debugProcess p h
+	return r
 
 -- | Wrapper around 'System.Process.withCreateProcess' that does debug logging.
 withCreateProcess :: CreateProcess -> (Maybe Handle -> Maybe Handle -> Maybe Handle -> ProcessHandle -> IO a) -> IO a
@@ -182,11 +183,14 @@ withCreateProcess p action = bracket (createProcess p) cleanupProcess
 	(\(m_in, m_out, m_err, ph) -> action m_in m_out m_err ph)
 
 -- | Debugging trace for a CreateProcess.
-debugProcess :: CreateProcess -> IO ()
-debugProcess p = debugM "Utility.Process" $ unwords
-	[ action ++ ":"
-	, showCmd p
-	]
+debugProcess :: CreateProcess -> ProcessHandle -> IO ()
+debugProcess p h = do
+	pid <- getPid h
+	debugM "Utility.Process" $ unwords
+		[ describePid pid
+		, action ++ ":"
+		, showCmd p
+		]
   where
 	action
 		| piped (std_in p) && piped (std_out p) = "chat"
@@ -196,11 +200,17 @@ debugProcess p = debugM "Utility.Process" $ unwords
 	piped Inherit = False
 	piped _ = True
 
+describePid :: Maybe Utility.Process.Shim.Pid -> String
+describePid Nothing = "process"
+describePid (Just p) = "process [" ++  show p ++ "]"
+
 -- | Wrapper around 'System.Process.waitForProcess' that does debug logging.
 waitForProcess ::  ProcessHandle -> IO ExitCode
 waitForProcess h = do
+	-- Have to get pid before waiting, which closes the ProcessHandle.
+	pid <- getPid h
 	r <- Utility.Process.Shim.waitForProcess h
-	debugM "Utility.Process" ("process done " ++ show r)
+	debugM "Utility.Process" (describePid pid ++ " done " ++ show r)
 	return r
 
 cleanupProcess :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO () 

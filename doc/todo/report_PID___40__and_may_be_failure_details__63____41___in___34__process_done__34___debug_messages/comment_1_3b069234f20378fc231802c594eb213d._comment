@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-24T16:32:14Z"
+ content="""
+I've added the pid.
+
+This happens at a layer that only knows the process exited, not what it was
+used for. Of course if we know the process in question the higher layer
+that uses it could be made to log something more informative, if
+the nonzero exit is really unexpected.
+"""]]
