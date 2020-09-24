@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="is -J shared between workers and ASYNC or &quot;multipliticative&quot;?"
+ date="2020-09-24T15:37:20Z"
+ content="""
+question: is ASYNC and parallel workers in annex share the `-J` somehow?  I.e. if I start `annex get -J3 .` it would create three workers and then possibly talk to special remote(s).  Special remotes then might announce support of ASYNC and accept multiple jobs.  Would it be 3 active jobs across all workers+async or it would be up to 3*3=9 active jobs if every worker supports ASYNC?
+"""]]
