@@ -656,6 +656,7 @@ seekSyncContent o rs currbranch = do
 				l <- workTreeItems ww (contentOfOption o)
 				seekworktree mvar l (const noop)
 				pure Nothing
+	waitForAllRunningCommandActions
 	withKeyOptions' (keyOptions o) False
 		(return (commandAction . gokey mvar bloom))
 		(const noop)
