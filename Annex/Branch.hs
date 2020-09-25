@@ -393,24 +393,26 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 
 {- Lists all files on the branch. including ones in the journal
  - that have not been committed yet. There may be duplicates in the list. -}
-files :: Annex [RawFilePath]
+files :: Annex ([RawFilePath], IO Bool)
 files = do
 	_  <- update
+	(bfs, cleanup) <- branchFiles
 	-- ++ forces the content of the first list to be buffered in memory,
 	-- so use getJournalledFilesStale which should be much smaller most
 	-- of the time. branchFiles will stream as the list is consumed.
-	(++)
+	l <- (++)
 		<$> (map toRawFilePath <$> getJournalledFilesStale)
-		<*> branchFiles
+		<*> pure bfs
+	return (l, cleanup)
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
-branchFiles :: Annex [RawFilePath]
+branchFiles :: Annex ([RawFilePath], IO Bool)
 branchFiles = withIndex $ inRepo branchFiles'
 
-branchFiles' :: Git.Repo -> IO [RawFilePath]
-branchFiles' = Git.Command.pipeNullSplitZombie'
-	(lsTreeParams Git.LsTree.LsTreeRecursive fullname [Param "--name-only"])
+branchFiles' :: Git.Repo -> IO ([RawFilePath], IO Bool)
+branchFiles' = Git.Command.pipeNullSplit' $
+	lsTreeParams Git.LsTree.LsTreeRecursive fullname [Param "--name-only"]
 
 {- Populates the branch's index file with the current branch contents.
  - 
@@ -620,10 +622,11 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		remoteconfigmap <- calcRemoteConfigMap <$> getStaged remoteLog
 		-- partially apply, improves performance
 		let changers' = map (\c -> c config trustmap remoteconfigmap) changers
-		fs <- branchFiles
+		(fs, cleanup) <- branchFiles
 		forM_ fs $ \f -> do
 			content <- getStaged f
 			apply changers' f content
+		liftIO $ void cleanup
 	apply [] _ _ = return ()
 	apply (changer:rest) file content = case changer file content of
 		PreserveFile -> apply rest file content

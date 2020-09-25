@@ -134,12 +134,6 @@ pipeNullSplitStrict params repo = do
 	s <- pipeReadStrict params repo
 	return $ filter (not . S.null) $ S.split 0 s
 
-pipeNullSplitZombie :: [CommandParam] -> Repo -> IO [L.ByteString]
-pipeNullSplitZombie params repo = leaveZombie <$> pipeNullSplit params repo
-
-pipeNullSplitZombie' :: [CommandParam] -> Repo -> IO [S.ByteString]
-pipeNullSplitZombie' params repo = leaveZombie <$> pipeNullSplit' params repo
-
 {- Doesn't run the cleanup action. A zombie results. -}
 leaveZombie :: (a, IO Bool) -> a
 leaveZombie = fst

@@ -532,8 +532,9 @@ cachedRemoteData u = do
 			let combinedata d uk = finishCheck uk >>= \case
 				Nothing -> return d
 				Just k -> return $ addKey k d
-			v <- lift $ foldM combinedata emptyKeyInfo
-				=<< loggedKeysFor' u
+			(ks, cleanup) <- lift $ loggedKeysFor' u
+			v <- lift $ foldM combinedata emptyKeyInfo ks
+			liftIO $ void cleanup
 			put s { repoData = M.insert u v (repoData s) }
 			return v
 
