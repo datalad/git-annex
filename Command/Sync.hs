@@ -681,7 +681,7 @@ seekSyncContent o rs currbranch = do
 			seekHelper fst3 ww LsFiles.inRepoDetails l
 
 	seekincludinghidden origbranch mvar l bloomfeeder =
-		seekFiltered (\(si, f) -> ifAnnexed f (commandAction . gofile bloomfeeder mvar si f) noop) $
+		seekFiltered (const (pure True)) (\(si, f) -> ifAnnexed f (commandAction . gofile bloomfeeder mvar si f) noop) $
 			seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
 
 	ww = WarnUnmatchLsFiles

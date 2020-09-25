@@ -130,7 +130,7 @@ send ups fs = do
 	starting "sending files" (ActionItemOther Nothing) (SeekInput []) $
 		withTmpFile "send" $ \t h -> do
 			let ww = WarnUnmatchLsFiles
-			fs' <- seekHelper id ww LsFiles.inRepo
+			(fs', cleanup) <- seekHelper id ww LsFiles.inRepo
 				=<< workTreeItems ww fs
 			matcher <- Limit.getMatcher
 			let addlist f o = whenM (matcher $ MatchingFile $ FileInfo f f) $
@@ -142,6 +142,7 @@ send ups fs = do
 					Just k -> withObjectLoc k $
 						addlist f . fromRawFilePath
 			liftIO $ hClose h
+			liftIO $ void cleanup
 			
 			serverkey <- uftpKey
 			u <- getUUID

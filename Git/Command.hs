@@ -55,7 +55,7 @@ runQuiet params repo = withNullHandle $ \nullh ->
  -
  - Also returns an action that should be used when the output is all
  - read, that will wait on the command, and
- - return True if it succeeded. Failure to wait will result in zombies.
+ - return True if it succeeded.
  -}
 pipeReadLazy :: [CommandParam] -> Repo -> IO (L.ByteString, IO Bool)
 pipeReadLazy params repo = assertLocal repo $ do
@@ -133,10 +133,6 @@ pipeNullSplitStrict :: [CommandParam] -> Repo -> IO [S.ByteString]
 pipeNullSplitStrict params repo = do
 	s <- pipeReadStrict params repo
 	return $ filter (not . S.null) $ S.split 0 s
-
-{- Doesn't run the cleanup action. A zombie results. -}
-leaveZombie :: (a, IO Bool) -> a
-leaveZombie = fst
 
 {- Runs a git command as a coprocess. -}
 gitCoProcessStart :: Bool -> [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
