@@ -1,0 +1,11 @@
+Three recent todos have needed a way to introspect the matchers built from
+preferred content expressions and some command-line options, to determine
+what information they use. So implemented that today.
+
+With that, it was possible to double the seeking speed of 
+`git-annex sync --all` when include=/exclude= are not used
+in preferred content. And the seeking speed of commands like
+`git-annex find --copies=2` and `--in remote` improved by around 20%.
+
+Today's work was sponsored by Jake Vosloo
+[on Patreon](https://www.patreon.com/joeyh).
