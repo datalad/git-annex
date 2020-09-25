@@ -245,15 +245,13 @@ cleanup dir = whenM (doesDirectoryExist dir) $ do
 
 finalCleanup :: IO ()
 finalCleanup = whenM (doesDirectoryExist tmpdir) $ do
-	Annex.Action.reapZombies
 	Command.Uninit.prepareRemoveAnnexDir' tmpdir
 	catchIO (removeDirectoryForCleanup tmpdir) $ \e -> do
 		print e
 		putStrLn "sleeping 10 seconds and will retry directory cleanup"
 		Utility.ThreadScheduler.threadDelaySeconds $
 			Utility.ThreadScheduler.Seconds 10
-		whenM (doesDirectoryExist tmpdir) $ do
-			Annex.Action.reapZombies
+		whenM (doesDirectoryExist tmpdir) $
 			removeDirectoryForCleanup tmpdir
 
 checklink :: FilePath -> Assertion

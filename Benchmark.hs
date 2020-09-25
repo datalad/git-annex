@@ -15,7 +15,6 @@ import CmdLine
 import CmdLine.GitAnnex.Options
 import qualified Annex
 import qualified Annex.Branch
-import Annex.Action
 
 import qualified Options.Applicative as O
 
@@ -35,10 +34,6 @@ mkGenerator cmds userinput = do
 			-- The cmd is run for benchmarking without startup or
 			-- shutdown actions.
 			Annex.eval st $ performCommandAction cmd seek noop
-		-- Since the cmd will be run many times, some zombie
-		-- processes that normally only occur once per command
-		-- will build up; reap them.
-		reapZombies
   where
 	-- Simplified versio of CmdLine.dispatch, without support for fuzzy
 	-- matching or out-of-repo commands.
