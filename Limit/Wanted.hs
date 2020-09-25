@@ -26,11 +26,13 @@ addPreferredContentLimit a = do
 	nfn <- introspectPreferredRequiredContent matchNeedsFileName Nothing
 	nfc <- introspectPreferredRequiredContent matchNeedsFileContent Nothing
 	nk <- introspectPreferredRequiredContent matchNeedsKey Nothing
+	nl <- introspectPreferredRequiredContent matchNeedsLocationLog Nothing
 	addLimit $ Right $ MatchFiles
 		{ matchAction = const a
 		, matchNeedsFileName = nfn
 		, matchNeedsFileContent = nfc
 		, matchNeedsKey = nk
+		, matchNeedsLocationLog = nl
 		}
 
 checkWant :: (AssociatedFile -> Annex Bool) -> MatchInfo -> Annex Bool

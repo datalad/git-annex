@@ -198,8 +198,8 @@ addIn s = do
 	u <- Remote.nameToUUID name
 	hereu <- getUUID
 	addLimit $ if u == hereu && null date
-		then use True inhere
-		else use False (inuuid u)
+		then use True checkinhere
+		else use False (checkinuuid u)
   where
 	(name, date) = separate (== '@') s
 	use inhere a = Right $ MatchFiles
@@ -209,14 +209,14 @@ addIn s = do
 		, matchNeedsKey = True
 		, matchNeedsLocationLog = not inhere
 		}
-	inuuid u notpresent key
+	checkinuuid u notpresent key
 		| null date = do
 			us <- Remote.keyLocations key
 			return $ u `elem` us && u `S.notMember` notpresent
 		| otherwise = do
 			us <- loggedLocationsHistorical (RefDate date) key
 			return $ u `elem` us
-	inhere notpresent key
+	checkinhere notpresent key
 		| S.null notpresent = inAnnex key
 		| otherwise = do
 			u <- getUUID

@@ -270,5 +270,6 @@ call (Right sub) = Right $ Operation $ MatchFiles
 	, matchNeedsFileName = any matchNeedsFileName sub
 	, matchNeedsFileContent = any matchNeedsFileContent sub
 	, matchNeedsKey = any matchNeedsKey sub
+	, matchNeedsLocationLog = any matchNeedsLocationLog sub
 	}
 call (Left err) = Left err
