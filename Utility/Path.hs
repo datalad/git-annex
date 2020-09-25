@@ -228,7 +228,7 @@ segmentPaths' f c (i:is) new =
 	(found, rest) = if length is < 100
 		then partition ini new
 		else break (not . ini) new
-	ini f = i' `dirContains` fromRawFilePath (c f)
+	ini p = i' `dirContains` fromRawFilePath (c p)
 	i' = fromRawFilePath i
 
 {- This assumes that it's cheaper to call segmentPaths on the result,
