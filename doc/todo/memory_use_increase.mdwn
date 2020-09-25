@@ -1,0 +1,32 @@
+Max memory use running `git-annex find` in a repo with 100k annexed files
+has increased significantly since 8.20200330, from 36 mb to 118 mb:
+
+old:
+
+	5.16user 3.36system 0:16.91elapsed 50%CPU (0avgtext+0avgdata 37188maxresident)k
+	897424inputs+0outputs (263major+17954minor)pagefaults 0swaps
+
+current:
+
+	7.51user 1.76system 0:06.50elapsed 142%CPU (0avgtext+0avgdata 121812maxresident)k
+	0inputs+0outputs (0major+34283minor)pagefaults 0swaps
+
+Note that it has at the same time gotten nearly 3x faster!
+
+I don't think this is a memory leak, but instead is probably a change in
+buffering behavior, likely connected to optimisations. It may be that it's
+an acceptable tradeoff, but it seems to have been somewhat unintentional,
+so it needs to be investigated and understood.
+
+Version 8.20200617 (just before the cat-file --buffer changes):
+
+	4.78user 3.81system 0:17.94elapsed 47%CPU (0avgtext+0avgdata 37188maxresident)k
+	1144592inputs+0outputs (249major+18142minor)pagefaults 0swaps
+
+Version 8.20200720 (cat-file --buffer)
+
+	annex/git-annex find >/dev/null7.82user 3.01system 0:08.60elapsed 126%CPU (0avgtext+0avgdata 122016maxresident)k
+	350752inputs+0outputs (1444major+17634minor)pagefaults 0swaps
+	
+Smoking gun. And probably reasonable. But, why exactly does that optimisation
+change the memory use in this way?
