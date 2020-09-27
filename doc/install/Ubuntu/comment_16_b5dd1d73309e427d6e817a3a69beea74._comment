@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 16"
+ date="2020-09-27T13:42:15Z"
+ content="""
+Eh, true. Our version is year old as the one which doesn't cause regressions in datalad. We are still fighting with some remaining regressions. See eg one of the last attempts https://github.com/datalad/datalad/pull/4915 .
+
+We do have unannounced on the NeuroDebian debian-devel/ (complement to regular debian/ line in your apt listing) from the main NeuroDebian website (not mirrors). That is where we upload those versions to test.
+
+Also there is now a daily built git annex .deb (and .dmg for osx) package as artifact of GitHub workflow, eg https://github.com/datalad/datalad-extensions/actions/runs/274613689 . I guess we better automatically upload them somewhere for easier fetching/deployment.
+"""]]
