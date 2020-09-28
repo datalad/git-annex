@@ -541,15 +541,12 @@ wantImport :: FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
 wantImport matcher loc sz = checkMatcher' matcher mi mempty
   where
 	mi = MatchingInfo $ ProvidedInfo
-		{ providedFilePath = Right $ fromRawFilePath $ fromImportLocation loc
-		, providedKey = unavail "key"
-		, providedFileSize = Right sz
-		, providedMimeType = unavail "mime"
-		, providedMimeEncoding = unavail "mime"
+		{ providedFilePath = fromImportLocation loc
+		, providedKey = Nothing
+		, providedFileSize = sz
+		, providedMimeType = Nothing
+		, providedMimeEncoding = Nothing
 		}
-	-- This should never run, as long as the FileMatcher was generated
-	-- using the preferredContentKeylessTokens.
-	unavail v = Left $ error $ "Internal error: unavailable " ++ v
 
 {- If a file is not preferred content, but it was previously exported or
  - imported to the remote, not importing it would result in a remote

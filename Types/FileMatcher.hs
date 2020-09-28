@@ -1,6 +1,6 @@
 {- git-annex file matcher types
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ data MatchInfo
 	= MatchingFile FileInfo
 	| MatchingKey Key AssociatedFile
 	| MatchingInfo ProvidedInfo
+	| MatchingUserInfo UserProvidedInfo
 
 data FileInfo = FileInfo
 	{ contentFile :: Maybe RawFilePath
@@ -32,23 +33,32 @@ data FileInfo = FileInfo
 	-- ^ filepath to match on; may be relative to top of repo or cwd
 	}
 
--- This is used when testing a matcher, with values to match against
--- provided in some way, rather than queried from files on disk.
 data ProvidedInfo = ProvidedInfo
-	{ providedFilePath :: OptInfo FilePath
-	, providedKey :: OptInfo Key
-	, providedFileSize :: OptInfo FileSize
-	, providedMimeType :: OptInfo MimeType
-	, providedMimeEncoding :: OptInfo MimeEncoding
+	{ providedFilePath :: RawFilePath
+	, providedKey :: Maybe Key
+	, providedFileSize :: FileSize
+	, providedMimeType :: Maybe MimeType
+	, providedMimeEncoding :: Maybe MimeEncoding
 	}
 
-type OptInfo a = Either (IO a) a
+-- This is used when testing a matcher, with values to match against
+-- provided by the user.
+data UserProvidedInfo = UserProvidedInfo
+	{ userProvidedFilePath :: UserInfo FilePath
+	, userProvidedKey :: UserInfo Key
+	, userProvidedFileSize :: UserInfo FileSize
+	, userProvidedMimeType :: UserInfo MimeType
+	, userProvidedMimeEncoding :: UserInfo MimeEncoding
+	}
 
--- If the OptInfo is not available, accessing it may result in eg an
+-- This may fail if the user did not provide the information.
+type UserInfo a = Either (IO a) a
+
+-- If the UserInfo is not available, accessing it may result in eg an
 -- exception being thrown.
-getInfo :: MonadIO m => OptInfo a -> m a
-getInfo (Right i) = return i
-getInfo (Left e) = liftIO e
+getUserInfo :: MonadIO m => UserInfo a -> m a
+getUserInfo (Right i) = return i
+getUserInfo (Left e) = liftIO e
 
 type FileMatcherMap a = M.Map UUID (FileMatcher a)
 

@@ -195,9 +195,9 @@ mkMatchExpressionParser = do
 		commonKeylessTokens LimitDiskFiles ++
 #ifdef WITH_MAGICMIME
 		[ mimer "mimetype" $
-			matchMagic "mimetype" getMagicMimeType providedMimeType
+			matchMagic "mimetype" getMagicMimeType providedMimeType userProvidedMimeType
 		, mimer "mimeencoding" $
-			matchMagic "mimeencoding" getMagicMimeEncoding providedMimeEncoding
+			matchMagic "mimeencoding" getMagicMimeEncoding providedMimeEncoding userProvidedMimeEncoding
 		]
 #else
 		[ mimer "mimetype"

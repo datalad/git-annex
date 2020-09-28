@@ -37,9 +37,9 @@ optParser desc = MatchExpressionOptions
 		( long "largefiles"
 		<> help "parse as annex.largefiles expression"
 		)
-	<*> (MatchingInfo . addkeysize <$> dataparser)
+	<*> (MatchingUserInfo . addkeysize <$> dataparser)
   where
-	dataparser = ProvidedInfo
+	dataparser = UserProvidedInfo
 		<$> optinfo "file" (strOption
 			( long "file" <> metavar paramFile
 			<> help "specify filename to match against"
@@ -65,9 +65,9 @@ optParser desc = MatchExpressionOptions
 		<|> (pure $ Left $ missingdata datadesc)
 	missingdata datadesc = bail $ "cannot match this expression without " ++ datadesc ++ " data"
 	-- When a key is provided, make its size also be provided.
-	addkeysize p = case providedKey p of
+	addkeysize p = case userProvidedKey p of
 		Right k -> case fromKey keySize k of
-			Just sz -> p { providedFileSize = Right sz }
+			Just sz -> p { userProvidedFileSize = Right sz }
 			Nothing -> p
 		Left _ -> p
 

@@ -117,20 +117,27 @@ matchGlobFile glob = go
   where
 	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingFile fi) = pure $ matchGlob cglob (fromRawFilePath (matchFile fi))
-	go (MatchingInfo p) = matchGlob cglob <$> getInfo (providedFilePath p)
+	go (MatchingInfo p) = pure $ matchGlob cglob (fromRawFilePath (providedFilePath p))
+	go (MatchingUserInfo p) = matchGlob cglob <$> getUserInfo (userProvidedFilePath p)
 	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
 	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob (fromRawFilePath af)
 
 addMimeType :: String -> Annex ()
-addMimeType = addMagicLimit "mimetype" getMagicMimeType providedMimeType
+addMimeType = addMagicLimit "mimetype" getMagicMimeType providedMimeType userProvidedMimeType
 
 addMimeEncoding :: String -> Annex ()
-addMimeEncoding = addMagicLimit "mimeencoding" getMagicMimeEncoding providedMimeEncoding
+addMimeEncoding = addMagicLimit "mimeencoding" getMagicMimeEncoding providedMimeEncoding userProvidedMimeEncoding
 
-addMagicLimit :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> String -> Annex ()
-addMagicLimit limitname querymagic selectprovidedinfo glob = do
+addMagicLimit
+	:: String
+	-> (Magic -> FilePath -> Annex (Maybe String))
+	-> (ProvidedInfo -> Maybe String)
+	-> (UserProvidedInfo -> UserInfo String)
+	-> String
+	-> Annex ()
+addMagicLimit limitname querymagic selectprovidedinfo selectuserprovidedinfo glob = do
 	magic <- liftIO initMagicMime
-	addLimit $ matchMagic limitname querymagic' selectprovidedinfo magic glob
+	addLimit $ matchMagic limitname querymagic' selectprovidedinfo selectuserprovidedinfo magic glob
   where
 	querymagic' magic f = liftIO (isPointerFile (toRawFilePath f)) >>= \case
 		-- Avoid getting magic of a pointer file, which would
@@ -143,8 +150,14 @@ addMagicLimit limitname querymagic selectprovidedinfo glob = do
 				querymagic magic . fromRawFilePath
 			Nothing -> querymagic magic f
 
-matchMagic :: String -> (Magic -> FilePath -> Annex (Maybe String)) -> (ProvidedInfo -> OptInfo String) -> Maybe Magic -> MkLimit Annex
-matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob = 
+matchMagic
+	:: String
+	-> (Magic -> FilePath -> Annex (Maybe String))
+	-> (ProvidedInfo -> Maybe String)
+	-> (UserProvidedInfo -> UserInfo String)
+	-> Maybe Magic
+	-> MkLimit Annex
+matchMagic _limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just magic) glob = 
 	Right $ MatchFiles
 		{ matchAction = const go
 		, matchNeedsFileName = True
@@ -160,9 +173,11 @@ matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob =
 			maybe False (matchGlob cglob)
 				<$> querymagic magic (fromRawFilePath f)
 		Nothing -> return False
-	go (MatchingInfo p) =
-		matchGlob cglob <$> getInfo (selectprovidedinfo p)
-matchMagic limitname _ _ Nothing _ = 
+	go (MatchingInfo p) = pure $
+		maybe False (matchGlob cglob) (selectprovidedinfo p)
+	go (MatchingUserInfo p) =
+		matchGlob cglob <$> getUserInfo (selectuserprovidedinfo p)
+matchMagic limitname _ _ _ Nothing _ = 
 	Left $ "unable to load magic database; \""++limitname++"\" cannot be used"
 
 addUnlocked :: Annex ()
@@ -186,6 +201,7 @@ addLocked = addLimit $ Right $ MatchFiles
 matchLockStatus :: Bool -> MatchInfo -> Annex Bool
 matchLockStatus _ (MatchingKey _ _) = pure False
 matchLockStatus _ (MatchingInfo _) = pure False
+matchLockStatus _ (MatchingUserInfo _) = pure False
 matchLockStatus wantlocked (MatchingFile fi) = case contentFile fi of
 	Just f -> liftIO $ do
 		islocked <- isPointerFile f >>= \case
@@ -256,8 +272,9 @@ limitInDir dir = MatchFiles
   where
 	go (MatchingFile fi) = checkf $ fromRawFilePath $ matchFile fi
 	go (MatchingKey _ (AssociatedFile Nothing)) = return False
-	go (MatchingKey _ (AssociatedFile (Just af))) = checkf (fromRawFilePath af)
-	go (MatchingInfo p) = checkf =<< getInfo (providedFilePath p)
+	go (MatchingKey _ (AssociatedFile (Just af))) = checkf $ fromRawFilePath af
+	go (MatchingInfo p) = checkf $ fromRawFilePath $ providedFilePath p
+	go (MatchingUserInfo p) = checkf =<< getUserInfo (userProvidedFilePath p)
 	checkf = return . elem dir . splitPath . takeDirectory
 
 {- Adds a limit to skip files not believed to have the specified number
@@ -319,6 +336,7 @@ limitLackingCopies approx want = case readish want of
 					fromRawFilePath $ matchFile fi
 				MatchingKey _ _ -> approxNumCopies
 				MatchingInfo {} -> approxNumCopies
+				MatchingUserInfo {} -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
 			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
 		return $ numcopies - length us >= needed
@@ -339,10 +357,13 @@ limitUnused = MatchFiles
 	}
   where
  	go _ (MatchingFile _) = return False
-	go _ (MatchingKey k _) = S.member k <$> unusedKeys
-	go _ (MatchingInfo p) = do
-		k <- getInfo (providedKey p)
-		S.member k <$> unusedKeys
+	go _ (MatchingKey k _) = isunused k
+	go _ (MatchingInfo p) = maybe (pure False) isunused (providedKey p)
+	go _ (MatchingUserInfo p) = do
+		k <- getUserInfo (userProvidedKey p)
+		isunused k
+	
+	isunused k = S.member k <$> unusedKeys
 
 {- Limit that matches any version of any file or key. -}
 limitAnything :: MatchFiles Annex
@@ -448,8 +469,10 @@ limitSize lb vs s = case readSize dataUnits s of
 				return $ filesize `vs` Just sz
 			Nothing -> goannexed sz fi
 	go sz _ (MatchingKey key _) = checkkey sz key
-	go sz _ (MatchingInfo p) =
-		getInfo (providedFileSize p) 
+	go sz _ (MatchingInfo p) = return $
+		Just (providedFileSize p) `vs` Just sz
+	go sz _ (MatchingUserInfo p) =
+		getUserInfo (userProvidedFileSize p) 
 			>>= \sz' -> return (Just sz' `vs` Just sz)
 	goannexed sz fi = lookupFileKey fi >>= \case
 		Just key -> checkkey sz key
@@ -520,5 +543,5 @@ lookupFileKey fi = case contentFile fi of
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a
 checkKey a (MatchingKey k _) = a k
-checkKey a (MatchingInfo p) = a =<< getInfo (providedKey p)
-
+checkKey a (MatchingInfo p) = maybe (return False) a (providedKey p)
+checkKey a (MatchingUserInfo p) = a =<< getUserInfo (userProvidedKey p)

@@ -346,8 +346,8 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 			(pure Nothing)
 			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> getFileStatus tmp)
 			mtmp
-		stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
-		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath (toRawFilePath file))
+		stagePointerFile file' mode =<< hashPointerFile key
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file')
 		case mtmp of
 			Just tmp -> ifM (moveAnnex key tmp)
 				( linkunlocked mode >> return True
@@ -367,23 +367,23 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 	mi = case mtmp of
 		Just tmp -> MatchingFile $ FileInfo
 			{ contentFile = Just (toRawFilePath tmp)
-			, matchFile = toRawFilePath file
+			, matchFile = file'
 			}
 		-- Provide as much info as we can without access to the
-		-- file's content. It's better to provide wrong info
-		-- than for an operation to fail just because it can't
-		-- tell if a file should be unlocked or locked.
+		-- file's content.
 		Nothing -> MatchingInfo $ ProvidedInfo
-			{ providedFilePath = Right file
-			, providedKey = Right key
-			, providedFileSize = Right $ fromMaybe 0 $
+			{ providedFilePath = file'
+			, providedKey = Just key
+			, providedFileSize = fromMaybe 0 $
 				keySize `fromKey` key
-			, providedMimeType = Right "application/octet-stream"
-			, providedMimeEncoding = Right "binary"
+			, providedMimeType = Nothing
+			, providedMimeEncoding = Nothing
 			}
 	
 	linkunlocked mode = linkFromAnnex key file mode >>= \case
 		LinkAnnexFailed -> liftIO $
-			writePointerFile (toRawFilePath file) key mode
+			writePointerFile file' key mode
 		_ -> return ()
-	writepointer mode = liftIO $ writePointerFile (toRawFilePath file) key mode
+	writepointer mode = liftIO $ writePointerFile file' key mode
+
+	file' = toRawFilePath file
