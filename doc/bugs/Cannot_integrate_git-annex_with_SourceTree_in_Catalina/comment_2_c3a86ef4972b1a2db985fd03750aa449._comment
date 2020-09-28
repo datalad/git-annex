@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="mark@6b90344cdab3158eacb94a3944460d138afc9bef"
+ nickname="mark"
+ avatar="http://cdn.libravatar.org/avatar/780625d9a11f1840abd94822dfe3e9f5"
+ subject="comment 2"
+ date="2020-09-28T21:40:21Z"
+ content="""
+Switching SourceTree to look at /usr/local/git/bin fixed the problem.
+
+This can be CLOSED.
+"""]]
