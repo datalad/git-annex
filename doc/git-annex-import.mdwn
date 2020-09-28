@@ -91,7 +91,8 @@ the tree of files on the remote, even when importing into a subdirectory.
 
 * `--content`, `--no-content`
 
-  Controls whether content is downloaded from the special remote.
+  Controls whether annexed content is downloaded from the special remote.
+
   The default is to download content into the git-annex repository.
 
   With --no-content, git-annex keys are generated from information
@@ -108,16 +109,12 @@ the tree of files on the remote, even when importing into a subdirectory.
   The annex.securehashesonly configuration, if set, will prevent
   --no-content importing from a special remote that uses insecure keys.
 
-  Using --no-content prevents annex.largefiles from being checked,
-  because the files are not downloaded. So, when using --no-content,
-  files that would usually be considered non-large will be added to the
-  annex, rather than adding them directly to the git repository.
-
-  Note that a different git tree will often be generated when using
+  Note that a different git tree may be generated when using
   --no-content than would be generated when using --content, because
   the options cause different kinds of keys to be used when importing
   new/changed files. So mixing uses of --content and --no-content can
-  lead to merge conflicts in some situations.
+  lead to merge conflicts in some situations. Some special remotes,
+  notably the directory special remote, avoid this problem.
 
 # IMPORTING FROM A DIRECTORY
 

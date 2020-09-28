@@ -23,6 +23,10 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
     local repo and remotes don't use include=/exclude=.
   * Sped up seeking for files to operate on, when using options like
     --copies or --in, by around 20%
+  * import --no-content: Check annex.largefiles, and import small
+    files into git, the same as is done when importing with content.
+    If the largefiles expression needs the file content available
+    (due to mimetype or mimeencoding being used), the import will fail.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 

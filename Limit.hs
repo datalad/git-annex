@@ -69,7 +69,7 @@ getMatcher' = go =<< Annex.getState Annex.limit
 {- Checks if the user-specified limits contains anything that meets the
  - condition. -}
 introspect :: (MatchFiles Annex -> Bool) -> Annex Bool
-introspect c = any c <$> getMatcher'
+introspect c = Utility.Matcher.introspect c <$> getMatcher'
 
 {- Adds something to the limit list, which is built up reversed. -}
 add :: Utility.Matcher.Token (MatchFiles Annex) -> Annex ()

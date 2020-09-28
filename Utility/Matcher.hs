@@ -27,6 +27,7 @@ module Utility.Matcher (
 	matchMrun,
 	isEmpty,
 	combineMatchers,
+	introspect,
 
 	prop_matcher_sane
 ) where
@@ -146,6 +147,10 @@ combineMatchers a b
 	| isEmpty a = b
 	| isEmpty b = a
 	| otherwise = a `MOr` b
+
+{- Checks if anything in the matcher meets the condition. -}
+introspect :: (a -> Bool) -> Matcher a -> Bool
+introspect = any
 
 prop_matcher_sane :: Bool
 prop_matcher_sane = all (\m -> match dummy m ()) $ map generate

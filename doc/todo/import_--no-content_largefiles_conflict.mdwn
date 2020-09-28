@@ -13,6 +13,13 @@ expression needs the file content, when importing from a special remote.
 Or could detect when those are used, and only allow 
 importing with --content in that case.
 
+> So this needs a way to introspect a preferred content expression
+> to see if the terms used in it
+> match some criteria. Another todo that also needs that is
+> [[faster_key_lookup_for_limits]] --[[Joey]]
+
+> > That introspection is implemented now.
+
 Which is better? The repo may have annex.largefiles set in gitattributes
 for good workflow reasons, so it would be very annoying to have importing
 error out. And if importing ignores the configuration, the user is likely
@@ -21,9 +28,8 @@ and say "sorry, I can't, need the file content", the user can then choose
 between changing largefiles or using --content, and it's clear how they're
 asking for contradictory things.
 
-> So this needs a way to introspect a preferred content expression
-> to see if the terms used in it
-> match some criteria. Another todo that also needs that is
-> [[faster_key_lookup_for_limits]] --[[Joey]]
+Hmm, if largefiles does not match, it would have to download the file
+content to add it to git, even though --no-content is used. A little weird,
+but it's a small file, presumably.
 
-> > That introspection is implemented now.
+[[done]] --[[Joey]]

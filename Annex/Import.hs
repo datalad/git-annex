@@ -48,7 +48,7 @@ import Logs.Location
 import Logs.PreferredContent
 import Types.FileMatcher
 import Annex.FileMatcher
-import Utility.Matcher (isEmpty)
+import qualified Utility.Matcher
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as CIDDb
 import qualified Logs.ContentIdentifier as CIDLog
@@ -388,29 +388,70 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		| not importcontent = doimport
 		| otherwise = dodownload
 
-	doimport cidmap db (loc, (cid, sz)) _largematcher =
+	doimport cidmap db (loc, (cid, sz)) largematcher =
 		case Remote.importKey ia of
 			Nothing -> error "internal" -- checked earlier
-			Just a -> do
-				let importer p = do
-					unsizedk <- a loc cid p
-					-- This avoids every remote needing
-					-- to add the size.
-					let k = alterKey unsizedk $ \kd -> kd
-						{ keySize = keySize kd <|> Just sz }
-					checkSecureHashes k >>= \case
-						Nothing -> do
-							recordcidkey cidmap db cid k
-							logChange k (Remote.uuid remote) InfoPresent
-							return (Right k)
-						Just msg -> giveup (msg ++ " to import")
-				let runimport p = tryNonAsync (importer p) >>= \case
-					Right k -> return $ Just (loc, k)
+			Just importkey -> do
+				f <- locworktreefile loc
+				matcher <- largematcher (fromRawFilePath f)
+				when (Utility.Matcher.introspect matchNeedsFileContent matcher) $
+					giveup "annex.largefiles configuration examines file contents, so cannot import without content."
+				let mi = MatchingInfo ProvidedInfo
+					{ providedFilePath = f
+					, providedKey = Nothing
+					, providedFileSize = sz
+					, providedMimeType = Nothing
+					, providedMimeEncoding = Nothing
+					}
+				islargefile <- checkMatcher' matcher mi mempty
+				metered Nothing sz $ const $ if islargefile
+					then doimportlarge importkey cidmap db loc cid sz
+					else doimportsmall cidmap db loc cid sz
+	
+	doimportlarge importkey cidmap db loc cid sz p =
+		tryNonAsync importer >>= \case
+			Right k -> return $ Just (loc, k)
+			Left e -> do
+				warning (show e)
+				return Nothing
+	  where
+		importer = do
+			unsizedk <- importkey loc cid p
+			-- This avoids every remote needing
+			-- to add the size.
+			let k = alterKey unsizedk $ \kd -> kd
+				{ keySize = keySize kd <|> Just sz }
+			checkSecureHashes k >>= \case
+				Nothing -> do
+					recordcidkey cidmap db cid k
+					logChange k (Remote.uuid remote) InfoPresent
+					return (Right k)
+				Just msg -> giveup (msg ++ " to import")
+			
+	-- The file is small, so is added to git, so while importing
+	-- without content does not retrieve annexed files, it does
+	-- need to retrieve this file.
+	doimportsmall cidmap db loc cid sz p = do
+		let downloader tmpfile = do
+			k <- Remote.retrieveExportWithContentIdentifier
+				ia loc cid tmpfile
+				(mkkey tmpfile)
+				p
+			case keyGitSha k of
+				Just sha -> do
+					recordcidkey cidmap db cid k
+					return (Left sha)
+				Nothing -> error "internal"
+		checkDiskSpaceToGet tmpkey Nothing $
+			withTmp tmpkey $ \tmpfile ->
+				tryNonAsync (downloader tmpfile) >>= \case
+					Right v -> return $ Just (loc, v)
 					Left e -> do
 						warning (show e)
 						return Nothing
-				metered Nothing	sz $
-					const runimport
+	  where
+		tmpkey = importKey cid sz
+		mkkey tmpfile = gitShaKey <$> hashFile tmpfile
 	
 	dodownload cidmap db (loc, (cid, sz)) largematcher = do
 		f <- locworktreefile loc
@@ -418,7 +459,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		let downloader tmpfile p = do
 			k <- Remote.retrieveExportWithContentIdentifier
 				ia loc cid tmpfile 
-				(mkkey f tmpfile largematcher)
+				(mkkey f tmpfile)
 				p
 			case keyGitSha k of
 				Nothing -> do
@@ -446,25 +487,25 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 	  where
 		tmpkey = importKey cid sz
 	
-	ia = Remote.importActions remote
+		mkkey f tmpfile = do
+			matcher <- largematcher (fromRawFilePath f)
+			let mi = MatchingFile FileInfo
+				{ matchFile = f
+				, contentFile = Just (toRawFilePath tmpfile)
+				}
+			islargefile <- checkMatcher' matcher mi mempty
+			if islargefile
+				then do
+					backend <- chooseBackend (fromRawFilePath f)
+					let ks = KeySource
+						{ keyFilename = f
+						, contentLocation = toRawFilePath tmpfile
+						, inodeCache = Nothing
+						}
+					fst <$> genKey ks nullMeterUpdate backend
+				else gitShaKey <$> hashFile tmpfile
 	
-	mkkey f tmpfile largematcher = do
-		matcher <- largematcher (fromRawFilePath f)
-		let mi = MatchingFile FileInfo
-			{ matchFile = f
-			, contentFile = Just (toRawFilePath tmpfile)
-			}
-		islargefile <- checkMatcher' matcher mi mempty
-		if islargefile
-			then do
-				backend <- chooseBackend (fromRawFilePath f)
-				let ks = KeySource
-					{ keyFilename = f
-					, contentLocation = toRawFilePath tmpfile
-					, inodeCache = Nothing
-					}
-				fst <$> genKey ks nullMeterUpdate backend
-			else gitShaKey <$> hashFile tmpfile
+	ia = Remote.importActions remote
 
 	locworktreefile loc = fromRepo $ fromTopFilePath $ asTopFilePath $
 		case importtreeconfig of
@@ -563,7 +604,7 @@ shouldImport dbhandle matcher loc sz =
 
 filterImportableContents :: Remote -> FileMatcher Annex -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (ImportableContents (ContentIdentifier, ByteSize))
 filterImportableContents r matcher importable
-	| isEmpty matcher = return importable
+	| Utility.Matcher.isEmpty matcher = return importable
 	| otherwise = do
 		dbhandle <- Export.openDb (Remote.uuid r)
 		go dbhandle importable
