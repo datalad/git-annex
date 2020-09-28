@@ -1,0 +1,34 @@
+I have a repo for which `git annex fsck --all` goes through without any complaints, and `git fsck` produces
+
+    Checking object directories: 100% (256/256), done.
+    error in tree 97abf6de76c0c56593f78d2f55b4c60d04345281: gitmodulesSymlink: .gitmodules is a symbolic link
+    Checking objects: 100% (998477/998477), done.
+    Checking connectivity: 998477, done.
+    dangling tree f9a2b542f57770c135631de1ae590475fc0caa54
+
+but running `git annex repair --force`,
+
+    repair Running git fsck ...
+    Unpacking all pack files.
+    Unpacking objects: 100% (998477/998477), 64.95 MiB | 359.00 KiB/s, done.
+    Initialized empty Git repository in /tmp/tmprepoqPmkhi/.git/
+    Trying to recover missing objects from remote A.
+    fatal: '[a path I censored]' does not appear to be a git repository
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+    Trying to recover missing objects from remote B.
+    Unpacking all pack files.
+    Unpacking objects: 100% (923941/923941), 63.54 MiB | 367.00 KiB/s, done.
+    [A couple of other cases of remotes not available.]
+    failed
+    git-annex: repair: 1 failed
+
+Is the failure likely related to the `gitmodulesSymlink` error? If so, what could I do about it? If not, how do I figure out what's going on?
+
+Regarding the `.gitmodules` complaint: The repo has a subfolder with its own `.git` and `.gitmodules`, and although nothing in there is commited into the main repo now, I did in the past accidentally, temporarily commit the `subfolder/.gitmodules` into the main repo.
+
+I don't actually find anything wrong with the repo, the only reason I'm running `repair` on it is because a remote of it is missing some files, although it claims to be all synced up.
+
+This is on version 8.20200226. I would be happy to try on a more recent one, if there's a way to do so on Ubuntu without compiling from source.

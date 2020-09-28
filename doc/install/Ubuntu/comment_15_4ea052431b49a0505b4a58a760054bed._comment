@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mhauru"
+ avatar="http://cdn.libravatar.org/avatar/2532433a0207ba772e6ca964e61899c0"
+ subject="NeuroDebian seems to have stopped updating"
+ date="2020-09-27T12:40:54Z"
+ content="""
+The comment about NeuroDebian providing more up to date builds is out of date, their version is now more than a year old. An alternative would be welcome, something between the official Ubuntu package and compiling from source.
+"""]]
