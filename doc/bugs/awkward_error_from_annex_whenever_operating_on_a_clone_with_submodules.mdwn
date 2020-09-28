@@ -59,3 +59,4 @@ ok
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+[[!tag moreinfo]]
