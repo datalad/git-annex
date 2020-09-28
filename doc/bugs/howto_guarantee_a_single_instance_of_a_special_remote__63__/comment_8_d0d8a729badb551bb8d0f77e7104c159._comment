@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-09-28T14:00:00Z"
+ content="""
+The async extension to the protocol guarantees only a single process will
+be run. The remote might be asked to start several operations
+concurrently, but if it wants to queue them sequentially, that should be
+fine.
+
+While it might be a bit of a round about way to get this functionality,
+since the extension complicates the protocol a bit, I'm inclined to feel
+it's enough, and not add this other extension, 
+at least without some more compelling use case.
+"""]]

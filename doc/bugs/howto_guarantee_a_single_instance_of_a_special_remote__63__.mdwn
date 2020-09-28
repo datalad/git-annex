@@ -37,3 +37,5 @@ I wondered if there is an easy way to restrict a single instance for some specia
 [[!tag projects/datalad]]
 
 [[!meta title="extend external special remote protocol so a process can refuse to PREPARE, making -J not use it concurrently"]]
+
+> [[rejected|done]] --[[Joey]] 
