@@ -1,0 +1,29 @@
+git-annex import --no-content means annex.largefiles is not checked, so
+non-large files get added as annexed files. That's done because
+annex.largefiles can contain expressions that need to examine the content
+of the file. In particular for mimetype and mimeencoding.
+
+So, if someone uses import --no-content in one repo, and in another clone
+it's used with --content, importing the same files both times, a merge
+conflict can result.
+
+May be worth removing support for matching annex.largefiles when the
+expression needs the file content, when importing from a special remote.
+
+Or could detect when those are used, and only allow 
+importing with --content in that case.
+
+Which is better? The repo may have annex.largefiles set in gitattributes
+for good workflow reasons, so it would be very annoying to have importing
+error out. And if importing ignores the configuration, the user is likely
+to see that as a bug. If importing with --no-content looks at the config
+and say "sorry, I can't, need the file content", the user can then choose
+between changing largefiles or using --content, and it's clear how they're
+asking for contradictory things.
+
+> So this needs a way to introspect a preferred content expression
+> to see if the terms used in it
+> match some criteria. Another todo that also needs that is
+> [[faster_key_lookup_for_limits]] --[[Joey]]
+
+> > That introspection is implemented now.
