@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2020-09-28T19:44:05Z"
+ content="""
+Sorry for being anal with my questions and not just trying it out... but by `The async extension to the protocol guarantees only a single process will be run.` which of the following scenarios do you mean
+
+- a. there will be no parallel workers if `--jobs N` is specified (thus a single process for an external remote)
+- b. there are parallel workers, and a single instance of an external special remote will be ran and either 
+   - b.1. only one worker would be able to talk to it
+   - b.2. parallel workers will talk to the same async external special remote
+
+or may be some other c. or b.3  ?
+"""]]
