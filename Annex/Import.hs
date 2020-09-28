@@ -12,6 +12,7 @@ module Annex.Import (
 	ImportCommitConfig(..),
 	buildImportCommit,
 	buildImportTrees,
+	canImportKeys,
 	importKeys,
 	filterImportableContents,
 	makeImportMatcher,
@@ -281,6 +282,12 @@ buildImportTrees basetree msubdir importable = History
 		topf = asTopFilePath $
 			maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
 
+canImportKeys :: Remote -> Bool -> Bool
+canImportKeys remote importcontent =
+	importcontent || isJust (Remote.importKey ia)
+  where
+	ia = Remote.importActions remote
+
 {- Downloads all new ContentIdentifiers, or when importcontent is False,
  - generates Keys without downloading.
  -
@@ -304,7 +311,7 @@ importKeys
 	-> ImportableContents (ContentIdentifier, ByteSize)
 	-> Annex (Maybe (ImportableContents (Either Sha Key)))
 importKeys remote importtreeconfig importcontent importablecontents = do
-	when (not importcontent && isNothing (Remote.importKey ia)) $
+	unless (canImportKeys remote importcontent) $
 		giveup "This remote does not support importing without downloading content."
 	-- This map is used to remember content identifiers that
 	-- were just imported, before they have necessarily been

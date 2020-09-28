@@ -66,6 +66,7 @@ import Annex.UpdateInstead
 import Annex.Export
 import Annex.TaggedPush
 import Annex.CurrentBranch
+import Annex.Import (canImportKeys)
 import Types.FileMatcher
 import qualified Database.Export as Export
 import Utility.Bloom
@@ -468,8 +469,11 @@ importRemote importcontent o mergeconfig remote currbranch
 			let subdir = if S.null p
 				then Nothing
 				else Just (asTopFilePath p)
-			Command.Import.seekRemote remote branch subdir importcontent
-			void $ mergeRemote remote currbranch mergeconfig o
+			if canImportKeys remote importcontent
+				then do
+					Command.Import.seekRemote remote branch subdir importcontent
+					void $ mergeRemote remote currbranch mergeconfig o
+				else warning $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 

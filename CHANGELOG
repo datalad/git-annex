@@ -27,6 +27,9 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
     files into git, the same as is done when importing with content.
     If the largefiles expression needs the file content available
     (due to mimetype or mimeencoding being used), the import will fail.
+  * sync: When run without --content, import without copying from
+    importtree=yes directory special remotes.
+    (Other special remotes may support this later as well.)
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 
