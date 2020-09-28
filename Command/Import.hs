@@ -223,7 +223,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		stop
 	lockdown a = do
 		let mi = MatchingFile $ FileInfo
-			{ currFile = toRawFilePath srcfile
+			{ contentFile = Just (toRawFilePath srcfile)
 			, matchFile = toRawFilePath destfile
 			}
 		lockingfile <- not <$> addUnlocked addunlockedmatcher mi

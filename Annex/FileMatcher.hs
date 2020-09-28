@@ -85,7 +85,7 @@ fileMatchInfo file = do
 	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
 	return $ MatchingFile FileInfo
 		{ matchFile = matchfile
-		, currFile = file
+		, contentFile = Just file
 		}
 
 matchAll :: FileMatcher Annex

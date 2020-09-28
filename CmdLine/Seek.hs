@@ -106,7 +106,7 @@ withPathContents a params = do
 		, return [(p, takeFileName p)]
 		)
 	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
-		{ currFile = toRawFilePath f
+		{ contentFile = Just (toRawFilePath f)
 		, matchFile = toRawFilePath relf
 		}
 
@@ -280,7 +280,7 @@ seekFiltered prefilter a listfs = do
   where
 	process matcher v@(_si, f) =
 		whenM (prefilter v) $
-			whenM (matcher $ MatchingFile $ FileInfo f f) $
+			whenM (matcher $ MatchingFile $ FileInfo (Just f) f) $
 				a v
 
 data MatcherInfo = MatcherInfo
@@ -358,7 +358,7 @@ seekFilteredKeys seeker listfs = do
 		-- checked later, to avoid a slow lookup here.
 		(not ((matcherNeedsKey mi || matcherNeedsLocationLog mi) 
 			&& not (matcherNeedsFileName mi)))
-		(MatchingFile $ FileInfo f f)
+		(MatchingFile $ FileInfo (Just f) f)
 		(liftIO $ ofeeder ((si, f), sha))
 
 	keyaction f mi content a = 

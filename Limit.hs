@@ -155,9 +155,11 @@ matchMagic _limitname querymagic selectprovidedinfo (Just magic) glob =
   where
  	cglob = compileGlob glob CaseSensative -- memoized
 	go (MatchingKey _ _) = pure False
-	go (MatchingFile fi) = catchBoolIO $
-		maybe False (matchGlob cglob)
-			<$> querymagic magic (fromRawFilePath (currFile fi))
+	go (MatchingFile fi) = case contentFile fi of
+		Just f -> catchBoolIO $
+			maybe False (matchGlob cglob)
+				<$> querymagic magic (fromRawFilePath f)
+		Nothing -> return False
 	go (MatchingInfo p) =
 		matchGlob cglob <$> getInfo (selectprovidedinfo p)
 matchMagic limitname _ _ Nothing _ = 
@@ -184,12 +186,14 @@ addLocked = addLimit $ Right $ MatchFiles
 matchLockStatus :: Bool -> MatchInfo -> Annex Bool
 matchLockStatus _ (MatchingKey _ _) = pure False
 matchLockStatus _ (MatchingInfo _) = pure False
-matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
-	islocked <- isPointerFile (currFile fi) >>= \case
-		Just _key -> return False
-		Nothing -> isSymbolicLink
-			<$> getSymbolicLinkStatus (fromRawFilePath (currFile fi))
-	return (islocked == wantlocked)
+matchLockStatus wantlocked (MatchingFile fi) = case contentFile fi of
+	Just f -> liftIO $ do
+		islocked <- isPointerFile f >>= \case
+			Just _key -> return False
+			Nothing -> isSymbolicLink
+				<$> getSymbolicLinkStatus (fromRawFilePath f)
+		return (islocked == wantlocked)
+	Nothing -> return False
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
@@ -436,17 +440,20 @@ limitSize lb vs s = case readSize dataUnits s of
 		}
   where
 	go sz _ (MatchingFile fi) = case lb of
-		LimitAnnexFiles -> lookupFileKey fi >>= \case
-			Just key -> checkkey sz key
-			Nothing -> return False
-		LimitDiskFiles -> do
-			filesize <- liftIO $ catchMaybeIO $
-				getFileSize (fromRawFilePath (currFile fi))
-			return $ filesize `vs` Just sz
+		LimitAnnexFiles -> goannexed sz fi
+		LimitDiskFiles -> case contentFile fi of
+			Just f -> do
+				filesize <- liftIO $ catchMaybeIO $
+					getFileSize (fromRawFilePath f)
+				return $ filesize `vs` Just sz
+			Nothing -> goannexed sz fi
 	go sz _ (MatchingKey key _) = checkkey sz key
 	go sz _ (MatchingInfo p) =
 		getInfo (providedFileSize p) 
 			>>= \sz' -> return (Just sz' `vs` Just sz)
+	goannexed sz fi = lookupFileKey fi >>= \case
+		Just key -> checkkey sz key
+		Nothing -> return False
 	checkkey sz key = return $ fromKey keySize key `vs` Just sz
 
 addMetaData :: String -> Annex ()
@@ -506,7 +513,9 @@ addAccessedWithin duration = do
 	secs = fromIntegral (durationSeconds duration)
 
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
-lookupFileKey = lookupKey . currFile
+lookupFileKey fi = case contentFile fi of
+	Just f -> lookupKey f
+	Nothing -> return Nothing
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a

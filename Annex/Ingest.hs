@@ -366,7 +366,7 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
   where
 	mi = case mtmp of
 		Just tmp -> MatchingFile $ FileInfo
-			{ currFile = toRawFilePath tmp
+			{ contentFile = Just (toRawFilePath tmp)
 			, matchFile = toRawFilePath file
 			}
 		-- Provide as much info as we can without access to the

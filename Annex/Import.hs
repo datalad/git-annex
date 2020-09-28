@@ -452,7 +452,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		matcher <- largematcher (fromRawFilePath f)
 		let mi = MatchingFile FileInfo
 			{ matchFile = f
-			, currFile = toRawFilePath tmpfile
+			, contentFile = Just (toRawFilePath tmpfile)
 			}
 		islargefile <- checkMatcher' matcher mi mempty
 		if islargefile
