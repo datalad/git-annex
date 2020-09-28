@@ -225,10 +225,13 @@ seek' o = do
 				, map (withbranch . pullRemote o mergeConfig) gitremotes
 				,  [ mergeAnnex ]
 				]
-				
-			whenM (shouldSyncContent o) $ do
-				mapM_ (withbranch . importRemote o mergeConfig) importremotes
 			
+			content <- shouldSyncContent o
+
+			forM_ importremotes $
+				withbranch . importRemote content o mergeConfig
+			
+			when content $ do
 				-- Send content to any exports before other
 				-- repositories, in case that lets content
 				-- be dropped from other repositories.
@@ -454,8 +457,8 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []
 
-importRemote :: SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
-importRemote o mergeconfig remote currbranch
+importRemote :: Bool -> SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
+importRemote importcontent o mergeconfig remote currbranch
 	| not (pullOption o) || not wantpull = noop
 	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
 		Nothing -> noop
@@ -465,7 +468,7 @@ importRemote o mergeconfig remote currbranch
 			let subdir = if S.null p
 				then Nothing
 				else Just (asTopFilePath p)
-			Command.Import.seekRemote remote branch subdir True
+			Command.Import.seekRemote remote branch subdir importcontent
 			void $ mergeRemote remote currbranch mergeconfig o
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)

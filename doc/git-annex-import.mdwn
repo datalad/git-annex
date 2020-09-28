@@ -98,23 +98,7 @@ the tree of files on the remote, even when importing into a subdirectory.
   With --no-content, git-annex keys are generated from information
   provided by the special remote, without downloading it. Commands like
   `git-annex get` can later be used to download files, as desired.
-
-  The --no-content option is not supported by all special remotes,
-  and the kind of git-annex key that is generated is left up to
-  each special remote. So while the directory special remote hashes
-  the file and generates the same key it usually would, other
-  special remotes may use unusual keys like SHA1, or WORM, depending
-  on the limitations of the special remote. 
-
-  The annex.securehashesonly configuration, if set, will prevent
-  --no-content importing from a special remote that uses insecure keys.
-
-  Note that a different git tree may be generated when using
-  --no-content than would be generated when using --content, because
-  the options cause different kinds of keys to be used when importing
-  new/changed files. So mixing uses of --content and --no-content can
-  lead to merge conflicts in some situations. Some special remotes,
-  notably the directory special remote, avoid this problem.
+  The --no-content option is not supported by all special remotes.
 
 # IMPORTING FROM A DIRECTORY
 

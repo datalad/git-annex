@@ -35,7 +35,18 @@ git-annex to use a different backend.
 > content, then the remote could say, don't use importKey by default.
 > (Or more likely, only the directory remote will be able to support
 > importKey by default..)
+> 
+> Problem: When annex.largefiles matches file content,
+> cannot use importKey. So then should sync --content not use importKey
+> then, risking generating a different tree? Or should it fail, even
+> though importing with content is possible?
+> 
+> > Well, different annex.largefiles settings in different clones 
+> > can already risk generating a different tree on import. So,
+> > the former option seems preferable.
 
 ---
 
 See also, [[todo/import_--no-content_largefiles_conflict]]
+
+> [[done]] --[[Joey]]

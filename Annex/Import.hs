@@ -384,19 +384,28 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				importaction
 			return (Right job)
 	
-	importordownload
-		| not importcontent = doimport
-		| otherwise = dodownload
+	importordownload cidmap db (loc, (cid, sz)) largematcher= do
+		f <- locworktreefile loc
+		matcher <- largematcher (fromRawFilePath f)
+		-- When importing a key is supported, always use it rather
+		-- than downloading and retrieving a key, to avoid
+		-- generating trees with different keys for the same content.
+		let act = if importcontent
+			then case Remote.importKey ia of
+				Nothing -> dodownload
+				Just _ -> if Utility.Matcher.introspect matchNeedsFileContent matcher
+					then dodownload
+					else doimport
+			else doimport
+		act cidmap db (loc, (cid, sz)) f matcher
 
-	doimport cidmap db (loc, (cid, sz)) largematcher =
+	doimport cidmap db (loc, (cid, sz)) f matcher =
 		case Remote.importKey ia of
 			Nothing -> error "internal" -- checked earlier
 			Just importkey -> do
-				f <- locworktreefile loc
-				matcher <- largematcher (fromRawFilePath f)
 				when (Utility.Matcher.introspect matchNeedsFileContent matcher) $
 					giveup "annex.largefiles configuration examines file contents, so cannot import without content."
-				let mi = MatchingInfo ProvidedInfo
+ 				let mi = MatchingInfo ProvidedInfo
 					{ providedFilePath = f
 					, providedKey = Nothing
 					, providedFileSize = sz
@@ -405,18 +414,24 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 					}
 				islargefile <- checkMatcher' matcher mi mempty
 				metered Nothing sz $ const $ if islargefile
-					then doimportlarge importkey cidmap db loc cid sz
+					then doimportlarge importkey cidmap db loc cid sz f
 					else doimportsmall cidmap db loc cid sz
 	
-	doimportlarge importkey cidmap db loc cid sz p =
+	doimportlarge importkey cidmap db loc cid sz f p =
 		tryNonAsync importer >>= \case
-			Right k -> return $ Just (loc, k)
+			Right (Just (k, True)) -> return $ Just (loc, Right k)
+			Right _ -> return Nothing
 			Left e -> do
 				warning (show e)
 				return Nothing
 	  where
 		importer = do
-			unsizedk <- importkey loc cid p
+			unsizedk <- importkey loc cid
+				-- Don't display progress when generating
+				-- key, if the content will later be
+				-- downloaded, which is a more expensive
+				-- operation generally.
+				(if importcontent then nullMeterUpdate else p)
 			-- This avoids every remote needing
 			-- to add the size.
 			let k = alterKey unsizedk $ \kd -> kd
@@ -425,8 +440,27 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				Nothing -> do
 					recordcidkey cidmap db cid k
 					logChange k (Remote.uuid remote) InfoPresent
-					return (Right k)
+					if importcontent
+						then getcontent k
+						else return (Just (k, True))
 				Just msg -> giveup (msg ++ " to import")
+		
+		getcontent :: Key -> Annex (Maybe (Key, Bool))
+		getcontent k = do
+			let af = AssociatedFile (Just f)
+			let downloader p' tmpfile = do
+				k' <- Remote.retrieveExportWithContentIdentifier
+					ia loc cid tmpfile 
+					(pure k)
+					(combineMeterUpdate p' p)
+				ok <- moveAnnex k' tmpfile
+				when ok $
+					logStatus k InfoPresent
+				return (Just (k', ok))
+			checkDiskSpaceToGet k Nothing $
+				notifyTransfer Download af $
+					download (Remote.uuid remote) k af stdRetry $ \p' ->
+						withTmp k $ downloader p'
 			
 	-- The file is small, so is added to git, so while importing
 	-- without content does not retrieve annexed files, it does
@@ -440,12 +474,12 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 			case keyGitSha k of
 				Just sha -> do
 					recordcidkey cidmap db cid k
-					return (Left sha)
+					return sha
 				Nothing -> error "internal"
 		checkDiskSpaceToGet tmpkey Nothing $
 			withTmp tmpkey $ \tmpfile ->
 				tryNonAsync (downloader tmpfile) >>= \case
-					Right v -> return $ Just (loc, v)
+					Right sha -> return $ Just (loc, Left sha)
 					Left e -> do
 						warning (show e)
 						return Nothing
@@ -453,13 +487,12 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		tmpkey = importKey cid sz
 		mkkey tmpfile = gitShaKey <$> hashFile tmpfile
 	
-	dodownload cidmap db (loc, (cid, sz)) largematcher = do
-		f <- locworktreefile loc
+	dodownload cidmap db (loc, (cid, sz)) f matcher = do
 		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
 			k <- Remote.retrieveExportWithContentIdentifier
 				ia loc cid tmpfile 
-				(mkkey f tmpfile)
+				(mkkey tmpfile)
 				p
 			case keyGitSha k of
 				Nothing -> do
@@ -487,8 +520,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 	  where
 		tmpkey = importKey cid sz
 	
-		mkkey f tmpfile = do
-			matcher <- largematcher (fromRawFilePath f)
+		mkkey tmpfile = do
 			let mi = MatchingFile FileInfo
 				{ matchFile = f
 				, contentFile = Just (toRawFilePath tmpfile)

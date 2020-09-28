@@ -186,7 +186,10 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   rather than `EXPECTED`.
 * `IMPORTKEY File`
   This only needs to be implemented if IMPORTKEYSUPPORTED indicates
-  it is supported.  
+  it is supported. And if a remote did not support it before, adding
+  it will make importing the same content as before generate a likely
+  different tree, which can lead to merge conflicts. So be careful
+  implementing this.  
   Generates a key by querying the remote for eg, a checksum.
   (See [[internals/key_format]] for details of how to format a key.)
   Any kind of key can be generated, depending on what the remote

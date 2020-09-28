@@ -108,12 +108,14 @@ received.
   This behavior can be overridden by configuring the preferred content
   of a repository. See [[git-annex-preferred-content]](1).
 
-  When `remote.<name>.annex-tracking-branch` is configured for a special remote
-  and that branch is checked out, syncing content will import changes from
-  the remote, merge them into the branch, and export any changes that have
-  been committed to the branch back to the remote. See 
-  See [[git-annex-import]](1) and [[git-annex-export]](1) for details about
-  how importing and exporting work.
+  When `remote.<name>.annex-tracking-branch` is configured for a special
+  remote and that branch is checked out, syncing with --content will
+  import changes from the remote, merge them into the branch, and export
+  any changes that have been committed to the branch back to the remote.
+  With --no-content, imports will only be made from special remotes that
+  support importing without transferting files, and no exports will be done.
+  See [[git-annex-import]](1) and [[git-annex-export]](1) for details
+  about how importing and exporting work.
 
 * `--content-of=path` `-C path`
 
