@@ -90,9 +90,7 @@ downloadKey key _af dest p = do
 		r <- untilTrue urls $ \u -> do
 			let (u', downloader) = getDownloader u
 			case downloader of
-				YoutubeDownloader -> do
-					showOutput
-					youtubeDlTo key u' dest
+				YoutubeDownloader -> youtubeDlTo key u' dest p
 				_ -> Url.withUrlOptions $ downloadUrl key p [u'] dest
 		unless r $
 			giveup "download failed"

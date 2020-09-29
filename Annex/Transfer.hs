@@ -74,9 +74,7 @@ runTransfer = runTransfer' False
 
 {- Like runTransfer, but ignores any existing transfer lock file for the
  - transfer, allowing re-running a transfer that is already in progress.
- -
- - Note that this may result in confusing progress meter display in the
- - webapp, if multiple processes are writing to the transfer info file. -}
+ -}
 alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 alwaysRunTransfer = runTransfer' True
 

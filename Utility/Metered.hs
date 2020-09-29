@@ -11,6 +11,7 @@ module Utility.Metered (
 	MeterUpdate,
 	nullMeterUpdate,
 	combineMeterUpdate,
+	TotalSize(..),
 	BytesProcessed(..),
 	toBytesProcessed,
 	fromBytesProcessed,
@@ -29,6 +30,8 @@ module Utility.Metered (
 	ProgressParser,
 	commandMeter,
 	commandMeter',
+	commandMeterExitCode,
+	commandMeterExitCode',
 	demeterCommand,
 	demeterCommandEnv,
 	avoidProgress,
@@ -228,31 +231,44 @@ data OutputHandler = OutputHandler
 	}
 
 {- Parses the String looking for a command's progress output, and returns
- - Maybe the number of bytes done so far, and any any remainder of the
- - string that could be an incomplete progress output. That remainder
- - should be prepended to future output, and fed back in. This interface
- - allows the command's output to be read in any desired size chunk, or
- - even one character at a time.
+ - Maybe the number of bytes done so far, optionally a total size, 
+ - and any any remainder of the string that could be an incomplete
+ - progress output. That remainder should be prepended to future output,
+ - and fed back in. This interface allows the command's output to be read
+ - in any desired size chunk, or even one character at a time.
  -}
-type ProgressParser = String -> (Maybe BytesProcessed, String)
+type ProgressParser = String -> (Maybe BytesProcessed, Maybe TotalSize, String)
+
+newtype TotalSize = TotalSize Integer
 
 {- Runs a command and runs a ProgressParser on its output, in order
  - to update a meter.
+ -
+ - If the Meter is provided, the ProgressParser can report the total size,
+ - which allows creating a Meter before the size is known.
  -}
-commandMeter :: ProgressParser -> OutputHandler -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
-commandMeter progressparser oh meterupdate cmd params = do
-	ret <- commandMeter' progressparser oh meterupdate cmd params
+commandMeter :: ProgressParser -> OutputHandler -> Maybe Meter -> MeterUpdate -> FilePath -> [CommandParam] -> IO Bool
+commandMeter progressparser oh meter meterupdate cmd params =
+	commandMeter' progressparser oh meter meterupdate cmd params id
+
+commandMeter' :: ProgressParser -> OutputHandler -> Maybe Meter -> MeterUpdate -> FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO Bool
+commandMeter' progressparser oh meter meterupdate cmd params mkprocess = do
+	ret <- commandMeterExitCode' progressparser oh meter meterupdate cmd params mkprocess
 	return $ case ret of
 		Just ExitSuccess -> True
 		_ -> False
 
-commandMeter' :: ProgressParser -> OutputHandler -> MeterUpdate -> FilePath -> [CommandParam] -> IO (Maybe ExitCode)
-commandMeter' progressparser oh meterupdate cmd params = 
-	outputFilter cmd params Nothing
-		(feedprogress zeroBytesProcessed [])
+commandMeterExitCode :: ProgressParser -> OutputHandler -> Maybe Meter -> MeterUpdate -> FilePath -> [CommandParam] -> IO (Maybe ExitCode)
+commandMeterExitCode progressparser oh meter meterupdate cmd params =
+	commandMeterExitCode' progressparser oh meter meterupdate cmd params id
+
+commandMeterExitCode' :: ProgressParser -> OutputHandler -> Maybe Meter -> MeterUpdate -> FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO (Maybe ExitCode)
+commandMeterExitCode' progressparser oh mmeter meterupdate cmd params mkprocess = 
+	outputFilter cmd params mkprocess Nothing
+		(feedprogress mmeter zeroBytesProcessed [])
 		handlestderr
   where
-	feedprogress prev buf h = do
+	feedprogress sendtotalsize prev buf h = do
 		b <- S.hGetSome h 80
 		if S.null b
 			then return ()
@@ -261,13 +277,18 @@ commandMeter' progressparser oh meterupdate cmd params =
 					S.hPut stdout b
 					hFlush stdout
 				let s = decodeBS b
-				let (mbytes, buf') = progressparser (buf++s)
+				let (mbytes, mtotalsize, buf') = progressparser (buf++s)
+				sendtotalsize' <- case (sendtotalsize, mtotalsize) of
+					(Just meter, Just (TotalSize n)) -> do
+						setMeterTotalSize meter n
+						return Nothing
+					_ -> return sendtotalsize
 				case mbytes of
-					Nothing -> feedprogress prev buf' h
+					Nothing -> feedprogress sendtotalsize' prev buf' h
 					(Just bytes) -> do
 						when (bytes /= prev) $
 							meterupdate bytes
-						feedprogress bytes buf' h
+						feedprogress sendtotalsize' bytes buf' h
 
 	handlestderr h = unlessM (hIsEOF h) $ do
 		stderrHandler oh =<< hGetLine h
@@ -283,7 +304,7 @@ demeterCommand oh cmd params = demeterCommandEnv oh cmd params Nothing
 
 demeterCommandEnv :: OutputHandler -> FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
 demeterCommandEnv oh cmd params environ = do
-	ret <- outputFilter cmd params environ
+	ret <- outputFilter cmd params id environ
 		(\outh -> avoidProgress True outh stdouthandler)
 		(\errh -> avoidProgress True errh $ stderrHandler oh)
 	return $ case ret of
@@ -308,11 +329,12 @@ avoidProgress doavoid h emitter = unlessM (hIsEOF h) $ do
 outputFilter
 	:: FilePath
 	-> [CommandParam]
+	-> (CreateProcess -> CreateProcess)
 	-> Maybe [(String, String)]
 	-> (Handle -> IO ())
 	-> (Handle -> IO ())
 	-> IO (Maybe ExitCode)
-outputFilter cmd params environ outfilter errfilter = 
+outputFilter cmd params mkprocess environ outfilter errfilter = 
 	catchMaybeIO $ withCreateProcess p go
   where
 	go _ (Just outh) (Just errh) pid = do
@@ -338,7 +360,7 @@ outputFilter cmd params environ outfilter errfilter =
 		return ret
 	go _ _ _ _ = error "internal"
 	
-	p = (proc cmd (toCommand params))
+	p = mkprocess (proc cmd (toCommand params))
 		{ env = environ
 		, std_out = CreatePipe
 		, std_err = CreatePipe

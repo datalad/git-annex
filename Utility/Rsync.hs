@@ -114,7 +114,7 @@ rsyncUrlIsPath s
  -}
 rsyncProgress :: OutputHandler -> MeterUpdate -> [CommandParam] -> IO Bool
 rsyncProgress oh meter ps =
-	commandMeter' parseRsyncProgress oh meter "rsync" (rsyncParamsFixup ps) >>= \case
+	commandMeterExitCode parseRsyncProgress oh Nothing meter "rsync" (rsyncParamsFixup ps) >>= \case
 		Just ExitSuccess -> return True
 		Just (ExitFailure exitcode) -> do
 			when (exitcode /= 1) $
@@ -136,10 +136,10 @@ rsyncProgress oh meter ps =
 parseRsyncProgress :: ProgressParser
 parseRsyncProgress = go [] . reverse . progresschunks
   where
-	go remainder [] = (Nothing, remainder)
+	go remainder [] = (Nothing, Nothing, remainder)
 	go remainder (x:xs) = case parsebytes (findbytesstart x) of
 		Nothing -> go (delim:x++remainder) xs
-		Just b -> (Just (toBytesProcessed b), remainder)
+		Just b -> (Just (toBytesProcessed b), Nothing, remainder)
 
 	delim = '\r'
 

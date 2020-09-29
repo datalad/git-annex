@@ -1,6 +1,6 @@
 {- youtube-dl integration for git-annex
  -
- - Copyright 2017-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,10 +21,15 @@ import Annex.Url
 import Utility.DiskFree
 import Utility.HtmlDetect
 import Utility.Process.Transcript
+import Utility.Metered
+import Utility.DataUnits
+import Messages.Progress
 import Logs.Transfer
 
 import Network.URI
 import Control.Concurrent.Async
+import Data.Char
+import Text.Read
 
 -- youtube-dl can follow redirects to anywhere, including potentially
 -- localhost or a private address. So, it's only allowed to download
@@ -43,6 +48,8 @@ youtubeDlNotAllowedMessage = unwords
 -- Runs youtube-dl in a work directory, to download a single media file
 -- from the url. Reutrns the path to the media file in the work directory.
 --
+-- Displays a progress meter as youtube-dl downloads.
+--
 -- If youtube-dl fails without writing any files to the work directory, 
 -- or is not installed, returns Right Nothing.
 --
@@ -53,14 +60,14 @@ youtubeDlNotAllowedMessage = unwords
 --
 -- (Note that we can't use --output to specifiy the file to download to,
 -- due to <https://github.com/rg3/youtube-dl/issues/14864>)
-youtubeDl :: URLString -> FilePath -> Annex (Either String (Maybe FilePath))
-youtubeDl url workdir = ifM ipAddressesUnlimited
-	( withUrlOptions $ youtubeDl' url workdir
+youtubeDl :: URLString -> FilePath -> MeterUpdate -> Annex (Either String (Maybe FilePath))
+youtubeDl url workdir p = ifM ipAddressesUnlimited
+	( withUrlOptions $ youtubeDl' url workdir p
 	, return $ Left youtubeDlNotAllowedMessage
 	)
 
-youtubeDl' :: URLString -> FilePath -> UrlOptions -> Annex (Either String (Maybe FilePath))
-youtubeDl' url workdir uo
+youtubeDl' :: URLString -> FilePath -> MeterUpdate -> UrlOptions -> Annex (Either String (Maybe FilePath))
+youtubeDl' url workdir p uo
 	| supportedScheme uo url = ifM (liftIO $ inPath "youtube-dl")
 		( runcmd >>= \case
 			Right True -> workdirfiles >>= \case
@@ -81,11 +88,17 @@ youtubeDl' url workdir uo
 	runcmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
 		Right maxsize -> do
-			quiet <- commandProgressDisabled
-			opts <- youtubeDlOpts $ dlopts ++ maxsize ++ 
-				if quiet then [ Param "--quiet" ] else []
-			ok <- liftIO $ boolSystem' "youtube-dl" opts $
-				\p -> p { cwd = Just workdir }
+			opts <- youtubeDlOpts (dlopts ++ maxsize)
+			oh <- mkOutputHandlerQuiet
+			-- The size is unknown to start. Once youtube-dl
+			-- outputs some progress, the meter will be updated
+			-- with the size, which is why it's important the
+			-- meter is passed into commandMeter'
+			let unknownsize = Nothing :: Maybe FileSize
+			ok <- metered (Just p) unknownsize $ \meter meterupdate ->
+				liftIO $ commandMeter' 
+					parseYoutubeDlProgress oh (Just meter) meterupdate "youtube-dl" opts
+					(\pr -> pr { cwd = Just workdir })
 			return (Right ok)
 	dlopts = 
 		[ Param url
@@ -125,10 +138,10 @@ youtubeDlMaxSize workdir = ifM (Annex.getState Annex.force)
 	)
 
 -- Download a media file to a destination, 
-youtubeDlTo :: Key -> URLString -> FilePath -> Annex Bool
-youtubeDlTo key url dest = do
+youtubeDlTo :: Key -> URLString -> FilePath -> MeterUpdate -> Annex Bool
+youtubeDlTo key url dest p = do
 	res <- withTmpWorkDir key $ \workdir ->
-		youtubeDl url workdir >>= \case
+		youtubeDl url workdir p >>= \case
 			Right (Just mediafile) -> do
 				liftIO $ renameFile mediafile dest
 				return (Just True)
@@ -239,3 +252,37 @@ supportedScheme uo url = case parseURIRelaxed url of
 		-- involving youtube-dl in a ftp download
 		"ftp:" -> False
 		_ -> allowedScheme uo u
+
+{- Strategy: Look for chunks prefixed with \r, which look approximately
+ - like this:
+ - "ESC[K[download]  26.6% of 60.22MiB at 254.69MiB/s ETA 00:00"
+ - Look at the number before "% of " and the number and unit after,
+ - to determine the number of bytes.
+ -}
+parseYoutubeDlProgress :: ProgressParser
+parseYoutubeDlProgress = go [] . reverse . progresschunks
+  where
+	delim = '\r'
+
+	progresschunks = drop 1 . splitc delim
+
+	go remainder [] = (Nothing, Nothing, remainder)
+	go remainder (x:xs) = case split "% of " x of
+		(p:r:[]) -> case (parsepercent p, parsebytes r) of
+			(Just percent, Just total) ->
+				( Just (toBytesProcessed (calc percent total))
+				, Just (TotalSize total)
+				, remainder
+				)
+			_ -> go (delim:x++remainder) xs
+		_ -> go (delim:x++remainder) xs
+
+	calc :: Double -> Integer -> Integer
+	calc percent total = round (percent * fromIntegral total / 100)
+
+	parsepercent :: String -> Maybe Double
+	parsepercent = readMaybe . reverse . takeWhile (not . isSpace) . reverse
+
+	parsebytes = readSize units . takeWhile (not . isSpace)
+
+	units = memoryUnits ++ storageUnits

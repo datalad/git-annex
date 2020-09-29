@@ -307,7 +307,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 		| rawOption (downloadOptions opts) = downloadlink
 		| otherwise = do
 			r <- withTmpWorkDir mediakey $ \workdir -> do
-				dl <- youtubeDl linkurl workdir
+				dl <- youtubeDl linkurl workdir nullMeterUpdate
 				case dl of
 					Right (Just mediafile) -> do
 						let ext = case takeExtension mediafile of

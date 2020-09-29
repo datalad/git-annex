@@ -327,9 +327,10 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+			showNote "using youtube-dl"
 			Transfer.notifyTransfer Transfer.Download url $
-				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \_p ->
-					youtubeDl url workdir >>= \case
+				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \p ->
+					youtubeDl url workdir p >>= \case
 						Right (Just mediafile) -> do
 							cleanuptmp
 							checkCanAdd o dest $ \canadd -> do

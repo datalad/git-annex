@@ -307,16 +307,16 @@ ariaProgress :: Maybe Integer -> MeterUpdate -> [CommandParam] -> Annex Bool
 ariaProgress Nothing _ ps = runAria ps
 ariaProgress (Just sz) meter ps = do
 	oh <- mkOutputHandler
-	liftIO . commandMeter (parseAriaProgress sz) oh meter "aria2c"
+	liftIO . commandMeter (parseAriaProgress sz) oh Nothing meter "aria2c"
 		=<< ariaParams ps
 
 parseAriaProgress :: Integer -> ProgressParser
 parseAriaProgress totalsize = go [] . reverse . splitc '\r'
   where
-	go remainder [] = (Nothing, remainder)
+	go remainder [] = (Nothing, Nothing, remainder)
 	go remainder (x:xs) = case readish (findpercent x) of
 		Nothing -> go (x++remainder) xs
-		Just p -> (Just (frompercent p), remainder)
+		Just p -> (Just (frompercent p), Nothing, remainder)
 
 	-- "(N%)"
 	findpercent = takeWhile (/= '%') . drop 1 . dropWhile (/= '(')
