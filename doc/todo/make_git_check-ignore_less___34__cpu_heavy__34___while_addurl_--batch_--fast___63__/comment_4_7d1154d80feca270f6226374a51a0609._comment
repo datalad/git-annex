@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-09-29T15:48:52Z"
+ content="""
+Should I reopen this? 
+
+Skipping checking ignores seems like a likely approach for you, because
+any url you want to add seems likely to have an extension that is not
+ignored, and it's very unlikely that the filename that addurl picks will be
+ignored either.
+
+I can see two further ways to optimise it... 
+
+The ignores check currently runs in the same stage as the download. Making
+the download happen in perform stage and the ignores check and git add
+happen in cleanup would improve parallelization because it would not block
+other downloads on the ignores check.
+
+Or, the ignores could not be checked by git-annex before git add,
+and instead git add be relied on to check, and if it fails,
+just clean up the annex link from the working tree. But the problem with
+that is, it does batch up calls to git add, and so if git add failed, it
+would be difficult to know which file(s) it rejected due to being ignored
+in order to clean them up. Also, I guess git add probably does an
+equivilant amount of work as git check-ignore to check the ignores, so
+at most this would halve that work, and eliminate a little overhead in
+talking to git check-ignore.
+
+Oh hmm, that suggests a third possibility: Run git add -f, since we've
+already checked the ignores, which would probably avoid it doing the ignore
+checking work.
+
+(Another other problem with skipping git check-ignore is it would need
+to download the url before git add checks if it's ignored ...
+but in fact it already does download the file before check-ignore, because
+it needs to determine if youtube-dl should be used, which needs the content
+of the url, and when youtube-dl is used, a different filename will be used.)
+"""]]
