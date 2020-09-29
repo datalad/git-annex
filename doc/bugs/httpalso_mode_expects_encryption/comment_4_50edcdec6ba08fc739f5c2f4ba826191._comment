@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-09-29T17:52:03Z"
+ content="""
+Made it check if the inherited config has encryption and skip setting it
+up. So if there is a special remote that does not support encryption
+config, it won't fail this way.
+
+Come to think, at least tahoe does not support encryption config.
+Although it seems very unlikely it would be useful combined with tahoe.
+
+Of course, it still won't, and cannot possibly work when combined with a
+http export of a git working tree. But then the docs are clear it won't
+work with everything.
+"""]]

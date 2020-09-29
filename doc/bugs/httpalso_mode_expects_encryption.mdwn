@@ -40,3 +40,5 @@ git annex 8.20200908 on current Debian sid (as packaged)
 My first git-annex repository dates back 2010-12-21 ... so: yes.
 
 The introduction of httpalso simplifies the setup in the [annex-to-web](https://gitlab.com/chrysn/annex-to-web)  server, which on one hand consumes them in order to pass out redirects, and on the other hand .
+
+> [[fixed|done]] to the extent this was a bug at all. --[[Joey]]

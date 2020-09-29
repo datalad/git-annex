@@ -105,7 +105,9 @@ httpAlsoSetup _ (Just u) _ c gc = do
 	_url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)
 		(M.lookup urlField c)
-	(c', _encsetup) <- encryptionSetup c gc
+	c' <- if isJust (M.lookup encryptionField c)
+		then fst <$> encryptionSetup c gc
+		else pure c
 	gitConfigSpecialRemote u c' [("httpalso", "true")]
 	return (c', u)
 
