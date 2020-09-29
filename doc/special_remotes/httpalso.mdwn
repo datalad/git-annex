@@ -1,7 +1,8 @@
-This special remote allows downloading annexed objects from other remotes
-that also publish their content by http. Not to be confused with the [[web]]
-special remote, this one is only useful in combination with some other
-special remote.
+This special remote allows downloading annexed objects from other special 
+remotes that also publish their content by http. Not to be confused with
+the [[web]] special remote, or with 
+[accessing git-annex repositories over http](tips/setup_a_public_repository_on_a_web_site),
+this is only useful in combination with some other special remote.
 
 Suppose, for example, that you have a [[directory]] special remote. And the
 directory happens to be published by a web server. (Or it could be a
