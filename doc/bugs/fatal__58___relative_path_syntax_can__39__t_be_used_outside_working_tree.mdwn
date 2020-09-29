@@ -40,3 +40,5 @@ git-annex: user error (git ["--git-dir=.","--literal-pathspecs","cat-file","--ba
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! We love it! Thank you so much! Git-annex is a superpower 🦹‍♂️ 
+
+> [[fixed|done]] --[[Joey]]

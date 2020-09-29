@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-09-29T17:34:03Z"
+ content="""
+I have not been able to reproduce this so far in a usual environment.
+
+It doesn't even run `git cat-file` in my testing, let alone do
+anything with it that fails.
+
+AFAICS, for `git cat-file` to run, the `git ls-files --cached` that it does
+run would have to otput some filenames. Which should be impossible normally
+in a bare repository, because there is no index file in a bare repo.
+
+So, there is something unusual about your repository 
+or environment.
+
+Here are two ways to reproduce that failure:
+
+* Set `GIT_INDEX_FILE` to point to an index file belonging to some other
+  git repository.
+* Copy .git/index from some other repository into the bare repository.
+
+I guess you, or some past buggy thing, could have done the latter.
+Or perhaps you did the former and forgot about the envionment setting?
+
+Anyway, I'll make git-annex check if it's a bare repo and skip this
+part entirely, but really it seems to me that either of those possibilities
+is pretty far into foot shooting territory and if git-annex explodes
+because you're doing stuff like that, it's hardly a bug. Of course,
+if you can somehow rule out both possibilities, that would be a different
+story.
+"""]]

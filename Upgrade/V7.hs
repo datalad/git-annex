@@ -96,7 +96,7 @@ removeOldDb getdb = do
 -- annex object. That work is only done once, and then the object will
 -- finally get its inode cached.
 populateKeysDb :: Annex ()
-populateKeysDb = do
+populateKeysDb = unlessM isBareRepo $ do
 	top <- fromRepo Git.repoPath
 	(l, cleanup) <- inRepo $ LsFiles.inodeCaches [top]
 	forM_ l $ \case

@@ -31,6 +31,7 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
     importtree=yes directory special remotes.
     (Other special remotes may support this later as well.)
   * addurl: Avoid a redundant git ignores check for speed.
+  * upgrade: Avoid an upgrade failure of a bare repo in unusual circumstances.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 
