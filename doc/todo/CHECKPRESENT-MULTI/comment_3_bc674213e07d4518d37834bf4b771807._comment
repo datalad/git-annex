@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
+ nickname="lykos"
+ avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
+ subject="comment 3"
+ date="2020-09-29T08:32:20Z"
+ content="""
+I agree about the simplification. However, when resuming an upload with, say, 400 chunks where only 10 are missing, after CHECKPRESENT-MULTI-FAILURE, we'd need to CHECKPRESENT another 390 keys until we can continue. Sure, the remote could cache the replies, but another idea would be for the remote to reply with the last key in the list that is present.
+
+Example:
+
+```
+$ CHECKPRESENT-MULTI a b c d e  # git annex calls CHECKPRESENT-MULTI with an ordered list
+CHECKPRESENT-MULTI-SUCCESS # all keys are present
+CHECKPRESENT-MULTI-FAILURE # all keys are missing
+CHECKPRESENT-MULTI-FAILURE c # a, b and c are present. Rest ist missing
+```
+"""]]
