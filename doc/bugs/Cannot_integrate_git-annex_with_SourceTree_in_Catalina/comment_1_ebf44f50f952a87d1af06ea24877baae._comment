@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="mark@6b90344cdab3158eacb94a3944460d138afc9bef"
+ nickname="mark"
+ avatar="http://cdn.libravatar.org/avatar/780625d9a11f1840abd94822dfe3e9f5"
+ subject="comment 1"
+ date="2020-09-28T21:10:56Z"
+ content="""
+And BTW, we really value git-annex and use it for keeping all of our golden reference outputs for regression testing in place and available for others who need to run tests.
+"""]]
