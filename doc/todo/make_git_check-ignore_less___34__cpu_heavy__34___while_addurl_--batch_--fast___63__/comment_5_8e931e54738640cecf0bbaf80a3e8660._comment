@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-09-29T16:58:18Z"
+ content="""
+Implemented the git add -f optimisation. Unsure how much of an optimisation
+it really is tho.
+"""]]

@@ -34,7 +34,7 @@ import Logs.File
 import qualified Utility.Format
 import Utility.Tmp
 import Utility.Metered
-import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..))
+import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..), checkCanAdd)
 import Annex.UUID
 import Backend.URL (fromUrl)
 import Annex.Content
@@ -198,28 +198,28 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 						-- don't use youtube-dl
 						, rawOption = True
 						}
-					let go urlinfo = maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
+					let go urlinfo = Just . maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
 					if relaxedOption (downloadOptions opts)
 						then go Url.assumeUrlExists
 						else Url.withUrlOptions (Url.getUrlInfo url) >>= \case
 							Right urlinfo -> go urlinfo
 							Left err -> do
 								warning err
-								return []
+								return (Just [])
 				else do
 					res <- tryNonAsync $ maybe
 						(error $ "unable to checkUrl of " ++ Remote.name r)
 						(flip id url)
 						(Remote.checkUrl r)
 					case res of
-						Left _ -> return []
+						Left _ -> return (Just [])
 						Right (UrlContents sz _) ->
-							maybeToList <$>
+							Just . maybeToList <$>
 								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
 								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' (f </> sanitizeFilePath subf) sz
-							return $ if all isJust kl
+							return $ Just $ if all isJust kl
 								then catMaybes kl
 								else []
 							
@@ -257,19 +257,26 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 			Nothing -> return True
 			Just f -> do
 				showStartOther "addurl" (Just url) (SeekInput [])
-				ks <- getter f
-				if null ks
-					then do
+				getter f >>= \case
+					Just ks
+						-- Download problem.
+						| null ks -> do
+							showEndFail
+							checkFeedBroken (feedurl todownload)
+						| otherwise -> do
+							forM_ ks $ \key ->
+								ifM (annexGenMetaData <$> Annex.getGitConfig)
+									( addMetaData key $ extractMetaData todownload
+									, addMetaData key $ minimalMetaData todownload
+									)
+							showEndOk
+							return True
+					-- Was not able to add anything,
+					-- but not because of a download 
+					-- problem.
+					Nothing -> do
 						showEndFail
-						checkFeedBroken (feedurl todownload)
-					else do
-						forM_ ks $ \key ->
-							ifM (annexGenMetaData <$> Annex.getGitConfig)
-								( addMetaData key $ extractMetaData todownload
-								, addMetaData key $ minimalMetaData todownload
-								)
-						showEndOk
-						return True
+						return False
 
 	{- Find a unique filename to save the url to.
 	 - If the file exists, prefixes it with a number.
@@ -306,9 +313,10 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 						let ext = case takeExtension mediafile of
 							[] -> ".m"
 							s -> s
-						ok <- rundownload linkurl ext $ \f -> do
-							addWorkTree (downloadOptions opts) addunlockedmatcher webUUID mediaurl f mediakey (Just mediafile)
-							return [mediakey]
+						ok <- rundownload linkurl ext $ \f ->
+							checkCanAdd (downloadOptions opts) f $ \canadd -> do
+								addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just mediafile)
+								return (Just [mediakey])
 						return (Just ok)
 					-- youtude-dl didn't support it, so
 					-- download it as if the link were
@@ -325,9 +333,10 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 	addmediafast linkurl mediaurl mediakey =
 		ifM (pure (not (rawOption (downloadOptions opts)))
 		     <&&> youtubeDlSupported linkurl)
-			( rundownload linkurl ".m" $ \f -> do
-				addWorkTree (downloadOptions opts) addunlockedmatcher webUUID mediaurl f mediakey Nothing
-				return [mediakey]
+			( rundownload linkurl ".m" $ \f ->
+				checkCanAdd (downloadOptions opts) f $ \canadd -> do
+					addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey Nothing
+					return (Just [mediakey])
 			, performDownload addunlockedmatcher opts cache todownload
 				{ location = Enclosure linkurl }
 			)
