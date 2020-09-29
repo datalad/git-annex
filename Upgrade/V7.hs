@@ -17,6 +17,7 @@ import qualified Database.Keys.SQL
 import qualified Git.LsFiles as LsFiles
 import qualified Git
 import Git.FilePath
+import Config
 
 upgrade :: Bool -> Annex Bool
 upgrade automatic = do
