@@ -643,25 +643,22 @@ getImportableContents r importtreeconfig ci matcher =
 		<*> mapM (filterunwanted dbhandle) (importableHistory ic)
 	
 	wanted dbhandle (loc, (_cid, sz))
-		| ".git" `elem` Posix.splitDirectories (fromImportLocation loc) =
-			pure False
-		| otherwise = wantImport importtreeconfig ci matcher loc sz
-			<||> isKnownImportLocation dbhandle loc
+		| ingitdir = pure False
+		| otherwise =
+			isknown <||> (matches <&&> notignored)
+	  where
+		-- Checks, from least to most expensive.
+		ingitdir = ".git" `elem` Posix.splitDirectories (fromImportLocation loc)
+		matches = matchesImportLocation matcher loc sz
+		isknown = isKnownImportLocation dbhandle loc
+		notignored = notIgnoredImportLocation importtreeconfig ci loc
 
 isKnownImportLocation :: Export.ExportHandle -> ImportLocation -> Annex Bool
 isKnownImportLocation dbhandle loc = liftIO $
 	not . null <$> Export.getExportTreeKey dbhandle loc
 
-{- The matcher is matched relative to the top of the tree of files on the
- - remote, even when importing into a subdirectory. 
- -
- - However, when checking gitignores, the subdirectory is included
- - so it will look at the gitignore file in it.
- -}
-wantImport :: ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
-wantImport importtreeconfig ci matcher loc sz =
-	checkMatcher' matcher mi mempty
-		<&&> (not <$> checkIgnored ci f)
+matchesImportLocation :: FileMatcher Annex -> ImportLocation -> Integer -> Annex Bool
+matchesImportLocation matcher loc sz = checkMatcher' matcher mi mempty
   where
 	mi = MatchingInfo $ ProvidedInfo
 		{ providedFilePath = fromImportLocation loc
@@ -670,6 +667,10 @@ wantImport importtreeconfig ci matcher loc sz =
 		, providedMimeType = Nothing
 		, providedMimeEncoding = Nothing
 		}
+
+notIgnoredImportLocation :: ImportTreeConfig -> CheckGitIgnore -> ImportLocation -> Annex Bool
+notIgnoredImportLocation importtreeconfig ci loc = not <$> checkIgnored ci f
+  where
 	f = fromRawFilePath $ case importtreeconfig of
 		ImportSubTree dir _ ->
 			getTopFilePath dir P.</> fromImportLocation loc
