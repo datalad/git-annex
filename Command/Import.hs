@@ -307,15 +307,18 @@ seekRemote remote branch msubdir importcontent = do
 
 listContents :: Remote -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
 listContents remote tvar = starting "list" ai si $
-	listImportableContents remote >>= \case
-		Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
-		Just importable -> do
-			importable' <- makeImportMatcher remote >>= \case
-				Right matcher -> filterImportableContents remote matcher importable
-				Left err -> giveup $ "Cannot import from " ++ Remote.name remote ++ " because of a problem with its configuration: " ++ err
-			next $ do
-				liftIO $ atomically $ writeTVar tvar (Just importable')
+	makeImportMatcher remote >>= \case
+		Right matcher -> getImportableContents remote matcher >>= \case
+			Just importable -> next $ do
+				liftIO $ atomically $ writeTVar tvar (Just importable)
 				return True
+			Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
+		Left err -> giveup $ unwords 
+			[ "Cannot import from"
+			, Remote.name remote
+			, "because of a problem with its configuration:"
+			, err
+			]
   where
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []

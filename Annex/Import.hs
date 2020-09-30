@@ -14,9 +14,8 @@ module Annex.Import (
 	buildImportTrees,
 	canImportKeys,
 	importKeys,
-	filterImportableContents,
 	makeImportMatcher,
-	listImportableContents,
+	getImportableContents,
 ) where
 
 import Annex.Common
@@ -58,7 +57,7 @@ import Backend.Utilities
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
-import qualified System.FilePath.Posix as Posix
+import qualified System.FilePath.Posix.ByteString as Posix
 import qualified System.FilePath.ByteString as P
 
 {- Configures how to build an import tree. -}
@@ -617,16 +616,31 @@ makeImportMatcher r = load preferredContentKeylessTokens >>= \case
   where
 	load t = M.lookup (Remote.uuid r) . fst <$> preferredRequiredMapsLoad' t
 
-wantImport :: FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
-wantImport matcher loc sz = checkMatcher' matcher mi mempty
+{- Gets the ImportableContents from the remote.
+ -
+ - Filters out any paths that include a ".git" component, because git does
+ - not allow storing ".git" in a git repository. While it is possible to
+ - write a git tree that contains that, git will complain and refuse to
+ - check it out.
+ -
+ - Filters out things not matching the FileMatcher.
+ -}
+getImportableContents :: Remote -> FileMatcher Annex -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+getImportableContents r matcher = 
+	Remote.listImportableContents (Remote.importActions r) >>= \case
+		Nothing -> return Nothing
+		Just importable -> do
+			dbhandle <- Export.openDb (Remote.uuid r)
+			Just <$> filterunwanted dbhandle importable
   where
-	mi = MatchingInfo $ ProvidedInfo
-		{ providedFilePath = fromImportLocation loc
-		, providedKey = Nothing
-		, providedFileSize = sz
-		, providedMimeType = Nothing
-		, providedMimeEncoding = Nothing
-		}
+	filterunwanted dbhandle ic = ImportableContents
+		<$> filterM (wanted dbhandle) (importableContents ic)
+		<*> mapM (filterunwanted dbhandle) (importableHistory ic)
+	
+	wanted dbhandle (loc, (_cid, sz))
+		| ".git" `elem` Posix.splitDirectories (fromImportLocation loc) =
+			pure False
+		| otherwise = shouldImport dbhandle matcher loc sz
 
 {- If a file is not preferred content, but it was previously exported or
  - imported to the remote, not importing it would result in a remote
@@ -641,34 +655,13 @@ shouldImport dbhandle matcher loc sz =
 		<||>
 	liftIO (not . null <$> Export.getExportTreeKey dbhandle loc)
 
-filterImportableContents :: Remote -> FileMatcher Annex -> ImportableContents (ContentIdentifier, ByteSize) -> Annex (ImportableContents (ContentIdentifier, ByteSize))
-filterImportableContents r matcher importable
-	| Utility.Matcher.isEmpty matcher = return importable
-	| otherwise = do
-		dbhandle <- Export.openDb (Remote.uuid r)
-		go dbhandle importable
+wantImport :: FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
+wantImport matcher loc sz = checkMatcher' matcher mi mempty
   where
-	go dbhandle ic = ImportableContents
-		<$> filterM (match dbhandle) (importableContents ic)
-		<*> mapM (go dbhandle) (importableHistory ic)
-	
-	match dbhandle (loc, (_cid, sz)) = shouldImport dbhandle matcher loc sz
-	
-{- Gets the ImportableContents from the remote.
- -
- - Filters out any paths that include a ".git" component, because git does
- - not allow storing ".git" in a git repository. While it is possible to
- - write a git tree that contains that, git will complain and refuse to
- - check it out.
- -}
-listImportableContents :: Remote -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-listImportableContents r = fmap removegitspecial
-	<$> Remote.listImportableContents (Remote.importActions r)
-  where
-	removegitspecial ic = ImportableContents
-		{ importableContents = 
-			filter (not . gitspecial . fst) (importableContents ic)
-		, importableHistory =
-			map removegitspecial (importableHistory ic)
+	mi = MatchingInfo $ ProvidedInfo
+		{ providedFilePath = fromImportLocation loc
+		, providedKey = Nothing
+		, providedFileSize = sz
+		, providedMimeType = Nothing
+		, providedMimeEncoding = Nothing
 		}
-	gitspecial l = ".git" `elem` Posix.splitDirectories (fromRawFilePath (fromImportLocation l))
