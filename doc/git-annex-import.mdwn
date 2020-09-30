@@ -31,7 +31,7 @@ remote.
 You can only import from special remotes that were configured with
 `importtree=yes` when set up with [[git-annex-initremote]](1). Only some
 kinds of special remotes will let you configure them this way. A perhaps
-non-exhastive list is the directory, s3, and adb special remotes.
+non-exhaustive list is the directory, s3, and adb special remotes.
 
 To import from a special remote, you must specify the name of a branch.
 A corresponding remote tracking branch will be updated by `git annex import`.
