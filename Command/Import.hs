@@ -56,6 +56,7 @@ data ImportOptions
 		, importToBranch :: Branch
 		, importToSubDir :: Maybe FilePath
 		, importContent :: Bool
+		, checkGitIgnoreOption :: CheckGitIgnore
 		}
 
 optParser :: CmdParamsDesc -> Parser ImportOptions
@@ -76,6 +77,7 @@ optParser desc = do
 					(Ref (encodeBS' branch))
 					(if null subdir then Nothing else Just subdir)
 					content
+					ic
 			_ -> giveup "expected BRANCH[:SUBDIR]"
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
@@ -122,7 +124,7 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		(pure Nothing)
 		(Just <$$> inRepo . toTopFilePath . toRawFilePath)
 		(importToSubDir o)
-	seekRemote r (importToBranch o) subdir (importContent o)
+	seekRemote r (importToBranch o) subdir (importContent o) (checkGitIgnoreOption o)
 
 startLocal :: ImportOptions -> AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
 startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
@@ -268,8 +270,8 @@ verifyExisting key destfile (yes, no) = do
 	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
 		(const yes) no
 
-seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CommandSeek
-seekRemote remote branch msubdir importcontent = do
+seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> CommandSeek
+seekRemote remote branch msubdir importcontent ci = do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir ->
@@ -286,7 +288,7 @@ seekRemote remote branch msubdir importcontent = do
 	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 
 	importabletvar <- liftIO $ newTVarIO Nothing
-	void $ includeCommandAction (listContents remote importabletvar)
+	void $ includeCommandAction (listContents remote importtreeconfig ci importabletvar)
 	liftIO (atomically (readTVar importabletvar)) >>= \case
 		Nothing -> return ()
 		Just importable -> importKeys remote importtreeconfig importcontent importable >>= \case
@@ -305,10 +307,10 @@ seekRemote remote branch msubdir importcontent = do
 
 	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
 
-listContents :: Remote -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
-listContents remote tvar = starting "list" ai si $
+listContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
+listContents remote importtreeconfig ci tvar = starting "list" ai si $
 	makeImportMatcher remote >>= \case
-		Right matcher -> getImportableContents remote matcher >>= \case
+		Right matcher -> getImportableContents remote importtreeconfig ci matcher >>= \case
 			Just importable -> next $ do
 				liftIO $ atomically $ writeTVar tvar (Just importable)
 				return True

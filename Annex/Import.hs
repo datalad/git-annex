@@ -36,6 +36,7 @@ import Annex.Export
 import Annex.RemoteTrackingBranch
 import Annex.HashObject
 import Annex.Transfer
+import Annex.CheckIgnore
 import Command
 import Backend
 import Types.Key
@@ -623,10 +624,14 @@ makeImportMatcher r = load preferredContentKeylessTokens >>= \case
  - write a git tree that contains that, git will complain and refuse to
  - check it out.
  -
- - Filters out things not matching the FileMatcher.
+ - Filters out new things not matching the FileMatcher or that are
+ - gitignored. However, files that are already in git get imported
+ - regardless. (Similar to how git add behaves on gitignored files.)
+ - This avoids creating a remote tracking branch that, when merged,
+ - would delete the files.
  -}
-getImportableContents :: Remote -> FileMatcher Annex -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-getImportableContents r matcher = 
+getImportableContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+getImportableContents r importtreeconfig ci matcher = 
 	Remote.listImportableContents (Remote.importActions r) >>= \case
 		Nothing -> return Nothing
 		Just importable -> do
@@ -640,23 +645,23 @@ getImportableContents r matcher =
 	wanted dbhandle (loc, (_cid, sz))
 		| ".git" `elem` Posix.splitDirectories (fromImportLocation loc) =
 			pure False
-		| otherwise = shouldImport dbhandle matcher loc sz
+		| otherwise = wantImport importtreeconfig ci matcher loc sz
+			<||> isKnownImportLocation dbhandle loc
 
-{- If a file is not preferred content, but it was previously exported or
- - imported to the remote, not importing it would result in a remote
- - tracking branch that, when merged, would delete the file.
+isKnownImportLocation :: Export.ExportHandle -> ImportLocation -> Annex Bool
+isKnownImportLocation dbhandle loc = liftIO $
+	not . null <$> Export.getExportTreeKey dbhandle loc
+
+{- The matcher is matched relative to the top of the tree of files on the
+ - remote, even when importing into a subdirectory. 
  -
- - To avoid that problem, such files are included in the import.
- - The next export will remove them from the remote.
+ - However, when checking gitignores, the subdirectory is included
+ - so it will look at the gitignore file in it.
  -}
-shouldImport :: Export.ExportHandle -> FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
-shouldImport dbhandle matcher loc sz = 
-	wantImport matcher loc sz
-		<||>
-	liftIO (not . null <$> Export.getExportTreeKey dbhandle loc)
-
-wantImport :: FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
-wantImport matcher loc sz = checkMatcher' matcher mi mempty
+wantImport :: ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> ImportLocation -> ByteSize -> Annex Bool
+wantImport importtreeconfig ci matcher loc sz =
+	checkMatcher' matcher mi mempty
+		<&&> (not <$> checkIgnored ci f)
   where
 	mi = MatchingInfo $ ProvidedInfo
 		{ providedFilePath = fromImportLocation loc
@@ -665,3 +670,8 @@ wantImport matcher loc sz = checkMatcher' matcher mi mempty
 		, providedMimeType = Nothing
 		, providedMimeEncoding = Nothing
 		}
+	f = fromRawFilePath $ case importtreeconfig of
+		ImportSubTree dir _ ->
+			getTopFilePath dir P.</> fromImportLocation loc
+		ImportTree ->
+			fromImportLocation loc

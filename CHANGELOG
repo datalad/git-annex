@@ -13,6 +13,7 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
     This fixes failures uploading to S3 when using -J.
   * add, addurl, importfeed, import: Added --no-check-gitignore option
     for finer grained control than using --force.
+  * import: Check gitignores when importing trees from special remotes.
   * addunused: Don't check .gitignores when adding files.
   * Improve the "Try making some of these repositories available"
     message, with some hints for the user for what to do.

@@ -72,6 +72,9 @@ to tell it what branch to track. For example:
 	git config remote.myremote.annex-tracking-branch master
 	git annex sync --content
 
+Any files that are gitignored will not be included in the import,
+but will be left on the remote.
+
 When the special remote has a preferred content expression set by
 [[git-annex-wanted]](1), it will be honored when importing from it.
 Files that are not preferred content of the remote will not be
@@ -166,10 +169,6 @@ and `--reinject-duplicates` documentation below.
 
   Also, causes .gitignore to not take effect when adding files.
 
-* `--no-check-gitignore`
-
-  Add gitignored files.
-
 * file matching options
 
   Many of the [[git-annex-matching-options]](1)
@@ -185,6 +184,10 @@ and `--reinject-duplicates` documentation below.
   For example: `-J4`  
 
   Setting this to "cpus" will run one job per CPU core.
+
+* `--no-check-gitignore`
+
+  Add gitignored files.
 
 * `--json`
 
