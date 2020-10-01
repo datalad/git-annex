@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-10-01T14:06:32Z"
+ content="""
+Is there a sensible way (could be a helper script) to safely (checks for git links to be used etc) to downgrade version from 8 to 5?
+
+Rationale: On the original host (smaug) of the monstrous http://datasets.datalad.org (on falkor) I have managed to invoke our cron update script while using a newer annex and I had no `annex.autoupgraderepository` set, so annex upgraded a number of clones (originally version 5) locally to version 8.  As I am still by default use older annex, I would like to downgrade those clones on smaug back to 5. 
+"""]]
