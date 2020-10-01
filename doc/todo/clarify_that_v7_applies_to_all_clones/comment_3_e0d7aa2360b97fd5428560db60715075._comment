@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-01T16:54:21Z"
+ content="""
+If the repository did not get switched from direct mode to adjusted
+unlocked branch, and does not use any unlocked files, you can:
+
+* remove the filter.annex.smudge and filter.annex.clean from .git/config
+* remove .git/info/attributes (or at least the filter=annex line)
+* remove .git/hooks/post-checkout and .git/hooks/post-merge
+* remove sqlite databases (all of .git/annex/keysdb* .git/annex/fsck/ .git/annex/export/ .git/annex/cidsdb*)
+* change annex.version
+
+To get back from adjusted unlocked branch to direct mode, you'd first want
+to check out the master branch, and then do all of the above, then `git
+annex direct` to get back into direct mode.
+"""]]
