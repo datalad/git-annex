@@ -22,7 +22,6 @@ import Types.Key
 import Utility.DataUnits
 
 import Criterion.Main
-import Control.Monad.IO.Class (liftIO)
 import qualified Data.ByteString.Char8 as B8
 import System.Random
 import Control.Concurrent
