@@ -270,7 +270,7 @@ Flag MagicMime
 
 Flag Benchmark
   Description: Enable benchmarking
-  Default: False
+  Default: True
 
 Flag DebugLocks
   Description: Debug location of MVar/STM deadlocks

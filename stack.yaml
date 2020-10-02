@@ -8,7 +8,7 @@ flags:
     magicmime: false
     dbus: false
     debuglocks: false
-    benchmark: false
+    benchmark: true
     networkbsd: true
     gitlfs: true
     httpclientrestricted: true

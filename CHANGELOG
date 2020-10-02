@@ -38,6 +38,8 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
   * Parse youtube-dl progress output, which lets progress be displayed
     when doing concurrent downloads.
   * Fix build with Benchmark build flag.
+  * Enable building with git-annex benchmark by default, only turning it
+    off when the criterion library is not installed.
 
  -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
 
