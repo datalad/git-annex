@@ -92,7 +92,7 @@ keyN n = mkKey $ \k -> k
 	}
 
 fileN :: Integer -> TopFilePath
-fileN n = asTopFilePath ("file" ++ show n)
+fileN n = asTopFilePath (toRawFilePath ("file" ++ show n))
 
 keyMiss :: Key
 keyMiss = keyN 0 -- 0 is never stored
