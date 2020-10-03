@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+Originally reported against datalad [#4976](https://github.com/datalad/datalad/issues/4976). Ran into it again and decided to reproduce by simply trying to make `git config` in parallel (they should not crash, right?) and it brings to the same problem reported
+
+```shell
+#!/bin/bash
+
+set -eu
+export PS4='> '
+set -x
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+
+which git
+grep runshell `which git`
+
+git init
+git annex init
+
+for s in {1..30}; do
+    git config annex.version &
+done
+wait
+
+``` 
+
+I also wonder if it is possible to avoid dealing with locales upon **every** invocation of git/git-annex? couldn't it be done just once e.g. per installed annex? (sorry if we had this discussion already, but it feels not yet resolved optimally).
+
+### What version of git-annex are you using? On what operating system?
+
+`8.20200908-gcfc74c2f4`
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
