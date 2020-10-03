@@ -1,0 +1,126 @@
+### Please describe the problem.
+
+I have mentioned this issue here and there but I believe I never filed an issue for it.  ATM I have a process running which does have a good number (see below). Originally we started to observe this issue after refactoring in datalad ([PR4829](https://github.com/datalad/datalad/pull/4829#issuecomment-680837746), but we have not found any possible reason on why it is happening, so decided just to let those batched processes let go without being stuck on them.  In that PR testing it was quite reproducible (testing `datalad-crawler` extension).  In real life it is some % of processes which exhibit the same behavior.  E.g. below it is I believe only those handful from over 1k of such processes.
+
+
+```
+    0     REG       0x34          0  226206175 /mnt/scrap/tmp/abcd/testds-fast-full4/sourcedata/.git/annex/journal.lck                                                                                                             
+    1    FIFO        0xc             184736925 pipe
+    2     REG       0x32          0  111383230 /home/yoh/.tmp/tmpo88ucekd (deleted)
+    3 a_inode        0xd          0      10388 [eventpoll]
+    4 a_inode        0xd          0      10388 [timerfd]
+    5    FIFO        0xc             184711928 pipe
+    6    FIFO        0xc             184711928 pipe
+    7 a_inode        0xd          0      10388 [eventfd]
+    8    FIFO        0xc             184711931 pipe
+    9    FIFO        0xc             184711931 pipe
+   10 a_inode        0xd          0      10388 [eventfd]
+   11 a_inode        0xd          0      10388 [eventpoll]
+   12    FIFO        0xc             184711936 pipe
+   13    FIFO        0xc             184711936 pipe
+   14 a_inode        0xd          0      10388 [eventfd]
+   15 a_inode        0xd          0      10388 [eventpoll]
+   16    FIFO        0xc             184711937 pipe
+   17    FIFO        0xc             184711937 pipe
+   18 a_inode        0xd          0      10388 [eventfd]
+   19 a_inode        0xd          0      10388 [eventpoll]
+   20    FIFO        0xc             184711940 pipe
+   21    FIFO        0xc             184711940 pipe
+   22 a_inode        0xd          0      10388 [eventfd]
+   23     REG       0x34          0  226206176 /mnt/scrap/tmp/abcd/testds-fast-full4/sourcedata/.git/annex/othertmp.lck
+   24     REG       0x34    1327104  227606027 /mnt/scrap/tmp/abcd/testds-fast-full4/sourcedata/.git/annex/othertmp/jlog3458164-0
+   25    FIFO        0xc             185127155 pipe
+   26    FIFO        0xc             184895622 pipe
+   27    FIFO        0xc             184895623 pipe
+   28    FIFO        0xc             184733096 pipe
+   29    FIFO        0xc             184733097 pipe
+   31    FIFO        0xc             184733098 pipe
+  cwd     DIR       0x34      47782  226206111 /mnt/scrap/tmp/abcd/testds-fast-full4/sourcedata
+  mem     REG       0x2d             110620457 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib64/ld-linux-x86-64.so.2 (path dev=0,50)
+  mem     REG       0x2d             110620869 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex (path dev=0,50)
+  mem     REG       0x2d             110621138 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libmagic.so.1 (path dev=0,50)
+  mem     REG       0x2d             110621139 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libc.so.6 (path dev=0,50)
+  mem     REG       0x2d             110621140 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libgmp.so.10 (path dev=0,50)
+  mem     REG       0x2d             110621145 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libm.so.6 (path dev=0,50)
+  mem     REG       0x2d             110621163 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libsqlite3.so.0 (path dev=0,50)
+  mem     REG       0x2d             110621175 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libbz2.so.1.0 (path dev=0,50)
+  mem     REG       0x2d             110621176 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/liblzma.so.5 (path dev=0,50)
+  mem     REG       0x2d             110621187 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libpthread.so.0 (path dev=0,50)
+  mem     REG       0x2d             110621207 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libffi.so.7 (path dev=0,50)
+  mem     REG       0x2d             110621208 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libdl.so.2 (path dev=0,50)
+  mem     REG       0x2d             110621211 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib/x86_64-linux-gnu/libz.so.1 (path dev=0,50)
+  mem     REG       0x2d             111381598 /home/yoh/.cache/git-annex/locales/bb375eb6ec0d2706f1723307f068911a/en_US.UTF-8/LC_CTYPE (path dev=0,50)
+  rtd     DIR      0x900       4096          2 /
+  txt     REG       0x32     177928  110620457 /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/lib64/ld-linux-x86-64.so.2
+
+```
+
+the tail of the log file from above:
+
+```
+$> tail /mnt/scrap/tmp/abcd/testds-fast-full4/sourcedata/.git/annex/othertmp/jlog3458164-0
+768_b3b_URL-s129400--s3&c%%NDAR__Central__1%submission__-5b733a46f742db820f7b5552c7c576df.log
+f64_54f_URL-s428527--s3&c%%NDAR__Central__1%submission__-4103b9975e7643d71239cf50fd5b767d.log.web
+f64_54f_URL-s428527--s3&c%%NDAR__Central__1%submission__-4103b9975e7643d71239cf50fd5b767d.log
+9e8_f0f_URL-s428527--s3&c%%NDAR__Central__1%submission__-bc9437b29056960784bab28fb24e1f87.log.web
+9e8_f0f_URL-s428527--s3&c%%NDAR__Central__1%submission__-bc9437b29056960784bab28fb24e1f87.log
+276_2e8_URL-s425371--s3&c%%NDAR__Central__1%submission__-3012b0043ac8847cf38c2c97a12cfa26.log.web
+276_2e8_URL-s425371--s3&c%%NDAR__Central__1%submission__-3012b0043ac8847cf38c2c97a12cfa26.log
+dda_614_URL-s425371--s3&c%%NDAR__Central__1%submission__-6d7ea2d5b0d0771f6a44e2e51edef648.log.web
+dda_614_URL-s425371--s3&c%%NDAR__Central__1%submission__-6d7ea2d5b0d0771f6a44e2e51edef648.log
+b66_7bf_URL-s196404--s3&c%%NDAR__Central__1%submission% 
+```
+
+```
+  13411 yoh        20   0 17804  6452  1720 S  0.0  0.0  0:13.81 │  ├─ zsh
+3136785 yoh        20   0 4176M 4094M 11008 S 21.6  3.2 22:10.12 │  │  └─ python3 datalad-nda/scripts/datalad-nda --pdb add2datalad -i /proc/self/fd/15 -d testds-fast-full4 --fast
+3881942 yoh        20   0     8     8     0 R  2.0  0.0  0:00.03 │  │     ├─ python3
+3458129 yoh        20   0  6992  3312  2920 S  0.0  0.0  0:00.09 │  │     └─ git --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git/git annex addurl --fast --with-files --json --json-error-messages --batch
+3458164 yoh        20   0  1.0T 99344 35792 S  0.0  0.1 22:03.39 │  │        └─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3725766 yoh        20   0 12348  8568  3748 D  0.0  0.0  0:03.74 │  │           ├─ git --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs write-tree
+3549190 yoh        20   0  7140  4172  3644 S  0.0  0.0  0:06.23 │  │           ├─ git --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3463573 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.11 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch                        
+3462846 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.07 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458347 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.13 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458216 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  2:12.84 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458215 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.20 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458209 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:02.94 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458207 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:30.23 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458181 yoh        20   0  100M 55756 17736 S  0.0  0.0  0:41.01 │  │           ├─ python3 /mnt/scrap/tmp/abcd/datalad/venvs/dev3/bin/git-annex-remote-datalad
+3458175 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  5:09.58 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458174 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  3:37.60 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458173 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.93 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458172 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.91 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458171 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  5:07.11 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458170 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.92 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458169 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  4:16.06 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458167 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:49.34 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458166 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:00.93 │  │           ├─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+3458165 yoh        20   0  1.0T 99344 35792 S  0.0  0.1  0:05.84 │  │           └─ git-annex --library-path /home/yoh/.tmp/ga-mgY44yd/git-annex.linux//lib/x86_64-linux-gnu: /home/yoh/.tmp/ga-mgY44yd/git-annex.linux/shimmed/git-annex/git-annex addurl --fast --with-files --json --json-error-messages --batch
+```
+
+### What version of git-annex are you using? On what operating system?
+
+```
+$> which git-annex
+/home/yoh/.tmp/ga-RIFzW89/git-annex.linux//git-annex
+
+$> git-annex version
+git-annex version: 8.20200908-gcfc74c2f4
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP
+512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+```
+
+
+I had placed that top process into background, and then when I brought it back to see if I could may be strace any of those processes, I ran into https://git-annex.branchable.com/bugs/standalone_runshell_can_race_and_fail_to_remove___96____126____47__.cache__47__git-annex__47__locales__47____96___dirs/ and although main process and a single `annex addurl --batch` was still hanging there, the rest was gone/finished...
+
+Any ideas joey on what could hold them?  if needed I could try to give reproducible docker or singularity recipe based on running datalad tests...
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
