@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-10-05T16:43:02Z"
+ content="""
+Fixed the rm to not redirect errors to stdout. Traced back to a8a0f7fc58
+which involved a case where the rm was failing due to perms, so the intent
+must have been to also send stdout to /dev/null, but that was omitted then.
+"""]]

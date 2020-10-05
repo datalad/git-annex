@@ -143,7 +143,7 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 	for localecache in $HOME/.cache/git-annex/locales/*; do
 		cachebase=$(cat "$localecache/base" 2>/dev/null || true)
 		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null 2>&1 ; then
-			rm -rf "$localecache" 2>&1 || true
+			rm -rf "$localecache" >/dev/null 2>&1 || true
 		fi
 	done
 	
