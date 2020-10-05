@@ -141,14 +141,6 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 	fi
 	export LOCPATH
 	
-	# Clean up locale caches when their standalone bundle no longer exists.
-	for localecache in $HOME/.cache/git-annex/locales/*; do
-		cachebase=$(cat "$localecache/base" 2>/dev/null || true)
-		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null 2>&1 ; then
-			rm -rf "$localecache" >/dev/null 2>&1 || true
-		fi
-	done
-	
 	if [ ! -d "$LOCPATH" ]; then
 		if ! mkdir -p "$LOCPATH"; then
 			echo "Unable to write to $LOCPATH; can't continue!" >&2
@@ -193,6 +185,14 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 					) >/dev/null 2>/dev/null || true
 				fi
 			fi
+		fi
+	done
+	
+	# Clean up locale caches when their standalone bundle no longer exists.
+	for localecache in $HOME/.cache/git-annex/locales/*; do
+		cachebase=$(cat "$localecache/base" 2>/dev/null || true)
+		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null 2>&1 ; then
+			rm -rf "$localecache" >/dev/null 2>&1 || true
 		fi
 	done
 fi
