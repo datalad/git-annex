@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-05T16:46:25Z"
+ content="""
+I thought you were mostly using git-annex-standalone.deb @yoh,
+and that, I think sets `GIT_ANNEX_PACKAGE_INSTALL` which prevents doing
+anything with locales.
+
+It does a minumum amount of work every time to get the locales
+available, which is necessary because the user might have deleted the cache
+since a previous run. If the cached files are available, it does not do
+anything expensive. Clearing the old cache, which is what happened to fail
+here, needs to be done at some point, and only happens once per old cache
+directory, so I see no way to improve performance of that.
+
+Anyway, something needs to be done to make runshell's updating of this
+stuff idempotent, clearly.
+"""]]
