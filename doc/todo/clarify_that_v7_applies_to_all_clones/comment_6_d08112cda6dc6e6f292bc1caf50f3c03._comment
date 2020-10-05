@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2020-10-05T15:26:08Z"
+ content="""
+THANK YOU Kyle!  `find --unlocked` works!
+  
+But the tricky part is that I wanted to use some \"single\" instance of git-annex which would support `find --unlocked` and also v5 so I could fsck and do some other tests after I do the evil downgrade.  But older versions, such as 7.20191114, which support v5 do not support v8, so cannot do `find --unlocked` on v8.  So I need to either
+
+- find another later version which would support both v5 and v8
+- make script use multiple versions of git-annex from different locations (one for initial `find --unlocked` and then another one for subsequent checks etc)
+- find a way for `find --unlocked`  without invoking `git-annex`.
+"""]]

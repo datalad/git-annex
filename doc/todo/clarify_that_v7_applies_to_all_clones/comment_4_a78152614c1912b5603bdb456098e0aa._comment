@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2020-10-01T17:26:09Z"
+ content="""
+THANK YOU!  What is the most efficient way to identify if there are unlocked files in the tree (or full repository)?  I know that annex scans for unlocked files after a clone, so I guess you might have considered different options and already chose the most efficient ;)
+"""]]

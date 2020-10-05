@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="standalone build"
+ date="2020-10-04T15:45:13Z"
+ content="""
+Just to note, the standalone build currently ends up being used for [many conda installs](https://anaconda.org/conda-forge/git-annex/files), so any fixes for it would be great.
+
+Is there a list somewhere of currently known issues affecting the standalone build but not the standard build?  This would be useful in helping people decide between a more recent standalone build or an older standard one.
+"""]]
