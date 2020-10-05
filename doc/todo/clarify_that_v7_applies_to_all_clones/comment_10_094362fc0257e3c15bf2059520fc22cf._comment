@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2020-10-05T18:40:32Z"
+ content="""
+Unless it entered an adjusted unlocked branch, this upgrade cannot have
+changed locked files to unlocked files itself. So if you were not using
+unlocked files in this repo before, and didn't make any changes after the
+upgrade that would add any, you don't need to worry about them.
+
+The only risk if it was downgraded to v5 with an unlocked files
+is that a command like `git commit -a` would commit the
+large content to git. Easy enough to notice that with `git status` after
+the downgrade too.
+
+(But do checkout master if the currently checked out branch is
+"adjusted/master(unlocked)")
+"""]]
