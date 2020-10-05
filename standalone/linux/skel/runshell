@@ -142,51 +142,45 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 	export LOCPATH
 	
 	if [ ! -d "$LOCPATH" ]; then
-		if ! mkdir -p "$LOCPATH"; then
-			echo "Unable to write to $LOCPATH; can't continue!" >&2
+		if ! mkdir -p "$LOCPATH.$$"; then
+			echo "Unable to write to $LOCPATH.$$; can't continue!" >&2
 			exit 1
 		fi
-	fi
-	if [ ! -e "$LOCPATH/base" ]; then
-		echo "$base" > "$LOCPATH/base.$$"
-		mv -f "$LOCPATH/base.$$" "$LOCPATH/base"
-	fi
-	# Not using cp to avoid using the one bundled with git-annex
-	# before the environment is set up to run it.
-	if [ ! -e "$LOCPATH/buildid" ]; then
-		cat < "$base/buildid" > "$LOCPATH/buildid.$$"
-		mv -f "$LOCPATH/buildid.$$" "$LOCPATH/buildid"
-	fi
+		echo "$base" > "$LOCPATH.$$/base"
+		# Not using cp to avoid using the one bundled with git-annex
+		# before the environment is set up to run it.
+		cat < "$base/buildid" > "$LOCPATH.$$/buildid"
 
-	# Generate locale definition files for the locales in use,
-	# using the localedef and locale files from the bundle.
-	# Currently only utf-8 locales are handled.
-	lastlocaleenv=""
-	for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
-			"$LC_COLLATE" "$LC_MONETARY" "$LC_MESSAGES" "$LC_PAPER" \
-			"$LC_NAME" "$LC_ADDRESS" "$LC_TELEPHONE" "$LC_MEASUREMENT" \
-			"$LC_IDENTIFICATION" "$LC_ALL"; do
-		if [ -n "$localeenv" ] && [ "$localeenv" != "$lastlocaleenv" ]; then
-			lastlocaleenv="$localeenv"
-			if [ ! -d "$LOCPATH/$localeenv" ]; then
-				if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
-					(
-						rm -rf "$LOCPATH/$localeenv.new.$$" &&
-						mkdir -p "$LOCPATH/$localeenv.new.$$" &&
-						# cd to $base since localedef reads files from pwd
-						cd "$base" &&
-						# Run localedef using the bundled i18n files;
-						# use LANG=C to avoid it reading the system locale archive.
-						I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$LOCPATH/$localeenv.new.$$" &&
-						mv "$LOCPATH/$localeenv.new.$$" "$LOCPATH/$localeenv"
-						# In a race, LOCPATH may get created by another process,
-						# in which cache the mv above would put it here.
-						rm -rf "$LOCPATH/$localeenv/$localeenv.new.$$"
-					) >/dev/null 2>/dev/null || true
+		# Generate locale definition files for the locales in use,
+		# using the localedef and locale files from the bundle.
+		# Currently only utf-8 locales are handled.
+		lastlocaleenv=""
+		for localeenv in "$LANG" "$LANGUAGE" "$LC_CTYPE" "$LC_NUMERIC" "$LC_TIME" \
+				"$LC_COLLATE" "$LC_MONETARY" "$LC_MESSAGES" "$LC_PAPER" \
+				"$LC_NAME" "$LC_ADDRESS" "$LC_TELEPHONE" "$LC_MEASUREMENT" \
+				"$LC_IDENTIFICATION" "$LC_ALL"; do
+			if [ -n "$localeenv" ] && [ "$localeenv" != "$lastlocaleenv" ]; then
+				lastlocaleenv="$localeenv"
+				if [ ! -d "$LOCPATH.$$/$localeenv" ]; then
+					if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
+						(
+							mkdir -p "$LOCPATH.$$/$localeenv" &&
+							# cd to $base since localedef reads files from pwd
+							cd "$base" &&
+							# Run localedef using the bundled i18n files;
+							# use LANG=C to avoid it reading the system locale archive.
+							I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$LOCPATH.$$/$localeenv"
+						) >/dev/null 2>/dev/null || true
+					fi
 				fi
 			fi
-		fi
-	done
+		done
+		
+		mv "$LOCPATH.$$" "$LOCPATH"
+		# In a race, LOCPATH may get created by another process,
+		# in which cache the mv above would put it here.
+		rm -rf "$LOCPATH/$LOCPATH.$$"
+	fi
 	
 	# Clean up locale caches when their standalone bundle no longer exists.
 	for localecache in $HOME/.cache/git-annex/locales/*; do
