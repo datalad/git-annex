@@ -189,6 +189,9 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 						# use LANG=C to avoid it reading the system locale archive.
 						I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$LOCPATH/$localeenv.new.$$" &&
 						mv "$LOCPATH/$localeenv.new.$$" "$LOCPATH/$localeenv"
+						# In a race, LOCPATH may get created by another process,
+						# in which cache the mv above would put it here.
+						rm -rf "$LOCPATH/$localeenv/$localeenv.new.$$"
 					) >/dev/null 2>/dev/null || true
 				fi
 			fi
