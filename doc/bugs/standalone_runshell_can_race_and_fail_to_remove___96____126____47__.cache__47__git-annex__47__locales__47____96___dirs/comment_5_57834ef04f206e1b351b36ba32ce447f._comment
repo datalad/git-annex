@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-10-05T18:31:26Z"
+ content="""
+The test case works a bit inconsistently, I had the best luck 
+first removing ~/.cache/git-annex/locales/ and the running the test case 
+twice in a row, which made it reliably reproduce that error on the second
+run.
+
+After the above fixes, the test case no longer reproduces the problem.
+"""]]

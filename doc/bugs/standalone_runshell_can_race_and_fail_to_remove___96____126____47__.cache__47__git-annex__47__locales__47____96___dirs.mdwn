@@ -32,3 +32,5 @@ I also wonder if it is possible to avoid dealing with locales upon **every** inv
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
