@@ -176,7 +176,7 @@ linuxstandalone:
 	cp doc/logo_16x16.png doc/logo.svg $(LINUXSTANDALONE_DEST)
 	cp standalone/trustedkeys.gpg $(LINUXSTANDALONE_DEST)
 
-	sha1sum git-annex > "$(LINUXSTANDALONE_DEST)/buildid"
+	md5sum git-annex > "$(LINUXSTANDALONE_DEST)/buildid"
 	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
 	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
 	cd tmp && tar c git-annex.linux | gzip -9 --rsyncable > git-annex-standalone-$(shell dpkg --print-architecture).tar.gz
