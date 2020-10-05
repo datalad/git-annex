@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-10-05T18:37:39Z"
+ content="""
+@Ilya_Shlyakhter there is no separate bug tracker for runshell,
+but I don't know of any other open bugs involving it either.
+"""]]
