@@ -64,8 +64,9 @@ if [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 				echo "else"
 				echo "exec '$base/runshell' git-annex-shell -c \"\$@\""
 				echo "fi"
-			) > "$HOME/.ssh/git-annex-shell"
-			chmod +x "$HOME/.ssh/git-annex-shell"
+			) > "$HOME/.ssh/git-annex-shell.$$"
+			chmod +x "$HOME/.ssh/git-annex-shell.$$"
+			mv -f "$HOME/.ssh/git-annex-shell.$$" "$HOME/.ssh/git-annex-shell"
 		fi
 	fi
 
@@ -77,8 +78,9 @@ if [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 				echo "#!/bin/sh"
 				echo "set -e"
 				echo "exec '$base/runshell' \"\$@\""
-			) > "$HOME/.ssh/git-annex-wrapper"
-			chmod +x "$HOME/.ssh/git-annex-wrapper"
+			) > "$HOME/.ssh/git-annex-wrapper.$$"
+			chmod +x "$HOME/.ssh/git-annex-wrapper.$$"
+			mv -f "$HOME/.ssh/git-annex-wrapper.$$" "$HOME/.ssh/git-annex-wrapper"
 		fi
 	fi
 fi
@@ -155,10 +157,16 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 		echo "Unable to write to $LOCPATH; can't continue!" >&2
 		exit 1
 	fi
-	echo "$base" > "$LOCPATH/base"
+	# This is updated each time, because the bundle could be moved to a
+	# different directory.
+	echo "$base" > "$LOCPATH/base.$$"
+	mv -f "$LOCPATH/base.$$" "$LOCPATH/base"
+	# This is updated each time, because the bundle could be updated
+	# in place to a new version.
 	# Not using cp to avoid using the one bundled with git-annex before
 	# the environment is set up to run it.
-	cat < "$base/buildid" > "$LOCPATH/buildid"
+	cat < "$base/buildid" > "$LOCPATH/buildid.$$"
+	mv -f "$LOCPATH/buildid.$$" "$LOCPATH/buildid"
 
 	# Generate locale definition files for the locales in use,
 	# using the localedef and locale files from the bundle.

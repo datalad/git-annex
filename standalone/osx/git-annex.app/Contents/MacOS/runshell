@@ -45,8 +45,9 @@ if [ ! -e "$HOME/.ssh/git-annex-shell" ]; then
 			echo "else"
 			echo "exec '$base/runshell' git-annex-shell -c \"\$@\""
 			echo "fi"
-		) > "$HOME/.ssh/git-annex-shell"
-		chmod +x "$HOME/.ssh/git-annex-shell"
+		) > "$HOME/.ssh/git-annex-shell.$$"
+		chmod +x "$HOME/.ssh/git-annex-shell.$$"
+		mv "$HOME/.ssh/git-annex-shell.$$" "$HOME/.ssh/git-annex-shell"
 	fi
 fi
 
@@ -58,8 +59,9 @@ if [ ! -e "$HOME/.ssh/git-annex-wrapper" ]; then
 			echo "#!/bin/sh"
 			echo "set -e"
 			echo "exec '$base/runshell' \"\$@\""
-		) > "$HOME/.ssh/git-annex-wrapper"
-		chmod +x "$HOME/.ssh/git-annex-wrapper"
+		) > "$HOME/.ssh/git-annex-wrapper.$$"
+		chmod +x "$HOME/.ssh/git-annex-wrapper.$$"
+		mv "$HOME/.ssh/git-annex-wrapper.$$" "$HOME/.ssh/git-annex-wrapper"
 	fi
 fi
 
