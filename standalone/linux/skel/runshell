@@ -168,7 +168,7 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 			"$LC_COLLATE" "$LC_MONETARY" "$LC_MESSAGES" "$LC_PAPER" \
 			"$LC_NAME" "$LC_ADDRESS" "$LC_TELEPHONE" "$LC_MEASUREMENT" \
 			"$LC_IDENTIFICATION" "$LC_ALL"; do
-		if [ "$localeenv" != "$lastlocaleenv" ]; then
+		if [ -n "$localeenv" ] && [ "$localeenv" != "$lastlocaleenv" ]; then
 			lastlocaleenv="$localeenv"
 			if [ ! -d "$LOCPATH/$localeenv" ]; then
 				if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
