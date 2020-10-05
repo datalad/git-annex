@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 7"
+ date="2020-10-05T17:42:23Z"
+ content="""
+> - find a way for `find --unlocked` without invoking `git-annex`.
+
+Assuming you're interested in finding just the v6+ pointer files,
+instead of also finding the uncommitted type changes for v5 unlocked
+files, perhaps you could use something like this
+
+[[!format python \"\"\"
+import subprocess as sp
+
+p_ls = sp.Popen([\"git\", \"ls-files\", \"--stage\"], stdout=sp.PIPE)
+p_cat = sp.Popen([\"git\", \"cat-file\", \"--batch\"], stdin=sp.PIPE, stdout=sp.PIPE)
+with p_ls:
+    with p_cat:
+        for line in p_ls.stdout:
+            info, fname = line.strip().split(b\"\t\")
+            mode, objid = info.split(b\" \")[:2]
+            if mode != b\"100644\":
+                continue
+            p_cat.stdin.write(objid + b\"\n\")
+            p_cat.stdin.flush()
+            out = p_cat.stdout.readline()
+            _, objtype, size = out.split()
+            size = int(size)
+            if size > 0:
+                content = p_cat.stdout.read(size)
+                if content.startswith(b\"/annex/objects/\"):
+                    print(fname.decode())
+            p_cat.stdout.readline()
+\"\"\"]]
+
+"""]]
