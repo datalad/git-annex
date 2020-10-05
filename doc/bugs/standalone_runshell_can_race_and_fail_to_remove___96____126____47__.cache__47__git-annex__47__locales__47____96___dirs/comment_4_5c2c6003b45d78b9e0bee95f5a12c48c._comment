@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-10-05T17:04:45Z"
+ content="""
+Hmm, that rm -rf is idempotent itself once the stderr is hidden;
+if a race causes one rm to fail the other one will probably succeed;
+if both manage to fail it ignores the nonzero exit code and, 
+the next run will clean up after it by running it again. AFAICS the cache
+eventually gets cleaned up in all circumstances.
+
+	rm: cannot remove '/home/yoh/.cache/git-annex/locales/bb375eb6ec0d2706f1723307f068911a': Directory not empty
+
+I think what happened there is, the first process created
+that cache directory, but had not yet written the base file
+when the second process ran. So the second process sees what looks like a
+cache directory with no base file, so it decides to clean it up. In the
+meantime the first process has written base and other files and so the rm
+fails. Also, the first process may succeed and end up running git-annex
+with some locale files missing (if the rm happened to delete those),
+resulting in incompatable system locales being used.
+
+So, it ought to defer cleaning up old caches until after it's made sure its
+current cache is all set up. Then that race goes away.
+
+But, there's a problem with this, that comes right after the main cache
+cleanup:
+
+	# If the locale cache for this bundle is out of date, refresh it.
+	if [ -e "$LOCPATH/buildid" ] && ! cmp "$LOCPATH/buildid" "$base/buildid" >/dev/null 2>&1 ; then
+		rm -rf "$LOCPATH"
+	fi
+
+That runs if the git-annex.linux directory gets overwritten with a new version,
+so the cache is the same. And it's also prone to similar races. 
+I think, to fix this, it probably needs to use the buildid in the LOCPATH.
+"""]]

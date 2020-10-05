@@ -133,7 +133,7 @@ unset LD_PRELOAD
 ORIG_LOCPATH="$LOCPATH"
 export ORIG_LOCPATH
 if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
-	LOCPATH="$HOME/.cache/git-annex/locales/$(echo "$base" | tr / _ )"
+	LOCPATH="$HOME/.cache/git-annex/locales/$(cat "$base/buildid")_$(echo "$base" | tr / _ )"
 	# try to generate a short version, if md5sum is available
 	locpathmd5=$( (echo "$LOCPATH" | md5sum | cut -d ' ' -f 1 2>/dev/null) || true)
 	if [ -n "$locpathmd5" ]; then
@@ -149,24 +149,22 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 		fi
 	done
 	
-	# If the locale cache for this bundle is out of date, refresh it.
-	if [ -e "$LOCPATH/buildid" ] && ! cmp "$LOCPATH/buildid" "$base/buildid" >/dev/null 2>&1 ; then
-		rm -rf "$LOCPATH"
+	if [ ! -d "$LOCPATH" ]; then
+		if ! mkdir -p "$LOCPATH"; then
+			echo "Unable to write to $LOCPATH; can't continue!" >&2
+			exit 1
+		fi
 	fi
-	if ! mkdir -p "$LOCPATH"; then
-		echo "Unable to write to $LOCPATH; can't continue!" >&2
-		exit 1
+	if [ ! -e "$LOCPATH/base" ]; then
+		echo "$base" > "$LOCPATH/base.$$"
+		mv -f "$LOCPATH/base.$$" "$LOCPATH/base"
 	fi
-	# This is updated each time, because the bundle could be moved to a
-	# different directory.
-	echo "$base" > "$LOCPATH/base.$$"
-	mv -f "$LOCPATH/base.$$" "$LOCPATH/base"
-	# This is updated each time, because the bundle could be updated
-	# in place to a new version.
-	# Not using cp to avoid using the one bundled with git-annex before
-	# the environment is set up to run it.
-	cat < "$base/buildid" > "$LOCPATH/buildid.$$"
-	mv -f "$LOCPATH/buildid.$$" "$LOCPATH/buildid"
+	# Not using cp to avoid using the one bundled with git-annex
+	# before the environment is set up to run it.
+	if [ ! -e "$LOCPATH/buildid" ]; then
+		cat < "$base/buildid" > "$LOCPATH/buildid.$$"
+		mv -f "$LOCPATH/buildid.$$" "$LOCPATH/buildid"
+	fi
 
 	# Generate locale definition files for the locales in use,
 	# using the localedef and locale files from the bundle.
