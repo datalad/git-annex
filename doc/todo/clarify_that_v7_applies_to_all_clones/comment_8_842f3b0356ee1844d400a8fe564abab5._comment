@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2020-10-05T18:02:48Z"
+ content="""
+Thank you Kyle!  I came up with 
+
+```shell
+unlocked=( `git grep -l -a --no-textconv --cached '^/annex/objects/' || :` )
+if [ \"${#unlocked[*]}\" -ge 1 ]; then
+    error \"Found ${#unlocked[*]} unlocked files. Cannot do: ${unlocked[*]}\" 2
+fi
+```
+
+do you think it would miss something?
+
+Here is my complete script ATM (didn't try in \"production\" yet, switched to other tasks for now but it is ready, also does some testing of operation at the end, so must not be applied as is to existing repos without commenting that out): http://www.onerussian.com/tmp/downgrade-annex
+
+"""]]
