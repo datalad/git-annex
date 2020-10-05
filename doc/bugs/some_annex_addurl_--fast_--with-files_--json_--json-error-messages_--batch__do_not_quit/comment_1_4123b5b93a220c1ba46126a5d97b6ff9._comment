@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-05T18:54:30Z"
+ content="""
+That process tree seems to show git-annex with a bunch of child
+git-annex processes. (Assuming that the first field is the pid, and
+so those are not threads..)
+
+But git-annex rarely exec's git-annex, and when it does, it's never with
+the same params as the parent git-annex was run with. And, addurl in this
+situation normally has some other child processes like `git cat-file
+--batch` that this one is missing.
+
+So it kind of looks like a fork/exec stalled before the exec somehow, I
+don't know how. strace of a child process in this situation may shed some
+light on this strange state.
+
+If a fork/exec somehow stalled, it might explain why the jlog file
+is incompletely written, since the haskell IO manager might have gotten
+locked up.
+
+It seems at least plasible that the race you then hit is somehow related to
+it getting into this state. When I fixed that race, I noticed and fixed a
+condition where runshell would run git-annex with the locales not
+generated, which would lead to running with the system locales. Which, if
+there were an incompatibility between them and the bundled libc, might
+cause some kind of weird behavior.
+
+Or, it could be something like 
+<https://gitlab.haskell.org/ghc/ghc/-/issues/4074>
+But that was fixed in 2010, so unless this git-annex was built with an
+old haskell library, unlikely that precise bug.
+"""]]
