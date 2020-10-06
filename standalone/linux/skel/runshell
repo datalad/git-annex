@@ -133,23 +133,25 @@ unset LD_PRELOAD
 ORIG_LOCPATH="$LOCPATH"
 export ORIG_LOCPATH
 if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
-	LOCPATH="$HOME/.cache/git-annex/locales/$(cat "$base/buildid")_$(echo "$base" | tr / _ )"
+	locpathbase="$(cat "$base/buildid")_$(echo "$base" | tr / _ )"
 	# try to generate a short version, if md5sum is available
-	locpathmd5=$( (echo "$LOCPATH" | md5sum | cut -d ' ' -f 1 2>/dev/null) || true)
+	locpathmd5=$( (echo "$locpathbase" | md5sum | cut -d ' ' -f 1 2>/dev/null) || true)
 	if [ -n "$locpathmd5" ]; then
-		LOCPATH="$HOME/.cache/git-annex/locales/$locpathmd5"
+		locpathbase="$locpathmd5"
 	fi
+	LOCPATH="$HOME/.cache/git-annex/locales/$locpathbase"
 	export LOCPATH
 	
 	if [ ! -d "$LOCPATH" ]; then
-		if ! mkdir -p "$LOCPATH.$$"; then
-			echo "Unable to write to $LOCPATH.$$; can't continue!" >&2
+		locpathtmp="$HOME/.cache/git-annex/locales.tmp/$locpathbase.$$"
+		if ! mkdir -p "$locpathtmp"; then
+			echo "Unable to write to $locpathtmp; can't continue!" >&2
 			exit 1
 		fi
-		echo "$base" > "$LOCPATH.$$/base"
+		echo "$base" > "$locpathtmp/base"
 		# Not using cp to avoid using the one bundled with git-annex
 		# before the environment is set up to run it.
-		cat < "$base/buildid" > "$LOCPATH.$$/buildid"
+		cat < "$base/buildid" > "$locpathtmp/buildid"
 
 		# Generate locale definition files for the locales in use,
 		# using the localedef and locale files from the bundle.
@@ -161,25 +163,25 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 				"$LC_IDENTIFICATION" "$LC_ALL"; do
 			if [ -n "$localeenv" ] && [ "$localeenv" != "$lastlocaleenv" ]; then
 				lastlocaleenv="$localeenv"
-				if [ ! -d "$LOCPATH.$$/$localeenv" ]; then
+				if [ ! -d "$locpathtmp/$localeenv" ]; then
 					if [ "${localeenv##[!.]*.}" = "utf8" ] || [ "${localeenv##[!.]*.}" = "UTF-8" ]; then
 						(
-							mkdir -p "$LOCPATH.$$/$localeenv" &&
+							mkdir -p "$locpathtmp/$localeenv" &&
 							# cd to $base since localedef reads files from pwd
 							cd "$base" &&
 							# Run localedef using the bundled i18n files;
 							# use LANG=C to avoid it reading the system locale archive.
-							I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$LOCPATH.$$/$localeenv"
+							I18NPATH="$base/i18n" LANG=C localedef -i "${localeenv%%.*}" -c -f UTF-8 "$locpathtmp/$localeenv"
 						) >/dev/null 2>/dev/null || true
 					fi
 				fi
 			fi
 		done
 		
-		mv "$LOCPATH.$$" "$LOCPATH"
+		mv "$locpathtmp" "$LOCPATH"
 		# In a race, LOCPATH may get created by another process,
 		# in which cache the mv above would put it here.
-		rm -rf "$LOCPATH/$LOCPATH.$$"
+		rm -rf "$LOCPATH/$locpathbase.$$"
 	fi
 	
 	# Clean up locale caches when their standalone bundle no longer exists.
