@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-06T14:30:42Z"
+ content="""
+Looks like this time it was a git-annex info --batch. And none of
+the child processes look unusual like what you showed before,
+it's the usual collection of git cat-file.
+
+	lr-x------ 1 test test 64 Oct  6 10:27 /proc/896711/fd/0 -> 'pipe:[190817413]'
+	l-wx------ 1 test test 64 Oct  6 10:44 /proc/896825/fd/7 -> 'pipe:[190817413]'
+
+The git-annex process's stdin is still connected to a pipe, the other end of
+which datalad still has open for write. So there's no reason for git-annex to exit,
+it's still waiting for batch requests.
+
+	datalad_crawler.nodes.tests.test_annex.test_annex_file('full',) ... [WARNING] Caught Command '['git', '-c', 'annex.merge-annex-branches=false', 'annex', 'info', '--bytes', '--json', '--json-error-messages', '--batch']' timed out after 3.0 seconds [subprocess.py:_wait:1616] on trial #1. Sleeping 1.000000 and retrying
+	[WARNING] Caught Command '['git', '-c', 'annex.merge-annex-branches=false', 'annex', 'info', '--bytes', '--json', '--json-error-messages', '--batch']' timed out after 3.0 seconds [subprocess.py:_wait:1616] on trial #2. Sleeping 1.000000 and retrying
+
+3 seconds? Are you sure this is the same problem? Or that this is a problem at 
+all? git-annex info could take longer than 3 seconds if you ask it for
+info on a directory, or if it needs to merge the git-annex branch,
+or maybe in other circumstances.
+
+Getting the feeling the problem may be in your test machinery..
+"""]]
