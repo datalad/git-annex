@@ -142,6 +142,14 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 	LOCPATH="$HOME/.cache/git-annex/locales/$locpathbase"
 	export LOCPATH
 	
+	# Clean up locale caches when their standalone bundle no longer exists.
+	for localecache in $HOME/.cache/git-annex/locales/*; do
+		cachebase=$(cat "$localecache/base" 2>/dev/null || true)
+		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null 2>&1 ; then
+			rm -rf "$localecache" >/dev/null 2>&1 || true
+		fi
+	done
+	
 	if [ ! -d "$LOCPATH" ]; then
 		locpathtmp="$HOME/.cache/git-annex/locales.tmp/$locpathbase.$$"
 		if ! mkdir -p "$locpathtmp"; then
@@ -183,14 +191,6 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 		# in which cache the mv above would put it here.
 		rm -rf "$LOCPATH/$locpathbase.$$"
 	fi
-	
-	# Clean up locale caches when their standalone bundle no longer exists.
-	for localecache in $HOME/.cache/git-annex/locales/*; do
-		cachebase=$(cat "$localecache/base" 2>/dev/null || true)
-		if [ ! -d "$cachebase" ] || ! cmp "$localecache/buildid" "$cachebase/buildid" >/dev/null 2>&1 ; then
-			rm -rf "$localecache" >/dev/null 2>&1 || true
-		fi
-	done
 fi
 
 useproot=""
