@@ -1,0 +1,18 @@
+### Please describe the problem.
+
+Running "git clone git://git-annex.branchable.com/" in git-bash on Windows 7 fails with:
+
+[[!format sh """
+error: invalid path 'doc/bugs/Add_day_to_metadata./comment_1_d46d9f085b7077cc95d71628e45c231d._comment'
+fatal: unable to checkout working tree
+warning: Clone succeeded, but checkout failed.
+You can inspect what was checked out with 'git status'
+and retry with 'git restore --source=HEAD :/'
+"""]
+
+I believe the failure is because "Add_day_to_metadata." (a path component with an empty extension) is invalid on Windows.
+
+Because of this, developing and building on Windows is harder and more needlessly complicated than it should be.  Please rename the "doc/bugs/Add_day_to_metadata." directory along with the other directories whose names also end in a period (They can be found with "git ls-tree -r --name-only HEAD | grep '\./'").
+### What steps will reproduce the problem?
+
+Cloning the git-annex repository on Windows 7 — or any other Windows, I believe.
