@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="FTR"
+ date="2020-10-06T00:04:36Z"
+ content="""
+Thank you Joey! FTR (if I located properly): fixed in [8.20200908-163-gd74d97896](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=d74d9789688fde1151ece6a751d1c549af87de84)
+
+If for what \"flavor\" of git-annex build I use -- every day is not like another these days ;)  But yeah -- tend to use a year old neurodebian built .deb when I can afford and do not feel adventurous, but I think in these cases was just using a standalone build indeed.
+
+"""]]
