@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="just comments"
+ date="2020-10-05T23:11:29Z"
+ content="""
+> git cat-file --batch that this one is missing.
+
+may be that one already exited \"peacefully\"? I believe I was looking at the moment when we already requested closing that `annex addurl --batch`.
+
+> But git-annex rarely exec's git-annex, and when it does, it's never with the same params as the parent git-annex was run with
+
+I wonder if may be `htop` (I believe I pasted process tree from it) somehow may be groupped incorrectly and those are \"independent\" hanging `git annex addurl` processes which got \"folded\"... I don't know..
+
+Anyways, to hopefully \"shine the light\", I have managed to reproduce (with up to date snapshot of annex, didn't get there with systemwide older git-annex) on smaug using initially stalling datalad-crawler tests (so 100% reproducible): just login as `test` user to `smaug`.  There is a screen session with one shell there with python's PDB where we were waiting for batched process to exit but it didn't;  then 2nd one shows `ps auxw -H | grep '^test'`.  Please `strace` or inspect anything you might find pertinent (IIRC, raising debug level for datalad, or disabling code tests coverage collection, was making the stall going away). FTR the command is `PATH=~/git-annex/20201005-snapshot/:$PATH DATALAD_LOG_LEVEL=WARNING DATALAD_TESTS_TEMP_KEEP=1 python -m nose -s -v --with-cov --cover-package datalad ../datalad_crawler/dbs/tests/test_files.py ../datalad_crawler/nodes/tests/test_annex.py` and it ends up in pdb (python debugger) if batched annex did not exit although we waited.
+"""]]

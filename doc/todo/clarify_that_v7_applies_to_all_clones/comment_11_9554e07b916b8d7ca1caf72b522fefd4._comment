@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 11"
+ date="2020-10-05T23:17:07Z"
+ content="""
+> .. after the upgrade that would add any, you don't need to worry about them.
+
+With the datalad pixie dust on top of git-annex, I am never 100% sure ;)  I would better worry and do some basic check before proceeding... -- will do later today/tomorrow, God bless BTRFS and its snapshots - I can get a \"sandbox\" clone of the entire filesystem to play with safely.
+"""]]
