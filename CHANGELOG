@@ -1,4 +1,4 @@
-git-annex (8.20200909) UNRELEASED; urgency=medium
+git-annex (8.20201007) upstream; urgency=medium
 
   * --json output now includes a new field "input" which is the input
     value (filename, url, etc) that caused a json object to be output.
@@ -45,7 +45,7 @@ git-annex (8.20200909) UNRELEASED; urgency=medium
   * runshell: Update files atomically when preparing to run git-annex.
   * Fix a build failure on Windows.
 
- -- Joey Hess <id@joeyh.name>  Mon, 14 Sep 2020 18:34:37 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 07 Oct 2020 12:19:05 -0400
 
 git-annex (8.20200908) upstream; urgency=medium
 
