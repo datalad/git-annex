@@ -67,7 +67,7 @@ pidLockChildProcess cmd ps f a = do
 		let p' = p { env = Just ((v, PidF.pidLockEnvValue) : baseenv) }
 		withCreateProcess p' a
 #else
-	gonopidlock
+	liftIO gonopidlock
 #endif
 
 {- Wrap around actions that may run a git-annex child process via a git

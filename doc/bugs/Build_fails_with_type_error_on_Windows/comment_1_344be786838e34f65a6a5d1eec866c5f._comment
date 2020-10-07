@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-07T16:03:04Z"
+ content="""
+Thanks for reporting this. I usually only find out when the Windows CI
+fails, but it's not been running for a while.
+
+I've fixed this particular problem, but don't have a windows build env
+handy to test the rest of the build. Please followup if there's a
+subsequent build failure.
+"""]]

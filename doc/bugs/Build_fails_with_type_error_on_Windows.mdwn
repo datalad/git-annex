@@ -40,3 +40,5 @@ This happens when trying to build both the most recent commit (20c7e6c) and the 
 
 - stack version: 2.3.3
 - Windows version: Windows 7 Enterprise, version 6.1
+
+> [[fixed|done]] --[[Joey]]
