@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+Trying to build git-annex on Windows by running "stack build" as instructed by https://git-annex.branchable.com/install/Windows/ currently fails with the following error:
+
+[[!format sh """
+
+[305 of 636] Compiling Annex.PidLock
+
+Annex\PidLock.hs:70:9: error:
+    * Couldn't match expected type `Annex a' with actual type `IO a'
+    * In a stmt of a 'do' block: gonopidlock
+      In the expression:
+        do let p = f (proc cmd ps)
+           let gonopidlock = withCreateProcess p a
+           gonopidlock
+      In an equation for `pidLockChildProcess':
+          pidLockChildProcess cmd ps f a
+            = do let p = ...
+                 let gonopidlock = ...
+                 gonopidlock
+    * Relevant bindings include
+        gonopidlock :: IO a (bound at Annex\PidLock.hs:47:13)
+        a :: Maybe Handle
+             -> Maybe Handle -> Maybe Handle -> ProcessHandle -> IO a
+          (bound at Annex\PidLock.hs:45:30)
+        pidLockChildProcess :: FilePath
+                               -> [String]
+                               -> (CreateProcess -> CreateProcess)
+                               -> (Maybe Handle
+                                   -> Maybe Handle -> Maybe Handle -> ProcessHandle -> IO a)
+                               -> Annex a
+          (bound at Annex\PidLock.hs:45:1)
+   |
+70 |         gonopidlock
+   |         ^^^^^^^^^^^
+
+"""]]
+
+This happens when trying to build both the most recent commit (20c7e6c) and the most recent tag (8.20200908).
+
+- stack version: 2.3.3
+- Windows version: Windows 7 Enterprise, version 6.1
