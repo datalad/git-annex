@@ -16,3 +16,5 @@ Because of this, developing and building on Windows is harder and more needlessl
 ### What steps will reproduce the problem?
 
 Cloning the git-annex repository on Windows 7 — or any other Windows, I believe.
+
+> [[fixed|done]] --[[Joey]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-07T16:11:23Z"
+ content="""
+Thanks for reporting that. We used to have problems with : getting into
+filenames in the website, fixed that, so I've gone ahead and fixed this
+too, including (I hope) configuring it to reject a trailing period.
+"""]]
