@@ -1,3 +1,9 @@
+git-annex (8.20201008) UNRELEASED; urgency=medium
+
+  * Fix build on Windows with network-3.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
+
 git-annex (8.20201007) upstream; urgency=medium
 
   * --json output now includes a new field "input" which is the input

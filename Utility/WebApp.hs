@@ -86,11 +86,12 @@ webAppSettings = setTimeout halfhour defaultSettings
 getSocket :: Maybe HostName -> IO Socket
 getSocket h = do
 #if defined (mingw32_HOST_OS)
-	-- getAddrInfo currently segfaults on Android.
 	-- The HostName is ignored by this code.
+	-- getAddrInfo didn't used to work on windows; current status
+	-- unknown.
 	when (isJust h) $
 		error "getSocket with HostName not supported on this OS"
-	addr <- inet_addr "127.0.0.1"
+	let addr = tupleToHostAddress (127,0,0,1)
 	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock
 	bind sock (SockAddrInet defaultPort addr)

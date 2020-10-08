@@ -18,3 +18,5 @@ Utility\WebApp.hs:96:33: error:
 
 - stack version: 2.3.3
 - Windows version: Windows 7 Enterprise, version 6.1
+
+> [[fixed|done]] --[[Joey]]
