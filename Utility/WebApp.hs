@@ -85,7 +85,7 @@ webAppSettings = setTimeout halfhour defaultSettings
  -}
 getSocket :: Maybe HostName -> IO Socket
 getSocket h = do
-#if defined(__ANDROID__) || defined (mingw32_HOST_OS)
+#if defined (mingw32_HOST_OS)
 	-- getAddrInfo currently segfaults on Android.
 	-- The HostName is ignored by this code.
 	when (isJust h) $
