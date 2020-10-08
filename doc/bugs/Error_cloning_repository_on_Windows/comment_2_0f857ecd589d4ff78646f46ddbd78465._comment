@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jwodder"
+ avatar="http://cdn.libravatar.org/avatar/b06e01332c949b895c681cc92934f36a"
+ subject="comment 2"
+ date="2020-10-08T12:44:51Z"
+ content="""
+You overlooked the directory `doc/bugs/Very_not_graceful_exit_on_cwd_deletion_while_git_annex_adding_files.`
+"""]]
