@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2020-10-08T13:45:37Z"
+ content="""
+New plan for this: Extend `git-annex transferkeys` to send back progress
+and success/failure info. Make it stop updating location tracking 
+and other state (the caller should instead) and only handle the actual
+data movement and possibly low-level locking associated with it.
+
+Then running multiple concurrent processes of it should be reasonably
+efficient. There will still be some added overhead from pipe communication.
+And some remotes will need to do more work. Eg, ones that use a tcp connection
+will need to open more connections (one per -J level), even if earlier
+non-transfer use already cached one. So git-annex should only use
+transferkeys when annex.retry is enabled, and do the transfers in-process
+otherwise.
+
+Some remote backends should not be used via transferkeys. One, I think, is
+the external special remote backend, at least when the async extension is
+used. Instead, the external backend can expose something (ie a TChan) that
+can be used to stop or restart a transfer that its running, and can just
+kill the external process to do it. And if this is implemented for the async
+extension it will work just as well for the other externals too, so may as
+well do it for all of them. (When the async extension is used, that will
+also stop other concurrent transfers, unless that gets extended with the
+ability to cancel specific jobs.)
+
+Also, all parts of Messages that remotes use will need to be serialized
+over the transferkeys protocol. Eg, Messages.prompt when the transferkeys
+process is doing something like ssh that is prompting for a password.
+So transferkeys will need its own OutputType to make Messages communicate
+over the pipe.
+"""]]
