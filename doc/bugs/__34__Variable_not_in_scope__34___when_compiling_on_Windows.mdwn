@@ -1,0 +1,20 @@
+Attempting to build commit 7fcbb92 on Windows 7 by running "stack build" fails with the following error:
+
+[[!format sh """
+[571 of 636] Compiling Utility.WebApp
+
+Utility\WebApp.hs:93:17: error:
+    Variable not in scope: inet_addr :: [Char] -> IO HostAddress
+   |
+93 |         addr <- inet_addr "127.0.0.1"
+   |                 ^^^^^^^^^
+
+Utility\WebApp.hs:96:33: error:
+    Variable not in scope: aNY_PORT :: PortNumber
+   |
+96 |         bind sock (SockAddrInet aNY_PORT addr)
+   |                                 ^^^^^^^^
+"""]]
+
+- stack version: 2.3.3
+- Windows version: Windows 7 Enterprise, version 6.1
