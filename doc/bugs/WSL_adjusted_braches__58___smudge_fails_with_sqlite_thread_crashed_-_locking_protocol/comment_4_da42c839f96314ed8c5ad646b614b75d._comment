@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-10-09T23:43:47Z"
+ content="""
+I tried using Windows 10 build 19041 from 
+<https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/>
+That is new enough to support WSL2.
+
+At first, this bug reproduced. Turns out that still has WSL1 by default.
+<https://docs.microsoft.com/en-us/windows/wsl/install-win10> explains how
+to enable WSL2.
+
+Unfortunately, those instructions failed at the final hurdle, 
+`wsl --set-version Ubuntu 2` said Virtual Machine Platform needed to be
+enabled, or virtualization enabled in the BIOS. I had already done the
+former in an earlier step, so I guess VirtualBox is not enabling it in the
+BIOS. 
+
+Probably it needs nested VT-x. VirtualBox has that option greyed out
+for me. 
+<https://github.com/microsoft/WSL/issues/5030> says this needs virtualbox
+to use Hyper-V, which needs a fix that landed 2 weeks ago, not yet in a
+released version. Or use another emulator, or maybe try it on real
+hardware?
+"""]]
