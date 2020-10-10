@@ -1,0 +1,8 @@
+So I have an unlocked file which I "--content synced" from my machine 'X03' to my bare-repository remote 'origin'. 
+I edited the same file on another machine 'X02' before syncing, realised that, hit undo and synced with content.
+
+Now the file contains only a "hash-link" as if it was an unlocked file which I did not 'get'. 
+I am afraid that I somehow committed that change, i.e., changing the file content to a single line containing the "hash-link", and deleted the actual file contents. Currently I have no access to 'X03'. 
+
+Is there a way to check out an older version or fix this altogether? 
+I assume the real file contents should still be in 'origin'?
