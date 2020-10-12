@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-10-12T15:39:58Z"
+ content="""
+	test      894971  0.0  0.0 145856 67768 pts/23   S+   Oct05   0:02       python -m nose -s -v --with-cov --cover-package datalad ../datalad_crawler/dbs/tests/test_files.py ../datalad_crawler/nodes/tests/test_annex.py
+	test      896682  0.0  0.0   6988  1912 pts/23   S+   Oct05   0:00         /home/test/git-annex/20201005-snapshot/exe/git --library-path /home/test/git-annex/20201005-snapshot//lib/x86_64-linux-gnu: /home/test/git-annex/20201005-snapshot/shimmed/git/git -c annex.merge-annex-branches=false annex info --bytes --json --json-error-messages --batch
+	test      896711  0.0  0.0 1074040220 32428 pts/23 Sl+ Oct05   0:00           /home/test/git-annex/20201005-snapshot/exe/git-annex --library-path /home/test/git-annex/20201005-snapshot//lib/x86_64-linux-gnu: /home/test/git-annex/20201005-snapshot/shimmed/git-annex/git-annex info --bytes --json --json-error-messages --batch
+	test      896718  0.0  0.0   7076  2772 pts/23   S+   Oct05   0:00             /home/test/git-annex/20201005-snapshot/exe/git --library-path /home/test/git-annex/20201005-snapshot//lib/x86_64-linux-gnu: /home/test/git-annex/20201005-snapshot/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+	test      896719  0.0  0.0   6988  2040 pts/23   S+   Oct05   0:00             /home/test/git-annex/20201005-snapshot/exe/git --library-path /home/test/git-annex/20201005-snapshot//lib/x86_64-linux-gnu: /home/test/git-annex/20201005-snapshot/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+	test      896720  0.0  0.0   6988  1872 pts/23   S+   Oct05   0:00             /home/test/git-annex/20201005-snapshot/exe/git --library-path /home/test/git-annex/20201005-snapshot//lib/x86_64-linux-gnu: /home/test/git-annex/20201005-snapshot/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+	test      896721  0.0  0.0   6988  2544 pts/23   S+   Oct05   0:00             /home/test/git-annex/20201005-snapshot/exe/git --library-path /home/test/git-annex/20201005-snapshot//lib/x86_64-linux-gnu: /home/test/git-annex/20201005-snapshot/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+	test      896825  0.0  0.0 216756 55932 pts/23   Sl+  Oct05   0:08         python -m nose -s -v --with-cov --cover-package datalad ../datalad_crawler/dbs/tests/test_files.py ../datalad_crawler/nodes/tests/test_annex.py
+
+896825 is the process that still had the pipe open for write. It appears to not be the main python process
+894971 that started git-annex.
+
+So, my guess would be it inherits the pipe across a fork.
+"""]]
