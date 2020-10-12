@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-10-12T18:56:49Z"
+ content="""
+It's completely normal for an unlocked file whose content is not locally
+present to have an annex hash as its content. That is what gets
+committed to git normally.
+"""]]
