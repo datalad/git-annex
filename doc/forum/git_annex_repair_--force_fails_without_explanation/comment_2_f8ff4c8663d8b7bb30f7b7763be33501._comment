@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mhauru"
+ avatar="http://cdn.libravatar.org/avatar/2532433a0207ba772e6ca964e61899c0"
+ subject="comment 2"
+ date="2020-10-12T17:07:58Z"
+ content="""
+Thanks for trying to help! `git status` on the repo that's missing files (and has old versions of some other files, I just noticed) shows nothing remarkable: Some staged modifications, some other unstaged ones, and some untracked files, but they don't include the missing and/or out-of-date ones.
+"""]]

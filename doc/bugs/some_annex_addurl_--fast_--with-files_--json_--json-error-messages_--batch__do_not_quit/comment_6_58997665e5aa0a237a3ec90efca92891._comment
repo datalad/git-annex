@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2020-10-12T16:00:31Z"
+ content="""
+Thank you Joey for the analysis!  I am not 100% certain why that nose fork process came about.  May be nose (testing framework) causes a fork if some processes are still lingering after a test completes...  I guess something for us to keep in mind
+
+Also I
+- [identified the change has caused the issue to disappear](https://github.com/datalad/datalad/pull/5013#issuecomment-707189474) while looking through recent datalad changes.  Not yet sure if that was anyhow a \"fix\" but at least I do not observe it any longer
+- reproduced the issue with elderly 7.20190819+git2-g908476a9b-1~ndall+1, so it confirms that it is not a regression within git-annex (due to some flaky run I thought about possible regression).
+
+I think you can close it, and we (datalad) should keep an eye on nose and real-life if any stalls... so far I only observed datalad abandoning `git-annex` process without waiting long enough (like in the original case I reported here) when it could be just taking longer to complete indeed.
+"""]]
