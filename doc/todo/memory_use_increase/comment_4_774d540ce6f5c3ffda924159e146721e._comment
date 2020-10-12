@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-10-12T19:19:40Z"
+ content="""
+Thinking a little more about this, the lazy bytestring it reads is probably
+in around 32kb chunks. The git ls-files --stage output segment for a file
+is 50 bytes plus the filename, so probably under 200 bytes.
+
+The lazy bytestring is split into those segments, and then each segment
+is copied to a strict bytestring with L.toStrict.
+
+How does a lazy bytestring get split on null? L.split uses L.take.
+L.take uses S.take on the chunk. S.take simply updates the length of
+the bytestring, but the result still keeps the rest of it allocated.
+(And similar for drop I assume.)
+
+So, if L.toStrict is run on a lazy bytestring consisting of a single chunk
+that's a strict bytestring, that's had its size reduced by L.split,
+the rest is still allocated. And in L.toStrict, there's a special case for a
+single chunk input, that bypasses the usual copying:
+
+    goLen1 _   bs Empty = bs
+
+That keeps the original strict bytestring, not copying it. And so
+the rest of it, after the NULL, remains allocated for as long as the result
+is in use.
+
+Hmm, this doesn't explain the memory leak (throwing in a S.copy didn't fix
+it either) or why profiling doesn't show the full memory use, but it does
+explain the PINNED memory use, probably.
+"""]]
