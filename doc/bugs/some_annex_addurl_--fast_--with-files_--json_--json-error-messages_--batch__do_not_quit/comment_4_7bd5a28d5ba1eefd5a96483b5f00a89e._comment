@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2020-10-11T13:51:28Z"
+ content="""
+the mystery is that to our knowledge we do close the stdin (and stdout) of [git-annex process right before](https://github.com/datalad/datalad/blob/master/datalad/cmd.py#L1339), so pipe should have not remained open, unless something else may be somehow keeps it open...  And I cannot reproduce the bug ATM neither locally or on smaug where I did prepare you the reproduced case!
+
+Indeed though I agree that pretty much any timeout could not generally be \"sufficient\".  That is why we need to figure out what is happening/why some times batched processes do not quit.  Either the later \"reproducer\" was exactly the same situation as in the original reported (where it was a few out of 1000s of batched processes) -- I do not know.  may be there are multiple issues.
+"""]]

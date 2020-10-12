@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-10-11T14:08:27Z"
+ content="""
+I don't think your problem is related to the \"git fsck\" error. Also, it doesn't look like the failure of \"git annex repair\" is related to the \"git fsck\" error either.
+What does \"git status\" say in the repo that is missing files?
+"""]]
