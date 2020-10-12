@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-12T17:14:05Z"
+ content="""
+Made a profiling build. Profiles show memory use is growing linearly, a
+clear space leak.
+
+Heap profiling shows main use is PINNED (probably ByteString), 
+seekHelper/seekFilteredKeys is also large, and takeByteString/decimal
+and extractSha next largest. (Those last 3 are clearly from
+parseStagedDetails.)
+
+Allocation profiling shows `ARR_WORDS` (ByteString internal), then
+ByteString.
+
+The profile only shows 35mb in use max, not the full 200+mb.
+That and the PINNED and the overall shape seems very similar to the leak described
+here http://neilmitchell.blogspot.com/2013/02/chasing-space-leak-in-shake.html
+Profiling with "-xt -hy" suggested from that, did not show anything new
+though.
+
+I think there could be two different problems here, whatever is NOT
+showing up on the profiling is one, and the other looks to be 
+a problem in seekHelper. 
+
+I tried a simplified seekHelper (not suitable for production use)
+and with that version the memory use is 122mb like I originally
+reported, not the 200+mb I see now.
+
+	seekHelper c ww a (WorkTreeItems l) = do
+		os <- seekOptions ww
+		(r, cleanup) <- inRepo $ a os (map toRawFilePath l)
+		return (map (mk Nothing) r, cleanup)
+
+I don't much like the way the lsfiles code path is reading a lazy bytestring,
+copying lines of it to a strict bytestring and parsing each with
+attoparsec. Using strict bytestrings and incremental attoparsec would be
+better, and might just resolve the problem that profiling is failing to spot.
+"""]]
