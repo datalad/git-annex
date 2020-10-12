@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-10-12T15:42:31Z"
+ content="""
+That is good thinking. Since that commit, it has since been changed to use
+a Chan. Commit bd2d304064915b3785dbd0725bf81643277530ec actually did think
+about this a little:
+
+	Chan will be faster than DList here. Bearing in mind, it is unbounded,
+	but in reality will be bounded by the size of the stdio buffer through
+	git cat-file.
+
+I added debug prints of all readChan and writeChan, and they seemed more or
+less evenly interleaved throughout the run, although at the start
+there were 274 writeChans before the first readChan and at the end 
+a similar run of readChans. That does not seem large enough to explain the
+memory use though.
+
+Next I tried converting to a TBChan, bounded to 1000 items. Did not affect
+memory use. Dropped the bound to 10 items. That actually hung, possibly
+the pipeline needs to be fuller than that before stuff comes out the other
+end? Also hung with 100 items. With 300 items, it ran, with the same memory
+use.
+
+(Also noticed that the memory use is sometimes more like 225 mb, probably due
+to differences in caching and timing.)
+"""]]
