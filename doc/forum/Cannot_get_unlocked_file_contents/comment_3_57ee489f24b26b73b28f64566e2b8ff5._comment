@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Maximilian"
+ avatar="http://cdn.libravatar.org/avatar/e7add028a8da87278c36a3d7b9f1cd60"
+ subject="comment 3"
+ date="2020-10-12T19:53:27Z"
+ content="""
+@Lukey: thanks for the tip. Will try this at some point with a new repo. For now I just copied the most recent version of the file from /annex/objects/ of my central repo. 
+
+@joey: I am afraid I committed the hash-link contents: 'git annex get' didn't change anything. Still I have no idea how this could happen; I'll dig through the history and report back :) 
+"""]]
