@@ -28,5 +28,5 @@ is in use.
 
 Hmm, this doesn't explain the memory leak (throwing in a S.copy didn't fix
 it either) or why profiling doesn't show the full memory use, but it does
-explain the PINNED memory use, probably.
+start to explain the PINNED memory use.
 """]]
