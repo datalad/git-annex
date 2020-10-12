@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-10-12T19:19:40Z"
+ content="""
+Thinking a little more about this, the lazy bytestring it reads is probably
+in around 32kb chunks. The git ls-files --stage output segment for a file
+is 50 bytes plus the filename, so probably under 200 bytes.
+
+The lazy bytestring is split into those segments, and then each segment
+is coopied to a strict bytestring. The attoparsec parser I think does not
+copy, so the parsed result will be the size of the original strict
+bytestring.
+
+But hmm, does L.toStrict copy the whole chunk or chunks of the lazy
+bytestring and make a strict bytestring out of that? If it does,
+that means each 32kb chunk will get copied many times, probably 150+!
+
+Well, how does a lazy bytestring get split on null? L.split uses L.take.
+L.take uses S.take on the chunk. S.take simply updates the length of
+the bytestring, but the result still keeps the rest of it allocated.
+(And similar for drop I assume.)
+
+So, if L.toStrict is run on a lazy bytestring consisting of a single chunk
+that's a strict bytestring, that's had its size reduced by L.take, the
+rest is still allocated. And in L.toStrict, there's a special case for a
+single chunk input, that bypasses the usual copying:
+
+    goLen1 _   bs Empty = bs
+
+So, that keeps the original strict bytestring, not copying it. And so
+the rest of it, after the NULL, remains allocated!
+
+This is surprising behavior. Could even be a bug. L.toStrict does
+say that it copies all the data, but not that it pins data that is not
+even part of the input bytestring as far as the user is concerned.
+
+So that explains the PINNED memory use.
+
+So, I think git-annex needs to stop using L.toStrict here
+(and probably everywhere involving streaming any amount of data),
+there are some other ones.
+"""]]
