@@ -1,14 +1,14 @@
 I've spent two days trying to track down a recently introduced memory leak,
 or leaks. This was unusually hard because all the profiler could tell
 me is the memory is "PINNED", but not what allocated it or anything else
-about it.
+about it. 
 
 I probably should have bisected it, rather than staring at the code and
 randomly reimplementing things I thought could be pinning memory. Oops.
 
-Anyway, I've solved one of them, and the other one, if it's a memory leak
-at all, is memory that the profiler does not even show is in use, but that
-does appear to be allocated, at least as far as mmap goes.
+And there is more memory that the profiler doesn't even show
+being allocated, which got much bigger with a new toolchain, and I have not
+gotten to the bottom of that yet.
 
 --
 
