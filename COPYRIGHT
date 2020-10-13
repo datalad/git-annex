@@ -18,6 +18,16 @@ Files: doc/design/external_backend_protocol/git-annex-backend-XFOO
 Copyright: © 2020 Joey Hess <id@joeyh.name>
 License: GPL-3+
 
+Files: Command/Sync.hs
+Copyright: © Joachim Breitner <mail@joachim-breitner.de>
+           © 2011-2020 Joey Hess <id@joeyh.name>
+License: AGPL-3+
+
+Files: Command/List.hs
+Copyright: © 2013 Joey Hess <id@joeyh.name>
+           © 2013 Antoine Beaupré
+License: AGPL-3+
+
 Files: Remote/Ddar.hs
 Copyright: © 2011-2020 Joey Hess <id@joeyh.name>
            © 2014 Robie Basak <robie@justgohome.co.uk>
