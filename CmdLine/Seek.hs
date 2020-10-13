@@ -48,6 +48,7 @@ import CmdLine.Action
 
 import Control.Concurrent.Async
 import System.Posix.Types
+import Data.IORef
 
 data AnnexedFileSeeker = AnnexedFileSeeker
 	{ startAction :: SeekInput -> RawFilePath -> Key -> CommandStart
@@ -416,18 +417,24 @@ seekFilteredKeys seeker listfs = do
 seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> WorkTreeItems -> Annex ([(SeekInput, a)], IO Bool)
 seekHelper c ww a (WorkTreeItems l) = do
 	os <- seekOptions ww
-	inRepo $ \g -> combinelists <$> forM (segmentXargsOrdered l)
-		(runSegmentPaths' mk c (\fs -> a os fs g) . map toRawFilePath)
+	v <- liftIO $ newIORef []
+	r <- inRepo $ \g -> concat . concat <$> forM (segmentXargsOrdered l)
+		(runSegmentPaths' mk c (\fs -> go v os fs g) . map toRawFilePath)
+	return (r, cleanupall v)
   where
 	mk (Just i) f = (SeekInput [fromRawFilePath i], f) 
 	-- This is not accurate, but it only happens when there are a
 	-- great many input WorkTreeItems.
 	mk Nothing f = (SeekInput [fromRawFilePath (c f)], f)
 
-	combinelists v = 
-		let r = concat $ concat $ map fst v
-		    cleanup = and <$> sequence (map snd v)
-		in (r, cleanup)
+	go v os fs g = do
+		(l, cleanup) <- a os fs g
+		liftIO $ modifyIORef' v (cleanup:)
+		return l
+
+	cleanupall v = do
+		cleanups <- readIORef v
+		and <$> sequence cleanups
 seekHelper _ _ _ NoWorkTreeItems = return ([], pure True)
 
 data WarnUnmatchWhen = WarnUnmatchLsFiles | WarnUnmatchWorkTreeItems

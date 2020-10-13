@@ -235,15 +235,11 @@ segmentPaths' f c (i:is) new =
  - than it would be to run the action separately with each path. In
  - the case of git file list commands, that assumption tends to hold.
  -}
-runSegmentPaths :: (a -> RawFilePath) -> ([RawFilePath] -> IO ([a], v)) -> [RawFilePath] -> IO ([[a]], v)
-runSegmentPaths c a paths = do
-	(l, cleanup) <- a paths
-	return (segmentPaths c paths l, cleanup)
+runSegmentPaths :: (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[a]]
+runSegmentPaths c a paths = segmentPaths c paths <$> a paths
 
-runSegmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> ([RawFilePath] -> IO ([a], v)) -> [RawFilePath] -> IO ([[r]], v)
-runSegmentPaths' si c a paths = do
-	(l, cleanup) <- a paths
-	return (segmentPaths' si c paths l, cleanup)
+runSegmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[r]]
+runSegmentPaths' si c a paths = segmentPaths' si c paths <$> a paths
 
 {- Converts paths in the home directory to use ~/ -}
 relHome :: FilePath -> IO String

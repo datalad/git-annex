@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-10-13T19:52:50Z"
+ content="""
+[[!commit f624876dc21fed141eee368c86f4b209852ab91c]] is where seekHelper
+went bad. Fixed that.
+
+git-annex is still allocating 120 mb in this situation, though the
+profile now shows a max memory use of 4 mb. Still don't understand that, so
+this remains open.
+"""]]
