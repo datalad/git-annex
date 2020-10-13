@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-10-13T18:59:08Z"
+ content="""
+In the alternatepipenullsplit branch, I made what I think is the relevant
+part of LsFiles not use a lazy bytestring, but instead read chunks
+directly to strict bytestrings. It did not change the PINNED amount or reduce
+overall memory use.
+
+So the pinning must be happening somewhere other than where I had assumed
+it was happening.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-10-13T19:15:41Z"
+ content="""
+The seekHelper version in comment 3 significantly changes the 
+shape of the profile. PINNED is still there, but only a couple mb,
+and it's a constant amount of memory, not an upward slope.
+
+So I think that identifies the main culprit for the mysterious PINNED.
+runSegmentPaths is supposed to stream, but it seems it somehow is hanging
+on to values longer than it should.
+
+Although the max memory use of that version is still around 90 mb
+according to `time`. The profile is flat at 3500 kb.
+"""]]
