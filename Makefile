@@ -42,12 +42,14 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	mkdir -p tmp
 	touch tmp/configure-stamp
 
-# Non-optimised build for development.
+# Non-optimised build for development, with profiling enabled (for memory
+# profiling).
 #
 # This leaves cabal.project.local configured for a dev build,
 # so just running make will continue to do dev builds.
 dev:
-	$(BUILDER) configure -f"-Production" -O0 --enable-executable-dynamic
+	$(BUILDER) configure -f"-Production" -O0 \
+			--enable-executable-dynamic --enable-profiling
 	mkdir -p tmp
 	touch tmp/configure-stamp
 	$(MAKE) git-annex
