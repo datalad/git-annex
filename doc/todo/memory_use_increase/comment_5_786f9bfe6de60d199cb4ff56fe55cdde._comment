@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-10-13T16:22:53Z"
+ content="""
+Profiling a non-optimised build, the PINNED went up to 90+mb.
+
+So, it seems likely that the profile is missing some of the pinned memory
+due to it being used too briefly to show get recorded, and that it's the
+main culprit.
+"""]]
