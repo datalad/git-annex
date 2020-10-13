@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-10-13T20:31:30Z"
+ content="""
+100k files: 122364k  
+40k files: 115476k  
+1k files: 97920k  
+0 files: 94808k  
+
+So, it's using a little bit more for more files, reasonable if something
+is scaling up under load.
+
+But where did that use of 90mb for 0 files come from?
+
+My earlier numbers for 8.20200617 were for the debian package of it. I
+built that version with a current toolchain:
+
+100k files: 127240k  (vs 37188k with old toolchain)  
+0 files: 105748k
+
+So, much of the increase is due to a change in ghc or the toolchain or
+libraries. Maybe its memory manager is preallocating more or a buffer has
+started to default to significantly larger?
+
+For that matter, the old build should not have needed 37mb and I'm pretty
+sure it used to be more like 2-5mb?
+
+A haskell hello world still only needs a few kb of memory.
+
+Made git-annex's `main = print "hello"` -- 61716k
+
+Made git-annex exit before it runs git ls-files -- 66892k
+
+Made it exit after starting ls-files and cat-file -- 67320k
+
+Made it exit just before running the first action on the first file, but
+after seekFilteredKeys did its processing -- 93300k
+
+So this is partly toolchain or compiler caused, but I don't know if the
+extra 30mb it grows by that point is because of the toolchain changing,
+or another memory leak.
+"""]]
