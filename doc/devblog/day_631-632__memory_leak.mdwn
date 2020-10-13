@@ -1,0 +1,16 @@
+I've spent two days trying to track down a recently introduced memory leak,
+or leaks. This was unusually hard because all the profiler could tell
+me is the memory is "PINNED", but not what allocated it or anything else
+about it.
+
+I probably should have bisected it, rather than staring at the code and
+randomly reimplementing things I thought could be pinning memory. Oops.
+
+Anyway, I've solved one of them, and the other one, if it's a memory leak
+at all, is memory that the profiler does not even show is in use, but that
+does appear to be allocated, at least as far as mmap goes.
+
+--
+
+This work was sponsored by Jake Vosloo and Mark Reidenbach
+<a href="https://patreon.com/joeyh">on Patreon</a>.
