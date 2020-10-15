@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="fbaca1610@41d03d827c5fd52d594eef456b6196c057c0944f"
+ nickname="fbaca1610"
+ avatar="http://cdn.libravatar.org/avatar/43f0d5bb6f1b878853d43f69600310cd"
+ subject="dropunused and copies"
+ date="2020-10-15T10:19:16Z"
+ content="""
+Hey there, love git annex!
+
+I have a (silly?) question: `git annex dropunused` tells me that there are not enough copies. I agree it is a good thing or at least might be in some cases.
+
+The problem is this: I have synced and used `git annex copy --to` for all my repositories and still I have unused files that `dropunused` will not delete, since it finds no copies.
+
+Am I doing something wrong here? Why are these (now) unused files not copied and therefore okay to delete locally?
+"""]]
