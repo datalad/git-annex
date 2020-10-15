@@ -6,7 +6,7 @@ while `git add` adds files to git.
 Let's suppose you're developing a video game, written in C. You have
 source code, and some large game assets. You want to ensure the source
 code is stored in git -- that's what git's for! And you want to store
-the game assets in the git annex -- to avod bloating your git repos with
+the game assets in the git annex -- to avoid bloating your git repos with
 possibly enormous files, but still version control them.
 
 You could take care to use `git annex add` after changes to the assets,
