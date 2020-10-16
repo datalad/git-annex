@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="building the standalone distribution on CentOS"
+ date="2020-10-16T14:58:42Z"
+ content="""
+\"This build process is done on a Debian system, and it needs to use dpkg to examine the host system\" -- would it be hard to make this work on CentOS?  (For building the standalone tarball as part of building the [conda-forge package](https://github.com/conda-forge/git-annex-feedstock/), where the build process uses [this docker image](https://github.com/conda-forge/docker-images/blob/master/linux-anvil-comp7/Dockerfile).)
+"""]]
