@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="copying directly from directory special remote to the cloud"
+ date="2020-10-18T21:00:58Z"
+ content="""
+One more use case: running git-annex inside a VirtualBox VM (Linux guest on Windows host), with the repo inside the VM, operating on files on the host through [shared folders](https://help.ubuntu.com/community/VirtualBox/SharedFolders).  Shared folder is too large to copy inside the VM.  With the recent addition of [[importing from directory special remote without downloading|https://git-annex.branchable.com/todo/importing_from_special_remote_without_downloading/]] (thanks @joeyh for implementing that!), can import the files into the repo, bypassing [[issues with VirtualBox shared folder filesystem|bugs/removeLink_failed_when_initializing_a_repo_in_a_VirtualBox_shared_folder]].  But can't upload the files to a cloud special remote, without first [[`git-annex-get`|git-annex-get]]ting them into the VM, and I unfortunately don't have space for two local copies of each file.  So a direct transfer from a directory special remote to a cloud special remote would help a lot.  
+
+The alternative, of course, is to run git-annex directly on Windows, but I've run into speed issues with that, and using WSL means losing ability to run VirtualBox, so running git-annex from a guest VM and operating on host files through the shared folder filesystem -- broken as that is -- seems like the best option right now.
+"""]]
