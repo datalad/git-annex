@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-10-19T16:39:28Z"
+ content="""
+I installed git for windows in a fresh windows 10
+VM. Then I installed git-annex from the git-annex for windows installer. 
+Then I ran git-annex add, which ran cp --reflink successfully.
+
+But you didn't say how you installed git-annex on windows, did you?
+I guess, since you're building it yourself, you put it into path somewhere
+else. So it seems to me, it's the up to you to make its path include the
+same cp you built it against. 
+
+Or just build the windows installer too, and install your git-annex build
+using that.
+"""]]
