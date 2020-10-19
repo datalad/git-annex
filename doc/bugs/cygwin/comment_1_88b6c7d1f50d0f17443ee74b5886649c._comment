@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-19T16:54:15Z"
+ content="""
+> not found .
+> git-annex.exe: pre-commit: 1 failed
+
+I guess whatever this is, running `git annex pre-commit`
+would probably reproduce it, and then you could add the --debug flag and it
+would show what program it's trying to run when this happens.
+
+I don't know why it would not display the name of a program it's tried to
+run. But I guess it's probably a program, since that seems to be the most
+likely thing that would be broken by running git-annex in this unusual way.
+"""]]
