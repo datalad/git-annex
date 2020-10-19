@@ -25,6 +25,7 @@ module Annex.FileMatcher (
 	AddUnlockedMatcher,
 	addUnlockedMatcher,
 	checkAddUnlockedMatcher,
+	LimitBy(..),
 	module Types.FileMatcher
 ) where
 

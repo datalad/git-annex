@@ -29,9 +29,16 @@ import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = notBareRepo $ 
-	withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, fileMatchingOptions] $
+	withGlobalOptions opts $
 		command "add" SectionCommon "add files to annex"
 			paramPaths (seek <$$> optParser)
+  where
+	opts =
+		[ jobsOption
+		, jsonOptions
+		, jsonProgressOption
+		, fileMatchingOptions LimitDiskFiles
+		]
 
 data AddOptions = AddOptions
 	{ addThese :: CmdParams

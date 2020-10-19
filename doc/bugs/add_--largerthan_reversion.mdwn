@@ -14,7 +14,4 @@ That commit was otherwise right, eg `git-annex get --largerthan` should
 look at the size of the annexed file, not of the file on disk, which could
 be a small pointer file.
 
-Rather than being global options, --largerthan and --smallerthan, 
-could added by each command, so the command can specify how the size
-should be determined. Finding a way to do that w/o needing to add
-boilerplate to many commands would be best.
+> [[fixed|done]] --[[Joey]]

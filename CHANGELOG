@@ -2,6 +2,8 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
 
   * Fix build on Windows with network-3.
   * Fix a memory leak introduced in the last release.
+  * add, import: Fix a reversion in 7.20191009 that broke handling
+    of --largerthan and --smallerthan.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 

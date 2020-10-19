@@ -223,7 +223,7 @@ parseKey = maybe (Fail.fail "invalid key") return . deserializeKey
 annexedMatchingOptions :: [GlobalOption]
 annexedMatchingOptions = concat
 	[ keyMatchingOptions'
-	, fileMatchingOptions'
+	, fileMatchingOptions' Limit.LimitAnnexFiles
 	, combiningOptions
 	, timeLimitOption
 	]
@@ -315,11 +315,11 @@ keyMatchingOptions' =
 	]
 
 -- Options to match files which may not yet be annexed.
-fileMatchingOptions :: [GlobalOption]
-fileMatchingOptions = fileMatchingOptions' ++ combiningOptions ++ timeLimitOption
+fileMatchingOptions :: Limit.LimitBy -> [GlobalOption]
+fileMatchingOptions lb = fileMatchingOptions' lb ++ combiningOptions ++ timeLimitOption
 
-fileMatchingOptions' :: [GlobalOption]
-fileMatchingOptions' =
+fileMatchingOptions' :: Limit.LimitBy -> [GlobalOption]
+fileMatchingOptions' lb =
 	[ globalSetter Limit.addExclude $ strOption
 		( long "exclude" <> short 'x' <> metavar paramGlob
 		<> help "skip files matching the glob pattern"
@@ -330,12 +330,12 @@ fileMatchingOptions' =
 		<> help "limit to files matching the glob pattern"
 		<> hidden
 		)
-	, globalSetter Limit.addLargerThan $ strOption
+	, globalSetter (Limit.addLargerThan lb) $ strOption
 		( long "largerthan" <> metavar paramSize
 		<> help "match files larger than a size"
 		<> hidden
 		)
-	, globalSetter Limit.addSmallerThan $ strOption
+	, globalSetter (Limit.addSmallerThan lb) $ strOption
 		( long "smallerthan" <> metavar paramSize
 		<> help "match files smaller than a size"
 		<> hidden

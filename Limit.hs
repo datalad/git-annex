@@ -441,11 +441,11 @@ limitSecureHash = MatchFiles
 	}
 
 {- Adds a limit to skip files that are too large or too small -}
-addLargerThan :: String -> Annex ()
-addLargerThan = addLimit . limitSize LimitAnnexFiles (>)
+addLargerThan :: LimitBy -> String -> Annex ()
+addLargerThan lb = addLimit . limitSize lb (>)
 
-addSmallerThan :: String -> Annex ()
-addSmallerThan = addLimit . limitSize LimitAnnexFiles (<)
+addSmallerThan :: LimitBy -> String -> Annex ()
+addSmallerThan lb = addLimit . limitSize lb (<)
 
 limitSize :: LimitBy -> (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit Annex
 limitSize lb vs s = case readSize dataUnits s of

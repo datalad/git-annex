@@ -39,11 +39,21 @@ import Control.Concurrent.STM
 
 cmd :: Command
 cmd = notBareRepo $
-	withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, fileMatchingOptions] $
+	withGlobalOptions opts $
 		command "import" SectionCommon 
 			"add a tree of files to the repository"
 			(paramPaths ++ "|BRANCH[:SUBDIR]")
 			(seek <$$> optParser)
+  where
+	opts =
+		[ jobsOption
+		, jsonOptions
+		, jsonProgressOption
+		-- These options are only used when importing from a
+		-- directory, not from a special remote. So it's ok
+		-- to use LimitDiskFiles.
+		, fileMatchingOptions LimitDiskFiles
+		]
 
 data ImportOptions 
 	= LocalImportOptions
