@@ -18,16 +18,6 @@ import Utility.Shell
 
 import qualified Data.Map as M
 
--- Remove all hooks.
-unHook :: Annex ()
-unHook = do
-	hookUnWrite preCommitHook
-	hookUnWrite postReceiveHook
-	hookUnWrite postCheckoutHook
-	hookUnWrite postMergeHook
-	hookUnWrite preCommitAnnexHook
-	hookUnWrite postUpdateAnnexHook
-
 preCommitHook :: Git.Hook
 preCommitHook = Git.Hook "pre-commit" (mkHookScript "git annex pre-commit .") []
 

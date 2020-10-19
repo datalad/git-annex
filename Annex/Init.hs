@@ -145,7 +145,11 @@ initialize' mversion = checkCanInitialize  $ do
 
 uninitialize :: Annex ()
 uninitialize = do
-	unHook
+	-- Remove hooks that are written when initializing.
+	hookUnWrite preCommitHook
+	hookUnWrite postReceiveHook
+	hookUnWrite postCheckoutHook
+	hookUnWrite postMergeHook
 	deconfigureSmudgeFilter
 	removeRepoUUID
 	removeVersion
