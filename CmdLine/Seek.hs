@@ -428,9 +428,9 @@ seekHelper c ww a (WorkTreeItems l) = do
 	mk Nothing f = (SeekInput [fromRawFilePath (c f)], f)
 
 	go v os fs g = do
-		(l, cleanup) <- a os fs g
+		(ls, cleanup) <- a os fs g
 		liftIO $ modifyIORef' v (cleanup:)
-		return l
+		return ls
 
 	cleanupall v = do
 		cleanups <- readIORef v
