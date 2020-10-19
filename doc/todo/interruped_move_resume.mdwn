@@ -19,9 +19,32 @@ Perhaps some local state could avoid this problem?
 > it could resume the interrupted transfer, and numcopies would work the
 > same as it did when the move started. 
 > 
-> Or, move to annex/objects/ but delay updating the location tracking to
-> say it's in the local repo until after the drop.
+> > After an interrupted move, whereis would say the content is present,
+> > but eg an annex link to it would be broken. That seems surprising,
+> > and if the user doesn't think to resume the move, fsck would have to be
+> > made to deal with it. I don't much like this approach, it seems to
+> > change an invariant that usually existance of copy on disk is ground
+> > truth, and location tracking tries to reflect it. With this, location
+> > tracking would be correct, but only because the content is in an
+> > unusual place on disk that it can be recovered from.
 > 
-> Either way, a problem is that the only copy would appear missing until
-> the move was re-run. The latter approach at least lets fsck clean up
-> from that situation, but it could still be surprising.
+> Or: Move to annex/objects/ w/o updating local location log.
+> Then do the drop, updating the remote's location log as now.
+> Then update local location log.
+> > 
+> > If interrupted, and then the move is resumed, it will see
+> > there's a local copy, and drop again from the remote. Either that
+> > finishes the interrupted drop, or the drop already happened and it's a
+> > noop. Either way, the local location log then gets updated.
+> > That should clean things up.
+> > 
+> > But, if a sync is done with the remote first, and then the move
+> > is resumed, it will no longer think the remote has a copy. This is
+> > where the only copy can appear missing (in whereis). So a fsck
+> > will be needed to recover. Or, move could be made to recover from
+> > this too, noticing the local copy and updating the location log to
+> > reflect it.
+> > 
+> > Still, if the move is interrupted and never resumed, after a sync
+> > with the remote, the only copy appears missing, which does seem
+> > potentially confusing.
