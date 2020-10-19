@@ -38,12 +38,13 @@ seek :: UpgradeOptions -> CommandSeek
 seek o = commandAction (start o)
 
 start :: UpgradeOptions -> CommandStart
-start (UpgradeOptions { autoOnly = True }) = do
+start (UpgradeOptions { autoOnly = True }) =
 	starting "upgrade" (ActionItemOther Nothing) (SeekInput []) $ do
-	getVersion >>= maybe noop checkUpgrade
-	next $ return True
-start _ = starting "upgrade" (ActionItemOther Nothing) (SeekInput []) $ do
-	whenM (isNothing <$> getVersion) $ do
-		initialize Nothing Nothing
-	r <- upgrade False latestVersion
-	next $ return r
+		getVersion >>= maybe noop checkUpgrade
+		next $ return True
+start _ =
+	starting "upgrade" (ActionItemOther Nothing) (SeekInput []) $ do
+		whenM (isNothing <$> getVersion) $ do
+			initialize Nothing Nothing
+		r <- upgrade False latestVersion
+		next $ return r

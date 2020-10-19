@@ -295,11 +295,11 @@ discoverLFSEndpoint tro h
 						let endpoint' = addbasicauth (Git.credentialBasicAuth cred) endpoint
 						let testreq' = LFS.startTransferRequest endpoint' transfernothing
 						flip catchNonAsync (const (returnendpoint endpoint')) $ do
-						resp' <- makeSmallAPIRequest testreq'
-						inRepo $ if needauth (responseStatus resp')
-							then Git.rejectUrlCredential cred
-							else Git.approveUrlCredential cred
-						returnendpoint endpoint'
+							resp' <- makeSmallAPIRequest testreq'
+							inRepo $ if needauth (responseStatus resp')
+								then Git.rejectUrlCredential cred
+								else Git.approveUrlCredential cred
+							returnendpoint endpoint'
 					else returnendpoint endpoint
 	  where
 	  	transfernothing = LFS.TransferRequest

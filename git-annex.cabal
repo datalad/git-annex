@@ -377,7 +377,7 @@ Executable git-annex
    DAV (>= 1.0)
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
-  Default-Language: Haskell98
+  Default-Language: Haskell2010
   Default-Extensions: PackageImports, LambdaCase
   Other-Extensions: TemplateHaskell
   -- Some things don't work with the non-threaded RTS.
