@@ -1,0 +1,18 @@
+Hi there,
+
+I'm trying to set up a new git-annex repo. I want to use the WORM backend for files larger than 200MB.
+So I use the following command when adding files:
+
+    git annex add --largerthan=200MB --backend=WORM .
+
+But this does not seem to work. No files are added. I tried several variants of the command like:
+
+    git annex add --largerthan 200MB --backend=WORM .
+    git annex add --largerthan "200 MB" --backend=WORM .
+
+Do not work also. Am I missing anything?
+
+I'm using **Git 2.28.0.windows.1** and **git-annex 8.20200815-g335aae266** on a newly-created repository in an NTFS partition.
+I used the following command to initialize the repo:
+
+    git init && git annex init
