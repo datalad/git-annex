@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-10-19T18:27:56Z"
+ content="""
+Update after some recent optimisations involving seekFilteredKeys.
+
+	        Mon Oct 19 14:36 2020 Time and Allocation Profiling Report  (Final)
+	
+	           git-annex +RTS -p -RTS find
+	
+	        total time  =        1.32 secs   (1316 ticks @ 1000 us, 1 processor)
+	        total alloc = 583,359,800 bytes  (excludes profiling overheads)
+	
+	COST CENTRE           MODULE                              SRC                                                   %time %alloc
+	
+	keyFile               Annex.Locations                     Annex/Locations.hs:(602,1)-(612,30)                    13.2   32.7
+	readObjectContent     Git.CatFile                         Git/CatFile.hs:(122,1)-(131,42)                        10.9    2.3
+	copyAndFreeze         Data.ByteArray.Methods              Data/ByteArray/Methods.hs:(237,1)-(240,21)              5.2    0.8
+	withPtr               Basement.Block.Base                 Basement/Block/Base.hs:(402,1)-(411,31)                 5.2    4.1
+	parseLinkTarget       Annex.Link                          Annex/Link.hs:(263,1)-(271,25)                          4.5   12.3
+	fileKey               Annex.Locations                     Annex/Locations.hs:(618,1)-(628,41)                     4.5    8.1
+	decimal               Data.Attoparsec.ByteString.Char8    Data/Attoparsec/ByteString/Char8.hs:(447,1)-(448,49)    4.3    4.5
+	doesPathExist         Utility.RawFilePath                 Utility/RawFilePath.hs:32:1-25                          3.9    0.6
+	ifM                   Utility.Monad                       Utility/Monad.hs:(54,1)-(56,44)                         3.0    3.2
+	catObjectStream       Git.CatFile                         Git/CatFile.hs:(322,1)-(330,45)                         2.6    2.5
+	</>                   System.FilePath.Posix.ByteString    System/FilePath/Posix/../Internal.hs:841:1-15           2.4    3.4
+	respParser            Git.CatFile                         Git/CatFile.hs:(175,1)-(182,39)                         2.4    1.3
+"""]]

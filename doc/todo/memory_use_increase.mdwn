@@ -30,3 +30,5 @@ Version 8.20200720 (cat-file --buffer)
 	
 Smoking gun. And probably reasonable. But, why exactly does that optimisation
 change the memory use in this way?
+
+[[done]]

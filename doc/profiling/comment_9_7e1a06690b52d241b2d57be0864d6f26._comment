@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2020-10-19T18:35:02Z"
+ content="""
+Also, /usr/bin/time git-annex find:
+
+	1.70user 0.27system 0:01.55elapsed 126%CPU (0avgtext+0avgdata 97352maxresident)k
+	0inputs+0outputs (0major+9303minor)pagefaults 0swaps
+
+The maxresident seems high, but a stack profile does not show a memory
+leak, or such a large amount of memory use at all. Currently, I
+think that memory is being preallocated by the ghc runtime,
+or something like that. (See [[todo/memory_use_increase]].)
+
+ghc 8.8.4  
+Should keep an eye on this with newer ghc versions.
+"""]]

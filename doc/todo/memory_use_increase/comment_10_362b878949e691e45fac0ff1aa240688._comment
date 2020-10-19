@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2020-10-19T17:33:49Z"
+ content="""
+[[/profiling]] has a history of `+RTS -p` profiles in the same repo.
+Comparing against the 10 month old one there, current git-annex find
+runs in same time, and actually allocates slightly less memory, 583357880
+bytes down from 608475328. That's memory churn, not max memory usage,
+so doesn't rule out a memory leak. But if there is one, it's memory that
+was allocated before, so it would need to be a laziness bug I think.
+And the profiles are not showing another such leak.
+
+My feeling is, what's left now is all due to a change to haskell runtime's
+memory management, or a library. So not worth keeping this open for since I
+can't do anything about it except for keep an eye on it.
+"""]]
