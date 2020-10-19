@@ -1,0 +1,20 @@
+`git annex add --largerthan=200mb` of a new file
+does not add a file that is large enough.
+
+This is a reversion, introduced last year in
+[[!commit 3066bdb1fb60e80f40b5badc150fb6eb51a922bb]].
+
+`git annex import /dir --largerthan=100mb` is also affected, and has an
+ugly fail mode as it tries to look up an annexed file outside the repo:
+
+	joey@darkstar:~/tmp/t>git annex import --largerthan=100mb ../d
+	fatal: './../d/foo' is outside repository at '/home/joey/tmp/t'
+
+That commit was otherwise right, eg `git-annex get --largerthan` should
+look at the size of the annexed file, not of the file on disk, which could
+be a small pointer file.
+
+Rather than being global options, --largerthan and --smallerthan, 
+could added by each command, so the command can specify how the size
+should be determined. Finding a way to do that w/o needing to add
+boilerplate to many commands would be best.
