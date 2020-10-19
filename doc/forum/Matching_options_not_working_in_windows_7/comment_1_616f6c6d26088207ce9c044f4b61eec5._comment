@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-19T18:59:30Z"
+ content="""
+Lucky for you, I tried it on linux, and it also fails there.
+
+I think the problem is, --largerthan and --smallerthan only work on annexed
+files, not on files you want to add to the annex. This is probably a bug.
+
+What does work is to configure annex.largefiles and disable
+annex.addsmallfiles:
+
+git config annex.largefiles 'largerthan=200mb'
+git config annex.addsmallfiles false
+"""]]
