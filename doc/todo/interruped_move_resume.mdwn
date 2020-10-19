@@ -10,6 +10,9 @@ numcopies is 2, so it can't drop the copy from the remote.
 
 This happens to me often enough to be annoying.
 
+I think it can also happen with move --to, although I can't remember seeing
+that.
+
 Perhaps some local state could avoid this problem?
 
 --[[Joey]]
@@ -48,3 +51,13 @@ Perhaps some local state could avoid this problem?
 > > Still, if the move is interrupted and never resumed, after a sync
 > > with the remote, the only copy appears missing, which does seem
 > > potentially confusing.
+
+> Local state could be a file listing keys that have had a move started
+> but not finished. When doing the same move, it should be allowed to
+> succeed even if numcopies would prevent it. More accurately, it
+> should disregard the local copy when checking numcopies for a move
+> --from. And for a move --to, it should disregard the remote copy.
+> May need 2 separate lists for the two kinds of moves.
+> 
+> > This is complex to implement, but it avoids the gotchas in the earlier
+> > ideas, so I think is best. --[[Joey]]
