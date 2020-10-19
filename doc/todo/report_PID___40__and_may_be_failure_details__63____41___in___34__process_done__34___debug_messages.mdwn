@@ -45,3 +45,6 @@ so I wondered if those `process done ExitFailure ERR` could be made a bit more i
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> pid added, so [[done]] .. please open something else if there's a
+> specific place you need more detail about a nonzero exit. --[[Joey]]
