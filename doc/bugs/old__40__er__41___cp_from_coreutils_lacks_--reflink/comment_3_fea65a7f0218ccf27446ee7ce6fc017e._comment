@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-19T16:19:49Z"
+ content="""
+I'm not going to make git-annex probe everything at run time. The
+user can find more ways to break their environment than I can probe for,
+and sheer code complexity, and runtime complexity, and debug complexity, 
+and run time would all be affected.
+
+The way git-annex is installed into git for windows's path is supposed to both
+make "git annex" work and also put it in the same directory that git for
+windows installs curl and cp. IIRC on windows a program automatically
+looks in its directory along with the path, so that makes them available
+to git-annex. There are probably configurations that make some other path
+be used in preference, or perhaps something changed in git for windows's
+locations of these things, although the path you show sounds like the same
+one I'd expect git-annex.exe to be in. I do know that used to work.
+
+--reflink seems unlikely to do anything useful on windows
+even if the option is supported, so it could just be defaulted to not
+supported on windows. -a/-p/--preserve-timestamps are more important and
+also probed at build time.
+"""]]
