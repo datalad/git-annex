@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-10-16T01:50:39Z"
+ content="""
+in datalad we took an approach that \"if bundled git-annex is used, use by default git which comes with it\".  If assumption here for Windows is that \"cp which comes with git should be used\", then git-annex needs to use a specific PATH to use that one, and not some other which might be found in the PATH.  The situation is a bit messy though since `git.exe` is at `/c/Program Files (x86)/Git/cmd/git.exe` (pasting from mingw'ed bash) while `cp` is under `/c/Program Files (x86)/Git/usr/bin/cp.exe` so not exactly the same directory, but I guess consistent for all Windows'es.
+"""]]

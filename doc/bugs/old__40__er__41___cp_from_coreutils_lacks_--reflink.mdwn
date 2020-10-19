@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+Ref: Original issue and finding [report against datalad](https://github.com/datalad/datalad/issues/5015#issuecomment-709436065).
+
+
+### What version of git-annex are you using? On what operating system?
+
+Windows 8.20200815-g335aae266  (I see now that I might benefit from update, but I found no related issue so likely it is something new)
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+{920}[Level 5] CommandError: '"git" "annex" "add" "-c" "annex.dotfiles=true" "-c" "annex.retry=3" "--json" "--json-error-messages" "--debug" "--" "file.dat"' failed with exitcode 1 under C:\Users\DataLad\AppData\Local\Temp\datalad_temp_tree_q4wxn05d [out: '{"command":"add","success":false,"error-messages":["  file.dat failed to link to annex"],"file":"file.dat"}'] [err: '[2020-10-15 11:57:07.4657537] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.dotfiles=true","-c","annex.retry=3","show-ref","git-annex"]
+| [2020-10-15 11:57:07.4813787] process done ExitSuccess
+| [2020-10-15 11:57:07.4813787] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.dotfiles=true","-c","annex.retry=3","show-ref","--hash","refs/heads/git-annex"]
+...
+| [2020-10-15 11:57:07.6376287] call: cp ["--reflink=auto","-a","file.dat",".git\\annex\\objects\\6f0\\fbd\\SHA256E-s7--ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73.dat\\SHA256E-s7--ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73.dat"]
+| "cp": unrecognized option `--reflink=auto'
+| Try `"cp" --help' for more information.
+| [2020-10-15 11:57:07.6532537] process done ExitFailure 1
+
+C:\tmp>cp --help | grep ref
+  -d                           same as --no-dereference --preserve=link
+  -L, --dereference            always follow symbolic links
+  -P, --no-dereference         never follow symbolic links
+
+C:\tmp>cp --version
+cp (GNU coreutils) 5.97
+Copyright (C) 2006 Free Software Foundation, Inc.
+This is free software.  You may redistribute copies of it under the terms of
+the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Torbjorn Granlund, David MacKenzie, and Jim Meyering.
+"""]]
+
+if I parsed NEWS.gz correctly, that option was added in `* Noteworthy changes in release 8.0 (2009-10-06) [beta]` . So I wonder if `git-annex` could sense for version of `cp` or presence of `--reflink` option and not use it if `cp` is too old?
+
+Meanwhile I will see if there is some sensible way to get more uptodate coreutils (or `cp`) at least within conda env
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]

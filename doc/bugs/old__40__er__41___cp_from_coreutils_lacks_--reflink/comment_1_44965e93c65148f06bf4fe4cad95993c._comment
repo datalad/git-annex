@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-10-16T01:29:22Z"
+ content="""
+a mental note... building git-annex in a windows vm ATM, and saw
+
+```
+> stack ghc --no-haddock --package nsis Build/NullSoftInstaller.hs
+...
+[36 of 36] Compiling StackSetupShim   ( C:\\sr\setup-exe-src\setup-shim-Z6RU0evB.hs, C:\\tmp\git-annex\.stack-work\dist\
+29cc6475\setup\StackSetupShim.o )
+Linking C:\\tmp\\git-annex\\.stack-work\\dist\\29cc6475\\setup\\setup.exe ...
+  checking UPGRADE_LOCATION... http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
+  checking git... yes
+  checking git version... 2.23.0.windows.1
+  checking cp -a... yes
+  checking cp -p... yes
+  checking cp --preserve=timestamps... yes
+  checking cp --reflink=auto... yes
+...
+  checking ssh connection caching... no
+Configuring git-annex-8.20201007...
+```
+
+so either the check is wrong or there are multiple `cp` around (may be some came with `stack`?) ... I found total over 10 different cp.exe on drive (didn't check yet how many in PATH). But I just wonder, if check is done at build time, but `cp` is not distributed along, the check should be done at run time instead.
+"""]]
