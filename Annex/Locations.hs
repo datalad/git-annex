@@ -76,7 +76,7 @@ module Annex.Locations (
 	gitAnnexPidFile,
 	gitAnnexPidLockFile,
 	gitAnnexDaemonStatusFile,
-	gitAnnexLogFile,
+	gitAnnexDaemonLogFile,
 	gitAnnexFuzzTestLogFile,
 	gitAnnexHtmlShim,
 	gitAnnexUrlFile,
@@ -513,8 +513,8 @@ gitAnnexDaemonStatusFile r = fromRawFilePath $
 	gitAnnexDir r P.</> "daemon.status"
 
 {- Log file for daemon mode. -}
-gitAnnexLogFile :: Git.Repo -> FilePath
-gitAnnexLogFile r = fromRawFilePath $ gitAnnexDir r P.</> "daemon.log"
+gitAnnexDaemonLogFile :: Git.Repo -> FilePath
+gitAnnexDaemonLogFile r = fromRawFilePath $ gitAnnexDir r P.</> "daemon.log"
 
 {- Log file for fuzz test. -}
 gitAnnexFuzzTestLogFile :: Git.Repo -> FilePath
