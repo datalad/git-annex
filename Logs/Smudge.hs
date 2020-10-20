@@ -13,11 +13,13 @@ import Annex.Common
 import Git.FilePath
 import Logs.File
 
+import qualified Data.ByteString.Lazy as L
+
 -- | Log a smudged file.
 smudgeLog :: Key -> TopFilePath -> Annex ()
 smudgeLog k f = do
 	logf <- fromRepo gitAnnexSmudgeLog
-	appendLogFile logf gitAnnexSmudgeLock $ fromRawFilePath $
+	appendLogFile logf gitAnnexSmudgeLock $ L.fromStrict $
 		serializeKey' k <> " " <> getTopFilePath f
 
 -- | Streams all smudged files, and then empties the log at the end.
