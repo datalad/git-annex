@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+In a repository with submodules, if I want to initialise git-annex on all submodules, I expect that `git submodule foreach git annex init` should work.  Other `git-annex` commands seem to work with the `submodule foreach` command just fine.
+
+
+### What steps will reproduce the problem?
+
+ 1. Clone a repository with submodules (recursively): `git clone --recursive <remote>`
+ 2. Initialise the main repository's annex: `git annex init`
+ 3. Try to initialise git-annex in all submodules: `git submodule foreach git annex init`
+
+This produces the following error:
+```
+git-annex: git: createProcess: runInteractiveProcess: chdir: inappropriate type (Not a directory)
+fatal: run_command returned non-zero status for scripts
+.
+```
+
+As a workaround, manually changing directory into each submodule and running `git annex init` works, but there are cases where having a general script that can iterate submodules is convenient.
+
+
+### What version of git-annex are you using? On what operating system?
+
+- git-annex version: 8.20201007-gcf33be21ac
+- OS: Arch Linux
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use it regularly with great success :)
