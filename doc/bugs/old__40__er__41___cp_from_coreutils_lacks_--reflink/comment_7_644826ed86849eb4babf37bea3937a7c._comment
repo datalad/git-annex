@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2020-10-20T16:39:15Z"
+ content="""
+oh, just now realized that `git-annex.exe` is in **exactly** the same `C:\Program Files (x86)\Git\usr\bin` as `cp` etc -- so specifying specific path of where `git-annex.exe` installed (I bet the process would know which dir it is coming from) to `cp` and all those tools for a windows build could potentially make those installations more robust overall.
+"""]]
