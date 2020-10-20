@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-10-20T15:59:26Z"
+ content="""
+I can trigger this issue on my end too (tried with
+7.20190503-g4da50456a and 8.20201008-gad86a25c5).  In case it's
+helpful, here is a minimal reproducer:
+
+[[!format sh \"\"\"
+set -ue
+
+cd \"$(mktemp -d \"${TMPDIR:-/tmp}\"/gx-XXXXXXX)\"
+
+git annex version
+pwd
+
+git init src
+(
+    cd src
+    git init sub
+    git -C sub annex init
+    git -C sub commit --allow-empty -m sub-c0
+    git submodule add ./sub
+    git commit -m sub
+)
+
+git clone --recursive src dest
+(
+    cd dest
+    git annex init
+    git submodule foreach 'git annex init'
+)
+\"\"\"]]
+
+"""]]
