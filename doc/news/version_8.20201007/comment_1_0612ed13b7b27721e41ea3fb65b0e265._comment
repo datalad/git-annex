@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="nix.zahlen@1211ac6c964ba2d68b70655f747bef1383032e77"
+ nickname="nix.zahlen"
+ avatar="http://cdn.libravatar.org/avatar/66cc45a05749fe8d4ca36d8c6071da51"
+ subject="cannot find this mentioned Windows build :|"
+ date="2020-10-21T20:46:37Z"
+ content="""
+seems like the offered Windows installer is still on \"distributionVersion = \"8.20200815\"\"
+"""]]
