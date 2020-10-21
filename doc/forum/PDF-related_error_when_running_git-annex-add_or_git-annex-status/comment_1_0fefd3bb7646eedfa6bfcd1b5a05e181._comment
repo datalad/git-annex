@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-10-21T19:10:01Z"
+ content="""
+Git on windows configures a diff driver by default, which is probably throwing these errors (For whathever reason... *sigh*). It's the `diff.<driver>.command` setting that you have to unset.
+"""]]
