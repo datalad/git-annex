@@ -1,0 +1,15 @@
+When I run either "git annex add" or "git annex status" on a repository with PDF files, I'm getting the following errors:
+
+    Syntax Warning: May not be a PDF file (continuing anyway)
+    Syntax Error: Couldn't read xref table
+    Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+    Syntax Error: Couldn't find trailer dictionary
+    Syntax Error: Couldn't read xref table
+
+I checked the PDFs and I can open them.
+
+What is triggerring these errors? Frequently these errors freezes the git-annex process and I have no choice but to kill one by one all the spawned git processes.
+
+Again, I'm in Windows 7, using Git 2.28.0.windows.1 and git-annex 8.20200815-g335aae266 on a newly-created repository in an NTFS partition.
+
+
