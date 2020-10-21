@@ -1,0 +1,12 @@
+The first prerelease of git-annex was made ten years ago.
+Taking a look back at 0.01, which I think only I ever used, it
+had the commands add, get, drop, unannex, init, fix, and fromkey.
+There were 2600 lines of code in all, which has increased 30-fold.
+
+Later that week, 0.02 added the move command. I've been working recently
+on fixing a [[tricky_problem|doc/todo/interruped_move_resume]] with
+resuming interrupted moves. The move command has been surprisingly
+subtle to get just right, since it turns out to not be as simple as a get
+followed by a drop -- numcopies checks that would prevent a drop sometimes
+need to be relaxed to allow a move. Maybe I've finally gotten it perfect
+now. Probably not.
