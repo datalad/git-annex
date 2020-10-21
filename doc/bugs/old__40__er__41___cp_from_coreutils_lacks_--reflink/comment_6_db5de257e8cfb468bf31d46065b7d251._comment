@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2020-10-20T12:33:29Z"
+ content="""
+> --reflink seems unlikely to do anything useful on windows even if the option is supported, so it could just be defaulted to not supported on windows. 
+
+yeap, sounds good to me ATM.
+
+> -a/-p/--preserve-timestamps are more important and also probed at build time.
+
+If I read NEWS correctly, it was added in 4.1.10, so old enough (was I even born then?) ;) 
+"""]]

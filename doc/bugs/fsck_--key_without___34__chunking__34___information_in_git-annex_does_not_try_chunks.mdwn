@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+Probably it is more of a todo than a bug.
+
+### What steps will reproduce the problem?
+
+This is a use-case where I am trying to establish a special remote to be shared by multiple unrelated repositories.
+
+So I had original repo1 in which I
+
+- created an external special remote with chunking, it got UUID1
+- uploaded some data (all got chunked)
+
+created repo2 in which I
+
+- initialized special remote with identical settings and provided `uuid=UUID1`
+- decided to test if annex would be able to get a key from the shared special remote
+
+but `annex fsck --key KEY --from remote --fast`, since it doesn't have an exact chunking list, just provides special remote backend with original full key only, which is obviously not found, and it reports failure.   But I wondered -- couldn't `git-annex` just use chunking size and "mint" possible chunked-keys to test on the special remote since it has all the information?  After all chunk keys AFAIK are deterministically minted and pretty much are just "augmented" original key with `-S<chunksize>-C<chunkindex>` added to the key.
+
+### What version of git-annex are you using? On what operating system?
+
+8.20200908+git175-g95d02d6e2-1~ndall+1
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]

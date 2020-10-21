@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="ericm"
+ avatar="http://cdn.libravatar.org/avatar/67ca64c5a99fb142fc2e3916333881ca"
+ subject="comment 3"
+ date="2020-10-20T13:45:09Z"
+ content="""
+This worked for me:
+
+    git -c annex.largefiles=largerthan=200mb -c annex.addsmallfiles=false annex add --backend=WORM .
+
+Then this adds the remaining files:
+
+    git annex add .
+
+Thanks for the help!
+"""]]

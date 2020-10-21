@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-10-20T12:29:19Z"
+ content="""
+It isn't exactly \"how git-annex installed\" but rather, what else is installed besides git-annex.  Recommended way to install datalad on OSX and Windows is via [anaconda](https://www.anaconda.com/) or [miniconda](https://docs.conda.io/en/latest/miniconda.html) from conda-forge channel.  See  So it places itself into `PATH` ahead of the rest, and it is the one which comes ATM with outdated `cp`.
+[It seems](https://github.com/conda-forge/coreutils-feedstock/issues/8) that `cp` might come also with `git` package there, and I have initiated (but didn't progress) [effort](https://github.com/conda-forge/coreutils-feedstock/issues/8) to build newer coreutils for Windows for conda-forge. (there is also some other m2sys channel with somewhat newer coreutils build, but mixing channels that much is begging for more of other issues).  So, eventually, I hope that there would be updated `cp` available by default with `datalad` installation, but the point is that unless git-annex uses the specific `cp` it knows about, it could be some other `cp` in its way.
+"""]]
