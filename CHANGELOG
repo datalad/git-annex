@@ -4,6 +4,9 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
   * Fix a memory leak introduced in the last release.
   * add, import: Fix a reversion in 7.20191009 that broke handling
     of --largerthan and --smallerthan.
+  * move: Improve resuming a move that was interrupted after the object
+    was transferred, in cases where numcopies checks prevented the resumed
+    move from dropping the object from the source repository.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 

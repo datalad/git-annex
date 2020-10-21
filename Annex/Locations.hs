@@ -47,6 +47,8 @@ module Annex.Locations (
 	gitAnnexFsckResultsLog,
 	gitAnnexSmudgeLog,
 	gitAnnexSmudgeLock,
+	gitAnnexMoveLog,
+	gitAnnexMoveLock,
 	gitAnnexExportDir,
 	gitAnnexExportDbDir,
 	gitAnnexExportLock,
@@ -376,6 +378,14 @@ gitAnnexSmudgeLog r = fromRawFilePath $ gitAnnexDir r P.</> "smudge.log"
 
 gitAnnexSmudgeLock :: Git.Repo -> FilePath
 gitAnnexSmudgeLock r = fromRawFilePath $ gitAnnexDir r P.</> "smudge.lck"
+
+{- .git/annex/move.log is used to log moves that are in progress,
+ - to better support resuming an interrupted move. -}
+gitAnnexMoveLog :: Git.Repo -> FilePath
+gitAnnexMoveLog r = fromRawFilePath $ gitAnnexDir r P.</> "move.log"
+
+gitAnnexMoveLock :: Git.Repo -> FilePath
+gitAnnexMoveLock r = fromRawFilePath $ gitAnnexDir r P.</> "move.lck"
 
 {- .git/annex/export/ is used to store information about
  - exports to special remotes. -}

@@ -8,7 +8,9 @@ getting any worse) and remove the content from the remote after
 transferring it. But, on resume, git-annex sees there are 2 copies and
 numcopies is 2, so it can't drop the copy from the remote.
 
-This happens to me often enough to be annoying.
+This happens to me often enough to be annoying. Note that being interrupted
+during checksum verification makes it happen, so the window is relatively
+wide.
 
 I think it can also happen with move --to, although I can't remember seeing
 that.
@@ -61,3 +63,21 @@ Perhaps some local state could avoid this problem?
 > 
 > > This is complex to implement, but it avoids the gotchas in the earlier
 > > ideas, so I think is best. --[[Joey]]
+
+> > > Implementation will involve willDropMakeItWorse,
+> > > which is passed a deststartedwithcopy that currently comes from
+> > > inAnnex/checkPresent. Check the log, and if
+> > > the interrupted move started with the move destination 
+> > > not having a copy, pass False.
+
+Are there any situations where this would be surprising? Eg, if git-annex
+move were interrupted, and then a year later, run again, and proceeded
+to apparently violate numcopies?
+
+Maybe, OTOH I've run into this problem probably weeks after the first move
+got interrupted. Eg, if files are always moved from repo A to repo B,
+leaving repo A empty, this problem can cause stuff to build up on repo A
+unexpectedly. And in such a case, the timing of the resumed move does not
+matter, the user expected files to always get eventually moved from A.
+
+[[fixed|done]] --[[Joey]]

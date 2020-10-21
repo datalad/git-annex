@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,9 +16,12 @@ import Annex.UUID
 import Annex.Transfer
 import Logs.Presence
 import Logs.Trust
+import Logs.File
 import Annex.NumCopies
 
 import System.Log.Logger (debugM)
+import qualified Data.ByteString.Char8 as B8
+import qualified Data.ByteString.Lazy as L
 
 cmd :: Command
 cmd = withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatchingOptions] $
@@ -130,34 +133,36 @@ expectedPresent dest key = do
 	return $ dest `elem` remotes
 
 toPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
-toPerform dest removewhen key afile fastcheck isthere =
+toPerform dest removewhen key afile fastcheck isthere = do
+	srcuuid <- getUUID
 	case isthere of
 		Left err -> do
 			showNote err
 			stop
-		Right False -> do
+		Right False -> logMove srcuuid destuuid False key $ \deststartedwithcopy -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
 				upload (Remote.uuid dest) key afile stdRetry $
 					Remote.action . Remote.storeKey dest key afile
 			if ok
-				then finish False $
+				then finish deststartedwithcopy $
 					Remote.logStatus dest key InfoPresent
 				else do
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
-		Right True -> finish True $
-			unlessM (expectedPresent dest key) $
-				Remote.logStatus dest key InfoPresent
+		Right True -> logMove srcuuid destuuid False key $ \deststartedwithcopy ->
+			finish deststartedwithcopy $
+				unlessM (expectedPresent dest key) $
+					Remote.logStatus dest key InfoPresent
   where
+	destuuid = Remote.uuid dest
 	finish deststartedwithcopy setpresentremote = case removewhen of
 		RemoveNever -> do
 			setpresentremote
 			next $ return True
 		RemoveSafe -> lockContentForRemoval key lockfailed $ \contentlock -> do
 			srcuuid <- getUUID
-			let destuuid = Remote.uuid dest
 			willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
 				DropAllowed -> drophere setpresentremote contentlock "moved"
 				DropCheckNumCopies -> do
@@ -211,19 +216,21 @@ fromOk src key = do
 fromPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
 fromPerform src removewhen key afile = do
 	showAction $ "from " ++ Remote.name src
-	ifM (inAnnex key)
-		( dispatch removewhen True True
-		, dispatch removewhen False =<< go
-		)
+	present <- inAnnex key
+	destuuid <- getUUID
+	logMove srcuuid destuuid present key $ \deststartedwithcopy ->
+		if present
+			then dispatch removewhen deststartedwithcopy True
+			else dispatch removewhen deststartedwithcopy =<< get
   where
-	go = notifyTransfer Download afile $ 
+	get = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile stdRetry $ \p ->
 			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
 				Remote.verifiedAction $ Remote.retrieveKeyFile src key afile t p
+	
 	dispatch _ _ False = stop -- failed
 	dispatch RemoveNever _ True = next $ return True -- copy complete
 	dispatch RemoveSafe deststartedwithcopy True = lockContentShared key $ \_lck -> do
-		let srcuuid = Remote.uuid src
 		destuuid <- getUUID
 		willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
 			DropAllowed -> dropremote "moved"
@@ -233,7 +240,11 @@ fromPerform src removewhen key afile = do
 				verifyEnoughCopiesToDrop "" key Nothing numcopies [Remote.uuid src] verified
 					tocheck (dropremote . showproof) faileddropremote
 			DropWorse -> faileddropremote		
+	
+	srcuuid = Remote.uuid src
+	
 	showproof proof = "proof: " ++ show proof
+	
 	dropremote reason = do
 		liftIO $ debugM "move" $ unwords
 			[ "Dropping from remote"
@@ -242,6 +253,7 @@ fromPerform src removewhen key afile = do
 			]
 		ok <- Remote.action (Remote.removeKey src key)
 		next $ Command.Drop.cleanupRemote key src ok
+	
 	faileddropremote = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"
 		showLongNote $ "Content not dropped from " ++ Remote.name src ++ "."
@@ -287,8 +299,8 @@ toHereStart removewhen afile key ai si =
  - This function checks all that. It needs to know if the destination
  - repository already had a copy of the file before the move began.
  -}
-willDropMakeItWorse :: UUID -> UUID -> Bool -> Key -> AssociatedFile -> Annex DropCheck
-willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile =
+willDropMakeItWorse :: UUID -> UUID -> DestStartedWithCopy -> Key -> AssociatedFile -> Annex DropCheck
+willDropMakeItWorse srcuuid destuuid (DestStartedWithCopy deststartedwithcopy) key afile =
 	ifM (Command.Drop.checkRequiredContent srcuuid key afile)
 		( if deststartedwithcopy
 			then unlessforced DropCheckNumCopies
@@ -309,3 +321,53 @@ willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile =
 		return (desttrust > UnTrusted || desttrust >= srctrust)
 
 data DropCheck = DropWorse | DropAllowed | DropCheckNumCopies
+
+newtype DestStartedWithCopy = DestStartedWithCopy Bool
+
+{- Runs an action that performs a move, and logs the move, allowing an
+ - interrupted move to be restarted later.
+ -
+ - This deals with the situation where dest did not start with a copy,
+ - but the move downloaded it, and was then interrupted before dropping
+ - it from the source. Re-running the move would see dest has a
+ - copy, and so could refuse to allow the drop. By providing the logged
+ - DestStartedWithCopy, this avoids that annoyance.
+ -}
+logMove :: UUID -> UUID -> Bool -> Key -> (DestStartedWithCopy -> Annex a) -> Annex a
+logMove srcuuid destuuid deststartedwithcopy key a = bracket setup cleanup go
+  where
+	logline = L.fromStrict $ B8.unwords
+		[ fromUUID srcuuid
+		, fromUUID destuuid
+		, serializeKey' key
+		]
+
+	setup = do
+		logf <- fromRepo gitAnnexMoveLog
+		-- Only log when there was no copy.
+		unless deststartedwithcopy $
+			appendLogFile logf gitAnnexMoveLock logline
+		return logf
+
+	cleanup logf = do
+		-- This buffers the log file content in memory.
+		-- The log file length is limited to the number of
+		-- concurrent jobs, times the number of times a move
+		-- (of different files) has been interrupted.
+		-- That could grow without bounds given enough time,
+		-- so the log is also truncated to the most recent
+		-- 100 items.
+		modifyLogFile logf gitAnnexMoveLock
+			(filter (/= logline) . reverse . take 100 . reverse)
+
+	go logf
+		-- Only need to check log when there is a copy.
+		| deststartedwithcopy = do
+			wasnocopy <- checkLogFile logf gitAnnexMoveLock
+				(== logline)
+			if wasnocopy
+				then go' False
+				else go' deststartedwithcopy
+		| otherwise = go' deststartedwithcopy
+
+	go' = a . DestStartedWithCopy

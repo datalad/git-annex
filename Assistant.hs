@@ -74,7 +74,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	enableInteractiveBranchAccess
 	pidfile <- fromRepo gitAnnexPidFile
-	logfile <- fromRepo gitAnnexLogFile
+	logfile <- fromRepo gitAnnexDaemonLogFile
 	liftIO $ debugM desc $ "logging to " ++ logfile
 	createAnnexDirectory (parentDir pidfile)
 #ifndef mingw32_HOST_OS
@@ -127,7 +127,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	start daemonize webappwaiter = withThreadState $ \st -> do
 		checkCanWatch
 		dstatus <- startDaemonStatus
-		logfile <- fromRepo gitAnnexLogFile
+		logfile <- fromRepo gitAnnexDaemonLogFile
 		liftIO $ debugM desc $ "logging to " ++ logfile
 		liftIO $ daemonize $
 			flip runAssistant (go webappwaiter) 
