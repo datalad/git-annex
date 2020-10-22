@@ -24,3 +24,5 @@ but `annex fsck --key KEY --from remote --fast`, since it doesn't have an exact 
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[done]] --[[Joey]]

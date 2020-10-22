@@ -206,7 +206,7 @@ seekResume h encryptor chunkkeys checker = do
  -}
 removeChunks :: Remover -> UUID -> ChunkConfig -> EncKey -> Key -> Annex ()
 removeChunks remover u chunkconfig encryptor k = do
-	ls <- chunkKeys u chunkconfig k
+	ls <- map chunkKeyList <$> chunkKeys u chunkconfig k
 	mapM_ (remover . encryptor) (concat ls)
 	let chunksizes = catMaybes $ map (fromKey keyChunkSize <=< headMaybe) ls
 	forM_ chunksizes $ chunksRemoved u k . FixedSizeChunks . fromIntegral
@@ -245,7 +245,8 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 			(\e -> go (Just e) =<< chunkKeysOnly u chunkconfig basek)
 	| otherwise = go Nothing =<< chunkKeys u chunkconfig basek
   where
-	go pe ls = do
+	go pe cks = do
+		let ls = map chunkKeyList cks
 		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
@@ -359,14 +360,18 @@ checkPresentChunks checker u chunkconfig encryptor basek
   where
 	checklists Nothing [] = return False
 	checklists (Just deferrederror) [] = throwM deferrederror
-	checklists d (l:ls)
+	checklists d (ck:cks)
 		| not (null l) = do
 			v <- checkchunks l
 			case v of
-				Left e -> checklists (Just e) ls
-				Right True -> return True
-				Right False -> checklists Nothing ls
-		| otherwise = checklists d ls
+				Left e -> checklists (Just e) cks
+				Right True -> do
+					ensureChunksAreLogged u basek ck
+					return True
+				Right False -> checklists Nothing cks
+		| otherwise = checklists d cks
+	  where
+		l = chunkKeyList ck
 	
 	checkchunks :: [Key] -> Annex (Either SomeException Bool)
 	checkchunks [] = return (Right True)
@@ -378,6 +383,14 @@ checkPresentChunks checker u chunkconfig encryptor basek
 			Left e -> return $ Left e
 
 	check = tryNonAsync . checker . encryptor
+
+data ChunkKeys
+	= ChunkKeys [Key]
+	| SpeculativeChunkKeys (ChunkMethod, ChunkCount) [Key]
+
+chunkKeyList :: ChunkKeys -> [Key]
+chunkKeyList (ChunkKeys l) = l
+chunkKeyList (SpeculativeChunkKeys _ l) = l
 
 {- A key can be stored in a remote unchunked, or as a list of chunked keys.
  - This can be the case whether or not the remote is currently configured
@@ -395,22 +408,22 @@ checkPresentChunks checker u chunkconfig encryptor basek
  - recover from data loss, where the chunk log didn't make it out,
  - though only as long as the ChunkConfig is unchanged.
  -}
-chunkKeys :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
+chunkKeys :: UUID -> ChunkConfig -> Key -> Annex [ChunkKeys]
 chunkKeys = chunkKeys' False
 
 {- Same as chunkKeys, but excluding the unchunked key. -}
-chunkKeysOnly :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
+chunkKeysOnly :: UUID -> ChunkConfig -> Key -> Annex [ChunkKeys]
 chunkKeysOnly = chunkKeys' True
 
-chunkKeys' :: Bool -> UUID -> ChunkConfig -> Key -> Annex [[Key]]
+chunkKeys' :: Bool -> UUID -> ChunkConfig -> Key -> Annex [ChunkKeys]
 chunkKeys' onlychunks u chunkconfig k = do
 	recorded <- getCurrentChunks u k
-	let recordedl  = map (toChunkList k) recorded
+	let recordedl = map (ChunkKeys . toChunkList k) recorded
 	return $ addspeculative recorded $ if onlychunks
 		then recordedl
 		else if noChunks chunkconfig
-			then [k] : recordedl
-			else recordedl ++ [[k]]
+			then ChunkKeys [k] : recordedl
+			else recordedl ++ [ChunkKeys [k]]
   where
 	addspeculative recorded l = case chunkconfig of
 		NoChunks -> l
@@ -422,10 +435,19 @@ chunkKeys' onlychunks u chunkconfig k = do
  				    v = (FixedSizeChunks chunksz, chunkcount)
 				in if v `elem` recorded
 					then l
-					else l ++ [toChunkList k v]
+					else l ++ [SpeculativeChunkKeys v (toChunkList k v)]
 		LegacyChunks _ -> l
 
 toChunkList :: Key -> (ChunkMethod, ChunkCount) -> [Key]
 toChunkList k (FixedSizeChunks chunksize, chunkcount) =
 	takeChunkKeyStream chunkcount $ chunkKeyStream k chunksize
 toChunkList _ (UnknownChunks _, _) = []
+
+{- When chunkKeys provided a speculative chunk list, and that has been
+ - verified to be present, use this to log it in the chunk log. This way,
+ - a later change to the chunk size of the remote won't prevent accessing
+ - the chunks. -}
+ensureChunksAreLogged :: UUID -> Key -> ChunkKeys -> Annex ()
+ensureChunksAreLogged u k (SpeculativeChunkKeys (chunkmethod, chunkcount) _) = 
+	chunksStored u k chunkmethod chunkcount
+ensureChunksAreLogged _ _ (ChunkKeys _) = return ()
