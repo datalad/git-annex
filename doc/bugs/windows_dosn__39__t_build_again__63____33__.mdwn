@@ -20,3 +20,7 @@ Seems like the Windows version is not updated?
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 - use it to ensure some of my private data / files are save on 2x different media's :)
 
+> The windows autobuilder is currenntly broken and has to be periodically
+> rebooted or something to be "fixed". So updated builds are sporadic. 
+> This is not due to a bug in git-annex, so I don't really want to track
+> it here. [[done]] --[[Joey]]
