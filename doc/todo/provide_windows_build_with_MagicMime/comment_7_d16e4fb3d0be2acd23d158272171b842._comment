@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="windows build with magic"
+ date="2020-10-22T19:32:55Z"
+ content="""
+FWIW, the mission of automated building of windows installer for annex with libmagic support is accomplished.  
+
+- It is 64bit build, works on Windows 10 **but in my experience does not work on Windows 7**. [info/pain to share if interested](https://github.com/datalad/datalad-extensions/pull/40#issuecomment-713853822)
+- Not sure if artifacts are publicly available [from github](https://github.com/datalad/datalad-extensions/runs/1294145386?check_suite_focus=true), but current copy could be fetched from [my personal website](http://www.onerussian.com/tmp/git-annex-windows-installer_20201022.zip).  We are [thinking](https://github.com/datalad/datalad-extensions/issues/46) about organizing public consistent distribution for them
+- libmagic is cross-build on Linux, based on [file-windows](https://github.com/nscaife/file-windows) with some fixups (?) in [our clone](https://github.com/datalad/file-windows)
+"""]]
