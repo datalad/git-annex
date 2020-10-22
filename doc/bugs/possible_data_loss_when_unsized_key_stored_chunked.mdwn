@@ -39,3 +39,10 @@ since it can fail so badly with them, and they're kind of a side thing?
 (Could continue retrieving, for whatever is stored hopefully w/o being
 corrupted already.)
 --[[Joey]]
+
+> This would also affect any key that is not stable.
+> And oh, it stopped using chunks to store non-stable keys in 2014.
+> 
+> So, this can't really happen with url keys, because they're not stable.
+> Ok, not a bug then, because if the key is stable, there can only be one
+> object for it, by definition. Whew! [[done]] --[[Joey]]

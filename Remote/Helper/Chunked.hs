@@ -120,6 +120,10 @@ storeChunks
 	-> Annex ()
 storeChunks u chunkconfig encryptor k f p storer checker = 
 	case chunkconfig of
+		-- Only stable keys are safe to store chunked,
+		-- because an unstable key can have multiple different
+		-- objects, and mixing up chunks from them would be
+		-- possible without this check.
 		(UnpaddedChunks chunksize) -> ifM (isStableKey k)
 			( do
 				h <- liftIO $ openBinaryFile f ReadMode
