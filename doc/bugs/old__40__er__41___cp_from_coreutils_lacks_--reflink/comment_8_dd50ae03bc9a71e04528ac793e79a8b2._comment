@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-10-22T17:41:49Z"
+ content="""
+If whatever is putting itself at the front of PATH, I think it would
+also risk breaking any part of git that expects to run another part of it
+by path. Including any git commands that use the bundled cp or other
+unix commands.
+
+Perhaps the problem is that you're mixing two different package systems?
+If there's going to be a datalad package, there should also be a git-annex
+package, and then it can be built to use the right cp options for its
+distibution.
+"""]]
