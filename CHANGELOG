@@ -7,6 +7,9 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
   * move: Improve resuming a move that was interrupted after the object
     was transferred, in cases where numcopies checks prevented the resumed
     move from dropping the object from the source repository.
+  * When a special remote has chunking enabled, but no chunk sizes are
+    recorded (or the recorded ones are not found), speculatively try
+    chunks using the configured chunk size.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 

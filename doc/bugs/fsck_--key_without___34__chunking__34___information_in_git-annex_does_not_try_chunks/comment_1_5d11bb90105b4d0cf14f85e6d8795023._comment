@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-22T16:09:17Z"
+ content="""
+Note that what you are trying to do will only work if the special remote
+is not encrypted.
+
+As well as your use case, which seems very unusual, I think one other use
+case would be if a clone uploaded to the special remote, but never synced
+out its git-annex branch before being lost, and fsck --from
+remote is being run in another clone to reconstruct it. Currently it
+won't try chunks as none are recorded.
+
+Speculatively trying the current remote's chunk config would handle the
+majority of cases, though wouldn't help if the other clone had adjusted the
+special remote's chunk size too.
+
+There's some overhead, but it can check it last, and not check it if
+it's in the list of known chunks, so the overhead would only usually 
+be paid if the content git-annex expected to be present had gone missing,
+which I think is rare enough to not care about.
+
+(Also, this can only be done when the size of the key is known, so not
+eg addurl --relaxed keys.)
+"""]]

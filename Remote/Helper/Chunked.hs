@@ -242,7 +242,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
 		-- looking in the git-annex branch for chunk counts
 		-- that are likely not there.
 		getunchunked `catchNonAsync`
-			(\e -> go (Just e) =<< chunkKeysOnly u basek)
+			(\e -> go (Just e) =<< chunkKeysOnly u chunkconfig basek)
 	| otherwise = go Nothing =<< chunkKeys u chunkconfig basek
   where
 	go pe ls = do
@@ -350,10 +350,11 @@ checkPresentChunks checker u chunkconfig encryptor basek
 		-- looking in the git-annex branch for chunk counts
 		-- that are likely not there.
 		v <- check basek
+		let getchunkkeys = chunkKeysOnly u chunkconfig basek
 		case v of
 			Right True -> return True
-			Left e -> checklists (Just e) =<< chunkKeysOnly u basek
-			_ -> checklists Nothing =<< chunkKeysOnly u basek
+			Left e -> checklists (Just e) =<< getchunkkeys
+			_ -> checklists Nothing =<< getchunkkeys
 	| otherwise = checklists Nothing =<< chunkKeys u chunkconfig basek
   where
 	checklists Nothing [] = return False
@@ -388,16 +389,41 @@ checkPresentChunks checker u chunkconfig encryptor basek
  - This finds all possible lists of keys that might be on the remote that
  - can be combined to get back the requested key, in order from most to
  - least likely to exist.
+ -
+ - Speculatively tries chunks using the ChunkConfig last of all
+ - (when that's not the same as the recorded chunks). This can help
+ - recover from data loss, where the chunk log didn't make it out,
+ - though only as long as the ChunkConfig is unchanged.
  -}
 chunkKeys :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
-chunkKeys u chunkconfig k = do
-	l <- chunkKeysOnly u k
-	return $ if noChunks chunkconfig
-		then [k] : l
-		else l ++ [[k]]
+chunkKeys = chunkKeys' False
 
-chunkKeysOnly :: UUID -> Key -> Annex [[Key]]
-chunkKeysOnly u k = map (toChunkList k) <$> getCurrentChunks u k
+{- Same as chunkKeys, but excluding the unchunked key. -}
+chunkKeysOnly :: UUID -> ChunkConfig -> Key -> Annex [[Key]]
+chunkKeysOnly = chunkKeys' True
+
+chunkKeys' :: Bool -> UUID -> ChunkConfig -> Key -> Annex [[Key]]
+chunkKeys' onlychunks u chunkconfig k = do
+	recorded <- getCurrentChunks u k
+	let recordedl  = map (toChunkList k) recorded
+	return $ addspeculative recorded $ if onlychunks
+		then recordedl
+		else if noChunks chunkconfig
+			then [k] : recordedl
+			else recordedl ++ [[k]]
+  where
+	addspeculative recorded l = case chunkconfig of
+		NoChunks -> l
+		UnpaddedChunks chunksz -> case fromKey keySize k of
+			Nothing -> l
+			Just keysz -> 
+				let (d, m) = keysz `divMod` fromIntegral chunksz
+				    chunkcount = d + if m == 0 then 0 else 1
+ 				    v = (FixedSizeChunks chunksz, chunkcount)
+				in if v `elem` recorded
+					then l
+					else l ++ [toChunkList k v]
+		LegacyChunks _ -> l
 
 toChunkList :: Key -> (ChunkMethod, ChunkCount) -> [Key]
 toChunkList k (FixedSizeChunks chunksize, chunkcount) =

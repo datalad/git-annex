@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-10-22T17:00:25Z"
+ content="""
+Implemented that. But..
+
+As implemented, there's nothing to make the chunk size get stored in the
+chunk log for a key, after it accesses its content using the configured
+chunk size.
+
+So, changing the chunk= of the remote can prevent accessing content that
+was accessible before. Of course, avoiding that is why chunk sizes are
+logged in the first place.
+
+Seems like maybe fsck --from should fix the chunk log? I think
+fsck would always need to be used, to fix up the location log, before any
+other commands rely on the data being in the special remote, so it seems
+fine to only fix the chunk log there.
+
+But, also a bit unclear how fsck would find out when it needs to do this.
+It only needs to when the remote's configured chunk size is not
+listed in the chunk log. But that's also common after changing the chunk
+size of a remote. So it would have to mess around with checking the
+presence of chunk keys itself, which would be extra work and also ugly
+to implement.
+
+I'm leaving this todo^Wbug open for now due to this.
+"""]]
