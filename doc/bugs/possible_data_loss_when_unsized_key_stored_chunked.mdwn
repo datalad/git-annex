@@ -1,0 +1,41 @@
+When a key has no known size (from addurl --relaxed eg), I think data loss
+could occur in this situation:
+
+* repo A has an object for the key with size X
+* repo B has an object for the same key with size Y (!= X)
+* repo A transfers to the special remote
+* then B transfers to the special remote
+* B transfers one more chunk than A, because of the different size
+* B actually "resumes" after the last chunk A uploaded. So now the remote
+  contains A's chunks, followed by B's extra chunk.
+* A and B sync up, which merges the chunk logs. Since that log
+  uses "key:chunksize" as the log key, and the two logs have two different
+  ones, one will win or come first in the merged log. Suppose it's
+  the entry for B. So, the log then will be interpreted as the number of
+  chunks being B's.
+* Now when the object is retrieved from the special remote, it will
+  retrieve and concacenate A's chunks, followed by B's extra chunk.
+
+So this is corruption at least, it can be recovered from, but to do so
+you have to know the original length of A's object. Note that most keys
+with unknown size also have no checksum to use to verify them, so it would
+be easy for this to happen and not be caught.
+
+(Alternatively, after B transfers, it can sync with A, drop, and get
+the content back from the special remote. Same result by another route,
+and without needing any particular git-annex branch merge behavior to
+happen so easier to reproduce. (I have not tried either yet.))
+
+A simulantaneous upload by A and B might cause unrecoverable data loss
+if they eg alternate chunks. Unsure if that can really happen.
+
+If A starts to transfer, sends some chunks, but is interrupted, and B
+then transfers, resuming after the last chunk A stored, that would be data
+loss.
+
+It might be best to just disable storing in chunks for keys of unknown size,
+since it can fail so badly with them, and they're kind of a side thing?
+
+(Could continue retrieving, for whatever is stored hopefully w/o being
+corrupted already.)
+--[[Joey]]
