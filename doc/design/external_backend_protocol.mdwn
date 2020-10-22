@@ -1,5 +1,3 @@
-**Draft**
-
 Communication between git-annex and a program implementing an external
 [[backend|backends]] uses this protocol.
 
