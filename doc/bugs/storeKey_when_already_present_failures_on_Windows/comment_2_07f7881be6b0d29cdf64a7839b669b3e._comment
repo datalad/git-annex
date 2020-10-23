@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-10-23T19:27:57Z"
+ content="""
+I've made it display whatever exception caused the test to fail, which
+should help pin down a bit more what the problem is.
+"""]]

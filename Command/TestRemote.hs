@@ -235,15 +235,15 @@ mkTestTrees runannex mkrs mkunavailr mkexportr mkks = concat $
 test :: RunAnnex -> Annex (Maybe Remote) -> Annex Key -> [TestTree]
 test runannex mkr mkk =
 	[ check "removeKey when not present" $ \r k ->
-		whenwritable r $ isRight <$> tryNonAsync (remove r k)
+		whenwritable r $ runBool (remove r k)
 	, check ("present " ++ show False) $ \r k ->
 		whenwritable r $ present r k False
 	, check "storeKey" $ \r k ->
-		whenwritable r $ isRight <$> tryNonAsync (store r k)
+		whenwritable r $ runBool (store r k)
 	, check ("present " ++ show True) $ \r k ->
 		whenwritable r $ present r k True
 	, check "storeKey when already present" $ \r k ->
-		whenwritable r $ isRight <$> tryNonAsync (store r k)
+		whenwritable r $ runBool (store r k)
 	, check ("present " ++ show True) $ \r k -> present r k True
 	, check "retrieveKeyFile" $ \r k -> do
 		lockContentForRemoval k noop removeAnnex
@@ -273,7 +273,7 @@ test runannex mkr mkk =
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "removeKey when present" $ \r k -> 
-		whenwritable r $ isRight <$> tryNonAsync (remove r k)
+		whenwritable r $ runBool (remove r k)
 	, check ("present " ++ show False) $ \r k -> 
 		whenwritable r $ present r k False
 	]
@@ -306,31 +306,31 @@ testExportTree runannex mkr mkk1 mkk2 =
 	[ check "check present export when not present" $ \ea k1 _k2 ->
 		not <$> checkpresentexport ea k1
 	, check "remove export when not present" $ \ea k1 _k2 -> 
-		isRight <$> tryNonAsync (removeexport ea k1)
+		runBool (removeexport ea k1)
 	, check "store export" $ \ea k1 _k2 ->
-		isRight <$> tryNonAsync (storeexport ea k1)
+		runBool (storeexport ea k1)
 	, check "check present export after store" $ \ea k1 _k2 ->
 		checkpresentexport ea k1
 	, check "store export when already present" $ \ea k1 _k2 ->
-		isRight <$> tryNonAsync (storeexport ea k1)
+		runBool (storeexport ea k1)
 	, check "retrieve export" $ \ea k1 _k2 -> 
 		retrieveexport ea k1
 	, check "store new content to export" $ \ea _k1 k2 ->
-		isRight <$> tryNonAsync (storeexport ea k2)
+		runBool (storeexport ea k2)
 	, check "check present export after store of new content" $ \ea _k1 k2 ->
 		checkpresentexport ea k2
 	, check "retrieve export new content" $ \ea _k1 k2 ->
 		retrieveexport ea k2
 	, check "remove export" $ \ea _k1 k2 -> 
-		isRight <$> tryNonAsync (removeexport ea k2)
+		runBool (removeexport ea k2)
 	, check "check present export after remove" $ \ea _k1 k2 ->
 		not <$> checkpresentexport ea k2
 	, check "retrieve export fails after removal" $ \ea _k1 k2 ->
 		not <$> retrieveexport ea k2
 	, check "remove export directory" $ \ea _k1 _k2 ->
-		isRight <$> tryNonAsync (removeexportdirectory ea)
+		runBool (removeexportdirectory ea)
 	, check "remove export directory that is already removed" $ \ea _k1 _k2 ->
-		isRight <$> tryNonAsync (removeexportdirectory ea)
+		runBool (removeexportdirectory ea)
 	-- renames are not tested because remotes do not need to support them
 	]
   where
@@ -448,3 +448,9 @@ getReadonlyKey r f = lookupKey (toRawFilePath f) >>= \case
 		unlessM ((Remote.uuid r `elem`) <$> loggedLocations k) $
 			giveup $ f ++ " is not stored in the remote being tested, cannot test it"
 		return k
+
+runBool :: Monad m => m () -> m Bool
+runBool a = do
+	a
+	return True
+
