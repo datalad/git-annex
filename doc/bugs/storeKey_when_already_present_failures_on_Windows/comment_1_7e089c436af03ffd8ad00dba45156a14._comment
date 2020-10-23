@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-23T16:50:31Z"
+ content="""
+So this is the testremote of the directory special remote, and the failing
+test tries to store content into the remote which already contains that
+content, an unusual edge case since git-annex normally knows when a remote
+has content and avoids resending it.
+
+Remote.Directory.finalizeStoreGeneric removes the old directory, and moves
+the new one into place. This is not the first time I've seen windows fail
+in such a situation, it seems that directory removals are not atomic, or
+don't really fully finish by the time the call returns, or something else
+like antivirus has a file open in the directory and so prevents deletion.
+Or something like that.
+
+This kind of thing is why I am not enthused about wasting any more time
+on supporting Windows. `rm -rf foo && mv bar foo` should not cause a bug report
+that requires me to dig out a VM and put in complex and expensive
+workarounds. The tar pit has no bottom.
+
+(Also, FWIW, git-annex test on the jenkins autobuilder always exploded from
+the very beginning, so was always || true, which is why the windows install
+page encourages windows users to test git-annex themselves.)
+"""]]
