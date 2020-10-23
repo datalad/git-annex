@@ -32,3 +32,5 @@ CentOS8 / git-annex-standalone-8.20200909-1.x86_64
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 No, first time install
+
+> [[fixed|done]] --[[Joey]]
