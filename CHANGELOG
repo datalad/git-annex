@@ -12,6 +12,8 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
   * When a special remote has chunking enabled, but no chunk sizes are
     recorded (or the recorded ones are not found), speculatively try
     chunks using the configured chunk size.
+  * Fixed some problems that prevented this command from working:
+    git submodule foreach git annex init
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 

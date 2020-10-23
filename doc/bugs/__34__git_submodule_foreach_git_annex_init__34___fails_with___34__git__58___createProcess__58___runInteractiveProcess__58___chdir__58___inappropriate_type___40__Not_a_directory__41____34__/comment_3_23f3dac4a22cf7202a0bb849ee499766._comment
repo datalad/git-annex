@@ -25,13 +25,11 @@ Where does that path that does not exist come from?
 .git/modules/sub/config has "core.worktree = ../../../sub"
 
 git clone sets that. And it's a path from ../.git/modules/sub/
-back to the work tree. git-annex interprets it as well, a regular path
-from the cwd, like it usually is. It's worth noting that setting
-`GIT_WORK_TREE` to the same value makes git behave differently!
-Nothing in git's docs seem to explain this mess.
+back to the work tree. git-annex interprets it as relative to `GIT_DIR`,
+which git submodule sets to ".git".
 
 So git-annex needs to check if .git is a gitdir: reference, and
-then interpret core.worktree relative to it.
+then interpret core.worktree relative to what it points to.
 
 Or, alternatively, fixupUnusualRepos could learn to tell if the *current*
 command is git-annex init, and go ahead with the fixes. Which would avoid

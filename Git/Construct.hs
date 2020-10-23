@@ -21,6 +21,7 @@ module Git.Construct (
 	repoAbsPath,
 	checkForRepo,
 	newFrom,
+	adjustGitDirFile,
 ) where
 
 #ifndef mingw32_HOST_OS
@@ -73,7 +74,7 @@ fromAbsPath dir
 				, ret (takeDirectory canondir)
 				)
 		| otherwise = ifM (doesDirectoryExist dir)
-			( gitDirFile dir >>= maybe (ret dir) (pure . newFrom)
+			( checkGitDirFile dir >>= maybe (ret dir) (pure . newFrom)
 			-- git falls back to dir.git when dir doesn't
 			-- exist, as long as dir didn't end with a
 			-- path separator
@@ -198,7 +199,7 @@ expandTilde = expandt True
 checkForRepo :: FilePath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
 	check isRepo $
-		check (gitDirFile dir) $
+		check (checkGitDirFile dir) $
 			check isBareRepo $
 				return Nothing
   where
@@ -219,23 +220,35 @@ checkForRepo dir =
 		<&&> doesDirectoryExist (dir </> "objects")
 	gitSignature file = doesFileExist $ dir </> file
 
+-- Check for a .git file.
+checkGitDirFile :: FilePath -> IO (Maybe RepoLocation)
+checkGitDirFile dir = adjustGitDirFile' $ Local 
+	{ gitdir = toRawFilePath (dir </> ".git")
+	, worktree = Just (toRawFilePath dir)
+	}
+
 -- git-submodule, git-worktree, and --separate-git-dir
 -- make .git be a file pointing to the real git directory.
 -- Detect that, and return a RepoLocation with gitdir pointing 
 -- to the real git directory.
-gitDirFile :: FilePath -> IO (Maybe RepoLocation)
-gitDirFile dir = do
-	c <- firstLine <$>
-		catchDefaultIO "" (readFile $ dir </> ".git")
-	return $ if gitdirprefix `isPrefixOf` c
-		then Just $ Local 
-			{ gitdir = toRawFilePath $ absPathFrom dir $
-				drop (length gitdirprefix) c
-			, worktree = Just (toRawFilePath dir)
-			}
-		else Nothing
+adjustGitDirFile :: RepoLocation -> IO RepoLocation
+adjustGitDirFile loc = fromMaybe loc <$> adjustGitDirFile' loc
+
+adjustGitDirFile' :: RepoLocation -> IO (Maybe RepoLocation)
+adjustGitDirFile' loc = do
+	let gd = fromRawFilePath (gitdir loc)
+	c <- firstLine <$> catchDefaultIO "" (readFile gd)
+	if gitdirprefix `isPrefixOf` c
+		then do
+			top <- takeDirectory <$> absPath gd
+			return $ Just $ loc
+				{ gitdir = toRawFilePath $ absPathFrom top $
+					drop (length gitdirprefix) c
+				}
+		else return Nothing
  where
 	gitdirprefix = "gitdir: "
+
 
 newFrom :: RepoLocation -> Repo
 newFrom l = Repo
