@@ -1,5 +1,7 @@
 git-annex (8.20201008) UNRELEASED; urgency=medium
 
+  * Fix bug that prevented linux standalone bundle from working on a fresh
+    install.
   * Fix build on Windows with network-3.
   * Fix a memory leak introduced in the last release.
   * add, import: Fix a reversion in 7.20191009 that broke handling

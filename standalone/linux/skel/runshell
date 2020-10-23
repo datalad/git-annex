@@ -151,6 +151,10 @@ if [ -z "${LOCPATH+set}" ] && [ -z "$GIT_ANNEX_PACKAGE_INSTALL" ]; then
 	done
 	
 	if [ ! -d "$LOCPATH" ]; then
+		if ! mkdir -p "$HOME/.cache/git-annex/locales"; then
+			echo "Unable to write to $HOME/.cache/git-annex/locales; can't continue!" >&2
+			exit 1
+		fi
 		locpathtmp="$HOME/.cache/git-annex/locales.tmp/$locpathbase.$$"
 		if ! mkdir -p "$locpathtmp"; then
 			echo "Unable to write to $locpathtmp; can't continue!" >&2

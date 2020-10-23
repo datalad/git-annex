@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-10-23T16:15:42Z"
+ content="""
+I've fixed this for the next release. It was simply omitting creating the 
+/home/user/.cache/git-annex/locales/ directory, so as a workaround you can
+create that directory.
+"""]]
