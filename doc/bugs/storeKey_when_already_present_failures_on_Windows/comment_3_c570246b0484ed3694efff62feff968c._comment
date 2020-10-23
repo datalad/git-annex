@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-23T20:10:27Z"
+ content="""
+Turns out Remote.Directory was using removeDirGeneric everywhere it needed
+to remove a directory, except for in what I believe is failing here.
+And removeDirGeneric already has a workaround for some windows quirk in it.
+
+So I changed that to use it too. I don't know if that will fix the problem.
+"""]]

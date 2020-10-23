@@ -195,8 +195,7 @@ store d chunkconfig k b p = liftIO $ do
  - down. -}
 finalizeStoreGeneric :: FilePath -> FilePath -> FilePath -> IO ()
 finalizeStoreGeneric d tmp dest = do
-	void $ tryIO $ allowWrite dest -- may already exist
-	void $ tryIO $ removeDirectoryRecursive dest -- or not exist
+	removeDirGeneric d dest
 	createDirectoryUnder d (parentDir dest)
 	renameDirectory tmp dest
 	-- may fail on some filesystems
