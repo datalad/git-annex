@@ -71,8 +71,7 @@ number takes that many paths from the end.
 <a name=videos></a>
 
 There's support for downloading videos from sites like YouTube, Vimeo,
-and many more. This relies on [youtube-dl](https://rg3.github.io/youtube-dl/)
-to download the videos.
+and many more. This relies on youtube-dl to download the videos.
 
 When you have youtube-dl installed, you can just 
 `git annex addurl http://youtube.com/foo` and it will detect that

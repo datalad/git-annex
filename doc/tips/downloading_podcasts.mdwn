@@ -74,7 +74,7 @@ and transferring to your laptop on demand.
 ## youtube channels
 
 You can also use `git annex importfeed` on youtube channels.
-It will use [youtube-dl](https://rg3.github.io/youtube-dl/) to automatically
+It will use youtube-dl to automatically
 download the videos.
 
 To download a youtube channel, you need to find the feed associated with that
