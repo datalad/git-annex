@@ -1,0 +1,17 @@
+### Please describe the problem.
+Now we have github action which builds git-annex with libmagic support.  Unfortunately we had to "allow" `git annex test` to fail to proceed for now. Although it looks not that bad -- there is only one "test" which fails in various scenarios (to the total of `12 out of 704 tests failed (616.78s)`)
+
+```
+2020-10-22T18:50:07.2946875Z         storeKey when already present:                    FAIL (0.02s)
+2020-10-22T18:50:07.2948174Z           .\Command\TestRemote.hs:290:
+2020-10-22T18:50:07.2949772Z           failed
+```
+
+
+[full log copy](http://www.onerussian.com/tmp/git-annex-windows-failures-8.20201008-g577af1b.log)
+[link to original workflow run](https://github.com/datalad/datalad-extensions/runs/1294367575?check_suite_focus=true)
+
+When I ran `annex test` after installing that installer in a local Win 10 VM, I have got a lesser count (`8 out of 704 tests failed (1197.82s)`)  [full log](http://www.onerussian.com/tmp/git-annex-windows-failures-8.20201008-g577af1b-local.log)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
