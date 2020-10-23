@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="rshalaev@3e2130a1e3cb0aaff7dd80aba7548ad9be0ea2d4"
+ nickname="rshalaev"
+ avatar="http://cdn.libravatar.org/avatar/d7f181d338cbcef7418faa01f0441e86"
+ subject="comment 1"
+ date="2020-10-23T02:00:08Z"
+ content="""
+Line endings got removed in the original post, so for clarification, after installing git-annex, I'm following this steps:
+
+1. `mkdir ~/annex`
+2. `cd ~/annex`
+3. `git init`
+4. `git annex init`
+
+command that fails is `git annex init` (error message is `mv: cannot move '/home/user/.cache/git-annex/locales.tmp/b03b775f010002f73bc923b1b46a73c7.4662' to '/home/user/.cache/git-annex/locales/b03b775f010002f73bc923b1b46a73c7': No such file or directory`)
+"""]]
