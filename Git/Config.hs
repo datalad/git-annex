@@ -61,10 +61,15 @@ read' repo = go repo
 	go _ = assertLocal repo $ error "internal"
 	git_config d = withCreateProcess p (git_config' p)
 	  where
-		params = ["config", "--null", "--list"]
+		params =
+			[ "--git-dir"
+			, fromRawFilePath d
+			, "config"
+			, "--null"
+			, "--list"
+			]
 		p = (proc "git" params)
-			{ cwd = Just (fromRawFilePath d)
-			, env = gitEnv repo
+			{ env = gitEnv repo
 			, std_out = CreatePipe 
 			}
 	git_config' p _ (Just hout) _ pid = 
