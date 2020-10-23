@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-10-23T18:19:03Z"
+ content="""
+Tried to implement that idea of detecting if the repo is in the process of
+initializing, but automatic initialization makes that impractical to
+implement, I think.
+"""]]
