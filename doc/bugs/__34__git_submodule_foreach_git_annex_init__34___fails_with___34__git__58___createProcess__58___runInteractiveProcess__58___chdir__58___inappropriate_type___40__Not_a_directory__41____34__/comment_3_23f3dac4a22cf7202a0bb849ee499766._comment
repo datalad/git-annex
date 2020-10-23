@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-23T16:21:12Z"
+ content="""
+Let's see, sub/.git is a file not a directory, and that's what it's trying
+to chdir to, when running git.
+
+fixupUnusualRepos usually converts that file to a symlink to a directory,
+but when the annex has not been initialized yet, it avoids doing so, because
+users would be unhappy if an accidential git-annex run in a submodule not
+initialized for git-annex started messing with it.
+
+git-annex does not normally chdir when running git, and the only place that
+does is Config.read'. Which only does it to make git read the right config,
+for when it's reading some remote's config. So, using --git-dir there will
+have the same effect, and avoid the problem.
+
+Which it did, but then there's the new problem not much further along:
+
+	git-annex: /home/joey/tmp/gx-KHSxawT/sub: changeWorkingDirectory: does not exist (No such file or directory)
+
+This is from Git.CurrentRepo.get, which does a setCurrentDirectory.
+Where does that path that does not exist come from?
+.git/modules/sub/config has "core.worktree = ../../../sub"
+
+git clone sets that. And it's a path from ../.git/modules/sub/
+back to the work tree. git-annex interprets it as well, a regular path
+from the cwd, like it usually is. It's worth noting that setting
+`GIT_WORK_TREE` to the same value makes git behave differently!
+Nothing in git's docs seem to explain this mess.
+
+So git-annex needs to check if .git is a gitdir: reference, and
+then interpret core.worktree relative to it.
+
+Or, alternatively, fixupUnusualRepos could learn to tell if the *current*
+command is git-annex init, and go ahead with the fixes. Which would avoid
+needing to chase more of this weird stuff.
+"""]]
