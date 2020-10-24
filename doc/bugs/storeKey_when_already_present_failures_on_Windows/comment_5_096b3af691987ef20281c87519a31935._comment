@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-10-24T12:26:01Z"
+ content="""
+woohoo [last run](https://github.com/datalad/datalad-extensions/runs/1300942377?check_suite_focus=true) had ` All 704 tests passed (698.50s)` !!! so it might have fixed it.  I will submit a PR removing `|| true` to see if that sticks, and also will test locally
+"""]]
