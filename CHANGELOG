@@ -17,6 +17,10 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
   * testremote: Display exceptions when tests fail, to aid debugging.
   * Windows build changed to one done by the datalad-extensions project
     using Github actions.
+  * Windows build now includes libmagic, so mimetype and mimeencoding
+    will work.
+    Thanks to John Thorvald Wodder II and Yaroslav Halchenko for their work
+    on this.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 
