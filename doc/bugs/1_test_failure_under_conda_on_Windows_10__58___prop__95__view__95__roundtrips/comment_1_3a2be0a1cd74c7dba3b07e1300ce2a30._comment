@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-10-26T16:03:40Z"
+ content="""
+I can reproduce it in a windows VM running
+`git-annex test --quickcheck-replay=742853`
+
+These quickcheck tests test random input so not flaky exactly.
+
+Does not happen with that seed on linux, so it probably involves something
+encoding specific. An area where the windows port is known to have
+extensive problems.
+
+([[!commit 1b8026b2cbc8df0274082c5f08a8b4f8ca47c5c9]] was similar, 
+although that was MetaField and this appears to be MetaValue.)
+"""]]
