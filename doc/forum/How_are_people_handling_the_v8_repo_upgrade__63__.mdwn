@@ -1,0 +1,13 @@
+I noticed today when running `git annex sync` that it was unhappy with one of my remotes:
+
+```
+remote: git-annex: Repository /home/anovak/annex/.git is at unsupported version 7. Automatic upgrade exception! actually-broken.log: getSymbolicLinkStatus: does not exist (No such file or directory)
+```
+
+Digging in, it looks like that machine is running Ubuntu 20.04, which ships Git Annex 8, which *only* supports repo version 8. The rest of my machines are a mix of Ubuntu 18.04 and other Debian derivatives, which all ship older versions of Git Annex, which *can't* support repo version 8.
+
+Is there a way for me to get out of manually installing Git Annex on every machine to upgrade everything to v8 at the same time?
+
+And, before I've upgraded, is there a way to screw up my repo by e.g. running `git annex sync` from the newer Git Annex and pushing commits in the new format over to machines that still only speak the old format?
+
+How are other people handling this transition where there's no repo format that's speakable by all the machines? Just upgrading everything at once and replacing the distro's git annex with a manually installed version?
