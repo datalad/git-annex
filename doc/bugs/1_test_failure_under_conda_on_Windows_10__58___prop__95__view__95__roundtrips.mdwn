@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+
+
+### What steps will reproduce the problem?
+
+
+I am  plowing through on making git-annex available within conda-forge "natively" for Windows.  For now I just took the recently built installer, the one now available from [datasets.datalad.org](http://datasets.datalad.org/datalad/packages/windows/) and built on datalad-extensions github setup.  I just extracted git-annex component from the installer and placed them within conda hierarchy (installed `posix` package with all the needed basic tools.  Overall -- looks great, but:
+
+[[!format sh """
+    prop_view_roundtrips:                                 FAIL (0.30s)
+      *** Failed! Falsified (after 524 tests and 1 shrink):
+      "a"
+      MetaData (fromList [(MetaField "8",fromList [MetaValue (CurrentlySet False) "",MetaValue (CurrentlySet True) "\nD\EM",MetaValue (CurrentlySet True) "GO`!)",MetaValue (CurrentlySet False) "k\FS\CAN"]),(MetaField "dU",fromList [MetaValue (CurrentlySet True) "",MetaValue (CurrentlySet False) "\NUL44Vfm[\t",MetaValue (CurrentlySet True) "\nLMEgYc",MetaValue (CurrentlySet True) "\SO[",MetaValue (CurrentlySet True) "\FS\DC4\DLE\"3",MetaValue (CurrentlySet True) ";\f0&Wc\GS{^",MetaValue (CurrentlySet True) "D",MetaValue (CurrentlySet True) "c:"]),(MetaField "sV",fromList [MetaValue (CurrentlySet True) "",MetaValue (CurrentlySet False) "\STX8#w",MetaValue (CurrentlySet False) "\ny",MetaValue (CurrentlySet False) "\DC4qOq",MetaValue (CurrentlySet True) "\FSbqjq",MetaValue (CurrentlySet True) "T_bx%[lN",MetaValue (CurrentlySet True) "W0`",MetaValue (CurrentlySet True) "~ ueY"]),(MetaField "V",fromList [MetaValue (CurrentlySet False) "",MetaValue (CurrentlySet False) "\t\DC1~`\SOHv\DC1",MetaValue (CurrentlySet True) "\DLE3",MetaValue (CurrentlySet True) "/MZh$",MetaValue (CurrentlySet False) "0",MetaValue (CurrentlySet False) "MEulc",MetaValue (CurrentlySet True) "P5D",MetaValue (CurrentlySet True) "i|S,",MetaValue (CurrentlySet True) "x|C"])])
+      True
+      Use --quickcheck-replay=742853 to reproduce.
+"""]]
+
+unfortunately I cannot tell from that output what could be the problem.  Please let me know if hard to figure it out and I should provide access to such environment (ATM needs effort, so I do not want to spend time on that unless "no other way")
+
+And it seems it might be a flaky test -- I started another run, it is still running but I this test did not fail 
+
+```
+$ grep prop_view_roundtrips git-annex-test-miniconda*.log
+git-annex-test-miniconda-2.log:    prop_view_roundtrips:                                 OK (2.51s)
+git-annex-test-miniconda.log:    prop_view_roundtrips:                                 FAIL (0.30s)
+```
+
+Cheers,
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
