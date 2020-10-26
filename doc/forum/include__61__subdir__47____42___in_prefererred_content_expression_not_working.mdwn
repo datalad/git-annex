@@ -1,0 +1,31 @@
+Hi there,
+
+If I use a preferred content expression like the following:
+
+    include=subdir/*
+
+it does not work in commands like `git annex get --auto`.
+
+But the following works:
+
+    include=*
+
+Here is a short bash script that can be used to recreate this issue:
+
+    mkdir annexA && cd annexA
+    git init && git annex init
+    git remote add annexB ../annexB
+
+    mkdir ../annexB && cd ../annexB
+    git init && git annex init
+    git annex wanted . "include=subdir/*"
+    git remote add annexA ../annexA
+
+    cd ../annexA && mkdir subdir
+    echo "lorem ipsum" > subdir/test.txt
+    git annex add . && git annex sync
+
+    cd ../annexB && git annex sync
+    git annex get --auto
+
+I'm using **Git 2.28.0.windows.1** and **git-annex 8.20200815-g335aae266**.
