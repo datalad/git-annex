@@ -42,6 +42,7 @@ main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
 		let gitannex = tmpdir </> gitannexprogram
 		mustSucceed "ln" [File "git-annex.exe", File gitannex]
+		mapM_ (\f -> mustSucceed "ln" [File f, File (tmpdir </> f)]) (magicDLLs ++ magicShare)
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"
@@ -51,7 +52,7 @@ main = do
 		let gitannexcmd = tmpdir </> "git-annex.cmd"
 		writeFile gitannexcmd "git annex %*"
 		writeFile nsifile $ makeInstaller
-			gitannex gitannexcmd license htmlhelp winPrograms
+			gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs) magicShare
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
@@ -117,8 +118,8 @@ needGit = strConcat
 	, fromString "You can install git from http:////git-scm.com//"
 	]
 
-makeInstaller :: FilePath -> FilePath -> FilePath -> FilePath -> [FilePath] -> [FilePath] -> String
-makeInstaller gitannex gitannexcmd license htmlhelp extrabins launchers = nsis $ do
+makeInstaller :: FilePath -> FilePath -> FilePath -> FilePath -> [FilePath] -> [FilePath] -> [FilePath] -> String
+makeInstaller gitannex gitannexcmd license htmlhelp extrabins sharefiles launchers = nsis $ do
 	name "git-annex"
 	outFile $ str installer
 	{- Installing into the same directory as git avoids needing to modify
@@ -163,6 +164,8 @@ makeInstaller gitannex gitannexcmd license htmlhelp extrabins launchers = nsis $
 		-- there.
 		setOutPath "$INSTDIR\\usr\\bin"
 		mapM_ addfile (gitannex:extrabins)
+		setOutPath "$INSTDIR\\usr\\share\\misc"
+		mapM_ addfile sharefiles
 		-- This little wrapper is installed in the cmd directory,
 		-- so that "git-annex" works (as well as "git annex"),
 		-- when only that directory is in PATH (ie, in a ms-dos

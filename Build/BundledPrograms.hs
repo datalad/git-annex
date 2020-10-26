@@ -87,3 +87,17 @@ preferredBundledPrograms = catMaybes
 	ifset True s = Just s
 	ifset False _ = Nothing
 #endif
+
+magicDLLs :: [FilePath]
+#ifdef mingw32_HOST_OS
+magicDLLs = ["libmagic-1.dll", "libgnurx-0.dll"]
+#else
+magicDLLs = []
+#endif
+
+magicShare :: [FilePath]
+#ifdef mingw32_HOST_OS
+magicShare = ["magic.mgc"]
+#else
+magicShare = []
+#endif
