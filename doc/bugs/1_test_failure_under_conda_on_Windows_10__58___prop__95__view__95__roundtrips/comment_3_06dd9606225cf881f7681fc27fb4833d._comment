@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-10-26T18:41:27Z"
+ content="""
+Hmm, this uses viewedFiles, which generates filenames
+based on the MetaValue. Note use of pathProduct, which uses
+System.FilePath.combine.
+
+So, generating random ascii (including escape sequences)
+bytestrings, and passing them through decodeBS to generate FilePaths, 
+and then operating on those filepaths. What could possibly go wrong.
+
+And aha! I made pathProduct use System.FilePath.Windows.combine
+and was able to reproduce the test suite failure on Linux.
+
+And aha again: 
+
+	MetaValue (CurrentlySet True) "c:"
+
+Which of course breaks it on windows because it wanted to generate
+something like "bar/c:/baz/a" but instead it gets "c:/bar/baz/a"
+
+git-annex does replace '/' and '\' when generating these filenames.
+Not as a security measure (when the view branch is checked out, git's
+security checks apply same as any branch so it piggybacks on those),
+but to let the user build a view and successfully check it out
+when their metadata happens to include such stuff.
+
+However, windows does have enough special filenames and gotchas
+that it simply does not seem to make sense for git-annex to try to work
+around them all in the view code. If a MetaValue happens to end with a
+period, or is "nul", and so the generated filename is illegal on Windows,
+it'll blow up at checkout time, and I am ok with that.
+
+So I think it would make sense to also escape ':', but that's about as far
+as this should go. *Especially* because the filenames it generates need to
+roundtrip back to metadata cleanly, which is what this test case is
+testing. While I can finesse individual characters, it would be quite hard
+to make a filename w/o a trailing dot roundtrip back to one with it, for
+example.
+"""]]
