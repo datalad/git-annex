@@ -26,5 +26,4 @@ tree, run "stack build" to download and
 build all dependencies and git-annex. "stack install" will install git-annex.
 
 (To build the git-annex installer, you also need to install the NullSoft
-installer system. The script `standalone/windows/build.sh` is
-used to make the builds linked to above.)
+installer system, see Build/NullSoftInstaller.hs for details.)

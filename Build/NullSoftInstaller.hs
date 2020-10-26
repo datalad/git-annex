@@ -9,11 +9,15 @@
  - for that.
  - 
  - To build the installer, git-annex should already be built to
- - ./git-annex.exe and the necessary utility programs
- - (specifically rsync)
- - already installed in PATH from msys32.
+ - ./git-annex.exe, then run this program.
  -
- - Copyright 2013-2015 Joey Hess <id@joeyh.name>
+ - A build of libmagic will also be included in the installer, if its files
+ - are found in the current directory: 
+ -   ./magic.mgc ./libmagic-1.dll ./libgnurx-0.dll
+ - To build git-annex to usse libmagic, it has to be built with the
+ - magicmime build flag turned on.
+ -
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -42,7 +46,8 @@ main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
 		let gitannex = tmpdir </> gitannexprogram
 		mustSucceed "ln" [File "git-annex.exe", File gitannex]
-		mapM_ (\f -> mustSucceed "ln" [File f, File (tmpdir </> f)]) (magicDLLs ++ magicShare)
+		magicDLLs' <- installwhenpresent magicDLLs
+		magicShare' <- installwhenpresent magicShare
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"
@@ -52,7 +57,7 @@ main = do
 		let gitannexcmd = tmpdir </> "git-annex.cmd"
 		writeFile gitannexcmd "git annex %*"
 		writeFile nsifile $ makeInstaller
-			gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs) magicShare
+			gitannex gitannexcmd license htmlhelp (winPrograms ++ magicDLLs') magicShare'
 			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
@@ -63,6 +68,15 @@ main = do
 		case r of
 			True -> return ()
 			False -> error $ cmd ++ " failed"
+	installwhenpresent fs = do
+		fs' <- forM fs $ \f -> do
+			present <- doesFileExist f
+			if present
+				then do
+					mustSucceed "ln" [File f, File (tmpdir </> f)]
+					return (Just f)
+				else return Nothing
+		return (catMaybes fs')
 
 {- Generates a .vbs launcher which runs a command without any visible DOS
  - box. It expects to be passed the directory where git-annex is installed. -}
