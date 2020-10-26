@@ -104,6 +104,8 @@ This first removes the file from git's index cache, and then adds it back
 using git-annex. You can modify the file before the `git-annex add` step,
 perhaps replacing it with new larger content that necessitates git-annex.
 
+The --force-large option needs git-annex version 7.20200202.7 or newer.
+
 ## converting annexed to git
 
 When you have a file that is currently stored in the annex, and you want to
@@ -117,3 +119,5 @@ convert that to be stored in git, here's how to accomplish that:
 You can modify the file after unlocking it and before adding it to
 git. And this is probably a good idea if it was really a big file,
 so that you can replace its content with something smaller.
+
+The --force-small option needs git-annex version 7.20200202.7 or newer.

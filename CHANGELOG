@@ -474,7 +474,7 @@ git-annex (7.20200204) upstream; urgency=medium
 
 git-annex (7.20200202.7) upstream; urgency=medium
 
-  * add: --force-annex/--force-git options make it easier to override
+  * add: --force-large/--force-small options make it easier to override
     annex.largefiles configuration (and potentially safer as it avoids
     bugs like the smudge bug fixed in the last release).
   * reinject --known: Fix bug that prevented it from working in a bare repo.
