@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-10-26T17:57:12Z"
+ content="""
+you say \"windows port\", I say \"windows as a whole\", e.g. today revelation (or just a come back if I ran into it before but forgot) to me [was inability to have a file/directory named `con`...](https://github.com/datalad/datalad/issues/5097) - no bloody sense on how such design decision has happened and how it dragged all the way into the flagman of the 2020 product.
+"""]]
