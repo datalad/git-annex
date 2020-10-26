@@ -15,3 +15,5 @@ When I ran `annex test` after installing that installer in a local Win 10 VM, I 
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> apparently [[fixed|done]]; followup if it reappears --[[Joey]]
