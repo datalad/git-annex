@@ -9,7 +9,9 @@
  - for that.
  - 
  - To build the installer, git-annex should already be built to
- - ./git-annex.exe, then run this program.
+ - ./git-annex.exe, then run this program, using eg:
+ -
+ - stack ghc --no-haddock --package nsis Build/NullSoftInstaller.hs
  -
  - A build of libmagic will also be included in the installer, if its files
  - are found in the current directory: 
@@ -46,8 +48,8 @@ main = do
 	withTmpDir "nsis-build" $ \tmpdir -> do
 		let gitannex = tmpdir </> gitannexprogram
 		mustSucceed "ln" [File "git-annex.exe", File gitannex]
-		magicDLLs' <- installwhenpresent magicDLLs
-		magicShare' <- installwhenpresent magicShare
+		magicDLLs' <- installwhenpresent magicDLLs tmpdir
+		magicShare' <- installwhenpresent magicShare tmpdir
 		let license = tmpdir </> licensefile
 		mustSucceed "sh" [Param "-c", Param $ "zcat standalone/licences.gz > '" ++ license ++ "'"]
 		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git annex webapp"
@@ -68,7 +70,7 @@ main = do
 		case r of
 			True -> return ()
 			False -> error $ cmd ++ " failed"
-	installwhenpresent fs = do
+	installwhenpresent fs tmpdir = do
 		fs' <- forM fs $ \f -> do
 			present <- doesFileExist f
 			if present
