@@ -50,8 +50,7 @@ annexed content, and other symlinks.
 * `--force-small`
 
   Treat all files as small files, ignoring annex.largefiles and annex.dotfiles
-  configuration, and add to git, also ignoring annex.addsmallfiles
-  configuration.
+  and annex.addsmallfiles configuration, and add to git.
 
 * `--backend`
 
