@@ -595,9 +595,8 @@ Executable git-annex
     CPP-Options: -DWITH_TORRENTPARSER
 
   if flag(MagicMime)
-    if (! os(windows))
-      Build-Depends: magic
-      CPP-Options: -DWITH_MAGICMIME
+    Build-Depends: magic
+    CPP-Options: -DWITH_MAGICMIME
 
   if flag(Benchmark)
     Build-Depends: criterion
