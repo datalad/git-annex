@@ -9,17 +9,11 @@ git-annex. The assistant and webapp are also usable. There are some known
 problems and parts that don't work. See [[todo/windows_support]] for
 current status.
 
-To verify that the build of git-annex works in your Windows system, you are
-encouraged to run the test suite before using git-annex on real data. After
-installation, run `git annex test`. There will be a lot of output; the
-important thing is that it should end with "All tests passed".
-
 ## autobuilds
 
-An hourly autobuild is also available, thanks to Yury V. Zaytsev and
-Dartmouth College.
+An autobuild is also available, thanks to the Datalad project.
 
-* [download](https://downloads.kitenet.net/git-annex/autobuild/windows/)
+* [download](http://datasets.datalad.org/datalad/packages/windows/)
 
 ## building it yourself
 

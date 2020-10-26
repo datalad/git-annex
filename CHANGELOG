@@ -15,6 +15,8 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
   * Fixed some problems that prevented this command from working:
     git submodule foreach git annex init
   * testremote: Display exceptions when tests fail, to aid debugging.
+  * Windows build changed to one done by the datalad-extensions project
+    using Github actions.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 
