@@ -298,6 +298,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "export_import_subdir" test_export_import_subdir
 	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
+	, testCase "magic" test_magic
 	, testCase "import" test_import
 	, testCase "reinject" test_reinject
 	, testCase "unannex (no copy)" test_unannex_nocopy
@@ -445,6 +446,28 @@ test_shared_clone = intmpsharedclonerepo $ do
 test_log :: Assertion
 test_log = intmpclonerepo $ do
 	git_annex "log" [annexedfile] @? "log failed"
+
+test_magic :: Assertion
+test_magic = intmpclonerepo $ do
+#ifdef WITH_MAGICMIME
+	boolSystem "git"
+		[ Param "config"
+		, Param "annex.largefiles"
+		, Param "mimeencoding=binary"
+		] @? "git config annex.largefiles failed"
+	writeFile "binary" "\127"
+	writeFile "text" "test\n" 
+	git_annex "add" ["binary", "text"]
+		@? "git-annex add failed with mimeencoding in largefiles"
+	git_annex "sync" []
+		@? "git-annex sync failed"
+	(isJust <$> annexeval (Annex.CatFile.catKeyFile (encodeBS "binary")))
+		@? "binary file not added to annex despite mimeencoding config"
+	(isNothing <$> annexeval (Annex.CatFile.catKeyFile (encodeBS "text")))
+		@? "non-binary file got added to annex despite mimeencoding config"
+#else
+	return ()
+#endif
 
 test_import :: Assertion
 test_import = intmpclonerepo $ Utility.Tmp.Dir.withTmpDir "importtest" $ \importdir -> do
