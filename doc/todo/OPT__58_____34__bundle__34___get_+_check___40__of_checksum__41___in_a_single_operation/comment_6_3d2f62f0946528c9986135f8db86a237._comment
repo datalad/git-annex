@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="michael.hanke@c60e12358aa3fc6060531bdead1f530ac4d582ec"
+ nickname="michael.hanke"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Documentation of demand"
+ date="2020-10-27T14:59:47Z"
+ content="""
+We are routinely working with datasets in the 100TB range, with individual file sizes of up to 16TB. Some of our systems have ~500MB/s disk read throughput only. The separation of download and checksuming leads to 6+ hours of additional disk reads and delay the availability of a file. Having this feature would be a stellar performance improvement for our use case. Thanks in advance.
+"""]]
