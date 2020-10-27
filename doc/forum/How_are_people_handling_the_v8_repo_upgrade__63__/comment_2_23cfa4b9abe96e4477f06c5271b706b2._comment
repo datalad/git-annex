@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-10-27T18:23:30Z"
+ content="""
+A git-annex repo consisting of annex symlinks (locked files) can be cloned
+and used on machines running git-annex versions between 2 and 8. (Any
+version from the past 9 years.) It's the same information stored in git.
+
+If you choose to commit unlocked files to the repo, those files will only
+work when using git-annex 7 or 8. But that's optional and you can also just
+re-lock the files to regain compatability all the way back to version 2.
+
+So, no, you do not need to worry about git-annex sync breaking something.
+
+And, git-annex 8 on one machine can talk to git-annex 7 (or any version
+really) on another machine, no problem.
+
+Now, if you have a repo that you are physically moving around between
+machines, on USB for example, then the machines all need have to have
+a git-annex version installed that's compatible with the annex.version
+of the repo.
+"""]]
