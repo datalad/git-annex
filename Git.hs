@@ -3,11 +3,12 @@
  - This is written to be completely independant of git-annex and should be
  - suitable for other uses.
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Git (
@@ -37,6 +38,7 @@ module Git (
 	relPath,
 ) where
 
+import qualified Data.ByteString as B
 import Network.URI (uriPath, uriScheme, unEscapeString)
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
@@ -44,6 +46,7 @@ import System.Posix.Files
 
 import Common
 import Git.Types
+import Utility.Path.AbsRel
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
 #endif
@@ -159,13 +162,13 @@ relPath = adjustPath torel
   where
 	torel p = do
 		p' <- relPathCwdToFile p
-		return $ if null p' then "." else p'
+		return $ if B.null p' then "." else p'
 
 {- Adusts the path to a local Repo using the provided function. -}
-adjustPath :: (FilePath -> IO FilePath) -> Repo -> IO Repo
+adjustPath :: (RawFilePath -> IO RawFilePath) -> Repo -> IO Repo
 adjustPath f r@(Repo { location = l@(Local { gitdir = d, worktree = w }) }) = do
-	d' <- f' d
-	w' <- maybe (pure Nothing) (Just <$$> f') w
+	d' <- f d
+	w' <- maybe (pure Nothing) (Just <$$> f) w
 	return $ r 
 		{ location = l 
 			{ gitdir = d'
@@ -173,8 +176,7 @@ adjustPath f r@(Repo { location = l@(Local { gitdir = d, worktree = w }) }) = do
 			}
 		}
   where
-	f' v = toRawFilePath <$> f (fromRawFilePath v)
 adjustPath f r@(Repo { location = LocalUnknown d }) = do
-	d' <- toRawFilePath <$> f (fromRawFilePath d)
+	d' <- f d
 	return $ r { location = LocalUnknown d' }
 adjustPath _ r = pure r

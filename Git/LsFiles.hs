@@ -37,12 +37,14 @@ import Git.Sha
 import Utility.InodeCache
 import Utility.TimeStamp
 import Utility.Attoparsec
+import Utility.Path.AbsRel
 
 import System.Posix.Types
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
+import qualified System.FilePath.ByteString as P
 
 {- It's only safe to use git ls-files on the current repo, not on a remote.
  -
@@ -208,12 +210,12 @@ typeChanged = typeChanged' []
 
 typeChanged' :: [CommandParam] -> [RawFilePath] -> Repo -> IO ([RawFilePath], IO Bool)
 typeChanged' ps l repo = guardSafeForLsFiles repo $ do
-	(fs, cleanup) <- pipeNullSplit (prefix ++ ps ++ suffix) repo
+	(fs, cleanup) <- pipeNullSplit' (prefix ++ ps ++ suffix) repo
 	-- git diff returns filenames relative to the top of the git repo;
 	-- convert to filenames relative to the cwd, like git ls-files.
-	top <- absPath (fromRawFilePath (repoPath repo))
-	currdir <- getCurrentDirectory
-	return (map (\f -> toRawFilePath (relPathDirToFileAbs currdir $ top </> decodeBL' f)) fs, cleanup)
+	top <- absPath (repoPath repo)
+	currdir <- toRawFilePath <$> getCurrentDirectory
+	return (map (\f -> relPathDirToFileAbs currdir $ top P.</> f) fs, cleanup)
   where
 	prefix = 
 		[ Param "diff"

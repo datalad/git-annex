@@ -35,12 +35,14 @@ import qualified Git.Ref as Ref
 import qualified Git.RefLog as RefLog
 import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Branch as Branch
+import Utility.Directory.Create
 import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
+import qualified System.FilePath.ByteString as P
 
 {- Given a set of bad objects found by git fsck, which may not
  - be complete, finds and removes all corrupt objects. -}
@@ -99,7 +101,7 @@ retrieveMissingObjects missing referencerepo r
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			error $ "failed to create temp repository in " ++ tmpdir
-		tmpr <- Config.read =<< Construct.fromAbsPath tmpdir
+		tmpr <- Config.read =<< Construct.fromAbsPath (toRawFilePath tmpdir)
 		rs <- Construct.fromRemotes r
 		stillmissing <- pullremotes tmpr rs fetchrefstags missing
 		if S.null (knownMissing stillmissing)
@@ -246,11 +248,14 @@ explodePackedRefsFile r = do
 		nukeFile f
   where
 	makeref (sha, ref) = do
-		let gitd = fromRawFilePath (localGitDir r)
-		let dest = gitd </> fromRef ref
-		createDirectoryUnder gitd (parentDir dest)
-		unlessM (doesFileExist dest) $
-			writeFile dest (fromRef sha)
+		let gitd = localGitDir r
+		let dest = gitd P.</> fromRef' ref
+		let dest' = fromRawFilePath dest
+		createDirectoryUnder
+			(fromRawFilePath gitd)
+			(fromRawFilePath (parentDir dest))
+		unlessM (doesFileExist dest') $
+			writeFile dest' (fromRef sha)
 
 packedRefsFile :: Repo -> FilePath
 packedRefsFile r = fromRawFilePath (localGitDir r) </> "packed-refs"

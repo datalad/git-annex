@@ -1,6 +1,6 @@
 {- The current git repository.
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Git.Construct
 import qualified Git.Config
 import Utility.Env
 import Utility.Env.Set
+import Utility.Path.AbsRel
 
 {- Gets the current git repository.
  -

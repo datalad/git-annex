@@ -23,6 +23,7 @@ import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
 import Utility.ThreadScheduler
+import Utility.Path.AbsRel
 
 {- Returns a single git config setting, or a fallback value if not set. -}
 get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
@@ -141,9 +142,9 @@ updateLocation' r l = do
 		Nothing -> return l
 		Just (ConfigValue d) -> do
 			{- core.worktree is relative to the gitdir -}
-			top <- absPath $ fromRawFilePath (gitdir l)
-			let p = absPathFrom top (fromRawFilePath d)
-			return $ l { worktree = Just (toRawFilePath p) }
+			top <- absPath (gitdir l)
+			let p = absPathFrom top d
+			return $ l { worktree = Just p }
 		Just NoConfigValue -> return l
 	return $ r { location = l' }
 

@@ -1,6 +1,6 @@
 {- git check-attr interface
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,11 +10,13 @@ module Git.CheckAttr where
 import Common
 import Git
 import Git.Command
+import Utility.Path.AbsRel
 import qualified Utility.CoProcess as CoProcess
 
 import System.IO.Error
+import qualified Data.ByteString as B
 
-type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
+type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], RawFilePath)
 
 type Attr = String
 
@@ -22,7 +24,7 @@ type Attr = String
  - values and returns a handle.  -}
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
-	currdir <- getCurrentDirectory
+	currdir <- toRawFilePath <$> getCurrentDirectory
 	h <- gitCoProcessStart True params repo
 	return (h, attrs, currdir)
   where
@@ -38,16 +40,16 @@ checkAttrStop (h, _, _) = CoProcess.stop h
 
 {- Gets an attribute of a file. When the attribute is not specified,
  - returns "" -}
-checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
+checkAttr :: CheckAttrHandle -> Attr -> RawFilePath -> IO String
 checkAttr (h, attrs, currdir) want file = do
 	pairs <- CoProcess.query h send (receive "")
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
 		["unspecified"] -> return ""
 		[v] -> return v
-		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
+		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ fromRawFilePath file
   where
-	send to = hPutStr to $ file' ++ "\0"
+	send to = B.hPutStr to $ file' `B.snoc` 0
 	receive c from = do
 		s <- hGetSomeString from 1024
 		if null s

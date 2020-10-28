@@ -18,7 +18,9 @@ import Utility.Directory
 import Utility.Process
 import Utility.Monad
 import Utility.Path
+import Utility.Path.AbsRel
 import Utility.Split
+import Utility.FileSystemEncoding
 
 import Data.Maybe
 import System.FilePath
@@ -35,18 +37,20 @@ installLib installfile top lib = ifM (doesFileExist lib)
 	( do
 		installfile top lib
 		checksymlink lib
-		return $ Just $ parentDir lib
+		return $ Just $ fromRawFilePath $ parentDir $ toRawFilePath lib
 	, return Nothing
 	)
   where
 	checksymlink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus (inTop top f)) $ do
 		l <- readSymbolicLink (inTop top f)
-		let absl = absPathFrom (parentDir f) l
-		target <- relPathDirToFile (takeDirectory f) absl
-		installfile top absl
+		let absl = absPathFrom
+			(parentDir (toRawFilePath f))
+			(toRawFilePath l)
+		target <- relPathDirToFile (toRawFilePath (takeDirectory f)) absl
+		installfile top (fromRawFilePath absl)
 		nukeFile (top ++ f)
-		createSymbolicLink target (inTop top f)
-		checksymlink absl
+		createSymbolicLink (fromRawFilePath target) (inTop top f)
+		checksymlink (fromRawFilePath absl)
 
 -- Note that f is not relative, so cannot use </>
 inTop :: FilePath -> FilePath -> FilePath

@@ -12,8 +12,7 @@ module Config.Files.AutoStart where
 import Common
 import Config.Files
 import Utility.Tmp
-import Utility.FreeDesktop
-import Utility.Directory.AbsRel
+import Utility.Path.AbsRel
 
 {- Returns anything listed in the autostart file (which may not exist). -}
 readAutoStartFile :: IO [FilePath]
@@ -31,7 +30,8 @@ modifyAutoStartFile func = do
 	let dirs' = nubBy equalFilePath $ func dirs
 	when (dirs' /= dirs) $ do
 		f <- autoStartFile
-		createDirectoryIfMissing True (parentDir f)
+		createDirectoryIfMissing True $
+			fromRawFilePath (parentDir (toRawFilePath f))
 		viaTmp writeFile f $ unlines dirs'
 
 {- Adds a directory to the autostart file. If the directory is already
@@ -39,12 +39,12 @@ modifyAutoStartFile func = do
  - when opening the webapp. -}
 addAutoStartFile :: FilePath -> IO ()
 addAutoStartFile path = do
-	path' <- absPath path
+	path' <- fromRawFilePath <$> absPath (toRawFilePath path)
 	modifyAutoStartFile $ (:) path'
 
 {- Removes a directory from the autostart file. -}
 removeAutoStartFile :: FilePath -> IO ()
 removeAutoStartFile path = do
-	path' <- absPath path
+	path' <- fromRawFilePath <$> absPath (toRawFilePath path)
 	modifyAutoStartFile $
 		filter (not . equalFilePath path')

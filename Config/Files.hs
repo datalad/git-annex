@@ -10,7 +10,6 @@
 module Config.Files where
 
 import Common
-import Utility.Tmp
 import Utility.FreeDesktop
 
 {- ~/.config/git-annex/file -}

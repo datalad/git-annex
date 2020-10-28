@@ -17,6 +17,7 @@ module Git.DiffTree (
 	commitDiff,
 ) where
 
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
@@ -34,9 +35,11 @@ import Utility.Attoparsec
 {- Checks if the DiffTreeItem modifies a file with a given name
  - or under a directory by that name. -}
 isDiffOf :: DiffTreeItem -> TopFilePath -> Bool
-isDiffOf diff f = case fromRawFilePath (getTopFilePath f) of
-	"" -> True -- top of repo contains all
-	d -> d `dirContains` fromRawFilePath (getTopFilePath (file diff))
+isDiffOf diff f = 
+	let f' = getTopFilePath f
+	in if B.null f'
+		then True -- top of repo contains all
+		else f' `dirContains` getTopFilePath (file diff)
 
 {- Diffs two tree Refs. -}
 diffTree :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)

@@ -11,6 +11,7 @@ import Common
 import Git
 import Utility.Env
 import Utility.Env.Set
+import Utility.Path.AbsRel
 
 indexEnv :: String
 indexEnv = "GIT_INDEX_FILE"
@@ -27,7 +28,7 @@ indexEnv = "GIT_INDEX_FILE"
  - So, an absolute path is the only safe option for this to return.
  -}
 indexEnvVal :: FilePath -> IO String
-indexEnvVal = absPath
+indexEnvVal p = fromRawFilePath <$> absPath (toRawFilePath p)
 
 {- Forces git to use the specified index file.
  -

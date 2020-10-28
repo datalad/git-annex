@@ -16,6 +16,7 @@ import Git.Command
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
 import Utility.Tmp
+import Utility.Path.AbsRel
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
@@ -36,10 +37,10 @@ hashObjectStop :: HashObjectHandle -> IO ()
 hashObjectStop = CoProcess.stop
 
 {- Injects a file into git, returning the Sha of the object. -}
-hashFile :: HashObjectHandle -> FilePath -> IO Sha
+hashFile :: HashObjectHandle -> RawFilePath -> IO Sha
 hashFile h file = CoProcess.query h send receive
   where
-	send to = hPutStrLn to =<< absPath file
+	send to = S8.hPutStrLn to =<< absPath file
 	receive from = getSha "hash-object" $ S8.hGetLine from
 
 class HashableBlob t where
@@ -60,7 +61,7 @@ hashBlob :: HashableBlob b => HashObjectHandle -> b -> IO Sha
 hashBlob h b = withTmpFile "hash" $ \tmp tmph -> do
 	hashableBlobToHandle tmph b
 	hClose tmph
-	hashFile h tmp
+	hashFile h (toRawFilePath tmp)
 
 {- Injects some content into git, returning its Sha.
  - 

@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Git.Construct (
@@ -37,6 +38,10 @@ import Git.Remote
 import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
+import Utility.Path.AbsRel
+
+import qualified Data.ByteString as B
+import qualified System.FilePath.ByteString as P
 
 {- Finds the git repository used for the cwd, which may be in a parent
  - directory. -}
@@ -46,40 +51,40 @@ fromCwd = getCurrentDirectory >>= seekUp
 	seekUp dir = do
 		r <- checkForRepo dir
 		case r of
-			Nothing -> case upFrom dir of
+			Nothing -> case upFrom (toRawFilePath dir) of
 				Nothing -> return Nothing
-				Just d -> seekUp d
+				Just d -> seekUp (fromRawFilePath d)
 			Just loc -> pure $ Just $ newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
-fromPath :: FilePath -> IO Repo
+fromPath :: RawFilePath -> IO Repo
 fromPath dir = fromAbsPath =<< absPath dir
 
 {- Local Repo constructor, requires an absolute path to the repo be
  - specified. -}
-fromAbsPath :: FilePath -> IO Repo
+fromAbsPath :: RawFilePath -> IO Repo
 fromAbsPath dir
-	| absoluteGitPath (encodeBS dir) = hunt
+	| absoluteGitPath dir = hunt
 	| otherwise =
-		error $ "internal error, " ++ dir ++ " is not absolute"
+		error $ "internal error, " ++ show dir ++ " is not absolute"
   where
-	ret = pure . newFrom . LocalUnknown . toRawFilePath
-	canondir = dropTrailingPathSeparator dir
+	ret = pure . newFrom . LocalUnknown
+	canondir = P.dropTrailingPathSeparator dir
 	{- When dir == "foo/.git", git looks for "foo/.git/.git",
 	 - and failing that, uses "foo" as the repository. -}
 	hunt
-		| (pathSeparator:".git") `isSuffixOf` canondir =
-			ifM (doesDirectoryExist $ dir </> ".git")
+		| (P.pathSeparator `B.cons` ".git") `B.isSuffixOf` canondir =
+			ifM (doesDirectoryExist $ fromRawFilePath dir </> ".git")
 				( ret dir
-				, ret (takeDirectory canondir)
+				, ret (P.takeDirectory canondir)
 				)
-		| otherwise = ifM (doesDirectoryExist dir)
+		| otherwise = ifM (doesDirectoryExist (fromRawFilePath dir))
 			( checkGitDirFile dir >>= maybe (ret dir) (pure . newFrom)
 			-- git falls back to dir.git when dir doesn't
 			-- exist, as long as dir didn't end with a
 			-- path separator
 			, if dir == canondir
-				then ret (dir ++ ".git")
+				then ret (dir <> ".git")
 				else ret dir
 			)
 
@@ -95,7 +100,8 @@ fromUrl url
 
 fromUrlStrict :: String -> IO Repo
 fromUrlStrict url
-	| "file://" `isPrefixOf` url = fromAbsPath $ unEscapeString $ uriPath u
+	| "file://" `isPrefixOf` url = fromAbsPath $ toRawFilePath $
+		unEscapeString $ uriPath u
 	| otherwise = pure $ newFrom $ Url u
   where
 	u = fromMaybe bad $ parseURI url
@@ -155,7 +161,7 @@ fromRemoteLocation s repo = gen $ parseRemoteLocation s repo
 fromRemotePath :: FilePath -> Repo -> IO Repo
 fromRemotePath dir repo = do
 	dir' <- expandTilde dir
-	fromPath $ fromRawFilePath (repoPath repo) </> dir'
+	fromPath $ repoPath repo P.</> toRawFilePath dir'
 
 {- Git remotes can have a directory that is specified relative
  - to the user's home directory, or that contains tilde expansions.
@@ -199,7 +205,7 @@ expandTilde = expandt True
 checkForRepo :: FilePath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
 	check isRepo $
-		check (checkGitDirFile dir) $
+		check (checkGitDirFile (toRawFilePath dir)) $
 			check isBareRepo $
 				return Nothing
   where
@@ -221,10 +227,10 @@ checkForRepo dir =
 	gitSignature file = doesFileExist $ dir </> file
 
 -- Check for a .git file.
-checkGitDirFile :: FilePath -> IO (Maybe RepoLocation)
+checkGitDirFile :: RawFilePath -> IO (Maybe RepoLocation)
 checkGitDirFile dir = adjustGitDirFile' $ Local 
-	{ gitdir = toRawFilePath (dir </> ".git")
-	, worktree = Just (toRawFilePath dir)
+	{ gitdir = dir P.</> ".git"
+	, worktree = Just dir
 	}
 
 -- git-submodule, git-worktree, and --separate-git-dir
@@ -236,14 +242,16 @@ adjustGitDirFile loc = fromMaybe loc <$> adjustGitDirFile' loc
 
 adjustGitDirFile' :: RepoLocation -> IO (Maybe RepoLocation)
 adjustGitDirFile' loc = do
-	let gd = fromRawFilePath (gitdir loc)
-	c <- firstLine <$> catchDefaultIO "" (readFile gd)
+	let gd = gitdir loc
+	c <- firstLine <$> catchDefaultIO "" (readFile (fromRawFilePath gd))
 	if gitdirprefix `isPrefixOf` c
 		then do
-			top <- takeDirectory <$> absPath gd
+			top <- fromRawFilePath . P.takeDirectory <$> absPath gd
 			return $ Just $ loc
-				{ gitdir = toRawFilePath $ absPathFrom top $
-					drop (length gitdirprefix) c
+				{ gitdir = absPathFrom 
+					(toRawFilePath top)
+					(toRawFilePath 
+						(drop (length gitdirprefix) c))
 				}
 		else return Nothing
  where

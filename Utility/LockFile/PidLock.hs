@@ -23,7 +23,7 @@ import Utility.Exception
 import Utility.Applicative
 import Utility.Directory
 import Utility.Monad
-import Utility.Path
+import Utility.Path.AbsRel
 import Utility.FileMode
 import Utility.LockFile.LockStatus
 import Utility.ThreadScheduler
@@ -108,7 +108,7 @@ dropSideLock (Just (f, h)) = do
 -- locks. /tmp is used as a fallback.
 sideLockFile :: LockFile -> IO LockFile
 sideLockFile lockfile = do
-	f <- absPath lockfile
+	f <- fromRawFilePath <$> absPath (toRawFilePath lockfile)
 	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
 	let shortbase = reverse $ take 32 $ reverse base
 	let md5sum = if base == shortbase
@@ -131,7 +131,7 @@ sideLockFile lockfile = do
 -- "PIDLOCK_lockfile" environment variable, does not block either.
 tryLock :: LockFile -> IO (Maybe LockHandle)
 tryLock lockfile = do
-	abslockfile <- absPath lockfile
+	abslockfile <- fromRawFilePath <$> absPath (toRawFilePath lockfile)
 	lockenv <- pidLockEnv abslockfile
 	getEnv lockenv >>= \case
 		Nothing -> trySideLock lockfile (go abslockfile)
@@ -299,7 +299,7 @@ checkSaneLock _ ParentLocked = return True
 -- not see unsetLockEnv.
 pidLockEnv :: FilePath -> IO String
 pidLockEnv lockfile = do
-	abslockfile <- absPath lockfile
+	abslockfile <- fromRawFilePath <$> absPath (toRawFilePath lockfile)
 	return $ "PIDLOCK_" ++ filter legalInEnvVar abslockfile
 
 pidLockEnvValue :: String
