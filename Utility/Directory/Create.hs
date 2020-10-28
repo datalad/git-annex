@@ -5,6 +5,7 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
@@ -20,12 +21,14 @@ import Control.Monad.IO.Class
 import Control.Monad.IfElse
 import System.IO.Error
 import Data.Maybe
+import qualified System.FilePath.ByteString as P
 import Prelude
 
 import Utility.SystemDirectory
 import Utility.Path.AbsRel
 import Utility.Exception
 import Utility.FileSystemEncoding
+import qualified Utility.RawFilePath as R
 import Utility.PartialPrelude
 
 {- Like createDirectoryIfMissing True, but it will only create
@@ -49,38 +52,36 @@ import Utility.PartialPrelude
  - Note that, the second FilePath, if relative, is relative to the current
  - working directory, not to the first FilePath.
  -}
-createDirectoryUnder :: FilePath -> FilePath -> IO ()
+createDirectoryUnder :: RawFilePath -> RawFilePath -> IO ()
 createDirectoryUnder topdir dir =
-	createDirectoryUnder' topdir dir createDirectory
+	createDirectoryUnder' topdir dir R.createDirectory
 
 createDirectoryUnder'
 	:: (MonadIO m, MonadCatch m)
-	=> FilePath
-	-> FilePath
-	-> (FilePath -> m ())
+	=> RawFilePath
+	-> RawFilePath
+	-> (RawFilePath -> m ())
 	-> m ()
 createDirectoryUnder' topdir dir0 mkdir = do
-	p <- liftIO $ fromRawFilePath <$> relPathDirToFile
-		(toRawFilePath topdir)
-		(toRawFilePath dir0)
-	let dirs = splitDirectories p
+	p <- liftIO $ relPathDirToFile topdir dir0
+	let dirs = P.splitDirectories p
 	-- Catch cases where the dir is not beneath the topdir.
 	-- If the relative path between them starts with "..",
 	-- it's not. And on Windows, if they are on different drives,
 	-- the path will not be relative.
-	if headMaybe dirs == Just ".." || isAbsolute p
+	if headMaybe dirs == Just ".." || P.isAbsolute p
 		then liftIO $ ioError $ customerror userErrorType
-			("createDirectoryFrom: not located in " ++ topdir)
+			("createDirectoryFrom: not located in " ++ fromRawFilePath topdir)
 		-- If dir0 is the same as the topdir, don't try to create
 		-- it, but make sure it does exist.
 		else if null dirs
-			then liftIO $ unlessM (doesDirectoryExist topdir) $
+			then liftIO $ unlessM (doesDirectoryExist (fromRawFilePath topdir)) $
 				ioError $ customerror doesNotExistErrorType
 					"createDirectoryFrom: does not exist"
 			else createdirs $
-				map (topdir </>) (reverse (scanl1 (</>) dirs))
+				map (topdir P.</>) (reverse (scanl1 (P.</>) dirs))
   where
-	customerror t s = mkIOError t s Nothing (Just dir0)
+	customerror t s = mkIOError t s Nothing (Just (fromRawFilePath dir0))
 
 	createdirs [] = pure ()
 	createdirs (dir:[]) = createdir dir (liftIO . ioError)
@@ -97,6 +98,6 @@ createDirectoryUnder' topdir dir0 mkdir = do
 		Left e
 			| isDoesNotExistError e -> notexisthandler e
 			| isAlreadyExistsError e || isPermissionError e ->
-				liftIO $ unlessM (doesDirectoryExist dir) $
+				liftIO $ unlessM (doesDirectoryExist (fromRawFilePath dir)) $
 					ioError e
 			| otherwise -> liftIO $ ioError e

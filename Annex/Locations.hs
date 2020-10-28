@@ -425,9 +425,8 @@ gitAnnexScheduleState r = fromRawFilePath $ gitAnnexDir r P.</> "schedulestate"
 
 {- .git/annex/creds/ is used to store credentials to access some special
  - remotes. -}
-gitAnnexCredsDir :: Git.Repo -> FilePath
-gitAnnexCredsDir r = fromRawFilePath $
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "creds"
+gitAnnexCredsDir :: Git.Repo -> RawFilePath
+gitAnnexCredsDir r = P.addTrailingPathSeparator $ gitAnnexDir r P.</> "creds"
 
 {- .git/annex/certificate.pem and .git/annex/key.pem are used by the webapp
  - when HTTPS is enabled -}
@@ -545,8 +544,8 @@ gitAnnexSshDir r = fromRawFilePath $
 	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "ssh"
 
 {- .git/annex/remotes/ is used for remote-specific state. -}
-gitAnnexRemotesDir :: Git.Repo -> FilePath
-gitAnnexRemotesDir r = fromRawFilePath $
+gitAnnexRemotesDir :: Git.Repo -> RawFilePath
+gitAnnexRemotesDir r =
 	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "remotes"
 
 {- This is the base directory name used by the assistant when making

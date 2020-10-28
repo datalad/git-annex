@@ -78,7 +78,7 @@ createInodeSentinalFile :: Bool -> Annex ()
 createInodeSentinalFile evenwithobjects = 
 	unlessM (alreadyexists <||> hasobjects) $ do
 		s <- annexSentinalFile
-		createAnnexDirectory (parentDir (fromRawFilePath (sentinalFile s)))
+		createAnnexDirectory (parentDir (sentinalFile s))
 		liftIO $ writeSentinalFile s
   where
 	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile

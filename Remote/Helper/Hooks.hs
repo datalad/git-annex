@@ -5,11 +5,13 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Remote.Helper.Hooks (addHooks) where
 
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 
 import Annex.Common
 import Types.Remote
@@ -46,7 +48,7 @@ addHooks' r starthook stophook = r'
 runHooks :: Remote -> Maybe String -> Maybe String -> Annex a -> Annex a
 runHooks r starthook stophook a = do
 	dir <- fromRepo gitAnnexRemotesDir
-	let lck = dir </> remoteid ++ ".lck"
+	let lck = dir P.</> remoteid <> ".lck"
 	whenM (notElem lck . M.keys <$> getLockCache) $ do
 		createAnnexDirectory dir
 		firstrun lck

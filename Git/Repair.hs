@@ -251,9 +251,7 @@ explodePackedRefsFile r = do
 		let gitd = localGitDir r
 		let dest = gitd P.</> fromRef' ref
 		let dest' = fromRawFilePath dest
-		createDirectoryUnder
-			(fromRawFilePath gitd)
-			(fromRawFilePath (parentDir dest))
+		createDirectoryUnder gitd (parentDir dest)
 		unlessM (doesFileExist dest') $
 			writeFile dest' (fromRef sha)
 

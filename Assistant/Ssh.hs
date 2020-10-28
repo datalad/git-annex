@@ -244,7 +244,8 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
 installSshKeyPair :: SshKeyPair -> SshData -> IO SshData
 installSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
-	createDirectoryIfMissing True $ parentDir $ sshdir </> sshPrivKeyFile sshdata
+	createDirectoryIfMissing True $ fromRawFilePath $
+		parentDir $ toRawFilePath $ sshdir </> sshPrivKeyFile sshdata
 
 	unlessM (doesFileExist $ sshdir </> sshPrivKeyFile sshdata) $
 		writeFileProtected (sshdir </> sshPrivKeyFile sshdata) (sshPrivKey sshkeypair)

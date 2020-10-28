@@ -26,7 +26,7 @@ annexAttrs =
 	, "annex.largefiles"
 	]
 
-checkAttr :: Git.Attr -> FilePath -> Annex String
+checkAttr :: Git.Attr -> RawFilePath -> Annex String
 checkAttr attr file = withCheckAttrHandle $ \h -> 
 	liftIO $ Git.checkAttr h attr file
 

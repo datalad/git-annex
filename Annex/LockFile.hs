@@ -26,6 +26,7 @@ import Annex.Perms
 import Annex.LockPool
 
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 
 {- Create a specified lock file, and takes a shared lock, which is retained
  - in the cache. -}
@@ -62,12 +63,12 @@ changeLockCache a = do
 
 {- Runs an action with a shared lock held. If an exclusive lock is held,
  - blocks until it becomes free. -}
-withSharedLock :: (Git.Repo -> FilePath) -> Annex a -> Annex a
+withSharedLock :: (Git.Repo -> RawFilePath) -> Annex a -> Annex a
 withSharedLock getlockfile a = debugLocks $ do
 	lockfile <- fromRepo getlockfile
-	createAnnexDirectory $ takeDirectory lockfile
+	createAnnexDirectory $ P.takeDirectory lockfile
 	mode <- annexFileMode
-	bracket (lock mode lockfile) (liftIO . dropLock) (const a)
+	bracket (lock mode (fromRawFilePath lockfile)) (liftIO . dropLock) (const a)
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . lockShared (Just mode)
@@ -77,19 +78,19 @@ withSharedLock getlockfile a = debugLocks $ do
 
 {- Runs an action with an exclusive lock held. If the lock is already
  - held, blocks until it becomes free. -}
-withExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex a
+withExclusiveLock :: (Git.Repo -> RawFilePath) -> Annex a -> Annex a
 withExclusiveLock getlockfile a = bracket
 	(takeExclusiveLock getlockfile)
 	(liftIO . dropLock)
 	(const a)
 
 {- Takes an exclusive lock, blocking until it's free. -}
-takeExclusiveLock :: (Git.Repo -> FilePath) -> Annex LockHandle
+takeExclusiveLock :: (Git.Repo -> RawFilePath) -> Annex LockHandle
 takeExclusiveLock getlockfile = debugLocks $ do
 	lockfile <- fromRepo getlockfile
-	createAnnexDirectory $ takeDirectory lockfile
+	createAnnexDirectory $ P.takeDirectory lockfile
 	mode <- annexFileMode
-	lock mode lockfile
+	lock mode (fromRawFilePath lockfile)
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . lockExclusive (Just mode)
@@ -99,12 +100,12 @@ takeExclusiveLock getlockfile = debugLocks $ do
 
 {- Tries to take an exclusive lock and run an action. If the lock is
  - already held, returns Nothing. -}
-tryExclusiveLock :: (Git.Repo -> FilePath) -> Annex a -> Annex (Maybe a)
+tryExclusiveLock :: (Git.Repo -> RawFilePath) -> Annex a -> Annex (Maybe a)
 tryExclusiveLock getlockfile a = debugLocks $ do
 	lockfile <- fromRepo getlockfile
-	createAnnexDirectory $ takeDirectory lockfile
+	createAnnexDirectory $ P.takeDirectory lockfile
 	mode <- annexFileMode
-	bracket (lock mode lockfile) (liftIO . unlock) go
+	bracket (lock mode (fromRawFilePath lockfile)) (liftIO . unlock) go
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . tryLockExclusive (Just mode)

@@ -18,6 +18,8 @@ module Annex.View.ViewedFile (
 
 import Annex.Common
 
+import qualified Data.ByteString as S
+
 type FileName = String
 type ViewedFile = FileName
 
@@ -34,14 +36,14 @@ type MkViewedFile = FilePath -> ViewedFile
  -}
 viewedFileFromReference :: MkViewedFile
 viewedFileFromReference f = concat
-	[ escape base
+	[ escape (fromRawFilePath base)
 	, if null dirs then "" else "_%" ++ intercalate "%" (map escape dirs) ++ "%"
-	, escape $ concat extensions
+	, escape $ fromRawFilePath $ S.concat extensions
 	]
   where
 	(path, basefile) = splitFileName f
 	dirs = filter (/= ".") $ map dropTrailingPathSeparator (splitPath path)
-	(base, extensions) = splitShortExtensions basefile
+	(base, extensions) = splitShortExtensions (toRawFilePath basefile)
 
 	{- To avoid collisions with filenames or directories that contain
 	 - '%', and to allow the original directories to be extracted

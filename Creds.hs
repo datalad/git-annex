@@ -190,14 +190,14 @@ writeCreds :: Creds -> FilePath -> Annex ()
 writeCreds creds file = do
 	d <- fromRepo gitAnnexCredsDir
 	createAnnexDirectory d
-	liftIO $ writeFileProtected (d </> file) creds
+	liftIO $ writeFileProtected (fromRawFilePath d </> file) creds
 
 readCreds :: FilePath -> Annex (Maybe Creds)
 readCreds f = liftIO . catchMaybeIO . readFileStrict =<< credsFile f
 
 credsFile :: FilePath -> Annex FilePath
 credsFile basefile = do
-	d <- fromRepo gitAnnexCredsDir
+	d <- fromRawFilePath <$> fromRepo gitAnnexCredsDir
 	return $ d </> basefile
 
 encodeCredPair :: CredPair -> Creds
@@ -210,7 +210,7 @@ decodeCredPair creds = case lines creds of
 
 removeCreds :: FilePath -> Annex ()
 removeCreds file = do
-	d <- fromRepo gitAnnexCredsDir
+	d <- fromRawFilePath <$> fromRepo gitAnnexCredsDir
 	let f = d </> file
 	liftIO $ nukeFile f
 

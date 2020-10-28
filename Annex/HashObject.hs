@@ -33,7 +33,7 @@ hashObjectStop = maybe noop stop =<< Annex.getState Annex.hashobjecthandle
 		Annex.changeState $ \s -> s { Annex.hashobjecthandle = Nothing }
 		return ()
 
-hashFile :: FilePath -> Annex Sha
+hashFile :: RawFilePath -> Annex Sha
 hashFile f = do
 	h <- hashObjectHandle
 	liftIO $ Git.HashObject.hashFile h f

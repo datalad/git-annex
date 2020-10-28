@@ -25,6 +25,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMChan
 import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 
 newtype ChangedRefs = ChangedRefs [Git.Ref]
 	deriving (Show)
@@ -77,8 +78,8 @@ watchChangedRefs = do
 	chan <- liftIO $ newTBMChanIO 100
 	
 	g <- gitRepo
-	let gittop = fromRawFilePath (Git.localGitDir g)
-	let refdir = gittop </> "refs"
+	let gittop = Git.localGitDir g
+	let refdir = gittop P.</> "refs"
 	liftIO $ createDirectoryUnder gittop refdir
 
 	let notifyhook = Just $ notifyHook chan

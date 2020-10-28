@@ -1,5 +1,4 @@
-{- Portability shim around System.Posix.Files.ByteString and
- - System.Posix.Directory.ByteString
+{- Portability shim for basic operations on RawFilePaths.
  -
  - On unix, this makes syscalls using RawFilesPaths as efficiently as
  - possible.
@@ -23,12 +22,13 @@ module Utility.RawFilePath (
 	getSymbolicLinkStatus,
 	doesPathExist,
 	getCurrentDirectory,
+	createDirectory,
 ) where
 
 #ifndef mingw32_HOST_OS
 import Utility.FileSystemEncoding (RawFilePath)
 import System.Posix.Files.ByteString
-import System.Posix.Directory.ByteString
+import qualified System.Posix.Directory.ByteString as D
 
 -- | Checks if a file or directoy exists. Note that a dangling symlink
 -- will be false.
@@ -36,7 +36,10 @@ doesPathExist :: RawFilePath -> IO Bool
 doesPathExist = fileExist
 
 getCurrentDirectory :: IO RawFilePath
-getCurrentDirectory = getWorkingDirectory
+getCurrentDirectory = D.getWorkingDirectory
+
+createDirectory :: RawFilePath -> IO ()
+createDirectory p = D.createDirectory p 0o777
 
 #else
 import qualified Data.ByteString as B
@@ -64,4 +67,7 @@ doesPathExist = D.doesPathExist . fromRawFilePath
 
 getCurrentDirectory :: IO RawFilePath
 getCurrentDirectory = toRawFilePath <$> D.getCurrentDirectory
+
+createDirectory :: RawFilePath -> IO ()
+createDirectory = D.createDirectory . fromRawFilePath
 #endif

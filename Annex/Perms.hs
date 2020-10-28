@@ -31,6 +31,8 @@ import Git
 import Git.ConfigTypes
 import qualified Annex
 import Config
+import Utility.Directory.Create
+import qualified Utility.RawFilePath as R
 
 withShared :: (SharedRepository -> Annex a) -> Annex a
 withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
@@ -97,24 +99,24 @@ annexFileMode = withShared $ return . go
 {- Creates a directory inside the gitAnnexDir, creating any parent
  - directories up to and including the gitAnnexDir.
  - Makes directories with appropriate permissions. -}
-createAnnexDirectory :: FilePath -> Annex ()
+createAnnexDirectory :: RawFilePath -> Annex ()
 createAnnexDirectory dir = do
-	top <- parentDir . fromRawFilePath <$> fromRepo gitAnnexDir
+	top <- parentDir <$> fromRepo gitAnnexDir
 	createDirectoryUnder' top dir createdir
   where
 	createdir p = do
-		liftIO $ createDirectory p
-		setAnnexDirPerm p
+		liftIO $ R.createDirectory p
+		setAnnexDirPerm (fromRawFilePath p)
 
 {- Create a directory in the git work tree, creating any parent
  - directories up to the top of the work tree.
  -
  - Uses default permissions.
  -}
-createWorkTreeDirectory :: FilePath -> Annex ()
+createWorkTreeDirectory :: RawFilePath -> Annex ()
 createWorkTreeDirectory dir = do
 	fromRepo repoWorkTree >>= liftIO . \case
-		Just wt -> createDirectoryUnder (fromRawFilePath wt) dir
+		Just wt -> createDirectoryUnder wt dir
 		-- Should never happen, but let whatever tries to write
 		-- to the directory be what throws an exception, as that
 		-- will be clearer than an exception from here.
@@ -190,34 +192,35 @@ thawPerms a = ifM crippledFileSystem
  - is set, this is not done, since the group must be allowed to delete the
  - file.
  -}
-freezeContentDir :: FilePath -> Annex ()
+freezeContentDir :: RawFilePath -> Annex ()
 freezeContentDir file = unlessM crippledFileSystem $
 	withShared go
   where
-	dir = parentDir file
+	dir = fromRawFilePath $ parentDir file
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead dir
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead dir
 	go _ = liftIO $ preventWrite dir
 
-thawContentDir :: FilePath -> Annex ()
-thawContentDir file = thawPerms $ liftIO $ allowWrite $ parentDir file
+thawContentDir :: RawFilePath -> Annex ()
+thawContentDir file = 
+	thawPerms $ liftIO $ allowWrite . fromRawFilePath $ parentDir file
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}
-createContentDir :: FilePath -> Annex ()
+createContentDir :: RawFilePath -> Annex ()
 createContentDir dest = do
-	unlessM (liftIO $ doesDirectoryExist dir) $
+	unlessM (liftIO $ R.doesPathExist dir) $
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
 	unlessM crippledFileSystem $
-		liftIO $ allowWrite dir
+		liftIO $ allowWrite $ fromRawFilePath dir
   where
 	dir = parentDir dest
 
 {- Creates the content directory for a file if it doesn't already exist,
  - or thaws it if it does, then runs an action to modify the file, and
  - finally, freezes the content directory. -}
-modifyContent :: FilePath -> Annex a -> Annex a
+modifyContent :: RawFilePath -> Annex a -> Annex a
 modifyContent f a = do
 	createContentDir f -- also thaws it
 	v <- tryNonAsync a

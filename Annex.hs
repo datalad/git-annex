@@ -74,6 +74,7 @@ import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
 import Utility.ResourcePool
+import Utility.Path.AbsRel
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent

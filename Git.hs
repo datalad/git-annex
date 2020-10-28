@@ -43,6 +43,7 @@ import Network.URI (uriPath, uriScheme, unEscapeString)
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
+import qualified System.FilePath.ByteString as P
 
 import Common
 import Git.Types
@@ -133,14 +134,13 @@ assertLocal repo action
 	| otherwise = action
 
 {- Path to a repository's gitattributes file. -}
-attributes :: Repo -> FilePath
+attributes :: Repo -> RawFilePath
 attributes repo
 	| repoIsLocalBare repo = attributesLocal repo
-	| otherwise = fromRawFilePath (repoPath repo) </> ".gitattributes"
+	| otherwise = repoPath repo P.</> ".gitattributes"
 
-attributesLocal :: Repo -> FilePath
-attributesLocal repo = fromRawFilePath (localGitDir repo)
-	</> "info" </> "attributes"
+attributesLocal :: Repo -> RawFilePath
+attributesLocal repo = localGitDir repo P.</> "info" P.</> "attributes"
 
 {- Path to a given hook script in a repository, only if the hook exists
  - and is executable. -}
