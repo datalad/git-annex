@@ -11,27 +11,22 @@
 
 module Utility.Path (
 	simplifyPath,
-	absPathFrom,
 	parentDir,
 	upFrom,
 	dirContains,
-	absPath,
-	relPathCwdToFile,
-	relPathDirToFile,
-	relPathDirToFileAbs,
 	segmentPaths,
 	segmentPaths',
 	runSegmentPaths,
 	runSegmentPaths',
-	relHome,
 	inPath,
 	searchPath,
 	dotfile,
 	splitShortExtensions,
+	relPathDirToFileAbs,
 
 	prop_upFrom_basics,
-	prop_relPathDirToFile_basics,
-	prop_relPathDirToFile_regressionTest,
+	prop_relPathDirToFileAbs_basics,
+	prop_relPathDirToFileAbs_regressionTest,
 ) where
 
 import System.FilePath.ByteString
@@ -39,11 +34,6 @@ import qualified System.FilePath as P
 import qualified Data.ByteString as B
 import Data.List
 import Data.Maybe
-#ifdef mingw32_HOST_OS
-import Data.Char
-#else
-import System.Posix.Directory.ByteString (getWorkingDirectory)
-#endif
 import Control.Applicative
 import Prelude
 
@@ -79,19 +69,6 @@ simplifyPath path = dropTrailingPathSeparator $
 		| otherwise = norm (p:c) ps
 	  where
 		p' = dropTrailingPathSeparator p
-
-{- Makes a path absolute.
- -
- - Also simplifies it using simplifyPath.
- -
- - The first parameter is a base directory (ie, the cwd) to use if the path
- - is not already absolute, and should itsef be absolute.
- -
- - Does not attempt to deal with edge cases or ensure security with
- - untrusted inputs.
- -}
-absPathFrom :: RawFilePath -> RawFilePath -> RawFilePath
-absPathFrom dir path = simplifyPath (combine dir path)
 
 {- takeDirectory "foo/bar/" is "foo/bar". This instead yields "foo" -}
 parentDir :: RawFilePath -> RawFilePath
@@ -132,90 +109,6 @@ dirContains a b = a == b
 	b' = norm b
 	norm = normalise . simplifyPath
 
-{- Converts a filename into an absolute path.
- -
- - Also simplifies it using simplifyPath.
- -
- - Unlike Directory.canonicalizePath, this does not require the path
- - already exists. -}
-absPath :: RawFilePath -> IO RawFilePath
-absPath file
-	-- Avoid unncessarily getting the current directory when the path
-	-- is already absolute. absPathFrom uses simplifyPath
-	-- so also used here for consistency.
-	| isAbsolute file = return $ simplifyPath file
-	| otherwise = do
-#ifdef mingw32_HOST_OS
-		cwd <- toRawFilePath <$> getCurrentDirectory
-#else
-		cwd <- getWorkingDirectory
-#endif
-		return $ absPathFrom cwd file
-
-{- Constructs a relative path from the CWD to a file.
- -
- - For example, assuming CWD is /tmp/foo/bar:
- -    relPathCwdToFile "/tmp/foo" == ".."
- -    relPathCwdToFile "/tmp/foo/bar" == "" 
- -}
-relPathCwdToFile :: RawFilePath -> IO RawFilePath
-relPathCwdToFile f = do
-#ifdef mingw32_HOST_OS
-	c <- toRawFilePath <$> getCurrentDirectory
-#else
-	c <- getWorkingDirectory
-#endif
-	relPathDirToFile c f
-
-{- Constructs a relative path from a directory to a file. -}
-relPathDirToFile :: RawFilePath -> RawFilePath -> IO RawFilePath
-relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
-
-{- This requires the first path to be absolute, and the
- - second path cannot contain ../ or ./
- -
- - On Windows, if the paths are on different drives,
- - a relative path is not possible and the path is simply
- - returned as-is.
- -}
-relPathDirToFileAbs :: RawFilePath -> RawFilePath -> RawFilePath
-relPathDirToFileAbs from to
-#ifdef mingw32_HOST_OS
-	| normdrive from /= normdrive to = to
-#endif
-	| otherwise = joinPath $ dotdots ++ uncommon
-  where
-	pfrom = sp from
-	pto = sp to
-	sp = map dropTrailingPathSeparator . splitPath . dropDrive
-	common = map fst $ takeWhile same $ zip pfrom pto
-	same (c,d) = c == d
-	uncommon = drop numcommon pto
-	dotdots = replicate (length pfrom - numcommon) ".."
-	numcommon = length common
-#ifdef mingw32_HOST_OS
-	normdrive = map toLower . takeWhile (/= ':') . fromRawFilePath . takeDrive
-#endif
-
-prop_relPathDirToFile_basics :: RawFilePath -> RawFilePath -> Bool
-prop_relPathDirToFile_basics from to
-	| B.null from || B.null to = True
-	| from == to = B.null r
-	| otherwise = not (B.null r)
-  where
-	r = relPathDirToFileAbs from to 
-
-prop_relPathDirToFile_regressionTest :: Bool
-prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
-  where
-	{- Two paths have the same directory component at the same
-	 - location, but it's not really the same directory.
-	 - Code used to get this wrong. -}
-	same_dir_shortcurcuits_at_difference =
-		relPathDirToFileAbs (joinPath [pathSeparator `B.cons` "tmp", "r", "lll", "xxx", "yyy", "18"])
-			(joinPath [pathSeparator `B.cons` "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
-				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
-
 {- Given an original list of paths, and an expanded list derived from it,
  - which may be arbitrarily reordered, generates a list of lists, where
  - each sublist corresponds to one of the original paths.
@@ -252,15 +145,6 @@ runSegmentPaths c a paths = segmentPaths c paths <$> a paths
 
 runSegmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[r]]
 runSegmentPaths' si c a paths = segmentPaths' si c paths <$> a paths
-
-{- Converts paths in the home directory to use ~/ -}
-relHome :: FilePath -> IO String
-relHome path = do
-	let path' = toRawFilePath path
-	home <- toRawFilePath <$> myHomeDir
-	return $ if dirContains home path'
-		then fromRawFilePath ("~/" <> relPathDirToFileAbs home path')
-		else path
 
 {- Checks if a command is available in PATH.
  -
@@ -314,3 +198,48 @@ splitShortExtensions' maxextension = go []
 	  where
 		(base, ext) = splitExtension f
 		len = B.length ext
+
+{- This requires the first path to be absolute, and the
+ - second path cannot contain ../ or ./
+ -
+ - On Windows, if the paths are on different drives,
+ - a relative path is not possible and the path is simply
+ - returned as-is.
+ -}
+relPathDirToFileAbs :: RawFilePath -> RawFilePath -> RawFilePath
+relPathDirToFileAbs from to
+#ifdef mingw32_HOST_OS
+	| normdrive from /= normdrive to = to
+#endif
+	| otherwise = joinPath $ dotdots ++ uncommon
+  where
+	pfrom = sp from
+	pto = sp to
+	sp = map dropTrailingPathSeparator . splitPath . dropDrive
+	common = map fst $ takeWhile same $ zip pfrom pto
+	same (c,d) = c == d
+	uncommon = drop numcommon pto
+	dotdots = replicate (length pfrom - numcommon) ".."
+	numcommon = length common
+#ifdef mingw32_HOST_OS
+	normdrive = map toLower . takeWhile (/= ':') . fromRawFilePath . takeDrive
+#endif
+
+prop_relPathDirToFileAbs_basics :: RawFilePath -> RawFilePath -> Bool
+prop_relPathDirToFileAbs_basics from to
+	| B.null from || B.null to = True
+	| from == to = B.null r
+	| otherwise = not (B.null r)
+  where
+	r = relPathDirToFileAbs from to 
+
+prop_relPathDirToFileAbs_regressionTest :: Bool
+prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference
+  where
+	{- Two paths have the same directory component at the same
+	 - location, but it's not really the same directory.
+	 - Code used to get this wrong. -}
+	same_dir_shortcurcuits_at_difference =
+		relPathDirToFileAbs (joinPath [pathSeparator `B.cons` "tmp", "r", "lll", "xxx", "yyy", "18"])
+			(joinPath [pathSeparator `B.cons` "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
+				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]

@@ -817,6 +817,7 @@ Executable git-annex
     Config
     Config.Cost
     Config.Files
+    Config.Files.AutoStart
     Config.DynamicConfig
     Config.GitConfig
     Config.Smudge
@@ -1055,6 +1056,7 @@ Executable git-annex
     Utility.DirWatcher
     Utility.DirWatcher.Types
     Utility.Directory
+    Utility.Directory.Create
     Utility.Directory.Stream
     Utility.DiskFree
     Utility.Dot
@@ -1094,6 +1096,7 @@ Executable git-annex
     Utility.PID
     Utility.PartialPrelude
     Utility.Path
+    Utility.Path.AbsRel
     Utility.Path.Max
     Utility.Percentage
     Utility.Process

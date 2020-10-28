@@ -188,8 +188,8 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 	, testProperty "prop_isomorphic_configEscape" Logs.Remote.prop_isomorphic_configEscape
 	, testProperty "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
 	, testProperty "prop_upFrom_basics" Utility.Path.prop_upFrom_basics
-	, testProperty "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
-	, testProperty "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
+	, testProperty "prop_relPathDirToFileAbs_basics" Utility.Path.prop_relPathDirToFileAbs_basics
+	, testProperty "prop_relPathDirToFileAbs_regressionTest" Utility.Path.prop_relPathDirToFileAbs_regressionTest
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
 	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane

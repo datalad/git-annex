@@ -16,6 +16,7 @@ import Utility.FreeDesktop
 import Utility.Path
 import Utility.Monad
 import Utility.Directory
+import Utility.FileSystemEncoding
 import Config.Files
 import Utility.OSX
 import Assistant.Install.AutoStart
@@ -77,7 +78,7 @@ install command = do
 		( return ()
 		, do
 			programfile <- inDestDir =<< programFile
-			createDirectoryIfMissing True (parentDir programfile)
+			createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath programfile)))
 			writeFile programfile command
 		)
 

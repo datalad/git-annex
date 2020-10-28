@@ -22,40 +22,6 @@ userConfigFile file = do
 autoStartFile :: IO FilePath
 autoStartFile = userConfigFile "autostart"
 
-{- Returns anything listed in the autostart file (which may not exist). -}
-readAutoStartFile :: IO [FilePath]
-readAutoStartFile = do
-	f <- autoStartFile
-	filter valid . nub . map dropTrailingPathSeparator . lines
-		<$> catchDefaultIO "" (readFile f)
-  where
-	-- Ignore any relative paths; some old buggy versions added eg "."
-	valid = isAbsolute
-
-modifyAutoStartFile :: ([FilePath] -> [FilePath]) -> IO ()
-modifyAutoStartFile func = do
-	dirs <- readAutoStartFile
-	let dirs' = nubBy equalFilePath $ func dirs
-	when (dirs' /= dirs) $ do
-		f <- autoStartFile
-		createDirectoryIfMissing True (parentDir f)
-		viaTmp writeFile f $ unlines dirs'
-
-{- Adds a directory to the autostart file. If the directory is already
- - present, it's moved to the top, so it will be used as the default
- - when opening the webapp. -}
-addAutoStartFile :: FilePath -> IO ()
-addAutoStartFile path = do
-	path' <- absPath path
-	modifyAutoStartFile $ (:) path'
-
-{- Removes a directory from the autostart file. -}
-removeAutoStartFile :: FilePath -> IO ()
-removeAutoStartFile path = do
-	path' <- absPath path
-	modifyAutoStartFile $
-		filter (not . equalFilePath path')
-
 {- The path to git-annex is written here; which is useful when something
  - has installed it to some awful non-PATH location. -}
 programFile :: IO FilePath
