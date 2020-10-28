@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.CurrentRepo where
 
 import Common
@@ -14,6 +16,10 @@ import qualified Git.Config
 import Utility.Env
 import Utility.Env.Set
 import Utility.Path.AbsRel
+import qualified Utility.RawFilePath as R
+
+import qualified Data.ByteString as B
+import qualified System.FilePath.ByteString as P
 
 {- Gets the current git repository.
  -
@@ -38,14 +44,14 @@ get = do
 	gd <- getpathenv "GIT_DIR"
 	r <- configure gd =<< fromCwd
 	prefix <- getpathenv "GIT_PREFIX"
-	wt <- maybe (fromRawFilePath <$> worktree (location r)) Just
+	wt <- maybe (worktree (location r)) Just
 		<$> getpathenvprefix "GIT_WORK_TREE" prefix
 	case wt of
 		Nothing -> return r
 		Just d -> do
-			curr <- getCurrentDirectory
+			curr <- R.getCurrentDirectory
 			unless (d `dirContains` curr) $
-				setCurrentDirectory d
+				setCurrentDirectory (fromRawFilePath d)
 			return $ addworktree wt r
   where
 	getpathenv s = do
@@ -53,24 +59,25 @@ get = do
 		case v of
 			Just d -> do
 				unsetEnv s
-				return (Just d)
+				return (Just (toRawFilePath d))
 			Nothing -> return Nothing
 	
-	getpathenvprefix s (Just prefix) | not (null prefix) =
+	getpathenvprefix s (Just prefix) | not (B.null prefix) =
 		getpathenv s >>= \case
 			Nothing -> return Nothing
 			Just d
 				| d == "." -> return (Just d)
-				| otherwise -> Just <$> absPath (prefix </> d)
+				| otherwise -> Just 
+					<$> absPath (prefix P.</> d)
 	getpathenvprefix s _ = getpathenv s
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do
-		absd <- absPath (fromRawFilePath d)
-		curr <- getCurrentDirectory
+		absd <- absPath d
+		curr <- R.getCurrentDirectory
 		loc <- adjustGitDirFile $ Local
 			{ gitdir = absd
-			, worktree = Just (toRawFilePath curr)
+			, worktree = Just curr
 			}
 		r <- Git.Config.read $ newFrom loc
 		return $ if Git.Config.isBare r
@@ -80,6 +87,7 @@ get = do
 
 	addworktree w r = changelocation r $ Local
 		{ gitdir = gitdir (location r)
-		, worktree = fmap toRawFilePath w
+		, worktree = w
 		}
+	
 	changelocation r l = r { location = l }

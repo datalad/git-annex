@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -108,6 +108,7 @@ import qualified Git.Types as Git
 import Git.FilePath
 import Annex.DirHashes
 import Annex.Fixup
+import Utility.Path.AbsRel
 import qualified Utility.RawFilePath as R
 
 {- Conventions:
@@ -199,32 +200,27 @@ gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	check [] = error "internal"
 
 {- Calculates a symlink target to link a file to an annexed object. -}
-gitAnnexLink :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexLink :: RawFilePath -> Key -> Git.Repo -> GitConfig -> IO RawFilePath
 gitAnnexLink file key r config = do
-	currdir <- getCurrentDirectory
+	currdir <- R.getCurrentDirectory
 	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
 	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
-	fromRawFilePath . toInternalGitPath . toRawFilePath
-		<$> relPathDirToFile (parentDir absfile) (fromRawFilePath loc)
+	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
 	getgitdir currdir
 		{- This special case is for git submodules on filesystems not
 		 - supporting symlinks; generate link target that will
 		 - work portably. -}
 		| not (coreSymlinks config) && needsSubmoduleFixup r =
-			toRawFilePath $
-				absNormPathUnix currdir $ fromRawFilePath $
-					Git.repoPath r P.</> ".git"
+			absNormPathUnix currdir (Git.repoPath r P.</> ".git")
 		| otherwise = Git.localGitDir r
-	absNormPathUnix d p = fromRawFilePath $ toInternalGitPath $ toRawFilePath $
-		absPathFrom
-			(fromRawFilePath $ toInternalGitPath $ toRawFilePath d)
-			(fromRawFilePath $ toInternalGitPath $ toRawFilePath p)
+	absNormPathUnix d p = toInternalGitPath $
+		absPathFrom (toInternalGitPath d) (toInternalGitPath p)
 
 {- Calculates a symlink target as would be used in a typical git
  - repository, with .git in the top of the work tree. -}
-gitAnnexLinkCanonical :: FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexLinkCanonical :: RawFilePath -> Key -> Git.Repo -> GitConfig -> IO RawFilePath
 gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
   where
 	r' = case r of
