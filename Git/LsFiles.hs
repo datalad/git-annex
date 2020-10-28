@@ -38,6 +38,7 @@ import Utility.InodeCache
 import Utility.TimeStamp
 import Utility.Attoparsec
 import Utility.Path.AbsRel
+import qualified Utility.RawFilePath as R
 
 import System.Posix.Types
 import qualified Data.Map as M
@@ -214,7 +215,7 @@ typeChanged' ps l repo = guardSafeForLsFiles repo $ do
 	-- git diff returns filenames relative to the top of the git repo;
 	-- convert to filenames relative to the cwd, like git ls-files.
 	top <- absPath (repoPath repo)
-	currdir <- toRawFilePath <$> getCurrentDirectory
+	currdir <- R.getCurrentDirectory
 	return (map (\f -> relPathDirToFileAbs currdir $ top P.</> f) fs, cleanup)
   where
 	prefix = 

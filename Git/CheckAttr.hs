@@ -12,6 +12,7 @@ import Git
 import Git.Command
 import Utility.Path.AbsRel
 import qualified Utility.CoProcess as CoProcess
+import qualified Utility.RawFilePath as R
 
 import System.IO.Error
 import qualified Data.ByteString as B
@@ -24,7 +25,7 @@ type Attr = String
  - values and returns a handle.  -}
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
-	currdir <- toRawFilePath <$> getCurrentDirectory
+	currdir <- R.getCurrentDirectory
 	h <- gitCoProcessStart True params repo
 	return (h, attrs, currdir)
   where

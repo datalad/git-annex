@@ -66,10 +66,10 @@ get = do
 
 	configure Nothing (Just r) = Git.Config.read r
 	configure (Just d) _ = do
-		absd <- absPath d
+		absd <- absPath (fromRawFilePath d)
 		curr <- getCurrentDirectory
 		loc <- adjustGitDirFile $ Local
-			{ gitdir = toRawFilePath absd
+			{ gitdir = absd
 			, worktree = Just (toRawFilePath curr)
 			}
 		r <- Git.Config.read $ newFrom loc

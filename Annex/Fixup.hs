@@ -18,6 +18,7 @@ import Utility.Directory
 import Utility.Exception
 import Utility.Monad
 import Utility.FileSystemEncoding
+import qualified Utility.RawFilePath as R
 import Utility.PartialPrelude
 
 import System.IO
@@ -112,9 +113,9 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 	dotgit' = fromRawFilePath dotgit
 
 	replacedotgit = whenM (doesFileExist dotgit') $ do
-		linktarget <- relPathDirToFile (fromRawFilePath w) (fromRawFilePath d)
+		linktarget <- relPathDirToFile w d
 		nukeFile dotgit'
-		createSymbolicLink linktarget dotgit'
+		R.createSymbolicLink linktarget dotgit'
 	
 	unsetcoreworktree =
 		maybe (error "unset core.worktree failed") (\_ -> return ())
