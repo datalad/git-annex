@@ -62,13 +62,13 @@ newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go
 	go = do
 		removedb =<< fromRepo (gitAnnexFsckDbDir u)
 		removedb =<< fromRepo (gitAnnexFsckDbDirOld u)
-	removedb = liftIO . void . tryIO . removeDirectoryRecursive
+	removedb = liftIO . void . tryIO . removeDirectoryRecursive . fromRawFilePath
 
 {- Opens the database, creating it if it doesn't exist yet. -}
 openDb :: UUID -> Annex FsckHandle
 openDb u = do
 	dbdir <- fromRepo (gitAnnexFsckDbDir u)
-	let db = dbdir </> "db"
+	let db = fromRawFilePath dbdir </> "db"
 	unlessM (liftIO $ doesFileExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateFsck

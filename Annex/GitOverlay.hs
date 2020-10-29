@@ -90,8 +90,8 @@ withWorkTreeRelated :: FilePath -> Annex a -> Annex a
 withWorkTreeRelated d a = withAltRepo modrepo unmodrepo (const a)
   where
 	modrepo g = liftIO $ do
-		g' <- addGitEnv g "GIT_COMMON_DIR"
-			=<< absPath (fromRawFilePath (localGitDir g))
+		g' <- addGitEnv g "GIT_COMMON_DIR" . fromRawFilePath
+			=<< absPath (localGitDir g)
 		g'' <- addGitEnv g' "GIT_DIR" d
 		return (g'' { gitEnvOverridesGitDir = True }, ())
 	unmodrepo g g' = g'

@@ -15,6 +15,7 @@ import Annex.Common
 import Git.Fsck
 import Git.Types
 import Logs.File
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Set as S
 
@@ -24,7 +25,8 @@ writeFsckResults u fsckresults = do
 	case fsckresults of
 		FsckFailed -> store S.empty False logfile
 		FsckFoundMissing s t
-			| S.null s -> liftIO $ removeWhenExistsWith removeLink logfile
+			| S.null s -> liftIO $
+				removeWhenExistsWith R.removeLink logfile
 			| otherwise -> store s t logfile
   where
 	store s t logfile = writeLogFile logfile $ serialize s t
@@ -38,7 +40,7 @@ readFsckResults :: UUID -> Annex FsckResults
 readFsckResults u = do
 	logfile <- fromRepo $ gitAnnexFsckResultsLog u
 	liftIO $ catchDefaultIO (FsckFoundMissing S.empty False) $
-		deserialize . lines <$> readFile logfile
+		deserialize . lines <$> readFile (fromRawFilePath logfile)
   where
 	deserialize ("truncated":ls) = deserialize' ls True
 	deserialize ls = deserialize' ls False
@@ -47,6 +49,6 @@ readFsckResults u = do
 		in if S.null s then FsckFailed else FsckFoundMissing s t
 
 clearFsckResults :: UUID -> Annex ()
-clearFsckResults = liftIO . removeWhenExistsWith removeLink
+clearFsckResults = liftIO . removeWhenExistsWith R.removeLink
 	<=< fromRepo . gitAnnexFsckResultsLog
 	

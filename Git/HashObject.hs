@@ -16,7 +16,6 @@ import Git.Command
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
 import Utility.Tmp
-import Utility.Path.AbsRel
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8

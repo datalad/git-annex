@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 module Types.Transfer where
@@ -17,6 +18,7 @@ import Utility.QuickCheck
 import Utility.Url
 import Utility.FileSystemEncoding
 
+import qualified Data.ByteString as B
 import Data.Time.Clock.POSIX
 import Control.Concurrent
 import Control.Applicative
@@ -56,7 +58,7 @@ stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing (Associa
 data Direction = Upload | Download
 	deriving (Eq, Ord, Show, Read)
 
-formatDirection :: Direction -> String
+formatDirection :: Direction -> B.ByteString
 formatDirection Upload = "upload"
 formatDirection Download = "download"
 

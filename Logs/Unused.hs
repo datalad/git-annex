@@ -15,6 +15,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Logs.Unused (
 	UnusedMap,
 	updateUnusedLog,
@@ -55,13 +57,13 @@ preserveTimestamps oldl newl = M.intersection (M.unionWith oldts oldl newl) newl
   where
 	oldts _old@(_, ts) _new@(int, _) = (int, ts)
 
-updateUnusedLog :: FilePath -> UnusedMap -> Annex ()
+updateUnusedLog :: RawFilePath -> UnusedMap -> Annex ()
 updateUnusedLog prefix m = do
 	oldl <- readUnusedLog prefix
 	newl <- preserveTimestamps oldl . flip map2log m <$> liftIO getPOSIXTime
 	writeUnusedLog prefix newl
 
-writeUnusedLog :: FilePath -> UnusedLog -> Annex ()
+writeUnusedLog :: RawFilePath -> UnusedLog -> Annex ()
 writeUnusedLog prefix l = do
 	logfile <- fromRepo $ gitAnnexUnusedLog prefix
 	writeLogFile logfile $ unlines $ map format $ M.toList l
@@ -69,9 +71,9 @@ writeUnusedLog prefix l = do
 	format (k, (i, Just t)) = show i ++ " " ++ serializeKey k ++ " " ++ show t
 	format (k, (i, Nothing)) = show i ++ " " ++ serializeKey k
 
-readUnusedLog :: FilePath -> Annex UnusedLog
+readUnusedLog :: RawFilePath -> Annex UnusedLog
 readUnusedLog prefix = do
-	f <- fromRepo $ gitAnnexUnusedLog prefix
+	f <- fromRawFilePath <$> fromRepo (gitAnnexUnusedLog prefix)
 	ifM (liftIO $ doesFileExist f)
 		( M.fromList . mapMaybe parse . lines
 			<$> liftIO (readFileStrict f)
@@ -87,13 +89,13 @@ readUnusedLog prefix = do
 		skey = reverse rskey
 		ts = reverse rts
 
-readUnusedMap :: FilePath -> Annex UnusedMap
+readUnusedMap :: RawFilePath -> Annex UnusedMap
 readUnusedMap = log2map <$$> readUnusedLog
 
-dateUnusedLog :: FilePath -> Annex (Maybe UTCTime)
+dateUnusedLog :: RawFilePath -> Annex (Maybe UTCTime)
 dateUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
-	liftIO $ catchMaybeIO $ getModificationTime f
+	liftIO $ catchMaybeIO $ getModificationTime $ fromRawFilePath f
 
 {- Set of unused keys. This is cached for speed. -}
 unusedKeys :: Annex (S.Set Key)

@@ -13,7 +13,7 @@ module Utility.DottedVersion (
 	normalize,
 ) where
 
-import Common
+import Utility.Split
 
 data DottedVersion = DottedVersion String Integer
 	deriving (Eq)

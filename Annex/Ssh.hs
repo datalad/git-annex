@@ -38,6 +38,7 @@ import Annex.Concurrent.Utility
 import Types.Concurrency
 import Git.Env
 import Git.Ssh
+import qualified Utility.RawFilePath as R
 import Annex.Perms
 #ifndef mingw32_HOST_OS
 import Annex.LockPool
@@ -45,6 +46,7 @@ import Annex.LockPool
 
 import Control.Concurrent.STM
 import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 
 {- Some ssh commands are fed stdin on a pipe and so should be allowed to
  - consume it. But ssh commands that are not piped stdin should generally
@@ -102,9 +104,11 @@ sshCachingInfo :: (SshHost, Maybe Integer) -> Annex (Maybe FilePath, [CommandPar
 sshCachingInfo (host, port) = go =<< sshCacheDir'
   where
 	go (Right dir) =
-		liftIO (bestSocketPath $ dir </> hostport2socket host port) >>= return . \case
+		liftIO (bestSocketPath $ dir P.</> hostport2socket host port) >>= return . \case
 			Nothing -> (Nothing, [])
-			Just socketfile -> (Just socketfile, sshConnectionCachingParams socketfile)
+			Just socketfile -> 
+				let socketfile' = fromRawFilePath socketfile
+				in (Just socketfile', sshConnectionCachingParams socketfile')
 	-- No connection caching with concurrency is not a good
 	-- combination, so warn the user.
 	go (Left whynocaching) = do
@@ -130,20 +134,20 @@ sshCachingInfo (host, port) = go =<< sshCacheDir'
  - file.
  -
  - If no path can be constructed that is a valid socket, returns Nothing. -}
-bestSocketPath :: FilePath -> IO (Maybe FilePath)
+bestSocketPath :: RawFilePath -> IO (Maybe RawFilePath)
 bestSocketPath abssocketfile = do
 	relsocketfile <- liftIO $ relPathCwdToFile abssocketfile
-	let socketfile = if length abssocketfile <= length relsocketfile
+	let socketfile = if S.length abssocketfile <= S.length relsocketfile
 		then abssocketfile
 		else relsocketfile
-	return $ if valid_unix_socket_path (socketfile ++ sshgarbage)
+	return $ if valid_unix_socket_path socketfile sshgarbagelen
 			then Just socketfile
 			else Nothing
   where
 	-- ssh appends a 16 char extension to the socket when setting it
 	-- up, which needs to be taken into account when checking
 	-- that a valid socket was constructed.
-	sshgarbage = replicate (1+16) 'X'
+	sshgarbagelen = 1+16
 
 sshConnectionCachingParams :: FilePath -> [CommandParam]
 sshConnectionCachingParams socketfile = 
@@ -160,10 +164,10 @@ sshSocketDirEnv = "GIT_ANNEX_SSH_SOCKET_DIR"
  - 
  - The directory will be created if it does not exist.
  -}
-sshCacheDir :: Annex (Maybe FilePath)
+sshCacheDir :: Annex (Maybe RawFilePath)
 sshCacheDir = eitherToMaybe <$> sshCacheDir'
 
-sshCacheDir' :: Annex (Either String FilePath)
+sshCacheDir' :: Annex (Either String RawFilePath)
 sshCacheDir' = 
 	ifM (fromMaybe BuildInfo.sshconnectioncaching . annexSshCaching <$> Annex.getGitConfig)
 		( ifM crippledFileSystem
@@ -186,7 +190,7 @@ sshCacheDir' =
 	usetmpdir tmpdir = do
 		let socktmp = tmpdir </> "ssh"
 		createDirectoryIfMissing True socktmp
-		return socktmp
+		return (toRawFilePath socktmp)
 	
 	crippledfswarning = unwords
 		[ "This repository is on a crippled filesystem, so unix named"
@@ -285,9 +289,9 @@ enumSocketFiles :: Annex [FilePath]
 enumSocketFiles = liftIO . go =<< sshCacheDir
   where
 	go Nothing = return []
-	go (Just dir) = filterM (doesFileExist . socket2lock)
+	go (Just dir) = filterM (R.doesPathExist . socket2lock)
 		=<< filter (not . isLock)
-		<$> catchDefaultIO [] (dirContents dir)
+		<$> catchDefaultIO [] (dirContents (fromRawFilePath dir))
 
 {- Stop any unused ssh connection caching processes. -}
 sshCleanup :: Annex ()
@@ -339,19 +343,19 @@ forceStopSsh socketfile = withNullHandle $ \nullh -> do
  - of the path to a socket file. At the same time, it needs to be unique
  - for each host.
  -}
-hostport2socket :: SshHost -> Maybe Integer -> FilePath
+hostport2socket :: SshHost -> Maybe Integer -> RawFilePath
 hostport2socket host Nothing = hostport2socket' $ fromSshHost host
 hostport2socket host (Just port) = hostport2socket' $
 	fromSshHost host ++ "!" ++ show port
-hostport2socket' :: String -> FilePath
+hostport2socket' :: String -> RawFilePath
 hostport2socket' s
-	| length s > lengthofmd5s = show $ md5 $ encodeBL s
-	| otherwise = s
+	| length s > lengthofmd5s = toRawFilePath $ show $ md5 $ encodeBL s
+	| otherwise = toRawFilePath s
   where
 	lengthofmd5s = 32
 
-socket2lock :: FilePath -> FilePath
-socket2lock socket = socket ++ lockExt
+socket2lock :: FilePath -> RawFilePath
+socket2lock socket = toRawFilePath (socket ++ lockExt)
 
 isLock :: FilePath -> Bool
 isLock f = lockExt `isSuffixOf` f
@@ -369,8 +373,8 @@ sizeof_sockaddr_un_sun_path = 100
 
 {- Note that this looks at the true length of the path in bytes, as it will
  - appear on disk. -}
-valid_unix_socket_path :: FilePath -> Bool
-valid_unix_socket_path f = S.length (encodeBS f) < sizeof_sockaddr_un_sun_path
+valid_unix_socket_path :: RawFilePath -> Int -> Bool
+valid_unix_socket_path f n = S.length f + n < sizeof_sockaddr_un_sun_path
 
 {- Parses the SSH port, and returns the other OpenSSH options. If
  - several ports are found, the last one takes precedence. -}

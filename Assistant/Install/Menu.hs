@@ -10,9 +10,13 @@
 
 module Assistant.Install.Menu where
 
-import Common
-
 import Utility.FreeDesktop
+import Utility.FileSystemEncoding
+import Utility.Path
+
+import System.IO
+import Utility.SystemDirectory
+import System.FilePath
 
 installMenu :: FilePath -> FilePath -> FilePath -> FilePath -> IO ()
 #ifdef darwin_HOST_OS

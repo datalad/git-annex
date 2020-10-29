@@ -11,7 +11,6 @@ import Common
 import Git
 import Utility.Env
 import Utility.Env.Set
-import Utility.Path.AbsRel
 
 indexEnv :: String
 indexEnv = "GIT_INDEX_FILE"

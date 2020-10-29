@@ -47,7 +47,6 @@ import qualified System.FilePath.ByteString as P
 
 import Common
 import Git.Types
-import Utility.Path.AbsRel
 #ifndef mingw32_HOST_OS
 import Utility.FileMode
 #endif

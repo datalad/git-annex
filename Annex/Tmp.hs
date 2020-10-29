@@ -21,7 +21,7 @@ import Data.Time.Clock.POSIX
 -- directory that is passed to it. However, once the action is done,
 -- any files left in that directory may be cleaned up by another process at
 -- any time.
-withOtherTmp :: (FilePath -> Annex a) -> Annex a
+withOtherTmp :: (RawFilePath -> Annex a) -> Annex a
 withOtherTmp a = do
 	Annex.addCleanup OtherTmpCleanup cleanupOtherTmp
 	tmpdir <- fromRepo gitAnnexTmpOtherDir
@@ -38,14 +38,14 @@ withOtherTmp a = do
 -- Unlike withOtherTmp, this does not rely on locking working.
 -- Its main use is in situations where the state of lockfile is not
 -- determined yet, eg during initialization.
-withEventuallyCleanedOtherTmp :: (FilePath -> Annex a) -> Annex a
+withEventuallyCleanedOtherTmp :: (RawFilePath -> Annex a) -> Annex a
 withEventuallyCleanedOtherTmp = bracket setup cleanup
   where
 	setup = do
 		tmpdir <- fromRepo gitAnnexTmpOtherDirOld
 		void $ createAnnexDirectory tmpdir
 		return tmpdir
-	cleanup = liftIO . void . tryIO . removeDirectory 
+	cleanup = liftIO . void . tryIO . removeDirectory . fromRawFilePath
 
 -- | Cleans up any tmp files that were left by a previous
 -- git-annex process that got interrupted or failed to clean up after
@@ -56,9 +56,9 @@ cleanupOtherTmp :: Annex ()
 cleanupOtherTmp = do
 	tmplck <- fromRepo gitAnnexTmpOtherLock
 	void $ tryIO $ tryExclusiveLock (const tmplck) $ do
-		tmpdir <- fromRepo gitAnnexTmpOtherDir
+		tmpdir <- fromRawFilePath <$> fromRepo gitAnnexTmpOtherDir
 		void $ liftIO $ tryIO $ removeDirectoryRecursive tmpdir
-		oldtmp <- fromRepo gitAnnexTmpOtherDirOld
+		oldtmp <- fromRawFilePath <$> fromRepo gitAnnexTmpOtherDirOld
 		liftIO $ mapM_ cleanold =<< dirContentsRecursive oldtmp
 		liftIO $ void $ tryIO $ removeDirectory oldtmp -- when empty
   where

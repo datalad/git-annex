@@ -10,7 +10,6 @@ module Git.CheckAttr where
 import Common
 import Git
 import Git.Command
-import Utility.Path.AbsRel
 import qualified Utility.CoProcess as CoProcess
 import qualified Utility.RawFilePath as R
 

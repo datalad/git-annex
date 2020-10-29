@@ -15,7 +15,6 @@ import Git.Construct
 import qualified Git.Config
 import Utility.Env
 import Utility.Env.Set
-import Utility.Path.AbsRel
 import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as B

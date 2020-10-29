@@ -23,6 +23,7 @@ import Utility.DebugLocks as X
 import Utility.SafeCommand as X
 import Utility.Process as X
 import Utility.Path as X
+import Utility.Path.AbsRel as X
 import Utility.Directory as X
 import Utility.Monad as X
 import Utility.Data as X

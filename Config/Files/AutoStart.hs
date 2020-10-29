@@ -12,7 +12,6 @@ module Config.Files.AutoStart where
 import Common
 import Config.Files
 import Utility.Tmp
-import Utility.Path.AbsRel
 
 {- Returns anything listed in the autostart file (which may not exist). -}
 readAutoStartFile :: IO [FilePath]

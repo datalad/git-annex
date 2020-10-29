@@ -37,7 +37,6 @@ import Git.Sha
 import Utility.InodeCache
 import Utility.TimeStamp
 import Utility.Attoparsec
-import Utility.Path.AbsRel
 import qualified Utility.RawFilePath as R
 
 import System.Posix.Types

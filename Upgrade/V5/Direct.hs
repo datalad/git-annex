@@ -28,6 +28,7 @@ import Config
 import Annex.Perms
 import Utility.InodeCache
 import Annex.InodeSentinal
+import qualified Utility.RawFilePath as R
 
 setIndirect :: Annex ()
 setIndirect = do
@@ -86,7 +87,7 @@ associatedFiles key = do
  - the top of the repo. -}
 associatedFilesRelative :: Key -> Annex [FilePath] 
 associatedFilesRelative key = do
-	mapping <- calcRepo $ gitAnnexMapping key
+	mapping <- fromRawFilePath <$> calcRepo (gitAnnexMapping key)
 	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h ->
 		-- Read strictly to ensure the file is closed promptly
 		lines <$> hGetContentsStrict h
@@ -96,7 +97,7 @@ removeAssociatedFiles :: Key -> Annex ()
 removeAssociatedFiles key = do
 	mapping <- calcRepo $ gitAnnexMapping key
 	modifyContent mapping $
-		liftIO $ removeWhenExistsWith removeLink mapping
+		liftIO $ removeWhenExistsWith R.removeLink mapping
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
@@ -116,13 +117,14 @@ goodContent key file =
 recordedInodeCache :: Key -> Annex [InodeCache]
 recordedInodeCache key = withInodeCacheFile key $ \f ->
 	liftIO $ catchDefaultIO [] $
-		mapMaybe readInodeCache . lines <$> readFileStrict f
+		mapMaybe readInodeCache . lines
+			<$> readFileStrict (fromRawFilePath f)
 
 {- Removes an inode cache. -}
 removeInodeCache :: Key -> Annex ()
 removeInodeCache key = withInodeCacheFile key $ \f ->
 	modifyContent f $
-		liftIO $ removeWhenExistsWith removeLink f
+		liftIO $ removeWhenExistsWith R.removeLink f
 
-withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
+withInodeCacheFile :: Key -> (RawFilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)

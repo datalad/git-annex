@@ -29,8 +29,8 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 -- | Writes content to a file, replacing the file atomically, and
 -- making the new file have whatever permissions the git repository is
 -- configured to use. Creates the parent directory when necessary.
-writeLogFile :: FilePath -> String -> Annex ()
-writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog f c
+writeLogFile :: RawFilePath -> String -> Annex ()
+writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog (fromRawFilePath f) c
   where
 	writelog f' c' = do
 		liftIO $ writeFile f' c'
@@ -38,10 +38,10 @@ writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog f c
 
 -- | Runs the action with a handle connected to a temp file.
 -- The temp file replaces the log file once the action succeeds.
-withLogHandle :: FilePath -> (Handle -> Annex a) -> Annex a
+withLogHandle :: RawFilePath -> (Handle -> Annex a) -> Annex a
 withLogHandle f a = do
 	createAnnexDirectory (parentDir f)
-	replaceGitAnnexDirFile f $ \tmp ->
+	replaceGitAnnexDirFile (fromRawFilePath f) $ \tmp ->
 		bracket (setup tmp) cleanup a
   where
 	setup tmp = do
@@ -51,10 +51,12 @@ withLogHandle f a = do
 
 -- | Appends a line to a log file, first locking it to prevent
 -- concurrent writers.
-appendLogFile :: FilePath -> (Git.Repo -> FilePath) -> L.ByteString -> Annex ()
-appendLogFile f lck c = createDirWhenNeeded f $ withExclusiveLock lck $ do
-	liftIO $ withFile f AppendMode $ \h -> L8.hPutStrLn h c
-	setAnnexFilePerm f
+appendLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> L.ByteString -> Annex ()
+appendLogFile f lck c = 
+	createDirWhenNeeded (toRawFilePath f) $
+		withExclusiveLock lck $ do
+			liftIO $ withFile f AppendMode $ \h -> L8.hPutStrLn h c
+			setAnnexFilePerm f
 
 -- | Modifies a log file.
 --
@@ -64,13 +66,13 @@ appendLogFile f lck c = createDirWhenNeeded f $ withExclusiveLock lck $ do
 --
 -- The file is locked to prevent concurrent writers, and it is written
 -- atomically.
-modifyLogFile :: FilePath -> (Git.Repo -> FilePath) -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
+modifyLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
 modifyLogFile f lck modf = withExclusiveLock lck $ do
 	ls <- liftIO $ fromMaybe []
 		<$> tryWhenExists (L8.lines <$> L.readFile f)
 	let ls' = modf ls
 	when (ls' /= ls) $
-		createDirWhenNeeded f $
+		createDirWhenNeeded (toRawFilePath f) $
 			viaTmp writelog f (L8.unlines ls')
   where
 	writelog f' b = do
@@ -83,7 +85,7 @@ modifyLogFile f lck modf = withExclusiveLock lck $ do
 -- action is concurrently modifying the file. It does not lock the file,
 -- for speed, but instead relies on the fact that a log file usually
 -- ends in a newline.
-checkLogFile :: FilePath -> (Git.Repo -> FilePath) -> (L.ByteString -> Bool) -> Annex Bool
+checkLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> (L.ByteString -> Bool) -> Annex Bool
 checkLogFile f lck matchf = withExclusiveLock lck $ bracket setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f ReadMode
@@ -117,7 +119,7 @@ fullLines = go []
 -- 
 -- Locking is used to prevent writes to to the log file while this
 -- is running.
-streamLogFile :: FilePath -> (Git.Repo -> FilePath) -> (String -> Annex ()) -> Annex ()
+streamLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> (String -> Annex ()) -> Annex ()
 streamLogFile f lck a = withExclusiveLock lck $ bracketOnError setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f ReadMode 
@@ -130,7 +132,7 @@ streamLogFile f lck a = withExclusiveLock lck $ bracketOnError setup cleanup go
 		liftIO $ writeFile f ""
 		setAnnexFilePerm f
 
-createDirWhenNeeded :: FilePath -> Annex () -> Annex ()
+createDirWhenNeeded :: RawFilePath -> Annex () -> Annex ()
 createDirWhenNeeded f a = a `catchNonAsync` \_e -> do
 	-- Most of the time, the directory will exist, so this is only
 	-- done if writing the file fails.

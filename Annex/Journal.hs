@@ -50,11 +50,11 @@ setJournalFile :: Journalable content => JournalLocked -> RawFilePath -> content
 setJournalFile _jl file content = withOtherTmp $ \tmp -> do
 	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
 	-- journal file is written atomically
-	jfile <- fromRawFilePath <$> fromRepo (journalFile file)
-	let tmpfile = tmp </> takeFileName jfile
+	jfile <- fromRepo (journalFile file)
+	let tmpfile = fromRawFilePath (tmp P.</> P.takeFileName jfile)
 	liftIO $ do
 		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
-		moveFile tmpfile jfile
+		moveFile tmpfile (fromRawFilePath jfile)
 
 {- Gets any journalled content for a file in the branch. -}
 getJournalFile :: JournalLocked -> RawFilePath -> Annex (Maybe L.ByteString)
@@ -82,19 +82,19 @@ getJournalledFilesStale :: Annex [FilePath]
 getJournalledFilesStale = do
 	g <- gitRepo
 	fs <- liftIO $ catchDefaultIO [] $
-		getDirectoryContents $ gitAnnexJournalDir g
+		getDirectoryContents $ fromRawFilePath $ gitAnnexJournalDir g
 	return $ filter (`notElem` [".", ".."]) $
 		map (fromRawFilePath . fileJournal . toRawFilePath) fs
 
 withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle a = do
-	d <- fromRepo gitAnnexJournalDir
+	d <- fromRawFilePath <$> fromRepo gitAnnexJournalDir
 	bracketIO (openDirectory d) closeDirectory (liftIO . a)
 
 {- Checks if there are changes in the journal. -}
 journalDirty :: Annex Bool
 journalDirty = do
-	d <- fromRepo gitAnnexJournalDir
+	d <- fromRawFilePath <$> fromRepo gitAnnexJournalDir
 	liftIO $ 
 		(not <$> isDirectoryEmpty d)
 			`catchIO` (const $ doesDirectoryExist d)

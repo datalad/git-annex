@@ -23,7 +23,6 @@ import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
 import Utility.ThreadScheduler
-import Utility.Path.AbsRel
 
 {- Returns a single git config setting, or a fallback value if not set. -}
 get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue

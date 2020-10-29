@@ -14,7 +14,7 @@ module Git.Version (
 	GitVersion,
 ) where
 
-import Common
+import Utility.Process
 import Utility.DottedVersion
 
 type GitVersion = DottedVersion

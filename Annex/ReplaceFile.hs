@@ -19,6 +19,7 @@ import Annex.Tmp
 import Annex.Perms
 import Git
 import Utility.Tmp.Dir
+import Utility.Directory.Create
 #ifndef mingw32_HOST_OS
 import Utility.Path.Max
 #endif
@@ -30,7 +31,7 @@ replaceGitAnnexDirFile = replaceFile createAnnexDirectory
 {- replaceFile on a file located inside the .git directory. -}
 replaceGitDirFile :: FilePath -> (FilePath -> Annex a) -> Annex a
 replaceGitDirFile = replaceFile $ \dir -> do
-	top <- fromRawFilePath <$> fromRepo localGitDir
+	top <- fromRepo localGitDir
 	liftIO $ createDirectoryUnder top dir
 
 {- replaceFile on a worktree file. -}
@@ -52,29 +53,30 @@ replaceWorkTreeFile = replaceFile createWorkTreeDirectory
  - The createdirectory action is only run when moving the file into place
  - fails, and can create any parent directory structure needed.
  -}
-replaceFile :: (FilePath -> Annex ()) -> FilePath -> (FilePath -> Annex a) -> Annex a
+replaceFile :: (RawFilePath -> Annex ()) -> FilePath -> (FilePath -> Annex a) -> Annex a
 replaceFile createdirectory file action = withOtherTmp $ \othertmpdir -> do
+	let othertmpdir' = fromRawFilePath othertmpdir
 #ifndef mingw32_HOST_OS
 	-- Use part of the filename as the template for the temp
 	-- directory. This does not need to be unique, but it
 	-- makes it more clear what this temp directory is for.
-	filemax <- liftIO $ fileNameLengthLimit othertmpdir
+	filemax <- liftIO $ fileNameLengthLimit othertmpdir'
 	let basetmp = take (filemax `div` 2) (takeFileName file)
 #else
 	-- Windows has limits on the whole path length, so keep
 	-- it short.
 	let basetmp = "t"
 #endif
-	withTmpDirIn othertmpdir basetmp $ \tmpdir -> do
+	withTmpDirIn othertmpdir' basetmp $ \tmpdir -> do
 		let tmpfile = tmpdir </> basetmp
 		r <- action tmpfile
 		replaceFileFrom tmpfile file createdirectory
 		return r
 
-replaceFileFrom :: FilePath -> FilePath -> (FilePath -> Annex ()) -> Annex ()
+replaceFileFrom :: FilePath -> FilePath -> (RawFilePath -> Annex ()) -> Annex ()
 replaceFileFrom src dest createdirectory = go `catchIO` fallback
   where
 	go = liftIO $ moveFile src dest
 	fallback _ = do
-		createdirectory (parentDir dest)
+		createdirectory (parentDir (toRawFilePath dest))
 		go

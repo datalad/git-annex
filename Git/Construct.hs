@@ -38,7 +38,6 @@ import Git.Remote
 import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
-import Utility.Path.AbsRel
 
 import qualified Data.ByteString as B
 import qualified System.FilePath.ByteString as P

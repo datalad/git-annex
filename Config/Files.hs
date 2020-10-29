@@ -9,8 +9,10 @@
 
 module Config.Files where
 
-import Common
 import Utility.FreeDesktop
+import Utility.Exception
+
+import System.FilePath
 
 {- ~/.config/git-annex/file -}
 userConfigFile :: FilePath -> IO FilePath

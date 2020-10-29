@@ -32,7 +32,7 @@ import Utility.FileSystemEncoding (RawFilePath)
 import System.Posix.Files.ByteString
 import qualified System.Posix.Directory.ByteString as D
 
--- | Checks if a file or directoy exists. Note that a dangling symlink
+-- | Checks if a file or directory exists. Note that a dangling symlink
 -- will be false.
 doesPathExist :: RawFilePath -> IO Bool
 doesPathExist = fileExist
