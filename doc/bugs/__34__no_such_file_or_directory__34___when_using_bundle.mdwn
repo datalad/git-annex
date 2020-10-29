@@ -1,0 +1,44 @@
+### Please describe the problem.
+
+The bundle provided at https://git-annex.branchable.com/install/Linux_standalone/ doesn't work
+
+### What steps will reproduce the problem?
+
+1. I downloaded this file: https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+
+2. I untared it in /usr/local and renamed the resulting directory to '/usr/local/git-annex'
+
+3. I added '/usr/local/git-annex' to my PATH
+
+4. I ran 'git-annex' and got:
+
+mv: cannot move '/home/lyderic/.cache/git-annex/locales.tmp/ec977e22ef909b450a3a84bd55783865.1075139' to '/home/lyderic/.cache/git-annex/locales/ec977e22ef909b450a3a84bd55783865': No such file or directory
+
+5. I fixed the problem by doing this:
+
+$ mkdir ~/.cache/git-annex/locales
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 8.20200909-g2d5036e44
+OS: Ubuntu 20.04.1
+
+### Please provide any additional information below.
+
+This is a transcript of the commands I ran to show and fix the bug:
+
+[[!format sh """
+~$ sudo tar -xzf Downloads/git-annex-standalone-amd64.tar.gz -C /usr/local
+~$ sudo mv /usr/local/git-annex.linux /usr/local/git-annex
+~$ sudo chown -R 0.0 /usr/local/git-annex
+~$ export PATH=$PATH:/usr/local/git-annex
+~$ git-annex version
+mv: cannot move '/home/lyderic/.cache/git-annex/locales.tmp/ec977e22ef909b450a3a84bd55783865.1075139' to '/home/lyderic/.cache/git-annex/locales/ec977e22ef909b450a3a84bd55783865': No such file or directory
+~$ mkdir ~/.cache/git-annex/locales
+~$ git-annex version | head -1
+git-annex version: 8.20200909-g2d5036e44
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I have never used it. I am learning it / evaluating it right now. I am very impressed so far!
