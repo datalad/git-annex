@@ -93,8 +93,9 @@ mkRetrievalVerifiableKeysSecure gc
 fileStorer :: (Key -> FilePath -> MeterUpdate -> Annex ()) -> Storer
 fileStorer a k (FileContent f) m = a k f m
 fileStorer a k (ByteContent b) m = withTmp k $ \f -> do
-	liftIO $ L.writeFile f b
-	a k f m
+	let f' = fromRawFilePath f
+	liftIO $ L.writeFile f' b
+	a k f' m
 
 -- A Storer that expects to be provided with a L.ByteString of
 -- the content to store.
@@ -106,8 +107,8 @@ byteStorer a k c m = withBytes c $ \b -> a k b m
 fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
 fileRetriever a k m callback = do
 	f <- prepTmp k
-	a f k m
-	pruneTmpWorkDirBefore f (callback . FileContent)
+	a (fromRawFilePath f) k m
+	pruneTmpWorkDirBefore f (callback . FileContent . fromRawFilePath)
 
 -- A Retriever that generates a lazy ByteString containing the Key's
 -- content, and passes it to a callback action which will fully consume it

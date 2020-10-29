@@ -42,7 +42,7 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 		liftIO $ removeWhenExistsWith R.removeLink f
 		(ic, populated) <- replaceWorkTreeFile f' $ \tmp -> do
 			let tmp' = toRawFilePath tmp
-			ok <- linkOrCopy k (fromRawFilePath obj) tmp destmode >>= \case
+			ok <- linkOrCopy k obj tmp' destmode >>= \case
 				Just _ -> thawContent tmp >> return True
 				Nothing -> liftIO (writePointerFile tmp' k destmode) >> return False
 			ic <- withTSDelta (liftIO . genInodeCache tmp')
@@ -61,7 +61,7 @@ depopulatePointerFile key file = do
 	let file' = fromRawFilePath file
 	st <- liftIO $ catchMaybeIO $ getFileStatus file'
 	let mode = fmap fileMode st
-	secureErase file'
+	secureErase file
 	liftIO $ removeWhenExistsWith R.removeLink file
 	ic <- replaceWorkTreeFile file' $ \tmp -> do
 		liftIO $ writePointerFile (toRawFilePath tmp) key mode

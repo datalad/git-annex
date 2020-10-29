@@ -187,7 +187,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 		-- update-index is documented as picky about "./file" and it
 		-- fails on "../../repo/path/file" when cwd is not in the repo 
 		-- being acted on. Avoid these problems with an absolute path.
-		absf <- liftIO $ absPath $ fromRawFilePath f
+		absf <- liftIO $ absPath f
 		Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
   where
 	isunmodified tsd = genInodeCache f tsd >>= return . \case

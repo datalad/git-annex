@@ -18,7 +18,8 @@ upgrade = do
 	-- do the reorganisation of the key files
 	olddir <- fromRawFilePath <$> fromRepo gitAnnexDir
 	keys <- getKeysPresent0 olddir
-	forM_ keys $ \k -> moveAnnex k $ olddir </> keyFile0 k
+	forM_ keys $ \k ->
+		moveAnnex k $ toRawFilePath $ olddir </> keyFile0 k
 
 	-- update the symlinks to the key files
 	-- No longer needed here; V1.upgrade does the same thing

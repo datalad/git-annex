@@ -114,7 +114,7 @@ openDb _ st@(DbOpen _) = return st
 openDb False DbUnavailable = return DbUnavailable
 openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
-	let db = dbdir </> "db"
+	let db = fromRawFilePath dbdir </> "db"
 	dbexists <- liftIO $ doesFileExist db
 	case (dbexists, createdb) of
 		(True, _) -> open db
@@ -214,7 +214,7 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
 reconcileStaged :: H.DbQueue -> Annex ()
 reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
-	indexcache <- fromRepo gitAnnexKeysDbIndexCache
+	indexcache <- fromRawFilePath <$> fromRepo gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache (toRawFilePath gitindex)) >>= \case
 		Just cur -> 
 			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case

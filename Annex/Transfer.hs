@@ -35,9 +35,11 @@ import Annex.Concurrent.Utility
 import Types.WorkerPool
 import Annex.WorkerPool
 import Backend (isCryptographicallySecure)
+import qualified Utility.RawFilePath as R
 
 import Control.Concurrent
 import qualified Data.Map.Strict as M
+import qualified System.FilePath.ByteString as P
 import Data.Ord
 
 upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
@@ -96,11 +98,11 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 				else recordFailedTransfer t info
 			return v
   where
-	prep :: FilePath -> Annex () -> FileMode -> Annex (Maybe LockHandle, Bool)
+	prep :: RawFilePath -> Annex () -> FileMode -> Annex (Maybe LockHandle, Bool)
 #ifndef mingw32_HOST_OS
 	prep tfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
-		createAnnexDirectory $ takeDirectory lck
+		createAnnexDirectory $ P.takeDirectory lck
 		tryLockExclusive (Just mode) lck >>= \case
 			Nothing -> return (Nothing, True)
 			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
@@ -114,7 +116,7 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 #else
 	prep tfile createtfile _mode = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile
-		createAnnexDirectory $ takeDirectory lck
+		createAnnexDirectory $ P.takeDirectory lck
 		catchMaybeIO (liftIO $ lockExclusive lck) >>= \case
 			Nothing -> return (Nothing, False)
 			Just Nothing -> return (Nothing, True)
@@ -127,9 +129,9 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 	cleanup _ Nothing = noop
 	cleanup tfile (Just lockhandle) = do
 		let lck = transferLockFile tfile
-		void $ tryIO $ removeFile tfile
+		void $ tryIO $ R.removeLink tfile
 #ifndef mingw32_HOST_OS
-		void $ tryIO $ removeFile lck
+		void $ tryIO $ R.removeLink lck
 		dropLock lockhandle
 #else
 		{- Windows cannot delete the lockfile until the lock
@@ -138,7 +140,7 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 		 - so ignore failure to remove.
 		 -}
 		dropLock lockhandle
-		void $ tryIO $ removeFile lck
+		void $ tryIO $ R.removeLink lck
 #endif
 
 	retry numretries oldinfo metervar run =
@@ -164,7 +166,7 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 			liftIO $ readMVar metervar
 		| otherwise = do
 			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
-			liftIO $ catchDefaultIO 0 $ getFileSize f
+			liftIO $ catchDefaultIO 0 $ getFileSize (fromRawFilePath f)
 
 {- Avoid download and upload of keys with insecure content when
  - annex.securehashesonly is configured.

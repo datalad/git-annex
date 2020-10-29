@@ -75,10 +75,10 @@ moveContent = do
   where
 	move f = do
 		let k = fileKey1 (takeFileName f)
-		let d = parentDir f
+		let d = fromRawFilePath $ parentDir $ toRawFilePath f
 		liftIO $ allowWrite d
 		liftIO $ allowWrite f
-		_ <- moveAnnex k f
+		_ <- moveAnnex k (toRawFilePath f)
 		liftIO $ removeDirectory d
 
 updateSymlinks :: Annex ()
@@ -94,7 +94,8 @@ updateSymlinks = do
 		case r of
 			Nothing -> noop
 			Just (k, _) -> do
-				link <- calcRepo $ gitAnnexLink f k
+				link <- fromRawFilePath
+					<$> calcRepo (gitAnnexLink (toRawFilePath f) k)
 				liftIO $ removeFile f
 				liftIO $ createSymbolicLink link f
 				Annex.Queue.addCommand "add" [Param "--"] [f]
@@ -113,10 +114,10 @@ moveLocationLogs = do
 			, return []
 			)
 	move (l, k) = do
-		dest <- fromRepo $ logFile2 k
+		dest <- fromRepo (logFile2 k)
 		dir <- fromRepo Upgrade.V2.gitStateDir
 		let f = dir </> l
-		createWorkTreeDirectory (parentDir dest)
+		createWorkTreeDirectory (parentDir (toRawFilePath dest))
 		-- could just git mv, but this way deals with
 		-- log files that are not checked into git,
 		-- as well as merging with already upgraded

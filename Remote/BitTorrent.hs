@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Remote.BitTorrent (remote) where
@@ -29,8 +30,10 @@ import Annex.UUID
 import qualified Annex.Url as Url
 import Remote.Helper.ExportImport
 import Annex.SpecialRemote.Config
+import qualified Utility.RawFilePath as R
 
 import Network.URI
+import qualified System.FilePath.ByteString as P
 
 #ifdef WITH_TORRENTPARSER
 import Data.Torrent
@@ -167,7 +170,7 @@ torrentUrlKey :: URLString -> Annex Key
 torrentUrlKey u = return $ fromUrl (fst $ torrentUrlNum u) Nothing
 
 {- Temporary filename to use to store the torrent file. -}
-tmpTorrentFile :: URLString -> Annex FilePath
+tmpTorrentFile :: URLString -> Annex RawFilePath
 tmpTorrentFile u = fromRepo . gitAnnexTmpObjectLocation =<< torrentUrlKey u
 
 {- A cleanup action is registered to delete the torrent file
@@ -179,34 +182,37 @@ tmpTorrentFile u = fromRepo . gitAnnexTmpObjectLocation =<< torrentUrlKey u
  -}
 registerTorrentCleanup :: URLString -> Annex ()
 registerTorrentCleanup u = Annex.addCleanup (TorrentCleanup u) $
-	liftIO . removeWhenExistsWith removeLink =<< tmpTorrentFile u
+	liftIO . removeWhenExistsWith R.removeLink =<< tmpTorrentFile u
 
 {- Downloads the torrent file. (Not its contents.) -}
 downloadTorrentFile :: URLString -> Annex Bool
 downloadTorrentFile u = do
 	torrent <- tmpTorrentFile u
-	ifM (liftIO $ doesFileExist torrent)
+	ifM (liftIO $ doesFileExist (fromRawFilePath torrent))
 		( return True
 		, do
 			showAction "downloading torrent file"
 			createAnnexDirectory (parentDir torrent)
 			if isTorrentMagnetUrl u
 				then withOtherTmp $ \othertmp -> do
-					kf <- fromRawFilePath . keyFile <$> torrentUrlKey u
-					let metadir = othertmp </> "torrentmeta" </> kf
+					kf <- keyFile <$> torrentUrlKey u
+					let metadir = othertmp P.</> "torrentmeta" P.</> kf
 					createAnnexDirectory metadir
 					showOutput
-					ok <- downloadMagnetLink u metadir torrent
-					liftIO $ removeDirectoryRecursive metadir
+					ok <- downloadMagnetLink u
+						(fromRawFilePath metadir)
+						(fromRawFilePath torrent)
+					liftIO $ removeDirectoryRecursive
+						(fromRawFilePath metadir)
 					return ok
 				else withOtherTmp $ \othertmp -> do
-					withTmpFileIn othertmp "torrent" $ \f h -> do
+					withTmpFileIn (fromRawFilePath othertmp) "torrent" $ \f h -> do
 						liftIO $ hClose h
 						resetAnnexFilePerm f
 						ok <- Url.withUrlOptions $ 
 							Url.download nullMeterUpdate u f
 						when ok $
-							liftIO $ renameFile f torrent
+							liftIO $ renameFile f (fromRawFilePath torrent)
 						return ok
 		)
 
@@ -237,14 +243,15 @@ downloadTorrentContent :: Key -> URLString -> FilePath -> Int -> MeterUpdate -> 
 downloadTorrentContent k u dest filenum p = do
 	torrent <- tmpTorrentFile u
 	withOtherTmp $ \othertmp -> do
-		kf <- fromRawFilePath . keyFile <$> torrentUrlKey u
-		let downloaddir = othertmp </> "torrent" </> kf
+		kf <- keyFile <$> torrentUrlKey u
+		let downloaddir = othertmp P.</> "torrent" P.</> kf
 		createAnnexDirectory downloaddir
 		f <- wantedfile torrent
+		let dlf = fromRawFilePath downloaddir </> f
 		showOutput
-		ifM (download torrent downloaddir <&&> liftIO (doesFileExist (downloaddir </> f)))
+		ifM (download torrent downloaddir <&&> liftIO (doesFileExist dlf))
 			( do
-				liftIO $ renameFile (downloaddir </> f) dest
+				liftIO $ renameFile dlf dest
 				-- The downloaddir is not removed here,
 				-- so if aria downloaded parts of other
 				-- files, and this is called again, it will
@@ -258,9 +265,9 @@ downloadTorrentContent k u dest filenum p = do
   where
 	download torrent tmpdir = ariaProgress (fromKey keySize k) p
 		[ Param $ "--select-file=" ++ show filenum
-		, File torrent
+		, File (fromRawFilePath torrent)
 		, Param "-d"
-		, File tmpdir
+		, File (fromRawFilePath tmpdir)
 		, Param "--seed-time=0"
 		, Param "--summary-interval=0"
 		, Param "--file-allocation=none"
@@ -347,11 +354,11 @@ btshowmetainfo torrent field =
 {- Examines the torrent file and gets the list of files in it,
  - and their sizes.
  -}
-torrentFileSizes :: FilePath -> IO [(FilePath, Integer)]
+torrentFileSizes :: RawFilePath -> IO [(FilePath, Integer)]
 torrentFileSizes torrent = do
 #ifdef WITH_TORRENTPARSER
 	let mkfile = joinPath . map (scrub . decodeBL)
-	b <- B.readFile torrent
+	b <- B.readFile (fromRawFilePath torrent)
 	return $ case readTorrent b of
 		Left e -> giveup $ "failed to parse torrent: " ++ e
 		Right t -> case tInfo t of

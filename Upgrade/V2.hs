@@ -132,7 +132,7 @@ attrLines =
 
 gitAttributesUnWrite :: Git.Repo -> IO ()
 gitAttributesUnWrite repo = do
-	let attributes = Git.attributes repo
+	let attributes = fromRawFilePath (Git.attributes repo)
 	whenM (doesFileExist attributes) $ do
 		c <- readFileStrict attributes
 		liftIO $ viaTmp writeFile attributes $ unlines $

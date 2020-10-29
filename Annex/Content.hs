@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -131,8 +131,7 @@ objectFileExists key =
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
 inAnnexSafe :: Key -> Annex (Maybe Bool)
-inAnnexSafe key = 
-	inAnnex' (fromMaybe True) (Just False) (go . fromRawFilePath) key
+inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
   where
 	is_locked = Nothing
 	is_unlocked = Just True
@@ -145,7 +144,7 @@ inAnnexSafe key =
 	{- The content file must exist, but the lock file generally
 	 - won't exist unless a removal is in process. -}
 	checklock (Just lockfile) contentfile =
-		ifM (liftIO $ doesFileExist contentfile)
+		ifM (liftIO $ doesFileExist (fromRawFilePath contentfile))
 			( checkOr is_unlocked lockfile
 			, return is_missing
 			)
@@ -154,7 +153,7 @@ inAnnexSafe key =
 		Just True -> is_locked
 		Just False -> is_unlocked
 #else
-	checklock Nothing contentfile = liftIO $ ifM (doesFileExist contentfile)
+	checklock Nothing contentfile = liftIO $ ifM (doesFileExist (fromRawFilePath contentfile))
 		( lockShared contentfile >>= \case
 			Nothing -> return is_locked
 			Just lockhandle -> do
@@ -165,7 +164,7 @@ inAnnexSafe key =
 	{- In Windows, see if we can take a shared lock. If so, 
 	 - remove the lock file to clean up after ourselves. -}
 	checklock (Just lockfile) contentfile =
-		ifM (liftIO $ doesFileExist contentfile)
+		ifM (liftIO $ doesFileExist (fromRawFilePath contentfile))
 			( modifyContent lockfile $ liftIO $
 				lockShared lockfile >>= \case
 					Nothing -> return is_locked
@@ -180,7 +179,7 @@ inAnnexSafe key =
 {- Windows has to use a separate lock file from the content, since
  - locking the actual content file would interfere with the user's
  - use of it. -}
-contentLockFile :: Key -> Annex (Maybe FilePath)
+contentLockFile :: Key -> Annex (Maybe RawFilePath)
 #ifndef mingw32_HOST_OS
 contentLockFile _ = pure Nothing
 #else
@@ -226,9 +225,11 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
 	lock contentfile Nothing = bracket_
-		(thawContent contentfile)
-		(freezeContent contentfile)
+		(thawContent contentfile')
+		(freezeContent contentfile')
 		(tryLockExclusive Nothing contentfile)
+	  where
+		contentfile' = fromRawFilePath contentfile
 	lock _ (Just lockfile) = posixLocker tryLockExclusive lockfile
 #else
 	lock = winLocker lockExclusive
@@ -236,7 +237,7 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 
 {- Passed the object content file, and maybe a separate lock file to use,
  - when the content file itself should not be locked. -}
-type ContentLocker = FilePath -> Maybe LockFile -> Annex (Maybe LockHandle)
+type ContentLocker = RawFilePath -> Maybe LockFile -> Annex (Maybe LockHandle)
 
 #ifndef mingw32_HOST_OS
 posixLocker :: (Maybe FileMode -> LockFile -> Annex (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
@@ -262,7 +263,7 @@ winLocker _ _ Nothing = return Nothing
  - the file that is locked eg on Windows a different file is locked. -}
 lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a -> Annex a
 lockContentUsing locker key fallback a = do
-	contentfile <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
+	contentfile <- calcRepo (gitAnnexLocation key)
 	lockfile <- contentLockFile key
 	bracket
 		(lock contentfile lockfile)
@@ -295,22 +296,22 @@ lockContentUsing locker key fallback a = do
 
 	cleanuplockfile lockfile = modifyContent lockfile $
 		void $ liftIO $ tryIO $
-			removeWhenExistsWith removeLink lockfile
+			removeWhenExistsWith R.removeLink lockfile
 
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
  - the key and moves the file into the annex as a key's content. -}
-getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
 getViaTmp rsp v key action = checkDiskSpaceToGet key False $
 	getViaTmpFromDisk rsp v key action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmpFromDisk :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (FilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmpFromDisk :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
 getViaTmpFromDisk rsp v key action = checkallowed $ do
 	tmpfile <- prepTmp key
-	resuming <- liftIO $ doesFileExist tmpfile
+	resuming <- liftIO $ R.doesPathExist tmpfile
 	(ok, verification) <- action tmpfile
 	-- When the temp file already had content, we don't know if
 	-- that content is good or not, so only trust if it the action
@@ -322,7 +323,7 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 			_ -> MustVerify
 		else verification
 	if ok
-		then ifM (verifyKeyContent rsp v verification' key tmpfile)
+		then ifM (verifyKeyContent rsp v verification' key (fromRawFilePath tmpfile))
 			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key))
 				( do
 					logStatus key InfoPresent
@@ -338,7 +339,8 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 				-- including perhaps the content of another
 				-- file than the one that was requested,
 				-- and so it's best not to keep it on disk.
-				pruneTmpWorkDirBefore tmpfile (liftIO . removeWhenExistsWith removeLink)
+				pruneTmpWorkDirBefore tmpfile
+					(liftIO . removeWhenExistsWith R.removeLink)
 				return False
 			)
 		-- On transfer failure, the tmp file is left behind, in case
@@ -432,7 +434,7 @@ shouldVerify (RemoteVerify r) =
  -}
 checkDiskSpaceToGet :: Key -> a -> Annex a -> Annex a
 checkDiskSpaceToGet key unabletoget getkey = do
-	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
+	tmp <- fromRawFilePath <$> fromRepo (gitAnnexTmpObjectLocation key)
 
 	e <- liftIO $ doesFileExist tmp
 	alreadythere <- liftIO $ if e
@@ -446,7 +448,7 @@ checkDiskSpaceToGet key unabletoget getkey = do
 		, return unabletoget
 		)
 
-prepTmp :: Key -> Annex FilePath
+prepTmp :: Key -> Annex RawFilePath
 prepTmp key = do
 	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 	createAnnexDirectory (parentDir tmp)
@@ -456,11 +458,11 @@ prepTmp key = do
  - the temp file. If the action throws an exception, the temp file is
  - left behind, which allows for resuming.
  -}
-withTmp :: Key -> (FilePath -> Annex a) -> Annex a
+withTmp :: Key -> (RawFilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
 	res <- action tmp
-	pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith removeLink)
+	pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)
 	return res
 
 {- Moves a key's content into .git/annex/objects/
@@ -491,7 +493,7 @@ withTmp key action = do
  - accepted into the repository. Will display a warning message in this
  - case. May also throw exceptions in some cases.
  -}
-moveAnnex :: Key -> FilePath -> Annex Bool
+moveAnnex :: Key -> RawFilePath -> Annex Bool
 moveAnnex key src = ifM (checkSecureHashes' key)
 	( do
 		withObjectLoc key storeobject
@@ -501,9 +503,11 @@ moveAnnex key src = ifM (checkSecureHashes' key)
   where
 	storeobject dest = ifM (liftIO $ R.doesPathExist dest)
 		( alreadyhave
-		, modifyContent dest' $ do
-			freezeContent src
-			liftIO $ moveFile src dest'
+		, modifyContent dest $ do
+			freezeContent (fromRawFilePath src)
+			liftIO $ moveFile
+				(fromRawFilePath src)
+				(fromRawFilePath dest)
 			g <- Annex.gitRepo 
 			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
@@ -511,9 +515,7 @@ moveAnnex key src = ifM (checkSecureHashes' key)
 				ics <- mapM (populatePointerFile (Restage True) key dest) fs
 				Database.Keys.storeInodeCaches' key [dest] (catMaybes ics)
 		)
-	  where
-		dest' = fromRawFilePath dest
-	alreadyhave = liftIO $ removeFile src
+	alreadyhave = liftIO $ R.removeLink src
 
 checkSecureHashes :: Key -> Annex (Maybe String)
 checkSecureHashes key = ifM (Backend.isCryptographicallySecure key)
@@ -535,20 +537,20 @@ data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
 
 {- Populates the annex object file by hard linking or copying a source
  - file to it. -}
-linkToAnnex :: Key -> FilePath -> Maybe InodeCache -> Annex LinkAnnexResult
+linkToAnnex :: Key -> RawFilePath -> Maybe InodeCache -> Annex LinkAnnexResult
 linkToAnnex key src srcic = ifM (checkSecureHashes' key)
 	( do
-		dest <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
+		dest <- calcRepo (gitAnnexLocation key)
 		modifyContent dest $ linkAnnex To key src srcic dest Nothing
 	, return LinkAnnexFailed
 	)
 
 {- Makes a destination file be a link or copy from the annex object. -}
-linkFromAnnex :: Key -> FilePath -> Maybe FileMode -> Annex LinkAnnexResult
+linkFromAnnex :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
 linkFromAnnex key dest destmode = do
 	src <- calcRepo (gitAnnexLocation key)
 	srcic <- withTSDelta (liftIO . genInodeCache src)
-	linkAnnex From key (fromRawFilePath src) srcic dest destmode
+	linkAnnex From key src srcic dest destmode
 
 data FromTo = From | To
 
@@ -564,10 +566,10 @@ data FromTo = From | To
  -
  - Nothing is done if the destination file already exists.
  -}
-linkAnnex :: FromTo -> Key -> FilePath -> Maybe InodeCache -> FilePath -> Maybe FileMode -> Annex LinkAnnexResult
+linkAnnex :: FromTo -> Key -> RawFilePath -> Maybe InodeCache -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
 linkAnnex _ _ _ Nothing _ _ = return LinkAnnexFailed
 linkAnnex fromto key src (Just srcic) dest destmode =
-	withTSDelta (liftIO . genInodeCache dest') >>= \case
+	withTSDelta (liftIO . genInodeCache dest) >>= \case
 		Just destic -> do
 			cs <- Database.Keys.getInodeCaches key
 			if null cs
@@ -578,24 +580,25 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 			Nothing -> failed
 			Just r -> do
 				case fromto of
-					From -> thawContent dest
+					From -> thawContent $
+						fromRawFilePath dest
 					To -> case r of
-						Copied -> freezeContent dest
+						Copied -> freezeContent $
+							fromRawFilePath dest
 						Linked -> noop
 				checksrcunchanged
   where
-	dest' = toRawFilePath dest
 	failed = do
 		Database.Keys.addInodeCaches key [srcic]
 		return LinkAnnexFailed
-	checksrcunchanged = withTSDelta (liftIO . genInodeCache (toRawFilePath src)) >>= \case
+	checksrcunchanged = withTSDelta (liftIO . genInodeCache src) >>= \case
 		Just srcic' | compareStrong srcic srcic' -> do
-			destic <- withTSDelta (liftIO . genInodeCache dest')
+			destic <- withTSDelta (liftIO . genInodeCache dest)
 			Database.Keys.addInodeCaches key $
 				catMaybes [destic, Just srcic]
 			return LinkAnnexOk
 		_ -> do
-			liftIO $ removeWhenExistsWith removeLink dest
+			liftIO $ removeWhenExistsWith R.removeLink dest
 			failed
 
 {- Removes the annex object file for a key. Lowlevel. -}
@@ -656,7 +659,7 @@ withObjectLoc key a = a =<< calcRepo (gitAnnexLocation key)
 
 cleanObjectLoc :: Key -> Annex () -> Annex ()
 cleanObjectLoc key cleaner = do
-	file <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
+	file <- calcRepo (gitAnnexLocation key)
 	void $ tryIO $ thawContentDir file
 	cleaner
 	liftIO $ removeparents file (3 :: Int)
@@ -665,16 +668,15 @@ cleanObjectLoc key cleaner = do
 	removeparents file n = do
 		let dir = parentDir file
 		maybe noop (const $ removeparents dir (n-1))
-			<=< catchMaybeIO $ removeDirectory dir
+			<=< catchMaybeIO $ removeDirectory (fromRawFilePath dir)
 
 {- Removes a key's file from .git/annex/objects/
  -}
 removeAnnex :: ContentRemovalLock -> Annex ()
 removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	cleanObjectLoc key $ do
-		let file' = fromRawFilePath file
-		secureErase file'
-		liftIO $ removeWhenExistsWith removeLink file'
+		secureErase file
+		liftIO $ removeWhenExistsWith R.removeLink file
 		g <- Annex.gitRepo 
 		mapM_ (\f -> void $ tryIO $ resetpointer $ fromTopFilePath f g)
 			=<< Database.Keys.getAssociatedFiles key
@@ -736,14 +738,15 @@ isUnmodifiedCheap' key fc =
  - returns the file it was moved to. -}
 moveBad :: Key -> Annex FilePath
 moveBad key = do
-	src <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
+	src <- calcRepo (gitAnnexLocation key)
 	bad <- fromRepo gitAnnexBadDir
-	let dest = bad </> takeFileName src
+	let dest = bad P.</> P.takeFileName src
+	let dest' = fromRawFilePath dest
 	createAnnexDirectory (parentDir dest)
 	cleanObjectLoc key $
-		liftIO $ moveFile src dest
+		liftIO $ moveFile (fromRawFilePath src) dest'
 	logStatus key InfoMissing
-	return dest
+	return dest'
 
 data KeyLocation = InAnnex | InAnywhere
 
@@ -839,9 +842,9 @@ preseedTmp key file = go =<< inAnnex key
 
 {- Finds files directly inside a directory like gitAnnexBadDir 
  - (not in subdirectories) and returns the corresponding keys. -}
-dirKeys :: (Git.Repo -> FilePath) -> Annex [Key]
+dirKeys :: (Git.Repo -> RawFilePath) -> Annex [Key]
 dirKeys dirspec = do
-	dir <- fromRepo dirspec
+	dir <- fromRawFilePath <$> fromRepo dirspec
 	ifM (liftIO $ doesDirectoryExist dir)
 		( do
 			contents <- liftIO $ getDirectoryContents dir
@@ -857,7 +860,7 @@ dirKeys dirspec = do
  - Also, stale keys that can be proven to have no value
  - (ie, their content is already present) are deleted.
  -}
-staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
+staleKeysPrune :: (Git.Repo -> RawFilePath) -> Bool -> Annex [Key]
 staleKeysPrune dirspec nottransferred = do
 	contents <- dirKeys dirspec
 	
@@ -866,8 +869,8 @@ staleKeysPrune dirspec nottransferred = do
 
 	dir <- fromRepo dirspec
 	forM_ dups $ \k ->
-		pruneTmpWorkDirBefore (dir </> fromRawFilePath (keyFile k))
-			(liftIO . removeFile)
+		pruneTmpWorkDirBefore (dir P.</> keyFile k)
+			(liftIO . R.removeLink)
 
 	if nottransferred
 		then do
@@ -882,9 +885,9 @@ staleKeysPrune dirspec nottransferred = do
  - This preserves the invariant that the workdir never exists without
  - the content file.
  -}
-pruneTmpWorkDirBefore :: FilePath -> (FilePath -> Annex a) -> Annex a
+pruneTmpWorkDirBefore :: RawFilePath -> (RawFilePath -> Annex a) -> Annex a
 pruneTmpWorkDirBefore f action = do
-	let workdir = gitAnnexTmpWorkDir f
+	let workdir = fromRawFilePath $ gitAnnexTmpWorkDir f
 	liftIO $ whenM (doesDirectoryExist workdir) $
 		removeDirectoryRecursive workdir
 	action f
@@ -899,21 +902,22 @@ pruneTmpWorkDirBefore f action = do
  - the temporary work directory is retained (unless
  - empty), so anything in it can be used on resume.
  -}
-withTmpWorkDir :: Key -> (FilePath -> Annex (Maybe a)) -> Annex (Maybe a)
+withTmpWorkDir :: Key -> (RawFilePath -> Annex (Maybe a)) -> Annex (Maybe a)
 withTmpWorkDir key action = do
 	-- Create the object file if it does not exist. This way,
 	-- staleKeysPrune only has to look for object files, and can
 	-- clean up gitAnnexTmpWorkDir for those it finds.
 	obj <- prepTmp key
-	unlessM (liftIO $ doesFileExist obj) $ do
-		liftIO $ writeFile obj ""
-		setAnnexFilePerm obj
+	let obj' = fromRawFilePath obj
+	unlessM (liftIO $ doesFileExist obj') $ do
+		liftIO $ writeFile obj' ""
+		setAnnexFilePerm obj'
 	let tmpdir = gitAnnexTmpWorkDir obj
 	createAnnexDirectory tmpdir
 	res <- action tmpdir
 	case res of
-		Just _ -> liftIO $ removeDirectoryRecursive tmpdir
-		Nothing -> liftIO $ void $ tryIO $ removeDirectory tmpdir
+		Just _ -> liftIO $ removeDirectoryRecursive (fromRawFilePath tmpdir)
+		Nothing -> liftIO $ void $ tryIO $ removeDirectory (fromRawFilePath tmpdir)
 	return res
 
 {- Finds items in the first, smaller list, that are not

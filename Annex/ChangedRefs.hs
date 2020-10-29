@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.ChangedRefs
 	( ChangedRefs(..)
 	, ChangedRefsHandle
@@ -17,6 +19,7 @@ module Annex.ChangedRefs
 import Annex.Common
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
+import Utility.Directory.Create
 import qualified Git
 import Git.Sha
 import qualified Utility.SimpleProtocol as Proto
@@ -90,7 +93,9 @@ watchChangedRefs = do
 
 	if canWatch
 		then do
-			h <- liftIO $ watchDir refdir (const False) True hooks id
+			h <- liftIO $ watchDir
+				(fromRawFilePath refdir)
+				(const False) True hooks id
 			return $ Just $ ChangedRefsHandle h chan
 		else return Nothing
 

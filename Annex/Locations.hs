@@ -232,10 +232,10 @@ gitAnnexLinkCanonical file key r config = gitAnnexLink file key r' config'
 		}
 
 {- File used to lock a key's content. -}
-gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
 gitAnnexContentLock key r config = do
 	loc <- gitAnnexLocation key r config
-	return $ fromRawFilePath loc ++ ".lck"
+	return $ loc <> ".lck"
 
 {- File that maps from a key to the file(s) in the git repository.
  - Used in direct mode. -}
@@ -296,9 +296,8 @@ gitAnnexTmpWatcherDir r = fromRawFilePath $
 	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "watchtmp"
 
 {- The temp file to use for a given key's content. -}
-gitAnnexTmpObjectLocation :: Key -> Git.Repo -> FilePath
-gitAnnexTmpObjectLocation key r = fromRawFilePath $
-	gitAnnexTmpObjectDir' r P.</> keyFile key
+gitAnnexTmpObjectLocation :: Key -> Git.Repo -> RawFilePath
+gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir' r P.</> keyFile key
 
 {- Given a temp file such as gitAnnexTmpObjectLocation, makes a name for a
  - subdirectory in the same location, that can be used as a work area
@@ -307,37 +306,36 @@ gitAnnexTmpObjectLocation key r = fromRawFilePath $
  - There are ordering requirements for creating these directories;
  - use Annex.Content.withTmpWorkDir to set them up.
  -}
-gitAnnexTmpWorkDir :: FilePath -> FilePath
+gitAnnexTmpWorkDir :: RawFilePath -> RawFilePath
 gitAnnexTmpWorkDir p =
-	let (dir, f) = splitFileName p
+	let (dir, f) = P.splitFileName p
 	-- Using a prefix avoids name conflict with any other keys.
-	in dir </> "work." ++ f
+	in dir P.</> "work." <> f
 
 {- .git/annex/bad/ is used for bad files found during fsck -}
-gitAnnexBadDir :: Git.Repo -> FilePath
-gitAnnexBadDir r = fromRawFilePath $
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "bad"
+gitAnnexBadDir :: Git.Repo -> RawFilePath
+gitAnnexBadDir r = P.addTrailingPathSeparator $ gitAnnexDir r P.</> "bad"
 
 {- The bad file to use for a given key. -}
-gitAnnexBadLocation :: Key -> Git.Repo -> FilePath
-gitAnnexBadLocation key r = gitAnnexBadDir r </> fromRawFilePath (keyFile key)
+gitAnnexBadLocation :: Key -> Git.Repo -> RawFilePath
+gitAnnexBadLocation key r = gitAnnexBadDir r P.</> keyFile key
 
 {- .git/annex/foounused is used to number possibly unused keys -}
 gitAnnexUnusedLog :: RawFilePath -> Git.Repo -> RawFilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r P.</> (prefix <> "unused")
 
 {- .git/annex/keysdb/ contains a database of information about keys. -}
-gitAnnexKeysDb :: Git.Repo -> FilePath
-gitAnnexKeysDb r = fromRawFilePath $ gitAnnexDir r P.</> "keysdb"
+gitAnnexKeysDb :: Git.Repo -> RawFilePath
+gitAnnexKeysDb r = gitAnnexDir r P.</> "keysdb"
 
 {- Lock file for the keys database. -}
-gitAnnexKeysDbLock :: Git.Repo -> FilePath
-gitAnnexKeysDbLock r = gitAnnexKeysDb r ++ ".lck"
+gitAnnexKeysDbLock :: Git.Repo -> RawFilePath
+gitAnnexKeysDbLock r = gitAnnexKeysDb r <> ".lck"
 
 {- Contains the stat of the last index file that was
  - reconciled with the keys database. -}
-gitAnnexKeysDbIndexCache :: Git.Repo -> FilePath
-gitAnnexKeysDbIndexCache r = gitAnnexKeysDb r ++ ".cache"
+gitAnnexKeysDbIndexCache :: Git.Repo -> RawFilePath
+gitAnnexKeysDbIndexCache r = gitAnnexKeysDb r <> ".cache"
 
 {- .git/annex/fsck/uuid/ is used to store information about incremental
  - fscks. -}
@@ -383,43 +381,42 @@ gitAnnexMoveLock r = fromRawFilePath $ gitAnnexDir r P.</> "move.lck"
 
 {- .git/annex/export/ is used to store information about
  - exports to special remotes. -}
-gitAnnexExportDir :: Git.Repo -> FilePath
-gitAnnexExportDir r = fromRawFilePath $ gitAnnexDir r P.</> "export"
+gitAnnexExportDir :: Git.Repo -> RawFilePath
+gitAnnexExportDir r = gitAnnexDir r P.</> "export"
 
 {- Directory containing database used to record export info. -}
-gitAnnexExportDbDir :: UUID -> Git.Repo -> FilePath
-gitAnnexExportDbDir u r = gitAnnexExportDir r </> fromUUID u </> "exportdb"
+gitAnnexExportDbDir :: UUID -> Git.Repo -> RawFilePath
+gitAnnexExportDbDir u r = gitAnnexExportDir r P.</> fromUUID u P.</> "exportdb"
 
 {- Lock file for export state for a special remote. -}
-gitAnnexExportLock :: UUID -> Git.Repo -> FilePath
-gitAnnexExportLock u r = gitAnnexExportDbDir u r ++ ".lck"
+gitAnnexExportLock :: UUID -> Git.Repo -> RawFilePath
+gitAnnexExportLock u r = gitAnnexExportDbDir u r <> ".lck"
 
 {- Lock file for updating the export state for a special remote. -}
-gitAnnexExportUpdateLock :: UUID -> Git.Repo -> FilePath
-gitAnnexExportUpdateLock u r = gitAnnexExportDbDir u r ++ ".upl"
+gitAnnexExportUpdateLock :: UUID -> Git.Repo -> RawFilePath
+gitAnnexExportUpdateLock u r = gitAnnexExportDbDir u r <> ".upl"
 
 {- Log file used to keep track of files that were in the tree exported to a
  - remote, but were excluded by its preferred content settings. -}
-gitAnnexExportExcludeLog :: UUID -> Git.Repo -> FilePath
-gitAnnexExportExcludeLog u r = fromRawFilePath $
-	gitAnnexDir r P.</> "export.ex" P.</> fromUUID u
+gitAnnexExportExcludeLog :: UUID -> Git.Repo -> RawFilePath
+gitAnnexExportExcludeLog u r = gitAnnexDir r P.</> "export.ex" P.</> fromUUID u
 
 {- Directory containing database used to record remote content ids.
  -
  - (This used to be "cid", but a problem with the database caused it to
  - need to be rebuilt with a new name.)
  -}
-gitAnnexContentIdentifierDbDir :: Git.Repo -> FilePath
-gitAnnexContentIdentifierDbDir r = fromRawFilePath $ gitAnnexDir r P.</> "cidsdb"
+gitAnnexContentIdentifierDbDir :: Git.Repo -> RawFilePath
+gitAnnexContentIdentifierDbDir r = gitAnnexDir r P.</> "cidsdb"
 
 {- Lock file for writing to the content id database. -}
-gitAnnexContentIdentifierLock :: Git.Repo -> FilePath
-gitAnnexContentIdentifierLock r = gitAnnexContentIdentifierDbDir r ++ ".lck"
+gitAnnexContentIdentifierLock :: Git.Repo -> RawFilePath
+gitAnnexContentIdentifierLock r = gitAnnexContentIdentifierDbDir r <> ".lck"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}
-gitAnnexScheduleState :: Git.Repo -> FilePath
-gitAnnexScheduleState r = fromRawFilePath $ gitAnnexDir r P.</> "schedulestate"
+gitAnnexScheduleState :: Git.Repo -> RawFilePath
+gitAnnexScheduleState r = gitAnnexDir r P.</> "schedulestate"
 
 {- .git/annex/creds/ is used to store credentials to access some special
  - remotes. -}
@@ -484,8 +481,8 @@ gitAnnexIndex r = fromRawFilePath $ gitAnnexDir r P.</> "index"
  -
  - The .lck in the name is a historical accident; this is not used as a
  - lock. -}
-gitAnnexIndexStatus :: Git.Repo -> FilePath
-gitAnnexIndexStatus r = fromRawFilePath $ gitAnnexDir r P.</> "index.lck"
+gitAnnexIndexStatus :: Git.Repo -> RawFilePath
+gitAnnexIndexStatus r = gitAnnexDir r P.</> "index.lck"
 
 {- The index file used to generate a filtered branch view._-}
 gitAnnexViewIndex :: Git.Repo -> FilePath
@@ -496,12 +493,12 @@ gitAnnexViewLog :: Git.Repo -> RawFilePath
 gitAnnexViewLog r = gitAnnexDir r P.</> "viewlog"
 
 {- List of refs that have already been merged into the git-annex branch. -}
-gitAnnexMergedRefs :: Git.Repo -> FilePath
-gitAnnexMergedRefs r = fromRawFilePath $ gitAnnexDir r P.</> "mergedrefs"
+gitAnnexMergedRefs :: Git.Repo -> RawFilePath
+gitAnnexMergedRefs r = gitAnnexDir r P.</> "mergedrefs"
 
 {- List of refs that should not be merged into the git-annex branch. -}
-gitAnnexIgnoredRefs :: Git.Repo -> FilePath
-gitAnnexIgnoredRefs r = fromRawFilePath $ gitAnnexDir r P.</> "ignoredrefs"
+gitAnnexIgnoredRefs :: Git.Repo -> RawFilePath
+gitAnnexIgnoredRefs r = gitAnnexDir r P.</> "ignoredrefs"
 
 {- Pid file for daemon mode. -}
 gitAnnexPidFile :: Git.Repo -> RawFilePath

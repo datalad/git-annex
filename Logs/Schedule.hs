@@ -63,7 +63,7 @@ scheduleChange u a = scheduleSet u . S.toList . a =<< scheduleGet u
 
 getLastRunTimes :: Annex (M.Map ScheduledActivity LocalTime)
 getLastRunTimes = do
-	f <- fromRepo gitAnnexScheduleState
+	f <- fromRawFilePath <$> fromRepo gitAnnexScheduleState
 	liftIO $ fromMaybe M.empty
 		<$> catchDefaultIO Nothing (readish <$> readFile f)
 

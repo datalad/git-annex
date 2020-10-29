@@ -88,7 +88,7 @@ unknownBackendVarietyMessage v =
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file,
  - or forced with --backend. -}
-chooseBackend :: FilePath -> Annex (Maybe Backend)
+chooseBackend :: RawFilePath -> Annex (Maybe Backend)
 chooseBackend f = Annex.getState Annex.forcebackend >>= go
   where
 	go Nothing = maybeLookupBackendVariety . parseKeyVariety . encodeBS

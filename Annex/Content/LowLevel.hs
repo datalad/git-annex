@@ -18,16 +18,17 @@ import Utility.DiskFree
 import Utility.FileMode
 import Utility.DataUnits
 import Utility.CopyFile
+import qualified Utility.RawFilePath as R
 
 {- Runs the secure erase command if set, otherwise does nothing.
  - File may or may not be deleted at the end; caller is responsible for
  - making sure it's deleted. -}
-secureErase :: FilePath -> Annex ()
+secureErase :: RawFilePath -> Annex ()
 secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitConfig
   where
 	go basecmd = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
-	gencmd = massReplace [ ("%file", shellEscape file) ]
+	gencmd = massReplace [ ("%file", shellEscape (fromRawFilePath file)) ]
 
 data LinkedOrCopied = Linked | Copied
 
@@ -44,10 +45,10 @@ data LinkedOrCopied = Linked | Copied
  - execute bit will be set. The mode is not fully copied over because
  - git doesn't support file modes beyond execute.
  -}
-linkOrCopy :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
+linkOrCopy :: Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
 linkOrCopy = linkOrCopy' (annexThin <$> Annex.getGitConfig)
 
-linkOrCopy' :: Annex Bool -> Key -> FilePath -> FilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
+linkOrCopy' :: Annex Bool -> Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> Annex (Maybe LinkedOrCopied)
 linkOrCopy' canhardlink key src dest destmode = catchDefaultIO Nothing $
 	ifM canhardlink
 		( hardlink
@@ -58,13 +59,15 @@ linkOrCopy' canhardlink key src dest destmode = catchDefaultIO Nothing $
 		s <- getstat
 		if linkCount s > 1
 			then copy s
-			else liftIO (createLink src dest >> preserveGitMode dest destmode >> return (Just Linked))
+			else liftIO (R.createLink src dest >> preserveGitMode dest' destmode >> return (Just Linked))
 				`catchIO` const (copy s)
-	copy s = ifM (checkedCopyFile' key src dest destmode s)
+	copy s = ifM (checkedCopyFile' key src' dest' destmode s)
 		( return (Just Copied)
 		, return Nothing
 		)
-	getstat = liftIO $ getFileStatus src
+	getstat = liftIO $ R.getFileStatus src
+	src' = fromRawFilePath src
+	dest' = fromRawFilePath dest
 
 {- Checks disk space before copying. -}
 checkedCopyFile :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex Bool

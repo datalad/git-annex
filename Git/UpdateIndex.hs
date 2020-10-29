@@ -31,6 +31,7 @@ import Git.FilePath
 import Git.Sha
 import qualified Git.DiffTreeItem as Diff
 
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Control.Monad.IO.Class
 
@@ -135,7 +136,7 @@ indexPath :: TopFilePath -> InternalGitPath
 indexPath = toInternalGitPath . getTopFilePath
 
 {- Refreshes the index, by checking file stat information.  -}
-refreshIndex :: Repo -> ((FilePath -> IO ()) -> IO ()) -> IO Bool
+refreshIndex :: Repo -> ((RawFilePath -> IO ()) -> IO ()) -> IO Bool
 refreshIndex repo feeder = withCreateProcess p go
   where
 	params = 
@@ -150,9 +151,8 @@ refreshIndex repo feeder = withCreateProcess p go
 		{ std_in = CreatePipe }
 
 	go (Just h) _ _ pid = do
-		feeder $ \f -> do
-			hPutStr h f
-			hPutStr h "\0"
+		feeder $ \f ->
+			S.hPut h (S.snoc f 0)
 		hFlush h
 		hClose h
 		checkSuccessProcess pid

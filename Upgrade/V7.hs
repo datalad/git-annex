@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Upgrade.V7 where
@@ -18,6 +19,9 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git
 import Git.FilePath
 import Config
+import qualified Utility.RawFilePath as R
+
+import qualified System.FilePath.ByteString as P
 
 upgrade :: Bool -> Annex Bool
 upgrade automatic = do
@@ -33,7 +37,7 @@ upgrade automatic = do
 	-- new database is not populated. It will be automatically
 	-- populated from the git-annex branch the next time it is used.
 	removeOldDb gitAnnexContentIdentifierDbDirOld
-	liftIO . removeWhenExistsWith removeLink
+	liftIO . removeWhenExistsWith R.removeLink
 		=<< fromRepo gitAnnexContentIdentifierLockOld
 
 	-- The export databases are deleted here. The new databases
@@ -43,33 +47,33 @@ upgrade automatic = do
 
 	populateKeysDb
 	removeOldDb gitAnnexKeysDbOld
-	liftIO . removeWhenExistsWith removeLink
+	liftIO . removeWhenExistsWith R.removeLink
 		=<< fromRepo gitAnnexKeysDbIndexCacheOld
-	liftIO . removeWhenExistsWith removeLink
+	liftIO . removeWhenExistsWith R.removeLink
 		=<< fromRepo gitAnnexKeysDbLockOld
 	
 	updateSmudgeFilter
 
 	return True
 
-gitAnnexKeysDbOld :: Git.Repo -> FilePath
-gitAnnexKeysDbOld r = fromRawFilePath (gitAnnexDir r) </> "keys"
+gitAnnexKeysDbOld :: Git.Repo -> RawFilePath
+gitAnnexKeysDbOld r = gitAnnexDir r P.</> "keys"
 
-gitAnnexKeysDbLockOld :: Git.Repo -> FilePath
-gitAnnexKeysDbLockOld r = gitAnnexKeysDbOld r ++ ".lck"
+gitAnnexKeysDbLockOld :: Git.Repo -> RawFilePath
+gitAnnexKeysDbLockOld r = gitAnnexKeysDbOld r <> ".lck"
 
-gitAnnexKeysDbIndexCacheOld :: Git.Repo -> FilePath
-gitAnnexKeysDbIndexCacheOld r = gitAnnexKeysDbOld r ++ ".cache"
+gitAnnexKeysDbIndexCacheOld :: Git.Repo -> RawFilePath
+gitAnnexKeysDbIndexCacheOld r = gitAnnexKeysDbOld r <> ".cache"
 
-gitAnnexContentIdentifierDbDirOld :: Git.Repo -> FilePath
-gitAnnexContentIdentifierDbDirOld r = fromRawFilePath (gitAnnexDir r) </> "cids"
+gitAnnexContentIdentifierDbDirOld :: Git.Repo -> RawFilePath
+gitAnnexContentIdentifierDbDirOld r = gitAnnexDir r P.</> "cids"
 
-gitAnnexContentIdentifierLockOld :: Git.Repo -> FilePath
-gitAnnexContentIdentifierLockOld r = gitAnnexContentIdentifierDbDirOld r ++ ".lck"
+gitAnnexContentIdentifierLockOld :: Git.Repo -> RawFilePath
+gitAnnexContentIdentifierLockOld r = gitAnnexContentIdentifierDbDirOld r <> ".lck"
 
-removeOldDb :: (Git.Repo -> FilePath) -> Annex ()
+removeOldDb :: (Git.Repo -> RawFilePath) -> Annex ()
 removeOldDb getdb = do
-	db <- fromRepo getdb
+	db <- fromRawFilePath <$> fromRepo getdb
 	whenM (liftIO $ doesDirectoryExist db) $ do
 		v <- liftIO $ tryNonAsync $
 #if MIN_VERSION_directory(1,2,7)
@@ -124,7 +128,7 @@ populateKeysDb = unlessM isBareRepo $ do
 -- checked into the repository.
 updateSmudgeFilter :: Annex ()
 updateSmudgeFilter = do
-	lf <- Annex.fromRepo Git.attributesLocal
+	lf <- fromRawFilePath <$> Annex.fromRepo Git.attributesLocal
 	ls <- liftIO $ lines <$> catchDefaultIO "" (readFileStrict lf)
 	let ls' = removedotfilter ls
 	when (ls /= ls') $

@@ -41,6 +41,7 @@ import Data.Function
 import Data.Char
 import Data.ByteString.Builder
 import Control.Concurrent (threadDelay)
+import qualified System.FilePath.ByteString as P
 
 import Annex.Common
 import Types.BranchState
@@ -455,7 +456,7 @@ withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = withIndexFile AnnexIndexFile $ \f -> do
 	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 		unless bootstrapping create
-		createAnnexDirectory $ takeDirectory f
+		createAnnexDirectory $ toRawFilePath $ takeDirectory f
 		unless bootstrapping $ inRepo genIndex
 	a
 
@@ -477,7 +478,7 @@ forceUpdateIndex jl branchref = do
 {- Checks if the index needs to be updated. -}
 needUpdateIndex :: Git.Ref -> Annex Bool
 needUpdateIndex branchref = do
-	f <- fromRepo gitAnnexIndexStatus
+	f <- fromRawFilePath <$> fromRepo gitAnnexIndexStatus
 	committedref <- Git.Ref . firstLine' <$>
 		liftIO (catchDefaultIO mempty $ B.readFile f)
 	return (committedref /= branchref)
@@ -506,19 +507,19 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	prepareModifyIndex jl
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
-	(jlogf, jlogh) <- openjlog tmpdir
+	(jlogf, jlogh) <- openjlog (fromRawFilePath tmpdir)
 	h <- hashObjectHandle
 	withJournalHandle $ \jh ->
 		Git.UpdateIndex.streamUpdateIndex g
 			[genstream dir h jh jlogh]
 	commitindex
-	liftIO $ cleanup dir jlogh jlogf
+	liftIO $ cleanup (fromRawFilePath dir) jlogh jlogf
   where
 	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
 		Nothing -> return ()
 		Just file -> do
 			unless (dirCruft file) $ do
-				let path = dir </> file
+				let path = dir P.</> toRawFilePath file
 				sha <- Git.HashObject.hashFile h path
 				hPutStrLn jlogh file
 				streamer $ Git.UpdateIndex.updateIndexLine
@@ -666,7 +667,7 @@ getIgnoredRefs =
 	S.fromList . mapMaybe Git.Sha.extractSha . B8.lines <$> content
   where
 	content = do
-		f <- fromRepo gitAnnexIgnoredRefs
+		f <- fromRawFilePath <$> fromRepo gitAnnexIgnoredRefs
 		liftIO $ catchDefaultIO mempty $ B.readFile f
 
 addMergedRefs :: [(Git.Sha, Git.Branch)] -> Annex ()
@@ -684,7 +685,7 @@ getMergedRefs = S.fromList . map fst <$> getMergedRefs'
 
 getMergedRefs' :: Annex [(Git.Sha, Git.Branch)]
 getMergedRefs' = do
-	f <- fromRepo gitAnnexMergedRefs
+	f <- fromRawFilePath <$> fromRepo gitAnnexMergedRefs
 	s <- liftIO $ catchDefaultIO mempty $ B.readFile f
 	return $ map parse $ B8.lines s
   where

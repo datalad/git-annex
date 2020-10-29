@@ -96,7 +96,7 @@ ExportTreeCurrent
  -}
 openDb :: UUID -> Annex ExportHandle
 openDb u = do
-	dbdir <- fromRepo (gitAnnexExportDbDir u)
+	dbdir <- fromRawFilePath <$> fromRepo (gitAnnexExportDbDir u)
 	let db = dbdir </> "db"
 	unlessM (liftIO $ doesFileExist db) $ do
 		initDb db $ void $

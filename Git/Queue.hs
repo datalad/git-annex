@@ -45,11 +45,11 @@ data Action m
 	 - to as the queue grows. -}
 	| InternalAction
 		{ getRunner :: InternalActionRunner m
-		, getInternalFiles :: [(FilePath, IO Bool)]
+		, getInternalFiles :: [(RawFilePath, IO Bool)]
 		}
 
 {- The String must be unique for each internal action. -}
-data InternalActionRunner m = InternalActionRunner String (Repo -> [(FilePath, IO Bool)] -> m ())
+data InternalActionRunner m = InternalActionRunner String (Repo -> [(RawFilePath, IO Bool)] -> m ())
 
 instance Eq (InternalActionRunner m) where
 	InternalActionRunner s1 _ == InternalActionRunner s2 _ = s1 == s2
@@ -108,7 +108,7 @@ addCommand subcommand params files q repo =
 	different _ = True
 
 {- Adds an internal action to the queue. -}
-addInternalAction :: MonadIO m => InternalActionRunner m -> [(FilePath, IO Bool)] -> Queue m -> Repo -> m (Queue m)
+addInternalAction :: MonadIO m => InternalActionRunner m -> [(RawFilePath, IO Bool)] -> Queue m -> Repo -> m (Queue m)
 addInternalAction runner files q repo =
 	updateQueue action different (length files) q repo
   where
