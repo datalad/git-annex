@@ -1,0 +1,7 @@
+Hi!
+
+I tagged some files with `tag=telegram`, but upon trying to try out views with `git annex view tag=telegram` I get:
+
+https://del.dog/nifumairra.txt
+
+Any ideas? :(  The file viewindex.lock doesn't exist..
