@@ -54,7 +54,7 @@ runHooks r starthook stophook a = do
 		firstrun lck
 	a
   where
-	remoteid = show (uuid r)
+	remoteid = fromUUID (uuid r)
 	run Nothing = noop
 	run (Just command) = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param command]
