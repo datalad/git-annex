@@ -283,10 +283,10 @@ sink dest enc c mh mp content = case (enc, mh, content) of
 		withBytes content $ \b ->
 			decrypt cmd c cipher (feedBytes b) $
 				readBytes write
-		liftIO $ nukeFile f
+		liftIO $ removeWhenExistsWith removeLink f
 	(Nothing, _, FileContent f) -> do
 		withBytes content write
-		liftIO $ nukeFile f
+		liftIO $ removeWhenExistsWith removeLink f
 	(Nothing, _, ByteContent b) -> write b
   where
 	write b = case mh of

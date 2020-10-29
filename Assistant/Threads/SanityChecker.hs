@@ -66,7 +66,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	ifM (not <$> liftAnnex (inRepo checkIndexFast))
 		( do
 			notice ["corrupt index file found at startup; removing and restaging"]
-			liftAnnex $ inRepo $ nukeFile . indexFile
+			liftAnnex $ inRepo $ removeWhenExistsWith removeLink . indexFile
 			{- Normally the startup scan avoids re-staging files,
 			 - but with the index deleted, everything needs to be
 			 - restaged. -}
@@ -80,7 +80,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	 - will be automatically regenerated. -}
 	unlessM (liftAnnex $ Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndexFast) $ do
 		notice ["corrupt annex/index file found at startup; removing"]
-		liftAnnex $ liftIO . nukeFile =<< fromRepo gitAnnexIndex
+		liftAnnex $ liftIO . removeWhenExistsWith removeLink =<< fromRepo gitAnnexIndex
 
 	{- Fix up ssh remotes set up by past versions of the assistant. -}
 	liftIO $ fixUpSshRemotes

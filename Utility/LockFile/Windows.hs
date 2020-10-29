@@ -16,15 +16,18 @@ module Utility.LockFile.Windows (
 import System.Win32.Types
 import System.Win32.File
 import Control.Concurrent
+import System.FilePath.ByteString (RawFilePath)
 
-type LockFile = FilePath
+import Utility.FileSystemEncoding
+
+type LockFile = RawFilePath
 
 type LockHandle = HANDLE
 
 {- Tries to lock a file with a shared lock, which allows other processes to
  - also lock it shared. Fails if the file is exclusively locked. -}
 lockShared :: LockFile -> IO (Maybe LockHandle)
-lockShared = openLock fILE_SHARE_READ
+lockShared = openLock fILE_SHARE_READ . fromRawFilePath
 
 {- Tries to take an exclusive lock on a file. Fails if another process has
  - a shared or exclusive lock.
@@ -33,7 +36,7 @@ lockShared = openLock fILE_SHARE_READ
  - read or write by any other process. So for advisory locking of a file's
  - content, a separate LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
-lockExclusive = openLock fILE_SHARE_NONE
+lockExclusive = openLock fILE_SHARE_NONE . fromRawFilePath
 
 {- Windows considers just opening a file enough to lock it. This will
  - create the LockFile if it does not already exist.
@@ -51,7 +54,7 @@ lockExclusive = openLock fILE_SHARE_NONE
  -}
 openLock :: ShareMode -> LockFile -> IO (Maybe LockHandle)
 openLock sharemode f = do
-	h <- withTString f $ \c_f ->
+	h <- withTString (fromRawFilePath f) $ \c_f ->
 		c_CreateFile c_f gENERIC_READ sharemode security_attributes
 			oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL (maybePtr Nothing)
 	return $ if h == iNVALID_HANDLE_VALUE

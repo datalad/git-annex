@@ -326,7 +326,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 		Left _ -> normalfinish tmp
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
-			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith removeLink)
 			showNote "using youtube-dl"
 			Transfer.notifyTransfer Transfer.Download url $
 				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \p ->
@@ -446,7 +446,7 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 			( do
 				when (isJust mtmp) $
 					logStatus key InfoPresent
-			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . nukeFile)) mtmp
+			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith removeLink)) mtmp
 			)
 	
 	-- git does not need to check ignores, because that has already

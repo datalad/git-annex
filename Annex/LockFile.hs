@@ -30,7 +30,7 @@ import qualified System.FilePath.ByteString as P
 
 {- Create a specified lock file, and takes a shared lock, which is retained
  - in the cache. -}
-lockFileCached :: FilePath -> Annex ()
+lockFileCached :: RawFilePath -> Annex ()
 lockFileCached file = go =<< fromLockCache file
   where
 	go (Just _) = noop -- already locked
@@ -43,7 +43,7 @@ lockFileCached file = go =<< fromLockCache file
 #endif
 		changeLockCache $ M.insert file lockhandle
 
-unlockFile :: FilePath -> Annex ()
+unlockFile :: RawFilePath -> Annex ()
 unlockFile file = maybe noop go =<< fromLockCache file
   where
 	go lockhandle = do
@@ -53,7 +53,7 @@ unlockFile file = maybe noop go =<< fromLockCache file
 getLockCache :: Annex LockCache
 getLockCache = getState lockcache
 
-fromLockCache :: FilePath -> Annex (Maybe LockHandle)
+fromLockCache :: RawFilePath -> Annex (Maybe LockHandle)
 fromLockCache file = M.lookup file <$> getLockCache
 
 changeLockCache :: (LockCache -> LockCache) -> Annex ()
@@ -68,7 +68,7 @@ withSharedLock getlockfile a = debugLocks $ do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ P.takeDirectory lockfile
 	mode <- annexFileMode
-	bracket (lock mode (fromRawFilePath lockfile)) (liftIO . dropLock) (const a)
+	bracket (lock mode lockfile) (liftIO . dropLock) (const a)
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . lockShared (Just mode)
@@ -90,7 +90,7 @@ takeExclusiveLock getlockfile = debugLocks $ do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ P.takeDirectory lockfile
 	mode <- annexFileMode
-	lock mode (fromRawFilePath lockfile)
+	lock mode lockfile
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . lockExclusive (Just mode)
@@ -105,7 +105,7 @@ tryExclusiveLock getlockfile a = debugLocks $ do
 	lockfile <- fromRepo getlockfile
 	createAnnexDirectory $ P.takeDirectory lockfile
 	mode <- annexFileMode
-	bracket (lock mode (fromRawFilePath lockfile)) (liftIO . unlock) go
+	bracket (lock mode lockfile) (liftIO . unlock) go
   where
 #ifndef mingw32_HOST_OS
 	lock mode = noUmask mode . tryLockExclusive (Just mode)

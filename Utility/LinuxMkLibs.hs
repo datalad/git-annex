@@ -48,7 +48,7 @@ installLib installfile top lib = ifM (doesFileExist lib)
 			(toRawFilePath l)
 		target <- relPathDirToFile (toRawFilePath (takeDirectory f)) absl
 		installfile top (fromRawFilePath absl)
-		nukeFile (top ++ f)
+		removeWhenExistsWith removeLink (top ++ f)
 		createSymbolicLink (fromRawFilePath target) (inTop top f)
 		checksymlink (fromRawFilePath absl)
 

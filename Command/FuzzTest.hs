@@ -177,7 +177,8 @@ runFuzzAction (FuzzAdd (FuzzFile f)) = do
 	createWorkTreeDirectory (parentDir f)
 	n <- liftIO (getStdRandom random :: IO Int)
 	liftIO $ writeFile f $ show n ++ "\n"
-runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $ nukeFile f
+runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $
+	removeWhenExistsWith removeLink f
 runFuzzAction (FuzzMove (FuzzFile src) (FuzzFile dest)) = liftIO $
 	rename src dest
 runFuzzAction (FuzzDeleteDir (FuzzDir d)) = liftIO $

@@ -284,7 +284,7 @@ retrieveExportM d _k loc dest p =
 
 removeExportM :: FilePath -> Key -> ExportLocation -> Annex ()
 removeExportM d _k loc = liftIO $ do
-	nukeFile src
+	removeWhenExistsWith removeLink src
 	removeExportLocation d loc
   where
 	src = exportPath d loc

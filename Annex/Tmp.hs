@@ -67,5 +67,5 @@ cleanupOtherTmp = do
 		let oldenough = now - (60 * 60 * 24 * 7)
 		catchMaybeIO (modificationTime <$> getSymbolicLinkStatus f) >>= \case
 			Just mtime | realToFrac mtime <= oldenough -> 
-				void $ tryIO $ nukeFile f
+				void $ tryIO $ removeWhenExistsWith removeLink f
 			_ -> return ()

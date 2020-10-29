@@ -89,7 +89,7 @@ perform file key = do
 		fs <- map (`fromTopFilePath` g)
 			<$> Database.Keys.getAssociatedFiles key
 		mfile <- firstM (isUnmodified key) fs
-		liftIO $ nukeFile obj
+		liftIO $ removeWhenExistsWith removeLink obj
 		case mfile of
 			Just unmodified ->
 				unlessM (checkedCopyFile key (fromRawFilePath unmodified) obj Nothing)

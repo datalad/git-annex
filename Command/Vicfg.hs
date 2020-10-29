@@ -57,7 +57,7 @@ vicfg curcfg f = do
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
 		giveup $ vi ++ " exited nonzero; aborting"
 	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrict f)
-	liftIO $ nukeFile f
+	liftIO $ removeWhenExistsWith removeLink f
 	case r of
 		Left s -> do
 			liftIO $ writeFile f s

@@ -66,5 +66,5 @@ perform from numcopies key = case from of
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do
 	f <- fromRepo $ filespec key
-	pruneTmpWorkDirBefore f (liftIO . nukeFile)
+	pruneTmpWorkDirBefore f (liftIO . removeWhenExistsWith removeLink)
 	next $ return True

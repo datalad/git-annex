@@ -96,7 +96,7 @@ removeAssociatedFiles :: Key -> Annex ()
 removeAssociatedFiles key = do
 	mapping <- calcRepo $ gitAnnexMapping key
 	modifyContent mapping $
-		liftIO $ nukeFile mapping
+		liftIO $ removeWhenExistsWith removeLink mapping
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
  -
@@ -122,7 +122,7 @@ recordedInodeCache key = withInodeCacheFile key $ \f ->
 removeInodeCache :: Key -> Annex ()
 removeInodeCache key = withInodeCacheFile key $ \f ->
 	modifyContent f $
-		liftIO $ nukeFile f
+		liftIO $ removeWhenExistsWith removeLink f
 
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)

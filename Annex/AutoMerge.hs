@@ -176,7 +176,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				-- files, so delete here.
 				unless inoverlay $
 					unless (islocked LsFiles.valUs) $
-						liftIO $ nukeFile file
+						liftIO $ removeWhenExistsWith removeLink file
 			| otherwise -> do
 				-- Only resolve using symlink when both
 				-- were locked, otherwise use unlocked
@@ -309,7 +309,7 @@ cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 		<$> mapM Database.Keys.getInodeCaches resolvedks
 	forM_ (M.toList unstagedmap) $ \(i, f) ->
 		whenM (matchesresolved is i f) $
-			liftIO $ nukeFile f
+			liftIO $ removeWhenExistsWith removeLink f
   where
 	fs = S.fromList resolvedfs
 	ks = S.fromList resolvedks

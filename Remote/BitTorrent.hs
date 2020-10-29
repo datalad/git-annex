@@ -179,7 +179,7 @@ tmpTorrentFile u = fromRepo . gitAnnexTmpObjectLocation =<< torrentUrlKey u
  -}
 registerTorrentCleanup :: URLString -> Annex ()
 registerTorrentCleanup u = Annex.addCleanup (TorrentCleanup u) $
-	liftIO . nukeFile =<< tmpTorrentFile u
+	liftIO . removeWhenExistsWith removeLink =<< tmpTorrentFile u
 
 {- Downloads the torrent file. (Not its contents.) -}
 downloadTorrentFile :: URLString -> Annex Bool

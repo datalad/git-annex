@@ -18,6 +18,8 @@ module Utility.RawFilePath (
 	RawFilePath,
 	readSymbolicLink,
 	createSymbolicLink,
+	createLink,
+	removeLink,
 	getFileStatus,
 	getSymbolicLinkStatus,
 	doesPathExist,
@@ -55,6 +57,14 @@ createSymbolicLink :: RawFilePath -> RawFilePath -> IO ()
 createSymbolicLink a b = P.createSymbolicLink
 	(fromRawFilePath a)
 	(fromRawFilePath b)
+
+createLink :: RawFilePath -> RawFilePath -> IO ()
+createLink a b = P.createLink
+	(fromRawFilePath a)
+	(fromRawFilePath b)
+
+removeLink :: RawFilePath -> IO ()
+removeLink = P.removeLink . fromRawFilePath
 
 getFileStatus :: RawFilePath -> IO FileStatus
 getFileStatus = P.getFileStatus . fromRawFilePath

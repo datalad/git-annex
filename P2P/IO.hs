@@ -124,7 +124,7 @@ closeConnection conn = do
 -- the callback.
 serveUnixSocket :: FilePath -> (Handle -> IO ()) -> IO ()
 serveUnixSocket unixsocket serveconn = do
-	nukeFile unixsocket
+	removeWhenExistsWith removeLink unixsocket
 	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
 	S.bind soc (S.SockAddrUnix unixsocket)
 	-- Allow everyone to read and write to the socket,

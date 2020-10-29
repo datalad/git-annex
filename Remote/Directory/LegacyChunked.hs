@@ -98,7 +98,7 @@ retrieve locations d basek p c = withOtherTmp $ \tmpdir -> do
 				S.appendFile tmp <=< S.readFile
 			return True
 		b <- liftIO $ L.readFile tmp
-		liftIO $ nukeFile tmp
+		liftIO $ removeWhenExistsWith removeLink tmp
 		sink b
 	byteRetriever go basek p c
 

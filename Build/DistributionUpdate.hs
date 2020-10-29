@@ -83,10 +83,10 @@ getbuild repodir (url, f) = do
 	bv1 <- getbv
 	let dest = repodir </> f
 	let tmp = dest ++ ".tmp"
-	nukeFile tmp
+	removeWhenExistsWith removeFile tmp
 	createDirectoryIfMissing True (parentDir dest)
 	let oops s = do
-		nukeFile tmp
+		removeWhenExistsWith removeFile tmp
 		putStrLn $ "*** " ++ s
 		return Nothing
 	uo <- defUrlOptions
@@ -98,7 +98,7 @@ getbuild repodir (url, f) = do
 					Nothing -> oops $ "no build-version file for " ++ url
 					(Just v)
 						| bv2 == bv1 -> do
-							nukeFile dest
+							removeWhenExistsWith removeFile dest
 							renameFile tmp dest
 							-- remove git rev part of version
 							let v' = takeWhile (/= '-') v
@@ -228,7 +228,7 @@ buildrpms topdir l = do
 		<$> liftIO (getDirectoryContents rpmrepo)
 	forM_ tarrpmarches $ \(tararch, rpmarch) ->
 		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) -> do
-			liftIO $ mapM_ nukeFile (filter ((rpmarch ++ ".rpm") `isSuffixOf`) oldrpms)
+			liftIO $ mapM_ (removeWhenExistsWith removeLink) (filter ((rpmarch ++ ".rpm") `isSuffixOf`) oldrpms)
 			void $ liftIO $ boolSystem script 
 				[ Param rpmarch
 				, File tarball

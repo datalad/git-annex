@@ -85,7 +85,7 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b =
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 
-pidLockFile :: Annex (Maybe FilePath)
+pidLockFile :: Annex (Maybe RawFilePath)
 #ifndef mingw32_HOST_OS
 pidLockFile = ifM (annexPidLock <$> Annex.getGitConfig)
 	( Just <$> Annex.fromRepo gitAnnexPidLockFile

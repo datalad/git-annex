@@ -256,7 +256,7 @@ wormholePairing remotename ouraddrs ui = do
 			Wormhole.sendFile sendf observer wormholeparams
 				`concurrently`
 			Wormhole.receiveFile recvf producer wormholeparams
-		liftIO $ nukeFile sendf
+		liftIO $ removeWhenExistsWith removeLink sendf
 		if sendres /= True
 			then return SendFailed
 			else if recvres /= True

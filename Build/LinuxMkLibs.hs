@@ -99,8 +99,8 @@ installLinkerShim top linker exe = do
 	ifM (isSymbolicLink <$> getSymbolicLinkStatus exe)
 		( do
 			sl <- readSymbolicLink exe
-			nukeFile exe
-			nukeFile exedest
+			removeWhenExistsWith removeLink exe
+			removeWhenExistsWith removeLink exedest
 			-- Assume that for a symlink, the destination
 			-- will also be shimmed.
 			let sl' = ".." </> takeFileName sl </> takeFileName sl

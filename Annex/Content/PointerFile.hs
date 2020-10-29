@@ -25,6 +25,7 @@ import Utility.InodeCache
 #if ! defined(mingw32_HOST_OS)
 import Utility.Touch
 #endif
+import qualified Utility.RawFilePath as R
 
 {- Populates a pointer file with the content of a key. 
  -
@@ -37,8 +38,8 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
   where
 	go (Just k') | k == k' = do
 		let f' = fromRawFilePath f
-		destmode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus f'
-		liftIO $ nukeFile f'
+		destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus f
+		liftIO $ removeWhenExistsWith R.removeLink f
 		(ic, populated) <- replaceWorkTreeFile f' $ \tmp -> do
 			let tmp' = toRawFilePath tmp
 			ok <- linkOrCopy k (fromRawFilePath obj) tmp destmode >>= \case
@@ -61,7 +62,7 @@ depopulatePointerFile key file = do
 	st <- liftIO $ catchMaybeIO $ getFileStatus file'
 	let mode = fmap fileMode st
 	secureErase file'
-	liftIO $ nukeFile file'
+	liftIO $ removeWhenExistsWith R.removeLink file
 	ic <- replaceWorkTreeFile file' $ \tmp -> do
 		liftIO $ writePointerFile (toRawFilePath tmp) key mode
 #if ! defined(mingw32_HOST_OS)

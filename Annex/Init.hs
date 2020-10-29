@@ -208,9 +208,9 @@ probeCrippledFileSystem' tmp = do
   where
 	probe f = catchDefaultIO (True, []) $ do
 		let f2 = f ++ "2"
-		nukeFile f2
+		removeWhenExistsWith removeLink f2
 		createSymbolicLink f f2
-		nukeFile f2
+		removeWhenExistsWith removeLink f2
 		preventWrite f
 		-- Should be unable to write to the file, unless
 		-- running as root, but some crippled
@@ -251,13 +251,13 @@ probeLockSupport = withEventuallyCleanedOtherTmp $ \tmp -> do
 	liftIO $ withAsync warnstall (const (go f mode))
   where
 	go f mode = do
-		nukeFile f
+		removeWhenExistsWith removeLink f
 		let locktest = bracket
 			(Posix.lockExclusive (Just mode) f)
 			Posix.dropLock
 			(const noop)
 		ok <- isRight <$> tryNonAsync locktest
-		nukeFile f
+		removeWhenExistsWith removeLink f
 		return ok
 	
 	warnstall = do
@@ -275,14 +275,14 @@ probeFifoSupport = do
 		let f = tmp </> "gaprobe"
 		let f2 = tmp </> "gaprobe2"
 		liftIO $ do
-			nukeFile f
-			nukeFile f2
+			removeWhenExistsWith removeLink f
+			removeWhenExistsWith removeLink f2
 			ms <- tryIO $ do
 				createNamedPipe f ownerReadMode
 				createLink f f2
 				getFileStatus f
-			nukeFile f
-			nukeFile f2
+			removeWhenExistsWith removeLink f
+			removeWhenExistsWith removeLink f2
 			return $ either (const False) isNamedPipe ms
 #endif
 

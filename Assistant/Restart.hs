@@ -39,8 +39,8 @@ import Network.URI
 prepRestart :: Assistant ()
 prepRestart = do
 	liftIO . maybe noop (`throwTo` PauseWatcher) =<< namedThreadId watchThread
-	liftIO . nukeFile =<< liftAnnex (fromRepo gitAnnexUrlFile)
-	liftIO . nukeFile =<< liftAnnex (fromRepo gitAnnexPidFile)
+	liftIO . removeWhenExistsWith removeLink =<< liftAnnex (fromRepo gitAnnexUrlFile)
+	liftIO . removeWhenExistsWith removeLink =<< liftAnnex (fromRepo gitAnnexPidFile)
 
 {- To finish a restart, send a global redirect to the new url
  - to any web browsers that are displaying the webapp.

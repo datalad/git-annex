@@ -409,7 +409,7 @@ test_ignore_deleted_files :: Assertion
 test_ignore_deleted_files = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get failed"
 	git_annex_expectoutput "find" [] [annexedfile]
-	nukeFile annexedfile
+	removeWhenExistsWith removeLink annexedfile
 	-- A file that has been deleted, but the deletion not staged,
 	-- is a special case; make sure git-annex skips these.
 	git_annex_expectoutput "find" [] []
@@ -759,7 +759,8 @@ test_lock_force = intmpclonerepo $ do
 		Just k <- Annex.WorkTree.lookupKey (toRawFilePath annexedfile)
 		Database.Keys.removeInodeCaches k
 		Database.Keys.closeDb
-		liftIO . nukeFile =<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
+		liftIO . removeWhenExistsWith removeLink
+			=<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
 	writecontent annexedfile "test_lock_force content"
 	git_annex_shouldfail "lock" [annexedfile] @? "lock of modified file failed to fail"
 	git_annex "lock" ["--force", annexedfile] @? "lock --force of modified file failed"
@@ -1306,7 +1307,7 @@ test_remove_conflict_resolution = do
 					@? "unlock conflictor failed"
 				writecontent conflictor "newconflictor"
 			indir r1 $
-				nukeFile conflictor
+				removeWhenExistsWith removeLink conflictor
 			let l = if inr1 then [r1, r2, r1] else [r2, r1, r2]
 			forM_ l $ \r -> indir r $
 				git_annex "sync" [] @? "sync failed"
@@ -1833,7 +1834,7 @@ test_export_import = intmpclonerepo $ do
 	git_annex "merge" ["foo/" ++ origbranch] @? "git annex merge failed"
 	annexed_present_imported "import"
 
-	nukeFile "import"
+	removeWhenExistsWith removeLink "import"
 	writecontent "import" (content "newimport1")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges
@@ -1842,7 +1843,7 @@ test_export_import = intmpclonerepo $ do
 
 	-- verify that export refuses to overwrite modified file
 	writedir "import" (content "newimport2")
-	nukeFile "import"
+	removeWhenExistsWith removeLink "import"
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges
@@ -1852,7 +1853,7 @@ test_export_import = intmpclonerepo $ do
 	-- resolving import conflict
 	git_annex "import" [origbranch, "--from", "foo"] @? "import from dir failed"
 	not <$> boolSystem "git" [Param "merge", Param "foo/master", Param "-mmerge"] @? "git merge of conflict failed to exit nonzero"
-	nukeFile "import"
+	removeWhenExistsWith removeLink "import"
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges

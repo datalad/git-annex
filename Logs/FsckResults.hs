@@ -24,7 +24,7 @@ writeFsckResults u fsckresults = do
 	case fsckresults of
 		FsckFailed -> store S.empty False logfile
 		FsckFoundMissing s t
-			| S.null s -> liftIO $ nukeFile logfile
+			| S.null s -> liftIO $ removeWhenExistsWith removeLink logfile
 			| otherwise -> store s t logfile
   where
 	store s t logfile = writeLogFile logfile $ serialize s t
@@ -47,5 +47,6 @@ readFsckResults u = do
 		in if S.null s then FsckFailed else FsckFoundMissing s t
 
 clearFsckResults :: UUID -> Annex ()
-clearFsckResults = liftIO . nukeFile <=< fromRepo . gitAnnexFsckResultsLog
+clearFsckResults = liftIO . removeWhenExistsWith removeLink
+	<=< fromRepo . gitAnnexFsckResultsLog
 	

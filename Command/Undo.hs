@@ -67,7 +67,7 @@ perform p = do
 
 	forM_ removals $ \di -> do
 		f <- mkrel di
-		liftIO $ nukeFile f
+		liftIO $ removeWhenExistsWith removeLink f
 
 	forM_ adds $ \di -> do
 		f <- mkrel di

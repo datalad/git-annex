@@ -148,7 +148,7 @@ repairStaleLocks lockfiles = go =<< getsizes
 			waitforit "to check stale git lock file"
 			l' <- getsizes
 			if l' == l
-				then liftIO $ mapM_ nukeFile (map fst l)
+				then liftIO $ mapM_ (removeWhenExistsWith removeLink . fst) l
 				else go l'
 		, do
 			waitforit "for git lock file writer"

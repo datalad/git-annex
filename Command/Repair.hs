@@ -75,7 +75,7 @@ repairAnnexBranch modifiedbranches
 		Annex.Branch.forceCommit "committing index after git repository repair"
 		liftIO $ putStrLn "Successfully recovered the git-annex branch using .git/annex/index"
 	nukeindex = do
-		inRepo $ nukeFile . gitAnnexIndex
+		inRepo $ removeWhenExistsWith removeLink . gitAnnexIndex
 		liftIO $ putStrLn "Had to delete the .git/annex/index file as it was corrupt."
 	missingbranch = liftIO $ putStrLn "Since the git-annex branch is not up-to-date anymore. It would be a very good idea to run: git annex fsck --fast"
 

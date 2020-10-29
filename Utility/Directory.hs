@@ -142,15 +142,9 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			(Right s) -> return $ isDirectory s
 #endif
 
-{- Removes a file (or symlink), which may or may not exist.
+{- Use with an action that removes something, which may or may not exist.
  -
- - Note that an exception is thrown if the file exists but
- - cannot be removed, or if its a directory. -}
-nukeFile :: FilePath -> IO ()
-nukeFile file = void $ tryWhenExists go
-  where
-#ifndef mingw32_HOST_OS
-	go = removeLink file
-#else
-	go = removeFile file
-#endif
+ - If an exception is thrown due to it not existing, it is ignored.
+ -}
+removeWhenExistsWith :: (a -> IO ()) -> a -> IO ()
+removeWhenExistsWith f a = void $ tryWhenExists $ f a

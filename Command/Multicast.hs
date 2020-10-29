@@ -84,7 +84,7 @@ genAddress = starting "gen-address" (ActionItemOther Nothing) (SeekInput []) $ d
 		KeyContainer s -> liftIO $ genkey (Param s)
 		KeyFile f -> do
 			createAnnexDirectory (takeDirectory f)
-			liftIO $ nukeFile f
+			liftIO $ removeWhenExistsWith removeLink f
 			liftIO $ protectedOutput $ genkey (File f)
 	case (ok, parseFingerprint s) of
 		(False, _) -> giveup $ "uftp_keymgt failed: " ++ s
@@ -210,7 +210,7 @@ storeReceived f = do
 	case deserializeKey (takeFileName f) of
 		Nothing -> do
 			warning $ "Received a file " ++ f ++ " that is not a git-annex key. Deleting this file."
-			liftIO $ nukeFile f
+			liftIO $ removeWhenExistsWith removeLink f
 		Just k -> void $
 			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do

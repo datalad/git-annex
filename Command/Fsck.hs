@@ -584,7 +584,7 @@ recordStartTime :: UUID -> Annex ()
 recordStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
 	createAnnexDirectory $ parentDir f
-	liftIO $ nukeFile f
+	liftIO $ removeWhenExistsWith removeLink f
 	liftIO $ withFile f WriteMode $ \h -> do
 #ifndef mingw32_HOST_OS
 		t <- modificationTime <$> getFileStatus f
@@ -598,7 +598,8 @@ recordStartTime u = do
 	showTime = show
 
 resetStartTime :: UUID -> Annex ()
-resetStartTime u = liftIO . nukeFile =<< fromRepo (gitAnnexFsckState u)
+resetStartTime u = liftIO . removeWhenExistsWith removeLink
+	=<< fromRepo (gitAnnexFsckState u)
 
 {- Gets the incremental fsck start time. -}
 getStartTime :: UUID -> Annex (Maybe EpochTime)

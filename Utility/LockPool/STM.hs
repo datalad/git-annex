@@ -22,6 +22,7 @@ module Utility.LockPool.STM (
 import Utility.Monad
 
 import System.IO.Unsafe (unsafePerformIO)
+import System.FilePath.ByteString (RawFilePath)
 import qualified Data.Map.Strict as M
 import Control.Concurrent.STM
 import Control.Exception
@@ -29,7 +30,7 @@ import Control.Monad
 import Control.Applicative
 import Prelude
 
-type LockFile = FilePath
+type LockFile = RawFilePath
 
 data LockMode = LockExclusive | LockShared
 	deriving (Eq)

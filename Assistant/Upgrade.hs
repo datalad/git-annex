@@ -220,7 +220,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			error $ "did not find " ++ dir ++ " in " ++ distributionfile
 	makeorigsymlink olddir = do
 		let origdir = parentDir olddir </> installBase
-		nukeFile origdir
+		removeWhenExistsWith removeLink origdir
 		createSymbolicLink newdir origdir
 
 {- Finds where the old version was installed. -}
@@ -278,8 +278,8 @@ installBase = "git-annex." ++
 deleteFromManifest :: FilePath -> IO ()
 deleteFromManifest dir = do
 	fs <- map (dir </>) . lines <$> catchDefaultIO "" (readFile manifest)
-	mapM_ nukeFile fs
-	nukeFile manifest
+	mapM_ (removeWhenExistsWith removeLink) fs
+	removeWhenExistsWith removeLink manifest
 	removeEmptyRecursive dir
   where
 	manifest = dir </> "git-annex.MANIFEST"

@@ -39,6 +39,7 @@ import Utility.Directory.Create
 import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
@@ -52,7 +53,7 @@ cleanCorruptObjects fsckresults r = do
 	mapM_ removeLoose (S.toList $ knownMissing fsckresults)
 	mapM_ removeBad =<< listLooseObjectShas r
   where
-	removeLoose s = nukeFile (looseObjectFile r s)
+	removeLoose s = removeWhenExistsWith removeLink (looseObjectFile r s)
 	removeBad s = do
 		void $ tryIO $ allowRead $  looseObjectFile r s
 		whenM (isMissing s r) $
@@ -78,7 +79,7 @@ explodePacks r = go =<< listPackFiles r
 		putStrLn "Unpacking all pack files."
 		forM_ packs $ \packfile -> do
 			moveFile packfile (tmpdir </> takeFileName packfile)
-			nukeFile $ packIdxFile packfile
+			removeWhenExistsWith removeLink $ packIdxFile packfile
 		forM_ packs $ \packfile -> do
 			let tmp = tmpdir </> takeFileName packfile
 			allowRead tmp
@@ -245,7 +246,7 @@ explodePackedRefsFile r = do
 		rs <- mapMaybe parsePacked . lines
 			<$> catchDefaultIO "" (safeReadFile f)
 		forM_ rs makeref
-		nukeFile f
+		removeWhenExistsWith removeLink f
   where
 	makeref (sha, ref) = do
 		let gitd = localGitDir r
@@ -268,7 +269,7 @@ parsePacked l = case words l of
 {- git-branch -d cannot be used to remove a branch that is directly
  - pointing to a corrupt commit. -}
 nukeBranchRef :: Branch -> Repo -> IO ()
-nukeBranchRef b r = nukeFile $ fromRawFilePath (localGitDir r) </> fromRef b
+nukeBranchRef b r = removeWhenExistsWith R.removeLink $ localGitDir r P.</> fromRef' b
 
 {- Finds the most recent commit to a branch that does not need any
  - of the missing objects. If the input branch is good as-is, returns it.
@@ -394,7 +395,7 @@ rewriteIndex r
 	| otherwise = do
 		(bad, good, cleanup) <- partitionIndex r
 		unless (null bad) $ do
-			nukeFile (indexFile r)
+			removeWhenExistsWith removeLink (indexFile r)
 			UpdateIndex.streamUpdateIndex r
 				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
@@ -442,7 +443,7 @@ displayList items header
 preRepair :: Repo -> IO ()
 preRepair g = do
 	unlessM (validhead <$> catchDefaultIO "" (safeReadFile headfile)) $ do
-		nukeFile headfile
+		removeWhenExistsWith removeLink headfile
 		writeFile headfile "ref: refs/heads/master"
 	explodePackedRefsFile g
 	unless (repoIsLocalBare g) $ do
@@ -571,7 +572,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 			else successfulfinish modifiedbranches
 
 	corruptedindex = do
-		nukeFile (indexFile g)
+		removeWhenExistsWith removeLink (indexFile g)
 		-- The corrupted index can prevent fsck from finding other
 		-- problems, so re-run repair.
 		fsckresult' <- findBroken False g

@@ -25,10 +25,13 @@ import Utility.Applicative
 import Utility.LockFile.LockStatus
 
 import System.IO
-import System.Posix
+import System.Posix.Types
+import System.Posix.IO.ByteString
+import System.Posix.Files.ByteString
+import System.FilePath.ByteString (RawFilePath)
 import Data.Maybe
 
-type LockFile = FilePath
+type LockFile = RawFilePath
 
 newtype LockHandle = LockHandle Fd
 

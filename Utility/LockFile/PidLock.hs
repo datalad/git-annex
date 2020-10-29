@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Utility.LockFile.PidLock (
 	LockHandle,
 	tryLock,
@@ -34,12 +36,13 @@ import Utility.Env.Set
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
-import System.Posix.IO
 import System.Posix.Types
-import System.Posix.Files
+import System.Posix.IO.ByteString
+import System.Posix.Files.ByteString
 import System.Posix.Process
 import Control.Monad
 import Control.Monad.IO.Class (liftIO, MonadIO)
+import qualified System.FilePath.ByteString as P
 import Data.Maybe
 import Data.List
 import Network.BSD
@@ -47,7 +50,7 @@ import System.FilePath
 import Control.Applicative
 import Prelude
 
-type LockFile = FilePath
+type LockFile = RawFilePath
 
 data LockHandle
 	= LockHandle LockFile FileStatus SideLockHandle
@@ -67,7 +70,8 @@ mkPidLock = PidLock
 	<*> getHostName
 
 readPidLock :: LockFile -> IO (Maybe PidLock)
-readPidLock lockfile = (readish =<<) <$> catchMaybeIO (readFile lockfile)
+readPidLock lockfile = (readish =<<)
+	<$> catchMaybeIO (readFile (fromRawFilePath lockfile))
 
 -- To avoid races when taking over a stale pid lock, a side lock is used.
 -- This is a regular posix exclusive lock.
@@ -100,7 +104,7 @@ dropSideLock (Just (f, h)) = do
 	-- to take the side lock will only succeed once the file is
 	-- deleted, and so will be able to immediately see that it's taken
 	-- a stale lock.
-	_ <- tryIO $ removeFile f 
+	_ <- tryIO $ removeFile (fromRawFilePath f)
 	Posix.dropLock h
 
 -- The side lock is put in /dev/shm. This will work on most any
@@ -108,17 +112,17 @@ dropSideLock (Just (f, h)) = do
 -- locks. /tmp is used as a fallback.
 sideLockFile :: LockFile -> IO LockFile
 sideLockFile lockfile = do
-	f <- fromRawFilePath <$> absPath (toRawFilePath lockfile)
+	f <- fromRawFilePath <$> absPath lockfile
 	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
 	let shortbase = reverse $ take 32 $ reverse base
 	let md5sum = if base == shortbase
 		then ""
-		else show (md5 (encodeBL base))
+		else toRawFilePath $ show (md5 (encodeBL base))
 	dir <- ifM (doesDirectoryExist "/dev/shm")
 		( return "/dev/shm"
 		, return "/tmp"
 		)
-	return $ dir </> md5sum ++ shortbase ++ ".lck"
+	return $ dir P.</> md5sum <> toRawFilePath shortbase <> ".lck"
 
 -- | Tries to take a lock; does not block when the lock is already held.
 --
@@ -131,25 +135,27 @@ sideLockFile lockfile = do
 -- "PIDLOCK_lockfile" environment variable, does not block either.
 tryLock :: LockFile -> IO (Maybe LockHandle)
 tryLock lockfile = do
-	abslockfile <- fromRawFilePath <$> absPath (toRawFilePath lockfile)
+	abslockfile <- absPath lockfile
 	lockenv <- pidLockEnv abslockfile
 	getEnv lockenv >>= \case
 		Nothing -> trySideLock lockfile (go abslockfile)
 		_ -> return (Just ParentLocked)
   where
 	go abslockfile sidelock = do
-		(tmp, h) <- openTempFile (takeDirectory abslockfile) "locktmp"
-		setFileMode tmp (combineModes readModes)
+		let abslockfile' = fromRawFilePath abslockfile
+		(tmp, h) <- openTempFile (takeDirectory abslockfile') "locktmp"
+		let tmp' = toRawFilePath tmp
+		setFileMode tmp' (combineModes readModes)
 		hPutStr h . show =<< mkPidLock
 		hClose h
 		let failedlock st = do
-			dropLock $ LockHandle tmp st sidelock
-			nukeFile tmp
+			dropLock $ LockHandle tmp' st sidelock
+			removeWhenExistsWith removeLink tmp'
 			return Nothing
 		let tooklock st = return $ Just $ LockHandle abslockfile st sidelock
-		ifM (linkToLock sidelock tmp abslockfile)
+		ifM (linkToLock sidelock tmp' abslockfile)
 			( do
-				nukeFile tmp
+				removeWhenExistsWith removeLink tmp'
 				-- May not have made a hard link, so stat
 				-- the lockfile
 				lckst <- getFileStatus abslockfile
@@ -157,7 +163,7 @@ tryLock lockfile = do
 			, do
 				v <- readPidLock abslockfile
 				hn <- getHostName
-				tmpst <- getFileStatus tmp
+				tmpst <- getFileStatus tmp'
 				case v of
 					Just pl | isJust sidelock && hn == lockingHost pl -> do
 						-- Since we have the sidelock,
@@ -165,7 +171,7 @@ tryLock lockfile = do
 						-- the pidlock was taken on,
 						-- we know that the pidlock is
 						-- stale, and can take it over.
-						rename tmp abslockfile
+						rename tmp' abslockfile
 						tooklock tmpst
 					_ -> failedlock tmpst
 			)
@@ -180,12 +186,12 @@ tryLock lockfile = do
 --
 -- However, not all filesystems support hard links. So, first probe
 -- to see if they are supported. If not, use open with O_EXCL.
-linkToLock :: SideLockHandle -> FilePath -> FilePath -> IO Bool
+linkToLock :: SideLockHandle -> RawFilePath -> RawFilePath -> IO Bool
 linkToLock Nothing _ _ = return False
 linkToLock (Just _) src dest = do
-	let probe = src ++ ".lnk"
+	let probe = src <> ".lnk"
 	v <- tryIO $ createLink src probe
-	nukeFile probe
+	removeWhenExistsWith removeLink probe
 	case v of
 		Right _ -> do
 			_ <- tryIO $ createLink src dest
@@ -200,7 +206,8 @@ linkToLock (Just _) src dest = do
 					(defaultFileFlags {exclusive = True})
 				fdToHandle fd
 			let cleanup = hClose
-			bracket setup cleanup (\h -> readFile src >>= hPutStr h)
+			let go h = readFile (fromRawFilePath src) >>= hPutStr h
+			bracket setup cleanup go
 			return True
   where
 	checklinked = do
@@ -228,16 +235,17 @@ linkToLock (Just _) src dest = do
 -- We can detect this insanity by getting the directory contents after
 -- making the link, and checking to see if 2 copies of the dest file,
 -- with the SAME FILENAME exist.
-checkInsaneLustre :: FilePath -> IO Bool
+checkInsaneLustre :: RawFilePath -> IO Bool
 checkInsaneLustre dest = do
-	fs <- dirContents (takeDirectory dest)
-	case length (filter (== dest) fs) of
+	let dest' = fromRawFilePath dest
+	fs <- dirContents (takeDirectory dest')
+	case length (filter (== dest') fs) of
 		1 -> return False -- whew!
 		0 -> return True -- wtf?
 		_ -> do
 			-- Try to clean up the extra copy we made
 			-- that has the same name. Egads.
-			_ <- tryIO $ removeFile dest
+			_ <- tryIO $ removeFile dest'
 			return True
 
 -- | Waits as necessary to take a lock.
@@ -253,20 +261,20 @@ waitLock (Seconds timeout) lockfile displaymessage = go timeout
 		| n > 0 = liftIO (tryLock lockfile) >>= \case
 			Nothing -> do
 				when (n == pred timeout) $
-					displaymessage $ "waiting for pid lock file " ++ lockfile ++ " which is held by another process (or may be stale)"
+					displaymessage $ "waiting for pid lock file " ++ fromRawFilePath lockfile ++ " which is held by another process (or may be stale)"
 				liftIO $ threadDelaySeconds (Seconds 1)
 				go (pred n)
 			Just lckh -> return lckh
 		| otherwise = do
-			displaymessage $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ lockfile
-			giveup $ "Gave up waiting for pid lock file " ++ lockfile
+			displaymessage $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ fromRawFilePath lockfile
+			giveup $ "Gave up waiting for pid lock file " ++ fromRawFilePath lockfile
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle lockfile _ sidelock) = do
 	-- Drop side lock first, at which point the pid lock will be
 	-- considered stale.
 	dropSideLock sidelock
-	nukeFile lockfile
+	removeWhenExistsWith removeLink lockfile
 dropLock ParentLocked = return ()
 
 getLockStatus :: LockFile -> IO LockStatus
@@ -297,9 +305,9 @@ checkSaneLock _ ParentLocked = return True
 -- The parent process should keep running as long as the child
 -- process is running, since the child inherits the environment and will
 -- not see unsetLockEnv.
-pidLockEnv :: FilePath -> IO String
+pidLockEnv :: RawFilePath -> IO String
 pidLockEnv lockfile = do
-	abslockfile <- fromRawFilePath <$> absPath (toRawFilePath lockfile)
+	abslockfile <- fromRawFilePath <$> absPath lockfile
 	return $ "PIDLOCK_" ++ filter legalInEnvVar abslockfile
 
 pidLockEnvValue :: String

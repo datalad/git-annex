@@ -109,11 +109,10 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		)
   where
 	dotgit = w </> ".git"
-	dotgit' = fromRawFilePath dotgit
 
-	replacedotgit = whenM (doesFileExist dotgit') $ do
+	replacedotgit = whenM (doesFileExist (fromRawFilePath dotgit)) $ do
 		linktarget <- relPathDirToFile w d
-		nukeFile dotgit'
+		removeWhenExistsWith R.removeLink dotgit
 		R.createSymbolicLink linktarget dotgit
 	
 	unsetcoreworktree =

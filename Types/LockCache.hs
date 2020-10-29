@@ -10,7 +10,9 @@ module Types.LockCache (
 	LockHandle
 ) where
 
-import qualified Data.Map as M
 import Utility.LockPool (LockHandle)
 
-type LockCache = M.Map FilePath LockHandle
+import qualified Data.Map as M
+import System.FilePath.ByteString (RawFilePath)
+
+type LockCache = M.Map RawFilePath LockHandle

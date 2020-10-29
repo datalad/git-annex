@@ -212,7 +212,7 @@ removeCreds :: FilePath -> Annex ()
 removeCreds file = do
 	d <- fromRawFilePath <$> fromRepo gitAnnexCredsDir
 	let f = d </> file
-	liftIO $ nukeFile f
+	liftIO $ removeWhenExistsWith removeLink f
 
 includeCredsInfo :: ParsedRemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
 includeCredsInfo pc@(ParsedRemoteConfig cm _) storage info = do

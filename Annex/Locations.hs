@@ -505,12 +505,12 @@ gitAnnexIgnoredRefs :: Git.Repo -> FilePath
 gitAnnexIgnoredRefs r = fromRawFilePath $ gitAnnexDir r P.</> "ignoredrefs"
 
 {- Pid file for daemon mode. -}
-gitAnnexPidFile :: Git.Repo -> FilePath
-gitAnnexPidFile r = fromRawFilePath $ gitAnnexDir r P.</> "daemon.pid"
+gitAnnexPidFile :: Git.Repo -> RawFilePath
+gitAnnexPidFile r = gitAnnexDir r P.</> "daemon.pid"
 
 {- Pid lock file for pidlock mode -}
-gitAnnexPidLockFile :: Git.Repo -> FilePath
-gitAnnexPidLockFile r = fromRawFilePath $ gitAnnexDir r P.</> "pidlock"
+gitAnnexPidLockFile :: Git.Repo -> RawFilePath
+gitAnnexPidLockFile r = gitAnnexDir r P.</> "pidlock"
 
 {- Status file for daemon mode. -}
 gitAnnexDaemonStatusFile :: Git.Repo -> FilePath

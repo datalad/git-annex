@@ -112,7 +112,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 			(tmpfile, h) <- openTempFile tmpdir $
 				relatedTemplate $ "ingest-" ++ takeFileName file
 			hClose h
-			nukeFile tmpfile
+			removeWhenExistsWith removeLink tmpfile
 			withhardlink' delta tmpfile
 				`catchIO` const (nohardlink' delta)
 
@@ -229,7 +229,7 @@ populateAssociatedFiles key source restage = do
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $
-	liftIO $ nukeFile $ fromRawFilePath $ contentLocation source
+	liftIO $ removeWhenExistsWith R.removeLink $ contentLocation source
 
 -- If a worktree file was was hard linked to an annex object before,
 -- modifying the file would have caused the object to have the wrong
@@ -262,7 +262,7 @@ cleanOldKeys file newkey = do
 restoreFile :: FilePath -> Key -> SomeException -> Annex a
 restoreFile file key e = do
 	whenM (inAnnex key) $ do
-		liftIO $ nukeFile file
+		liftIO $ removeWhenExistsWith removeLink file
 		-- The key could be used by other files too, so leave the
 		-- content in the annex, and make a copy back to the file.
 		obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)

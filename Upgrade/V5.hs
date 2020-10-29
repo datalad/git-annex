@@ -150,7 +150,7 @@ upgradeDirectWorkTree = do
 		)
 	
 	writepointer f k = liftIO $ do
-		nukeFile f
+		removeWhenExistsWith removeLink f
 		S.writeFile f (formatPointer k)
 
 {- Remove all direct mode bookkeeping files. -}

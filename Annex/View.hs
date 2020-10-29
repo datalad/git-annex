@@ -353,7 +353,7 @@ applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
-	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
+	liftIO . removeWhenExistsWith removeLink =<< fromRepo gitAnnexViewIndex
 	viewg <- withViewIndex gitRepo
 	withUpdateIndex viewg $ \uh -> do
 		forM_ l $ \(f, sha, mode) -> do

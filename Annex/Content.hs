@@ -171,7 +171,7 @@ inAnnexSafe key =
 					Nothing -> return is_locked
 					Just lockhandle -> do
 						dropLock lockhandle
-						void $ tryIO $ nukeFile lockfile
+						void $ tryIO $ removeWhenExistsWith removeLink lockfile
 						return is_unlocked
 			, return is_missing
 			)
@@ -295,7 +295,7 @@ lockContentUsing locker key fallback a = do
 
 	cleanuplockfile lockfile = modifyContent lockfile $
 		void $ liftIO $ tryIO $
-			nukeFile lockfile
+			removeWhenExistsWith removeLink lockfile
 
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
@@ -338,7 +338,7 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 				-- including perhaps the content of another
 				-- file than the one that was requested,
 				-- and so it's best not to keep it on disk.
-				pruneTmpWorkDirBefore tmpfile (liftIO . nukeFile)
+				pruneTmpWorkDirBefore tmpfile (liftIO . removeWhenExistsWith removeLink)
 				return False
 			)
 		-- On transfer failure, the tmp file is left behind, in case
@@ -460,7 +460,7 @@ withTmp :: Key -> (FilePath -> Annex a) -> Annex a
 withTmp key action = do
 	tmp <- prepTmp key
 	res <- action tmp
-	pruneTmpWorkDirBefore tmp (liftIO . nukeFile)
+	pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith removeLink)
 	return res
 
 {- Moves a key's content into .git/annex/objects/
@@ -595,16 +595,16 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 				catMaybes [destic, Just srcic]
 			return LinkAnnexOk
 		_ -> do
-			liftIO $ nukeFile dest
+			liftIO $ removeWhenExistsWith removeLink dest
 			failed
 
 {- Removes the annex object file for a key. Lowlevel. -}
 unlinkAnnex :: Key -> Annex ()
 unlinkAnnex key = do
-	obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
+	obj <- calcRepo (gitAnnexLocation key)
 	modifyContent obj $ do
 		secureErase obj
-		liftIO $ nukeFile obj
+		liftIO $ removeWhenExistsWith R.removeLink obj
 
 {- Runs an action to transfer an object's content.
  -
@@ -674,7 +674,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	cleanObjectLoc key $ do
 		let file' = fromRawFilePath file
 		secureErase file'
-		liftIO $ nukeFile file'
+		liftIO $ removeWhenExistsWith removeLink file'
 		g <- Annex.gitRepo 
 		mapM_ (\f -> void $ tryIO $ resetpointer $ fromTopFilePath f g)
 			=<< Database.Keys.getAssociatedFiles key

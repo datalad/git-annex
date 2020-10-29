@@ -95,7 +95,7 @@ installGitLibs topdir = do
 						unlessM (doesFileExist linktarget') $ do
 							createDirectoryIfMissing True (takeDirectory linktarget')
 							L.readFile f >>= L.writeFile linktarget'
-						nukeFile destf
+						removeWhenExistsWith removeLink destf
 						rellinktarget <- relPathDirToFile (takeDirectory destf) linktarget'
 						createSymbolicLink rellinktarget destf
 			else cp f destf
@@ -125,7 +125,7 @@ installGitLibs topdir = do
 
 cp :: FilePath -> FilePath -> IO ()
 cp src dest = do
-	nukeFile dest
+	removeWhenExistsWith removeLink dest
 	unlessM (boolSystem "cp" [Param "-a", File src, File dest]) $
 		error "cp failed"
 
