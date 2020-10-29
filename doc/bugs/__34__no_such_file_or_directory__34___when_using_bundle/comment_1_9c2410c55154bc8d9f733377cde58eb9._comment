@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="lyderic"
+ avatar="http://cdn.libravatar.org/avatar/d03e900b5e94b54891ee9596460f76c3"
+ subject="This bug has alreay been raised"
+ date="2020-10-29T10:13:50Z"
+ content="""
+I found out that this bug has already been raised and addressed...
+https://git-annex.branchable.com/bugs/git_annex_init_fails/
+"""]]
