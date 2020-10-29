@@ -18,6 +18,8 @@ mv: cannot move '/home/lyderic/.cache/git-annex/locales.tmp/ec977e22ef909b450a3a
 
 $ mkdir ~/.cache/git-annex/locales
 
+[[done]]
+
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 8.20200909-g2d5036e44
