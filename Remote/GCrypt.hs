@@ -1,6 +1,6 @@
 {- git remotes encrypted using git-remote-gcrypt
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ module Remote.GCrypt (
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import qualified System.FilePath.ByteString as P
 import Control.Exception
 import Data.Default
 
@@ -58,6 +59,7 @@ import Logs.Remote
 import Utility.Gpg
 import Utility.SshHost
 import Utility.Tuple
+import Utility.Directory.Create
 import Messages.Progress
 import Types.ProposedAccepted
 
@@ -284,7 +286,7 @@ setupRepo gcryptid r
 	 - which is needed for direct rsync of objects to work.
 	 -}
 	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
-		createAnnexDirectory (tmp </> objectDir)
+		createAnnexDirectory (toRawFilePath (tmp </> objectDir))
 		dummycfg <- liftIO dummyRemoteGitConfig
 		(rsynctransport, rsyncurl, _) <- rsyncTransport r dummycfg
 		let tmpconfig = tmp </> "config"
@@ -368,12 +370,12 @@ store' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Storer
 store' repo r rsyncopts
 	| not $ Git.repoIsUrl repo = 
 		byteStorer $ \k b p -> guardUsable repo (giveup "cannot access remote") $ liftIO $ do
-			let tmpdir = Git.repoLocation repo </> "tmp" </> fromRawFilePath (keyFile k)
-			void $ tryIO $ createDirectoryUnder (Git.repoLocation repo) tmpdir
-			let tmpf = tmpdir </> fromRawFilePath (keyFile k)
-			meteredWriteFile p tmpf b
-			let destdir = parentDir $ gCryptLocation repo k
-			Remote.Directory.finalizeStoreGeneric (Git.repoLocation repo) tmpdir destdir
+			let tmpdir = Git.repoPath repo P.</> "tmp" P.</> keyFile k
+			void $ tryIO $ createDirectoryUnder (Git.repoPath repo) tmpdir
+			let tmpf = tmpdir P.</> keyFile k
+			meteredWriteFile p (fromRawFilePath tmpf) b
+			let destdir = parentDir $ toRawFilePath $ gCryptLocation repo k
+			Remote.Directory.finalizeStoreGeneric (Git.repoPath repo) tmpdir destdir
 	| Git.repoIsSsh repo = if accessShell r
 		then fileStorer $ \k f p -> do
 			oh <- mkOutputHandler
@@ -414,7 +416,9 @@ remove r rsyncopts k = do
 remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Remover
 remove' repo r rsyncopts k
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $
-		liftIO $ Remote.Directory.removeDirGeneric (Git.repoLocation repo) (parentDir (gCryptLocation repo k))
+		liftIO $ Remote.Directory.removeDirGeneric
+			(fromRawFilePath (Git.repoPath repo))
+			(fromRawFilePath (parentDir (toRawFilePath (gCryptLocation repo k))))
 	| Git.repoIsSsh repo = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
   where
