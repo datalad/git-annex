@@ -42,7 +42,7 @@ import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 
-type LinkTarget = String
+type LinkTarget = S.ByteString
 
 {- Checks if a file is a link to a key. -}
 isAnnexLink :: RawFilePath -> Annex (Maybe Key)
@@ -56,7 +56,7 @@ isAnnexLink file = maybe Nothing parseLinkTargetOrPointer <$> getAnnexLinkTarget
  - Returns Nothing if the file is not a symlink, or not a link to annex
  - content.
  -}
-getAnnexLinkTarget :: RawFilePath -> Annex (Maybe S.ByteString)
+getAnnexLinkTarget :: RawFilePath -> Annex (Maybe LinkTarget)
 getAnnexLinkTarget f = getAnnexLinkTarget' f
 	=<< (coreSymlinks <$> Annex.getGitConfig)
 
@@ -107,9 +107,9 @@ makeAnnexLink = makeGitLink
 makeGitLink :: LinkTarget -> RawFilePath -> Annex ()
 makeGitLink linktarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( liftIO $ do
-		void $ tryIO $ removeFile (fromRawFilePath file)
-		createSymbolicLink linktarget (fromRawFilePath file)
-	, liftIO $ writeFile (fromRawFilePath file) linktarget
+		void $ tryIO $ R.removeLink file
+		R.createSymbolicLink linktarget file
+	, liftIO $ S.writeFile (fromRawFilePath file) linktarget
 	)
 
 {- Creates a link on disk, and additionally stages it in git. -}
@@ -120,7 +120,7 @@ addAnnexLink linktarget file = do
 
 {- Injects a symlink target into git, returning its Sha. -}
 hashSymlink :: LinkTarget -> Annex Sha
-hashSymlink = hashBlob . toInternalGitPath . toRawFilePath
+hashSymlink = hashBlob . toInternalGitPath
 
 {- Stages a symlink to an annexed object, using a Sha of its target. -}
 stageSymlink :: RawFilePath -> Sha -> Annex ()

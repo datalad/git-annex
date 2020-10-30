@@ -141,7 +141,7 @@ youtubeDlMaxSize workdir = ifM (Annex.getState Annex.force)
 youtubeDlTo :: Key -> URLString -> FilePath -> MeterUpdate -> Annex Bool
 youtubeDlTo key url dest p = do
 	res <- withTmpWorkDir key $ \workdir ->
-		youtubeDl url workdir p >>= \case
+		youtubeDl url (fromRawFilePath workdir) p >>= \case
 			Right (Just mediafile) -> do
 				liftIO $ renameFile mediafile dest
 				return (Just True)

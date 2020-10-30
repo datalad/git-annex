@@ -40,7 +40,7 @@ runLocal :: RunState -> RunProto Annex -> LocalF (Proto a) -> Annex (Either Prot
 runLocal runst runner a = case a of
 	TmpContentSize k next -> do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation k
-		size <- liftIO $ catchDefaultIO 0 $ getFileSize tmp
+		size <- liftIO $ catchDefaultIO 0 $ getFileSize $ fromRawFilePath tmp
 		runner (next (Len size))
 	FileSize f next -> do
 		size <- liftIO $ catchDefaultIO 0 $ getFileSize f
@@ -77,7 +77,7 @@ runLocal runst runner a = case a of
 			let runtransfer ti = 
 				Right <$> transfer download k af (\p ->
 					getViaTmp rsp DefaultVerify k $ \tmp ->
-						storefile tmp o l getb validitycheck p ti)
+						storefile (fromRawFilePath tmp) o l getb validitycheck p ti)
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer already in progress, or unable to take transfer lock"
 			checktransfer runtransfer fallback
