@@ -1,6 +1,6 @@
 {- adjusted branch
  -
- - Copyright 2016-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -57,11 +57,13 @@ import Annex.Tmp
 import Annex.GitOverlay
 import Utility.Tmp.Dir
 import Utility.CopyFile
+import Utility.Directory.Create
 import qualified Database.Keys
 import Config
 
 import qualified Data.Map as M
 import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 
 -- How to perform various adjustments to a TreeItem.
 class AdjustTreeItem t where
@@ -110,11 +112,10 @@ adjustToPointer ti@(TreeItem f _m s) = catKey s >>= \case
 adjustToSymlink :: TreeItem -> Annex (Maybe TreeItem)
 adjustToSymlink = adjustToSymlink' gitAnnexLink
 
-adjustToSymlink' :: (FilePath -> Key -> Git.Repo -> GitConfig -> IO FilePath) -> TreeItem -> Annex (Maybe TreeItem)
+adjustToSymlink' :: (RawFilePath -> Key -> Git.Repo -> GitConfig -> IO RawFilePath) -> TreeItem -> Annex (Maybe TreeItem)
 adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
 	Just k -> do
-		absf <- inRepo $ \r -> absPath $ 
-			fromRawFilePath $ fromTopFilePath f r
+		absf <- inRepo $ \r -> absPath $ fromTopFilePath f r
 		linktarget <- calcRepo $ gitannexlink absf k
 		Just . TreeItem f (fromTreeItemType TreeSymlink)
 			<$> hashSymlink linktarget
@@ -376,23 +377,27 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	 - index file is currently locked.)
 	 -}
 	changestomerge (Just updatedorig) = withOtherTmp $ \othertmpdir -> do
-		git_dir <- fromRawFilePath <$> fromRepo Git.localGitDir
+		git_dir <- fromRepo Git.localGitDir
+		let git_dir' = fromRawFilePath git_dir
 		tmpwt <- fromRepo gitAnnexMergeDir
-		withTmpDirIn othertmpdir "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
+		withTmpDirIn (fromRawFilePath othertmpdir) "git" $ \tmpgit -> withWorkTreeRelated tmpgit $
 			withemptydir git_dir tmpwt $ withWorkTree tmpwt $ do
 				liftIO $ writeFile (tmpgit </> "HEAD") (fromRef updatedorig)
 				-- Copy in refs and packed-refs, to work
 				-- around bug in git 2.13.0, which
 				-- causes it not to look in GIT_DIR for refs.
 				refs <- liftIO $ dirContentsRecursive $
-					git_dir </> "refs"
-				let refs' = (git_dir </> "packed-refs") : refs
+					git_dir' </> "refs"
+				let refs' = (git_dir' </> "packed-refs") : refs
 				liftIO $ forM_ refs' $ \src ->
 					whenM (doesFileExist src) $ do
-						dest <- relPathDirToFile git_dir src
-						let dest' = tmpgit </> dest
-						createDirectoryUnder git_dir (takeDirectory dest')
-						void $ createLinkOrCopy src dest'
+						dest <- relPathDirToFile git_dir
+							(toRawFilePath src)
+						let dest' = toRawFilePath tmpgit P.</> dest
+						createDirectoryUnder git_dir
+							(P.takeDirectory dest')
+						void $ createLinkOrCopy src
+							(fromRawFilePath dest')
 				-- This reset makes git merge not care
 				-- that the work tree is empty; otherwise
 				-- it will think that all the files have
@@ -418,7 +423,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 		setup = do
 			whenM (doesDirectoryExist d) $
 				removeDirectoryRecursive d
-			createDirectoryUnder git_dir d
+			createDirectoryUnder git_dir (toRawFilePath d)
 		cleanup _ = removeDirectoryRecursive d
 
 	{- A merge commit has been made between the basisbranch and 

@@ -132,13 +132,14 @@ upgradeDirectWorkTree = do
 
 	fromdirect f k = ifM (Direct.goodContent k f)
 		( do
+			let f' = toRawFilePath f
 			-- If linkToAnnex fails for some reason, the work tree
 			-- file still has the content; the annex object file
 			-- is just not populated with it. Since the work tree
 			-- file is recorded as an associated file, things will
 			-- still work that way, it's just not ideal.
-			ic <- withTSDelta (liftIO . genInodeCache (toRawFilePath f))
-			void $ Content.linkToAnnex k f ic
+			ic <- withTSDelta (liftIO . genInodeCache f')
+			void $ Content.linkToAnnex k f' ic
 		, unlessM (Content.inAnnex k) $ do
 			-- Worktree file was deleted or modified;
 			-- if there are no other copies of the content

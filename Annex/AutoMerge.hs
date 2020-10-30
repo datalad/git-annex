@@ -230,7 +230,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		| otherwise = pure f
 
 	makesymlink key dest = do
-		l <- calcRepo $ gitAnnexLink dest key
+		l <- calcRepo $ gitAnnexLink (toRawFilePath dest) key
 		unless inoverlay $ replacewithsymlink dest l
 		dest' <- toRawFilePath <$> stagefile dest
 		stageSymlink dest' =<< hashSymlink l
@@ -267,7 +267,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 					Nothing -> noop
 					Just sha -> do
 						link <- catSymLinkTarget sha
-						replacewithsymlink item (fromRawFilePath link)
+						replacewithsymlink item link
 			-- And when grafting in anything else vs a symlink,
 			-- the work tree already contains what we want.
 			(_, Just TreeSymlink) -> noop

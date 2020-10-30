@@ -50,6 +50,7 @@ import Upgrade
 import Annex.Tmp
 import Utility.UserInfo
 import Utility.ThreadScheduler
+import qualified Utility.RawFilePath as R
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 import Utility.FileMode
@@ -59,6 +60,7 @@ import Data.Either
 #endif
 
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 
 checkCanInitialize :: Annex a -> Annex a
@@ -79,8 +81,8 @@ canInitialize' = inRepo (noAnnexFileContent . fmap fromRawFilePath . Git.repoWor
 genDescription :: Maybe String -> Annex UUIDDesc
 genDescription (Just d) = return $ UUIDDesc $ encodeBS d
 genDescription Nothing = do
-	reldir <- liftIO . relHome
-		=<< liftIO . absPath . fromRawFilePath
+	reldir <- liftIO . relHome . fromRawFilePath
+		=<< liftIO . absPath
 		=<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
 	let at = if null hostname then "" else "@"
@@ -194,12 +196,12 @@ probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
 	mapM_ warning warnings
 	return r
 
-probeCrippledFileSystem' :: FilePath -> IO (Bool, [String])
+probeCrippledFileSystem' :: RawFilePath -> IO (Bool, [String])
 #ifdef mingw32_HOST_OS
 probeCrippledFileSystem' _ = return (True, [])
 #else
 probeCrippledFileSystem' tmp = do
-	let f = tmp </> "gaprobe"
+	let f = fromRawFilePath (tmp P.</> "gaprobe")
 	writeFile f ""
 	r <- probe f
 	void $ tryIO $ allowWrite f
@@ -246,18 +248,18 @@ probeLockSupport :: Annex Bool
 probeLockSupport = return True
 #else
 probeLockSupport = withEventuallyCleanedOtherTmp $ \tmp -> do
-	let f = tmp </> "lockprobe"
+	let f = tmp P.</> "lockprobe"
 	mode <- annexFileMode
 	liftIO $ withAsync warnstall (const (go f mode))
   where
 	go f mode = do
-		removeWhenExistsWith removeLink f
+		removeWhenExistsWith R.removeLink f
 		let locktest = bracket
 			(Posix.lockExclusive (Just mode) f)
 			Posix.dropLock
 			(const noop)
 		ok <- isRight <$> tryNonAsync locktest
-		removeWhenExistsWith removeLink f
+		removeWhenExistsWith R.removeLink f
 		return ok
 	
 	warnstall = do
@@ -272,17 +274,17 @@ probeFifoSupport = do
 	return False
 #else
 	withEventuallyCleanedOtherTmp $ \tmp -> do
-		let f = tmp </> "gaprobe"
-		let f2 = tmp </> "gaprobe2"
+		let f = tmp P.</> "gaprobe"
+		let f2 = tmp P.</> "gaprobe2"
 		liftIO $ do
-			removeWhenExistsWith removeLink f
-			removeWhenExistsWith removeLink f2
+			removeWhenExistsWith R.removeLink f
+			removeWhenExistsWith R.removeLink f2
 			ms <- tryIO $ do
-				createNamedPipe f ownerReadMode
-				createLink f f2
-				getFileStatus f
-			removeWhenExistsWith removeLink f
-			removeWhenExistsWith removeLink f2
+				createNamedPipe (fromRawFilePath f) ownerReadMode
+				R.createLink f f2
+				R.getFileStatus f
+			removeWhenExistsWith R.removeLink f
+			removeWhenExistsWith R.removeLink f2
 			return $ either (const False) isNamedPipe ms
 #endif
 

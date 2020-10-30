@@ -51,9 +51,9 @@ needsUpgrade v
   where
 	err msg = do
 		g <- Annex.gitRepo
-		p <- liftIO $ absPath $ fromRawFilePath $ Git.repoPath g
+		p <- liftIO $ absPath $ Git.repoPath g
 		return $ Just $ unwords
-			[ "Repository", p
+			[ "Repository", fromRawFilePath p
 			, "is at unsupported version"
 			, show (fromRepoVersion v) ++ "."
 			, msg
