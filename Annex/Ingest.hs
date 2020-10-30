@@ -157,7 +157,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	k <- case mk of
 		Nothing -> do
 			backend <- maybe
-				(chooseBackend $ fromRawFilePath $ keyFilename source)
+				(chooseBackend $ keyFilename source)
 				(return . Just)
 				preferredbackend
 			fst <$> genKey source meterupdate backend
@@ -176,7 +176,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	go _ _ Nothing = failure "failed to generate a key"
 
 	golocked key mcache s =
-		tryNonAsync (moveAnnex key $ fromRawFilePath $ contentLocation source) >>= \case
+		tryNonAsync (moveAnnex key $ contentLocation source) >>= \case
 			Right True -> do
 				populateAssociatedFiles key source restage
 				success key mcache s		
@@ -189,7 +189,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		-- already has a hard link.
 		cleanCruft source
 		cleanOldKeys (keyFilename source) key
-		linkToAnnex key (fromRawFilePath $ keyFilename source) (Just cache) >>= \case
+		linkToAnnex key (keyFilename source) (Just cache) >>= \case
 			LinkAnnexFailed -> failure "failed to link to annex"
 			_ -> do
 				finishIngestUnlocked' key source restage
@@ -254,7 +254,7 @@ cleanOldKeys file newkey = do
 				-- so no need for any recovery.
 				(f:_) -> do
 					ic <- withTSDelta (liftIO . genInodeCache f)
-					void $ linkToAnnex key (fromRawFilePath f) ic
+					void $ linkToAnnex key f ic
 				_ -> logStatus key InfoMissing
 
 {- On error, put the file back so it doesn't seem to have vanished.
@@ -272,9 +272,9 @@ restoreFile file key e = do
 	throwM e
 
 {- Creates the symlink to the annexed content, returns the link target. -}
-makeLink :: FilePath -> Key -> Maybe InodeCache -> Annex String
+makeLink :: FilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
 makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
-	l <- calcRepo $ gitAnnexLink file key
+	l <- calcRepo $ gitAnnexLink (toRawFilePath file) key
 	replaceWorkTreeFile file $ makeAnnexLink l . toRawFilePath
 
 	-- touch symlink to have same time as the original file,
@@ -349,7 +349,7 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 		stagePointerFile file' mode =<< hashPointerFile key
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file')
 		case mtmp of
-			Just tmp -> ifM (moveAnnex key tmp)
+			Just tmp -> ifM (moveAnnex key (toRawFilePath tmp))
 				( linkunlocked mode >> return True
 				, writepointer mode >> return False
 				)
@@ -360,7 +360,7 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 	, do
 		addLink ci file key Nothing
 		case mtmp of
-			Just tmp -> moveAnnex key tmp
+			Just tmp -> moveAnnex key (toRawFilePath tmp)
 			Nothing -> return True
 	)
   where
@@ -380,7 +380,7 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 			, providedMimeEncoding = Nothing
 			}
 	
-	linkunlocked mode = linkFromAnnex key file mode >>= \case
+	linkunlocked mode = linkFromAnnex key file' mode >>= \case
 		LinkAnnexFailed -> liftIO $
 			writePointerFile file' key mode
 		_ -> return ()

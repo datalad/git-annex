@@ -333,7 +333,7 @@ limitLackingCopies approx want = case readish want of
 			then approxNumCopies
 			else case mi of
 				MatchingFile fi -> getGlobalFileNumCopies $
-					fromRawFilePath $ matchFile fi
+					matchFile fi
 				MatchingKey _ _ -> approxNumCopies
 				MatchingInfo {} -> approxNumCopies
 				MatchingUserInfo {} -> approxNumCopies

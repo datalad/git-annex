@@ -137,7 +137,7 @@ batchFilesMatching fmt a = do
 			)
   where
 	go a' = batchInput fmt 
-		(Right <$$> liftIO . relPathCwdToFile)
+		(Right . fromRawFilePath <$$> liftIO . relPathCwdToFile . toRawFilePath)
 		(batchCommandAction . uncurry a')
 
 batchAnnexedFilesMatching :: BatchFormat -> AnnexedFileSeeker -> Annex ()

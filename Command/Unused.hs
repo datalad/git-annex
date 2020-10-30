@@ -108,7 +108,7 @@ check file msg a c = do
 	l <- a
 	let unusedlist = number c l
 	unless (null l) $ showLongNote $ msg unusedlist
-	updateUnusedLog file $ M.fromList unusedlist
+	updateUnusedLog (toRawFilePath file) (M.fromList unusedlist)
 	return $ c + length l
 
 number :: Int -> [a] -> [(Int, a)]

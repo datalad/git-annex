@@ -43,11 +43,12 @@ seek = withNothing (commandAction start)
 start :: CommandStart
 start = do
 	f <- fromRepo gitAnnexTmpCfgFile
+	let f' = fromRawFilePath f
 	createAnnexDirectory $ parentDir f
 	cfg <- getCfg
 	descs <- uuidDescriptions
-	liftIO $ writeFile f $ genCfg cfg descs
-	vicfg cfg f
+	liftIO $ writeFile f' $ genCfg cfg descs
+	vicfg cfg f'
 	stop
 
 vicfg :: Cfg -> FilePath -> Annex ()

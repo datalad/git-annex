@@ -640,8 +640,8 @@ copyFromRemoteCheap r st repo
 		loc <- liftIO $ gitAnnexLocation key repo gc
 		liftIO $ ifM (R.doesPathExist loc)
 			( do
-				absloc <- absPath (fromRawFilePath loc)
-				createSymbolicLink absloc file
+				absloc <- absPath loc
+				R.createSymbolicLink absloc (toRawFilePath file)
 			, giveup "remote does not contain key"
 			)
 	| Git.repoIsSsh repo = Just $ \key af file ->
@@ -692,7 +692,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 				let rsp = RetrievalAllKeysSecure
 				res <- Annex.Content.getViaTmp rsp verify key $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
-						copier object dest p' (liftIO checksuccessio)
+						copier object (fromRawFilePath dest) p' (liftIO checksuccessio)
 				Annex.Content.saveState True
 				return res
 			)

@@ -126,7 +126,7 @@ hashSymlink = hashBlob . toInternalGitPath
 stageSymlink :: RawFilePath -> Sha -> Annex ()
 stageSymlink file sha =
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.stageSymlink (fromRawFilePath file) sha)
+		inRepo (Git.UpdateIndex.stageSymlink file sha)
 
 {- Injects a pointer file content into git, returning its Sha. -}
 hashPointerFile :: Key -> Annex Sha

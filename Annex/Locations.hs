@@ -268,11 +268,8 @@ gitAnnexObjectDir r = fromRawFilePath $
 	P.addTrailingPathSeparator $ Git.localGitDir r P.</> objectDir'
 
 {- .git/annex/tmp/ is used for temp files for key's contents -}
-gitAnnexTmpObjectDir :: Git.Repo -> FilePath
-gitAnnexTmpObjectDir = fromRawFilePath . gitAnnexTmpObjectDir'
-
-gitAnnexTmpObjectDir' :: Git.Repo -> RawFilePath
-gitAnnexTmpObjectDir' r = P.addTrailingPathSeparator $
+gitAnnexTmpObjectDir :: Git.Repo -> RawFilePath
+gitAnnexTmpObjectDir r = P.addTrailingPathSeparator $
 	gitAnnexDir r P.</> "tmp"
 
 {- .git/annex/othertmp/ is used for other temp files -}
@@ -297,7 +294,7 @@ gitAnnexTmpWatcherDir r = fromRawFilePath $
 
 {- The temp file to use for a given key's content. -}
 gitAnnexTmpObjectLocation :: Key -> Git.Repo -> RawFilePath
-gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir' r P.</> keyFile key
+gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r P.</> keyFile key
 
 {- Given a temp file such as gitAnnexTmpObjectLocation, makes a name for a
  - subdirectory in the same location, that can be used as a work area
@@ -531,8 +528,8 @@ gitAnnexUrlFile :: Git.Repo -> FilePath
 gitAnnexUrlFile r = fromRawFilePath $ gitAnnexDir r P.</> "url"
 
 {- Temporary file used to edit configuriation from the git-annex branch. -}
-gitAnnexTmpCfgFile :: Git.Repo -> FilePath
-gitAnnexTmpCfgFile r = fromRawFilePath $ gitAnnexDir r P.</> "config.tmp"
+gitAnnexTmpCfgFile :: Git.Repo -> RawFilePath
+gitAnnexTmpCfgFile r = gitAnnexDir r P.</> "config.tmp"
 
 {- .git/annex/ssh/ is used for ssh connection caching -}
 gitAnnexSshDir :: Git.Repo -> RawFilePath

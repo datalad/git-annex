@@ -118,12 +118,12 @@ unstageFile' p = pureStreamer $ L.fromStrict $
 	<> indexPath p
 
 {- A streamer that adds a symlink to the index. -}
-stageSymlink :: FilePath -> Sha -> Repo -> IO Streamer
+stageSymlink :: RawFilePath -> Sha -> Repo -> IO Streamer
 stageSymlink file sha repo = do
 	!line <- updateIndexLine
 		<$> pure sha
 		<*> pure TreeSymlink
-		<*> toTopFilePath (toRawFilePath file) repo
+		<*> toTopFilePath file repo
 	return $ pureStreamer line
 
 {- A streamer that applies a DiffTreeItem to the index. -}

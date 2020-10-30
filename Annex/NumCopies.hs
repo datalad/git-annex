@@ -63,7 +63,7 @@ getNumCopies = fromSources
 
 {- Numcopies value for a file, from any configuration source, including the
  - deprecated git config. -}
-getFileNumCopies :: FilePath -> Annex NumCopies
+getFileNumCopies :: RawFilePath -> Annex NumCopies
 getFileNumCopies f = fromSources
 	[ getForcedNumCopies
 	, getFileNumCopies' f
@@ -72,17 +72,17 @@ getFileNumCopies f = fromSources
 
 getAssociatedFileNumCopies :: AssociatedFile -> Annex NumCopies
 getAssociatedFileNumCopies (AssociatedFile afile) =
-	maybe getNumCopies getFileNumCopies (fromRawFilePath <$> afile)
+	maybe getNumCopies getFileNumCopies afile
 
 {- This is the globally visible numcopies value for a file. So it does
  - not include local configuration in the git config or command line
  - options. -}
-getGlobalFileNumCopies :: FilePath  -> Annex NumCopies
+getGlobalFileNumCopies :: RawFilePath  -> Annex NumCopies
 getGlobalFileNumCopies f = fromSources
 	[ getFileNumCopies' f
 	]
 
-getFileNumCopies' :: FilePath  -> Annex (Maybe NumCopies)
+getFileNumCopies' :: RawFilePath  -> Annex (Maybe NumCopies)
 getFileNumCopies' file = maybe getGlobalNumCopies (return . Just) =<< getattr
   where
 	getattr = (NumCopies <$$> readish)
@@ -95,12 +95,12 @@ getFileNumCopies' file = maybe getGlobalNumCopies (return . Just) =<< getattr
  - This is good enough for everything except dropping the file, which
  - requires active verification of the copies.
  -}
-numCopiesCheck :: FilePath -> Key -> (Int -> Int -> v) -> Annex v
+numCopiesCheck :: RawFilePath -> Key -> (Int -> Int -> v) -> Annex v
 numCopiesCheck file key vs = do
 	have <- trustExclude UnTrusted =<< Remote.keyLocations key
 	numCopiesCheck' file vs have
 
-numCopiesCheck' :: FilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
+numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
 	NumCopies needed <- getFileNumCopies file
 	return $ length have `vs` needed

@@ -50,7 +50,7 @@ perform dest key = do
 	replaceWorkTreeFile (fromRawFilePath dest) $ \tmp ->
 		ifM (inAnnex key)
 			( do
-				r <- linkFromAnnex key tmp destmode
+				r <- linkFromAnnex key (toRawFilePath tmp) destmode
 				case r of
 					LinkAnnexOk -> return ()
 					LinkAnnexNoop -> return ()

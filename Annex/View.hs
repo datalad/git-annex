@@ -369,8 +369,7 @@ applyView' mkviewedfile getfilemetadata view = do
 		let f = fromRawFilePath $ getTopFilePath topf
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
-			f' <- fromRawFilePath <$> 
-				fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
+			f' <- fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
 			stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
 	go uh topf sha (Just treeitemtype) Nothing
 		| "." `B.isPrefixOf` getTopFilePath topf =

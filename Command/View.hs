@@ -19,6 +19,8 @@ import Types.View
 import Annex.View
 import Logs.View
 
+import qualified System.FilePath.ByteString as P
+
 cmd :: Command
 cmd = notBareRepo $
 	command "view" SectionMetaData "enter a view branch"
@@ -101,19 +103,19 @@ checkoutViewBranch view mkbranch = do
 		 - and this pollutes the view, so remove them.
 		 - (However, emptry directories used by submodules are not
 		 - removed.) -}
-		top <- liftIO . absPath . fromRawFilePath =<< fromRepo Git.repoPath
+		top <- liftIO . absPath =<< fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $
-			LsFiles.notInRepoIncludingEmptyDirectories [] False
-				[toRawFilePath top]
+			LsFiles.notInRepoIncludingEmptyDirectories [] False [top]
 		forM_ l (removeemptydir top)
 		liftIO $ void cleanup
 		unlessM (liftIO $ doesDirectoryExist here) $ do
-			showLongNote (cwdmissing top)
+			showLongNote (cwdmissing (fromRawFilePath top))
 	return ok
   where
 	removeemptydir top d = do
 		p <- inRepo $ toTopFilePath d
-		liftIO $ tryIO $ removeDirectory (top </> fromRawFilePath (getTopFilePath p))
+		liftIO $ tryIO $ removeDirectory $
+			fromRawFilePath $ (top P.</> getTopFilePath p)
 	cwdmissing top = unlines
 		[ "This view does not include the subdirectory you are currently in."
 		, "Perhaps you should:  cd " ++ top

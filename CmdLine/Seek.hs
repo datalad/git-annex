@@ -25,6 +25,7 @@ import qualified Git.Ref
 import Git.FilePath
 import qualified Limit
 import CmdLine.GitAnnex.Options
+import CmdLine.Action
 import Logs
 import Logs.Unused
 import Types.Transfer
@@ -44,7 +45,6 @@ import qualified Annex.BranchState
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Utility.Tuple
-import CmdLine.Action
 
 import Control.Concurrent.Async
 import System.Posix.Types
@@ -102,7 +102,7 @@ withPathContents a params = do
 				a f
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
-		( map (\f -> (f, makeRelative (parentDir p) f))
+		( map (\f -> (f, makeRelative (takeDirectory (dropTrailingPathSeparator p)) f))
 			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
 		, return [(p, takeFileName p)]
 		)
@@ -490,7 +490,7 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 		currbranch <- getCurrentBranch
 		stopattop <- prepviasymlink
 		ps' <- flip filterM ps $ \p -> do
-			relf <- liftIO $ relPathCwdToFile p
+			relf <- liftIO $ relPathCwdToFile $ toRawFilePath p
 			ifM (not <$> (exists p <||> hidden currbranch relf))
 				( prob (p ++ " not found")
 				, ifM (viasymlink stopattop (upFrom relf))
@@ -517,7 +517,7 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 
 	viasymlink _ Nothing = return False
 	viasymlink stopattop (Just p) = do
-		st <- liftIO $ getSymbolicLinkStatus p
+		st <- liftIO $ R.getSymbolicLinkStatus p
 		if stopattop st
 			then return False
 			else if isSymbolicLink st
@@ -526,7 +526,7 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 
 	hidden currbranch f
 		| allowhidden = isJust
-			<$> catObjectMetaDataHidden (toRawFilePath f) currbranch
+			<$> catObjectMetaDataHidden f currbranch
 		| otherwise = return False
 
 	prob msg = do

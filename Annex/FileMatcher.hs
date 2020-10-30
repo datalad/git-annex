@@ -52,18 +52,19 @@ import Annex.Magic
 import Data.Either
 import qualified Data.Set as S
 
-type GetFileMatcher = FilePath -> Annex (FileMatcher Annex)
+type GetFileMatcher = RawFilePath -> Annex (FileMatcher Annex)
 
-checkFileMatcher :: GetFileMatcher -> FilePath -> Annex Bool
-checkFileMatcher getmatcher file = checkFileMatcher' getmatcher file (return True)
+checkFileMatcher :: GetFileMatcher -> RawFilePath -> Annex Bool
+checkFileMatcher getmatcher file =
+	checkFileMatcher' getmatcher file (return True)
 
 -- | Allows running an action when no matcher is configured for the file.
-checkFileMatcher' :: GetFileMatcher -> FilePath -> Annex Bool -> Annex Bool
+checkFileMatcher' :: GetFileMatcher -> RawFilePath -> Annex Bool -> Annex Bool
 checkFileMatcher' getmatcher file notconfigured = do
 	matcher <- getmatcher file
 	checkMatcher matcher Nothing afile S.empty notconfigured d
   where
-	afile = AssociatedFile (Just (toRawFilePath file))
+	afile = AssociatedFile (Just file)
 	-- checkMatcher will never use this, because afile is provided.
 	d = return True
 
