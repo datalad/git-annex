@@ -7,10 +7,13 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Remote.Directory.LegacyChunked where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 
 import Annex.Common
 import Utility.FileMode
@@ -18,6 +21,7 @@ import Remote.Helper.Special
 import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Annex.Tmp
 import Utility.Metered
+import Utility.Directory.Create
 
 withCheckedFiles :: (FilePath -> IO Bool) -> FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ [] _locations _ _ = return False
@@ -70,17 +74,19 @@ storeLegacyChunked' meterupdate chunksize (d:dests) bs c = do
 				feed bytes' (sz - s) ls h
 			else return (l:ls)
 
-storeHelper :: FilePath -> (FilePath -> FilePath -> IO ()) -> Key -> ([FilePath] -> IO [FilePath]) -> FilePath -> FilePath -> IO ()
+storeHelper :: FilePath -> (RawFilePath -> RawFilePath -> IO ()) -> Key -> ([FilePath] -> IO [FilePath]) -> FilePath -> FilePath -> IO ()
 storeHelper repotop finalizer key storer tmpdir destdir = do
-	void $ liftIO $ tryIO $ createDirectoryUnder repotop tmpdir
-	Legacy.storeChunks key tmpdir destdir storer recorder finalizer
+	void $ liftIO $ tryIO $ createDirectoryUnder
+		(toRawFilePath repotop)
+		(toRawFilePath tmpdir)
+	Legacy.storeChunks key tmpdir destdir storer recorder (legacyFinalizer finalizer)
   where
 	recorder f s = do
 		void $ tryIO $ allowWrite f
 		writeFile f s
 		void $ tryIO $ preventWrite f
 
-store :: FilePath -> ChunkSize -> (FilePath -> FilePath -> IO ()) -> Key -> L.ByteString -> MeterUpdate -> FilePath -> FilePath -> IO ()
+store :: FilePath -> ChunkSize -> (RawFilePath -> RawFilePath -> IO ()) -> Key -> L.ByteString -> MeterUpdate -> FilePath -> FilePath -> IO ()
 store repotop chunksize finalizer k b p = storeHelper repotop finalizer k $ \dests ->
 	storeLegacyChunked p chunksize dests b
 
@@ -88,12 +94,13 @@ store repotop chunksize finalizer k b p = storeHelper repotop finalizer k $ \des
  - Done very innefficiently, by writing to a temp file.
  - :/ This is legacy code..
  -}
-retrieve :: (FilePath -> Key -> [FilePath]) -> FilePath -> Retriever
+retrieve :: (RawFilePath -> Key -> [RawFilePath]) -> RawFilePath -> Retriever
 retrieve locations d basek p c = withOtherTmp $ \tmpdir -> do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
-	let tmp = tmpdir </> fromRawFilePath (keyFile basek) ++ ".directorylegacy.tmp"
+	let tmp = fromRawFilePath $ 
+		tmpdir P.</> keyFile basek <> ".directorylegacy.tmp"
 	let go = \k sink -> do
-		liftIO $ void $ withStoredFiles d locations k $ \fs -> do
+		liftIO $ void $ withStoredFiles (fromRawFilePath d) (legacyLocations locations) k $ \fs -> do
 			forM_ fs $
 				S.appendFile tmp <=< S.readFile
 			return True
@@ -102,7 +109,15 @@ retrieve locations d basek p c = withOtherTmp $ \tmpdir -> do
 		sink b
 	byteRetriever go basek p c
 
-checkKey :: FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> Annex Bool
-checkKey d locations k = liftIO $ withStoredFiles d locations k $
-	-- withStoredFiles checked that it exists
-	const $ return True
+checkKey :: RawFilePath -> (RawFilePath -> Key -> [RawFilePath]) -> Key -> Annex Bool
+checkKey d locations k = liftIO $
+	withStoredFiles (fromRawFilePath d) (legacyLocations locations) k $
+		-- withStoredFiles checked that it exists
+		const $ return True
+
+legacyFinalizer :: (RawFilePath -> RawFilePath -> IO ()) -> (FilePath -> FilePath -> IO ())
+legacyFinalizer f = \a b -> f (toRawFilePath a) (toRawFilePath b)
+
+legacyLocations :: (RawFilePath -> Key -> [RawFilePath]) -> (FilePath -> Key -> [FilePath])
+legacyLocations locations = \f k ->
+	map fromRawFilePath $ locations (toRawFilePath f) k

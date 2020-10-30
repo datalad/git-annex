@@ -224,7 +224,7 @@ storeGeneric o meterupdate basedest populatedest =
 storeGeneric' :: RsyncOpts -> MeterUpdate -> FilePath -> (FilePath -> Annex Bool) -> Annex Bool
 storeGeneric' o meterupdate basedest populatedest = withRsyncScratchDir $ \tmp -> do
 	let dest = tmp </> basedest
-	createAnnexDirectory (parentDir dest)
+	createAnnexDirectory (parentDir (toRawFilePath dest))
 	ok <- populatedest dest
 	ps <- sendParams
 	if ok
@@ -250,7 +250,7 @@ remove o k = removeGeneric o includes
   where
 	includes = concatMap use dirHashes
 	use h = let dir = fromRawFilePath (h def k) in
-		[ parentDir dir
+		[ fromRawFilePath (parentDir (toRawFilePath dir))
 		, dir
 		-- match content directory and anything in it
 		, dir </> fromRawFilePath (keyFile k) </> "***"
@@ -314,7 +314,8 @@ checkPresentExportM o _k loc = checkPresentGeneric o [rsyncurl]
 
 removeExportM :: RsyncOpts -> Key -> ExportLocation -> Annex ()
 removeExportM o _k loc =
-	removeGeneric o $ includes $ fromRawFilePath $ fromExportLocation loc
+	removeGeneric o $ map fromRawFilePath $
+		includes $ fromExportLocation loc
   where
 	includes f = f : case upFrom f of
 		Nothing -> []
@@ -325,9 +326,9 @@ removeExportDirectoryM o ed = removeGeneric o (allbelow d : includes d)
   where
 	d = fromRawFilePath $ fromExportDirectory ed
 	allbelow f = f </> "***"
-	includes f = f : case upFrom f of
+	includes f = f : case upFrom (toRawFilePath f) of
 		Nothing -> []
-		Just f' -> includes f'
+		Just f' -> includes (fromRawFilePath f')
 
 renameExportM :: RsyncOpts -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportM _ _ _ _ = return Nothing
