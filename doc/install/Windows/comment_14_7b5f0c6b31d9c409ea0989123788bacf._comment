@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="nix.zahlen@1211ac6c964ba2d68b70655f747bef1383032e77"
+ nickname="nix.zahlen"
+ avatar="http://cdn.libravatar.org/avatar/66cc45a05749fe8d4ca36d8c6071da51"
+ subject="where and how to submit Windows autobuild related issues?"
+ date="2020-10-31T17:44:18Z"
+ content="""
+see <br>
+- http://git-annex.branchable.com/news/version_8.20201007/#comment-cc425c38dbd1e3e6ee308bf2d9de1fd1 <br>
+- http://git-annex.branchable.com/bugs/windows_dosn__39__t_build_again__63____33__/#comment-90263bc0689187fb5df4d44ce668c08c (bug moved to \"done\"?!? but there is still no updated Windows installer available...) <br>
+
+
+"""]]
