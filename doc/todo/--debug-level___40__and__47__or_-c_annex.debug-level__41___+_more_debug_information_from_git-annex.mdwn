@@ -1,0 +1,5 @@
+In the light of the recent debugging of git-annex+datalad special remote tandem, I would have appreciated if there was a way to see reflection of git-annex actions beyond current `--debug`: what is annex intending to do internally (not just reporting which commands to be ran etc).  Most likely such higher level of debug information would generally be not needed, so probably not worth "enriching" default `--debug` output, so I wonder if there could be an option or config setting which would set `git-annex` on the path to provide more debug output if requested (e.g. like those on closing stdin/stdout/stderr/stderr-handler), may be it could be a config setting which would allow for `DEFAULT|HEAVY|VERYHEAVY` or alike values.
+I hope that I would never need to use that, but it might end up being "days-savior" 
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
