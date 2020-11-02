@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2020-11-02T20:37:47Z"
+ content="""
+> Every call to debugM does add overhead both in time to run it (checking if debugging is enabled is nonzero overhead and this will add up if it's done a few million times or whatever) and in time to write a useful explanation.
+
+debug-vs-not could be decided at start up once, and debug function could be set to noop if no debugging output (given the level requested) was desired.  I really doubt that any reasonable number of noop function calls would add any notable burden on top of operation/interaction with external git commands and remotes.
+
+> It seems to me that debugging is best added when trying to debug something, or when there's a readily available value that can be output (such as the safety proof that is debugged when dropping, or external special remote messages).
+
+yes, but then first you need to identify the code where to add it and know how to add it...  users (myself included) would not be be able to do so that easily.
+
+> Trying to add enough useful debugging information to 60,000 lines of code that any possible thing it might do will have a useful debug trace seems like a recipe to end up with 100,000 lines of code
+
+sure thing should not be added to every code line!  But there would be value from knowing some critical \"interface\" points where e.g. hanging or incorrect operation could happen, e.g. if I saw earlier the output of what `trace.patch` you provided today I might have saved myself quite a lot of time, so sounds like a location of value to add some `heavydebug()` logging.
+
+> It would be easier to run the code in a debugger and step through it at that point.
+
+might not be that easy especially when relevant git-annex call is sandwiched deep in the hierarchy of datalad/git/git-annex/datalad/git-annex/datalad/git-annex calls through all the special remotes etc.
+"""]]
