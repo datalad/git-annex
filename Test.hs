@@ -298,6 +298,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "export_import_subdir" test_export_import_subdir
 	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
+	, testCase "view" test_view
 	, testCase "magic" test_magic
 	, testCase "import" test_import
 	, testCase "reinject" test_reinject
@@ -446,6 +447,14 @@ test_shared_clone = intmpsharedclonerepo $ do
 test_log :: Assertion
 test_log = intmpclonerepo $ do
 	git_annex "log" [annexedfile] @? "log failed"
+
+test_view :: Assertion
+test_view = intmpclonerepo $ do
+	git_annex "metadata" ["-s", "test=test1", annexedfile]  @? "metadata failed"
+	git_annex "metadata" ["-s", "test=test2", sha1annexedfile]  @? "metadata failed"
+	git_annex "view" ["test=test1"] @? "entering view failed"
+	checkexists annexedfile
+	checkdoesnotexist sha1annexedfile
 
 test_magic :: Assertion
 test_magic = intmpclonerepo $ do
