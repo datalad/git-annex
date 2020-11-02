@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-11-02T18:48:44Z"
+ content="""
+Every call to debugM does add overhead both in time to run it
+(checking if debugging is enabled is nonzero overhead and this will add up
+if it's done a few million times or whatever) and in time to write
+a useful explanation.
+
+It seems to me that debugging is best added when trying to debug something,
+or when there's a readily available value that can be output (such as the
+safety proof that is debugged when dropping, or external special remote
+messages).
+
+Trying to add enough useful debugging information to 60,000 lines of code
+that any possible thing it might do will have a useful debug trace seems
+like a recipe to end up with 100,000 lines of code. It would be easier to
+run the code in a debugger and step through it at that point.
+"""]]
