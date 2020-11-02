@@ -23,6 +23,10 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
     on this.
   * view: Avoid using ':' from metadata when generating a view, because
     it's a special character on Windows ("c:")
+  * Improve shutdown process for external special remotes and external
+    backends. Make sure to relay any remaining stderr from the process,
+    and potentially avoid the process getting a SIGPIPE if it writes to
+    stderr too late. 
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 

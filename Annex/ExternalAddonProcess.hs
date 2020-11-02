@@ -55,14 +55,20 @@ startExternalAddonProcess basecmd pid = do
 	started cmd errrelayer pall@(Just hin, Just hout, Just herr, ph) = do
 		stderrelay <- async $ errrelayer herr
 		let shutdown forcestop = do
-			cancel stderrelay
+			-- Close the process's stdin, to let it know there
+			-- are no more requests, so it will exit.
+			hClose hout
+			-- Close the procces's stdout as we're not going to
+			-- process any more output from it.
+			hClose hin
 			if forcestop
 				then cleanupProcess pall
-				else flip onException (cleanupProcess pall) $ do
-					hClose herr
-					hClose hin
-					hClose hout
-					void $ waitForProcess ph
+				else void (waitForProcess ph)
+					`onException` cleanupProcess pall
+			-- This thread will exit after consuming any
+			-- remaining stderr from the process.
+			wait stderrelay
+			hClose herr
 		return $ ExternalAddonProcess
 			{ externalSend = hin
 			, externalReceive = hout
