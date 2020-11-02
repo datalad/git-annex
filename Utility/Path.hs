@@ -38,10 +38,7 @@ import Control.Applicative
 import Prelude
 
 import Utility.Monad
-import Utility.UserInfo
 import Utility.SystemDirectory
-import Utility.Split
-import Utility.FileSystemEncoding
 
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.

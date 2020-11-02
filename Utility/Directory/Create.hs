@@ -15,7 +15,6 @@ module Utility.Directory.Create (
 ) where
 
 import Control.Monad
-import System.FilePath
 import Control.Applicative
 import Control.Monad.IO.Class
 import Control.Monad.IfElse
