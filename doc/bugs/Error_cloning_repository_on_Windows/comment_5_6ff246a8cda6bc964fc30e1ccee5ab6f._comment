@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-11-02T17:38:34Z"
+ content="""
+I think windows has a limit of around 256 characters on the total length of
+a path. (vs 4096 on linux)
+
+So, even if ikiwiki had a way to limit the length of a page name,
+which could perhaps be done with `wiki_file_regexp`, that would not help,
+because several short page names can be nested into a path that ends up too
+long for windows. As is the case here; neither of the bug report filenames
+is too long, only the comments on them end up too long. Allowing posting a
+bug report but not commenting on it would not be good.
+
+Since I am flatly NOT going to decouple the bug tracking repo from the
+source code repo, this seems to put me in the position of going around
+cleaning up things that happen to be too long for windows manually. Which I
+frankly, also do not want to do. I guess I'll take patches if people want
+to send them, but is this really how we want to spend our time?
+
+(Also, renaming someone's bug report out from under where it was risks them
+not seeing a request for more information.)
+
+Note that, windows provides ways to avoid these length limits, by prefixing
+paths with a sequence that avoids using a compatability layer that imposes
+them, and instead uses a more modern layer that has more reasonable limits.
+I think git-annex actually uses that itself, thanks to some improvements to
+ghc. git for windows could be made to also, I suppose.
+"""]]

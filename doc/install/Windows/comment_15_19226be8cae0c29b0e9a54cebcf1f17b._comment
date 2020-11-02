@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="nix.zahlen@1211ac6c964ba2d68b70655f747bef1383032e77"
+ nickname="nix.zahlen"
+ avatar="http://cdn.libravatar.org/avatar/66cc45a05749fe8d4ca36d8c6071da51"
+ subject="build a CI/CD chain for git-annex"
+ date="2020-10-31T17:47:15Z"
+ content="""
+would this be: <br>
+* possible? <br>
+* desired? <br>
+* appreciated? <br>
+
+If yes, how and where? Ideas?
+
+"""]]
