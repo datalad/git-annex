@@ -65,3 +65,7 @@ git-annex: view: 1 failed
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git-annex is an awesome tool! Really appreciate your work and everything else works great!
+
+> Thank you for reporting, I've fixed this reversion and am also going to
+> add something like that to the test suite, which lacked any testing of
+> views. [[done]] --[[Joey]]

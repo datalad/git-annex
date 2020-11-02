@@ -27,6 +27,7 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
     backends. Make sure to relay any remaining stderr from the process,
     and potentially avoid the process getting a SIGPIPE if it writes to
     stderr too late. 
+  * view: Fix a reversion in 8.20200522 that broke entering or changing views.
 
  -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
 
