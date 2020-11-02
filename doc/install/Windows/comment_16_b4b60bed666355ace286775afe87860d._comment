@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 16"
+ date="2020-11-02T21:04:35Z"
+ content="""
+FWIW -- there is now CI for git-annex on linux (debian-based), osx, and Windows on https://github.com/datalad/datalad-extensions/ which builds git-annex installer, tests git-annex, and then tests datalad against it in a few scenarios.
+ATM it runs on cron, so not for each git-annex commit.  We will see if we need/want more frequent builds. Artifacts (re)distribution will eventually be established on http://datasets.datalad.org/datalad/packages/ but we aren't there yet.
+"""]]
