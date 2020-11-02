@@ -251,7 +251,7 @@ test runannex mkr mkk =
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ \r k -> do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- prepTmp k
+		tmp <- fromRawFilePath <$> prepTmp k
 		partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
@@ -260,14 +260,14 @@ test runannex mkr mkk =
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ \r k -> do
-		tmp <- prepTmp k
+		tmp <- fromRawFilePath <$> prepTmp k
 		liftIO $ writeFile tmp ""
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from end" $ \r k -> do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
-		tmp <- prepTmp k
+		tmp <- fromRawFilePath <$> prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
 		lockContentForRemoval k noop removeAnnex
 		get r k
@@ -295,7 +295,7 @@ test runannex mkr mkk =
 			Nothing -> return True
 			Just verifier -> verifier k (serializeKey k)
 	get r k = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
-		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate) >>= \case
+		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate) >>= \case
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
 	store r k = Remote.storeKey r k (AssociatedFile Nothing) nullMeterUpdate
@@ -369,14 +369,14 @@ testUnavailable runannex mkr mkk =
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->
 		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
-			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) dest nullMeterUpdate) >>= \case
+			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate) >>= \case
 				Right v -> return (True, v)
 				Left _ -> return (False, UnVerified)
 	, check (== Right False) "retrieveKeyFileCheap" $ \r k -> case Remote.retrieveKeyFileCheap r of
 		Nothing -> return False
 		Just a -> getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest -> 
 			unVerified $ isRight
-				<$> tryNonAsync (a k (AssociatedFile Nothing) dest)
+				<$> tryNonAsync (a k (AssociatedFile Nothing) (fromRawFilePath dest))
 	]
   where
 	check checkval desc a = testCase desc $ 
@@ -436,7 +436,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 	k <- case Types.Backend.genKey Backend.Hash.testKeyBackend of
 		Just a -> a ks nullMeterUpdate
 		Nothing -> giveup "failed to generate random key (backend problem)"
-	_ <- moveAnnex k f
+	_ <- moveAnnex k (toRawFilePath f)
 	return k
 
 getReadonlyKey :: Remote -> FilePath -> Annex Key

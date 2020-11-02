@@ -54,7 +54,7 @@ optParser desc = smudgeoptions <|> updateoption
 
 seek :: SmudgeOptions -> CommandSeek
 seek (SmudgeOptions f False) = commandAction (smudge f)
-seek (SmudgeOptions f True) = commandAction (clean f)
+seek (SmudgeOptions f True) = commandAction (clean (toRawFilePath f))
 seek UpdateOption = commandAction update
 
 -- Smudge filter is fed git file content, and if it's a pointer to an
@@ -83,7 +83,7 @@ smudge file = do
 -- Clean filter is fed file content on stdin, decides if a file
 -- should be stored in the annex, and outputs a pointer to its
 -- injested content if so. Otherwise, the original content.
-clean :: FilePath -> CommandStart
+clean :: RawFilePath -> CommandStart
 clean file = do
 	b <- liftIO $ L.hGetContents stdin
 	ifM fileoutsiderepo
@@ -98,10 +98,10 @@ clean file = do
   where
 	go b = case parseLinkTargetOrPointerLazy b of
 		Just k -> do
-			getMoveRaceRecovery k (toRawFilePath file)
+			getMoveRaceRecovery k file
 			liftIO $ L.hPut stdout b
 		Nothing -> do
-			let fileref = Git.Ref.fileRef (toRawFilePath file)
+			let fileref = Git.Ref.fileRef file
 			indexmeta <- catObjectMetaData fileref
 			go' b indexmeta =<< catKey' fileref indexmeta
 	go' b indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
@@ -120,7 +120,7 @@ clean file = do
 			-- annexed and is unmodified.
 			case oldkey of
 				Nothing -> doingest oldkey
-				Just ko -> ifM (isUnmodifiedCheap ko (toRawFilePath file))
+				Just ko -> ifM (isUnmodifiedCheap ko file)
 					( liftIO $ emitPointer ko
 					, doingest oldkey
 					)
@@ -141,7 +141,7 @@ clean file = do
 		liftIO . emitPointer
 			=<< postingest
 			=<< (\ld -> ingest' oldbackend nullMeterUpdate ld Nothing norestage)
-			=<< lockDown cfg file
+			=<< lockDown cfg (fromRawFilePath file)
 
 	postingest (Just k, _) = do
 		logStatus k InfoPresent
@@ -156,8 +156,7 @@ clean file = do
 	-- git diff can run the clean filter on files outside the
 	-- repository; can't annex those
 	fileoutsiderepo = do
-	        repopath <- liftIO . absPath . fromRawFilePath
-			=<< fromRepo Git.repoPath
+	        repopath <- liftIO . absPath =<< fromRepo Git.repoPath
 		filepath <- liftIO $ absPath file
 		return $ not $ dirContains repopath filepath
 
@@ -175,7 +174,7 @@ clean file = do
 -- annexed content before, annex it. This handles cases such as renaming an
 -- unlocked annexed file followed by git add, which the user naturally
 -- expects to behave the same as git mv.
-shouldAnnex :: FilePath -> Maybe (Sha, FileSize, ObjectType) -> Maybe Key -> Annex Bool
+shouldAnnex :: RawFilePath -> Maybe (Sha, FileSize, ObjectType) -> Maybe Key -> Annex Bool
 shouldAnnex file indexmeta moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
 	( checkunchangedgitfile $ checkmatcher checkheuristics
 	, checkunchangedgitfile checkheuristics
@@ -196,7 +195,7 @@ shouldAnnex file indexmeta moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitCon
 		Just _ -> return True
 		Nothing -> checkknowninode
 
-	checkknowninode = withTSDelta (liftIO . genInodeCache (toRawFilePath file)) >>= \case
+	checkknowninode = withTSDelta (liftIO . genInodeCache file) >>= \case
 		Nothing -> pure False
 		Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
 
@@ -208,7 +207,7 @@ shouldAnnex file indexmeta moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitCon
 	-- annex.largefiles now matches it, because the content is not
 	-- changed.
 	checkunchangedgitfile cont = case (moldkey, indexmeta) of
-		(Nothing, Just (sha, sz, _)) -> liftIO (catchMaybeIO (getFileSize file)) >>= \case
+		(Nothing, Just (sha, sz, _)) -> liftIO (catchMaybeIO (getFileSize (fromRawFilePath file))) >>= \case
 			Just sz' | sz' == sz -> do
 				-- The size is the same, so the file
 				-- is not much larger than what was stored

@@ -165,8 +165,8 @@ parseJSONInput i = case eitherDecode (BU.fromString i) of
 			(Just k, _) -> return $
 				Right (Right k, m)
 			(Nothing, Just f) -> do
-				f' <- liftIO $ relPathCwdToFile f
-				return $ Right (Left (toRawFilePath f'), m)
+				f' <- liftIO $ relPathCwdToFile (toRawFilePath f)
+				return $ Right (Left f', m)
 			(Nothing, Nothing) -> return $ 
 				Left "JSON input is missing either file or key"
 

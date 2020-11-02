@@ -43,11 +43,13 @@ seek os
 startSrcDest :: [FilePath] -> CommandStart
 startSrcDest ps@(src:dest:[])
 	| src == dest = stop
-	| otherwise = notAnnexed src $ ifAnnexed (toRawFilePath dest) go stop
+	| otherwise = notAnnexed src' $
+		ifAnnexed (toRawFilePath dest) go stop
   where
+	src' = toRawFilePath src
 	go key = starting "reinject" ai si $
 		ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src)
-			( perform src key
+			( perform src' key
 			, giveup $ src ++ " does not have expected content of " ++ dest
 			)
 	ai = ActionItemOther (Just src)
@@ -55,31 +57,31 @@ startSrcDest ps@(src:dest:[])
 startSrcDest _ = giveup "specify a src file and a dest file"
 
 startKnown :: FilePath -> CommandStart
-startKnown src = notAnnexed src $
+startKnown src = notAnnexed src' $
 	starting "reinject" ai si $ do
 		(key, _) <- genKey ks nullMeterUpdate Nothing
 		ifM (isKnownKey key)
-			( perform src key
+			( perform src' key
 			, do
 				warning "Not known content; skipping"
 				next $ return True
 			)
   where
-	ks = KeySource src' src' Nothing
 	src' = toRawFilePath src
+	ks = KeySource src' src' Nothing
 	ai = ActionItemOther (Just src)
 	si = SeekInput [src]
 
-notAnnexed :: FilePath -> CommandStart -> CommandStart
+notAnnexed :: RawFilePath -> CommandStart -> CommandStart
 notAnnexed src a = 
 	ifM (fromRepo Git.repoIsLocalBare)
 		( a
-		, ifAnnexed (toRawFilePath src)
-			(giveup $ "cannot used annexed file as src: " ++ src)
+		, ifAnnexed src
+			(giveup $ "cannot used annexed file as src: " ++ fromRawFilePath src)
 			a
 		)
 
-perform :: FilePath -> Key -> CommandPerform
+perform :: RawFilePath -> Key -> CommandPerform
 perform src key = ifM move
 	( next $ cleanup key
 	, error "failed"

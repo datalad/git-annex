@@ -55,7 +55,7 @@ start s _si _file k
 
 start' :: Key -> CommandStart
 start' k = startingCustomOutput k $ do
-	tmpf <- fromRepo $ gitAnnexTmpObjectLocation k
+	tmpf <- fromRawFilePath <$> fromRepo (gitAnnexTmpObjectLocation k)
 	whenM (liftIO $ doesFileExist tmpf) $
 		liftIO $ putStrLn tmpf
 	next $ return True

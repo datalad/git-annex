@@ -67,7 +67,7 @@ perform file key = do
 	lockdown obj = do
 		ifM (isUnmodified key obj)
 			( breakhardlink obj
-			, repopulate (fromRawFilePath obj)
+			, repopulate obj
 			)
 		whenM (liftIO $ R.doesPathExist obj) $
 			freezeContent $ fromRawFilePath obj
@@ -78,7 +78,7 @@ perform file key = do
 		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			let obj' = fromRawFilePath obj
-			modifyContent obj' $ replaceGitAnnexDirFile obj' $ \tmp -> do
+			modifyContent obj $ replaceGitAnnexDirFile obj' $ \tmp -> do
 				unlessM (checkedCopyFile key obj' tmp Nothing) $
 					giveup "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
@@ -89,10 +89,10 @@ perform file key = do
 		fs <- map (`fromTopFilePath` g)
 			<$> Database.Keys.getAssociatedFiles key
 		mfile <- firstM (isUnmodified key) fs
-		liftIO $ removeWhenExistsWith removeLink obj
+		liftIO $ removeWhenExistsWith R.removeLink obj
 		case mfile of
 			Just unmodified ->
-				unlessM (checkedCopyFile key (fromRawFilePath unmodified) obj Nothing)
+				unlessM (checkedCopyFile key (fromRawFilePath unmodified) (fromRawFilePath obj) Nothing)
 					lostcontent
 			Nothing -> lostcontent
 

@@ -12,6 +12,7 @@ module Command.Info where
 import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
 import qualified Data.Vector as V
+import qualified System.FilePath.ByteString as P
 import Data.Ord
 import qualified Data.Semigroup as Sem
 import Prelude
@@ -152,9 +153,9 @@ itemInfo o (si, p) = ifM (isdir p)
 				case v' of
 					Right u -> uuidInfo o u si
 					Left _ -> do
-						relp <- liftIO $ relPathCwdToFile p
-						ifAnnexed (toRawFilePath relp)
-							(fileInfo o relp si)
+						relp <- liftIO $ relPathCwdToFile (toRawFilePath p)
+						ifAnnexed relp
+							(fileInfo o (fromRawFilePath relp) si)
 							(treeishInfo o p si)
 	)
   where
@@ -435,7 +436,7 @@ transfer_list = stat desc $ nojson $ lift $ do
   where
 	desc = "transfers in progress"
 	line uuidmap t i = unwords
-		[ formatDirection (transferDirection t) ++ "ing"
+		[ fromRawFilePath (formatDirection (transferDirection t)) ++ "ing"
 		, fromRawFilePath $ actionItemDesc $ mkActionItem
 			(transferKey t, associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
@@ -579,7 +580,7 @@ getDirStatInfo o dir = do
 					then return (numcopiesstats, repodata)
 					else do
 						locs <- Remote.keyLocations key
-						nc <- updateNumCopiesStats (fromRawFilePath file) numcopiesstats locs
+						nc <- updateNumCopiesStats file numcopiesstats locs
 						return (nc, updateRepoData key locs repodata)
 				return $! (presentdata', referenceddata', numcopiesstats', repodata')
 			, return vs
@@ -643,7 +644,7 @@ updateRepoData key locs m = m'
 		M.fromList $ zip locs (map update locs)
 	update loc = addKey key (fromMaybe emptyKeyInfo $ M.lookup loc m)
 
-updateNumCopiesStats :: FilePath -> NumCopiesStats -> [UUID] -> Annex NumCopiesStats
+updateNumCopiesStats :: RawFilePath -> NumCopiesStats -> [UUID] -> Annex NumCopiesStats
 updateNumCopiesStats file (NumCopiesStats m) locs = do
 	have <- trustExclude UnTrusted locs
 	!variance <- Variance <$> numCopiesCheck' file (-) have
@@ -663,7 +664,7 @@ showSizeKeys d = do
 			"+ " ++ show (unknownSizeKeys d) ++
 			" unknown size"
 
-staleSize :: String -> (Git.Repo -> FilePath) -> Stat
+staleSize :: String -> (Git.Repo -> RawFilePath) -> Stat
 staleSize label dirspec = go =<< lift (dirKeys dirspec)
   where
 	go [] = nostat
@@ -676,7 +677,7 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
 		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
-			getFileSize (dir </> fromRawFilePath (keyFile k))
+			getFileSize (fromRawFilePath (dir P.</> keyFile k))
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

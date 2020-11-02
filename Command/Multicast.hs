@@ -83,7 +83,7 @@ genAddress = starting "gen-address" (ActionItemOther Nothing) (SeekInput []) $ d
 	(s, ok) <- case k of
 		KeyContainer s -> liftIO $ genkey (Param s)
 		KeyFile f -> do
-			createAnnexDirectory (takeDirectory f)
+			createAnnexDirectory (toRawFilePath (takeDirectory f))
 			liftIO $ removeWhenExistsWith removeLink f
 			liftIO $ protectedOutput $ genkey (File f)
 	case (ok, parseFingerprint s) of
@@ -176,8 +176,8 @@ receive ups = starting "receiving multicast files" ai si $ do
 	(callback, environ, statush) <- liftIO multicastCallbackEnv
 	tmpobjdir <- fromRepo gitAnnexTmpObjectDir
 	createAnnexDirectory tmpobjdir
-	withTmpDirIn tmpobjdir "multicast" $ \tmpdir -> withAuthList $ \authlist -> do
-		abstmpdir <- liftIO $ absPath tmpdir
+	withTmpDirIn (fromRawFilePath tmpobjdir) "multicast" $ \tmpdir -> withAuthList $ \authlist -> do
+		abstmpdir <- liftIO $ absPath (toRawFilePath tmpdir)
 		abscallback <- liftIO $ searchPath callback
 		let ps =
 			-- Avoid it running as a daemon.
@@ -190,7 +190,7 @@ receive ups = starting "receiving multicast files" ai si $ do
 			, Param "-S", Param authlist
 			-- Receive files into tmpdir
 			-- (it needs an absolute path)
-			, Param "-D", File abstmpdir
+			, Param "-D", File (fromRawFilePath abstmpdir)
 			-- Run callback after each file received
 			-- (it needs an absolute path)
 			, Param "-s", Param (fromMaybe callback abscallback)
@@ -214,7 +214,7 @@ storeReceived f = do
 		Just k -> void $
 			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do
-					rename f dest
+					rename f (fromRawFilePath dest)
 					return True
 
 -- Under Windows, uftp uses key containers, which are not files on the

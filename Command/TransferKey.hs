@@ -64,7 +64,7 @@ fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key file remote = go Upload file $
 	download (uuid remote) key file stdRetry $ \p ->
 		getViaTmp (retrievalSecurityPolicy remote) (RemoteVerify remote) key $ \t ->
-			tryNonAsync (Remote.retrieveKeyFile remote key file t p) >>= \case
+			tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p) >>= \case
 				Right v -> return (True, v)	
 				Left e -> do
 					warning (show e)

@@ -47,8 +47,8 @@ batchParser s = case separate (== ' ') (reverse s) of
 			Nothing -> return $ Left "bad key"
 			Just k -> do
 				let f = reverse rf
-				f' <- liftIO $ relPathCwdToFile f
-				return $ Right (toRawFilePath f', k)
+				f' <- liftIO $ relPathCwdToFile (toRawFilePath f)
+				return $ Right (f', k)
 
 seek :: ReKeyOptions -> CommandSeek
 seek o = case batchOption o of
@@ -91,7 +91,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 	 - unlocked file, which would leave the new key unlocked
 	 - and vulnerable to corruption. -}
 	( getViaTmpFromDisk RetrievalAllKeysSecure DefaultVerify newkey $ \tmp -> unVerified $ do
-		oldobj <- fromRawFilePath <$> calcRepo (gitAnnexLocation oldkey)
+		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 	, do
 	 	{- The file being rekeyed is itself an unlocked file; if
@@ -111,7 +111,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 				warning (show e)
 				return False
 			Right () -> do
-				r <- linkToAnnex newkey (fromRawFilePath file) ic
+				r <- linkToAnnex newkey file ic
 				return $ case r of
 					LinkAnnexFailed -> False
 					LinkAnnexOk -> True

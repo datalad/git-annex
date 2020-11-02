@@ -11,9 +11,10 @@ import Command
 import Annex.Content
 import Types.Transfer
 import Logs.Transfer
-import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 import Utility.SimpleProtocol
+import qualified CmdLine.GitAnnexShell.Fields as Fields
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = noCommit $ 
@@ -58,7 +59,7 @@ start (k:[]) = do
 					bytes <- readUpdate
 					maybe (error "transferinfo protocol error")
 						(update . toBytesProcessed) bytes
-				, tryIO $ removeFile tfile
+				, tryIO $ R.removeLink tfile
 				, exitSuccess
 				]
 	stop

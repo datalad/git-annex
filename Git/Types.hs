@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TypeSynonymInstances, FlexibleInstances #-}
 
 module Git.Types where
 
@@ -79,9 +79,15 @@ fromConfigKey (ConfigKey s) = decodeBS' s
 instance Show ConfigKey where
 	show = fromConfigKey
 
-fromConfigValue :: ConfigValue -> String
-fromConfigValue (ConfigValue s) = decodeBS' s
-fromConfigValue NoConfigValue = mempty
+class FromConfigValue a where
+	fromConfigValue :: ConfigValue -> a
+
+instance FromConfigValue S.ByteString where
+	fromConfigValue (ConfigValue s) = s
+	fromConfigValue NoConfigValue = mempty
+
+instance FromConfigValue String where
+	fromConfigValue = decodeBS' . fromConfigValue
 
 instance Show ConfigValue where
 	show = fromConfigValue

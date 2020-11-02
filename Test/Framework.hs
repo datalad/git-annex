@@ -93,8 +93,9 @@ with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
 with_ssh_origin cloner a = cloner $ do
 	let k = Git.Types.ConfigKey (encodeBS' config)
 	let v = Git.Types.ConfigValue (toRawFilePath "/dev/null")
-	origindir <- absPath . Git.Types.fromConfigValue =<< annexeval (Config.getConfig k v)
-	let originurl = "localhost:" ++ origindir
+	origindir <- absPath . Git.Types.fromConfigValue
+		=<< annexeval (Config.getConfig k v)
+	let originurl = "localhost:" ++ fromRawFilePath origindir
 	boolSystem "git" [Param "config", Param config, Param originurl] @? "git config failed"
 	a
   where
@@ -105,7 +106,7 @@ intmpclonerepo a = withtmpclonerepo $ \r -> indir r a
 
 checkRepo :: Types.Annex a -> FilePath -> IO a
 checkRepo getval d = do
-	s <- Annex.new =<< Git.Construct.fromPath d
+	s <- Annex.new =<< Git.Construct.fromPath (toRawFilePath d)
 	Annex.eval s $
 		getval `finally` Annex.Action.stopCoProcesses
 
@@ -223,7 +224,7 @@ ensuretmpdir = do
 {- Prevent global git configs from affecting the test suite. -}
 isolateGitConfig :: IO a -> IO a
 isolateGitConfig a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
-	tmphomeabs <- absPath tmphome
+	tmphomeabs <- fromRawFilePath <$> absPath (toRawFilePath tmphome)
 	Utility.Env.Set.setEnv "HOME" tmphomeabs True
 	Utility.Env.Set.setEnv "XDG_CONFIG_HOME" tmphomeabs True
 	Utility.Env.Set.setEnv "GIT_CONFIG_NOSYSTEM" "1" True

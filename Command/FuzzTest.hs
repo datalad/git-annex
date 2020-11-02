@@ -174,7 +174,7 @@ instance Arbitrary FuzzAction where
 
 runFuzzAction :: FuzzAction -> Annex ()
 runFuzzAction (FuzzAdd (FuzzFile f)) = do
-	createWorkTreeDirectory (parentDir f)
+	createWorkTreeDirectory (parentDir (toRawFilePath f))
 	n <- liftIO (getStdRandom random :: IO Int)
 	liftIO $ writeFile f $ show n ++ "\n"
 runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $
@@ -209,7 +209,7 @@ genFuzzAction = do
 			case md of
 				Nothing -> genFuzzAction
 				Just d -> do
-					newd <- liftIO $ newDir (parentDir $ toFilePath d)
+					newd <- liftIO $ newDir (parentDir $ toRawFilePath $ toFilePath d)
 					maybe genFuzzAction (return . FuzzMoveDir d) newd
 		FuzzDeleteDir _ -> do
 			d <- liftIO existingDir
@@ -261,13 +261,13 @@ newFile = go (100 :: Int)
 			, go (n - 1)
 			)
 
-newDir :: FilePath -> IO (Maybe FuzzDir)
+newDir :: RawFilePath -> IO (Maybe FuzzDir)
 newDir parent = go (100 :: Int)
   where
 	go 0 = return Nothing
 	go n = do
 		(FuzzDir d) <- genFuzzDir
-		ifM (doesnotexist (parent </> d))
+		ifM (doesnotexist (fromRawFilePath parent </> d))
 			( return $ Just $ FuzzDir d
 			, go (n - 1)
 			)

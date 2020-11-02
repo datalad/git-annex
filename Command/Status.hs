@@ -61,6 +61,6 @@ displayStatus (Renamed _ _) = noop
 displayStatus s = do
 	let c = statusChar s
 	absf <- fromRepo $ fromTopFilePath (statusFile s)
-	f <- liftIO $ relPathCwdToFile $ fromRawFilePath absf
+	f <- liftIO $ fromRawFilePath <$> relPathCwdToFile absf
 	unlessM (showFullJSON $ JSONChunk [("status", [c]), ("file", f)]) $
 		liftIO $ putStrLn $ [c] ++ " " ++ f

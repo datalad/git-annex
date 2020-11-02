@@ -178,8 +178,7 @@ absRepo reference r
 	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
 	| Git.repoIsUrl r = return r
 	| otherwise = liftIO $ do
-		r' <- Git.Construct.fromAbsPath
-			=<< absPath (fromRawFilePath (Git.repoPath r))
+		r' <- Git.Construct.fromAbsPath =<< absPath (Git.repoPath r)
 		r'' <- safely $ flip Annex.eval Annex.gitRepo =<< Annex.new r'
 		return (fromMaybe r' r'')
 

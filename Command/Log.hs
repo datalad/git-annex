@@ -12,6 +12,7 @@ import qualified Data.Map as M
 import Data.Char
 import Data.Time.Clock.POSIX
 import Data.Time
+import qualified System.FilePath.ByteString as P
 
 import Command
 import Logs
@@ -207,10 +208,10 @@ compareChanges format changes = concatMap diff changes
 getKeyLog :: Key -> [CommandParam] -> Annex ([RefChange], IO Bool)
 getKeyLog key os = do
 	top <- fromRepo Git.repoPath
-	p <- liftIO $ relPathCwdToFile $ fromRawFilePath top
+	p <- liftIO $ relPathCwdToFile top
 	config <- Annex.getGitConfig
-	let logfile = p </> fromRawFilePath (locationLogFile config key)
-	getGitLog [logfile] (Param "--remove-empty" : os)
+	let logfile = p P.</> locationLogFile config key
+	getGitLog [fromRawFilePath logfile] (Param "--remove-empty" : os)
 
 {- Streams the git log for all git-annex branch changes. -}
 getAllLog :: [CommandParam] -> Annex ([RefChange], IO Bool)

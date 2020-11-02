@@ -41,7 +41,8 @@ batchParser s = case separate (== ' ') (reverse s) of
 		| null ru || null rf -> return $ Left "Expected: \"file url\""
 		| otherwise -> do
 			let f = reverse rf
-			f' <- liftIO $ relPathCwdToFile f
+			f' <- liftIO $ fromRawFilePath
+				<$> relPathCwdToFile (toRawFilePath f)
 			return $ Right (f', reverse ru)
 
 start :: (SeekInput, (FilePath, URLString)) -> CommandStart
