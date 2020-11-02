@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-11-02T19:17:01Z"
+ content="""
+Hmm, the form has size=40, but people are pasting entire long error
+messages into it. Although special characters also being escaped increases
+the length, if it were really limited to around that length, it would still
+be short enough.
+
+Ok, added maxlength=50 to it.
+"""]]
