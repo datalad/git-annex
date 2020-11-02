@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2020-10-27T19:30:24Z"
+ content="""
+Working in the same environment as in [the other issue](https://git-annex.branchable.com/bugs/git-annex_looses_itself_on_Windows__63__/?updated).  It does come with more recent `cp` (coreutils) 8.25 BUT that one blows with (sorry -- this is debug output of datalad, not direct output from git/annex invocation):
+
+<details>
+<summary></summary> 
+
+```shell
+datalad.cmd: DEBUG: Async run ['git', '-c', 'annex.largefiles=nothing', 'add', '--dry-run', '-N', '--ignore-missing', '--verbose', '--', 'fi le.dat']
+datalad.cmd: DEBUG: Launching process ['git', '-c', 'annex.largefiles=nothing', 'add', '--dry-run', '-N', '--ignore-missing', '--verbose', '--', 'fi le.dat']
+datalad.cmd: DEBUG: Process 2932 started
+datalad.cmd: DEBUG: Waiting for process 2932 to complete
+datalad.cmd: DEBUG: Process 2932 exited with return code 0
+datalad.cmd: DEBUG: Process file list chunk 0 (length 1)
+datalad.annex: DEBUG: Running add resulted in stderr output: cp: preserving permissions for ‘.git\\annex\\objects\\6f0\\fbd\\SHA256E-s7--ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73.dat\\SHA256E-s7--ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73.dat’: Not supported
+git-annex: add: 1 failed
+
+```
+</details>
+
+so it echoes your \"-a/-p/--preserve-timestamps are more important and also probed at build time.\" and is yet another gotcha of using different build and run environments. I only wonder how is that our github windows workflow environment supports `cp` with preserving permissions while conda's doesn't
+"""]]

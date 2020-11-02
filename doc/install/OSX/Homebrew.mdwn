@@ -1,4 +1,4 @@
-[Homebrew](http://brew.sh/) has [a formula](https://github.com/Homebrew/homebrew/commits/master/Library/Formula/git-annex.rb) for git-annex.
+[Homebrew](http://brew.sh/) has [a formula](https://formulae.brew.sh/formula/git-annex) for git-annex.
 
 Homebrew users can simply run `brew install git-annex` to install git-annex.
 

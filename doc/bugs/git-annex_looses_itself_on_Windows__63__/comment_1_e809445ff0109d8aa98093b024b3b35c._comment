@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-10-27T19:44:36Z"
+ content="""
+probably nevermind and feel free to close -- something is finicky with the `bash` which I have
+
+```
+(datalad-2) C:\Users\DataLad\AppData\Local\Temp\datalad_temp_tree_hufbz7i1>bash -c \"git-annex version\"
+bash: git-annex: command not found
+```
+
+need to figure that out
+
+```
+(datalad-2) C:\Users\DataLad\AppData\Local\Temp\datalad_temp_tree_hufbz7i1>echo %PATH%
+C:\Users\DataLad\miniconda3\envs\datalad-2;C:\Users\DataLad\miniconda3\envs\datalad-2\Library\mingw-w64\bin;C:\Users\DataLad\miniconda3\envs\datalad-2\Library\usr\bin;C:\Users\DataLad\miniconda3\envs\datalad-2\Library\bin;C:\Users\DataLad\miniconda3\envs\datalad-2\Scripts;C:\Users\DataLad\miniconda3\envs\datalad-2\bin;C:\Users\DataLad\miniconda3\condabin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files\Git\cmd;C:\Users\DataLad\AppData\Local\Microsoft\WindowsApps;.
+
+(datalad-2) C:\Users\DataLad\AppData\Local\Temp\datalad_temp_tree_hufbz7i1>bash -c \"echo $PATH\"
+/c/Users/DataLad/miniconda3/envs/datalad-2:/mingw-w64/bin:/usr/bin:/bin:/c/Users/DataLad/miniconda3/envs/datalad-2/Scripts:/c/Users/DataLad/miniconda3/envs/datalad-2/bin:/c/Users/DataLad/miniconda3/condabin:/c/Windows/system32:/c/Windows:/c/Windows/System32/Wbem:/c/Windows/System32/WindowsPowerShell/v1.0:/c/Windows/System32/OpenSSH:/c/Program Files/Git/cmd:/c/Users/DataLad/AppData/Local/Microsoft/WindowsApps:.
+```
+so it seems to discard `C:\Users\DataLad\miniconda3\envs\datalad-2\Library\bin`, may be I should not \"install\" there ;) (but it also looses `conda` itself in that `bash` \"shell\")
+"""]]
