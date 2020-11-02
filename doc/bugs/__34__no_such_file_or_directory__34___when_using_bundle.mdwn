@@ -44,3 +44,6 @@ git-annex version: 8.20200909-g2d5036e44
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I have never used it. I am learning it / evaluating it right now. I am very impressed so far!
+
+> [[fixed|done]], the bundle will be updated in the upcoming release.
+> --[[Joey]]
