@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-11-03T02:12:16Z"
+ content="""
+hehehey -- I think I got the reason at least!  
+
+```
+In [4]: len(r'C:\Users\DataLad\AppData\Local\Temp\datalad_temp_tree_j7pvlyz2\.git\annex\objects\662\c6f\SHA256E-s3--a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3.datc\SHA256E-s3--a665a45920422f9d417e4867efdc4
+   ...: fb8a04a1f3fff1fa07e998e86f7f7a27ae3.datc.lck')
+Out[4]: 257
+
+```
+so we exceeded the volume of magical dust windows could swallow without it sticking out somewhere...  If I change backend to MD5E we do not observe that issue.
+"""]]
