@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-11-03T01:47:26Z"
+ content="""
+It would be possible to split out of AnnexState a value that is
+immutable, and have that part not gated behind a MVar, and so avoid the
+MVar lookup overhead, since it would just be part of the Annex Reader
+monad. And the debug action in that could just be a noop when it's disabled,
+and so be essentially zero overhead. One little problem is that option
+parsing (eg for --debug) currently runs in the Annex monad, so too late to
+change that immutable value.
+
+Obviously having debug logging in a place where you just needed debug
+logging would have been useful. It does not logically follow that we can
+determine such places prior to your needing debug logging, or that we will
+need debug logging there later. After all, it seems to have been debugged
+now.
+
+I suppose we can say that anything involving canceling a thread, or closing
+a file descriptor connected to a pipe, is fairly delicate and so it makes
+sense to wrap and debug log those. (Which were the things needing debug
+logging in your case.) But the only information available to display is
+"thread N" or "FD N", so it would also need to debug log each thread spawn
+and FD open point in order to work out which are interesting. (Or wrap the
+values with more information, but that rapidly gets ugly.)
+
+Anyway, I rarely find myself adding debugM calls when debugging git-annex,
+generally just playing with the test case rapidly lets a theory be formed
+about what's happening, and then do something to test the theory, and I'm
+probably most of the way to a fix or at least understanding the problem.
+
+The main way the current debug output is useful to me is it often hints at
+the proximate location of the problem, because of whatever git command
+git-annex ran just before it. It would certianly be useful to have
+additional debugM wherever there's a lot of code that does not involve
+anything that currently logs.. But I don't know a good way to identify
+such stretches of code.
+"""]]
