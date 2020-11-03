@@ -45,11 +45,10 @@ jobs:
 
       - name: Download and "install" libmagic for windows
         run: |
-          TARGET_REPO=datalad/file-windows
-          TARGET_WORKFLOW=build.yml
-          GITHUB_TOKEN="${{ secrets.datalad_github_token }}"
-          curl -fsSL -o "${{ runner.temp }}"/download-latest-artifact https://raw.githubusercontent.com/datalad/datalad-extensions/master/scripts/ci/download-latest-artifact
-          . "${{ runner.temp }}"/download-latest-artifact
+          export TARGET_REPO=datalad/file-windows
+          export TARGET_WORKFLOW=build.yml
+          export GITHUB_TOKEN="${{ secrets.datalad_github_token }}"
+          .github/workflows/tools/download-latest-artifact
           cp download/* .
           cp libmagic-1.dll libmagic.dll
 

@@ -82,6 +82,9 @@ jobs:
         # is fixed
       fail-fast: false
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
       - name: Download git-annex package
         uses: actions/download-artifact@v2
         with:
@@ -100,9 +103,8 @@ jobs:
       - name: Run tests
         run: |
           if echo "${{ matrix.flavor }}" | grep -q "crippled" ; then
-            curl -fsSL -o "${{ runner.temp }}"/setup_crippledfs https://raw.githubusercontent.com/datalad/datalad-extensions/master/scripts/ci/setup_crippledfs
             # source so that CRIPPLEDFS_PATH will be set:
-            . "${{ runner.temp }}"/setup_crippledfs crippledfs 500
+            . .github/workflows/tools/setup_crippledfs crippledfs 500
           fi
           case "${{ matrix.flavor }}" in
             crippled-tmp)
