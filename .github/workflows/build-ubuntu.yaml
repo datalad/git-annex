@@ -42,6 +42,7 @@ jobs:
           echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
           # public key for verification
           gpg --import .github/workflows/tools/datalad-builder-key.asc
+        working-directory: git-annex
 
       - name: Get build version
         id: build-version
