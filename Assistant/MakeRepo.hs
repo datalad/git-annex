@@ -46,7 +46,9 @@ makeRepo path bare = ifM (probeRepoExists path)
 {- Runs an action in the git repository in the specified directory. -}
 inDir :: FilePath -> Annex a -> IO a
 inDir dir a = do
-	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
+	state <- Annex.new
+		=<< Git.Config.read
+		=<< Git.Construct.fromPath (toRawFilePath dir)
 	Annex.eval state $ a `finally` stopCoProcesses
 
 {- Creates a new repository, and returns its UUID. -}

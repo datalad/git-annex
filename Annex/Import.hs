@@ -271,7 +271,7 @@ buildImportTrees basetree msubdir importable = History
 	mktreeitem (loc, v) = case v of
 		Right k -> do
 			relf <- fromRepo $ fromTopFilePath topf
-			symlink <- calcRepo $ gitAnnexLink (fromRawFilePath relf) k
+			symlink <- calcRepo $ gitAnnexLink relf k
 			linksha <- hashSymlink symlink
 			return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
 		Left sha -> 
@@ -538,7 +538,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 					backend <- chooseBackend (fromRawFilePath f)
 					let ks = KeySource
 						{ keyFilename = f
-						, contentLocation = toRawFilePath tmpfile
+						, contentLocation = tmpfile
 						, inodeCache = Nothing
 						}
 					fst <$> genKey ks nullMeterUpdate backend
@@ -671,7 +671,7 @@ matchesImportLocation matcher loc sz = checkMatcher' matcher mi mempty
 notIgnoredImportLocation :: ImportTreeConfig -> CheckGitIgnore -> ImportLocation -> Annex Bool
 notIgnoredImportLocation importtreeconfig ci loc = not <$> checkIgnored ci f
   where
-	f = fromRawFilePath $ case importtreeconfig of
+	f = case importtreeconfig of
 		ImportSubTree dir _ ->
 			getTopFilePath dir P.</> fromImportLocation loc
 		ImportTree ->

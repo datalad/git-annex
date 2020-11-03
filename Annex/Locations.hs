@@ -428,12 +428,12 @@ gitAnnexWebPrivKey :: Git.Repo -> FilePath
 gitAnnexWebPrivKey r = fromRawFilePath $ gitAnnexDir r P.</> "privkey.pem"
 
 {- .git/annex/feeds/ is used to record per-key (url) state by importfeeds -}
-gitAnnexFeedStateDir :: Git.Repo -> FilePath
-gitAnnexFeedStateDir r = fromRawFilePath $
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "feedstate"
+gitAnnexFeedStateDir :: Git.Repo -> RawFilePath
+gitAnnexFeedStateDir r = P.addTrailingPathSeparator $
+	gitAnnexDir r P.</> "feedstate"
 
-gitAnnexFeedState :: Key -> Git.Repo -> FilePath
-gitAnnexFeedState k r = gitAnnexFeedStateDir r </> fromRawFilePath (keyFile k)
+gitAnnexFeedState :: Key -> Git.Repo -> RawFilePath
+gitAnnexFeedState k r = gitAnnexFeedStateDir r P.</> keyFile k
 
 {- .git/annex/merge/ is used as a empty work tree for direct mode merges and
  - merges in adjusted branches. -}

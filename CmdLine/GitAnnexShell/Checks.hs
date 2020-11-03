@@ -71,7 +71,9 @@ checkDirectory mdir = do
 	canondir home d
 		| "~/" `isPrefixOf` d = return d
 		| "/~/" `isPrefixOf` d = return $ drop 1 d
-		| otherwise = relHome $ absPathFrom home d
+		| otherwise = relHome $ fromRawFilePath <$> absPathFrom
+			(toRawFilePath home)
+			(toRawFilePath d)
 
 {- Modifies a Command to check that it is run in either a git-annex
  - repository, or a repository with a gcrypt-id set. -}

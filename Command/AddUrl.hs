@@ -165,14 +165,15 @@ checkUrl addunlockedmatcher r o si u = do
 startRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> SeekInput -> FilePath -> URLString -> Maybe Integer -> CommandStart
 startRemote addunlockedmatcher r o si file uri sz = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
-	let file' = joinPath $ map (truncateFilePath pathmax) $ splitDirectories file
+	let file' = joinPath $ map (truncateFilePath pathmax) $
+		splitDirectories file
 	startingAddUrl si uri o $ do
 		showNote $ "from " ++ Remote.name r 
 		showDestinationFile file'
-		performRemote addunlockedmatcher r o uri file' sz
+		performRemote addunlockedmatcher r o uri (toRawFilePath file') sz
 
-performRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> URLString -> FilePath -> Maybe Integer -> CommandPerform
-performRemote addunlockedmatcher r o uri file sz = ifAnnexed (toRawFilePath file) adduri geturi
+performRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> URLString -> RawFilePath -> Maybe Integer -> CommandPerform
+performRemote addunlockedmatcher r o uri file sz = ifAnnexed file adduri geturi
   where
 	loguri = setDownloader uri OtherDownloader
 	adduri = addUrlChecked o loguri file (Remote.uuid r) checkexistssize
@@ -181,10 +182,10 @@ performRemote addunlockedmatcher r o uri file sz = ifAnnexed (toRawFilePath file
 		Just n -> (True, n == fromMaybe n (fromKey keySize key), loguri)
 	geturi = next $ isJust <$> downloadRemoteFile addunlockedmatcher r (downloadOptions o) uri file sz
 
-downloadRemoteFile :: AddUnlockedMatcher -> Remote -> DownloadOptions -> URLString -> FilePath -> Maybe Integer -> Annex (Maybe Key)
+downloadRemoteFile :: AddUnlockedMatcher -> Remote -> DownloadOptions -> URLString -> RawFilePath -> Maybe Integer -> Annex (Maybe Key)
 downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd o file $ \canadd -> do
 	let urlkey = Backend.URL.fromUrl uri sz
-	createWorkTreeDirectory (parentDir (toRawFilePath file))
+	createWorkTreeDirectory (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
 		( do
 			addWorkTree canadd addunlockedmatcher (Remote.uuid r) loguri file urlkey Nothing
@@ -202,7 +203,7 @@ downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd o file $ \ca
 		)
   where
 	loguri = setDownloader uri OtherDownloader
-	af = AssociatedFile (Just (toRawFilePath file))
+	af = AssociatedFile (Just file)
 
 startWeb :: AddUnlockedMatcher -> AddUrlOptions -> SeekInput -> URLString -> CommandStart
 startWeb addunlockedmatcher o si urlstring = go $ fromMaybe bad $ parseURI urlstring
@@ -231,7 +232,7 @@ startWeb addunlockedmatcher o si urlstring = go $ fromMaybe bad $ parseURI urlst
 							, pure f
 							)
 				_ -> pure $ url2file url (pathdepthOption o) pathmax
-		performWeb addunlockedmatcher o urlstring file urlinfo
+		performWeb addunlockedmatcher o urlstring (toRawFilePath file) urlinfo
 
 sanitizeOrPreserveFilePath :: AddUrlOptions -> FilePath -> Annex FilePath
 sanitizeOrPreserveFilePath o f
@@ -257,8 +258,8 @@ checkPreserveFileNameSecurity f = do
 			, "has a security problem (" ++ d ++ "), not adding."
 			]
 
-performWeb :: AddUnlockedMatcher -> AddUrlOptions -> URLString -> FilePath -> Url.UrlInfo -> CommandPerform
-performWeb addunlockedmatcher o url file urlinfo = ifAnnexed (toRawFilePath file) addurl geturl
+performWeb :: AddUnlockedMatcher -> AddUrlOptions -> URLString -> RawFilePath -> Url.UrlInfo -> CommandPerform
+performWeb addunlockedmatcher o url file urlinfo = ifAnnexed file addurl geturl
   where
 	geturl = next $ isJust <$> addUrlFile addunlockedmatcher (downloadOptions o) url urlinfo file
 	addurl = addUrlChecked o url file webUUID $ \k ->
@@ -269,11 +270,11 @@ performWeb addunlockedmatcher o url file urlinfo = ifAnnexed (toRawFilePath file
 
 {- Check that the url exists, and has the same size as the key,
  - and add it as an url to the key. -}
-addUrlChecked :: AddUrlOptions -> URLString -> FilePath -> UUID -> (Key -> Annex (Bool, Bool, URLString)) -> Key -> CommandPerform
+addUrlChecked :: AddUrlOptions -> URLString -> RawFilePath -> UUID -> (Key -> Annex (Bool, Bool, URLString)) -> Key -> CommandPerform
 addUrlChecked o url file u checkexistssize key =
 	ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
 		( do
-			showDestinationFile file
+			showDestinationFile (fromRawFilePath file)
 			next $ return True
 		, do
 			(exists, samesize, url') <- checkexistssize key
@@ -295,35 +296,35 @@ addUrlChecked o url file u checkexistssize key =
  - different file, based on the title of the media. Unless the user
  - specified fileOption, which then forces using the FilePath.
  -}
-addUrlFile :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+addUrlFile :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlInfo -> RawFilePath -> Annex (Maybe Key)
 addUrlFile addunlockedmatcher o url urlinfo file =
 	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
 		( nodownloadWeb addunlockedmatcher o url urlinfo file
 		, downloadWeb addunlockedmatcher o url urlinfo file
 		)
 
-downloadWeb :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlInfo -> FilePath -> Annex (Maybe Key)
+downloadWeb :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlInfo -> RawFilePath -> Annex (Maybe Key)
 downloadWeb addunlockedmatcher o url urlinfo file =
-	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just (toRawFilePath file)))
+	go =<< downloadWith' downloader urlkey webUUID url (AssociatedFile (Just file))
   where
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
 	downloader f p = Url.withUrlOptions $ downloadUrl urlkey p [url] f
 	go Nothing = return Nothing
-	go (Just tmp) = ifM (pure (not (rawOption o)) <&&> liftIO (isHtml <$> readFile tmp))
+	go (Just tmp) = ifM (pure (not (rawOption o)) <&&> liftIO (isHtml <$> readFile (fromRawFilePath tmp)))
 		( tryyoutubedl tmp
 		, normalfinish tmp
 		)
 	normalfinish tmp = checkCanAdd o file $ \canadd -> do
-		showDestinationFile file
-		createWorkTreeDirectory (parentDir (toRawFilePath file))
+		showDestinationFile (fromRawFilePath file)
+		createWorkTreeDirectory (parentDir file)
 		Just <$> finishDownloadWith canadd addunlockedmatcher tmp webUUID url file
 	-- Ask youtube-dl what filename it will download first, 
 	-- so it's only used when the file contains embedded media.
 	tryyoutubedl tmp = youtubeDlFileNameHtmlOnly url >>= \case
 		Right mediafile -> 
-			let f = youtubeDlDestFile o file mediafile
-			in ifAnnexed (toRawFilePath f)
-				(alreadyannexed f)
+			let f = youtubeDlDestFile o file (toRawFilePath mediafile)
+			in ifAnnexed f
+				(alreadyannexed (fromRawFilePath f))
 				(dl f)
 		Left _ -> normalfinish tmp
 	  where
@@ -332,12 +333,12 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 			showNote "using youtube-dl"
 			Transfer.notifyTransfer Transfer.Download url $
 				Transfer.download webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \p ->
-					youtubeDl url workdir p >>= \case
+					youtubeDl url (fromRawFilePath workdir) p >>= \case
 						Right (Just mediafile) -> do
 							cleanuptmp
 							checkCanAdd o dest $ \canadd -> do
-								showDestinationFile dest
-								addWorkTree canadd addunlockedmatcher webUUID mediaurl dest mediakey (Just mediafile)
+								showDestinationFile (fromRawFilePath dest)
+								addWorkTree canadd addunlockedmatcher webUUID mediaurl dest mediakey (Just (toRawFilePath mediafile))
 								return $ Just mediakey
 						Right Nothing -> normalfinish tmp
 						Left msg -> do
@@ -380,24 +381,24 @@ showDestinationFile file = do
  - Downloads the url, sets up the worktree file, and returns the
  - real key.
  -}
-downloadWith :: CanAddFile -> AddUnlockedMatcher -> (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> FilePath -> Annex (Maybe Key)
+downloadWith :: CanAddFile -> AddUnlockedMatcher -> (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> RawFilePath -> Annex (Maybe Key)
 downloadWith canadd addunlockedmatcher downloader dummykey u url file =
 	go =<< downloadWith' downloader dummykey u url afile
   where
-	afile = AssociatedFile (Just (toRawFilePath file))
+	afile = AssociatedFile (Just file)
 	go Nothing = return Nothing
 	go (Just tmp) = Just <$> finishDownloadWith canadd addunlockedmatcher tmp u url file
 
 {- Like downloadWith, but leaves the dummy key content in
  - the returned location. -}
-downloadWith' :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> AssociatedFile -> Annex (Maybe FilePath)
+downloadWith' :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> AssociatedFile -> Annex (Maybe RawFilePath)
 downloadWith' downloader dummykey u url afile =
 	checkDiskSpaceToGet dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		ok <- Transfer.notifyTransfer Transfer.Download url $
 			Transfer.download u dummykey afile Transfer.stdRetry $ \p -> do
 				createAnnexDirectory (parentDir tmp)
-				downloader tmp p
+				downloader (fromRawFilePath tmp) p
 		if ok
 			then return (Just tmp)
 			else return Nothing
@@ -406,8 +407,8 @@ finishDownloadWith :: CanAddFile -> AddUnlockedMatcher -> RawFilePath -> UUID ->
 finishDownloadWith canadd addunlockedmatcher tmp u url file = do
 	backend <- chooseBackend file
 	let source = KeySource
-		{ keyFilename = toRawFilePath file
-		, contentLocation = toRawFilePath tmp
+		{ keyFilename = file
+		, contentLocation = tmp
 		, inodeCache = Nothing
 		}
 	key <- fst <$> genKey source nullMeterUpdate backend

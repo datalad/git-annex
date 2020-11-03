@@ -51,7 +51,8 @@ ensureInstalled = ifM (isJust <$> getEnv "GIT_ANNEX_PACKAGE_INSTALL")
 	go (Just base) = do
 		let program = base </> "git-annex"
 		programfile <- programFile
-		createDirectoryIfMissing True (parentDir programfile)
+		createDirectoryIfMissing True $
+			fromRawFilePath (parentDir (toRawFilePath programfile))
 		writeFile programfile program
 
 #ifdef darwin_HOST_OS
@@ -100,7 +101,7 @@ installWrapper :: FilePath -> String -> IO ()
 installWrapper file content = do
 	curr <- catchDefaultIO "" $ readFileStrict file
 	when (curr /= content) $ do
-		createDirectoryIfMissing True (parentDir file)
+		createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath file)))
 		viaTmp writeFile file content
 		modifyFileMode file $ addModes [ownerExecuteMode]
 

@@ -454,9 +454,10 @@ feedProblem url message = ifM (checkFeedBroken url)
  - least 23 hours. -}
 checkFeedBroken :: URLString -> Annex Bool
 checkFeedBroken url = checkFeedBroken' url =<< feedState url
-checkFeedBroken' :: URLString -> FilePath -> Annex Bool
+checkFeedBroken' :: URLString -> RawFilePath -> Annex Bool
 checkFeedBroken' url f = do
-	prev <- maybe Nothing readish <$> liftIO (catchMaybeIO $ readFile f)
+	prev <- maybe Nothing readish
+		<$> liftIO (catchMaybeIO $ readFile (fromRawFlePath f))
 	now <- liftIO getCurrentTime
 	case prev of
 		Nothing -> do
@@ -471,7 +472,9 @@ checkFeedBroken' url f = do
 			return broken
 
 clearFeedProblem :: URLString -> Annex ()
-clearFeedProblem url = void $ liftIO . tryIO . removeFile =<< feedState url
+clearFeedProblem url =
+	void $ liftIO . tryIO . removeFile . fromRawFilePath
+		=<< feedState url
 
-feedState :: URLString -> Annex FilePath
+feedState :: URLString -> Annex RawFilePath
 feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing

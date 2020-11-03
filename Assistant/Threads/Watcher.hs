@@ -335,7 +335,8 @@ addLink file link mk = do
 			Just (currlink, sha, _type)
 				| s2w8 link == L.unpack currlink ->
 					stageSymlink (toRawFilePath file) sha
-			_ -> stageSymlink (toRawFilePath file) =<< hashSymlink link
+			_ -> stageSymlink (toRawFilePath file)
+				=<< hashSymlink (toRawFilePath link)
 	madeChange file $ LinkChange mk
 
 onDel :: Handler

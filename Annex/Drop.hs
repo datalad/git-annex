@@ -64,7 +64,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 		(untrusted, have) <- trustPartition UnTrusted locs
 		numcopies <- if null fs
 			then getNumCopies
-			else maximum <$> mapM (getFileNumCopies . fromRawFilePath) fs
+			else maximum <$> mapM getFileNumCopies fs
 		return (NumCopies (length have), numcopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
