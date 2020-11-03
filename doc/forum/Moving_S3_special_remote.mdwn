@@ -1,0 +1,1 @@
+I want to move the contents of my S3 special remote. I've already kicked off the transfer with `rclone sync s3:bucketfoo s3:bucketbar/annex` to move the encrypted chunks to a new bucket under a new prefix. Once that finishes (in a few days), can I just run `git annex enableremote [new params]` or will I run into problems?
