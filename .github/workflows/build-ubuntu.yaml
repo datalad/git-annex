@@ -41,7 +41,7 @@ jobs:
           # private key for signing - comes from secrets
           echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
           # public key for verification
-          curl -fsSL https://raw.githubusercontent.com/datalad/datalad-extensions/master/resources/datalad-builder-key.asc | gpg --import
+          gpg --import .github/workflows/tools/datalad-builder-key.asc
 
       - name: Get build version
         id: build-version
@@ -89,6 +89,9 @@ jobs:
         flavor: [normal, crippled-tmp, crippled-home, nfs-tmp]
       fail-fast: false
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
       - name: Download git-annex package
         uses: actions/download-artifact@v2
         with:
@@ -103,9 +106,8 @@ jobs:
       - name: Run tests
         run: |
           if echo "${{ matrix.flavor }}" | grep -q "crippled" ; then
-            curl -fsSL -o "${{ runner.temp }}"/setup_crippledfs https://raw.githubusercontent.com/datalad/datalad-extensions/master/scripts/ci/setup_crippledfs
             # source so that CRIPPLEDFS_PATH will be set:
-            . "${{ runner.temp }}"/setup_crippledfs crippledfs 500
+            . .github/workflows/tools/setup_crippledfs crippledfs 500
           fi
           if echo "${{ matrix.flavor }}" | grep -q "nfs" ; then
             mkdir /tmp/nfsmount_ /tmp/nfsmount
