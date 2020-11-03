@@ -1,0 +1,23 @@
+name: Update mirror
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Update mirror
+        run: |
+          BRANCH="$(git branch --show-current)"
+          git remote add upstream git://git.kitenet.net/git-annex
+          git pull --tags upstream "$BRANCH"
+          git push --tags origin "$BRANCH"
+
+# vim:set sts=2:
