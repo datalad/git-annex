@@ -12,12 +12,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          ref: upstream/master
 
       - name: Update mirror
         run: |
-          BRANCH="$(git branch --show-current)"
           git remote add upstream git://git.kitenet.net/git-annex
-          git pull --tags upstream "$BRANCH"
-          git push --tags origin "$BRANCH"
+          git pull --tags upstream upstream/master
+          git checkout master
+          git merge upstream/master
+          git push --tags origin master upstream/master
 
 # vim:set sts=2:
