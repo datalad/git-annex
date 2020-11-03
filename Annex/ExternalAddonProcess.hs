@@ -67,7 +67,7 @@ startExternalAddonProcess basecmd pid = do
 					`onException` cleanupProcess pall
 			-- This thread will exit after consuming any
 			-- remaining stderr from the process.
-			wait stderrelay
+			() <- wait stderrelay
 			hClose herr
 		return $ ExternalAddonProcess
 			{ externalSend = hin
