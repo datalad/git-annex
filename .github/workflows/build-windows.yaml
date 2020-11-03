@@ -27,21 +27,21 @@ jobs:
           enable-stack: true
           stack-no-global: true
 
-      - name: Checkout this repository
-        uses: actions/checkout@v2
-        with:
-          # We need to fetch all commits so that we get tags so that `git
-          # describe` will work.
-          fetch-depth: 0
-
       #- name: Checkout this repository
-      #  run: |
+      #  uses: actions/checkout@v2
+      #  with:
       #    # We need to fetch all commits so that we get tags so that `git
       #    # describe` will work.
-      #    git clone --no-checkout https://github.com/datalad/git-annex.git .
-      #    # We can't do a straight clone due to <https://git-annex.branchable.com/bugs/Error_cloning_repository_on_Windows/>
-      #    git ls-tree --name-only HEAD | grep -v '^doc$' | xargs git checkout HEAD
-      #    git checkout HEAD doc/license ':(glob)doc/*.mdwn' ':(glob)doc/logo*'
+      #    fetch-depth: 0
+
+      - name: Checkout this repository
+        run: |
+          # We need to fetch all commits so that we get tags so that `git
+          # describe` will work.
+          git clone --no-checkout https://github.com/datalad/git-annex.git .
+          # We can't do a straight clone due to <https://git-annex.branchable.com/bugs/Error_cloning_repository_on_Windows/>
+          git ls-tree --name-only HEAD | grep -v '^doc$' | xargs git checkout HEAD
+          git checkout HEAD doc/license ':(glob)doc/*.mdwn' ':(glob)doc/logo*'
 
       - name: Download and "install" libmagic for windows
         run: |
