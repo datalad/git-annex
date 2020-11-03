@@ -143,7 +143,7 @@ freezeContent file = unlessM crippledFileSystem $
 		removeModes writeModes .
 		addModes [ownerReadMode]
 
-isContentWritePermOk :: FilePath -> Annex Bool
+isContentWritePermOk :: RawFilePath -> Annex Bool
 isContentWritePermOk file = ifM crippledFileSystem
 	( return True
 	, withShared go
@@ -153,7 +153,7 @@ isContentWritePermOk file = ifM crippledFileSystem
 	go AllShared = want writeModes
 	go _ = return True
 	want wantmode =
-		liftIO (catchMaybeIO $ fileMode <$> getFileStatus file) >>= return . \case
+		liftIO (catchMaybeIO $ fileMode <$> R.getFileStatus file) >>= return . \case
 			Nothing -> True
 			Just havemode -> havemode == combineModes (havemode:wantmode)
 

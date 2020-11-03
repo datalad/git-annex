@@ -18,6 +18,7 @@ import Git.Command
 import qualified Utility.CoProcess as CoProcess
 
 import System.IO.Error
+import qualified Data.ByteString as B
 
 type CheckIgnoreHandle = CoProcess.CoProcessHandle
 
@@ -51,11 +52,11 @@ checkIgnoreStop :: CheckIgnoreHandle -> IO ()
 checkIgnoreStop = void . tryIO . CoProcess.stop
 
 {- Returns True if a file is ignored. -}
-checkIgnored :: CheckIgnoreHandle -> FilePath -> IO Bool
+checkIgnored :: CheckIgnoreHandle -> RawFilePath -> IO Bool
 checkIgnored h file = CoProcess.query h send (receive "")
   where
 	send to = do
-		hPutStr to $ file ++ "\0"
+		B.hPutStr to $ file `B.snoc` 0
 		hFlush to
 	receive c from = do
 		s <- hGetSomeString from 1024

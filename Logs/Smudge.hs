@@ -32,7 +32,7 @@ smudgeLog k f = do
 streamSmudged :: (Key -> TopFilePath -> Annex ()) -> Annex ()
 streamSmudged a = do
 	logf <- fromRepo gitAnnexSmudgeLog
-	streamLogFile logf gitAnnexSmudgeLock $ \l -> 
+	streamLogFile (fromRawFilePath logf) gitAnnexSmudgeLock $ \l -> 
 		case parse l of
 			Nothing -> noop
 			Just (k, f) -> a k f

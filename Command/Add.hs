@@ -81,8 +81,9 @@ seek o = startConcurrency commandStages $ do
 	annexdotfiles <- getGitConfigVal annexDotFiles 
 	let gofile (si, file) = case largeFilesOverride o of
 		Nothing -> 
-			let file' = fromRawFilePath file
-			in ifM (pure (annexdotfiles || not (dotfile file')) <&&> (checkFileMatcher largematcher file' <||> Annex.getState Annex.force))
+			ifM (pure (annexdotfiles || not (dotfile file))
+				<&&> (checkFileMatcher largematcher file 
+				<||> Annex.getState Annex.force))
 				( start o si file addunlockedmatcher
 				, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
 					( startSmall o si file
@@ -128,20 +129,19 @@ startSmallOverridden o si file =
 addSmallOverridden :: AddOptions -> RawFilePath -> Annex Bool
 addSmallOverridden o file = do
 	showNote "adding content to git repository"
-	let file' = fromRawFilePath file
-	s <- liftIO $ getSymbolicLinkStatus file'
+	s <- liftIO $ R.getSymbolicLinkStatus file
 	if not (isRegularFile s)
 		then addFile (checkGitIgnoreOption o) file
 		else do
 			-- Can't use addFile because the clean filter will
 			-- honor annex.largefiles and it has been overridden.
 			-- Instead, hash the file and add to the index.
-			sha <- hashFile file'
+			sha <- hashFile file
 			let ty = if isExecutable (fileMode s)
 				then TreeExecutable
 				else TreeFile
 			Annex.Queue.addUpdateIndex =<<
-				inRepo (Git.UpdateIndex.stageFile sha ty file')
+				inRepo (Git.UpdateIndex.stageFile sha ty (fromRawFilePath file))
 			return True
 
 addFile :: CheckGitIgnore -> RawFilePath -> Annex Bool
@@ -172,7 +172,7 @@ start o si file addunlockedmatcher = do
 	fixuplink key = starting "add" (ActionItemWorkTreeFile file) si $ do
 		-- the annexed symlink is present but not yet added to git
 		liftIO $ removeFile (fromRawFilePath file)
-		addLink (checkGitIgnoreOption o) (fromRawFilePath file) key Nothing
+		addLink (checkGitIgnoreOption o) file key Nothing
 		next $
 			cleanup key =<< inAnnex key
 	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) si $ do

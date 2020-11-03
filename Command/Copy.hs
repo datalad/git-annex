@@ -72,7 +72,7 @@ start o si file key = stopUnless shouldCopy $
 	Command.Move.start (fromToOptions o) Command.Move.RemoveNever si file key
   where
 	shouldCopy
-		| autoMode o = want <||> numCopiesCheck (fromRawFilePath file) key (<)
+		| autoMode o = want <||> numCopiesCheck file key (<)
 		| otherwise = return True
 	want = case fromToOptions o of
 		Right (ToRemote dest) ->

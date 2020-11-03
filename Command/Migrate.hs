@@ -44,7 +44,7 @@ start si file key = do
 		Just oldbackend -> do
 			exists <- inAnnex key
 			newbackend <- maybe defaultBackend return 
-				=<< chooseBackend (fromRawFilePath file)
+				=<< chooseBackend file
 			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
 				then starting "migrate" (mkActionItem (key, file)) si $
 					perform file key oldbackend newbackend

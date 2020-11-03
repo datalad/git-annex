@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.AddUnused where
 
 import Logs.Location
@@ -33,7 +35,7 @@ perform key = next $ do
 	addLink (CheckGitIgnore False) file key Nothing
 	return True
   where
-	file = "unused." ++ fromRawFilePath (keyFile key)
+	file = "unused." <> keyFile key
 
 {- The content is not in the annex, but in another directory, and
  - it seems better to error out, rather than moving bad/tmp content into

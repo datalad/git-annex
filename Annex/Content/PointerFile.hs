@@ -64,12 +64,13 @@ depopulatePointerFile key file = do
 	secureErase file
 	liftIO $ removeWhenExistsWith R.removeLink file
 	ic <- replaceWorkTreeFile file' $ \tmp -> do
-		liftIO $ writePointerFile (toRawFilePath tmp) key mode
+		let tmp' = toRawFilePath tmp
+		liftIO $ writePointerFile tmp' key mode
 #if ! defined(mingw32_HOST_OS)
 		-- Don't advance mtime; this avoids unncessary re-smudging
 		-- by git in some cases.
 		liftIO $ maybe noop
-			(\t -> touch tmp t False)
+			(\t -> touch tmp' t False)
 			(fmap modificationTimeHiRes st)
 #endif
 		withTSDelta (liftIO . genInodeCache (toRawFilePath tmp))

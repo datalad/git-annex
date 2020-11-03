@@ -362,19 +362,19 @@ gitAnnexFsckResultsLog u r =
 
 {- .git/annex/smudge.log is used to log smudges worktree files that need to
  - be updated. -}
-gitAnnexSmudgeLog :: Git.Repo -> FilePath
-gitAnnexSmudgeLog r = fromRawFilePath $ gitAnnexDir r P.</> "smudge.log"
+gitAnnexSmudgeLog :: Git.Repo -> RawFilePath
+gitAnnexSmudgeLog r = gitAnnexDir r P.</> "smudge.log"
 
 gitAnnexSmudgeLock :: Git.Repo -> RawFilePath
 gitAnnexSmudgeLock r = gitAnnexDir r P.</> "smudge.lck"
 
 {- .git/annex/move.log is used to log moves that are in progress,
  - to better support resuming an interrupted move. -}
-gitAnnexMoveLog :: Git.Repo -> FilePath
-gitAnnexMoveLog r = fromRawFilePath $ gitAnnexDir r P.</> "move.log"
+gitAnnexMoveLog :: Git.Repo -> RawFilePath
+gitAnnexMoveLog r = gitAnnexDir r P.</> "move.log"
 
-gitAnnexMoveLock :: Git.Repo -> FilePath
-gitAnnexMoveLock r = fromRawFilePath $ gitAnnexDir r P.</> "move.lck"
+gitAnnexMoveLock :: Git.Repo -> RawFilePath
+gitAnnexMoveLock r = gitAnnexDir r P.</> "move.lck"
 
 {- .git/annex/export/ is used to store information about
  - exports to special remotes. -}

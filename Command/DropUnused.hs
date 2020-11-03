@@ -15,6 +15,7 @@ import qualified Git
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Annex.NumCopies
 import Annex.Content
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = command "dropunused" SectionMaintenance
@@ -63,8 +64,8 @@ perform from numcopies key = case from of
   where
 	droplocal = Command.Drop.performLocal key (AssociatedFile Nothing) numcopies []
 
-performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
+performOther :: (Key -> Git.Repo -> RawFilePath) -> Key -> CommandPerform
 performOther filespec key = do
 	f <- fromRepo $ filespec key
-	pruneTmpWorkDirBefore f (liftIO . removeWhenExistsWith removeLink)
+	pruneTmpWorkDirBefore f (liftIO . removeWhenExistsWith R.removeLink)
 	next $ return True

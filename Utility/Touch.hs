@@ -14,19 +14,20 @@ module Utility.Touch (
 
 #if ! defined(mingw32_HOST_OS)
 
-import System.Posix.Files
+import System.FilePath.ByteString (RawFilePath)
+import System.Posix.Files.ByteString
 import Data.Time.Clock.POSIX
 
 {- Changes the access and modification times of an existing file.
    Can follow symlinks, or not. -}
-touchBoth :: FilePath -> POSIXTime -> POSIXTime -> Bool -> IO ()
+touchBoth :: RawFilePath -> POSIXTime -> POSIXTime -> Bool -> IO ()
 touchBoth file atime mtime follow
 	| follow = setFileTimesHiRes file atime mtime
 	| otherwise = setSymbolicLinkTimesHiRes file atime mtime
 
 {- Changes the access and modification times of an existing file
  - to the same value. Can follow symlinks, or not. -}
-touch :: FilePath -> POSIXTime -> Bool -> IO ()
+touch :: RawFilePath -> POSIXTime -> Bool -> IO ()
 touch file mtime = touchBoth file mtime mtime
 
 #else
@@ -34,10 +35,10 @@ touch file mtime = touchBoth file mtime mtime
 import Data.Time.Clock.POSIX
 
 {- Noop for Windows -}
-touchBoth :: FilePath -> POSIXTime -> POSIXTime -> Bool -> IO ()
+touchBoth :: RawFilePath -> POSIXTime -> POSIXTime -> Bool -> IO ()
 touchBoth _ _ _ _ = return ()
 
-touch :: FilePath -> POSIXTime -> Bool -> IO ()
+touch :: RawFilePath -> POSIXTime -> Bool -> IO ()
 touch _ _ _ = return ()
 
 #endif

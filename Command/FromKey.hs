@@ -16,6 +16,7 @@ import Annex.WorkTree
 import Annex.Perms
 import qualified Annex
 import qualified Backend.URL
+import qualified Utility.RawFilePath as R
 
 import Network.URI
 
@@ -51,12 +52,12 @@ seekBatch fmt = batchInput fmt parse (commandAction . go)
 		let (keyname, file) = separate (== ' ') s
 		if not (null keyname) && not (null file)
 			then do
-				file' <- liftIO $ relPathCwdToFile file
+				file' <- liftIO $ relPathCwdToFile (toRawFilePath file)
 				return $ Right (file', keyOpt keyname)
 			else return $
 				Left "Expected pairs of key and filename"
 	go (si, (file, key)) = 
-		let ai = mkActionItem (key, toRawFilePath file)
+		let ai = mkActionItem (key, file)
 		in starting "fromkey" ai si $
 			perform key file
 
@@ -67,9 +68,11 @@ start force (si, (keyname, file)) = do
 		inbackend <- inAnnex key
 		unless inbackend $ giveup $
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
-	let ai = mkActionItem (key, toRawFilePath file)
+	let ai = mkActionItem (key, file')
 	starting "fromkey" ai si $
-		perform key file
+		perform key file'
+  where
+	file' = toRawFilePath file
 
 -- From user input to a Key.
 -- User can input either a serialized key, or an url.
@@ -86,15 +89,15 @@ keyOpt s = case parseURI s of
 		Just k -> k
 		Nothing -> giveup $ "bad key/url " ++ s
 
-perform :: Key -> FilePath -> CommandPerform
-perform key file = lookupKeyNotHidden (toRawFilePath file) >>= \case
-	Nothing -> ifM (liftIO $ doesFileExist file)
+perform :: Key -> RawFilePath -> CommandPerform
+perform key file = lookupKeyNotHidden file >>= \case
+	Nothing -> ifM (liftIO $ doesFileExist (fromRawFilePath file))
 		( hasothercontent
 		, do
 			link <- calcRepo $ gitAnnexLink file key
 			createWorkTreeDirectory (parentDir file)
-			liftIO $ createSymbolicLink link file
-			Annex.Queue.addCommand "add" [Param "--"] [file]
+			liftIO $ R.createSymbolicLink link file
+			Annex.Queue.addCommand "add" [Param "--"] [fromRawFilePath file]
 			next $ return True
 		)
 	Just k
@@ -102,5 +105,5 @@ perform key file = lookupKeyNotHidden (toRawFilePath file) >>= \case
 		| otherwise -> hasothercontent
   where
 	hasothercontent = do
-		warning $ file ++ " already exists with different content"
+		warning $ fromRawFilePath file ++ " already exists with different content"
 		next $ return False

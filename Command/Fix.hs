@@ -46,11 +46,10 @@ data FixWhat = FixSymlinks | FixAll
 start :: FixWhat -> SeekInput -> RawFilePath -> Key -> CommandStart
 start fixwhat si file key = do
 	currlink <- liftIO $ catchMaybeIO $ R.readSymbolicLink file
-	wantlink <- calcRepo $ gitAnnexLink (fromRawFilePath file) key
+	wantlink <- calcRepo $ gitAnnexLink file key
 	case currlink of
 		Just l
-			| l /= toRawFilePath wantlink -> fixby $
-				fixSymlink (fromRawFilePath file) wantlink
+			| l /=  wantlink -> fixby $ fixSymlink file wantlink
 			| otherwise -> stop
 		Nothing -> case fixwhat of
 			FixAll -> fixthin
@@ -78,7 +77,7 @@ breakHardLink file key obj = do
 		unlessM (checkedCopyFile key obj' tmp mode) $
 			error "unable to break hard link"
 		thawContent tmp
-		modifyContent obj' $ freezeContent obj'
+		modifyContent obj $ freezeContent obj'
 	Database.Keys.storeInodeCaches key [file]
 	next $ return True
 
@@ -86,25 +85,25 @@ makeHardLink :: RawFilePath -> Key -> CommandPerform
 makeHardLink file key = do
 	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
-		linkFromAnnex key tmp mode >>= \case
+		linkFromAnnex key (toRawFilePath tmp) mode >>= \case
 			LinkAnnexFailed -> error "unable to make hard link"
 			_ -> noop
 	next $ return True
 
-fixSymlink :: FilePath -> FilePath -> CommandPerform
+fixSymlink :: RawFilePath -> RawFilePath -> CommandPerform
 fixSymlink file link = do
 #if ! defined(mingw32_HOST_OS)
 	-- preserve mtime of symlink
 	mtime <- liftIO $ catchMaybeIO $ modificationTimeHiRes
-		<$> getSymbolicLinkStatus file
+		<$> R.getSymbolicLinkStatus file
 #endif
 	createWorkTreeDirectory (parentDir file)
-	liftIO $ removeFile file
-	liftIO $ createSymbolicLink link file
+	liftIO $ R.removeLink file
+	liftIO $ R.createSymbolicLink link file
 #if ! defined(mingw32_HOST_OS)
 	liftIO $ maybe noop (\t -> touch file t False) mtime
 #endif
-	next $ cleanupSymlink file
+	next $ cleanupSymlink (fromRawFilePath file)
 
 cleanupSymlink :: FilePath -> CommandCleanup
 cleanupSymlink file = do

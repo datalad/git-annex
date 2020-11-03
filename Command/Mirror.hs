@@ -88,4 +88,4 @@ startKey o afile (si, key, ai) = case fromToOptions o of
   where
 	getnumcopies = case afile of
 		AssociatedFile Nothing -> getNumCopies
-		AssociatedFile (Just af) -> getFileNumCopies (fromRawFilePath af)
+		AssociatedFile (Just af) -> getFileNumCopies af

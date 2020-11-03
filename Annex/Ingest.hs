@@ -61,7 +61,7 @@ data LockedDown = LockedDown
 data LockDownConfig = LockDownConfig
 	{ lockingFile :: Bool
 	-- ^ write bit removed during lock down
-	, hardlinkFileTmpDir :: Maybe FilePath
+	, hardlinkFileTmpDir :: Maybe RawFilePath
 	-- ^ hard link to temp directory
 	}
 	deriving (Show)
@@ -109,7 +109,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 		when (lockingFile cfg) $
 			freezeContent file
 		withTSDelta $ \delta -> liftIO $ do
-			(tmpfile, h) <- openTempFile tmpdir $
+			(tmpfile, h) <- openTempFile (fromRawFilePath tmpdir) $
 				relatedTemplate $ "ingest-" ++ takeFileName file
 			hClose h
 			removeWhenExistsWith removeLink tmpfile
@@ -139,7 +139,7 @@ ingestAdd' ci meterupdate ld@(Just (LockedDown cfg source)) mk = do
 		Just k -> do
 			let f = keyFilename source
 			if lockingFile cfg
-				then addLink ci (fromRawFilePath f) k mic
+				then addLink ci f k mic
 				else do
 					mode <- liftIO $ catchMaybeIO $
 						fileMode <$> R.getFileStatus (contentLocation source)
@@ -272,10 +272,10 @@ restoreFile file key e = do
 	throwM e
 
 {- Creates the symlink to the annexed content, returns the link target. -}
-makeLink :: FilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
-makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
-	l <- calcRepo $ gitAnnexLink (toRawFilePath file) key
-	replaceWorkTreeFile file $ makeAnnexLink l . toRawFilePath
+makeLink :: RawFilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
+makeLink file key mcache = flip catchNonAsync (restoreFile file' key) $ do
+	l <- calcRepo $ gitAnnexLink file key
+	replaceWorkTreeFile file' $ makeAnnexLink l . toRawFilePath
 
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
@@ -284,6 +284,8 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 		Nothing -> noop
 
 	return l
+  where
+	file' = fromRawFilePath file
 
 {- Creates the symlink to the annexed content, and stages it in git.
  -
@@ -294,15 +296,15 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
  - Also, using git add allows it to skip gitignored files, unless forced
  - to include them.
  -}
-addLink :: CheckGitIgnore -> FilePath -> Key -> Maybe InodeCache -> Annex ()
+addLink :: CheckGitIgnore -> RawFilePath -> Key -> Maybe InodeCache -> Annex ()
 addLink ci file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( do
 		_ <- makeLink file key mcache
 		ps <- gitAddParams ci
-		Annex.Queue.addCommand "add" (ps++[Param "--"]) [file]
+		Annex.Queue.addCommand "add" (ps++[Param "--"]) [fromRawFilePath file]
 	, do
 		l <- makeLink file key mcache
-		addAnnexLink l (toRawFilePath file)
+		addAnnexLink l file
 	)
 
 {- Parameters to pass to git add, forcing addition of ignored files.
@@ -339,17 +341,17 @@ addUnlocked matcher mi =
  -
  - When the content of the key is not accepted into the annex, returns False.
  -}
-addAnnexedFile :: CheckGitIgnore -> AddUnlockedMatcher -> FilePath -> Key -> Maybe FilePath -> Annex Bool
+addAnnexedFile :: CheckGitIgnore -> AddUnlockedMatcher -> RawFilePath -> Key -> Maybe RawFilePath -> Annex Bool
 addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 	( do
 		mode <- maybe
 			(pure Nothing)
-			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> getFileStatus tmp)
+			(\tmp -> liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus tmp)
 			mtmp
-		stagePointerFile file' mode =<< hashPointerFile key
-		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file')
+		stagePointerFile file mode =<< hashPointerFile key
+		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		case mtmp of
-			Just tmp -> ifM (moveAnnex key (toRawFilePath tmp))
+			Just tmp -> ifM (moveAnnex key tmp)
 				( linkunlocked mode >> return True
 				, writepointer mode >> return False
 				)
@@ -360,19 +362,19 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 	, do
 		addLink ci file key Nothing
 		case mtmp of
-			Just tmp -> moveAnnex key (toRawFilePath tmp)
+			Just tmp -> moveAnnex key tmp
 			Nothing -> return True
 	)
   where
 	mi = case mtmp of
 		Just tmp -> MatchingFile $ FileInfo
-			{ contentFile = Just (toRawFilePath tmp)
-			, matchFile = file'
+			{ contentFile = Just tmp
+			, matchFile = file
 			}
 		-- Provide as much info as we can without access to the
 		-- file's content.
 		Nothing -> MatchingInfo $ ProvidedInfo
-			{ providedFilePath = file'
+			{ providedFilePath = file
 			, providedKey = Just key
 			, providedFileSize = fromMaybe 0 $
 				keySize `fromKey` key
@@ -380,10 +382,8 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 			, providedMimeEncoding = Nothing
 			}
 	
-	linkunlocked mode = linkFromAnnex key file' mode >>= \case
-		LinkAnnexFailed -> liftIO $
-			writePointerFile file' key mode
+	linkunlocked mode = linkFromAnnex key file mode >>= \case
+		LinkAnnexFailed -> liftIO $ writepointer mode
 		_ -> return ()
-	writepointer mode = liftIO $ writePointerFile file' key mode
-
-	file' = toRawFilePath file
+	
+	writepointer mode = liftIO $ writePointerFile file key mode

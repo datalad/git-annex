@@ -60,7 +60,7 @@ start o from si file key = start' expensivecheck from key afile ai si
 	afile = AssociatedFile (Just file)
 	ai = mkActionItem (key, afile)
 	expensivecheck
-		| autoMode o = numCopiesCheck (fromRawFilePath file) key (<)
+		| autoMode o = numCopiesCheck file key (<)
 			<||> wantGet False (Just key) afile
 		| otherwise = return True
 
@@ -118,5 +118,6 @@ getKey' key afile = dispatch
 		download (Remote.uuid r) key afile stdRetry
 			(\p -> do
 				showAction $ "from " ++ Remote.name r
-				Remote.verifiedAction (Remote.retrieveKeyFile r key afile dest p)
+				Remote.verifiedAction $
+					Remote.retrieveKeyFile r key afile (fromRawFilePath dest) p
 			) witness

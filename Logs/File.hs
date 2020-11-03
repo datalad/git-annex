@@ -51,12 +51,15 @@ withLogHandle f a = do
 
 -- | Appends a line to a log file, first locking it to prevent
 -- concurrent writers.
-appendLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> L.ByteString -> Annex ()
+appendLogFile :: RawFilePath -> (Git.Repo -> RawFilePath) -> L.ByteString -> Annex ()
 appendLogFile f lck c = 
-	createDirWhenNeeded (toRawFilePath f) $
+	createDirWhenNeeded f $
 		withExclusiveLock lck $ do
-			liftIO $ withFile f AppendMode $ \h -> L8.hPutStrLn h c
-			setAnnexFilePerm f
+			liftIO $ withFile f' AppendMode $
+				\h -> L8.hPutStrLn h c
+			setAnnexFilePerm f'
+  where
+	f' = fromRawFilePath f
 
 -- | Modifies a log file.
 --
@@ -66,18 +69,19 @@ appendLogFile f lck c =
 --
 -- The file is locked to prevent concurrent writers, and it is written
 -- atomically.
-modifyLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
+modifyLogFile :: RawFilePath -> (Git.Repo -> RawFilePath) -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
 modifyLogFile f lck modf = withExclusiveLock lck $ do
 	ls <- liftIO $ fromMaybe []
-		<$> tryWhenExists (L8.lines <$> L.readFile f)
+		<$> tryWhenExists (L8.lines <$> L.readFile f')
 	let ls' = modf ls
 	when (ls' /= ls) $
-		createDirWhenNeeded (toRawFilePath f) $
-			viaTmp writelog f (L8.unlines ls')
+		createDirWhenNeeded f $
+			viaTmp writelog f' (L8.unlines ls')
   where
-	writelog f' b = do
-		liftIO $ L.writeFile f' b
-		setAnnexFilePerm f'
+	f' = fromRawFilePath f
+	writelog lf b = do
+		liftIO $ L.writeFile lf b
+		setAnnexFilePerm lf
 
 -- | Checks the content of a log file to see if any line matches.
 --

@@ -226,7 +226,7 @@ fromPerform src removewhen key afile = do
 	get = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile stdRetry $ \p ->
 			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
-				Remote.verifiedAction $ Remote.retrieveKeyFile src key afile t p
+				Remote.verifiedAction $ Remote.retrieveKeyFile src key afile (fromRawFilePath t) p
 	
 	dispatch _ _ False = stop -- failed
 	dispatch RemoveNever _ True = next $ return True -- copy complete
@@ -363,7 +363,7 @@ logMove srcuuid destuuid deststartedwithcopy key a = bracket setup cleanup go
 	go logf
 		-- Only need to check log when there is a copy.
 		| deststartedwithcopy = do
-			wasnocopy <- checkLogFile logf gitAnnexMoveLock
+			wasnocopy <- checkLogFile (fromRawFilePath logf) gitAnnexMoveLock
 				(== logline)
 			if wasnocopy
 				then go' False
