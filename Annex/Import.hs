@@ -393,7 +393,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 	
 	importordownload cidmap db (loc, (cid, sz)) largematcher= do
 		f <- locworktreefile loc
-		matcher <- largematcher (fromRawFilePath f)
+		matcher <- largematcher f
 		-- When importing a key is supported, always use it rather
 		-- than downloading and retrieving a key, to avoid
 		-- generating trees with different keys for the same content.
@@ -457,7 +457,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 			let af = AssociatedFile (Just f)
 			let downloader p' tmpfile = do
 				k' <- Remote.retrieveExportWithContentIdentifier
-					ia loc cid tmpfile 
+					ia loc cid (fromRawFilePath tmpfile)
 					(pure k)
 					(combineMeterUpdate p' p)
 				ok <- moveAnnex k' tmpfile
@@ -475,7 +475,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 	doimportsmall cidmap db loc cid sz p = do
 		let downloader tmpfile = do
 			k <- Remote.retrieveExportWithContentIdentifier
-				ia loc cid tmpfile
+				ia loc cid (fromRawFilePath tmpfile)
 				(mkkey tmpfile)
 				p
 			case keyGitSha k of
@@ -498,7 +498,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
 			k <- Remote.retrieveExportWithContentIdentifier
-				ia loc cid tmpfile 
+				ia loc cid (fromRawFilePath tmpfile)
 				(mkkey tmpfile)
 				p
 			case keyGitSha k of
@@ -530,12 +530,12 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		mkkey tmpfile = do
 			let mi = MatchingFile FileInfo
 				{ matchFile = f
-				, contentFile = Just (toRawFilePath tmpfile)
+				, contentFile = Just tmpfile
 				}
 			islargefile <- checkMatcher' matcher mi mempty
 			if islargefile
 				then do
-					backend <- chooseBackend (fromRawFilePath f)
+					backend <- chooseBackend f
 					let ks = KeySource
 						{ keyFilename = f
 						, contentLocation = tmpfile

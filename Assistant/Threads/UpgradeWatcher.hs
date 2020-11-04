@@ -46,7 +46,7 @@ upgradeWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
 			, modifyHook = changed
 			, delDirHook = changed
 			}
-		let dir = parentDir flagfile
+		let dir = fromRawFilePath (parentDir (toRawFilePath flagfile))
 		let depth = length (splitPath dir) + 1
 		let nosubdirs f = length (splitPath f) == depth
 		void $ liftIO $ watchDir dir nosubdirs False hooks (startup mvar)

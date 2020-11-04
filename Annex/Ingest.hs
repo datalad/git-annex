@@ -98,7 +98,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 	nohardlink = withTSDelta $ liftIO . nohardlink'
 
 	nohardlink' delta = do
-		cache <- genInodeCache (toRawFilePath file) delta
+		cache <- genInodeCache file' delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file'
 			, contentLocation = file'

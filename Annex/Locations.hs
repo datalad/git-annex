@@ -288,9 +288,9 @@ gitAnnexTmpOtherDirOld r = P.addTrailingPathSeparator $
 	gitAnnexDir r P.</> "misctmp"
 
 {- .git/annex/watchtmp/ is used by the watcher and assistant -}
-gitAnnexTmpWatcherDir :: Git.Repo -> FilePath
-gitAnnexTmpWatcherDir r = fromRawFilePath $
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "watchtmp"
+gitAnnexTmpWatcherDir :: Git.Repo -> RawFilePath
+gitAnnexTmpWatcherDir r = P.addTrailingPathSeparator $
+	gitAnnexDir r P.</> "watchtmp"
 
 {- The temp file to use for a given key's content. -}
 gitAnnexTmpObjectLocation :: Key -> Git.Repo -> RawFilePath
@@ -511,8 +511,8 @@ gitAnnexDaemonStatusFile r = fromRawFilePath $
 	gitAnnexDir r P.</> "daemon.status"
 
 {- Log file for daemon mode. -}
-gitAnnexDaemonLogFile :: Git.Repo -> FilePath
-gitAnnexDaemonLogFile r = fromRawFilePath $ gitAnnexDir r P.</> "daemon.log"
+gitAnnexDaemonLogFile :: Git.Repo -> RawFilePath
+gitAnnexDaemonLogFile r = gitAnnexDir r P.</> "daemon.log"
 
 {- Log file for fuzz test. -}
 gitAnnexFuzzTestLogFile :: Git.Repo -> FilePath
@@ -520,12 +520,12 @@ gitAnnexFuzzTestLogFile r = fromRawFilePath $
 	gitAnnexDir r P.</> "fuzztest.log"
 
 {- Html shim file used to launch the webapp. -}
-gitAnnexHtmlShim :: Git.Repo -> FilePath
-gitAnnexHtmlShim r = fromRawFilePath $ gitAnnexDir r P.</> "webapp.html"
+gitAnnexHtmlShim :: Git.Repo -> RawFilePath
+gitAnnexHtmlShim r = gitAnnexDir r P.</> "webapp.html"
 
 {- File containing the url to the webapp. -}
-gitAnnexUrlFile :: Git.Repo -> FilePath
-gitAnnexUrlFile r = fromRawFilePath $ gitAnnexDir r P.</> "url"
+gitAnnexUrlFile :: Git.Repo -> RawFilePath
+gitAnnexUrlFile r = gitAnnexDir r P.</> "url"
 
 {- Temporary file used to edit configuriation from the git-annex branch. -}
 gitAnnexTmpCfgFile :: Git.Repo -> RawFilePath

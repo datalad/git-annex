@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Assistant.Threads.Merger where
 
 import Assistant.Common
@@ -13,6 +15,7 @@ import Assistant.BranchChange
 import Assistant.Sync
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
+import Utility.Directory.Create
 import Annex.CurrentBranch
 import qualified Annex
 import qualified Annex.Branch
@@ -21,13 +24,15 @@ import qualified Git.Branch
 import qualified Git.Ref
 import qualified Command.Sync
 
+import qualified System.FilePath.ByteString as P
+
 {- This thread watches for changes to .git/refs/, and handles incoming
  - pushes. -}
 mergeThread :: NamedThread
 mergeThread = namedThread "Merger" $ do
 	g <- liftAnnex gitRepo
-	let gitd = fromRawFilePath (Git.localGitDir g)
-	let dir = gitd </> "refs"
+	let gitd = Git.localGitDir g
+	let dir = gitd P.</> "refs"
 	liftIO $ createDirectoryUnder gitd dir
 	let hook a = Just <$> asIO2 (runHandler a)
 	changehook <- hook onChange
@@ -37,8 +42,8 @@ mergeThread = namedThread "Merger" $ do
 		, modifyHook = changehook
 		, errHook = errhook
 		}
-	void $ liftIO $ watchDir dir (const False) True hooks id
-	debug ["watching", dir]
+	void $ liftIO $ watchDir (fromRawFilePath dir) (const False) True hooks id
+	debug ["watching", fromRawFilePath dir]
 
 type Handler = FilePath -> Assistant ()
 

@@ -39,6 +39,7 @@ import Prelude
 
 import Utility.Monad
 import Utility.SystemDirectory
+import Utility.FileSystemEncoding
 
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.
@@ -84,13 +85,13 @@ upFrom dir
 	(drive, path) = splitDrive dir
 	dirs = filter (not . B.null) $ B.splitWith isPathSeparator path
 
-prop_upFrom_basics :: RawFilePath -> Bool
+prop_upFrom_basics :: FilePath -> Bool
 prop_upFrom_basics dir
-	| B.null dir = True
+	| null dir = True
 	| dir == "/" = p == Nothing
 	| otherwise = p /= Just dir
   where
-	p = upFrom dir
+	p = fromRawFilePath <$> upFrom (toRawFilePath dir)
 
 {- Checks if the first RawFilePath is, or could be said to contain the second.
  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc
@@ -222,13 +223,15 @@ relPathDirToFileAbs from to
 	normdrive = map toLower . takeWhile (/= ':') . fromRawFilePath . takeDrive
 #endif
 
-prop_relPathDirToFileAbs_basics :: RawFilePath -> RawFilePath -> Bool
+prop_relPathDirToFileAbs_basics :: FilePath -> FilePath -> Bool
 prop_relPathDirToFileAbs_basics from to
-	| B.null from || B.null to = True
-	| from == to = B.null r
-	| otherwise = not (B.null r)
+	| null from || null to = True
+	| from == to = null r
+	| otherwise = not (null r)
   where
-	r = relPathDirToFileAbs from to 
+	r = fromRawFilePath $ relPathDirToFileAbs
+		(toRawFilePath from)
+		(toRawFilePath to)
 
 prop_relPathDirToFileAbs_regressionTest :: Bool
 prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference

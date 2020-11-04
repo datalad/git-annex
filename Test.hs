@@ -31,6 +31,7 @@ import Common
 import CmdLine.GitAnnex.Options
 
 import qualified Utility.SafeCommand
+import qualified Utility.RawFilePath as R
 import qualified Annex
 import qualified Git.Filename
 import qualified Git.Types
@@ -141,7 +142,7 @@ runner opts
 		exitWith exitcode
 	runsubprocesstests (Just _) = isolateGitConfig $ do
 		ensuretmpdir
-		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem' tmpdir
+		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem' (toRawFilePath tmpdir)
 		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
 		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem adjustedbranchok opts) of
 			Nothing -> error "No tests found!?"
@@ -759,7 +760,7 @@ test_lock_force = intmpclonerepo $ do
 		Just k <- Annex.WorkTree.lookupKey (toRawFilePath annexedfile)
 		Database.Keys.removeInodeCaches k
 		Database.Keys.closeDb
-		liftIO . removeWhenExistsWith removeLink
+		liftIO . removeWhenExistsWith R.removeLink
 			=<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
 	writecontent annexedfile "test_lock_force content"
 	git_annex_shouldfail "lock" [annexedfile] @? "lock of modified file failed to fail"
@@ -1022,7 +1023,7 @@ test_unused = intmpclonerepo $ do
   where
 	checkunused expectedkeys desc = do
 		git_annex "unused" [] @? "unused failed"
-		unusedmap <- annexeval $ Logs.Unused.readUnusedMap ""
+		unusedmap <- annexeval $ Logs.Unused.readUnusedMap mempty
 		let unusedkeys = M.elems unusedmap
 		assertEqual ("unused keys differ " ++ desc)
 			(sort expectedkeys) (sort unusedkeys)
@@ -1433,7 +1434,7 @@ test_uncommitted_conflict_resolution = do
 		withtmpclonerepo $ \r2 -> do
 			indir r1 $ do
 				disconnectOrigin
-				createDirectoryIfMissing True (parentDir remoteconflictor)
+				createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath remoteconflictor)))
 				writecontent remoteconflictor annexedcontent
 				add_annex conflictor @? "add remoteconflicter failed"
 				git_annex "sync" [] @? "sync failed in r1"
@@ -1681,7 +1682,8 @@ test_rsync_remote = intmpclonerepo $ do
 
 test_bup_remote :: Assertion
 test_bup_remote = intmpclonerepo $ when BuildInfo.bup $ do
-	dir <- absPath "dir" -- bup special remote needs an absolute path
+	-- bup special remote needs an absolute path
+	dir <- fromRawFilePath <$> absPath (toRawFilePath "dir")
 	createDirectory dir
 	git_annex "initremote" (words $ "foo type=bup encryption=none buprepo="++dir) @? "initremote failed"
 	git_annex "get" [annexedfile] @? "get of file failed"
@@ -1705,10 +1707,11 @@ test_crypto = do
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
 	testscheme scheme = do
-		abstmp <- absPath tmpdir
+		abstmp <- fromRawFilePath <$> absPath (toRawFilePath tmpdir)
 		testscheme' scheme abstmp
 	testscheme' scheme abstmp = intmpclonerepo $ do
-		gpgtmp <- (</> "gpgtmp") <$> relPathCwdToFile abstmp
+		gpgtmp <- (</> "gpgtmp") . fromRawFilePath
+			<$> relPathCwdToFile (toRawFilePath abstmp)
 		createDirectoryIfMissing False gpgtmp
 		Utility.Gpg.testTestHarness gpgtmp gpgcmd
 			@? "test harness self-test failed"
@@ -1805,7 +1808,7 @@ test_addurl :: Assertion
 test_addurl = intmpclonerepo $ do
 	-- file:// only; this test suite should not hit the network
 	let filecmd c ps = git_annex c ("-cannex.security.allowed-url-schemes=file" : ps)
-	f <- absPath "myurl"
+	f <- fromRawFilePath <$> absPath (toRawFilePath "myurl")
 	let url = replace "\\" "/" ("file:///" ++ dropDrive f)
 	writecontent f "foo"
 	git_annex_shouldfail "addurl" [url] @? "addurl failed to fail on file url"

@@ -62,7 +62,8 @@ import System.Log.Logger
 import Network.Socket (HostName)
 
 stopDaemon :: Annex ()
-stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
+stopDaemon = liftIO . Utility.Daemon.stopDaemon . fromRawFilePath
+	=<< fromRepo gitAnnexPidFile
 
 {- Starts the daemon. If the daemon is run in the foreground, once it's
  - running, can start the browser.
@@ -75,24 +76,24 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	enableInteractiveBranchAccess
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexDaemonLogFile
-	liftIO $ debugM desc $ "logging to " ++ logfile
+	liftIO $ debugM desc $ "logging to " ++ fromRawFilePath logfile
 	createAnnexDirectory (parentDir pidfile)
 #ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
-	logfd <- liftIO $ handleToFd =<< openLog logfile
+	logfd <- liftIO $ handleToFd =<< openLog (fromRawFilePath logfile)
 	if foreground
 		then do
 			origout <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdOutput
 			origerr <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdError
-			let undaemonize = Utility.Daemon.foreground logfd (Just pidfile)
+			let undaemonize = Utility.Daemon.foreground logfd (Just (fromRawFilePath pidfile))
 			start undaemonize $ 
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a origout origerr
 		else
-			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
+			start (Utility.Daemon.daemonize logfd (Just (fromRawFilePath pidfile)) False) Nothing
 #else
 	-- Windows doesn't daemonize, but does redirect output to the
 	-- log file. The only way to do so is to restart the program.
@@ -128,7 +129,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		checkCanWatch
 		dstatus <- startDaemonStatus
 		logfile <- fromRepo gitAnnexDaemonLogFile
-		liftIO $ debugM desc $ "logging to " ++ logfile
+		liftIO $ debugM desc $ "logging to " ++ fromRawFilePath logfile
 		liftIO $ daemonize $
 			flip runAssistant (go webappwaiter) 
 				=<< newAssistantData st dstatus

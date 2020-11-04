@@ -16,7 +16,7 @@ import Assistant.ScanRemotes
 import Assistant.Sync
 import qualified Remote
 import qualified Git
-import Config.Files
+import Config.Files.AutoStart
 import Logs.Trust
 import Logs.Remote
 import Logs.PreferredContent
@@ -90,7 +90,8 @@ deleteCurrentRepository = dangerPage $ do
 				mapM_ (\r -> changeSyncable (Just r) False) rs
 
 			liftAnnex $ prepareRemoveAnnexDir dir
-			liftIO $ removeDirectoryRecursive =<< absPath dir
+			liftIO $ removeDirectoryRecursive . fromRawFilePath
+				=<< absPath (toRawFilePath dir)
 			
 			redirect ShutdownConfirmedR
 		_ -> $(widgetFile "configurators/delete/currentrepository")

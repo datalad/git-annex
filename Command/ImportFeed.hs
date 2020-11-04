@@ -22,6 +22,7 @@ import Data.Time.LocalTime
 import qualified Data.Text as T
 import System.Log.Logger
 import Control.Concurrent.Async
+import qualified System.FilePath.ByteString as P
 
 import Command
 import qualified Annex
@@ -188,13 +189,14 @@ performDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> ToDownloa
 performDownload addunlockedmatcher opts cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
 		rundownload url (takeWhile (/= '?') $ takeExtension url) $ \f -> do
+			let f' = fromRawFilePath f
 			r <- Remote.claimingUrl url
 			if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
 				then do
 					let dlopts = (downloadOptions opts)
 						-- force using the filename
 						-- chosen here
-						{ fileOption = Just f
+						{ fileOption = Just f'
 						-- don't use youtube-dl
 						, rawOption = True
 						}
@@ -218,7 +220,8 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url f sz
 						Right (UrlMulti l) -> do
 							kl <- forM l $ \(url', sz, subf) ->
-								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' (f </> sanitizeFilePath subf) sz
+								let dest = f P.</> toRawFilePath (sanitizeFilePath subf)
+								in downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' dest sz
 							return $ Just $ if all isJust kl
 								then catMaybes kl
 								else []
@@ -257,7 +260,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 			Nothing -> return True
 			Just f -> do
 				showStartOther "addurl" (Just url) (SeekInput [])
-				getter f >>= \case
+				getter (toRawFilePath f) >>= \case
 					Just ks
 						-- Download problem.
 						| null ks -> do
@@ -307,7 +310,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 		| rawOption (downloadOptions opts) = downloadlink
 		| otherwise = do
 			r <- withTmpWorkDir mediakey $ \workdir -> do
-				dl <- youtubeDl linkurl workdir nullMeterUpdate
+				dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
 				case dl of
 					Right (Just mediafile) -> do
 						let ext = case takeExtension mediafile of
@@ -315,7 +318,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 							s -> s
 						ok <- rundownload linkurl ext $ \f ->
 							checkCanAdd (downloadOptions opts) f $ \canadd -> do
-								addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just mediafile)
+								addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just (toRawFilePath mediafile))
 								return (Just [mediakey])
 						return (Just ok)
 					-- youtude-dl didn't support it, so
@@ -457,7 +460,7 @@ checkFeedBroken url = checkFeedBroken' url =<< feedState url
 checkFeedBroken' :: URLString -> RawFilePath -> Annex Bool
 checkFeedBroken' url f = do
 	prev <- maybe Nothing readish
-		<$> liftIO (catchMaybeIO $ readFile (fromRawFlePath f))
+		<$> liftIO (catchMaybeIO $ readFile (fromRawFilePath f))
 	now <- liftIO getCurrentTime
 	case prev of
 		Nothing -> do

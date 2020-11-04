@@ -188,7 +188,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	 - into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
+		withTmpDirIn (fromRawFilePath $ parentDir $ toRawFilePath newdir) "git-annex.upgrade" $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also
 			-- avoids problems if tar doesn't support transparent
@@ -219,7 +219,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 		unlessM (doesDirectoryExist dir) $
 			error $ "did not find " ++ dir ++ " in " ++ distributionfile
 	makeorigsymlink olddir = do
-		let origdir = parentDir olddir </> installBase
+		let origdir = fromRawFilePath (parentDir (toRawFilePath olddir)) </> installBase
 		removeWhenExistsWith removeLink origdir
 		createSymbolicLink newdir origdir
 
@@ -228,7 +228,7 @@ oldVersionLocation :: IO FilePath
 oldVersionLocation = readProgramFile >>= \case
 	Nothing -> error "Cannot find old distribution bundle; not upgrading."
 	Just pf -> do
-		let pdir = parentDir pf
+		let pdir = fromRawFilePath $ parentDir $ toRawFilePath pf
 #ifdef darwin_HOST_OS
 		let dirs = splitDirectories pdir
 		{- It will probably be deep inside a git-annex.app directory. -}
@@ -257,7 +257,7 @@ newVersionLocation d olddir =
 			return Nothing
   where
 	s = installBase ++ "." ++ distributionVersion d
-	topdir = parentDir olddir
+	topdir = fromRawFilePath $ parentDir $ toRawFilePath olddir
 	newloc = topdir </> s
 	trymkdir dir fallback =
 		(createDirectory dir >> return (Just dir))

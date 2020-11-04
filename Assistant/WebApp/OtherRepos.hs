@@ -12,9 +12,10 @@ module Assistant.WebApp.OtherRepos where
 import Assistant.Common
 import Assistant.WebApp.Types
 import Assistant.WebApp.Page
-import Config.Files
+import Config.Files.AutoStart
 import Utility.Yesod
 import Assistant.Restart
+import qualified Utility.RawFilePath as R
 
 getRepositorySwitcherR :: Handler Html
 getRepositorySwitcherR = page "Switch repository" Nothing $ do
@@ -24,9 +25,9 @@ getRepositorySwitcherR = page "Switch repository" Nothing $ do
 listOtherRepos :: IO [(String, String)]
 listOtherRepos = do
 	dirs <- readAutoStartFile
-	pwd <- getCurrentDirectory
+	pwd <- R.getCurrentDirectory
 	gooddirs <- filterM isrepo $
-		filter (\d -> not $ d `dirContains` pwd) dirs
+		filter (\d -> not $ toRawFilePath d `dirContains` pwd) dirs
 	names <- mapM relHome gooddirs
 	return $ sort $ zip names gooddirs
   where

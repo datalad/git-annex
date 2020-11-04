@@ -37,7 +37,7 @@ transferWatcherThread = namedThread "TransferWatcher" $ do
 		, modifyHook = modifyhook
 		, errHook = errhook
 		}
-	void $ liftIO $ watchDir dir (const False) True hooks id
+	void $ liftIO $ watchDir (fromRawFilePath dir) (const False) True hooks id
 	debug ["watching for transfers"]
 
 type Handler = FilePath -> Assistant ()

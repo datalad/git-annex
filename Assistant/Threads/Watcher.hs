@@ -24,6 +24,7 @@ import Assistant.Alert
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import Utility.InodeCache
+import qualified Utility.RawFilePath as R
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
@@ -169,7 +170,7 @@ ignored = ig . takeFileName
 	ig _ = False
 
 unlessIgnored :: FilePath -> Assistant (Maybe Change) -> Assistant (Maybe Change)
-unlessIgnored file a = ifM (liftAnnex $ checkIgnored (CheckGitIgnore True) file)
+unlessIgnored file a = ifM (liftAnnex $ checkIgnored (CheckGitIgnore True) (toRawFilePath file))
 	( noChange
 	, a
 	)
@@ -194,7 +195,7 @@ runHandler handler file filestatus = void $ do
 
 {- Small files are added to git as-is, while large ones go into the annex. -}
 add :: GetFileMatcher -> FilePath -> Assistant (Maybe Change)
-add largefilematcher file = ifM (liftAnnex $ checkFileMatcher largefilematcher file)
+add largefilematcher file = ifM (liftAnnex $ checkFileMatcher largefilematcher (toRawFilePath file))
 	( pendingAddChange file
 	, do
 		liftAnnex $ Annex.Queue.addCommand "add"
@@ -280,7 +281,7 @@ onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkss
 						Nothing -> noop
 						Just key -> liftAnnex $
 							addassociatedfile key file
-					onAddSymlink' (Just $ fromRawFilePath lt) mk file fs
+					onAddSymlink' (Just lt) mk file fs
 
 {- A symlink might be an arbitrary symlink, which is just added.
  - Or, if it is a git-annex symlink, ensure it points to the content
@@ -288,15 +289,17 @@ onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkss
  -}
 onAddSymlink :: Handler
 onAddSymlink file filestatus = unlessIgnored file $ do
-	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
-	kv <- liftAnnex (lookupKey (toRawFilePath file))
+	linktarget <- liftIO (catchMaybeIO $ R.readSymbolicLink file')
+	kv <- liftAnnex (lookupKey file')
 	onAddSymlink' linktarget kv file filestatus
+  where
+	file' = toRawFilePath file
 
-onAddSymlink' :: Maybe String -> Maybe Key -> Handler
+onAddSymlink' :: Maybe LinkTarget -> Maybe Key -> Handler
 onAddSymlink' linktarget mk file filestatus = go mk
   where
 	go (Just key) = do
-		link <- liftAnnex $ calcRepo $ gitAnnexLink file key
+		link <- liftAnnex $ calcRepo $ gitAnnexLink (toRawFilePath file) key
 		if linktarget == Just link
 			then ensurestaged (Just link) =<< getDaemonStatus
 			else do
@@ -326,17 +329,17 @@ onAddSymlink' linktarget mk file filestatus = go mk
 	ensurestaged Nothing _ = noChange
 
 {- For speed, tries to reuse the existing blob for symlink target. -}
-addLink :: FilePath -> FilePath -> Maybe Key -> Assistant (Maybe Change)
+addLink :: FilePath -> LinkTarget -> Maybe Key -> Assistant (Maybe Change)
 addLink file link mk = do
 	debug ["add symlink", file]
 	liftAnnex $ do
 		v <- catObjectDetails $ Ref $ encodeBS' $ ':':file
 		case v of
 			Just (currlink, sha, _type)
-				| s2w8 link == L.unpack currlink ->
+				| L.fromStrict link == currlink ->
 					stageSymlink (toRawFilePath file) sha
 			_ -> stageSymlink (toRawFilePath file)
-				=<< hashSymlink (toRawFilePath link)
+				=<< hashSymlink link
 	madeChange file $ LinkChange mk
 
 onDel :: Handler

@@ -91,10 +91,10 @@ runRepair u mrmt destructiverepair = do
 	remoterepair fsckresults = case Remote.repairRepo =<< mrmt of
 		Nothing -> return False
 		Just mkrepair -> do
-			thisrepopath <- liftIO . absPath . fromRawFilePath
+			thisrepopath <- liftIO . absPath
 				=<< liftAnnex (fromRepo Git.repoPath)
 			a <- liftAnnex $ mkrepair $
-				repair fsckresults (Just thisrepopath)
+				repair fsckresults (Just (fromRawFilePath thisrepopath))
 			liftIO $ catchBoolIO a
 
 	repair fsckresults referencerepo = do

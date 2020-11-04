@@ -247,7 +247,7 @@ checkAssociatedDirectory cfg (Just r) = do
 		RepoGroupStandard gr -> case associatedDirectory repoconfig gr of
 			Just d -> do
 				top <- fromRawFilePath <$> fromRepo Git.repoPath
-				createWorkTreeDirectory (top </> d)
+				createWorkTreeDirectory (toRawFilePath (top </> d))
 			Nothing -> noop
 		_ -> noop
 

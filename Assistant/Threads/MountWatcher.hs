@@ -159,7 +159,7 @@ handleMount urlrenderer dir = do
  -}
 remotesUnder :: FilePath -> Assistant [Remote]
 remotesUnder dir = do
-	repotop <- liftAnnex $ fromRawFilePath <$> fromRepo Git.repoPath
+	repotop <- liftAnnex $ fromRepo Git.repoPath
 	rs <- liftAnnex remoteList
 	pairs <- liftAnnex $ mapM (checkremote repotop) rs
 	let (waschanged, rs') = unzip pairs
@@ -169,7 +169,7 @@ remotesUnder dir = do
 	return $ mapMaybe snd $ filter fst pairs
   where
 	checkremote repotop r = case Remote.localpath r of
-		Just p | dirContains dir (absPathFrom repotop p) ->
+		Just p | dirContains (toRawFilePath dir) (absPathFrom repotop (toRawFilePath p)) ->
 			(,) <$> pure True <*> updateRemote r
 		_ -> return (False, Just r)
 

@@ -191,7 +191,7 @@ instance DeferredParseClass SyncOptions where
 		<*> pure (pushOption v)
 		<*> pure (contentOption v)
 		<*> pure (noContentOption v)
-		<*> liftIO (mapM absPath (contentOfOption v))
+		<*> liftIO (mapM (fromRawFilePath <$$> absPath . toRawFilePath) (contentOfOption v))
 		<*> pure (cleanupOption v)
 		<*> pure (keyOptions v)
 		<*> pure (resolveMergeOverride v)

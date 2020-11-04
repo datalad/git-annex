@@ -168,11 +168,11 @@ fromRemotePath dir repo = do
  - This converts such a directory to an absolute path.
  - Note that it has to run on the system where the remote is.
  -}
-repoAbsPath :: FilePath -> IO FilePath
+repoAbsPath :: RawFilePath -> IO RawFilePath
 repoAbsPath d = do
-	d' <- expandTilde d
+	d' <- expandTilde (fromRawFilePath d)
 	h <- myHomeDir
-	return $ h </> d'
+	return $ toRawFilePath $ h </> d'
 
 expandTilde :: FilePath -> IO FilePath
 #ifdef mingw32_HOST_OS

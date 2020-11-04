@@ -16,6 +16,7 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.Command as Git
 import qualified Git.Branch
 import qualified Command.Sync
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = notBareRepo $
@@ -62,15 +63,15 @@ perform p = do
 	-- and then any adds. This order is necessary to handle eg, removing
 	-- a directory and replacing it with a file.
 	let (removals, adds) = partition (\di -> dstsha di `elem` nullShas) diff'
-	let mkrel di = liftIO $ relPathCwdToFile $ fromRawFilePath $
+	let mkrel di = liftIO $ relPathCwdToFile $
 		fromTopFilePath (file di) g
 
 	forM_ removals $ \di -> do
 		f <- mkrel di
-		liftIO $ removeWhenExistsWith removeLink f
+		liftIO $ removeWhenExistsWith R.removeLink f
 
 	forM_ adds $ \di -> do
-		f <- mkrel di
+		f <- fromRawFilePath <$> mkrel di
 		inRepo $ Git.run [Param "checkout", Param "--", File f]
 
 	next $ liftIO cleanup

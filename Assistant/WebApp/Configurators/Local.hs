@@ -20,7 +20,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.Config
 import qualified Git.Command
-import Config.Files
+import Config.Files.AutoStart
 import Utility.FreeDesktop
 import Utility.DiskFree
 #ifndef mingw32_HOST_OS
@@ -78,8 +78,8 @@ checkRepositoryPath :: Text -> IO (Either (SomeMessage WebApp) (Maybe Text))
 checkRepositoryPath p = do
 	home <- myHomeDir
 	let basepath = expandTilde home $ T.unpack p
-	path <- absPath basepath
-	let parent = parentDir path
+	path <- fromRawFilePath <$> absPath (toRawFilePath basepath)
+	let parent = fromRawFilePath $ parentDir (toRawFilePath path)
 	problems <- catMaybes <$> mapM runcheck
 		[ (return $ path == "/", "Enter the full path to use for the repository.")
 		, (return $ all isSpace basepath, "A blank path? Seems unlikely.")
@@ -354,7 +354,9 @@ combineRepos :: FilePath -> String -> Handler Remote
 combineRepos dir name = liftAnnex $ do
 	hostname <- fromMaybe "host" <$> liftIO getHostname
 	mylocation <- fromRepo Git.repoLocation
-	mypath <- liftIO $ relPathDirToFile dir mylocation
+	mypath <- liftIO $ fromRawFilePath <$> relPathDirToFile
+		(toRawFilePath dir)
+		(toRawFilePath mylocation)
 	liftIO $ inDir dir $ void $ makeGitRemote hostname mypath
 	addRemote $ makeGitRemote name dir
 
@@ -415,7 +417,9 @@ startFullAssistant path repogroup setup = do
 canWrite :: FilePath -> IO Bool		
 canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
-		(return dir, return $ parentDir dir)
+		( return dir
+		, return $ fromRawFilePath $ parentDir $ toRawFilePath dir
+		)
 	catchBoolIO $ fileAccess tocheck False True False
 
 {- Gets the UUID of the git repo at a location, which may not exist, or

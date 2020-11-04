@@ -71,7 +71,7 @@ checkDirectory mdir = do
 	canondir home d
 		| "~/" `isPrefixOf` d = return d
 		| "/~/" `isPrefixOf` d = return $ drop 1 d
-		| otherwise = relHome $ fromRawFilePath <$> absPathFrom
+		| otherwise = relHome $ fromRawFilePath $ absPathFrom 
 			(toRawFilePath home)
 			(toRawFilePath d)
 

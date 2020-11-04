@@ -34,6 +34,7 @@ import Git.FilePath
 import Git.Types
 import Types.Import
 import Utility.Metered
+import qualified Utility.RawFilePath as R
 
 import Control.Concurrent.STM
 
@@ -118,10 +119,11 @@ duplicateModeParser =
 
 seek :: ImportOptions -> CommandSeek
 seek o@(LocalImportOptions {}) = startConcurrency commandStages $ do
-	repopath <- liftIO . absPath . fromRawFilePath =<< fromRepo Git.repoPath
-	inrepops <- liftIO $ filter (dirContains repopath) <$> mapM absPath (importFiles o)
+	repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+	inrepops <- liftIO $ filter (dirContains repopath)
+		<$> mapM (absPath . toRawFilePath) (importFiles o)
 	unless (null inrepops) $ do
-		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords inrepops
+		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords (map fromRawFilePath inrepops)
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
 	(commandAction . startLocal o addunlockedmatcher largematcher (duplicateMode o))
@@ -136,23 +138,21 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		(importToSubDir o)
 	seekRemote r (importToBranch o) subdir (importContent o) (checkGitIgnoreOption o)
 
-startLocal :: ImportOptions -> AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (FilePath, FilePath) -> CommandStart
+startLocal :: ImportOptions -> AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (RawFilePath, RawFilePath) -> CommandStart
 startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
-	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
+	ifM (liftIO $ isRegularFile <$> R.getSymbolicLinkStatus srcfile)
 		( starting "import" ai si pickaction
 		, stop
 		)
   where
- 	ai = ActionItemWorkTreeFile destfile'
+ 	ai = ActionItemWorkTreeFile destfile
 	si = SeekInput []
-
-	destfile' = toRawFilePath destfile
 
 	deletedup k = do
 		showNote $ "duplicate of " ++ serializeKey k
 		verifyExisting k destfile
 			( do
-				liftIO $ removeFile srcfile
+				liftIO $ R.removeLink srcfile
 				next $ return True
 			, do
 				warning "Could not verify that the content is still present in the annex; not removing from the import location."
@@ -165,35 +165,35 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		ignored <- checkIgnored (checkGitIgnoreOption o) destfile
 		if ignored
 			then do
-				warning $ "not importing " ++ destfile ++ " which is .gitignored (use --no-check-gitignore to override)"
+				warning $ "not importing " ++ fromRawFilePath destfile ++ " which is .gitignored (use --no-check-gitignore to override)"
 				stop
 			else do
-				existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
+				existing <- liftIO (catchMaybeIO $ R.getSymbolicLinkStatus destfile)
 				case existing of
 					Nothing -> importfilechecked ld k
 					Just s
 						| isDirectory s -> notoverwriting "(is a directory)"
 						| isSymbolicLink s -> ifM (Annex.getState Annex.force)
 							( do
-								liftIO $ removeWhenExistsWith removeLink destfile
+								liftIO $ removeWhenExistsWith R.removeLink destfile
 								importfilechecked ld k
 							, notoverwriting "(is a symlink)"
 							)
 						| otherwise -> ifM (Annex.getState Annex.force)
 							( do
-								liftIO $ removeWhenExistsWith removeLink destfile
+								liftIO $ removeWhenExistsWith R.removeLink destfile
 								importfilechecked ld k
 							, notoverwriting "(use --force to override, or a duplication option such as --deduplicate to clean up)"
 							)
 	checkdestdir cont = do
 		let destdir = parentDir destfile
-		existing <- liftIO (catchMaybeIO $ getSymbolicLinkStatus destdir)
+		existing <- liftIO (catchMaybeIO $ R.getSymbolicLinkStatus destdir)
 		case existing of
 			Nothing -> cont
 			Just s
 				| isDirectory s -> cont
 				| otherwise -> do
-					warning $ "not importing " ++ destfile ++ " because " ++ destdir ++ " is not a directory"
+					warning $ "not importing " ++ fromRawFilePath destfile ++ " because " ++ fromRawFilePath destdir ++ " is not a directory"
 					stop
 
 	importfilechecked ld k = do
@@ -201,13 +201,17 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		-- The dest file is what will be ingested.
 		createWorkTreeDirectory (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
-			then void $ copyFileExternal CopyAllMetaData srcfile destfile
-			else moveFile srcfile destfile
+			then void $ copyFileExternal CopyAllMetaData 
+				(fromRawFilePath srcfile)
+				(fromRawFilePath destfile)
+			else moveFile 
+				(fromRawFilePath srcfile)
+				(fromRawFilePath destfile)
 		-- Get the inode cache of the dest file. It should be
 		-- weakly the same as the originally locked down file's
 		-- inode cache. (Since the file may have been copied,
 		-- its inodes may not be the same.)
-		newcache <- withTSDelta $ liftIO . genInodeCache destfile'
+		newcache <- withTSDelta $ liftIO . genInodeCache destfile
 		let unchanged = case (newcache, inodeCache (keySource ld)) of
 			(_, Nothing) -> True
 			(Just newc, Just c) | compareWeak c newc -> True
@@ -218,8 +222,8 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		-- is what will be ingested.
 		let ld' = ld
 			{ keySource = KeySource
-				{ keyFilename = destfile'
-				, contentLocation = destfile'
+				{ keyFilename = destfile
+				, contentLocation = destfile
 				, inodeCache = newcache
 				}
 			}
@@ -228,15 +232,15 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)
-			, next $ Command.Add.addSmall (checkGitIgnoreOption o) destfile'
+			, next $ Command.Add.addSmall (checkGitIgnoreOption o) destfile
 			)
 	notoverwriting why = do
-		warning $ "not overwriting existing " ++ destfile ++ " " ++ why
+		warning $ "not overwriting existing " ++ fromRawFilePath destfile ++ " " ++ why
 		stop
 	lockdown a = do
 		let mi = MatchingFile $ FileInfo
-			{ contentFile = Just (toRawFilePath srcfile)
-			, matchFile = toRawFilePath destfile
+			{ contentFile = Just srcfile
+			, matchFile = destfile
 			}
 		lockingfile <- not <$> addUnlocked addunlockedmatcher mi
 		-- Minimal lock down with no hard linking so nothing
@@ -245,7 +249,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 			{ lockingFile = lockingfile
 			, hardlinkFileTmpDir = Nothing
 			}
-		v <- lockDown cfg srcfile
+		v <- lockDown cfg (fromRawFilePath srcfile)
 		case v of
 			Just ld -> do
 				backend <- chooseBackend destfile
@@ -270,7 +274,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		_ -> importfile ld k
 	skipbecause s = showNote (s ++ "; skipping") >> next (return True)
 
-verifyExisting :: Key -> FilePath -> (CommandPerform, CommandPerform) -> CommandPerform
+verifyExisting :: Key -> RawFilePath -> (CommandPerform, CommandPerform) -> CommandPerform
 verifyExisting key destfile (yes, no) = do
 	-- Look up the numcopies setting for the file that it would be
 	-- imported to, if it were imported.

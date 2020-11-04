@@ -12,6 +12,7 @@ import qualified Command.Watch
 import Annex.Init
 import Annex.Path
 import Config.Files
+import Config.Files.AutoStart
 import qualified BuildInfo
 import Utility.HumanTime
 import Assistant.Install

@@ -221,7 +221,7 @@ hourlyCheck = do
  -}
 checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
-	f <- liftAnnex $ fromRepo gitAnnexDaemonLogFile
+	f <- liftAnnex $ fromRawFilePath <$> fromRepo gitAnnexDaemonLogFile
 	logs <- liftIO $ listLogs f
 	totalsize <- liftIO $ sum <$> mapM getFileSize logs
 	when (totalsize > 2 * oneMegabyte) $ do

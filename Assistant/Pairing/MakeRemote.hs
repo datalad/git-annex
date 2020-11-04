@@ -26,7 +26,7 @@ setupAuthorizedKeys :: PairMsg -> FilePath -> IO ()
 setupAuthorizedKeys msg repodir = case validateSshPubKey $ remoteSshPubKey $ pairMsgData msg of
 	Left err -> error err
 	Right pubkey -> do
-		absdir <- absPath repodir
+		absdir <- fromRawFilePath <$> absPath (toRawFilePath repodir)
 		unlessM (liftIO $ addAuthorizedKeys True absdir pubkey) $
 			error "failed setting up ssh authorized keys"
 

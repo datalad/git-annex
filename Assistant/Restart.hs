@@ -17,6 +17,7 @@ import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Url
 import Utility.PID
+import qualified Utility.RawFilePath as R
 import qualified Git.Construct
 import qualified Git.Config
 import qualified Annex
@@ -39,8 +40,8 @@ import Network.URI
 prepRestart :: Assistant ()
 prepRestart = do
 	liftIO . maybe noop (`throwTo` PauseWatcher) =<< namedThreadId watchThread
-	liftIO . removeWhenExistsWith removeLink =<< liftAnnex (fromRepo gitAnnexUrlFile)
-	liftIO . removeWhenExistsWith removeLink =<< liftAnnex (fromRepo gitAnnexPidFile)
+	liftIO . removeWhenExistsWith R.removeLink =<< liftAnnex (fromRepo gitAnnexUrlFile)
+	liftIO . removeWhenExistsWith R.removeLink =<< liftAnnex (fromRepo gitAnnexPidFile)
 
 {- To finish a restart, send a global redirect to the new url
  - to any web browsers that are displaying the webapp.
@@ -75,8 +76,8 @@ newAssistantUrl repo = do
 	geturl
   where
 	geturl = do
-		r <- Git.Config.read =<< Git.Construct.fromPath repo
-		waiturl $ gitAnnexUrlFile r
+		r <- Git.Config.read =<< Git.Construct.fromPath (toRawFilePath repo)
+		waiturl $ fromRawFilePath $ gitAnnexUrlFile r
 	waiturl urlfile = do
 		v <- tryIO $ readFile urlfile
 		case v of

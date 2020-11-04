@@ -16,7 +16,7 @@ import Assistant.WebApp.Common
 import qualified Annex
 import qualified Git
 import Config
-import Config.Files
+import Config.Files.AutoStart
 import Annex.NumCopies
 import Utility.DataUnits
 import Git.Config
@@ -24,6 +24,7 @@ import Types.Distribution
 import qualified BuildInfo
 
 import qualified Data.Text as T
+import qualified System.FilePath.ByteString as P
 
 data PrefsForm = PrefsForm
 	{ diskReserve :: Text
@@ -119,5 +120,5 @@ postPreferencesR = page "Preferences" (Just Configuration) $ do
 inAutoStartFile :: Annex Bool
 inAutoStartFile = do
 	here <- liftIO . absPath =<< fromRepo Git.repoPath
-	any (`equalFilePath` here) . toRawFilePath
+	any (`P.equalFilePath` here) . map toRawFilePath
 		<$> liftIO readAutoStartFile

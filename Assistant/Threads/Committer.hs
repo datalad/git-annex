@@ -57,10 +57,11 @@ commitThread = namedThread "Committer" $ do
 	liftAnnex $ do
 		-- Clean up anything left behind by a previous process
 		-- on unclean shutdown.
-		void $ liftIO $ tryIO $ removeDirectoryRecursive lockdowndir
+		void $ liftIO $ tryIO $ removeDirectoryRecursive
+			(fromRawFilePath lockdowndir)
 		void $ createAnnexDirectory lockdowndir
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds lockdowndir havelsof delayadd $
+		readychanges <- handleAdds (fromRawFilePath lockdowndir) havelsof delayadd $
 			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
@@ -261,7 +262,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	let lockdownconfig = LockDownConfig
 		{ lockingFile = False
-		, hardlinkFileTmpDir = Just lockdowndir
+		, hardlinkFileTmpDir = Just (toRawFilePath lockdowndir)
 		}
 	(postponed, toadd) <- partitionEithers
 		<$> safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess
@@ -304,7 +305,7 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 		delta <- liftAnnex getTSDelta
 		let cfg = LockDownConfig
 			{ lockingFile = False
-			, hardlinkFileTmpDir = Just lockdowndir
+			, hardlinkFileTmpDir = Just (toRawFilePath lockdowndir)
 			}
 		if M.null m
 			then forM toadd (add cfg)

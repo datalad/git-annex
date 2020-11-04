@@ -91,7 +91,9 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 		else do
 			htmlshim <- getAnnex' $ fromRepo gitAnnexHtmlShim
 			urlfile <- getAnnex' $ fromRepo gitAnnexUrlFile
-			go tlssettings addr webapp htmlshim (Just urlfile)
+			go tlssettings addr webapp
+				(fromRawFilePath htmlshim)
+				(Just (fromRawFilePath urlfile))
   where
 	-- The webapp thread does not wait for the startupSanityCheckThread
 	-- to finish, so that the user interface remains responsive while
@@ -100,8 +102,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 	getreldir
 		| noannex = return Nothing
 		| otherwise = Just <$>
-			(relHome =<< absPath . fromRawFilePath
-				=<< getAnnex' (fromRepo repoPath))
+			(relHome . fromRawFilePath =<< absPath =<< getAnnex' (fromRepo repoPath))
 	go tlssettings addr webapp htmlshim urlfile = do
 		let url = myUrl tlssettings webapp addr
 		maybe noop (`writeFileProtected` url) urlfile

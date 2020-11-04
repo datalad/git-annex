@@ -49,6 +49,7 @@ import Utility.Tuple
 import Control.Concurrent.Async
 import System.Posix.Types
 import Data.IORef
+import qualified System.FilePath.ByteString as P
 
 data AnnexedFileSeeker = AnnexedFileSeeker
 	{ startAction :: SeekInput -> RawFilePath -> Key -> CommandStart
@@ -92,7 +93,7 @@ withFilesNotInGit (CheckGitIgnore ci) ww a l = do
 	seekFiltered (const (pure True)) a $
 		seekHelper id ww (const $ LsFiles.notInRepo [] include_ignored) l
 
-withPathContents :: ((FilePath, FilePath) -> CommandSeek) -> CmdParams -> CommandSeek
+withPathContents :: ((RawFilePath, RawFilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher
 	forM_ params $ \p -> do
@@ -102,13 +103,18 @@ withPathContents a params = do
 				a f
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
-		( map (\f -> (f, makeRelative (takeDirectory (dropTrailingPathSeparator p)) f))
+		( map (\f -> 
+			let f' = toRawFilePath f
+			in (f', P.makeRelative (P.takeDirectory (P.dropTrailingPathSeparator p')) f'))
 			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
-		, return [(p, takeFileName p)]
+		, return [(p', P.takeFileName p')]
 		)
+	  where
+		p' = toRawFilePath p
+
 	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
-		{ contentFile = Just (toRawFilePath f)
-		, matchFile = toRawFilePath relf
+		{ contentFile = Just f
+		, matchFile = relf
 		}
 
 withWords :: ([String] -> CommandSeek) -> CmdParams -> CommandSeek

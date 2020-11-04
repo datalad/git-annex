@@ -124,7 +124,8 @@ builtin cmd dir params = do
 		"Restricted login shell for git-annex only SSH access"
   where
 	mkrepo = do
-		r <- Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
+		r <- Git.Construct.repoAbsPath (toRawFilePath dir)
+			>>= Git.Construct.fromAbsPath
 		Git.Config.read r
 			`catchIO` \_ -> do
 				hn <- fromMaybe "unknown" <$> getHostname

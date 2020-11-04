@@ -27,7 +27,7 @@ import Git.Types (fromConfigValue)
 import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Annex
-import Config.Files
+import Config.Files.AutoStart
 import Upgrade
 import Annex.Version
 import Utility.Android
@@ -75,15 +75,15 @@ start' allowauto o = do
 		listenAddress' <- if isJust (listenAddress o)
 			then pure (listenAddress o)
 			else annexListen <$> Annex.getGitConfig
-		ifM (checkpid <&&> checkshim f)
+		ifM (checkpid <&&> checkshim (fromRawFilePath f))
 			( if isJust (listenAddress o)
 				then giveup "The assistant is already running, so --listen cannot be used."
 				else do
-					url <- liftIO . readFile
+					url <- liftIO . readFile . fromRawFilePath
 						=<< fromRepo gitAnnexUrlFile
 					liftIO $ if isJust listenAddress'
 						then putStrLn url
-						else liftIO $ openBrowser browser f url Nothing Nothing
+						else liftIO $ openBrowser browser (fromRawFilePath f) url Nothing Nothing
 			, do
 				startDaemon True True Nothing cannotrun listenAddress' $ Just $ 
 					\origout origerr url htmlshim ->
@@ -93,7 +93,7 @@ start' allowauto o = do
 			)
 	checkpid = do
 		pidfile <- fromRepo gitAnnexPidFile
-		liftIO $ isJust <$> checkDaemon pidfile
+		liftIO $ isJust <$> checkDaemon (fromRawFilePath pidfile)
 	checkshim f = liftIO $ doesFileExist f
 	notinitialized = do
 		g <- Annex.gitRepo
@@ -105,8 +105,8 @@ start' allowauto o = do
 notHome :: Annex Bool
 notHome = do
 	g <- Annex.gitRepo
-	d <- liftIO $ absPath (Git.repoLocation g)
-	h <- liftIO $ absPath =<< myHomeDir
+	d <- liftIO $ absPath (Git.repoPath g)
+	h <- liftIO $ absPath . toRawFilePath =<< myHomeDir
 	return (d /= h)
 
 {- When run without a repo, start the first available listed repository in
@@ -191,7 +191,7 @@ firstRun o = do
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
 openBrowser mcmd htmlshim realurl outh errh = do
-	htmlshim' <- absPath htmlshim
+	htmlshim' <- fromRawFilePath <$> absPath (toRawFilePath htmlshim)
 	openBrowser' mcmd htmlshim' realurl outh errh
 
 openBrowser' :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
