@@ -1,3 +1,0 @@
-git-annex 8.20200720.1 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix a bug in find --batch in the previous version."""]]

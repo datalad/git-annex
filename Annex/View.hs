@@ -360,7 +360,7 @@ applyView' mkviewedfile getfilemetadata view = do
 			topf <- inRepo (toTopFilePath f)
 			go uh topf sha (toTreeItemType mode) =<< lookupKey f
 		liftIO $ void clean
-		genViewBranch view
+	genViewBranch view
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 

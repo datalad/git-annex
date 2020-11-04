@@ -1,11 +1,5 @@
-git-annex (8.20201008) UNRELEASED; urgency=medium
+git-annex (8.20201103) upstream; urgency=medium
 
-  * Fix bug that prevented linux standalone bundle from working on a fresh
-    install.
-  * Fix build on Windows with network-3.
-  * Fix a memory leak introduced in the last release.
-  * add, import: Fix a reversion in 7.20191009 that broke handling
-    of --largerthan and --smallerthan.
   * move: Improve resuming a move that was interrupted after the object
     was transferred, in cases where numcopies checks prevented the resumed
     move from dropping the object from the source repository.
@@ -14,7 +8,12 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
     chunks using the configured chunk size.
   * Fixed some problems that prevented this command from working:
     git submodule foreach git annex init
-  * testremote: Display exceptions when tests fail, to aid debugging.
+  * Improve shutdown process for external special remotes and external
+    backends. Make sure to relay any remaining stderr from the process,
+    and potentially avoid the process getting a SIGPIPE if it writes to
+    stderr too late.
+  * Fix a bug that prevented linux standalone bundle from working on a fresh
+    install.
   * Windows build changed to one done by the datalad-extensions project
     using Github actions.
   * Windows build now includes libmagic, so mimetype and mimeencoding
@@ -23,12 +22,14 @@ git-annex (8.20201008) UNRELEASED; urgency=medium
     on this.
   * view: Avoid using ':' from metadata when generating a view, because
     it's a special character on Windows ("c:")
-  * Improve shutdown process for external special remotes and external
-    backends. Make sure to relay any remaining stderr from the process,
-    and potentially avoid the process getting a SIGPIPE if it writes to
-    stderr too late. 
+  * Fix a memory leak introduced in the last release.
+  * add, import: Fix a reversion in 7.20191009 that broke handling
+    of --largerthan and --smallerthan.
+  * view: Fix a reversion in 8.20200522 that broke entering or changing views.
+  * Fix build on Windows with network-3.
+  * testremote: Display exceptions when tests fail, to aid debugging.
 
- -- Joey Hess <id@joeyh.name>  Thu, 08 Oct 2020 10:48:17 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 03 Nov 2020 11:40:56 -0400
 
 git-annex (8.20201007) upstream; urgency=medium
 
