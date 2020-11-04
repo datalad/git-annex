@@ -17,7 +17,7 @@ jobs:
       - name: Update mirror
         run: |
           git remote add official git://git.kitenet.net/git-annex
-          git pull --tags official upstream/master
+          git pull --tags official master
           git push --tags origin upstream/master
 
 # vim:set sts=2:
