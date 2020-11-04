@@ -31,8 +31,6 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v2
         with:
-          # We need to fetch all commits so that we get tags so that `git
-          # describe` will work.
           fetch-depth: 0
           path: git-annex
 
@@ -51,7 +49,7 @@ jobs:
       - name: Get build version
         id: build-version
         run: |
-          version="$(git describe | sed -e 's/-/+git/')"
+          version="$(git describe origin/upstream/master | sed -e 's/-/+git/')"
           arch="$(dpkg --print-architecture)"
           echo "::set-output name=version::${version}_$arch"
         working-directory: git-annex

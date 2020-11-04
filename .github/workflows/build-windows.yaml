@@ -33,8 +33,6 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v2
         with:
-          # We need to fetch all commits so that we get tags so that `git
-          # describe` will work.
           fetch-depth: 0
 
       - name: Check out source files
@@ -104,7 +102,7 @@ jobs:
       - name: Get build version
         id: build-version
         run: |
-          version="$(git describe | sed -e 's/-/+git/')"
+          version="$(git describe origin/upstream/master | sed -e 's/-/+git/')"
           echo "::set-output name=version::${version}_x64"
 
       - name: Add version to installer name
