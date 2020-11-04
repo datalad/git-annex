@@ -18,8 +18,6 @@ jobs:
         run: |
           git remote add upstream git://git.kitenet.net/git-annex
           git pull --tags upstream upstream/master
-          git checkout master
-          git merge upstream/master
-          git push --tags origin master upstream/master
+          git push --tags origin upstream/master
 
 # vim:set sts=2:
