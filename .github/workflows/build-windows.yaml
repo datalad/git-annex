@@ -37,6 +37,9 @@ jobs:
           # describe` will work.
           fetch-depth: 0
 
+      - name: Check out source files
+        run: git checkout origin/upstream/master -- .
+
       #- name: Checkout this repository
       #  run: |
       #    # We need to fetch all commits so that we get tags so that `git

@@ -36,6 +36,10 @@ jobs:
           fetch-depth: 0
           path: git-annex
 
+      - name: Check out source files
+        run: git checkout origin/upstream/master -- .
+        working-directory: git-annex
+
       - name: Import GPG keys
         run: |
           # private key for signing - comes from secrets

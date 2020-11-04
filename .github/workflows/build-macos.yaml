@@ -28,6 +28,9 @@ jobs:
           # describe` will work.
           fetch-depth: 0
 
+      - name: Check out source files
+        run: git checkout origin/upstream/master -- .
+
       - name: Get build version
         id: build-version
         run: |
