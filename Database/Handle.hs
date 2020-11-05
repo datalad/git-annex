@@ -63,10 +63,10 @@ data DbConcurrency = SingleWriter | MultiWriter
 
 {- Opens the database, but does not perform any migrations. Only use
  - once the database is known to exist and have the right tables. -}
-openDb :: DbConcurrency -> FilePath -> TableName -> IO DbHandle
+openDb :: DbConcurrency -> RawFilePath -> TableName -> IO DbHandle
 openDb dbconcurrency db tablename = do
 	jobs <- newEmptyMVar
-	worker <- async (workerThread (T.pack db) tablename jobs)
+	worker <- async (workerThread (T.pack (fromRawFilePath db)) tablename jobs)
 	
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO $ fileEncoding stderr

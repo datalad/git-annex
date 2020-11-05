@@ -47,9 +47,11 @@ import qualified Git.Ref
 import qualified Git.DiffTree as DiffTree
 import Logs
 import qualified Logs.ContentIdentifier as Log
+import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
+import qualified System.FilePath.ByteString as P
 
 data ContentIdentifierHandle = ContentIdentifierHandle H.DbQueue
 
@@ -75,8 +77,8 @@ AnnexBranch
 openDb :: Annex ContentIdentifierHandle
 openDb = do
 	dbdir <- fromRawFilePath <$> fromRepo gitAnnexContentIdentifierDbDir
-	let db = dbdir </> "db"
-	unlessM (liftIO $ doesFileExist db) $ do
+	let db = dbdir P.</> "db"
+	unlessM (liftIO $ R.doesPathExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateContentIdentifier
 	h <- liftIO $ H.openDbQueue H.SingleWriter db "content_identifiers"

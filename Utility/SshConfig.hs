@@ -144,7 +144,7 @@ changeUserSshConfig modifier = do
 writeSshConfig :: FilePath -> String -> IO ()
 writeSshConfig f s = do
 	writeFile f s
-	setSshConfigMode f
+	setSshConfigMode (toRawFilePath f)
 
 {- Ensure that the ssh config file lacks any group or other write bits, 
  - since ssh is paranoid about not working if other users can write
@@ -153,7 +153,7 @@ writeSshConfig f s = do
  - If the chmod fails, ignore the failure, as it might be a filesystem like
  - Android's that does not support file modes.
  -}
-setSshConfigMode :: FilePath -> IO ()
+setSshConfigMode :: RawFilePath -> IO ()
 setSshConfigMode f = void $ tryIO $ modifyFileMode f $
 	removeModes [groupWriteMode, otherWriteMode]
 

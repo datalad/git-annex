@@ -1090,6 +1090,7 @@ Executable git-annex
     Utility.Metered
     Utility.Misc
     Utility.Monad
+    Utility.MoveFile
     Utility.Network
     Utility.NotificationBroadcaster
     Utility.OptParse

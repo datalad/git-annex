@@ -5,12 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.Index where
 
 import Common
 import Git
 import Utility.Env
 import Utility.Env.Set
+
+import qualified System.FilePath.ByteString as P
 
 indexEnv :: String
 indexEnv = "GIT_INDEX_FILE"
@@ -26,8 +30,8 @@ indexEnv = "GIT_INDEX_FILE"
  -
  - So, an absolute path is the only safe option for this to return.
  -}
-indexEnvVal :: FilePath -> IO String
-indexEnvVal p = fromRawFilePath <$> absPath (toRawFilePath p)
+indexEnvVal :: RawFilePath -> IO String
+indexEnvVal p = fromRawFilePath <$> absPath p
 
 {- Forces git to use the specified index file.
  -
@@ -36,7 +40,7 @@ indexEnvVal p = fromRawFilePath <$> absPath (toRawFilePath p)
  -
  - Warning: Not thread safe.
  -}
-override :: FilePath -> Repo -> IO (IO ())
+override :: RawFilePath -> Repo -> IO (IO ())
 override index _r = do
 	res <- getEnv var
 	val <- indexEnvVal index
@@ -48,13 +52,13 @@ override index _r = do
 	reset _ = unsetEnv var
 
 {- The normal index file. Does not check GIT_INDEX_FILE. -}
-indexFile :: Repo -> FilePath
-indexFile r = fromRawFilePath (localGitDir r) </> "index"
+indexFile :: Repo -> RawFilePath
+indexFile r = localGitDir r P.</> "index"
 
 {- The index file git will currently use, checking GIT_INDEX_FILE. -}
-currentIndexFile :: Repo -> IO FilePath
-currentIndexFile r = fromMaybe (indexFile r) <$> getEnv indexEnv	
+currentIndexFile :: Repo -> IO RawFilePath
+currentIndexFile r = maybe (indexFile r) toRawFilePath <$> getEnv indexEnv
 
 {- Git locks the index by creating this file. -}
-indexFileLock :: FilePath -> FilePath
-indexFileLock f = f ++ ".lock"
+indexFileLock :: RawFilePath -> RawFilePath
+indexFileLock f = f <> ".lock"

@@ -5,16 +5,20 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Database.Init where
 
 import Annex.Common
 import Annex.Perms
 import Utility.FileMode
 import Utility.Directory.Create
+import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sqlite
-import qualified Data.Text as T
 import Lens.Micro
+import qualified Data.Text as T
+import qualified System.FilePath.ByteString as P
 
 {- Ensures that the database is freshly initialized. Deletes any
  - existing database. Pass the migration action for the database.
@@ -24,24 +28,24 @@ import Lens.Micro
  - file causes Sqlite to always use the same permissions for additional
  - files it writes later on
  -}
-initDb :: FilePath -> SqlPersistM () -> Annex ()
+initDb :: P.RawFilePath -> SqlPersistM () -> Annex ()
 initDb db migration = do
-	let dbdir = takeDirectory db
-	let tmpdbdir = dbdir ++ ".tmp"
-	let tmpdb = tmpdbdir </> "db"
-	let tdb = T.pack tmpdb
+	let dbdir = P.takeDirectory db
+	let tmpdbdir = dbdir <> ".tmp"
+	let tmpdb = tmpdbdir P.</> "db"
+	let tdb = T.pack (fromRawFilePath tmpdb)
 	top <- parentDir <$> fromRepo gitAnnexDir
 	liftIO $ do
-		createDirectoryUnder top (toRawFilePath tmpdbdir)
+		createDirectoryUnder top tmpdbdir
 		runSqliteInfo (enableWAL tdb) migration
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring
 	-- less restrictive umasks.
-	liftIO $ setFileMode tmpdb =<< defaultFileMode
+	liftIO $ R.setFileMode tmpdb =<< defaultFileMode
 	setAnnexFilePerm tmpdb
 	liftIO $ do
-		void $ tryIO $ removeDirectoryRecursive dbdir
-		rename tmpdbdir dbdir
+		void $ tryIO $ removeDirectoryRecursive (fromRawFilePath dbdir)
+		rename (fromRawFilePath tmpdbdir) (fromRawFilePath dbdir)
 
 {- Make sure that the database uses WAL mode, to prevent readers
  - from blocking writers, and prevent a writer from blocking readers.

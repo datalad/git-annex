@@ -422,7 +422,7 @@ testHarness tmpdir cmd a = ifM (inPath (unGpgCmd cmd))
 		orig <- getEnv var
 		subdir <- makenewdir (1 :: Integer)
 		-- gpg is picky about permissions on its home dir
-		liftIO $ void $ tryIO $ modifyFileMode subdir $
+		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath subdir) $
 			removeModes $ otherGroupModes
 		setEnv var subdir True
 		-- For some reason, recent gpg needs a trustdb to be set up.

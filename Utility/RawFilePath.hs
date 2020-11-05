@@ -25,6 +25,7 @@ module Utility.RawFilePath (
 	doesPathExist,
 	getCurrentDirectory,
 	createDirectory,
+	setFileMode,
 ) where
 
 #ifndef mingw32_HOST_OS
@@ -45,8 +46,9 @@ createDirectory p = D.createDirectory p 0o777
 
 #else
 import qualified Data.ByteString as B
-import System.PosixCompat (FileStatus)
+import System.PosixCompat (FileStatus, FileMode)
 import qualified System.PosixCompat as P
+import qualified System.PosixCompat.Files as F
 import qualified System.Directory as D
 import Utility.FileSystemEncoding
 
@@ -80,4 +82,7 @@ getCurrentDirectory = toRawFilePath <$> D.getCurrentDirectory
 
 createDirectory :: RawFilePath -> IO ()
 createDirectory = D.createDirectory . fromRawFilePath
+
+setFileMode :: RawFilePath -> FileMode -> IO () 
+setFileMode = F.setFileMode
 #endif

@@ -9,8 +9,6 @@
 
 module Annex.Content.LowLevel where
 
-import System.PosixCompat.Files
-
 import Annex.Common
 import Logs.Transfer
 import qualified Annex
@@ -19,6 +17,9 @@ import Utility.FileMode
 import Utility.DataUnits
 import Utility.CopyFile
 import qualified Utility.RawFilePath as R
+
+import System.PosixCompat.Files
+import qualified System.FilePath.ByteString as P
 
 {- Runs the secure erase command if set, otherwise does nothing.
  - File may or may not be deleted at the end; caller is responsible for
@@ -59,32 +60,30 @@ linkOrCopy' canhardlink key src dest destmode = catchDefaultIO Nothing $
 		s <- getstat
 		if linkCount s > 1
 			then copy s
-			else liftIO (R.createLink src dest >> preserveGitMode dest' destmode >> return (Just Linked))
+			else liftIO (R.createLink src dest >> preserveGitMode dest destmode >> return (Just Linked))
 				`catchIO` const (copy s)
-	copy s = ifM (checkedCopyFile' key src' dest' destmode s)
+	copy s = ifM (checkedCopyFile' key src dest destmode s)
 		( return (Just Copied)
 		, return Nothing
 		)
 	getstat = liftIO $ R.getFileStatus src
-	src' = fromRawFilePath src
-	dest' = fromRawFilePath dest
 
 {- Checks disk space before copying. -}
-checkedCopyFile :: Key -> FilePath -> FilePath -> Maybe FileMode -> Annex Bool
+checkedCopyFile :: Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> Annex Bool
 checkedCopyFile key src dest destmode = catchBoolIO $
 	checkedCopyFile' key src dest destmode
-		=<< liftIO (getFileStatus src)
+		=<< liftIO (R.getFileStatus src)
 
-checkedCopyFile' :: Key -> FilePath -> FilePath -> Maybe FileMode -> FileStatus -> Annex Bool
+checkedCopyFile' :: Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> FileStatus -> Annex Bool
 checkedCopyFile' key src dest destmode s = catchBoolIO $
-	ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ takeDirectory dest) key 0 True)
+	ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ P.takeDirectory dest) key 0 True)
 		( liftIO $
-			copyFileExternal CopyAllMetaData src dest
+			copyFileExternal CopyAllMetaData (fromRawFilePath src) (fromRawFilePath dest)
 				<&&> preserveGitMode dest destmode
 		, return False
 		)
 
-preserveGitMode :: FilePath -> Maybe FileMode -> IO Bool
+preserveGitMode :: RawFilePath -> Maybe FileMode -> IO Bool
 preserveGitMode f (Just mode)
 	| isExecutable mode = catchBoolIO $ do
 		modifyFileMode f $ addModes executeModes
@@ -102,12 +101,12 @@ preserveGitMode _ _ = return True
  - to be downloaded from the free space. This way, we avoid overcommitting
  - when doing concurrent downloads.
  -}
-checkDiskSpace :: Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace :: Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
 checkDiskSpace destdir key = checkDiskSpace' (fromMaybe 1 (fromKey keySize key)) destdir key
 
 {- Allows specifying the size of the key, if it's known, which is useful
  - as not all keys know their size. -}
-checkDiskSpace' :: Integer -> Maybe FilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace' :: Integer -> Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
 checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
 	( return True
 	, do
@@ -120,7 +119,7 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getSta
 		inprogress <- if samefilesystem
 			then sizeOfDownloadsInProgress (/= key)
 			else pure 0
-		dir >>= liftIO . getDiskFree >>= \case
+		dir >>= liftIO . getDiskFree . fromRawFilePath >>= \case
 			Just have -> do
 				reserve <- annexDiskReserve <$> Annex.getGitConfig
 				let delta = need + reserve - have - alreadythere + inprogress
@@ -131,7 +130,7 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getSta
 			_ -> return True
 	)
   where
-	dir = maybe (fromRawFilePath <$> fromRepo gitAnnexDir) return destdir
+	dir = maybe (fromRepo gitAnnexDir) return destdir
 
 needMoreDiskSpace :: Integer -> String
 needMoreDiskSpace n = "not enough free space, need " ++ 

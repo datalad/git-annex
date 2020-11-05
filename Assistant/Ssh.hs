@@ -248,7 +248,7 @@ installSshKeyPair sshkeypair sshdata = do
 		parentDir $ toRawFilePath $ sshdir </> sshPrivKeyFile sshdata
 
 	unlessM (doesFileExist $ sshdir </> sshPrivKeyFile sshdata) $
-		writeFileProtected (sshdir </> sshPrivKeyFile sshdata) (sshPrivKey sshkeypair)
+		writeFileProtected (toRawFilePath (sshdir </> sshPrivKeyFile sshdata)) (sshPrivKey sshkeypair)
 	unlessM (doesFileExist $ sshdir </> sshPubKeyFile sshdata) $
 		writeFile (sshdir </> sshPubKeyFile sshdata) (sshPubKey sshkeypair)
 
@@ -331,7 +331,7 @@ setSshConfig sshdata config = do
 			, "Host " ++ mangledhost
 			] ++ map (\(k, v) -> "\t" ++ k ++ " " ++ v)
 				(settings ++ config)
-		setSshConfigMode configfile
+		setSshConfigMode (toRawFilePath configfile)
 
 	return $ sshdata
 		{ sshHostName = T.pack mangledhost

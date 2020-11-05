@@ -36,6 +36,7 @@ import Utility.Env (getEnv)
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.ByteString.Char8 as S
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 import Utility.Base64
 
 {- A CredPair can be stored in a file, or in the environment, or
@@ -190,7 +191,7 @@ writeCreds :: Creds -> FilePath -> Annex ()
 writeCreds creds file = do
 	d <- fromRepo gitAnnexCredsDir
 	createAnnexDirectory d
-	liftIO $ writeFileProtected (fromRawFilePath d </> file) creds
+	liftIO $ writeFileProtected (d P.</> toRawFilePath file) creds
 
 readCreds :: FilePath -> Annex (Maybe Creds)
 readCreds f = liftIO . catchMaybeIO . readFileStrict =<< credsFile f

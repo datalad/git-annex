@@ -53,9 +53,9 @@ cleanCorruptObjects fsckresults r = do
 	mapM_ removeLoose (S.toList $ knownMissing fsckresults)
 	mapM_ removeBad =<< listLooseObjectShas r
   where
-	removeLoose s = removeWhenExistsWith removeLink (looseObjectFile r s)
+	removeLoose s = removeWhenExistsWith R.removeLink (looseObjectFile r s)
 	removeBad s = do
-		void $ tryIO $ allowRead $  looseObjectFile r s
+		void $ tryIO $ allowRead $ looseObjectFile r s
 		whenM (isMissing s r) $
 			removeLoose s
 
@@ -79,10 +79,11 @@ explodePacks r = go =<< listPackFiles r
 		putStrLn "Unpacking all pack files."
 		forM_ packs $ \packfile -> do
 			moveFile packfile (tmpdir </> takeFileName packfile)
-			removeWhenExistsWith removeLink $ packIdxFile packfile
+			removeWhenExistsWith R.removeLink
+				(packIdxFile (toRawFilePath packfile))
 		forM_ packs $ \packfile -> do
 			let tmp = tmpdir </> takeFileName packfile
-			allowRead tmp
+			allowRead (toRawFilePath tmp)
 			-- May fail, if pack file is corrupt.
 			void $ tryIO $
 				pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
@@ -163,8 +164,8 @@ retrieveMissingObjects missing referencerepo r
 copyObjects :: Repo -> Repo -> IO Bool
 copyObjects srcr destr = rsync
 	[ Param "-qr"
-	, File $ addTrailingPathSeparator $ objectsDir srcr
-	, File $ addTrailingPathSeparator $ objectsDir destr
+	, File $ addTrailingPathSeparator $ fromRawFilePath $ objectsDir srcr
+	, File $ addTrailingPathSeparator $ fromRawFilePath $ objectsDir destr
 	]
 
 {- To deal with missing objects that cannot be recovered, resets any
@@ -395,7 +396,7 @@ rewriteIndex r
 	| otherwise = do
 		(bad, good, cleanup) <- partitionIndex r
 		unless (null bad) $ do
-			removeWhenExistsWith removeLink (indexFile r)
+			removeWhenExistsWith R.removeLink (indexFile r)
 			UpdateIndex.streamUpdateIndex r
 				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
@@ -446,9 +447,8 @@ preRepair g = do
 		removeWhenExistsWith removeLink headfile
 		writeFile headfile "ref: refs/heads/master"
 	explodePackedRefsFile g
-	unless (repoIsLocalBare g) $ do
-		let f = indexFile g
-		void $ tryIO $ allowWrite f
+	unless (repoIsLocalBare g) $
+		void $ tryIO $ allowWrite $ indexFile g
   where
 	headfile = fromRawFilePath (localGitDir g) </> "HEAD"
 	validhead s = "ref: refs/" `isPrefixOf` s
@@ -572,7 +572,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 			else successfulfinish modifiedbranches
 
 	corruptedindex = do
-		removeWhenExistsWith removeLink (indexFile g)
+		removeWhenExistsWith R.removeLink (indexFile g)
 		-- The corrupted index can prevent fsck from finding other
 		-- problems, so re-run repair.
 		fsckresult' <- findBroken False g
@@ -618,5 +618,5 @@ successfulRepair = fst
 
 safeReadFile :: FilePath -> IO String
 safeReadFile f = do
-	allowRead f
+	allowRead (toRawFilePath f)
 	readFileStrict f

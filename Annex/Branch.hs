@@ -77,6 +77,7 @@ import Annex.Branch.Transitions
 import qualified Annex
 import Annex.Hook
 import Utility.Directory.Stream
+import qualified Utility.RawFilePath as R
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -447,7 +448,7 @@ mergeIndex jl branches = do
 prepareModifyIndex :: JournalLocked -> Annex ()
 prepareModifyIndex _jl = do
 	index <- fromRepo gitAnnexIndex
-	void $ liftIO $ tryIO $ removeFile $ index ++ ".lock"
+	void $ liftIO $ tryIO $ R.removeLink (index <> ".lock")
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a

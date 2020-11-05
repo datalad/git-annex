@@ -166,7 +166,7 @@ prepHiddenServiceSocketDir :: AppName -> UserID -> UniqueIdent -> IO ()
 prepHiddenServiceSocketDir appname uid ident = do
 	createDirectoryIfMissing True d
 	setOwnerAndGroup d uid (-1)
-	modifyFileMode d $
+	modifyFileMode (toRawFilePath d) $
 		addModes [ownerReadMode, ownerExecuteMode, ownerWriteMode]
   where
 	d = takeDirectory $ hiddenServiceSocketFile appname uid ident

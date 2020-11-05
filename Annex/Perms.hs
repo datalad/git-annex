@@ -37,20 +37,20 @@ import qualified Utility.RawFilePath as R
 withShared :: (SharedRepository -> Annex a) -> Annex a
 withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
 
-setAnnexFilePerm :: FilePath -> Annex ()
+setAnnexFilePerm :: RawFilePath -> Annex ()
 setAnnexFilePerm = setAnnexPerm False
 
-setAnnexDirPerm :: FilePath -> Annex ()
+setAnnexDirPerm :: RawFilePath -> Annex ()
 setAnnexDirPerm = setAnnexPerm True
 
 {- Sets appropriate file mode for a file or directory in the annex,
  - other than the content files and content directory. Normally,
  - don't change the mode, but with core.sharedRepository set,
  - allow the group to write, etc. -}
-setAnnexPerm :: Bool -> FilePath -> Annex ()
+setAnnexPerm :: Bool -> RawFilePath -> Annex ()
 setAnnexPerm = setAnnexPerm' Nothing
 
-setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> FilePath -> Annex ()
+setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> RawFilePath -> Annex ()
 setAnnexPerm' modef isdir file = unlessM crippledFileSystem $
 	withShared $ liftIO . go
   where
@@ -67,7 +67,7 @@ setAnnexPerm' modef isdir file = unlessM crippledFileSystem $
 			modifyFileMode file $ f []
 	modef' = fromMaybe addModes modef
 
-resetAnnexFilePerm :: FilePath -> Annex ()
+resetAnnexFilePerm :: RawFilePath -> Annex ()
 resetAnnexFilePerm = resetAnnexPerm False
 
 {- Like setAnnexPerm, but ignores the current mode of the file entirely,
@@ -78,7 +78,7 @@ resetAnnexFilePerm = resetAnnexPerm False
  - which is going to be moved to a non-temporary location and needs
  - usual modes.
  -}
-resetAnnexPerm :: Bool -> FilePath -> Annex ()
+resetAnnexPerm :: Bool -> RawFilePath -> Annex ()
 resetAnnexPerm isdir file = unlessM crippledFileSystem $ do
 	defmode <- liftIO defaultFileMode
 	let modef moremodes _oldmode = addModes moremodes defmode
@@ -106,7 +106,7 @@ createAnnexDirectory dir = do
   where
 	createdir p = do
 		liftIO $ R.createDirectory p
-		setAnnexDirPerm (fromRawFilePath p)
+		setAnnexDirPerm p
 
 {- Create a directory in the git work tree, creating any parent
  - directories up to the top of the work tree.
@@ -131,7 +131,7 @@ createWorkTreeDirectory dir = do
  - shared repository, the current user may not be able to change a file
  - owned by another user, so failure to set this mode is ignored.
  -}
-freezeContent :: FilePath -> Annex ()
+freezeContent :: RawFilePath -> Annex ()
 freezeContent file = unlessM crippledFileSystem $
 	withShared go
   where
@@ -158,7 +158,7 @@ isContentWritePermOk file = ifM crippledFileSystem
 			Just havemode -> havemode == combineModes (havemode:wantmode)
 
 {- Adjusts read mode of annexed file per core.sharedRepository setting. -}
-chmodContent :: FilePath -> Annex ()
+chmodContent :: RawFilePath -> Annex ()
 chmodContent file = unlessM crippledFileSystem $
 	withShared go
   where
@@ -171,7 +171,7 @@ chmodContent file = unlessM crippledFileSystem $
 
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
-thawContent :: FilePath -> Annex ()
+thawContent :: RawFilePath -> Annex ()
 thawContent file = thawPerms $ withShared go
   where
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead file
@@ -196,14 +196,14 @@ freezeContentDir :: RawFilePath -> Annex ()
 freezeContentDir file = unlessM crippledFileSystem $
 	withShared go
   where
-	dir = fromRawFilePath $ parentDir file
+	dir = parentDir file
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead dir
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead dir
 	go _ = liftIO $ preventWrite dir
 
 thawContentDir :: RawFilePath -> Annex ()
 thawContentDir file = 
-	thawPerms $ liftIO $ allowWrite . fromRawFilePath $ parentDir file
+	thawPerms $ liftIO $ allowWrite $ parentDir file
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}
@@ -213,7 +213,7 @@ createContentDir dest = do
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
 	unlessM crippledFileSystem $
-		liftIO $ allowWrite $ fromRawFilePath dir
+		liftIO $ allowWrite dir
   where
 	dir = parentDir dest
 

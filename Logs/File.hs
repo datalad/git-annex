@@ -32,9 +32,9 @@ import qualified Data.ByteString.Lazy.Char8 as L8
 writeLogFile :: RawFilePath -> String -> Annex ()
 writeLogFile f c = createDirWhenNeeded f $ viaTmp writelog (fromRawFilePath f) c
   where
-	writelog f' c' = do
-		liftIO $ writeFile f' c'
-		setAnnexFilePerm f'
+	writelog tmp c' = do
+		liftIO $ writeFile tmp c'
+		setAnnexFilePerm (toRawFilePath tmp)
 
 -- | Runs the action with a handle connected to a temp file.
 -- The temp file replaces the log file once the action succeeds.
@@ -45,7 +45,7 @@ withLogHandle f a = do
 		bracket (setup tmp) cleanup a
   where
 	setup tmp = do
-		setAnnexFilePerm tmp
+		setAnnexFilePerm (toRawFilePath tmp)
 		liftIO $ openFile tmp WriteMode
 	cleanup h = liftIO $ hClose h
 
@@ -57,7 +57,7 @@ appendLogFile f lck c =
 		withExclusiveLock lck $ do
 			liftIO $ withFile f' AppendMode $
 				\h -> L8.hPutStrLn h c
-			setAnnexFilePerm f'
+			setAnnexFilePerm (toRawFilePath f')
   where
 	f' = fromRawFilePath f
 
@@ -81,7 +81,7 @@ modifyLogFile f lck modf = withExclusiveLock lck $ do
 	f' = fromRawFilePath f
 	writelog lf b = do
 		liftIO $ L.writeFile lf b
-		setAnnexFilePerm lf
+		setAnnexFilePerm (toRawFilePath lf)
 
 -- | Checks the content of a log file to see if any line matches.
 --
@@ -134,7 +134,7 @@ streamLogFile f lck a = withExclusiveLock lck $ bracketOnError setup cleanup go
 		mapM_ a =<< liftIO (lines <$> hGetContents h)
 		liftIO $ hClose h
 		liftIO $ writeFile f ""
-		setAnnexFilePerm f
+		setAnnexFilePerm (toRawFilePath f)
 
 createDirWhenNeeded :: RawFilePath -> Annex () -> Annex ()
 createDirWhenNeeded f a = a `catchNonAsync` \_e -> do

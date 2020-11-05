@@ -43,7 +43,7 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 		(ic, populated) <- replaceWorkTreeFile f' $ \tmp -> do
 			let tmp' = toRawFilePath tmp
 			ok <- linkOrCopy k obj tmp' destmode >>= \case
-				Just _ -> thawContent tmp >> return True
+				Just _ -> thawContent tmp' >> return True
 				Nothing -> liftIO (writePointerFile tmp' k destmode) >> return False
 			ic <- withTSDelta (liftIO . genInodeCache tmp')
 			return (ic, ok)

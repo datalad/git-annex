@@ -189,7 +189,8 @@ insertAuthToken extractAuthToken predicate webapp root pathbits params =
 {- Creates a html shim file that's used to redirect into the webapp,
  - to avoid exposing the secret token when launching the web browser. -}
 writeHtmlShim :: String -> String -> FilePath -> IO ()
-writeHtmlShim title url file = viaTmp writeFileProtected file $ genHtmlShim title url
+writeHtmlShim title url file = 
+	viaTmp writeFileProtected (toRawFilePath file) $ genHtmlShim title url
 
 genHtmlShim :: String -> String -> String
 genHtmlShim title url = unlines

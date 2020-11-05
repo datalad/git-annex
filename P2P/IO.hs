@@ -135,7 +135,7 @@ serveUnixSocket unixsocket serveconn = do
         -- Connections have to authenticate to do anything,
         -- so it's fine that other local users can connect to the
         -- socket.
-	modifyFileMode unixsocket $ addModes
+	modifyFileMode (toRawFilePath unixsocket) $ addModes
 		[groupReadMode, groupWriteMode, otherReadMode, otherWriteMode]
 	S.listen soc 2
 	forever $ do

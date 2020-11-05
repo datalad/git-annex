@@ -33,10 +33,12 @@ import Annex.Locations
 import Utility.Exception
 import Annex.Common
 import Annex.LockFile
+import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
 import Data.Time.Clock
+import qualified System.FilePath.ByteString as P
 
 data FsckHandle = FsckHandle H.DbQueue UUID
 
@@ -68,8 +70,8 @@ newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go
 openDb :: UUID -> Annex FsckHandle
 openDb u = do
 	dbdir <- fromRepo (gitAnnexFsckDbDir u)
-	let db = fromRawFilePath dbdir </> "db"
-	unlessM (liftIO $ doesFileExist db) $ do
+	let db = dbdir P.</> "db"
+	unlessM (liftIO $ R.doesPathExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateFsck
 	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)

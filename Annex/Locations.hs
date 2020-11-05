@@ -471,8 +471,8 @@ gitAnnexMergeLock :: Git.Repo -> FilePath
 gitAnnexMergeLock r = fromRawFilePath $ gitAnnexDir r P.</> "merge.lck"
 
 {- .git/annex/index is used to stage changes to the git-annex branch -}
-gitAnnexIndex :: Git.Repo -> FilePath
-gitAnnexIndex r = fromRawFilePath $ gitAnnexDir r P.</> "index"
+gitAnnexIndex :: Git.Repo -> RawFilePath
+gitAnnexIndex r = gitAnnexDir r P.</> "index"
 
 {- Holds the ref of the git-annex branch that the index was last updated to.
  -
@@ -482,8 +482,8 @@ gitAnnexIndexStatus :: Git.Repo -> RawFilePath
 gitAnnexIndexStatus r = gitAnnexDir r P.</> "index.lck"
 
 {- The index file used to generate a filtered branch view._-}
-gitAnnexViewIndex :: Git.Repo -> FilePath
-gitAnnexViewIndex r = fromRawFilePath $ gitAnnexDir r P.</> "viewindex"
+gitAnnexViewIndex :: Git.Repo -> RawFilePath
+gitAnnexViewIndex r = gitAnnexDir r P.</> "viewindex"
 
 {- File containing a log of recently accessed views. -}
 gitAnnexViewLog :: Git.Repo -> RawFilePath

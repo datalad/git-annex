@@ -25,12 +25,13 @@ import Criterion.Main
 import qualified Data.ByteString.Char8 as B8
 import System.Random
 import Control.Concurrent
+import qualified System.FilePath.ByteString as P
 #endif
 
 benchmarkDbs :: CriterionMode -> Integer -> Annex ()
 #ifdef WITH_BENCHMARK
 benchmarkDbs mode n = withTmpDirIn "." "benchmark" $ \tmpdir -> do
-	db <- benchDb tmpdir n
+	db <- benchDb (toRawFilePath tmpdir) n
 	liftIO $ runMode mode
 		[ bgroup "keys database"
 			[ getAssociatedFilesHitBench db
@@ -101,18 +102,18 @@ fileMiss = fileN 0 -- 0 is never stored
 
 data BenchDb = BenchDb H.DbQueue Integer (MVar Integer)
 
-benchDb :: FilePath -> Integer -> Annex BenchDb
+benchDb :: RawFilePath -> Integer -> Annex BenchDb
 benchDb tmpdir num = do
 	liftIO $ putStrLn $ "setting up database with " ++ show num ++ " items"
 	initDb db SQL.createTables
 	h <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
 	liftIO $ populateAssociatedFiles h num
-	sz <- liftIO $ getFileSize (toRawFilePath db)
+	sz <- liftIO $ getFileSize db
 	liftIO $ putStrLn $ "size of database on disk: " ++ 
 		roughSize storageUnits False sz
 	mv <- liftIO $ newMVar 1
 	return (BenchDb h num mv)
   where
-	db = tmpdir </> show num </> "db"
+	db = tmpdir P.</> toRawFilePath (show num </> "db")
 
 #endif /* WITH_BENCHMARK */

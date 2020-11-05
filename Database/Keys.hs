@@ -43,6 +43,7 @@ import Git.FilePath
 import Git.Command
 import Git.Types
 import Git.Index
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
@@ -114,8 +115,8 @@ openDb _ st@(DbOpen _) = return st
 openDb False DbUnavailable = return DbUnavailable
 openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
-	let db = fromRawFilePath dbdir </> "db"
-	dbexists <- liftIO $ doesFileExist db
+	let db = dbdir P.</> "db"
+	dbexists <- liftIO $ R.doesPathExist db
 	case (dbexists, createdb) of
 		(True, _) -> open db
 		(False, True) -> do
@@ -215,7 +216,7 @@ reconcileStaged :: H.DbQueue -> Annex ()
 reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRawFilePath <$> fromRepo gitAnnexKeysDbIndexCache
-	withTSDelta (liftIO . genInodeCache (toRawFilePath gitindex)) >>= \case
+	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
 		Just cur -> 
 			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case
 				Nothing -> go cur indexcache

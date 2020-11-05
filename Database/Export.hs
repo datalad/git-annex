@@ -59,9 +59,11 @@ import Git.Types
 import Git.Sha
 import Git.FilePath
 import qualified Git.DiffTree
+import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
+import qualified System.FilePath.ByteString as P
 
 data ExportHandle = ExportHandle H.DbQueue UUID
 
@@ -96,9 +98,9 @@ ExportTreeCurrent
  -}
 openDb :: UUID -> Annex ExportHandle
 openDb u = do
-	dbdir <- fromRawFilePath <$> fromRepo (gitAnnexExportDbDir u)
-	let db = dbdir </> "db"
-	unlessM (liftIO $ doesFileExist db) $ do
+	dbdir <- fromRepo (gitAnnexExportDbDir u)
+	let db = dbdir P.</> "db"
+	unlessM (liftIO $ R.doesPathExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateExport
 	h <- liftIO $ H.openDbQueue H.SingleWriter db "exported"
