@@ -38,6 +38,10 @@ jobs:
         run: git checkout origin/upstream/master -- .
         working-directory: git-annex
 
+      - name: Adjust changelog generation script to use original branch
+        run: sed -i -e 's,HEAD,origin/upstream/master,g' debian/create-standalone-changelog
+        working-directory: git-annex
+
       - name: Import GPG keys
         run: |
           # private key for signing - comes from secrets
