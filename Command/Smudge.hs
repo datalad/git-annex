@@ -207,7 +207,7 @@ shouldAnnex file indexmeta moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitCon
 	-- annex.largefiles now matches it, because the content is not
 	-- changed.
 	checkunchangedgitfile cont = case (moldkey, indexmeta) of
-		(Nothing, Just (sha, sz, _)) -> liftIO (catchMaybeIO (getFileSize (fromRawFilePath file))) >>= \case
+		(Nothing, Just (sha, sz, _)) -> liftIO (catchMaybeIO (getFileSize file)) >>= \case
 			Just sz' | sz' == sz -> do
 				-- The size is the same, so the file
 				-- is not much larger than what was stored

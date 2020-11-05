@@ -123,7 +123,7 @@ youtubeDlMaxSize workdir = ifM (Annex.getState Annex.force)
 		Just have -> do
 			inprogress <- sizeOfDownloadsInProgress (const True)
 			partial <- liftIO $ sum 
-				<$> (mapM getFileSize =<< dirContents workdir)
+				<$> (mapM (getFileSize . toRawFilePath) =<< dirContents workdir)
 			reserve <- annexDiskReserve <$> Annex.getGitConfig
 			let maxsize = have - reserve - inprogress + partial
 			if maxsize > 0

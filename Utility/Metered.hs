@@ -223,7 +223,8 @@ watchFileSize f p a = bracket
 			p sz
 		watcher sz
 	getsz = catchDefaultIO zeroBytesProcessed $
-		toBytesProcessed <$> getFileSize f
+		toBytesProcessed <$> getFileSize f'
+	f' = toRawFilePath f
 
 data OutputHandler = OutputHandler
 	{ quietMode :: Bool

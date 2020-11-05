@@ -339,15 +339,15 @@ removeExportLocation topdir loc =
 listImportableContentsM :: RawFilePath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 listImportableContentsM dir = catchMaybeIO $ liftIO $ do
 	l <- dirContentsRecursive (fromRawFilePath dir)
-	l' <- mapM go l
+	l' <- mapM (go . toRawFilePath) l
 	return $ ImportableContents (catMaybes l') []
   where
 	go f = do
-		st <- getFileStatus f
+		st <- R.getFileStatus f
 		mkContentIdentifier f st >>= \case
 			Nothing -> return Nothing
 			Just cid -> do
-				relf <- relPathDirToFile dir (toRawFilePath f)
+				relf <- relPathDirToFile dir f
 				sz <- getFileSize' f st
 				return $ Just (mkImportLocation relf, (cid, sz))
 
@@ -359,7 +359,7 @@ listImportableContentsM dir = catchMaybeIO $ liftIO $ do
 -- result in extra work to re-import them.
 --
 -- If the file is not a regular file, this will return Nothing.
-mkContentIdentifier :: FilePath -> FileStatus -> IO (Maybe ContentIdentifier)
+mkContentIdentifier :: RawFilePath -> FileStatus -> IO (Maybe ContentIdentifier)
 mkContentIdentifier f st =
 	fmap (ContentIdentifier . encodeBS . showInodeCache)
 		<$> toInodeCache noTSDelta f st
@@ -373,7 +373,7 @@ importKeyM :: RawFilePath -> ExportLocation -> ContentIdentifier -> MeterUpdate 
 importKeyM dir loc cid p = do
 	backend <- chooseBackend f
 	k <- fst <$> genKey ks p backend
-	currcid <- liftIO $ mkContentIdentifier (fromRawFilePath absf)
+	currcid <- liftIO $ mkContentIdentifier absf
 		=<< R.getFileStatus absf
 	guardSameContentIdentifiers (return k) cid currcid
   where
@@ -421,7 +421,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 	-- Check before copy, to avoid expensive copy of wrong file
 	-- content.
 	precheck cont = guardSameContentIdentifiers cont cid
-		=<< liftIO . mkContentIdentifier f'
+		=<< liftIO . mkContentIdentifier f
 		=<< liftIO (R.getFileStatus f)
 
 	-- Check after copy, in case the file was changed while it was
@@ -442,7 +442,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 #else
 	postcheck cont = do
 #endif
-		currcid <- liftIO $ mkContentIdentifier f'
+		currcid <- liftIO $ mkContentIdentifier f
 #ifndef mingw32_HOST_OS
 			=<< getFdStatus fd
 #else
@@ -458,7 +458,7 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do
 		liftIO $ hFlush tmph
 		liftIO $ hClose tmph
 		resetAnnexFilePerm tmpf
-		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf >>= \case
+		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier (toRawFilePath tmpf) >>= \case
 			Nothing -> giveup "unable to generate content identifier"
 			Just newcid -> do
 				checkExportContent dir loc
@@ -506,7 +506,7 @@ checkExportContent dir loc knowncids unsafe callback =
 	tryWhenExists (liftIO $ R.getFileStatus dest) >>= \case
 		Just destst
 			| not (isRegularFile destst) -> unsafe
-			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier (fromRawFilePath dest) destst) >>= \case
+			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier dest destst) >>= \case
 				Just destcid
 					| destcid `elem` knowncids -> callback KnownContentIdentifier
 					-- dest exists with other content

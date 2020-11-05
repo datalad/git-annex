@@ -223,7 +223,7 @@ checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
 	f <- liftAnnex $ fromRawFilePath <$> fromRepo gitAnnexDaemonLogFile
 	logs <- liftIO $ listLogs f
-	totalsize <- liftIO $ sum <$> mapM getFileSize logs
+	totalsize <- liftIO $ sum <$> mapM (getFileSize . toRawFilePath) logs
 	when (totalsize > 2 * oneMegabyte) $ do
 		notice ["Rotated logs due to size:", show totalsize]
 		liftIO $ openLog f >>= handleToFd >>= redirLog

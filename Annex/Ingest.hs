@@ -164,7 +164,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		Just k -> return k
 	let src = contentLocation source
 	ms <- liftIO $ catchMaybeIO $ R.getFileStatus src
-	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta (fromRawFilePath src)) ms
+	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta src) ms
 	case (mcache, inodeCache source) of
 		(_, Nothing) -> go k mcache ms
 		(Just newc, Just c) | compareStrong c newc -> go k mcache ms

@@ -384,7 +384,7 @@ checkKeySizeOr :: (Key -> Annex String) -> Key -> RawFilePath -> ActionItem -> A
 checkKeySizeOr bad key file ai = case fromKey keySize key of
 	Nothing -> return True
 	Just size -> do
-		size' <- liftIO $ getFileSize (fromRawFilePath file)
+		size' <- liftIO $ getFileSize file
 		comparesizes size size'
   where
 	comparesizes a b = do
@@ -461,7 +461,7 @@ checkBackendOr' bad backend key file ai postcheck =
 	case Types.Backend.verifyKeyContent backend of
 		Nothing -> return True
 		Just verifier -> do
-			ok <- verifier key (fromRawFilePath file)
+			ok <- verifier key file
 			ifM postcheck
 				( do
 					unless ok $ do

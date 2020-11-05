@@ -20,7 +20,7 @@ data BackendA a = Backend
 	, genKey :: Maybe (KeySource -> MeterUpdate -> a Key)
 	-- Verifies the content of a key using a hash. This does not need
 	-- to be cryptographically secure.
-	, verifyKeyContent :: Maybe (Key -> FilePath -> a Bool)
+	, verifyKeyContent :: Maybe (Key -> RawFilePath -> a Bool)
 	-- Checks if a key can be upgraded to a better form.
 	, canUpgradeKey :: Maybe (Key -> Bool)
 	-- Checks if there is a fast way to migrate a key to a different

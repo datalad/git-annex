@@ -464,8 +464,7 @@ limitSize lb vs s = case readSize dataUnits s of
 		LimitAnnexFiles -> goannexed sz fi
 		LimitDiskFiles -> case contentFile fi of
 			Just f -> do
-				filesize <- liftIO $ catchMaybeIO $
-					getFileSize (fromRawFilePath f)
+				filesize <- liftIO $ catchMaybeIO $ getFileSize f
 				return $ filesize `vs` Just sz
 			Nothing -> goannexed sz fi
 	go sz _ (MatchingKey key _) = checkkey sz key

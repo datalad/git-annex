@@ -166,7 +166,7 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 			liftIO $ readMVar metervar
 		| otherwise = do
 			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
-			liftIO $ catchDefaultIO 0 $ getFileSize (fromRawFilePath f)
+			liftIO $ catchDefaultIO 0 $ getFileSize f
 
 {- Avoid download and upload of keys with insecure content when
  - annex.securehashesonly is configured.

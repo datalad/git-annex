@@ -323,7 +323,7 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 			_ -> MustVerify
 		else verification
 	if ok
-		then ifM (verifyKeyContent rsp v verification' key (fromRawFilePath tmpfile))
+		then ifM (verifyKeyContent rsp v verification' key tmpfile)
 			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key))
 				( do
 					logStatus key InfoPresent
@@ -373,7 +373,7 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
  - If the RetrievalSecurityPolicy requires verification and the key's
  - backend doesn't support it, the verification will fail.
  -}
-verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> FilePath -> Annex Bool
+verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> RawFilePath -> Annex Bool
 verifyKeyContent rsp v verification k f = case (rsp, verification) of
 	(_, Verified) -> return True
 	(RetrievalVerifiableKeysSecure, _) -> ifM (Backend.isVerifiable k)
@@ -434,16 +434,17 @@ shouldVerify (RemoteVerify r) =
  -}
 checkDiskSpaceToGet :: Key -> a -> Annex a -> Annex a
 checkDiskSpaceToGet key unabletoget getkey = do
-	tmp <- fromRawFilePath <$> fromRepo (gitAnnexTmpObjectLocation key)
+	tmp <- fromRepo (gitAnnexTmpObjectLocation key)
+	let tmp' = fromRawFilePath tmp
 
-	e <- liftIO $ doesFileExist tmp
+	e <- liftIO $ doesFileExist tmp'
 	alreadythere <- liftIO $ if e
 		then getFileSize tmp
 		else return 0
 	ifM (checkDiskSpace Nothing key alreadythere True)
 		( do
 			-- The tmp file may not have been left writable
-			when e $ thawContent tmp
+			when e $ thawContent tmp'
 			getkey
 		, return unabletoget
 		)
@@ -703,7 +704,7 @@ isUnmodified key f = go =<< geti
   where
 	go Nothing = return False
 	go (Just fc) = isUnmodifiedCheap' key fc <||> expensivecheck fc
-	expensivecheck fc = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key (fromRawFilePath f))
+	expensivecheck fc = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
 		( do
 			-- The file could have been modified while it was
 			-- being verified. Detect that.

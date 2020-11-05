@@ -15,12 +15,13 @@ module Backend.Hash (
 
 import Annex.Common
 import qualified Annex
+import Backend.Utilities
 import Types.Key
 import Types.Backend
 import Types.KeySource
 import Utility.Hash
 import Utility.Metered
-import Backend.Utilities
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
@@ -100,7 +101,7 @@ hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
 {- A key is a hash of its contents. -}
 keyValue :: Hash -> KeySource -> MeterUpdate -> Annex Key
 keyValue hash source meterupdate = do
-	let file = fromRawFilePath (contentLocation source)
+	let file = contentLocation source
 	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file meterupdate
 	return $ mkKey $ \k -> k
@@ -117,10 +118,10 @@ keyValueE hash source meterupdate =
 
 {- A key's checksum is checked during fsck when it's content is present
  - except for in fast mode. -}
-checkKeyChecksum :: Hash -> Key -> FilePath -> Annex Bool
+checkKeyChecksum :: Hash -> Key -> RawFilePath -> Annex Bool
 checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	fast <- Annex.getState Annex.fast
-	exists <- liftIO $ doesFileExist file
+	exists <- liftIO $ R.doesPathExist file
 	case (exists, fast) of
 		(True, False) -> do
 			showAction "checksum"
@@ -191,9 +192,9 @@ trivialMigrate' oldkey newbackend afile maxextlen
 	oldvariety = fromKey keyVariety oldkey
 	newvariety = backendVariety newbackend
 
-hashFile :: Hash -> FilePath -> MeterUpdate -> Annex String
+hashFile :: Hash -> RawFilePath -> MeterUpdate -> Annex String
 hashFile hash file meterupdate = 
-	liftIO $ withMeteredFile file meterupdate $ \b -> do
+	liftIO $ withMeteredFile (fromRawFilePath file) meterupdate $ \b -> do
 		let h = hasher b
 		-- Force full evaluation of hash so whole file is read
 		-- before returning.

@@ -39,7 +39,7 @@ keyValue :: KeySource -> MeterUpdate -> Annex Key
 keyValue source _ = do
 	let f = contentLocation source
 	stat <- liftIO $ R.getFileStatus f
-	sz <- liftIO $ getFileSize' (fromRawFilePath f) stat
+	sz <- liftIO $ getFileSize' f stat
 	relf <- fromRawFilePath . getTopFilePath
 		<$> inRepo (toTopFilePath $ keyFilename source)
 	return $ mkKey $ \k -> k

@@ -218,7 +218,8 @@ onAddUnlocked symlinkssupported matcher f fs = do
 			=<< inRepo (toTopFilePath (toRawFilePath file))
 	samefilestatus key file status = do
 		cache <- Database.Keys.getInodeCaches key
-		curr <- withTSDelta $ \delta -> liftIO $ toInodeCache delta file status
+		curr <- withTSDelta $ \delta ->
+			liftIO $ toInodeCache delta (toRawFilePath file) status
 		case (cache, curr) of
 			(_, Just c) -> elemInodeCaches c cache
 			([], Nothing) -> return True

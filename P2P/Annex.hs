@@ -40,13 +40,13 @@ runLocal :: RunState -> RunProto Annex -> LocalF (Proto a) -> Annex (Either Prot
 runLocal runst runner a = case a of
 	TmpContentSize k next -> do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation k
-		size <- liftIO $ catchDefaultIO 0 $ getFileSize $ fromRawFilePath tmp
+		size <- liftIO $ catchDefaultIO 0 $ getFileSize tmp
 		runner (next (Len size))
 	FileSize f next -> do
-		size <- liftIO $ catchDefaultIO 0 $ getFileSize f
+		size <- liftIO $ catchDefaultIO 0 $ getFileSize (toRawFilePath f)
 		runner (next (Len size))
 	ContentSize k next -> do
-		let getsize = liftIO . catchMaybeIO . getFileSize . fromRawFilePath
+		let getsize = liftIO . catchMaybeIO . getFileSize
 		size <- inAnnex' isJust Nothing getsize k
 		runner (next (Len <$> size))
 	ReadContent k af o sender next -> do
@@ -166,7 +166,7 @@ runLocal runst runner a = case a of
 				indicatetransferred ti
 
 				rightsize <- do
-					sz <- liftIO $ getFileSize dest
+					sz <- liftIO $ getFileSize (toRawFilePath dest)
 					return (toInteger sz == l + o)
 					
 				runner validitycheck >>= \case

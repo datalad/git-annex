@@ -32,7 +32,7 @@ type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) ->
 
 store :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 store runner k af p = do
-	let sizer = KeySizer k (fmap fst <$> prepSendAnnex k)
+	let sizer = KeySizer k (fmap (toRawFilePath . fst) <$> prepSendAnnex k)
 	metered (Just p) sizer $ \_ p' ->
 		runner p' (P2P.put k af p') >>= \case
 			Just True -> return ()

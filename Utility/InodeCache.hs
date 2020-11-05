@@ -186,15 +186,15 @@ readInodeCache s = case words s of
 
 genInodeCache :: RawFilePath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
-	toInodeCache delta (fromRawFilePath f) =<< R.getFileStatus f
+	toInodeCache delta f =<< R.getFileStatus f
 
-toInodeCache :: TSDelta -> FilePath -> FileStatus -> IO (Maybe InodeCache)
+toInodeCache :: TSDelta -> RawFilePath -> FileStatus -> IO (Maybe InodeCache)
 toInodeCache (TSDelta getdelta) f s
 	| isRegularFile s = do
 		delta <- getdelta
 		sz <- getFileSize' f s
 #ifdef mingw32_HOST_OS
-		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime f
+		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime (fromRawFilePath f)
 #else
 		let mtime = modificationTimeHiRes s
 #endif

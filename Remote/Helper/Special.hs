@@ -249,7 +249,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 
 	displayprogress p k srcfile a
 		| displayProgress cfg =
-			metered (Just p) (KeySizer k (return srcfile)) (const a)
+			metered (Just p) (KeySizer k (pure (fmap toRawFilePath srcfile))) (const a)
 		| otherwise = a p
 
 {- Sink callback for retrieveChunks. Stores the file content into the

@@ -293,7 +293,7 @@ test runannex mkr mkk =
 		Nothing -> return True
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return True
-			Just verifier -> verifier k (serializeKey k)
+			Just verifier -> verifier k (serializeKey' k)
 	get r k = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
 		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate) >>= \case
 			Right v -> return (True, v)
@@ -352,7 +352,7 @@ testExportTree runannex mkr mkk1 mkk2 =
 		liftIO $ hClose h
 		tryNonAsync (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate) >>= \case
 			Left _ -> return False
-			Right () -> verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified k tmp
+			Right () -> verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified k (toRawFilePath tmp)
 	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
 	removeexport ea k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory ea = case Remote.removeExportDirectory ea of

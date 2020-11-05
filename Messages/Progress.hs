@@ -49,7 +49,7 @@ instance MeterSize KeySource where
  - This allows uploads of keys without size to still have progress
  - displayed.
  -}
-data KeySizer = KeySizer Key (Annex (Maybe FilePath))
+data KeySizer = KeySizer Key (Annex (Maybe RawFilePath))
 
 instance MeterSize KeySizer where
 	getMeterSize (KeySizer k getsrcfile) = case fromKey keySize k of

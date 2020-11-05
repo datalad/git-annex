@@ -333,7 +333,7 @@ store mh r info magic = fileStorer $ \k f p -> withS3HandleOrFail (uuid r) mh $ 
 storeHelper :: S3Info -> S3Handle -> Maybe Magic -> FilePath -> S3.Object -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
 storeHelper info h magic f object p = liftIO $ case partSize info of
 	Just partsz | partsz > 0 -> do
-		fsz <- getFileSize f
+		fsz <- getFileSize (toRawFilePath f)
 		if fsz > partsz
 			then multipartupload fsz partsz
 			else singlepartupload

@@ -140,7 +140,8 @@ repairStaleGitLocks r = do
 repairStaleLocks :: [FilePath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where
-	getsize lf = catchMaybeIO $ (\s -> (lf, s)) <$> getFileSize lf
+	getsize lf = catchMaybeIO $ (\s -> (lf, s))
+		<$> getFileSize (toRawFilePath lf)
 	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
 	go [] = return ()
 	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map fst l))

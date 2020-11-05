@@ -32,7 +32,7 @@ httpStorer a = fileStorer $ \k f m -> a k =<< liftIO (httpBodyStorer f m)
 -- the meter as it's sent.
 httpBodyStorer :: FilePath -> MeterUpdate -> IO RequestBody
 httpBodyStorer src m = do
-	size <- getFileSize src
+	size <- getFileSize (toRawFilePath src)
 	let streamer sink = withMeteredFile src m $ \b -> byteStringPopper b sink
 	return $ RequestBodyStream (fromInteger size) streamer
 

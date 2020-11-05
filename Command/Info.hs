@@ -676,8 +676,8 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 			return $ sizer storageUnits False size
 	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
-		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
-			getFileSize (fromRawFilePath (dir P.</> keyFile k))
+		liftIO $ forM keys $ \k -> 
+			catchDefaultIO 0 $ getFileSize (dir P.</> keyFile k)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

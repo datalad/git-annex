@@ -363,7 +363,7 @@ inodeMap getfiles = do
 		let f' = fromRawFilePath f
 		if isSymbolicLink s
 			then pure $ Just (Left f', f')
-			else withTSDelta (\d -> liftIO $ toInodeCache d f' s)
+			else withTSDelta (\d -> liftIO $ toInodeCache d f s)
 				>>= return . \case
 					Just i -> Just (Right (inodeCacheToKey Strongly i), f')
 					Nothing -> Nothing

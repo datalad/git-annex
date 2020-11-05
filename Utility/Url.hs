@@ -52,6 +52,7 @@ import Network.HTTP.Client.Restricted
 import Utility.HttpManagerRestricted
 #endif
 import Utility.IPAddress
+import qualified Utility.RawFilePath as R
 
 import Network.URI
 import Network.HTTP.Types
@@ -309,8 +310,8 @@ getUrlInfo url uo = case parseURIRelaxed url of
 		=<< curlRestrictedParams r u defport (basecurlparams url')
 
 	existsfile u = do
-		let f = unEscapeString (uriPath u)
-		s <- catchMaybeIO $ getFileStatus f
+		let f = toRawFilePath (unEscapeString (uriPath u))
+		s <- catchMaybeIO $ R.getFileStatus f
 		case s of
 			Just stat -> do
 				sz <- getFileSize' f stat
@@ -455,7 +456,7 @@ download' nocurlerror meterupdate url file uo =
  -}
 downloadConduit :: MeterUpdate -> Request -> FilePath -> UrlOptions -> IO ()
 downloadConduit meterupdate req file uo =
-	catchMaybeIO (getFileSize file) >>= \case
+	catchMaybeIO (getFileSize (toRawFilePath file)) >>= \case
 		Just sz | sz > 0 -> resumedownload sz
 		_ -> join $ runResourceT $ do
 			liftIO $ debugM "url" (show req')

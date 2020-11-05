@@ -389,7 +389,7 @@ mkUploadRequest rs k content = case (extractKeySha256 k, extractKeySize k) of
 		ret sha256 size
 	_ -> do
 		sha256 <- calcsha256
-		size <- liftIO $ getFileSize content
+		size <- liftIO $ getFileSize (toRawFilePath content)
 		rememberboth sha256 size
 		ret sha256 size
   where

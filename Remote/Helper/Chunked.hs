@@ -251,7 +251,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep sink
   where
 	go pe cks = do
 		let ls = map chunkKeyList cks
-		currsize <- liftIO $ catchMaybeIO $ getFileSize dest
+		currsize <- liftIO $ catchMaybeIO $ getFileSize (toRawFilePath dest)
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
 			then noop -- dest is already complete

@@ -102,12 +102,12 @@ genKeyExternal ebname hasext ks meterupdate =
 		return $ GetNextMessage go
 	go _ = Nothing
 
-verifyKeyContentExternal :: ExternalBackendName -> HasExt -> MeterUpdate -> Key -> FilePath -> Annex Bool
+verifyKeyContentExternal :: ExternalBackendName -> HasExt -> MeterUpdate -> Key -> RawFilePath -> Annex Bool
 verifyKeyContentExternal ebname hasext meterupdate k f = 
 	withExternalState ebname hasext $ \st ->
 		handleRequest st req notavail go
   where
-	req = VERIFYKEYCONTENT (toProtoKey k) f
+	req = VERIFYKEYCONTENT (toProtoKey k) (fromRawFilePath f)
 
 	-- This should not be able to happen, because CANVERIFY is checked
 	-- before this function is enable, and so the external program 

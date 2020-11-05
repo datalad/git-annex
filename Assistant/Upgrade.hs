@@ -113,16 +113,16 @@ distributionDownloadComplete d dest cleanup t
 	| transferDirection t == Download = do
 		debug ["finished downloading git-annex distribution"]
 		maybe (failedupgrade "bad download") go
-			=<< liftAnnex (withObjectLoc k (fsckit . fromRawFilePath))
+			=<< liftAnnex (withObjectLoc k fsckit)
 	| otherwise = cleanup
   where
 	k = mkKey $ const $ distributionKey d
 	fsckit f = Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
-		Nothing -> return $ Just f
+		Nothing -> return $ Just (fromRawFilePath f)
 		Just b -> case Types.Backend.verifyKeyContent b of
-			Nothing -> return $ Just f
+			Nothing -> return $ Just (fromRawFilePath f)
 			Just verifier -> ifM (verifier k f)
-				( return $ Just f
+				( return $ Just (fromRawFilePath f)
 				, return Nothing
 				)
 	go f = do
