@@ -1,0 +1,15 @@
+Hi,<br>
+So I have yet another idea to speed up git annex. For now only for the 2nd pass of git annex sync --content --all.
+
+1. Do a normal (full) git annex sync. For every remote that we synced with, record the commit id of the current tip of the git-annex branch.
+    * Record the commit id only if --content --all was specified
+    * Record the commit id only if the remote is actually available and every file was sucessfully transfered
+2. If any of the remotes doesn't have a commit id recorded, go to 1. Else do a incremental git annex sync: In the 2nd pass of git annex sync --content --all,
+   only look at keys whose location log changed since the last (full or incremental) sync via `git diff-tree -r --name-only <lowest recorded commit id of all remotes> git-annex`.
+   Again, update the commit id of remotes that we sucessfully synced with.
+3. If one of the following happens, remove all recorded commit ids of all remotes, go to 1. Else go to 2.
+    * The preferred content expression of us or one of our remotes changed.
+    * The preferred content expression of a group changed
+    * The group of any repo (not only remotes) changed. This way remotes containing `copies=<group>:<numcopies>` recheck all keys.
+
+This should be pretty reliable, but please double check. It has to be reliable enough to become the default.      
