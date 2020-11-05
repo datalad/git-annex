@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="a@92214b2eae95307f511e06845d2cb5b5931b00a3"
+ nickname="a"
+ avatar="http://cdn.libravatar.org/avatar/d76a578b33d7d7bb570e176909fa8fb1"
+ subject="Re: Moving S3 special remote"
+ date="2020-11-05T03:44:52Z"
+ content="""
+And the answer is that running `git annex enableremote bucket=bucketbar fileprefix=annex/` works just fine.
+"""]]
