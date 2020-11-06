@@ -39,6 +39,7 @@ import qualified Data.Text as T
 import qualified Data.ByteString as B
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 import "mtl" Control.Monad.Writer
 
 {- Each visible ViewFilter in a view results in another level of
@@ -293,12 +294,12 @@ fromView view f = MetaData $
  - it to a file yields a set of ViewedFile which all contain the same
  - MetaFields that were present in the input metadata
  - (excluding fields that are not visible). -}
-prop_view_roundtrips :: FilePath -> MetaData -> Bool -> Bool
-prop_view_roundtrips f metadata visible = or
-	[ null f
-	, null (takeFileName f) && null (takeDirectory f)
+prop_view_roundtrips :: AssociatedFile -> MetaData -> Bool -> Bool
+prop_view_roundtrips (AssociatedFile Nothing) _ _ = True
+prop_view_roundtrips (AssociatedFile (Just f)) metadata visible = or
+	[ B.null (P.takeFileName f) && B.null (P.takeDirectory f)
 	, viewTooLarge view
-	, all hasfields (viewedFiles view viewedFileFromReference f metadata)
+	, all hasfields (viewedFiles view viewedFileFromReference (fromRawFilePath f) metadata)
 	]
   where
 	view = View (Git.Ref "foo") $

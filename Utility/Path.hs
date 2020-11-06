@@ -88,6 +88,7 @@ upFrom dir
 prop_upFrom_basics :: FilePath -> Bool
 prop_upFrom_basics dir
 	| null dir = True
+	| '\NUL' `elem` dir = True -- not a legal filename
 	| dir == "/" = p == Nothing
 	| otherwise = p /= Just dir
   where
@@ -226,6 +227,7 @@ relPathDirToFileAbs from to
 prop_relPathDirToFileAbs_basics :: FilePath -> FilePath -> Bool
 prop_relPathDirToFileAbs_basics from to
 	| null from || null to = True
+	| '\NUL' `elem` from || '\NUL' `elem` to = True -- not a legal filename
 	| from == to = null r
 	| otherwise = not (null r)
   where
