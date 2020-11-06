@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-11-06T14:14:18Z"
+ content="""
+I can't reproduce this with the latest [[standalone build|https://git-annex.branchable.com/install/Linux_standalone/]] (8.20201008). What does `git status` say after `git annex add`? What filesystem is this on? Can you try this again with the standalone build?
+"""]]
