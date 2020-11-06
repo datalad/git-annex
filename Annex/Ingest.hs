@@ -107,7 +107,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 	
 	withhardlink tmpdir = do
 		when (lockingFile cfg) $
-			freezeContent file
+			freezeContent file'
 		withTSDelta $ \delta -> liftIO $ do
 			(tmpfile, h) <- openTempFile (fromRawFilePath tmpdir) $
 				relatedTemplate $ "ingest-" ++ takeFileName file
@@ -181,7 +181,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 				populateAssociatedFiles key source restage
 				success key mcache s		
 			Right False -> giveup "failed to add content to annex"
-			Left e -> restoreFile (fromRawFilePath $ keyFilename source) key e
+			Left e -> restoreFile (keyFilename source) key e
 
 	gounlocked key (Just cache) s = do
 		-- Remove temp directory hard link first because
@@ -259,21 +259,21 @@ cleanOldKeys file newkey = do
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
-restoreFile :: FilePath -> Key -> SomeException -> Annex a
+restoreFile :: RawFilePath -> Key -> SomeException -> Annex a
 restoreFile file key e = do
 	whenM (inAnnex key) $ do
-		liftIO $ removeWhenExistsWith removeLink file
+		liftIO $ removeWhenExistsWith R.removeLink file
 		-- The key could be used by other files too, so leave the
 		-- content in the annex, and make a copy back to the file.
 		obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
-		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj file) $
-			warning $ "Unable to restore content of " ++ file ++ "; it should be located in " ++ obj
+		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj (fromRawFilePath file)) $
+			warning $ "Unable to restore content of " ++ fromRawFilePath file ++ "; it should be located in " ++ obj
 		thawContent file
 	throwM e
 
 {- Creates the symlink to the annexed content, returns the link target. -}
 makeLink :: RawFilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
-makeLink file key mcache = flip catchNonAsync (restoreFile file' key) $ do
+makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	l <- calcRepo $ gitAnnexLink file key
 	replaceWorkTreeFile file' $ makeAnnexLink l . toRawFilePath
 

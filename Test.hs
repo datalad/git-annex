@@ -868,7 +868,7 @@ test_fsck_basic = intmpclonerepo $ do
   where
 	corrupt f = do
 		git_annex "get" [f] @? "get of file failed"
-		Utility.FileMode.allowWrite f
+		Utility.FileMode.allowWrite (toRawFilePath f)
 		writecontent f (changedcontent f)
 		ifM (hasUnlockedFiles <$> getTestMode)
 			( git_annex "fsck" [] @? "fsck failed on unlocked file with changed file content"

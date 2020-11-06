@@ -70,16 +70,15 @@ perform file key = do
 			, repopulate obj
 			)
 		whenM (liftIO $ R.doesPathExist obj) $
-			freezeContent $ fromRawFilePath obj
+			freezeContent obj
 
 	-- It's ok if the file is hard linked to obj, but if some other
 	-- associated file is, we need to break that link to lock down obj.
 	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (R.getFileStatus obj)) $ do
 		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
-			let obj' = fromRawFilePath obj
-			modifyContent obj $ replaceGitAnnexDirFile obj' $ \tmp -> do
-				unlessM (checkedCopyFile key obj' tmp Nothing) $
+			modifyContent obj $ replaceGitAnnexDirFile (fromRawFilePath obj) $ \tmp -> do
+				unlessM (checkedCopyFile key obj (toRawFilePath tmp) Nothing) $
 					giveup "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
 
@@ -92,7 +91,7 @@ perform file key = do
 		liftIO $ removeWhenExistsWith R.removeLink obj
 		case mfile of
 			Just unmodified ->
-				unlessM (checkedCopyFile key (fromRawFilePath unmodified) (fromRawFilePath obj) Nothing)
+				unlessM (checkedCopyFile key unmodified obj Nothing)
 					lostcontent
 			Nothing -> lostcontent
 

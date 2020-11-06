@@ -103,7 +103,8 @@ installWrapper file content = do
 	when (curr /= content) $ do
 		createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath file)))
 		viaTmp writeFile file content
-		modifyFileMode file $ addModes [ownerExecuteMode]
+		modifyFileMode (toRawFilePath file) $ 
+			addModes [ownerExecuteMode]
 
 installFileManagerHooks :: FilePath -> IO ()
 #ifdef linux_HOST_OS
@@ -132,7 +133,7 @@ installFileManagerHooks program = unlessM osAndroid $ do
 	scriptname action = "git-annex " ++ action
 	installscript f c = whenM (safetoinstallscript f) $ do
 		writeFile f c
-		modifyFileMode f $ addModes [ownerExecuteMode]
+		modifyFileMode (toRawFilePath f) $ addModes [ownerExecuteMode]
 	safetoinstallscript f = catchDefaultIO True $
 		elem autoaddedcomment . lines <$> readFileStrict f
 	autoaddedcomment = "# " ++ autoaddedmsg ++ " (To disable, chmod 600 this file.)"

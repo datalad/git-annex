@@ -208,7 +208,7 @@ downloadTorrentFile u = do
 				else withOtherTmp $ \othertmp -> do
 					withTmpFileIn (fromRawFilePath othertmp) "torrent" $ \f h -> do
 						liftIO $ hClose h
-						resetAnnexFilePerm f
+						resetAnnexFilePerm (toRawFilePath f)
 						ok <- Url.withUrlOptions $ 
 							Url.download nullMeterUpdate u f
 						when ok $

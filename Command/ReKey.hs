@@ -96,15 +96,16 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 	, do
 	 	{- The file being rekeyed is itself an unlocked file; if
 		 - it's hard linked to the old key, that link must be broken. -}
-		oldobj <- fromRawFilePath <$> calcRepo (gitAnnexLocation oldkey)
+		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		v <- tryNonAsync $ do
 			st <- liftIO $ R.getFileStatus file
 			when (linkCount st > 1) $ do
 				freezeContent oldobj
 				replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
-					unlessM (checkedCopyFile oldkey oldobj tmp Nothing) $
+					let tmp' = toRawFilePath tmp
+					unlessM (checkedCopyFile oldkey oldobj tmp' Nothing) $
 						error "can't lock old key"
-					thawContent tmp
+					thawContent tmp'
 		ic <- withTSDelta (liftIO . genInodeCache file)
 		case v of
 			Left e -> do

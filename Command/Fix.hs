@@ -72,12 +72,12 @@ start fixwhat si file key = do
 breakHardLink :: RawFilePath -> Key -> RawFilePath -> CommandPerform
 breakHardLink file key obj = do
 	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
+		let tmp' = toRawFilePath tmp
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
-		let obj' = fromRawFilePath obj
-		unlessM (checkedCopyFile key obj' tmp mode) $
+		unlessM (checkedCopyFile key obj tmp' mode) $
 			error "unable to break hard link"
-		thawContent tmp
-		modifyContent obj $ freezeContent obj'
+		thawContent tmp'
+		modifyContent obj $ freezeContent obj
 	Database.Keys.storeInodeCaches key [file]
 	next $ return True
 

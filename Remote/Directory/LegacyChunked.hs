@@ -82,9 +82,10 @@ storeHelper repotop finalizer key storer tmpdir destdir = do
 	Legacy.storeChunks key tmpdir destdir storer recorder (legacyFinalizer finalizer)
   where
 	recorder f s = do
-		void $ tryIO $ allowWrite f
+		let f' = toRawFilePath f
+		void $ tryIO $ allowWrite f'
 		writeFile f s
-		void $ tryIO $ preventWrite f
+		void $ tryIO $ preventWrite f'
 
 store :: FilePath -> ChunkSize -> (RawFilePath -> RawFilePath -> IO ()) -> Key -> L.ByteString -> MeterUpdate -> FilePath -> FilePath -> IO ()
 store repotop chunksize finalizer k b p = storeHelper repotop finalizer k $ \dests ->

@@ -820,7 +820,7 @@ rsyncOrCopyFile st rsyncparams src dest p =
 		State _ _ (CopyCoWTried v) _ _ -> v
 	dorsync = do
 		-- dest may already exist, so make sure rsync can write to it
-		void $ liftIO $ tryIO $ allowWrite dest
+		void $ liftIO $ tryIO $ allowWrite (toRawFilePath dest)
 		oh <- mkOutputHandlerQuiet
 		Ssh.rsyncHelper oh (Just p) $
 			rsyncparams ++ [File src, File dest]

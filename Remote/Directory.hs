@@ -166,18 +166,18 @@ storeDir d k = P.addTrailingPathSeparator $
  - store the key. Note that the unencrypted key size is checked. -}
 storeKeyM :: RawFilePath -> ChunkConfig -> Storer
 storeKeyM d chunkconfig k c m = 
-	ifM (checkDiskSpaceDirectory (fromRawFilePath d) k)
+	ifM (checkDiskSpaceDirectory d k)
 		( byteStorer (store d chunkconfig) k c m
 		, giveup "Not enough free disk space."
 		)
 
-checkDiskSpaceDirectory :: FilePath -> Key -> Annex Bool
+checkDiskSpaceDirectory :: RawFilePath -> Key -> Annex Bool
 checkDiskSpaceDirectory d k = do
 	annexdir <- fromRepo gitAnnexObjectDir
 	samefilesystem <- liftIO $ catchDefaultIO False $ 
 		(\a b -> deviceID a == deviceID b)
-			<$> getFileStatus d
-			<*> getFileStatus annexdir
+			<$> R.getFileStatus d
+			<*> R.getFileStatus annexdir
 	checkDiskSpace (Just d) k 0 samefilesystem
 
 store :: RawFilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex ()
@@ -212,8 +212,8 @@ finalizeStoreGeneric d tmp dest = do
 	renameDirectory (fromRawFilePath tmp) dest'
 	-- may fail on some filesystems
 	void $ tryIO $ do
-		mapM_ preventWrite =<< dirContents dest'
-		preventWrite dest'
+		mapM_ (preventWrite . toRawFilePath) =<< dirContents dest'
+		preventWrite dest
   where
 	dest' = fromRawFilePath dest
 
@@ -254,7 +254,7 @@ removeKeyM d k = liftIO $ removeDirGeneric
  -}
 removeDirGeneric :: FilePath -> FilePath -> IO ()
 removeDirGeneric topdir dir = do
-	void $ tryIO $ allowWrite dir
+	void $ tryIO $ allowWrite (toRawFilePath dir)
 #ifdef mingw32_HOST_OS
 	{- Windows needs the files inside the directory to be writable
 	 - before it can delete them. -}
@@ -454,11 +454,12 @@ storeExportWithContentIdentifierM :: RawFilePath -> FilePath -> Key -> ExportLoc
 storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do
 	liftIO $ createDirectoryUnder dir (toRawFilePath destdir)
 	withTmpFileIn destdir template $ \tmpf tmph -> do
+		let tmpf' = toRawFilePath tmpf
 		liftIO $ withMeteredFile src p (L.hPut tmph)
 		liftIO $ hFlush tmph
 		liftIO $ hClose tmph
-		resetAnnexFilePerm tmpf
-		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier (toRawFilePath tmpf) >>= \case
+		resetAnnexFilePerm tmpf'
+		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf' >>= \case
 			Nothing -> giveup "unable to generate content identifier"
 			Just newcid -> do
 				checkExportContent dir loc

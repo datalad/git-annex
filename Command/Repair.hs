@@ -14,6 +14,7 @@ import qualified Annex.Branch
 import qualified Git.Ref
 import Git.Types
 import Annex.Version
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = noCommit $ dontCheck repoExists $
@@ -75,7 +76,7 @@ repairAnnexBranch modifiedbranches
 		Annex.Branch.forceCommit "committing index after git repository repair"
 		liftIO $ putStrLn "Successfully recovered the git-annex branch using .git/annex/index"
 	nukeindex = do
-		inRepo $ removeWhenExistsWith removeLink . gitAnnexIndex
+		inRepo $ removeWhenExistsWith R.removeLink . gitAnnexIndex
 		liftIO $ putStrLn "Had to delete the .git/annex/index file as it was corrupt."
 	missingbranch = liftIO $ putStrLn "Since the git-annex branch is not up-to-date anymore. It would be a very good idea to run: git annex fsck --fast"
 

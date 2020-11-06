@@ -220,11 +220,11 @@ wormholePairing remotename ouraddrs ui = do
 	-- to read them. So, set up a temp directory that only
 	-- we can read.
 	withTmpDir "pair" $ \tmp -> do
-		liftIO $ void $ tryIO $ modifyFileMode tmp $ 
+		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath tmp) $ 
 			removeModes otherGroupModes
 		let sendf = tmp </> "send"
 		let recvf = tmp </> "recv"
-		liftIO $ writeFileProtected sendf $
+		liftIO $ writeFileProtected (toRawFilePath sendf) $
 			serializePairData ourpairdata
 
 		observer <- liftIO Wormhole.mkCodeObserver

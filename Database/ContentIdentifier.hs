@@ -76,7 +76,7 @@ AnnexBranch
  -}
 openDb :: Annex ContentIdentifierHandle
 openDb = do
-	dbdir <- fromRawFilePath <$> fromRepo gitAnnexContentIdentifierDbDir
+	dbdir <- fromRepo gitAnnexContentIdentifierDbDir
 	let db = dbdir P.</> "db"
 	unlessM (liftIO $ R.doesPathExist db) $ do
 		initDb db $ void $

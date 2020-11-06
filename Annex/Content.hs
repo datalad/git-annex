@@ -225,11 +225,9 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
 	lock contentfile Nothing = bracket_
-		(thawContent contentfile')
-		(freezeContent contentfile')
+		(thawContent contentfile)
+		(freezeContent contentfile)
 		(tryLockExclusive Nothing contentfile)
-	  where
-		contentfile' = fromRawFilePath contentfile
 	lock _ (Just lockfile) = posixLocker tryLockExclusive lockfile
 #else
 	lock = winLocker lockExclusive
@@ -435,16 +433,14 @@ shouldVerify (RemoteVerify r) =
 checkDiskSpaceToGet :: Key -> a -> Annex a -> Annex a
 checkDiskSpaceToGet key unabletoget getkey = do
 	tmp <- fromRepo (gitAnnexTmpObjectLocation key)
-	let tmp' = fromRawFilePath tmp
-
-	e <- liftIO $ doesFileExist tmp'
+	e <- liftIO $ doesFileExist (fromRawFilePath tmp)
 	alreadythere <- liftIO $ if e
 		then getFileSize tmp
 		else return 0
 	ifM (checkDiskSpace Nothing key alreadythere True)
 		( do
 			-- The tmp file may not have been left writable
-			when e $ thawContent tmp'
+			when e $ thawContent tmp
 			getkey
 		, return unabletoget
 		)
@@ -505,7 +501,7 @@ moveAnnex key src = ifM (checkSecureHashes' key)
 	storeobject dest = ifM (liftIO $ R.doesPathExist dest)
 		( alreadyhave
 		, modifyContent dest $ do
-			freezeContent (fromRawFilePath src)
+			freezeContent src
 			liftIO $ moveFile
 				(fromRawFilePath src)
 				(fromRawFilePath dest)
@@ -581,11 +577,9 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 			Nothing -> failed
 			Just r -> do
 				case fromto of
-					From -> thawContent $
-						fromRawFilePath dest
+					From -> thawContent dest
 					To -> case r of
-						Copied -> freezeContent $
-							fromRawFilePath dest
+						Copied -> freezeContent dest
 						Linked -> noop
 				checksrcunchanged
   where
@@ -691,7 +685,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 		-- If it was a hard link to the annex object,
 		-- that object might have been frozen as part of the
 		-- removal process, so thaw it.
-		, void $ tryIO $ thawContent $ fromRawFilePath file
+		, void $ tryIO $ thawContent file
 		)
 
 {- Check if a file contains the unmodified content of the key.
@@ -764,7 +758,7 @@ listKeys keyloc = do
 	 -}
 	s <- Annex.getState id
 	depth <- gitAnnexLocationDepth <$> Annex.getGitConfig
-	liftIO $ walk s depth dir
+	liftIO $ walk s depth (fromRawFilePath dir)
   where
 	walk s depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
@@ -829,7 +823,7 @@ preseedTmp key file = go =<< inAnnex key
 	go False = return False
 	go True = do
 		ok <- copy
-		when ok $ thawContent file
+		when ok $ thawContent (toRawFilePath file)
 		return ok
 	copy = ifM (liftIO $ doesFileExist file)
 		( return True
@@ -912,7 +906,7 @@ withTmpWorkDir key action = do
 	let obj' = fromRawFilePath obj
 	unlessM (liftIO $ doesFileExist obj') $ do
 		liftIO $ writeFile obj' ""
-		setAnnexFilePerm obj'
+		setAnnexFilePerm obj
 	let tmpdir = gitAnnexTmpWorkDir obj
 	createAnnexDirectory tmpdir
 	res <- action tmpdir

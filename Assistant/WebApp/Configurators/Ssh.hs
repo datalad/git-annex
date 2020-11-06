@@ -391,7 +391,7 @@ sshAuthTranscript sshinput opts sshhost cmd input = case inputAuthMethod sshinpu
 			Nothing -> go [passwordprompts 0] Nothing
 			Just pass -> withTmpFile "ssh" $ \passfile h -> do
 				hClose h
-				writeFileProtected passfile pass
+				writeFileProtected (toRawFilePath passfile) pass
 				environ <- getEnvironment
 				let environ' = addEntries
 					[ ("SSH_ASKPASS", program)

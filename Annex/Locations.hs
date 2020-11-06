@@ -263,9 +263,9 @@ gitAnnexDir :: Git.Repo -> RawFilePath
 gitAnnexDir r = P.addTrailingPathSeparator $ Git.localGitDir r P.</> annexDir
 
 {- The part of the annex directory where file contents are stored. -}
-gitAnnexObjectDir :: Git.Repo -> FilePath
-gitAnnexObjectDir r = fromRawFilePath $ 
-	P.addTrailingPathSeparator $ Git.localGitDir r P.</> objectDir'
+gitAnnexObjectDir :: Git.Repo -> RawFilePath
+gitAnnexObjectDir r = P.addTrailingPathSeparator $
+	Git.localGitDir r P.</> objectDir'
 
 {- .git/annex/tmp/ is used for temp files for key's contents -}
 gitAnnexTmpObjectDir :: Git.Repo -> RawFilePath

@@ -33,6 +33,7 @@ import Logs.View
 import Utility.Glob
 import Types.Command
 import CmdLine.Action
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Text as T
 import qualified Data.ByteString as B
@@ -353,7 +354,7 @@ applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
-	liftIO . removeWhenExistsWith removeLink =<< fromRepo gitAnnexViewIndex
+	liftIO . removeWhenExistsWith R.removeLink =<< fromRepo gitAnnexViewIndex
 	viewg <- withViewIndex gitRepo
 	withUpdateIndex viewg $ \uh -> do
 		forM_ l $ \(f, sha, mode) -> do

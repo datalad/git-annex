@@ -42,6 +42,7 @@ import Types.Transfer
 import Annex.Path
 import Annex.Tmp
 import qualified Annex
+import qualified Utility.RawFilePath as R
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
@@ -66,7 +67,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	ifM (not <$> liftAnnex (inRepo checkIndexFast))
 		( do
 			notice ["corrupt index file found at startup; removing and restaging"]
-			liftAnnex $ inRepo $ removeWhenExistsWith removeLink . indexFile
+			liftAnnex $ inRepo $ removeWhenExistsWith R.removeLink . indexFile
 			{- Normally the startup scan avoids re-staging files,
 			 - but with the index deleted, everything needs to be
 			 - restaged. -}
@@ -80,7 +81,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	 - will be automatically regenerated. -}
 	unlessM (liftAnnex $ Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndexFast) $ do
 		notice ["corrupt annex/index file found at startup; removing"]
-		liftAnnex $ liftIO . removeWhenExistsWith removeLink =<< fromRepo gitAnnexIndex
+		liftAnnex $ liftIO . removeWhenExistsWith R.removeLink =<< fromRepo gitAnnexIndex
 
 	{- Fix up ssh remotes set up by past versions of the assistant. -}
 	liftIO $ fixUpSshRemotes

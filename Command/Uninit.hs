@@ -73,7 +73,7 @@ finish = do
 		then liftIO $ removeDirectoryRecursive annexdir
 		else giveup $ unlines
 			[ "Not fully uninitialized"
-			, "Some annexed data is still left in " ++ annexobjectdir
+			, "Some annexed data is still left in " ++ fromRawFilePath annexobjectdir
 			, "This may include deleted files, or old versions of modified files."
 			, ""
 			, "If you don't care about preserving the data, just delete the"
@@ -108,7 +108,7 @@ prepareRemoveAnnexDir annexdir = do
 prepareRemoveAnnexDir' :: FilePath -> IO ()
 prepareRemoveAnnexDir' annexdir =
 	dirTreeRecursiveSkipping (const False) annexdir 
-		>>= mapM_ (void . tryIO . allowWrite)
+		>>= mapM_ (void . tryIO . allowWrite . toRawFilePath)
 
 {- Keys that were moved out of the annex have a hard link still in the
  - annex, with > 1 link count, and those can be removed.

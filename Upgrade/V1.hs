@@ -13,6 +13,7 @@ import Data.Default
 import Data.ByteString.Builder
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import qualified System.FilePath.ByteString as P
 
 import Annex.Common
 import Annex.Content
@@ -74,12 +75,13 @@ moveContent = do
 	forM_ files move
   where
 	move f = do
-		let k = fileKey1 (takeFileName f)
-		let d = fromRawFilePath $ parentDir $ toRawFilePath f
+		let f' = toRawFilePath f
+		let k = fileKey1 (fromRawFilePath (P.takeFileName f'))
+		let d = parentDir f'
 		liftIO $ allowWrite d
-		liftIO $ allowWrite f
-		_ <- moveAnnex k (toRawFilePath f)
-		liftIO $ removeDirectory d
+		liftIO $ allowWrite f'
+		_ <- moveAnnex k f'
+		liftIO $ removeDirectory (fromRawFilePath d)
 
 updateSymlinks :: Annex ()
 updateSymlinks = do
@@ -215,7 +217,8 @@ lookupKey1 file = do
 			" (unknown backend " ++ bname ++ ")"
 
 getKeyFilesPresent1 :: Annex [FilePath]
-getKeyFilesPresent1  = getKeyFilesPresent1' =<< fromRepo gitAnnexObjectDir
+getKeyFilesPresent1  = getKeyFilesPresent1' . fromRawFilePath
+	=<< fromRepo gitAnnexObjectDir
 getKeyFilesPresent1' :: FilePath -> Annex [FilePath]
 getKeyFilesPresent1' dir =
 	ifM (liftIO $ doesDirectoryExist dir)

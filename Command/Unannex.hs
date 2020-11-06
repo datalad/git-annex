@@ -14,6 +14,7 @@ import qualified Git.Command
 import Utility.CopyFile
 import qualified Database.Keys
 import Git.FilePath
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = withGlobalOptions [annexedMatchingOptions] $
@@ -54,7 +55,7 @@ perform file key = do
 cleanup :: RawFilePath -> Key -> CommandCleanup
 cleanup file key = do
 	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
-	src <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
+	src <- calcRepo (gitAnnexLocation key)
 	ifM (Annex.getState Annex.fast)
 		( do
 			-- Only make a hard link if the annexed file does not
@@ -62,19 +63,21 @@ cleanup file key = do
 			-- This avoids unannexing (and uninit) ending up
 			-- hard linking files together, which would be
 			-- surprising.
-			s <- liftIO $ getFileStatus src
+			s <- liftIO $ R.getFileStatus src
 			if linkCount s > 1
 				then copyfrom src
 				else hardlinkfrom src
 		, copyfrom src
 		)
   where
-	file' = fromRawFilePath file
 	copyfrom src = 
-		thawContent file' `after` liftIO (copyFileExternal CopyAllMetaData src file')
+		thawContent file `after` liftIO 
+			(copyFileExternal CopyAllMetaData
+				(fromRawFilePath src)
+				(fromRawFilePath file))
 	hardlinkfrom src =
 		-- creating a hard link could fall; fall back to copying
-		ifM (liftIO $ catchBoolIO $ createLink src file' >> return True)
+		ifM (liftIO $ catchBoolIO $ R.createLink src file >> return True)
 			( return True
 			, copyfrom src
 			)

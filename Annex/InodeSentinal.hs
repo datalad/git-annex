@@ -84,7 +84,8 @@ createInodeSentinalFile evenwithobjects =
 	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile
 	hasobjects
 		| evenwithobjects = pure False
-		| otherwise = liftIO . doesDirectoryExist =<< fromRepo gitAnnexObjectDir
+		| otherwise = liftIO . doesDirectoryExist . fromRawFilePath
+			=<< fromRepo gitAnnexObjectDir
 
 annexSentinalFile :: Annex SentinalFile
 annexSentinalFile = do

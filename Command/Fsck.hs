@@ -183,7 +183,7 @@ performRemote key afile backend numcopies remote =
 		let cleanup = liftIO $ catchIO (R.removeLink tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
-	getfile tmp = ifM (checkDiskSpace (Just (fromRawFilePath (P.takeDirectory tmp))) key 0 True)
+	getfile tmp = ifM (checkDiskSpace (Just (P.takeDirectory tmp)) key 0 True)
 		( ifM (getcheap tmp)
 			( return (Just True)
 			, ifM (Annex.getState Annex.fast)
@@ -251,9 +251,9 @@ verifyLocationLog key keystatus ai = do
 	 - in a permission fixup here too. -}
 	when present $ do
 		void $ tryIO $ case keystatus of
-			KeyUnlockedThin -> thawContent (fromRawFilePath obj)
-			KeyLockedThin -> thawContent (fromRawFilePath obj)
-			_ -> freezeContent (fromRawFilePath obj)
+			KeyUnlockedThin -> thawContent obj
+			KeyLockedThin -> thawContent obj
+			_ -> freezeContent obj
 		unlessM (isContentWritePermOk obj) $
 			warning $ "** Unable to set correct write mode for " ++ fromRawFilePath obj ++ " ; perhaps you don't own that file"
 	whenM (liftIO $ R.doesPathExist $ parentDir obj) $
@@ -346,13 +346,14 @@ verifyWorkTree key file = do
 		Just k | k == key -> whenM (inAnnex key) $ do
 			showNote "fixing worktree content"
 			replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
+				let tmp' = toRawFilePath tmp
 				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 				ifM (annexThin <$> Annex.getGitConfig)
-					( void $ linkFromAnnex key (toRawFilePath tmp) mode
+					( void $ linkFromAnnex key tmp' mode
 					, do
-						obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
-						void $ checkedCopyFile key obj tmp mode
-						thawContent tmp
+						obj <- calcRepo (gitAnnexLocation key)
+						void $ checkedCopyFile key obj tmp' mode
+						thawContent tmp'
 					)
 			Database.Keys.storeInodeCaches key [file]
 		_ -> return ()
@@ -586,17 +587,16 @@ recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
 recordStartTime :: UUID -> Annex ()
 recordStartTime u = do
 	f <- fromRepo (gitAnnexFsckState u)
-	let f' = fromRawFilePath f
 	createAnnexDirectory $ parentDir f
 	liftIO $ removeWhenExistsWith R.removeLink f
-	liftIO $ withFile f' WriteMode $ \h -> do
+	liftIO $ withFile (fromRawFilePath f) WriteMode $ \h -> do
 #ifndef mingw32_HOST_OS
 		t <- modificationTime <$> R.getFileStatus f
 #else
 		t <- getPOSIXTime
 #endif
 		hPutStr h $ showTime $ realToFrac t
-	setAnnexFilePerm f'
+	setAnnexFilePerm f
   where
 	showTime :: POSIXTime -> String
 	showTime = show

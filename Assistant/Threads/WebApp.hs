@@ -93,7 +93,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 			urlfile <- getAnnex' $ fromRepo gitAnnexUrlFile
 			go tlssettings addr webapp
 				(fromRawFilePath htmlshim)
-				(Just (fromRawFilePath urlfile))
+				(Just urlfile)
   where
 	-- The webapp thread does not wait for the startupSanityCheckThread
 	-- to finish, so that the user interface remains responsive while

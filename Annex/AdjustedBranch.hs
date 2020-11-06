@@ -296,7 +296,7 @@ preventCommits = bracket setup cleanup
   where
 	setup = do
 		lck <- fromRepo $ indexFileLock . indexFile
-		liftIO $ Git.LockFile.openLock lck
+		liftIO $ Git.LockFile.openLock (fromRawFilePath lck)
 	cleanup = liftIO . Git.LockFile.closeLock
 
 {- Commits a given adjusted tree, with the provided parent ref.

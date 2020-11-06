@@ -204,7 +204,7 @@ probeCrippledFileSystem' tmp = do
 	let f = fromRawFilePath (tmp P.</> "gaprobe")
 	writeFile f ""
 	r <- probe f
-	void $ tryIO $ allowWrite f
+	void $ tryIO $ allowWrite (toRawFilePath f)
 	removeFile f
 	return r
   where
@@ -213,7 +213,7 @@ probeCrippledFileSystem' tmp = do
 		removeWhenExistsWith removeLink f2
 		createSymbolicLink f f2
 		removeWhenExistsWith removeLink f2
-		preventWrite f
+		preventWrite (toRawFilePath f)
 		-- Should be unable to write to the file, unless
 		-- running as root, but some crippled
 		-- filesystems ignore write bit removals.
