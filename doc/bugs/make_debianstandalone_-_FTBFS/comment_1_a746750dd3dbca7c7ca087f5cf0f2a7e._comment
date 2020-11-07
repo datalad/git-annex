@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-11-07T23:59:51Z"
+ content="""
+didn't look in detail but entire dashboard is largely red: https://git-annex.branchable.com/builds/ (only Linux armel building some older I guess commitish is Warning only).
+"""]]
