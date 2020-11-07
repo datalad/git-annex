@@ -1,0 +1,5 @@
+A couple of times I have seen a git-annex sync -C . upload files to the
+remote that are not part of the remote's preferred content. In the most
+recent case, I had moved the file to another directory while the sync was
+downloading a previous file. I suspect that the file being removed causes
+preferred content checks to mess up. --[[Joey]]
