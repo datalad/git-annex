@@ -9,6 +9,7 @@
 {-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DataKinds, FlexibleInstances #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
 #if MIN_VERSION_persistent_template(2,8,0)
