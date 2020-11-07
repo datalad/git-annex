@@ -1,0 +1,221 @@
+### Please describe the problem.
+When I run `git annex add .` the file is no longer symlinked into the directory, but the file is keep as it is and simply added to git. This also happens with a minimalistic test repo as described below:
+
+### What steps will reproduce the problem?
+- `sudo pacman -S git-annex`
+- `mkdir ./test`
+- `cd test`
+- `git init`
+- `git annex init`
+- `cp ../myLargeFile.CR2 .`
+- `git annex add .`
+
+### What version of git-annex are you using? On what operating system?
+```
+$ git annex version
+git-annex version: 8.20201103-g2dabd4cc2d
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.2 http-client-0.7.2.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+```
+$ uname -a
+Linux jcarch 5.4.74-1-lts #1 SMP Sun, 01 Nov 2020 12:58:27 +0000 x86_64 GNU/Linux
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+$ git annex add -d test.CR2 
+[2020-11-05 14:05:18.380112289] process [47259] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2020-11-05 14:05:18.380857707] process [47259] done ExitSuccess
+[2020-11-05 14:05:18.381159814] process [47260] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2020-11-05 14:05:18.381788658] process [47260] done ExitSuccess
+[2020-11-05 14:05:18.382106752] process [47261] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..ae4cf18c6d72434a514230220967195c0b230adb","--pretty=%H","-n1"]
+[2020-11-05 14:05:18.382829403] process [47261] done ExitSuccess
+[2020-11-05 14:05:18.38340398] process [47262] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2020-11-05 14:05:18.383651872] process [47263] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2020-11-05 14:05:18.384269396] process [47264] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2020-11-05 14:05:18.385141135] process [47264] done ExitSuccess
+[2020-11-05 14:05:18.385420658] process [47265] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+[2020-11-05 14:05:18.386064486] process [47265] done ExitFailure 1
+[2020-11-05 14:05:18.386480384] process [47266] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","-z","--others","--exclude-standard","--","test.CR2"]
+[2020-11-05 14:05:18.387250532] process [47267] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.numcopies","annex.largefiles","--"]
+add test.CR2 [2020-11-05 14:05:18.389436209] process [47268] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","diff.external=","-c","filter.annex.smudge=","-c","filter.annex.clean=","diff","--cached","--raw","-z","--no-abbrev","-G^/annex/objects/","--diff-filter=AMUT","--no-renames","--ignore-submodules=all","--no-ext-diff"]
+[2020-11-05 14:05:18.391345028] process [47268] done ExitSuccess
+ok
+[2020-11-05 14:05:18.391581576] process [47266] done ExitSuccess
+[2020-11-05 14:05:18.39193215] process [47270] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","-z","--modified","--","test.CR2"]
+[2020-11-05 14:05:18.392531099] process [47270] done ExitSuccess
+[2020-11-05 14:05:18.392820948] process [47271] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--name-only","--diff-filter=T","-z","--cached","--","test.CR2"]
+[2020-11-05 14:05:18.393490388] process [47271] done ExitSuccess
+(recording state in git...)
+[2020-11-05 14:05:18.39392609] process [47272] feed: xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","add","--"]
+[2020-11-05 14:05:18.679370104] process [47272] done ExitSuccess
+[2020-11-05 14:05:18.680381167] process [47262] done ExitSuccess
+[2020-11-05 14:05:18.680659505] process [47263] done ExitSuccess
+[2020-11-05 14:05:18.680881174] process [47267] done ExitSuccess
+"""]]
+
+The directory structure of the repo after running `git annex add .`:
+[[!format sh """
+$ tree -a
+.
+├── .git
+│   ├── annex
+│   │   ├── gitqueue.lck
+│   │   ├── index
+│   │   ├── index.lck
+│   │   ├── journal
+│   │   ├── journal.lck
+│   │   ├── keysdb
+│   │   │   └── db
+│   │   ├── keysdb.cache
+│   │   ├── keysdb.lck
+│   │   ├── othertmp.lck
+│   │   ├── sentinal
+│   │   └── sentinal.cache
+│   ├── branches
+│   ├── config
+│   ├── description
+│   ├── HEAD
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-checkout
+│   │   ├── post-merge
+│   │   ├── post-receive
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   ├── attributes
+│   │   └── exclude
+│   ├── logs
+│   │   └── refs
+│   │       └── heads
+│   │           └── git-annex
+│   ├── objects
+│   │   ├── 0d
+│   │   │   └── b47ff2773fdd41f7be54839f6a3450c25da595
+│   │   ├── 4b
+│   │   │   └── 825dc642cb6eb9a060e54bf8d69288fbee4904
+│   │   ├── 53
+│   │   │   └── 40ddb9312ba2c09f08cb0308f4f8679b70735e
+│   │   ├── 7f
+│   │   │   └── 92a6e546f860b696d1ee94694296975761b8f4
+│   │   ├── 9d
+│   │   │   └── c023b630e35c131d96c10641e57de7529c3c64
+│   │   ├── ae
+│   │   │   └── 4cf18c6d72434a514230220967195c0b230adb
+│   │   ├── info
+│   │   └── pack
+│   └── refs
+│       ├── heads
+│       │   └── git-annex
+│       └── tags
+└── test.CR2
+"""]]
+
+The repo after running `git annex unlock test.CR2 && git annex lock test.CR2`. Now, I do get a symlink, but it is completely broken:
+[[!format sh """
+$ tree -a
+.
+├── .git
+│   ├── annex
+│   │   ├── gitqueue.lck
+│   │   ├── index
+│   │   ├── index.lck
+│   │   ├── journal
+│   │   ├── journal.lck
+│   │   ├── keysdb
+│   │   │   └── db
+│   │   ├── keysdb.cache
+│   │   ├── keysdb.lck
+│   │   ├── objects
+│   │   │   └── Z8
+│   │   │       └── ff
+│   │   │           └── SHA256E-s29334740--1ddc219a95f1d1fa37e94667dae44c8a5ec42fff0c5dfd5dc46ac9e6ad43e7fe.CR2
+│   │   ├── othertmp.lck
+│   │   ├── sentinal
+│   │   └── sentinal.cache
+│   ├── branches
+│   ├── config
+│   ├── description
+│   ├── HEAD
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-checkout
+│   │   ├── post-merge
+│   │   ├── post-receive
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   ├── attributes
+│   │   └── exclude
+│   ├── logs
+│   │   └── refs
+│   │       └── heads
+│   │           └── git-annex
+│   ├── objects
+│   │   ├── 0d
+│   │   │   └── b47ff2773fdd41f7be54839f6a3450c25da595
+│   │   ├── 3a
+│   │   │   └── 23d9e0574e7b37778991638c07005f6c27418f
+│   │   ├── 45
+│   │   │   └── 36e1509db6efcf5b3f213e94e139dfffd909b7
+│   │   ├── 4b
+│   │   │   └── 825dc642cb6eb9a060e54bf8d69288fbee4904
+│   │   ├── 53
+│   │   │   └── 40ddb9312ba2c09f08cb0308f4f8679b70735e
+│   │   ├── 74
+│   │   │   └── 4ae89ab07cb3c592c4e815db44adb1f2b0f679
+│   │   ├── 7f
+│   │   │   └── 92a6e546f860b696d1ee94694296975761b8f4
+│   │   ├── 85
+│   │   │   └── f161fd698805ff508cf17712f7297751ea4d51
+│   │   ├── 9c
+│   │   │   └── 1989036a57661474b3442062b4fcc3c285681b
+│   │   ├── 9d
+│   │   │   └── c023b630e35c131d96c10641e57de7529c3c64
+│   │   ├── ae
+│   │   │   └── 4cf18c6d72434a514230220967195c0b230adb
+│   │   ├── f8
+│   │   │   └── c3a1f4e637bb0cffd25ae8fa61ce38d3b9d2f2
+│   │   ├── info
+│   │   └── pack
+│   └── refs
+│       ├── heads
+│       │   └── git-annex
+│       └── tags
+└── test.CR2 -> .git/annex/objects/Z8/ff/SHA256E-s29334740--1ddc219a95f1d1fa37e94667dae44c8a5ec42fff0c5dfd5dc46ac9e6ad43e7fe.CR2/SHA256E-s29334740--1ddc219a95f1d1fa37e94667dae44c8a5ec42fff0c5dfd5dc46ac9e6ad43e7fe.CR2
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+It used to work before. It seem to be broken since a system update. I have tried reinstalling `git-annex` as well as all dependencies, bit without any luck.

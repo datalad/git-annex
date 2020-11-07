@@ -1,0 +1,103 @@
+### Please describe the problem.
+
+```
+$> make debianstandalone
+...
+[644 of 645] Compiling CmdLine.GitAnnex ( CmdLine/GitAnnex.hs, dist/build/git-annex/git-annex-tmp/CmdLine/GitAnnex.o )
+[645 of 645] Compiling Main             ( git-annex.hs, dist/build/git-annex/git-annex-tmp/Main.o )
+Linking dist/build/git-annex/git-annex ...
+ghc --make Build/Standalone -Wall -fno-warn-tabs
+[18 of 30] Compiling BuildInfo        ( BuildInfo.hs, BuildInfo.o )
+[19 of 30] Compiling Build.BundledPrograms ( Build/BundledPrograms.hs, Build/BundledPrograms.o )
+[20 of 30] Compiling Utility.DebugLocks ( Utility/DebugLocks.hs, Utility/DebugLocks.o )
+[21 of 30] Compiling Utility.Env      ( Utility/Env.hs, Utility/Env.o )
+[22 of 30] Compiling Utility.FileSize ( Utility/FileSize.hs, Utility/FileSize.o )
+[23 of 30] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, Utility/PartialPrelude.o )
+[24 of 30] Compiling Utility.Network  ( Utility/Network.hs, Utility/Network.o )
+[25 of 30] Compiling Utility.Path.AbsRel ( Utility/Path/AbsRel.hs, Utility/Path/AbsRel.o )
+[26 of 30] Compiling Utility.LinuxMkLibs ( Utility/LinuxMkLibs.hs, Utility/LinuxMkLibs.o )
+[27 of 30] Compiling Common           ( Common.hs, Common.o )
+[28 of 30] Compiling Utility.CopyFile ( Utility/CopyFile.hs, Utility/CopyFile.o )
+[29 of 30] Compiling Build.LinuxMkLibs ( Build/LinuxMkLibs.hs, Build/LinuxMkLibs.o )
+
+Build/LinuxMkLibs.hs:45:41: error:
+    • Couldn't match type ‘Data.ByteString.Internal.ByteString’
+                     with ‘[Char]’
+      Expected type: String
+        Actual type: System.Posix.ByteString.FilePath.RawFilePath
+    • In the second argument of ‘writeFile’, namely
+        ‘(parentDir $ head gconvlibs)’
+      In a stmt of a 'do' block:
+        writeFile (top </> "gconvdir") (parentDir $ head gconvlibs)
+      In the expression:
+        do fs <- dirContentsRecursive top
+           exes <- filterM checkExe fs
+           libs <- parseLdd <$> readProcess "ldd" exes
+           glibclibs <- glibcLibs
+           ....
+   |
+45 |         writeFile (top </> "gconvdir") (parentDir $ Prelude.head gconvlibs)
+   |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:45:53: error:
+    • Couldn't match type ‘[Char]’
+                     with ‘Data.ByteString.Internal.ByteString’
+      Expected type: System.Posix.ByteString.FilePath.RawFilePath
+        Actual type: FilePath
+    • In the second argument of ‘($)’, namely ‘head gconvlibs’
+      In the second argument of ‘writeFile’, namely
+        ‘(parentDir $ head gconvlibs)’
+      In a stmt of a 'do' block:
+        writeFile (top </> "gconvdir") (parentDir $ head gconvlibs)
+   |
+45 |         writeFile (top </> "gconvdir") (parentDir $ Prelude.head gconvlibs)
+   |                                                     ^^^^^^^^^^^^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:110:17: error:
+    • Variable not in scope:
+        relPathDirToFile :: FilePath -> [Char] -> IO FilePath
+    • Perhaps you meant ‘relPathDirToFileAbs’ (imported from Utility.Path)
+    |
+110 |         link <- relPathDirToFile (top </> exedir) (top ++ linker)
+    |                 ^^^^^^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:132:31: error:
+    • Couldn't match type ‘Data.ByteString.Internal.ByteString’
+                     with ‘[Char]’
+      Expected type: FilePath
+        Actual type: System.Posix.ByteString.FilePath.RawFilePath
+    • In the second argument of ‘($)’, namely ‘parentDir f’
+      In the expression: inTop top $ parentDir f
+      In an equation for ‘destdir’: destdir = inTop top $ parentDir f
+    |
+132 |         destdir = inTop top $ parentDir f
+    |                               ^^^^^^^^^^^
+
+Build/LinuxMkLibs.hs:132:41: error:
+    • Couldn't match type ‘[Char]’
+                     with ‘Data.ByteString.Internal.ByteString’
+      Expected type: System.Posix.ByteString.FilePath.RawFilePath
+        Actual type: FilePath
+    • In the first argument of ‘parentDir’, namely ‘f’
+      In the second argument of ‘($)’, namely ‘parentDir f’
+      In the expression: inTop top $ parentDir f
+    |
+132 |         destdir = inTop top $ parentDir f
+    |                                         ^
+make[4]: *** [Makefile:165: Build/Standalone] Error 1
+make[4]: Leaving directory '/home/yoh/proj/git-annex'
+make[3]: *** [Makefile:173: linuxstandalone] Error 2
+make[3]: Leaving directory '/home/yoh/proj/git-annex'
+make[2]: *** [debian/rules:24: override_dh_auto_build] Error 2
+make[2]: Leaving directory '/home/yoh/proj/git-annex'
+make[1]: *** [debian/rules:17: build] Error 2
+make[1]: Leaving directory '/home/yoh/proj/git-annex'
+dpkg-buildpackage: error: debian/rules build subprocess returned exit status 2
+make: *** [Makefile:205: dpkg-buildpackage-F] Error 2
+make debianstandalone  289.29s user 9.60s system 99% cpu 5:00.49 total
+
+
+$> git describe
+8.20201103-34-gd8e8d145e
+```
+```

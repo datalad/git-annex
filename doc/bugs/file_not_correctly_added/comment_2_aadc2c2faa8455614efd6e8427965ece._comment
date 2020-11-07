@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="jcjgraf"
+ avatar="http://cdn.libravatar.org/avatar/9dda752f83ac44906fefbadb35e8a6ac"
+ subject="comment 2"
+ date="2020-11-06T14:57:52Z"
+ content="""
+Thanks for the reply!
+
+- `git status` after running `git annex add` simply reports that there is a new file:
+
+```
+$ git annex add
+add test.CR2 ok
+(recording state in git...)
+
+$ git status
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use \"git rm --cached <file>...\" to unstage)
+	new file:   test.CR2
+```
+
+- The file system is just plain ext4.
+
+- The behaviour of the standalone build does not differ.
+
+"""]]
