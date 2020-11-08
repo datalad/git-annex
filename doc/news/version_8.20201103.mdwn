@@ -1,7 +1,5 @@
 git-annex 8.20201103 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
-git-annex (8.20201103) upstream; urgency=medium
-.
   * move: Improve resuming a move that was interrupted after the object
     was transferred, in cases where numcopies checks prevented the resumed
     move from dropping the object from the source repository.
