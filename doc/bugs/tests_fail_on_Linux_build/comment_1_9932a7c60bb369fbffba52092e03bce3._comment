@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-11-09T22:52:59Z"
+ content="""
+[[!commit d44fb89d4f4d3120a34a192025ee901c064cab00]] fixed a problem
+with the same underlying cause.
+Also, [[!commit d44fb89d4f4d3120a34a192025ee901c064cab00]]
+
+Like those, this certianly cannot affect actual use of git-annex
+as the string QuickCheck has magiced up is normally unable to be produced
+by any input when LANG=C, and is not a problem in unicode locales.
+
+Probably there ought to be a newtype wrapper around FilePath with a more
+sane Arbitrary instance, since the default haskell one has this problem.
+Limiting to ascii only is probably fine. It would be good to use that in
+every quickcheck property, so we can stop tripping over these.
+
+(Also worth noting: As soon as everything gets converted to RawFilePath
+entirely, this entire class of problems goes away (and git-annex gets
+faster too). I wrote over 10,000 lines of patch toward that end in the past
+week, during many agonizing days, but it seems mostly to have resulted in
+my being complained at about not having a good enough CI to catch whatever
+minor breakage results.)
+
+(I wonder if it's also just a bug in QuickCheck, but it's hard to see how
+it could both do any testing of unicode and work in LANG=C given that
+Arbitrary is pure and has no way of knowing the locale.)
+"""]]
