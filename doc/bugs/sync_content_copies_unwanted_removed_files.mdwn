@@ -3,3 +3,15 @@ remote that are not part of the remote's preferred content. In the most
 recent case, I had moved the file to another directory while the sync was
 downloading a previous file. I suspect that the file being removed causes
 preferred content checks to mess up. --[[Joey]]
+
+> Reproduced reliably as follows: Have a bigfile in the remote 
+> and a smallfile in the local repo. Have the remote in group source,
+> preferred content standard. Have the local repo's preferred content
+> `include=*`. Run `git-annex sync -C.` while that's running, `git rm
+> smallfile`.  (bigfile has to be big enough to give time to run that
+> command)
+> 
+> smallfile gets sent to the remote unexpectedly. If it's not deleted
+> first, that does not happen.
+> 
+> --[[Joey]]
