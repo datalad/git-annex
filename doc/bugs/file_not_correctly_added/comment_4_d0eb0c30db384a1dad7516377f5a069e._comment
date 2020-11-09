@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-11-09T16:16:31Z"
+ content="""
+So, the test suite contains many tests that would blow up if it was breaking
+this way.
+
+It seems to me you must have something in your git configuration or other
+local environment, or in the repo's git-annex config, that is causing this, 
+since it doesn't happen to anyone else. Or perhaps something else like a
+version of git that is somehow problimatic.
+
+If annex.addunlocked is configured, `git-annex add` will add the file to
+the annex in unlocked mode. This must be happening, because a) the command
+does not say "non-large file; adding content to git repository" which it
+would if annex.largefiles was configured to make that happen and b)
+git-annex lock/unlock only operate on annexed files.
+
+The thing I don't understand, and cannot reproduce, is that
+.git/annex/objects should contain an object after `git-annex add`, and you
+show it does not. It seems to me that `git annex whereis` should probably
+be either complaining that it's lost the content, or tell about some other
+repository that the content has somehow moved to. Or if not, at least `git
+annex fsck` should have something to say about this situation.
+"""]]
