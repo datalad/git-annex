@@ -108,3 +108,6 @@ get 123 (from origin...)
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]], it seems that my documentation improvement is the only thing
+> that needed to be done for this. --[[Joey]]
