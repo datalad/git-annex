@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-11-09T19:27:12Z"
+ content="""
+Ok, I have a way to reprouduce this. Let's assume that your
+original "myLargeFile.CR2" was from some other git-annex repo.
+And it was unlocked in that repo. And you dropped it from that repo.
+And then maybe you moved it around or copied it, or whatever and forgot that
+this happened, leading you to the "cp ../myLargeFile.CR2 ." in your
+original steps to reproduce the problem.
+
+Then the content of that file would be something like this:
+
+   echo '/annex/objects/SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4.CR2' > myLargeFile.CR2
+
+And what happens if I add that?
+
+   # git annex add myLargeFile.CR2
+   add myLargeFile.CR2 ok
+   # git annex fsck
+   fsck myLargeFile.CR2 
+      ** No known copies exist of myLargeFile.CR2
+   failed
+
+This happens because I added a git-annex link to the repo so now it contains
+this link to an object that never got added. Same would happen if I used
+git add, or if I did an ln -s to make a .git/annex/objects symlink and added
+that. I don't think it's a bug really.
+
+Is this what you did? If not, further responses below, but I'll bet we
+can stop here.
+
+----
+
+Configuration can be included in the repo (by git-annex config), but you would
+have to be cloning from another repo that had those config settings, not
+creating a new repo as you seem to show in your original test case.
+
+Are you sure you didn't miss some place where a git
+config could be set? (Eg, /etc/gitconfig)
+Running `git config --list | grep annex` would display any git config you
+might have missed.
+
+Do whereis/fsck show that immediately after you run "git-annex add",
+without and other commands in between?
+
+There's a good chance that a full transcript of it happening would have
+some other clue. Like if it enters an adjusted unlocked branch for some
+reason.
+"""]]
