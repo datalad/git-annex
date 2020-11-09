@@ -1,0 +1,292 @@
+[[!comment format=mdwn
+ username="jcjgraf"
+ avatar="http://cdn.libravatar.org/avatar/9dda752f83ac44906fefbadb35e8a6ac"
+ subject="comment 7"
+ date="2020-11-09T20:41:00Z"
+ content="""
+Unfortunately, this is not the cause of my problem. I have tried it with some files which were never part of a git annex repo but without any difference.
+
+No, there is no other git configuration except the one I have posted and the local one generated during the initialisation of the test repo (see the `git config --list` output at the bottom of this message).
+
+Yes, I have run these two commands (`whereis` and `fsck`) right after running `git annex add`. 
+
+Here a full transcript of the taken steps. I hope this yield some more insights. If there is anything else which would be helpful, let me know. 
+
+Thanks a lot for all your effort!
+
+
+```
+# ~/Images  
+-> mkdir test
+
+# ~/Images  
+-> cd test
+
+# ~/Images/test  
+-> git init
+Initialized empty Git repository in /home/jeanclaude/Images/test/.git/
+
+# ~/Images/test on git:master o  
+-> git annex init -d
+init  [2020-11-09 21:18:05.857678458] process [301188] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-11-09 21:18:05.858362763] process [301188] done ExitFailure 1
+[2020-11-09 21:18:05.858530918] process [301189] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--verify\",\"-q\",\"origin/git-annex\"]
+[2020-11-09 21:18:05.859091599] process [301189] done ExitFailure 1
+[2020-11-09 21:18:05.859778604] process [301190] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2020-11-09 21:18:05.860578566] process [301190] done ExitSuccess
+[2020-11-09 21:18:05.860992266] process [301191] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\",\"--no-gpg-sign\"]
+[2020-11-09 21:18:05.861708745] process [301191] done ExitSuccess
+[2020-11-09 21:18:05.86196764] process [301192] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"cc29c590c2b3802aad89ba45d82275b378a8c843\"]
+[2020-11-09 21:18:05.862691494] process [301192] done ExitSuccess
+[2020-11-09 21:18:05.863174225] process [301193] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.uuid\",\"092eb39f-6944-437d-8085-3062827d114f\"]
+[2020-11-09 21:18:05.863730795] process [301193] done ExitSuccess
+[2020-11-09 21:18:05.863942819] process [301194] read: git [\"config\",\"--null\",\"--list\"]
+[2020-11-09 21:18:05.864510469] process [301194] done ExitSuccess
+[2020-11-09 21:18:05.8689692] process [301195] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2020-11-09 21:18:05.869730113] process [301195] done ExitSuccess
+[2020-11-09 21:18:05.870051925] process [301196] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-11-09 21:18:05.87067267] process [301196] done ExitSuccess
+[2020-11-09 21:18:05.871064391] process [301197] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..cc29c590c2b3802aad89ba45d82275b378a8c843\",\"--pretty=%H\",\"-n1\"]
+[2020-11-09 21:18:05.871789326] process [301197] done ExitSuccess
+[2020-11-09 21:18:05.872219143] process [301198] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:18:05.872450128] process [301199] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-11-09 21:18:05.873070997] process [301200] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"annex.version\",\"8\"]
+[2020-11-09 21:18:05.873747221] process [301200] done ExitSuccess
+[2020-11-09 21:18:05.873983127] process [301201] read: git [\"config\",\"--null\",\"--list\"]
+[2020-11-09 21:18:05.874692554] process [301201] done ExitSuccess
+[2020-11-09 21:18:05.875039242] process [301202] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"status\",\"--porcelain\"]
+[2020-11-09 21:18:05.875796308] process [301202] done ExitSuccess
+[2020-11-09 21:18:05.876081608] process [301203] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"filter.annex.smudge\",\"git-annex smudge -- %f\"]
+[2020-11-09 21:18:05.876774707] process [301203] done ExitSuccess
+[2020-11-09 21:18:05.877020054] process [301204] read: git [\"config\",\"--null\",\"--list\"]
+[2020-11-09 21:18:05.877590492] process [301204] done ExitSuccess
+[2020-11-09 21:18:05.877809109] process [301205] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"config\",\"filter.annex.clean\",\"git-annex smudge --clean -- %f\"]
+[2020-11-09 21:18:05.878396585] process [301205] done ExitSuccess
+[2020-11-09 21:18:05.878568762] process [301206] read: git [\"config\",\"--null\",\"--list\"]
+[2020-11-09 21:18:05.879121735] process [301206] done ExitSuccess
+(scanning for unlocked files...)
+[2020-11-09 21:18:05.879331578] process [301207] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--head\"]
+[2020-11-09 21:18:05.879894524] process [301207] done ExitSuccess
+[2020-11-09 21:18:05.880285614] process [301208] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2020-11-09 21:18:05.880860662] process [301208] done ExitSuccess
+[2020-11-09 21:18:05.881026905] process [301209] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2020-11-09 21:18:05.881624482] process [301209] done ExitFailure 1
+[2020-11-09 21:18:05.881911479] process [301210] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2020-11-09 21:18:05.882544605] process [301210] done ExitSuccess
+[2020-11-09 21:18:05.88274148] process [301211] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+[2020-11-09 21:18:05.883377364] process [301211] done ExitFailure 1
+[2020-11-09 21:18:05.883636208] process [301212] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"checkout\",\"-q\",\"-B\",\"master\"]
+[2020-11-09 21:18:05.884333724] process [301212] done ExitSuccess
+[2020-11-09 21:18:05.885138806] process [301213] read: uname [\"-n\"]
+[2020-11-09 21:18:05.885414287] process [301213] done ExitSuccess
+ok
+[2020-11-09 21:18:05.88680324] process [301214] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2020-11-09 21:18:05.887058838] process [301215] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2020-11-09 21:18:05.88795655] process [301215] done ExitSuccess
+[2020-11-09 21:18:05.888423958] process [301216] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-11-09 21:18:05.889185379] process [301216] done ExitSuccess
+(recording state in git...)
+[2020-11-09 21:18:05.889577989] process [301218] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2020-11-09 21:18:05.890575199] process [301218] done ExitSuccess
+[2020-11-09 21:18:05.890901508] process [301219] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"283356f53ffc1158753de3fa8f6ad1fd4ef944a1\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+[2020-11-09 21:18:05.892116156] process [301219] done ExitSuccess
+[2020-11-09 21:18:05.892568401] process [301223] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"88db094ee3108764027124ff8528fa9b83886d15\"]
+[2020-11-09 21:18:05.893479964] process [301223] done ExitSuccess
+[2020-11-09 21:18:05.894556565] process [301198] done ExitSuccess
+[2020-11-09 21:18:05.894814565] process [301199] done ExitSuccess
+[2020-11-09 21:18:05.895064348] process [301214] done ExitSuccess
+
+# ~/Images/test on git:master o  
+-> cp ../test.CR2 .
+
+# ~/Images/test on git:master x  
+-> g annex add -d 
+[2020-11-09 21:18:37.761856427] process [301520] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2020-11-09 21:18:37.762517315] process [301520] done ExitSuccess
+[2020-11-09 21:18:37.762730127] process [301521] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-11-09 21:18:37.76341947] process [301521] done ExitSuccess
+[2020-11-09 21:18:37.763862337] process [301522] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..88db094ee3108764027124ff8528fa9b83886d15\",\"--pretty=%H\",\"-n1\"]
+[2020-11-09 21:18:37.764700249] process [301522] done ExitSuccess
+[2020-11-09 21:18:37.765372445] process [301523] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:18:37.765628934] process [301524] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-11-09 21:18:37.766240345] process [301525] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2020-11-09 21:18:37.766883313] process [301525] done ExitSuccess
+[2020-11-09 21:18:37.767219173] process [301526] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2020-11-09 21:18:37.767819241] process [301526] done ExitFailure 1
+[2020-11-09 21:18:37.768198125] process [301527] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"-z\",\"--others\",\"--exclude-standard\",\"--\"]
+[2020-11-09 21:18:37.768913506] process [301528] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"annex.largefiles\",\"--\"]
+add test.CR2 ok
+[2020-11-09 21:18:37.800822834] process [301527] done ExitSuccess
+[2020-11-09 21:18:37.801541467] process [301530] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"-z\",\"--modified\",\"--\"]
+[2020-11-09 21:18:37.804737301] process [301530] done ExitSuccess
+[2020-11-09 21:18:37.805576063] process [301531] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"diff\",\"--name-only\",\"--diff-filter=T\",\"-z\",\"--cached\",\"--\",\".\"]
+[2020-11-09 21:18:37.809270202] process [301531] done ExitSuccess
+(recording state in git...)
+[2020-11-09 21:18:37.810761671] process [301532] feed: xargs [\"-0\",\"git\",\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"add\",\"--\"]
+[2020-11-09 21:18:38.105427988] process [301532] done ExitSuccess
+[2020-11-09 21:18:38.122781502] process [301523] done ExitSuccess
+[2020-11-09 21:18:38.123382458] process [301524] done ExitSuccess
+[2020-11-09 21:18:38.1240349] process [301528] done ExitSuccess
+
+# ~/Images/test on git:master x  
+-> tree -a
+.
+├── .git
+│   ├── annex
+│   │   ├── gitqueue.lck
+│   │   ├── index
+│   │   ├── index.lck
+│   │   ├── journal
+│   │   ├── journal.lck
+│   │   ├── keysdb
+│   │   │   └── db
+│   │   ├── keysdb.lck
+│   │   ├── othertmp.lck
+│   │   ├── sentinal
+│   │   └── sentinal.cache
+│   ├── branches
+│   ├── config
+│   ├── description
+│   ├── HEAD
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-checkout
+│   │   ├── post-merge
+│   │   ├── post-receive
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   ├── attributes
+│   │   └── exclude
+│   ├── logs
+│   │   └── refs
+│   │       └── heads
+│   │           └── git-annex
+│   ├── objects
+│   │   ├── 0d
+│   │   │   └── b47ff2773fdd41f7be54839f6a3450c25da595
+│   │   ├── 28
+│   │   │   └── 3356f53ffc1158753de3fa8f6ad1fd4ef944a1
+│   │   ├── 4b
+│   │   │   └── 825dc642cb6eb9a060e54bf8d69288fbee4904
+│   │   ├── 65
+│   │   │   └── 783ba972653cd323df432c5affe8d62263f81d
+│   │   ├── 88
+│   │   │   └── db094ee3108764027124ff8528fa9b83886d15
+│   │   ├── cc
+│   │   │   └── 29c590c2b3802aad89ba45d82275b378a8c843
+│   │   ├── info
+│   │   └── pack
+│   └── refs
+│       ├── heads
+│       │   └── git-annex
+│       └── tags
+└── test.CR2
+
+22 directories, 40 files
+
+# ~/Images/test on git:master x  
+-> git annex whereis test.CR2 -d
+[2020-11-09 21:19:06.747007494] process [301865] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2020-11-09 21:19:06.747646855] process [301865] done ExitSuccess
+[2020-11-09 21:19:06.747969742] process [301866] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-11-09 21:19:06.748661535] process [301866] done ExitSuccess
+[2020-11-09 21:19:06.749060672] process [301867] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..88db094ee3108764027124ff8528fa9b83886d15\",\"--pretty=%H\",\"-n1\"]
+[2020-11-09 21:19:06.749842614] process [301867] done ExitSuccess
+[2020-11-09 21:19:06.75045599] process [301868] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:19:06.750831336] process [301869] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-11-09 21:19:06.751532238] process [301870] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2020-11-09 21:19:06.752113929] process [301870] done ExitSuccess
+[2020-11-09 21:19:06.752381211] process [301871] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2020-11-09 21:19:06.753053508] process [301871] done ExitFailure 1
+[2020-11-09 21:19:06.753377108] process [301872] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--stage\",\"-z\",\"--\",\"test.CR2\"]
+[2020-11-09 21:19:06.756788587] process [301873] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2020-11-09 21:19:06.757087393] process [301874] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2020-11-09 21:19:06.757493375] process [301875] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+whereis test.CR2 [2020-11-09 21:19:06.758500321] process [301876] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:19:06.75874544] process [301877] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+(0 copies) failed
+[2020-11-09 21:19:06.759864151] process [301876] done ExitSuccess
+[2020-11-09 21:19:06.760118535] process [301877] done ExitSuccess
+[2020-11-09 21:19:06.760181101] process [301875] done ExitSuccess
+[2020-11-09 21:19:06.760299463] process [301874] done ExitSuccess
+[2020-11-09 21:19:06.760395548] process [301873] done ExitSuccess
+[2020-11-09 21:19:06.7604857] process [301872] done ExitSuccess
+git-annex: whereis: 1 failed
+
+# ~/Images/test on git:master x  C:1
+-> git annex fsck -d
+[2020-11-09 21:19:16.754635603] process [301990] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2020-11-09 21:19:16.755282306] process [301990] done ExitSuccess
+[2020-11-09 21:19:16.755516429] process [301991] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-11-09 21:19:16.756217949] process [301991] done ExitSuccess
+[2020-11-09 21:19:16.756624385] process [301992] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..88db094ee3108764027124ff8528fa9b83886d15\",\"--pretty=%H\",\"-n1\"]
+[2020-11-09 21:19:16.757371526] process [301992] done ExitSuccess
+[2020-11-09 21:19:16.757964021] process [301993] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:19:16.758225471] process [301994] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-11-09 21:19:16.758986812] process [301995] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2020-11-09 21:19:16.759699011] process [301995] done ExitSuccess
+[2020-11-09 21:19:16.759969384] process [301996] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2020-11-09 21:19:16.760566806] process [301996] done ExitFailure 1
+[2020-11-09 21:19:16.760952487] process [301997] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--stage\",\"-z\",\"--\"]
+[2020-11-09 21:19:16.761246486] process [301998] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2020-11-09 21:19:16.764811773] process [301999] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2020-11-09 21:19:16.765130473] process [302000] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2020-11-09 21:19:16.76635019] process [302001] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"annex.largefiles\",\"--\"]
+[2020-11-09 21:19:16.767203931] process [302002] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:19:16.767473428] process [302003] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+fsck test.CR2 [2020-11-09 21:19:16.768325918] process [302004] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"diff.external=\",\"-c\",\"filter.annex.smudge=\",\"-c\",\"filter.annex.clean=\",\"diff\",\"--cached\",\"--raw\",\"-z\",\"--no-abbrev\",\"-G^/annex/objects/\",\"--diff-filter=AMUT\",\"--no-renames\",\"--ignore-submodules=all\",\"--no-ext-diff\"]
+[2020-11-09 21:19:16.7705705] process [302006] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:19:16.77093471] process [302007] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-11-09 21:19:16.771967978] process [302004] done ExitSuccess
+
+  ** No known copies exist of test.CR2
+failed
+[2020-11-09 21:19:16.774116848] process [302006] done ExitSuccess
+[2020-11-09 21:19:16.774269964] process [302007] done ExitSuccess
+[2020-11-09 21:19:16.77440891] process [302002] done ExitSuccess
+[2020-11-09 21:19:16.774577166] process [302003] done ExitSuccess
+[2020-11-09 21:19:16.774745401] process [302001] done ExitSuccess
+[2020-11-09 21:19:16.774800806] process [302000] done ExitSuccess
+[2020-11-09 21:19:16.77484124] process [301999] done ExitSuccess
+[2020-11-09 21:19:16.774873496] process [301998] done ExitSuccess
+[2020-11-09 21:19:16.774902674] process [301997] done ExitSuccess
+[2020-11-09 21:19:16.775189502] process [302008] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2020-11-09 21:19:16.775473145] process [302009] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2020-11-09 21:19:16.776696194] process [302010] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2020-11-09 21:19:16.776905151] process [302011] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2020-11-09 21:19:16.777910232] process [302011] done ExitSuccess
+[2020-11-09 21:19:16.77823167] process [302012] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2020-11-09 21:19:16.778800722] process [302012] done ExitSuccess
+(recording state in git...)
+[2020-11-09 21:19:16.779227579] process [302013] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2020-11-09 21:19:16.780331627] process [302013] done ExitSuccess
+[2020-11-09 21:19:16.780708844] process [302014] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"89a899c333c8b04da73517700f655a67b93323c6\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+[2020-11-09 21:19:16.78164598] process [302014] done ExitSuccess
+[2020-11-09 21:19:16.782028199] process [302015] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"f46e7b12120b14413bcd62d76a20170ae146d9d0\"]
+[2020-11-09 21:19:16.782930785] process [302015] done ExitSuccess
+[2020-11-09 21:19:16.783900844] process [302008] done ExitSuccess
+[2020-11-09 21:19:16.784127486] process [302009] done ExitSuccess
+[2020-11-09 21:19:16.784363948] process [302010] done ExitSuccess
+git-annex: fsck: 1 failed
+
+# ~/Images/test on git:master x  C:1
+-> git config --list | grep annex
+annex.uuid=092eb39f-6944-437d-8085-3062827d114f
+annex.version=8
+filter.annex.smudge=git-annex smudge -- %f
+filter.annex.clean=git-annex smudge --clean -- %f
+```
+
+"""]]
