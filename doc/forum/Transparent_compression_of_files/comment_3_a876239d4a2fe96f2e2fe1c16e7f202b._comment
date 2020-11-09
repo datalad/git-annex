@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jochen.keil@38b1f86ab65128dab3e62e726403ceee4f5141bf"
+ nickname="jochen.keil"
+ avatar="http://cdn.libravatar.org/avatar/a1329c0b3a262017553cc5497aa12c18"
+ subject="comment 3"
+ date="2020-11-09T13:15:40Z"
+ content="""
+Just a quick update:
+
+I've enabled zfs compression on my backup storage and couldn't be happier. Same goes for btrfs volumes. If one would like to narrow it down it's easy to create separate volumes (for zfs and btrfs) with different compression settings. I think that's the way to go, adding compression to btrfs would be just re-inventing the wheel.
+"""]]
