@@ -1,0 +1,25 @@
+[https://github.com/datalad/git-annex/pull/7/checks?check_run_id=1376365603](https://github.com/datalad/git-annex/pull/7/checks?check_run_id=1376365603)
+
+```
+2020-11-09T20:27:43.3824770Z     prop_upFrom_basics:                                   FAIL
+2020-11-09T20:27:43.3827072Z       *** Failed! Exception: 'recoverEncode: invalid argument (invalid character)' (after 3 tests):
+2020-11-09T20:27:43.3828330Z       "\522233"
+2020-11-09T20:27:43.3829895Z       Use --quickcheck-replay=884646 to reproduce.
+2020-11-09T20:27:43.3836556Z     prop_relPathDirToFileAbs_basics:                      FAIL
+2020-11-09T20:27:43.3838482Z       *** Failed! Exception: 'recoverEncode: invalid argument (invalid character)' (after 3 tests and 2 shrinks):
+2020-11-09T20:27:43.3839816Z       "a"
+2020-11-09T20:27:43.3840575Z       "\1046632"
+2020-11-09T20:27:43.3841805Z       Use --quickcheck-replay=45910 to reproduce.
+...
+2020-11-09T20:27:52.3356280Z     prop_viewedFile_rountrips:                            FAIL
+2020-11-09T20:27:52.3358132Z       *** Failed! Exception: 'recoverEncode: invalid argument (invalid character)' (after 3 tests and 1 shrink):
+2020-11-09T20:27:52.3358797Z       "\897292"
+2020-11-09T20:27:52.3359408Z       Use --quickcheck-replay=262390 to reproduce.
+```
+
+that is for 8.20201103+git55-g0f2813377 
+
+OSX and Windows [still FTBFS differently](https://github.com/datalad/git-annex/pull/7#issuecomment-724306450) so cannot say either it is linux or not specific
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
