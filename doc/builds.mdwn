@@ -47,8 +47,8 @@
 <iframe width=1024 scrolling=no frameborder=0 marginheight=0 marginwidth=0 src="https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-yosemite/">
 </iframe>
 <h2>Debian standalone packages</h2>
-<a href="https://github.com/datalad/datalad-extensions/actions?query=workflow%3A%22Build+git-annex+snapshot%22">
-<img src="https://github.com/datalad/datalad-extensions/workflows/Build%20git-annex%20snapshot/badge.svg">
+<a href="https://github.com/datalad/datalad-extensions/actions?query=workflow%3A%22Build+git-annex+snapshot+on+Ubuntu%22">
+<img src="https://github.com/datalad/datalad-extensions/workflows/Build%20git-annex%20snapshot%20on%20Ubuntu/badge.svg">
 </a>
 <h2>Windows</h2>
 <a href="https://github.com/datalad/datalad-extensions/actions?query=workflow%3A%22Build+git-annex+snapshot+on+Windows%22">
