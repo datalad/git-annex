@@ -5,8 +5,8 @@ downloading a previous file. I suspect that the file being removed causes
 preferred content checks to mess up. --[[Joey]]
 
 > Reproduced reliably as follows: Have a bigfile in the remote 
-> and a smallfile in the local repo. Have the remote in group source,
-> preferred content standard. Have the local repo's preferred content
+> and a smallfile in the local repo. Have the remote's preferred content
+> be "not (copies=1)". Have the local repo's preferred content
 > `include=*`. Run `git-annex sync -C.` while that's running, `git rm
 > smallfile`.  (bigfile has to be big enough to give time to run that
 > command)
@@ -15,3 +15,28 @@ preferred content checks to mess up. --[[Joey]]
 > first, that does not happen.
 > 
 > --[[Joey]]
+
+> > Hmm, so limitCopies uses checkKey, which for MatchingFile, uses
+> > lookupKey. And with a deleted file, lookupKey falls
+> > into a case where it uses catKeyFile, but since the file has been
+> > removed from the index, that also fails. And when it fails,
+> > that means it assumes it does not have 1 copy, and so the 
+> > "not (copies=1)" evalulates to true, so it thinks it's matched as
+> > preferred content.
+> >
+> > The preferred content is being checked via wantSend, which already knows
+> > the key in this case.
+> >
+> > It knows the key already because sync uses seekFilteredKeys and so it's
+> > already streamed the file though and looked up the key before 
+> > it's deleted. If the file got deleted before that could look up the
+> > key, it would skip it. It may be that recent changes to add this
+> > streaming for performance led to this bug.
+> > 
+> > So one fix might be to change it to use MatchingKey,
+> > and so avoid the later lookup? Investigating the git history
+> > and the code I see no reason not to do this. It didn't used to be that
+> > MatchingKey included an AssociatedFile, which is probably why it was
+> > not used in this case originally.
+
+[[fixed|done]]

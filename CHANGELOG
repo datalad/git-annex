@@ -1,3 +1,11 @@
+git-annex (8.20201104) UNRELEASED; urgency=medium
+
+  * sync --content: Fix a bug where a file that was not preferred content
+    could be transferred to a remote. This happened when the file got deleted
+    after the sync started running.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 09 Nov 2020 15:15:20 -0400
+
 git-annex (8.20201103) upstream; urgency=medium
 
   * move: Improve resuming a move that was interrupted after the object
