@@ -21,8 +21,10 @@ import Utility.Directory
 import Utility.Process
 import Utility.Monad
 import Utility.Path
+import Utility.Path.AbsRel
 import Utility.FileMode
 import Utility.CopyFile
+import Utility.FileSystemEncoding
 
 mklibs :: FilePath -> a -> IO Bool
 mklibs top _installedbins = do
@@ -42,7 +44,7 @@ mklibs top _installedbins = do
 	-- Various files used by runshell to set up env vars used by the
 	-- linker shims.
 	writeFile (top </> "libdirs") (unlines libdirs')
-	writeFile (top </> "gconvdir") (parentDir $ Prelude.head gconvlibs)
+	writeFile (top </> "gconvdir") (fromRawFilePath $ parentDir $ toRawFilePath $ Prelude.head gconvlibs)
 	
 	mapM_ (installLib installFile top) linkers
 	let linker = Prelude.head linkers
@@ -107,16 +109,18 @@ installLinkerShim top linker exe = do
 			createSymbolicLink sl' exedest
 		, renameFile exe exedest
 		)
-	link <- relPathDirToFile (top </> exedir) (top ++ linker)
+	link <- relPathDirToFile
+		(toRawFilePath (top </> exedir))
+		(toRawFilePath (top ++ linker))
 	unlessM (doesFileExist (top </> exelink)) $
-		createSymbolicLink link (top </> exelink)
+		createSymbolicLink (fromRawFilePath link) (top </> exelink)
 	writeFile exe $ unlines
 		[ "#!/bin/sh"
 		, "GIT_ANNEX_PROGRAMPATH=\"$0\""
 		, "export GIT_ANNEX_PROGRAMPATH"
 		, "exec \"$GIT_ANNEX_DIR/" ++ exelink ++ "\" --library-path \"$GIT_ANNEX_LD_LIBRARY_PATH\" \"$GIT_ANNEX_DIR/shimmed/" ++ base ++ "/" ++ base ++ "\" \"$@\""
 		]
-	modifyFileMode exe $ addModes executeModes
+	modifyFileMode (toRawFilePath exe) $ addModes executeModes
   where
 	base = takeFileName exe
 	shimdir = "shimmed" </> base
@@ -129,7 +133,7 @@ installFile top f = do
 	createDirectoryIfMissing True destdir
 	void $ copyFileExternal CopyTimeStamps f destdir
   where
-	destdir = inTop top $ parentDir f
+	destdir = inTop top $ fromRawFilePath $ parentDir $ toRawFilePath f
 
 checkExe :: FilePath -> IO Bool
 checkExe f

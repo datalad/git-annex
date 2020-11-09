@@ -21,8 +21,10 @@ import qualified Data.Map as M
 import Utility.SafeCommand
 import Utility.Process
 import Utility.Path
+import Utility.Path.AbsRel
 import Utility.Directory
 import Utility.Env
+import Utility.FileSystemEncoding
 import Build.BundledPrograms
 #ifdef darwin_HOST_OS
 import System.IO
@@ -71,8 +73,10 @@ installGitLibs topdir = do
 	execpath <- getgitpath "exec-path"
 	cfs <- dirContents execpath
 	forM_ cfs $ \f -> do
-		destf <- (gitcoredestdir </>)
-			<$> relPathDirToFile execpath f
+		destf <- ((gitcoredestdir </>) . fromRawFilePath)
+			<$> relPathDirToFile
+				(toRawFilePath execpath)
+				(toRawFilePath f)
 		createDirectoryIfMissing True (takeDirectory destf)
 		issymlink <- isSymbolicLink <$> getSymbolicLinkStatus f
 		if issymlink
@@ -96,8 +100,10 @@ installGitLibs topdir = do
 							createDirectoryIfMissing True (takeDirectory linktarget')
 							L.readFile f >>= L.writeFile linktarget'
 						removeWhenExistsWith removeLink destf
-						rellinktarget <- relPathDirToFile (takeDirectory destf) linktarget'
-						createSymbolicLink rellinktarget destf
+						rellinktarget <- relPathDirToFile
+							(toRawFilePath (takeDirectory destf))
+							(toRawFilePath linktarget')
+						createSymbolicLink (fromRawFilePath rellinktarget) destf
 			else cp f destf
 	
 	-- install git's template files
@@ -108,8 +114,10 @@ installGitLibs topdir = do
 	let templatepath = manpath </> ".." </> "git-core" </> "templates"
 	tfs <- dirContents templatepath
 	forM_ tfs $ \f -> do
-		destf <- (templatedestdir </>)
-			<$> relPathDirToFile templatepath f
+		destf <- ((templatedestdir </>) . fromRawFilePath)
+			<$> relPathDirToFile
+				(toRawFilePath templatepath)
+				(toRawFilePath f)
 		createDirectoryIfMissing True (takeDirectory destf)
 		cp f destf
   where
@@ -187,7 +195,9 @@ installSkelRest topdir _basedir hwcaplibs = do
 	gapi <- getEnv "GIT_ANNEX_PACKAGE_INSTALL"
 	writeFile (topdir </> "runshell")
 		(unlines (map (expandrunshell gapi) runshell))
-	modifyFileMode (topdir </> "runshell") (addModes executeModes)
+	modifyFileMode
+		(toRawFilePath (topdir </> "runshell"))
+		(addModes executeModes)
   where
 	expandrunshell (Just gapi) l@"GIT_ANNEX_PACKAGE_INSTALL=" = l ++ gapi
 	-- This is an optimisation, that avoids the linker looking in

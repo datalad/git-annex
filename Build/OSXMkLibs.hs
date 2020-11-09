@@ -24,6 +24,7 @@ import Utility.Path
 import Utility.Exception
 import Utility.Env
 import Utility.Split
+import Utility.FileSystemEncoding
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -63,7 +64,7 @@ installLibs appbase installedbins replacement_libs libmap = do
 		ifM (doesFileExist dest)
 			( return Nothing
 			, do
-				createDirectoryIfMissing True (parentDir dest)
+				createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath dest)))
 				putStrLn $ "installing " ++ pathlib ++ " as " ++ shortlib
 				unlessM (boolSystem "cp" [File pathlib, File dest]
 					<&&> boolSystem "chmod" [Param "644", File dest]
