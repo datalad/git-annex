@@ -27,6 +27,8 @@ import Utility.FileMode
 import Utility.OptParse
 import qualified Utility.RawFilePath as R
 
+import System.Log.Logger (debugM)
+
 cmd :: Command
 cmd = notBareRepo $ 
 	withGlobalOptions opts $
@@ -170,13 +172,13 @@ start o si file addunlockedmatcher = do
 			Just s | isSymbolicLink s -> fixuplink key
 			_ -> add
 	fixuplink key = starting "add" (ActionItemWorkTreeFile file) si $ do
-		-- the annexed symlink is present but not yet added to git
+		liftIO $ debugM "add" "adding existing annex symlink to git"
 		liftIO $ removeFile (fromRawFilePath file)
 		addLink (checkGitIgnoreOption o) file key Nothing
 		next $
 			cleanup key =<< inAnnex key
 	fixuppointer key = starting "add" (ActionItemWorkTreeFile file) si $ do
-		-- the pointer file is present, but not yet added to git
+		liftIO $ debugM "add" "adding pointer file to git"
 		Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 		next $ addFile (checkGitIgnoreOption o) file
 
