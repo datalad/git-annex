@@ -55,6 +55,7 @@ jobs:
         run: |
           version="$(git describe origin/upstream/master | sed -e 's/-/+git/')"
           arch="$(dpkg --print-architecture)"
+          echo "Building $version"
           echo "::set-output name=version::${version}_$arch"
         working-directory: git-annex
 
