@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="jcjgraf"
+ avatar="http://cdn.libravatar.org/avatar/9dda752f83ac44906fefbadb35e8a6ac"
+ subject="comment 5"
+ date="2020-11-09T18:13:47Z"
+ content="""
+ The global git-annex installation was removed when I tried it with the standalone. So there was no possible interference.
+
+I initiate the repo as described above. There is no local git-annex config as well as no remote. I do have a global `.gitconfig`, but besides the ordinary settings, there is nothing special:
+
+```
+[user]
+	name =
+	email = 
+	signingKey = 
+[core]
+	editor = nvim
+	excludesfile = /home/jeanclaude/.gitignore_global
+[merge]
+    tool = vimdiff
+[mergetool]
+    prompt = true
+    keepBackup = false
+[mergetool \"vimdiff\"]
+    cmd = nvim -d $BASE $LOCAL $REMOTE $MERGED -c '$wincmd w' -c 'wincmd J'
+[commit]
+	gpgSign = true
+[gpg]
+	program = gpg2
+[pull]
+	ff = only
+```
+
+After adding my file, running `git annex whereis` and `git annex fsck` do indeed report was do indeed fail and report that there is no copy of my file.
+
+```
+$git annex whereis test.CR2
+whereis test.CR2 (0 copies) failed
+git-annex: whereis: 1 failed
+
+# /tmp/test on git:master x  C:1
+$git annex fsck
+fsck test.CR2 
+  ** No known copies exist of test.CR2
+failed
+(recording state in git...)
+git-annex: fsck: 1 failed
+```
+
+I am running git version 2.29.2.
+
+Git-annex does not have any \"global\" settings, caches or anything I could have overseen, right?
+
+"""]]
