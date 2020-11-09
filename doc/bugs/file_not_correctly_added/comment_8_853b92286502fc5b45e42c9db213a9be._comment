@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2020-11-09T21:29:16Z"
+ content="""
+Perhaps these CR2 files somehow get incorrectly treated as annex link files
+despite not being them? Can you reproduce it with some other file content,
+eg 
+	
+	echo foo > file
+	git annex add file
+"""]]
