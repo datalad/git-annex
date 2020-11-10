@@ -13,6 +13,7 @@ import Types
 import Annex.Locations
 import Utility.Rsync
 import Utility.SafeCommand
+import Utility.ShellEscape
 import Utility.FileSystemEncoding
 import Annex.DirHashes
 #ifdef mingw32_HOST_OS

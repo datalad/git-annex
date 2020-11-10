@@ -31,7 +31,6 @@ module Key (
 	prop_isomorphic_key_encode
 ) where
 
-import Data.Char
 import qualified Data.Text as T
 import qualified Data.ByteString as S
 import qualified Data.Attoparsec.ByteString as A
@@ -100,16 +99,10 @@ instance Arbitrary KeyData where
 		<*> ((abs <$>) <$> arbitrary) -- chunksize cannot be negative
 		<*> ((succ . abs <$>) <$> arbitrary) -- chunknum cannot be 0 or negative
 
--- AssociatedFile cannot be empty, and cannot contain a NUL
--- (but can be Nothing). 
 instance Arbitrary AssociatedFile where
-  	arbitrary = (AssociatedFile . fmap conv <$> arbitrary)
-		`suchThat` (/= AssociatedFile (Just S.empty))
-		`suchThat` (\(AssociatedFile f) -> maybe True (S.notElem 0) f)
-	  where
-		-- Generating arbitrary unicode leads to encoding errors
-		-- when LANG=C, so limit to ascii.
-		conv = toRawFilePath . filter isAscii
+  	arbitrary = AssociatedFile
+		. fmap (toRawFilePath . fromTestableFilePath)
+		<$> arbitrary
 
 instance Arbitrary Key where
 	arbitrary = mkKey . const <$> arbitrary

@@ -1099,6 +1099,7 @@ Executable git-annex
     Utility.Path
     Utility.Path.AbsRel
     Utility.Path.Max
+    Utility.Path.Tests
     Utility.Percentage
     Utility.Process
     Utility.Process.Shim
@@ -1111,6 +1112,7 @@ Executable git-annex
     Utility.Scheduled
     Utility.Scheduled.QuickCheck
     Utility.Shell
+    Utility.ShellEscape
     Utility.SimpleProtocol
     Utility.Split
     Utility.SshConfig

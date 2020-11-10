@@ -8,6 +8,7 @@
 module Utility.Base64 where
 
 import Utility.FileSystemEncoding
+import Utility.QuickCheck
 
 import qualified "sandi" Codec.Binary.Base64 as B64
 import Data.Maybe
@@ -43,7 +44,9 @@ fromB64' = fromMaybe bad . fromB64Maybe'
 -- Only ascii strings are tested, because an arbitrary string may contain
 -- characters not encoded using the FileSystemEncoding, which would thus
 -- not roundtrip, as decodeBS always generates an output encoded that way.
-prop_b64_roundtrips :: String -> Bool
-prop_b64_roundtrips s
+prop_b64_roundtrips :: TestableString -> Bool
+prop_b64_roundtrips ts
 	| all (isAscii) s = s == decodeBS (fromB64' (toB64' (encodeBS s)))
 	| otherwise = True
+  where
+	s = fromTestableString ts

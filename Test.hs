@@ -30,7 +30,7 @@ import Control.Concurrent.STM hiding (check)
 import Common
 import CmdLine.GitAnnex.Options
 
-import qualified Utility.SafeCommand
+import qualified Utility.ShellEscape
 import qualified Utility.RawFilePath as R
 import qualified Annex
 import qualified Git.Filename
@@ -69,7 +69,7 @@ import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
 import qualified Command.TestRemote
-import qualified Utility.Path
+import qualified Utility.Path.Tests
 import qualified Utility.FileMode
 import qualified BuildInfo
 import qualified Utility.Format
@@ -184,13 +184,13 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 	[ testProperty "prop_encode_decode_roundtrip" Git.Filename.prop_encode_decode_roundtrip
 	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
-	, testProperty "prop_isomorphic_shellEscape" Utility.SafeCommand.prop_isomorphic_shellEscape
-	, testProperty "prop_isomorphic_shellEscape_multiword" Utility.SafeCommand.prop_isomorphic_shellEscape_multiword
+	, testProperty "prop_isomorphic_shellEscape" Utility.ShellEscape.prop_isomorphic_shellEscape
+	, testProperty "prop_isomorphic_shellEscape_multiword" Utility.ShellEscape.prop_isomorphic_shellEscape_multiword
 	, testProperty "prop_isomorphic_configEscape" Logs.Remote.prop_isomorphic_configEscape
 	, testProperty "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
-	, testProperty "prop_upFrom_basics" Utility.Path.prop_upFrom_basics
-	, testProperty "prop_relPathDirToFileAbs_basics" Utility.Path.prop_relPathDirToFileAbs_basics
-	, testProperty "prop_relPathDirToFileAbs_regressionTest" Utility.Path.prop_relPathDirToFileAbs_regressionTest
+	, testProperty "prop_upFrom_basics" Utility.Path.Tests.prop_upFrom_basics
+	, testProperty "prop_relPathDirToFileAbs_basics" Utility.Path.Tests.prop_relPathDirToFileAbs_basics
+	, testProperty "prop_relPathDirToFileAbs_regressionTest" Utility.Path.Tests.prop_relPathDirToFileAbs_regressionTest
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
 	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane

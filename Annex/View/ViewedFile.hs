@@ -17,6 +17,7 @@ module Annex.View.ViewedFile (
 ) where
 
 import Annex.Common
+import Utility.QuickCheck
 
 import qualified Data.ByteString as S
 
@@ -78,11 +79,12 @@ dirFromViewedFile = joinPath . drop 1 . sep [] ""
 			[] -> sep l curr cs
 		| otherwise = sep l (c:curr) cs
 
-prop_viewedFile_roundtrips :: FilePath -> Bool
-prop_viewedFile_roundtrips f
+prop_viewedFile_roundtrips :: TestableFilePath -> Bool
+prop_viewedFile_roundtrips tf
 	-- Relative filenames wanted, not directories.
 	| any (isPathSeparator) (end f ++ beginning f) = True
 	| isAbsolute f = True
 	| otherwise = dir == dirFromViewedFile (viewedFileFromReference f)
   where
+	f = fromTestableFilePath tf
 	dir = joinPath $ beginning $ splitDirectories f

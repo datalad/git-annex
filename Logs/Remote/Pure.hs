@@ -22,6 +22,7 @@ import Types.Remote
 import Types.ProposedAccepted
 import Logs.UUIDBased
 import Annex.SpecialRemote.Config
+import Utility.QuickCheck
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -85,8 +86,10 @@ configUnEscape = unescape
 		rest = drop 1 r
 
 {- for quickcheck -}
-prop_isomorphic_configEscape :: String -> Bool
-prop_isomorphic_configEscape s = s == (configUnEscape . configEscape) s
+prop_isomorphic_configEscape :: TestableString -> Bool
+prop_isomorphic_configEscape ts = s == (configUnEscape . configEscape) s
+  where
+	s = fromTestableString ts
 
 prop_parse_show_Config :: RemoteConfig -> Bool
 prop_parse_show_Config c

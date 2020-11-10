@@ -18,6 +18,7 @@ import Data.ByteString.UTF8 (fromString)
 import qualified Data.ByteString as S
 
 import Utility.Hash
+import Utility.QuickCheck
 
 type Secret = S.ByteString
 type HMACDigest = String
@@ -38,8 +39,8 @@ verify v secret = v == mkVerifiable (verifiableVal v) secret
 calcDigest :: String -> Secret -> HMACDigest
 calcDigest v secret = calcMac HmacSha1 secret (fromString v)
 
-{- for quickcheck -}
-prop_verifiable_sane :: String -> String -> Bool
-prop_verifiable_sane a s = verify (mkVerifiable a secret) secret
+prop_verifiable_sane :: TestableString -> TestableString -> Bool
+prop_verifiable_sane v ts = 
+	verify (mkVerifiable (fromTestableString v) secret) secret
   where
-	secret = fromString s
+	secret = fromString (fromTestableString ts)

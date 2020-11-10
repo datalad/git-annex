@@ -23,10 +23,6 @@ module Utility.Path (
 	dotfile,
 	splitShortExtensions,
 	relPathDirToFileAbs,
-
-	prop_upFrom_basics,
-	prop_relPathDirToFileAbs_basics,
-	prop_relPathDirToFileAbs_regressionTest,
 ) where
 
 import System.FilePath.ByteString
@@ -39,7 +35,6 @@ import Prelude
 
 import Utility.Monad
 import Utility.SystemDirectory
-import Utility.FileSystemEncoding
 
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.
@@ -84,15 +79,6 @@ upFrom dir
 	-- otherwise ""
 	(drive, path) = splitDrive dir
 	dirs = filter (not . B.null) $ B.splitWith isPathSeparator path
-
-prop_upFrom_basics :: FilePath -> Bool
-prop_upFrom_basics dir
-	| null dir = True
-	| '\NUL' `elem` dir = True -- not a legal filename
-	| dir == "/" = p == Nothing
-	| otherwise = p /= Just dir
-  where
-	p = fromRawFilePath <$> upFrom (toRawFilePath dir)
 
 {- Checks if the first RawFilePath is, or could be said to contain the second.
  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc
@@ -223,25 +209,3 @@ relPathDirToFileAbs from to
 #ifdef mingw32_HOST_OS
 	normdrive = map toLower . takeWhile (/= ':') . fromRawFilePath . takeDrive
 #endif
-
-prop_relPathDirToFileAbs_basics :: FilePath -> FilePath -> Bool
-prop_relPathDirToFileAbs_basics from to
-	| null from || null to = True
-	| '\NUL' `elem` from || '\NUL' `elem` to = True -- not a legal filename
-	| from == to = null r
-	| otherwise = not (null r)
-  where
-	r = fromRawFilePath $ relPathDirToFileAbs
-		(toRawFilePath from)
-		(toRawFilePath to)
-
-prop_relPathDirToFileAbs_regressionTest :: Bool
-prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference
-  where
-	{- Two paths have the same directory component at the same
-	 - location, but it's not really the same directory.
-	 - Code used to get this wrong. -}
-	same_dir_shortcurcuits_at_difference =
-		relPathDirToFileAbs (joinPath [pathSeparator `B.cons` "tmp", "r", "lll", "xxx", "yyy", "18"])
-			(joinPath [pathSeparator `B.cons` "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
-				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]

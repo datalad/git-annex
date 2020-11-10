@@ -1,5 +1,3 @@
-{-# LANGUAGE PackageImports #-}
-
 module Common (module X) where
 
 import Control.Monad as X
@@ -21,6 +19,7 @@ import Utility.Misc as X
 import Utility.Exception as X
 import Utility.DebugLocks as X
 import Utility.SafeCommand as X
+import Utility.ShellEscape as X
 import Utility.Process as X
 import Utility.Path as X
 import Utility.Path.AbsRel as X

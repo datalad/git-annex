@@ -16,18 +16,13 @@ module Utility.SafeCommand (
 	safeSystem,
 	safeSystem',
 	safeSystemEnv,
-	shellWrap,
-	shellEscape,
-	shellUnEscape,
 	segmentXargsOrdered,
 	segmentXargsUnordered,
-	prop_isomorphic_shellEscape,
-	prop_isomorphic_shellEscape_multiword,
 ) where
 
-import System.Exit
 import Utility.Process
-import Utility.Split
+
+import System.Exit
 import System.FilePath
 import Data.Char
 import Data.List
@@ -92,44 +87,6 @@ safeSystem' command params mkprocess =
 safeSystemEnv :: FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO ExitCode
 safeSystemEnv command params environ = safeSystem' command params $ 
 	\p -> p { env = environ }
-
--- | Wraps a shell command line inside sh -c, allowing it to be run in a
--- login shell that may not support POSIX shell, eg csh.
-shellWrap :: String -> String
-shellWrap cmdline = "sh -c " ++ shellEscape cmdline
-
--- | Escapes a filename or other parameter to be safely able to be exposed to
--- the shell.
---
--- This method works for POSIX shells, as well as other shells like csh.
-shellEscape :: String -> String
-shellEscape f = "'" ++ escaped ++ "'"
-  where
-	-- replace ' with '"'"'
-	escaped = intercalate "'\"'\"'" $ splitc '\'' f
-
--- | Unescapes a set of shellEscaped words or filenames.
-shellUnEscape :: String -> [String]
-shellUnEscape [] = []
-shellUnEscape s = word : shellUnEscape rest
-  where
-	(word, rest) = findword "" s
-	findword w [] = (w, "")
-	findword w (c:cs)
-		| c == ' ' = (w, cs)
-		| c == '\'' = inquote c w cs
-		| c == '"' = inquote c w cs
-		| otherwise = findword (w++[c]) cs
-	inquote _ w [] = (w, "")
-	inquote q w (c:cs)
-		| c == q = findword w cs
-		| otherwise = inquote q (w++[c]) cs
-
--- | For quickcheck.
-prop_isomorphic_shellEscape :: String -> Bool
-prop_isomorphic_shellEscape s = [s] == (shellUnEscape . shellEscape) s
-prop_isomorphic_shellEscape_multiword :: [String] -> Bool
-prop_isomorphic_shellEscape_multiword s = s == (shellUnEscape . unwords . map shellEscape) s
 
 -- | Segments a list of filenames into groups that are all below the maximum
 --  command-line length limit.
