@@ -1,0 +1,236 @@
+name: Build git-annex on macOS
+
+on:
+  # Trigger the workflow on pull request,
+  pull_request:
+    paths:
+      - '.github/workflows/build-macos.yaml'
+  schedule:
+    - cron: '30 01 * * *'
+
+env:
+  LANG: C
+
+jobs:
+  build-package:
+    runs-on: macos-latest
+    outputs:
+      build-version: ${{ steps.build-version.outputs.version }}
+    steps:
+      - name: Set up system
+        shell: bash
+        run: brew install libmagic pkg-config
+
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check out source files
+        run: git checkout origin/upstream/master -- .
+
+      - name: Get build version
+        id: build-version
+        run: |
+          version="$(git describe origin/upstream/master | sed -e 's/-/+git/')"
+          echo "Building $version"
+          echo "::set-output name=version::${version}_x64"
+
+      - name: Configure build
+        run: |
+          #echo BUILDEROPTIONS="--extra-include-dirs=$HOME/homebrew/include --extra-lib-dirs=$HOME/homebrew/lib" >> "$GITHUB_ENV"
+          echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
+          echo BUILDERCOMMONOPTIONS="--stack-yaml stack.yaml.autobuild" >> "$GITHUB_ENV"
+          echo BUILDER=stack >> "$GITHUB_ENV"
+          echo GHC="stack --stack-yaml stack.yaml.autobuild ghc --" >> "$GITHUB_ENV"
+
+      - name: Set stack.yaml.autobuild
+        run: cat standalone/osx/stack.yaml > stack.yaml.autobuild
+
+      - name: stack setup
+        run: stack setup --stack-yaml stack.yaml.autobuild
+
+      - name: Enable Stack cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.stack
+          key: cache-stack-macos-${{ hashFiles('stack.yaml.autobuild.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          restore-keys: |
+            cache-stack-macos-
+
+      - name: Build git-annex
+        run: make osxapp
+
+      - name: Add version to DMG name
+        run: |
+          mv git-annex.dmg \
+             git-annex_"${{ steps.build-version.outputs.version }}".dmg
+        working-directory: tmp
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: git-annex-macos-dmg_${{ steps.build-version.outputs.version }}
+          path: tmp/git-annex_*.dmg
+
+  test-annex:
+    runs-on: macos-latest
+    needs: build-package
+    strategy:
+      matrix:
+        flavor: [normal, crippled-tmp]
+        # TODO: Add "crippled-home" back in once
+        # <https://git-annex.branchable.com/bugs/gets_stuck_in_Remote_Tests___40____63____41___while_running_on_OSX_with_HOME_on_crippled_FS/?updated>
+        # is fixed
+      fail-fast: false
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Download git-annex package
+        uses: actions/download-artifact@v2
+        with:
+          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          hdiutil attach git-annex_*.dmg
+          rsync -a /Volumes/git-annex/git-annex.app /Applications/
+          hdiutil detach /Volumes/git-annex/
+          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+
+      - name: Print git-annex version
+        run: git annex version
+
+      - name: Run tests
+        run: |
+          if echo "${{ matrix.flavor }}" | grep -q "crippled" ; then
+            # source so that CRIPPLEDFS_PATH will be set:
+            . .github/workflows/tools/setup_crippledfs crippledfs 500
+          fi
+          case "${{ matrix.flavor }}" in
+            crippled-tmp)
+              # forces all test repos/paths into the VFAT FS
+              export TMPDIR="$CRIPPLEDFS_PATH"
+              ;;
+            crippled-home)
+              export HOME="$CRIPPLEDFS_PATH"
+              ;;
+            normal)
+              ;;
+            *)
+              echo "Unknown flavor ${{ matrix.flavor }}"
+              exit 1
+          esac
+
+          # Do it after we possibly setup HOME
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+          cd $HOME
+          export | grep -e crippledfs || :
+
+          git annex test
+
+  test-annex-more:
+    runs-on: macos-latest
+    needs: build-package
+    steps:
+      - name: Download git-annex package
+        uses: actions/download-artifact@v2
+        with:
+          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          hdiutil attach git-annex_*.dmg
+          rsync -a /Volumes/git-annex/git-annex.app /Applications/
+          hdiutil detach /Volumes/git-annex/
+          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+
+      - name: Seek of dynlibs
+        run: |
+          mkdir /tmp/testrepo; cd /tmp/testrepo; git init
+          function nfailed() {
+            strace -f git-annex "$1" 2>&1 | awk "/$2.*ENOENT/{print}" | tee /dev/fd/2 | wc -l
+          }
+          # We should get some reasonable number (not 40) of directories look up for dynamic libraries
+          liblookups=
+          PS4='> '; set -x
+          test $(nfailed version "libpcre.*so") -lt 5
+          test $(nfailed init "libpcre.*so") -lt 130
+
+  test-datalad:
+    # TODO: Re-enable macOS testing once it passes reliably
+    # <https://github.com/datalad/datalad-extensions/pull/33#issuecomment-696368877>
+    if: false
+    runs-on: macos-latest
+    needs: build-package
+    strategy:
+      matrix:
+        version: [master, maint, release]
+      fail-fast: false
+    steps:
+      - name: Download git-annex package
+        uses: actions/download-artifact@v2
+        with:
+          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          hdiutil attach git-annex_*.dmg
+          rsync -a /Volumes/git-annex/git-annex.app /Applications/
+          hdiutil detach /Volumes/git-annex/
+          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+
+      - name: Set up SSH target
+        shell: bash
+        # TODO: Drop the release condition once 0.13.2 is released.
+        run: |
+          if [ "${{ matrix.version }}" != "release" ]; then
+            # coreutils provides a readlink that supports `-f`
+            brew install coreutils docker docker-machine
+            docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
+            eval "$(docker-machine env default)"
+            export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+            curl -fSsL \
+              https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
+              | bash;
+            echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+          fi
+
+      - name: Set up environment
+        run: |
+          brew install exempi  # Needed by python-xmp-toolkit
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: install ${{ matrix.version }} datalad
+        run: |
+          if [ "${{ matrix.version }}" = "release" ]; then
+            # Authorize so that we don't run up against low API rate limits
+            commitish="$(curl -fsSL -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/datalad/datalad/releases/latest | jq -r .tag_name)"
+          else
+            commitish="${{ matrix.version }}"
+          fi
+          python -m pip install --upgrade pip
+          pip install https://github.com/datalad/datalad/archive/${commitish}.zip
+
+      - name: Install nose et al (just in case!)
+        run: pip install nose vcrpy mock
+
+      - name: WTF!?
+        run: datalad wtf
+
+      - name: Run datalad tests
+        run: |
+          mkdir -p __testhome__
+          cd __testhome__
+          python -m nose -s -v datalad
+
+# vim:set sts=2:

@@ -1,0 +1,267 @@
+name: Build git-annex on Windows
+
+on:
+  # Trigger the workflow on pull request,
+  pull_request:
+    paths:
+      - '.github/workflows/build-windows.yaml'
+  schedule:
+    - cron: '30 03 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  LANG: C.utf-8
+
+jobs:
+  build-package:
+    runs-on: windows-2016
+    outputs:
+      build-version: ${{ steps.build-version.outputs.version }}
+    steps:
+      - name: Setup Haskell
+        uses: actions/setup-haskell@v1.1.3
+        with:
+          enable-stack: true
+          stack-no-global: true
+
+      - name: Handle long filenames
+        run: git config --system core.longpaths true
+
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check out source files
+        run: git checkout origin/upstream/master -- .
+
+      #- name: Checkout this repository
+      #  run: |
+      #    # We need to fetch all commits so that we get tags so that `git
+      #    # describe` will work.
+      #    git clone --no-checkout https://github.com/datalad/git-annex.git .
+      #    # We can't do a straight clone due to <https://git-annex.branchable.com/bugs/Error_cloning_repository_on_Windows/>
+      #    git reset "$GITHUB_REF"
+      #    git ls-tree --name-only HEAD | grep -v '^doc$' | xargs git checkout HEAD
+      #    git checkout HEAD doc/license ':(glob)doc/*.mdwn' ':(glob)doc/logo*'
+
+      - name: Get build version
+        id: build-version
+        run: |
+          version="$(git describe origin/upstream/master | sed -e 's/-/+git/')"
+          echo "Building $version"
+          echo "::set-output name=version::${version}_x64"
+
+      - name: Download and "install" libmagic for windows
+        run: |
+          export TARGET_REPO=datalad/file-windows
+          export TARGET_WORKFLOW=build.yml
+          export GITHUB_TOKEN="${{ secrets.datalad_github_token }}"
+          .github/workflows/tools/download-latest-artifact
+          cp download/* .
+          cp libmagic-1.dll libmagic.dll
+
+      - name: Enable building with magic
+        run: |
+          perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
+
+      - name: Set UPGRADE_LOCATION
+        run: |
+          # This tells git-annex where to upgrade itself from.
+          echo "UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe" >> "$GITHUB_ENV"
+
+      - name: Run stack --version
+        run: stack --version
+
+      - name: stack setup
+        run: stack setup
+
+      # At this point, stack.yaml.lock exists, so we can activate the cache
+
+      - name: Enable Stack cache
+        uses: actions/cache@v2
+        with:
+          path: 'C:\sr\snapshots'
+          key: cache-stack-windows-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          restore-keys: |
+            cache-stack-windows-
+
+      - name: Build dependencies
+        run: stack build --only-dependencies --extra-include-dirs=$PWD --extra-lib-dirs=$PWD
+
+      - name: Update version info for git rev being built.
+        run: |
+          mkdir -p dist
+          stack ghc --no-haddock Build/BuildVersion.hs
+          ./Build/BuildVersion > dist/build-version
+
+      - name: Build git-annex
+        run: stack install --no-haddock --local-bin-path .
+
+      - name: Build the installer
+        run: |
+          stack ghc --no-haddock --package nsis Build/NullSoftInstaller.hs
+          TMP="$PWD" ./Build/NullSoftInstaller
+
+      - name: Add version to installer name
+        run: |
+          mv git-annex-installer.exe \
+             git-annex-installer_"${{ steps.build-version.outputs.version }}".exe
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: git-annex-windows-installer_${{ steps.build-version.outputs.version }}
+          path: |
+            git-annex-installer_*.exe
+            dist\build-version
+
+  test-annex:
+    runs-on: windows-2016
+    needs: build-package
+    steps:
+      - name: Download git-annex installer
+        uses: actions/download-artifact@v2
+        with:
+          name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        shell: powershell
+        run: ./git-annex-installer_*.exe /S
+
+      - name: Check that magic files are installed
+        run: |
+          GIT_ANNEX_PATH="$(type -p git-annex)"
+          echo "git-annex is at $GIT_ANNEX_PATH"
+          GIT_ANNEX_DIR="$(dirname "$GIT_ANNEX_PATH")"
+          ls "$GIT_ANNEX_DIR"/*magic* "$GIT_ANNEX_DIR"/*gnurx*
+          ls "$GIT_ANNEX_DIR"/../share/misc/*magic*
+
+      - name: Check git-annex version for MagicMime flag
+        run: |
+          git annex version | grep 'build flags:.*MagicMime'
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Run tests
+        run: |
+          cd $HOME
+          timeout 1800 git annex test
+
+  test-datalad:
+    runs-on: windows-2016
+    needs: build-package
+    strategy:
+      matrix:
+        version: [master, maint, release]
+      fail-fast: false
+    steps:
+      - name: Download git-annex installer
+        uses: actions/download-artifact@v2
+        with:
+          name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        shell: powershell
+        run: ./git-annex-installer_*.exe /S
+
+      - name: Define test host alias
+        shell: cmd
+        run: |
+          echo. >> %SYSTEMROOT%\System32\drivers\etc\hosts
+          echo.127.0.0.1  datalad-test >> %SYSTEMROOT%\System32\drivers\etc\hosts
+          echo.127.0.0.1  datalad-test2 >> %SYSTEMROOT%\System32\drivers\etc\hosts
+
+      - name: OpenSSH server setup
+        shell: powershell
+        run: |
+          mkdir downloads
+          Invoke-WebRequest -Uri https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win32.zip -OutFile downloads\openssh.zip
+          7z x -o"downloads" downloads\openssh.zip
+
+      - name: Install
+        shell: cmd
+        run: powershell.exe -ExecutionPolicy Bypass -File downloads\OpenSSH-Win32\install-sshd.ps1
+
+      - name: Configure service
+        shell: cmd
+        run: powershell.exe New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+
+      - name: Keys in default place
+        shell: bash
+        run: ssh-keygen -f ~/.ssh/id_rsa -N ""
+
+      - name: Authorize access with these keys
+        shell: cmd
+        run: |
+          copy %USERPROFILE%\.ssh\id_rsa.pub %USERPROFILE%\.ssh\authorized_keys
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          (
+            echo Host localhost
+            echo StrictHostKeyChecking no
+            echo Host datalad-test
+            echo StrictHostKeyChecking no
+            echo Host datalad-test2
+            echo StrictHostKeyChecking no
+          ) > "$USERPROFILE"/.ssh/config
+
+      - name: Fire up service
+        run: net start sshd
+
+      - name: Test login
+        run: |
+          ssh -v localhost exit
+          ssh datalad-test exit
+          ssh datalad-test2 exit
+
+      - name: Enable SSH tests
+        shell: bash
+        run: echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+
+      - name: Set up environment
+        run: |
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: install ${{ matrix.version }} datalad
+        run: |
+          if [ "${{ matrix.version }}" = "release" ]; then
+            # Authorize so that we don't run up against low API rate limits
+            commitish="$(curl -fsSL -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/datalad/datalad/releases/latest | jq -r .tag_name)"
+          else
+            commitish="${{ matrix.version }}";
+          fi
+          python -m pip install --upgrade pip
+          pip install https://github.com/datalad/datalad/archive/${commitish}.zip
+
+      - name: Install nose et al (just in case!)
+        run: |
+          pip install nose vcrpy mock
+
+      - name: WTF!?
+        run: |
+          datalad wtf
+
+      # TODO: reenable -- was hanging here
+      # see https://github.com/datalad/datalad-extensions/pull/54
+      #- name: Run datalad tests
+      #  run: |
+      #    mkdir -p __testhome__
+      #    cd __testhome__
+      #    python -m nose -s -v datalad
+
+# vim:set sts=2:
