@@ -21,6 +21,7 @@ module Annex.Ingest (
 	CheckGitIgnore(..),
 	gitAddParams,
 	addAnnexedFile,
+	addingExistingLink,
 ) where
 
 import Annex.Common
@@ -387,3 +388,19 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 		_ -> return ()
 	
 	writepointer mode = liftIO $ writePointerFile file key mode
+
+{- Use with actions that add an already existing annex symlink or pointer
+ - file. The warning avoids a confusing situation where the file got copied
+ - from another git-annex repo, probably by accident. -}
+addingExistingLink :: RawFilePath -> Key -> Annex a -> Annex a
+addingExistingLink f k a = do
+	unlessM (isKnownKey k <||> inAnnex k) $ do
+		islink <- isJust <$> isAnnexLink f
+		warning $ unwords
+			[ fromRawFilePath f
+			, "is a git-annex"
+			, if islink then "symlink." else "pointer file."
+			, "Its content is not available in this repository."
+			, "(Maybe " ++ fromRawFilePath f ++ " was copied from another repository?)"
+			]
+	a

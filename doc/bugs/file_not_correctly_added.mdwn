@@ -219,3 +219,5 @@ $ tree -a
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 It used to work before. It seem to be broken since a system update. I have tried reinstalling `git-annex` as well as all dependencies, bit without any luck.
+
+> Added warning. [[done]] --[[Joey]]

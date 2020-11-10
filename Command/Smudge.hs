@@ -98,8 +98,9 @@ clean file = do
   where
 	go b = case parseLinkTargetOrPointerLazy b of
 		Just k -> do
-			getMoveRaceRecovery k file
-			liftIO $ L.hPut stdout b
+			addingExistingLink file k $ do
+				getMoveRaceRecovery k file
+				liftIO $ L.hPut stdout b
 		Nothing -> do
 			let fileref = Git.Ref.fileRef file
 			indexmeta <- catObjectMetaData fileref
