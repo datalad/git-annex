@@ -36,6 +36,11 @@ import Prelude
 import Utility.Monad
 import Utility.SystemDirectory
 
+#ifdef mingw32_HOST_OS
+import Data.Char
+import Utility.FileSystemEncoding
+#endif
+
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.
  -
