@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2020-11-10T15:50:10Z"
+ content="""
+So was myLargeFile.CR2 in fact an annex pointer file all along?
+
+Anyway, I think it might be possible to avoid this confusing kind of
+situation. If git-annex add sees an annex pointer file or symlink, it can
+check if there's a location log file for it. Normally there always is. If
+not, that's a situation where some file from another annex is being added,
+and it can either warn, or refuse to proceed.
+
+This will only really be worth doing if git-annex smudge --clean can also
+do it, so if git add is used it does the same check.
+"""]]
