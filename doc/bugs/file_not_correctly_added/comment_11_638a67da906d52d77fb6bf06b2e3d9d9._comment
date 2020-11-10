@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="jcjgraf"
+ avatar="http://cdn.libravatar.org/avatar/9dda752f83ac44906fefbadb35e8a6ac"
+ subject="comment 11"
+ date="2020-11-10T16:05:57Z"
+ content="""
+Yes, it was a git-annex pointer. `cat myLargeFile.CR2` gave something like `'/annex/objects/SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4.CR2'`
+
+It would indeed be helpful if there was a warning or something similar. Though, it is an error one is probably only doing once in the course of using git-annex :-)
+
+Once again, thank you very much and have a good time!
+"""]]
