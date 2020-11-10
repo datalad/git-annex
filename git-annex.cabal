@@ -298,7 +298,7 @@ source-repository head
 custom-setup
   Setup-Depends: base (>= 4.11.1.0), hslogger, split, unix-compat, 
     filepath, exceptions, bytestring, directory, IfElse, data-default,
-    filepath-bytestring (>= 1.4.2.1.1),
+    filepath-bytestring (>= 1.4.2.1.4),
     process (>= 1.6.3),
     async, utf8-string, transformers, Cabal
 
