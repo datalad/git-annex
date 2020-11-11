@@ -85,5 +85,5 @@ createDirectory :: RawFilePath -> IO ()
 createDirectory = D.createDirectory . fromRawFilePath
 
 setFileMode :: RawFilePath -> FileMode -> IO () 
-setFileMode = F.setFileMode
+setFileMode = F.setFileMode . fromRawFilePath
 #endif
