@@ -4,5 +4,7 @@ In some scenarios we do know ahead of time url + size + filename (thus extension
 
 I made subject prefixed with `calckey`  since it seems like the closest hit but it does need an actual file.
 
+edit1: I was pointed to [forum/Is_it_possible_adding_files_to_git_annex_bypassing___40__some_parts_of__41___the_git_annex_tools/#comment-a80b2371012dda93ad7fb4926af91b48](https://git-annex.branchable.com/forum/Is_it_possible_adding_files_to_git_annex_bypassing___40__some_parts_of__41___the_git_annex_tools/#comment-a80b2371012dda93ad7fb4926af91b48) which seems to be the closest hit, but relies on assuming how extension is extracted by annex, which might be incorrect for some files.
+
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
