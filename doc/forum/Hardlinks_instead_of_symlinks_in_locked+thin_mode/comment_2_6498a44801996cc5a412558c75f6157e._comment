@@ -7,22 +7,38 @@
 > (protection, easy-to-spot missing files) and of direct mode (no
 > duplication of files).
 
-Well, it does have the benefits of locked mode, but does it really have
-additional benefits like direct mode did? 
+Well, it does have the benefits of locked mode, but does it really gain
+back any benefits of direct mode?
 
-Locked mode also does not involve duplication of files so that's kind of
-irrelevant.
+Direct mode didn't duplicate files. But locked mode with annex.thin doesn't
+duplicate files either, except for on a filesystem that doesn't support
+hard links. But this new mode relies on hard links too.
 
-The actual benefit of direct mode was well, you could directly modify
-files, in place. This mode would not have that benefit. annex.thin
-also allows direct modification in place.
+Direct mode allowed modifying files in place. But locked mode does too,
+more safely than direct mode (except when using annex.thin, then it's the
+same).
 
-The only advantage that the old direct mode had, over the
-current `git config annex.thin true; git-annex adjust --unlock`, is that
-direct mode managed to not store two copies of content even on a filesystem
-that does not support hard links. But this new mode relies on hard links.
+Direct mode represented missing content as dangling symlinks (on
+filesystems that support them). And this seems to be the only benefit
+of direct mode that this new mode would gain back.
 
-I do sort of like this idea, but I'm struggling to articulate why at the
-moment, and so unsure how I'd even begin to document it. Any help
-appreciated. :)
+If the benefit of this new mode is only that, all that's really
+needed is for the missing files to be represented as symlinks. Earlier I
+said:
+
+> it could work though. Ie, have a git annex adjust mode that represents
+> present files as unlocked, but with the write bits unset, and that
+> represents missing files as symlinks.
+
+I now see that unsetting the write bit is not necessary to get the only
+benefit of this new mode. Instead, the unlocked files can work just like
+usual, being a copy of the content. And if the user doesn't want to store
+two copies, they can enable annex.thin to get hardlinks, allowing in-place
+modification.
+
+If it actually made sense to unset the write bit of unlocked
+files, it could be a config independant from this new mode. But I don't
+currently see any real benefit to doing that. As far as I can see,
+this new mode + unset write bit does not have any advantages at all
+compared with regular locked files.
 """]]
