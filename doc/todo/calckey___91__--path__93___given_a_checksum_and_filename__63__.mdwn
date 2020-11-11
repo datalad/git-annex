@@ -1,0 +1,8 @@
+May be it is already available and thus not really todo (feel welcome to close then or I will), and/or I have asked before, but I failed to find it.  Sorry if duplicating the issue.
+
+In some scenarios we do know ahead of time url + size + filename (thus extension) + corresponding checksum for the content. We would like to implement `addurl` which would not even talk to the remote server but just "mint" corresponding path to the key under `.git/annex/objects` and `registerurl` to it.  But I failed to find a convenience annex command which would allow us to get the full key (accounting for `E` the way git annex does), and full path to it (thus adding `DIRHASH` which special remotes could "query", and which is appropriate given the repository settings).
+
+I made subject prefixed with `calckey`  since it seems like the closest hit but it does need an actual file.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
