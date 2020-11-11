@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-11-11T11:36:37Z"
+ content="""
+> Such a combined mode would have all the benefits of locked mode
+> (protection, easy-to-spot missing files) and of direct mode (no
+> duplication of files).
+
+Well, it does have the benefits of locked mode, but does it really have
+additional benefits like direct mode did? 
+
+Locked mode also does not involve duplication of files so that's kind of
+irrelevant.
+
+The actual benefit of direct mode was well, you could directly modify
+files, in place. This mode would not have that benefit. annex.thin
+also allows direct modification in place.
+
+The only advantage that the old direct mode had, over the
+current `git config annex.thin true; git-annex adjust --unlock`, is that
+direct mode managed to not store two copies of content even on a filesystem
+that does not support hard links. But this new mode relies on hard links.
+
+I do sort of like this idea, but I'm struggling to articulate why at the
+moment, and so unsure how I'd even begin to document it. Any help
+appreciated. :)
+"""]]
