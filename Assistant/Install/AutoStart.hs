@@ -21,7 +21,7 @@ import Utility.FileSystemEncoding
 installAutoStart :: FilePath -> FilePath -> IO ()
 installAutoStart command file = do
 #ifdef darwin_HOST_OS
-	createDirectoryIfMissing True (fromRawFilePath (parentDir file))
+	createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath file)))
 	writeFile file $ genOSXAutoStartFile osxAutoStartLabel command
 		["assistant", "--autostart"]
 #else
