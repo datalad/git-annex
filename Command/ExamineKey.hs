@@ -10,6 +10,7 @@ module Command.ExamineKey where
 import Command
 import qualified Utility.Format
 import Command.Find (parseFormatOption, showFormatted, keyVars)
+import Annex.Link
 
 cmd :: Command
 cmd = noCommit $ noMessages $ dontCheck repoExists $ 
@@ -22,5 +23,10 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 run :: Maybe Utility.Format.Format -> SeekInput -> String -> Annex Bool
 run format _ p = do
 	let k = fromMaybe (giveup "bad key") $ deserializeKey p
-	showFormatted format (serializeKey' k) (keyVars k)
+	objectpath <- calcRepo $ gitAnnexLocation k
+	let objectpointer = formatPointer k
+	showFormatted format (serializeKey' k) $
+		[ ("objectpath", fromRawFilePath objectpath)
+		, ("objectpointer", fromRawFilePath objectpointer)
+		] ++ keyVars k
 	return True

@@ -22,9 +22,13 @@ that can be determined purely by looking at the key.
   use '${var;width}' ; to left-justify a variable, use '${var;-width}';
   to escape unusual characters in a variable, use '${escaped_var}'
 
-  These variables are available for use in formats: key, backend,
-  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for
-  the mtime field of a WORM key).
+  To generate a path from the top of the repository to the git-annex
+  object for a key, use ${objectpath}. To generate the value of a
+  git-annex pointer file for a key, use ${objectpointer}.
+
+  These variables are also available for use in formats: ${key}, ${backend},
+  ${bytesize}, ${humansize}, ${keyname}, ${hashdirlower}, ${hashdirmixed},
+  ${mtime} (for the mtime field of a WORM key).
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
@@ -42,12 +46,6 @@ that can be determined purely by looking at the key.
 
   Enable batch mode, in which a line containing a key is read from stdin,
   the information about it is output to stdout, and repeat.
-
-# EXAMPLES
-
-The location where the content of a key is stored can be looked up by running:
-
-	git annex examinekey $KEY --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
 
 # SEE ALSO
 
