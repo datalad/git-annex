@@ -8,3 +8,5 @@ edit1: I was pointed to [forum/Is_it_possible_adding_files_to_git_annex_bypassin
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]

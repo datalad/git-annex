@@ -42,10 +42,36 @@ that can be determined purely by looking at the key.
   Messages that would normally be output to standard error are included in
   the json instead.
 
+* `--migrate-to-backend=backend`
+
+  Attempt to migrate the input key to the new backend specified. If
+  successful, outputs information about the migrated key. Otherwise,
+  outputs information about the input key.
+
+  This only does fast migrations; it will not re-hash the content of a key
+  or similar expensive operation.
+
+  One way to use it is to add an extension to a key.
+
+	git-annex examinekey SHA256--xxx --migrate-to-backend=SHA256E --filename=foo.tar.gz
+
+  Or to remove the extension from a key:
+
+  	git-annex examinekey SHA256E-xxx.tar.gz --migrate-to-backend=SHA256
+
+* `--filename=name`
+
+  The name of a file associated with the key, eg a work tree file.
+  It does not need to exist. This is needed when using `--migrate-to-backend`
+  to add an extension to the key.
+
 * `--batch`
 
   Enable batch mode, in which a line containing a key is read from stdin,
   the information about it is output to stdout, and repeat.
+
+  In order to also provide the name of a file associated with the key, the
+  line can be in the format "$key $file"
 
 # SEE ALSO
 

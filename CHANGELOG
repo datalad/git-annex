@@ -7,6 +7,7 @@ git-annex (8.20201104) UNRELEASED; urgency=medium
     is not known to the repository, to prevent confusion if the user has
     copied it from some other repository.
   * examinekey: Added two new format variables: objectpath and objectpointer
+  * examinekey: Added --migrate-to-backend
 
  -- Joey Hess <id@joeyh.name>  Mon, 09 Nov 2020 15:15:20 -0400
 
