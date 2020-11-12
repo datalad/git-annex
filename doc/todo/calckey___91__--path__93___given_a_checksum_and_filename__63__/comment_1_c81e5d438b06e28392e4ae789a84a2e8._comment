@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-11-12T15:45:01Z"
+ content="""
+Any extension you pick to use would work fine; it's not a value that needs
+to be calculated in a long-term reproducible way, and git-annex has refined
+the extensions it picks repeatedly.
+
+I'm wary about exposing a way for git-annex to calculate the extension.
+It risks a slippery slope to exposing other internal details of how other
+backends (eg URL) construct parts of their keys. Especially with the
+external backends existing now.
+
+This does generate the path to the annex object:
+
+	git annex examinekey $KEY --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
+
+Except, hmm, when the repo is tuned with annex.tune.objecthash1=true
+it does not take that into account. And if the repo is tuned with
+annex.tune.objecthashlower=true that needs to be `${hashdirlower}` instead.
+
+I think it would be a good idea to add something to examinekey that
+simplifies this, eg `${objectpath}` that would exand to the full path.
+Taking the tuning edge cases into account and also future-proofing the
+interface.
+"""]]
