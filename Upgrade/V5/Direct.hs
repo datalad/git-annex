@@ -128,3 +128,16 @@ removeInodeCache key = withInodeCacheFile key $ \f ->
 
 withInodeCacheFile :: Key -> (RawFilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
+
+{- File that maps from a key to the file(s) in the git repository. -}
+gitAnnexMapping :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexMapping key r c = do
+	loc <- gitAnnexLocation key r c
+	return $ loc <> ".map"
+
+{- File that caches information about a key's content, used to determine
+ - if a file has changed. -}
+gitAnnexInodeCache :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexInodeCache key r c = do
+	loc <- gitAnnexLocation key r c
+	return $ loc <> ".cache"

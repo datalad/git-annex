@@ -20,8 +20,6 @@ module Annex.Locations (
 	gitAnnexLink,
 	gitAnnexLinkCanonical,
 	gitAnnexContentLock,
-	gitAnnexMapping,
-	gitAnnexInodeCache,
 	gitAnnexInodeSentinal,
 	gitAnnexInodeSentinalCache,
 	annexLocations,
@@ -68,7 +66,6 @@ module Annex.Locations (
 	gitAnnexJournalDir',
 	gitAnnexJournalLock,
 	gitAnnexGitQueueLock,
-	gitAnnexMergeLock,
 	gitAnnexIndex,
 	gitAnnexIndexStatus,
 	gitAnnexViewIndex,
@@ -161,9 +158,6 @@ gitAnnexLocationDepth config = hashlevels + 1
  -
  - When the file is not present, returns the location where the file should
  - be stored.
- -
- - This does not take direct mode into account, so in direct mode it is not
- - the actual location of the file's content.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
 gitAnnexLocation key r config = gitAnnexLocation' key r config
@@ -236,21 +230,6 @@ gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
 gitAnnexContentLock key r config = do
 	loc <- gitAnnexLocation key r config
 	return $ loc <> ".lck"
-
-{- File that maps from a key to the file(s) in the git repository.
- - Used in direct mode. -}
-gitAnnexMapping :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
-gitAnnexMapping key r config = do
-	loc <- gitAnnexLocation key r config
-	return $ loc <> ".map"
-
-{- File that caches information about a key's content, used to determine
- - if a file has changed.
- - Used in direct mode. -}
-gitAnnexInodeCache :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
-gitAnnexInodeCache key r config = do
-	loc <- gitAnnexLocation key r config
-	return $ loc <> ".cache"
 
 gitAnnexInodeSentinal :: Git.Repo -> RawFilePath
 gitAnnexInodeSentinal r = gitAnnexDir r P.</> "sentinal"
@@ -435,8 +414,8 @@ gitAnnexFeedStateDir r = P.addTrailingPathSeparator $
 gitAnnexFeedState :: Key -> Git.Repo -> RawFilePath
 gitAnnexFeedState k r = gitAnnexFeedStateDir r P.</> keyFile k
 
-{- .git/annex/merge/ is used as a empty work tree for direct mode merges and
- - merges in adjusted branches. -}
+{- .git/annex/merge/ is used as a empty work tree for merges in 
+ - adjusted branches. -}
 gitAnnexMergeDir :: Git.Repo -> FilePath
 gitAnnexMergeDir r = fromRawFilePath $
 	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "merge"
@@ -465,10 +444,6 @@ gitAnnexJournalLock r = gitAnnexDir r P.</> "journal.lck"
  - other git state that should only have one writer at a time. -}
 gitAnnexGitQueueLock :: Git.Repo -> RawFilePath
 gitAnnexGitQueueLock r = gitAnnexDir r P.</> "gitqueue.lck"
-
-{- Lock file for direct mode merge. -}
-gitAnnexMergeLock :: Git.Repo -> FilePath
-gitAnnexMergeLock r = fromRawFilePath $ gitAnnexDir r P.</> "merge.lck"
 
 {- .git/annex/index is used to stage changes to the git-annex branch -}
 gitAnnexIndex :: Git.Repo -> RawFilePath
