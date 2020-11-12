@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-11-12T16:47:12Z"
+ content="""
+Another approach would be to generate a SHA256 key, make the annex link,
+and then use `git-annex migrate --backend=SHA256E` to convert the annex link.
+
+And hmm, that does point toward a way to use the existing backend API
+cleanly. Why bother with writing out the symlinks only to have migrate
+convert them? The fastMigrate API has well-defined inputs, so we can just
+expose it.
+
+Eg:
+
+	git-annex examinekey SHA256--xxx --format="${key} ${objectpath}" \
+		--migrate-to-backend=SHA256E --filename=foo.tar.gz
+
+--batch would need to input the filename as well as the key when
+used with --migrate-to-backend.
+"""]]
