@@ -1,0 +1,81 @@
+The --hide-missing and --unlock-present adjusted branches
+depend on whether the content of a file is present. So after a get or drop,
+the branch needs to be updated to reflect the change. Currently this has to
+be done manually, except git-annex sync does do it at the end. Can the
+update be automated?
+
+Of course, it could be updated on shutdown whenever content was transferred
+or dropped. The question really is, can it be done efficiently enough that
+it makes sense to do that? And for that matter, can it be done efficiently
+enough to do it more frequently? After every file or after some number of
+files, or after processing all files in a (sub-)tree?
+
+Investigation of the obvious things that make it slow follows:
+
+## efficient branch adjustment
+
+updateAdjustedBranch re-adjusts the whole branch. That is inneficient for a
+branch with a large number of files in it. We need a way to incrementally
+adjust part of the branch.
+
+(Or maybe not *need* because maybe it's acceptable for it to be slow; slow
+is still better than manual, probably.)
+
+Git.Tree.adjustTree recursively lists the tree and applies
+the adjustment to each item in it. What's needed is a way to
+adjust only the subtree containing a file, and then use 
+Git.Tree.graftTree to graft that into the existing tree. Seems quite
+doable!
+
+graftTree does use getTree, so buffers the whole tree object in memory.
+adjustTree avoids doing that. I think it's probably ok though; git probably
+also buffers tree objects in memory. Only the tree objects down to the
+graft point need to be buffered.
+
+Oh, also, it can cache a few tree objects to speed
+this up more. Eg after dropping foo/bar/1 buffer foo and foo/bar's
+objects, and use that when dropping foo/bar/2.
+
+## efficient checkout
+
+updateAdjustedBranch checks out the new version of the branch.
+
+git checkout needs to diff the old and new tree, and while git is fast,
+it's not magic. Consider if, after every file dropped, we checked out a new
+branch that did not contain that file. Dropping can be quite fast,
+thousands of files per second.. How much would those git checkouts
+slow it down?
+
+I benchmarked to find out. (On an SSD)
+
+	for x in $(seq 1 10000); do echo $x > $x; git add $x; git commit -m add; done
+
+	time while git checkout --quiet HEAD^;do : ; done
+	real	5m59.489s
+	user	4m34.775s
+	sys	3m39.665s
+
+Seems like git-annex could do the equivilant of checkout more quickly,
+since it knows the part of the branch that changed. Eg, git rm the file,
+and update the sha1 that HEAD points to.
+
+## dangling git objects
+
+Incremental adjusting would generate new trees each time, and a new commit.
+If it's done a lot, those will pile up. They get deleted by gc, but
+normally would only be deleted after some time. Perhaps git-annex could
+delete them itself. (At least if they remain loose git objects; deleting
+them once they reach a pack file seems hard.)
+
+(The tree object buffer mentioned above suggests the approach of,
+when an object in the buffer gets replaced with another object for the same
+tree position, delete the old object from .git/objects.)
+
+## slowness in writing git objects
+
+git-annex uses git commit-tree to create new commits on the adjusted
+branch. That is not batched, so running once per file may get slow.
+
+And to write trees, it uses git mktree --batch. But, a new process is
+started each time by Git.Tree.adjustTree (and other things). 
+Making that a long-running process would speed it up, probably.
