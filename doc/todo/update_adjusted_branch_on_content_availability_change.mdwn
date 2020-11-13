@@ -71,6 +71,12 @@ them once they reach a pack file seems hard.)
 when an object in the buffer gets replaced with another object for the same
 tree position, delete the old object from .git/objects.)
 
+A git repo containing 10000 commits, starting with 10000 files and ending
+with 0, deleting 1 file per commit, weighs in at 99mb. That's with
+short filenames, more typical filenames would add to it. (It packs down to
+9 mb, but that's just extra work for objects that will get gc'ed away
+eventually.)
+
 ## slowness in writing git objects
 
 git-annex uses git commit-tree to create new commits on the adjusted
