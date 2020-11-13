@@ -54,3 +54,5 @@ Relevant links:
 I'm really excited about using git-annex, and have spent 3-4 days reading documentation, past bug reports, setting up repos, transferring data, and manually testing failure cases (e.g. this one :p).
 
 Thanks for all your hard work!
+
+> [[fixed|done]] --[[Joey]]
