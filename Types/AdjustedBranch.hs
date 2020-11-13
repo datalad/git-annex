@@ -10,7 +10,7 @@ module Types.AdjustedBranch where
 data Adjustment
 	= LinkAdjustment LinkAdjustment
 	| PresenceAdjustment PresenceAdjustment (Maybe LinkAdjustment)
-	| LinkMissingAdjustment LinkMissingAdjustment
+	| LinkPresentAdjustment LinkPresentAdjustment
 	deriving (Show, Eq)
 
 data LinkAdjustment
@@ -25,9 +25,9 @@ data PresenceAdjustment
 	| ShowMissingAdjustment
 	deriving (Show, Eq)
 
-data LinkMissingAdjustment
-	= LockMissingAdjustment
-	| UnlockMissingAdjustment
+data LinkPresentAdjustment
+	= UnlockPresentAdjustment
+	| LockPresentAdjustment
 	deriving (Show, Eq)
 
 -- Adjustments have to be able to be reversed, so that commits made to the
@@ -41,8 +41,8 @@ instance ReversableAdjustment Adjustment where
 		LinkAdjustment (reverseAdjustment l)
 	reverseAdjustment (PresenceAdjustment p ml) =
 		PresenceAdjustment (reverseAdjustment p) (fmap reverseAdjustment ml)
-	reverseAdjustment (LinkMissingAdjustment l) =
-		LinkMissingAdjustment (reverseAdjustment l)
+	reverseAdjustment (LinkPresentAdjustment l) =
+		LinkPresentAdjustment (reverseAdjustment l)
 
 instance ReversableAdjustment LinkAdjustment where
 	reverseAdjustment UnlockAdjustment = LockAdjustment
@@ -55,9 +55,9 @@ instance ReversableAdjustment PresenceAdjustment where
 	reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
 	reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
 
-instance ReversableAdjustment LinkMissingAdjustment where
-	reverseAdjustment LockMissingAdjustment = UnlockMissingAdjustment
-	reverseAdjustment UnlockMissingAdjustment = LockMissingAdjustment
+instance ReversableAdjustment LinkPresentAdjustment where
+	reverseAdjustment UnlockPresentAdjustment = LockPresentAdjustment
+	reverseAdjustment LockPresentAdjustment = UnlockPresentAdjustment
 
 adjustmentHidesFiles :: Adjustment -> Bool
 adjustmentHidesFiles (PresenceAdjustment HideMissingAdjustment _) = True

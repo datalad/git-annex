@@ -4,7 +4,7 @@ git-annex adjust - enter an adjusted branch
 
 # SYNOPSIS
 
-git annex adjust `--unlock|--lock|--fix|--hide-missing [--unlock|--lock|--fix]`
+git annex adjust `--unlock|--lock|--fix|--hide-missing [--unlock|--lock|--fix]|--unlock-present`
 
 # DESCRIPTION
 
@@ -31,8 +31,8 @@ problems, use `git annex merge otherbranch`.
 
 Re-running this command with the same options
 while inside the adjusted branch will update the adjusted branch
-as necessary (eg for `--hide-missing`), and will also propagate commits
-back to the original branch.
+as necessary (eg for `--hide-missing` and `--unlock-present`), 
+and will also propagate commits back to the original branch.
 
 # OPTIONS
 
@@ -91,10 +91,10 @@ back to the original branch.
 
   This option can be combined with --unlock, --lock, or --fix.
 
-* `--lock-missing`
+* `--unlock-present`
 
-  Lock files whose content is not present, and unlock files whose content
-  is present. This provides the benefits of working with unlocked files,
+  Unlock files whose content is present, and lock files whose content is
+  missing. This provides the benefits of working with unlocked files,
   but makes it easier to see when the content of a file is not missing,
   since it will be a broken symlink.
   
@@ -104,7 +104,7 @@ back to the original branch.
   not be broken symlinks.
   
   To update the adjusted branch to reflect changes to content availability, 
-  run `git annex adjust --hide-missing` again. Or use `git-annex sync
+  run `git annex adjust --unlock-present` again. Or use `git-annex sync
   --content`, which updates the branch after transferring content.
 
 # SEE ALSO

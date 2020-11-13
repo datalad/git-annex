@@ -11,7 +11,7 @@ module Annex.AdjustedBranch (
 	Adjustment(..),
 	LinkAdjustment(..),
 	PresenceAdjustment(..),
-	LinkMissingAdjustment(..),
+	LinkPresentAdjustment(..),
 	adjustmentHidesFiles,
 	OrigBranch,
 	AdjBranch(..),
@@ -77,7 +77,7 @@ instance AdjustTreeItem Adjustment where
 		adjustTreeItem p t >>= \case
 			Nothing -> return Nothing
 			Just t' -> adjustTreeItem l t'
-	adjustTreeItem (LinkMissingAdjustment l) t = adjustTreeItem l t
+	adjustTreeItem (LinkPresentAdjustment l) t = adjustTreeItem l t
 
 instance AdjustTreeItem LinkAdjustment where
 	adjustTreeItem UnlockAdjustment =
@@ -95,11 +95,16 @@ instance AdjustTreeItem PresenceAdjustment where
 	adjustTreeItem ShowMissingAdjustment =
 		noAdjust
 
-instance AdjustTreeItem LinkMissingAdjustment where
-	adjustTreeItem LockMissingAdjustment = 
+instance AdjustTreeItem LinkPresentAdjustment where
+	adjustTreeItem UnlockPresentAdjustment = 
 		ifPresent adjustToPointer adjustToSymlink
-	adjustTreeItem UnlockMissingAdjustment =
-		noAdjust
+	adjustTreeItem LockPresentAdjustment =
+		-- Turn all pointers back to symlinks, whether the content
+		-- is present or not. This is done because the content
+		-- availability may have changed and the branch not been
+		-- re-adjusted to keep up, so there may be pointers whose
+		-- content is not present.
+		ifSymlink noAdjust adjustToSymlink
 
 ifSymlink
 	:: (TreeItem -> Annex a)
@@ -224,7 +229,7 @@ checkoutAdjustedBranch (AdjBranch b) checkoutparams = do
 updateAdjustedBranch :: Adjustment -> AdjBranch -> OrigBranch -> Annex Bool
 updateAdjustedBranch adj@(PresenceAdjustment _ _) currbranch origbranch =
 	updateAdjustedBranch' adj currbranch origbranch
-updateAdjustedBranch adj@(LinkMissingAdjustment _) currbranch origbranch =
+updateAdjustedBranch adj@(LinkPresentAdjustment _) currbranch origbranch =
 	updateAdjustedBranch' adj currbranch origbranch
 updateAdjustedBranch adj@(LinkAdjustment _) _ origbranch =
 	preventCommits $ \commitlck -> do

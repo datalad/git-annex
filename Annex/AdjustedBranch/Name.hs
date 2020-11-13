@@ -37,7 +37,7 @@ instance SerializeAdjustment Adjustment where
 		serializeAdjustment p
 	serializeAdjustment (PresenceAdjustment p (Just l)) = 
 		serializeAdjustment p <> "-" <> serializeAdjustment l
-	serializeAdjustment (LinkMissingAdjustment l) =
+	serializeAdjustment (LinkPresentAdjustment l) =
 		serializeAdjustment l
 	deserializeAdjustment s = 
 		(LinkAdjustment <$> deserializeAdjustment s)
@@ -46,7 +46,7 @@ instance SerializeAdjustment Adjustment where
 			<|>
 		(PresenceAdjustment <$> deserializeAdjustment s <*> pure Nothing)
 			<|>
-		(LinkMissingAdjustment <$> deserializeAdjustment s)
+		(LinkPresentAdjustment <$> deserializeAdjustment s)
 	  where
 		(s1, s2) = separate' (== (fromIntegral (ord '-'))) s
 
@@ -68,11 +68,11 @@ instance SerializeAdjustment PresenceAdjustment where
 	deserializeAdjustment "showmissing" = Just ShowMissingAdjustment
 	deserializeAdjustment _ = Nothing
 
-instance SerializeAdjustment LinkMissingAdjustment where
-	serializeAdjustment LockMissingAdjustment = "lockmissing"
-	serializeAdjustment UnlockMissingAdjustment = "unlockmissing"
-	deserializeAdjustment "lockmissing" = Just LockMissingAdjustment
-	deserializeAdjustment "unlockmissing" = Just UnlockMissingAdjustment
+instance SerializeAdjustment LinkPresentAdjustment where
+	serializeAdjustment UnlockPresentAdjustment = "unlockpresent"
+	serializeAdjustment LockPresentAdjustment = "lockpresent"
+	deserializeAdjustment "unlockpresent" = Just UnlockPresentAdjustment
+	deserializeAdjustment "lockpresent" = Just LockPresentAdjustment
 	deserializeAdjustment _ = Nothing
 
 newtype AdjBranch = AdjBranch { adjBranch :: Branch }
