@@ -39,4 +39,5 @@ the branch needs to automatically get updated.
 
 --[[Joey]]
 
-[[!tag needsthought]]
+> I've implemented this approach, as `git annex adjust --unlock-present`
+> [[done]] --[[Joey]]
