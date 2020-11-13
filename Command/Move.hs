@@ -151,7 +151,7 @@ toPerform dest removewhen key afile fastcheck isthere = do
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
-		Right True -> logMove srcuuid destuuid False key $ \deststartedwithcopy ->
+		Right True -> logMove srcuuid destuuid True key $ \deststartedwithcopy ->
 			finish deststartedwithcopy $
 				unlessM (expectedPresent dest key) $
 					Remote.logStatus dest key InfoPresent

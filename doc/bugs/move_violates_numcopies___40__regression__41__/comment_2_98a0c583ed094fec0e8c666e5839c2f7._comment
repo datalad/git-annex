@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-11-13T18:01:29Z"
+ content="""
+Oh what a dumb mistake, literally a copied "False" that should be "True".
+
+I'm going to move the next release up due to this regression, but
+thankfully it doesn't result in data loss, so am not going to do a crash
+priority release. Probably Monday.
+
+The test suite also has a test case for move and numcopies now. It used to be
+ok for it to only test drop and numcopies, but that changed a while back
+and it should have had one already.
+"""]]

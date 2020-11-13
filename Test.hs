@@ -312,6 +312,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "get (ssh remote)" test_get_ssh_remote
 	, testCase "move" test_move
 	, testCase "move (ssh remote)" test_move_ssh_remote
+	, testCase "move (numcopies)" test_move_numcopies
 	, testCase "copy" test_copy
 	, testCase "lock" test_lock
 	, testCase "lock --force" test_lock_force
@@ -656,6 +657,20 @@ test_move' setup = setup $ do
 	git_annex "move" ["--from", "origin", ingitfile] @? "move of ingitfile should be no-op"
 	unannexed ingitfile
 	inmainrepo $ unannexed ingitfile
+
+test_move_numcopies :: Assertion
+test_move_numcopies = intmpclonerepo $ do
+	inmainrepo $ annexed_present annexedfile
+	git_annex "numcopies" ["2"] @? "setting numcopies failed"
+	git_annex "move" ["--from", "origin", annexedfile] @? "move of file --from remote with numcopies unsatisfied but not made worse failed unexpectedly"
+	annexed_present annexedfile
+	inmainrepo $ annexed_notpresent annexedfile
+	git_annex "move" ["--to", "origin", annexedfile] @? "move of file --to remote with numcopies unsatisfied but not made worse failed unexpectedly"
+	annexed_notpresent annexedfile
+	inmainrepo $ annexed_present annexedfile
+	git_annex "get" [annexedfile] @? "get of file failed"
+	git_annex_shouldfail "move" ["--from", "origin", annexedfile] @? "move of file --from remote violated numcopies setting"
+	git_annex_shouldfail "move" ["--to", "origin", annexedfile] @? "move of file --to remote violated numcopies setting"
 
 test_copy :: Assertion
 test_copy = intmpclonerepo $ do
