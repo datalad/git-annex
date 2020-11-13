@@ -1,0 +1,56 @@
+### Please describe the problem.
+
+Using `git annex move` will reduce the number of copies below `numcopies`.
+
+Relevant links:
+
+- [original bug report](https://git-annex.branchable.com/bugs/move_violates_numcopies/)
+- [devblog day 496: move numcopies safety revisited](https://git-annex.branchable.com/devblog/day_496__move_numcopies_safety_revisited/)
+
+### What steps will reproduce the problem?
+
+	╭─@ringo ~/backup/annex/test-drop ‹python-2.7.16› ‹master•1b16944›
+	╰─ git annex whereis
+	whereis 1403415.jpg (2 copies)
+		766c9221-1404-4d68-bfa6-46d064bf4798 -- ting@ringo:/Volumes/apple/backup/annex/test-drop [apple]
+		9cfda232-8504-4c3b-b694-4a6c85dc6c9c -- ting@ringo:~/backup/annex/test-drop [ringo] [here]
+	ok
+	╭─@ringo ~/backup/annex/test-drop ‹python-2.7.16› ‹master•1b16944›
+	╰─ g annex numcopies
+	2
+	╭─@ringo ~/backup/annex/test-drop ‹python-2.7.16› ‹master•1b16944›
+	╰─ g annex move 1403415.jpg --to=apple
+	move 1403415.jpg ok
+	(recording state in git...)
+	╭─@ringo ~/backup/annex/test-drop ‹python-2.7.16› ‹master•1b16944›
+	╰─ git annex whereis
+	whereis 1403415.jpg (1 copy)
+		766c9221-1404-4d68-bfa6-46d064bf4798 -- ting@ringo:/Volumes/apple/backup/annex/test-drop [apple]
+	ok
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+`git-annex` installed via Homebrew on OS X. Version: 8.20201103
+
+	╭─@ringo ~/backup/annex/test-drop ‹python-2.7.16› ‹master•1b16944›
+	╰─ git annex version
+	git-annex version: 8.20201103
+	build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+	dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.6.5 http-client-0.7.2.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+	key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+	remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+	operating system: darwin x86_64
+	supported repository versions: 8
+	upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+	local repository version: 8
+
+### Please provide any additional information below.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm really excited about using git-annex, and have spent 3-4 days reading documentation, past bug reports, setting up repos, transferring data, and manually testing failure cases (e.g. this one :p).
+
+Thanks for all your hard work!
