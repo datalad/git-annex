@@ -16,7 +16,9 @@ import Utility.Path
 
 import System.IO
 import Utility.SystemDirectory
+#ifndef darwin_HOST_OS
 import System.FilePath
+#endif
 
 installMenu :: FilePath -> FilePath -> FilePath -> FilePath -> IO ()
 #ifdef darwin_HOST_OS
