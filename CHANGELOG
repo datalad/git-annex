@@ -8,6 +8,9 @@ git-annex (8.20201104) UNRELEASED; urgency=medium
     copied it from some other repository.
   * examinekey: Added two new format variables: objectpath and objectpointer
   * examinekey: Added --migrate-to-backend
+  * adjust: New --lock-missing mode which locks files whose content is not
+    present (so the broken symlink is visible), while unlocking files whose
+    content is present.
 
  -- Joey Hess <id@joeyh.name>  Mon, 09 Nov 2020 15:15:20 -0400
 

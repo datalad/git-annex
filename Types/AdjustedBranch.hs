@@ -1,6 +1,6 @@
 {- adjusted branch types
  -
- - Copyright 2016-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,9 +10,9 @@ module Types.AdjustedBranch where
 data Adjustment
 	= LinkAdjustment LinkAdjustment
 	| PresenceAdjustment PresenceAdjustment (Maybe LinkAdjustment)
+	| LinkMissingAdjustment LinkMissingAdjustment
 	deriving (Show, Eq)
 
--- Doesn't make sense to combine unlock with fix.
 data LinkAdjustment
 	= UnlockAdjustment
 	| LockAdjustment
@@ -23,6 +23,11 @@ data LinkAdjustment
 data PresenceAdjustment
 	= HideMissingAdjustment
 	| ShowMissingAdjustment
+	deriving (Show, Eq)
+
+data LinkMissingAdjustment
+	= LockMissingAdjustment
+	| UnlockMissingAdjustment
 	deriving (Show, Eq)
 
 -- Adjustments have to be able to be reversed, so that commits made to the
@@ -36,6 +41,8 @@ instance ReversableAdjustment Adjustment where
 		LinkAdjustment (reverseAdjustment l)
 	reverseAdjustment (PresenceAdjustment p ml) =
 		PresenceAdjustment (reverseAdjustment p) (fmap reverseAdjustment ml)
+	reverseAdjustment (LinkMissingAdjustment l) =
+		LinkMissingAdjustment (reverseAdjustment l)
 
 instance ReversableAdjustment LinkAdjustment where
 	reverseAdjustment UnlockAdjustment = LockAdjustment
@@ -47,6 +54,10 @@ instance ReversableAdjustment LinkAdjustment where
 instance ReversableAdjustment PresenceAdjustment where
 	reverseAdjustment HideMissingAdjustment = ShowMissingAdjustment
 	reverseAdjustment ShowMissingAdjustment = HideMissingAdjustment
+
+instance ReversableAdjustment LinkMissingAdjustment where
+	reverseAdjustment LockMissingAdjustment = UnlockMissingAdjustment
+	reverseAdjustment UnlockMissingAdjustment = LockMissingAdjustment
 
 adjustmentHidesFiles :: Adjustment -> Bool
 adjustmentHidesFiles (PresenceAdjustment HideMissingAdjustment _) = True

@@ -1,6 +1,6 @@
 {- adjusted branch names
  -
- - Copyright 2016-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,12 +37,16 @@ instance SerializeAdjustment Adjustment where
 		serializeAdjustment p
 	serializeAdjustment (PresenceAdjustment p (Just l)) = 
 		serializeAdjustment p <> "-" <> serializeAdjustment l
+	serializeAdjustment (LinkMissingAdjustment l) =
+		serializeAdjustment l
 	deserializeAdjustment s = 
 		(LinkAdjustment <$> deserializeAdjustment s)
 			<|>
 		(PresenceAdjustment <$> deserializeAdjustment s1 <*> pure (deserializeAdjustment s2))
 			<|>
 		(PresenceAdjustment <$> deserializeAdjustment s <*> pure Nothing)
+			<|>
+		(LinkMissingAdjustment <$> deserializeAdjustment s)
 	  where
 		(s1, s2) = separate' (== (fromIntegral (ord '-'))) s
 
@@ -62,6 +66,13 @@ instance SerializeAdjustment PresenceAdjustment where
 	serializeAdjustment ShowMissingAdjustment = "showmissing"
 	deserializeAdjustment "hidemissing" = Just HideMissingAdjustment
 	deserializeAdjustment "showmissing" = Just ShowMissingAdjustment
+	deserializeAdjustment _ = Nothing
+
+instance SerializeAdjustment LinkMissingAdjustment where
+	serializeAdjustment LockMissingAdjustment = "lockmissing"
+	serializeAdjustment UnlockMissingAdjustment = "unlockmissing"
+	deserializeAdjustment "lockmissing" = Just LockMissingAdjustment
+	deserializeAdjustment "unlockmissing" = Just UnlockMissingAdjustment
 	deserializeAdjustment _ = Nothing
 
 newtype AdjBranch = AdjBranch { adjBranch :: Branch }

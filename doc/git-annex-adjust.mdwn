@@ -86,9 +86,26 @@ back to the original branch.
 
   Despite missing files being hidden, `git annex sync --content` will
   still operate on them, and can be used to download missing
-  files from remotes.
+  files from remotes. It also updates the adjusted branch after
+  transferring content.
 
   This option can be combined with --unlock, --lock, or --fix.
+
+* `--lock-missing`
+
+  Lock files whose content is not present, and unlock files whose content
+  is present. This provides the benefits of working with unlocked files,
+  but makes it easier to see when the content of a file is not missing,
+  since it will be a broken symlink.
+  
+  The adjusted branch is not immediately changed when content availability
+  changes, so when you `git annex get` files, they will remain locked.
+  And when you `git annex drop` files, they will remain locked and so will
+  not be broken symlinks.
+  
+  To update the adjusted branch to reflect changes to content availability, 
+  run `git annex adjust --hide-missing` again. Or use `git-annex sync
+  --content`, which updates the branch after transferring content.
 
 # SEE ALSO
 

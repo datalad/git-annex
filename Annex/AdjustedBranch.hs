@@ -11,6 +11,7 @@ module Annex.AdjustedBranch (
 	Adjustment(..),
 	LinkAdjustment(..),
 	PresenceAdjustment(..),
+	LinkMissingAdjustment(..),
 	adjustmentHidesFiles,
 	OrigBranch,
 	AdjBranch(..),
@@ -76,30 +77,54 @@ instance AdjustTreeItem Adjustment where
 		adjustTreeItem p t >>= \case
 			Nothing -> return Nothing
 			Just t' -> adjustTreeItem l t'
+	adjustTreeItem (LinkMissingAdjustment l) t = adjustTreeItem l t
 
 instance AdjustTreeItem LinkAdjustment where
-	adjustTreeItem UnlockAdjustment = ifSymlink adjustToPointer noAdjust
-	adjustTreeItem LockAdjustment = ifSymlink noAdjust adjustToSymlink
-	adjustTreeItem FixAdjustment = ifSymlink adjustToSymlink noAdjust
-	adjustTreeItem UnFixAdjustment = ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
+	adjustTreeItem UnlockAdjustment =
+		ifSymlink adjustToPointer noAdjust
+	adjustTreeItem LockAdjustment =
+		ifSymlink noAdjust adjustToSymlink
+	adjustTreeItem FixAdjustment =
+		ifSymlink adjustToSymlink noAdjust
+	adjustTreeItem UnFixAdjustment =
+		ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
 
 instance AdjustTreeItem PresenceAdjustment where
-	adjustTreeItem HideMissingAdjustment = \ti@(TreeItem _ _ s) ->
-		catKey s >>= \case
-			Just k -> ifM (inAnnex k)
-				( return (Just ti)
-				, return Nothing
-				)
-			Nothing -> return (Just ti)
-	adjustTreeItem ShowMissingAdjustment = noAdjust
+	adjustTreeItem HideMissingAdjustment = 
+		ifPresent noAdjust hideAdjust
+	adjustTreeItem ShowMissingAdjustment =
+		noAdjust
 
-ifSymlink :: (TreeItem -> Annex a) -> (TreeItem -> Annex a) -> TreeItem -> Annex a
+instance AdjustTreeItem LinkMissingAdjustment where
+	adjustTreeItem LockMissingAdjustment = 
+		ifPresent adjustToPointer adjustToSymlink
+	adjustTreeItem UnlockMissingAdjustment =
+		noAdjust
+
+ifSymlink
+	:: (TreeItem -> Annex a)
+	-> (TreeItem -> Annex a)
+	-> TreeItem
+	-> Annex a
 ifSymlink issymlink notsymlink ti@(TreeItem _f m _s)
 	| toTreeItemType m == Just TreeSymlink = issymlink ti
 	| otherwise = notsymlink ti
 
+ifPresent
+	:: (TreeItem -> Annex (Maybe TreeItem))
+	-> (TreeItem -> Annex (Maybe TreeItem))
+	-> TreeItem
+	-> Annex (Maybe TreeItem)
+ifPresent ispresent notpresent ti@(TreeItem _ _ s) =
+	catKey s >>= \case
+		Just k -> ifM (inAnnex k) (ispresent ti, notpresent ti)
+		Nothing -> return (Just ti)
+
 noAdjust :: TreeItem -> Annex (Maybe TreeItem)
 noAdjust = return . Just
+
+hideAdjust :: TreeItem -> Annex (Maybe TreeItem)
+hideAdjust _ = return Nothing
 
 adjustToPointer :: TreeItem -> Annex (Maybe TreeItem)
 adjustToPointer ti@(TreeItem f _m s) = catKey s >>= \case
@@ -197,7 +222,20 @@ checkoutAdjustedBranch (AdjBranch b) checkoutparams = do
  - But, it can be implemented more efficiently than that.
  -}
 updateAdjustedBranch :: Adjustment -> AdjBranch -> OrigBranch -> Annex Bool
-updateAdjustedBranch adj@(PresenceAdjustment _ _) (AdjBranch currbranch) origbranch = do
+updateAdjustedBranch adj@(PresenceAdjustment _ _) currbranch origbranch =
+	updateAdjustedBranch' adj currbranch origbranch
+updateAdjustedBranch adj@(LinkMissingAdjustment _) currbranch origbranch =
+	updateAdjustedBranch' adj currbranch origbranch
+updateAdjustedBranch adj@(LinkAdjustment _) _ origbranch =
+	preventCommits $ \commitlck -> do
+		-- Not really needed here, but done for consistency.
+		_ <- propigateAdjustedCommits' origbranch adj commitlck
+		-- No need to do anything else, because link adjustments
+		-- are stable.
+		return True
+
+updateAdjustedBranch' :: Adjustment -> AdjBranch -> OrigBranch -> Annex Bool
+updateAdjustedBranch' adj (AdjBranch currbranch) origbranch = do
 	b <- preventCommits $ \commitlck -> do
 		-- Avoid losing any commits that the adjusted branch has that
 		-- have not yet been propigated back to the origbranch.
@@ -216,11 +254,6 @@ updateAdjustedBranch adj@(PresenceAdjustment _ _) (AdjBranch currbranch) origbra
 	-- Make git checkout quiet to avoid warnings about disconnected
 	-- branch tips being lost.
 	checkoutAdjustedBranch b [Param "--quiet"]
-updateAdjustedBranch adj@(LinkAdjustment _) _ origbranch = preventCommits $ \commitlck -> do
-	-- Not really needed here, but done for consistency.
-	_ <- propigateAdjustedCommits' origbranch adj commitlck
-	-- No need to do anything else, because link adjustments are stable.
-	return True
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
