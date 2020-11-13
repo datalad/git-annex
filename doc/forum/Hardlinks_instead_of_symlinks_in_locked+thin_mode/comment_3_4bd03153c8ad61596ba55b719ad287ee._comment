@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-11-13T19:51:04Z"
+ content="""
+I've implemented `git annex adjust --unlock-present` that unlocks files
+whose content is present, while keeping the non-present files locked,
+so dangling symlinks.
+
+It doesn't mess with the file permissions, but otherwise that's what was
+requested here.
+"""]]
