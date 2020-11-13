@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-11-13T16:36:45Z"
+ content="""
+I can trigger this on my end.
+
+With the script below, it bisects [*] to 0133b7e5a (move: Improve
+resuming a move that was interrupted after the object was transferred,
+2020-10-21), which was included in the 8.20201103 release.
+
+  [*] Well, almost.  I couldn't build the two commits right before
+      0133b7e5a (363acfb55 and 62d630272).
+
+[[!format sh \"\"\"
+cd \"$(mktemp -d \"${TMPDIR:-/tmp}\"/gx-XXXXXXX)\" || exit 125
+git annex version
+git init a
+(
+    cd a
+    echo one >one
+    git annex init a
+    git annex add one
+    git commit -mone
+)
+git clone -o a a b
+(
+    cd b
+    git annex init b
+    git annex get one
+    git annex numcopies 2
+    git annex numcopies
+    git annex whereis
+)
+git -C b annex move --to=a one || exit 0
+exit 1
+\"\"\"]]
+
+"""]]
