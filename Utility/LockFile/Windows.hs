@@ -27,7 +27,7 @@ type LockHandle = HANDLE
 {- Tries to lock a file with a shared lock, which allows other processes to
  - also lock it shared. Fails if the file is exclusively locked. -}
 lockShared :: LockFile -> IO (Maybe LockHandle)
-lockShared = openLock fILE_SHARE_READ . fromRawFilePath
+lockShared = openLock fILE_SHARE_READ
 
 {- Tries to take an exclusive lock on a file. Fails if another process has
  - a shared or exclusive lock.
@@ -36,7 +36,7 @@ lockShared = openLock fILE_SHARE_READ . fromRawFilePath
  - read or write by any other process. So for advisory locking of a file's
  - content, a separate LockFile should be used. -}
 lockExclusive :: LockFile -> IO (Maybe LockHandle)
-lockExclusive = openLock fILE_SHARE_NONE . fromRawFilePath
+lockExclusive = openLock fILE_SHARE_NONE
 
 {- Windows considers just opening a file enough to lock it. This will
  - create the LockFile if it does not already exist.
