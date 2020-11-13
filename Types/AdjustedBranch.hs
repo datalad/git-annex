@@ -62,4 +62,3 @@ instance ReversableAdjustment LinkPresentAdjustment where
 adjustmentHidesFiles :: Adjustment -> Bool
 adjustmentHidesFiles (PresenceAdjustment HideMissingAdjustment _) = True
 adjustmentHidesFiles _ = False
-

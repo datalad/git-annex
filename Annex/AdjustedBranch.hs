@@ -13,6 +13,7 @@ module Annex.AdjustedBranch (
 	PresenceAdjustment(..),
 	LinkPresentAdjustment(..),
 	adjustmentHidesFiles,
+	adjustmentIsStable,
 	OrigBranch,
 	AdjBranch(..),
 	originalToAdjusted,
@@ -66,9 +67,11 @@ import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 
--- How to perform various adjustments to a TreeItem.
 class AdjustTreeItem t where
+	-- How to perform various adjustments to a TreeItem.
 	adjustTreeItem :: t -> TreeItem -> Annex (Maybe TreeItem)
+	-- Will adjusting a given tree always yield the same adjusted tree?
+	adjustmentIsStable :: t -> Bool
 
 instance AdjustTreeItem Adjustment where
 	adjustTreeItem (LinkAdjustment l) t = adjustTreeItem l t
@@ -79,6 +82,10 @@ instance AdjustTreeItem Adjustment where
 			Just t' -> adjustTreeItem l t'
 	adjustTreeItem (LinkPresentAdjustment l) t = adjustTreeItem l t
 
+	adjustmentIsStable (LinkAdjustment l) = adjustmentIsStable l
+	adjustmentIsStable (PresenceAdjustment p _) = adjustmentIsStable p
+	adjustmentIsStable (LinkPresentAdjustment l) = adjustmentIsStable l
+
 instance AdjustTreeItem LinkAdjustment where
 	adjustTreeItem UnlockAdjustment =
 		ifSymlink adjustToPointer noAdjust
@@ -88,12 +95,17 @@ instance AdjustTreeItem LinkAdjustment where
 		ifSymlink adjustToSymlink noAdjust
 	adjustTreeItem UnFixAdjustment =
 		ifSymlink (adjustToSymlink' gitAnnexLinkCanonical) noAdjust
+	
+	adjustmentIsStable _ = True
 
 instance AdjustTreeItem PresenceAdjustment where
 	adjustTreeItem HideMissingAdjustment = 
 		ifPresent noAdjust hideAdjust
 	adjustTreeItem ShowMissingAdjustment =
 		noAdjust
+
+	adjustmentIsStable HideMissingAdjustment = False
+	adjustmentIsStable ShowMissingAdjustment = True
 
 instance AdjustTreeItem LinkPresentAdjustment where
 	adjustTreeItem UnlockPresentAdjustment = 
@@ -105,6 +117,9 @@ instance AdjustTreeItem LinkPresentAdjustment where
 		-- re-adjusted to keep up, so there may be pointers whose
 		-- content is not present.
 		ifSymlink noAdjust adjustToSymlink
+
+	adjustmentIsStable UnlockPresentAdjustment = False
+	adjustmentIsStable LockPresentAdjustment = True
 
 ifSymlink
 	:: (TreeItem -> Annex a)
@@ -222,43 +237,40 @@ checkoutAdjustedBranch (AdjBranch b) checkoutparams = do
 		] ++ checkoutparams
 
 {- Already in a branch with this adjustment, but the user asked to enter it
- - again. This should have the same result as checking out the original branch,
- - deleting and rebuilding the adjusted branch, and then checking it out.
+ - again. This should have the same result as propagating any commits
+ - back to the original branch, checking out the original branch, deleting
+ - and rebuilding the adjusted branch, and then checking it out.
  - But, it can be implemented more efficiently than that.
  -}
 updateAdjustedBranch :: Adjustment -> AdjBranch -> OrigBranch -> Annex Bool
-updateAdjustedBranch adj@(PresenceAdjustment _ _) currbranch origbranch =
-	updateAdjustedBranch' adj currbranch origbranch
-updateAdjustedBranch adj@(LinkPresentAdjustment _) currbranch origbranch =
-	updateAdjustedBranch' adj currbranch origbranch
-updateAdjustedBranch adj@(LinkAdjustment _) _ origbranch =
-	preventCommits $ \commitlck -> do
-		-- Not really needed here, but done for consistency.
+updateAdjustedBranch adj (AdjBranch currbranch) origbranch
+	| not (adjustmentIsStable adj) = do
+		b <- preventCommits $ \commitlck -> do
+			-- Avoid losing any commits that the adjusted branch
+			-- has that have not yet been propigated back to the
+			-- origbranch.
+			_ <- propigateAdjustedCommits' origbranch adj commitlck
+
+			-- Git normally won't do anything when asked to check
+			-- out the currently checked out branch, even when its
+			-- ref has changed. Work around this by writing a raw
+			-- sha to .git/HEAD.
+			inRepo (Git.Ref.sha currbranch) >>= \case
+				Just headsha -> inRepo $ \r ->
+					writeFile (Git.Ref.headFile r) (fromRef headsha)
+				_ -> noop
+	
+			adjustBranch adj origbranch
+	
+		-- Make git checkout quiet to avoid warnings about
+		-- disconnected branch tips being lost.
+		checkoutAdjustedBranch b [Param "--quiet"]
+	| otherwise = preventCommits $ \commitlck -> do
+		-- Done for consistency.
 		_ <- propigateAdjustedCommits' origbranch adj commitlck
-		-- No need to do anything else, because link adjustments
-		-- are stable.
+		-- No need to actually update the branch because the
+		-- adjustment is stable.
 		return True
-
-updateAdjustedBranch' :: Adjustment -> AdjBranch -> OrigBranch -> Annex Bool
-updateAdjustedBranch' adj (AdjBranch currbranch) origbranch = do
-	b <- preventCommits $ \commitlck -> do
-		-- Avoid losing any commits that the adjusted branch has that
-		-- have not yet been propigated back to the origbranch.
-		_ <- propigateAdjustedCommits' origbranch adj commitlck
-
-		-- Git normally won't do anything when asked to check out the
-		-- currently checked out branch, even when its ref has
-		-- changed. Work around this by writing a raw sha to .git/HEAD.
-		inRepo (Git.Ref.sha currbranch) >>= \case
-			Just headsha -> inRepo $ \r ->
-				writeFile (Git.Ref.headFile r) (fromRef headsha)
-			_ -> noop
-	
-		adjustBranch adj origbranch
-	
-	-- Make git checkout quiet to avoid warnings about disconnected
-	-- branch tips being lost.
-	checkoutAdjustedBranch b [Param "--quiet"]
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do

@@ -406,13 +406,13 @@ updateBranches (Nothing, _) = noop
 updateBranches (Just branch, madj) = do
 	-- When in an adjusted branch, propigate any changes made to it
 	-- back to the original branch. The adjusted branch may also need
-	-- to be updated to hide/expose files.
+	-- to be updated, if the adjustment is not stable.
 	case madj of
 		Nothing -> noop
 		Just adj -> do
 			let origbranch = branch
 			propigateAdjustedCommits origbranch adj
-			when (adjustmentHidesFiles adj) $ do
+			unless (adjustmentIsStable adj) $ do
 				showSideAction "updating adjusted branch"
 				let adjbranch = originalToAdjusted origbranch adj
 				unlessM (updateAdjustedBranch adj adjbranch origbranch) $
