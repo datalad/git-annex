@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-11-14T02:00:13Z"
+ content="""
+Woohoo -- thank you Joey!
+
+Here is my complete example which seems to work quite neatly.  One aspect which you might (or not -- shouldn't matter to me but bash people might appreciate): could \"${filename}\" (if provided to examinekey) be passed into `format` as well? that would allow for easy looping like in this example, but on more than one key at a time.
+
+Unrelated, just curious -- what is the best way to \"chain\" multiple batch processes in bash, like here `examinekey` and `registerurl`?
+
+
+```bash
+$> cat ./addurl-uberfast.sh
+#!/bin/bash
+
+export PS4='> '
+set -x
+set -eu
+cd \"$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)\"
+
+md5=f92bbc617f8c8714a251f1f208af37a0
+size=6605
+filename=GLwDrawA.h
+url=http://www.onerussian.com/tmp/$filename
+
+git init
+git annex init
+
+echo MD5-s$size--$md5 $filename | \
+ git-annex examinekey --batch --format='${key} ${objectpath}\n' --migrate-to-backend=MD5E | \
+ while read key objectpath; do
+    git-annex registerurl \"$key\" \"$url\"
+    # examinekey does not know ${filename} in its format so such looping isn't exactly
+    # possible easily in bash ATM
+    ln -s \"$objectpath\" \"$filename\"
+    git add \"$filename\"
+    git annex get \"$filename\"
+    git annex drop \"$filename\"
+ done
+```
+"""]]
