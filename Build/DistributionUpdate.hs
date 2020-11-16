@@ -65,7 +65,7 @@ main = do
 	topdir <- getCurrentDirectory
 	changeWorkingDirectory repodir
 	updated <- catMaybes <$> mapM (getbuild repodir) autobuilds
-	state <- Annex.new =<< Git.Construct.fromPath "."
+	state <- Annex.new =<< Git.Construct.fromPath (toRawFilePath ".")
 	ood <- Annex.eval state $ do
 		buildrpms topdir updated
 		makeinfos updated version
@@ -84,7 +84,7 @@ getbuild repodir (url, f) = do
 	let dest = repodir </> f
 	let tmp = dest ++ ".tmp"
 	removeWhenExistsWith removeFile tmp
-	createDirectoryIfMissing True (parentDir dest)
+	createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath dest)))
 	let oops s = do
 		removeWhenExistsWith removeFile tmp
 		putStrLn $ "*** " ++ s
