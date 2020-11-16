@@ -75,7 +75,8 @@ seek o = do
 
 start :: FindOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o _ file key = startingCustomOutput key $ do
-	showFormatted (formatOption o) file $ ("file", fromRawFilePath file) : keyVars key
+	showFormatted (formatOption o) file 
+		(formatVars key (AssociatedFile (Just file)))
 	next $ return True
 
 startKeys :: FindOptions -> (SeekInput, Key, ActionItem) -> CommandStart
@@ -92,8 +93,9 @@ showFormatted format unformatted vars =
 				Utility.Format.format formatter $
 					M.fromList vars
 
-keyVars :: Key -> [(String, String)]
-keyVars key =
+formatVars :: Key -> AssociatedFile -> [(String, String)]
+formatVars key (AssociatedFile af) =
+	(maybe id (\f l -> (("file", fromRawFilePath f) : l)) af)
 	[ ("key", serializeKey key)
 	, ("backend", decodeBS $ formatKeyVariety $ fromKey keyVariety key)
 	, ("bytesize", size show)
