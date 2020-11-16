@@ -28,7 +28,8 @@ that can be determined purely by looking at the key.
 
   These variables are also available for use in formats: ${key}, ${backend},
   ${bytesize}, ${humansize}, ${keyname}, ${hashdirlower}, ${hashdirmixed},
-  ${mtime} (for the mtime field of a WORM key).
+  ${mtime} (for the mtime field of a WORM key), ${file} (when a filename is
+  provided to examinekey).
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 

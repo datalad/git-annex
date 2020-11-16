@@ -33,6 +33,7 @@ touch file mtime = touchBoth file mtime mtime
 #else
 
 import Data.Time.Clock.POSIX
+import Utility.RawFilePath
 
 {- Noop for Windows -}
 touchBoth :: RawFilePath -> POSIXTime -> POSIXTime -> Bool -> IO ()

@@ -9,7 +9,7 @@ module Command.ExamineKey where
 
 import Command
 import qualified Utility.Format
-import Command.Find (parseFormatOption, showFormatted, keyVars)
+import Command.Find (parseFormatOption, showFormatted, formatVars)
 import Annex.Link
 import Backend
 import Types.Backend
@@ -57,7 +57,7 @@ run o _ input = do
 	showFormatted (format o) (serializeKey' k) $
 		[ ("objectpath", fromRawFilePath objectpath)
 		, ("objectpointer", fromRawFilePath objectpointer)
-		] ++ keyVars k
+		] ++ formatVars k af
 	return True
   where
 	-- Parse the input, which is either a key, or in batch mode 
