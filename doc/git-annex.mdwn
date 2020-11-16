@@ -1023,11 +1023,12 @@ Like other git commands, git-annex is configured via `.git/config`.
   controls how frequently the branch is refreshed. 
 
   Refreshing the branch takes some time, so doing it after every file
-  can be too slow. The default value is 0 (or false), which does not
-  refresh the branch. 1 (or true) will refresh once, after git-annex
-  has made other changes. Higher values refresh after approximately that
-  many files need to be updated. Ie, 2 refreshes after every file,
-  and 100 after every 99 files.
+  can be too slow. (It also can generate a lot of dangling git objects.)
+  The default value is 0 (or false), which does not
+  refresh the branch. Setting 1 (or true) will refresh only once, 
+  after git-annex has made other changes. Setting 2 refreshes after every
+  file, 3 after every other file, and so on; setting 100 refreshes after
+  every 99 files.
 
   (If git-annex gets faster in the future, refresh rates will increase
   proportional to the speed improvements.)

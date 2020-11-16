@@ -223,19 +223,19 @@ enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
 			, do
 				b <- preventCommits $ const $ 
 					adjustBranch adj origbranch
-				checkoutAdjustedBranch b []
+				checkoutAdjustedBranch b False
 			)
 
-checkoutAdjustedBranch :: AdjBranch -> [CommandParam] -> Annex Bool
-checkoutAdjustedBranch (AdjBranch b) checkoutparams = do
-	showOutput -- checkout can have output in large repos
+checkoutAdjustedBranch :: AdjBranch -> Bool -> Annex Bool
+checkoutAdjustedBranch (AdjBranch b) quietcheckout = do
+	-- checkout can have output in large repos
+	unless quietcheckout
+		showOutput
 	inRepo $ Git.Command.runBool $
 		[ Param "checkout"
 		, Param $ fromRef $ Git.Ref.base b
-		-- always show checkout progress, even if --quiet is used
-		-- to suppress other messages
-		, Param "--progress"
-		] ++ checkoutparams
+		, if quietcheckout then Param "--quiet" else Param "--progress"
+		]
 
 {- Already in a branch with this adjustment, but the user asked to enter it
  - again. This should have the same result as propagating any commits
@@ -265,7 +265,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 	
 		-- Make git checkout quiet to avoid warnings about
 		-- disconnected branch tips being lost.
-		checkoutAdjustedBranch b [Param "--quiet"]
+		checkoutAdjustedBranch b True
 	| otherwise = preventCommits $ \commitlck -> do
 		-- Done for consistency.
 		_ <- propigateAdjustedCommits' origbranch adj commitlck
@@ -302,7 +302,6 @@ adjustedBranchRefresh _af a = do
 	checkcounter n
 		-- Special case, 1 (or true) refreshes only at shutdown.
 		| n == 1 = pure False
-		| n == 2 = pure True
 		| otherwise = Annex.withState $ \s -> 
 			let !c = Annex.adjustedbranchrefreshcounter s + 1
 			    !enough = c >= pred n
@@ -337,7 +336,7 @@ adjustToCrippledFileSystem = do
 			_ -> do
 				let adjbranch = originalToAdjusted currbranch adj
 				ifM (inRepo (Git.Ref.exists $ adjBranch adjbranch))
-					( unlessM (checkoutAdjustedBranch adjbranch []) $
+					( unlessM (checkoutAdjustedBranch adjbranch False) $
 						failedenter
 					, unlessM (enterAdjustedBranch adj) $
 						failedenter
