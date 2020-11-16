@@ -44,6 +44,7 @@ import Annex.Common
 import Types.AdjustedBranch
 import Annex.AdjustedBranch.Name
 import qualified Annex
+import qualified Annex.Queue
 import Git
 import Git.Types
 import qualified Git.Branch
@@ -315,6 +316,11 @@ adjustedBranchRefresh _af a = do
 	-- because other files than the provided AssociatedFile
 	-- can need to be updated in some edge cases.
 	update adj origbranch = do
+		-- Flush the queue, to make any pending changes be written
+		-- out to disk. But mostly so any pointer files
+		-- restagePointerFile was called on get updated so git
+		-- checkout won't fall over.
+		Annex.Queue.flush
 		let adjbranch = originalToAdjusted origbranch adj
 		void $ updateAdjustedBranch adj adjbranch origbranch
 

@@ -97,3 +97,14 @@ branch. That is not batched, so running once per file may get slow.
 And to write trees, it uses git mktree --batch. But, a new process is
 started each time by Git.Tree.adjustTree (and other things). 
 Making that a long-running process would speed it up, probably.
+
+## queue flush slowness
+
+It uses Annex.Queue.flush to avoid a problem with dropping files,
+which depopuates the pointer file, which git sees as modified until
+restaged, which then prevents checking out the version of the branch where
+the pointer file is a symlink. There must be a less expensive way to handle
+that.
+
+(All the extra "(recording state in git...)" when dropping
+are due to it doing that too.)
