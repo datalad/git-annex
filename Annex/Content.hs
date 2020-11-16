@@ -76,6 +76,7 @@ import Annex.Link
 import Annex.LockPool
 import Annex.UUID
 import Annex.InodeSentinal
+import Annex.AdjustedBranch (adjustedBranchRefresh)
 import Messages.Progress
 import Types.Remote (RetrievalSecurityPolicy(..))
 import Types.NumCopies
@@ -203,15 +204,15 @@ lockContentUsing locker key fallback a = do
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
  - the key and moves the file into the annex as a key's content. -}
-getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmp rsp v key action = checkDiskSpaceToGet key False $
-	getViaTmpFromDisk rsp v key action
+getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> AssociatedFile -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmp rsp v key af action = checkDiskSpaceToGet key False $
+	getViaTmpFromDisk rsp v key af action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
  - and not being copied into place. -}
-getViaTmpFromDisk :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmpFromDisk rsp v key action = checkallowed $ do
+getViaTmpFromDisk :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> AssociatedFile -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmpFromDisk rsp v key af action = checkallowed $ do
 	tmpfile <- prepTmp key
 	resuming <- liftIO $ R.doesPathExist tmpfile
 	(ok, verification) <- action tmpfile
@@ -226,7 +227,7 @@ getViaTmpFromDisk rsp v key action = checkallowed $ do
 		else verification
 	if ok
 		then ifM (verifyKeyContent rsp v verification' key tmpfile)
-			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key))
+			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key af))
 				( do
 					logStatus key InfoPresent
 					return True
@@ -329,8 +330,8 @@ withTmp key action = do
  - accepted into the repository. Will display a warning message in this
  - case. May also throw exceptions in some cases.
  -}
-moveAnnex :: Key -> RawFilePath -> Annex Bool
-moveAnnex key src = ifM (checkSecureHashes' key)
+moveAnnex :: Key -> AssociatedFile -> RawFilePath -> Annex Bool
+moveAnnex key af src = ifM (checkSecureHashes' key)
 	( do
 		withObjectLoc key storeobject
 		return True
@@ -339,7 +340,7 @@ moveAnnex key src = ifM (checkSecureHashes' key)
   where
 	storeobject dest = ifM (liftIO $ R.doesPathExist dest)
 		( alreadyhave
-		, modifyContent dest $ do
+		, adjustedBranchRefresh af $ modifyContent dest $ do
 			freezeContent src
 			liftIO $ moveFile
 				(fromRawFilePath src)
@@ -500,8 +501,7 @@ cleanObjectLoc key cleaner = do
 		maybe noop (const $ removeparents dir (n-1))
 			<=< catchMaybeIO $ removeDirectory (fromRawFilePath dir)
 
-{- Removes a key's file from .git/annex/objects/
- -}
+{- Removes a key's file from .git/annex/objects/ -}
 removeAnnex :: ContentRemovalLock -> Annex ()
 removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	cleanObjectLoc key $ do
@@ -515,7 +515,8 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	-- Check associated pointer file for modifications, and reset if
 	-- it's unmodified.
 	resetpointer file = ifM (isUnmodified key file)
-		( depopulatePointerFile key file
+		( adjustedBranchRefresh (AssociatedFile (Just file)) $
+			depopulatePointerFile key file
 		-- Modified file, so leave it alone.
 		-- If it was a hard link to the annex object,
 		-- that object might have been frozen as part of the

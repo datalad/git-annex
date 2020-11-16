@@ -80,7 +80,7 @@ moveContent = do
 		let d = parentDir f'
 		liftIO $ allowWrite d
 		liftIO $ allowWrite f'
-		_ <- moveAnnex k f'
+		_ <- moveAnnex k (AssociatedFile Nothing) f'
 		liftIO $ removeDirectory (fromRawFilePath d)
 
 updateSymlinks :: Annex ()

@@ -63,7 +63,7 @@ toPerform key file remote = go Upload file $
 fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key file remote = go Upload file $
 	download (uuid remote) key file stdRetry $ \p ->
-		getViaTmp (retrievalSecurityPolicy remote) (RemoteVerify remote) key $ \t ->
+		getViaTmp (retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t ->
 			tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p) >>= \case
 				Right v -> return (True, v)	
 				Left e -> do

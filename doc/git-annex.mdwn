@@ -1016,6 +1016,22 @@ Like other git commands, git-annex is configured via `.git/config`.
 
   When the `--batch` option is used, this configuration is ignored.
 
+* `annex.adjustedbranchrefresh`
+
+  When [[git-annex-adjust]](1) is used to set up an adjusted branch
+  that needs to be refreshed after getting or dropping files, this config
+  controls how frequently the branch is refreshed. 
+
+  Refreshing the branch takes some time, so doing it after every file
+  can be too slow. The default value is 0 (or false), which does not
+  refresh the branch. 1 (or true) will refresh once, after git-annex
+  has made other changes. Higher values refresh after approximately that
+  many files need to be updated. Ie, 2 refreshes after every file,
+  and 100 after every 99 files.
+
+  (If git-annex gets faster in the future, refresh rates will increase
+  proportional to the speed improvements.)
+
 * `annex.queuesize`
 
   git-annex builds a queue of git commands, in order to combine similar

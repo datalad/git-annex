@@ -10,6 +10,18 @@ it makes sense to do that? And for that matter, can it be done efficiently
 enough to do it more frequently? After every file or after some number of
 files, or after processing all files in a (sub-)tree?
 
+> Since the answer to that will change over time, let's make a config for
+> it. annex.adjustedbranchrefresh
+> 
+> The config can start out as a range from 0 up that indicates how
+> infrequently to update the branch for this. With 0 being never refresh,
+> 1 being refresh the minimum (once at shutdown), 2 being refresh after 
+> 1 file, 100 after every 99 files, etc.
+> If refreshing gets twice as fast, divide the numbers by two, etc.
+> If it becomes sufficiently fast that the overhead doesn't matter,
+> it can change to a simple boolean. Since 0 is false and > 0 is true,
+> in git config, the old values will still work. (done)
+
 Investigation of the obvious things that make it slow follows:
 
 ## efficient branch adjustment

@@ -294,7 +294,7 @@ test runannex mkr mkk =
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k (serializeKey' k)
-	get r k = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
+	get r k = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) $ \dest ->
 		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate) >>= \case
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
@@ -368,13 +368,13 @@ testUnavailable runannex mkr mkk =
 	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->
-		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest ->
+		getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) $ \dest ->
 			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate) >>= \case
 				Right v -> return (True, v)
 				Left _ -> return (False, UnVerified)
 	, check (== Right False) "retrieveKeyFileCheap" $ \r k -> case Remote.retrieveKeyFileCheap r of
 		Nothing -> return False
-		Just a -> getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k $ \dest -> 
+		Just a -> getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) $ \dest -> 
 			unVerified $ isRight
 				<$> tryNonAsync (a k (AssociatedFile Nothing) (fromRawFilePath dest))
 	]
@@ -436,7 +436,7 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 	k <- case Types.Backend.genKey Backend.Hash.testKeyBackend of
 		Just a -> a ks nullMeterUpdate
 		Nothing -> giveup "failed to generate random key (backend problem)"
-	_ <- moveAnnex k (toRawFilePath f)
+	_ <- moveAnnex k (AssociatedFile Nothing) (toRawFilePath f)
 	return k
 
 getReadonlyKey :: Remote -> FilePath -> Annex Key

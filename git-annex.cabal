@@ -609,6 +609,7 @@ Executable git-annex
     Annex
     Annex.Action
     Annex.AdjustedBranch
+    Annex.AdjustedBranch.Merge
     Annex.AdjustedBranch.Name
     Annex.AutoMerge
     Annex.BloomFilter

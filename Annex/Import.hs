@@ -460,7 +460,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 					ia loc cid (fromRawFilePath tmpfile)
 					(pure k)
 					(combineMeterUpdate p' p)
-				ok <- moveAnnex k' tmpfile
+				ok <- moveAnnex k' af tmpfile
 				when ok $
 					logStatus k InfoPresent
 				return (Just (k', ok))
@@ -503,7 +503,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				p
 			case keyGitSha k of
 				Nothing -> do
-					ok <- moveAnnex k tmpfile
+					ok <- moveAnnex k af tmpfile
 					when ok $ do
 						recordcidkey cidmap db cid k
 						logStatus k InfoPresent

@@ -60,6 +60,7 @@ import Logs.Export
 import Logs.PreferredContent
 import Annex.AutoMerge
 import Annex.AdjustedBranch
+import Annex.AdjustedBranch.Merge
 import Annex.Ssh
 import Annex.BloomFilter
 import Annex.UpdateInstead

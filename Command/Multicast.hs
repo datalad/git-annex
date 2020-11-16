@@ -212,7 +212,7 @@ storeReceived f = do
 			warning $ "Received a file " ++ f ++ " that is not a git-annex key. Deleting this file."
 			liftIO $ removeWhenExistsWith removeLink f
 		Just k -> void $
-			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k $ \dest -> unVerified $
+			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k (AssociatedFile Nothing) $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do
 					rename f (fromRawFilePath dest)
 					return True

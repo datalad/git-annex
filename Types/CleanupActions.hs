@@ -16,6 +16,7 @@ data CleanupAction
 	| StopHook UUID
 	| FsckCleanup
 	| SshCachingCleanup
+	| AdjustedBranchUpdate
 	| TorrentCleanup URLString
 	| OtherTmpCleanup
 	deriving (Eq, Ord)

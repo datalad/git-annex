@@ -33,7 +33,7 @@ start (_, key) = fieldTransfer Download key $ \_p -> do
 	let verify = if fromunlocked then AlwaysVerify else DefaultVerify
 	-- This matches the retrievalSecurityPolicy of Remote.Git
 	let rsp = RetrievalAllKeysSecure
-	ifM (getViaTmp rsp verify key go)
+	ifM (getViaTmp rsp verify key (AssociatedFile Nothing) go)
 		( do
 			-- forcibly quit after receiving one key,
 			-- and shutdown cleanly

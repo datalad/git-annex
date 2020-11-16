@@ -225,7 +225,7 @@ fromPerform src removewhen key afile = do
   where
 	get = notifyTransfer Download afile $ 
 		download (Remote.uuid src) key afile stdRetry $ \p ->
-			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key $ \t ->
+			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key afile $ \t ->
 				Remote.verifiedAction $ Remote.retrieveKeyFile src key afile (fromRawFilePath t) p
 	
 	dispatch _ _ False = stop -- failed

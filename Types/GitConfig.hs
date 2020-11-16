@@ -125,6 +125,7 @@ data GitConfig = GitConfig
 	, annexAutoUpgradeRepository :: Bool
 	, annexCommitMode :: CommitMode
 	, annexSkipUnknown :: Bool
+	, annexAdjustedBranchRefresh :: Integer
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -219,6 +220,10 @@ extractGitConfig configsource r = GitConfig
 		then ManualCommit
 		else AutomaticCommit
 	, annexSkipUnknown = getbool (annexConfig "skipunknown") True
+	, annexAdjustedBranchRefresh = fromMaybe
+		-- parse as bool if it's not a number
+		(if getbool "adjustedbranchrefresh" False then 1 else 0)
+		(getmayberead (annexConfig "adjustedbranchrefresh"))
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

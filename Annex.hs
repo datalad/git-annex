@@ -143,6 +143,7 @@ data AnnexState = AnnexState
 	, sentinalstatus :: Maybe SentinalStatus
 	, useragent :: Maybe String
 	, errcounter :: Integer
+	, adjustedbranchrefreshcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
 	, tempurls :: M.Map Key URLString
 	, existinghooks :: M.Map Git.Hook.Hook Bool
@@ -203,6 +204,7 @@ newState c r = do
 		, sentinalstatus = Nothing
 		, useragent = Nothing
 		, errcounter = 0
+		, adjustedbranchrefreshcounter = 0
 		, unusedkeys = Nothing
 		, tempurls = M.empty
 		, existinghooks = M.empty
@@ -399,8 +401,8 @@ changeDirectory d = do
 
 incError :: Annex ()
 incError = changeState $ \s -> 
-	let ! c = errcounter s + 1 
-	    ! s' = s { errcounter = c }
+	let !c = errcounter s + 1 
+	    !s' = s { errcounter = c }
 	in s'
 
 getGitRemotes :: Annex [Git.Repo]
