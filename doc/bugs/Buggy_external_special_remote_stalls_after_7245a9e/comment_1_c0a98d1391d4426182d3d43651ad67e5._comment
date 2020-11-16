@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-11-16T18:22:05Z"
+ content="""
+> In the datalad test suite, a test involving one of our special remotes
+> hangs after 7245a9ed5 [...] The hang depends on the remote program
+> creating an SSH socket but not cleaning it up on failure. That's being
+> addressed on our end (https://github.com/datalad/datalad/pull/5151).
+
+That statement was based on me being able to trigger a stall locally
+in the same test on my Buster system.  The changes from datalad's pr
+5151 resolved the hang on my end, as well as the hang from the
+stripped down demo I added here.
+
+However, with the changes from pr 5151 merged, it turns out the the
+stall on the Ubuntu 18.04 CI is still there [1].  So, it's unclear
+what's going on.  Perhaps 7245a9ed5 isn't even what triggered the hang
+on the CI, though the stall seems to have first appeared 14 days ago
+on a build using 7e24b2587 [2], so the timing is at least consistent
+with 7245a9ed5 being the culprit.
+
+[1] https://github.com/datalad/git-annex/runs/1404305092?check_suite_focus=true
+[2] https://github.com/datalad/datalad-extensions/runs/1345445794?check_suite_focus=true
+
+"""]]
