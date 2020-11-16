@@ -186,6 +186,10 @@ isTrueFalse' (ConfigValue s)
 	| s' == "0" = Just False
 	| s' == "" = Just False
 
+	-- Git treats any number other than 0 as true,
+	-- including negative numbers.
+	| S8.all (\c -> isDigit c || c == '-') s' = Just True
+
 	| otherwise = Nothing
   where
 	s' = S8.map toLower s
