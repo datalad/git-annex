@@ -21,8 +21,8 @@ module Annex.AdjustedBranch (
 	fromAdjustedBranch,
 	getAdjustment,
 	enterAdjustedBranch,
-	updateAdjustedBranch,
 	adjustedBranchRefresh,
+	adjustedBranchRefreshFull,
 	adjustBranch,
 	adjustTree,
 	adjustToCrippledFileSystem,
@@ -296,7 +296,7 @@ adjustedBranchRefresh _af a = do
 				ifM (checkcounter n)
 					( update adj origbranch
 					, Annex.addCleanup AdjustedBranchUpdate $
-						update adj origbranch
+						adjustedBranchRefreshFull adj origbranch
 					)
 		_ -> return ()
 	
@@ -309,20 +309,26 @@ adjustedBranchRefresh _af a = do
 			    !c' = if enough then 0 else c
 			    !s' = s { Annex.adjustedbranchrefreshcounter = c' }
 			    in pure (s', enough)
-	
-	-- TODO This is very slow when run a lot of times. 
-	-- Incrementally adjust only the AssociatedFile.
-	-- However, this should be run once at shutdown then,
-	-- because other files than the provided AssociatedFile
-	-- can need to be updated in some edge cases.
+
 	update adj origbranch = do
 		-- Flush the queue, to make any pending changes be written
 		-- out to disk. But mostly so any pointer files
 		-- restagePointerFile was called on get updated so git
 		-- checkout won't fall over.
 		Annex.Queue.flush
-		let adjbranch = originalToAdjusted origbranch adj
-		void $ updateAdjustedBranch adj adjbranch origbranch
+		-- This is slow, it would be better to incrementally
+		-- adjust the AssociatedFile, and only call this once
+		-- at shutdown to handle cases where not all
+		-- AssociatedFiles are known.
+		adjustedBranchRefreshFull adj origbranch
+
+{- Slow, but more dependable version of adjustedBranchRefresh that
+ - does not rely on all AssociatedFiles being known. -}
+adjustedBranchRefreshFull :: Adjustment -> OrigBranch -> Annex ()
+adjustedBranchRefreshFull adj origbranch = do
+	let adjbranch = originalToAdjusted origbranch adj
+	unlessM (updateAdjustedBranch adj adjbranch origbranch) $
+		warning $ unwords [ "Updating adjusted branch failed." ]
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
