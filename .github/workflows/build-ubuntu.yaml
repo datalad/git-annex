@@ -7,6 +7,11 @@ on:
       - '.github/workflows/build-ubuntu.yaml'
   schedule:
     - cron: '30 02 * * *'
+  workflow_dispatch:
+    inputs:
+      commitish:
+        description: The upstream commitish to build
+        required: true
 
 env:
   LANG: C
@@ -34,12 +39,19 @@ jobs:
           fetch-depth: 0
           path: git-annex
 
+      - name: Determine git-annex ref to build
+        run: |
+          if [ "${{ github.event_name }}" = workflow_dispatch ]
+          then echo "BUILD_COMMIT=${{ github.event.inputs.commitish }}" >> "$GITHUB_ENV"
+          else echo "BUILD_COMMIT=origin/upstream/master" >> "$GITHUB_ENV"
+          fi
+
       - name: Check out source files
-        run: git checkout origin/upstream/master -- .
+        run: git checkout "$BUILD_COMMIT" -- .
         working-directory: git-annex
 
       - name: Adjust changelog generation script to use original branch
-        run: sed -i -e 's,HEAD,origin/upstream/master,g' debian/create-standalone-changelog
+        run: sed -i -e "s,HEAD,$BUILD_COMMIT,g" debian/create-standalone-changelog
         working-directory: git-annex
 
       - name: Import GPG keys
@@ -53,7 +65,7 @@ jobs:
       - name: Get build version
         id: build-version
         run: |
-          version="$(git describe origin/upstream/master | sed -e 's/-/+git/')"
+          version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
           arch="$(dpkg --print-architecture)"
           echo "Building $version"
           echo "::set-output name=version::${version}_$arch"
