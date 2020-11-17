@@ -7,6 +7,8 @@ git-annex (8.20201117) UNRELEASED; urgency=medium
     branches set up by git-annex adjust --unlock-present/--hide-missing.
   * examinekey: Added a "file" format variable for consistency with find,
     and for easier scripting.
+  * init: When writing hook scripts, set all execute bits, not only
+    the user execute bit.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2020 09:38:32 -0400
 

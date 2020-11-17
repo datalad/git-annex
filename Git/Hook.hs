@@ -55,8 +55,9 @@ hookWrite h r = ifM (doesFileExist f)
 	f = hookFile h r
 	go = do
 		viaTmp writeFile f (hookScript h)
-		p <- getPermissions f
-		void $ tryIO $ setPermissions f $ p {executable = True}
+		void $ tryIO $ modifyFileMode
+			(toRawFilePath f)
+			(addModes executeModes)
 		return True
 
 {- Removes a hook. Returns False if the hook contained something else, and

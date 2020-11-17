@@ -20,3 +20,13 @@ git-annex version: 8.20201103, on Debian sid
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex is super great :-)
+
+> That's a bug indeed! I've fixed it.
+> 
+> I decided to not make re-running `git-annex init` fix up the file mode
+> if the hook already existed with the wrong permissions.
+> That seemed like probably a bad idea, because it's at least possible
+> the user might intend to unset one of the x bits and git-annex should not
+> get in the way of that. So, you should `chmod a+x` the hooks yourself.
+>
+> [[done]] --[[Joey]]
