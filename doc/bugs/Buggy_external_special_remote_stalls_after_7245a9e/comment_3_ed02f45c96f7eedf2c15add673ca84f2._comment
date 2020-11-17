@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2020-11-17T19:04:26Z"
+ content="""
+One approach would be:
+
+		cancelOnExit :: ProcessHandle -> IO a -> IO (Maybe a)
+
+The versions of this currently being used to work around the past
+occurances of the problem wait for the process to exit, and then wait 2
+seconds before canceling the action, to give it time to read anything that
+was buffered in the pipe.
+
+That's annoyingly racey, what if the system somehow massively slows
+down for 2 seconds just after the process exits, and so buffered output is
+lost? Doing this in a lot of places, not just a few targeted places where
+maybe we didn't care too much about stderr anyway, does not feel safe.
+
+There's GHC.IO.Handle.hWaitForInput that does not consume input from a
+Handle, but checks if there is any available to read. Digging into what
+that really means -- as well as checking its internal buffers, it calls a
+[fdReady C function](https://gitlab.haskell.org/ghc/ghc/-/blob/ba4dcc7cb77a37486368911fec854d112a1db93c/libraries/base/cbits/inputReady.c)
+which boils down to a `poll()`. So that seems like it could be used to
+avoid the race. I think it would be safest to use it with 0, which avoids a
+case where, it interrupted too long, it can return false when there's still
+input.
+
+It should be possible to use that to implement this:
+
+	readUntilExit :: ProcessHandle -> (Handle -> IO a) -> Handle -> IO a
+
+Wait for the process to exit, and then check hWaitForInput, and as long as
+there's input left, sleep breifly and loop. Once all buffered input as been
+consumed by the action, hClose the handle to get the action to finish
+reading from it.
+
+One problem with this is that eg, this would throw an exception if it
+closed the handle out from under hGetLine before it read anything:
+
+	unlessM (hIsEOF h) $
+		readUntilExit ph hGetLine h
+
+So it's not entirely safe to drop this in just anywhere. Maybe it should
+catch the EOF exception?
+	
+	readUntilExitOrEOF :: ProcessHandle -> (Handle -> IO a) -> Handle -> IO (Maybe a)
+
+That should be fine for things like hGetLine, but would still be unsafe
+for hGetContents, which does *not* like having the handle it's reading
+closed out from under it ("hGetContents: illegal operation (delayed read on closed handle)").
+So maybe best to specialize it:
+
+	hGetLineUntilExitOrEOF :: ProcessHandle -> Handle -> IO (Maybe String)
+
+I have a partial implementation on the ssh-hates-me branch.
+"""]]
