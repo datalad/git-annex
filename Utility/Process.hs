@@ -24,6 +24,7 @@ module Utility.Process (
 	withCreateProcess,
 	waitForProcess,
 	cleanupProcess,
+	cancelOnExit,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
@@ -42,8 +43,10 @@ import System.Exit
 import System.IO
 import System.Log.Logger
 import Control.Monad.IO.Class
+import Control.Concurrent
 import Control.Concurrent.Async
 import qualified Data.ByteString as S
+import GHC.IO.Handle (hWaitForInput)
 
 data StdHandle = StdinHandle | StdoutHandle | StderrHandle
 	deriving (Eq)
@@ -229,3 +232,60 @@ cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
 	maybe (return ()) hClose mb_stderr
 	void $ waitForProcess pid
 #endif
+
+{- | Like hGetLine, reads a line from the Handle. If the Handle is already
+ - closed, returns Nothing. If the process exits without writing a line,
+ - also returns Nothing.
+ -
+ - This is useful to protect against situations where the process might
+ - have transferred the handle being read to another process, and so
+ - the handle could remain open after the process has exited. That is a rare
+ - situation, but can happen. Consider a the process that started up a
+ - daemon, and the daemon inherited stderr from it, rather than the more
+ - usual behavior of closing the file descriptor. Reading from stderr
+ - would block past the exit of the process.
+ -
+ - In that situation, this will detect when the process has exited,
+ - and avoid blocking forever. But will still return anything the process
+ - buffered to the handle before exiting.
+ -}
+hGetLineUntilExitOrEOF :: ProcessHandle -> Handle -> IO (Maybe String)
+hGetLineUntilExitOrEOF ph h = either Just id <$> (reader `race` waiter)
+  where
+	reader = hGetLine isEOF h >>= \case
+		True -> return Nothing
+		False -> Just <$> hGetLine h
+
+	waiter = do
+		smalldelay
+		_ <- waitForProcess ph
+		waiter'
+		-- Reached the end of the processes output.
+		hClose h
+
+	waiter' = isanythingbuffered >>= \case
+		True -> do
+			-- Waiting for the reader to consume
+			-- buffered output after the process has
+			-- exited.
+			threadDelay 10000 -- 1/100th second
+			waiter'
+		False ->  return ()
+
+	isanythingbuffered = 
+		-- waitForInput is documented to throw an encoding
+		-- error in some cases, if the Handle has buffered on it
+		-- something that cannot be decoded. If it does,
+		-- that does imply there's still something buffered though.
+		catchNonAsync
+			(const (return True))
+			-- waitForInput can throw an EOF error
+			(catchIOErrorType EOF
+				(const (return False))
+				(hWaitForInput h 0))
+
+
+	-- A small delay avoids starting the work of waitForProcess
+	-- unncessarily in the common case where hGetLine gets a buffered
+	-- line immediately.
+	smalldelay = threadDelay 10000 -- 1/100th second

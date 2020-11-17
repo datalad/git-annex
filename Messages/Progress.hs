@@ -140,11 +140,11 @@ mkOutputHandlerQuiet = OutputHandler
 	<$> pure True
 	<*> mkStderrEmitter
 
-mkStderrRelayer :: Annex (Handle -> IO ())
+mkStderrRelayer :: Annex (ProcessHandle -> Handle -> IO ())
 mkStderrRelayer = do
 	quiet <- commandProgressDisabled
 	emitter <- mkStderrEmitter
-	return $ \h -> avoidProgress quiet h emitter
+	return $ \ph h -> avoidProgress quiet ph h emitter
 
 {- Generates an IO action that can be used to emit stderr.
  -
