@@ -176,14 +176,14 @@ stopDaemon pidfile = go =<< checkDaemon pidfile
  - when eg, restarting the daemon.
  -}
 #ifdef mingw32_HOST_OS
-winLockFile :: PID -> FilePath -> IO FilePath
+winLockFile :: PID -> FilePath -> IO RawFilePath
 winLockFile pid pidfile = do
 	cleanstale
-	return $ prefix ++ show pid ++ suffix
+	return $ toRawFilePath $ prefix ++ show pid ++ suffix
   where
 	prefix = pidfile ++ "."
 	suffix = ".lck"
 	cleanstale = mapM_ (void . tryIO . removeFile) =<<
-		(filter iswinlockfile <$> dirContents (parentDir pidfile))
+		(filter iswinlockfile <$> dirContents (fromRawFilePath (parentDir (toRawFilePath pidfile))))
 	iswinlockfile f = suffix `isSuffixOf` f && prefix `isPrefixOf` f
 #endif
