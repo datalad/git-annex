@@ -24,4 +24,4 @@ OSX and Windows [still FTBFS differently](https://github.com/datalad/git-annex/p
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
-[[!fixed|done]] --[[Joey]]
+[[fixed|done]] --[[Joey]]
