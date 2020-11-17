@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-11-17T16:06:53Z"
+ content="""
+The ssh process you run this way has the following file descriptor:
+
+	l-wx------ 1 joey joey 64 Nov 17 12:07 2 -> pipe:[6320144]
+
+That pipe is connected to git-annex. git-annex is waiting to read any errors
+that the special remote might output to stderr, in order to relay them to the
+user. Yes, this was changed by the referenced commit.
+
+Since git-annex has already waited on the process, the process is dead
+by the point it waits on the stderr relayer thread. The only purpose
+of waiting rather than closing the handle is to see anything the process
+might have output in its dying breath.
+
+Also, this is very similar to the problem fixed
+in [[!commit aa492bc65904a19f22ffdfc20d7a5e7052e2f54d]] and in
+[[!commit cb74cefde782e542ad609b194792deabe55b1f5a]], also involving ssh.
+Those were solved using a rather ugly up to 2 second wait for any late
+stderr to arrive, though it only delays when the handle is kept open like this.
+
+There are surely a ton of places where this could potentially happen.
+Not only stderr.. it's entirely possible that process that git-annex
+expects to read stdout from might spawn a daemon that keeps inherited
+stdout open, and exit, leaving git-annex waiting forever to read
+from the pipe.
+
+I'm doubtful this is a bug everywhere that git-annex reads all the stdout from
+a pipe. Because it seems to me a great many programs would have the same
+problem if a program they were piping stdout from behaved in that way. 
+I've never seen anything concern itself with this potential problem. This is
+why proper daemons close their handles, certianly their stdout handle. stderr
+is a slightly special case maybe.
+
+processTranscript is one example of another place in git-annex that
+waits to consume all stderr from a process and would be hung by such a daemon.
+There are a dozen in all,
+`git grep 'std_err =' | egrep 'CreatePipe|UseHandle | grep -v nullh`
+I suppose they could all be audited and maybe something abstracted out to
+deal with them all.
+"""]]
