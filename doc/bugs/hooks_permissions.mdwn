@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+I'm using accessing to a repo with sshfs, but I noticed hooks do not get executed. I noticed the permissions of hooks created by git-annex were all set to 700 (while the default .sample hooks seem to be 755). Is it intended?
+
+### What steps will reproduce the problem?
+
+(example)
+[[!format sh """
+$ git checkout 'adjusted/master(unlocked)'
+Updating files: 100% (3499/3499), done.
+Switched to branch 'adjusted/master(unlocked)'
+hint: The '.git/hooks/post-checkout' hook was ignored because it's not set as executable.
+hint: You can disable this warning with `git config advice.ignoredHook false`.
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 8.20201103, on Debian sid
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex is super great :-)
