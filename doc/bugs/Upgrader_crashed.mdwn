@@ -1,0 +1,39 @@
+### Please describe the problem.
+I get the following **warning** on my git-annex dashboard
+
+```
+Upgrader crashed: C:\Users\alexasus\.config\git-annex\program: openFile: does not exist (No such file or directory)
+```
+
+### What steps will reproduce the problem?
+- Install git-annex with the Windows 10 installer.
+- Create a repository with the default path.
+
+
+### What version of git-annex are you using? On what operating system?
+- git-annex version: git-annex-installer_8.20201007+git171-g7e24b2587 (this is the Windows 10 installer filename)
+- Windows 10 Version 2004 (OS Build 19041.630)
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2020-11-18 11:29:22.6950775] main: starting assistant version 8.20201008-g7e24b2587
+Launching web browser on file://C:\Users\alexasus\Desktop\annex\.git\annex\webapp.html
+[2020-11-18 11:29:22.7940807] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2020-11-18 11:29:23.278062] Watcher: Performing startup scan
+(started...) 
+Upgrader crashed: C:\Users\alexasus\.config\git-annex\program: openFile: does not exist (No such file or directory)
+[2020-11-18 11:29:24.1010593] Upgrader: warning Upgrader crashed: C:\Users\alexasus\.config\git-annex\program: openFile: does not exist (No such file or directory)
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I've barely just installed. So I'm gonna get going these days. That warning doesn't seem to be an issue so far. I've looked it up but couldn't find any other reports for that warning.
+
+
