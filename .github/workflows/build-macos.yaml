@@ -7,6 +7,11 @@ on:
       - '.github/workflows/build-macos.yaml'
   schedule:
     - cron: '30 01 * * *'
+  workflow_dispatch:
+    inputs:
+      commitish:
+        description: The upstream commitish to build
+        required: true
 
 env:
   LANG: C
@@ -26,13 +31,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine git-annex ref to build
+        run: |
+          if [ "${{ github.event_name }}" = workflow_dispatch ]
+          then echo "BUILD_COMMIT=${{ github.event.inputs.commitish }}" >> "$GITHUB_ENV"
+          else echo "BUILD_COMMIT=origin/upstream/master" >> "$GITHUB_ENV"
+          fi
+
       - name: Check out source files
-        run: git checkout origin/upstream/master -- .
+        run: git checkout "$BUILD_COMMIT" -- .
 
       - name: Get build version
         id: build-version
         run: |
-          version="$(git describe origin/upstream/master | sed -e 's/-/+git/')"
+          version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
           echo "Building $version"
           echo "::set-output name=version::${version}_x64"
 
