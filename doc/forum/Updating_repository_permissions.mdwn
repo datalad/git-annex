@@ -1,0 +1,18 @@
+Hello everyone,
+
+I would like to make a repository readable and writable over ssh for all users of a given group.
+
+A [quick search](https://stackoverflow.com/a/29646155) led me to the following procedure :
+
+```bash
+cd <project_dir>/                         # Enter inside the project directory
+git config core.sharedRepository group    # Update the git's config
+chgrp -R <group-name> .                   # Change files and directories' group
+chmod -R g+w .                            # Change permissions
+chmod g-w .git/objects/pack/*             # Git pack files should be immutable
+find -type d -exec chmod g+s {} +         # New files get directory's group id
+```
+
+My question is simple : is it safe to apply it to a git-annex repository as well ?
+
+Thank you for your help.
