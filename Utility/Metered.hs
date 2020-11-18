@@ -49,7 +49,6 @@ import Common
 import Utility.Percentage
 import Utility.DataUnits
 import Utility.HumanTime
-import Utility.ThreadScheduler
 import Utility.SimpleProtocol as Proto
 
 import qualified Data.ByteString.Lazy as L
@@ -266,7 +265,7 @@ commandMeterExitCode progressparser oh meter meterupdate cmd params =
 commandMeterExitCode' :: ProgressParser -> OutputHandler -> Maybe Meter -> MeterUpdate -> FilePath -> [CommandParam] -> (CreateProcess -> CreateProcess) -> IO (Maybe ExitCode)
 commandMeterExitCode' progressparser oh mmeter meterupdate cmd params mkprocess = 
 	outputFilter cmd params mkprocess Nothing
-		(feedprogress mmeter zeroBytesProcessed [])
+		(const $ feedprogress mmeter zeroBytesProcessed [])
 		handlestderr
   where
 	feedprogress sendtotalsize prev buf h = do
@@ -291,9 +290,11 @@ commandMeterExitCode' progressparser oh mmeter meterupdate cmd params mkprocess 
 							meterupdate bytes
 						feedprogress sendtotalsize' bytes buf' h
 
-	handlestderr h = unlessM (hIsEOF h) $ do
-		stderrHandler oh =<< hGetLine h
-		handlestderr h
+	handlestderr ph h = hGetLineUntilExitOrEOF ph h >>= \case
+		Just l -> do
+			stderrHandler oh l
+			handlestderr ph h
+		Nothing -> return ()
 
 {- Runs a command, that may display one or more progress meters on
  - either stdout or stderr, and prevents the meters from being displayed.
@@ -306,8 +307,8 @@ demeterCommand oh cmd params = demeterCommandEnv oh cmd params Nothing
 demeterCommandEnv :: OutputHandler -> FilePath -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
 demeterCommandEnv oh cmd params environ = do
 	ret <- outputFilter cmd params id environ
-		(\outh -> avoidProgress True outh stdouthandler)
-		(\errh -> avoidProgress True errh $ stderrHandler oh)
+		(\ph outh -> avoidProgress True ph outh stdouthandler)
+		(\ph errh -> avoidProgress True ph errh $ stderrHandler oh)
 	return $ case ret of
 		Just ExitSuccess -> True
 		_ -> False
@@ -320,44 +321,31 @@ demeterCommandEnv oh cmd params environ = do
  - filter out lines that contain \r (typically used to reset to the
  - beginning of the line when updating a progress display).
  -}
-avoidProgress :: Bool -> Handle -> (String -> IO ()) -> IO ()
-avoidProgress doavoid h emitter = unlessM (hIsEOF h) $ do
-	s <- hGetLine h
-	unless (doavoid && '\r' `elem` s) $
-		emitter s
-	avoidProgress doavoid h emitter
+avoidProgress :: Bool -> ProcessHandle -> Handle -> (String -> IO ()) -> IO ()
+avoidProgress doavoid ph h emitter = hGetLineUntilExitOrEOF ph h >>= \case
+	Just s -> do
+		unless (doavoid && '\r' `elem` s) $
+			emitter s
+		avoidProgress doavoid ph h emitter
+	Nothing -> return ()
 
 outputFilter
 	:: FilePath
 	-> [CommandParam]
 	-> (CreateProcess -> CreateProcess)
 	-> Maybe [(String, String)]
-	-> (Handle -> IO ())
-	-> (Handle -> IO ())
+	-> (ProcessHandle -> Handle -> IO ())
+	-> (ProcessHandle -> Handle -> IO ())
 	-> IO (Maybe ExitCode)
 outputFilter cmd params mkprocess environ outfilter errfilter = 
 	catchMaybeIO $ withCreateProcess p go
   where
-	go _ (Just outh) (Just errh) pid = do
-		outt <- async $ tryIO (outfilter outh) >> hClose outh
-		errt <- async $ tryIO (errfilter errh) >> hClose errh
-		ret <- waitForProcess pid
-
-		-- Normally, now that the process has exited, the threads
-		-- will finish processing its output and terminate.
-		-- But, just in case the process did something evil like
-		-- forking to the background while inheriting stderr,
-		-- it's possible that the threads will not finish, which
-		-- would result in a deadlock. So, wait a few seconds
-		-- maximum for them to finish and then cancel them.
-		-- (One program that has behaved this way in the past is
-		-- openssh.)
-		void $ tryNonAsync $ race_
-			(wait outt >> wait errt)
-			(threadDelaySeconds (Seconds 2))
-		cancel outt
-		cancel errt
-
+	go _ (Just outh) (Just errh) ph = do
+		outt <- async $ tryIO (outfilter ph outh) >> hClose outh
+		errt <- async $ tryIO (errfilter ph errh) >> hClose errh
+		ret <- waitForProcess ph
+		wait outt
+		wait errt
 		return ret
 	go _ _ _ _ = error "internal"
 	

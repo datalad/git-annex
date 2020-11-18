@@ -6,7 +6,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP, Rank2Types #-}
+{-# LANGUAGE CPP, Rank2Types, LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Process (
@@ -24,6 +24,7 @@ module Utility.Process (
 	withCreateProcess,
 	waitForProcess,
 	cleanupProcess,
+	hGetLineUntilExitOrEOF,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
@@ -229,3 +230,92 @@ cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
 	maybe (return ()) hClose mb_stderr
 	void $ waitForProcess pid
 #endif
+
+{- | Like hGetLine, reads a line from the Handle. Returns Nothing if end of
+ - file is reached, or the handle is closed, or if the process has exited
+ - and there is nothing more buffered to read from the handle.
+ -
+ - This is useful to protect against situations where the process might
+ - have transferred the handle being read to another process, and so
+ - the handle could remain open after the process has exited. That is a rare
+ - situation, but can happen. Consider a the process that started up a
+ - daemon, and the daemon inherited stderr from it, rather than the more
+ - usual behavior of closing the file descriptor. Reading from stderr
+ - would block past the exit of the process.
+ -
+ - In that situation, this will detect when the process has exited,
+ - and avoid blocking forever. But will still return anything the process
+ - buffered to the handle before exiting.
+ -
+ - Note on newline mode: This ignores whatever newline mode is configured
+ - for the handle, because there is no way to query that. On Windows,
+ - it will remove any \r coming before the \n. On other platforms,
+ - it does not treat \r specially.
+ -}
+hGetLineUntilExitOrEOF :: ProcessHandle -> Handle -> IO (Maybe String)
+hGetLineUntilExitOrEOF ph h = go []
+  where
+	go buf = do
+		ready <- waitforinputorerror smalldelay
+		if ready
+			then getloop buf go
+			else getProcessExitCode ph >>= \case
+				-- Process still running, wait longer.
+				Nothing -> go buf
+				-- Process is done. It's possible
+				-- that it output something and exited
+				-- since the prior hWaitForInput,
+				-- so check one more time for any buffered
+				-- output.
+				Just _ -> finalcheck buf
+
+	finalcheck buf = do
+		ready <- waitforinputorerror 0
+		if ready
+			then getloop buf finalcheck
+			-- No remaining buffered input, though the handle
+			-- may not be EOF if something else is keeping it
+			-- open. Treated the same as EOF.
+			else eofwithnolineend buf
+
+	-- On exception, proceed as if there was input;
+	-- EOF and any encoding issues are dealt with
+	-- when reading from the handle.
+	waitforinputorerror t = hWaitForInput h t
+		`catchNonAsync` const (pure True)
+
+	getchar = 
+		catcherr EOF $
+			-- If the handle is closed, reading from it is
+			-- an IllegalOperation.
+			catcherr IllegalOperation $
+				Just <$> hGetChar h
+	  where
+		catcherr t = catchIOErrorType t (const (pure Nothing))
+
+	getloop buf cont =
+		getchar >>= \case
+			Just c
+				| c == '\n' -> return (Just (gotline buf))
+				| otherwise -> cont (c:buf)
+			Nothing -> eofwithnolineend buf
+
+#ifndef mingw32_HOST_OS
+	gotline buf = reverse buf
+#else
+	gotline ('\r':buf) = reverse buf
+	gotline buf = reverse buf
+#endif
+
+	eofwithnolineend buf = return $
+		if null buf 
+			then Nothing -- no line read
+			else Just (reverse buf)
+
+	-- Tenth of a second delay. If the process exits with the FD being
+	-- held open, will wait up to twice this long before returning.
+	-- This delay could be made smaller. However, that is an unusual
+	-- case, and making it too small would cause lots of wakeups while
+	-- waiting for output. Bearing in mind that this could be run on
+	-- many processes at the same time.
+	smalldelay = 100 -- milliseconds

@@ -53,7 +53,7 @@ startExternalAddonProcess basecmd pid = do
 			Left _ -> runerr cmdpath
 	
 	started cmd errrelayer pall@(Just hin, Just hout, Just herr, ph) = do
-		stderrelay <- async $ errrelayer herr
+		stderrelay <- async $ errrelayer ph herr
 		let shutdown forcestop = do
 			-- Close the process's stdin, to let it know there
 			-- are no more requests, so it will exit.
