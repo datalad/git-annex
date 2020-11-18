@@ -250,58 +250,57 @@ cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
  - buffered to the handle before exiting.
  -}
 hGetLineUntilExitOrEOF :: ProcessHandle -> Handle -> IO (Maybe String)
-hGetLineUntilExitOrEOF ph h = do
-	w <- async waiter
-	r <- reader
-	cancel w
-	return r
+hGetLineUntilExitOrEOF ph h = go []
   where
-	reader = hIsEOF h >>= \case
-		True -> return Nothing
-		False -> Just <$> hGetLine h
+	go buf = do
+		ready <- waitforinputorerror smalldelay
+		if ready
+			then getloop buf go
+			else getProcessExitCode ph >>= \case
+				-- Process still running, wait longer.
+				Nothing -> go buf
+				-- Process is done. It's possible
+				-- that it output something and exited
+				-- since the prior hWaitForInput,
+				-- so check one more time for any buffered
+				-- output.
+				Just _ -> finalcheck buf
 
-	waiter = do
-		smalldelay
-		print "hGetLineUntilExitOrEOF waitForProcess"
-		hFlush stdout
-		_ <- waitForProcess ph
-		print "hGetLineUntilExitOrEOF process done"
-		hFlush stdout
-		waitbufferempty
-		print "hGetLineUntilExitOrEOF buffer empty"
-		hFlush stdout
-		-- Reached the end of the processes output.
-		hClose h
+	finalcheck buf = do
+		ready <- hWaitForInput h 0
+		if ready
+			then getloop buf finalcheck
+			-- No remaining buffered input, though the handle
+			-- may not be EOF if something else is keeping it
+			-- open. Treated the same as EOF.
+			else eofwithnolineend buf
 
-	waitbufferempty = isanythingbuffered >>= \case
-		True -> do
-			print "something still buffered.."
-			-- Waiting for the reader to consume
-			-- buffered output after the process has
-			-- exited.
-			threadDelay 10000 -- 1/100th second
-			waitbufferempty
-		False ->  return ()
+	-- On exception, proceed as if there was input;
+	-- EOF and any encoding issues are dealt with
+	-- when reading from the handle.
+	waitforinputorerror t = hWaitForInput h t
+		`catchNonAsync` const (pure True)
 
-	isanythingbuffered = do
-		print "hWaitForInput call start"
-		-- waitForInput is documented to throw an encoding
-		-- error in some cases, if the Handle has buffered on it
-		-- something that cannot be decoded. If it does,
-		-- that does imply there's still something buffered though.
-		r <- hWaitForInput h 100
-		{-
-		catchNonAsync
-			-- waitForInput can throw an EOF error
-			(catchIOErrorType EOF
-				(const (print "EOF exception" >> return False))
-				(hWaitForInput h 1))
-			(const (print "encoding exception" >> return True))
-		-}
-		print "hWaitForInput call done"
-		return r
+	getchar = catchIOErrorType EOF 
+		(const (pure Nothing)) 
+		(Just <$> hGetChar h)
 
-	-- A small delay avoids starting the work of waitForProcess
-	-- unncessarily in the common case where hGetLine gets a buffered
-	-- line immediately.
-	smalldelay = threadDelay 10000 -- 1/100th second
+	getloop buf cont =
+		getchar >>= \case
+			Just c
+				| c == '\n' -> return (Just (reverse buf))
+				| otherwise -> cont (c:buf)
+			Nothing -> eofwithnolineend buf
+
+	eofwithnolineend buf = return $
+		if null buf 
+			then Nothing -- no line read
+			else Just (reverse buf)
+
+	-- Tenth of a second delay. If the process exits with the FD being
+	-- held open, will wait up to twice this long before returning.
+	-- This delay could be made smaller. However, that is an unusual
+	-- case, and making it too small would cause lots of wakeups while
+	-- waiting for output. Bearing in mind that this could be run on
+	-- many processes at the same time.
+	smalldelay = 100 -- milliseconds
