@@ -1,0 +1,5 @@
+#!/bin/sh
+ssh -fN -o ControlMaster=auto -o ControlPersist=15m -o ControlPath=./socket localhost
+echo foo >&2
+sleep 2
+perl -e 'print STDERR "blah\n" for 1..100; print STDERR "final\n"'

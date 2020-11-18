@@ -6,7 +6,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE CPP, Rank2Types #-}
+{-# LANGUAGE CPP, Rank2Types, LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Process (
@@ -24,7 +24,7 @@ module Utility.Process (
 	withCreateProcess,
 	waitForProcess,
 	cleanupProcess,
-	cancelOnExit,
+	hGetLineUntilExitOrEOF,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
@@ -250,40 +250,56 @@ cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
  - buffered to the handle before exiting.
  -}
 hGetLineUntilExitOrEOF :: ProcessHandle -> Handle -> IO (Maybe String)
-hGetLineUntilExitOrEOF ph h = either Just id <$> (reader `race` waiter)
+hGetLineUntilExitOrEOF ph h = do
+	w <- async waiter
+	r <- reader
+	cancel w
+	return r
   where
-	reader = hGetLine isEOF h >>= \case
+	reader = hIsEOF h >>= \case
 		True -> return Nothing
 		False -> Just <$> hGetLine h
 
 	waiter = do
 		smalldelay
+		print "hGetLineUntilExitOrEOF waitForProcess"
+		hFlush stdout
 		_ <- waitForProcess ph
-		waiter'
+		print "hGetLineUntilExitOrEOF process done"
+		hFlush stdout
+		waitbufferempty
+		print "hGetLineUntilExitOrEOF buffer empty"
+		hFlush stdout
 		-- Reached the end of the processes output.
 		hClose h
 
-	waiter' = isanythingbuffered >>= \case
+	waitbufferempty = isanythingbuffered >>= \case
 		True -> do
+			print "something still buffered.."
 			-- Waiting for the reader to consume
 			-- buffered output after the process has
 			-- exited.
 			threadDelay 10000 -- 1/100th second
-			waiter'
+			waitbufferempty
 		False ->  return ()
 
-	isanythingbuffered = 
+	isanythingbuffered = do
+		print "hWaitForInput call start"
 		-- waitForInput is documented to throw an encoding
 		-- error in some cases, if the Handle has buffered on it
 		-- something that cannot be decoded. If it does,
 		-- that does imply there's still something buffered though.
+		r <- hWaitForInput h 100
+		{-
 		catchNonAsync
-			(const (return True))
 			-- waitForInput can throw an EOF error
 			(catchIOErrorType EOF
-				(const (return False))
-				(hWaitForInput h 0))
-
+				(const (print "EOF exception" >> return False))
+				(hWaitForInput h 1))
+			(const (print "encoding exception" >> return True))
+		-}
+		print "hWaitForInput call done"
+		return r
 
 	-- A small delay avoids starting the work of waitForProcess
 	-- unncessarily in the common case where hGetLine gets a buffered
