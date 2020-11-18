@@ -1,5 +1,9 @@
 The git annex repo seems to be assuming anything under a hidden directory is non-large and thus is putting it in .git instead of .git/annex
 
+
+git-annex version: 8.20201117-g3dda21d29
+
+
 ```
 mkdir ...git.annex.test...
 cd ...git.annex.test...
