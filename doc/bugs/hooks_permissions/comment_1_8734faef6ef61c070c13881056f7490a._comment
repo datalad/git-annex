@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="gueux"
+ avatar="http://cdn.libravatar.org/avatar/47e44a21505727b2d6bb5d88f0468f34"
+ subject="comment 1"
+ date="2020-11-18T10:54:56Z"
+ content="""
+Thanks for the fix! I've manually updated the permissions of the hooks to 755 but unfortunately they are still not executed in a repo mounted via sshfs. There seems to be a kind of protection feature (which I can understand, as we're not sure of what's inside a remote executable). 
+
+
+    $ ls -l .git/hooks/post-checkout
+    .rwxr-xr-x 76 gueux 27 Feb 20:33 .git/hooks/post-checkout
+    $ .git/hooks/post-checkout
+    bash: .git/hooks/post-checkout: Permission denied
+"""]]
