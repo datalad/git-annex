@@ -1,6 +1,6 @@
 The git annex repo seems to be assuming anything under a hidden directory is non-large and thus is putting it in .git instead of .git/annex
-I have even tried 
 
+```
 mkdir ...git.annex.test...
 cd ...git.annex.test...
 git init
@@ -11,5 +11,6 @@ git annex add .
 ...
 ... (non-large file; adding content to git repository)
 ...
+```
 
 this only affects content under a dot-directory, is this expected?
