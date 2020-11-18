@@ -232,8 +232,8 @@ cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
 #endif
 
 {- | Like hGetLine, reads a line from the Handle. Returns Nothing if end of
- - file is reached, or if the process has exited and there is nothing more
- - buffered to read from the handle.
+ - file is reached, or the handle is closed, or if the process has exited
+ - and there is nothing more buffered to read from the handle.
  -
  - This is useful to protect against situations where the process might
  - have transferred the handle being read to another process, and so
@@ -284,9 +284,14 @@ hGetLineUntilExitOrEOF ph h = go []
 	waitforinputorerror t = hWaitForInput h t
 		`catchNonAsync` const (pure True)
 
-	getchar = catchIOErrorType EOF 
-		(const (pure Nothing)) 
-		(Just <$> hGetChar h)
+	getchar = 
+		catcherr EOF $
+			-- If the handle is closed, reading from it is
+			-- an IllegalOperation.
+			catcherr IllegalOperation $
+				Just <$> hGetChar h
+	  where
+		catcherr t = catchIOErrorType t (const (pure Nothing))
 
 	getloop buf cont =
 		getchar >>= \case
