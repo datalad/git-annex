@@ -9,6 +9,9 @@ git-annex (8.20201117) UNRELEASED; urgency=medium
     and for easier scripting.
   * init: When writing hook scripts, set all execute bits, not only
     the user execute bit.
+  * Fix hang when an external special remote program exited but
+    the stderr pipe to it was left open, due to a daemon having inherited
+    the file descriptor.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2020 09:38:32 -0400
 

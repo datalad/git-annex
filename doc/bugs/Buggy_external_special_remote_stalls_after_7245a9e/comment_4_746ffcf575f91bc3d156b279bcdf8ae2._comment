@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-11-18T17:23:21Z"
+ content="""
+Seems the problem with hWaitForInput happens when running it concurrently
+with hGetLine on the same handle. When I run it sequentially, it does seem
+to work. Ok.. I was able to implement hGetLineUntilExitOrEOF that seems to
+work.
+
+I've converted it to use that, and the test case for this bug is fixed.
+Also, the sleep based workaround
+in [[!commit aa492bc65904a19f22ffdfc20d7a5e7052e2f54d]] is removed,
+and it uses hGetLineUntilExitOrEOF instead.
+
+However, I still want to do the audit of other things that pipe stderr.
+Some of them don't do line based input, so will need a different function
+than hGetLineUntilExitOrEOF. Leaving this bug open until that audit is
+done.
+"""]]
