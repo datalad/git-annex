@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
- nickname="eric.w"
- avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
- subject="how to convert existing repo to new backend?"
- date="2020-11-18T18:54:31Z"
- content="""
-for example if I want to change from SHA256E to SHA256, what is the order of operations?
-"""]]
