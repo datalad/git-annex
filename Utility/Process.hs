@@ -43,10 +43,8 @@ import System.Exit
 import System.IO
 import System.Log.Logger
 import Control.Monad.IO.Class
-import Control.Concurrent
 import Control.Concurrent.Async
 import qualified Data.ByteString as S
-import GHC.IO.Handle (hWaitForInput)
 
 data StdHandle = StdinHandle | StdoutHandle | StderrHandle
 	deriving (Eq)
@@ -248,6 +246,11 @@ cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
  - In that situation, this will detect when the process has exited,
  - and avoid blocking forever. But will still return anything the process
  - buffered to the handle before exiting.
+ -
+ - Note on newline mode: This ignores whatever newline mode is configured
+ - for the handle, because there is no way to query that. On Windows,
+ - it will remove any \r coming before the \n. On other platforms,
+ - it does not treat \r specially.
  -}
 hGetLineUntilExitOrEOF :: ProcessHandle -> Handle -> IO (Maybe String)
 hGetLineUntilExitOrEOF ph h = go []
@@ -288,9 +291,16 @@ hGetLineUntilExitOrEOF ph h = go []
 	getloop buf cont =
 		getchar >>= \case
 			Just c
-				| c == '\n' -> return (Just (reverse buf))
+				| c == '\n' -> return (Just (gotline buf))
 				| otherwise -> cont (c:buf)
 			Nothing -> eofwithnolineend buf
+
+#ifndef mingw32_HOST_OS
+	gotline buf = reverse buf
+#else
+	gotline ('\r':buf) = reverse buf
+	gotline buf = reverse buf
+#endif
 
 	eofwithnolineend buf = return $
 		if null buf 
