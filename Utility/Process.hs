@@ -270,7 +270,7 @@ hGetLineUntilExitOrEOF ph h = go []
 				Just _ -> finalcheck buf
 
 	finalcheck buf = do
-		ready <- hWaitForInput h 0
+		ready <- waitforinputorerror 0
 		if ready
 			then getloop buf finalcheck
 			-- No remaining buffered input, though the handle
