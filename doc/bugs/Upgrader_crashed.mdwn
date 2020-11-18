@@ -11,8 +11,8 @@ Upgrader crashed: C:\Users\alexasus\.config\git-annex\program: openFile: does no
 
 
 ### What version of git-annex are you using? On what operating system?
-git-annex version: git-annex-installer_8.20201007+git171-g7e24b2587 (this is the Windows 10 installer filename)
-Windows 10 Version 2004 (OS Build 19041.630)
+- git-annex version: git-annex-installer_8.20201007+git171-g7e24b2587 (this is the Windows 10 installer filename)
+- Windows 10 Version 2004 (OS Build 19041.630)
 
 
 ### Please provide any additional information below.
