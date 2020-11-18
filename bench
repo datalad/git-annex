@@ -1,2 +1,0 @@
-#!/bin/sh
-perl -e 'print STDERR "blah\n" for 1..100; print STDERR "final\n"'
