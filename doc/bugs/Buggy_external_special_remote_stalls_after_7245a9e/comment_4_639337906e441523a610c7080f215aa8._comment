@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-11-18T15:57:10Z"
+ content="""
+hWaitForInput does not seem to behave as documented. It does not time out,
+so blocks forever in this situation. This is with a 0 timeout and with
+larger timeouts. Unsure why, it looked like it should work. Looking at the
+ghc bug tracker, it seems to have some open bugs.
+([[!commit 9af0000e0ff28c8eaae0ee1ce6838063d0a5ebef]] has my bench test
+demonstrating this problem.)
+
+hGetLineUntilExitOrEOF could still be implemented, but rather than using
+hGetLine, it would need to use hGetBufNonBlocking to do one byte at a time
+reads, with a small sleep when there is nothing to read,
+until it gets an empty read at a point after the process has exited.
+
+I can't see a way to implement it without the sleep, and that is
+problimatic, too long sleep will slow down reading, and too short a sleep
+will waste cpu. It might be possible to use hGetBufSome and cancel it
+once the process exits, and only then switch to hGetBufNonBlocking to
+read the rest of the buffer. But it's not clear what would happen hGetBufSome
+got as far as reading from the handle, but didn't quite manage to finish
+before being timed out. Seems likely any data it did read would then be lost.
+
+Think I'll have to abandon the hGetLineUntilExitOrEOF idea.
+"""]]
