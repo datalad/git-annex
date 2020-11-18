@@ -290,12 +290,11 @@ commandMeterExitCode' progressparser oh mmeter meterupdate cmd params mkprocess 
 							meterupdate bytes
 						feedprogress sendtotalsize' bytes buf' h
 
-	handlestderr ph h = unlessM (hIsEOF h) $ do
-		cancelOnExit ph (hGetLine h) >>= \case
-			Just l -> do
-				stderrHandler oh l
-				handlestderr ph h
-			Nothing -> return ()
+	handlestderr ph h = hGetLineUntilExitOrEOF ph h >>= \case
+		Just l -> do
+			stderrHandler oh l
+			handlestderr ph h
+		Nothing -> return ()
 
 {- Runs a command, that may display one or more progress meters on
  - either stdout or stderr, and prevents the meters from being displayed.
@@ -323,13 +322,12 @@ demeterCommandEnv oh cmd params environ = do
  - beginning of the line when updating a progress display).
  -}
 avoidProgress :: Bool -> ProcessHandle -> Handle -> (String -> IO ()) -> IO ()
-avoidProgress doavoid ph h emitter = unlessM (hIsEOF h) $
-	cancelOnExit ph (hGetLine h) >>= \case
-		Just s -> do
-			unless (doavoid && '\r' `elem` s) $
-				emitter s
-			avoidProgress doavoid ph h emitter
-		Nothing -> return ()
+avoidProgress doavoid ph h emitter = hGetLineUntilExitOrEOF ph h >>= \case
+	Just s -> do
+		unless (doavoid && '\r' `elem` s) $
+			emitter s
+		avoidProgress doavoid ph h emitter
+	Nothing -> return ()
 
 outputFilter
 	:: FilePath

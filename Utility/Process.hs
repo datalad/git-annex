@@ -231,9 +231,9 @@ cleanupProcess (mb_stdin, mb_stdout, mb_stderr, pid) = do
 	void $ waitForProcess pid
 #endif
 
-{- | Like hGetLine, reads a line from the Handle. If the Handle is already
- - closed, returns Nothing. If the process exits without writing a line,
- - also returns Nothing.
+{- | Like hGetLine, reads a line from the Handle. Returns Nothing if end of
+ - file is reached, or if the process has exited and there is nothing more
+ - buffered to read from the handle.
  -
  - This is useful to protect against situations where the process might
  - have transferred the handle being read to another process, and so
