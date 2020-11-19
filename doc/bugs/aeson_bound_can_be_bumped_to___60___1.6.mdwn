@@ -1,0 +1,13 @@
+### Please describe the problem.
+
+git-lfs has an aeson upper bound of < 1.5, but I have built it successfully with aeson 1.5.4
+
+### What version of git-annex are you using? On what operating system?
+
+git-lfs 1.1.0 on nixos
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I really like git-annex. Although I have to admit I am not an active user myself. I just want to keep it working for all nixos users, I know some that rely on it.
+
