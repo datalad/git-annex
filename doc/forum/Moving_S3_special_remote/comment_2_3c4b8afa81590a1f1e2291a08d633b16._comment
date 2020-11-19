@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="wting"
+ avatar="http://cdn.libravatar.org/avatar/ff65dc4f3eb58490220b89a7984c4d02"
+ subject="comment 2"
+ date="2020-11-19T03:12:36Z"
+ content="""
+Thanks for sharing the answer you found, it helped me out as well.
+
+To add on, modifying a special remote via `git annex enableremote myspecialremote autoenable=true && git annex sync` also propagates the updated configuration to reachable repositories. That said, you have to manually remove and re-enable remote to get the new configuration for each repo.
+"""]]
