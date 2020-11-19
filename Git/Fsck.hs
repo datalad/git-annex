@@ -85,8 +85,8 @@ findBroken batchmode r = do
   where
 	go _ (Just outh) (Just errh) pid = do
 		(o1, o2) <- concurrently
-			(parseFsckOutput maxobjs r outh)
-			(parseFsckOutput maxobjs r errh)
+			(parseFsckOutput maxobjs r outh pid)
+			(parseFsckOutput maxobjs r errh pid)
 		fsckok <- checkSuccessProcess pid
 		case mappend o1 o2 of
 			FsckOutput badobjs truncated
@@ -121,9 +121,9 @@ knownMissing (FsckFoundMissing s _) = s
 findMissing :: [Sha] -> Repo -> IO MissingObjects
 findMissing objs r = S.fromList <$> filterM (`isMissing` r) objs
 
-parseFsckOutput :: Int -> Repo -> Handle -> IO FsckOutput
-parseFsckOutput maxobjs r h = do
-	ls <- lines <$> hGetContents h
+parseFsckOutput :: Int -> Repo -> Handle -> ProcessHandle -> IO FsckOutput
+parseFsckOutput maxobjs r h pid = do
+	ls <- getlines []
 	if null ls
 		then return NoFsckOutput
 		else if all ("duplicateEntries" `isInfixOf`) ls
@@ -133,6 +133,10 @@ parseFsckOutput maxobjs r h = do
 				let !truncated = length shas > maxobjs
 				missingobjs <- findMissing (take maxobjs shas) r
 				return $ FsckOutput missingobjs truncated
+  where
+	getlines c = hGetLineUntilExitOrEOF pid h >>= \case
+		Nothing -> return (reverse c)
+		Just l -> getlines (l:c)
 
 isMissing :: Sha -> Repo -> IO Bool
 isMissing s r = either (const True) (const False) <$> tryIO dump

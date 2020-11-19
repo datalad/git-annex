@@ -113,23 +113,28 @@ sendFile f (CodeObserver observer) ps = do
 	-- Work around stupid stdout buffering behavior of python.
 	-- See https://github.com/warner/magic-wormhole/issues/108
 	environ <- addEntry "PYTHONUNBUFFERED" "1" <$> getEnvironment
-	runWormHoleProcess p { env = Just environ} $ \_hin hout herr -> do
-		(inout, inerr) <- findcode hout `concurrently` findcode herr
+	runWormHoleProcess p { env = Just environ} $ \_hin hout herr ph -> do
+ 		(inout, inerr) <- concurrently
+			(findcode ph hout)
+			(findcode ph herr)
 		return (inout || inerr)
   where
 	p = wormHoleProcess (Param "send" : ps ++ [File f])
-	findcode h = findcode' =<< words <$> hGetContents h
+	findcode ph h = findcode' =<< getwords ph h []
 	findcode' [] = return False
 	findcode' (w:ws) = case mkCode w of
 		Just code -> do
 			_ <- tryPutMVar observer code
 			return True
 		Nothing -> findcode' ws
+	getwords ph h c = hGetLineUntilExitOrEOF ph h >>= \case
+		Nothing -> return $ concatMap words $ reverse c
+		Just l -> getwords ph h (l:c)
 
 -- | Receives a file. Once the receive is under way, the Code will be
 -- read from the CodeProducer, and fed to wormhole on stdin.
 receiveFile :: FilePath -> CodeProducer -> WormHoleParams -> IO Bool
-receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout _herr -> do
+receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout _herr _ph -> do
 	Code c <- readMVar producer
 	hPutStrLn hin c
 	hFlush hin
@@ -145,7 +150,7 @@ receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout _he
 wormHoleProcess :: WormHoleParams -> CreateProcess
 wormHoleProcess = proc "wormhole" . toCommand
 
-runWormHoleProcess :: CreateProcess -> (Handle -> Handle -> Handle -> IO Bool) ->  IO Bool
+runWormHoleProcess :: CreateProcess -> (Handle -> Handle -> Handle -> ProcessHandle -> IO Bool) ->  IO Bool
 runWormHoleProcess p consumer =
 	withCreateProcess p' go `catchNonAsync` const (return False)
   where
@@ -155,7 +160,7 @@ runWormHoleProcess p consumer =
 		, std_err = CreatePipe
 		}
 	go (Just hin) (Just hout) (Just herr) pid =
-		consumer hin hout herr <&&> waitbool pid
+		consumer hin hout herr pid <&&> waitbool pid
 	go _ _ _ _ = error "internal"
 	waitbool pid = do
 		r <- waitForProcess pid

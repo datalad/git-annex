@@ -225,15 +225,18 @@ youtubeDlFileNameHtmlOnly' url uo
 		liftIO $ withCreateProcess p waitproc
 	
 	waitproc Nothing (Just o) (Just e) pid = do
-		output <- fmap fst $ 
-			hGetContentsStrict o
-				`concurrently`
-			hGetContentsStrict e
+		errt <- async $ discardstderr pid e
+		output <- hGetContentsStrict o
 		ok <- liftIO $ checkSuccessProcess pid
+		wait errt
 		return $ case (ok, lines output) of
 			(True, (f:_)) | not (null f) -> Right f
 			_ -> nomedia
 	waitproc _ _ _ _ = error "internal"
+
+	discardstderr pid e = hGetLineUntilExitOrEOF pid e >>= \case
+		Nothing -> return ()
+		Just _ -> discardstderr pid e
 
 	nomedia = Left "no media in url"
 
