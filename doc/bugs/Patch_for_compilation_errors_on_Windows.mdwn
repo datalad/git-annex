@@ -1,0 +1,36 @@
+Compilation of the latest git-annex code (commit 04dca96) on Windows is currently failing due to some modules not being imported.  The issues are fixed by the following patch:
+
+```
+diff --git a/Annex/Content/Presence.hs b/Annex/Content/Presence.hs
+index 861288c0b..f5d4b593f 100644
+--- a/Annex/Content/Presence.hs
++++ b/Annex/Content/Presence.hs
+@@ -25,6 +25,9 @@ module Annex.Content.Presence (
+ ) where
+
+ import Annex.Common
++#ifdef mingw32_HOST_OS
++import Annex.Perms
++#endif
+ import qualified Annex
+ import Annex.LockPool
+ import Annex.WorkerPool
+diff --git a/Git/Hook.hs b/Git/Hook.hs
+index 45662f236..788552305 100644
+--- a/Git/Hook.hs
++++ b/Git/Hook.hs
+@@ -13,9 +13,7 @@ import Common
+ import Git
+ import Utility.Tmp
+ import Utility.Shell
+-#ifndef mingw32_HOST_OS
+ import Utility.FileMode
+-#endif
+
+ data Hook = Hook
+        { hookName :: FilePath
+
+```
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
