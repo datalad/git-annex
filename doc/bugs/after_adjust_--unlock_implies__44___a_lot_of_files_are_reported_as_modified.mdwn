@@ -4,7 +4,7 @@ When checking an adjusted (unlocked) branch, after a while (a few hours), withou
 
 ### What steps will reproduce the problem?
 
-On a ~1.5To repo with 1Go to 4Go files, running "git adjust --unlock" works, but after a while "git status" reports a lot of files being modified, "git restore myfiles" restores the files, but other files are reported by "git status" has modified...
+On a ~1.5To repo with 1Go to 4Go files, running "git adjust --unlock" works, but after a while "git status" reports a lot of files being modified, "git restore myfiles" restores the files, but other files are reported by "git status" as modified...
 
 ### What version of git-annex are you using? On what operating system?
 
