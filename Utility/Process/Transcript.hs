@@ -15,7 +15,6 @@ module Utility.Process.Transcript (
 ) where
 
 import Utility.Process
-import Utility.Misc
 
 import System.IO
 import System.Exit
@@ -63,10 +62,10 @@ processTranscript'' cp input = do
 			, std_err = UseHandle writeh
 			}
 		withCreateProcess cp' $ \hin hout herr pid -> do
-			get <- asyncreader readh
+			get <- asyncreader pid readh
 			writeinput input (hin, hout, herr, pid)
-			transcript <- wait get
 			code <- waitForProcess pid
+			transcript <- wait get
 			return (transcript, code)
 #else
 {- This implementation for Windows puts stderr after stdout. -}
@@ -77,16 +76,18 @@ processTranscript'' cp input = do
 		}
 	withCreateProcess cp' $ \hin hout herr pid -> do
 		let p = (hin, hout, herr, pid)
-		getout <- asyncreader (stdoutHandle p)
-		geterr <- asyncreader (stderrHandle p)
+		getout <- asyncreader pid (stdoutHandle p)
+		geterr <- asyncreader pid (stderrHandle p)
 		writeinput input p
-		transcript <- (++) <$> wait getout <*> wait geterr
 		code <- waitForProcess pid
+		transcript <- (++) <$> wait getout <*> wait geterr
 		return (transcript, code)
 #endif
   where
-	asyncreader = async . hGetContentsStrict
-
+	asyncreader pid h = async $ reader pid h []
+	reader pid h c = hGetLineUntilExitOrEOF pid h >>= \case
+		Nothing -> return (concat (reverse c))
+		Just l -> reader pid h (l:c)
 	writeinput (Just s) p = do
 		let inh = stdinHandle p
 		unless (null s) $ do
