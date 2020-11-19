@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-11-19T16:46:50Z"
+ content="""
+Thanks for reporting. You do not need to worry about this, it seems we
+accidentially enabled trying to upgrade in the recent release for windows,
+but git-annex has never actually supported upgrading itself on windows,
+so of course it fails.
+"""]]
