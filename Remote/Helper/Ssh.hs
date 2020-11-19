@@ -28,7 +28,6 @@ import qualified P2P.Annex as P2P
 
 import Control.Concurrent.STM
 import Control.Concurrent.Async
-import qualified Data.ByteString as B
 
 toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (FilePath, [CommandParam])
 toRepo cs r gc remotecmd = do
@@ -272,7 +271,7 @@ openP2PSshConnection r connpool = do
 			, P2P.connIdent = P2P.ConnIdent $
 				Just $ "ssh connection " ++ show pidnum
 			}
-		stderrhandlerst <- newStderrHandler err
+		stderrhandlerst <- newStderrHandler err pid
 		runst <- P2P.mkRunState P2P.Client
 		let c = P2P.OpenConnection (runst, conn, pid, stderrhandlerst)
 		-- When the connection is successful, the remote
@@ -301,32 +300,24 @@ openP2PSshConnection r connpool = do
 		modifyTVar' connpool $
 			maybe (Just P2PSshUnsupported) Just
 
-newStderrHandler :: Handle -> IO (TVar StderrHandlerState)
-newStderrHandler errh = do
+newStderrHandler :: Handle -> ProcessHandle -> IO (TVar StderrHandlerState)
+newStderrHandler errh ph = do
 	-- stderr from git-annex-shell p2pstdio is initially discarded
 	-- because old versions don't support the command. Once it's known
 	-- to be running, this is changed to DisplayStderr.
 	v <- newTVarIO DiscardStderr
-	p <- async $ go v
-	void $ async $ ender p v
+	void $ async $ go v
 	return v
   where
 	go v = do
-		l <- B.hGetLine errh
-		atomically (readTVar v) >>= \case
-			DiscardStderr -> go v
-			DisplayStderr -> do
-				B.hPut stderr l
-				go v
-			EndStderrHandler -> return ()
-	
-	ender p v = do
-		atomically $ do
-			readTVar v >>= \case
-				EndStderrHandler -> return ()
-				_ -> retry
-		hClose errh
-		cancel p
+		hGetLineUntilExitOrEOF ph errh >>= \case
+			Nothing -> hClose errh
+			Just l -> atomically (readTVar v) >>= \case
+				DiscardStderr -> go v
+				DisplayStderr -> do
+					hPutStrLn stderr l
+					go v
+				EndStderrHandler -> hClose errh
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
