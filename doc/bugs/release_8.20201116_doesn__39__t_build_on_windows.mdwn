@@ -1,0 +1,199 @@
+### Please describe the problem.
+
+Lately I have been building my own git-annex binary for Windows from source ([[install/fromsource]])
+just to keep myself on edge, so to speak, and usually I don't have a problem doing that with
+the `stack setup` & `stack build` method under PowerShell (v7.1.0) if I choose a tagged commit
+from Git Annex's git repo. However, this latest release doesn't seem to build without additional minor
+coaxing/editing of the Haskell source due to type mismatches. I don't really know Haskell but I have
+some rudimentary understanding of the ML family of languages, so I went ahead and peppered the troublesome
+points of code with some invocations of `fromRawFilePath` and `toRawFilePath` to please the GHC
+gods. Additionally, I cherry-picked commit `bce8865` on top of my own corrections to make things work.
+This indeed allowed the code to compile but then the part of the testsuite which I exercised,
+namely the "Unit Tests v8" set failed completely due to not being able to init the annex. The gist of
+the matter is that git-annex.exe complains thusly:
+"git-annex.exe: System.PosixCompat.Files.removeLink: not supported: illegal operation".
+
+### What steps will reproduce the problem?
+
+Checking out tag `8.20201116`, making the corrections in the diff below, and then building with `stack setup`
+and `stack build` (with no extras enabled, not even libmagic/MagicMime); finally testing the resulting binary
+within *Git Bash* (in a folder like `c:\annx`) in the following fashion:
+
+[[!format sh """
+$ pwd
+/c/annx
+$ ./git-annex.exe test -p 'adjusted unlocked branch' 2>&1 | tee git-annex.test--p-adjusted_unlocked_branch.LOG~101
+Init Tests
+  init: Tests
+  Unit Tests v8 adjusted unlocked branch
+    add dup:                                              init test repo
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+(scanning for unlocked files...)
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+git-annex.exe: System.PosixCompat.Files.removeLink: not supported: illegal operation
+FAIL (2.92s)
+    Test.hs:371:
+    init failed
+  add:  add foo
+^M100%  20 B              555 B/s 0s^M                                  ^Mok
+(recording state in git...)
+git-annex.exe: System.PosixCompat.Files.removeLink: not supported: illegal operation
+FAIL (1.06s)
+    Test.hs:381:
+    add failed
+
+2 out of 2 tests failed (3.98s)
+[...]
+    addurl:                                               FAIL
+      Exception: init tests failed! cannot continue
+      CallStack (from HasCallStack):
+        error, called at .\\Test\\Framework.hs:432:49 in main:Test.Framework
+
+71 out of 71 tests failed (3.99s)
+  (Failures above could be due to a bug in git-annex, or an incompatibility
+   with utilities, such as git, installed on this system.)
+# end of transcript
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+Version 8.20201116, commit 864af53a2, with some corrections that are in the diff below. This is on
+Windows 10 version 20H2 (build 19042.630), 64 bit.
+
+### Please provide any additional information below.
+
+Here's the diff to my changes on top of commit 864af53a2:
+
+[[!format diff """
+diff --git a/Annex/Content.hs b/Annex/Content.hs
+index a8bcd1666..af6d95435 100644
+--- a/Annex/Content.hs
++++ b/Annex/Content.hs
+@@ -170,7 +170,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
+                                        Nothing -> return is_locked
+                                        Just lockhandle -> do
+                                                dropLock lockhandle
+-                                               void $ tryIO $ removeWhenExistsWith removeLink lockfile
++                                               void $ tryIO $ removeWhenExistsWith removeLink (fromRawFilePath lockfile)
+                                                return is_unlocked
+                        , return is_missing
+                        )
+@@ -249,7 +249,7 @@ winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker
+ winLocker takelock _ (Just lockfile) = do
+        modifyContent lockfile $
+                void $ liftIO $ tryIO $
+-                       writeFile lockfile ""
++                       writeFile (fromRawFilePath lockfile) ""
+        liftIO $ takelock lockfile
+ -- never reached; windows always uses a separate lock file
+ winLocker _ _ Nothing = return Nothing
+diff --git a/Assistant.hs b/Assistant.hs
+index a0bbd3704..d7e75e23d 100644
+--- a/Assistant.hs
++++ b/Assistant.hs
+@@ -102,7 +102,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser =
+                createAnnexDirectory (parentDir logfile)
+                ifM (liftIO $ isNothing <$> getEnv flag)
+                        ( liftIO $ withNullHandle $ \nullh -> do
+-                               loghandle <- openLog logfile
++                               loghandle <- openLog (fromRawFilePath logfile)
+                                e <- getEnvironment
+                                cmd <- programPath
+                                ps <- getArgs
+@@ -115,7 +115,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser =
+                                exitcode <- withCreateProcess p $ \_ _ _ pid ->
+                                        waitForProcess pid
+                                exitWith exitcode
+-                       , start (Utility.Daemon.foreground (Just pidfile)) $
++                       , start (Utility.Daemon.foreground (Just (fromRawFilePath pidfile))) $
+                                case startbrowser of
+                                        Nothing -> Nothing
+                                        Just a -> Just $ a Nothing Nothing
+diff --git a/Logs/Transfer.hs b/Logs/Transfer.hs
+index 2722702d2..369c6a630 100644
+--- a/Logs/Transfer.hs
++++ b/Logs/Transfer.hs
+@@ -131,7 +131,7 @@ checkTransfer t = debugLocks $ do
+        v <- liftIO $ lockShared lck
+        liftIO $ case v of
+                Nothing -> catchDefaultIO Nothing $
+-                       readTransferInfoFile Nothing tfile
++                       readTransferInfoFile Nothing (fromRawFilePath tfile)
+                Just lockhandle -> do
+                        dropLock lockhandle
+                        cleanstale
+diff --git a/Remote/Directory.hs b/Remote/Directory.hs
+index 5c20894ee..0a8b6da71 100644
+--- a/Remote/Directory.hs
++++ b/Remote/Directory.hs
+@@ -258,7 +258,7 @@ removeDirGeneric topdir dir = do
+ #ifdef mingw32_HOST_OS
+        {- Windows needs the files inside the directory to be writable
+         - before it can delete them. -}
+-       void $ tryIO $ mapM_ allowWrite =<< dirContents dir
++       void $ tryIO $ mapM_ (allowWrite . toRawFilePath) =<< dirContents dir
+ #endif
+        tryNonAsync (removeDirectoryRecursive dir) >>= \case
+                Right () -> return ()
+@@ -446,7 +446,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
+ #ifndef mingw32_HOST_OS
+                        =<< getFdStatus fd
+ #else
+-                       =<< getFileStatus f
++                       =<< getFileStatus (fromRawFilePath f)
+ #endif
+                guardSameContentIdentifiers cont cid currcid
+
+diff --git a/Utility/Daemon.hs b/Utility/Daemon.hs
+index 2e1a9baa8..9a3425589 100644
+--- a/Utility/Daemon.hs
++++ b/Utility/Daemon.hs
+@@ -112,7 +112,7 @@ lockPidFile pidfile = do
+        pid <- getPID
+        writeFile pidfile (show pid)
+        lckfile <- winLockFile pid pidfile
+-       writeFile lckfile ""
++       writeFile (fromRawFilePath lckfile) ""
+        void $ lockExclusive lckfile
+ #endif
+
+@@ -176,14 +176,14 @@ stopDaemon pidfile = go =<< checkDaemon pidfile
+  - when eg, restarting the daemon.
+  -}
+ #ifdef mingw32_HOST_OS
+-winLockFile :: PID -> FilePath -> IO FilePath
++winLockFile :: PID -> FilePath -> IO RawFilePath
+ winLockFile pid pidfile = do
+        cleanstale
+-       return $ prefix ++ show pid ++ suffix
++       return $ toRawFilePath $ prefix ++ show pid ++ suffix
+   where
+        prefix = pidfile ++ "."
+        suffix = ".lck"
+        cleanstale = mapM_ (void . tryIO . removeFile) =<<
+-               (filter iswinlockfile <$> dirContents (parentDir pidfile))
++               (filter iswinlockfile <$> dirContents (fromRawFilePath (parentDir (toRawFilePath pidfile))))
+        iswinlockfile f = suffix `isSuffixOf` f && prefix `isPrefixOf` f
+ #endif
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've been trying out Git Annex for a number of years but only for a year now I've had a nice use case for it
+with archiving/mirroring my Macrium Reflect backup files (multi-gigabyte disk images with .mrimg extension)
+to a secondary drive. Obviously because I'm on Windows I use adjusted branches a lot (even
+`git-annex adjust --hide-missing --unlock`) with the `annex.thin` set to true so I rely on basic v8 features
+to just work. I haven't tried special remotes yet, so I'm not at the moment concerned about that part of Git
+Annex -- my use case is more like local archiving and stuff. Git Annex does give me some rigor to how I move
+my backup files around and it's always nice to have an external checksum (I use MD5E w/Annex) recorded
+"in the system" so that you can be sure your files are not altered due to bit rot, etc. In any case,
+big thanks go to Joey (et al.) for this wonderful tool you made!
