@@ -22,7 +22,6 @@ import Git.Types
 import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
-import Utility.ThreadScheduler
 
 {- Returns a single git config setting, or a fallback value if not set. -}
 get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
@@ -211,8 +210,8 @@ coreBare = "core.bare"
 
 {- Runs a command to get the configuration of a repo,
  - and returns a repo populated with the configuration, as well as the raw
- - output and standard error of the command. -}
-fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
+ - output and the standard error of the command. -}
+fromPipe :: Repo -> String -> [CommandParam] -> ConfigStyle -> IO (Either SomeException (Repo, S.ByteString, String))
 fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
   where
 	p = (proc cmd $ toCommand params)
@@ -220,24 +219,21 @@ fromPipe r cmd params st = tryNonAsync $ withCreateProcess p go
 		, std_err = CreatePipe
 		}
 	go _ (Just hout) (Just herr) pid =
-		withAsync (S.hGetContents herr) $ \errreader -> do
+		withAsync (getstderr pid herr []) $ \errreader -> do
 			val <- S.hGetContents hout
-			-- In case the process exits while something else,
-			-- like a background process, keeps the stderr handle
-			-- open, don't block forever waiting for stderr.
-			-- A few seconds after finishing reading stdout
-			-- should get any error message.
-			err <- either id id <$> 
-				wait errreader
-					`race` (threadDelaySeconds (Seconds 2) >> return mempty)
+			err <- wait errreader
 			forceSuccessProcess p pid
 			r' <- store val st r
 			return (r', val, err)
 	go _ _ _ _ = error "internal"
 
+	getstderr pid herr c = hGetLineUntilExitOrEOF pid herr >>= \case
+		Just l -> getstderr pid herr (l:c)
+		Nothing -> return (unlines (reverse c))
+
 {- Reads git config from a specified file and returns the repo populated
  - with the configuration. -}
-fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, S.ByteString, S.ByteString))
+fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, S.ByteString, String))
 fromFile r f = fromPipe r "git"
 	[ Param "config"
 	, Param "--file"

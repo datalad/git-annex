@@ -487,7 +487,7 @@ getGCryptId fast r gc
 	extract Nothing = (Nothing, r)
 	extract (Just r') = (fromConfigValue <$> Git.Config.getMaybe coreGCryptId r', r')
 
-getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString, S.ByteString))
+getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString, String))
 getConfigViaRsync r gc = do
 	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
 	opts <- rsynctransport
