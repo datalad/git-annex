@@ -66,8 +66,10 @@ createLink a b = P.createLink
 	(fromRawFilePath a)
 	(fromRawFilePath b)
 
+{- On windows, removeLink is not available, so only remove files,
+ - not symbolic links. -}
 removeLink :: RawFilePath -> IO ()
-removeLink = P.removeLink . fromRawFilePath
+removeLink = D.removeFile . fromRawFilePath
 
 getFileStatus :: RawFilePath -> IO FileStatus
 getFileStatus = P.getFileStatus . fromRawFilePath
