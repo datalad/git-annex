@@ -382,7 +382,7 @@ torrentFileSizes torrent = do
 				(d:[]) -> return $ map (splitsize d) files
 				_ -> parsefailed (show v)
   where
-	getfield = btshowmetainfo torrent
+	getfield = btshowmetainfo (fromRawFilePath torrent)
 	parsefailed s = giveup $ "failed to parse btshowmetainfo output for torrent file: " ++ show s
 
 	-- btshowmetainfo outputs a list of "filename (size)"
