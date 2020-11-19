@@ -338,6 +338,18 @@ distributionInfoUrl = fromJust BuildInfo.upgradelocation ++ ".info"
 distributionInfoSigUrl :: String
 distributionInfoSigUrl = distributionInfoUrl ++ ".sig"
 
+{- Upgrade only supported on linux and OSX. -}
+upgradeSupported :: Bool
+#ifdef linux_HOST_OS
+upgradeSupported = isJust BuildInfo.upgradelocation
+#else
+#ifdef darwin_HOST_OS
+upgradeSupported = isJust BuildInfo.upgradelocation
+#else
+upgradeSupported = False
+#endif
+#endif
+
 {- Verifies that a file from the git-annex distribution has a valid
  - signature. Pass the detached .sig file; the file to be verified should
  - be located next to it.

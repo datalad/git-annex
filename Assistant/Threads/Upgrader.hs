@@ -31,7 +31,7 @@ import qualified Data.Text as T
 
 upgraderThread :: UrlRenderer -> NamedThread
 upgraderThread urlrenderer = namedThread "Upgrader" $
-	when (isJust BuildInfo.upgradelocation) $ do
+	when upgradeSupported $ do
 		{- Check for upgrade on startup, unless it was just
 		 - upgraded. -}
 		unlessM (liftIO checkSuccessfulUpgrade) $

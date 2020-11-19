@@ -21,7 +21,7 @@ import Annex.NumCopies
 import Utility.DataUnits
 import Git.Config
 import Types.Distribution
-import qualified BuildInfo
+import Assistant.Upgrade
 
 import qualified Data.Text as T
 import qualified System.FilePath.ByteString as P
@@ -59,7 +59,7 @@ prefsAForm d = PrefsForm
 		, ("disabled", NoAutoUpgrade)
 		]
 	autoUpgradeLabel
-		| isJust BuildInfo.upgradelocation = "Auto upgrade"
+		| upgradeSupported = "Auto upgrade"
 		| otherwise = "Auto restart on upgrade"
 
 	positiveIntField = check isPositive intField
