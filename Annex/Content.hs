@@ -154,7 +154,7 @@ winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker
 winLocker takelock _ (Just lockfile) = do
 	modifyContent lockfile $
 		void $ liftIO $ tryIO $
-			writeFile lockfile ""
+			writeFile (fromRawFilePath lockfile) ""
 	liftIO $ takelock lockfile
 -- never reached; windows always uses a separate lock file
 winLocker _ _ Nothing = return Nothing

@@ -102,7 +102,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		createAnnexDirectory (parentDir logfile)
 		ifM (liftIO $ isNothing <$> getEnv flag)
 			( liftIO $ withNullHandle $ \nullh -> do
-				loghandle <- openLog logfile
+				loghandle <- openLog (fromRawFilePath logfile)
 				e <- getEnvironment
 				cmd <- programPath
 				ps <- getArgs
@@ -115,7 +115,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				exitcode <- withCreateProcess p $ \_ _ _ pid ->
 					waitForProcess pid
 				exitWith exitcode
-			, start (Utility.Daemon.foreground (Just pidfile)) $
+			, start (Utility.Daemon.foreground (Just (fromRawFilePath pidfile))) $
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a Nothing Nothing

@@ -115,7 +115,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 					Nothing -> return is_locked
 					Just lockhandle -> do
 						dropLock lockhandle
-						void $ tryIO $ removeWhenExistsWith removeLink lockfile
+						void $ tryIO $ removeWhenExistsWith removeLink (fromRawFilePath lockfile)
 						return is_unlocked
 			, return is_missing
 			)

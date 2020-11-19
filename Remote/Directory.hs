@@ -258,7 +258,7 @@ removeDirGeneric topdir dir = do
 #ifdef mingw32_HOST_OS
 	{- Windows needs the files inside the directory to be writable
 	 - before it can delete them. -}
-	void $ tryIO $ mapM_ allowWrite =<< dirContents dir
+	void $ tryIO $ mapM_ (allowWrite . toRawFilePath) =<< dirContents dir
 #endif
 	tryNonAsync (removeDirectoryRecursive dir) >>= \case
 		Right () -> return ()
@@ -446,7 +446,7 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 #ifndef mingw32_HOST_OS
 			=<< getFdStatus fd
 #else
-			=<< getFileStatus f
+			=<< R.getFileStatus f
 #endif
 		guardSameContentIdentifiers cont cid currcid
 

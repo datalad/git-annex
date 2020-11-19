@@ -208,3 +208,5 @@ Annex -- my use case is more like local archiving and stuff. Git Annex does give
 my backup files around and it's always nice to have an external checksum (I use MD5E w/Annex) recorded
 "in the system" so that you can be sure your files are not altered due to bit rot, etc. In any case,
 big thanks go to Joey (et al.) for this wonderful tool you made!
+
+> [[fixed|done]] --[[Joey]]

@@ -112,7 +112,7 @@ lockPidFile pidfile = do
 	pid <- getPID
 	writeFile pidfile (show pid)
 	lckfile <- winLockFile pid pidfile
-	writeFile lckfile ""
+	writeFile (fromRawFilePath lckfile) ""
 	void $ lockExclusive lckfile
 #endif
 

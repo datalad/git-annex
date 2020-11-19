@@ -131,7 +131,7 @@ checkTransfer t = debugLocks $ do
 	v <- liftIO $ lockShared lck
 	liftIO $ case v of
 		Nothing -> catchDefaultIO Nothing $
-			readTransferInfoFile Nothing tfile
+			readTransferInfoFile Nothing (fromRawFilePath tfile)
 		Just lockhandle -> do
 			dropLock lockhandle
 			cleanstale
