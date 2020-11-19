@@ -1,0 +1,55 @@
+### Please describe the problem.
+
+When checking an adjusted (unlocked) branch, after a while (a few hours), without modifying anything but running several times "git status", a lot of files are reported as "modified" by "git status".
+
+### What steps will reproduce the problem?
+
+On a ~1.5To repo with 1Go to 4Go files, running "git adjust --unlock" works, but after a while "git status" reports a lot of files being modified, "git restore myfiles" restores the files, but other files are reported by "git status" has modified...
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 8.20201103, Debian sid
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ cat .git/config
+[core]
+    repositoryformatversion = 0
+    filemode = true
+    bare = false
+    logallrefupdates = true
+[annex]
+    uuid = 56c81321-3ca1-4464-8c42-b4b405a2502d
+    version = 8
+    thin = true
+    autocommit = false
+[receive]
+    denyCurrentBranch = updateInstead
+[filter "annex"]
+    smudge = git-annex smudge %f
+    clean = git-annex smudge --clean %f
+$ git status
+Refresh index: 100% (4703/4703), done.
+On branch adjusted/master(unlocked)
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+      modified:    file1.avi
+      modified:    file2.avi
+      ...
+
+
+It took 3.88 seconds to enumerate untracked files. 'status -uno'
+may speed it up, but you have to be careful not to forget to add
+new files yourself (see 'git help status').
+no changes added to commit (use "git add" and/or "git commit -a")
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+It's almost perfect :-).
