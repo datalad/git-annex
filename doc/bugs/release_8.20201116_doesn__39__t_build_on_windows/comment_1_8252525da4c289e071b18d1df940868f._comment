@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-11-19T16:31:21Z"
+ content="""
+Thanks for that patch, I had been fixing the windows build one line per
+day, so that sped it up considerably.
+
+I've fixed the issue with the test suite I think, although I will have to
+wait on tomorrow's windows build to know for sure.
+"""]]
