@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-11-19T16:56:45Z"
+ content="""
+To reproduce this, interrupt git-annex after it downloads the whole file,
+but before it moves it from the download location into the annex. (Or,
+let it get the file, then move the object back to the temp object location.)
+
+This is a tricky case, because if the total file size is not
+known when resuming the download, how can it detect if it's got it all
+already? And git-annex does not always know the total file size, eg when
+git-annex addurl --relaxed is used, and then git-annex get is later used
+to download the content.
+
+What git-annex already tried to do to detect this is,
+when it got a 416 it looks for a Content-Range header "bytes */$size"
+where $size is the same as the size of the file on disk.
+
+That relied on the http library throwing an exception for the 416.
+Thing is, http may or may not throw exceptions for non-2xx
+responses, depending on the input Request. IMHO that is a very bad design,
+it leads to this kind of bug, rather than making it evident with the data
+types what is going on.
+
+Currently downloadConduit takes a Request, and assumes it throws exceptions
+for 416, but not for 401. Both can't be right.
+
+Ok, fixed this mess..
+"""]]

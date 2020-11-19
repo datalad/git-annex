@@ -452,7 +452,12 @@ download' nocurlerror meterupdate url file uo =
 {- Download a perhaps large file using conduit, with auto-resume
  - of incomplete downloads.
  -
- - Does not catch exceptions.
+ - A Request can be configured to throw exceptions for non-2xx http
+ - status codes, or not. That configuration is overridden by this,
+ - and if it is unable to download, it throws an exception containing
+ - a user-visible explanation of the problem. (However, exceptions
+ - thrown for reasons other than http status codes will still be thrown
+ - as usual.)
  -}
 downloadConduit :: MeterUpdate -> Request -> FilePath -> UrlOptions -> IO ()
 downloadConduit meterupdate req file uo =
@@ -480,28 +485,29 @@ downloadConduit meterupdate req file uo =
 			filter ((/= hAcceptEncoding) . fst)
 				(requestHeaders req)
 		, decompress = const False
+		-- Avoid throwing exceptions non-2xx http status codes,
+		-- since we rely on parsing the Response to handle
+		-- several such codes.
+		, checkResponse = \_ _ -> return ()
 		}
 
 	-- Resume download from where a previous download was interrupted, 
 	-- when supported by the http server. The server may also opt to
 	-- send the whole file rather than resuming.
-	resumedownload sz = catchJust
-		(matchStatusCodeHeadersException (alreadydownloaded sz))
-		dl
-		(const noop)
-	  where
-		dl = join $ runResourceT $ do
-			let req'' = req' { requestHeaders = resumeFromHeader sz : requestHeaders req }
-			liftIO $ debugM "url" (show req'')
-			resp <- http req'' (httpManager uo)
-			if responseStatus resp == partialContent206
+	resumedownload sz = join $ runResourceT $ do
+		let req'' = req' { requestHeaders = resumeFromHeader sz : requestHeaders req }
+		liftIO $ debugM "url" (show req'')
+		resp <- http req'' (httpManager uo)
+		if responseStatus resp == partialContent206
+			then do
+				store (toBytesProcessed sz) AppendMode resp
+				return (return ())
+			else if responseStatus resp == ok200
 				then do
-					store (toBytesProcessed sz) AppendMode resp
+					store zeroBytesProcessed WriteMode resp
 					return (return ())
-				else if responseStatus resp == ok200
-					then do
-						store zeroBytesProcessed WriteMode resp
-						return (return ())
+				else if alreadydownloaded sz resp
+					then return (return ())
 					else do
 						rf <- extractFromResourceT (respfailure resp)
 						if responseStatus resp == unauthorized401
@@ -510,8 +516,9 @@ downloadConduit meterupdate req file uo =
 								Just ba -> retryauthed ba
 							else return $ giveup rf
 	
-	alreadydownloaded sz s h = s == requestedRangeNotSatisfiable416 
-		&& case lookup hContentRange h of
+	alreadydownloaded sz resp
+		| responseStatus resp /= requestedRangeNotSatisfiable416 = False
+		| otherwise = case lookup hContentRange (responseHeaders resp) of
 			-- This could be improved by fixing
 			-- https://github.com/aristidb/http-types/issues/87
 			Just crh -> crh == B8.fromString ("bytes */" ++ show sz)

@@ -41,3 +41,5 @@ Stock git-annex on Fedora 32:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! git-annex has been working great for me so far, and is powering the bioinformatics chat podcast (https://bioinformatics.chat/). Thanks!
+
+> [[fixed|done]] --[[Joey]]

@@ -15,6 +15,9 @@ git-annex (8.20201117) UNRELEASED; urgency=medium
   * Fix build on Windows.
   * Prevent windows assistant from trying (and failing) to upgrade
     itself, which has never been supported on windows.
+  * Fix a bug that could make resuming a download from the web fail
+    when the entire content of the file is actually already present
+    locally.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2020 09:38:32 -0400
 
