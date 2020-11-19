@@ -495,7 +495,7 @@ downloadConduit meterupdate req file uo =
 	-- when supported by the http server. The server may also opt to
 	-- send the whole file rather than resuming.
 	resumedownload sz = join $ runResourceT $ do
-		let req'' = req' { requestHeaders = resumeFromHeader sz : requestHeaders req }
+		let req'' = req' { requestHeaders = resumeFromHeader sz : requestHeaders req' }
 		liftIO $ debugM "url" (show req'')
 		resp <- http req'' (httpManager uo)
 		if responseStatus resp == partialContent206
