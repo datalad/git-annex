@@ -11,3 +11,4 @@ git-lfs 1.1.0 on nixos
 
 I really like git-annex. Although I have to admit I am not an active user myself. I just want to keep it working for all nixos users, I know some that rely on it.
 
+> [[done]] --[[Joey]]
