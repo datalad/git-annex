@@ -26,7 +26,7 @@ THIS_WORKFLOW = "build-prs.yml"
 THIS_STEP = "Run PR workflow dispatch script"
 WORKFLOWS = ["build-macos.yaml", "build-ubuntu.yaml", "build-windows.yaml"]
 PAGE_SIZE = 50
-DEFAULT_TIME_WINDOW = timedelta(seconds=300)
+DEFAULT_TIME_WINDOW = timedelta(seconds=3600)
 
 log = logging.getLogger(__name__)
 
