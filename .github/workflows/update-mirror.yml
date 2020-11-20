@@ -31,10 +31,10 @@ jobs:
       - name: Push new objects to mirror
         run: git push --tags origin upstream/master
 
-      - name: Use python 3.8
-        uses: actions/setup-python@v1
+      - name: Install Python
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: '^3.6'
 
       - name: Install dependencies
         run: |
@@ -47,9 +47,8 @@ jobs:
 
       - name: Trigger workflow runs for new tags
         run: |
-          while read tag
-          do python .github/workflows/tools/dispatch-build "$tag"
-          done < new-tags.txt
+          xargs -a new-tags.txt -r -L1 \
+            python .github/workflows/tools/dispatch-build
         env:
           GITHUB_TOKEN: ${{ secrets.DATALAD_GITHUB_TOKEN }}
 
