@@ -4,7 +4,7 @@
 # with workflows still needs to be done through the REST API, though.
 
 __python_requires__ = "~= 3.8"
-__requires__ = ["PyGithub == 1.*", "requests ~= 2.20"]
+__requires__ = ["PyGithub == 1.*", "python-dateutil ~= 2.7", "requests ~= 2.20"]
 
 from datetime import datetime, timedelta, timezone
 from functools import cached_property
@@ -13,6 +13,7 @@ import logging
 import os
 import sys
 from time import sleep
+from dateutil.parser import isoparse
 from github import Github
 import requests
 
@@ -100,6 +101,7 @@ class PRDispatcher:
                             id
                             number
                             title
+                            createdAt
                             mergeable
                             timelineItems(
                                 since: $since,
@@ -131,7 +133,8 @@ class PRDispatcher:
             q, variables, ("data", "repository", "pullRequests"),
         ):
             log.info("Found open PR #%s: %s", pr["number"], pr["title"])
-            if pr["timelineItems"]["filteredCount"] == 0:
+            created = isoparse(pr["createdAt"])
+            if created <= since and pr["timelineItems"]["filteredCount"] == 0:
                 log.info("No recent commit activity on PR; skipping")
             else:
                 while pr["mergeable"] == "UNKNOWN":
@@ -176,7 +179,7 @@ class PRDispatcher:
                 r.raise_for_status()
                 for step in r.json()["jobs"][0]["steps"]:
                     if step["name"] == THIS_STEP:
-                        return datetime.fromisoformat(step["started_at"])
+                        return isoparse(step["started_at"])
                 raise RuntimeError(
                     "Could not find this step in previous successful run"
                 )
