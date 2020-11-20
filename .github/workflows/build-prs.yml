@@ -30,6 +30,6 @@ jobs:
       - name: Run PR workflow dispatch script
         run: python .github/workflows/tools/prdispatch.py
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DATALAD_GITHUB_TOKEN }}
 
 # vim:set sts=2:
