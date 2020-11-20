@@ -76,8 +76,8 @@ class PRDispatcher:
         """
         Returns an iterator of pull requests to ``BASE_BRANCH`` in the
         repository that are open, are mergeable, and have had development
-        activity (commits pushed, PR head force-pushed, or PR base changed)
-        since ``since``.
+        activity (PR created, commits pushed, PR head force-pushed, or PR base
+        changed) since ``since``.
         """
         log.info("Fetching open PRs with activity since %s", str(since))
         q = """
