@@ -54,6 +54,7 @@ jobs:
           else echo No inputs provided to workflow dispatch
                exit 2
           fi
+        working-directory: git-annex
 
       - name: Check out source files
         run: git checkout "$BUILD_COMMIT" -- .
