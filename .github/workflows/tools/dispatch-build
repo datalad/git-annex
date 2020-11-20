@@ -34,7 +34,7 @@ class BuildDispatcher:
 @click.option(
     "--os",
     "ostypes",
-    type=click.Choice(["macos", "ubuntu", "windows"]),
+    type=click.Choice(ALL_OS_TYPES),
     multiple=True,
     default=ALL_OS_TYPES,
     help="Specify an OS to build on [multiple use; default: all]",
