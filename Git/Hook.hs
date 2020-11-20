@@ -13,9 +13,7 @@ import Common
 import Git
 import Utility.Tmp
 import Utility.Shell
-#ifndef mingw32_HOST_OS
 import Utility.FileMode
-#endif
 
 data Hook = Hook
 	{ hookName :: FilePath
