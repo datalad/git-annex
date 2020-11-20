@@ -1,0 +1,32 @@
+name: Trigger build workflows for active pull requests
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Use python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip pip-run wheel
+          # No quotes around substitution:
+          python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/prdispatch.py)
+
+      # IMPORTANT: Any change to the name of this step MUST be reflected in the
+      # `THIS_STEP` variable in `prdispatch.py`!
+      - name: Run PR workflow dispatch script
+        run: python .github/workflows/tools/prdispatch.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# vim:set sts=2:
