@@ -20,7 +20,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip pip-run wheel
           # No quotes around substitution:
-          python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/prdispatch.py)
+          ### Currently broken <https://github.com/jaraco/pip-run/issues/46>,
+          ### so the dependencies have to copied here for now.
+          #python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/prdispatch.py)
+          python -m pip install "PyGithub == 1.*" "requests ~= 2.20"
 
       # IMPORTANT: Any change to the name of this step MUST be reflected in the
       # `THIS_STEP` variable in `prdispatch.py`!
