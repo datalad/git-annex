@@ -169,8 +169,17 @@ class PRDispatcher:
         return [self.repo.get_workflow(w) for w in WORKFLOWS]
 
     def get_last_successful_start_time(self):
+        try:
+            myself = int(os.environ["GITHUB_RUN_NUMBER"])
+        except (KeyError, ValueError):
+            sys.exit(
+                "Could not fetch run number for this run;"
+                " is this not GitHub Actions?"
+            )
         for wfrun in self.repo.get_workflow(THIS_WORKFLOW).get_runs():
-            if wfrun.status != "completed":
+            if wfrun.run_number == myself:
+                pass
+            elif wfrun.status != "completed":
                 sys.exit("Previous run has not completed; aborting")
             elif wfrun.conclusion == "success":
                 # As of version 1.53, PyGithub does not support getting
