@@ -25,6 +25,9 @@ module Annex.Content.Presence (
 ) where
 
 import Annex.Common
+#ifdef mingw32_HOST_OS
+import Annex.Perms
+#endif
 import qualified Annex
 import Annex.LockPool
 import Annex.WorkerPool
