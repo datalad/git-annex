@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 1"
+ date="2020-11-20T22:16:34Z"
+ content="""
+If I move a symlink up one directory (thus breaking it), git-annex fix \"symlink-name\" doesn't do anything. the only way I could find to fix it was to do a git annex add $symlink-name. what am I doing wrong?
+"""]]
