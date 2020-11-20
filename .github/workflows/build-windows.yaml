@@ -43,17 +43,14 @@ jobs:
 
       - name: Determine git-annex ref to build
         run: |
-          if [ "${{ github.event_name }}" != workflow_dispatch ]
-          then echo "BUILD_COMMIT=origin/upstream/master" >> "$GITHUB_ENV"
-          elif [ -n "${{ github.event.inputs.pr }}" ]
+          if [ -n "${{ github.event.inputs.pr }}" ]
           then prnum="${{ github.event.inputs.pr }}"
                merge_sha="$(set -o pipefail; curl -fsSL -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/datalad/git-annex/pulls/"$prnum" | jq -r .merge_commit_sha)"
                git fetch origin +"$merge_sha":refs/remotes/pull/"$prnum"/merge
                echo "BUILD_COMMIT=pull/$prnum/merge" >> "$GITHUB_ENV"
           elif [ -n "${{ github.event.inputs.commitish }}" ]
           then echo "BUILD_COMMIT=${{ github.event.inputs.commitish }}" >> "$GITHUB_ENV"
-          else echo No inputs provided to workflow dispatch
-               exit 2
+          else echo "BUILD_COMMIT=origin/upstream/master" >> "$GITHUB_ENV"
           fi
 
       - name: Check out source files
