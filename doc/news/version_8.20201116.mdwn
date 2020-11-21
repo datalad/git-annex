@@ -1,7 +1,5 @@
 git-annex 8.20201116 released with [[!toggle text="these changes"]]
 [[!toggleable text="""
-git-annex (8.20201116) upstream; urgency=medium
-.
   * move: Fix a regression in the last release that made move --to not
     honor numcopies settings.
   * sync --content: Fix a bug where a file that was not preferred content
