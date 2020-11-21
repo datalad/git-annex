@@ -4,7 +4,7 @@ remote of the normal kind. Two exceptions to that are [[git-lfs]] and
 
 But it is possible to register a git repository as a special remote.
 git-annex and git will use the remote the same as any normal git remote,
-but its url will be recorded in the repisitory. One benefit of doing this
+but its url will be recorded in the repository. One benefit of doing this
 is it allows [[git-annex init|git-annex-init]] to autoenable the remote.
 
 First you need a regular git remote with the url that you want to use for
