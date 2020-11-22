@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Cebtenzzre"
+ avatar="http://cdn.libravatar.org/avatar/238202b8214db86e24636e11f4452a12"
+ subject="comment 12"
+ date="2020-11-22T16:07:15Z"
+ content="""
+The semantics described in [proposal for timestamp semantics](https://git-annex.branchable.com/bugs/proposal_for_timestamp_semantics/) would be all I need to stop wishing I just used rsync instead of git-annex. It seems easier to track history with rsync (snapshots and a CHANGELOG?) than to synchronize timestamps (or xattrs for comments) with git-annex. I don't care if it impacts performance, or if I have to set flags to non-default values, or how it resolves conflicts. I know git doesn't do it natively, but I thought the point of git-annex was to be better than native git with data files. Metadata like this is very useful to me, and often I want to sort by *some* kind of meaningful timestamp. ls can't read Exif or ID3 tags, and sometimes they aren't available or even relevant.
+"""]]
