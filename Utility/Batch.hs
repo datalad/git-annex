@@ -41,12 +41,10 @@ batch a = wait =<< batchthread
 	batchthread = asyncBound $ do
 		setProcessPriority 0 maxNice
 		a
+	maxNice = 19
 #else
 batch a = a
 #endif
-
-maxNice :: Int
-maxNice = 19
 
 {- Makes a command be run by whichever of nice, ionice, and nocache
  - are available in the path. -}

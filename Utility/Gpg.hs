@@ -332,6 +332,7 @@ genRandom cmd highQuality size = checksize <$> readStrict cmd params
 testKeyId :: String
 testKeyId = "129D6E0AC537B9C7"
 
+#ifndef mingw32_HOST_OS
 testKey :: String
 testKey = keyBlock True
 	[ "mI0ETvFAZgEEAKnqwWgZqznMhi1RQExem2H8t3OyKDxaNN3rBN8T6LWGGqAYV4wT"
@@ -400,7 +401,6 @@ keyBlock public ls = unlines
 		| public = "PUBLIC"
 		| otherwise = "PRIVATE"
 
-#ifndef mingw32_HOST_OS
 {- Runs an action using gpg in a test harness, in which gpg does
  - not use ~/.gpg/, but sets up the test key in a subdirectory of 
  - the passed directory and uses it.

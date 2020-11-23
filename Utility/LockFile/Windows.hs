@@ -16,7 +16,6 @@ module Utility.LockFile.Windows (
 import System.Win32.Types
 import System.Win32.File
 import Control.Concurrent
-import System.FilePath.ByteString (RawFilePath)
 
 import Utility.FileSystemEncoding
 

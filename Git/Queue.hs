@@ -207,11 +207,13 @@ runAction repo action@(CommandAction {}) = liftIO $ do
   where
 	gitparams = gitCommandLine
 		(Param (getSubcommand action):getParams action) repo
+#ifndef mingw32_HOST_OS
 	go p (Just h) _ _ pid = do
 		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
 		hClose h
 		forceSuccessProcess p pid
 	go _ _ _ _ _ = error "internal"
+#endif
 runAction repo action@(InternalAction {}) =
 	let InternalActionRunner _ runner = getRunner action
 	in runner repo (getInternalFiles action)

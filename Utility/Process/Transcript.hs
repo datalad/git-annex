@@ -20,8 +20,8 @@ import System.IO
 import System.Exit
 import Control.Concurrent.Async
 import Control.Monad
-import Control.Exception
 #ifndef mingw32_HOST_OS
+import Control.Exception
 import qualified System.Posix.IO
 #else
 import Control.Applicative

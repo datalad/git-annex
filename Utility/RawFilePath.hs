@@ -46,7 +46,6 @@ createDirectory :: RawFilePath -> IO ()
 createDirectory p = D.createDirectory p 0o777
 
 #else
-import qualified Data.ByteString as B
 import System.PosixCompat (FileStatus, FileMode)
 import qualified System.PosixCompat as P
 import qualified System.PosixCompat.Files as F

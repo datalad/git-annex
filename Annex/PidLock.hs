@@ -10,10 +10,10 @@
 module Annex.PidLock where
 
 import Annex.Common
-import Annex.GitOverlay
 import Git
-import Git.Env
 #ifndef mingw32_HOST_OS
+import Git.Env
+import Annex.GitOverlay
 import qualified Utility.LockFile.PidLock as PidF
 import qualified Utility.LockPool.PidLock as PidP
 import Utility.LockPool (dropLock)

@@ -178,6 +178,7 @@ fromRawFilePath = decodeFilePath
 toRawFilePath :: FilePath -> RawFilePath
 toRawFilePath = encodeFilePath
 
+#ifndef mingw32_HOST_OS
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
  - w82s produces a String, which may contain Chars that are invalid
@@ -206,6 +207,7 @@ decodeW8NUL :: FilePath -> [Word8]
 decodeW8NUL = intercalate [c2w8 nul] . map decodeW8 . splitc nul
   where
 	nul = '\NUL'
+#endif
 
 c2w8 :: Char -> Word8
 c2w8 = fromIntegral . fromEnum
