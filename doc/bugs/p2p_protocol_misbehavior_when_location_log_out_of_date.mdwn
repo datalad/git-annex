@@ -1,0 +1,15 @@
+With a ssh remote using the p2p protocol, git-annex move of 2 files,
+with the first file no longer present in the remote (having moved
+elsewhere) and the second file still, fails like this:
+
+	move file1 (from remote...)
+	verification of content failed
+	failed
+	move file2 (from remote..)
+	Lost connection (fd:15: hGetChar: illegal operation (handle is closed))
+	transfer failed
+
+The problem is on the first move, the protocol does not handle a file
+that's not present well, so it's not clear why it failed. And since that
+closes the connection, the next move fails when it should not need to.
+--[[Joey]]
