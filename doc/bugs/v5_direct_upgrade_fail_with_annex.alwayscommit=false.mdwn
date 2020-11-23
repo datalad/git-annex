@@ -1,0 +1,5 @@
+`upgrade` will fail and leave the repo broken when run in a
+v5 direct repo with annex.alwayscommit=false and not synced since the last
+change.
+
+> Forwarded from a private email to me, have not reproduced yet. --[[Joey]]
