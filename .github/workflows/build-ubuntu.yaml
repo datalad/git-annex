@@ -1,7 +1,7 @@
 name: Build git-annex on Ubuntu
 
 on:
-  # Trigger the workflow on pull request,
+  # Trigger the workflow on pull requests
   pull_request:
     paths:
       - '.github/workflows/build-ubuntu.yaml'
@@ -13,6 +13,10 @@ on:
         description: The upstream commitish to build
       pr:
         description: The number of the PR to build
+
+defaults:
+  run:
+    shell: bash
 
 env:
   LANG: C
@@ -27,7 +31,6 @@ jobs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
       - name: Set up system
-        shell: bash
         run: |
           bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
           sudo apt-get update -qq
@@ -54,18 +57,6 @@ jobs:
         run: git checkout "$BUILD_COMMIT" -- .
         working-directory: git-annex
 
-      - name: Adjust changelog generation script to use original branch
-        run: sed -i -e "s,HEAD,$BUILD_COMMIT,g" debian/create-standalone-changelog
-        working-directory: git-annex
-
-      - name: Import GPG keys
-        run: |
-          # private key for signing - comes from secrets
-          echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
-          # public key for verification
-          gpg --import .github/workflows/tools/datalad-builder-key.asc
-        working-directory: git-annex
-
       - name: Get build version
         id: build-version
         run: |
@@ -80,6 +71,18 @@ jobs:
         working-directory: git-annex
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Adjust changelog generation script to use original branch
+        run: sed -i -e "s,HEAD,$BUILD_COMMIT,g" debian/create-standalone-changelog
+        working-directory: git-annex
+
+      - name: Import GPG keys
+        run: |
+          # private key for signing - comes from secrets
+          echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
+          # public key for verification
+          gpg --import .github/workflows/tools/datalad-builder-key.asc
+        working-directory: git-annex
 
       - name: Get the git-annex build environment container
         run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster
@@ -130,9 +133,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        # TODO: add , nfs-home
-        # https://git-annex.branchable.com/bugs/running_tests_on_NFS_HOME_does_not_exit_cleanly__58___gpgtmp/
-        flavor: [normal, crippled-tmp, crippled-home, nfs-tmp]
+        flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-tmp"]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -144,7 +145,8 @@ jobs:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
-        run: sudo dpkg -i git-annex*.deb
+        run: |
+          sudo dpkg -i git-annex*.deb
 
       - name: Print git-annex version
         run: git annex version
@@ -191,7 +193,7 @@ jobs:
           cd $HOME
           export | grep -e crippledfs || :
 
-          git annex test
+          timeout 1800 git annex test
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
@@ -205,9 +207,7 @@ jobs:
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Scheduled tests of Ubuntu build failed!'
           body: |
-            The tests for a scheduled build of git-annex for Ubuntu failed for the following matrix:
-
-            ${{ toJSON(matrix) }}
+            The tests for a scheduled build of git-annex for Ubuntu (flavor: ${{ matrix.flavor }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
@@ -221,7 +221,8 @@ jobs:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
-        run: sudo dpkg -i git-annex*.deb
+        run: |
+          sudo dpkg -i git-annex*.deb
 
       - name: Seek of dynlibs
         run: |
@@ -249,7 +250,8 @@ jobs:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
-        run: sudo dpkg -i git-annex*.deb
+        run: |
+          sudo dpkg -i git-annex*.deb
 
       - name: Set up SSH target
         shell: bash
@@ -272,7 +274,7 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: install ${{ matrix.version }} datalad
+      - name: Install ${{ matrix.version }} Datalad
         run: |
           if [ "${{ matrix.version }}" = "release" ]; then
             # Authorize so that we don't run up against low API rate limits
@@ -295,4 +297,4 @@ jobs:
           cd __testhome__
           python -m nose -s -v datalad
 
-# vim:set sts=2:
+# vim:set et sts=2:

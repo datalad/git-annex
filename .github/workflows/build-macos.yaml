@@ -1,7 +1,7 @@
 name: Build git-annex on macOS
 
 on:
-  # Trigger the workflow on pull request,
+  # Trigger the workflow on pull requests
   pull_request:
     paths:
       - '.github/workflows/build-macos.yaml'
@@ -14,6 +14,10 @@ on:
       pr:
         description: The number of the PR to build
 
+defaults:
+  run:
+    shell: bash
+
 env:
   LANG: C
 
@@ -24,7 +28,6 @@ jobs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
       - name: Set up system
-        shell: bash
         run: brew install libmagic pkg-config
 
       - name: Checkout this repository
@@ -48,8 +51,9 @@ jobs:
         id: build-version
         run: |
           version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
+          arch=x64
           echo "Building $version"
-          echo "::set-output name=version::${version}_x64"
+          echo "::set-output name=version::${version}_$arch"
 
       - name: Apply local patches
         run: .github/workflows/tools/apply-patches patches
@@ -58,7 +62,6 @@ jobs:
 
       - name: Configure build
         run: |
-          #echo BUILDEROPTIONS="--extra-include-dirs=$HOME/homebrew/include --extra-lib-dirs=$HOME/homebrew/lib" >> "$GITHUB_ENV"
           echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
           echo BUILDERCOMMONOPTIONS="--stack-yaml stack.yaml.autobuild" >> "$GITHUB_ENV"
           echo BUILDER=stack >> "$GITHUB_ENV"
@@ -114,10 +117,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        flavor: [normal, crippled-tmp]
-        # TODO: Add "crippled-home" back in once
-        # <https://git-annex.branchable.com/bugs/gets_stuck_in_Remote_Tests___40____63____41___while_running_on_OSX_with_HOME_on_crippled_FS/?updated>
-        # is fixed
+        flavor: ["normal", "crippled-tmp"]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -144,6 +144,14 @@ jobs:
             # source so that CRIPPLEDFS_PATH will be set:
             . .github/workflows/tools/setup_crippledfs crippledfs 500
           fi
+          if echo "${{ matrix.flavor }}" | grep -q "nfs" ; then
+            mkdir /tmp/nfsmount_ /tmp/nfsmount
+            echo "/tmp/nfsmount_ localhost(rw)" | sudo bash -c 'cat - > /etc/exports'
+            sudo apt-get install -y nfs-kernel-server
+            sudo exportfs -a
+            sudo mount -t nfs localhost:/tmp/nfsmount_ /tmp/nfsmount
+          fi
+
           case "${{ matrix.flavor }}" in
             crippled-tmp)
               # forces all test repos/paths into the VFAT FS
@@ -151,6 +159,12 @@ jobs:
               ;;
             crippled-home)
               export HOME="$CRIPPLEDFS_PATH"
+              ;;
+            nfs-tmp)
+              export TMPDIR=/tmp/nfsmount
+              ;;
+            nfs-home)
+              export HOME=/tmp/nfsmount
               ;;
             normal)
               ;;
@@ -166,7 +180,7 @@ jobs:
           cd $HOME
           export | grep -e crippledfs || :
 
-          git annex test
+          timeout 1800 git annex test
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
@@ -180,9 +194,7 @@ jobs:
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Scheduled tests of macOS build failed!'
           body: |
-            The tests for a scheduled build of git-annex for macOS failed for the following matrix:
-
-            ${{ toJSON(matrix) }}
+            The tests for a scheduled build of git-annex for macOS (flavor: ${{ matrix.flavor }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
@@ -214,77 +226,4 @@ jobs:
           test $(nfailed version "libpcre.*so") -lt 5
           test $(nfailed init "libpcre.*so") -lt 130
 
-  test-datalad:
-    # TODO: Re-enable macOS testing once it passes reliably
-    # <https://github.com/datalad/datalad-extensions/pull/33#issuecomment-696368877>
-    if: false
-    runs-on: macos-latest
-    needs: build-package
-    strategy:
-      matrix:
-        version: [master, maint, release]
-      fail-fast: false
-    steps:
-      - name: Download git-annex package
-        uses: actions/download-artifact@v2
-        with:
-          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
-
-      - name: Install git-annex package
-        run: |
-          hdiutil attach git-annex_*.dmg
-          rsync -a /Volumes/git-annex/git-annex.app /Applications/
-          hdiutil detach /Volumes/git-annex/
-          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
-
-      - name: Set up SSH target
-        shell: bash
-        # TODO: Drop the release condition once 0.13.2 is released.
-        run: |
-          if [ "${{ matrix.version }}" != "release" ]; then
-            # coreutils provides a readlink that supports `-f`
-            brew install coreutils docker docker-machine
-            docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
-            eval "$(docker-machine env default)"
-            export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-            curl -fSsL \
-              https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
-              | bash;
-            echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
-          fi
-
-      - name: Set up environment
-        run: |
-          brew install exempi  # Needed by python-xmp-toolkit
-          git config --global user.email "test@github.land"
-          git config --global user.name "GitHub Almighty"
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-
-      - name: install ${{ matrix.version }} datalad
-        run: |
-          if [ "${{ matrix.version }}" = "release" ]; then
-            # Authorize so that we don't run up against low API rate limits
-            commitish="$(curl -fsSL -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/datalad/datalad/releases/latest | jq -r .tag_name)"
-          else
-            commitish="${{ matrix.version }}"
-          fi
-          python -m pip install --upgrade pip
-          pip install https://github.com/datalad/datalad/archive/${commitish}.zip
-
-      - name: Install nose et al (just in case!)
-        run: pip install nose vcrpy mock
-
-      - name: WTF!?
-        run: datalad wtf
-
-      - name: Run datalad tests
-        run: |
-          mkdir -p __testhome__
-          cd __testhome__
-          python -m nose -s -v datalad
-
-# vim:set sts=2:
+# vim:set et sts=2:

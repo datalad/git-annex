@@ -1,0 +1,50 @@
+- ostype: ubuntu
+  osname: Ubuntu
+  cron_hour: '02'
+  runs_on: ubuntu-latest
+  env:
+    LANG: C
+    DEB_SIGN_KEYID: 13A1093296154584245E0300C98FC49D36DAB17F
+    DEB_BUILD_OPTIONS: nocheck
+    bbuild_log: git-annex-build.log
+  test_annex_flavors: [normal, crippled-tmp, crippled-home, nfs-tmp]
+    # TODO: Add nfs-home
+    # https://git-annex.branchable.com/bugs/running_tests_on_NFS_HOME_does_not_exit_cleanly__58___gpgtmp/
+  artifact_basename: git-annex-debianstandalone-packages
+  artifact_install_steps:
+    - sudo dpkg -i git-annex*.deb
+  test_datalad: true
+
+- ostype: macos
+  osname: macOS
+  cron_hour: '01'
+  runs_on: macos-latest
+  env:
+    LANG: C
+  test_annex_flavors: [normal, crippled-tmp]
+    # TODO: Add "crippled-home" back in once
+    # <https://git-annex.branchable.com/bugs/gets_stuck_in_Remote_Tests___40____63____41___while_running_on_OSX_with_HOME_on_crippled_FS/?updated>
+    # is fixed
+  artifact_basename: git-annex-macos-dmg
+  artifact_install_steps:
+    - hdiutil attach git-annex_*.dmg
+    - rsync -a /Volumes/git-annex/git-annex.app /Applications/
+    - hdiutil detach /Volumes/git-annex/
+    - echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+  test_datalad: false
+    # TODO: Re-enable macOS testing once it passes reliably
+    # <https://github.com/datalad/datalad-extensions/pull/33#issuecomment-696368877>
+
+- ostype: windows
+  osname: Windows
+  cron_hour: '03'
+  runs_on: windows-2016
+  env:
+    LANG: C.utf-8
+  test_annex_flavors: []
+  artifact_basename: git-annex-windows-installer
+  artifact_install_steps:
+    - ./git-annex-installer_*.exe /S
+  test_datalad: false
+    # TODO: reenable -- was hanging on test step
+    # see https://github.com/datalad/datalad-extensions/pull/54
