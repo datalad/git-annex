@@ -31,16 +31,25 @@ jobs:
       - name: Push new objects to mirror
         run: git push --tags origin upstream/master
 
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '^3.6'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip pip-run wheel
+          # No quotes around substitution:
+          ### Currently broken <https://github.com/jaraco/pip-run/issues/46>,
+          ### so the dependencies have to copied here for now.
+          #python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/dispatch-build)
+          python -m pip install "click ~= 7.0" "PyGithub == 1.*"
+
       - name: Trigger workflow runs for new tags
         run: |
-          while read tag
-          do for workflow in build-macos.yaml build-ubuntu.yaml build-windows.yaml
-             do jq -n --arg tag "$tag" '{ref: "master", inputs: {commitish: $tag}}' | \
-                curl -fsSL -X POST -d@- \
-                  -H "Accept: application/vnd.github.v3+json" \
-                  -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" \
-                  https://api.github.com/repos/datalad/git-annex/actions/workflows/"$workflow"/dispatches
-             done
-          done < new-tags.txt
+          xargs -a new-tags.txt -r -L1 \
+            python .github/workflows/tools/dispatch-build
+        env:
+          GITHUB_TOKEN: ${{ secrets.DATALAD_GITHUB_TOKEN }}
 
 # vim:set sts=2:

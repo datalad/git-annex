@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+__requires__ = ["click ~= 7.0", "PyGithub == 1.*"]
+import os
+import subprocess
+import click
+from github import Github
+
+REPO = "datalad/git-annex"
+ALL_OS_TYPES = ("macos", "ubuntu", "windows")
+
+
+class BuildDispatcher:
+    def __init__(self, token):
+        self.gh = Github(token)
+        self.repo = self.gh.get_repo(REPO)
+
+    def get_os_workflows(self, ostypes):
+        return [self.repo.get_workflow(f"build-{o}.yaml") for o in ostypes]
+
+    def build_pr(self, pr, ostypes=ALL_OS_TYPES, workflow_ref="master"):
+        for w in self.get_os_workflows(ostypes):
+            w.create_dispatch(ref=workflow_ref, inputs={"pr": str(pr)})
+
+    def build_commitish(self, commitish, ostypes=ALL_OS_TYPES, workflow_ref="master"):
+        for w in self.get_os_workflows(ostypes):
+            w.create_dispatch(ref=workflow_ref, inputs={"commitish": commitish})
+
+    def build_latest(self, ostypes=ALL_OS_TYPES, workflow_ref="master"):
+        for w in self.get_os_workflows(ostypes):
+            w.create_dispatch(ref=workflow_ref, inputs={})
+
+
+@click.command()
+@click.option(
+    "--os",
+    "ostypes",
+    type=click.Choice(ALL_OS_TYPES),
+    multiple=True,
+    default=ALL_OS_TYPES,
+    help="Specify an OS to build on [multiple use; default: all]",
+)
+@click.option("--pr", is_flag=True, help="Build a pull request")
+@click.option(
+    "-w",
+    "--workflow-ref",
+    default="master",
+    help="The ref from which to acquire the workflow",
+    show_default=True,
+)
+@click.argument("ref", required=False)
+def main(ostypes, pr, ref, workflow_ref):
+    """
+    Trigger builds of datalad/git-annex.
+
+    Builds can be triggered for the latest code on upstream/master, for a pull
+    request, or for an arbitrary commitish in the repository.
+
+    * To build the latest code on upstream/master, run the script without any
+      arguments:
+
+        python3 dispatch-build.py [<options>]
+
+    * To build a pull request, pass the `--pr` option and the number of the PR:
+
+        python3 dispatch-build.py [<options>] --pr 42
+
+    When building a PR, the actual commit that gets built is the
+    GitHub-supplied result of merging the PR.  If the PR is not mergeable, the
+    result is undefined.
+
+    * To build an arbitrary commitish, specify it as the argument to the
+      script.  Note that branches must be prefixed with "origin/" as they are
+      not checked out by default.
+
+    \b
+         # Build a tag:
+         python3 dispatch-build.py [<options>] 8.20201116
+
+    \b
+         # Build a branch:
+         python3 dispatch-build.py [<options>] origin/my-fix
+
+    \b
+         # Build a commit hash:
+         python3 dispatch-build.py [<options>] 65131af
+
+    This script requires a GitHub OAuth token in order to run.  The token can
+    be specified via either the `GITHUB_TOKEN` environment variable or, if that
+    is not set, via the Git `hub.oauthtoken` config option.
+    """
+    token = os.environ.get("GITHUB_TOKEN")
+    if token is None:
+        token = subprocess.check_output(
+            ["git", "config", "hub.oauthtoken"], universal_newlines=True
+        ).strip()
+    dispatcher = BuildDispatcher(token)
+    if pr:
+        try:
+            int(ref)
+        except ValueError:
+            raise click.UsageError("--pr requires a PR number")
+        dispatcher.build_pr(pr, ostypes)
+    elif ref:
+        dispatcher.build_commitish(ref, ostypes)
+    else:
+        dispatcher.build_latest(ostypes)
+
+
+if __name__ == "__main__":
+    main()

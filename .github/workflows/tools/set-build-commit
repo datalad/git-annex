@@ -1,0 +1,11 @@
+#!/bin/bash
+set -eu -o pipefail
+
+if [ -n "$INPUT_PR" ]
+then merge_sha="$(curl -fsSL -H "Authorization: bearer $GITHUB_TOKEN" https://api.github.com/repos/datalad/git-annex/pulls/"$INPUT_PR" | jq -r .merge_commit_sha)"
+     git fetch origin +"$merge_sha":refs/remotes/pull/"$INPUT_PR"/merge
+     BUILD_COMMIT="pull/$INPUT_PR/merge"
+elif [ -n "$INPUT_COMMITISH" ]
+then BUILD_COMMIT="$INPUT_COMMITISH"
+else BUILD_COMMIT=origin/upstream/master
+fi
