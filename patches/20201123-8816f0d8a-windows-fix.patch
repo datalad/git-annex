@@ -4,7 +4,7 @@ index 861288c0b..f5d4b593f 100644
 +++ b/Annex/Content/Presence.hs
 @@ -25,6 +25,9 @@ module Annex.Content.Presence (
  ) where
-
+ 
  import Annex.Common
 +#ifdef mingw32_HOST_OS
 +import Annex.Perms
@@ -12,4 +12,4 @@ index 861288c0b..f5d4b593f 100644
  import qualified Annex
  import Annex.LockPool
  import Annex.WorkerPool
-
+ 
