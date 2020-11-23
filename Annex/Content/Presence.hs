@@ -39,6 +39,10 @@ import Utility.InodeCache
 import Types.WorkerPool
 import qualified Utility.RawFilePath as R
 
+#ifdef mingw32_HOST_OS
+import Annex.Perms
+#endif
+
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
 inAnnex key = inAnnexCheck key $ liftIO . R.doesPathExist
