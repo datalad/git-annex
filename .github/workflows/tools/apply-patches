@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -eux -o pipefail
+
+function api_query {
+    path="$1"
+    curl -fsSL \
+        -H "Authorization: bearer $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com$path"
+}
+
+patches_dir="$1"
+
+if [ ! -d "$patches_dir" ]
+then
+    echo "[INFO] Patch directory not found; doing nothing"
+    exit 0
+fi
+
+find "$patches_dir" -type f '!' -name '.*' -print | sort | while read -r patchfile
+do
+    echo "[INFO] Applying patch $patchfile"
+    # Test whether the patch has already been applied by seeing if it can be
+    # applied in reverse
+    if git apply -R --check "$patchfile"
+    then
+        echo "[INFO] $patchfile is already applied.  Creating PR to remove."
+        branch_name="rmpatch/$(basename "$patchfile" .patch)"
+        if api_query "/repos/$GITHUB_REPOSITORY/branches/$branch_name" > /dev/null
+        then
+            echo "[INFO] Branch $branch_name already exists; assuming PR already exists"
+        else
+            tmpdir="$(mktemp -d)"
+            git clone --depth 1 "$(git remote get-url origin)" "$tmpdir"
+            cd "$tmpdir"
+            git checkout -b "$branch_name"
+            git rm "$patchfile"
+            git commit -m "Delete patch $(basename "$patchfile")"
+            git push origin "$branch_name"
+            gh pr create --title "Delete patch $(basename "$patchfile")" --body "The patch \`$patchfile\` has been applied upstream.  This PR removes it from the local patch directory."
+            cd -
+        fi
+    elif git apply "$patchfile"
+    then echo "[INFO] Patch applied cleanly"
+    else
+        echo "[ERROR] Patch failed to apply; creating issue"
+        issue_title="Patch $(basename "$patchfile") fails to apply"
+        if api_query "/repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100&sort=created&direction=desc" | jq -e --arg title "$issue_title" 'any(.[].title; . == $title)'
+        then
+            echo "[INFO] Issue already exists"
+        else
+            gh issue create --title "$issue_title" --body "The patch \`$patchfile\` failed to apply cleanly.  See <https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID> for more information."
+        fi
+        echo "[ERROR] Erroring out"
+        exit 1
+    fi
+done

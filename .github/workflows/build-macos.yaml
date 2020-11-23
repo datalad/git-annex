@@ -57,6 +57,11 @@ jobs:
           echo "Building $version"
           echo "::set-output name=version::${version}_x64"
 
+      - name: Apply local patches
+        run: .github/workflows/tools/apply-patches patches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Configure build
         run: |
           #echo BUILDEROPTIONS="--extra-include-dirs=$HOME/homebrew/include --extra-lib-dirs=$HOME/homebrew/lib" >> "$GITHUB_ENV"
