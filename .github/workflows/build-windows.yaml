@@ -66,6 +66,9 @@ jobs:
           echo "Building $version"
           echo "::set-output name=version::${version}_x64"
 
+      - name: Apply local patches
+        run: .github/workflows/tools/apply-patches patches
+
       - name: Download and "install" libmagic for windows
         run: |
           export TARGET_REPO=datalad/file-windows

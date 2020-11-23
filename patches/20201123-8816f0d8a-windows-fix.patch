@@ -1,0 +1,15 @@
+diff --git a/Annex/Content/Presence.hs b/Annex/Content/Presence.hs
+index 861288c0b..f5d4b593f 100644
+--- a/Annex/Content/Presence.hs
++++ b/Annex/Content/Presence.hs
+@@ -25,6 +25,9 @@ module Annex.Content.Presence (
+ ) where
+
+ import Annex.Common
++#ifdef mingw32_HOST_OS
++import Annex.Perms
++#endif
+ import qualified Annex
+ import Annex.LockPool
+ import Annex.WorkerPool
+

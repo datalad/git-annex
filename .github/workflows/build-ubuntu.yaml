@@ -81,6 +81,10 @@ jobs:
           echo "::set-output name=version::${version}_$arch"
         working-directory: git-annex
 
+      - name: Apply local patches
+        run: .github/workflows/tools/apply-patches patches
+        working-directory: git-annex
+
       - name: Get the git-annex build environment container
         run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster
 
