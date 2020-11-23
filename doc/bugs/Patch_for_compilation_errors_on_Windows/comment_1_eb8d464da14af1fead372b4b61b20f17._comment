@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jwodder"
+ avatar="http://cdn.libravatar.org/avatar/b06e01332c949b895c681cc92934f36a"
+ subject="comment 1"
+ date="2020-11-23T15:02:28Z"
+ content="""
+I see you patched `Git/Hook.hs`, but you did not patch `Annex/Content/Presence.hs`.  The Windows builds are still failing.
+"""]]
