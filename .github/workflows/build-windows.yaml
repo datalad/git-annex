@@ -130,6 +130,22 @@ jobs:
             git-annex-installer_*.exe
             dist\build-version
 
+      - name: Send e-mail on failed scheduled run
+        if: "failure() && github.event_name == 'schedule'"
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
+          server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
+          username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
+          password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          from: GitHub Actions Notifications
+          to: ${{ secrets.NOTIFY_RECIPIENT }}
+          subject: '[${{ github.repository }}] Scheduled build on Windows failed!'
+          body: |
+            A scheduled build of git-annex for Windows failed!
+
+            See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
+
   test-annex:
     runs-on: windows-2016
     needs: build-package
@@ -164,6 +180,22 @@ jobs:
         run: |
           cd $HOME
           timeout 1800 git annex test
+
+      - name: Send e-mail on failed scheduled run
+        if: "failure() && github.event_name == 'schedule'"
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
+          server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
+          username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
+          password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          from: GitHub Actions Notifications
+          to: ${{ secrets.NOTIFY_RECIPIENT }}
+          subject: '[${{ github.repository }}] Scheduled tests of Windows build failed!'
+          body: |
+            The tests for a scheduled build of git-annex for Windows failed!
+
+            See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-datalad:
     runs-on: windows-2016
