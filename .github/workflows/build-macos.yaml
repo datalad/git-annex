@@ -135,6 +135,9 @@ jobs:
           hdiutil detach /Volumes/git-annex/
           echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
 
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
       - name: Print git-annex version
         run: git annex version
 

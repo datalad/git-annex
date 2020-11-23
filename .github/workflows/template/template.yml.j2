@@ -286,7 +286,11 @@ jobs:
           {{step}}
           {% endfor %}
 
-    {% if ostype == "windows" %}
+    {% if ostype == "macos" %}
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
+    {% elif ostype == "windows" %}
       - name: Check that magic files are installed
         run: |
           GIT_ANNEX_PATH="$(type -p git-annex)"
