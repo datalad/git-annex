@@ -84,6 +84,8 @@ jobs:
       - name: Apply local patches
         run: .github/workflows/tools/apply-patches patches
         working-directory: git-annex
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get the git-annex build environment container
         run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster

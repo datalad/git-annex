@@ -68,6 +68,8 @@ jobs:
 
       - name: Apply local patches
         run: .github/workflows/tools/apply-patches patches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download and "install" libmagic for windows
         run: |
