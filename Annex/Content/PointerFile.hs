@@ -9,12 +9,6 @@
 
 module Annex.Content.PointerFile where
 
-#if ! defined(mingw32_HOST_OS)
-import System.Posix.Files
-#else
-import System.PosixCompat.Files
-#endif
-
 import Annex.Common
 import Annex.Perms
 import Annex.Link
@@ -22,10 +16,11 @@ import Annex.ReplaceFile
 import Annex.InodeSentinal
 import Annex.Content.LowLevel
 import Utility.InodeCache
+import qualified Utility.RawFilePath as R
 #if ! defined(mingw32_HOST_OS)
 import Utility.Touch
+import System.Posix.Files (modificationTimeHiRes)
 #endif
-import qualified Utility.RawFilePath as R
 
 {- Populates a pointer file with the content of a key. 
  -

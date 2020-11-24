@@ -15,7 +15,7 @@ module Utility.MoveFile (
 
 import Control.Monad
 import System.FilePath
-import System.PosixCompat.Files
+import System.PosixCompat.Files hiding (removeLink)
 import System.IO.Error
 import Prelude
 

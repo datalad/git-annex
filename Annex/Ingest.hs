@@ -49,9 +49,9 @@ import Git.FilePath
 import Annex.InodeSentinal
 import Annex.AdjustedBranch
 import Annex.FileMatcher
+import qualified Utility.RawFilePath as R
 
 import Control.Exception (IOException)
-import qualified Utility.RawFilePath as R
 
 data LockedDown = LockedDown
 	{ lockDownConfig :: LockDownConfig
@@ -113,7 +113,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 			(tmpfile, h) <- openTempFile (fromRawFilePath tmpdir) $
 				relatedTemplate $ "ingest-" ++ takeFileName file
 			hClose h
-			removeWhenExistsWith removeLink tmpfile
+			removeWhenExistsWith R.removeLink (toRawFilePath tmpfile)
 			withhardlink' delta tmpfile
 				`catchIO` const (nohardlink' delta)
 

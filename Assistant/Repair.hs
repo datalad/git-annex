@@ -30,6 +30,7 @@ import qualified Data.Text as T
 #endif
 import qualified Utility.Lsof as Lsof
 import Utility.ThreadScheduler
+import qualified Utility.RawFilePath as R
 
 import Control.Concurrent.Async
 
@@ -149,7 +150,7 @@ repairStaleLocks lockfiles = go =<< getsizes
 			waitforit "to check stale git lock file"
 			l' <- getsizes
 			if l' == l
-				then liftIO $ mapM_ (removeWhenExistsWith removeLink . fst) l
+				then liftIO $ mapM_ (removeWhenExistsWith R.removeLink . toRawFilePath . fst) l
 				else go l'
 		, do
 			waitforit "for git lock file writer"

@@ -32,6 +32,7 @@ import Types.ScheduledActivity
 import Types.NumCopies
 import Remote
 import Git.Types (fromConfigKey, fromConfigValue)
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = command "vicfg" SectionSetup "edit configuration in git-annex branch"
@@ -58,7 +59,7 @@ vicfg curcfg f = do
 	unlessM (liftIO $ boolSystem "sh" [Param "-c", Param $ unwords [vi, shellEscape f]]) $
 		giveup $ vi ++ " exited nonzero; aborting"
 	r <- parseCfg (defCfg curcfg) <$> liftIO (readFileStrict f)
-	liftIO $ removeWhenExistsWith removeLink f
+	liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 	case r of
 		Left s -> do
 			liftIO $ writeFile f s

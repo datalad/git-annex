@@ -20,7 +20,7 @@ import System.IO
 import System.FilePath
 import System.Directory
 import Control.Monad.IO.Class
-import System.PosixCompat.Files
+import System.PosixCompat.Files hiding (removeLink)
 
 import Utility.Exception
 import Utility.FileSystemEncoding

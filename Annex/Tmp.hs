@@ -12,6 +12,7 @@ import qualified Annex
 import Annex.LockFile
 import Annex.Perms
 import Types.CleanupActions
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
 
@@ -67,5 +68,5 @@ cleanupOtherTmp = do
 		let oldenough = now - (60 * 60 * 24 * 7)
 		catchMaybeIO (modificationTime <$> getSymbolicLinkStatus f) >>= \case
 			Just mtime | realToFrac mtime <= oldenough -> 
-				void $ tryIO $ removeWhenExistsWith removeLink f
+				void $ tryIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 			_ -> return ()

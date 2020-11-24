@@ -412,7 +412,7 @@ test_ignore_deleted_files :: Assertion
 test_ignore_deleted_files = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get failed"
 	git_annex_expectoutput "find" [] [annexedfile]
-	removeWhenExistsWith removeLink annexedfile
+	removeWhenExistsWith R.removeLink (toRawFilePath annexedfile)
 	-- A file that has been deleted, but the deletion not staged,
 	-- is a special case; make sure git-annex skips these.
 	git_annex_expectoutput "find" [] []
@@ -1332,7 +1332,7 @@ test_remove_conflict_resolution = do
 					@? "unlock conflictor failed"
 				writecontent conflictor "newconflictor"
 			indir r1 $
-				removeWhenExistsWith removeLink conflictor
+				removeWhenExistsWith R.removeLink (toRawFilePath conflictor)
 			let l = if inr1 then [r1, r2, r1] else [r2, r1, r2]
 			forM_ l $ \r -> indir r $
 				git_annex "sync" [] @? "sync failed"
@@ -1861,7 +1861,7 @@ test_export_import = intmpclonerepo $ do
 	git_annex "merge" ["foo/" ++ origbranch] @? "git annex merge failed"
 	annexed_present_imported "import"
 
-	removeWhenExistsWith removeLink "import"
+	removeWhenExistsWith R.removeLink (toRawFilePath "import")
 	writecontent "import" (content "newimport1")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges
@@ -1870,7 +1870,7 @@ test_export_import = intmpclonerepo $ do
 
 	-- verify that export refuses to overwrite modified file
 	writedir "import" (content "newimport2")
-	removeWhenExistsWith removeLink "import"
+	removeWhenExistsWith R.removeLink (toRawFilePath "import")
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges
@@ -1880,7 +1880,7 @@ test_export_import = intmpclonerepo $ do
 	-- resolving import conflict
 	git_annex "import" [origbranch, "--from", "foo"] @? "import from dir failed"
 	not <$> boolSystem "git" [Param "merge", Param "foo/master", Param "-mmerge"] @? "git merge of conflict failed to exit nonzero"
-	removeWhenExistsWith removeLink "import"
+	removeWhenExistsWith R.removeLink (toRawFilePath "import")
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
 	commitchanges

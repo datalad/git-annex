@@ -337,7 +337,7 @@ forceStopSsh socketfile = withNullHandle $ \nullh -> do
 		}
 	void $ liftIO $ catchMaybeIO $ withCreateProcess p $ \_ _ _ pid ->
 		forceSuccessProcess p pid
-	liftIO $ removeWhenExistsWith removeLink socketfile
+	liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath socketfile)
 
 {- This needs to be as short as possible, due to limitations on the length
  - of the path to a socket file. At the same time, it needs to be unique

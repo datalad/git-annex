@@ -41,6 +41,7 @@ import qualified BuildInfo
 import qualified Utility.Url as Url
 import qualified Annex.Url as Url hiding (download)
 import Utility.Tuple
+import qualified Utility.RawFilePath as R
 
 import Data.Either
 import qualified Data.Map as M
@@ -220,7 +221,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			error $ "did not find " ++ dir ++ " in " ++ distributionfile
 	makeorigsymlink olddir = do
 		let origdir = fromRawFilePath (parentDir (toRawFilePath olddir)) </> installBase
-		removeWhenExistsWith removeLink origdir
+		removeWhenExistsWith R.removeLink (toRawFilePath origdir)
 		createSymbolicLink newdir origdir
 
 {- Finds where the old version was installed. -}
@@ -278,8 +279,8 @@ installBase = "git-annex." ++
 deleteFromManifest :: FilePath -> IO ()
 deleteFromManifest dir = do
 	fs <- map (dir </>) . lines <$> catchDefaultIO "" (readFile manifest)
-	mapM_ (removeWhenExistsWith removeLink) fs
-	removeWhenExistsWith removeLink manifest
+	mapM_ (removeWhenExistsWith R.removeLink . toRawFilePath) fs
+	removeWhenExistsWith R.removeLink (toRawFilePath manifest)
 	removeEmptyRecursive dir
   where
 	manifest = dir </> "git-annex.MANIFEST"

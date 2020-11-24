@@ -22,6 +22,7 @@ import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Annex.Tmp
 import Utility.Metered
 import Utility.Directory.Create
+import qualified Utility.RawFilePath as R
 
 withCheckedFiles :: (FilePath -> IO Bool) -> FilePath -> (FilePath -> Key -> [FilePath]) -> Key -> ([FilePath] -> IO Bool) -> IO Bool
 withCheckedFiles _ [] _locations _ _ = return False
@@ -98,15 +99,15 @@ store repotop chunksize finalizer k b p = storeHelper repotop finalizer k $ \des
 retrieve :: (RawFilePath -> Key -> [RawFilePath]) -> RawFilePath -> Retriever
 retrieve locations d basek p c = withOtherTmp $ \tmpdir -> do
 	showLongNote "This remote uses the deprecated chunksize setting. So this will be quite slow."
-	let tmp = fromRawFilePath $ 
-		tmpdir P.</> keyFile basek <> ".directorylegacy.tmp"
+	let tmp = tmpdir P.</> keyFile basek <> ".directorylegacy.tmp"
+	let tmp' = fromRawFilePath tmp
 	let go = \k sink -> do
 		liftIO $ void $ withStoredFiles (fromRawFilePath d) (legacyLocations locations) k $ \fs -> do
 			forM_ fs $
-				S.appendFile tmp <=< S.readFile
+				S.appendFile tmp' <=< S.readFile
 			return True
-		b <- liftIO $ L.readFile tmp
-		liftIO $ removeWhenExistsWith removeLink tmp
+		b <- liftIO $ L.readFile tmp'
+		liftIO $ removeWhenExistsWith R.removeLink tmp
 		sink b
 	byteRetriever go basek p c
 

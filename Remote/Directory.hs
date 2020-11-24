@@ -301,10 +301,10 @@ retrieveExportM d _k loc dest p =
 
 removeExportM :: RawFilePath -> Key -> ExportLocation -> Annex ()
 removeExportM d _k loc = liftIO $ do
-	removeWhenExistsWith removeLink src
+	removeWhenExistsWith R.removeLink src
 	removeExportLocation d loc
   where
-	src = fromRawFilePath $ exportPath d loc
+	src = exportPath d loc
 
 checkPresentExportM :: RawFilePath -> Key -> ExportLocation -> Annex Bool
 checkPresentExportM d _k loc =

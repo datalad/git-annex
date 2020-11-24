@@ -14,7 +14,7 @@ module Utility.FileSize (
 	getFileSize',
 ) where
 
-import System.PosixCompat.Files
+import System.PosixCompat.Files hiding (removeLink)
 import qualified Utility.RawFilePath as R
 #ifdef mingw32_HOST_OS
 import Control.Exception (bracket)

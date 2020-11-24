@@ -34,11 +34,11 @@ import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
-import qualified Utility.RawFilePath as R
 
 {- Merges from a branch into the current branch (which may not exist yet),
  - with automatic merge conflict resolution.
@@ -176,7 +176,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				-- files, so delete here.
 				unless inoverlay $
 					unless (islocked LsFiles.valUs) $
-						liftIO $ removeWhenExistsWith removeLink file
+						liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath file)
 			| otherwise -> do
 				-- Only resolve using symlink when both
 				-- were locked, otherwise use unlocked
@@ -309,7 +309,7 @@ cleanConflictCruft resolvedks resolvedfs unstagedmap = do
 		<$> mapM Database.Keys.getInodeCaches resolvedks
 	forM_ (M.toList unstagedmap) $ \(i, f) ->
 		whenM (matchesresolved is i f) $
-			liftIO $ removeWhenExistsWith removeLink f
+			liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
   where
 	fs = S.fromList resolvedfs
 	ks = S.fromList resolvedks

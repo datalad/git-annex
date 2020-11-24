@@ -17,6 +17,7 @@ import Annex.Perms
 import Utility.ThreadScheduler
 import Utility.DiskFree
 import Git.Types (fromConfigKey)
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock
 import System.Random (getStdRandom, random, randomR)
@@ -178,7 +179,7 @@ runFuzzAction (FuzzAdd (FuzzFile f)) = do
 	n <- liftIO (getStdRandom random :: IO Int)
 	liftIO $ writeFile f $ show n ++ "\n"
 runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $
-	removeWhenExistsWith removeLink f
+	removeWhenExistsWith R.removeLink (toRawFilePath f)
 runFuzzAction (FuzzMove (FuzzFile src) (FuzzFile dest)) = liftIO $
 	rename src dest
 runFuzzAction (FuzzDeleteDir (FuzzDir d)) = liftIO $

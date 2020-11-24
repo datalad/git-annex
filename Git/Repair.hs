@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Git.Repair (
 	runRepair,
 	runRepairOf,
@@ -243,11 +245,12 @@ getAllRefs' refdir = do
 explodePackedRefsFile :: Repo -> IO ()
 explodePackedRefsFile r = do
 	let f = packedRefsFile r
+	let f' = toRawFilePath f
 	whenM (doesFileExist f) $ do
 		rs <- mapMaybe parsePacked . lines
-			<$> catchDefaultIO "" (safeReadFile f)
+			<$> catchDefaultIO "" (safeReadFile f')
 		forM_ rs makeref
-		removeWhenExistsWith removeLink f
+		removeWhenExistsWith R.removeLink f'
   where
 	makeref (sha, ref) = do
 		let gitd = localGitDir r
@@ -444,13 +447,13 @@ displayList items header
 preRepair :: Repo -> IO ()
 preRepair g = do
 	unlessM (validhead <$> catchDefaultIO "" (safeReadFile headfile)) $ do
-		removeWhenExistsWith removeLink headfile
-		writeFile headfile "ref: refs/heads/master"
+		removeWhenExistsWith R.removeLink headfile
+		writeFile (fromRawFilePath headfile) "ref: refs/heads/master"
 	explodePackedRefsFile g
 	unless (repoIsLocalBare g) $
 		void $ tryIO $ allowWrite $ indexFile g
   where
-	headfile = fromRawFilePath (localGitDir g) </> "HEAD"
+	headfile = localGitDir g P.</> "HEAD"
 	validhead s = "ref: refs/" `isPrefixOf` s
 		|| isJust (extractSha (encodeBS' s))
 
@@ -616,7 +619,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 successfulRepair :: (Bool, [Branch]) -> Bool
 successfulRepair = fst
 
-safeReadFile :: FilePath -> IO String
+safeReadFile :: RawFilePath -> IO String
 safeReadFile f = do
-	allowRead (toRawFilePath f)
-	readFileStrict f
+	allowRead f
+	readFileStrict (fromRawFilePath f)

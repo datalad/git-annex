@@ -16,7 +16,7 @@ module Utility.FileMode (
 import System.IO
 import Control.Monad
 import System.PosixCompat.Types
-import System.PosixCompat.Files
+import System.PosixCompat.Files hiding (removeLink)
 import Control.Monad.IO.Class
 import Foreign (complement)
 import Control.Monad.Catch

@@ -16,7 +16,7 @@ module Utility.Directory (
 
 import Control.Monad
 import System.FilePath
-import System.PosixCompat.Files
+import System.PosixCompat.Files hiding (removeLink)
 import Control.Applicative
 import System.IO.Unsafe (unsafeInterleaveIO)
 import Data.Maybe

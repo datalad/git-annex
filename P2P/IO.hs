@@ -37,6 +37,7 @@ import Utility.Tor
 import Utility.FileMode
 import Types.UUID
 import Annex.ChangedRefs
+import qualified Utility.RawFilePath as R
 
 import Control.Monad.Free
 import Control.Monad.IO.Class
@@ -124,7 +125,7 @@ closeConnection conn = do
 -- the callback.
 serveUnixSocket :: FilePath -> (Handle -> IO ()) -> IO ()
 serveUnixSocket unixsocket serveconn = do
-	removeWhenExistsWith removeLink unixsocket
+	removeWhenExistsWith R.removeLink (toRawFilePath unixsocket)
 	soc <- S.socket S.AF_UNIX S.Stream S.defaultProtocol
 	S.bind soc (S.SockAddrUnix unixsocket)
 	-- Allow everyone to read and write to the socket,

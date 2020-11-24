@@ -18,7 +18,6 @@ import Utility.DataUnits
 import Utility.CopyFile
 import qualified Utility.RawFilePath as R
 
-import System.PosixCompat.Files
 import qualified System.FilePath.ByteString as P
 
 {- Runs the secure erase command if set, otherwise does nothing.
@@ -75,8 +74,9 @@ checkedCopyFile key src dest destmode = catchBoolIO $
 		=<< liftIO (R.getFileStatus src)
 
 checkedCopyFile' :: Key -> RawFilePath -> RawFilePath -> Maybe FileMode -> FileStatus -> Annex Bool
-checkedCopyFile' key src dest destmode s = catchBoolIO $
-	ifM (checkDiskSpace' (fromIntegral $ fileSize s) (Just $ P.takeDirectory dest) key 0 True)
+checkedCopyFile' key src dest destmode s = catchBoolIO $ do
+	sz <- liftIO $ getFileSize' src s
+	ifM (checkDiskSpace' sz (Just $ P.takeDirectory dest) key 0 True)
 		( liftIO $
 			copyFileExternal CopyAllMetaData (fromRawFilePath src) (fromRawFilePath dest)
 				<&&> preserveGitMode dest destmode

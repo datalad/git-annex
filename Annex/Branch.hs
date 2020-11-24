@@ -535,7 +535,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		stagedfs <- lines <$> hGetContents jlogh
 		mapM_ (removeFile . (dir </>)) stagedfs
 		hClose jlogh
-		removeWhenExistsWith removeLink jlogf
+		removeWhenExistsWith (R.removeLink) (toRawFilePath jlogf)
 	openjlog tmpdir = liftIO $ openTempFile tmpdir "jlog"
 
 {- This is run after the refs have been merged into the index,

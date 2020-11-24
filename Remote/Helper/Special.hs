@@ -51,6 +51,7 @@ import Messages.Progress
 import qualified Git
 import qualified Git.Construct
 import Git.Types
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -284,10 +285,10 @@ sink dest enc c mh mp content = case (enc, mh, content) of
 		withBytes content $ \b ->
 			decrypt cmd c cipher (feedBytes b) $
 				readBytes write
-		liftIO $ removeWhenExistsWith removeLink f
+		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 	(Nothing, _, FileContent f) -> do
 		withBytes content write
-		liftIO $ removeWhenExistsWith removeLink f
+		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 	(Nothing, _, ByteContent b) -> write b
   where
 	write b = case mh of

@@ -24,6 +24,7 @@ import Utility.AuthToken
 import Utility.Tmp.Dir
 import Utility.FileMode
 import Utility.ThreadScheduler
+import qualified Utility.RawFilePath as R
 import qualified Utility.MagicWormhole as Wormhole
 
 import Control.Concurrent.Async
@@ -256,7 +257,7 @@ wormholePairing remotename ouraddrs ui = do
 			Wormhole.sendFile sendf observer wormholeparams
 				`concurrently`
 			Wormhole.receiveFile recvf producer wormholeparams
-		liftIO $ removeWhenExistsWith removeLink sendf
+		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath sendf)
 		if sendres /= True
 			then return SendFailed
 			else if recvres /= True

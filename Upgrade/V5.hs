@@ -32,6 +32,7 @@ import Git.Ref
 import Utility.InodeCache
 import Utility.DottedVersion
 import Annex.AdjustedBranch
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 
@@ -156,7 +157,7 @@ upgradeDirectWorkTree = do
 		)
 	
 	writepointer f k = liftIO $ do
-		removeWhenExistsWith removeLink f
+		removeWhenExistsWith R.removeLink (toRawFilePath f)
 		S.writeFile f (formatPointer k)
 
 {- Remove all direct mode bookkeeping files. -}

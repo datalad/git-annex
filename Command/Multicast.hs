@@ -27,6 +27,7 @@ import Utility.Hash
 import Utility.Tmp
 import Utility.Tmp.Dir
 import Utility.Process.Transcript
+import qualified Utility.RawFilePath as R
 
 import Data.Char
 import qualified Data.ByteString.Lazy.UTF8 as B8
@@ -84,7 +85,7 @@ genAddress = starting "gen-address" (ActionItemOther Nothing) (SeekInput []) $ d
 		KeyContainer s -> liftIO $ genkey (Param s)
 		KeyFile f -> do
 			createAnnexDirectory (toRawFilePath (takeDirectory f))
-			liftIO $ removeWhenExistsWith removeLink f
+			liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 			liftIO $ protectedOutput $ genkey (File f)
 	case (ok, parseFingerprint s) of
 		(False, _) -> giveup $ "uftp_keymgt failed: " ++ s
@@ -210,7 +211,7 @@ storeReceived f = do
 	case deserializeKey (takeFileName f) of
 		Nothing -> do
 			warning $ "Received a file " ++ f ++ " that is not a git-annex key. Deleting this file."
-			liftIO $ removeWhenExistsWith removeLink f
+			liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 		Just k -> void $
 			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k (AssociatedFile Nothing) $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do

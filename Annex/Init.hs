@@ -49,8 +49,8 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Tmp
 import Utility.UserInfo
-#ifndef mingw32_HOST_OS
 import qualified Utility.RawFilePath as R
+#ifndef mingw32_HOST_OS
 import Utility.ThreadScheduler
 import Annex.Perms
 import Utility.FileMode
@@ -212,9 +212,9 @@ probeCrippledFileSystem' tmp = do
   where
 	probe f = catchDefaultIO (True, []) $ do
 		let f2 = f ++ "2"
-		removeWhenExistsWith removeLink f2
+		removeWhenExistsWith R.removeLink (toRawFilePath f2)
 		createSymbolicLink f f2
-		removeWhenExistsWith removeLink f2
+		removeWhenExistsWith R.removeLink (toRawFilePath f2)
 		preventWrite (toRawFilePath f)
 		-- Should be unable to write to the file, unless
 		-- running as root, but some crippled

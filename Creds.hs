@@ -32,12 +32,13 @@ import Crypto
 import Types.ProposedAccepted
 import Remote.Helper.Encryptable (remoteCipher, remoteCipher', embedCreds, EncryptionIsSetup, extractCipher)
 import Utility.Env (getEnv)
+import Utility.Base64
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.ByteString.Char8 as S
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
-import Utility.Base64
 
 {- A CredPair can be stored in a file, or in the environment, or
  - in a remote's configuration. -}
@@ -211,9 +212,8 @@ decodeCredPair creds = case lines creds of
 
 removeCreds :: FilePath -> Annex ()
 removeCreds file = do
-	d <- fromRawFilePath <$> fromRepo gitAnnexCredsDir
-	let f = d </> file
-	liftIO $ removeWhenExistsWith removeLink f
+	d <- fromRepo gitAnnexCredsDir
+	liftIO $ removeWhenExistsWith R.removeLink (d P.</> toRawFilePath file)
 
 includeCredsInfo :: ParsedRemoteConfig -> CredPairStorage -> [(String, String)] -> Annex [(String, String)]
 includeCredsInfo pc@(ParsedRemoteConfig cm _) storage info = do
