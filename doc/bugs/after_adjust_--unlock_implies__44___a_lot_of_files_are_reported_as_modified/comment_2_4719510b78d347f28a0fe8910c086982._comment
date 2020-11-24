@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="gueux"
+ avatar="http://cdn.libravatar.org/avatar/47e44a21505727b2d6bb5d88f0468f34"
+ subject="comment 2"
+ date="2020-11-24T21:07:37Z"
+ content="""
+You mean between the \"git annex adjust\" and the \"git status\"? No, I did nothing at all :(.
+
+After running \"git restore\" some files (but not all, it seems to be the first N files ordered alphabetically) are still marked as modified, some others get modified again after another \"git restore\"... Weird!
+"""]]
