@@ -49,19 +49,21 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Tmp
 import Utility.UserInfo
-import Utility.ThreadScheduler
-import qualified Utility.RawFilePath as R
 #ifndef mingw32_HOST_OS
+import qualified Utility.RawFilePath as R
+import Utility.ThreadScheduler
 import Annex.Perms
 import Utility.FileMode
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
-import Data.Either
 #endif
 
 import qualified Data.Map as M
+#ifndef mingw32_HOST_OS
+import Data.Either
 import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
+#endif
 
 checkCanInitialize :: Annex a -> Annex a
 checkCanInitialize a = canInitialize' >>= \case

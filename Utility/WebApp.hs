@@ -36,9 +36,6 @@ import Blaze.ByteString.Builder (Builder)
 import Control.Arrow ((***))
 import Control.Concurrent
 
-localhost :: HostName
-localhost = "localhost"
-
 {- Builds a command to use to start or open a web browser showing an url. -}
 browserProc :: String -> CreateProcess
 #ifdef darwin_HOST_OS
@@ -105,6 +102,7 @@ getSocket h = do
 		_ -> error "unable to bind to a local socket"
   where
 	hostname = fromMaybe localhost h
+	localhost = "localhost"
 	hints = defaultHints { addrSocketType = Stream }
 	{- Repeated attempts because bind sometimes fails for an
 	 - unknown reason on OSX. -} 
