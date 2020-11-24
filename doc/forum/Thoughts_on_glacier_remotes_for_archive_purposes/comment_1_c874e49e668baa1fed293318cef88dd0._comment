@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-11-24T18:35:16Z"
+ content="""
+I don't have any experience with S3, but there is a [[git remote s3 helper|https://github.com/bgahagan/git-remote-s3]]. So you can store data via s3 special remote and the metadata via git-remote-s3.
+"""]]
