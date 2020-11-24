@@ -22,6 +22,8 @@ git-annex (8.20201117) UNRELEASED; urgency=medium
     Thanks, Kyle Meyer.
   * upgrade: Support an edge case upgrading a v5 direct mode repo
     where nothing had ever been committed to the head branch.
+  * Made the test suite significantly less noisy, only displaying command
+    output when something failed.
 
  -- Joey Hess <id@joeyh.name>  Mon, 16 Nov 2020 09:38:32 -0400
 

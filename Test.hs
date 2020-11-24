@@ -387,8 +387,8 @@ test_add = inmainrepo $ do
 	annexed_present sha1annexedfile
 	checkbackend sha1annexedfile backendSHA1
 	writecontent ingitfile $ content ingitfile
-	boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
-	boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "commit"] @? "git commit failed"
+	git "add" [ingitfile] @? "git add failed"
+	git "commit" ["-q", "-m", "commit"] @? "git commit failed"
 	git_annex "add" [ingitfile] @? "add ingitfile should be no-op"
 	unannexed ingitfile
 
@@ -461,11 +461,8 @@ test_view = intmpclonerepo $ do
 test_magic :: Assertion
 test_magic = intmpclonerepo $ do
 #ifdef WITH_MAGICMIME
-	boolSystem "git"
-		[ Param "config"
-		, Param "annex.largefiles"
-		, Param "mimeencoding=binary"
-		] @? "git config annex.largefiles failed"
+	git "config" ["annex.largefiles", "mimeencoding=binary"]
+		@? "git config annex.largefiles failed"
 	writeFile "binary" "\127"
 	writeFile "text" "test\n" 
 	git_annex "add" ["binary", "text"]
@@ -562,8 +559,7 @@ test_unannex_withcopy = intmpclonerepo $ do
 test_drop_noremote :: Assertion
 test_drop_noremote = intmpclonerepo $ do
 	git_annex "get" [annexedfile] @? "get failed"
-	boolSystem "git" [Param "remote", Param "rm", Param "origin"]
-		@? "git remote rm origin failed"
+	git "remote" ["rm", "origin"] @? "git remote rm origin failed"
 	git_annex_shouldfail "drop" [annexedfile] @? "drop wrongly succeeded with no known copy of file"
 	annexed_present annexedfile
 	git_annex "drop" ["--force", annexedfile] @? "drop --force failed"
@@ -765,12 +761,12 @@ test_lock = intmpclonerepo $ do
 	git_annex "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile
 	changecontent annexedfile
-	boolSystem "git" [Param "add", Param annexedfile] @? "add of modified file failed"
+	git "add" [annexedfile] @? "add of modified file failed"
 	runchecks [checkregularfile, checkwritable] annexedfile
 	c <- readFile annexedfile
 	assertEqual "content of modified file" c (changedcontent annexedfile)
-	r' <- git_annex "drop" [annexedfile]
-	not r' @? "drop wrongly succeeded with no known copy of modified file"
+	git_annex_shouldfail "drop" [annexedfile]
+		@? "drop wrongly succeeded with no known copy of modified file"
 
 -- Regression test: lock --force when work tree file
 -- was modified lost the (unmodified) annex object.
@@ -804,12 +800,11 @@ test_edit' precommit = intmpclonerepo $ do
 	git_annex "edit" [annexedfile] @? "edit failed"
 	unannexed annexedfile
 	changecontent annexedfile
-	boolSystem "git" [Param "add", File annexedfile]
-		@? "git add of edited file failed"
+	git "add" [annexedfile] @? "git add of edited file failed"
 	if precommit
 		then git_annex "pre-commit" []
 			@? "pre-commit failed"
-		else boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "contentchanged"]
+		else git "commit" ["-q", "-m", "contentchanged"]
 			@? "git commit of edited file failed"
 	runchecks [checkregularfile, checkwritable] annexedfile
 	c <- readFile annexedfile
@@ -822,7 +817,7 @@ test_partial_commit = intmpclonerepo $ do
 	annexed_present annexedfile
 	git_annex "unlock" [annexedfile] @? "unlock failed"
 	changecontent annexedfile
-	boolSystem "git" [Param "commit", Param "-q", Param "-m", Param "test", File annexedfile]
+	git "commit" ["-q", "-m", "test", annexedfile]
 		@? "partial commit of unlocked file should be allowed"
 
 test_fix :: Assertion
@@ -835,8 +830,7 @@ test_fix = intmpclonerepo $ unlessM (hasUnlockedFiles <$> getTestMode) $ do
 	git_annex "fix" [annexedfile] @? "fix of present file failed"
 	annexed_present annexedfile
 	createDirectory subdir
-	boolSystem "git" [Param "mv", File annexedfile, File subdir]
-		@? "git mv failed"
+	git "mv" [annexedfile, subdir] @? "git mv failed"
 	git_annex "fix" [newfile] @? "fix of moved file failed"
 	runchecks [checklink, checkunwritable] newfile
 	c <- readFile newfile
@@ -973,16 +967,16 @@ test_unused = intmpclonerepo $ do
 	annexedfilekey <- getKey backendSHA256E annexedfile
 	sha1annexedfilekey <- getKey backendSHA1 sha1annexedfile
 	checkunused [] "after get"
-	boolSystem "git" [Param "rm", Param "-fq", File annexedfile] @? "git rm failed"
+	git "rm" ["-fq", annexedfile] @? "git rm failed"
 	checkunused [] "after rm"
 	-- commit the rm, and when on an adjusted branch, sync it back to
 	-- the master branch
 	git_annex "sync" ["--no-push", "--no-pull"] @? "git-annex sync failed"
 	checkunused [] "after commit"
 	-- unused checks origin/master; once it's gone it is really unused
-	boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "git remote rm origin failed"
+	git "remote" ["rm", "origin"] @? "git remote rm origin failed"
 	checkunused [annexedfilekey] "after origin branches are gone"
-	boolSystem "git" [Param "rm", Param "-fq", File sha1annexedfile] @? "git rm failed"
+	git "rm" ["-fq", sha1annexedfile] @? "git rm failed"
 	git_annex "sync" ["--no-push", "--no-pull"] @? "git-annex sync failed"
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
@@ -1006,7 +1000,7 @@ test_unused = intmpclonerepo $ do
 		git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
 		unusedfilekey <- getKey backendSHA256E "unusedfile"
 		renameFile "unusedfile" "unusedunstagedfile"
-		boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
+		git "rm" ["-qf", "unusedfile"] @? "git rm failed"
 		checkunused [] "with unstaged link"
 		removeFile "unusedunstagedfile"
 		checkunused [unusedfilekey] "with renamed link deleted"
@@ -1015,17 +1009,17 @@ test_unused = intmpclonerepo $ do
 	-- manually
 	writecontent "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
-	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
+	git "add" ["unusedfile"] @? "git add failed"
 	unusedfilekey' <- getKey backendSHA256E "unusedfile"
 	checkunused [] "with staged deleted link"
-	boolSystem "git" [Param "rm", Param "-qf", File "unusedfile"] @? "git rm failed"
+	git "rm" ["-qf", "unusedfile"] @? "git rm failed"
 	checkunused [unusedfilekey'] "with staged link deleted"
 
 	-- unused used to false positive on symlinks that were
 	-- deleted or modified manually, but not staged as such
 	writecontent "unusedfile" "unusedcontent"
 	git_annex "add" ["unusedfile"] @? "add of unusedfile failed"
-	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
+	git "add" ["unusedfile"] @? "git add failed"
 	checkunused [] "with staged file"
 	removeFile "unusedfile"
 	checkunused [] "with staged deleted file"
@@ -1036,11 +1030,11 @@ test_unused = intmpclonerepo $ do
 	whenM (hasUnlockedFiles <$> getTestMode) $ do
 		let f = "unlockedfile"
 		writecontent f "unlockedcontent1"
-		boolSystem "git" [Param "add", File "unlockedfile"] @? "git add failed"
+		git "add" ["unlockedfile"] @? "git add failed"
 		checkunused [] "with unlocked file before modification"
 		writecontent f "unlockedcontent2"
 		checkunused [] "with unlocked file after modification"
-		not <$> boolSystem "git" [Param "diff", Param "--quiet", File f] @? "git diff did not show changes to unlocked file"
+		git_shouldfail "diff" ["--quiet", f] @? "git diff did not show changes to unlocked file"
 		-- still nothing unused because one version is in the index
 		-- and the other is in the work tree
 		checkunused [] "with unlocked file after git diff"
@@ -1133,8 +1127,7 @@ test_concurrent_get_of_dup_key_regression = intmpclonerepo $ do
 	makedup f = do
 		Utility.CopyFile.copyFileExternal Utility.CopyFile.CopyAllMetaData annexedfile f
 			@? "copying annexed file failed"
-		boolSystem "git" [Param "add", File f]
-			@? "git add failed"	
+		git "add" [f] @? "git add failed"	
 
 {- Regression test for union merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}
@@ -1146,13 +1139,13 @@ test_union_merge_regression =
 			withtmpclonerepo $ \r3 -> do
 				forM_ [r1, r2, r3] $ \r -> indir r $ do
 					when (r /= r1) $
-						boolSystem "git" [Param "remote", Param "add", Param "r1", File ("../../" ++ r1)] @? "remote add"
+						git "remote" ["add", "r1", "../../" ++ r1] @? "remote add"
 					when (r /= r2) $
-						boolSystem "git" [Param "remote", Param "add", Param "r2", File ("../../" ++ r2)] @? "remote add"
+						git "remote" ["add", "r2", "../../" ++ r2] @? "remote add"
 					when (r /= r3) $
-						boolSystem "git" [Param "remote", Param "add", Param "r3", File ("../../" ++ r3)] @? "remote add"
+						git "remote" ["add", "r3", "../../" ++ r3] @? "remote add"
 					git_annex "get" [annexedfile] @? "get failed"
-					boolSystem "git" [Param "remote", Param "rm", Param "origin"] @? "remote rm"
+					git "remote" ["rm", "origin"] @? "remote rm"
 				forM_ [r3, r2, r1] $ \r -> indir r $
 					git_annex "sync" [] @? ("sync failed in " ++ r)
 				forM_ [r3, r2] $ \r -> indir r $
@@ -1366,12 +1359,11 @@ test_nonannexed_file_conflict_resolution = do
 			indir r2 $ do
 				disconnectOrigin
 				writecontent conflictor nonannexed_content
-				boolSystem "git"
-					[ Param "config"
-					, Param "annex.largefiles"
-					, Param ("exclude=" ++ ingitfile ++ " and exclude=" ++ conflictor)
+				git "config"
+					[ "annex.largefiles"
+					, "exclude=" ++ ingitfile ++ " and exclude=" ++ conflictor
 					] @? "git config annex.largefiles failed"
-				boolSystem "git" [Param "add", File conflictor] @? "git add conflictor failed"
+				git "add" [conflictor] @? "git add conflictor failed"
 				git_annex "sync" [] @? "sync failed in r2"
 			pair r1 r2
 			let l = if inr1 then [r1, r2] else [r2, r1]
@@ -1417,7 +1409,7 @@ test_nonannexed_symlink_conflict_resolution = do
 				indir r2 $ do
 					disconnectOrigin
 					createSymbolicLink symlinktarget "conflictor"
-					boolSystem "git" [Param "add", File conflictor] @? "git add conflictor failed"
+					git "add" [conflictor] @? "git add conflictor failed"
 					git_annex "sync" [] @? "sync failed in r2"
 				pair r1 r2
 				let l = if inr1 then [r1, r2] else [r2, r1]
@@ -1591,16 +1583,16 @@ test_adjusted_branch_subtree_regression =
 			writecontent "a/b/x/y" "foo"
 			git_annex "add" ["a/b/x"] @? "add a/b/x failed"
 			git_annex "sync" [] @? "sync failed"
-			boolSystem "git" [Param "checkout", Param origbranch] @? "git checkout failed"
+			git "checkout" [origbranch] @? "git checkout failed"
 			doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
 
 {- Set up repos as remotes of each other. -}
 pair :: FilePath -> FilePath -> Assertion
 pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
 	when (r /= r1) $
-		boolSystem "git" [Param "remote", Param "add", Param "r1", File ("../../" ++ r1)] @? "remote add"
+		git "remote" ["add", "r1", "../../" ++ r1] @? "remote add"
 	when (r /= r2) $
-		boolSystem "git" [Param "remote", Param "add", Param "r2", File ("../../" ++ r2)] @? "remote add"
+		git "remote" ["add", "r2", "../../" ++ r2] @? "remote add"
 
 test_map :: Assertion
 test_map = intmpclonerepo $ do
@@ -1620,7 +1612,7 @@ test_uninit = intmpclonerepo $ do
 
 test_uninit_inbranch :: Assertion
 test_uninit_inbranch = intmpclonerepo $ do
-	boolSystem "git" [Param "checkout", Param "git-annex"] @? "git checkout git-annex"
+	git "checkout" ["git-annex"] @? "git checkout git-annex"
 	git_annex_shouldfail "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
 
 test_upgrade :: Assertion
@@ -1663,7 +1655,7 @@ test_hook_remote = intmpclonerepo $ do
   where
 	dir = "dir"
 	loc = dir ++ "/$ANNEX_KEY"
-	git_config k v = boolSystem "git" [Param "config", Param k, Param v]
+	git_config k v = git "config" [k, v]
 		@? "git config failed"
 #else
 	-- this test doesn't work in Windows TODO
@@ -1741,7 +1733,7 @@ test_crypto = do
 			@? "test harness self-test failed"
 		void $ Utility.Gpg.testHarness gpgtmp gpgcmd $ do
 			createDirectory "dir"
-			let a cmd = git_annex cmd $
+			let initps =
 				[ "foo"
 				, "type=directory"
 				, "encryption=" ++ scheme
@@ -1750,10 +1742,10 @@ test_crypto = do
 				] ++ if scheme `elem` ["hybrid","pubkey"]
 					then ["keyid=" ++ Utility.Gpg.testKeyId]
 					else []
-			a "initremote" @? "initremote failed"
-			not <$> a "initremote" @? "initremote failed to fail when run twice in a row"
-			a "enableremote" @? "enableremote failed"
-			a "enableremote" @? "enableremote failed when run twice in a row"
+			git_annex "initremote" initps @? "initremote failed"
+			git_annex_shouldfail "initremote" initps @? "initremote failed to fail when run twice in a row"
+			git_annex "enableremote" initps @? "enableremote failed"
+			git_annex "enableremote" initps @? "enableremote failed when run twice in a row"
 			git_annex "get" [annexedfile] @? "get of file failed"
 			annexed_present annexedfile
 			git_annex "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
@@ -1879,7 +1871,7 @@ test_export_import = intmpclonerepo $ do
 
 	-- resolving import conflict
 	git_annex "import" [origbranch, "--from", "foo"] @? "import from dir failed"
-	not <$> boolSystem "git" [Param "merge", Param "foo/master", Param "-mmerge"] @? "git merge of conflict failed to exit nonzero"
+	git_shouldfail "merge" ["foo/master", "-mmerge"] @? "git merge of conflict failed to exit nonzero"
 	removeWhenExistsWith R.removeLink (toRawFilePath "import")
 	writecontent "import" (content "newimport3")
 	git_annex "add" ["import"] @? "add of import failed"
@@ -1904,10 +1896,8 @@ test_export_import_subdir = intmpclonerepo $ do
 	annexed_present annexedfile
 
 	createDirectory subdir
-	boolSystem "git" [Param "mv", File annexedfile, File subannexedfile]
-		@? "git mv failed"
-	boolSystem "git" [Param "commit", Param "-m", Param "moved"]
-		@? "git commit failed"
+	git "mv" [annexedfile, subannexedfile] @? "git mv failed"
+	git "commit" ["-m", "moved"] @? "git commit failed"
 	
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
