@@ -145,3 +145,5 @@ git-annex.exe: System.PosixCompat.Files.removeLink: not supported: illegal opera
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]
