@@ -51,45 +51,40 @@ import qualified Command.Uninit
 
 -- Run a process. The output and stderr is captured, and is only
 -- displayed if the process does not return the expected value.
--- Returns true if the process returned the expected value.
-testProcess :: String -> [String] -> Bool -> IO Bool
-testProcess command params expectedret = do
+testProcess :: String -> [String] -> (Bool -> Bool) -> String -> Assertion
+testProcess command params expectedret faildesc = do
 	(transcript, ret) <- Utility.Process.Transcript.processTranscript command params Nothing
-	if ret == expectedret
-		then return True
-		else do
-			hPutStrLn stderr transcript
-			return False
+	(expectedret ret) @? (faildesc ++ " failed (transcript follows)\n" ++ transcript)
 
 -- Run git. (Do not use to run git-annex as the one being tested
 -- may not be in path.)
-git :: String -> [String] -> IO Bool
-git command params = testProcess "git" (command:params) True
+git :: String -> [String] -> String -> Assertion
+git command params = testProcess "git" (command:params) (== True)
 
 -- For when git is expected to fail.
-git_shouldfail :: String -> [String] -> IO Bool
-git_shouldfail command params = testProcess "git" (command:params) False
+git_shouldfail :: String -> [String] -> String -> Assertion
+git_shouldfail command params = testProcess "git" (command:params) (== False)
 
 -- Run git-annex.
-git_annex :: String -> [String] -> IO Bool
-git_annex command params = do
-	pp <- Annex.Path.programPath
-	testProcess pp (command:params) True
+git_annex :: String -> [String] -> String -> Assertion
+git_annex = git_annex' (== True)
 
 -- For when git-annex is expected to fail.
-git_annex_shouldfail :: String -> [String] -> IO Bool
-git_annex_shouldfail command params = do
-	pp <- Annex.Path.programPath
-	-- Run with -q to squelch error.
-	testProcess pp (command:"-q":params) False
+git_annex_shouldfail :: String -> [String] -> String -> Assertion
+git_annex_shouldfail = git_annex' (== False)
 
-{- Runs git-annex and returns its output. -}
+git_annex' :: (Bool -> Bool) -> String -> [String] -> String -> Assertion
+git_annex' expectedret command params faildesc = do
+	pp <- Annex.Path.programPath
+	testProcess pp (command:params) expectedret faildesc
+
+{- Runs git-annex and returns its standard output. -}
 git_annex_output :: String -> [String] -> IO String
 git_annex_output command params = do
 	pp <- Annex.Path.programPath
 	Utility.Process.readProcess pp (command:params)
 
-git_annex_expectoutput :: String -> [String] -> [String] -> IO ()
+git_annex_expectoutput :: String -> [String] -> [String] -> Assertion
 git_annex_expectoutput command params expected = do
 	got <- lines <$> git_annex_output command params
 	got == expected @? ("unexpected value running " ++ command ++ " " ++ show params ++ " -- got: " ++ show got ++ " expected: " ++ show expected)
@@ -118,7 +113,7 @@ with_ssh_origin cloner a = cloner $ do
 	origindir <- absPath . Git.Types.fromConfigValue
 		=<< annexeval (Config.getConfig k v)
 	let originurl = "localhost:" ++ fromRawFilePath origindir
-	git "config" [config, originurl] @? "git config failed"
+	git "config" [config, originurl] "git config failed"
 	a
   where
 	config = "remote.origin.url"
@@ -157,7 +152,7 @@ withtmpclonerepo' cfg a = do
 			throwM e
 
 disconnectOrigin :: Assertion
-disconnectOrigin = git "remote" ["rm", "origin"] @? "remote rm"
+disconnectOrigin = git "remote" ["rm", "origin"] "remote rm"
 
 withgitrepo :: (FilePath -> Assertion) -> Assertion
 withgitrepo a = do
@@ -185,7 +180,7 @@ setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
 	cleanup dir
 	ensuretmpdir
-	git "init" ["-q", dir] @? "git init failed"
+	git "init" ["-q", dir] "git init"
 	configrepo dir
 	return dir
 
@@ -212,11 +207,16 @@ clonerepo old new cfg = do
 		, Just old
 		, Just new
 		]
-	git "clone" cloneparams @? "git clone failed"
+	git "clone" cloneparams "git clone"
 	configrepo new
 	indir new $ do
 		ver <- annexVersion <$> getTestMode
-		git_annex "init" ["-q", new, "--version", show (Types.RepoVersion.fromRepoVersion ver)] @? "git annex init failed"
+		git_annex "init" 
+			[ "-q"
+			, new, "--version"
+			, show (Types.RepoVersion.fromRepoVersion ver)
+			]
+			"git annex init"
 	unless (bareClone cfg) $
 		indir new $
 			setupTestMode
@@ -226,15 +226,15 @@ configrepo :: FilePath -> IO ()
 configrepo dir = indir dir $ do
 	-- ensure git is set up to let commits happen
 	git "config" ["user.name", "Test User"]
-		@? "git config failed"
+		"git config"
 	git "config" ["user.email", "test@example.com"]
-		@? "git config failed"
+		"git config"
 	-- avoid signed commits by test suite
 	git "config" ["commit.gpgsign", "false"]
-		@? "git config failed"
+		"git config"
 	-- tell git-annex to not annex the ingitfile
 	git "config" ["annex.largefiles", "exclude=" ++ ingitfile]
-		@? "git config annex.largefiles failed"
+		"git config annex.largefiles"
 
 ensuretmpdir :: IO ()
 ensuretmpdir = do
@@ -415,10 +415,10 @@ annexed_notpresent_imported f = ifM (annexeval Config.crippledFileSystem)
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
-add_annex :: FilePath -> IO Bool
-add_annex f = ifM (unlockedFiles <$> getTestMode)
-	( git "add" [f]
-	, git_annex "add" [f]
+add_annex :: FilePath -> String -> Assertion
+add_annex f faildesc = ifM (unlockedFiles <$> getTestMode)
+	( git "add" [f] faildesc
+	, git_annex "add" [f] faildesc
 	)
 
 data TestMode = TestMode
@@ -492,8 +492,8 @@ setupTestMode :: IO ()
 setupTestMode = do
 	testmode <- getTestMode
 	when (adjustedUnlockedBranch testmode) $ do
-		git "commit" ["--allow-empty", "-m", "empty"] @? "git commit failed"
-		git_annex "adjust" ["--unlock"] @? "git annex adjust failed"
+		git "commit" ["--allow-empty", "-m", "empty"] "git commit failed"
+		git_annex "adjust" ["--unlock"] "git annex adjust failed"
 
 changeToTmpDir :: FilePath -> IO ()
 changeToTmpDir t = do
