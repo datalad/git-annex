@@ -1,0 +1,22 @@
+Hello everyone,
+
+We are distributing large datasets with git-annex under our own infrastructure (for scientific purposes) and we need to implement long term backups on a different site. What is most important for us is to backup the original data files which are expensive to produce. These backups should only be retrieved in case of a disaster, so retrieval costs and delays don't really matter, what matters the most is to keep storage costs as low as possible. Amazon Glacier is therefore a good fit for this purpose.
+
+At first sight the easiest way was to use glacier special remotes, as it makes it very easy to backup the files we need with `git annex copy`. Another advantage is hybrid encryption : git-annex allows flexible end-to-end encryption with decryption keys redundancy.
+
+*However*, there seems to be a few pitfalls :
+
+1. What if a disaster occurs and we lose the git repository all the whole history/git-annex branch ? Could we still recover the data itself with this strategy ? First assuming no encryption, then assuming encryption and that we have access to only the cipher (stored in remote.log) and at least one decryption private key. Since we would not be able to `git-annex get` the files, it will be painful - but I am wondering if this is even possible at all as for instance Glacier vaults don't seem to store filenames...
+
+2. Datasets might undergo updates after being archived. We are not very interested in backing up these updates or very infrequently, as Glacier archives are meant to backup the underlying data in our case. But what if e.g. some large files are moved or merged ? Will this break `git annex get` ? 
+
+3. [glacier-cli](https://github.com/basak/glacier-cli) does not seem to be actively maintained. For instance, it breaks with python3 (had to use python2.7 to git annex get files). Glacier is meant for long term backups. Wouldn't it be a problem if breaking changes occur at some level (AWS/boto) and glacier-cli remains outdated ? It seems to be more plausible than a failure with Glacier itself.
+
+Based on these considerations, I am wondering whether we should consider other options, including :
+
+ - not using glacier but s3 w/ glacier storage class
+ - not using git-annex at all for the archives but rclone for instance
+
+I am also wondering if glacier would be suited for frequent backups, without uncontrolled costs - even though this is not really our need here, the most important is to have a copy of the data after it's been organised and cleaned up.
+
+Thank you for your insights !
