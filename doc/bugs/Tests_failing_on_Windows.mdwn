@@ -1,0 +1,147 @@
+As of commit 02b9764ff, after building git-annex on Windows with [this patch](https://git-annex.branchable.com/bugs/Patch_for_compilation_errors_on_Windows/) fully applied, running `git annex test` fails with the following output:
+
+[[!format sh """
+Tests
+  QuickCheck
+    prop_encode_decode_roundtrip:                         OK (0.05s)
+      +++ OK, passed 1000 tests.
+    prop_encode_c_decode_c_roundtrip:                     OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_key_encode:                           OK (0.03s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_shellEscape:                          OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_shellEscape_multiword:                OK (0.68s)
+      +++ OK, passed 1000 tests.
+    prop_isomorphic_configEscape:                         OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_parse_show_Config:                               OK (0.04s)
+      +++ OK, passed 1000 tests.
+    prop_upFrom_basics:                                   OK (0.02s)
+      +++ OK, passed 1000 tests.
+    prop_relPathDirToFileAbs_basics:                      OK (0.04s)
+      +++ OK, passed 1000 tests.
+    prop_relPathDirToFileAbs_regressionTest:              OK
+      +++ OK, passed 1 test.
+    prop_cost_sane:                                       OK
+      +++ OK, passed 1 test.
+    prop_matcher_sane:                                    OK
+      +++ OK, passed 1 test.
+    prop_HmacSha1WithCipher_sane:                         OK
+      +++ OK, passed 1 test.
+    prop_VectorClock_sane:                                OK
+      +++ OK, passed 1 test.
+    prop_addMapLog_sane:                                  OK
+      +++ OK, passed 1 test.
+    prop_verifiable_sane:                                 OK (0.07s)
+      +++ OK, passed 1000 tests.
+    prop_segment_regressionTest:                          OK
+      +++ OK, passed 1 test.
+    prop_read_write_transferinfo:                         OK (0.04s)
+      +++ OK, passed 1000 tests.
+    prop_read_show_inodecache:                            OK (0.03s)
+      +++ OK, passed 1000 tests.
+    prop_parse_build_presence_log:                        OK (1.39s)
+      +++ OK, passed 1000 tests.
+    prop_parse_build_contentidentifier_log:               OK (1.32s)
+      +++ OK, passed 1000 tests.
+    prop_read_show_TrustLevel:                            OK
+      +++ OK, passed 1 test.
+    prop_parse_build_TrustLevelLog:                       OK
+      +++ OK, passed 1 test.
+    prop_schedule_roundtrips:                             OK (0.01s)
+      +++ OK, passed 1000 tests.
+    prop_past_sane:                                       OK
+      +++ OK, passed 1 test.
+    prop_duration_roundtrips:                             OK
+      +++ OK, passed 1000 tests.
+    prop_metadata_sane:                                   OK (0.82s)
+      +++ OK, passed 1000 tests.
+    prop_metadata_serialize:                              OK (0.89s)
+      +++ OK, passed 1000 tests.
+    prop_branchView_legal:                                OK (0.69s)
+      +++ OK, passed 1000 tests.
+    prop_viewPath_roundtrips:                             OK (0.05s)
+      +++ OK, passed 1000 tests.
+    prop_view_roundtrips:                                 OK (0.41s)
+      +++ OK, passed 1000 tests.
+    prop_viewedFile_rountrips:                            OK (0.03s)
+      +++ OK, passed 1000 tests.
+    prop_b64_roundtrips:                                  OK (0.03s)
+      +++ OK, passed 1000 tests.
+    prop_standardGroups_parse:                            OK
+      +++ OK, passed 1 test.
+    sha1 stable:                                          OK
+      +++ OK, passed 1 test.
+    sha2_224 stable:                                      OK
+      +++ OK, passed 1 test.
+    sha2_256 stable:                                      OK
+      +++ OK, passed 1 test.
+    sha2_384 stable:                                      OK
+      +++ OK, passed 1 test.
+    sha2_512 stable:                                      OK
+      +++ OK, passed 1 test.
+    skein256 stable:                                      OK
+      +++ OK, passed 1 test.
+    skein512 stable:                                      OK
+      +++ OK, passed 1 test.
+    sha3_224 stable:                                      OK
+      +++ OK, passed 1 test.
+    sha3_256 stable:                                      OK
+      +++ OK, passed 1 test.
+    sha3_384 stable:                                      OK
+      +++ OK, passed 1 test.
+    sha3_512 stable:                                      OK
+      +++ OK, passed 1 test.
+    blake2s_160 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2s_224 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2s_256 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2sp_224 stable:                                  OK
+      +++ OK, passed 1 test.
+    blake2sp_256 stable:                                  OK
+      +++ OK, passed 1 test.
+    blake2b_160 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2b_224 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2b_256 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2b_384 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2b_512 stable:                                   OK
+      +++ OK, passed 1 test.
+    blake2bp_512 stable:                                  OK
+      +++ OK, passed 1 test.
+    md5 stable:                                           OK
+      +++ OK, passed 1 test.
+    HmacSha1 stable:                                      OK
+      +++ OK, passed 1 test.
+    HmacSha224 stable:                                    OK
+      +++ OK, passed 1 test.
+    HmacSha256 stable:                                    OK
+      +++ OK, passed 1 test.
+    HmacSha384 stable:                                    OK
+      +++ OK, passed 1 test.
+    HmacSha512 stable:                                    OK
+      +++ OK, passed 1 test.
+  Remote Tests
+    remote type directory
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+  Detected a crippled filesystem.
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+Switched to branch 'adjusted/master(unlocked)'
+git-annex.exe: System.PosixCompat.Files.removeLink: not supported: illegal operation
+      init:                                               FAIL (1.48s)
+        Test.hs:250:
+        init failed
+      unavailable remote
+        removeKey:                                        
+##[error]Process completed with exit code 124.
+"""]]
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
