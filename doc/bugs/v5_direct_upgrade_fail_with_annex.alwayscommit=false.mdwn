@@ -3,3 +3,38 @@ v5 direct repo with annex.alwayscommit=false and not synced since the last
 change.
 
 > Forwarded from a private email to me, have not reproduced yet. --[[Joey]]
+
+Update: Got a repo tarball sent to me that reproduces the problem. It looks like
+this:
+
+	git annex upgrade
+	upgrade (v5 to v6...) 
+	  caught exception: Somehow no branch is checked out
+	<callstack>
+	failed
+	(recording state in git...)
+	git-annex: upgrade: 1 failed
+
+.git/HEAD points to refs/heads/annex/direct/master, 
+but that ref does not actually exist yet.
+
+The repo was created with git-annex 7.20190731-gbb16a2610
+and this sequence of commands:
+
+	git init .
+
+	git config user.email "email@example.com"
+	git config user.name "Name Name"
+	git config annex.alwayscommit false
+	git config annex.autoupgraderepository false
+	git annex init foobar
+	git annex direct
+	echo "aaaa" > a && echo "bbbb" > b
+	git annex add a b
+	git annex drop --force a
+
+Note that lack of git-annex sync, which is why the branch
+never got created. The index file has the adds staged of course.
+
+So, fixing this unusual case needs the upgrade code to go ahead and commit
+the staged index first. 
