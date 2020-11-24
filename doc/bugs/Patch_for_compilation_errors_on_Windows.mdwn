@@ -34,3 +34,5 @@ index 45662f236..788552305 100644
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> build is succeeding now [[fixed|done]] --[[Joey]]
