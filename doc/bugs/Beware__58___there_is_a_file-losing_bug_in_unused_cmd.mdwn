@@ -13,3 +13,5 @@ I'm not sure. The files lost appear to be more recently added files, so this bug
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I've used git-annex to maintain large file sets for years now and there is no better tool I know of.
+
+[[!tag moreinfo]]

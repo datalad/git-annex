@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-11-24T18:37:58Z"
+ content="""
+> The annexes were fully synced and git-annex list showed the files in the annex they were dropped from.
+
+That statement does not make a lot of sense. If both repos have been
+synced with the other, then git-annex list could only display the file
+if it was still in the master branch. But then git-annex unused would
+certianly not have considered it unused. (Unless it has an insanely bad bug,
+but the test suite tests that it doesn't have that bug, so it seems likely
+it does not.)
+
+But also, if both repos were synced with one-another, and you had dropped the
+file from one repo, then git-annex list in other other repo would know that and
+would not show the file as still being in it.
+
+Which suggests you mean something else by "fully synced" than being fully in
+sync at that point. Or that you were mistaken about them being fully in sync.
+
+And if you were mistaken about that, it's easy to set up situations where
+two repos are not fully in sync, and so in one, the file is to all appearances
+unused, but in the other one, the file is still in use by a branch.
+
+So, without a way to reproduce this, I have to assume it's user error.
+"""]]
