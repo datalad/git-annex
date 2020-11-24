@@ -36,5 +36,4 @@ and this sequence of commands:
 Note that lack of git-annex sync, which is why the branch
 never got created. The index file has the adds staged of course.
 
-So, fixing this unusual case needs the upgrade code to go ahead and commit
-the staged index first. 
+> [[fixed|done]] --[[Joey]]

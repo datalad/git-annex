@@ -88,8 +88,13 @@ convertDirect = do
 	 - as does annex.thin. -}
 	setConfig (annexConfig "thin") (boolConfig True)
 	Direct.setIndirect
-	cur <- fromMaybe (error "Somehow no branch is checked out")
-		<$> inRepo Git.Branch.current
+	cur <- inRepo Git.Branch.current >>= \case
+		Just cur -> return cur
+		Nothing -> do
+			-- Avoid running pre-commit hook.
+			commitForAdjustedBranch [Param "--no-verify"]
+			fromMaybe (giveup "Nothing is committed, and a commit failed; unable to proceed.") 
+				<$> inRepo Git.Branch.current
 	upgradeDirectWorkTree
 	removeDirectCruft
 	{- Create adjusted branch where all files are unlocked.

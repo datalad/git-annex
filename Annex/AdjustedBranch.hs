@@ -26,6 +26,7 @@ module Annex.AdjustedBranch (
 	adjustBranch,
 	adjustTree,
 	adjustToCrippledFileSystem,
+	commitForAdjustedBranch,
 	propigateAdjustedCommits,
 	propigateAdjustedCommits',
 	commitAdjustedTree,
@@ -334,14 +335,8 @@ adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
 	warning "Entering an adjusted branch where files are unlocked as this filesystem does not support locked files."
 	checkVersionSupported
-	whenM (isNothing <$> inRepo Git.Branch.current) $ do
-		cmode <- annexCommitMode <$> Annex.getGitConfig
-		void $ inRepo $ Git.Branch.commitCommand cmode
-			[ Param "--quiet"
-			, Param "--allow-empty"
-			, Param "-m"
-			, Param "commit before entering adjusted unlocked branch"
-			]
+	whenM (isNothing <$> inRepo Git.Branch.current) $
+		commitForAdjustedBranch []
 	inRepo Git.Branch.current >>= \case
 		Just currbranch -> case getAdjustment currbranch of
 			Just curradj | curradj == adj -> return ()
@@ -357,6 +352,22 @@ adjustToCrippledFileSystem = do
   where
 	adj = LinkAdjustment UnlockAdjustment
 	failedenter = warning "Failed to enter adjusted branch!"
+
+{- Commit before entering adjusted branch. Only needs to be done
+ - when the current branch does not have any commits yet.
+ -
+ - If something is already staged, it will be committed, but otherwise
+ - an empty commit will be made.
+ -}
+commitForAdjustedBranch :: [CommandParam] -> Annex ()
+commitForAdjustedBranch ps = do
+	cmode <- annexCommitMode <$> Annex.getGitConfig
+	void $ inRepo $ Git.Branch.commitCommand cmode $
+		[ Param "--quiet"
+		, Param "--allow-empty"
+		, Param "-m"
+		, Param "commit before entering adjusted branch"
+		] ++ ps
 
 setBasisBranch :: BasisBranch -> Ref -> Annex ()
 setBasisBranch (BasisBranch basis) new = 
