@@ -229,4 +229,74 @@ jobs:
           test $(nfailed version "libpcre.*so") -lt 5
           test $(nfailed init "libpcre.*so") -lt 130
 
+  test-datalad:
+    runs-on: macos-latest
+    needs: build-package
+    strategy:
+      matrix:
+        version: [master, maint, release]
+      fail-fast: false
+    steps:
+      - name: Download git-annex package
+        uses: actions/download-artifact@v2
+        with:
+          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          hdiutil attach git-annex_*.dmg
+          rsync -a /Volumes/git-annex/git-annex.app /Applications/
+          hdiutil detach /Volumes/git-annex/
+          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
+
+      - name: Set up SSH target
+        shell: bash
+        # TODO: Drop the release condition once 0.13.2 is released.
+        run: |
+          if [ "${{ matrix.version }}" != "release" ]; then
+            # coreutils provides a readlink that supports `-f`
+            brew install coreutils docker docker-machine
+            docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
+            eval "$(docker-machine env default)"
+            export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+            curl -fSsL \
+              https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
+              | bash
+            echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+          fi
+
+      - name: Set up environment
+        run: |
+          brew install exempi  # Needed by python-xmp-toolkit
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install ${{ matrix.version }} Datalad
+        run: |
+          if [ "${{ matrix.version }}" = "release" ]; then
+            # Authorize so that we don't run up against low API rate limits
+            commitish="$(curl -fsSL -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/datalad/datalad/releases/latest | jq -r .tag_name)"
+          else
+            commitish="${{ matrix.version }}"
+          fi
+          python -m pip install --upgrade pip
+          pip install https://github.com/datalad/datalad/archive/${commitish}.zip
+
+      - name: Install nose et al (just in case!)
+        run: pip install nose vcrpy mock
+
+      - name: WTF!?
+        run: datalad wtf
+
+      - name: Run datalad tests
+        run: |
+          mkdir -p __testhome__
+          cd __testhome__
+          python -m nose -s -v datalad
+
 # vim:set et sts=2:

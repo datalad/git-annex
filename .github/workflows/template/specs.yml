@@ -31,7 +31,7 @@
     - rsync -a /Volumes/git-annex/git-annex.app /Applications/
     - hdiutil detach /Volumes/git-annex/
     - echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
-  test_datalad: false
+  test_datalad: true
     # TODO: Re-enable macOS testing once it passes reliably
     # <https://github.com/datalad/datalad-extensions/pull/33#issuecomment-696368877>
 
@@ -45,6 +45,6 @@
   artifact_basename: git-annex-windows-installer
   artifact_install_steps:
     - ./git-annex-installer_*.exe /S
-  test_datalad: false
+  test_datalad: true
     # TODO: reenable -- was hanging on test step
     # see https://github.com/datalad/datalad-extensions/pull/54

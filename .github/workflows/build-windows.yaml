@@ -205,4 +205,108 @@ jobs:
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
+  test-datalad:
+    runs-on: windows-2016
+    needs: build-package
+    strategy:
+      matrix:
+        version: [master, maint, release]
+      fail-fast: false
+    steps:
+      - name: Download git-annex package
+        uses: actions/download-artifact@v2
+        with:
+          name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        shell: powershell
+        run: |
+          ./git-annex-installer_*.exe /S
+
+      - name: Define test host alias
+        shell: cmd
+        run: |
+          echo. >> %SYSTEMROOT%\System32\drivers\etc\hosts
+          echo.127.0.0.1  datalad-test >> %SYSTEMROOT%\System32\drivers\etc\hosts
+          echo.127.0.0.1  datalad-test2 >> %SYSTEMROOT%\System32\drivers\etc\hosts
+
+      - name: OpenSSH server setup
+        shell: powershell
+        run: |
+          mkdir downloads
+          Invoke-WebRequest -Uri https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.1.0p1-Beta/OpenSSH-Win32.zip -OutFile downloads\openssh.zip
+          7z x -o"downloads" downloads\openssh.zip
+
+      - name: Install
+        shell: cmd
+        run: powershell.exe -ExecutionPolicy Bypass -File downloads\OpenSSH-Win32\install-sshd.ps1
+
+      - name: Configure service
+        shell: cmd
+        run: powershell.exe New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+
+      - name: Keys in default place
+        run: ssh-keygen -f ~/.ssh/id_rsa -N ""
+
+      - name: Authorize access with these keys
+        shell: cmd
+        run: |
+          copy %USERPROFILE%\.ssh\id_rsa.pub %USERPROFILE%\.ssh\authorized_keys
+
+      - name: Configure SSH
+        run: |
+          (
+            echo Host localhost
+            echo StrictHostKeyChecking no
+            echo Host datalad-test
+            echo StrictHostKeyChecking no
+            echo Host datalad-test2
+            echo StrictHostKeyChecking no
+          ) > "$USERPROFILE"/.ssh/config
+
+      - name: Fire up service
+        run: net start sshd
+
+      - name: Test login
+        run: |
+          ssh -v localhost exit
+          ssh datalad-test exit
+          ssh datalad-test2 exit
+
+      - name: Enable SSH tests
+        run: echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+
+      - name: Set up environment
+        run: |
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install ${{ matrix.version }} Datalad
+        run: |
+          if [ "${{ matrix.version }}" = "release" ]; then
+            # Authorize so that we don't run up against low API rate limits
+            commitish="$(curl -fsSL -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/datalad/datalad/releases/latest | jq -r .tag_name)"
+          else
+            commitish="${{ matrix.version }}"
+          fi
+          python -m pip install --upgrade pip
+          pip install https://github.com/datalad/datalad/archive/${commitish}.zip
+
+      - name: Install nose et al (just in case!)
+        run: pip install nose vcrpy mock
+
+      - name: WTF!?
+        run: datalad wtf
+
+      - name: Run datalad tests
+        run: |
+          mkdir -p __testhome__
+          cd __testhome__
+          python -m nose -s -v datalad
+
 # vim:set et sts=2:
