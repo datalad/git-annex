@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-{{ostype}}.yaml'
+      - 'patches/*.patch'
   schedule:
     - cron: '30 {{cron_hour}} * * *'
   workflow_dispatch:

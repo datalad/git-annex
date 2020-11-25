@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-macos.yaml'
+      - 'patches/*.patch'
   schedule:
     - cron: '30 01 * * *'
   workflow_dispatch:

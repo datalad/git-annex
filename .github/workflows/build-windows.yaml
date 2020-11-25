@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build-windows.yaml'
+      - 'patches/*.patch'
   schedule:
     - cron: '30 03 * * *'
   workflow_dispatch:
