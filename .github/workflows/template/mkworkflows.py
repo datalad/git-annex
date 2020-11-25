@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 __requires__ = ["Jinja2 ~= 2.11", "PyYAML ~= 5.3"]
-import os.path
+from   pathlib import Path
 import sys
 import jinja2
 import yaml
@@ -23,16 +23,14 @@ def jinja_render(template, context):
     return rendered.replace(PLACEHOLDER, "${{")
 
 def main():
-    specs_file, template_file, workflows_dir = sys.argv[1:]
-    with open(specs_file) as fp:
+    specs_file, template_file, workflows_dir = map(Path, sys.argv[1:])
+    with specs_file.open() as fp:
         specs = yaml.safe_load(fp)
-    with open(template_file) as fp:
-        template = fp.read()
+    template = template_file.read_text()
     for sp in specs:
         workflow = jinja_render(template, sp)
-        filename = jinja_render("build-{{ostype}}.yaml", sp)
-        with open(os.path.join(workflows_dir, filename), "w") as fp:
-            print(workflow, file=fp)
+        filename = jinja_render(template_file.with_suffix("").name, sp)
+        (workflows_dir / filename).write_text(workflow + "\n")
 
 if __name__ == "__main__":
     main()
