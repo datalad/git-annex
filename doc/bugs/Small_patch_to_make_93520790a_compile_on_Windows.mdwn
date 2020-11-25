@@ -1,0 +1,80 @@
+### Please describe the problem.
+
+Latest git-annex commit 93520790a still doesn't quite compile without a small patch :)
+
+### What steps will reproduce the problem?
+
+`stack setup && stack build`
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 8.20201117-g93520790a
+build flags: Assistant Webapp Pairing TorrentParser Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: mingw32 x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 2 3 4 5 6 7
+"""]]
+
+Windows version 20H2 (build 19042.630), 64 bit.
+
+### Please provide any additional information below.
+
+Relevant parts of the build log:
+
+[[!format sh """
+jkniiv@AINESIS:/c/Projektit/git-annex.branchable.com/git-annex--BUILD-201125-93520790a$ tail -n 25 stack.build.LOG~102
+[326 of 644] Compiling P2P.IO
+[327 of 644] Compiling CmdLine.GitRemoteTorAnnex
+[328 of 644] Compiling Annex.CheckIgnore
+[329 of 644] Compiling Annex.CheckAttr
+[330 of 644] Compiling Backend
+[331 of 644] Compiling Annex.Transfer
+[332 of 644] Compiling Annex.CatFile
+[333 of 644] Compiling RemoteDaemon.Common
+[334 of 644] Compiling Database.Keys
+[335 of 644] Compiling Upgrade.V7
+[336 of 644] Compiling Annex.Content.Presence
+
+Annex\Content\Presence.hs:122:85: error:
+    * Variable not in scope: removeLink :: FilePath -> IO ()
+    * Perhaps you meant one of these:
+        `R.removeLink' (imported from Utility.RawFilePath),
+        `removeFile' (imported from Annex.Common)
+    |
+122 |                                                 void $ tryIO $ removeWhenExistsWith removeLink (fromRawFilePath lockfile)
+    |                                                                                     ^^^^^^^^^^
+
+
+--  While building package git-annex-8.20201116 (scroll up to its section to see the error) using:
+      C:\Users\jkniiv\Projektit\git-annex.branchable.com\git-annex--BUILD-201125-93520790a\.stack-work\dist\29cc6475\setup\setup --builddir=.stack-work\dist\29cc6475 build exe:git-annex --ghc-options " -fdiagnostics-color=always"
+    Process exited with code: ExitFailure 1
+# End of transcript.
+"""]]
+
+The change I ended up making was:
+
+[[!format diff """
+diff --git a/Annex/Content/Presence.hs b/Annex/Content/Presence.hs
+index 4b33bcefb..05ff5715e 100644
+--- a/Annex/Content/Presence.hs
++++ b/Annex/Content/Presence.hs
+@@ -119,7 +119,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
+                                        Nothing -> return is_locked
+                                        Just lockhandle -> do
+                                                dropLock lockhandle
+-                                               void $ tryIO $ removeWhenExistsWith removeLink (fromRawFilePath lockfile)
++                                               void $ tryIO $ removeWhenExistsWith R.removeLink lockfile
+                                                return is_unlocked
+                        , return is_missing
+                        )
+"""]]
+
+This then compiled cleanly.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Git Annex is great. It works with multi-gigabyte backup files via the MD5E backend just dandy :)
