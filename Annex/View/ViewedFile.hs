@@ -83,7 +83,7 @@ prop_viewedFile_roundtrips :: TestableFilePath -> Bool
 prop_viewedFile_roundtrips tf
 	-- Relative filenames wanted, not directories.
 	| any (isPathSeparator) (end f ++ beginning f) = True
-	| isAbsolute f = True
+	| isAbsolute f || isDrive f = True
 	| otherwise = dir == dirFromViewedFile (viewedFileFromReference f)
   where
 	f = fromTestableFilePath tf
