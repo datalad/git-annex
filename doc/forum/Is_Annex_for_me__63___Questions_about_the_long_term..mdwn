@@ -1,0 +1,20 @@
+I finally managed to dig a bit into annex, but I am still unsure if it's the right tool for me. It certainly feels close.
+Maybe I'll describe what I am looking for:
+
+- on my laptop (and maybe a second machine) I want to have a repo with the metadata of all my files (files as in music, video, photos, books, documents, things that I want to keep - but not a backup of my work files)
+- I want to have x number of external hard drives and a cloud account that form my storage
+- I want to be able to say "these files go into the cloud", "these files just stay on local storage"
+- I want to be able to say how many copies should exist (music=1, video=1, photos=2, ...)
+- I want all files in storage to be encrypted, at least in the cloud
+- I want to be able tot verify that my files are free (and stay free) of bit rot
+- I want to be able to locate which files are on which disk so I can attach it if needed
+- I want to be able to "materialize" files on my client machines as I need them, and drop the back to storage when I don't anymore
+- I want to be able to recover my repo if my laptop gets stolen
+- If the whole setup somehow breaks I would like to still be able to get access to the files on the drives
+- If a storage drive dies I want to be able to add a new one that takes over (with little manual work)
+- I don't want to think about disk sizes. If one drive is full - store it on the other drive. If all is full - let me know.
+- I don't need these files to be versioned, in fact I don't want them to be versioned as they are mostly binary and will take up unnecessary space
+- I want to use healthy project with more than one contributor (bus, virus, ... you never know)
+
+To me it seems annex checks most of the boxes - but on some I didn't manage to find out yet.
+Any input on whether I could make annex work for me?
