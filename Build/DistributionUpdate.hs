@@ -23,6 +23,7 @@ import qualified Annex
 import Annex.Content
 import Annex.WorkTree
 import Git.Command
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock
 import Data.Char
@@ -228,7 +229,8 @@ buildrpms topdir l = do
 		<$> liftIO (getDirectoryContents rpmrepo)
 	forM_ tarrpmarches $ \(tararch, rpmarch) ->
 		forM_ (filter (isstandalonetarball tararch . fst) l) $ \(tarball, v) -> do
-			liftIO $ mapM_ (removeWhenExistsWith removeLink) (filter ((rpmarch ++ ".rpm") `isSuffixOf`) oldrpms)
+			liftIO $ mapM_ (removeWhenExistsWith (R.removeLink . toRawFilePath))
+				(filter ((rpmarch ++ ".rpm") `isSuffixOf`) oldrpms)
 			void $ liftIO $ boolSystem script 
 				[ Param rpmarch
 				, File tarball
