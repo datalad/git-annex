@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-11-27T18:46:04Z"
+ content="""
+Compared to other projects, git-annex meets most of your requirements (1-13; and 14 with a quirk). I myself have been looking for alternatives to git-annex (mainly for performance reasons), but there simply are none. <br>
+To not version Files (14), you can delete/drop old versions by listing unused keys (using `git-annex-unused`), then force drop them and mark them as dead (using `git annex dead --key`).
+"""]]
