@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-11-29T20:57:25Z"
+ content="""
+From a quick glance, you don't sync the `git-annex` branch (which tracks the location of files) across the two repos, so the 2nd repo doesn't know that the file is in the `shared-storage` remote. I suspect that `git annex get` silently skips the file, see this excerpt from the [[git-annex-get]] manpage:
+>* `--from=remote`
+>
+>  Normally git-annex will choose which remotes to get the content
+>  from, preferring remotes with lower costs. Use this option to specify
+>  which remote to use. 
+>  
+>  **Any files that are not available on the remote will be silently skipped.**
+
+If you don't pass the `--from=` option, it will probably complain that the there are no known copies of the file instead. <br>
+Instead, I suggest you to keep the `git-annex` branch in sync with `git annex sync --only-annex`. It can also directly get/copy the files if you pass the `--content` option.
+"""]]
