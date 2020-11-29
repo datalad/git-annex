@@ -1,0 +1,187 @@
+Hello,
+
+I was using git-annex some time ago and have just started using it back. I came across a weird difference between an older and the current version of git-annex, which I don't understand.
+Consider this script:
+
+```
+#!/bin/bash -x
+
+repo_url=git@gitlab.com:filipg/test-area5.git
+storage_dir=/home/filipg/storage15
+work_dir=test-area5
+
+git --version
+git-annex version
+
+mkdir $work_dir
+cd $work_dir
+git init
+git annex init
+git remote add origin $repo_url
+echo 'Hello world!' > test.txt
+git add test.txt
+dd if=/dev/urandom of=test.bin bs=1 count=1000000
+git annex add test.bin
+git commit -m 'init'
+git push origin master
+
+mkdir -p $storage_dir
+git annex initremote shared-storage type=directory directory=$storage_dir encryption=none
+ls -l $storage_dir
+git annex copy test.bin --to shared-storage
+ls -l $storage_dir
+
+cd ..
+
+git clone $repo_url ${work_dir}-copy
+cd ${work_dir}-copy
+wc -c test.bin
+
+git annex init
+git annex initremote shared-storage type=directory directory=$storage_dir encryption=none
+ls -l $storage_dir
+git annex get test.bin --from shared-storage
+wc -c test.bin
+```
+
+It works as expected on a machine with an older version of git-annex:
+
+```
+[...]
++ git --version
+git version 2.7.4
++ git-annex version
+git-annex version: 5.20151208-1build1
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus DesktopNotify XMPP DNS Feeds Quvi TDFA TorrentParser Database
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt S3 bup directory rsync web bittorrent webdav tahoe glacier ddar hook external
++ mkdir test-area8
+[...]
++ wc -c test.bin
+1000000 test.bin
+```
+
+whereas the `test.bin` file is not retrieved on a different machine with a newer version of git-annex:
+
+```
+$ LANG=C ./go.sh
++ repo_url=git@gitlab.com:filipg/test-area5.git
++ storage_dir=/home/filipg/storage15
++ work_dir=test-area5
++ git --version
+git version 2.29.2
++ git-annex version
+git-annex version: 8.20201103-g2dabd4cc2d
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.2 http-client-0.7.2.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
++ mkdir test-area5
++ cd test-area5
++ git init
+Initialized empty Git repository in /home/filipg/ext/git-annex-test/test-area5/.git/
++ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
++ git remote add origin git@gitlab.com:filipg/test-area5.git
++ echo 'Hello world!'
++ git add test.txt
++ dd if=/dev/urandom of=test.bin bs=1 count=1000000
+1000000+0 records in
+1000000+0 records out
+1000000 bytes (1.0 MB, 977 KiB) copied, 1.55659 s, 642 kB/s
++ git annex add test.bin
+add test.bin
+ok
+(recording state in git...)
++ git commit -m init
+[master (root-commit) ae9c146] init
+ 2 files changed, 2 insertions(+)
+ create mode 120000 test.bin
+ create mode 100644 test.txt
++ git push origin master
+Enumerating objects: 4, done.
+Counting objects: 100% (4/4), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (4/4), 363 bytes | 363.00 KiB/s, done.
+Total 4 (delta 0), reused 0 (delta 0), pack-reused 0
+remote:
+remote:
+remote: The private project filipg/test-area5 was successfully created.
+remote:
+remote: To configure the remote, run:
+remote:   git remote add origin git@gitlab.com:filipg/test-area5.git
+remote:
+remote: To view the project, visit:
+remote:   https://gitlab.com/filipg/test-area5
+remote:
+remote:
+remote:
+To gitlab.com:filipg/test-area5.git
+ * [new branch]      master -> master
++ mkdir -p /home/filipg/storage15
++ git annex initremote shared-storage type=directory directory=/home/filipg/storage15 encryption=none
+
+  Unable to parse git config from origin
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote origin
+initremote shared-storage ok
+(recording state in git...)
++ ls -l /home/filipg/storage15
+total 0
++ git annex copy test.bin --to shared-storage
+copy test.bin (to shared-storage...)
+ok
+(recording state in git...)
++ ls -l /home/filipg/storage15
+total 8
+drwxr-xr-x 3 filipg filipg 4096 Nov 29 20:56 9c0
+drwxr-xr-x 2 filipg filipg 4096 Nov 29 20:56 tmp
++ cd ..
++ git clone git@gitlab.com:filipg/test-area5.git test-area5-copy
+Cloning into 'test-area5-copy'...
+remote: Enumerating objects: 4, done.
+remote: Counting objects: 100% (4/4), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 4 (delta 0), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (4/4), done.
++ cd test-area5-copy
++ wc -c test.bin
+wc: test.bin: No such file or directory
++ git annex init
+init  (scanning for unlocked files...)
+
+  Unable to parse git config from origin
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote origin
+ok
+(recording state in git...)
++ git annex initremote shared-storage type=directory directory=/home/filipg/storage15 encryption=none
+initremote shared-storage ok
+(recording state in git...)
++ ls -l /home/filipg/storage15
+total 8
+drwxr-xr-x 3 filipg filipg 4096 Nov 29 20:56 9c0
+drwxr-xr-x 2 filipg filipg 4096 Nov 29 20:56 tmp
++ git annex get test.bin --from shared-storage
++ wc -c test.bin
+wc: test.bin: No such file or directory
+```
+
+Any ideas? Was there a substantial model in git-annex conceptual model between the version 5 and 8?
+
+
+
+
+
+
+ 
