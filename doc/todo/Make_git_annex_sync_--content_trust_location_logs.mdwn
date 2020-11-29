@@ -1,2 +1,2 @@
 Hello Joey,<br>
-`git annex sync --content` checks if the content of a key exists locally by checking if the path exists instead looking at the location log. I suspect that this has a large impact on performance if the cache is cold.
+`git annex sync --content (--all)` checks if the content of a key exists locally by checking if the path exists instead looking at the location log. I suspect that this has a large impact on performance if the cache is cold.
