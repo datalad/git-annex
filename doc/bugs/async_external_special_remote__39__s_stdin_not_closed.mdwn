@@ -1,0 +1,169 @@
+### Please describe the problem.
+
+It seems that git-annex does not close the stdin of an external special remote
+when the ASYNC extension is in use. Sometimes git-annex goes ahead anyway, but
+sometimes it hangs until it or the remote process is killed.
+
+### What steps will reproduce the problem?
+
+Save the following code (a minimal dummy external special remote) into
+`git-annex-remote-test` somewhere on PATH and make it executable:
+
+[[!format python """
+#!/usr/bin/env python3
+
+import os
+import sys
+
+
+def write(s):
+    print(s)
+    sys.stdout.flush()
+
+
+write("VERSION 1")
+
+while True:
+    line = sys.stdin.readline().strip()
+    if not line:
+        print("got EOF", file=sys.stderr)
+        break
+
+    cmd, *args = line.split()
+    prefix = ""
+    if cmd == "J":
+        prefix = f"J {args[0]} "
+        cmd, *args = args[1:]
+
+    if cmd == "EXTENSIONS":
+        if os.environ.get("TEST_ASYNC_ON") == "1":
+            write("EXTENSIONS INFO ASYNC")
+        else:
+            write("EXTENSIONS INFO")
+    elif cmd == "INITREMOTE":
+        write(prefix + "INITREMOTE-SUCCESS")
+    elif cmd == "PREPARE":
+        write(prefix + "PREPARE-SUCCESS")
+    elif cmd == "TRANSFER":
+        tp, key, fn = args
+        write(prefix + f"TRANSFER-SUCCESS {tp} {key}")
+    elif cmd == "CHECKPRESENT":
+        (key,) = args
+        write(prefix + f"CHECKPRESENT-SUCCESS {key}")
+    elif cmd == "REMOVE":
+        (key,) = args
+        write(prefix + f"REMOVE-SUCCESS {key}")
+    else:
+        write(prefix + "UNSUPPORTED-REQUEST")
+"""]]
+
+Run the following script:
+
+[[!format sh """
+#!/bin/sh
+
+PS4='================ '
+set -ex
+
+cd "$(mktemp -d)"
+git init
+git annex init
+git annex initremote test type=external externaltype=test encryption=none
+touch file
+git annex add file
+git annex copy --to test file
+"""]]
+
+If the `TEST_ASYNC_ON` environment variable is set to `1`, the dummy remote will
+advertise ASYNC support. In that case, the `git annex copy` command will hang
+until it or the remote process is manually killed. It looks like the
+`initremote` command also does not close the stdin of the remote processes that
+it spawns (as seen by the lack of `got EOF` lines in the terminal output), but
+it is able to complete successfully anyway.
+
+If ASYNC is not used, all commands complete quickly and successfully.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 8.20201116-g864af53a2d on Arch Linux.
+
+[[!format txt """
+$ git-annex version
+git-annex version: 8.20201116-g864af53a2d
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.2 http-client-0.7.3 persistent-sqlite-2.11.0.0 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+
+$ uname -a
+Linux dzhu-p52 5.9.9-arch1-1 #1 SMP PREEMPT Wed, 18 Nov 2020 19:52:04 +0000 x86_64 GNU/Linux
+"""]]
+
+### Please provide any additional information below.
+
+I've seen the same behavior with a compiled Go executable as the special remote,
+so this does not appear to be a Python-specific buffering issue, at least.
+
+Output I see from running the above code (`asynctest.sh` is the shell script):
+
+[[!format txt """
+$ ./asynctest.sh
+================= mktemp -d
+================ cd /tmp/tmp.5QyEIgAUUJ
+================ git init
+Initialized empty Git repository in /tmp/tmp.5QyEIgAUUJ/.git/
+================ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+================ git annex initremote test type=external externaltype=test encryption=none
+initremote test got EOF
+got EOF
+got EOF
+ok
+(recording state in git...)
+================ touch file
+================ git annex add file
+add file
+ok
+(recording state in git...)
+================ git annex copy --to test file
+copy file ok
+(recording state in git...)
+got EOF
+
+$ TEST_ASYNC_ON=1 ./asynctest.sh
+================= mktemp -d
+================ cd /tmp/tmp.cyiP80y3kE
+================ git init
+Initialized empty Git repository in /tmp/tmp.cyiP80y3kE/.git/
+================ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+================ git annex initremote test type=external externaltype=test encryption=none
+initremote test ok
+(recording state in git...)
+================ touch file
+================ git annex add file
+add file
+ok
+(recording state in git...)
+================ git annex copy --to test file
+copy file ok
+(recording state in git...)
+"""]]
+and then it gets stuck there.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! My photo collection and other miscellaneous files were getting out of hand,
+with tens of thousands of files spread across various drives and cloud services
+with varying amounts of ad hoc duplication. git-annex is helping me get
+everything under control for the first time; I'm not all the way there yet, but
+I finally have an idea of how to handle it all. I started developing something
+to do the file management myself, but embraced git-annex wholeheartedly once I
+grokked it.
