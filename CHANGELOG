@@ -1,3 +1,10 @@
+git-annex (8.20201128) UNRELEASED; urgency=medium
+
+  * Fix hang on shutdown of external special remote using ASYNC protocol
+    extension. (Reversion introduced in version 8.20201007.)
+
+ -- Joey Hess <id@joeyh.name>  Mon, 30 Nov 2020 12:55:49 -0400
+
 git-annex (8.20201127) upstream; urgency=medium
 
   * adjust: New --unlock-present mode which locks files whose content is not

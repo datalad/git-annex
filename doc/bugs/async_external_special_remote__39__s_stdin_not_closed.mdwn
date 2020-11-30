@@ -167,3 +167,5 @@ everything under control for the first time; I'm not all the way there yet, but
 I finally have an idea of how to handle it all. I started developing something
 to do the file management myself, but embraced git-annex wholeheartedly once I
 grokked it.
+
+> [[fixed|done]] --[[Joey]]
