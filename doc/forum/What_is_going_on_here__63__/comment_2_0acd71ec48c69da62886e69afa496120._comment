@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="filipg@7e6a4a5ad3a393bcea174bf8fd6664deffc76c25"
+ nickname="filipg"
+ avatar="http://cdn.libravatar.org/avatar/3eae35237b5c224a29148e6debacb5f9"
+ subject="comment 2"
+ date="2020-11-30T07:20:34Z"
+ content="""
+Thanks, Lukey, for your comment. It helped indeed, this works:
+
+```
+#!/bin/bash -x
+
+repo_url=git@gitlab.com:filipg/test-area9.git
+storage_dir=/home/filipg/storage19
+work_dir=test-area9
+
+git --version
+git-annex version
+
+mkdir $work_dir
+cd $work_dir
+git init
+git annex init
+git remote add origin $repo_url
+echo 'Hello world!' > test.txt
+git add test.txt
+dd if=/dev/urandom of=test.bin bs=1 count=1000000
+git annex add test.bin
+git commit -m 'init'
+git push origin master
+
+mkdir -p $storage_dir
+git annex initremote shared-storage type=directory directory=$storage_dir encryption=none
+ls -l $storage_dir
+git annex copy test.bin --to shared-storage
+ls -l $storage_dir
+git annex sync --only-annex
+
+cd ..
+
+git clone $repo_url ${work_dir}-copy
+cd ${work_dir}-copy
+wc -c test.bin
+
+git annex init
+git annex sync --only-annex
+git annex enableremote shared-storage type=directory directory=$storage_dir encryption=none
+ls -l $storage_dir
+git annex get test.bin --from shared-storage
+wc -c test.bin
+```
+
+But still the question why the previous version worked in git-annex 5 remains... So you can't specify remotes in such a way (manually, without syncing) in git-annex 8?
+"""]]
