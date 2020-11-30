@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-11-30T16:40:41Z"
+ content="""
+Analysis: It's hanging on 'hClose hout'. 
+
+I think that's because there's a thread that is waiting for the next line
+of output from the remote. hClose ends up taking a MVar, if the read
+keeps that MVar unpopulate hClose can then hang. This is surprising; I've
+never seen hClose hang, and the docs don't mention it can.
+
+Solution will be to cleanly shutdown the async IO threads before shutting
+down the external process.
+"""]]
