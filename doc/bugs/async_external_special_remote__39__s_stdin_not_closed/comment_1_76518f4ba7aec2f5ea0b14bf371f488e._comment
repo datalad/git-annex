@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2020-11-30T15:18:57Z"
+ content="""
+Thanks for the reproducer.  I tested it out locally, hoping I could
+report that the hang was resolved in the 8.20201127 release
+(specifically by 8.20201116-47-gd8b7f6721 [*]).  Unfortunately, your
+example still hangs for me on master (708181175).  As with the linked
+report below, it looks like that hang starts with 7245a9ed5 (Improve
+shutdown process for external special remotes and external backends,
+2020-11-02).
+
+[*] related report:
+    https://git-annex.branchable.com/bugs/Buggy_external_special_remote_stalls_after_7245a9e/
+
+"""]]
