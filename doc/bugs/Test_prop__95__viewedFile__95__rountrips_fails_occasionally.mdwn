@@ -99,3 +99,6 @@ Windows version 20H2 (build 19042.630), 64 bit.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Git Annex is great. It works with multi-gigabyte backup files via the MD5E backend just dandy :)
+
+> [[fixed|done]] in [[!commit e92117bfd0d28b24f51a10903158b95010defffd]]
+> --[[Joey]]
