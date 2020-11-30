@@ -46,3 +46,17 @@ remotes.
 * adb could use some shell trick perhaps.. But it would depend on doing
   locking in /sdcard, which seems likely to be a massive ball of POSIX
   incompliance and pain.
+
+----
+
+I was thinking about something related to this recently. Dropping currently
+guaranteeds numcopies will be maintained for remotes that support
+lockContent. But when some of the copies are on special remotes, this
+is not guaranteed. It only makes sure lockContent is keeping one copy
+locked, and can verify the existence of the other copies less stringently.
+
+So perhaps it would be good to make this explicit in the configuration,
+by adding a requirednumcopies. (Analagous to required content configs.)
+Defaulting to 1 as now, but if the user wants to they can set it higher,
+perhaps as high as their numcopies (or even just set it to 1000 and make
+it be treated the same value as numcopies when it's >= numcopies.)
