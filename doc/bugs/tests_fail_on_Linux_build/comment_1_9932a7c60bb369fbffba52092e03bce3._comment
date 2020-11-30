@@ -18,10 +18,7 @@ every quickcheck property, so we can stop tripping over these.
 
 (Also worth noting: As soon as everything gets converted to RawFilePath
 entirely, this entire class of problems goes away (and git-annex gets
-faster too). I wrote over 10,000 lines of patch toward that end in the past
-week, during many agonizing days, but it seems mostly to have resulted in
-my being complained at about not having a good enough CI to catch whatever
-minor breakage results.)
+faster too).)
 
 (I wonder if it's also just a bug in QuickCheck, but it's hard to see how
 it could both do any testing of unicode and work in LANG=C given that
