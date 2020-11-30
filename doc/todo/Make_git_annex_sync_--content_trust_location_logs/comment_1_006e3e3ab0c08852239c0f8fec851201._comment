@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-11-30T17:09:28Z"
+ content="""
+Statting a file is typically much faster than
+piping a request through to git, git reading complex files, and git-annex
+parsing the result.
+
+There may be a case, when annex.thin is set, where it has to hash the whole
+file to determine if it's got the expected content. Normally this is
+avoided by inode cache information though. And if it did, it would only
+be slow once for that particular version of the file as it would cache its
+informaton.
+
+If you have a case where this is actually slow, please explain how I can
+see it.
+"""]]
