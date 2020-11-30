@@ -31,6 +31,9 @@ jobs:
       - name: Push new objects to mirror
         run: git push --tags origin upstream/master
 
+      - name: Check out master .github
+        run: git checkout origin/master -- .github
+
       - name: Install Python
         uses: actions/setup-python@v2
         with:
