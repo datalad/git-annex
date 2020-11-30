@@ -40,10 +40,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip pip-run wheel
           # No quotes around substitution:
-          ### Currently broken <https://github.com/jaraco/pip-run/issues/46>,
-          ### so the dependencies have to copied here for now.
-          #python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/dispatch-build)
-          python -m pip install "click ~= 7.0" "PyGithub == 1.*"
+          python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/dispatch-build)
+          # Install the script's dependencies beforehand so that they aren't
+          # installed separately for each & every invocation by xargs.
 
       - name: Trigger workflow runs for new tags
         run: |
