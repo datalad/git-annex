@@ -20,10 +20,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip pip-run wheel
           # No quotes around substitution:
-          ### Currently broken <https://github.com/jaraco/pip-run/issues/46>,
-          ### so the dependencies have to copied here for now.
-          #python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/prdispatch.py)
-          python -m pip install "PyGithub == 1.*" "python-dateutil ~= 2.7" "requests ~= 2.20"
+          python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/prdispatch.py)
+          # Install the script's dependencies beforehand in order to reduce
+          # time between the start of the "Run PR workflow dispatch script"
+          # step and the script actually executing, lest any PR events
+          # occurring in that window be counted twice by two separate runs.
 
       # IMPORTANT: Any change to the name of this step MUST be reflected in the
       # `THIS_STEP` variable in `prdispatch.py`!
