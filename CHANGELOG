@@ -4,6 +4,9 @@ git-annex (8.20201128) UNRELEASED; urgency=medium
     extension. (Reversion introduced in version 8.20201007.)
   * Fix bug that made the next download after an empty file from a ssh
     or tor remote fail.
+  * Avoid spurious "verification of content failed" message when downloading
+    content from a ssh or tor remote fails due to the remote no longer
+    having a copy of the content.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Nov 2020 12:55:49 -0400
 

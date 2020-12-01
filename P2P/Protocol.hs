@@ -508,13 +508,15 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
 sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
   where
- 	go Nothing = sender (Len 0) L.empty (return Valid)
 	go (Just (Len totallen)) = do
 		let len = totallen - n
 		if len <= 0
 			then sender (Len 0) L.empty (return Valid)
 			else local $ readContent key af offset $
 				sender (Len len)
+	-- Content not available to send. Indicate this by sending
+	-- empty data and indlicate it's invalid.
+ 	go Nothing = sender (Len 0) L.empty (return Invalid)
 	sender len content validitycheck = do
 		let p' = offsetMeterUpdate p (toBytesProcessed n)
 		net $ sendMessage (DATA len)

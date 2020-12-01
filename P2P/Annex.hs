@@ -172,6 +172,14 @@ runLocal runst runner a = case a of
 				runner validitycheck >>= \case
 					Right (Just Valid) ->
 						return (rightsize, UnVerified)
+					Right (Just Invalid) | l == 0 ->
+						-- Special case, for when
+						-- content was not
+						-- available to send, 
+						-- which is indicated by
+						-- sending 0 bytes and 
+						-- Invalid.
+						return (False, UnVerified)
 					_ -> do
 						-- Invalid, or old protocol
 						-- version. Validity is not

@@ -35,9 +35,16 @@ closes the connection, the next move fails when it should not need to.
 > to avoid needing to add to the protocol. That should avoid
 > the spurious "verification of content failed".
 > 
+> > Done and it did.
+> 
 > But what causes the connection to get closed? It seems that
 > while the server sends VALID, the client never debugs that it received
 > it. Indeeed, the receiveMessage call that should receive it
 > fails because the handle is closed at that point. Seems that
 > this is caused by trying to receive 0 bytes as indicated by DATA
-> ending up closing the handle.
+> ending up closing the handle. Another case of it involved getting
+> an empty file followed by a second file.
+> 
+> > This bug is fixed.
+
+[[done]] --[[Joey]] 
