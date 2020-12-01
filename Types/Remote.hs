@@ -192,6 +192,7 @@ data Verification
 	| MustVerify
 	-- ^ Content likely to have been altered during transfer,
 	-- verify even if verification is normally disabled
+	deriving (Show)
 
 unVerified :: Monad m => m a -> m (a, Verification)
 unVerified a = do
