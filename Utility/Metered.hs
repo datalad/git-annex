@@ -169,8 +169,9 @@ hGetMetered h wantsize meterupdate = lazyRead zeroBytesProcessed
 		c <- S.hGet h (nextchunksize (fromBytesProcessed sofar))
 		if S.null c
 			then do
-				hClose h
-				return $ L.empty
+				when (wantsize /= Just 0) $
+					hClose h
+				return L.empty
 			else do
 				let !sofar' = addBytesProcessed sofar (S.length c)
 				meterupdate sofar'

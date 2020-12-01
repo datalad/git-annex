@@ -13,3 +13,31 @@ The problem is on the first move, the protocol does not handle a file
 that's not present well, so it's not clear why it failed. And since that
 closes the connection, the next move fails when it should not need to.
 --[[Joey]]
+
+> Protocol dump:
+> 
+> 	P2P > VERSION 1
+> 	P2P < VERSION 1
+>	P2P > GET 0 foo SHA256E-s30--f8f8766a836fb6120abf4d5328ce8761404e437529e997aaa0363bdd4fecd7bb
+> 	P2P < GET 0 foo SHA256E-s30--f8f8766a836fb6120abf4d5328ce8761404e437529e997aaa0363bdd4fecd7bb
+> 	P2P > DATA 0
+> 	P2P > VALID
+>	P2P < DATA 0
+>	P2P > SUCCESS
+>	P2P < SUCCESS
+> 
+> So it's sending an empty object and claiming it's valid when in
+> fact it does not have the object. That was done because the sender
+> does not have any other way in the protocol to indicate that.
+> The receiver is what sends SUCCESS/FAILURE, not the sender.a
+> 
+> Seems like, it could send DATA 0 followed by INVALID,
+> to avoid needing to add to the protocol. That should avoid
+> the spurious "verification of content failed".
+> 
+> But what causes the connection to get closed? It seems that
+> while the server sends VALID, the client never debugs that it received
+> it. Indeeed, the receiveMessage call that should receive it
+> fails because the handle is closed at that point. Seems that
+> this is caused by trying to receive 0 bytes as indicated by DATA
+> ending up closing the handle.
