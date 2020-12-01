@@ -1,0 +1,94 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~barthelemy"
+ nickname="barthelemy"
+ avatar="http://cdn.libravatar.org/avatar/e99cb15f6029de3225721b3ebdd0233905eb69698e9b229a8c4cc510a4135438"
+ subject="comment 6"
+ date="2020-12-01T21:55:31Z"
+ content="""
+Hello,
+
+I want to split my big git annex repo into smaller ones
+in order to workaround scalability issues (too many files),
+and to enable simpler synchronization rules and authorizations.
+As I first step, I'd like to split out my family pictures
+in a separate repo which does not know about the other
+content.
+
+Based on the instructions from this page, I came up with the test script below.
+It works, thank you!
+
+However, there is a drawback: in order to really forget the non-pictures content,
+I had to also forget about an old offsite backup (a git clone), which holds (some of)
+the pictures. Is there a way to keep tracking the pictures in this backup?
+
+I think I wouldn't have had the issue if this backup had been
+a special remote instead of a clone.
+
+    set -x
+    set -e
+    chmod -R u+w annexes
+    rm -rf annexes
+
+    ### setup the main repo
+    mkdir -p annexes/annex
+    cd annexes/annex
+    git init
+    git annex init main
+
+    # add data
+    mkdir -p private/Pictures/2019
+    echo \"big file a\" > private/Pictures/2019/a
+    echo \"big file b\" > private/Pictures/2019/b
+    git annex add private/Pictures/2019/{a,b}
+    git commit -m \"add pictures a b\"
+
+    mkdir -p public/
+    echo \"big file c\" > public/c
+    git annex add public/c
+    git rm private/Pictures/2019/a
+    git commit -m \"add document c\"
+
+    ### make an offsite \"time capsule\" backup.
+    # I don't want to ever touch it again, except for disaster recovery.
+    # Ideally, I want to keep tracking the data on it even after the split.
+    cd ..
+    git clone annex offsite
+    cd offsite
+    git annex get private
+    git annex sync
+    OFFSITE_UUID=$(git annex info  --json here | jq .uuid -r)
+
+    ### prepare for the split: let use hardlink instead of copies
+    cd ../annex
+    git config annex.hardlink true
+    git annex untrust here
+
+    # clone and prune
+    cd ..
+    git clone annex pictures
+    cd pictures
+    # remove everything except private/Pictures
+    git filter-branch --subdirectory-filter private/Pictures -- --all
+    # useless?
+    git reflog expire --expire=now --all && git gc --prune=now --aggressive
+    # get the pictures (just b, because I could not find a way to get a without getting c)
+    git annex get --from origin
+    # attemp to forget about the other files (just c)
+    MAIN_UUID=$(git annex info  --json here | jq .uuid -r)
+    git annex reinit `uuidgen`
+    git annex fsck --fast
+    git commit -m \"fixup links\"
+    git annex dead $MAIN_UUID
+    git annex dead $OFFSITE_UUID # sadly, I won't be able to track my old offsite backup
+    git annex dead origin
+    git annex forget --drop-dead --force
+    # try to get again
+    # nothing happens: this annex
+    # * already has b
+    # * knows a existed, but not where to find it (not great, but ok for me)
+    # * does not know about c (which was the whole point)
+    git annex get --all
+    # check what we have
+    find .git/annex/objects -type f -exec cat \{\} \;
+
+"""]]
