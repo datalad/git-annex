@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-12-01T16:28:36Z"
+ content="""
+git-annex does not contain the name of this file in its source code.
+
+In a few places git-annex uses `git credential` to ask for a credential.
+Only in the git-lfs special remote does it ever `git credential reject` if
+the provided credential does not work, which would remove it. Since you are
+apparently not using that special remote, it does not seem relevant, but
+also when git-annex does that, it's using it correctly to reject a
+non-working credential.
+
+It may be that git-annex ought to be calling `git credential approve` after
+it's used the credential. It seems possible git might in some situation or
+configuration choose to delete a credential that has not been recently
+approved. The docs are not very clear about this, but I have not been able
+to reproduce it behaving that way in some tests.
+
+Or this deletion could be a git bug, or git could be sometimes seeing the
+credential not work, for whatever reason, and so removing it.
+"""]]
