@@ -28,6 +28,7 @@ import Annex.Common
 import Types.Remote
 import Types.Export
 import qualified Git
+import qualified Annex
 import Config
 import Config.Cost
 import Annex.SpecialRemote.Config
@@ -139,8 +140,9 @@ webdavSetup _ mu mcreds c gc = do
 
 store :: DavHandleVar -> ChunkConfig -> Storer
 store hv (LegacyChunks chunksize) = fileStorer $ \k f p -> 
-	withDavHandle hv $ \dav -> liftIO $
-		withMeteredFile f p $ storeLegacyChunked chunksize k dav
+	withDavHandle hv $ \dav -> do
+		annexrunner <- Annex.makeRunner
+		liftIO $ withMeteredFile f p $ storeLegacyChunked annexrunner chunksize k dav
 store hv _ = httpStorer $ \k reqbody -> 
 	withDavHandle hv $ \dav -> liftIO $ goDAV dav $ do
 		let tmp = keyTmpLocation k
@@ -448,15 +450,15 @@ prepDAV user pass = do
 -- Legacy chunking code, to be removed eventually.
 --
 
-storeLegacyChunked :: ChunkSize -> Key -> DavHandle -> L.ByteString -> IO ()
-storeLegacyChunked chunksize k dav b =
+storeLegacyChunked :: (Annex () -> IO ()) -> ChunkSize -> Key -> DavHandle -> L.ByteString -> IO ()
+storeLegacyChunked annexrunner chunksize k dav b =
 	Legacy.storeChunks k tmp dest storer recorder finalizer
   where
 	storehttp l b' = void $ goDAV dav $ do
 		maybe noop (void . mkColRecursive) (locationParent l)
 		debugDav $ "putContent " ++ l
 		inLocation l $ putContentM (contentType, b')
-	storer locs = Legacy.storeChunked chunksize locs storehttp b
+	storer locs = Legacy.storeChunked annexrunner chunksize locs storehttp b
 	recorder l s = storehttp l (L8.fromString s)
 	finalizer tmp' dest' = goDAV dav $ 
 		finalizeStore dav tmp' (fromJust $ locationParent dest')

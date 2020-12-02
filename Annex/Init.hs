@@ -252,7 +252,8 @@ probeLockSupport = return True
 probeLockSupport = withEventuallyCleanedOtherTmp $ \tmp -> do
 	let f = tmp P.</> "lockprobe"
 	mode <- annexFileMode
-	liftIO $ withAsync warnstall (const (go f mode))
+	annexrunner <- Annex.makeRunner
+	liftIO $ withAsync (warnstall annexrunner) (const (go f mode))
   where
 	go f mode = do
 		removeWhenExistsWith R.removeLink f
@@ -264,10 +265,11 @@ probeLockSupport = withEventuallyCleanedOtherTmp $ \tmp -> do
 		removeWhenExistsWith R.removeLink f
 		return ok
 	
-	warnstall = do
+	warnstall annexrunner = do
 		threadDelaySeconds (Seconds 10)
-		warningIO "Probing the filesystem for POSIX fcntl lock support is taking a long time."
-		warningIO "(Setting annex.pidlock will avoid this probe.)"
+		annexrunner $ do
+			warning "Probing the filesystem for POSIX fcntl lock support is taking a long time."
+			warning "(Setting annex.pidlock will avoid this probe.)"
 #endif
 
 probeFifoSupport :: Annex Bool

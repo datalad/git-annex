@@ -619,7 +619,8 @@ startExternal external =
 				`onException` store UncheckedExternalAsync
 			if asyncExtensionEnabled extensions
 				then do
-					relay <- liftIO $ runRelayToExternalAsync external st
+					annexrunner <- Annex.makeRunner
+					relay <- liftIO $ runRelayToExternalAsync external st annexrunner
 					st' <- liftIO $ asyncRelayExternalState relay
 					store (ExternalAsync relay)
 					return st'

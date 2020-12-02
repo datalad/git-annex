@@ -85,8 +85,8 @@ storeChunks key tmp dest storer recorder finalizer = do
  - But this is the best that can be done with the storer interface that
  - writes a whole L.ByteString at a time.
  -}
-storeChunked :: ChunkSize -> [FilePath] -> (FilePath -> L.ByteString -> IO ()) -> L.ByteString -> IO [FilePath]
-storeChunked chunksize dests storer content = 
+storeChunked :: (Annex () -> IO ()) -> ChunkSize -> [FilePath] -> (FilePath -> L.ByteString -> IO ()) -> L.ByteString -> IO [FilePath]
+storeChunked annexrunner chunksize dests storer content = 
 	either onerr return =<< tryNonAsync (go (Just chunksize) dests)
   where
 	go _ [] = return [] -- no dests!?
@@ -99,7 +99,7 @@ storeChunked chunksize dests storer content =
 		| otherwise = storechunks sz [] dests content
 		
 	onerr e = do
-		warningIO (show e)
+		annexrunner $ warning (show e)
 		return []
 	
 	storechunks _ _ [] _ = return [] -- ran out of dests

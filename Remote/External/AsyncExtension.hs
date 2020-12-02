@@ -11,9 +11,10 @@
 module Remote.External.AsyncExtension (runRelayToExternalAsync) where
 
 import Common
+import Annex
 import Messages
 import Remote.External.Types
-import Utility.SimpleProtocol as Proto
+import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent.Async
 import Control.Concurrent.STM
@@ -23,13 +24,13 @@ import qualified Data.Map.Strict as M
 -- | Starts a thread that will handle all communication with the external
 -- process. The input ExternalState communicates directly with the external
 -- process.
-runRelayToExternalAsync :: External -> ExternalState -> IO ExternalAsyncRelay
-runRelayToExternalAsync external st = do
+runRelayToExternalAsync :: External -> ExternalState -> (Annex () -> IO ()) -> IO ExternalAsyncRelay
+runRelayToExternalAsync external st annexrunner = do
 	jidmap <- newTVarIO M.empty
 	sendq <- newSendQueue
 	nextjid <- newTVarIO (JobId 1)
 	sender <- async $ sendloop st sendq
-	receiver <- async $ receiveloop external st jidmap sendq sender
+	receiver <- async $ receiveloop external st jidmap sendq sender annexrunner
 	return $ ExternalAsyncRelay $ do
 		receiveq <- newReceiveQueue
 		jid <- atomically $ do
@@ -65,14 +66,14 @@ newReceiveQueue = newTBMChanIO 10
 newSendQueue :: IO SendQueue
 newSendQueue = newTBMChanIO 10
 
-receiveloop :: External -> ExternalState -> JidMap -> SendQueue -> Async () -> IO ()
-receiveloop external st jidmap sendq sendthread = externalReceive st >>= \case
+receiveloop :: External -> ExternalState -> JidMap -> SendQueue -> Async () -> (Annex () -> IO ()) -> IO ()
+receiveloop external st jidmap sendq sendthread annexrunner = externalReceive st >>= \case
 	Just l -> case parseMessage l :: Maybe AsyncMessage of
 		Just (AsyncMessage jid msg) ->
 			M.lookup jid <$> readTVarIO jidmap >>= \case
 				Just c -> do
 					atomically $ writeTBMChan c msg
-					receiveloop external st jidmap sendq sendthread
+					receiveloop external st jidmap sendq sendthread annexrunner
 				Nothing -> protoerr "unknown job number"
 		Nothing -> case parseMessage l :: Maybe ExceptionalMessage of
 			Just _ -> do
@@ -80,12 +81,12 @@ receiveloop external st jidmap sendq sendthread = externalReceive st >>= \case
 				m <- readTVarIO jidmap
 				forM_ (M.elems m) $ \c ->
 					atomically  $ writeTBMChan c l
-				receiveloop external st jidmap sendq sendthread
+				receiveloop external st jidmap sendq sendthread annexrunner
 			Nothing -> protoerr "unexpected non-async message"
 	Nothing -> closeandshutdown
   where
 	protoerr s = do
-		warningIO $ "async external special remote protocol error: " ++ s
+		annexrunner $ warning $ "async external special remote protocol error: " ++ s
 		closeandshutdown
 	
 	closeandshutdown = do
