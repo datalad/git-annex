@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="basak"
+ avatar="http://cdn.libravatar.org/avatar/b85cacece5b347853dc35d97371b9e0c"
+ subject="comment 2"
+ date="2020-12-02T02:12:58Z"
+ content="""
+1. Realistically, you do need the git branches to restore, as well as the contents of the special remote. This applies to git-annex and special remotes in general. Otherwise you'll have all the content, but not the filenames the content belong to. It is relatively easy to back the git branches up though - they're small (metadata only, if you add all data files through git-annex) and git being natively distributed makes it easy. You do need to do it though - which means that relying on Glacier special remote for disaster recovery isn't on its own enough.
+
+2. git-annex uses content addressed storage. If you make a change (see `git annex lock` and `git annex unlock`), you're effectively adding a new file, and you can decide whether to keep the old file or not. git-annex will handle whichever you leave in your git branch and regardless of what it's named.
+
+3. I'm the glacier-cli author and I'm still around. Are you the person who filed the issue on Python 3 support the other day? I haven't had a chance to look yet. Mostly glacier-cli is trivial (it's really not much code - take a look!), \"done\", and I'll take PRs to fix it to work against the latest boto library version, which is what I assume is the problem. I would have wrote it against Python 3 to start with only boto didn't support Python 3 at the time. glacier-cli is designed to be a \"thin\" wrapper - it doesn't use any special format - your git-annex data just ends up in Glacier as-is, so it should be extractable with relatively straightforward effort with any other tool, not just glacier-cli. However glacier-cli is still just something I wrote and maintain in my spare time, so if you aren't confident diving in to fix something if I'm not available or vanish, and you're not sure about finding someone else to do that either, then that's fair enough.
+"""]]
