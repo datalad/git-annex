@@ -30,5 +30,6 @@ Also, all parts of Messages that remotes use will need to be serialized
 over the transferkeys protocol. Eg, Messages.prompt when the transferkeys
 process is doing something like ssh that is prompting for a password.
 So transferkeys will need its own OutputType to make Messages communicate
-over the pipe.
+over the pipe. (This is a hard thing, so added a todo for it:
+[[todo/serialize_Messages_for_transferkeys]]
 """]]
