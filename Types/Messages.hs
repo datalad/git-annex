@@ -12,6 +12,8 @@ import Utility.Metered
 
 import Control.Concurrent
 import System.Console.Regions (ConsoleRegion)
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Lazy as L
 
 data OutputType
 	= NormalOutput
@@ -60,7 +62,8 @@ newMessageState = do
 		}
 
 data SerializedOutput
-	= OutputMessage String
+	= OutputMessage S.ByteString
 	| OutputError String
 	| ProgressMeter (Maybe Integer) MeterState MeterState
+	| JSONObject L.ByteString
 	deriving (Show, Read)

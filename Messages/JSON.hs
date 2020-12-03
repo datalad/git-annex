@@ -11,6 +11,7 @@ module Messages.JSON (
 	JSONBuilder,
 	JSONChunk(..),
 	emit,
+	encode,
 	none,
 	start,
 	end,
@@ -38,7 +39,6 @@ import Data.Maybe
 import Data.Monoid
 import Prelude
 
-import Types.Messages
 import Types.Command (SeekInput(..))
 import Key
 import Utility.Metered
@@ -82,12 +82,10 @@ end :: Bool -> JSONBuilder
 end b (Just (o, _)) = Just (HM.insert "success" (toJSON' b) o, True)
 end _ Nothing = Nothing
 
-finalize :: JSONOptions -> Object -> Object
-finalize jsonoptions o
-	-- Always include error-messages field, even if empty,
-	-- to make the json be self-documenting.
-	| jsonErrorMessages jsonoptions = addErrorMessage [] o
-	| otherwise = o
+-- Always include error-messages field, even if empty,
+-- to make the json be self-documenting.
+finalize :: Object -> Object
+finalize o = addErrorMessage [] o
 
 addErrorMessage :: [String] -> Object -> Object
 addErrorMessage msg o =
