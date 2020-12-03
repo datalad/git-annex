@@ -61,9 +61,14 @@ newMessageState = do
 		, promptLock = promptlock
 		}
 
+-- | When communicating with a child process over a pipe while it is
+-- performing some action, this is used to pass back output that the child
+-- would normally display to the console.
 data SerializedOutput
 	= OutputMessage S.ByteString
 	| OutputError String
 	| ProgressMeter (Maybe Integer) MeterState MeterState
 	| JSONObject L.ByteString
+	-- ^ This is always sent, it's up to the consumer to decide if it
+	-- wants to display JSON, or human-readable messages.
 	deriving (Show, Read)
