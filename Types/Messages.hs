@@ -1,6 +1,6 @@
 {- git-annex Messages data types
  - 
- - Copyright 2012-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,11 +8,16 @@
 module Types.Messages where
 
 import qualified Utility.Aeson as Aeson
+import Utility.Metered
 
 import Control.Concurrent
 import System.Console.Regions (ConsoleRegion)
 
-data OutputType = NormalOutput | QuietOutput | JSONOutput JSONOptions
+data OutputType
+	= NormalOutput
+	| QuietOutput
+	| JSONOutput JSONOptions
+	| SerializedOutput
 	deriving (Show)
 
 data JSONOptions = JSONOptions
@@ -53,3 +58,9 @@ newMessageState = do
 		, jsonBuffer = Nothing
 		, promptLock = promptlock
 		}
+
+data SerializedOutput
+	= OutputMessage String
+	| OutputError String
+	| ProgressMeter (Maybe Integer) MeterState MeterState
+	deriving (Show, Read)

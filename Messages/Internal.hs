@@ -1,6 +1,6 @@
 {- git-annex output messages, including concurrent output to display regions
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -29,6 +29,7 @@ outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case out
 		| otherwise -> liftIO $ flushed $ S.putStr msg
 	JSONOutput _ -> void $ jsonoutputter jsonbuilder s
 	QuietOutput -> q
+	SerializedOutput -> liftIO $ outputSerialized $ OutputMessage (decodeBS' msg)
 
 -- Buffer changes to JSON until end is reached and then emit it.
 bufferJSON :: JSONBuilder -> MessageState -> Annex Bool
@@ -67,6 +68,8 @@ outputError msg = withMessageState $ \s -> case (outputType s, jsonBuffer s) of
 		let jb' = Just (JSON.addErrorMessage (lines msg) jb)
 		in Annex.changeState $ \st ->
 			st { Annex.output = s { jsonBuffer = jb' } }
+	(SerializedOutput, _) -> 
+		liftIO $ outputSerialized $ OutputError msg
 	_
 		| concurrentOutputEnabled s -> concurrentMessage s True msg go
 		| otherwise -> go
@@ -81,3 +84,6 @@ q = noop
 
 flushed :: IO () -> IO ()
 flushed a = a >> hFlush stdout
+
+outputSerialized :: SerializedOutput -> IO ()
+outputSerialized = print

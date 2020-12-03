@@ -285,9 +285,10 @@ debugEnabled = do
 commandProgressDisabled :: Annex Bool
 commandProgressDisabled = withMessageState $ \s -> return $
 	case outputType s of
+		NormalOutput -> concurrentOutputEnabled s
 		QuietOutput -> True
 		JSONOutput _ -> True
-		NormalOutput -> concurrentOutputEnabled s
+		SerializedOutput -> True
 
 jsonOutputEnabled :: Annex Bool
 jsonOutputEnabled = withMessageState $ \s -> return $
