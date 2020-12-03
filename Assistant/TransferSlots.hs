@@ -155,7 +155,7 @@ genTransfer t info = case transferRemote info of
 	 - usual cleanup. However, first check if something else is
 	 - running the transfer, to avoid removing active transfers.
 	 -}
-	go remote transferrer = ifM (liftIO $ performTransfer transferrer t info)
+	go remote transferrer = ifM (liftAnnex $ performTransfer transferrer t info)
 		( do
 			case associatedFile info of
 				AssociatedFile Nothing -> noop

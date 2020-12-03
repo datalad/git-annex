@@ -11,6 +11,7 @@ module Messages.JSON (
 	JSONBuilder,
 	JSONChunk(..),
 	emit,
+	emit',
 	encode,
 	none,
 	start,
@@ -52,9 +53,12 @@ emitLock :: MVar ()
 emitLock = unsafePerformIO $ newMVar ()
 
 emit :: Object -> IO ()
-emit o = do
+emit = emit' . encode
+
+emit' :: L.ByteString -> IO ()
+emit' b = do
 	takeMVar emitLock
-	L.hPut stdout (encode o)
+	L.hPut stdout b
 	putStr "\n"
 	putMVar emitLock ()
 

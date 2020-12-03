@@ -95,9 +95,9 @@ metered othermeter sizer a = withMessageState $ \st ->
 				updateMeter meter
 			a meter (combinemeter m)
 		| otherwise = nometer
-	go msize (MessageState { outputType = SerializedOutput }) = do
+	go msize (MessageState { outputType = SerializedOutput h }) = do
 		meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
-			outputSerialized $ ProgressMeter msize' old new
+			outputSerialized h $ ProgressMeter msize' old new
 		m <- liftIO $ rateLimitMeterUpdate minratelimit meter $
 			updateMeter meter
 		a meter (combinemeter m)

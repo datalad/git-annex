@@ -19,8 +19,7 @@ data OutputType
 	= NormalOutput
 	| QuietOutput
 	| JSONOutput JSONOptions
-	| SerializedOutput
-	deriving (Show)
+	| SerializedOutput (SerializedOutput -> IO ())
 
 data JSONOptions = JSONOptions
 	{ jsonProgress :: Bool

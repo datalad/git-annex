@@ -29,15 +29,15 @@ outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case out
 		| otherwise -> liftIO $ flushed $ S.putStr msg
 	JSONOutput _ -> void $ jsonoutputter jsonbuilder s
 	QuietOutput -> q
-	SerializedOutput -> do
-		liftIO $ outputSerialized $ OutputMessage msg
+	SerializedOutput h -> do
+		liftIO $ outputSerialized h $ OutputMessage msg
 		void $ jsonoutputter jsonbuilder s
 
 -- Buffer changes to JSON until end is reached and then emit it.
 bufferJSON :: JSONBuilder -> MessageState -> Annex Bool
 bufferJSON jsonbuilder s = case outputType s of
 	JSONOutput _ -> go (flushed . JSON.emit)
-	SerializedOutput -> go (outputSerialized . JSONObject . JSON.encode)
+	SerializedOutput h -> go (outputSerialized h . JSONObject . JSON.encode)
 	_ -> return False
   where
 	go emitter
@@ -63,7 +63,7 @@ bufferJSON jsonbuilder s = case outputType s of
 outputJSON :: JSONBuilder -> MessageState -> Annex Bool
 outputJSON jsonbuilder s = case outputType s of
 	JSONOutput _ -> go (flushed . JSON.emit)
-	SerializedOutput -> go (outputSerialized . JSONObject . JSON.encode)
+	SerializedOutput h -> go (outputSerialized h . JSONObject . JSON.encode)
 	_ -> return False
   where
 	go emitter = do
@@ -77,8 +77,8 @@ outputError msg = withMessageState $ \s -> case (outputType s, jsonBuffer s) of
 		let jb' = Just (JSON.addErrorMessage (lines msg) jb)
 		in Annex.changeState $ \st ->
 			st { Annex.output = s { jsonBuffer = jb' } }
-	(SerializedOutput, _) -> 
-		liftIO $ outputSerialized $ OutputError msg
+	(SerializedOutput h, _) -> 
+		liftIO $ outputSerialized h $ OutputError msg
 	_
 		| concurrentOutputEnabled s -> concurrentMessage s True msg go
 		| otherwise -> go
@@ -94,5 +94,20 @@ q = noop
 flushed :: IO () -> IO ()
 flushed a = a >> hFlush stdout
 
-outputSerialized :: SerializedOutput -> IO ()
-outputSerialized = print
+outputSerialized :: (SerializedOutput -> IO ()) -> SerializedOutput -> IO ()
+outputSerialized = id
+
+emitSerializedOutput :: SerializedOutput -> Annex ()
+emitSerializedOutput (OutputMessage msg) =
+	outputMessage' nojsonoutputter nojsonbuilder msg
+  where
+	nojsonoutputter _ _ = return False
+	nojsonbuilder = id
+emitSerializedOutput (OutputError msg) = outputError msg
+emitSerializedOutput (ProgressMeter sz old new) = undefined -- TODO
+emitSerializedOutput (JSONObject b) =
+	withMessageState $ \s -> case outputType s of
+		JSONOutput _ -> liftIO $ flushed $ JSON.emit' b
+		SerializedOutput h -> liftIO $
+			outputSerialized h $ JSONObject b
+		_ -> q

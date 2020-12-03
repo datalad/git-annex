@@ -288,7 +288,7 @@ commandProgressDisabled = withMessageState $ \s -> return $
 		NormalOutput -> concurrentOutputEnabled s
 		QuietOutput -> True
 		JSONOutput _ -> True
-		SerializedOutput -> True
+		SerializedOutput _ -> True
 
 jsonOutputEnabled :: Annex Bool
 jsonOutputEnabled = withMessageState $ \s -> return $
