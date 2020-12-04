@@ -20,7 +20,7 @@ later in places where `--unlock` is currently used.
 Present: This week, I've been working on serializing all console IO
 that git-annex does, so it can start some child processes to perform
 long-running tasks, like downloads. The goal is to 
-[todo/detect stalled transfers and cancel or retry them](more_extensive_retries_to_mask_transient_failures).
+[[detect stalled transfers and cancel or retry them|todo/more_extensive_retries_to_mask_transient_failures]].
 This is after previous attempts, at doing it using threads failed.
 I finished the IO serialization part today, but may put off the rest until
 a bit later.
