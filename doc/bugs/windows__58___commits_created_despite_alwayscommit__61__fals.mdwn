@@ -1,0 +1,66 @@
+In DataLad, there's a spot where we set `alwayscommit=false` when
+doing bulk setting of metadata.  When debugging a test failure related
+to this, Adina, who was testing on Windows, reported that the script
+below shows two commits rather than the one commit I see on my end and
+would expect.  Here's the good output on my Debian system:
+
+[[!format sh """
+set -eu
+
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/ga-XXXXXXX)"
+
+alwayscommit=false
+
+git init && git annex init
+echo foo >foo && git annex add foo
+git -c annex.alwayscommit=$alwayscommit annex metadata --set a=b foo
+git -c annex.alwayscommit=$alwayscommit annex metadata --set c=d foo
+git commit -mc
+
+git annex version
+echo "-----"
+git log --oneline --stat git-annex -- '*.met'
+"""]]
+
+```
+[... 23 lines ...]
+git-annex version: 8.20201128-g2878ab456
+build flags: Assistant Webapp Pairing Inotify TorrentParser Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+-----
+9436e93 update
+ ...9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c.log.met | 2 ++
+ 1 file changed, 2 insertions(+)
+```
+
+And here's the output Adina reported on Windows:
+
+```
+c44294d (git-annex) update
+ ...b9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c.log.met | 1 +
+ 1 file changed, 1 insertion(+)
+2395118 update
+ ...b9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c.log.met | 1 +
+ 1 file changed, 1 insertion(+)
+```
+
+Adina saw this behavior on two Windows machines, one with
+8.20201008-g65c1687 and the other with 8.20201008-g7e24b2587.
+
+I realize this issue probably isn't something you can debug on your
+end, but perhaps you can think of an obvious culprit or another
+Windows user has ideas.
+
+Thanks.
+
+Related discussion on DataLad issue tracker:
+https://github.com/datalad/datalad/pull/5202#discussion_r536178860
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
