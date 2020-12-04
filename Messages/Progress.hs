@@ -24,6 +24,7 @@ import Messages.Internal
 
 import qualified System.Console.Regions as Regions
 import qualified System.Console.Concurrent as Console
+import Control.Monad.IO.Class (MonadIO)
 
 {- Class of things from which a size can be gotten to display a progress
  - meter. -}
@@ -64,13 +65,30 @@ instance MeterSize KeySizer where
 {- Shows a progress meter while performing an action.
  - The action is passed the meter and a callback to use to update the meter.
  --}
-metered :: MeterSize sizer => Maybe MeterUpdate -> sizer -> (Meter -> MeterUpdate -> Annex a) -> Annex a
-metered othermeter sizer a = withMessageState $ \st ->
-	flip go st =<< getMeterSize sizer
+metered
+	:: MeterSize sizer
+	=> Maybe MeterUpdate
+	-> sizer
+	-> (Meter -> MeterUpdate -> Annex a)
+	-> Annex a
+metered othermeter sizer a = withMessageState $ \st -> do
+	sz <- getMeterSize sizer
+	metered' st othermeter sz showOutput a
+
+metered'
+	:: (Monad m, MonadIO m, MonadMask m)
+	=> MessageState
+	-> Maybe MeterUpdate
+	-> Maybe FileSize
+	-> m ()
+	-- ^ this should run showOutput
+	-> (Meter -> MeterUpdate -> m a)
+	-> m a
+metered' st othermeter size showoutput a = go size st
   where
 	go _ (MessageState { outputType = QuietOutput }) = nometer
 	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
-		showOutput
+		showoutput
 		meter <- liftIO $ mkMeter msize $ 
 			displayMeterHandle stdout bandwidthMeter
 		m <- liftIO $ rateLimitMeterUpdate consoleratelimit meter $
@@ -79,7 +97,7 @@ metered othermeter sizer a = withMessageState $ \st ->
 		liftIO $ clearMeterHandle meter stdout
 		return r
 	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
-		withProgressRegion $ \r -> do
+		withProgressRegion st $ \r -> do
 			meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
 				let s = bandwidthMeter msize' old new
 				in Regions.setConsoleRegion r ('\n' : s)
@@ -88,7 +106,7 @@ metered othermeter sizer a = withMessageState $ \st ->
 			a meter (combinemeter m)
 	go msize (MessageState { outputType = JSONOutput jsonoptions })
 		| jsonProgress jsonoptions = do
-			buf <- withMessageState $ return . jsonBuffer
+			let buf = jsonBuffer st
 			meter <- liftIO $ mkMeter msize $ \_ msize' _old new ->
 				JSON.progress buf msize' (meterBytesProcessed new)
 			m <- liftIO $ rateLimitMeterUpdate jsonratelimit meter $
