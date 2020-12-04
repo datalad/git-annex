@@ -9,6 +9,7 @@ module Types.Messages where
 
 import qualified Utility.Aeson as Aeson
 import Utility.Metered
+import Utility.FileSize
 
 import Control.Concurrent
 import System.Console.Regions (ConsoleRegion)
@@ -66,7 +67,9 @@ newMessageState = do
 data SerializedOutput
 	= OutputMessage S.ByteString
 	| OutputError String
-	| ProgressMeter (Maybe Integer) MeterState MeterState
+	| StartProgressMeter (Maybe FileSize)
+	| UpdateProgressMeter BytesProcessed
+	| EndProgressMeter
 	| JSONObject L.ByteString
 	-- ^ This is always sent, it's up to the consumer to decide if it
 	-- wants to display JSON, or human-readable messages.

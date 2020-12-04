@@ -96,18 +96,3 @@ flushed a = a >> hFlush stdout
 
 outputSerialized :: (SerializedOutput -> IO ()) -> SerializedOutput -> IO ()
 outputSerialized = id
-
-emitSerializedOutput :: SerializedOutput -> Annex ()
-emitSerializedOutput (OutputMessage msg) =
-	outputMessage' nojsonoutputter nojsonbuilder msg
-  where
-	nojsonoutputter _ _ = return False
-	nojsonbuilder = id
-emitSerializedOutput (OutputError msg) = outputError msg
-emitSerializedOutput (ProgressMeter sz old new) = undefined -- TODO
-emitSerializedOutput (JSONObject b) =
-	withMessageState $ \s -> case outputType s of
-		JSONOutput _ -> liftIO $ flushed $ JSON.emit' b
-		SerializedOutput h -> liftIO $
-			outputSerialized h $ JSONObject b
-		_ -> q

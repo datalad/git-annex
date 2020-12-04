@@ -931,6 +931,7 @@ Executable git-annex
     Messages.Internal
     Messages.JSON
     Messages.Progress
+    Messages.Serialized
     P2P.Address
     P2P.Annex
     P2P.Auth

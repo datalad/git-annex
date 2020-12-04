@@ -84,10 +84,10 @@ metered'
 	-- ^ this should run showOutput
 	-> (Meter -> MeterUpdate -> m a)
 	-> m a
-metered' st othermeter size showoutput a = go size st
+metered' st othermeter msize showoutput a = go st
   where
-	go _ (MessageState { outputType = QuietOutput }) = nometer
-	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
+	go (MessageState { outputType = QuietOutput }) = nometer
+	go (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showoutput
 		meter <- liftIO $ mkMeter msize $ 
 			displayMeterHandle stdout bandwidthMeter
@@ -96,7 +96,7 @@ metered' st othermeter size showoutput a = go size st
 		r <- a meter (combinemeter m)
 		liftIO $ clearMeterHandle meter stdout
 		return r
-	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
+	go (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 		withProgressRegion st $ \r -> do
 			meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
 				let s = bandwidthMeter msize' old new
@@ -104,7 +104,7 @@ metered' st othermeter size showoutput a = go size st
 			m <- liftIO $ rateLimitMeterUpdate consoleratelimit meter $
 				updateMeter meter
 			a meter (combinemeter m)
-	go msize (MessageState { outputType = JSONOutput jsonoptions })
+	go (MessageState { outputType = JSONOutput jsonoptions })
 		| jsonProgress jsonoptions = do
 			let buf = jsonBuffer st
 			meter <- liftIO $ mkMeter msize $ \_ msize' _old new ->
@@ -113,12 +113,15 @@ metered' st othermeter size showoutput a = go size st
 				updateMeter meter
 			a meter (combinemeter m)
 		| otherwise = nometer
-	go msize (MessageState { outputType = SerializedOutput h }) = do
-		meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
-			outputSerialized h $ ProgressMeter msize' old new
+	go (MessageState { outputType = SerializedOutput h }) = do
+		liftIO $ outputSerialized h $ StartProgressMeter msize
+		meter <- liftIO $ mkMeter msize $ \_ _ _old new ->
+			outputSerialized h $ UpdateProgressMeter $
+				meterBytesProcessed new
 		m <- liftIO $ rateLimitMeterUpdate minratelimit meter $
 			updateMeter meter
 		a meter (combinemeter m)
+			`finally` (liftIO $ outputSerialized h EndProgressMeter)
 	nometer = do
 		dummymeter <- liftIO $ mkMeter Nothing $
 			\_ _ _ _ -> return ()

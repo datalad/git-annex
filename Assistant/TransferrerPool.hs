@@ -11,6 +11,7 @@ import Assistant.Common
 import Assistant.Types.TransferrerPool
 import Types.Transfer
 import Utility.Batch
+import Messages.Serialized
 
 import qualified Command.TransferKeys as T
 
@@ -58,14 +59,9 @@ checkTransferrerPoolItem program batchmaker i = case i of
 performTransfer :: Transferrer -> Transfer -> TransferInfo -> Assistant Bool
 performTransfer transferrer t info = catchBoolIO $ do
 	(liftIO $ T.sendRequest t info (transferrerWrite transferrer))
-	readresponse
-  where
-	readresponse = 
-		liftIO (T.readResponse (transferrerRead transferrer)) >>= \case
-			Right r -> return r
-			Left so -> do
-				liftAnnex $ emitSerializedOutput so
-				readresponse
+	relaySerializedOutput
+		(liftIO (T.readResponse (transferrerRead transferrer)))
+		liftAnnex
 
 {- Starts a new git-annex transferkeys process, setting up handles
  - that will be used to communicate with it. -}
