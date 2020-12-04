@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="rshalaev@3e2130a1e3cb0aaff7dd80aba7548ad9be0ea2d4"
+ nickname="rshalaev"
+ avatar="http://cdn.libravatar.org/avatar/d7f181d338cbcef7418faa01f0441e86"
+ subject="comment 15"
+ date="2020-12-03T01:43:00Z"
+ content="""
+Is where any way to make Git Annex use Windows 10 NTFS hardlinks in the working tree?
+
+Looking to conserve disk-space while still being able to browse and view files content. Currently Git Annex is doubling the ammount of disk space.
+"""]]
