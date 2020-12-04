@@ -17,6 +17,10 @@ then
     exit 0
 fi
 
+# Needed for `git commit`:
+git config --global user.email "test@github.land"
+git config --global user.name "GitHub Almighty"
+
 find "$patches_dir" -type f '!' -name '.*' -print | sort | while read -r patchfile
 do
     echo "[INFO] Applying patch $patchfile"
