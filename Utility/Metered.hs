@@ -382,8 +382,8 @@ data Meter = Meter (MVar (Maybe Integer)) (MVar MeterState) (MVar String) Displa
 
 data MeterState = MeterState
 	{ meterBytesProcessed :: BytesProcessed
-	, meterTimeStamp :: Double
-	} deriving (Show, Read)
+	, meterTimeStamp :: POSIXTime
+	} deriving (Show)
 
 type DisplayMeter = MVar String -> Maybe Integer -> MeterState -> MeterState -> IO ()
 
@@ -392,7 +392,7 @@ type RenderMeter = Maybe Integer -> MeterState -> MeterState -> String
 -- | Make a meter. Pass the total size, if it's known.
 mkMeter :: Maybe Integer -> DisplayMeter -> IO Meter
 mkMeter totalsize displaymeter = do
-	ts <- realToFrac <$> getPOSIXTime
+	ts <- getPOSIXTime
 	Meter
 		<$> newMVar totalsize
 		<*> newMVar (MeterState zeroBytesProcessed ts)
@@ -405,7 +405,7 @@ setMeterTotalSize (Meter totalsizev _ _ _) = void . swapMVar totalsizev . Just
 -- | Updates the meter, displaying it if necessary.
 updateMeter :: Meter -> MeterUpdate
 updateMeter (Meter totalsizev sv bv displaymeter) new = do
-	now <- realToFrac <$> getPOSIXTime
+	now <- getPOSIXTime
 	let curms = MeterState new now
 	oldms <- swapMVar sv curms
 	when (meterBytesProcessed oldms /= new) $ do
