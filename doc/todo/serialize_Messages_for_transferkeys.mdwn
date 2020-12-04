@@ -48,3 +48,4 @@ A few notes on implementing that:
   new output type by sending the message through the pipe, and also
   building any json object, and sending it through the pipe once it's done.
 
+> Started work on this in the message-serialization branch. --[[Joey]]
