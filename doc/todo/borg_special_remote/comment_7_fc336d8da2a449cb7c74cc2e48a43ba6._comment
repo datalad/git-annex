@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2020-12-04T01:17:01Z"
+ content="""
+The Remote interface recently got importKey, which gets us
+unexpectedly a *lot* closer to making `git-annex import --from borg` a reality!
+
+The Remote would need a listImportableContents that finds all annex objects
+in all (new) snapshots, and generates a ContentIdentifier that is just the
+snapshot plus object path. Then importKey can simply generate a Key from
+that ContentIdentifier without doing any more work. (And, so getting an
+object from the remote will also work, because it will have the
+ContentIdentifier recorded and so will know what snapshot and path in the
+borg repo.) 
+
+Seems that all that would be needed is a way to skip generating the git tree
+for the imported files, since it would be useless.
+And a way to force --no-content, since importing from a borg backup should not
+get all the backed up annex objects. It may be best to make this a new
+command, that just happens to use the ImportActions interface.
+"""]]
