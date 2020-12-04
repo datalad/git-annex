@@ -29,7 +29,7 @@ outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case out
 		| otherwise -> liftIO $ flushed $ S.putStr msg
 	JSONOutput _ -> void $ jsonoutputter jsonbuilder s
 	QuietOutput -> q
-	SerializedOutput h -> do
+	SerializedOutput h _ -> do
 		liftIO $ outputSerialized h $ OutputMessage msg
 		void $ jsonoutputter jsonbuilder s
 
@@ -37,7 +37,7 @@ outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case out
 bufferJSON :: JSONBuilder -> MessageState -> Annex Bool
 bufferJSON jsonbuilder s = case outputType s of
 	JSONOutput _ -> go (flushed . JSON.emit)
-	SerializedOutput h -> go (outputSerialized h . JSONObject . JSON.encode)
+	SerializedOutput h _ -> go (outputSerialized h . JSONObject . JSON.encode)
 	_ -> return False
   where
 	go emitter
@@ -63,7 +63,7 @@ bufferJSON jsonbuilder s = case outputType s of
 outputJSON :: JSONBuilder -> MessageState -> Annex Bool
 outputJSON jsonbuilder s = case outputType s of
 	JSONOutput _ -> go (flushed . JSON.emit)
-	SerializedOutput h -> go (outputSerialized h . JSONObject . JSON.encode)
+	SerializedOutput h _ -> go (outputSerialized h . JSONObject . JSON.encode)
 	_ -> return False
   where
 	go emitter = do
@@ -77,7 +77,7 @@ outputError msg = withMessageState $ \s -> case (outputType s, jsonBuffer s) of
 		let jb' = Just (JSON.addErrorMessage (lines msg) jb)
 		in Annex.changeState $ \st ->
 			st { Annex.output = s { jsonBuffer = jb' } }
-	(SerializedOutput h, _) -> 
+	(SerializedOutput h _, _) -> 
 		liftIO $ outputSerialized h $ OutputError msg
 	_
 		| concurrentOutputEnabled s -> concurrentMessage s True msg go
@@ -96,3 +96,9 @@ flushed a = a >> hFlush stdout
 
 outputSerialized :: (SerializedOutput -> IO ()) -> SerializedOutput -> IO ()
 outputSerialized = id
+
+-- | Wait for the specified response.
+waitOutputSerializedResponse :: (IO (Maybe SerializedOutputResponse)) -> SerializedOutputResponse -> IO ()
+waitOutputSerializedResponse getr r = tryIO getr >>= \case
+	Right (Just r') | r' == r -> return ()
+	v -> error $ "serialized output protocol error; expected " ++ show r ++ " got " ++ show v

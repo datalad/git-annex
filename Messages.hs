@@ -288,7 +288,7 @@ commandProgressDisabled = withMessageState $ \s -> return $
 		NormalOutput -> concurrentOutputEnabled s
 		QuietOutput -> True
 		JSONOutput _ -> True
-		SerializedOutput _ -> True
+		SerializedOutput _ _ -> True
 
 jsonOutputEnabled :: Annex Bool
 jsonOutputEnabled = withMessageState $ \s -> return $
@@ -314,8 +314,20 @@ mkPrompter = getConcurrency >>= \case
   where
 	goconcurrent = withMessageState $ \s -> do
 		let l = promptLock s
+		let (run, cleanup) = case outputType s of
+			SerializedOutput h hr ->
+				( \a -> do
+					liftIO $ outputSerialized h StartPrompt
+					liftIO $ waitOutputSerializedResponse hr ReadyPrompt
+					a
+				, liftIO $ outputSerialized h EndPrompt
+				)
+			_ ->
+				( hideRegionsWhile s
+				, noop
+				)
 		return $ \a ->
 			debugLocks $ bracketIO
 				(takeMVar l)
-				(putMVar l)
-				(const $ hideRegionsWhile s a)
+				(\v -> putMVar l v >> cleanup)
+				(const $ run a)

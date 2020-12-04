@@ -7,7 +7,11 @@
 
 {-# LANGUAGE RankNTypes #-}
 
-module Messages.Serialized (outputSerialized, relaySerializedOutput) where
+module Messages.Serialized (
+	relaySerializedOutput,
+	outputSerialized,
+	waitOutputSerializedResponse,
+) where
 
 import Common
 import Annex
@@ -19,15 +23,17 @@ import qualified Messages.JSON as JSON
 
 import Control.Monad.IO.Class (MonadIO)
 
+-- | Relay serialized output from a child process to the console.
 relaySerializedOutput
 	:: (Monad m, MonadIO m, MonadMask m)
 	=> m (Either SerializedOutput r)
 	-- ^ Get next serialized output, or final value to return.
+	-> (SerializedOutputResponse -> m ())
 	-> (forall a. Annex a -> m a)
 	-- ^ Run an annex action in the monad. Will not be used with
 	-- actions that block for a long time.
 	-> m r
-relaySerializedOutput getso runannex = go Nothing
+relaySerializedOutput getso sendsor runannex = go Nothing
   where
 	go st = loop st >>= \case
 		Right r -> return r
@@ -47,7 +53,7 @@ relaySerializedOutput getso runannex = go Nothing
 		Left (JSONObject b) -> do
 			runannex $ withMessageState $ \s -> case outputType s of
 				JSONOutput _ -> liftIO $ flushed $ JSON.emit' b
-				SerializedOutput h -> liftIO $
+				SerializedOutput h _ -> liftIO $
 					outputSerialized h $ JSONObject b
 				_ -> q
 			loop st
@@ -69,3 +75,18 @@ relaySerializedOutput getso runannex = go Nothing
 				Just meterupdate -> liftIO $ meterupdate n
 				Nothing -> noop
 			loop st
+		Left StartPrompt -> do
+			prompter <- runannex mkPrompter
+			v <- prompter $ do
+				sendsor ReadyPrompt
+				-- Continue processing serialized output
+				-- until EndPrompt or a final value is
+				-- returned. (EndPrompt is all that
+				-- ought to be sent while in a prompt
+				-- really, but if something else did get
+				-- sent, display it just in case.)
+				loop st
+			case v of
+				Right r -> return (Right r)
+				Left st' -> loop st'
+		Left EndPrompt -> return (Left st)

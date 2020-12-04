@@ -20,7 +20,9 @@ data OutputType
 	= NormalOutput
 	| QuietOutput
 	| JSONOutput JSONOptions
-	| SerializedOutput (SerializedOutput -> IO ())
+	| SerializedOutput
+		(SerializedOutput -> IO ())
+		(IO (Maybe SerializedOutputResponse))
 
 data JSONOptions = JSONOptions
 	{ jsonProgress :: Bool
@@ -70,7 +72,13 @@ data SerializedOutput
 	| StartProgressMeter (Maybe FileSize)
 	| UpdateProgressMeter BytesProcessed
 	| EndProgressMeter
+	| StartPrompt
+	| EndPrompt
 	| JSONObject L.ByteString
 	-- ^ This is always sent, it's up to the consumer to decide if it
 	-- wants to display JSON, or human-readable messages.
 	deriving (Show, Read)
+
+data SerializedOutputResponse
+	= ReadyPrompt
+	deriving (Eq, Show, Read)

@@ -60,7 +60,8 @@ performTransfer :: Transferrer -> Transfer -> TransferInfo -> Assistant Bool
 performTransfer transferrer t info = catchBoolIO $ do
 	(liftIO $ T.sendRequest t info (transferrerWrite transferrer))
 	relaySerializedOutput
-		(liftIO (T.readResponse (transferrerRead transferrer)))
+		(liftIO $ T.readResponse (transferrerRead transferrer))
+		(liftIO . T.sendSerializedOutputResponse (transferrerWrite transferrer))
 		liftAnnex
 
 {- Starts a new git-annex transferkeys process, setting up handles

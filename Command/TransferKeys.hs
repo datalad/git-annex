@@ -41,8 +41,9 @@ start :: CommandStart
 start = do
 	enableInteractiveBranchAccess
 	(readh, writeh) <- liftIO dupIoHandles
-	Annex.setOutput $ SerializedOutput $
-		hPutStrLn writeh . show . TransferOutput
+	Annex.setOutput $ SerializedOutput
+		(hPutStrLn writeh . show . TransferOutput)
+		(readMaybe <$> hGetLine readh)
 	runRequests readh writeh runner
 	stop
   where
@@ -101,13 +102,16 @@ runRequests readh writeh a = go Nothing Nothing
 		hPutStrLn writeh $ show $ TransferResult b
 		hFlush writeh
 
--- FIXME this is bad when used with inAnnex
+-- | Send a request to this command to perform a transfer.
 sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
 sendRequest t tinfo h = hPutStrLn h $ show $ TransferRequest
 	(transferDirection t)
 	(maybe (Left (transferUUID t)) (Right . Remote.name) (transferRemote tinfo))
 	(keyData (transferKey t))
 	(associatedFile tinfo)
+
+sendSerializedOutputResponse :: Handle -> SerializedOutputResponse -> IO ()
+sendSerializedOutputResponse h sor = hPutStrLn h $ show sor
 
 -- | Read a response from this command.
 --
