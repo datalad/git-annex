@@ -50,6 +50,7 @@ module Messages (
 	withMessageState,
 	prompt,
 	mkPrompter,
+	emitSerializedOutput,
 ) where
 
 import System.Log.Logger

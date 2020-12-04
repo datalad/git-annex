@@ -19,7 +19,6 @@ import qualified Database.Keys
 import Annex.BranchState
 import Types.Messages
 import Types.Key
-import Messages.Internal
 
 import Text.Read (readMaybe)
 
@@ -102,6 +101,7 @@ runRequests readh writeh a = go Nothing Nothing
 		hPutStrLn writeh $ show $ TransferResult b
 		hFlush writeh
 
+-- FIXME this is bad when used with inAnnex
 sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
 sendRequest t tinfo h = hPutStrLn h $ show $ TransferRequest
 	(transferDirection t)
@@ -111,16 +111,14 @@ sendRequest t tinfo h = hPutStrLn h $ show $ TransferRequest
 
 -- | Read a response from this command.
 --
--- Each TransferOutput line that is read before the final TransferResult
--- will be output.
-readResponse :: Handle -> Annex Bool
+-- Before the final response, this will return whatever SerializedOutput
+-- should be displayed as the transfer is performed.
+readResponse :: Handle -> IO (Either SerializedOutput Bool)
 readResponse h = do
 	l <- liftIO $ hGetLine h
 	case readMaybe l of
-		Just (TransferOutput so) -> do
-			emitSerializedOutput so
-			readResponse h
-		Just (TransferResult r) -> return r
+		Just (TransferOutput so) -> return (Left so)
+		Just (TransferResult r) -> return (Right r)
 		Nothing -> protocolError l
 
 protocolError :: String -> a

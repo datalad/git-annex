@@ -55,10 +55,17 @@ checkTransferrerPoolItem program batchmaker i = case i of
 
 {- Requests that a Transferrer perform a Transfer, and waits for it to
  - finish. -}
-performTransfer :: Transferrer -> Transfer -> TransferInfo -> Annex Bool
+performTransfer :: Transferrer -> Transfer -> TransferInfo -> Assistant Bool
 performTransfer transferrer t info = catchBoolIO $ do
 	(liftIO $ T.sendRequest t info (transferrerWrite transferrer))
-	T.readResponse (transferrerRead transferrer)
+	readresponse
+  where
+	readresponse = 
+		liftIO (T.readResponse (transferrerRead transferrer)) >>= \case
+			Right r -> return r
+			Left so -> do
+				liftAnnex $ emitSerializedOutput so
+				readresponse
 
 {- Starts a new git-annex transferkeys process, setting up handles
  - that will be used to communicate with it. -}
