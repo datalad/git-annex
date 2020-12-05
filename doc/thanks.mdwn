@@ -45,9 +45,8 @@ git-annex development was supported in large part by:
   University for the Healthy Brains for Healthy Lives initiative.
 * And by the NSF funded [Datalad project](http://datalad.org/) and the 
   [DANDI project](https://www.dandiarchive.org/)
-
-With additional support by Gioele Barabucci ENK and by
-[Powderhouse Studios](https://powderhouse.org/).
+* [Powderhouse Studios](https://powderhouse.org/)
+* Gioele Barabucci ENK
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
