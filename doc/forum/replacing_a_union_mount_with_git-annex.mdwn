@@ -1,11 +1,16 @@
 I currently use mergerfs, it gives me a simple union mount of a bunch of drives, for example:
-/media/*/datahoard/
-* meaning several stand alone drives
+/media/*/datahoard/  
+
+( * meaning several stand alone drives )
 
 I wanted to use git-annex instead, so I went to one of those drives:
+
 cd /media/strange/
+
 and created a git annex repo, then if I go to another drive
+
 cd /media/charm/ 
+
 and attempt to clone the repo, it complains because /datahoard/ already exists (and isn't empty)
 
 I want to import all of my single drives into git-annex and have the resulting directory structure be the same as the original union mount, is this possible and how would I go about doing it?
