@@ -120,11 +120,6 @@ jobs:
         run: grep -E '^All [[:digit:]]{3} tests passed' "${bbuild_log}"
         if: "!contains(env.DEB_BUILD_OPTIONS, 'nocheck')"
 
-      - name: Upload packages
-        uses: actions/upload-artifact@v2
-        with:
-          name: {{artifact_basename}}_${{ steps.build-version.outputs.version }}
-          path: git-annex[-_]*.*
     {% elif ostype == "macos" %}
       - name: Configure build
         run: |
@@ -156,11 +151,6 @@ jobs:
              git-annex_"${{ steps.build-version.outputs.version }}".dmg
         working-directory: tmp
 
-      - name: Upload packages
-        uses: actions/upload-artifact@v2
-        with:
-          name: {{artifact_basename}}_${{ steps.build-version.outputs.version }}
-          path: tmp/git-annex_*.dmg
     {% elif ostype == "windows" %}
       - name: Download and "install" libmagic for windows
         run: |
@@ -218,14 +208,14 @@ jobs:
           mv git-annex-installer.exe \
              git-annex-installer_"${{ steps.build-version.outputs.version }}".exe
 
-      - name: Upload artifacts
+    {% endif %}
+      - name: Upload packages
         uses: actions/upload-artifact@v2
         with:
-          name: git-annex-windows-installer_${{ steps.build-version.outputs.version }}
+          name: {{artifact_basename}}_${{ steps.build-version.outputs.version }}
           path: |
-            git-annex-installer_*.exe
-            dist\build-version
-    {% endif %}
+            git-annex[-_]*.*
+            dist/build-version
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
