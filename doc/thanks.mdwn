@@ -44,7 +44,7 @@ git-annex development was supported in large part by:
   by the Canada First Research Excellence Fund, awarded to McGill
   University for the Healthy Brains for Healthy Lives initiative.
 * The NSF funded [Datalad project](http://datalad.org/)
-* The NFS funded [DANDI project](https://www.dandiarchive.org/)
+* The NSF funded [DANDI project](https://www.dandiarchive.org/)
 * [Powderhouse Studios](https://powderhouse.org/)
 * Gioele Barabucci ENK
 
