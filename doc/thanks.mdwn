@@ -43,8 +43,10 @@ git-annex development was supported in large part by:
 * [NeuroHub](https://www.mcgill.ca/hbhl/research/platforms), funded
   by the Canada First Research Excellence Fund, awarded to McGill
   University for the Healthy Brains for Healthy Lives initiative.
-* The NSF funded [Datalad project](http://datalad.org/)
-* The NIH funded [DANDI project](https://www.dandiarchive.org/)
+* [Datalad](http://datalad.org/), funded by the NSF, awarded to Dartmouth
+  College.
+* [DANDI](https://www.dandiarchive.org/), funded by the NIH, awarded to
+  Dartmouth College.
 * [Powderhouse Studios](https://powderhouse.org/)
 * Gioele Barabucci ENK
 
