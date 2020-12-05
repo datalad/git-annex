@@ -102,7 +102,9 @@ jobs:
         run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster
 
       - name: Build source packages
-        run: chronic singularity exec ./buildenv.sif make debianstandalone-dsc
+        run: |
+          chronic singularity exec ./buildenv.sif make debianstandalone-dsc
+          mv ../git-annex_*.* .
 
       - name: Build binary package from the source package
         run: |
